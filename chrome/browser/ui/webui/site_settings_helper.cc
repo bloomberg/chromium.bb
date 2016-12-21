@@ -72,7 +72,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
 #if defined(OS_CHROMEOS)
     {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protectedContent"},
 #endif
-    {CONTENT_SETTINGS_TYPE_KEYGEN, "keygen"},
     {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync"},
 };
 

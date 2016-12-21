@@ -1,7 +1,6 @@
-CONSOLE WARNING: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 
 This tests the shadow host's and shadow root's nodeType.
-PASS keygen.nodeType is Node.ELEMENT_NODE
+PASS progress.nodeType is Node.ELEMENT_NODE
 PASS shadow.nodeType is Node.DOCUMENT_FRAGMENT_NODE
 PASS shadowChild is non-null.
 PASS shadowChild.nodeType != Node.DOCUMENT_FRAGMENT_NODE is true

@@ -1,4 +1,3 @@
-CONSOLE WARNING: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 This is a testharness.js-based test.
 PASS Check if the output element is a labelable element 
 PASS Check if the output element can access 'labels' 
@@ -14,8 +13,8 @@ PASS Check if the hidden input element is not a labelable element.
 FAIL Check if the hidden input element can access 'labels' Cannot read property 'length' of null
 PASS Check if the input element in radio state is a labelable element 
 PASS Check if the input element in radio state can access 'labels' 
-PASS Check if the keygen element is a labelable element 
-PASS Check if the keygen element can access 'labels' 
+FAIL Check if the keygen element is a labelable element Cannot read property 'id' of null
+FAIL Check if the keygen element can access 'labels' Cannot read property 'length' of undefined
 PASS Check if the meter element is a labelable element 
 PASS Check if the meter element can access 'labels' 
 PASS Check if the fieldset element is not a labelable element 

@@ -7,7 +7,6 @@
     <input name=n1 type=image>
     <input name=n1 type=text>
     <input name=n1 type=radio>
-    <keygen id=n1></keygen>
     <output id=n1></output>
     <object name=n1></object>
     <select name=n1><option id=n1></option></select>
@@ -19,11 +18,11 @@
 description("Test RadioNodeLists returned by the HTMLFormElement named-getter.");
 
 var form1 = document.getElementById("f1");
-shouldBe("form1.elements.length", "10");
+shouldBe("form1.elements.length", "9");
 
 debug("Check that only 'listed elements' are included in the list, if any.");
 var radioNodeList = form1["n1"];
-shouldBe("radioNodeList.length", "10");
+shouldBe("radioNodeList.length", "9");
 
 shouldBeTrue("radioNodeList[0] instanceof HTMLButtonElement");
 shouldBeTrue("radioNodeList[1] instanceof HTMLFieldSetElement");
@@ -33,10 +32,9 @@ shouldBeTrue("radioNodeList[3] instanceof HTMLInputElement");
 shouldBeEqualToString("radioNodeList[3].type", "text");
 shouldBeTrue("radioNodeList[4] instanceof HTMLInputElement");
 shouldBeEqualToString("radioNodeList[4].type", "radio");
-shouldBeTrue("radioNodeList[5] instanceof HTMLKeygenElement");
-shouldBeTrue("radioNodeList[6] instanceof HTMLOutputElement");
-shouldBeTrue("radioNodeList[7] instanceof HTMLObjectElement");
-shouldBeTrue("radioNodeList[8] instanceof HTMLSelectElement");
-shouldBeTrue("radioNodeList[9] instanceof HTMLTextAreaElement");
+shouldBeTrue("radioNodeList[5] instanceof HTMLOutputElement");
+shouldBeTrue("radioNodeList[6] instanceof HTMLObjectElement");
+shouldBeTrue("radioNodeList[7] instanceof HTMLSelectElement");
+shouldBeTrue("radioNodeList[8] instanceof HTMLTextAreaElement");
 </script>
 

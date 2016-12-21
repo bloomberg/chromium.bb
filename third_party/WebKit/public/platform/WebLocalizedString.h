@@ -104,8 +104,6 @@ struct WebLocalizedString {
     FileButtonChooseMultipleFilesLabel,
     FileButtonNoFileSelectedLabel,
     InputElementAltText,
-    KeygenMenuHighGradeKeySize,
-    KeygenMenuMediumGradeKeySize,
     MissingPluginText,
     MultipleFileUploadText,
     OtherColorLabel,

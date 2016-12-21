@@ -728,8 +728,6 @@ crbug.com/636053 [ Mac Win ] printing/thead-repeats-at-top-of-each-page-multiple
 crbug.com/636053 [ Mac Win ] virtual/threaded/printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
 
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
-crbug.com/520189 [ Mac ] http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
-crbug.com/520189 [ Mac ] virtual/mojo-loading/http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
 
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]

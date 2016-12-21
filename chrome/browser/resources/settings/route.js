@@ -160,7 +160,6 @@ cr.define('settings', function() {
       r.SITE_SETTINGS_COOKIES.createChild('/cookies/detail');
   r.SITE_SETTINGS_IMAGES = r.SITE_SETTINGS.createChild('images');
   r.SITE_SETTINGS_JAVASCRIPT = r.SITE_SETTINGS.createChild('javascript');
-  r.SITE_SETTINGS_KEYGEN = r.SITE_SETTINGS.createChild('keygen');
   r.SITE_SETTINGS_LOCATION = r.SITE_SETTINGS.createChild('location');
   r.SITE_SETTINGS_MICROPHONE = r.SITE_SETTINGS.createChild('microphone');
   r.SITE_SETTINGS_NOTIFICATIONS = r.SITE_SETTINGS.createChild('notifications');

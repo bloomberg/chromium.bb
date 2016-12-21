@@ -71,7 +71,7 @@ img interfaceName=HTMLImageElement, constructorNeedsCreatedByParser
 input constructorNeedsCreatedByParser
 ins interfaceName=HTMLModElement
 kbd interfaceName=HTMLElement
-keygen
+keygen interfaceName=HTMLUnknownElement
 label
 layer interfaceName=HTMLElement
 legend

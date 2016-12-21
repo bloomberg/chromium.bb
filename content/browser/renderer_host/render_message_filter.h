@@ -54,7 +54,6 @@ struct MediaLogEvent;
 
 namespace net {
 class IOBuffer;
-class KeygenHandler;
 class URLRequestContextGetter;
 }
 
@@ -156,17 +155,6 @@ class CONTENT_EXPORT RenderMessageFilter
       int buf_len,
       std::unique_ptr<CacheStorageCacheHandle> cache_handle,
       CacheStorageError error);
-  void OnKeygen(uint32_t key_size_index,
-                const std::string& challenge_string,
-                const GURL& url,
-                const GURL& top_origin,
-                IPC::Message* reply_msg);
-  void PostKeygenToWorkerThread(
-      IPC::Message* reply_msg,
-      std::unique_ptr<net::KeygenHandler> keygen_handler);
-  void OnKeygenOnWorkerThread(
-      std::unique_ptr<net::KeygenHandler> keygen_handler,
-      IPC::Message* reply_msg);
   void OnMediaLogEvents(const std::vector<media::MediaLogEvent>&);
 
   bool CheckBenchmarkingEnabled() const;

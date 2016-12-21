@@ -73,7 +73,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public static final String PREF_CAMERA_CAPTURE_PERMISSION = "camera_permission_list";
     public static final String PREF_COOKIES_PERMISSION = "cookies_permission_list";
     public static final String PREF_JAVASCRIPT_PERMISSION = "javascript_permission_list";
-    public static final String PREF_KEYGEN_PERMISSION = "keygen_permission_list";
     public static final String PREF_LOCATION_ACCESS = "location_access_list";
     public static final String PREF_MIC_CAPTURE_PERMISSION = "microphone_permission_list";
     public static final String PREF_MIDI_SYSEX_PERMISSION = "midi_sysex_permission_list";
@@ -90,7 +89,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
             PREF_CAMERA_CAPTURE_PERMISSION,
             PREF_COOKIES_PERMISSION,
             PREF_JAVASCRIPT_PERMISSION,
-            PREF_KEYGEN_PERMISSION,
             PREF_LOCATION_ACCESS,
             PREF_MIC_CAPTURE_PERMISSION,
             PREF_MIDI_SYSEX_PERMISSION,
@@ -124,13 +122,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
             // TODO(mvanouwerkerk): Avoid modifying the outer class from this inner class.
             mSite = mergePermissionInfoForTopLevelOrigin(mSiteAddress, sites);
-
-            // Display Keygen Content Setting if Keygen is blocked.
-            if (mSite.getKeygenInfo() == null && mWebContents != null
-                    && WebsitePreferenceBridge.getKeygenBlocked(mWebContents)) {
-                String origin = mSiteAddress.getOrigin();
-                mSite.setKeygenInfo(new KeygenInfo(origin, origin, false));
-            }
 
             displaySitePermissions();
         }
@@ -203,10 +194,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
             if (merged.getGeolocationInfo() == null && other.getGeolocationInfo() != null
                     && permissionInfoIsForTopLevelOrigin(other.getGeolocationInfo(), origin)) {
                 merged.setGeolocationInfo(other.getGeolocationInfo());
-            }
-            if (merged.getKeygenInfo() == null && other.getKeygenInfo() != null
-                    && permissionInfoIsForTopLevelOrigin(other.getKeygenInfo(), origin)) {
-                merged.setKeygenInfo(other.getKeygenInfo());
             }
             if (merged.getMidiInfo() == null && other.getMidiInfo() != null
                     && permissionInfoIsForTopLevelOrigin(other.getMidiInfo(), origin)) {
@@ -304,8 +291,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 setUpListPreference(preference, mSite.getCookiePermission());
             } else if (PREF_JAVASCRIPT_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getJavaScriptPermission());
-            } else if (PREF_KEYGEN_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getKeygenPermission());
             } else if (PREF_LOCATION_ACCESS.equals(preference.getKey())) {
                 setUpLocationPreference(preference);
             } else if (PREF_MIC_CAPTURE_PERMISSION.equals(preference.getKey())) {
@@ -537,8 +522,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES;
             case PREF_JAVASCRIPT_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
-            case PREF_KEYGEN_PERMISSION:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_KEYGEN;
             case PREF_LOCATION_ACCESS:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION;
             case PREF_MIC_CAPTURE_PERMISSION:
@@ -599,8 +582,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
             mSite.setCookiePermission(permission);
         } else if (PREF_JAVASCRIPT_PERMISSION.equals(preference.getKey())) {
             mSite.setJavaScriptPermission(permission);
-        } else if (PREF_KEYGEN_PERMISSION.equals(preference.getKey())) {
-            mSite.setKeygenPermission(permission);
         } else if (PREF_LOCATION_ACCESS.equals(preference.getKey())) {
             mSite.setGeolocationPermission(permission);
         } else if (PREF_MIC_CAPTURE_PERMISSION.equals(preference.getKey())) {
@@ -679,7 +660,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
         mSite.setCookiePermission(ContentSetting.DEFAULT);
         mSite.setGeolocationPermission(ContentSetting.DEFAULT);
         mSite.setJavaScriptPermission(ContentSetting.DEFAULT);
-        mSite.setKeygenPermission(ContentSetting.DEFAULT);
         mSite.setMicrophonePermission(ContentSetting.DEFAULT);
         mSite.setMidiPermission(ContentSetting.DEFAULT);
         mSite.setNotificationPermission(ContentSetting.DEFAULT);

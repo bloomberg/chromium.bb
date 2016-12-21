@@ -369,9 +369,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
       return replacedBy("'Performance.onwebkitresourcetimingbufferfull'",
                         "'Performance.onresourcetimingbufferfull'");
 
-    case UseCounter::HTMLKeygenElement:
-      return willBeRemoved("The <keygen> element", M57, "5716060992962560");
-
     case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
       return String::format(
           "EME requires that contentType strings accepted by "

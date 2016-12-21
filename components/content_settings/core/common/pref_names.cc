@@ -42,8 +42,6 @@ const char kManagedDefaultPluginsSetting[] =
     "profile.managed_default_content_settings.plugins";
 const char kManagedDefaultPopupsSetting[] =
     "profile.managed_default_content_settings.popups";
-const char kManagedDefaultKeygenSetting[] =
-    "profile.managed_default_content_settings.keygen";
 const char kManagedDefaultWebBluetoothGuardSetting[] =
     "profile.managed_default_content_settings.web_bluetooth_guard";
 
@@ -77,9 +75,4 @@ const char kManagedPopupsAllowedForUrls[] =
     "profile.managed_popups_allowed_for_urls";
 const char kManagedPopupsBlockedForUrls[] =
     "profile.managed_popups_blocked_for_urls";
-const char kManagedKeygenAllowedForUrls[] =
-    "profile.managed_keygen_allowed_for_urls";
-const char kManagedKeygenBlockedForUrls[] =
-    "profile.managed_keygen_blocked_for_urls";
-
 }  // namespace prefs

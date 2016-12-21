@@ -392,11 +392,11 @@ button {
 }
 
 /* Form controls don't go vertical. */
-input, textarea, keygen, select, button, meter, progress {
+input, textarea, select, button, meter, progress {
     -webkit-writing-mode: horizontal-tb !important;
 }
 
-input, textarea, keygen, select, button {
+input, textarea, select, button {
     margin: 0__qem;
     font: -webkit-small-control;
     text-rendering: auto; /* FIXME: Remove when tabs work with optimizeLegibility. */
@@ -484,12 +484,8 @@ input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-inner-spin-button {
     pointer-events: auto;
 }
 
-keygen, select {
+select {
     border-radius: 5px;
-}
-
-keygen::-webkit-keygen-select {
-    margin: 0px;
 }
 
 textarea {
@@ -610,7 +606,7 @@ input[type="range" i]::-webkit-slider-thumb, input[type="range" i]::-webkit-medi
 
 input[type="button" i]:disabled, input[type="submit" i]:disabled, input[type="reset" i]:disabled,
 input[type="file" i]:disabled::-webkit-file-upload-button, button:disabled,
-select:disabled, keygen:disabled, optgroup:disabled, option:disabled,
+select:disabled, optgroup:disabled, option:disabled,
 select[disabled]>option {
     color: GrayText
 }
@@ -978,7 +974,7 @@ embed:focus, iframe:focus, object:focus {
     outline: none
 }
 
-input:focus, textarea:focus, keygen:focus, select:focus {
+input:focus, textarea:focus, select:focus {
     outline-offset: -2px
 }
 

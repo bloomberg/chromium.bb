@@ -1,4 +1,3 @@
-CONSOLE WARNING: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 Check cases that :required/:optional classes are not applied
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

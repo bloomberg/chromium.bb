@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 28: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 Test labelable elements have labels attribute and others do not.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -17,9 +16,6 @@ PASS element.labels is undefined.
 PASS element.labels is not null
 
 Labelable: input [object HTMLInputElement]
-PASS element.labels.length is 1
-
-Labelable: keygen [object HTMLKeygenElement]
 PASS element.labels.length is 1
 
 Not labelable: label [object HTMLLabelElement]

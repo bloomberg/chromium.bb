@@ -210,7 +210,6 @@ class CSSChecker(object):
                          'inner-spin-button',
                          'input-placeholder',
                          'input-speech-button',
-                         'keygen-select',
                          'media-slider-container',
                          'media-slider-thumb',
                          'meter-bar',

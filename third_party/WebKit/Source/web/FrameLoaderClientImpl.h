@@ -178,7 +178,6 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
   void passiveInsecureContentFound(const KURL&) override;
   void didNotAllowScript() override;
   void didNotAllowPlugins() override;
-  void didUseKeygen() override;
 
   WebCookieJar* cookieJar() const override;
   void frameFocused() const override;

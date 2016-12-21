@@ -12,6 +12,8 @@
 #include "base/synchronization/lock.h"
 #include "content/public/browser/resource_context.h"
 
+class GURL;
+
 namespace net {
 class URLRequestContextGetter;
 }

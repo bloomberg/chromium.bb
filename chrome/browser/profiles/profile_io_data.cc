@@ -82,7 +82,6 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/features/features.h"
-#include "net/base/keygen_handler.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -363,17 +362,6 @@ void StartNSSInitOnIOThread(const AccountId& account_id,
   }
 }
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(USE_NSS_CERTS)
-void InitializeAndPassKeygenHandler(
-    std::unique_ptr<net::KeygenHandler> keygen_handler,
-    const base::Callback<void(std::unique_ptr<net::KeygenHandler>)>& callback,
-    std::unique_ptr<ChromeNSSCryptoModuleDelegate> delegate) {
-  if (delegate)
-    keygen_handler->set_crypto_module_delegate(std::move(delegate));
-  callback.Run(std::move(keygen_handler));
-}
-#endif  // defined(USE_NSS_CERTS)
 
 // For safe shutdown, must be called before the ProfileIOData is destroyed.
 void NotifyContextGettersOfShutdownOnIO(
@@ -963,32 +951,6 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(io_data_->initialized_);
   return request_context_;
-}
-
-void ProfileIOData::ResourceContext::CreateKeygenHandler(
-    uint32_t key_size_in_bits,
-    const std::string& challenge_string,
-    const GURL& url,
-    const base::Callback<void(std::unique_ptr<net::KeygenHandler>)>& callback) {
-  DCHECK(!callback.is_null());
-#if defined(USE_NSS_CERTS)
-  std::unique_ptr<net::KeygenHandler> keygen_handler(
-      new net::KeygenHandler(key_size_in_bits, challenge_string, url));
-
-  base::Callback<void(std::unique_ptr<ChromeNSSCryptoModuleDelegate>)>
-      got_delegate_callback =
-          base::Bind(&InitializeAndPassKeygenHandler,
-                     base::Passed(&keygen_handler), callback);
-
-  ChromeNSSCryptoModuleDelegate::CreateForResourceContext(
-      chrome::kCryptoModulePasswordKeygen,
-      net::HostPortPair::FromURL(url),
-      this,
-      got_delegate_callback);
-#else
-  callback.Run(base::MakeUnique<net::KeygenHandler>(key_size_in_bits,
-                                                    challenge_string, url));
-#endif
 }
 
 std::string ProfileIOData::ResourceContext::GetMediaDeviceIDSalt() {

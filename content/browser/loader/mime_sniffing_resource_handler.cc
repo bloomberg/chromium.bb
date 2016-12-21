@@ -365,16 +365,6 @@ bool MimeSniffingResourceHandler::MaybeStartInterception(bool* defer) {
   ResourceRequestInfoImpl* info = GetRequestInfo();
   const std::string& mime_type = response_->head.mime_type;
 
-  // https://crbug.com/568184 - Temporary hack to track servers that aren't
-  // setting Content-Disposition when sending x-x509-user-cert and expecting
-  // the browser to automatically install certificates; this is being
-  // deprecated and will be removed upon full <keygen> removal.
-  if (mime_type == "application/x-x509-user-cert" && response_->head.headers) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "UserCert.ContentDisposition",
-        response_->head.headers->HasHeader("Content-Disposition"));
-  }
-
   // Allow requests for object/embed tags to be intercepted as streams.
   if (info->GetResourceType() == content::RESOURCE_TYPE_OBJECT) {
     DCHECK(!info->allow_download());

@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 362: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 This test setting various attributes of a elements to JavaScript null.
 
 TEST SUCCEEDED: The value was null. [tested Node.nodeValue]
@@ -150,10 +149,6 @@ TEST SUCCEEDED: The value was the string 'text'. [tested HTMLInputElement.type]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLInputElement.useMap]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLInputElement.value]
-
-TEST SUCCEEDED: The value was the string 'null'. [tested HTMLKeygenElement.challenge]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLKeygenElement.keytype]
-TEST SUCCEEDED: The value was the string 'null'. [tested HTMLKeygenElement.name]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLabelElement.htmlFor]
 

@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 50: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 Tests to ensure that shadow element cannot be created in elements having dynamically created shadow root.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -41,8 +40,6 @@ PASS element.createShadowRoot() threw exception HierarchyRequestError: Failed to
 METER
 PASS element.createShadowRoot() threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts an user-agent shadow tree..
 PROGRESS
-PASS element.createShadowRoot() threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts an user-agent shadow tree..
-KEYGEN
 PASS element.createShadowRoot() threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts an user-agent shadow tree..
 VIDEO
 PASS element.createShadowRoot() threw exception InvalidStateError: Failed to execute 'createShadowRoot' on 'Element': Shadow root cannot be created on a host which already hosts an user-agent shadow tree..

@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 16: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 Existence tests for .setCustomValidity property
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -12,7 +11,6 @@ PASS typeof document.getElementsByTagName("select")[0].setCustomValidity is "fun
 PASS typeof document.getElementsByTagName("textarea")[0].setCustomValidity is "function"
 PASS typeof document.getElementsByTagName("output")[0].setCustomValidity is "function"
 PASS typeof document.getElementsByTagName("object")[0].setCustomValidity is "function"
-PASS typeof document.getElementsByTagName("keygen")[0].setCustomValidity is "function"
 PASS successfullyParsed is true
 
 TEST COMPLETE

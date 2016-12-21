@@ -1,11 +1,9 @@
-CONSOLE WARNING: line 16: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 Various tests for .willValidate property
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
 Existence of .willValidate
-PASS typeof controls[i].willValidate is "boolean"
 PASS typeof controls[i].willValidate is "boolean"
 PASS typeof controls[i].willValidate is "boolean"
 PASS typeof controls[i].willValidate is "boolean"
@@ -46,9 +44,6 @@ PASS document.getElementsByTagName("output")[0].willValidate is false
 
 Object element
 PASS document.getElementsByTagName("object")[0].willValidate is false
-
-Keygen element
-PASS document.getElementsByTagName("keygen")[0].willValidate is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -214,10 +214,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_FILE_NO_FILE_LABEL;
     case WebLocalizedString::InputElementAltText:
       return IDS_FORM_INPUT_ALT;
-    case WebLocalizedString::KeygenMenuHighGradeKeySize:
-      return IDS_KEYGEN_HIGH_GRADE_KEY;
-    case WebLocalizedString::KeygenMenuMediumGradeKeySize:
-      return IDS_KEYGEN_MED_GRADE_KEY;
     case WebLocalizedString::MissingPluginText:
       return IDS_PLUGIN_INITIALIZATION_ERROR;
     case WebLocalizedString::MultipleFileUploadText:
@@ -788,14 +784,6 @@ long long BlinkPlatformImpl::databaseGetSpaceAvailableForOrigin(
 bool BlinkPlatformImpl::databaseSetFileSize(
     const blink::WebString& vfs_file_name, long long size) {
   return false;
-}
-
-blink::WebString BlinkPlatformImpl::signedPublicKeyAndChallengeString(
-    unsigned key_size_index,
-    const blink::WebString& challenge,
-    const blink::WebURL& url,
-    const blink::WebURL& top_origin) {
-  return blink::WebString("");
 }
 
 size_t BlinkPlatformImpl::actualMemoryUsageMB() {

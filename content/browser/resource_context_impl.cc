@@ -18,7 +18,6 @@
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/keygen_handler.h"
 
 using base::UserDataAdapter;
 
@@ -40,15 +39,6 @@ ResourceContext::~ResourceContext() {
 
 std::string ResourceContext::GetMediaDeviceIDSalt() {
   return media_device_id_salt_;
-}
-
-void ResourceContext::CreateKeygenHandler(
-    uint32_t key_size_in_bits,
-    const std::string& challenge_string,
-    const GURL& url,
-    const base::Callback<void(std::unique_ptr<net::KeygenHandler>)>& callback) {
-  callback.Run(base::MakeUnique<net::KeygenHandler>(key_size_in_bits,
-                                                    challenge_string, url));
 }
 
 // static

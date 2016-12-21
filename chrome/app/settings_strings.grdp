@@ -1728,9 +1728,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION" desc="Label for the location site settings.">
     Location
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_KEYGEN" desc="Label for the key generation site settings.">
-    Key generation
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIC" desc="Label for the microphone site settings.">
     Microphone
   </message>
@@ -1835,15 +1832,6 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLERS_BLOCKED" desc="The block label for protocol handlers in site settings.">
     Do not allow any site to handle protocols
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_KEYGEN_ALLOW" desc="The allow label for keygen in site settings.">
-    Allow all sites to use key generation in forms
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_KEYGEN_BLOCK" desc="The block label for key generation in site settings.">
-    Do not allow any site to use key generation in forms
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_KEYGEN_BLOCK_RECOMMENDED" desc="The block label for key generation in site settings (with the 'recommended' suffix).">
-    Do not allow any site to use key generation in forms (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOAD_ASK" desc="The allow label for automatic download in site settings.">
     Ask when a site tries to download files automatically after the first file

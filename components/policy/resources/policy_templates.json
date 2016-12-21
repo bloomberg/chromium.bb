@@ -3277,7 +3277,7 @@
               'caption': '''Do not allow any site to use key generation''',
             },
           ],
-          'supported_on': ['chrome.*:49-', 'chrome_os:49-', 'android:49-'],
+          'supported_on': ['chrome.*:49-56', 'chrome_os:49-56', 'android:49-56'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -3478,7 +3478,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:49-', 'chrome_os:49-', 'android:49-'],
+          'supported_on': ['chrome.*:49-56', 'chrome_os:49-56', 'android:49-56'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -3498,7 +3498,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:49-', 'chrome_os:49-', 'android:49-'],
+          'supported_on': ['chrome.*:49-56', 'chrome_os:49-56', 'android:49-56'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,

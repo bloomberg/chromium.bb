@@ -86,10 +86,6 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
   const base::string16& hostname16 = base::UTF8ToUTF16(hostname);
   const base::string16& slot16 = base::UTF8ToUTF16(slot_name);
   switch (reason) {
-    case chrome::kCryptoModulePasswordKeygen:
-      text = l10n_util::GetStringFUTF8(
-          IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_KEYGEN, slot16, hostname16);
-      break;
     case chrome::kCryptoModulePasswordCertEnrollment:
       text = l10n_util::GetStringFUTF8(
           IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_ENROLLMENT,

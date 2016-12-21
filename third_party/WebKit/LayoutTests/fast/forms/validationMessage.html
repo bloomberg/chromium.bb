@@ -194,12 +194,6 @@ happySelect.name = "object";
 form.appendChild(happyObject);
 shouldBe("happyObject.validationMessage", "''");
 
-// Keygen controls can't be validated
-var happyKeygen = document.createElement("keygen");
-happySelect.name = "keygen";
-form.appendChild(happyKeygen);
-shouldBe("happyKeygen.validationMessage", "''");
-
 form.remove();
 </script>
 </body>

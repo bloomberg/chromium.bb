@@ -4,7 +4,7 @@
 <script src="../../../resources/js-test.js"></script>
 </head>
 <body>
-<keygen id="keys" />
+<progress id="progress" max=100></progress>
 <p id="peas" />
 <pre id="console">
 This tests that layout tests can access shadow DOM.
@@ -13,8 +13,8 @@ This tests that layout tests can access shadow DOM.
 <script>
 if (window.internals) {
     // Make assertions about a built-in shadow
-    var keygen = document.getElementById('keys');
-    var shadow = internals.shadowRoot(keygen);
+    var progress = document.getElementById('progress');
+    var shadow = internals.shadowRoot(progress);
     shouldBe('shadow.nodeName', '"#document-fragment"');
 
     // Shadow roots aren't elements, so accessing their shadow should throw.

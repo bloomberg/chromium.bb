@@ -656,7 +656,6 @@ class CORE_EXPORT UseCounter {
     V8Performance_Navigation_AttributeGetter = 883,
     V8Performance_Memory_AttributeGetter = 884,
     V8SharedWorker_WorkerStart_AttributeGetter = 885,
-    HTMLKeygenElement = 886,
     // The above items are available in M45 branch.
 
     HTMLMediaElementPreloadNone = 892,

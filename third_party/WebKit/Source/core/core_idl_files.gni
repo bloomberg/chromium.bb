@@ -222,7 +222,6 @@ core_idl_files = get_path_info([
                                  "html/HTMLHeadingElement.idl",
                                  "html/HTMLHtmlElement.idl",
                                  "html/HTMLImageElement.idl",
-                                 "html/HTMLKeygenElement.idl",
                                  "html/HTMLLIElement.idl",
                                  "html/HTMLLabelElement.idl",
                                  "html/HTMLLegendElement.idl",

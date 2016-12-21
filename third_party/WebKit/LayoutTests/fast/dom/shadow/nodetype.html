@@ -4,15 +4,15 @@
 <script src="../../../resources/js-test.js"></script>
 </head>
 <body>
-<keygen id="keys" />
+<progress id="progress" max="100"></progress>
 <pre id="console">
 This tests the shadow host's and shadow root's nodeType.
 </pre>
 <script>
-var keygen = document.getElementById('keys');
-var shadow = internals.shadowRoot(keygen);
+var progress = document.getElementById('progress');
+var shadow = internals.shadowRoot(progress);
 var shadowChild = shadow.firstChild;
-shouldBe('keygen.nodeType', 'Node.ELEMENT_NODE');
+shouldBe('progress.nodeType', 'Node.ELEMENT_NODE');
 shouldBe('shadow.nodeType', 'Node.DOCUMENT_FRAGMENT_NODE');
 shouldBeNonNull('shadowChild');
 shouldBeTrue('shadowChild.nodeType != Node.DOCUMENT_FRAGMENT_NODE');

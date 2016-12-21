@@ -211,11 +211,6 @@ bool ContentBrowserClient::AllowWebRTCIdentityCache(const GURL& url,
 }
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 
-bool ContentBrowserClient::AllowKeygen(const GURL& url,
-                                       content::ResourceContext* context) {
-  return true;
-}
-
 ContentBrowserClient::AllowWebBluetoothResult
 ContentBrowserClient::AllowWebBluetooth(
     content::BrowserContext* browser_context,

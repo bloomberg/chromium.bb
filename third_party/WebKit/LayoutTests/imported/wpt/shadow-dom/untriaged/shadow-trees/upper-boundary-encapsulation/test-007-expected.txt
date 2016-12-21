@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS A_04_01_07_T01 
+FAIL A_04_01_07_T02 assert_equals: Elements in shadow DOM must be accessible from shadow document keygen.form attribute expected (object) Element node <form id="form_id"></form> but got (undefined) undefined
+Harness: the test ran to completion.
+

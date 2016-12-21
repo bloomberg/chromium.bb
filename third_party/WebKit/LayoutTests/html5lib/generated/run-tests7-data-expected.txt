@@ -1,3 +1,2 @@
 CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token <
-CONSOLE WARNING: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 ../resources/tests7.dat: PASS

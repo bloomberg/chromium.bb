@@ -25,7 +25,6 @@ settings.ContentSettingsTypes = {
   PROTOCOL_HANDLERS: 'register-protocol-handler',
   UNSANDBOXED_PLUGINS: 'ppapi-broker',
   AUTOMATIC_DOWNLOADS: 'multiple-automatic-downloads',
-  KEYGEN: 'keygen',
   BACKGROUND_SYNC: 'background-sync',
   USB_DEVICES: 'usb-chooser-data',
   ZOOM_LEVELS: 'zoom-levels',

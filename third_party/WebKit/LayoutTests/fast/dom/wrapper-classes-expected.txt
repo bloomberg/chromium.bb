@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 26: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 This tests wrapper class names for JavaScript.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -394,10 +393,6 @@ PASS tagClassString('kbd') is "HTMLElement"
 FAIL tagPrototypeClassString('kbd') should be HTMLElementPrototype. Was HTMLElement.
 PASS tagConstructorClassString('kbd') is "Function"
 PASS tagConstructorName('kbd') is "HTMLElement"
-PASS tagClassString('keygen') is "HTMLKeygenElement"
-FAIL tagPrototypeClassString('keygen') should be HTMLKeygenElementPrototype. Was HTMLKeygenElement.
-PASS tagConstructorClassString('keygen') is "Function"
-PASS tagConstructorName('keygen') is "HTMLKeygenElement"
 PASS tagClassString('label') is "HTMLLabelElement"
 FAIL tagPrototypeClassString('label') should be HTMLLabelElementPrototype. Was HTMLLabelElement.
 PASS tagConstructorClassString('label') is "Function"

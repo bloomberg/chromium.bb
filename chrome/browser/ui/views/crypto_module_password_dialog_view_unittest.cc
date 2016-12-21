@@ -25,7 +25,7 @@ class CryptoModulePasswordDialogViewTest : public testing::Test {
 
   void CreateCryptoDialog(const CryptoModulePasswordCallback& callback) {
     dialog_.reset(new CryptoModulePasswordDialogView("slot",
-        kCryptoModulePasswordKeygen, "server", callback));
+        kCryptoModulePasswordCertEnrollment, "server", callback));
   }
 
   std::string text_;

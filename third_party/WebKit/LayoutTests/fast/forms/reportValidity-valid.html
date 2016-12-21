@@ -13,7 +13,6 @@
 <textarea name="victim"></textarea>
 <output name="victim"></output>
 <object name="victim"></object>
-<keygen name="victim"></keygen>
 </form>
 <form action="" id="soon_to_be_happy_form">
 <select required="" id="soon_to_be_happy_select">
@@ -32,7 +31,6 @@ shouldBe('document.getElementsByTagName("select")[0].reportValidity()', 'true');
 shouldBe('document.getElementsByTagName("textarea")[0].reportValidity()', 'true');
 shouldBe('document.getElementsByTagName("output")[0].reportValidity()', 'true');
 shouldBe('document.getElementsByTagName("object")[0].reportValidity()', 'true');
-shouldBe('document.getElementsByTagName("keygen")[0].reportValidity()', 'true');
 shouldBe('document.getElementById("happy_form")[0].reportValidity()', 'true');
 debug('');
 

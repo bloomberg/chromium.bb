@@ -73,11 +73,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebSecurityOrigin& origin) override;
   bool databaseSetFileSize(const blink::WebString& vfs_file_name,
                            long long size) override;
-  blink::WebString signedPublicKeyAndChallengeString(
-      unsigned key_size_index,
-      const blink::WebString& challenge,
-      const blink::WebURL& url,
-      const blink::WebURL& top_origin) override;
   size_t actualMemoryUsageMB() override;
   size_t numberOfProcessors() override;
 

@@ -65,14 +65,6 @@ cr.define('site_details', function() {
               source: 'preference',
             },
           ],
-          keygen: [
-            {
-              embeddingOrigin: 'https://foo-allow.com:443',
-              origin: 'https://foo-allow.com:443',
-              setting: 'allow',
-              source: 'preference',
-            },
-          ],
           mic: [
             {
               embeddingOrigin: 'https://foo-allow.com:443',

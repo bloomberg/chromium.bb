@@ -94,8 +94,6 @@ blink_core_sources("html") {
     "HTMLImageLoader.cpp",
     "HTMLImageLoader.h",
     "HTMLInputElement.cpp",
-    "HTMLKeygenElement.cpp",
-    "HTMLKeygenElement.h",
     "HTMLLIElement.cpp",
     "HTMLLIElement.h",
     "HTMLLabelElement.cpp",

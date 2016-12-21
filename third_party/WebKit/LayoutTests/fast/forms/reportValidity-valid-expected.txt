@@ -1,10 +1,9 @@
-CONSOLE WARNING: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 This test checks if reportValidity() returns correctly a true (meaning no error) result.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
- lorem ipsum     
+ lorem ipsum    
 
 Elements valid from the begining
 PASS document.getElementsByTagName("fieldset")[0].reportValidity() is true
@@ -14,7 +13,6 @@ PASS document.getElementsByTagName("select")[0].reportValidity() is true
 PASS document.getElementsByTagName("textarea")[0].reportValidity() is true
 PASS document.getElementsByTagName("output")[0].reportValidity() is true
 PASS document.getElementsByTagName("object")[0].reportValidity() is true
-PASS document.getElementsByTagName("keygen")[0].reportValidity() is true
 PASS document.getElementById("happy_form")[0].reportValidity() is true
 
 Element valid when changed

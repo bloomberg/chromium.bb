@@ -24,7 +24,6 @@ function hasFormOwner(shouldHaveOwner, haveIt, event)
 <fieldset onerror="hasFormOwner(true, typeof canary !== 'undefined' && canary, event);"></fieldset>
 <input type=radio onerror="hasFormOwner(true, typeof canary !== 'undefined' && canary, event);"/>
 <input type=number onerror="hasFormOwner(true, typeof canary !== 'undefined' && canary, event);"/>
-<keygen keytype=rsa onerror="hasFormOwner(true, typeof canary !== 'undefined' && canary, event);"></keygen>
 <label onerror="" onclick="hasFormOwner(false, typeof canary !== 'undefined' && canary, event);"><input type="button"/></label>
 <object onerror="hasFormOwner(true, typeof canary !== 'undefined' && canary, event);"></object>
 <select onerror="hasFormOwner(true, typeof canary !== 'undefined' && canary, event);"></select>
@@ -40,7 +39,6 @@ function hasFormOwner(shouldHaveOwner, haveIt, event)
 
 <!-- Elements that associated by 'form' reference rather than ancestor. -->
 <input form=topForm type="number" onerror="hasFormOwner(true, typeof canary !== 'undefined' && canary, event);"/>
-<keygen form=topForm keytype=rsa onerror="hasFormOwner(true, typeof canary !== 'undefined' && canary, event);"></keygen>
 <object form=topForm onerror="hasFormOwner(true, typeof canary !== 'undefined' && canary, event);"></object>
 <select form=topForm onerror="hasFormOwner(true, typeof canary !== 'undefined' && canary, event);"></select>
 <pre form=topForm onerror="hasFormOwner(false, typeof canary !== 'undefined' && canary, event);"></pre>

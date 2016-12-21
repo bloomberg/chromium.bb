@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 361: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 This is a testharness.js-based test.
 PASS [INPUT in HIDDEN status] Must be barred from the constraint validation 
 PASS [INPUT in BUTTON status] Must be barred from the constraint validation 
@@ -8,7 +7,7 @@ PASS [BUTTON in RESET status] Must be barred from the constraint validation
 FAIL [fieldset]  Must not be barred from the constraint validation assert_true: The willValidate attribute should be true. expected true got false
 FAIL [output]  Must not be barred from the constraint validation assert_true: The willValidate attribute should be true. expected true got false
 PASS [object]  Must be barred from the constraint validation 
-PASS [keygen]  Must be barred from the constraint validation 
+FAIL [keygen]  Must be barred from the constraint validation assert_true: The willValidate attribute doesn't exist. expected true got false
 PASS [INPUT in TEXT status] Must be barred from the constraint validation if it is disabled 
 PASS [INPUT in TEXT status] The willValidate attribute must be true if an element is mutable 
 PASS [INPUT in TEXT status] Must be barred from the constraint validation if it is readonly 

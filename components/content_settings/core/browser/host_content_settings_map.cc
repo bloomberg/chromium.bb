@@ -210,7 +210,6 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
   default_provider->AddObserver(this);
   content_settings_providers_[DEFAULT_PROVIDER] = std::move(default_provider);
 
-  MigrateKeygenSettings();
   MigrateDomainScopedSettings(false);
   RecordExceptionMetrics();
 }
@@ -499,45 +498,6 @@ void HostContentSettingsMap::SetContentSettingDefaultScope(
 
   SetContentSettingCustomScope(primary_pattern, secondary_pattern, content_type,
                                resource_identifier, setting);
-}
-
-void HostContentSettingsMap::MigrateKeygenSettings() {
-  const content_settings::ContentSettingsInfo* info =
-      content_settings::ContentSettingsRegistry::GetInstance()->Get(
-          CONTENT_SETTINGS_TYPE_KEYGEN);
-  if (info) {
-    ContentSettingsForOneType settings;
-    GetSettingsForOneType(CONTENT_SETTINGS_TYPE_KEYGEN, std::string(),
-                          &settings);
-
-    for (const ContentSettingPatternSource& setting_entry : settings) {
-      // Migrate user preference settings only.
-      if (setting_entry.source != "preference")
-        continue;
-      // Migrate old-format settings only.
-      if (setting_entry.secondary_pattern !=
-          ContentSettingsPattern::Wildcard()) {
-        GURL url(setting_entry.primary_pattern.ToString());
-        // Pull out the value of the old-format setting. Only do this if the
-        // patterns are as we expect them to be, otherwise the setting will just
-        // be removed for safety.
-        ContentSetting content_setting = CONTENT_SETTING_DEFAULT;
-        if (setting_entry.primary_pattern == setting_entry.secondary_pattern &&
-            url.is_valid()) {
-          content_setting = GetContentSetting(
-              url, url, CONTENT_SETTINGS_TYPE_KEYGEN, std::string());
-        }
-        // Remove the old pattern.
-        SetContentSettingCustomScope(setting_entry.primary_pattern,
-                                     setting_entry.secondary_pattern,
-                                     CONTENT_SETTINGS_TYPE_KEYGEN,
-                                     std::string(), CONTENT_SETTING_DEFAULT);
-        // Set the new pattern.
-        SetContentSettingDefaultScope(url, GURL(), CONTENT_SETTINGS_TYPE_KEYGEN,
-                                      std::string(), content_setting);
-      }
-    }
-  }
 }
 
 void HostContentSettingsMap::MigrateDomainScopedSettings(bool after_sync) {

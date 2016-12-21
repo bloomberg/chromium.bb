@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 28: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 Test that the labels list of a form control is dynamically updated when adding a label as parent for that form control.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -8,9 +7,6 @@ Check button
 PASS element.labels.length is 0
 PASS element.labels.length is 1
 Check input
-PASS element.labels.length is 0
-PASS element.labels.length is 1
-Check keygen
 PASS element.labels.length is 0
 PASS element.labels.length is 1
 Check meter

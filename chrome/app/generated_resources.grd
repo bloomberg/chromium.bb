@@ -308,9 +308,6 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_TYPE_JAVASCRIPT" desc="The label used for JavaScript permission controls in the Website Settings popup.">
         JavaScript
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_TYPE_KEYGEN" desc="The label used for the key generation permission controls in the Website Settings popup.">
-        Key Generation
-      </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_POPUPS" desc="The label used for popups permission controls in the Website Settings popup.">
         Popups
       </message>
@@ -8174,18 +8171,6 @@ I don't think this site should be blocked!
       <message name="IDS_JS_DONOTALLOW_RADIO" desc="A radio button in the Content Settings dialog for preventing JavaScript use on any site.">
         Do not allow any site to run JavaScript
       </message>
-      <message name="IDS_KEYGEN_TAB_LABEL" desc="Label for key generation tab on Content Settings dialog">
-        Key generation
-      </message>
-      <message name="IDS_KEYGEN_HEADER" desc="Label for key generation exception management page on Content Settings dialog">
-        Key generation exceptions
-      </message>
-      <message name="IDS_KEYGEN_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing forms to use key generation on any site.">
-        Allow all sites to use key generation in forms.
-      </message>
-      <message name="IDS_KEYGEN_DONOTALLOW_RADIO" desc="A radio button in the Content Settings dialog for preventing forms from using key generation on any site.">
-        Do not allow any site to use key generation in forms (recommended)
-      </message>
       <message name="IDS_PDF_TAB_LABEL" desc="Label for the pdf plugin tab on Content Settings dialog">
         PDF Documents
       </message>
@@ -9173,9 +9158,6 @@ I don't think this site should be blocked!
       <!-- NSS PKCS #11 password dialog -->
       <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TITLE" desc="The title in the dialog that prompts for security device password.">
        Sign in to Security Device
-      </message>
-      <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_KEYGEN" desc="The text in the dialog that prompts for security device password for key generation.">
-       Please sign in to <ph name="TOKEN_NAME">$1<ex>Software Security Device</ex></ph> to generate a key for <ph name="HOST_NAME">$2<ex>www.google.com</ex></ph>.
       </message>
       <message name="IDS_CRYPTO_MODULE_AUTH_DIALOG_TEXT_CERT_ENROLLMENT" desc="The text in the dialog that prompts for security device password for cert enrollment.">
        Please sign in to <ph name="TOKEN_NAME">$1<ex>Software Security Device</ex></ph> to import client certificate from <ph name="HOST_NAME">$2<ex>www.google.com</ex></ph>.

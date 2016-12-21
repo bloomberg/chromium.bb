@@ -119,14 +119,6 @@ var SiteSettingsBehaviorImpl = {
             loadTimeData.getString(
                  'siteSettingsAllowRecentlyClosedSitesRecommended') :
             loadTimeData.getString('siteSettingsAllowRecentlyClosedSites');
-      case settings.ContentSettingsTypes.KEYGEN:
-        // "Allow sites to use keygen" vs "Do not allow".
-        if (categoryEnabled) {
-          return loadTimeData.getString('siteSettingsKeygenAllow');
-        }
-        return showRecommendation ?
-            loadTimeData.getString('siteSettingsKeygenBlockRecommended') :
-            loadTimeData.getString('siteSettingsKeygenBlock');
       case settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
         // "Ask when a site wants to auto-download multiple" vs "Do not allow".
         if (!categoryEnabled) {

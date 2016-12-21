@@ -440,12 +440,6 @@ class ProfileIOData {
     // ResourceContext implementation:
     net::HostResolver* GetHostResolver() override;
     net::URLRequestContext* GetRequestContext() override;
-    void CreateKeygenHandler(
-        uint32_t key_size_in_bits,
-        const std::string& challenge_string,
-        const GURL& url,
-        const base::Callback<void(std::unique_ptr<net::KeygenHandler>)>&
-            callback) override;
     std::string GetMediaDeviceIDSalt() override;
 
    private:

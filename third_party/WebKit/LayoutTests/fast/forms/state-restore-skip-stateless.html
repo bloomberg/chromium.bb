@@ -37,7 +37,6 @@
 <select name=name26 ></select>
 <select name=name27 multiple></select>
 <textarea name=name28></textarea>
-<keygen name=name29>
 <output name=name30></output>
 </div>
 <script>
@@ -47,7 +46,7 @@ jsTestIsAsync = true;
 if (window.internals) {
     var statefulTypes = ['hidden', 'text', 'tel', 'url', 'email', 'number', 'range', 'checkbox',
                             'radio', 'file', 'select-one', 'select-multiple', 'textarea'];
-    var statelessTypes = ['fieldset', 'password', 'submit', 'reset', 'button', 'keygen', 'output'];
+    var statelessTypes = ['fieldset', 'password', 'submit', 'reset', 'button', 'output'];
 
     var states = internals.formControlStateOfHistoryItem();
     for (var i = 0; i < statefulTypes.length; ++i) {

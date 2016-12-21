@@ -15,11 +15,8 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
-class GURL;
-
 namespace net {
 class HostResolver;
-class KeygenHandler;
 class URLRequestContext;
 }
 
@@ -38,15 +35,6 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   // storage partitioning. This getter returns the default context associated
   // with a BrowsingContext.
   virtual net::URLRequestContext* GetRequestContext() = 0;
-
-  // Create a platform KeygenHandler and pass it to |callback|. The |callback|
-  // may be run synchronously.
-  virtual void CreateKeygenHandler(
-      uint32_t key_size_in_bits,
-      const std::string& challenge_string,
-      const GURL& url,
-      const base::Callback<void(std::unique_ptr<net::KeygenHandler>)>&
-          callback);
 
   // Returns a random salt string that is used for creating media device IDs.
   // Returns a random string by default.

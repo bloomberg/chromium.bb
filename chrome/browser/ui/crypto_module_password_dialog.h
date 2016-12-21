@@ -14,7 +14,6 @@ namespace chrome {
 
 // An enum to describe the reason for the password request.
 enum CryptoModulePasswordReason {
-  kCryptoModulePasswordKeygen,
   kCryptoModulePasswordCertEnrollment,
   kCryptoModulePasswordClientAuth,
   kCryptoModulePasswordListCerts,

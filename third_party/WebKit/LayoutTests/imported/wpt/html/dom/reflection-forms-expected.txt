@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 559: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 This is a testharness.js-based test.
 PASS form.title: 32 tests
 PASS form.lang: 32 tests
@@ -504,11 +503,159 @@ PASS keygen.className (<keygen class>): 32 tests
 PASS keygen.hidden: 33 tests
 PASS keygen.accessKey: 32 tests
 PASS keygen.tabIndex: 24 tests
-PASS keygen.autofocus: 33 tests
-PASS keygen.challenge: 32 tests
-PASS keygen.disabled: 33 tests
-PASS keygen.keytype: 23 tests
-PASS keygen.name: 32 tests
+FAIL keygen.autofocus: typeof IDL attribute assert_equals: expected "boolean" but got "undefined"
+FAIL keygen.autofocus: IDL get with DOM attribute unset assert_equals: expected (boolean) false but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to "" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to " foo " assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to undefined assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to null assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to 7 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to 1.5 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to true assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to false assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to NaN assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to -Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to "\0" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to object "test-toString" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: setAttribute() to "autofocus" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.autofocus: IDL set to "" assert_equals: hasAttribute() expected false but got true
+FAIL keygen.autofocus: IDL set to " foo " assert_equals: IDL get expected (boolean) true but got (string) " foo "
+FAIL keygen.autofocus: IDL set to undefined assert_equals: hasAttribute() expected false but got true
+FAIL keygen.autofocus: IDL set to null assert_equals: hasAttribute() expected false but got true
+FAIL keygen.autofocus: IDL set to 7 assert_equals: IDL get expected (boolean) true but got (number) 7
+FAIL keygen.autofocus: IDL set to 1.5 assert_equals: IDL get expected (boolean) true but got (number) 1.5
+PASS keygen.autofocus: IDL set to true 
+FAIL keygen.autofocus: IDL set to false assert_equals: hasAttribute() expected false but got true
+FAIL keygen.autofocus: IDL set to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (object) object "[object Object]"
+FAIL keygen.autofocus: IDL set to NaN assert_equals: hasAttribute() expected false but got true
+FAIL keygen.autofocus: IDL set to Infinity assert_equals: IDL get expected (boolean) true but got (number) Infinity
+FAIL keygen.autofocus: IDL set to -Infinity assert_equals: IDL get expected (boolean) true but got (number) -Infinity
+FAIL keygen.autofocus: IDL set to "\0" assert_equals: IDL get expected (boolean) true but got (string) "\0"
+FAIL keygen.autofocus: IDL set to object "test-toString" assert_equals: IDL get expected (boolean) true but got (object) object "test-toString"
+FAIL keygen.autofocus: IDL set to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (object) object "test-valueOf"
+FAIL keygen.challenge: typeof IDL attribute assert_equals: expected "string" but got "undefined"
+FAIL keygen.challenge: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to undefined assert_equals: IDL get expected (string) "undefined" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to 7 assert_equals: IDL get expected (string) "7" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to 1.5 assert_equals: IDL get expected (string) "1.5" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to true assert_equals: IDL get expected (string) "true" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to false assert_equals: IDL get expected (string) "false" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "[object Object]" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to NaN assert_equals: IDL get expected (string) "NaN" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to Infinity assert_equals: IDL get expected (string) "Infinity" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to -Infinity assert_equals: IDL get expected (string) "-Infinity" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to "\0" assert_equals: IDL get expected (string) "\0" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to null assert_equals: IDL get expected (string) "null" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "test-toString" but got (undefined) undefined
+FAIL keygen.challenge: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (undefined) undefined
+FAIL keygen.challenge: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
+FAIL keygen.challenge: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to 7 assert_equals: getAttribute() expected "7" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to true assert_equals: getAttribute() expected "true" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to false assert_equals: getAttribute() expected "false" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
+FAIL keygen.challenge: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
+FAIL keygen.disabled: typeof IDL attribute assert_equals: expected "boolean" but got "undefined"
+FAIL keygen.disabled: IDL get with DOM attribute unset assert_equals: expected (boolean) false but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to "" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to " foo " assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to undefined assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to null assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to 7 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to 1.5 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to true assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to false assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to NaN assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to -Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to "\0" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to object "test-toString" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: setAttribute() to "disabled" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL keygen.disabled: IDL set to "" assert_equals: hasAttribute() expected false but got true
+FAIL keygen.disabled: IDL set to " foo " assert_equals: IDL get expected (boolean) true but got (string) " foo "
+FAIL keygen.disabled: IDL set to undefined assert_equals: hasAttribute() expected false but got true
+FAIL keygen.disabled: IDL set to null assert_equals: hasAttribute() expected false but got true
+FAIL keygen.disabled: IDL set to 7 assert_equals: IDL get expected (boolean) true but got (number) 7
+FAIL keygen.disabled: IDL set to 1.5 assert_equals: IDL get expected (boolean) true but got (number) 1.5
+PASS keygen.disabled: IDL set to true 
+FAIL keygen.disabled: IDL set to false assert_equals: hasAttribute() expected false but got true
+FAIL keygen.disabled: IDL set to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (object) object "[object Object]"
+FAIL keygen.disabled: IDL set to NaN assert_equals: hasAttribute() expected false but got true
+FAIL keygen.disabled: IDL set to Infinity assert_equals: IDL get expected (boolean) true but got (number) Infinity
+FAIL keygen.disabled: IDL set to -Infinity assert_equals: IDL get expected (boolean) true but got (number) -Infinity
+FAIL keygen.disabled: IDL set to "\0" assert_equals: IDL get expected (boolean) true but got (string) "\0"
+FAIL keygen.disabled: IDL set to object "test-toString" assert_equals: IDL get expected (boolean) true but got (object) object "test-toString"
+FAIL keygen.disabled: IDL set to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (object) object "test-valueOf"
+FAIL keygen.keytype: typeof IDL attribute assert_equals: expected "string" but got "undefined"
+FAIL keygen.keytype: setAttribute() to "rsa" assert_equals: IDL get expected (string) "rsa" but got (undefined) undefined
+FAIL keygen.keytype: setAttribute() to "RSA" assert_equals: IDL get expected (string) "rsa" but got (undefined) undefined
+FAIL keygen.keytype: IDL set to "" assert_equals: getAttribute() expected "" but got "RSA"
+FAIL keygen.keytype: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "RSA"
+FAIL keygen.keytype: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "RSA"
+FAIL keygen.keytype: IDL set to 7 assert_equals: getAttribute() expected "7" but got "RSA"
+FAIL keygen.keytype: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "RSA"
+FAIL keygen.keytype: IDL set to true assert_equals: getAttribute() expected "true" but got "RSA"
+FAIL keygen.keytype: IDL set to false assert_equals: getAttribute() expected "false" but got "RSA"
+FAIL keygen.keytype: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "RSA"
+FAIL keygen.keytype: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "RSA"
+FAIL keygen.keytype: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "RSA"
+FAIL keygen.keytype: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "RSA"
+FAIL keygen.keytype: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "RSA"
+PASS keygen.keytype: IDL set to null 
+FAIL keygen.keytype: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "RSA"
+FAIL keygen.keytype: IDL set to object "test-valueOf" assert_equals: getAttribute() expected "test-valueOf" but got "RSA"
+FAIL keygen.keytype: IDL set to "rsa" assert_equals: getAttribute() expected "rsa" but got "RSA"
+FAIL keygen.keytype: IDL set to "xrsa" assert_equals: getAttribute() expected "xrsa" but got "RSA"
+FAIL keygen.keytype: IDL set to "rsa\0" assert_equals: getAttribute() expected "rsa\0" but got "RSA"
+FAIL keygen.keytype: IDL set to "sa" assert_equals: getAttribute() expected "sa" but got "RSA"
+FAIL keygen.keytype: IDL set to "RSA" assert_equals: IDL get expected "rsa" but got "RSA"
+FAIL keygen.name: typeof IDL attribute assert_equals: expected "string" but got "undefined"
+FAIL keygen.name: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
+FAIL keygen.name: setAttribute() to undefined assert_equals: IDL get expected (string) "undefined" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to 7 assert_equals: IDL get expected (string) "7" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to 1.5 assert_equals: IDL get expected (string) "1.5" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to true assert_equals: IDL get expected (string) "true" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to false assert_equals: IDL get expected (string) "false" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "[object Object]" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to NaN assert_equals: IDL get expected (string) "NaN" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to Infinity assert_equals: IDL get expected (string) "Infinity" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to -Infinity assert_equals: IDL get expected (string) "-Infinity" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to "\0" assert_equals: IDL get expected (string) "\0" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to null assert_equals: IDL get expected (string) "null" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "test-toString" but got (undefined) undefined
+FAIL keygen.name: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (undefined) undefined
+FAIL keygen.name: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
+FAIL keygen.name: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
+FAIL keygen.name: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "test-valueOf"
+FAIL keygen.name: IDL set to 7 assert_equals: getAttribute() expected "7" but got "test-valueOf"
+FAIL keygen.name: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "test-valueOf"
+FAIL keygen.name: IDL set to true assert_equals: getAttribute() expected "true" but got "test-valueOf"
+FAIL keygen.name: IDL set to false assert_equals: getAttribute() expected "false" but got "test-valueOf"
+FAIL keygen.name: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "test-valueOf"
+FAIL keygen.name: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "test-valueOf"
+FAIL keygen.name: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "test-valueOf"
+FAIL keygen.name: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "test-valueOf"
+FAIL keygen.name: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
+FAIL keygen.name: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
+FAIL keygen.name: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
+FAIL keygen.name: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
 PASS output.title: 32 tests
 PASS output.lang: 32 tests
 PASS output.dir: 62 tests

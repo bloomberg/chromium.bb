@@ -2176,28 +2176,6 @@ interface HTMLInputElement : HTMLElement
     setter valueAsNumber
     setter webkitdirectory
     setter width
-interface HTMLKeygenElement : HTMLElement
-    attribute @@toStringTag
-    getter autofocus
-    getter challenge
-    getter disabled
-    getter form
-    getter keytype
-    getter labels
-    getter name
-    getter type
-    getter validationMessage
-    getter validity
-    getter willValidate
-    method checkValidity
-    method constructor
-    method reportValidity
-    method setCustomValidity
-    setter autofocus
-    setter challenge
-    setter disabled
-    setter keytype
-    setter name
 interface HTMLLIElement : HTMLElement
     attribute @@toStringTag
     getter type

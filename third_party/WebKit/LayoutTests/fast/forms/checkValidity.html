@@ -33,10 +33,6 @@ test(() => {
 }, 'checkValidity() for OBJECT should return true.');
 
 test(() => {
-  assert_true(checkValidityFor('<keygen></keygen>'));
-}, 'checkValidity() for KEYGEN should return true.');
-
-test(() => {
   assert_true(checkValidityFor('<select required>' +
     '  <option>empty</option>' +
     '  <option>another</option>' +

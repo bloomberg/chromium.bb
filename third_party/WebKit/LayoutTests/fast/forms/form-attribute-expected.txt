@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 16: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 This test checks the form attribute of the form-associated elements.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -8,7 +7,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS document.getElementsByTagName("button")[0].form is owner
 PASS document.getElementsByTagName("fieldset")[0].form is owner
 PASS document.getElementsByTagName("input")[0].form is owner
-PASS document.getElementsByTagName("keygen")[0].form is owner
 PASS document.getElementsByTagName("label")[0].form is null
 PASS document.getElementsByTagName("object")[0].form is owner
 PASS document.getElementsByTagName("output")[0].form is owner

@@ -25,7 +25,6 @@
     <input id=inputcommon type=image>
     <input id=commoninput type=reset>
     <input id=inputcommon type=button value=buttonValue>
-    <keygen id=keygen1></keygen>
     <label id=label1></label>
     <meter id=meter1></meter>
     <object id=object1></object>
@@ -45,7 +44,7 @@ description("This test ensures fieldset.elements does NOT contain RadioNodeList.
 debug("");
 var owner = document.getElementById('fs');
 
-shouldBe('owner.elements.length', '24');
+shouldBe('owner.elements.length', '23');
 
 var elementsList = owner.elements;
 var notRadioNodeList = elementsList.namedItem("inputcommon");

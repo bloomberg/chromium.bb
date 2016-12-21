@@ -58,7 +58,6 @@ cr.define('site_list', function() {
           ],
           images: [],
           javascript: [],
-          keygen: [],
           mic: [],
           notifications: [],
           plugins: [],
@@ -148,7 +147,6 @@ cr.define('site_list', function() {
               source: 'preference',
             },
           ],
-          keygen: [],
           mic: [],
           notifications: [],
           plugins: [],
@@ -184,7 +182,6 @@ cr.define('site_list', function() {
           ],
           images: [],
           javascript: [],
-          keygen: [],
           mic: [],
           notifications: [
             {

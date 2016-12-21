@@ -387,9 +387,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         ResourceContext* context);
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 
-  // Allow the embedder to control whether we can use <keygen>.
-  virtual bool AllowKeygen(const GURL& url, content::ResourceContext* context);
-
   // Allow the embedder to control whether we can use Web Bluetooth.
   // TODO(crbug.com/589228): Replace this with a use of the permission system.
   enum class AllowWebBluetoothResult {

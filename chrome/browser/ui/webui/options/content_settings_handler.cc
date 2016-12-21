@@ -156,10 +156,6 @@ const ExceptionsInfoMap& GetExceptionsInfoMap() {
             UserMetricsAction(
                 "Options_DefaultProtectedMediaIdentifierSettingChanged"))));
 #endif
-    exceptions_info_map.insert(std::make_pair(
-        CONTENT_SETTINGS_TYPE_KEYGEN,
-        ContentSettingWithExceptions(
-            true, UserMetricsAction("Options_DefaultKeygenSettingChanged"))));
 
     // Without OTR exceptions.
     exceptions_info_map.insert(std::make_pair(
@@ -484,11 +480,6 @@ void ContentSettingsHandler::GetLocalizedValues(
     // Zoom levels.
     {"zoomlevelsHeader", IDS_ZOOMLEVELS_HEADER_AND_TAB_LABEL},
     {"zoomLevelsManage", IDS_ZOOMLEVELS_MANAGE_BUTTON},
-    // Keygen filter.
-    {"keygenTabLabel", IDS_KEYGEN_TAB_LABEL},
-    {"keygenHeader", IDS_KEYGEN_HEADER},
-    {"keygenAllow", IDS_KEYGEN_ALLOW_RADIO},
-    {"keygenBlock", IDS_KEYGEN_DONOTALLOW_RADIO},
     // PDF Plugin filter.
     {"pdfTabLabel", IDS_PDF_TAB_LABEL},
     {"pdfEnable", IDS_PDF_ENABLE_CHECKBOX},
@@ -561,7 +552,6 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_BACKGROUND_SYNC_HEADER);
   RegisterTitle(localized_strings, "zoomlevels",
                 IDS_ZOOMLEVELS_HEADER_AND_TAB_LABEL);
-  RegisterTitle(localized_strings, "keygen", IDS_KEYGEN_TAB_LABEL);
 
   localized_strings->SetString("exceptionsLearnMoreUrl",
                                kExceptionsLearnMoreUrl);

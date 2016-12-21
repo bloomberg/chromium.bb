@@ -1,5 +1,4 @@
-CONSOLE WARNING: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
-CONSOLE MESSAGE: line 44: Test if state of stateless form control types are not saved.
+CONSOLE MESSAGE: line 43: Test if state of stateless form control types are not saved.
 PASS There is a state for hidden
 PASS There is a state for text
 PASS There is a state for tel
@@ -18,7 +17,6 @@ PASS There is no state for password
 PASS There is no state for submit
 PASS There is no state for reset
 PASS There is no state for button
-PASS There is no state for keygen
 PASS There is no state for output
 PASS successfullyParsed is true
 

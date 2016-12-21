@@ -118,12 +118,6 @@ public class ContentSettingsResources {
                                  R.string.javascript_permission_title, ContentSetting.ALLOW,
                                  ContentSetting.BLOCK,
                                  R.string.website_settings_category_javascript_allowed, 0));
-            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_KEYGEN,
-                    new ResourceItem(R.drawable.permission_keygen,
-                                 R.string.keygen_permission_title,
-                                 R.string.keygen_permission_title, ContentSetting.ALLOW,
-                                 ContentSetting.BLOCK,
-                                 0, R.string.website_settings_category_blocked_recommended));
             localMap.put(
                     ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
                     new ResourceItem(R.drawable.permission_camera,

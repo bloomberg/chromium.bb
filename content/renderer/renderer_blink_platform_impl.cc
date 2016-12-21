@@ -782,20 +782,6 @@ blink::WebPublicSuffixList* RendererBlinkPlatformImpl::publicSuffixList() {
 
 //------------------------------------------------------------------------------
 
-blink::WebString RendererBlinkPlatformImpl::signedPublicKeyAndChallengeString(
-    unsigned key_size_index,
-    const blink::WebString& challenge,
-    const blink::WebURL& url,
-    const blink::WebURL& top_origin) {
-  std::string signed_public_key;
-  RenderThread::Get()->Send(new RenderProcessHostMsg_Keygen(
-      static_cast<uint32_t>(key_size_index), challenge.utf8(), GURL(url),
-      GURL(top_origin), &signed_public_key));
-  return WebString::fromUTF8(signed_public_key);
-}
-
-//------------------------------------------------------------------------------
-
 blink::WebScrollbarBehavior* RendererBlinkPlatformImpl::scrollbarBehavior() {
   return web_scrollbar_behavior_.get();
 }

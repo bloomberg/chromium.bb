@@ -107,7 +107,6 @@ ContentSettingsType kPermissionType[] = {
 #endif
     CONTENT_SETTINGS_TYPE_POPUPS,
     CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
-    CONTENT_SETTINGS_TYPE_KEYGEN,
     CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
     CONTENT_SETTINGS_TYPE_AUTOPLAY,
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
@@ -730,13 +729,6 @@ void WebsiteSettings::PresentSitePermissions() {
                                                       NULL);
     }
 
-    if (permission_info.type == CONTENT_SETTINGS_TYPE_KEYGEN &&
-        (permission_info.setting == CONTENT_SETTING_DEFAULT ||
-         permission_info.setting == permission_info.default_setting) &&
-        !tab_specific_content_settings()->IsContentBlocked(
-            permission_info.type)) {
-      continue;
-    }
     permission_info_list.push_back(permission_info);
   }
 

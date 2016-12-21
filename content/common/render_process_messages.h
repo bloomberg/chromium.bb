@@ -38,16 +38,6 @@ IPC_STRUCT_TRAITS_END()
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the render process to the browser.
 
-// Asks the browser process to generate a keypair for grabbing a client
-// certificate from a CA (<keygen> tag), and returns the signed public
-// key and challenge string.
-IPC_SYNC_MESSAGE_CONTROL4_1(RenderProcessHostMsg_Keygen,
-                            uint32_t /* key size index */,
-                            std::string /* challenge string */,
-                            GURL /* URL of requestor */,
-                            GURL /* Origin of top-level frame */,
-                            std::string /* signed public key and challenge */)
-
 // Message sent from the renderer to the browser to request that the browser
 // cache |data| associated with |url| and |expected_response_time|.
 IPC_MESSAGE_CONTROL3(RenderProcessHostMsg_DidGenerateCacheableMetadata,

@@ -55,8 +55,6 @@ public class WebsitePermissionsFetcher {
         queue.add(new MidiInfoFetcher());
         // Cookies are stored per-host.
         queue.add(new CookieExceptionInfoFetcher());
-        // Keygen permissions are per-origin.
-        queue.add(new KeygenInfoFetcher());
         // Local storage info is per-origin.
         queue.add(new LocalStorageInfoFetcher());
         // Website storage is per-host.
@@ -266,18 +264,6 @@ public class WebsitePermissionsFetcher {
         @Override
         public void run() {
             setException(ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES);
-        }
-    }
-
-    private class KeygenInfoFetcher extends Task {
-        @Override
-        public void run() {
-            for (KeygenInfo info : WebsitePreferenceBridge.getKeygenInfo()) {
-                WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
-                if (origin == null) continue;
-                WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-                findOrCreateSite(origin, embedder).setKeygenInfo(info);
-            }
         }
     }
 

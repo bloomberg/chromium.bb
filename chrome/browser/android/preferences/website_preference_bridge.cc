@@ -213,42 +213,6 @@ static void SetGeolocationSettingForOrigin(
                       static_cast<ContentSetting>(value), is_incognito);
 }
 
-static void GetKeygenOrigins(JNIEnv* env,
-                             const JavaParamRef<jclass>& clazz,
-                             const JavaParamRef<jobject>& list) {
-  GetOrigins(env, CONTENT_SETTINGS_TYPE_KEYGEN,
-             &Java_WebsitePreferenceBridge_insertKeygenInfoIntoList, list,
-             false);
-}
-
-static jint GetKeygenSettingForOrigin(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz,
-                                      const JavaParamRef<jstring>& origin,
-                                      const JavaParamRef<jstring>& embedder,
-                                      jboolean is_incognito) {
-  return GetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_KEYGEN, origin,
-                             embedder, is_incognito);
-}
-
-static void SetKeygenSettingForOrigin(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz,
-                                      const JavaParamRef<jstring>& origin,
-                                      jint value,
-                                      jboolean is_incognito) {
-  // Here 'nullptr' indicates that keygen uses wildcard for embedder.
-  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_KEYGEN, origin, nullptr,
-                      static_cast<ContentSetting>(value), is_incognito);
-}
-
-static jboolean GetKeygenBlocked(JNIEnv* env,
-                             const JavaParamRef<jclass>& clazz,
-                             const JavaParamRef<jobject>& java_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
-  return TabSpecificContentSettings::FromWebContents(
-      web_contents)->IsContentBlocked(CONTENT_SETTINGS_TYPE_KEYGEN);
-}
-
 static void GetMidiOrigins(JNIEnv* env,
                            const JavaParamRef<jclass>& clazz,
                            const JavaParamRef<jobject>& list) {

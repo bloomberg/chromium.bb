@@ -740,11 +740,11 @@ NET_ERROR(CACHE_AUTH_FAILURE_AFTER_READ, -410)
 // The server's response was insecure (e.g. there was a cert error).
 NET_ERROR(INSECURE_RESPONSE, -501)
 
-// The server responded to a <keygen> with a generated client cert that we
-// don't have the matching private key for.
+// An attempt to import a client certificate failed, as the user's key
+// database lacked a corresponding private key.
 NET_ERROR(NO_PRIVATE_KEY_FOR_CERT, -502)
 
-// An error adding to the OS certificate database (e.g. OS X Keychain).
+// An error adding a certificate to the OS certificate database.
 NET_ERROR(ADD_USER_CERT_FAILED, -503)
 
 // *** Code -600 is reserved (was FTP_PASV_COMMAND_FAILED). ***

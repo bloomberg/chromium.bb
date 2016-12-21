@@ -415,12 +415,6 @@ void ContentSettingsObserver::passiveInsecureContentFound(
   FilteredReportInsecureContentDisplayed(GURL(resource_url));
 }
 
-void ContentSettingsObserver::didUseKeygen() {
-  WebFrame* frame = render_frame()->GetWebFrame();
-  Send(new ChromeViewHostMsg_DidUseKeygen(
-      routing_id(), url::Origin(frame->getSecurityOrigin()).GetURL()));
-}
-
 void ContentSettingsObserver::didNotAllowPlugins() {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
 }

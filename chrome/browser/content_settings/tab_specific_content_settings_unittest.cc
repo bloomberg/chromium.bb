@@ -67,8 +67,6 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
   EXPECT_FALSE(content_settings->IsContentBlocked(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  EXPECT_FALSE(
-      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_KEYGEN));
 
   // Set a cookie, block access to images, block mediastream access and block a
   // popup.
@@ -109,8 +107,6 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
   EXPECT_TRUE(content_settings->IsContentBlocked(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  EXPECT_FALSE(
-      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_KEYGEN));
   content_settings->OnCookieChanged(GURL("http://google.com"),
                                     GURL("http://google.com"),
                                     "A=B",
@@ -151,8 +147,6 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
   EXPECT_FALSE(content_settings->IsContentBlocked(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  EXPECT_FALSE(
-      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_KEYGEN));
 
   content_settings->ClearNavigationRelatedContentSettings();
 #if !defined(OS_ANDROID)
@@ -171,8 +165,6 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
   EXPECT_FALSE(content_settings->IsContentBlocked(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  EXPECT_FALSE(
-      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_KEYGEN));
 }
 
 TEST_F(TabSpecificContentSettingsTest, BlockedFileSystems) {

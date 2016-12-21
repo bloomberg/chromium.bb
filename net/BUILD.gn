@@ -150,9 +150,6 @@ component("net") {
     if (!use_openssl_certs) {
       sources -= [
         "base/crypto_module_openssl.cc",
-        "base/keygen_handler_openssl.cc",
-        "base/openssl_private_key_store.h",
-        "base/openssl_private_key_store_memory.cc",
         "cert/cert_database_openssl.cc",
         "cert/cert_verify_proc_openssl.cc",
         "cert/cert_verify_proc_openssl.h",
@@ -161,14 +158,10 @@ component("net") {
         "ssl/openssl_client_key_store.cc",
         "ssl/openssl_client_key_store.h",
       ]
-      if (is_android) {
-        sources -= [ "base/openssl_private_key_store_android.cc" ]
-      }
     } else {
       if (is_android) {
         # Android doesn't use these even when using OpenSSL.
         sources -= [
-          "base/openssl_private_key_store_memory.cc",
           "cert/cert_database_openssl.cc",
           "cert/cert_verify_proc_openssl.cc",
           "cert/test_root_certs_openssl.cc",
@@ -190,7 +183,6 @@ component("net") {
     if (!use_nss_certs) {
       sources -= [
         "base/crypto_module_nss.cc",
-        "base/keygen_handler_nss.cc",
         "cert/cert_database_nss.cc",
         "cert/internal/cert_issuer_source_nss.cc",
         "cert/internal/cert_issuer_source_nss.h",
@@ -201,8 +193,6 @@ component("net") {
         "cert/x509_certificate_nss.cc",
         "ssl/client_cert_store_nss.cc",
         "ssl/client_cert_store_nss.h",
-        "third_party/mozilla_security_manager/nsKeygenHandler.cpp",
-        "third_party/mozilla_security_manager/nsKeygenHandler.h",
         "third_party/mozilla_security_manager/nsNSSCertificateDB.cpp",
         "third_party/mozilla_security_manager/nsNSSCertificateDB.h",
         "third_party/mozilla_security_manager/nsPKCS12Blob.cpp",
@@ -1456,8 +1446,6 @@ test("net_unittests") {
     sources -= [
       # TODO(droger): The following tests are disabled because the
       # implementation is missing or incomplete.
-      # KeygenHandler::GenKeyAndSignChallenge() is not ported to iOS.
-      "base/keygen_handler_unittest.cc",
       "disk_cache/backend_unittest.cc",
       "disk_cache/blockfile/block_files_unittest.cc",
 

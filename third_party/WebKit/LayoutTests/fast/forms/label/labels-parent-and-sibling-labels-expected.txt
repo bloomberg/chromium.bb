@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 28: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 Test that the labels list of a form control contains both parent label and sibling label.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -7,8 +6,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Check button
 PASS element.labels.length is 2
 Check input
-PASS element.labels.length is 2
-Check keygen
 PASS element.labels.length is 2
 Check meter
 PASS element.labels.length is 2

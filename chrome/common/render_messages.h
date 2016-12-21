@@ -384,11 +384,6 @@ IPC_SYNC_MESSAGE_CONTROL3_1(ChromeViewHostMsg_RequestFileSystemAccessSync,
                             GURL /* top origin url */,
                             bool /* allowed */)
 
-// Sent by the renderer process when a keygen element is rendered onto the
-// current page.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_DidUseKeygen,
-                    GURL /* origin_url */)
-
 // Sent by the renderer process to check whether access to FileSystem is
 // granted by content settings.
 IPC_MESSAGE_CONTROL4(ChromeViewHostMsg_RequestFileSystemAccessAsync,
