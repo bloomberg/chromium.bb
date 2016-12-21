@@ -147,6 +147,16 @@ Place AAC sequence header based on audio stream data.
 
 @item no_sequence_end
 Disable sequence end tag.
+
+@item no_metadata
+Disable metadata tag.
+
+@item no_duration_filesize
+Disable duration and filesize in metadata when they are equal to zero
+at the end of stream. (Be used to non-seekable living stream).
+
+@item add_keyframe_index
+Used to facilitate seeking; particularly for HTTP pseudo streaming.
 @end table
 @end table
 
@@ -635,7 +645,7 @@ The following example shows how to use @command{ffmpeg} for creating a
 sequence of files @file{img-001.jpeg}, @file{img-002.jpeg}, ...,
 taking one image every second from the input video:
 @example
-ffmpeg -i in.avi -vsync 1 -r 1 -f image2 'img-%03d.jpeg'
+ffmpeg -i in.avi -vsync cfr -r 1 -f image2 'img-%03d.jpeg'
 @end example
 
 Note that with @command{ffmpeg}, if the format is not specified with the
@@ -643,12 +653,12 @@ Note that with @command{ffmpeg}, if the format is not specified with the
 format, the image2 muxer is automatically selected, so the previous
 command can be written as:
 @example
-ffmpeg -i in.avi -vsync 1 -r 1 'img-%03d.jpeg'
+ffmpeg -i in.avi -vsync cfr -r 1 'img-%03d.jpeg'
 @end example
 
 Note also that the pattern must not necessarily contain "%d" or
 "%0@var{N}d", for example to create a single image file
-@file{img.jpeg} from the input video you can employ the command:
+@file{img.jpeg} from the start of the input video you can employ the command:
 @example
 ffmpeg -i in.avi -f image2 -frames:v 1 img.jpeg
 @end example
@@ -1055,6 +1065,8 @@ Use LATM packetization for AAC.
 Reemit PAT and PMT at each video frame.
 @item system_b
 Conform to System B (DVB) instead of System A (ATSC).
+@item initial_discontinuity
+Mark the initial packet of each stream as discontinuity.
 @end table
 
 @subsection Example
@@ -1649,7 +1661,7 @@ keyframes packets, as requested by the MPEG-TS format. The select
 option is applied to @file{out.aac} in order to make it contain only
 audio packets.
 @example
-ffmpeg -i ... -map 0 -flags +global_header -c:v libx264 -c:a aac -strict experimental
+ffmpeg -i ... -map 0 -flags +global_header -c:v libx264 -c:a aac
        -f tee "[bsfs/v=dump_extra]out.ts|[movflags=+faststart]out.mp4|[select=a]out.aac"
 @end example
 
@@ -1658,7 +1670,7 @@ As below, but select only stream @code{a:1} for the audio output. Note
 that a second level escaping must be performed, as ":" is a special
 character used to separate options.
 @example
-ffmpeg -i ... -map 0 -flags +global_header -c:v libx264 -c:a aac -strict experimental
+ffmpeg -i ... -map 0 -flags +global_header -c:v libx264 -c:a aac
        -f tee "[bsfs/v=dump_extra]out.ts|[movflags=+faststart]out.mp4|[select=\'a:1\']out.aac"
 @end example
 @end itemize

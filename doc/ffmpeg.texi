@@ -12,7 +12,7 @@
 
 @chapter Synopsis
 
-ffmpeg [@var{global_options}] @{[@var{input_file_options}] -i @file{input_file}@} ... @{[@var{output_file_options}] @file{output_file}@} ...
+ffmpeg [@var{global_options}] @{[@var{input_file_options}] -i @file{input_url}@} ... @{[@var{output_file_options}] @file{output_url}@} ...
 
 @chapter Description
 @c man begin DESCRIPTION
@@ -24,10 +24,10 @@ rates and resize video on the fly with a high quality polyphase filter.
 @command{ffmpeg} reads from an arbitrary number of input "files" (which can be regular
 files, pipes, network streams, grabbing devices, etc.), specified by the
 @code{-i} option, and writes to an arbitrary number of output "files", which are
-specified by a plain output filename. Anything found on the command line which
-cannot be interpreted as an option is considered to be an output filename.
+specified by a plain output url. Anything found on the command line which
+cannot be interpreted as an option is considered to be an output url.
 
-Each input or output file can, in principle, contain any number of streams of
+Each input or output url can, in principle, contain any number of streams of
 different types (video/audio/subtitle/attachment/data). The allowed number and/or
 types of streams may be limited by the container format. Selecting which
 streams from which inputs will go into which output is either done automatically
@@ -243,8 +243,8 @@ Force input or output file format. The format is normally auto detected for inpu
 files and guessed from the file extension for output files, so this option is not
 needed in most cases.
 
-@item -i @var{filename} (@emph{input})
-input file name
+@item -i @var{url} (@emph{input})
+input file url
 
 @item -y (@emph{global})
 Overwrite output files without asking.
@@ -281,7 +281,7 @@ libx264, and the 138th audio, which will be encoded with libvorbis.
 When used as an input option (before @code{-i}), limit the @var{duration} of
 data read from the input file.
 
-When used as an output option (before an output filename), stop writing the
+When used as an output option (before an output url), stop writing the
 output after its duration reaches @var{duration}.
 
 @var{duration} must be a time duration specification,
@@ -310,7 +310,7 @@ extra segment between the seek point and @var{position} will be decoded and
 discarded. When doing stream copy or when @option{-noaccurate_seek} is used, it
 will be preserved.
 
-When used as an output option (before an output filename), decodes but discards
+When used as an output option (before an output url), decodes but discards
 input until the timestamps reach @var{position}.
 
 @var{position} must be a time duration specification,
@@ -355,6 +355,40 @@ ffmpeg -i in.avi -metadata title="my title" out.flv
 To set the language of the first audio stream:
 @example
 ffmpeg -i INPUT -metadata:s:a:0 language=eng OUTPUT
+@end example
+
+@item -disposition[:stream_specifier] @var{value} (@emph{output,per-stream})
+Sets the disposition for a stream.
+
+This option overrides the disposition copied from the input stream. It is also
+possible to delete the disposition by setting it to 0.
+
+The following dispositions are recognized:
+@table @option
+@item default
+@item dub
+@item original
+@item comment
+@item lyrics
+@item karaoke
+@item forced
+@item hearing_impaired
+@item visual_impaired
+@item clean_effects
+@item captions
+@item descriptions
+@item metadata
+@end table
+
+For example, to make the second audio stream the default stream:
+@example
+ffmpeg -i in.mkv -disposition:a:1 default out.mkv
+@end example
+
+To make the second subtitle stream the default stream and remove the default
+disposition from the first subtitle stream:
+@example
+ffmpeg -i INPUT -disposition:s:0 0 -disposition:s:1 default OUTPUT
 @end example
 
 @item -program [title=@var{title}:][program_num=@var{program_num}:]st=@var{stream}[:st=@var{stream}...] (@emph{output})
@@ -414,6 +448,11 @@ want to create filtergraphs with multiple inputs and/or outputs.
 This option is similar to @option{-filter}, the only difference is that its
 argument is the name of the file from which a filtergraph description is to be
 read.
+
+@item -filter_threads @var{nb_threads} (@emph{global})
+Defines how many threads are used to process a filter pipeline. Each pipeline
+will produce a thread pool with this many threads available for parallel processing.
+The default is the number of available CPUs.
 
 @item -pre[:@var{stream_specifier}] @var{preset_name} (@emph{output,per-stream})
 Specify the preset for matching stream(s).
@@ -1129,7 +1168,7 @@ may be reassigned to a different value.
 For example, to set the stream 0 PID to 33 and the stream 1 PID to 36 for
 an output mpegts file:
 @example
-ffmpeg -i infile -streamid 0:33 -streamid 1:36 out.ts
+ffmpeg -i inurl -streamid 0:33 -streamid 1:36 out.ts
 @end example
 
 @item -bsf[:@var{stream_specifier}] @var{bitstream_filters} (@emph{output,per-stream})
@@ -1200,6 +1239,11 @@ To generate 5 seconds of pure red video using lavfi @code{color} source:
 @example
 ffmpeg -filter_complex 'color=c=red' -t 5 out.mkv
 @end example
+
+@item -filter_complex_threads @var{nb_threads} (@emph{global})
+Defines how many threads are used to process a filter_complex graph.
+Similar to filter_threads but used for @code{-filter_complex} graphs only.
+The default is the number of available CPUs.
 
 @item -lavfi @var{filtergraph} (@emph{global})
 Define a complex filtergraph, i.e. one with arbitrary number of inputs and/or

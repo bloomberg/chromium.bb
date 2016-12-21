@@ -18,6 +18,7 @@ OBJS = allfilters.o                                                     \
        fifo.o                                                           \
        formats.o                                                        \
        framepool.o                                                      \
+       framequeue.o                                                     \
        graphdump.o                                                      \
        graphparser.o                                                    \
        opencl_allkernels.o                                              \
@@ -93,7 +94,7 @@ OBJS-$(CONFIG_HDCD_FILTER)                   += af_hdcd.o
 OBJS-$(CONFIG_HIGHPASS_FILTER)               += af_biquads.o
 OBJS-$(CONFIG_JOIN_FILTER)                   += af_join.o
 OBJS-$(CONFIG_LADSPA_FILTER)                 += af_ladspa.o
-OBJS-$(CONFIG_LOUDNORM_FILTER)               += af_loudnorm.o
+OBJS-$(CONFIG_LOUDNORM_FILTER)               += af_loudnorm.o ebur128.o
 OBJS-$(CONFIG_LOWPASS_FILTER)                += af_biquads.o
 OBJS-$(CONFIG_PAN_FILTER)                    += af_pan.o
 OBJS-$(CONFIG_REPLAYGAIN_FILTER)             += af_replaygain.o
@@ -240,6 +241,7 @@ OBJS-$(CONFIG_PHASE_FILTER)                  += vf_phase.o
 OBJS-$(CONFIG_PIXDESCTEST_FILTER)            += vf_pixdesctest.o
 OBJS-$(CONFIG_PP_FILTER)                     += vf_pp.o
 OBJS-$(CONFIG_PP7_FILTER)                    += vf_pp7.o
+OBJS-$(CONFIG_PREMULTIPLY_FILTER)            += vf_premultiply.o framesync.o
 OBJS-$(CONFIG_PREWITT_FILTER)                += vf_convolution.o
 OBJS-$(CONFIG_PSNR_FILTER)                   += vf_psnr.o dualinput.o framesync.o
 OBJS-$(CONFIG_PULLUP_FILTER)                 += vf_pullup.o

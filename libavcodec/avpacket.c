@@ -295,16 +295,17 @@ FF_ENABLE_DEPRECATION_WARNINGS
 int av_packet_add_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
                             uint8_t *data, size_t size)
 {
+    AVPacketSideData *tmp;
     int elems = pkt->side_data_elems;
 
     if ((unsigned)elems + 1 > INT_MAX / sizeof(*pkt->side_data))
         return AVERROR(ERANGE);
 
-    pkt->side_data = av_realloc(pkt->side_data,
-                                (elems + 1) * sizeof(*pkt->side_data));
-    if (!pkt->side_data)
+    tmp = av_realloc(pkt->side_data, (elems + 1) * sizeof(*tmp));
+    if (!tmp)
         return AVERROR(ENOMEM);
 
+    pkt->side_data = tmp;
     pkt->side_data[elems].data = data;
     pkt->side_data[elems].size = size;
     pkt->side_data[elems].type = type;
@@ -371,6 +372,7 @@ const char *av_packet_side_data_name(enum AVPacketSideDataType type)
     case AV_PKT_DATA_METADATA_UPDATE:            return "Metadata Update";
     case AV_PKT_DATA_MPEGTS_STREAM_ID:           return "MPEGTS Stream ID";
     case AV_PKT_DATA_MASTERING_DISPLAY_METADATA: return "Mastering display metadata";
+    case AV_PKT_DATA_SPHERICAL:                  return "Spherical Mapping";
     }
     return NULL;
 }

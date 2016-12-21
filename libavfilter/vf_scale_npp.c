@@ -29,7 +29,7 @@
 #include "libavutil/common.h"
 #include "libavutil/eval.h"
 #include "libavutil/hwcontext.h"
-#include "libavutil/hwcontext_cuda.h"
+#include "libavutil/hwcontext_cuda_internal.h"
 #include "libavutil/internal.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/opt.h"
@@ -169,11 +169,9 @@ static int nppscale_query_formats(AVFilterContext *ctx)
     static const enum AVPixelFormat pixel_formats[] = {
         AV_PIX_FMT_CUDA, AV_PIX_FMT_NONE,
     };
-    AVFilterFormats *pix_fmts  = ff_make_format_list(pixel_formats);
+    AVFilterFormats *pix_fmts = ff_make_format_list(pixel_formats);
 
-    ff_set_common_formats(ctx, pix_fmts);
-
-    return 0;
+    return ff_set_common_formats(ctx, pix_fmts);
 }
 
 static int init_stage(NPPScaleStageContext *stage, AVBufferRef *device_ctx)
@@ -349,7 +347,7 @@ static int init_processing_chain(AVFilterContext *ctx, int in_width, int in_heig
     }
 
     if (last_stage < 0)
-        return AVERROR_BUG;
+        return 0;
     ctx->outputs[0]->hw_frames_ctx = av_buffer_ref(s->stages[last_stage].frames_ctx);
     if (!ctx->outputs[0]->hw_frames_ctx)
         return AVERROR(ENOMEM);
@@ -586,12 +584,7 @@ static int nppscale_filter_frame(AVFilterLink *link, AVFrame *in)
         goto fail;
     }
 
-    av_reduce(&out->sample_aspect_ratio.num, &out->sample_aspect_ratio.den,
-              (int64_t)in->sample_aspect_ratio.num * outlink->h * link->w,
-              (int64_t)in->sample_aspect_ratio.den * outlink->w * link->h,
-              INT_MAX);
-
-    err = cuCtxPushCurrent(device_hwctx->cuda_ctx);
+    err = device_hwctx->internal->cuda_dl->cuCtxPushCurrent(device_hwctx->cuda_ctx);
     if (err != CUDA_SUCCESS) {
         ret = AVERROR_UNKNOWN;
         goto fail;
@@ -599,9 +592,14 @@ static int nppscale_filter_frame(AVFilterLink *link, AVFrame *in)
 
     ret = nppscale_scale(ctx, out, in);
 
-    cuCtxPopCurrent(&dummy);
+    device_hwctx->internal->cuda_dl->cuCtxPopCurrent(&dummy);
     if (ret < 0)
         goto fail;
+
+    av_reduce(&out->sample_aspect_ratio.num, &out->sample_aspect_ratio.den,
+              (int64_t)in->sample_aspect_ratio.num * outlink->h * link->w,
+              (int64_t)in->sample_aspect_ratio.den * outlink->w * link->h,
+              INT_MAX);
 
     av_frame_free(&in);
     return ff_filter_frame(outlink, out);

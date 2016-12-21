@@ -172,6 +172,16 @@ FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_F
 fate-filter-overlay_yuv420: tests/data/filtergraphs/overlay_yuv420
 fate-filter-overlay_yuv420: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_yuv420
 
+FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_nv12
+fate-filter-overlay_nv12: tests/data/filtergraphs/overlay_nv12
+fate-filter-overlay_nv12: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_nv12
+fate-filter-overlay_nv12: REF = $(SRC_PATH)/tests/ref/fate/filter-overlay_yuv420
+
+FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_nv21
+fate-filter-overlay_nv21: tests/data/filtergraphs/overlay_nv21
+fate-filter-overlay_nv21: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_nv21
+fate-filter-overlay_nv21: REF = $(SRC_PATH)/tests/ref/fate/filter-overlay_yuv420
+
 FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_yuv422
 fate-filter-overlay_yuv422: tests/data/filtergraphs/overlay_yuv422
 fate-filter-overlay_yuv422: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_yuv422
@@ -652,6 +662,14 @@ fate-filter-metadata-readvitc-def: CMD = run $(FILTER_METADATA_COMMAND) "movie='
 FATE_METADATA_FILTER-$(call ALLYES, $(READVITC_METADATA_DEPS)) += fate-filter-metadata-readvitc-thr
 fate-filter-metadata-readvitc-thr: SRC = $(TARGET_SAMPLES)/filter/sample-vitc.avi
 fate-filter-metadata-readvitc-thr: CMD = run $(FILTER_METADATA_COMMAND) "movie='$(SRC)',readvitc=thr_b=0.3:thr_w=0.5"
+
+AVF_PHASE_METER_DEPS = FFPROBE AVDEVICE LAVFI_INDEV AMOVIE_FILTER FLAC_DEMUXER FLAC_DECODER SINE_FILTER APHASEMETER_FILTER
+FATE_METADATA_FILTER-$(call ALLYES, $(AVF_PHASE_METER_DEPS)) += fate-filter-metadata-avf-aphase-meter-mono
+fate-filter-metadata-avf-aphase-meter-mono: CMD = run $(FILTER_METADATA_COMMAND) sine="frequency=1000:sample_rate=48000:duration=1,aphasemeter"
+
+FATE_METADATA_FILTER-$(call ALLYES, $(AVF_PHASE_METER_DEPS)) += fate-filter-metadata-avf-aphase-meter-out-of-phase
+fate-filter-metadata-avf-aphase-meter-out-of-phase: SRC = $(TARGET_SAMPLES)/filter/out-of-phase-1000hz.flac
+fate-filter-metadata-avf-aphase-meter-out-of-phase: CMD = run $(FILTER_METADATA_COMMAND) "amovie='$(SRC)',aphasemeter"
 
 tests/data/file4560-override2rotate0.mov: TAG = GEN
 tests/data/file4560-override2rotate0.mov: ffmpeg$(PROGSSUF)$(EXESUF) | tests/data
