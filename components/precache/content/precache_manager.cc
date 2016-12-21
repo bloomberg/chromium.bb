@@ -123,10 +123,11 @@ PrecacheManager::AllowedType PrecacheManager::PrecachingAllowed() const {
     return AllowedType::PENDING;
 
   // SyncService delegates to SyncPrefs, which must be called on the UI thread.
-  if (history_service_ &&
+  if (history_service_ && !sync_service_->IsLocalSyncEnabled() &&
       sync_service_->GetActiveDataTypes().Has(syncer::SESSIONS) &&
-      !sync_service_->GetEncryptedDataTypes().Has(syncer::SESSIONS))
+      !sync_service_->GetEncryptedDataTypes().Has(syncer::SESSIONS)) {
     return AllowedType::ALLOWED;
+  }
 
   return AllowedType::DISALLOWED;
 }

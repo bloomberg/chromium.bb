@@ -83,7 +83,7 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
 #endif
         {switches::kUnsafePacUrl, prefs::kPacHttpsUrlStrippingEnabled, false},
         {switches::kEnableLocalSyncBackend,
-         syncer::prefs::kEnableLocalSyncBackend, false},
+         syncer::prefs::kEnableLocalSyncBackend, true},
 };
 
 const CommandLinePrefStore::SwitchToPreferenceMapEntry

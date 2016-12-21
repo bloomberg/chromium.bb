@@ -74,6 +74,11 @@ void UpdateNetworkTime(const base::Time& network_time,
                  latency, base::TimeTicks::Now()));
 }
 
+#if defined(OS_WIN)
+static const base::FilePath::CharType kLoopbackServerBackendFilename[] =
+    FILE_PATH_LITERAL("profile.pb");
+#endif
+
 }  // anonymous namespace
 
 // static
@@ -142,33 +147,68 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
   Profile* profile = Profile::FromBrowserContext(context);
 
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
+  init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
+  init_params.base_directory = profile->GetPath();
+  init_params.url_request_context = profile->GetRequestContext();
+  init_params.debug_identifier = profile->GetDebugName();
+  init_params.channel = chrome::GetChannel();
+  init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
 
-  // Always create the GCMProfileService instance such that we can listen to
-  // the profile notifications and purge the GCM store when the profile is
-  // being signed out.
-  gcm::GCMProfileServiceFactory::GetForProfile(profile);
+  bool local_sync_backend_enabled = false;
 
-  // TODO(atwilson): Change AboutSigninInternalsFactory to load on startup
-  // once http://crbug.com/171406 has been fixed.
-  AboutSigninInternalsFactory::GetForProfile(profile);
+// Since the local sync backend is currently only supported on Windows don't
+// even check the pref on other os-es.
+#if defined(OS_WIN)
+  syncer::SyncPrefs prefs(profile->GetPrefs());
+  local_sync_backend_enabled = prefs.IsLocalSyncEnabled();
+  if (local_sync_backend_enabled) {
+    // This code as it is now will assume the same profile order is present on
+    // all machines, which is not a given. It is to be defined if only the
+    // Default profile should get this treatment or all profile as is the case
+    // now. The solution for now will be to assume profiles are created in the
+    // same order on all machines and in the future decide if only the Default
+    // one should be considered roamed.
+    init_params.local_sync_backend_folder = prefs.GetLocalSyncBackendDir();
+    init_params.local_sync_backend_folder =
+        init_params.local_sync_backend_folder.Append(
+            init_params.base_directory.BaseName());
+    init_params.local_sync_backend_folder =
+        init_params.local_sync_backend_folder.Append(
+            kLoopbackServerBackendFilename);
 
-  init_params.signin_wrapper =
-      base::MakeUnique<SupervisedUserSigninManagerWrapper>(profile, signin);
-  init_params.oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  init_params.gaia_cookie_manager_service =
-      GaiaCookieManagerServiceFactory::GetForProfile(profile);
+    init_params.start_behavior = ProfileSyncService::AUTO_START;
+  }
+#endif  // defined(OS_WIN)
 
-  // TODO(tim): Currently, AUTO/MANUAL settings refer to the *first* time sync
-  // is set up and *not* a browser restart for a manual-start platform (where
-  // sync has already been set up, and should be able to start without user
-  // intervention). We can get rid of the browser_default eventually, but
-  // need to take care that ProfileSyncService doesn't get tripped up between
-  // those two cases. Bug 88109.
-  init_params.start_behavior = browser_defaults::kSyncAutoStarts
-                                   ? ProfileSyncService::AUTO_START
-                                   : ProfileSyncService::MANUAL_START;
+  if (!local_sync_backend_enabled) {
+    SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
+
+    // Always create the GCMProfileService instance such that we can listen to
+    // the profile notifications and purge the GCM store when the profile is
+    // being signed out.
+    gcm::GCMProfileServiceFactory::GetForProfile(profile);
+
+    // TODO(atwilson): Change AboutSigninInternalsFactory to load on startup
+    // once http://crbug.com/171406 has been fixed.
+    AboutSigninInternalsFactory::GetForProfile(profile);
+
+    init_params.signin_wrapper =
+        base::MakeUnique<SupervisedUserSigninManagerWrapper>(profile, signin);
+    init_params.oauth2_token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+    init_params.gaia_cookie_manager_service =
+        GaiaCookieManagerServiceFactory::GetForProfile(profile);
+
+    // TODO(tim): Currently, AUTO/MANUAL settings refer to the *first* time sync
+    // is set up and *not* a browser restart for a manual-start platform (where
+    // sync has already been set up, and should be able to start without user
+    // intervention). We can get rid of the browser_default eventually, but
+    // need to take care that ProfileSyncService doesn't get tripped up between
+    // those two cases. Bug 88109.
+    init_params.start_behavior = browser_defaults::kSyncAutoStarts
+                                     ? ProfileSyncService::AUTO_START
+                                     : ProfileSyncService::MANUAL_START;
+  }
 
   if (!client_factory_) {
     init_params.sync_client =
@@ -176,13 +216,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   } else {
     init_params.sync_client = client_factory_->Run(profile);
   }
-
-  init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
-  init_params.base_directory = profile->GetPath();
-  init_params.url_request_context = profile->GetRequestContext();
-  init_params.debug_identifier = profile->GetDebugName();
-  init_params.channel = chrome::GetChannel();
-  init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
 
   auto pss = base::MakeUnique<ProfileSyncService>(std::move(init_params));
 

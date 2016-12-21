@@ -66,7 +66,7 @@ enum SyncState {
 };
 
 SyncState GetSyncState(syncer::SyncService* sync) {
-  if (!sync || !sync->CanSyncStart())
+  if (!sync || !sync->CanSyncStart() || sync->IsLocalSyncEnabled())
     return SYNC_OR_HISTORY_SYNC_DISABLED;
   if (!sync->IsSyncActive() || !sync->ConfigurationDone())
     return NOT_INITIALIZED_ENABLED;

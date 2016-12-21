@@ -159,7 +159,7 @@ class SyncSchedulerImplTest : public testing::Test {
     context_->set_account_name("Test");
     scheduler_ = base::MakeUnique<SyncSchedulerImpl>(
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(), context(),
-        syncer_);
+        syncer_, false);
     scheduler_->SetDefaultNudgeDelay(default_delay());
   }
 
@@ -281,6 +281,15 @@ class SyncSchedulerImplTest : public testing::Test {
     DCHECK(tracker_it != scheduler_->nudge_tracker_.type_trackers_.end());
     DCHECK(tracker_it->second->wait_interval_.get());
     tracker_it->second->wait_interval_->mode = mode;
+  }
+
+  void NewSchedulerForLocalBackend() {
+    // The old syncer is destroyed with the scheduler that owns it.
+    syncer_ = new testing::StrictMock<MockSyncer>();
+    scheduler_ = base::MakeUnique<SyncSchedulerImpl>(
+        "TestSyncScheduler", BackoffDelayProvider::FromDefaults(), context(),
+        syncer_, true);
+    scheduler_->SetDefaultNudgeDelay(default_delay());
   }
 
  private:
@@ -465,6 +474,56 @@ TEST_F(SyncSchedulerImplTest, ConfigWithStop) {
   scheduler()->ScheduleConfiguration(params);
   PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
+  ASSERT_EQ(0, retry_counter.times_called());
+}
+
+// Verify that in the absence of valid auth token the command will fail.
+TEST_F(SyncSchedulerImplTest, ConfigNoAuthToken) {
+  SyncShareTimes times;
+  const ModelTypeSet model_types(THEMES);
+
+  connection()->ResetAuthToken();
+
+  StartSyncConfiguration();
+
+  CallbackCounter ready_counter;
+  CallbackCounter retry_counter;
+  ConfigurationParams params(
+      GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      TypesToRoutingInfo(model_types),
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+  scheduler()->ScheduleConfiguration(params);
+  PumpLoop();
+  ASSERT_EQ(0, ready_counter.times_called());
+  ASSERT_EQ(1, retry_counter.times_called());
+}
+
+// Verify that in the absence of valid auth token the command will pass if local
+// sync backend is used.
+TEST_F(SyncSchedulerImplTest, ConfigNoAuthTokenLocalSync) {
+  SyncShareTimes times;
+  const ModelTypeSet model_types(THEMES);
+
+  NewSchedulerForLocalBackend();
+  connection()->ResetAuthToken();
+
+  EXPECT_CALL(*syncer(), ConfigureSyncShare(_, _, _))
+      .WillOnce(DoAll(Invoke(test_util::SimulateConfigureSuccess),
+                      RecordSyncShare(&times, true)));
+
+  StartSyncConfiguration();
+
+  CallbackCounter ready_counter;
+  CallbackCounter retry_counter;
+  ConfigurationParams params(
+      GetUpdatesCallerInfo::RECONFIGURATION, model_types,
+      TypesToRoutingInfo(model_types),
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+  scheduler()->ScheduleConfiguration(params);
+  PumpLoop();
+  ASSERT_EQ(1, ready_counter.times_called());
   ASSERT_EQ(0, retry_counter.times_called());
 }
 

@@ -302,7 +302,7 @@ class SyncerTest : public testing::Test,
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(),
         context_.get(),
         // scheduler_ owned syncer_ now and will manage the memory of syncer_
-        syncer_);
+        syncer_, false);
 
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Directory::Metahandles children;

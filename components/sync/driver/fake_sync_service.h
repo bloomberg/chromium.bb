@@ -28,6 +28,7 @@ class FakeSyncService : public SyncService {
   bool IsFirstSetupComplete() const override;
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
+  bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   ModelTypeSet GetActiveDataTypes() const override;
   SyncClient* GetSyncClient() const override;

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo_util.h"
+#include "components/sync/base/sync_prefs.h"
 
 bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
   // Don't show sync promo if the sign in promo should not be shown.
@@ -13,8 +14,9 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
     return false;
   }
 
-  // Don't show if sync is not allowed to start.
-  if (!profile->IsSyncAllowed())
+  syncer::SyncPrefs prefs(profile->GetPrefs());
+  // Don't show if sync is not allowed to start or is running in local mode.
+  if (!profile->IsSyncAllowed() || prefs.IsLocalSyncEnabled())
     return false;
 
   return true;

@@ -211,14 +211,24 @@ class ProfileSyncServiceTest : public ::testing::Test {
         base::MakeUnique<syncer::FakeDataTypeController>(syncer::BOOKMARKS));
   }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  void CreateServiceWithoutSignIn() {
-    CreateService(ProfileSyncService::AUTO_START);
-    signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST,
-                              signin_metrics::SignoutDelete::IGNORE_METRIC);
+  void CreateServiceWithLocalSyncBackend() {
+    component_factory_ = profile_sync_service_bundle_.component_factory();
+    ProfileSyncServiceBundle::SyncClientBuilder builder(
+        &profile_sync_service_bundle_);
+    ProfileSyncService::InitParams init_params =
+        profile_sync_service_bundle_.CreateBasicInitParams(
+            ProfileSyncService::AUTO_START, builder.Build());
+
+    prefs()->SetBoolean(syncer::prefs::kEnableLocalSyncBackend, true);
+    init_params.local_sync_backend_folder =
+        base::FilePath(FILE_PATH_LITERAL("dummyPath"));
+    init_params.oauth2_token_service = nullptr;
+    init_params.gaia_cookie_manager_service = nullptr;
+
+    service_ = base::MakeUnique<ProfileSyncService>(std::move(init_params));
+    service_->RegisterDataTypeController(
+        base::MakeUnique<syncer::FakeDataTypeController>(syncer::BOOKMARKS));
   }
-#endif
 
   void ShutdownAndDeleteService() {
     if (service_)
@@ -365,6 +375,19 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
                           new base::FundamentalValue(false));
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
+  ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
+  ExpectSyncEngineCreation(1);
+  InitializeForNthSync();
+  EXPECT_FALSE(service()->IsManaged());
+  EXPECT_TRUE(service()->IsSyncActive());
+}
+
+// Verify a successful initialization.
+TEST_F(ProfileSyncServiceTest, SuccessfulLocalBackendInitialization) {
+  prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
+                          new base::FundamentalValue(false));
+  IssueTestTokens();
+  CreateServiceWithLocalSyncBackend();
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
   ExpectSyncEngineCreation(1);
   InitializeForNthSync();

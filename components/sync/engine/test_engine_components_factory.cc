@@ -25,7 +25,8 @@ TestEngineComponentsFactory::~TestEngineComponentsFactory() {}
 std::unique_ptr<SyncScheduler> TestEngineComponentsFactory::BuildScheduler(
     const std::string& name,
     SyncCycleContext* context,
-    CancelationSignal* cancelation_signal) {
+    CancelationSignal* cancelation_signal,
+    bool ignore_auth_credentials) {
   return std::unique_ptr<SyncScheduler>(new FakeSyncScheduler());
 }
 

@@ -90,7 +90,8 @@ class EngineComponentsFactory {
   virtual std::unique_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
       SyncCycleContext* context,
-      CancelationSignal* cancelation_signal) = 0;
+      CancelationSignal* cancelation_signal,
+      bool ignore_auth_credentials) = 0;
 
   virtual std::unique_ptr<SyncCycleContext> BuildContext(
       ServerConnectionManager* connection_manager,

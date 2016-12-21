@@ -24,7 +24,8 @@ class TestEngineComponentsFactory : public EngineComponentsFactory {
   std::unique_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
       SyncCycleContext* context,
-      CancelationSignal* cancelation_signal) override;
+      CancelationSignal* cancelation_signal,
+      bool ignore_auth_credentials) override;
 
   std::unique_ptr<SyncCycleContext> BuildContext(
       ServerConnectionManager* connection_manager,

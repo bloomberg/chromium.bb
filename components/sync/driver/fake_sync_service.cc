@@ -30,6 +30,10 @@ bool FakeSyncService::IsSyncActive() const {
   return false;
 }
 
+bool FakeSyncService::IsLocalSyncEnabled() const {
+  return false;
+}
+
 void FakeSyncService::TriggerRefresh(const ModelTypeSet& types) {}
 
 ModelTypeSet FakeSyncService::GetActiveDataTypes() const {

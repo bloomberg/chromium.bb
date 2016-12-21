@@ -151,7 +151,8 @@ GetUpdatesCallerInfo::GetUpdatesSource GetUpdatesFromNudgeSource(
 SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
                                      BackoffDelayProvider* delay_provider,
                                      SyncCycleContext* context,
-                                     Syncer* syncer)
+                                     Syncer* syncer,
+                                     bool ignore_auth_credentials)
     : name_(name),
       started_(false),
       syncer_short_poll_interval_seconds_(
@@ -163,6 +164,7 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
       syncer_(syncer),
       cycle_context_(context),
       next_sync_cycle_job_priority_(NORMAL_PRIORITY),
+      ignore_auth_credentials_(ignore_auth_credentials),
       weak_ptr_factory_(this),
       weak_ptr_factory_for_weak_handle_(this) {
   weak_handle_this_ =
@@ -337,7 +339,8 @@ bool SyncSchedulerImpl::CanRunJobNow(JobPriority priority) {
     return false;
   }
 
-  if (cycle_context_->connection_manager()->HasInvalidAuthToken()) {
+  if (!ignore_auth_credentials_ &&
+      cycle_context_->connection_manager()->HasInvalidAuthToken()) {
     SDVLOG(1) << "Unable to run a job because we have no valid auth token.";
     return false;
   }

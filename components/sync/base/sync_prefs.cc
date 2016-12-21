@@ -5,7 +5,9 @@
 #include "components/sync/base/sync_prefs.h"
 
 #include "base/base64.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -553,7 +555,20 @@ bool SyncPrefs::IsLocalSyncEnabled() const {
 }
 
 base::FilePath SyncPrefs::GetLocalSyncBackendDir() const {
-  return pref_service_->GetFilePath(prefs::kLocalSyncBackendDir);
+  base::FilePath local_sync_backend_folder =
+      pref_service_->GetFilePath(prefs::kLocalSyncBackendDir);
+
+#if defined(OS_WIN)
+  if (local_sync_backend_folder.empty()) {
+    // TODO(pastarmovj): Add DIR_ROAMING_USER_DATA to PathService to simplify
+    // this code and move the logic in its right place. See crbug/657810.
+    CHECK(
+        base::PathService::Get(base::DIR_APP_DATA, &local_sync_backend_folder));
+    local_sync_backend_folder =
+        local_sync_backend_folder.Append(FILE_PATH_LITERAL("Chrome/User Data"));
+  }
+#endif  // defined(OS_WIN)
+  return local_sync_backend_folder;
 }
 
 }  // namespace syncer

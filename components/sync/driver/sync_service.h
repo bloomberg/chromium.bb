@@ -108,6 +108,12 @@ class SyncService : public DataTypeEncryptionHandler {
   // datetypes are actually syncing, see GetActiveTypes() below.
   virtual bool IsSyncActive() const = 0;
 
+  // Returns true if the local sync backend server has been enabled through a
+  // command line flag or policy. In this case sync is considered active but any
+  // implied consent for further related services e.g. Suggestions, Web History
+  // etc. is considered not granted.
+  virtual bool IsLocalSyncEnabled() const = 0;
+
   // Triggers a GetUpdates call for the specified |types|, pulling any new data
   // from the sync server.
   virtual void TriggerRefresh(const ModelTypeSet& types) = 0;

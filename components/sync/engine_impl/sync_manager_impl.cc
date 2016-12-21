@@ -30,6 +30,7 @@
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
+#include "components/sync/engine_impl/loopback_server/loopback_connection_manager.h"
 #include "components/sync/engine_impl/model_type_connector_proxy.h"
 #include "components/sync/engine_impl/net/sync_server_connection_manager.h"
 #include "components/sync/engine_impl/sync_scheduler.h"
@@ -47,9 +48,6 @@
 #include "components/sync/syncable/write_node.h"
 #include "components/sync/syncable/write_transaction.h"
 
-#if defined(OS_WIN)
-#include "components/sync/engine_impl/loopback_server/loopback_connection_manager.h"
-#endif
 
 using base::TimeDelta;
 using sync_pb::GetUpdatesCallerInfo;
@@ -212,9 +210,11 @@ void SyncManagerImpl::Init(InitArgs* args) {
   CHECK(!initialized_);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(args->post_factory.get());
-  DCHECK(!args->credentials.account_id.empty());
-  DCHECK(!args->credentials.sync_token.empty());
-  DCHECK(!args->credentials.scope_set.empty());
+  if (!args->enable_local_sync_backend) {
+    DCHECK(!args->credentials.account_id.empty());
+    DCHECK(!args->credentials.sync_token.empty());
+    DCHECK(!args->credentials.scope_set.empty());
+  }
   DCHECK(args->cancelation_signal);
   DVLOG(1) << "SyncManager starting Init...";
 
@@ -276,13 +276,9 @@ void SyncManagerImpl::Init(InitArgs* args) {
   }
 
   if (args->enable_local_sync_backend) {
-#if defined(OS_WIN)
     VLOG(1) << "Running against local sync backend.";
     connection_manager_ = base::MakeUnique<LoopbackConnectionManager>(
         args->cancelation_signal, args->local_sync_backend_folder);
-#else
-    NOTREACHED();
-#endif  // defined(OS_WIN)
   } else {
     connection_manager_ = base::MakeUnique<SyncServerConnectionManager>(
         args->service_url.host() + args->service_url.path(),
@@ -316,17 +312,22 @@ void SyncManagerImpl::Init(InitArgs* args) {
       listeners, &debug_info_event_listener_, model_type_registry_.get(),
       args->invalidator_client_id);
   scheduler_ = args->engine_components_factory->BuildScheduler(
-      name_, cycle_context_.get(), args->cancelation_signal);
+      name_, cycle_context_.get(), args->cancelation_signal,
+      args->enable_local_sync_backend);
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
 
   initialized_ = true;
 
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
-  observing_network_connectivity_changes_ = true;
+  if (!args->enable_local_sync_backend) {
+    net::NetworkChangeNotifier::AddIPAddressObserver(this);
+    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+    observing_network_connectivity_changes_ = true;
 
-  UpdateCredentials(args->credentials);
+    UpdateCredentials(args->credentials);
+  } else {
+    scheduler_->OnCredentialsUpdated();
+  }
 
   NotifyInitializationSuccess();
 }

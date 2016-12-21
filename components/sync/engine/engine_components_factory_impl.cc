@@ -28,7 +28,8 @@ EngineComponentsFactoryImpl::~EngineComponentsFactoryImpl() {}
 std::unique_ptr<SyncScheduler> EngineComponentsFactoryImpl::BuildScheduler(
     const std::string& name,
     SyncCycleContext* context,
-    CancelationSignal* cancelation_signal) {
+    CancelationSignal* cancelation_signal,
+    bool ignore_auth_credentials) {
   std::unique_ptr<BackoffDelayProvider> delay(
       BackoffDelayProvider::FromDefaults());
 
@@ -38,7 +39,8 @@ std::unique_ptr<SyncScheduler> EngineComponentsFactoryImpl::BuildScheduler(
 
   std::unique_ptr<SyncSchedulerImpl> scheduler =
       base::MakeUnique<SyncSchedulerImpl>(name, delay.release(), context,
-                                          new Syncer(cancelation_signal));
+                                          new Syncer(cancelation_signal),
+                                          ignore_auth_credentials);
   if (switches_.nudge_delay == NudgeDelay::SHORT_NUDGE_DELAY) {
     // Set the default nudge delay to 0 because the default is used as a floor
     // for override values, and we don't want the below override to be ignored.

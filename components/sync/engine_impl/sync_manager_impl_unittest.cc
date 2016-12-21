@@ -996,8 +996,7 @@ class SyncManagerTest : public testing::Test,
 
   virtual ~SyncManagerTest() {}
 
-  // Test implementation.
-  void SetUp() {
+  virtual void DoSetUp(bool enable_local_sync_backend) {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     extensions_activity_ = new ExtensionsActivity();
@@ -1035,8 +1034,11 @@ class SyncManagerTest : public testing::Test,
     args.workers = workers;
     args.extensions_activity = extensions_activity_.get(),
     args.change_delegate = this;
-    args.credentials = credentials;
+    if (!enable_local_sync_backend)
+      args.credentials = credentials;
     args.invalidator_client_id = "fake_invalidator_client_id";
+    args.enable_local_sync_backend = enable_local_sync_backend;
+    args.local_sync_backend_folder = temp_dir_.GetPath();
     args.engine_components_factory.reset(GetFactory());
     args.encryptor = &encryptor_;
     args.unrecoverable_error_handler =
@@ -1059,6 +1061,9 @@ class SyncManagerTest : public testing::Test,
 
     PumpLoop();
   }
+
+  // Test implementation.
+  void SetUp() { DoSetUp(false); }
 
   void TearDown() {
     sync_manager_.RemoveObserver(&manager_observer_);
@@ -2692,6 +2697,38 @@ TEST_F(SyncManagerTest, IncrementTransactionVersion) {
   }
 }
 
+class SyncManagerWithLocalBackendTest : public SyncManagerTest {
+ protected:
+  void SetUp() override { DoSetUp(true); }
+};
+
+// This test checks that we can successfully initialize without credentials in
+// the local backend case.
+TEST_F(SyncManagerWithLocalBackendTest, StartSyncInLocalMode) {
+  EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
+  EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
+  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+
+  sync_manager_.GetEncryptionHandler()->Init();
+  PumpLoop();
+
+  const ModelTypeSet encrypted_types = GetEncryptedTypes();
+  EXPECT_TRUE(encrypted_types.Has(PASSWORDS));
+  EXPECT_FALSE(IsEncryptEverythingEnabledForTest());
+
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    ReadNode node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(GetIdForDataType(NIGORI)));
+    sync_pb::NigoriSpecifics nigori = node.GetNigoriSpecifics();
+    EXPECT_TRUE(nigori.has_encryption_keybag());
+    Cryptographer* cryptographer = trans.GetCryptographer();
+    EXPECT_TRUE(cryptographer->is_ready());
+    EXPECT_TRUE(cryptographer->CanDecrypt(nigori.encryption_keybag()));
+  }
+}
+
 class MockSyncScheduler : public FakeSyncScheduler {
  public:
   MockSyncScheduler() : FakeSyncScheduler() {}
@@ -2717,7 +2754,8 @@ class ComponentsFactory : public TestEngineComponentsFactory {
   std::unique_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
       SyncCycleContext* context,
-      CancelationSignal* stop_handle) override {
+      CancelationSignal* stop_handle,
+      bool local_sync_backend_enabled) override {
     *cycle_context_ = context;
     return std::move(scheduler_to_use_);
   }

@@ -336,6 +336,20 @@ static_library("sync") {
     "engine_impl/js_sync_encryption_handler_observer.h",
     "engine_impl/js_sync_manager_observer.cc",
     "engine_impl/js_sync_manager_observer.h",
+    "engine_impl/loopback_server/loopback_connection_manager.cc",
+    "engine_impl/loopback_server/loopback_connection_manager.h",
+    "engine_impl/loopback_server/loopback_server.cc",
+    "engine_impl/loopback_server/loopback_server.h",
+    "engine_impl/loopback_server/loopback_server_entity.cc",
+    "engine_impl/loopback_server/loopback_server_entity.h",
+    "engine_impl/loopback_server/persistent_bookmark_entity.cc",
+    "engine_impl/loopback_server/persistent_bookmark_entity.h",
+    "engine_impl/loopback_server/persistent_permanent_entity.cc",
+    "engine_impl/loopback_server/persistent_permanent_entity.h",
+    "engine_impl/loopback_server/persistent_tombstone_entity.cc",
+    "engine_impl/loopback_server/persistent_tombstone_entity.h",
+    "engine_impl/loopback_server/persistent_unique_client_entity.cc",
+    "engine_impl/loopback_server/persistent_unique_client_entity.h",
     "engine_impl/model_type_connector_proxy.cc",
     "engine_impl/model_type_connector_proxy.h",
     "engine_impl/model_type_registry.cc",
@@ -604,25 +618,6 @@ static_library("sync") {
     libs = [
       "CoreFoundation.framework",
       "SystemConfiguration.framework",  # Required by get_session_name_mac.mm.
-    ]
-  }
-
-  if (is_win) {
-    sources += [
-      "engine_impl/loopback_server/loopback_connection_manager.cc",
-      "engine_impl/loopback_server/loopback_connection_manager.h",
-      "engine_impl/loopback_server/loopback_server.cc",
-      "engine_impl/loopback_server/loopback_server.h",
-      "engine_impl/loopback_server/loopback_server_entity.cc",
-      "engine_impl/loopback_server/loopback_server_entity.h",
-      "engine_impl/loopback_server/persistent_bookmark_entity.cc",
-      "engine_impl/loopback_server/persistent_bookmark_entity.h",
-      "engine_impl/loopback_server/persistent_permanent_entity.cc",
-      "engine_impl/loopback_server/persistent_permanent_entity.h",
-      "engine_impl/loopback_server/persistent_tombstone_entity.cc",
-      "engine_impl/loopback_server/persistent_tombstone_entity.h",
-      "engine_impl/loopback_server/persistent_unique_client_entity.cc",
-      "engine_impl/loopback_server/persistent_unique_client_entity.h",
     ]
   }
 

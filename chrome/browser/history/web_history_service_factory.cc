@@ -20,9 +20,8 @@ namespace {
 bool IsHistorySyncEnabled(Profile* profile) {
   browser_sync::ProfileSyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  return sync &&
-      sync->IsSyncActive() &&
-      sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
+  return sync && sync->IsSyncActive() && !sync->IsLocalSyncEnabled() &&
+         sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
 }
 
 }  // namespace

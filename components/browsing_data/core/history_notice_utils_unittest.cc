@@ -28,9 +28,9 @@ namespace {
 class TestSyncService : public syncer::FakeSyncService {
  public:
   // Getters (FakeSyncService implementation). ---------------------------------
-  bool IsSyncActive() const override {
-   return sync_active_;
-  }
+  bool IsSyncActive() const override { return sync_active_; }
+
+  bool IsLocalSyncEnabled() const override { return false; }
 
   syncer::ModelTypeSet GetActiveDataTypes() const override {
     return active_data_types_;

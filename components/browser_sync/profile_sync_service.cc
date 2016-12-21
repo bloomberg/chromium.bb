@@ -198,6 +198,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       engine_initialized_(false),
       sync_disabled_by_admin_(false),
       is_auth_in_progress_(false),
+      local_sync_backend_folder_(init_params.local_sync_backend_folder),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
       encrypted_types_(syncer::SyncEncryptionHandler::SensitiveTypes()),
@@ -241,7 +242,8 @@ ProfileSyncService::~ProfileSyncService() {
 
 bool ProfileSyncService::CanSyncStart() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return IsSyncAllowed() && IsSyncRequested() && IsSignedIn();
+  return (IsSyncAllowed() && IsSyncRequested() &&
+          (IsLocalSyncEnabled() || IsSignedIn()));
 }
 
 void ProfileSyncService::Initialize() {
@@ -308,7 +310,7 @@ void ProfileSyncService::Initialize() {
   sync_prefs_.AddSyncPrefObserver(this);
 
   SyncInitialState sync_state = CAN_START;
-  if (!IsSignedIn()) {
+  if (!IsLocalSyncEnabled() && !IsSignedIn()) {
     sync_state = NOT_SIGNED_IN;
   } else if (IsManaged()) {
     sync_state = IS_MANAGED;
@@ -335,11 +337,13 @@ void ProfileSyncService::Initialize() {
     return;
   }
 
-  RegisterAuthNotifications();
+  if (!IsLocalSyncEnabled()) {
+    RegisterAuthNotifications();
 
-  if (!IsSignedIn()) {
-    // Clean up in case of previous crash during signout.
-    StopImpl(CLEAR_DATA);
+    if (!IsSignedIn()) {
+      // Clean up in case of previous crash during signout.
+      StopImpl(CLEAR_DATA);
+    }
   }
 
 #if defined(OS_CHROMEOS)
@@ -362,8 +366,8 @@ void ProfileSyncService::Initialize() {
                  sync_enabled_weak_factory_.GetWeakPtr()));
   startup_controller_->Reset(GetRegisteredDataTypes());
 
-  // Auto-start means means the first time the profile starts up, sync should
-  // start up immediately.
+  // Auto-start means the first time the profile starts up, sync should start up
+  // immediately.
   if (start_behavior_ == AUTO_START && IsSyncRequested() &&
       !IsFirstSetupComplete()) {
     startup_controller_->TryStartImmediately();
@@ -399,7 +403,8 @@ void ProfileSyncService::UnregisterAuthNotifications() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (signin())
     signin()->RemoveObserver(this);
-  oauth2_token_service_->RemoveObserver(this);
+  if (oauth2_token_service_)
+    oauth2_token_service_->RemoveObserver(this);
 }
 
 void ProfileSyncService::RegisterDataTypeController(
@@ -475,6 +480,11 @@ void ProfileSyncService::OnSessionRestoreComplete() {
 
 SyncCredentials ProfileSyncService::GetCredentials() {
   SyncCredentials credentials;
+
+  // No credentials exist or are needed for the local sync backend.
+  if (IsLocalSyncEnabled())
+    return credentials;
+
   credentials.account_id = signin_->GetAccountIdToUse();
   DCHECK(!credentials.account_id.empty());
   credentials.email = signin_->GetEffectiveUsername();
@@ -949,10 +959,15 @@ void ProfileSyncService::OnEngineInitialized(
   sync_js_controller_.AttachJsBackend(js_backend);
   debug_info_listener_ = debug_info_listener;
 
-  SigninClient* signin_client = signin_->GetOriginal()->signin_client();
-  DCHECK(signin_client);
-  std::string signin_scoped_device_id =
-      signin_client->GetSigninScopedDeviceId();
+  std::string signin_scoped_device_id;
+  if (IsLocalSyncEnabled()) {
+    signin_scoped_device_id = "local_device";
+  } else {
+    SigninClient* signin_client = signin_->GetOriginal()->signin_client();
+    DCHECK(signin_client);
+    std::string signin_scoped_device_id =
+        signin_client->GetSigninScopedDeviceId();
+  }
 
   // Initialize local device info.
   local_device_->Initialize(cache_guid, signin_scoped_device_id,
@@ -1002,6 +1017,10 @@ void ProfileSyncService::OnEngineInitialized(
   }
 
   NotifyObservers();
+
+  // Nobody will call us to start if no sign in is going to happen.
+  if (IsLocalSyncEnabled())
+    RequestStart();
 }
 
 void ProfileSyncService::OnSyncCycleCompleted() {
@@ -1530,6 +1549,11 @@ bool ProfileSyncService::IsSyncActive() const {
          data_type_manager_->state() != DataTypeManager::STOPPED;
 }
 
+bool ProfileSyncService::IsLocalSyncEnabled() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return sync_prefs_.IsLocalSyncEnabled();
+}
+
 void ProfileSyncService::TriggerRefresh(const syncer::ModelTypeSet& types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (engine_initialized_)
@@ -1542,6 +1566,8 @@ bool ProfileSyncService::IsSignedIn() const {
 }
 
 bool ProfileSyncService::CanEngineStart() const {
+  if (IsLocalSyncEnabled())
+    return true;
   return CanSyncStart() && oauth2_token_service_ &&
          oauth2_token_service_->RefreshTokenIsAvailable(
              signin_->GetAccountIdToUse());
@@ -2498,7 +2524,7 @@ bool ProfileSyncService::HasSyncingEngine() const {
 }
 
 void ProfileSyncService::UpdateFirstSyncTimePref() {
-  if (!IsSignedIn()) {
+  if (!IsLocalSyncEnabled() && !IsSignedIn()) {
     sync_prefs_.ClearFirstSyncTime();
   } else if (sync_prefs_.GetFirstSyncTime().is_null()) {
     // Set if not set before and it's syncing now.

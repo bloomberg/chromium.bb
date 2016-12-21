@@ -136,6 +136,7 @@ bool SyncServiceBase::GetLocalSyncConfig(
   // solution for now will be to assume profiles are created in the same order
   // on all machines and in the future decide if only the Default one should be
   // considered roamed.
+  // See http://crbug.com/674928.
   *local_sync_backend_folder =
       local_sync_backend_folder->Append(base_directory_.BaseName());
   *local_sync_backend_folder =
