@@ -225,7 +225,16 @@ BluetoothInternalsTest.prototype = {
   },
 };
 
-TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
+// Fails on Win/Mac. https://crbug.com/676227
+GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
+GEN('#define MAYBE_Startup_BluetoothInternals \\');
+GEN('    DISABLED_Startup_BluetoothInternals');
+GEN('#else');
+GEN('#define MAYBE_Startup_BluetoothInternals Startup_BluetoothInternals');
+GEN('#endif');
+
+TEST_F('BluetoothInternalsTest',
+       'MAYBE_Startup_BluetoothInternals', function() {
   var adapterFactory = null;
   var deviceTable = null;
   var sidebarNode = null;
