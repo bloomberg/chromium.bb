@@ -39,6 +39,8 @@ namespace blink {
 class WebFileWriter;
 
 class FileWriterBase : public GarbageCollectedMixin {
+  USING_PRE_FINALIZER(FileWriterBase, dispose);
+
  public:
   virtual ~FileWriterBase();
   void initialize(std::unique_ptr<WebFileWriter>, long long length);
@@ -59,7 +61,11 @@ class FileWriterBase : public GarbageCollectedMixin {
 
   void seekInternal(long long position);
 
+  void resetWriter();
+
  private:
+  void dispose();
+
   std::unique_ptr<WebFileWriter> m_writer;
   long long m_position;
   long long m_length;

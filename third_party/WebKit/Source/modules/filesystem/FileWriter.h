@@ -53,6 +53,7 @@ class FileWriter final : public EventTargetWithInlineData,
                          public WebFileWriterClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
+  USING_PRE_FINALIZER(FileWriter, dispose);
 
  public:
   static FileWriter* create(ExecutionContext*);
@@ -112,6 +113,8 @@ class FileWriter final : public EventTargetWithInlineData,
   void fireEvent(const AtomicString& type);
 
   void setError(FileError::ErrorCode, ExceptionState&);
+
+  void dispose();
 
   Member<DOMException> m_error;
   ReadyState m_readyState;

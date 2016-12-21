@@ -60,4 +60,14 @@ void FileWriterBase::seekInternal(long long position) {
   m_position = position;
 }
 
+void FileWriterBase::resetWriter() {
+  m_writer = nullptr;
+}
+
+void FileWriterBase::dispose() {
+  // Need to explicitly destroy m_writer in pre-finalizer, because otherwise it
+  // may attempt to call methods on the FileWriter before we are finalized.
+  resetWriter();
+}
+
 }  // namespace blink
