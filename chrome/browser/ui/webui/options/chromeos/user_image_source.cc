@@ -38,7 +38,7 @@ void ParseRequest(const GURL& url, std::string* email) {
   if (!status) {
     LOG(WARNING) << "Failed to deserialize account_id.";
     account_id = user_manager::known_user::GetAccountId(
-        serialized_account_id, std::string() /* id */, AccountType::UNKNOWN);
+        serialized_account_id, std::string() /* gaia_id */);
   }
   *email = account_id.GetUserEmail();
 }

@@ -179,8 +179,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Returns user canonical e-mail. Finds already used account alias, if
   // user has already signed in.
   AccountId GetAccountId(const std::string& authenticated_email,
-                         const std::string& id,
-                         const AccountType& account_type) const;
+                         const std::string& gaia_id) const;
 
   bool offline_login_is_active() const { return offline_login_is_active_; }
   void set_offline_login_is_active(bool offline_login_is_active) {

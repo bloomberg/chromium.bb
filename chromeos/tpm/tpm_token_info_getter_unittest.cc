@@ -259,7 +259,7 @@ class SystemTPMTokenInfoGetterTest : public testing::Test {
 class UserTPMTokenInfoGetterTest : public testing::Test {
  public:
   UserTPMTokenInfoGetterTest()
-      : account_id_(AccountId::FromUserEmail("user@gmail.com")) {}
+      : account_id_(AccountId::FromUserEmail("user")) {}
   ~UserTPMTokenInfoGetterTest() override {}
 
   void SetUp() override {

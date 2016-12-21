@@ -88,9 +88,9 @@ GaiaScreenMode GetGaiaScreenMode(const std::string& email, bool use_offline) {
 
     // If there's a populated email, we must check first that this user is using
     // SAML in order to decide whether to show the interstitial page.
-    const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
-        user_manager::known_user::GetAccountId(email, std::string() /* id */,
-                                               AccountType::UNKNOWN));
+    const user_manager::User* user =
+        user_manager::UserManager::Get()->FindUser(
+            user_manager::known_user::GetAccountId(email, std::string()));
 
     if (user && user->using_saml())
       return GAIA_SCREEN_MODE_SAML_INTERSTITIAL;
@@ -406,7 +406,7 @@ void GaiaScreenHandler::OnPortalDetectionCompleted(
 
 void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
   if (!Delegate()->IsUserWhitelisted(user_manager::known_user::GetAccountId(
-          user_email, std::string() /* id */, AccountType::UNKNOWN)))
+          user_email, std::string() /* gaia_id */)))
     ShowWhitelistCheckFailedError();
 }
 
@@ -451,13 +451,12 @@ void GaiaScreenHandler::HandleWebviewLoadAborted(
 
 AccountId GaiaScreenHandler::GetAccountId(
     const std::string& authenticated_email,
-    const std::string& id,
-    const AccountType& account_type) const {
+    const std::string& gaia_id) const {
   const std::string canonicalized_email =
       gaia::CanonicalizeEmail(gaia::SanitizeEmail(authenticated_email));
 
-  const AccountId account_id = user_manager::known_user::GetAccountId(
-      authenticated_email, id, account_type);
+  const AccountId account_id =
+      user_manager::known_user::GetAccountId(authenticated_email, gaia_id);
 
   if (account_id.GetUserEmail() != canonicalized_email) {
     LOG(WARNING) << "Existing user '" << account_id.GetUserEmail()
@@ -482,7 +481,7 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   const std::string sanitized_email = gaia::SanitizeEmail(email);
   Delegate()->SetDisplayEmail(sanitized_email);
 
-  UserContext user_context(GetAccountId(email, gaia_id, AccountType::GOOGLE));
+  UserContext user_context(GetAccountId(email, gaia_id));
   user_context.SetKey(Key(password));
   user_context.SetAuthCode(auth_code);
   user_context.SetAuthFlow(using_saml
@@ -567,8 +566,7 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
   DCHECK(!gaia_id.empty());
   const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
   Delegate()->SetDisplayEmail(sanitized_email);
-  UserContext user_context(
-      GetAccountId(typed_email, gaia_id, AccountType::GOOGLE));
+  UserContext user_context(GetAccountId(typed_email, gaia_id));
   user_context.SetKey(Key(password));
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
@@ -707,7 +705,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     Delegate()->LoadSigninWallpaper();
   } else {
     Delegate()->LoadWallpaper(user_manager::known_user::GetAccountId(
-        populated_email_, std::string() /* id */, AccountType::UNKNOWN));
+        populated_email_, std::string()));
   }
 
   input_method::InputMethodManager* imm =

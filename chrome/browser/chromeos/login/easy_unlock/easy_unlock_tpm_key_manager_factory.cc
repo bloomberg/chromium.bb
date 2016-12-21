@@ -40,9 +40,8 @@ EasyUnlockTpmKeyManager* EasyUnlockTpmKeyManagerFactory::Get(
 EasyUnlockTpmKeyManager* EasyUnlockTpmKeyManagerFactory::GetForUser(
     const std::string& user_id) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  const user_manager::User* user =
-      user_manager->FindUser(user_manager::known_user::GetAccountId(
-          user_id, std::string() /* id */, AccountType::UNKNOWN));
+  const user_manager::User* user = user_manager->FindUser(
+      user_manager::known_user::GetAccountId(user_id, std::string()));
   if (!user)
     return NULL;
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
