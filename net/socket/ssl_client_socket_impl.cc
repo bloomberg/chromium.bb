@@ -174,10 +174,7 @@ std::unique_ptr<base::Value> NetLogChannelIDLookupCompleteCallback(
   dict->SetInteger("net_error", result);
   std::string raw_key;
   if (result == OK && key && key->ExportRawPublicKey(&raw_key)) {
-    std::string key_to_log = "redacted";
-    if (capture_mode.include_cookies_and_credentials()) {
-      key_to_log = base::HexEncode(raw_key.data(), raw_key.length());
-    }
+    std::string key_to_log = base::HexEncode(raw_key.data(), raw_key.length());
     dict->SetString("key", key_to_log);
   }
   return std::move(dict);
