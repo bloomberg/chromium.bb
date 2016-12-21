@@ -2908,7 +2908,7 @@ static int drmParseSubsystemType(int maj, int min)
 
     return -EINVAL;
 #elif defined(__OpenBSD__)
-	return DRM_BUS_PCI;
+    return DRM_BUS_PCI;
 #else
 #warning "Missing implementation of drmParseSubsystemType"
     return -EINVAL;
@@ -3419,7 +3419,7 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
     closedir(sysdir);
     free(local_devices);
     if (*device == NULL)
-	return -ENODEV;
+        return -ENODEV;
     return 0;
 
 free_devices:
