@@ -357,21 +357,21 @@ InspectorTest.expandAndDumpEventListeners = function(eventListenersView, callbac
         InspectorTest.addSniffer(Components.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
 }
 
-InspectorTest.dumpNavigatorView = function(navigatorView)
+InspectorTest.dumpNavigatorView = function(navigatorView, dumpIcons)
 {
     dumpNavigatorTreeOutline(navigatorView._scriptsTree);
 
     function dumpNavigatorTreeElement(prefix, treeElement)
     {
-        var titleText = treeElement.title;
-        if (treeElement._trailingIconsElement) {
-            var iconTypes = [];
-            for (var icon = treeElement._trailingIconsElement.firstChild; icon; icon = icon.nextSibling) {
-                iconTypes.push(icon._iconType);
-            }
+        var titleText = '';
+        if (treeElement._leadingIconsElement && dumpIcons) {
+            var icons = treeElement._leadingIconsElement.querySelectorAll('[is=ui-icon]');
+            icons = Array.prototype.slice.call(icons);
+            var iconTypes = icons.map(icon => icon._iconType);
             if (iconTypes.length)
-                titleText = titleText + " [" + iconTypes.join(", ") + "]";
+                titleText = titleText + "[" + iconTypes.join(", ") + "] ";
         }
+        titleText += treeElement.title;
         if (treeElement._nodeType === Sources.NavigatorView.Types.FileSystem || treeElement._nodeType === Sources.NavigatorView.Types.FileSystemFolder) {
             var hasMappedFiles = treeElement.listItemElement.classList.contains("has-mapped-files");
             if (!hasMappedFiles)

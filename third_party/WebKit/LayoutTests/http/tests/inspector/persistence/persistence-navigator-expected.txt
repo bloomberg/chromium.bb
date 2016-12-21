@@ -4,50 +4,50 @@ Verify that navigator view removes mapped UISourceCodes.
 Running: addFileSystem
 
 Running: waitForUISourceCodes
-top
-  127.0.0.1:8000
-    inspector
-      persistence
-        resources
-          foo.js
-        persistence-navigator.html
-        persistence-test.js
-      debugger-test.js
-      inspector-test.js
-      isolated-filesystem-test.js
-www [dimmed]
-  inspector/persistence/resources [dimmed]
-    foo.js
+[largeicon-navigator-frame] top
+  [largeicon-navigator-domain] 127.0.0.1:8000
+    [largeicon-navigator-folder] inspector
+      [largeicon-navigator-folder] persistence
+        [largeicon-navigator-folder] resources
+          [largeicon-navigator-file] foo.js
+        [largeicon-navigator-file] persistence-navigator.html
+        [largeicon-navigator-file] persistence-test.js
+      [largeicon-navigator-file] debugger-test.js
+      [largeicon-navigator-file] inspector-test.js
+      [largeicon-navigator-file] isolated-filesystem-test.js
+[largeicon-navigator-folder] www [dimmed]
+  [largeicon-navigator-folder] inspector/persistence/resources [dimmed]
+    [largeicon-navigator-file] foo.js
 
 Running: addFileMapping
-top
-  127.0.0.1:8000
-    inspector
-      persistence
-        resources
-          foo.js [smallicon-green-checkmark]
-        persistence-navigator.html
-        persistence-test.js
-      debugger-test.js
-      inspector-test.js
-      isolated-filesystem-test.js
-www
-  inspector/persistence/resources
-    foo.js [smallicon-green-checkmark]
+[largeicon-navigator-frame] top
+  [largeicon-navigator-domain] 127.0.0.1:8000
+    [largeicon-navigator-folder] inspector
+      [largeicon-navigator-folder] persistence
+        [largeicon-navigator-folder] resources
+          [largeicon-navigator-file-sync, badge-navigator-file-sync] foo.js
+        [largeicon-navigator-file] persistence-navigator.html
+        [largeicon-navigator-file] persistence-test.js
+      [largeicon-navigator-file] debugger-test.js
+      [largeicon-navigator-file] inspector-test.js
+      [largeicon-navigator-file] isolated-filesystem-test.js
+[largeicon-navigator-folder] www
+  [largeicon-navigator-folder] inspector/persistence/resources
+    [largeicon-navigator-file-sync, badge-navigator-file-sync] foo.js
 
 Running: removeFileMapping
-top
-  127.0.0.1:8000
-    inspector
-      persistence
-        resources
-          foo.js
-        persistence-navigator.html
-        persistence-test.js
-      debugger-test.js
-      inspector-test.js
-      isolated-filesystem-test.js
-www [dimmed]
-  inspector/persistence/resources [dimmed]
-    foo.js
+[largeicon-navigator-frame] top
+  [largeicon-navigator-domain] 127.0.0.1:8000
+    [largeicon-navigator-folder] inspector
+      [largeicon-navigator-folder] persistence
+        [largeicon-navigator-folder] resources
+          [largeicon-navigator-file] foo.js
+        [largeicon-navigator-file] persistence-navigator.html
+        [largeicon-navigator-file] persistence-test.js
+      [largeicon-navigator-file] debugger-test.js
+      [largeicon-navigator-file] inspector-test.js
+      [largeicon-navigator-file] isolated-filesystem-test.js
+[largeicon-navigator-folder] www [dimmed]
+  [largeicon-navigator-folder] inspector/persistence/resources [dimmed]
+    [largeicon-navigator-file] foo.js
 

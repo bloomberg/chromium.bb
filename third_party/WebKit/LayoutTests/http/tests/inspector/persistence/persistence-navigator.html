@@ -31,7 +31,7 @@ function test()
 
             function onUISourceCodesAdded()
             {
-                InspectorTest.dumpNavigatorView(sourcesNavigator);
+                InspectorTest.dumpNavigatorView(sourcesNavigator, true);
                 next();
             }
         },
@@ -43,7 +43,7 @@ function test()
 
             function onBindingCreated(binding)
             {
-                InspectorTest.dumpNavigatorView(sourcesNavigator);
+                InspectorTest.dumpNavigatorView(sourcesNavigator, true);
                 next();
             }
         },
@@ -59,7 +59,7 @@ function test()
                 if (binding.network.name() !== "foo.js")
                     return
                 Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
-                InspectorTest.dumpNavigatorView(sourcesNavigator);
+                InspectorTest.dumpNavigatorView(sourcesNavigator, true);
                 next();
             }
         },
