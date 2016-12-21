@@ -28,6 +28,7 @@ import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
 public class WebApkActivity extends WebappActivity {
     /** Manages whether to check update for the WebAPK, and starts update check if needed. */
     private WebApkUpdateManager mUpdateManager;
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -117,7 +118,7 @@ public class WebApkActivity extends WebappActivity {
     /**
      * Returns the WebAPK's package name.
      */
-    private String getWebApkPackageName() {
+    public String getWebApkPackageName() {
         return getWebappInfo().webApkPackageName();
     }
 

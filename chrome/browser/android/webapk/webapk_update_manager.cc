@@ -80,6 +80,7 @@ static void UpdateAsync(
   info.scope = scope;
   info.name = ConvertJavaStringToUTF16(env, java_name);
   info.short_name = ConvertJavaStringToUTF16(env, java_short_name);
+  info.user_title = info.short_name;
   info.display = static_cast<blink::WebDisplayMode>(java_display_mode);
   info.orientation =
       static_cast<blink::WebScreenOrientationLockType>(java_orientation);
