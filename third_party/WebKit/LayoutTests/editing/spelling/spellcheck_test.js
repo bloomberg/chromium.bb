@@ -275,21 +275,52 @@ class MarkerSerializer {
   }
 }
 
-/**
- * @param {!Document} document
- * @return {boolean}
- */
-function hasPendingSpellCheckRequest(document) {
-  return internals.lastSpellCheckRequestSequence(document) !==
-      internals.lastSpellCheckProcessedSequence(document);
-}
-
 /** @type {string} */
 const kTitle = 'title';
 /** @type {string} */
 const kCallback = 'callback';
 /** @type {string} */
 const kIsSpellcheckTest = 'isSpellcheckTest';
+
+/**
+ * @param {!Test} testObject
+ * @param {!Sample} sample
+ * @param {string} expectedText
+ * @param {number} remainingRetry
+ * @param {number} retryInterval
+ */
+function verifyMarkers(
+    testObject, sample, expectedText, remainingRetry, retryInterval) {
+  assert_not_equals(
+      window.internals, undefined,
+      'window.internals is required for running automated spellcheck tests.');
+
+  /** @type {!MarkerSerializer} */
+  const serializer = new MarkerSerializer({
+    spelling: '#',
+    grammar: '~'});
+
+  try {
+    assert_equals(serializer.serialize(sample.document), expectedText);
+    testObject.done();
+  } catch (error) {
+    if (remainingRetry <= 0)
+      throw error;
+
+    // Force invoking idle time spellchecker in case it has not been run yet.
+    if (window.testRunner)
+      window.testRunner.runIdleTasks(() => {});
+
+    // TODO(xiaochengh): We should make SpellCheckRequester::didCheck trigger
+    // something in JavaScript (e.g., a |Promise|), so that we can actively
+    // know the completion of spellchecking instead of passively waiting for
+    // markers to appear or disappear.
+    testObject.step_timeout(
+        () => verifyMarkers(testObject, sample, expectedText,
+                            remainingRetry - 1, retryInterval),
+        retryInterval);
+  }
+}
 
 // Spellchecker gets triggered not only by text and selection change, but also
 // by focus change. For example, misspelling markers in <INPUT> disappear when
@@ -303,37 +334,6 @@ const kIsSpellcheckTest = 'isSpellcheckTest';
 var spellcheckTestRunning = false;
 /** @type {!Array<!Object>} */
 const testQueue = [];
-
-// We need to ensure correct usage of testRunner.runIdleTasks() that:
-// 1. We don't call runIdleTasks if another runIdleTasks is called but the
-//    callback has not been invoked yet; Otherwise, the current call is ignored.
-// 2. When the callback is invoked, we only verify test cases whose testers
-//    finished before calling runIdleTasks(); Otherwise, the idle time spell
-//    check may have not been invoked at the verification time.
-
-/** @type {boolean} */
-var runIdleTasksRequested = false;
-/**
- * @type {!Array<!Function>} Verification functions of test cases whose idle
- * idle spell checkers are requested before the current call of runIdleTasks.
- */
-var idleVerificationReadyQueue = [];
-/**
- * @type {!Array<!Function>} Verification functions of test cases whose idle
- * idle spell checkers are requested after the current call of runIdleTasks.
- */
-var idleVerificationWaitingQueue = [];
-
-function batchIdleVerification() {
-  runIdleTasksRequested = false;
-  idleVerificationReadyQueue.forEach(func => func());
-  idleVerificationReadyQueue = idleVerificationWaitingQueue;
-  idleVerificationWaitingQueue = [];
-  if (idleVerificationReadyQueue.length) {
-    runIdleTasksRequested = true;
-    testRunner.runIdleTasks(batchIdleVerification);
-  }
-}
 
 /**
  * @param {!Test} testObject
@@ -359,41 +359,19 @@ function invokeSpellcheckTest(testObject, input, tester, expectedText) {
       assert_unreached(`Invalid tester: ${tester}`);
     }
 
-    assert_not_equals(
-        window.testRunner, undefined,
-        'window.testRunner is required for automated spellcheck tests.');
-    assert_not_equals(
-        window.internals, undefined,
-        'window.internals is required for automated spellcheck tests.');
+    /** @type {number} */
+    const kMaxRetry = 10;
+    /** @type {number} */
+    const kRetryInterval = 50;
 
-    /** @type {!Function} */
-    const verification = () => {
-      testObject.step(() => {
-        if (hasPendingSpellCheckRequest(sample.document))
-          return;
-
-        /** @type {!MarkerSerializer} */
-        const serializer = new MarkerSerializer({
-          spelling: '#',
-          grammar: '~'});
-
-        assert_equals(serializer.serialize(sample.document), expectedText);
-        testObject.done();
-      });
-    }
-
-    // Verify when all spell check requests are resolved.
-    testRunner.setSpellCheckResolvedCallback(verification);
-
-    // For tests that do not expect new markers, verify with runIdleTasks.
-    if (runIdleTasksRequested) {
-      idleVerificationWaitingQueue.push(verification);
-      return;
-    }
-
-    idleVerificationReadyQueue.push(verification);
-    runIdleTasksRequested = true;
-    testRunner.runIdleTasks(batchIdleVerification);
+    // TODO(xiaochengh): We should make SpellCheckRequester::didCheck trigger
+    // something in JavaScript (e.g., a |Promise|), so that we can actively know
+    // the completion of spellchecking instead of passively waiting for markers
+    // to appear or disappear.
+    testObject.step_timeout(
+        () => verifyMarkers(testObject, sample, expectedText,
+                            kMaxRetry, kRetryInterval),
+        kRetryInterval);
   });
 }
 
@@ -416,22 +394,15 @@ add_result_callback(testObj => {
     if (shouldRemoveSample)
       testObj.sample.remove();
 
-    // We may be in a spellCheckResolvedCallback here, so removing the callback
-    // (and hence, all remaining tasks) must be done asynchronously.
-    setTimeout(() => {
-      if (window.testRunner)
-        testRunner.removeSpellCheckResolvedCallback();
+    // This is the earliest timing when a new spellcheck_test can be started.
+    spellcheckTestRunning = false;
 
-      // This is the earliest timing when a new spellcheck_test can be started.
-      spellcheckTestRunning = false;
-
-      /** @type {Object} */
-      const next = testQueue.shift();
-      if (next === undefined)
-        return;
-      invokeSpellcheckTest(next.testObject, next.input,
-                           next.tester, next.expectedText);
-    }, 0);
+    /** @type {Object} */
+    const next = testQueue.shift();
+    if (next === undefined)
+      return;
+    invokeSpellcheckTest(next.testObject, next.input,
+                         next.tester, next.expectedText);
 });
 
 /**
