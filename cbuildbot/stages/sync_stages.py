@@ -23,6 +23,7 @@ from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib
@@ -140,7 +141,7 @@ class PatchChangesStage(generic_stages.BuilderStage):
                        "\n".join(map(str, failures)))
 
   def PerformStage(self):
-    class NoisyPatchSeries(validation_pool.PatchSeries):
+    class NoisyPatchSeries(patch_series.PatchSeries):
       """Custom PatchSeries that adds links to buildbot logs for remote trys."""
 
       def ApplyChange(self, change):
@@ -149,19 +150,19 @@ class PatchChangesStage(generic_stages.BuilderStage):
         elif isinstance(change, cros_patch.UploadedLocalPatch):
           logging.PrintBuildbotStepText(str(change))
 
-        return validation_pool.PatchSeries.ApplyChange(self, change)
+        return patch_series.PatchSeries.ApplyChange(self, change)
 
     # If we're an external builder, ignore internal patches.
-    helper_pool = validation_pool.HelperPool.SimpleCreate(
+    helper_pool = patch_series.HelperPool.SimpleCreate(
         cros_internal=self._run.config.internal, cros=True)
 
     # Limit our resolution to non-manifest patches.
-    patch_series = NoisyPatchSeries(
+    patches = NoisyPatchSeries(
         self._build_root,
         helper_pool=helper_pool,
         deps_filter_fn=lambda p: not trybot_patch_pool.ManifestFilter(p))
 
-    self._ApplyPatchSeries(patch_series, self.patch_pool)
+    self._ApplyPatchSeries(patches, self.patch_pool)
 
 
 class BootstrapStage(PatchChangesStage):
@@ -198,9 +199,9 @@ class BootstrapStage(PatchChangesStage):
     repository.CloneGitRepo(checkout_dir,
                             self._run.config.manifest_repo_url)
 
-    patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
+    patches = patch_series.PatchSeries.WorkOnSingleRepo(
         checkout_dir, tracking_branch=self._run.manifest_branch)
-    self._ApplyPatchSeries(patch_series, patch_pool)
+    self._ApplyPatchSeries(patches, patch_pool)
 
     # Verify that the patched manifest loads properly. Propagate any errors as
     # exceptions.
@@ -293,9 +294,9 @@ class BootstrapStage(PatchChangesStage):
 
     chromite_pool = branch_pool.Filter(project=constants.CHROMITE_PROJECT)
     if chromite_pool:
-      patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
+      patches = patch_series.PatchSeries.WorkOnSingleRepo(
           chromite_dir, filter_branch)
-      self._ApplyPatchSeries(patch_series, chromite_pool)
+      self._ApplyPatchSeries(patches, chromite_pool)
 
     # Checkout the new version of site config (no patching logic, yet).
     if self.config_repo:
@@ -308,9 +309,9 @@ class BootstrapStage(PatchChangesStage):
 
       site_config_pool = branch_pool.FilterGitRemoteUrl(self.config_repo)
       if site_config_pool:
-        site_patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
+        site_patches = patch_series.PatchSeries.WorkOnSingleRepo(
             site_config_dir, filter_branch)
-        self._ApplyPatchSeries(site_patch_series, site_config_pool)
+        self._ApplyPatchSeries(site_patches, site_config_pool)
 
     # Re-exec into new instance of cbuildbot, with proper command line args.
     cbuildbot_path = constants.PATH_TO_CBUILDBOT
@@ -1621,9 +1622,9 @@ class PreCQLauncherStage(SyncStage):
 
     if change in can_submit:
       logging.info('Attempting to determine if %s can be submitted.', change)
-      patch_series = validation_pool.PatchSeries(self._build_root)
+      patches = patch_series.PatchSeries(self._build_root)
       try:
-        plan = patch_series.CreateTransaction(change, limit_to=can_submit)
+        plan = patches.CreateTransaction(change, limit_to=can_submit)
         return plan, set()
       except cros_patch.DependencyError:
         pass

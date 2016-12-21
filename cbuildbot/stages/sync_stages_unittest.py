@@ -20,6 +20,7 @@ from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
+from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import tree_status
@@ -906,7 +907,7 @@ pre-cq-configs: link-pre-cq
 
     # Change should throw a DependencyError when trying to create a transaction
     e = cros_patch.DependencyError(change, cros_patch.PatchException(change))
-    self.PatchObject(validation_pool.PatchSeries, 'CreateTransaction',
+    self.PatchObject(patch_series.PatchSeries, 'CreateTransaction',
                      side_effect=e)
     self.PerformSync(pre_cq_status=None, changes=[change], patch_objects=False)
     # Change should be marked as pre-cq passed, rather than being submitted.
