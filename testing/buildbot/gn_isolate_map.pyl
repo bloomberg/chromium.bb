@@ -20,7 +20,8 @@
 #  "windowed_test_launcher"
 #  : the test is a gtest-based test that uses the "brave-new-test-launcher"
 #    from //base/test:test_support and needs to run under Xvfb if run on
-#    some platforms (eg. Linux Desktop, X11 CrOS and Ozone CrOS).
+#    an X11-based platform (use_x11=true or use_ozone=true &&
+#    --ozone_platform=x11).
 #  "console_test_launcher"
 #  : the test is a gtest-based test that uses the "brave-new-test-launcher"
 #    from //base/test:test_support but does not need Xvfb.
@@ -449,8 +450,15 @@
   },
   "gl_unittests": {
     "label": "//ui/gl:gl_unittests",
-    "type": "windowed_test_launcher",
+    "type": "raw",
     "args": [],
+  },
+  "gl_unittests_ozonex": {
+    "label": "//ui/gl:gl_unittests_ozonex",
+    "label_type": "group",
+    "type": "windowed_test_launcher",
+    "executable": "gl_unittests",
+    "args": ["--ozone-platform=x11"],
   },
   "gn_all": {
     "label": "//:gn_all",
