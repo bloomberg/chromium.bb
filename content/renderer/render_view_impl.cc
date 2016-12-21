@@ -1870,7 +1870,10 @@ void RenderViewImpl::didHandleGestureEvent(
 
   // TODO(estade): hit test the event against focused node to make sure
   // the tap actually hit the focused node.
-  blink::WebTextInputType text_input_type = GetWebView()->textInputType();
+  blink::WebLocalFrame* focused = GetWebView()->focusedFrame();
+  blink::WebTextInputType text_input_type =
+      focused ? focused->inputMethodController()->textInputType()
+              : blink::WebTextInputTypeNone;
 
   Send(new ViewHostMsg_FocusedNodeTouched(
       GetRoutingID(), text_input_type != blink::WebTextInputTypeNone));

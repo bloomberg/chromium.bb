@@ -5,7 +5,9 @@
 #ifndef WebInputMethodController_h
 #define WebInputMethodController_h
 
+#include "../platform/WebTextInputInfo.h"
 #include "WebCompositionUnderline.h"
+#include "WebTextInputType.h"
 #include "WebWidget.h"
 
 namespace blink {
@@ -33,14 +35,23 @@ class WebInputMethodController {
       int selectionStart,
       int selectionEnd) = 0;
 
-  // Called to inform the WebWidget that deleting the ongoing composition if
+  // Called to inform the controller that deleting the ongoing composition if
   // any, inserting the specified text, and moving the caret according to
   // relativeCaretPosition.
   virtual bool commitText(const WebString& text, int relativeCaretPosition) = 0;
 
-  // Called to inform the WebWidget to confirm an ongoing composition.
+  // Called to inform the controller to confirm an ongoing composition.
   virtual bool finishComposingText(
       ConfirmCompositionBehavior selectionBehavior) = 0;
+
+  // Returns information about the current text input of this controller. Note
+  // that this query can be expensive for long fields, as it returns the
+  // plain-text representation of the current editable element. Consider using
+  // the lighter-weight textInputType() when appropriate.
+  virtual WebTextInputInfo textInputInfo() { return WebTextInputInfo(); }
+
+  // Returns the type of current text input of this controller.
+  virtual WebTextInputType textInputType() { return WebTextInputTypeNone; }
 };
 
 }  // namespace blink

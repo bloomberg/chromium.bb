@@ -1033,8 +1033,8 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
     return;  // Not considered as a text input field in WebKit/Chromium.
 
   blink::WebTextInputInfo new_info;
-  if (GetWebWidget())
-    new_info = GetWebWidget()->textInputInfo();
+  if (auto* controller = GetInputMethodController())
+    new_info = controller->textInputInfo();
   const ui::TextInputMode new_mode =
       ConvertWebTextInputMode(new_info.inputMode);
 
@@ -1728,8 +1728,8 @@ ui::TextInputType RenderWidget::GetTextInputType() {
   if (focused_pepper_plugin_)
     return focused_pepper_plugin_->text_input_type();
 #endif
-  if (GetWebWidget())
-    return ConvertWebTextInputType(GetWebWidget()->textInputType());
+  if (auto* controller = GetInputMethodController())
+    return ConvertWebTextInputType(controller->textInputType());
   return ui::TEXT_INPUT_TYPE_NONE;
 }
 
@@ -2110,7 +2110,8 @@ void RenderWidget::didHandleGestureEvent(
     UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
   } else if (event.type == WebInputEvent::GestureLongPress) {
     DCHECK(GetWebWidget());
-    if (GetWebWidget()->textInputInfo().value.isEmpty())
+    blink::WebInputMethodController* controller = GetInputMethodController();
+    if (!controller || controller->textInputInfo().value.isEmpty())
       UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
     else
       UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);

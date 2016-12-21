@@ -96,8 +96,6 @@ class WebView : protected WebWidget {
   using WebWidget::mouseCaptureLost;
   using WebWidget::setFocus;
   using WebWidget::compositionRange;
-  using WebWidget::textInputInfo;
-  using WebWidget::textInputType;
   using WebWidget::selectionBounds;
   using WebWidget::selectionTextDirection;
   using WebWidget::isSelectionAnchorFirst;

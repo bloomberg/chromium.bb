@@ -31,16 +31,11 @@ class WebInputMethodControllerImpl : public WebInputMethodController {
                       const WebVector<WebCompositionUnderline>& underlines,
                       int selectionStart,
                       int selectionEnd) override;
-
-  // Used to ask the WebInputMethodController to either delete and ongoing
-  // composition, or insert the specified text, or move the caret according to
-  // relativeCaretPosition.
   bool commitText(const WebString& text, int relativeCaretPosition) override;
-
-  // Called to ask the WebInputMethodController to confirm an ongoing
-  // composition.
   bool finishComposingText(
       ConfirmCompositionBehavior selectionBehavior) override;
+  WebTextInputInfo textInputInfo() override;
+  WebTextInputType textInputType() override;
 
   void setSuppressNextKeypressEvent(bool suppress) {
     m_suppressNextKeypressEvent = suppress;

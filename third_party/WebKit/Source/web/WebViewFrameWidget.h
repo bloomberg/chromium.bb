@@ -66,8 +66,6 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
   void mouseCaptureLost() override;
   void setFocus(bool) override;
   WebRange compositionRange() override;
-  WebTextInputInfo textInputInfo() override;
-  WebTextInputType textInputType() override;
   bool selectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool selectionTextDirection(WebTextDirection& start,
                               WebTextDirection& end) const override;

@@ -152,8 +152,6 @@ class WEB_EXPORT WebViewImpl final
   void mouseCaptureLost() override;
   void setFocus(bool enable) override;
   WebRange compositionRange() override;
-  WebTextInputInfo textInputInfo() override;
-  WebTextInputType textInputType() override;
   WebColor backgroundColor() const override;
   WebPagePopup* pagePopup() const override;
   bool selectionBounds(WebRect& anchor, WebRect& focus) const override;

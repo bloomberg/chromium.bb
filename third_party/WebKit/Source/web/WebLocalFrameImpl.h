@@ -42,6 +42,7 @@
 #include "web/WebExport.h"
 #include "web/WebFrameImplBase.h"
 #include "web/WebFrameWidgetBase.h"
+#include "web/WebInputMethodControllerImpl.h"
 #include "wtf/Compiler.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
@@ -296,6 +297,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   base::SingleThreadTaskRunner* timerTaskRunner() override;
   base::SingleThreadTaskRunner* loadingTaskRunner() override;
   base::SingleThreadTaskRunner* unthrottledTaskRunner() override;
+  WebInputMethodControllerImpl* inputMethodController() const override;
 
   // WebFrameImplBase methods:
   void initializeCoreFrame(FrameHost*,
@@ -401,7 +403,6 @@ class WEB_EXPORT WebLocalFrameImpl final
   void setContextMenuNode(Node* node) { m_contextMenuNode = node; }
   void clearContextMenuNode() { m_contextMenuNode.clear(); }
 
-  WebInputMethodControllerImpl* inputMethodController() const;
 
   DECLARE_TRACE();
 
