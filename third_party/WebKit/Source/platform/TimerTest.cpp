@@ -695,5 +695,27 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
   EXPECT_FALSE(taskRunner2->IsEmpty());
 }
 
+// This test checks that when inactive timer is moved to a different task
+// runner it isn't activated.
+TEST_F(TimerTest, MoveToNewTaskRunnerWithoutTasks) {
+  scoped_refptr<scheduler::TaskQueue> taskRunner1(
+      m_platform.rendererScheduler()->NewTimerTaskRunner(
+          scheduler::TaskQueue::QueueType::TEST));
+  scheduler::WebTaskRunnerImpl webTaskRunner1(taskRunner1);
+
+  scoped_refptr<scheduler::TaskQueue> taskRunner2(
+      m_platform.rendererScheduler()->NewTimerTaskRunner(
+          scheduler::TaskQueue::QueueType::TEST));
+  scheduler::WebTaskRunnerImpl webTaskRunner2(taskRunner2);
+
+  TimerForTest<TimerTest> timer(&webTaskRunner1, this,
+                                &TimerTest::countingTask);
+
+  m_platform.runUntilIdle();
+  EXPECT_TRUE(!m_runTimes.size());
+  EXPECT_TRUE(taskRunner1->IsEmpty());
+  EXPECT_TRUE(taskRunner2->IsEmpty());
+}
+
 }  // namespace
 }  // namespace blink

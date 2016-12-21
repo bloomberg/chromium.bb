@@ -96,9 +96,12 @@ void TimerBase::moveToNewTaskRunner(WebTaskRunner* taskRunner) {
     return;
   }
 
+  bool active = isActive();
   m_weakPtrFactory.revokeAll();
-
   m_webTaskRunner = taskRunner->clone();
+
+  if (!active)
+    return;
 
   double now = timerMonotonicallyIncreasingTime();
   double nextFireTime = std::max(m_nextFireTime, now);
