@@ -16,7 +16,6 @@ extern const char kDoNotSync[];
 extern const char kZoomWithoutBubble[];
 extern const char kAllowUsbDevicesPermissionInterfaceClass[];
 extern const char kSigninScreen[];
-extern const char kWhitelistedForNetworkingOncApi[];
 
 }  // namespace behavior_feature
 
