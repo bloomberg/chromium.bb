@@ -93,10 +93,12 @@ void DisplayCompositor::OnCompositorFrameSinkPrivateConnectionLost(
 }
 
 void DisplayCompositor::CreateDisplayCompositorFrameSink(
-    const cc::FrameSinkId& frame_sink_id, gpu::SurfaceHandle surface_handle,
+    const cc::FrameSinkId& frame_sink_id,
+    gpu::SurfaceHandle surface_handle,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+    cc::mojom::MojoCompositorFrameSinkClientPtr client,
+    cc::mojom::DisplayPrivateRequest display_private_request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
   std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source(
@@ -107,7 +109,8 @@ void DisplayCompositor::CreateDisplayCompositorFrameSink(
   CreateCompositorFrameSinkInternal(
       frame_sink_id, surface_handle, std::move(display),
       std::move(begin_frame_source), std::move(request),
-      std::move(private_request), std::move(client));
+      std::move(private_request), std::move(client),
+      std::move(display_private_request));
 }
 
 void DisplayCompositor::CreateOffscreenCompositorFrameSink(
@@ -115,9 +118,10 @@ void DisplayCompositor::CreateOffscreenCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
-  CreateCompositorFrameSinkInternal(
-      frame_sink_id, gpu::kNullSurfaceHandle, nullptr, nullptr,
-      std::move(request), std::move(private_request), std::move(client));
+  CreateCompositorFrameSinkInternal(frame_sink_id, gpu::kNullSurfaceHandle,
+                                    nullptr, nullptr, std::move(request),
+                                    std::move(private_request),
+                                    std::move(client), nullptr);
 }
 
 void DisplayCompositor::AddSurfaceReference(const cc::SurfaceReference& ref) {
@@ -220,12 +224,14 @@ std::unique_ptr<cc::Display> DisplayCompositor::CreateDisplay(
 }
 
 void DisplayCompositor::CreateCompositorFrameSinkInternal(
-    const cc::FrameSinkId& frame_sink_id, gpu::SurfaceHandle surface_handle,
+    const cc::FrameSinkId& frame_sink_id,
+    gpu::SurfaceHandle surface_handle,
     std::unique_ptr<cc::Display> display,
     std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+    cc::mojom::MojoCompositorFrameSinkClientPtr client,
+    cc::mojom::DisplayPrivateRequest display_request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // We cannot create more than one CompositorFrameSink with a given
   // |frame_sink_id|.
@@ -235,7 +241,8 @@ void DisplayCompositor::CreateCompositorFrameSinkInternal(
       base::MakeUnique<GpuCompositorFrameSink>(
           this, frame_sink_id, std::move(display),
           std::move(begin_frame_source), std::move(request),
-          std::move(private_request), std::move(client));
+          std::move(private_request), std::move(client),
+          std::move(display_request));
 }
 
 const cc::SurfaceId& DisplayCompositor::GetRootSurfaceId() const {

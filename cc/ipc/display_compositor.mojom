@@ -9,7 +9,19 @@ import "cc/ipc/mojo_compositor_frame_sink.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/surface_sequence.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
+import "mojo/common/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/color_space.mojom";
+
+// See ui/compositor/compositor.h: ContextFactoryPrivate.
+// The DisplayPrivate is used by privileged clients to talk to cc::Display.
+// DisplayPrivate would eventually replace or be used by ContextFactoryPrivate.
+interface DisplayPrivate {
+  SetDisplayVisible(bool visible);
+  ResizeDisplay(gfx.mojom.Size size_in_pixel);
+  SetDisplayColorSpace(gfx.mojom.ColorSpace color_space);
+  SetOutputIsSecure(bool secure);
+};
 
 // The DisplayCompositor interface is a privileged interface that allows
 // the display compositor host (browser or window server) to create
@@ -23,13 +35,20 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // will typically simply request a CompositorFrameSink from the display
 // compositor host which will forward the request to the display compositor.
 interface DisplayCompositor {
+  // Create a CompositorFrameSink for a privileged client (e.g. WindowServer).
+  // This is only used by privileged clients. The client can call methods that
+  // talks to the cc::Display (e.g. ResizeDisplay(), SetDisplayVisible(), etc)
   CreateDisplayCompositorFrameSink(
       cc.mojom.FrameSinkId frame_sink_id,
       gpu.mojom.SurfaceHandle widget,
       cc.mojom.MojoCompositorFrameSink& compositor_frame_sink,
       cc.mojom.MojoCompositorFrameSinkPrivate& compositor_frame_sink_private,
-      cc.mojom.MojoCompositorFrameSinkClient compositor_frame_sink_client);
+      cc.mojom.MojoCompositorFrameSinkClient compositor_frame_sink_client,
+      DisplayPrivate& display_private);
 
+  // CreateOffscreenCompositorFrameSink is used by unprivileged clients.
+  // An off screen CompositorFrameSink only submits frames to a buffer instead
+  // of a display.
   CreateOffscreenCompositorFrameSink(
       cc.mojom.FrameSinkId frame_sink_id,
       cc.mojom.MojoCompositorFrameSink& compositor_frame_sink,

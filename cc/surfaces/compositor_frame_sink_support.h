@@ -47,6 +47,8 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void AddChildFrameSink(const FrameSinkId& child_frame_sink_id);
   void RemoveChildFrameSink(const FrameSinkId& child_frame_sink_id);
 
+  Display* display() { return display_.get(); }
+
  private:
   void DidReceiveCompositorFrameAck();
 

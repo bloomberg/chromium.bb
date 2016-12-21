@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "cc/ipc/compositor_frame.mojom.h"
+#include "cc/ipc/display_compositor.mojom.h"
 #include "cc/output/context_provider.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -53,7 +54,8 @@ class ServerWindowCompositorFrameSinkManager {
   void CreateDisplayCompositorFrameSink(
       gfx::AcceleratedWidget widget,
       cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+      cc::mojom::MojoCompositorFrameSinkClientPtr client,
+      cc::mojom::DisplayPrivateRequest display_private_request);
   void CreateOffscreenCompositorFrameSink(
       mojom::CompositorFrameSinkType compositor_frame_sink_type,
       cc::mojom::MojoCompositorFrameSinkRequest request,
@@ -99,7 +101,8 @@ class ServerWindowCompositorFrameSinkManager {
       mojom::CompositorFrameSinkType compositor_frame_sink_type,
       gfx::AcceleratedWidget widget,
       cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+      cc::mojom::MojoCompositorFrameSinkClientPtr client,
+      cc::mojom::DisplayPrivateRequest display_private_request);
 
   ServerWindow* window_;
 

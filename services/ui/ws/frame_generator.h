@@ -128,6 +128,7 @@ class FrameGenerator : public ServerWindowTracker,
   cc::LocalFrameId local_frame_id_;
   cc::SurfaceIdAllocator id_allocator_;
   cc::mojom::MojoCompositorFrameSinkPtr compositor_frame_sink_;
+  cc::mojom::DisplayPrivatePtr display_private_;
 
   // Active references held by this client to surfaces that could be embedded in
   // a CompositorFrame submitted from FrameGenerator.

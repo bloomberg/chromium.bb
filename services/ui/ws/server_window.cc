@@ -85,9 +85,11 @@ bool ServerWindow::HasObserver(ServerWindowObserver* observer) {
 void ServerWindow::CreateDisplayCompositorFrameSink(
     gfx::AcceleratedWidget widget,
     cc::mojom::MojoCompositorFrameSinkRequest request,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+    cc::mojom::MojoCompositorFrameSinkClientPtr client,
+    cc::mojom::DisplayPrivateRequest display_private_request) {
   GetOrCreateCompositorFrameSinkManager()->CreateDisplayCompositorFrameSink(
-      widget, std::move(request), std::move(client));
+      widget, std::move(request), std::move(client),
+      std::move(display_private_request));
 }
 
 void ServerWindow::CreateOffscreenCompositorFrameSink(

@@ -14,6 +14,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "cc/ipc/display_compositor.mojom.h"
+#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/ids.h"
@@ -58,14 +60,11 @@ class ServerWindow {
 
   // Creates a new CompositorFrameSink of the specified type, replacing the
   // existing.
-  // TODO(fsamuel): We should not be passing in |gpu_memory_buffer_manager| and
-  // |context_provider|. The window server should not know anything about them.
-  // Instead, they should be a CompositorFrameSink service-side implementation
-  // detail.
   void CreateDisplayCompositorFrameSink(
       gfx::AcceleratedWidget widget,
       cc::mojom::MojoCompositorFrameSinkRequest request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+      cc::mojom::MojoCompositorFrameSinkClientPtr client,
+      cc::mojom::DisplayPrivateRequest display_private_request);
   void CreateOffscreenCompositorFrameSink(
       mojom::CompositorFrameSinkType compositor_frame_sink_type,
       cc::mojom::MojoCompositorFrameSinkRequest request,

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/ipc/display_compositor.mojom.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
@@ -19,15 +20,20 @@ namespace cc {
 class Display;
 }
 
+namespace gfx {
+class Size;
+class ColorSpace;
+}
+
 namespace ui {
 
 class DisplayCompositor;
 
 // Server side representation of a WindowSurface.
-class GpuCompositorFrameSink
-    : public cc::CompositorFrameSinkSupportClient,
-      public cc::mojom::MojoCompositorFrameSink,
-      public cc::mojom::MojoCompositorFrameSinkPrivate {
+class GpuCompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
+                               public cc::mojom::MojoCompositorFrameSink,
+                               public cc::mojom::MojoCompositorFrameSinkPrivate,
+                               public cc::mojom::DisplayPrivate {
  public:
   GpuCompositorFrameSink(
       DisplayCompositor* display_compositor,
@@ -36,7 +42,8 @@ class GpuCompositorFrameSink
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+      cc::mojom::MojoCompositorFrameSinkClientPtr client,
+      cc::mojom::DisplayPrivateRequest display_private_request);
 
   ~GpuCompositorFrameSink() override;
 
@@ -58,6 +65,12 @@ class GpuCompositorFrameSink
   void RemoveChildFrameSink(
       const cc::FrameSinkId& child_frame_sink_id) override;
 
+  // cc::mojom::DisplayPrivate:
+  void SetDisplayVisible(bool visible) override;
+  void ResizeDisplay(const gfx::Size& size) override;
+  void SetDisplayColorSpace(const gfx::ColorSpace& color_space) override;
+  void SetOutputIsSecure(bool secure) override;
+
  private:
   // cc::CompositorFrameSinkSupportClient implementation:
   void DidReceiveCompositorFrameAck() override;
@@ -77,7 +90,9 @@ class GpuCompositorFrameSink
 
   cc::mojom::MojoCompositorFrameSinkClientPtr client_;
   mojo::Binding<cc::mojom::MojoCompositorFrameSink> binding_;
-  mojo::Binding<cc::mojom::MojoCompositorFrameSinkPrivate> private_binding_;
+  mojo::Binding<cc::mojom::MojoCompositorFrameSinkPrivate>
+      compositor_frame_sink_private_binding_;
+  mojo::Binding<cc::mojom::DisplayPrivate> display_private_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCompositorFrameSink);
 };

@@ -42,8 +42,10 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
   DCHECK_NE(gfx::kNullAcceleratedWidget, widget);
   cc::mojom::MojoCompositorFrameSinkRequest request(&compositor_frame_sink_);
+  cc::mojom::DisplayPrivateRequest display_private_request(&display_private_);
   root_window_->CreateDisplayCompositorFrameSink(
-      widget, std::move(request), binding_.CreateInterfacePtrAndBind());
+      widget, std::move(request), binding_.CreateInterfacePtrAndBind(),
+      std::move(display_private_request));
   // TODO(fsamuel): This means we're always requesting a new BeginFrame signal
   // even when we don't need it. Once surface ID propagation work is done,
   // this will not be necessary because FrameGenerator will only need a
