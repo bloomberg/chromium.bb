@@ -4,7 +4,7 @@
 
 #include "content/renderer/screen_orientation/screen_orientation_observer.h"
 
-#include "content/common/screen_orientation_messages.h"
+#include "content/renderer/render_thread_impl.h"
 
 namespace content {
 
@@ -23,11 +23,20 @@ void ScreenOrientationObserver::Start(
 }
 
 void ScreenOrientationObserver::SendStartMessage() {
-  RenderThread::Get()->Send(new ScreenOrientationHostMsg_StartListening());
+  GetScreenOrientationListener()->Start();
 }
 
 void ScreenOrientationObserver::SendStopMessage() {
-  RenderThread::Get()->Send(new ScreenOrientationHostMsg_StopListening());
+  GetScreenOrientationListener()->Stop();
+}
+
+device::mojom::ScreenOrientationListener*
+ScreenOrientationObserver::GetScreenOrientationListener() {
+  if (!listener_) {
+    RenderThreadImpl::current()->GetChannel()->GetRemoteAssociatedInterface(
+        &listener_);
+  }
+  return listener_.get();
 }
 
 } // namespace content

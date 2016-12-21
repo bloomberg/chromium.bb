@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/renderer/platform_event_observer.h"
+#include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
 
 namespace content {
 
@@ -27,6 +28,11 @@ class ScreenOrientationObserver
  protected:
   void SendStartMessage() override;
   void SendStopMessage() override;
+
+ private:
+  device::mojom::ScreenOrientationListener* GetScreenOrientationListener();
+
+  device::mojom::ScreenOrientationListenerAssociatedPtr listener_;
 };
 
 }; // namespace content
