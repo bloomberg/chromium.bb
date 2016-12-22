@@ -21,7 +21,7 @@ FAIL contextMenu on HTMLElement must enqueue an attributeChanged reaction when a
 FAIL contextMenu on HTMLElement must enqueue an attributeChanged reaction when replacing an existing attribute Failed to set the 'contextMenu' property on 'HTMLElement': The provided value is not of type 'HTMLMenuElement'.
 PASS spellcheck on HTMLElement must enqueue an attributeChanged reaction when adding spellcheck content attribute 
 PASS spellcheck on HTMLElement must enqueue an attributeChanged reaction when replacing an existing attribute 
-FAIL innerText on HTMLElement must enqueue a disconnected reaction assert_array_equals: lengths differ, expected 1 got 0
-FAIL outerText on HTMLElement must enqueue a disconnected reaction assert_array_equals: lengths differ, expected 1 got 0
+PASS innerText on HTMLElement must enqueue a disconnected reaction 
+PASS outerText on HTMLElement must enqueue a disconnected reaction 
 Harness: the test ran to completion.
 

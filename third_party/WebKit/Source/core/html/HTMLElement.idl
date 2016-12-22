@@ -61,8 +61,8 @@ interface HTMLElement : Element {
     [RuntimeEnabled=CSSTypedOM] readonly attribute StylePropertyMap styleMap;
 
     // Non-standard APIs
-    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute DOMString innerText;
-    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute DOMString outerText;
+    [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute DOMString innerText;
+    [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute DOMString outerText;
     [CEReactions, Reflect, TreatNullAs=NullString, MeasureAs=PrefixedHTMLElementDropzone] attribute DOMString webkitdropzone;
 };
 
