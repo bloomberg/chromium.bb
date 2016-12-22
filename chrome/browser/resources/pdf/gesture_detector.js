@@ -16,10 +16,14 @@ class GestureDetector {
   constructor(element) {
     this.element_ = element;
 
-    this.element_.addEventListener('touchstart', this.onTouchStart_.bind(this));
-    this.element_.addEventListener('touchmove', this.onTouch_.bind(this));
-    this.element_.addEventListener('touchend', this.onTouch_.bind(this));
-    this.element_.addEventListener('touchcancel', this.onTouch_.bind(this));
+    this.element_.addEventListener(
+        'touchstart', this.onTouchStart_.bind(this), { passive: false });
+    this.element_.addEventListener(
+        'touchmove', this.onTouch_.bind(this), { passive: true });
+    this.element_.addEventListener(
+        'touchend', this.onTouch_.bind(this), { passive: true });
+    this.element_.addEventListener(
+        'touchcancel', this.onTouch_.bind(this), { passive: true });
 
     this.pinchStartEvent_ = null;
     this.lastEvent_ = null;

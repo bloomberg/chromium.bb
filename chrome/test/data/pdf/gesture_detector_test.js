@@ -7,21 +7,25 @@ chrome.test.runTests(function() {
 
   class StubElement {
     constructor() {
-      this.listeners_ = new Map([
+      this.listeners = new Map([
         ['touchstart', []],
         ['touchmove', []],
         ['touchend', []],
         ['touchcancel', []]
       ]);
+
+      this.listenerOptions = new Map();
     }
 
-    addEventListener(type, listener) {
-      if (this.listeners_.has(type))
-        this.listeners_.get(type).push(listener);
+    addEventListener(type, listener, options) {
+      if (this.listeners.has(type)) {
+        this.listeners.get(type).push(listener);
+        this.listenerOptions.set(listener, options);
+      }
     }
 
     sendEvent(event) {
-      for (let l of this.listeners_.get(event.type))
+      for (let l of this.listeners.get(event.type))
         l(event);
     }
   }
@@ -177,6 +181,17 @@ chrome.test.runTests(function() {
       let stubElement = new StubElement();
       let gestureDetector = new GestureDetector(stubElement);
       let pinchListener = new PinchListener(gestureDetector);
+
+      // Ensure that the touchstart listener is not passive, otherwise the
+      // call to preventDefault will be ignored. Since listeners could default
+      // to being passive, we must set the value explicitly
+      // (see crbug.com/675730).
+      for (let l of stubElement.listeners.get('touchstart')) {
+        let options = stubElement.listenerOptions.get(l);
+        chrome.test.assertTrue(!!options &&
+                               typeof(options.passive) == 'boolean');
+        chrome.test.assertFalse(options.passive);
+      }
 
       let pinchStartEvent = new MockTouchEvent('touchstart', [
         {clientX: 0, clientY: 0},
