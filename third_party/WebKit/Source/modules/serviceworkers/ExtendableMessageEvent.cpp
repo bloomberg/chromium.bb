@@ -117,8 +117,17 @@ ExtendableMessageEvent::ExtendableMessageEvent(
     else if (initializer.source().isMessagePort())
       m_sourceAsMessagePort = initializer.source().getAsMessagePort();
   }
-  if (initializer.hasPorts())
-    m_ports = new MessagePortArray(initializer.ports());
+  if (initializer.hasPorts()) {
+    // TODO(sof): remove the extra same-heap checks once crbug.com/655926
+    // has been resolved.
+    const MessagePortArray& ports = initializer.ports();
+    m_ports = new MessagePortArray;
+    m_ports->reserveInitialCapacity(ports.size());
+    for (const auto& port : ports) {
+      CHECK(ThreadState::current()->isOnThreadHeap(port.get()));
+      m_ports->append(port);
+    }
+  }
 }
 
 ExtendableMessageEvent::ExtendableMessageEvent(
@@ -135,6 +144,14 @@ ExtendableMessageEvent::ExtendableMessageEvent(
       m_ports(ports) {
   if (m_serializedData)
     m_serializedData->registerMemoryAllocatedWithCurrentScriptContext();
+
+  // TODO(sof): remove the same-heap verification once crbug.com/655926 has
+  // been resolved.
+  if (m_ports) {
+    for (const auto& port : *m_ports) {
+      CHECK(ThreadState::current()->isOnThreadHeap(port.get()));
+    }
+  }
 }
 
 }  // namespace blink
