@@ -46,6 +46,8 @@ def _CheckForTranslations(input_api, output_api):
 
   for f in input_api.AffectedFiles():
     local_path = f.LocalPath()
+    if local_path.endswith('i18n_behavior.js'):
+      continue
 
     keywords = None
     if local_path.endswith('.js'):
