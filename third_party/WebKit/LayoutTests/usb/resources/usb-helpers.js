@@ -35,11 +35,10 @@ function runGarbageCollection() {
 function usbMocks(mojo) {
   return define('USB Mocks', [
     'mojo/public/js/bindings',
-    'mojo/public/js/connection',
     'device/usb/public/interfaces/chooser_service.mojom',
     'device/usb/public/interfaces/device_manager.mojom',
     'device/usb/public/interfaces/device.mojom',
-  ], (bindings, connection, chooserService, deviceManager, device) => {
+  ], (bindings, chooserService, deviceManager, device) => {
     function assertDeviceInfoEquals(device, info) {
       assert_equals(device.usbVersionMajor, info.usb_version_major);
       assert_equals(device.usbVersionMinor, info.usb_version_minor);
@@ -323,21 +322,17 @@ function usbMocks(mojo) {
 
     class MockDeviceManager {
       constructor() {
+        this.bindingSet = new bindings.BindingSet(deviceManager.DeviceManager);
+
         this.mockDevices_ = new Map();
         this.deviceCloseHandler_ = null;
         this.client_ = null;
       }
 
-      bindToPipe(pipe) {
-        this.stub_ = connection.bindHandleToStub(
-            pipe, deviceManager.DeviceManager);
-        bindings.StubBindings(this.stub_).delegate = this;
-      }
-
       reset() {
         this.mockDevices_.forEach(device => {
-          for (var stub of device.stubs)
-            bindings.StubBindings(stub).close();
+          for (var binding of device.bindingArray)
+            binding.close();
           this.client_.onDeviceRemoved(device.info);
         });
         this.mockDevices_.clear();
@@ -346,7 +341,7 @@ function usbMocks(mojo) {
       addMockDevice(info) {
         let device = {
           info: info,
-          stubs: []
+          bindingArray: []
         };
         this.mockDevices_.set(info.guid, device);
         if (this.client_)
@@ -355,8 +350,8 @@ function usbMocks(mojo) {
 
       removeMockDevice(info) {
         let device = this.mockDevices_.get(info.guid);
-        for (var stub of device.stubs)
-          bindings.StubBindings(stub).close();
+        for (var binding of device.bindingArray)
+          binding.close();
         this.mockDevices_.delete(info.guid);
         if (this.client_)
           this.client_.onDeviceRemoved(info);
@@ -379,14 +374,13 @@ function usbMocks(mojo) {
         if (deviceData === undefined) {
           request.close();
         } else {
-          var stub = connection.bindHandleToStub(request.handle, device.Device);
-          var mock = new MockDevice(deviceData.info);
-          bindings.StubBindings(stub).delegate = mock;
-          bindings.StubBindings(stub).connectionErrorHandler = () => {
+          var binding = new bindings.Binding(
+              device.Device, new MockDevice(deviceData.info), request);
+          binding.setConnectionErrorHandler(() => {
             if (this.deviceCloseHandler_)
               this.deviceCloseHandler_(deviceData.info);
-          };
-          deviceData.stubs.push(stub);
+          });
+          deviceData.bindingArray.push(binding);
         }
       }
 
@@ -397,13 +391,10 @@ function usbMocks(mojo) {
 
     class MockChooserService {
       constructor() {
-        this.chosenDevice_ = null;
-      }
+        this.bindingSet = new bindings.BindingSet(
+            chooserService.ChooserService);
 
-      bindToPipe(pipe) {
-        this.stub_ = connection.bindHandleToStub(
-            pipe, chooserService.ChooserService);
-        bindings.StubBindings(this.stub_).delegate = this;
+        this.chosenDevice_ = null;
       }
 
       setChosenDevice(deviceInfo) {
@@ -418,15 +409,15 @@ function usbMocks(mojo) {
     let mockDeviceManager = new MockDeviceManager;
     mojo.frameInterfaces.addInterfaceOverrideForTesting(
         deviceManager.DeviceManager.name,
-        pipe => {
-          mockDeviceManager.bindToPipe(pipe);
+        handle => {
+          mockDeviceManager.bindingSet.addBinding(mockDeviceManager, handle);
         });
 
     let mockChooserService = new MockChooserService;
     mojo.frameInterfaces.addInterfaceOverrideForTesting(
         chooserService.ChooserService.name,
-        pipe => {
-          mockChooserService.bindToPipe(pipe);
+        handle => {
+          mockChooserService.bindingSet.addBinding(mockChooserService, handle);
         });
 
     return fakeUsbDevices().then(fakeDevices => Promise.resolve({

@@ -38,7 +38,8 @@ function runIframeDisconnectTest(usb, onDeviceConnected) {
           (frameInterfaces) => {
             frameInterfaces.addInterfaceOverrideForTesting(
             usb.DeviceManager.name,
-            pipe => { mockDeviceManager.bindToPipe(pipe); });
+            handle => { mockDeviceManager.bindingSet.addBinding(
+                mockDeviceManager, handle); });
         iframe.contentWindow.postMessage('Ready', '*');
       });
     }
@@ -83,7 +84,8 @@ usb_test(usb => {
           (frameInterfaces) => {
             frameInterfaces.addInterfaceOverrideForTesting(
             usb.DeviceManager.name,
-            pipe => { mockDeviceManager.bindToPipe(pipe); });
+            handle => { mockDeviceManager.bindingSet.addBinding(
+                mockDeviceManager, handle); });
         iframe.contentWindow.postMessage('Ready', '*');
       });
     }
