@@ -242,10 +242,7 @@ PhysicalWebPageSuggestionsProvider::GetMostRecentPhysicalWebPagesWithFilter(
 ContentSuggestion PhysicalWebPageSuggestionsProvider::ConvertPhysicalWebPage(
     const DictionaryValue& page) const {
   std::string scanned_url, raw_resolved_url, title, description;
-  int scan_timestamp;
   bool success = page.GetString(physical_web::kScannedUrlKey, &scanned_url);
-  success = page.GetInteger(physical_web::kScanTimestampKey, &scan_timestamp) &&
-            success;
   success = page.GetString(physical_web::kResolvedUrlKey, &raw_resolved_url) &&
             success;
   success = page.GetString(physical_web::kTitleKey, &title) && success;
@@ -260,10 +257,6 @@ ContentSuggestion PhysicalWebPageSuggestionsProvider::ConvertPhysicalWebPage(
                                resolved_url);
   DCHECK(base::IsStringUTF8(title));
   suggestion.set_title(base::UTF8ToUTF16(title));
-  // TODO(vitaliii): Set the time properly once the proper value is provided
-  // (see crbug.com/667722).
-  suggestion.set_publish_date(
-      base::Time::FromTimeT(static_cast<time_t>(scan_timestamp)));
   suggestion.set_publisher_name(base::UTF8ToUTF16(resolved_url.host()));
   DCHECK(base::IsStringUTF8(description));
   suggestion.set_snippet_text(base::UTF8ToUTF16(description));

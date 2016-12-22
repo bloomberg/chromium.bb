@@ -185,6 +185,31 @@ public class SnippetArticleViewHolder
         mPublisherBar.setLayoutParams(params);
     }
 
+    private static String getAttributionString(SnippetArticle article) {
+        if (article.mPublishTimestampMilliseconds == 0) return article.mPublisher;
+
+        // DateUtils.getRelativeTimeSpanString(...) calls through to TimeZone.getDefault(). If this
+        // has never been called before it loads the current time zone from disk. In most likelihood
+        // this will have been called previously and the current time zone will have been cached,
+        // but in some cases (eg instrumentation tests) it will cause a strict mode violation.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        CharSequence relativeTimeSpan;
+        try {
+            long time = SystemClock.elapsedRealtime();
+            relativeTimeSpan =
+                    DateUtils.getRelativeTimeSpanString(article.mPublishTimestampMilliseconds,
+                            System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS);
+            RecordHistogram.recordTimesHistogram("Android.StrictMode.SnippetUIBuildTime",
+                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+        // We format the publisher here so that having a publisher name in an RTL language
+        // doesn't mess up the formatting on an LTR device and vice versa.
+        return String.format(PUBLISHER_FORMAT_STRING,
+                BidiFormatter.getInstance().unicodeWrap(article.mPublisher), relativeTimeSpan);
+    }
+
     public void onBindViewHolder(SnippetArticle article, SuggestionsCategoryInfo categoryInfo) {
         super.onBindViewHolder();
 
@@ -196,28 +221,7 @@ public class SnippetArticleViewHolder
         updateLayout();
 
         mHeadlineTextView.setText(mArticle.mTitle);
-
-        // DateUtils.getRelativeTimeSpanString(...) calls through to TimeZone.getDefault(). If this
-        // has never been called before it loads the current time zone from disk. In most likelihood
-        // this will have been called previously and the current time zone will have been cached,
-        // but in some cases (eg instrumentation tests) it will cause a strict mode violation.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            long time = SystemClock.elapsedRealtime();
-            CharSequence relativeTimeSpan = DateUtils.getRelativeTimeSpanString(
-                    mArticle.mPublishTimestampMilliseconds, System.currentTimeMillis(),
-                    DateUtils.MINUTE_IN_MILLIS);
-            RecordHistogram.recordTimesHistogram("Android.StrictMode.SnippetUIBuildTime",
-                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
-
-            // We format the publisher here so that having a publisher name in an RTL language
-            // doesn't mess up the formatting on an LTR device and vice versa.
-            String publisherAttribution = String.format(PUBLISHER_FORMAT_STRING,
-                    BidiFormatter.getInstance().unicodeWrap(mArticle.mPublisher), relativeTimeSpan);
-            mPublisherTextView.setText(publisherAttribution);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        mPublisherTextView.setText(getAttributionString(mArticle));
 
         // The favicon of the publisher should match the TextView height.
         int widthSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
