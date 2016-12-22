@@ -1670,12 +1670,22 @@ static const aom_prob default_filter_intra_probs[2] = { 230, 230 };
 #if CONFIG_SUPERTX
 static const aom_prob default_supertx_prob[PARTITION_SUPERTX_CONTEXTS]
                                           [TX_SIZES] = {
+#if CONFIG_CB4X4
+#if CONFIG_TX64X64
+                                            { 1, 1, 160, 160, 170, 180 },
+                                            { 1, 1, 200, 200, 210, 220 },
+#else
+                                            { 1, 1, 160, 160, 170 },
+                                            { 1, 1, 200, 200, 210 },
+#endif  // CONFIG_TX64X64
+#else
 #if CONFIG_TX64X64
                                             { 1, 160, 160, 170, 180 },
                                             { 1, 200, 200, 210, 220 },
 #else
                                             { 1, 160, 160, 170 },
                                             { 1, 200, 200, 210 },
+#endif  // CONFIG_CB4X4
 #endif  // CONFIG_TX64X64
                                           };
 #endif  // CONFIG_SUPERTX

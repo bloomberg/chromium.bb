@@ -1006,6 +1006,11 @@ void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
 }
 
 #if CONFIG_SUPERTX
+#if CONFIG_CB4X4
+static const uint8_t mask_4[4] = { 64, 62, 12, 0 };
+static const uint8_t mask_4_uv[4] = { 64, 62, 12, 0 };
+#endif  // CONFIG_CB4X4
+
 static const uint8_t mask_8[8] = { 64, 64, 62, 52, 12, 2, 0, 0 };
 
 static const uint8_t mask_16[16] = { 63, 62, 60, 58, 55, 50, 43, 36,
@@ -1027,6 +1032,9 @@ static const uint8_t mask_32_uv[32] = { 64, 64, 64, 64, 64, 64, 64, 64,
 
 static const uint8_t *get_supertx_mask(int length, int plane) {
   switch (length) {
+#if CONFIG_CB4X4
+    case 4: return plane ? mask_4_uv : mask_4;
+#endif  // CONFIG_CB4X4
     case 8: return plane ? mask_8_uv : mask_8;
     case 16: return plane ? mask_16_uv : mask_16;
     case 32: return plane ? mask_32_uv : mask_32;

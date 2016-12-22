@@ -812,7 +812,12 @@ static void dec_extend_dir(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   const int mi_height = mi_size_high[bsize];
   int xss = xd->plane[1].subsampling_x;
   int yss = xd->plane[1].subsampling_y;
-  int b_sub8x8 = (bsize < BLOCK_8X8) ? 1 : 0;
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
+  int b_sub8x8 = (bsize < BLOCK_8X8) && !unify_bsize ? 1 : 0;
   BLOCK_SIZE extend_bsize;
   int unit, mi_row_pred, mi_col_pred;
 
@@ -911,6 +916,11 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   int i;
   const int mi_offset = mi_row * cm->mi_stride + mi_col;
   uint8_t *dst_buf1[3], *dst_buf2[3], *dst_buf3[3];
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
 
   DECLARE_ALIGNED(16, uint8_t, tmp_buf1[MAX_MB_PLANE * MAX_TX_SQUARE * 2]);
   DECLARE_ALIGNED(16, uint8_t, tmp_buf2[MAX_MB_PLANE * MAX_TX_SQUARE * 2]);
@@ -966,7 +976,7 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                      mi_row_top, mi_col_top, dst_buf, dst_stride);
       break;
     case PARTITION_HORZ:
-      if (bsize == BLOCK_8X8) {
+      if (bsize == BLOCK_8X8 && !unify_bsize) {
         // For sub8x8, predict in 8x8 unit
         // First half
         dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
@@ -1030,7 +1040,7 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       }
       break;
     case PARTITION_VERT:
-      if (bsize == BLOCK_8X8) {
+      if (bsize == BLOCK_8X8 && !unify_bsize) {
         // First half
         dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
                              mi_row_top, mi_col_top, dst_buf, dst_stride,
@@ -1093,7 +1103,7 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       }
       break;
     case PARTITION_SPLIT:
-      if (bsize == BLOCK_8X8) {
+      if (bsize == BLOCK_8X8 && !unify_bsize) {
         dec_predict_b_extend(pbi, xd, tile, 0, mi_row, mi_col, mi_row, mi_col,
                              mi_row_top, mi_col_top, dst_buf, dst_stride,
                              top_bsize, BLOCK_8X8, 1, 0);
@@ -1134,7 +1144,7 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                                  dst_buf3, dst_stride3);
       }
       for (i = 0; i < MAX_MB_PLANE; i++) {
-        if (bsize == BLOCK_8X8 && i != 0)
+        if (bsize == BLOCK_8X8 && i != 0 && !unify_bsize)
           continue;  // Skip <4x4 chroma smoothing
         if (mi_row < cm->mi_rows && mi_col + hbs < cm->mi_cols) {
           av1_build_masked_inter_predictor_complex(
@@ -4073,7 +4083,7 @@ static void read_supertx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   int i, j;
   if (aom_read(r, GROUP_DIFF_UPDATE_PROB, ACCT_STR)) {
     for (i = 0; i < PARTITION_SUPERTX_CONTEXTS; ++i) {
-      for (j = 1; j < TX_SIZES; ++j) {
+      for (j = TX_8X8; j < TX_SIZES; ++j) {
         av1_diff_update_prob(r, &fc->supertx_prob[i][j], ACCT_STR);
       }
     }
