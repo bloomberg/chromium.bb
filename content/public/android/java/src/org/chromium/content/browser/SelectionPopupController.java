@@ -200,15 +200,19 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             return true;
         }
 
-        assert mWebContents != null;
-        ActionMode actionMode = supportsFloatingActionMode()
-                ? startFloatingActionMode()
-                : mView.startActionMode(mCallback);
-        if (actionMode != null) {
-            // This is to work around an LGE email issue. See crbug.com/651706 for more details.
-            LGEmailActionModeWorkaround.runIfNecessary(mContext, actionMode);
+        if (mView.getParent() != null) {
+             // On ICS, startActionMode throws an NPE when getParent() is null.
+            assert mWebContents != null;
+            ActionMode actionMode = supportsFloatingActionMode()
+                    ? startFloatingActionMode()
+                    : mView.startActionMode(mCallback);
+            if (actionMode != null) {
+                // This is to work around an LGE email issue. See crbug.com/651706 for more details.
+                LGEmailActionModeWorkaround.runIfNecessary(mContext, actionMode);
+            }
+            mActionMode = actionMode;
         }
-        mActionMode = actionMode;
+        mUnselectAllOnDismiss = true;
         return isActionModeValid();
     }
 
