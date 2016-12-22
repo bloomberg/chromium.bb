@@ -4,15 +4,14 @@ let mockImageCaptureReady = define(
   'mockImageCapture',
   ['media/capture/mojo/image_capture.mojom',
    'mojo/public/js/bindings',
-   'mojo/public/js/connection',
    'content/public/renderer/interfaces',
-  ], (imageCapture, bindings, connection, interfaces) => {
+  ], (imageCapture, bindings, interfaces) => {
 
   class MockImageCapture {
     constructor() {
       interfaces.addInterfaceOverrideForTesting(
           imageCapture.ImageCapture.name,
-          pipe => this.bindToPipe(pipe));
+          handle => this.bindingSet_.addBinding(this, handle));
 
       this.capabilities_ = { capabilities : {
           iso : { min : 100.0, max : 12000.0, current : 400.0, step : 1.0 },
@@ -34,11 +33,7 @@ let mockImageCaptureReady = define(
           sharpness : { min : 4.0, max : 7.0, current : 7.0, step : 1.0 },
       }};
       this.settings_ = null;
-    }
-
-    bindToPipe(pipe) {
-      this.stub_ = connection.bindHandleToStub(pipe, imageCapture.ImageCapture);
-      bindings.StubBindings(this.stub_).delegate = this;
+      this.bindingSet_ = new bindings.BindingSet(imageCapture.ImageCapture);
     }
 
     getCapabilities(source_id) {

@@ -41,7 +41,7 @@ cr.define('bluetooth_internals', function() {
     },
   };
 
-  /** @type {!Map<string, !interfaces.BluetoothDevice.Device.proxyClass>} */
+  /** @type {!Map<string, !interfaces.BluetoothDevice.DevicePtr>} */
   var deviceAddressToProxy = new Map();
 
   /** @type {!device_collection.DeviceCollection} */

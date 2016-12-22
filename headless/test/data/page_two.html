@@ -6,16 +6,10 @@
 // fires after the requested modules have been loaded.
 define([
     'headless/lib/embedder_test.mojom',
-    'mojo/public/js/core',
-    'mojo/public/js/router',
     'content/public/renderer/frame_interfaces',
-    ], function(embedderMojom, mojoCore, routerModule,
-                frameInterfaces) {
-  var testEmbedderService =
-      new embedderMojom.TestEmbedderService.proxyClass(
-          new routerModule.Router(
-              frameInterfaces.getInterface(
-                  embedderMojom.TestEmbedderService.name)));
+    ], function(embedderMojom, frameInterfaces) {
+  var testEmbedderService = new embedderMojom.TestEmbedderServicePtr(
+      frameInterfaces.getInterface(embedderMojom.TestEmbedderService.name));
 
   // Send a message to the embedder!
   testEmbedderService.returnTestResult('page two');

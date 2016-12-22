@@ -55,6 +55,8 @@ PluginsTest.prototype = {
         'saveShowDetailsToPrefs',
       ]);
 
+      this.bindingSet = null;
+
       /**
        * The data to be returned by |getPluginsData_|.
        * @private
@@ -96,20 +98,19 @@ PluginsTest.prototype = {
     window.setupFn = function() {
       return importModules([
         'mojo/public/js/bindings',
-        'mojo/public/js/connection',
         'chrome/browser/ui/webui/plugins/plugins.mojom',
         'content/public/renderer/frame_interfaces',
       ]).then(function(modules) {
         var bindings = modules[0];
-        var connection = modules[1];
-        var pluginsMojom = modules[2];
-        var frameInterfaces = modules[3];
+        var pluginsMojom = modules[1];
+        var frameInterfaces = modules[2];
 
+        this.browserProxy.bindingSet = new bindings.BindingSet(
+            pluginsMojom.PluginsPageHandler);
         frameInterfaces.addInterfaceOverrideForTesting(
             pluginsMojom.PluginsPageHandler.name, function(handle) {
-              var stub = connection.bindHandleToStub(
-                  handle, pluginsMojom.PluginsPageHandler);
-              bindings.StubBindings(stub).delegate = this.browserProxy;
+              this.browserProxy.bindingSet.addBinding(this.browserProxy,
+                                                      handle);
             }.bind(this));
         return this.setupFnResolver.promise;
       }.bind(this));

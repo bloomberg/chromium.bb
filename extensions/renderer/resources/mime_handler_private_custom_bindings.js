@@ -15,13 +15,11 @@ var STREAM_ABORTED_ERROR = 'Stream has been aborted.';
 var servicePromise = Promise.all([
     requireAsync('content/public/renderer/frame_interfaces'),
     requireAsync('extensions/common/api/mime_handler.mojom'),
-    requireAsync('mojo/public/js/router'),
 ]).then(function(modules) {
   var frameInterfaces = modules[0];
   var mojom = modules[1];
-  var routerModule = modules[2];
-  return new mojom.MimeHandlerService.proxyClass(new routerModule.Router(
-      frameInterfaces.getInterface(mojom.MimeHandlerService.name)));
+  return new mojom.MimeHandlerServicePtr(
+      frameInterfaces.getInterface(mojom.MimeHandlerService.name));
 });
 
 // Stores a promise to the GetStreamInfo() result to avoid making additional
