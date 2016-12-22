@@ -139,7 +139,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 357
+#   For your editing convenience: highest ID currently used: 359
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1472,6 +1472,52 @@
 
       To fully disable Google Sync, it is recommended that you disable the Google Sync service in the Google Admin console.''',
       'arc_support': 'Disabling Google Sync will cause Android Backup and Restore to not function properly.',
+    },
+    {
+      'name': 'RoamingProfileSupportEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:57-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 358,
+      'caption': '''Enable the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data.''',
+      'tags': ['local-data-access'],
+      'desc': '''Enables the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data.
+
+      If you enable this setting, the settings stored in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles like bookmarks, autofill data, passwords, etc. will also be written to a file stored in the Roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMINGPROFILELOCATION_POLICY_NAME">$1<ex>RoamingProfileLocation</ex></ph> policy.
+
+      Google Sync is automatically disabled when this policy is enabled.
+
+      To prevent accidental data leaks it is advisable to also set the <ph name="SIGNINALLOWED_POLICY_NAME">$1<ex>SigninAllowed</ex></ph> policy to False.
+
+      If this policy is disabled or left not set only the regular local profiles will be used.''',
+      'label': '''Enable the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data.''',
+    },
+    {
+      'name': 'RoamingProfileLocation',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome.win:57-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': '${roaming_app_data}\\chrome-profile',
+      'id': 359,
+      'caption': '''Set the roaming profile directory''',
+      'tags': ['local-data-access'],
+      'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing the roaming copy of the profiles.
+
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory to store the roaming copy of the profiles if the <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME">$1<ex>RoamingProfileSupportEnabled</ex></ph> policy has been enabled. If the <ph name="ROAMINGPROFILESUPPORTENABLED_POLICY_NAME">$1<ex>RoamingProfileSupportEnabled</ex></ph> policy is disabled or left unset the value stored in this policy is not used.
+
+      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+
+      If this policy is left not set the default roaming profile path will be used.''',
+      'label': '''Set the roaming profile directory''',
     },
     {
       'name': 'SigninAllowed',

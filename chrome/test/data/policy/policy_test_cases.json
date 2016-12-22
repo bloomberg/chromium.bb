@@ -2044,6 +2044,23 @@
     ]
   },
 
+  "RoamingProfileSupportEnabled": {
+    "os": ["win"],
+    "test_policy": { "RoamingProfileSupportEnabled": true },
+    "pref_mappings": [
+      { "pref": "sync.enable_local_sync_backend" }
+    ]
+  },
+
+  "RoamingProfileLocation": {
+    "os": ["win"],
+    "test_policy": { "RoamingProfileLocation": "${roaming_app_data}" },
+    "pref_mappings": [
+      { "pref": "sync.local_sync_backend_dir" }
+    ]
+  },
+
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

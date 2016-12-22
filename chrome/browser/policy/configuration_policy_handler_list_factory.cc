@@ -50,6 +50,7 @@
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/ssl_config/ssl_config_prefs.h"
+#include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_policy_handler.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/variations/pref_names.h"
@@ -602,20 +603,33 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kNetworkThrottlingEnabled,
     base::Value::Type::DICTIONARY },
 
-  { key::kAllowScreenLock, prefs::kAllowScreenLock,
+  { key::kAllowScreenLock,
+    prefs::kAllowScreenLock,
     base::Value::Type::BOOLEAN },
 
-  { key::kQuickUnlockModeWhitelist, prefs::kQuickUnlockModeWhitelist,
+  { key::kQuickUnlockModeWhitelist,
+    prefs::kQuickUnlockModeWhitelist,
     base::Value::Type::LIST },
-  { key::kQuickUnlockTimeout, prefs::kQuickUnlockTimeout,
+  { key::kQuickUnlockTimeout,
+    prefs::kQuickUnlockTimeout,
     base::Value::Type::INTEGER },
-  { key::kPinUnlockMinimumLength, prefs::kPinUnlockMinimumLength,
+  { key::kPinUnlockMinimumLength,
+    prefs::kPinUnlockMinimumLength,
     base::Value::Type::INTEGER },
-  { key::kPinUnlockMaximumLength, prefs::kPinUnlockMaximumLength,
+  { key::kPinUnlockMaximumLength,
+    prefs::kPinUnlockMaximumLength,
     base::Value::Type::INTEGER },
-  { key::kPinUnlockWeakPinsAllowed, prefs::kPinUnlockWeakPinsAllowed,
+  { key::kPinUnlockWeakPinsAllowed,
+    prefs::kPinUnlockWeakPinsAllowed,
     base::Value::Type::BOOLEAN },
 #endif
+
+  { key::kRoamingProfileSupportEnabled,
+    syncer::prefs::kEnableLocalSyncBackend,
+    base::Value::Type::BOOLEAN },
+  { key::kRoamingProfileLocation,
+    syncer::prefs::kLocalSyncBackendDir,
+    base::Value::Type::STRING },
 };
 
 class ForceSafeSearchPolicyHandler : public TypeCheckingPolicyHandler {
