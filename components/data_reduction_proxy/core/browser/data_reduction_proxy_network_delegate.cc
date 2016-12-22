@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
@@ -175,8 +174,6 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
     DataReductionProxyRequestOptions* request_options,
     const DataReductionProxyConfigurator* configurator)
     : LayeredNetworkDelegate(std::move(network_delegate)),
-      total_received_bytes_(0),
-      total_original_received_bytes_(0),
       data_reduction_proxy_config_(config),
       data_reduction_proxy_bypass_stats_(nullptr),
       data_reduction_proxy_request_options_(request_options),
@@ -197,18 +194,6 @@ void DataReductionProxyNetworkDelegate::InitIODataAndUMA(
   DCHECK(bypass_stats);
   data_reduction_proxy_io_data_ = io_data;
   data_reduction_proxy_bypass_stats_ = bypass_stats;
-}
-
-std::unique_ptr<base::Value>
-DataReductionProxyNetworkDelegate::SessionNetworkStatsInfoToValue() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  // Use strings to avoid overflow. base::Value only supports 32-bit integers.
-  dict->SetString("session_received_content_length",
-                  base::Int64ToString(total_received_bytes_));
-  dict->SetString("session_original_content_length",
-                  base::Int64ToString(total_original_received_bytes_));
-  return std::move(dict);
 }
 
 void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
@@ -424,8 +409,6 @@ void DataReductionProxyNetworkDelegate::AccumulateDataUsage(
         data_used, original_size, data_reduction_proxy_io_data_->IsEnabled(),
         request_type, data_use_group, mime_type);
   }
-  total_received_bytes_ += data_used;
-  total_original_received_bytes_ += original_size;
 }
 
 void DataReductionProxyNetworkDelegate::RecordContentLength(

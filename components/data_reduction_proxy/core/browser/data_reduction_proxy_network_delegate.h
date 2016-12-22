@@ -21,10 +21,6 @@
 
 class GURL;
 
-namespace base {
-class Value;
-}
-
 namespace net {
 class HttpRequestHeaders;
 class NetworkDelegate;
@@ -79,9 +75,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   void InitIODataAndUMA(
       DataReductionProxyIOData* io_data,
       DataReductionProxyBypassStats* bypass_stats);
-
-  // Creates a base::Value summary of the state of the network session.
-  std::unique_ptr<base::Value> SessionNetworkStatsInfoToValue() const;
 
   void SetDataUseGroupProvider(
       std::unique_ptr<DataUseGroupProvider> data_use_group_provider);
@@ -161,12 +154,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       const net::ProxyInfo& proxy_info,
       net::HttpRequestHeaders* request_headers,
       const net::URLRequest& request) const;
-
-  // Total size of all content that has been received over the network.
-  int64_t total_received_bytes_;
-
-  // Total original size of all content before it was transferred.
-  int64_t total_original_received_bytes_;
 
   // All raw Data Reduction Proxy pointers must outlive |this|.
   DataReductionProxyConfig* data_reduction_proxy_config_;

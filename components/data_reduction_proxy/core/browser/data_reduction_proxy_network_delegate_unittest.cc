@@ -405,14 +405,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         request, data_reduction_proxy_info, proxy_retry_info, headers);
   }
 
-  int64_t total_received_bytes() const {
-    return GetSessionNetworkStatsInfoInt64("session_received_content_length");
-  }
-
-  int64_t total_original_received_bytes() const {
-    return GetSessionNetworkStatsInfoInt64("session_original_content_length");
-  }
-
   net::MockClientSocketFactory* mock_socket_factory() {
     return &mock_socket_factory_;
   }
@@ -438,23 +430,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
   TestLoFiDecider* lofi_decider() const { return lofi_decider_; }
 
  private:
-  int64_t GetSessionNetworkStatsInfoInt64(const char* key) const {
-    const DataReductionProxyNetworkDelegate* drp_network_delegate =
-        reinterpret_cast<const DataReductionProxyNetworkDelegate*>(
-            context_.network_delegate());
-
-    std::unique_ptr<base::DictionaryValue> session_network_stats_info =
-        base::DictionaryValue::From(
-            drp_network_delegate->SessionNetworkStatsInfoToValue());
-    EXPECT_TRUE(session_network_stats_info);
-
-    std::string string_value;
-    EXPECT_TRUE(session_network_stats_info->GetString(key, &string_value));
-    int64_t value = 0;
-    EXPECT_TRUE(base::StringToInt64(string_value, &value));
-    return value;
-  }
-
   base::MessageLoopForIO message_loop_;
   net::MockClientSocketFactory mock_socket_factory_;
   std::unique_ptr<net::ProxyService> proxy_service_;

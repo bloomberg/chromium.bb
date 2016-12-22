@@ -211,6 +211,7 @@ class NetInternalsMessageHandler
   void OnClearBrowserCache(const base::ListValue* list);
   void OnGetPrerenderInfo(const base::ListValue* list);
   void OnGetHistoricNetworkStats(const base::ListValue* list);
+  void OnGetSessionNetworkStats(const base::ListValue* list);
   void OnGetExtensionInfo(const base::ListValue* list);
   void OnGetDataReductionProxyInfo(const base::ListValue* list);
 #if defined(OS_CHROMEOS)
@@ -300,7 +301,6 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnHSTSQuery(const base::ListValue* list);
   void OnHSTSAdd(const base::ListValue* list);
   void OnHSTSDelete(const base::ListValue* list);
-  void OnGetSessionNetworkStats(const base::ListValue* list);
   void OnCloseIdleSockets(const base::ListValue* list);
   void OnFlushSocketPools(const base::ListValue* list);
 #if defined(OS_WIN)
@@ -444,10 +444,6 @@ void NetInternalsMessageHandler::RegisterMessages() {
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnHSTSDelete, proxy_));
   web_ui()->RegisterMessageCallback(
-      "getSessionNetworkStats",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnGetSessionNetworkStats, proxy_));
-  web_ui()->RegisterMessageCallback(
       "closeIdleSockets",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnCloseIdleSockets, proxy_));
@@ -476,6 +472,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getHistoricNetworkStats",
       base::Bind(&NetInternalsMessageHandler::OnGetHistoricNetworkStats,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getSessionNetworkStats",
+      base::Bind(&NetInternalsMessageHandler::OnGetSessionNetworkStats,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getExtensionInfo",
@@ -566,6 +566,24 @@ void NetInternalsMessageHandler::OnGetHistoricNetworkStats(
   }
   SendJavascriptCommand("receivedHistoricNetworkStats",
                         std::move(historic_network_info));
+}
+
+void NetInternalsMessageHandler::OnGetSessionNetworkStats(
+    const base::ListValue* list) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::unique_ptr<base::Value> session_network_info;
+  Profile* profile = Profile::FromWebUI(web_ui());
+  DataReductionProxyChromeSettings* data_reduction_proxy_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile);
+  if (data_reduction_proxy_settings) {
+    data_reduction_proxy::DataReductionProxyCompressionStats*
+        compression_stats =
+            data_reduction_proxy_settings->data_reduction_proxy_service()
+                ->compression_stats();
+    session_network_info = compression_stats->SessionNetworkStatsInfoToValue();
+  }
+  SendJavascriptCommand("receivedSessionNetworkStats",
+                        std::move(session_network_info));
 }
 
 void NetInternalsMessageHandler::OnGetExtensionInfo(
@@ -864,27 +882,6 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSDelete(
     return;
 
   transport_security_state->DeleteDynamicDataForHost(domain);
-}
-
-void NetInternalsMessageHandler::IOThreadImpl::OnGetSessionNetworkStats(
-    const base::ListValue* list) {
-  DCHECK(!list);
-  net::URLRequestContext* context =
-      main_context_getter_->GetURLRequestContext();
-  net::HttpNetworkSession* http_network_session =
-      GetHttpNetworkSession(context);
-
-  std::unique_ptr<base::Value> network_info;
-  if (http_network_session) {
-    // TODO(mmenke):  This cast is ugly.  Can we get rid of it, or, better,
-    // remove DRP data from net-internals entirely?
-    data_reduction_proxy::DataReductionProxyNetworkDelegate* net_delegate =
-        static_cast<data_reduction_proxy::DataReductionProxyNetworkDelegate*>(
-            context->network_delegate());
-    if (net_delegate)
-      network_info = net_delegate->SessionNetworkStatsInfoToValue();
-  }
-  SendJavascriptCommand("receivedSessionNetworkStats", std::move(network_info));
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnFlushSocketPools(

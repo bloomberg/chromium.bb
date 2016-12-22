@@ -26,10 +26,13 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
@@ -666,10 +669,12 @@ class DataReductionProxyDelegateTest : public testing::Test {
   }
 
   int64_t total_received_bytes() const {
+    test_context_->RunUntilIdle();
     return GetSessionNetworkStatsInfoInt64("session_received_content_length");
   }
 
   int64_t total_original_received_bytes() const {
+    test_context_->RunUntilIdle();
     return GetSessionNetworkStatsInfoInt64("session_original_content_length");
   }
 
@@ -693,13 +698,11 @@ class DataReductionProxyDelegateTest : public testing::Test {
 
  private:
   int64_t GetSessionNetworkStatsInfoInt64(const char* key) const {
-    const DataReductionProxyNetworkDelegate* drp_network_delegate =
-        reinterpret_cast<const DataReductionProxyNetworkDelegate*>(
-            context_.network_delegate());
-
     std::unique_ptr<base::DictionaryValue> session_network_stats_info =
-        base::DictionaryValue::From(
-            drp_network_delegate->SessionNetworkStatsInfoToValue());
+        base::DictionaryValue::From(test_context_->settings()
+                                        ->data_reduction_proxy_service()
+                                        ->compression_stats()
+                                        ->SessionNetworkStatsInfoToValue());
     EXPECT_TRUE(session_network_stats_info);
 
     std::string string_value;

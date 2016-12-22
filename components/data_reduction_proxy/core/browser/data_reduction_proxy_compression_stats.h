@@ -79,9 +79,14 @@ class DataReductionProxyCompressionStats {
                             const scoped_refptr<DataUseGroup>& data_use_group,
                             const std::string& mime_type);
 
-  // Creates a |Value| summary of the persistent state of the network session.
+  // Creates a |Value| summary of the persistent state of the network
+  // statistics.
   // Must be called on the UI thread.
   std::unique_ptr<base::Value> HistoricNetworkStatsInfoToValue();
+
+  // Creates a |Value| summary of the the session network statistics.
+  // Must be called on the UI thread.
+  std::unique_ptr<base::Value> SessionNetworkStatsInfoToValue() const;
 
   // Returns the time in milliseconds since epoch that the last update was made
   // to the daily original and received content lengths.
@@ -268,6 +273,12 @@ class DataReductionProxyCompressionStats {
   // Tracks whether |data_usage_map_| has changes that have not yet been
   // persisted to storage.
   bool data_usage_map_is_dirty_;
+
+  // Total size of all content that has been received over the network.
+  int64_t session_total_received_;
+
+  // Total original size of all content before it was proxied.
+  int64_t session_total_original_;
 
   // Tracks state of loading data usage from storage.
   CurrentDataUsageLoadStatus current_data_usage_load_status_;
