@@ -382,6 +382,7 @@ vs-chromium-project.txt
 /third_party/leveldb
 /third_party/libc++-static/libc++.a
 /third_party/libaddressinput/src
+/third_party/libdrm/src
 /third_party/libexif/sources
 /third_party/libFuzzer/src
 /third_party/libjingle/source
