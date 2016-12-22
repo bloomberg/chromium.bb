@@ -27,10 +27,7 @@ Polymer({
     spinnerActive: Boolean,
 
     // Controls whether the menu button is shown at the start of the menu.
-    showMenu: {
-      type: Boolean,
-      value: false
-    },
+    showMenu: {type: Boolean, value: false},
 
     // Whether to show menu promo tooltip.
     showMenuPromo: {
@@ -41,10 +38,7 @@ Polymer({
     closeMenuPromo: String,
 
     /** @private */
-    narrow_: {
-      type: Boolean,
-      reflectToAttribute: true
-    },
+    narrow_: {type: Boolean, reflectToAttribute: true},
 
     /** @private */
     showingSearch_: {
@@ -58,30 +52,25 @@ Polymer({
   ],
 
   /** @return {!CrToolbarSearchFieldElement} */
-  getSearchField: function() {
-    return this.$.search;
-  },
+  getSearchField: function() { return this.$.search; },
 
   /** @private */
-  onClosePromoTap_: function() {
-    this.fire('cr-toolbar-menu-promo-close');
-  },
+  onClosePromoTap_: function() { this.fire('cr-toolbar-menu-promo-close'); },
 
   /** @private */
-  onMenuTap_: function() {
-    this.fire('cr-toolbar-menu-tap');
-  },
+  onMenuTap_: function() { this.fire('cr-toolbar-menu-tap'); },
 
   /** @private */
   possiblyShowMenuPromo_: function() {
     Polymer.RenderStatus.afterNextRender(this, function() {
       if (this.showMenu && this.showMenuPromo && !this.showingSearch_) {
-        this.$$('#menuPromo').animate({
-          opacity: [0, .9],
-        }, /** @type {!KeyframeEffectOptions} */({
-          duration: 500,
-          fill: 'forwards'
-        }));
+        this.$$('#menuPromo')
+            .animate(
+                {
+                  opacity: [0, .9],
+                },
+                /** @type {!KeyframeEffectOptions} */ (
+                    {duration: 500, fill: 'forwards'}));
         this.fire('cr-toolbar-menu-promo-shown');
       }
     }.bind(this));

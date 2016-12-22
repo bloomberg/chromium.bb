@@ -26,23 +26,13 @@ Polymer({
      * The list of network state properties for the items to display.
      * @type {!Array<!CrOnc.NetworkStateProperties>}
      */
-    networks: {
-      type: Array,
-      value: function() {
-        return [];
-      }
-    },
+    networks: {type: Array, value: function() { return []; }},
 
     /**
      * The list of custom items to display after the list of networks.
      * @type {!Array<!CrNetworkList.CustomItemState>}
      */
-    customItems: {
-      type: Array,
-      value: function() {
-        return [];
-      }
-    },
+    customItems: {type: Array, value: function() { return []; }},
 
     /** True if action buttons should be shown for the itmes. */
     showButtons: {
@@ -78,9 +68,7 @@ Polymer({
   },
 
   /** @private */
-  listChanged_: function() {
-    this.updateScrollableContents();
-  },
+  listChanged_: function() { this.updateScrollableContents(); },
 
   /**
    * Returns a combined list of networks and custom items.

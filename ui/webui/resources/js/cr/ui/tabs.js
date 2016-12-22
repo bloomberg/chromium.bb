@@ -10,9 +10,8 @@ cr.define('cr.ui', function() {
    * @return {TabBox} The tab box if found.
    */
   function getTabBox(el) {
-    return findAncestor(el, function(node) {
-      return node.tagName == 'TABBOX';
-    });
+    return findAncestor(
+        el, function(node) { return node.tagName == 'TABBOX'; });
   }
 
   /**
@@ -105,8 +104,8 @@ cr.define('cr.ui', function() {
     handleSelectedChange_: function(e) {
       var target = e.target;
       if (e.newValue && isTabElement(target) && getTabBox(target) == this) {
-        var index = Array.prototype.indexOf.call(target.parentElement.children,
-                                                 target);
+        var index =
+            Array.prototype.indexOf.call(target.parentElement.children, target);
         this.selectedIndex = index;
       }
     },
@@ -118,8 +117,8 @@ cr.define('cr.ui', function() {
    * The index of the selected tab or -1 if no tab is selected.
    * @type {number}
    */
-  cr.defineProperty(TabBox, 'selectedIndex', cr.PropertyKind.JS_PROP,
-                    selectedIndexSetHook);
+  cr.defineProperty(
+      TabBox, 'selectedIndex', cr.PropertyKind.JS_PROP, selectedIndexSetHook);
 
   /**
    * Creates a new tabs element.

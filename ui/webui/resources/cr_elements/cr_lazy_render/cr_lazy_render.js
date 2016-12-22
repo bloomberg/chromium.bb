@@ -18,9 +18,7 @@ Polymer({
   is: 'cr-lazy-render',
   extends: 'template',
 
-  behaviors: [
-    Polymer.Templatizer
-  ],
+  behaviors: [Polymer.Templatizer],
 
   /** @private {TemplatizerNode} */
   child_: null,
@@ -39,9 +37,7 @@ Polymer({
    * @return {?Element} The element contained in the template, if it has
    *   already been stamped.
    */
-  getIfExists: function() {
-    return this.child_;
-  },
+  getIfExists: function() { return this.child_; },
 
   /** @private */
   render_: function() {

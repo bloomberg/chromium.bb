@@ -126,17 +126,14 @@ cr.define('cr.ui', function() {
      * Requests new suggestions. Called when new suggestions are needed.
      * @param {string} query the text to autocomplete from.
      */
-    requestSuggestions: function(query) {
-    },
+    requestSuggestions: function(query) {},
 
     /**
      * Handles the Enter keydown event.
      * By default, clears and hides the autocomplete popup. Note that the
      * keydown event bubbles up, so the input field can handle the event.
      */
-    handleEnterKeydown: function() {
-      this.suggestions = [];
-    },
+    handleEnterKeydown: function() { this.suggestions = []; },
 
     /**
      * Handles the selected suggestion. Called when a suggestion is selected.
@@ -225,9 +222,7 @@ cr.define('cr.ui', function() {
      * @return {HTMLElement} The text field the autocomplete popup is currently
      *     attached to, if any.
      */
-    get targetInput() {
-      return this.targetInput_;
-    },
+    get targetInput() { return this.targetInput_; },
 
     /**
      * Handles input field key events that should be interpreted as autocomplete
@@ -265,7 +260,5 @@ cr.define('cr.ui', function() {
     },
   };
 
-  return {
-    AutocompleteList: AutocompleteList
-  };
+  return {AutocompleteList: AutocompleteList};
 });

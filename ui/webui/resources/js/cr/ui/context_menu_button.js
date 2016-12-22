@@ -86,7 +86,5 @@ cr.define('cr.ui', function() {
   };
 
   // Export
-  return {
-    ContextMenuButton: ContextMenuButton
-  };
+  return {ContextMenuButton: ContextMenuButton};
 });

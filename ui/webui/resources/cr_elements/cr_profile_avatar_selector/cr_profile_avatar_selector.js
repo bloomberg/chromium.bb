@@ -18,19 +18,13 @@ Polymer({
      * The list of profile avatar URLs and labels.
      * @type {!Array<!AvatarIcon>}
      */
-    avatars: {
-      type: Array,
-      value: function() { return []; }
-    },
+    avatars: {type: Array, value: function() { return []; }},
 
     /**
      * The currently selected profile avatar URL. May be a data URI.
      * @type {string}
      */
-    selectedAvatarUrl: {
-      type: String,
-      notify: true
-    },
+    selectedAvatarUrl: {type: String, notify: true},
 
     ignoreModifiedKeyEvents: {
       type: Boolean,
@@ -43,7 +37,5 @@ Polymer({
    * @return {string} A CSS imageset for multiple scale factors.
    * @private
    */
-  getIconImageset_: function(iconUrl) {
-    return cr.icon.getImage(iconUrl);
-  },
+  getIconImageset_: function(iconUrl) { return cr.icon.getImage(iconUrl); },
 });

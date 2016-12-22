@@ -29,16 +29,10 @@ Polymer({
 
     // When true, show a loading spinner to indicate that the backend is
     // processing the search. Will only show if the search field is open.
-    spinnerActive: {
-      type: Boolean,
-      reflectToAttribute: true
-    },
+    spinnerActive: {type: Boolean, reflectToAttribute: true},
 
     /** @private */
-    hasSearchText_: {
-      type: Boolean,
-      reflectToAttribute: true
-    },
+    hasSearchText_: {type: Boolean, reflectToAttribute: true},
 
     /** @private */
     isSpinnerShown_: {
@@ -47,10 +41,7 @@ Polymer({
     },
 
     /** @private */
-    searchFocused_: {
-      type: Boolean,
-      value: false
-    },
+    searchFocused_: {type: Boolean, value: false},
   },
 
   listeners: {
@@ -59,9 +50,7 @@ Polymer({
   },
 
   /** @return {!HTMLInputElement} */
-  getSearchInput: function() {
-    return this.$.searchInput;
-  },
+  getSearchInput: function() { return this.$.searchInput; },
 
   /**
    * Sets the value of the search field. Overridden from CrSearchFieldBehavior.
@@ -75,9 +64,7 @@ Polymer({
   },
 
   /** @return {boolean} */
-  isSearchFocused: function() {
-    return this.searchFocused_;
-  },
+  isSearchFocused: function() { return this.searchFocused_; },
 
   showAndFocus: function() {
     this.showingSearch = true;
@@ -85,18 +72,14 @@ Polymer({
   },
 
   /** @private */
-  focus_: function() {
-    this.getSearchInput().focus();
-  },
+  focus_: function() { this.getSearchInput().focus(); },
 
   /**
    * @param {boolean} narrow
    * @return {number}
    * @private
    */
-  computeIconTabIndex_: function(narrow) {
-    return narrow ? 0 : -1;
-  },
+  computeIconTabIndex_: function(narrow) { return narrow ? 0 : -1; },
 
   /**
    * @return {boolean}
@@ -107,9 +90,7 @@ Polymer({
   },
 
   /** @private */
-  onInputFocus_: function() {
-    this.searchFocused_ = true;
-  },
+  onInputFocus_: function() { this.searchFocused_ = true; },
 
   /** @private */
   onInputBlur_: function() {

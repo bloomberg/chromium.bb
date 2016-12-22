@@ -25,8 +25,7 @@ cr.define('uiAccountTweaks', function() {
    * Encapsulated handling of ChromeOS accounts options page.
    * @constructor
    */
-  function UIAccountTweaks() {
-  }
+  function UIAccountTweaks() {}
 
   /**
    * @return {boolean} Whether the current user is owner or not.
@@ -74,7 +73,7 @@ cr.define('uiAccountTweaks', function() {
     }
 
     element.disabled = false;
-  }
+  };
 
   /**
    * Disables or hides some elements in specified type of session in ChromeOS.
@@ -86,9 +85,10 @@ cr.define('uiAccountTweaks', function() {
    * @param {string} sessionType name of the session type processed.
    * @private
    */
-  UIAccountTweaks.applySessionTypeVisibility_ = function(document,
-                                                         sessionType) {
-    var elements = document.querySelectorAll('['+ sessionType + '-visibility]');
+  UIAccountTweaks.applySessionTypeVisibility_ = function(
+      document, sessionType) {
+    var elements =
+        document.querySelectorAll('[' + sessionType + '-visibility]');
     for (var i = 0; i < elements.length; i++) {
       var element = elements[i];
       var visibility = element.getAttribute(sessionType + '-visibility');
@@ -97,7 +97,7 @@ cr.define('uiAccountTweaks', function() {
       else if (visibility == 'disabled')
         UIAccountTweaks.disableElementsForSessionType(element, sessionType);
     }
-  }
+  };
 
   /**
    * Updates specific visibility of elements for Guest session in ChromeOS.
@@ -109,7 +109,7 @@ cr.define('uiAccountTweaks', function() {
     if (!UIAccountTweaks.loggedInAsGuest())
       return;
     UIAccountTweaks.applySessionTypeVisibility_(document, SESSION_TYPE_GUEST);
-  }
+  };
 
   /**
    * Updates specific visibility of elements for Public account session in
@@ -121,7 +121,7 @@ cr.define('uiAccountTweaks', function() {
     if (!UIAccountTweaks.loggedInAsPublicAccount())
       return;
     UIAccountTweaks.applySessionTypeVisibility_(document, SESSION_TYPE_PUBLIC);
-  }
+  };
 
   /**
    * Disables and marks page elements for specified session type.
@@ -133,20 +133,18 @@ cr.define('uiAccountTweaks', function() {
    *     disabled.
    * @param {string} sessionType session type specificator.
    */
-  UIAccountTweaks.disableElementsForSessionType = function(element,
-                                                           sessionType) {
+  UIAccountTweaks.disableElementsForSessionType = function(
+      element, sessionType) {
     UIAccountTweaks.disableElementForSessionType_(element, sessionType);
 
     // Walk the tree, searching each ELEMENT node.
-    var walker = document.createTreeWalker(element,
-                                           NodeFilter.SHOW_ELEMENT,
-                                           null,
-                                           false);
+    var walker = document.createTreeWalker(
+        element, NodeFilter.SHOW_ELEMENT, null, false);
 
     var node = walker.nextNode();
     while (node) {
       UIAccountTweaks.disableElementForSessionType_(
-          /** @type {!Element} */(node), sessionType);
+          /** @type {!Element} */ (node), sessionType);
       node = walker.nextNode();
     }
   };
@@ -161,23 +159,18 @@ cr.define('uiAccountTweaks', function() {
    * @param {!Element} element Element that should be disabled.
    * @param {string} sessionType account session Type specificator.
    */
-  UIAccountTweaks.disableElementForSessionType_ = function(element,
-                                                           sessionType) {
+  UIAccountTweaks.disableElementForSessionType_ = function(
+      element, sessionType) {
     element.classList.add(sessionType + '-disabled');
-    if (element.nodeName == 'INPUT' ||
-        element.nodeName == 'SELECT' ||
+    if (element.nodeName == 'INPUT' || element.nodeName == 'SELECT' ||
         element.nodeName == 'BUTTON') {
       element.disabled = true;
     } else if (element.nodeName == 'A') {
-      element.onclick = function() {
-        return false;
-      };
+      element.onclick = function() { return false; };
     }
   };
 
   // Export
-  return {
-    UIAccountTweaks: UIAccountTweaks
-  };
+  return {UIAccountTweaks: UIAccountTweaks};
 
 });

@@ -88,7 +88,5 @@ cr.define('cr.ui', function() {
   };
 
   // Export.
-  return {
-    BubbleButton: BubbleButton
-  };
+  return {BubbleButton: BubbleButton};
 });

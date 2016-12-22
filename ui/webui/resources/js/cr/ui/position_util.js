@@ -57,8 +57,8 @@ cr.define('cr.ui', function() {
    * @param {boolean=} opt_invertLeftRight Whether to invert the right/left
    *     alignment.
    */
-  function positionPopupAroundRect(anchorRect, popupElement, type,
-                                   opt_invertLeftRight) {
+  function positionPopupAroundRect(
+      anchorRect, popupElement, type, opt_invertLeftRight) {
     var popupRect = popupElement.getBoundingClientRect();
     var availRect;
     var ownerDoc = popupElement.ownerDocument;
@@ -161,11 +161,11 @@ cr.define('cr.ui', function() {
           if (anchorRect.right - popupRect.width >= 0) {
             style.right = availRect.width - anchorRect.right + 'px';
 
-          // align left edges
+            // align left edges
           } else if (anchorRect.left + popupRect.width <= availRect.width) {
             style.left = anchorRect.left + 'px';
 
-          // not enough room on either side
+            // not enough room on either side
           } else {
             style.right = '0';
           }
@@ -174,11 +174,11 @@ cr.define('cr.ui', function() {
           if (anchorRect.left + popupRect.width <= availRect.width) {
             style.left = anchorRect.left + 'px';
 
-          // align right edges
+            // align right edges
           } else if (anchorRect.right - popupRect.width >= 0) {
             style.right = availRect.width - anchorRect.right + 'px';
 
-          // not enough room on either side
+            // not enough room on either side
           } else {
             style.left = '0';
           }
@@ -191,7 +191,7 @@ cr.define('cr.ui', function() {
         if (anchorRect.top + popupRect.height <= availRect.height) {
           style.top = anchorRect.top + 'px';
 
-        // align bottom edges
+          // align bottom edges
         } else if (anchorRect.bottom - popupRect.height >= 0) {
           style.bottom = availRect.height - anchorRect.bottom + 'px';
 
@@ -214,11 +214,11 @@ cr.define('cr.ui', function() {
    * @param {boolean=} opt_invertLeftRight Whether to invert the right/left
    *     alignment.
    */
-  function positionPopupAroundElement(anchorElement, popupElement, type,
-                                      opt_invertLeftRight) {
+  function positionPopupAroundElement(
+      anchorElement, popupElement, type, opt_invertLeftRight) {
     var anchorRect = anchorElement.getBoundingClientRect();
-    positionPopupAroundRect(anchorRect, popupElement, type,
-                            !!opt_invertLeftRight);
+    positionPopupAroundRect(
+        anchorRect, popupElement, type, !!opt_invertLeftRight);
   }
 
   /**
@@ -229,14 +229,7 @@ cr.define('cr.ui', function() {
    * @param {cr.ui.AnchorType=} opt_anchorType The type of anchoring we want.
    */
   function positionPopupAtPoint(x, y, popupElement, opt_anchorType) {
-    var rect = {
-      left: x,
-      top: y,
-      width: 0,
-      height: 0,
-      right: x,
-      bottom: y
-    };
+    var rect = {left: x, top: y, width: 0, height: 0, right: x, bottom: y};
 
     var anchorType = opt_anchorType || AnchorType.BELOW;
     positionPopupAroundRect(rect, popupElement, anchorType);

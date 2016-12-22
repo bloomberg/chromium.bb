@@ -14,7 +14,7 @@ var CrPolicyPrefBehavior = {
    */
   isPrefPolicyControlled: function(pref) {
     return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED &&
-           pref.controlledBy != chrome.settingsPrivate.ControlledBy.EXTENSION;
+        pref.controlledBy != chrome.settingsPrivate.ControlledBy.EXTENSION;
   },
 
   /**

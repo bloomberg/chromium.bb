@@ -9,8 +9,7 @@ cr.define('cr.ui', function() {
    * the topmost overlay) do not receive focus.
    * @constructor
    */
-  function FocusManager() {
-  }
+  function FocusManager() {}
 
   FocusManager.prototype = {
     /**
@@ -37,9 +36,7 @@ cr.define('cr.ui', function() {
      * allowed to receive focus.
      * @return {Element} The element containing focusable elements.
      */
-    getFocusParent: function() {
-      return document.body;
-    },
+    getFocusParent: function() { return document.body; },
 
     /**
      * Returns the elements on the page capable of receiving focus.
@@ -50,8 +47,7 @@ cr.define('cr.ui', function() {
 
       // Create a TreeWalker object to traverse the DOM from |focusableDiv|.
       var treeWalker = document.createTreeWalker(
-          focusableDiv,
-          NodeFilter.SHOW_ELEMENT,
+          focusableDiv, NodeFilter.SHOW_ELEMENT,
           /** @type {NodeFilter} */
           ({
             acceptNode: function(node) {
@@ -150,7 +146,7 @@ cr.define('cr.ui', function() {
     onDocumentFocus_: function(event) {
       // If the element being focused is a descendant of the currently visible
       // page, focus is valid.
-      var targetNode = /** @type {Node} */(event.target);
+      var targetNode = /** @type {Node} */ (event.target);
       if (this.isDescendantOf_(this.getFocusParent(), targetNode)) {
         this.dispatchFocusEvent_(event.target);
         return;
@@ -187,10 +183,10 @@ cr.define('cr.ui', function() {
      * Initializes the FocusManager by listening for events in the document.
      */
     initialize: function() {
-      document.addEventListener('focus', this.onDocumentFocus_.bind(this),
-          true);
-      document.addEventListener('keydown', this.onDocumentKeyDown_.bind(this),
-          true);
+      document.addEventListener(
+          'focus', this.onDocumentFocus_.bind(this), true);
+      document.addEventListener(
+          'keydown', this.onDocumentKeyDown_.bind(this), true);
     },
   };
 

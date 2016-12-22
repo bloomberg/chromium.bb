@@ -121,15 +121,12 @@ cr.define('cr.ui', function() {
       this.eventTracker.add(element, 'blur', this.onBlur_.bind(this));
       this.eventTracker.add(element, 'focus', this.onFocus_.bind(this));
       this.eventTracker.add(element, 'keydown', this.onKeydown_.bind(this));
-      this.eventTracker.add(element, 'mousedown',
-                             this.onMousedown_.bind(this));
+      this.eventTracker.add(element, 'mousedown', this.onMousedown_.bind(this));
       return true;
     },
 
     /** Dereferences nodes and removes event handlers. */
-    destroy: function() {
-      this.eventTracker.removeAll();
-    },
+    destroy: function() { this.eventTracker.removeAll(); },
 
     /**
      * @param {!Element} sampleElement An element for to find an equivalent for.
@@ -222,10 +219,10 @@ cr.define('cr.ui', function() {
      * @private
      */
     onBlur_: function(e) {
-      if (!this.boundary_.contains(/** @type {Element} */(e.relatedTarget)))
+      if (!this.boundary_.contains(/** @type {Element} */ (e.relatedTarget)))
         return;
 
-      var currentTarget = /** @type {!Element} */(e.currentTarget);
+      var currentTarget = /** @type {!Element} */ (e.currentTarget);
       if (this.getFocusableElements().indexOf(currentTarget) >= 0)
         this.makeActive(false);
     },
@@ -259,7 +256,7 @@ cr.define('cr.ui', function() {
      */
     onKeydown_: function(e) {
       var elements = this.getFocusableElements();
-      var currentElement = /** @type {!Element} */(e.currentTarget);
+      var currentElement = /** @type {!Element} */ (e.currentTarget);
       var elementIndex = elements.indexOf(currentElement);
       assert(elementIndex >= 0);
 

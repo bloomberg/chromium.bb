@@ -38,10 +38,7 @@
 var CrScrollableBehavior = {
   properties: {
     /** @private {number|null} */
-    intervalId_: {
-      type: Number,
-      value: null
-    }
+    intervalId_: {type: Number, value: null}
   },
 
   ready: function() {

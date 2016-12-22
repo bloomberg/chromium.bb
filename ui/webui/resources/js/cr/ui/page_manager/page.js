@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="../node_utils.js">
+// <include src="../node_utils.js">
 
 cr.define('cr.ui.pageManager', function() {
   var PageManager = cr.ui.pageManager.PageManager;
@@ -78,9 +78,7 @@ cr.define('cr.ui.pageManager', function() {
      * Sets focus on the first focusable element. Override for a custom focus
      * strategy.
      */
-    focus: function() {
-      cr.ui.setInitialFocus(this.pageDiv);
-    },
+    focus: function() { cr.ui.setInitialFocus(this.pageDiv); },
 
     /**
      * Reverse any buttons strips in this page (only applies to overlays).
@@ -96,9 +94,7 @@ cr.define('cr.ui.pageManager', function() {
      * Whether it should be possible to show the page.
      * @return {boolean} True if the page should be shown.
      */
-    canShowPage: function() {
-      return true;
-    },
+    canShowPage: function() { return true; },
 
     /**
      * Updates the hash of the current page. If the page is topmost, the history
@@ -152,8 +148,7 @@ cr.define('cr.ui.pageManager', function() {
     get visible() {
       // If this is an overlay dialog it is no longer considered visible while
       // the overlay is fading out. See http://crbug.com/118629.
-      if (this.isOverlay &&
-          this.container.classList.contains('transparent')) {
+      if (this.isOverlay && this.container.classList.contains('transparent')) {
         return false;
       }
       if (this.pageDiv.hidden)
@@ -188,17 +183,13 @@ cr.define('cr.ui.pageManager', function() {
      * page even if sub-pages change.
      * @type {boolean} True if this page is sticky.
      */
-    get sticky() {
-      return false;
-    },
+    get sticky() { return false; },
 
     /**
      * @type {boolean} True if this page should always be considered the
      *     top-most page when visible.
      */
-    get alwaysOnTop() {
-      return this.alwaysOnTop_;
-    },
+    get alwaysOnTop() { return this.alwaysOnTop_; },
 
     /**
      * @type {boolean} True if this page should always be considered the
@@ -244,13 +235,13 @@ cr.define('cr.ui.pageManager', function() {
         // TODO(flackr): Use an event delegate to avoid having to subscribe and
         // unsubscribe for webkitTransitionEnd events.
         container.addEventListener('webkitTransitionEnd', function f(e) {
-            var propName = e.propertyName;
-            if (e.target != e.currentTarget ||
-                (propName && propName != 'opacity')) {
-              return;
-            }
-            container.removeEventListener('webkitTransitionEnd', f);
-            self.fadeCompleted_();
+          var propName = e.propertyName;
+          if (e.target != e.currentTarget ||
+              (propName && propName != 'opacity')) {
+            return;
+          }
+          container.removeEventListener('webkitTransitionEnd', f);
+          self.fadeCompleted_();
         });
         // -webkit-transition is 200ms. Let's wait for 400ms.
         ensureTransitionEndEvent(container, 400);
@@ -267,8 +258,8 @@ cr.define('cr.ui.pageManager', function() {
 
         this.pageDiv.removeAttribute('aria-hidden');
         if (this.parentPage) {
-          this.parentPage.pageDiv.parentElement.setAttribute('aria-hidden',
-                                                             true);
+          this.parentPage.pageDiv.parentElement.setAttribute(
+              'aria-hidden', true);
         }
         container.classList.remove('transparent');
         PageManager.onPageVisibilityChanged(this);
@@ -301,7 +292,5 @@ cr.define('cr.ui.pageManager', function() {
   };
 
   // Export
-  return {
-    Page: Page
-  };
+  return {Page: Page};
 });

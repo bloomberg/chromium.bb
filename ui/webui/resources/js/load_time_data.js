@@ -15,7 +15,7 @@
 // Expose this type globally as a temporary work around until
 // https://github.com/google/closure-compiler/issues/544 is fixed.
 /** @constructor */
-function LoadTimeData() {}
+function LoadTimeData(){}
 
 (function() {
   'use strict';
@@ -39,17 +39,13 @@ function LoadTimeData() {}
      * Returns a JsEvalContext for |data_|.
      * @returns {JsEvalContext}
      */
-    createJsEvalContext: function() {
-      return new JsEvalContext(this.data_);
-    },
+    createJsEvalContext: function() { return new JsEvalContext(this.data_); },
 
     /**
      * @param {string} id An ID of a value that might exist.
      * @return {boolean} True if |id| is a key in the dictionary.
      */
-    valueExists: function(id) {
-      return id in this.data_;
-    },
+    valueExists: function(id) { return id in this.data_; },
 
     /**
      * Fetches a value, expecting that it exists.
@@ -88,9 +84,8 @@ function LoadTimeData() {}
         return '';
 
       var varArgs = arguments;
-      return value.replace(/\$[$1-9]/g, function(m) {
-        return m == '$$' ? '$' : varArgs[m[1]];
-      });
+      return value.replace(
+          /\$[$1-9]/g, function(m) { return m == '$$' ? '$' : varArgs[m[1]]; });
     },
 
     /**
@@ -121,8 +116,9 @@ function LoadTimeData() {}
      * @param {Object} replacements The dictionary object of keys to replace.
      */
     overrideValues: function(replacements) {
-      expect(typeof replacements == 'object',
-             'Replacements must be a dictionary object.');
+      expect(
+          typeof replacements == 'object',
+          'Replacements must be a dictionary object.');
       for (var key in replacements) {
         this.data_[key] = replacements[key];
       }
@@ -136,8 +132,8 @@ function LoadTimeData() {}
    */
   function expect(condition, message) {
     if (!condition) {
-      console.error('Unexpected condition on ' + document.location.href + ': ' +
-                    message);
+      console.error(
+          'Unexpected condition on ' + document.location.href + ': ' + message);
     }
   }
 
@@ -148,8 +144,8 @@ function LoadTimeData() {}
    * @param {string} type The type we expect |value| to be.
    */
   function expectIsType(id, value, type) {
-    expect(typeof value == type, '[' + value + '] (' + id +
-                                 ') is not a ' + type);
+    expect(
+        typeof value == type, '[' + value + '] (' + id + ') is not a ' + type);
   }
 
   expect(!loadTimeData, 'should only include this file once');

@@ -41,9 +41,7 @@ cr.define('cr.ui', function() {
      * The length of the data model.
      * @type {number}
      */
-    get length() {
-      return this.array_.length;
-    },
+    get length() { return this.array_.length; },
 
     /**
      * Returns the item at the given index.
@@ -63,9 +61,7 @@ cr.define('cr.ui', function() {
      * @param {string} field The field to get compare function for.
      * @return {function(*, *): number} Compare function set for given field.
      */
-    compareFunction: function(field) {
-      return this.compareFunctions_[field];
-    },
+    compareFunction: function(field) { return this.compareFunctions_[field]; },
 
     /**
      * Sets compare function for given field.
@@ -125,8 +121,9 @@ cr.define('cr.ui', function() {
      */
     slice: function(opt_from, opt_to) {
       var arr = this.array_;
-      return this.indexes_.slice(opt_from, opt_to).map(
-          function(index) { return arr[index] });
+      return this.indexes_.slice(opt_from, opt_to).map(function(index) {
+        return arr[index]
+      });
     },
 
     /**
@@ -181,8 +178,8 @@ cr.define('cr.ui', function() {
 
       var status = this.sortStatus;
       // if sortStatus.field is null, this restores original order.
-      var sortPermutation = this.doSort_(this.sortStatus.field,
-                                         this.sortStatus.direction);
+      var sortPermutation =
+          this.doSort_(this.sortStatus.field, this.sortStatus.direction);
       if (sortPermutation) {
         var splicePermutation = deletePermutation.map(function(element) {
           return element != -1 ? sortPermutation[element] : -1;
@@ -246,9 +243,7 @@ cr.define('cr.ui', function() {
      * This runs sort after updating.
      * @param {number} index The index of the item to update.
      */
-    updateIndex: function(index) {
-      this.updateIndexes([index]);
-    },
+    updateIndex: function(index) { this.updateIndexes([index]); },
 
     /**
      * Notifies of update of the items in the array. This does not remove and
@@ -270,8 +265,8 @@ cr.define('cr.ui', function() {
 
       if (this.sortStatus.field) {
         var status = this.sortStatus;
-        var sortPermutation = this.doSort_(this.sortStatus.field,
-                                           this.sortStatus.direction);
+        var sortPermutation =
+            this.doSort_(this.sortStatus.field, this.sortStatus.direction);
         if (sortPermutation)
           this.dispatchPermutedEvent_(sortPermutation);
         // We should first call prepareSort (data may change), and then sort.
@@ -288,10 +283,7 @@ cr.define('cr.ui', function() {
      * @return {!Object} Created sort status.
      */
     createSortStatus: function(field, direction) {
-      return {
-        field: field,
-        direction: direction
-      };
+      return {field: field, direction: direction};
     },
 
     /**
@@ -302,9 +294,7 @@ cr.define('cr.ui', function() {
      * @param {function()} callback The function to invoke when preparation
      *     is complete.
      */
-    prepareSort: function(field, callback) {
-      callback();
-    },
+    prepareSort: function(field, callback) { callback(); },
 
     /**
      * Sorts data model according to given field and direction and dispathes
@@ -426,8 +416,8 @@ cr.define('cr.ui', function() {
           compareResult = compareFunction.call(null, item1, item2);
         if (compareResult != 0)
           return dirMultiplier * compareResult;
-        return dirMultiplier * this.defaultValuesCompareFunction(index1,
-                                                                 index2);
+        return dirMultiplier *
+            this.defaultValuesCompareFunction(index1, index2);
       }.bind(this);
     },
 
@@ -444,7 +434,5 @@ cr.define('cr.ui', function() {
     }
   };
 
-  return {
-    ArrayDataModel: ArrayDataModel
-  };
+  return {ArrayDataModel: ArrayDataModel};
 });

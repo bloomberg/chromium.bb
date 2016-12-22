@@ -23,7 +23,7 @@ cr.define('cr.ui.table', function() {
 
     table_: null,
 
-     /**
+    /**
      * Initializes the element.
      */
     decorate: function() {
@@ -83,7 +83,8 @@ cr.define('cr.ui.table', function() {
     getAfterFillerHeight: function(lastIndex) {
       // If the list is empty set height to 1 to show horizontal
       // scroll bar.
-      return lastIndex == 0 ? 1 :
+      return lastIndex == 0 ?
+          1 :
           cr.ui.List.prototype.getAfterFillerHeight.call(this, lastIndex);
     },
 
@@ -215,7 +216,5 @@ cr.define('cr.ui.table', function() {
    */
   cr.defineProperty(TableList, 'table');
 
-  return {
-    TableList: TableList
-  };
+  return {TableList: TableList};
 });

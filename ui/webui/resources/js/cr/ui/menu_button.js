@@ -67,9 +67,7 @@ cr.define('cr.ui', function() {
      * The menu associated with the menu button.
      * @type {cr.ui.Menu}
      */
-    get menu() {
-      return this.menu_;
-    },
+    get menu() { return this.menu_; },
     set menu(menu) {
       if (typeof menu == 'string' && menu[0] == '#') {
         menu = assert(this.ownerDocument.getElementById(menu.slice(1)));
@@ -143,8 +141,8 @@ cr.define('cr.ui', function() {
           }
           break;
         case 'activate':
-          var hideDelayed = e.target instanceof cr.ui.MenuItem &&
-              e.target.checkable;
+          var hideDelayed =
+              e.target instanceof cr.ui.MenuItem && e.target.checkable;
           this.hideMenu(hideDelayed ? HideType.DELAYED : HideType.INSTANT);
           break;
         case 'scroll':
@@ -183,11 +181,8 @@ cr.define('cr.ui', function() {
 
       this.menu.updateCommands(this);
 
-      var event = new UIEvent('menushow',{
-        bubbles: true,
-        cancelable: true,
-        view: window
-      });
+      var event = new UIEvent(
+          'menushow', {bubbles: true, cancelable: true, view: window});
       if (!this.dispatchEvent(event))
         return;
 
@@ -232,11 +227,8 @@ cr.define('cr.ui', function() {
       this.showingEvents_.removeAll();
       this.focus();
 
-      var event = new UIEvent('menuhide', {
-        bubbles: true,
-        cancelable: false,
-        view: window
-      });
+      var event = new UIEvent(
+          'menuhide', {bubbles: true, cancelable: false, view: window});
       this.dispatchEvent(event);
 
       // On windows we might hide the menu in a right mouse button up and if
@@ -248,9 +240,7 @@ cr.define('cr.ui', function() {
     /**
      * Whether the menu is shown.
      */
-    isMenuShown: function() {
-      return this.hasAttribute('menu-shown');
-    },
+    isMenuShown: function() { return this.hasAttribute('menu-shown'); },
 
     /**
      * Positions the menu below the menu button. At this point we do not use any
@@ -258,8 +248,8 @@ cr.define('cr.ui', function() {
      * @private
      */
     positionMenu_: function() {
-      positionPopupAroundElement(this, this.menu, this.anchorType,
-                                 this.invertLeftRight);
+      positionPopupAroundElement(
+          this, this.menu, this.anchorType, this.invertLeftRight);
     },
 
     /**

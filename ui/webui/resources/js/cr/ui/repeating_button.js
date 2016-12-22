@@ -15,9 +15,7 @@ cr.define('cr.ui', function() {
   /**
    * DOM Events that may be fired by the Repeating button.
    */
-  RepeatingButton.Event = {
-    BUTTON_HELD: 'buttonHeld'
-  };
+  RepeatingButton.Event = {BUTTON_HELD: 'buttonHeld'};
 
   RepeatingButton.prototype = {
     __proto__: HTMLButtonElement.prototype,
@@ -104,12 +102,12 @@ cr.define('cr.ui', function() {
         if (typeof self.armRepeaterCallbackId_ != 'undefined') {
           self.armRepeaterCallbackId_ = undefined;
           self.buttonHeld_();
-          self.intervalCallbackId_ = setInterval(self.buttonHeld_.bind(self),
-                                                 self.holdRepeatIntervalTime_);
+          self.intervalCallbackId_ = setInterval(
+              self.buttonHeld_.bind(self), self.holdRepeatIntervalTime_);
         }
       };
-      this.armRepeaterCallbackId_ = setTimeout(armRepeaterCallback,
-                                               this.holdDelayTime_);
+      this.armRepeaterCallbackId_ =
+          setTimeout(armRepeaterCallback, this.holdDelayTime_);
     },
 
     /**
@@ -117,9 +115,7 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The triggered event.
      * @private
      */
-    buttonUp_: function(e) {
-      this.clearTimeout_();
-    },
+    buttonUp_: function(e) { this.clearTimeout_(); },
 
     /**
      * Resets the interval callback.
@@ -148,37 +144,26 @@ cr.define('cr.ui', function() {
      * Getter for the initial delay before repeating.
      * @type {number} The delay in milliseconds.
      */
-    get repeatDelay() {
-      return this.holdDelayTime_;
-    },
+    get repeatDelay() { return this.holdDelayTime_; },
 
     /**
      * Setter for the initial delay before repeating.
      * @type {number} The delay in milliseconds.
      */
-    set repeatDelay(delay) {
-      this.holdDelayTime_ = delay;
-    },
+    set repeatDelay(delay) { this.holdDelayTime_ = delay; },
 
     /**
      * Getter for the repeat interval.
      * @type {number} The repeat interval in milliseconds.
      */
-    get repeatInterval() {
-      return this.holdRepeatIntervalTime_;
-    },
+    get repeatInterval() { return this.holdRepeatIntervalTime_; },
 
     /**
      * Setter for the repeat interval.
      * @type {number} The interval in milliseconds.
      */
-   set repeatInterval(delay) {
-     this.holdRepeatIntervalTime_ = delay;
-   }
+    set repeatInterval(delay) { this.holdRepeatIntervalTime_ = delay; }
   };
 
-  return {
-    RepeatingButton: RepeatingButton
-  };
+  return {RepeatingButton: RepeatingButton};
 });
-

@@ -98,8 +98,7 @@ cr.define('cr.ui', function() {
      */
     decorate: function() {
       this.className = 'bubble';
-      this.innerHTML =
-          '<div class="bubble-content"></div>' +
+      this.innerHTML = '<div class="bubble-content"></div>' +
           '<div class="bubble-shadow"></div>' +
           '<div class="bubble-arrow"></div>';
       this.hidden = true;
@@ -142,11 +141,11 @@ cr.define('cr.ui', function() {
         return;
 
       this.arrowAtRight_ = location == cr.ui.ArrowLocation.TOP_END ||
-                           location == cr.ui.ArrowLocation.BOTTOM_END;
+          location == cr.ui.ArrowLocation.BOTTOM_END;
       if (document.documentElement.dir == 'rtl')
         this.arrowAtRight_ = !this.arrowAtRight_;
       this.arrowAtTop_ = location == cr.ui.ArrowLocation.TOP_START ||
-                         location == cr.ui.ArrowLocation.TOP_END;
+          location == cr.ui.ArrowLocation.TOP_END;
     },
 
     /**
@@ -181,8 +180,8 @@ cr.define('cr.ui', function() {
         // specified by the arrow location). If the bubble is not entirely
         // within view, it is then shifted, preserving the arrow tip position.
         var left = this.arrowAtRight_ ?
-           anchorMid + BubbleBase.ARROW_OFFSET - bubble.width :
-           anchorMid - BubbleBase.ARROW_OFFSET;
+            anchorMid + BubbleBase.ARROW_OFFSET - bubble.width :
+            anchorMid - BubbleBase.ARROW_OFFSET;
         var max_left_pos =
             documentWidth - bubble.width - BubbleBase.MIN_VIEWPORT_EDGE_MARGIN;
         var min_left_pos = BubbleBase.MIN_VIEWPORT_EDGE_MARGIN;
@@ -191,9 +190,10 @@ cr.define('cr.ui', function() {
         else
           left = Math.max(Math.min(left, max_left_pos), min_left_pos);
         var arrowTip = Math.min(
-            Math.max(arrow.width / 2,
-                     this.arrowAtRight_ ? left + bubble.width - anchorMid :
-                                          anchorMid - left),
+            Math.max(
+                arrow.width / 2, this.arrowAtRight_ ?
+                    left + bubble.width - anchorMid :
+                    anchorMid - left),
             bubble.width - arrow.width / 2);
 
         // Work out the vertical placement, attempting to fit the bubble
@@ -208,15 +208,16 @@ cr.define('cr.ui', function() {
         // * Outside the anchor, arrow tip overlapping the anchor (arrow at
         //   bottom/top, opposite the specified arrow location).
         // * Overlapping the anchor.
-        var offsetTop = Math.min(documentHeight - anchor.bottom - bubble.height,
-                                 arrow.height / 2);
-        var offsetBottom = Math.min(anchor.top - bubble.height,
-                                    arrow.height / 2);
+        var offsetTop = Math.min(
+            documentHeight - anchor.bottom - bubble.height, arrow.height / 2);
+        var offsetBottom =
+            Math.min(anchor.top - bubble.height, arrow.height / 2);
         if (offsetTop < 0 && offsetBottom < 0) {
           var top = 0;
           this.updateArrowPosition_(false, false, arrowTip);
-        } else if (offsetTop > offsetBottom ||
-                   offsetTop == offsetBottom && this.arrowAtTop_) {
+        } else if (
+            offsetTop > offsetBottom ||
+            offsetTop == offsetBottom && this.arrowAtTop_) {
           var top = anchor.bottom + offsetTop;
           this.updateArrowPosition_(true, true, arrowTip);
         } else {
@@ -226,17 +227,18 @@ cr.define('cr.ui', function() {
       } else {
         if (this.bubbleAlignment_ ==
             cr.ui.BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE) {
-          var left = this.arrowAtRight_ ? anchor.right - bubble.width :
-              anchor.left;
+          var left =
+              this.arrowAtRight_ ? anchor.right - bubble.width : anchor.left;
         } else {
           var left = this.arrowAtRight_ ?
               anchorMid - this.clientWidth + BubbleBase.ARROW_OFFSET :
               anchorMid - BubbleBase.ARROW_OFFSET;
         }
-        var top = this.arrowAtTop_ ? anchor.bottom + arrow.height / 2 :
+        var top = this.arrowAtTop_ ?
+            anchor.bottom + arrow.height / 2 :
             anchor.top - this.clientHeight - arrow.height / 2;
-        this.updateArrowPosition_(true, this.arrowAtTop_,
-                                  BubbleBase.ARROW_OFFSET);
+        this.updateArrowPosition_(
+            true, this.arrowAtTop_, BubbleBase.ARROW_OFFSET);
       }
 
       this.style.left = left + 'px';
@@ -289,9 +291,7 @@ cr.define('cr.ui', function() {
      * Attach the bubble to the document's DOM.
      * @private
      */
-    attachToDOM_: function() {
-      document.body.appendChild(this);
-    },
+    attachToDOM_: function() { document.body.appendChild(this); },
 
     /**
      * Update the arrow so that it appears at the correct position.
@@ -407,9 +407,10 @@ cr.define('cr.ui', function() {
         // Dismiss the bubble when the user clicks on the close button.
         if (event.target == this.querySelector('.bubble-close')) {
           this.handleCloseEvent_();
-        // Dismiss the bubble when the user clicks outside it after the
-        // specified delay has passed.
-        } else if (!this.contains(event.target) &&
+          // Dismiss the bubble when the user clicks outside it after the
+          // specified delay has passed.
+        } else if (
+            !this.contains(event.target) &&
             Date.now() - this.showTime_ >= this.deactivateToDismissDelay_) {
           this.hide();
         }

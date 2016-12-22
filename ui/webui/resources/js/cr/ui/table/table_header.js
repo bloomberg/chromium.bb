@@ -31,8 +31,8 @@ cr.define('cr.ui.table', function() {
       this.headerInner_ = this.ownerDocument.createElement('div');
       this.headerInner_.className = 'table-header-inner';
       this.appendChild(this.headerInner_);
-      this.addEventListener('touchstart',
-          this.handleTouchStart_.bind(this), false);
+      this.addEventListener(
+          'touchstart', this.handleTouchStart_.bind(this), false);
     },
 
     /**
@@ -64,9 +64,7 @@ cr.define('cr.ui.table', function() {
 
     batchCount_: 0,
 
-    startBatchUpdates: function() {
-      this.batchCount_++;
-    },
+    startBatchUpdates: function() { this.batchCount_++; },
 
     endBatchUpdates: function() {
       this.batchCount_--;
@@ -87,7 +85,7 @@ cr.define('cr.ui.table', function() {
       this.updateWidth();
       this.headerInner_.textContent = '';
 
-      if (!cm || ! dm) {
+      if (!cm || !dm) {
         return;
       }
 
@@ -100,8 +98,8 @@ cr.define('cr.ui.table', function() {
         cell.hidden = !cm.isVisible(i);
         cell.className = 'table-header-cell';
         if (dm.isSortable(cm.getId(i)))
-          cell.addEventListener('click',
-                                this.createSortFunction_(i).bind(this));
+          cell.addEventListener(
+              'click', this.createSortFunction_(i).bind(this));
 
         cell.appendChild(this.createHeaderLabel_(i));
         this.headerInner_.appendChild(cell);
@@ -119,8 +117,8 @@ cr.define('cr.ui.table', function() {
         // splitter should use CSS for background image.
         var splitter = new TableSplitter({table: this.table_});
         splitter.columnIndex = i;
-        splitter.addEventListener('dblclick',
-                                  this.handleDblClick_.bind(this, i));
+        splitter.addEventListener(
+            'dblclick', this.handleDblClick_.bind(this, i));
         // Don't display splitters for hidden columns.  Don't omit the splitter
         // completely, as it's much simpler if the number of splitter elements
         // and columns are in sync.
@@ -182,9 +180,7 @@ cr.define('cr.ui.table', function() {
      * @param {number} index The index of the column to sort by.
      */
     createSortFunction_: function(index) {
-      return function() {
-        this.table_.sort(index);
-      }.bind(this);
+      return function() { this.table_.sort(index); }.bind(this);
     },
 
     /**
@@ -225,9 +221,7 @@ cr.define('cr.ui.table', function() {
      * @param {number} index Column index.
      * @param {Event} e The double click event.
      */
-    handleDblClick_: function(index, e) {
-     this.table_.fitColumn(index);
-    },
+    handleDblClick_: function(index, e) { this.table_.fitColumn(index); },
 
     /**
      * Determines whether a full redraw is required.
@@ -261,7 +255,5 @@ cr.define('cr.ui.table', function() {
    */
   TableHeader.TOUCH_DRAG_AREA_WIDTH = 30;
 
-  return {
-    TableHeader: TableHeader
-  };
+  return {TableHeader: TableHeader};
 });

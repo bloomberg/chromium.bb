@@ -36,9 +36,7 @@ var CrSearchFieldBehavior = {
   /**
    * @return {string} The value of the search field.
    */
-  getValue: function() {
-    return this.getSearchInput().value;
-  },
+  getValue: function() { return this.getSearchInput().value; },
 
   /**
    * Sets the value of the search field.

@@ -32,18 +32,14 @@ cr.define('cr.ui.table', function() {
      * The number of the columns.
      * @type {number}
      */
-    get size() {
-      return this.columns_.length;
-    },
+    get size() { return this.columns_.length; },
 
     /**
      * Returns id of column at the given index.
      * @param {number} index The index of the column.
      * @return {string} Column id.
      */
-    getId: function(index) {
-      return this.columns_[index].id;
-    },
+    getId: function(index) { return this.columns_[index].id; },
 
     /**
      * Returns name of column at the given index. Name is used as column header
@@ -51,9 +47,7 @@ cr.define('cr.ui.table', function() {
      * @param {number} index The index of the column.
      * @return {string} Column name.
      */
-    getName: function(index) {
-      return this.columns_[index].name;
-    },
+    getName: function(index) { return this.columns_[index].name; },
 
     /**
      * Sets name of column at the given index.
@@ -75,18 +69,14 @@ cr.define('cr.ui.table', function() {
      * @param {number} index The index of the column.
      * @return {string} Column width in pixels.
      */
-    getWidth: function(index) {
-      return this.columns_[index].width;
-    },
+    getWidth: function(index) { return this.columns_[index].width; },
 
     /**
      * Check if the column at the given index should align to the end.
      * @param {number} index The index of the column.
      * @return {boolean} True if the column is aligned to end.
      */
-    isEndAlign: function(index) {
-      return this.columns_[index].endAlign;
-    },
+    isEndAlign: function(index) { return this.columns_[index].endAlign; },
 
     /**
      * Sets width of column at the given index.
@@ -213,12 +203,8 @@ cr.define('cr.ui.table', function() {
      * @param {number} index The column index.
      * @return {boolean} Whether the column is visible.
      */
-    isVisible: function(index) {
-      return this.columns_[index].visible;
-    }
+    isVisible: function(index) { return this.columns_[index].visible; }
   };
 
-  return {
-    TableColumnModel: TableColumnModel
-  };
+  return {TableColumnModel: TableColumnModel};
 });

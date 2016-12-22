@@ -51,13 +51,14 @@ Polymer({
       // We ignore UserEditable unless there is a UserPolicy.
       this.indicatorType = CrPolicyIndicatorType.RECOMMENDED;
       this.recommended =
-          /** @type {CrOnc.NetworkPropertyType} */(property.UserPolicy);
-    } else if (property.DeviceEditable === true &&
-               property.hasOwnProperty('DevicePolicy')) {
+          /** @type {CrOnc.NetworkPropertyType} */ (property.UserPolicy);
+    } else if (
+        property.DeviceEditable === true &&
+        property.hasOwnProperty('DevicePolicy')) {
       // We ignore DeviceEditable unless there is a DevicePolicy.
       this.indicatorType = CrPolicyIndicatorType.RECOMMENDED;
       this.recommended =
-          /** @type {CrOnc.NetworkPropertyType} */(property.DevicePolicy);
+          /** @type {CrOnc.NetworkPropertyType} */ (property.DevicePolicy);
     } else if (effective == 'UserPolicy') {
       this.indicatorType = CrPolicyIndicatorType.USER_POLICY;
     } else if (effective == 'DevicePolicy') {

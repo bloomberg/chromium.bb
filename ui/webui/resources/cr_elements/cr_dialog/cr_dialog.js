@@ -55,7 +55,5 @@ Polymer({
   },
 
   /** @return {!PaperIconButtonElement} */
-  getCloseButton: function() {
-    return this.$.close;
-  },
+  getCloseButton: function() { return this.$.close; },
 });

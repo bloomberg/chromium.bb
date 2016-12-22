@@ -36,13 +36,13 @@ cr.define('cr.ui.table', function() {
      * @return {cr.ui.table.TableColumn} Clone of the given column.
      */
     clone: function() {
-      var tableColumn = new TableColumn(this.id_, this.name_, this.width_,
-                                        this.endAlign_);
+      var tableColumn =
+          new TableColumn(this.id_, this.name_, this.width_, this.endAlign_);
       tableColumn.renderFunction = this.renderFunction_;
       tableColumn.headerRenderFunction = this.headerRenderFunction_;
       tableColumn.defaultOrder = this.defaultOrder_;
 
-      tableColumn.visible_  = this.visible_;
+      tableColumn.visible_ = this.visible_;
 
       return tableColumn;
     },
@@ -75,18 +75,14 @@ cr.define('cr.ui.table', function() {
      * The width of the column.  Hidden columns have zero width.
      * @type {number}
      */
-    get width() {
-      return this.visible_ ? this.width_ : 0;
-    },
+    get width() { return this.visible_ ? this.width_ : 0; },
 
     /**
      * The width of the column, disregarding visibility.  For hidden columns,
      * this would be the width of the column if it were to be made visible.
      * @type {number}
      */
-    get absoluteWidth() {
-      return this.width_;
-    },
+    get absoluteWidth() { return this.width_; },
   };
 
   /**
@@ -137,7 +133,5 @@ cr.define('cr.ui.table', function() {
    */
   cr.defineProperty(TableColumn, 'defaultOrder');
 
-  return {
-    TableColumn: TableColumn
-  };
+  return {TableColumn: TableColumn};
 });

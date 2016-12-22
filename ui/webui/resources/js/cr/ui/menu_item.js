@@ -58,9 +58,7 @@ cr.define('cr.ui', function() {
      * @type {cr.ui.Command}
      */
     command_: null,
-    get command() {
-      return this.command_;
-    },
+    get command() { return this.command_; },
     set command(command) {
       if (this.command_) {
         this.command_.removeEventListener('labelChange', this);
@@ -98,30 +96,20 @@ cr.define('cr.ui', function() {
      * The text label.
      * @type {string}
      */
-    get label() {
-      return this.textContent;
-    },
-    set label(label) {
-      this.textContent = label;
-    },
+    get label() { return this.textContent; },
+    set label(label) { this.textContent = label; },
 
     /**
      * Menu icon.
      * @type {string}
      */
-    get iconUrl() {
-      return this.style.backgroundImage;
-    },
-    set iconUrl(url) {
-      this.style.backgroundImage = 'url(' + url + ')';
-    },
+    get iconUrl() { return this.style.backgroundImage; },
+    set iconUrl(url) { this.style.backgroundImage = 'url(' + url + ')'; },
 
     /**
      * @return {boolean} Whether the menu item is a separator.
      */
-    isSeparator: function() {
-      return this.tagName == 'HR';
-    },
+    isSeparator: function() { return this.tagName == 'HR'; },
 
     /**
      * Updates shortcut text according to associated command. If command has
@@ -130,8 +118,7 @@ cr.define('cr.ui', function() {
     updateShortcut_: function() {
       this.removeAttribute('shortcutText');
 
-      if (!this.command_ ||
-          !this.command_.shortcut ||
+      if (!this.command_ || !this.command_.shortcut ||
           this.command_.hideShortcutText)
         return;
 
@@ -185,7 +172,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleMouseUp_: function(e) {
-      e = /** @type {!MouseEvent} */(e);
+      e = /** @type {!MouseEvent} */ (e);
       // Only dispatch an activate event for left or middle click.
       if (e.button > 1)
         return;
@@ -193,8 +180,9 @@ cr.define('cr.ui', function() {
       if (!this.disabled && !this.isSeparator() && this.selected) {
         // Store |contextElement| since it'll be removed by {Menu} on handling
         // 'activate' event.
-        var contextElement = /** @type {{contextElement: Element}} */(
-            this.parentNode).contextElement;
+        var contextElement =
+            /** @type {{contextElement: Element}} */ (this.parentNode)
+                .contextElement;
         var activationEvent = cr.doc.createEvent('Event');
         activationEvent.initEvent('activate', true, true);
         activationEvent.originalEvent = e;
@@ -267,7 +255,5 @@ cr.define('cr.ui', function() {
   cr.defineProperty(MenuItem, 'checkable', cr.PropertyKind.BOOL_ATTR);
 
   // Export
-  return {
-    MenuItem: MenuItem
-  };
+  return {MenuItem: MenuItem};
 });

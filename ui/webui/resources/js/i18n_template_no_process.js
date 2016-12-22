@@ -113,7 +113,7 @@ var i18nTemplate = (function() {
             }
           }
         } else {
-          element.setAttribute(propName, /** @type {string} */(value));
+          element.setAttribute(propName, /** @type {string} */ (value));
         }
       });
     }
@@ -127,9 +127,12 @@ var i18nTemplate = (function() {
     prefixes.push('* /deep/ ');
 
   var attributeNames = Object.keys(handlers);
-  var selector = prefixes.map(function(prefix) {
-    return prefix + '[' + attributeNames.join('], ' + prefix + '[') + ']';
-  }).join(', ');
+  var selector = prefixes
+                     .map(function(prefix) {
+                       return prefix + '[' +
+                           attributeNames.join('], ' + prefix + '[') + ']';
+                     })
+                     .join(', ');
 
   /**
    * Processes a DOM tree using a |data| source to populate template values.
@@ -158,7 +161,7 @@ var i18nTemplate = (function() {
 
     var importLinks = root.querySelectorAll('link[rel=import]');
     for (var i = 0; i < importLinks.length; ++i) {
-      var importLink = /** @type {!HTMLLinkElement} */(importLinks[i]);
+      var importLink = /** @type {!HTMLLinkElement} */ (importLinks[i]);
       if (!importLink.import) {
         // Happens when a <link rel=import> is inside a <template>.
         // TODO(dbeam): should we log an error if we detect that here?
@@ -169,7 +172,7 @@ var i18nTemplate = (function() {
 
     var templates = root.querySelectorAll('template');
     for (var i = 0; i < templates.length; ++i) {
-      var template = /** @type {HTMLTemplateElement} */(templates[i]);
+      var template = /** @type {HTMLTemplateElement} */ (templates[i]);
       if (!template.content)
         continue;
       processWithoutCycles(template.content, data, visited, mark);
@@ -177,7 +180,7 @@ var i18nTemplate = (function() {
 
     var isElement = root instanceof Element;
     if (isElement && root.webkitMatchesSelector(selector))
-      processElement(/** @type {!Element} */(root), data, visited);
+      processElement(/** @type {!Element} */ (root), data, visited);
 
     var elements = root.querySelectorAll(selector);
     for (var i = 0; i < elements.length; ++i) {
@@ -209,7 +212,5 @@ var i18nTemplate = (function() {
     }
   }
 
-  return {
-    process: process
-  };
+  return {process: process};
 }());

@@ -30,9 +30,7 @@ cr.define('cr.ui', function() {
      * The number of items in the model.
      * @type {number}
      */
-    get length() {
-      return this.length_;
-    },
+    get length() { return this.length_; },
 
     /**
      * The selected indexes.
@@ -229,15 +227,15 @@ cr.define('cr.ui', function() {
         // |anchorIndex| has been actually changed in the batch.
         this.leadIndex_ = this.adjustIndex_(this.leadIndex_);
         if (this.leadIndex_ != this.oldLeadIndex_) {
-          cr.dispatchPropertyChange(this, 'leadIndex',
-                                    this.leadIndex_, this.oldLeadIndex_);
+          cr.dispatchPropertyChange(
+              this, 'leadIndex', this.leadIndex_, this.oldLeadIndex_);
         }
         this.oldLeadIndex_ = null;
 
         this.anchorIndex_ = this.adjustIndex_(this.anchorIndex_);
         if (this.anchorIndex_ != this.oldAnchorIndex_) {
-          cr.dispatchPropertyChange(this, 'anchorIndex',
-                                    this.anchorIndex_, this.oldAnchorIndex_);
+          cr.dispatchPropertyChange(
+              this, 'anchorIndex', this.anchorIndex_, this.oldAnchorIndex_);
         }
         this.oldAnchorIndex_ = null;
 
@@ -264,9 +262,7 @@ cr.define('cr.ui', function() {
      * the user is moving using the arrow keys.
      * @type {number}
      */
-    get leadIndex() {
-      return this.leadIndex_;
-    },
+    get leadIndex() { return this.leadIndex_; },
     set leadIndex(leadIndex) {
       var oldValue = this.leadIndex_;
       var newValue = this.adjustIndex_(leadIndex);
@@ -283,9 +279,7 @@ cr.define('cr.ui', function() {
      * The anchorIndex is used with multiple selection.
      * @type {number}
      */
-    get anchorIndex() {
-      return this.anchorIndex_;
-    },
+    get anchorIndex() { return this.anchorIndex_; },
     set anchorIndex(anchorIndex) {
       var oldValue = this.anchorIndex_;
       var newValue = this.adjustIndex_(anchorIndex);
@@ -317,9 +311,7 @@ cr.define('cr.ui', function() {
      * Whether the selection model supports multiple selected items.
      * @type {boolean}
      */
-    get multiple() {
-      return true;
-    },
+    get multiple() { return true; },
 
     /**
      * Adjusts the selection after reordering of items in the table.
@@ -331,11 +323,10 @@ cr.define('cr.ui', function() {
       var oldAnchorIndex = this.anchorIndex;
       var oldSelectedItemsCount = this.selectedIndexes.length;
 
-      this.selectedIndexes = this.selectedIndexes.map(function(oldIndex) {
-        return permutation[oldIndex];
-      }).filter(function(index) {
-        return index != -1;
-      });
+      this.selectedIndexes =
+          this.selectedIndexes
+              .map(function(oldIndex) { return permutation[oldIndex]; })
+              .filter(function(index) { return index != -1; });
 
       // Will be adjusted in endChange.
       if (oldLeadIndex != -1)
@@ -357,12 +348,8 @@ cr.define('cr.ui', function() {
      * Adjusts selection model length.
      * @param {number} length New selection model length.
      */
-    adjustLength: function(length) {
-      this.length_ = length;
-    }
+    adjustLength: function(length) { this.length_ = length; }
   };
 
-  return {
-    ListSelectionModel: ListSelectionModel
-  };
+  return {ListSelectionModel: ListSelectionModel};
 });

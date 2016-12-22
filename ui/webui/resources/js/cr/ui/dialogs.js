@@ -40,13 +40,13 @@ cr.define('cr.ui.dialogs', function() {
     var doc = this.document_;
     this.container_ = doc.createElement('div');
     this.container_.className = 'cr-dialog-container';
-    this.container_.addEventListener('keydown',
-                                     this.onContainerKeyDown_.bind(this));
+    this.container_.addEventListener(
+        'keydown', this.onContainerKeyDown_.bind(this));
     this.shield_ = doc.createElement('div');
     this.shield_.className = 'cr-dialog-shield';
     this.container_.appendChild(this.shield_);
-    this.container_.addEventListener('mousedown',
-                                     this.onContainerMouseDown_.bind(this));
+    this.container_.addEventListener(
+        'mousedown', this.onContainerMouseDown_.bind(this));
 
     this.frame_ = doc.createElement('div');
     this.frame_.className = 'cr-dialog-frame';
@@ -61,8 +61,7 @@ cr.define('cr.ui.dialogs', function() {
 
     this.closeButton_ = doc.createElement('div');
     this.closeButton_.className = 'cr-dialog-close';
-    this.closeButton_.addEventListener('click',
-                                        this.onCancelClick_.bind(this));
+    this.closeButton_.addEventListener('click', this.onCancelClick_.bind(this));
     this.frame_.appendChild(this.closeButton_);
 
     this.text_ = doc.createElement('div');
@@ -82,8 +81,8 @@ cr.define('cr.ui.dialogs', function() {
     this.cancelButton_ = doc.createElement('button');
     this.cancelButton_.className = 'cr-dialog-cancel';
     this.cancelButton_.textContent = BaseDialog.CANCEL_LABEL;
-    this.cancelButton_.addEventListener('click',
-                                        this.onCancelClick_.bind(this));
+    this.cancelButton_.addEventListener(
+        'click', this.onCancelClick_.bind(this));
     this.buttons.appendChild(this.cancelButton_);
 
     this.initialFocusElement_ = this.okButton_;
@@ -164,8 +163,8 @@ cr.define('cr.ui.dialogs', function() {
    * @param {Function=} opt_onCancel
    * @param {Function=} opt_onShow
    */
-  BaseDialog.prototype.showHtml = function(title, message,
-      opt_onOk, opt_onCancel, opt_onShow) {
+  BaseDialog.prototype.showHtml = function(
+      title, message, opt_onOk, opt_onCancel, opt_onShow) {
     this.text_.innerHTML = message;
     this.show_(title, opt_onOk, opt_onCancel, opt_onShow);
   };
@@ -173,8 +172,7 @@ cr.define('cr.ui.dialogs', function() {
   /** @private */
   BaseDialog.prototype.findFocusableElements_ = function(doc) {
     var elements = Array.prototype.filter.call(
-        doc.querySelectorAll('*'),
-        function(n) { return n.tabIndex >= 0; });
+        doc.querySelectorAll('*'), function(n) { return n.tabIndex >= 0; });
 
     var iframes = doc.querySelectorAll('iframe');
     for (var i = 0; i < iframes.length; i++) {
@@ -184,7 +182,8 @@ cr.define('cr.ui.dialogs', function() {
       var contentDoc;
       try {
         contentDoc = iframe.contentDocument;
-      } catch(e) {} // ignore SecurityError
+      } catch (e) {
+      }  // ignore SecurityError
       if (contentDoc)
         elements = elements.concat(this.findFocusableElements_(contentDoc));
     }
@@ -198,8 +197,8 @@ cr.define('cr.ui.dialogs', function() {
    * @param {Function=} opt_onCancel
    * @param {Function=} opt_onShow
    */
-  BaseDialog.prototype.showWithTitle = function(title, message,
-      opt_onOk, opt_onCancel, opt_onShow) {
+  BaseDialog.prototype.showWithTitle = function(
+      title, message, opt_onOk, opt_onCancel, opt_onShow) {
     this.text_.textContent = message;
     this.show_(title, opt_onOk, opt_onCancel, opt_onShow);
   };
@@ -215,10 +214,10 @@ cr.define('cr.ui.dialogs', function() {
       title, opt_onOk, opt_onCancel, opt_onShow) {
     // Make all outside nodes unfocusable while the dialog is active.
     this.deactivatedNodes_ = this.findFocusableElements_(this.document_);
-    this.tabIndexes_ = this.deactivatedNodes_.map(
-        function(n) { return n.getAttribute('tabindex'); });
-    this.deactivatedNodes_.forEach(
-        function(n) { n.tabIndex = -1; });
+    this.tabIndexes_ = this.deactivatedNodes_.map(function(n) {
+      return n.getAttribute('tabindex');
+    });
+    this.deactivatedNodes_.forEach(function(n) { n.tabIndex = -1; });
 
     this.previousActiveElement_ = this.document_.activeElement;
     this.parentNode_.appendChild(this.container_);
@@ -307,9 +306,7 @@ cr.define('cr.ui.dialogs', function() {
    * @constructor
    * @extends {cr.ui.dialogs.BaseDialog}
    */
-  function ConfirmDialog(parentNode) {
-    BaseDialog.call(this, parentNode);
-  }
+  function ConfirmDialog(parentNode) { BaseDialog.call(this, parentNode); }
 
   ConfirmDialog.prototype = {__proto__: BaseDialog.prototype};
 
@@ -360,9 +357,7 @@ cr.define('cr.ui.dialogs', function() {
         this, message, opt_onOk, opt_onCancel, opt_onShow);
   };
 
-  PromptDialog.prototype.getValue = function() {
-    return this.input_.value;
-  };
+  PromptDialog.prototype.getValue = function() { return this.input_.value; };
 
   /** @private */
   PromptDialog.prototype.onOkClick_ = function(event) {

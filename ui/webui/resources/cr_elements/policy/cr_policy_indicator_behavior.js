@@ -26,7 +26,7 @@ var CrPolicyIndicatorBehavior = {
    */
   isIndicatorVisible: function(type) {
     return type != CrPolicyIndicatorType.NONE &&
-           type != CrPolicyIndicatorType.EXTENSION;
+        type != CrPolicyIndicatorType.EXTENSION;
   },
 
   /**
@@ -62,7 +62,7 @@ var CrPolicyIndicatorBehavior = {
    * @param {string=} opt_name An optional name argument.
    * @return The translated string.
    */
-  i18n_: function (id, opt_name) {
+  i18n_: function(id, opt_name) {
     return loadTimeData.getStringF(id, opt_name);
   },
 

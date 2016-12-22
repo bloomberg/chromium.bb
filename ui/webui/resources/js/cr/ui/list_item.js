@@ -25,12 +25,8 @@ cr.define('cr.ui', function() {
      * Plain text label.
      * @type {string}
      */
-    get label() {
-      return this.textContent;
-    },
-    set label(label) {
-      this.textContent = label;
-    },
+    get label() { return this.textContent; },
+    set label(label) { this.textContent = label; },
 
     /**
      * This item's index in the containing list.
@@ -50,18 +46,16 @@ cr.define('cr.ui', function() {
     /**
      * Called when the selection state of this element changes.
      */
-    selectionChanged: function() {
-    },
+    selectionChanged: function() {},
   };
 
   /**
    * Whether the item is selected. Setting this does not update the underlying
    * selection model. This is only used for display purpose.
    */
-  cr.defineProperty(ListItem, 'selected', cr.PropertyKind.BOOL_ATTR,
-                    function() {
-                      this.selectionChanged();
-                    });
+  cr.defineProperty(
+      ListItem, 'selected', cr.PropertyKind.BOOL_ATTR,
+      function() { this.selectionChanged(); });
 
   /**
    * Whether the item is the lead in a selection. Setting this does not update
@@ -75,7 +69,5 @@ cr.define('cr.ui', function() {
    */
   cr.defineProperty(ListItem, 'listIndex');
 
-  return {
-    ListItem: ListItem
-  };
+  return {ListItem: ListItem};
 });

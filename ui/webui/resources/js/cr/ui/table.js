@@ -32,27 +32,25 @@ cr.define('cr.ui', function() {
      *
      * @type {cr.ui.ArrayDataModel}
      */
-    get dataModel() {
-      return this.list_.dataModel;
-    },
+    get dataModel() { return this.list_.dataModel; },
     set dataModel(dataModel) {
       if (this.list_.dataModel != dataModel) {
         if (this.list_.dataModel) {
-          this.list_.dataModel.removeEventListener('sorted',
-                                                   this.boundHandleSorted_);
-          this.list_.dataModel.removeEventListener('change',
-                                                   this.boundHandleChangeList_);
-          this.list_.dataModel.removeEventListener('splice',
-                                                   this.boundHandleChangeList_);
+          this.list_.dataModel.removeEventListener(
+              'sorted', this.boundHandleSorted_);
+          this.list_.dataModel.removeEventListener(
+              'change', this.boundHandleChangeList_);
+          this.list_.dataModel.removeEventListener(
+              'splice', this.boundHandleChangeList_);
         }
         this.list_.dataModel = dataModel;
         if (this.list_.dataModel) {
-          this.list_.dataModel.addEventListener('sorted',
-                                                this.boundHandleSorted_);
-          this.list_.dataModel.addEventListener('change',
-                                                this.boundHandleChangeList_);
-          this.list_.dataModel.addEventListener('splice',
-                                                this.boundHandleChangeList_);
+          this.list_.dataModel.addEventListener(
+              'sorted', this.boundHandleSorted_);
+          this.list_.dataModel.addEventListener(
+              'change', this.boundHandleChangeList_);
+          this.list_.dataModel.addEventListener(
+              'splice', this.boundHandleChangeList_);
         }
         this.header_.redraw();
       }
@@ -63,18 +61,14 @@ cr.define('cr.ui', function() {
      *
      * @type {cr.ui.List}
      */
-    get list() {
-      return this.list_;
-    },
+    get list() { return this.list_; },
 
     /**
      * The table column model.
      *
      * @type {cr.ui.table.TableColumnModel}
      */
-    get columnModel() {
-      return this.columnModel_;
-    },
+    get columnModel() { return this.columnModel_; },
     set columnModel(columnModel) {
       if (this.columnModel_ != columnModel) {
         if (this.columnModel_)
@@ -94,9 +88,7 @@ cr.define('cr.ui', function() {
      * @type
      * {cr.ui.ListSelectionModel|cr.ui.ListSingleSelectionModel}
      */
-    get selectionModel() {
-      return this.list_.selectionModel;
-    },
+    get selectionModel() { return this.list_.selectionModel; },
     set selectionModel(selectionModel) {
       if (this.list_.selectionModel != selectionModel) {
         if (this.dataModel)
@@ -110,27 +102,17 @@ cr.define('cr.ui', function() {
      *
      * @type {boolean}
      */
-    get autoExpands() {
-      return this.list_.autoExpands;
-    },
-    set autoExpands(autoExpands) {
-      this.list_.autoExpands = autoExpands;
-    },
+    get autoExpands() { return this.list_.autoExpands; },
+    set autoExpands(autoExpands) { this.list_.autoExpands = autoExpands; },
 
-    get fixedHeight() {
-      return this.list_.fixedHeight;
-    },
-    set fixedHeight(fixedHeight) {
-      this.list_.fixedHeight = fixedHeight;
-    },
+    get fixedHeight() { return this.list_.fixedHeight; },
+    set fixedHeight(fixedHeight) { this.list_.fixedHeight = fixedHeight; },
 
     /**
      * Returns render function for row.
      * @return {function(*, cr.ui.Table): HTMLElement} Render function.
      */
-    getRenderFunction: function() {
-      return this.list_.renderFunction_;
-    },
+    getRenderFunction: function() { return this.list_.renderFunction_; },
 
     /**
      * Sets render function for row.
@@ -150,9 +132,7 @@ cr.define('cr.ui', function() {
      *
      * @type {cr.ui.table.TableColumnModel}
      */
-    get header() {
-      return this.header_;
-    },
+    get header() { return this.header_; },
 
     /**
      * Initializes the element.
@@ -219,9 +199,7 @@ cr.define('cr.ui', function() {
      * Ensures that a given index is inside the viewport.
      * @param {number} i The index of the item to scroll into view.
      */
-    scrollIndexIntoView: function(i) {
-      this.list_.scrollIndexIntoView(i);
-    },
+    scrollIndexIntoView: function(i) { this.list_.scrollIndexIntoView(i); },
 
     /**
      * Find the list item element at the given index.
@@ -237,9 +215,7 @@ cr.define('cr.ui', function() {
      * After sorting we need to redraw header
      * @param {Event} e The 'sorted' event.
      */
-    handleSorted_: function(e) {
-      this.header_.redraw();
-    },
+    handleSorted_: function(e) { this.header_.redraw(); },
 
     /**
      * This handles data model 'change' and 'splice' events.
@@ -342,10 +318,10 @@ cr.define('cr.ui', function() {
       dm.prepareSort(columnId, function() {
         // Select at most MAXIMUM_ROWS_TO_MEASURE items around visible area.
         var items = list.getItemsInViewPort(list.scrollTop, listHeight);
-        var firstIndex = Math.floor(Math.max(0,
-            (items.last + items.first - MAXIMUM_ROWS_TO_MEASURE) / 2));
-        var lastIndex = Math.min(dm.length,
-                                 firstIndex + MAXIMUM_ROWS_TO_MEASURE);
+        var firstIndex = Math.floor(Math.max(
+            0, (items.last + items.first - MAXIMUM_ROWS_TO_MEASURE) / 2));
+        var lastIndex =
+            Math.min(dm.length, firstIndex + MAXIMUM_ROWS_TO_MEASURE);
         for (var i = firstIndex; i < lastIndex; i++) {
           var item = dm.item(i);
           var div = doc.createElement('div');
@@ -373,7 +349,5 @@ cr.define('cr.ui', function() {
    */
   cr.defineProperty(Table, 'hasElementFocus', cr.PropertyKind.BOOL_ATTR);
 
-  return {
-    Table: Table
-  };
+  return {Table: Table};
 });

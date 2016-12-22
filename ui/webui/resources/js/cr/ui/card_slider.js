@@ -119,11 +119,14 @@ cr.define('cr.ui', function() {
      */
     initialize: function(ignoreMouseWheelEvents) {
       var view = this.container_.ownerDocument.defaultView;
-      assert(view.getComputedStyle(this.container_).display == '-webkit-box',
+      assert(
+          view.getComputedStyle(this.container_).display == '-webkit-box',
           'Container should be display -webkit-box.');
-      assert(view.getComputedStyle(this.frame_).overflow == 'hidden',
+      assert(
+          view.getComputedStyle(this.frame_).overflow == 'hidden',
           'Frame should be overflow hidden.');
-      assert(view.getComputedStyle(this.container_).position == 'static',
+      assert(
+          view.getComputedStyle(this.container_).position == 'static',
           'Container should be position static.');
 
       this.updateCardWidths_();
@@ -133,8 +136,8 @@ cr.define('cr.ui', function() {
       this.mouseWheelIsContinuous_ = false;
       this.scrollClearTimeout_ = null;
       if (!ignoreMouseWheelEvents) {
-        this.frame_.addEventListener('mousewheel',
-                                     this.onMouseWheel_.bind(this));
+        this.frame_.addEventListener(
+            'mousewheel', this.onMouseWheel_.bind(this));
       }
       this.container_.addEventListener(
           'webkitTransitionEnd', this.onWebkitTransitionEnd_.bind(this));
@@ -144,14 +147,14 @@ cr.define('cr.ui', function() {
       // no touch events (eg. we're mainly just adding listeners for events that
       // will never trigger).
       var TouchHandler = cr.ui.TouchHandler;
-      this.container_.addEventListener(TouchHandler.EventType.TOUCH_START,
-                                       this.onTouchStart_.bind(this));
-      this.container_.addEventListener(TouchHandler.EventType.DRAG_START,
-                                       this.onDragStart_.bind(this));
-      this.container_.addEventListener(TouchHandler.EventType.DRAG_MOVE,
-                                       this.onDragMove_.bind(this));
-      this.container_.addEventListener(TouchHandler.EventType.DRAG_END,
-                                       this.onDragEnd_.bind(this));
+      this.container_.addEventListener(
+          TouchHandler.EventType.TOUCH_START, this.onTouchStart_.bind(this));
+      this.container_.addEventListener(
+          TouchHandler.EventType.DRAG_START, this.onDragStart_.bind(this));
+      this.container_.addEventListener(
+          TouchHandler.EventType.DRAG_MOVE, this.onDragMove_.bind(this));
+      this.container_.addEventListener(
+          TouchHandler.EventType.DRAG_END, this.onDragEnd_.bind(this));
 
       this.touchHandler_.enable(/* opt_capture */ false);
     },
@@ -180,7 +183,8 @@ cr.define('cr.ui', function() {
      *     navigate to.
      */
     setCards: function(cards, index) {
-      assert(index >= 0 && index < cards.length,
+      assert(
+          index >= 0 && index < cards.length,
           'Invalid index in CardSlider#setCards');
       this.cards_ = cards;
 
@@ -224,42 +228,32 @@ cr.define('cr.ui', function() {
      * Returns the index of the current card.
      * @return {number} index of the current card.
      */
-    get currentCard() {
-      return this.currentCard_;
-    },
+    get currentCard() { return this.currentCard_; },
 
     /**
      * Allows setting the current card index.
      * @param {number} index A new index to set the current index to.
      * @return {number} The new index after having been set.
      */
-    set currentCard(index) {
-      return (this.currentCard_ = index);
-    },
+    set currentCard(index) { return (this.currentCard_ = index); },
 
     /**
      * Returns the number of cards.
      * @return {number} number of cards.
      */
-    get cardCount() {
-      return this.cards_.length;
-    },
+    get cardCount() { return this.cards_.length; },
 
     /**
      * Returns the current card itself.
      * @return {!Element} the currently shown card.
      */
-    get currentCardValue() {
-      return this.cards_[this.currentCard_];
-    },
+    get currentCardValue() { return this.cards_[this.currentCard_]; },
 
     /**
      * Returns the frame holding the cards.
      * @return {Element} The frame used to position the cards.
      */
-    get frame() {
-      return this.frame_;
-    },
+    get frame() { return this.frame_; },
 
     /**
      * Handle horizontal scrolls to flip between pages.
@@ -283,15 +277,16 @@ cr.define('cr.ui', function() {
         // For continuous devices, detect a page swipe when the accumulated
         // delta matches a pre-defined threshhold.  After changing the page,
         // ignore wheel events for a short time before repeating this process.
-        if (this.mouseWheelCardSelected_) return;
+        if (this.mouseWheelCardSelected_)
+          return;
         this.mouseWheelScrollAmount_ += e.wheelDeltaX;
         if (Math.abs(this.mouseWheelScrollAmount_) >= 600) {
           var pagesToScroll = this.mouseWheelScrollAmount_ > 0 ? 1 : -1;
           if (!isRTL())
             pagesToScroll *= -1;
           var newCardIndex = this.currentCard + pagesToScroll;
-          newCardIndex = Math.min(this.cards_.length - 1,
-                                  Math.max(0, newCardIndex));
+          newCardIndex =
+              Math.min(this.cards_.length - 1, Math.max(0, newCardIndex));
           this.selectCard(newCardIndex, true);
           this.mouseWheelCardSelected_ = true;
         }
@@ -301,8 +296,8 @@ cr.define('cr.ui', function() {
         if (!isRTL())
           pagesToScroll *= -1;
         var newCardIndex = this.currentCard + pagesToScroll;
-        newCardIndex = Math.min(this.cards_.length - 1,
-                                Math.max(0, newCardIndex));
+        newCardIndex =
+            Math.min(this.cards_.length - 1, Math.max(0, newCardIndex));
         this.selectCard(newCardIndex, true);
       }
 
@@ -463,9 +458,7 @@ cr.define('cr.ui', function() {
      * the likely event it needs to be updated by a card being inserted or
      * removed in the flow.
      */
-    repositionFrame: function() {
-      this.transformToCurrentCard_();
-    },
+    repositionFrame: function() { this.transformToCurrentCard_(); },
 
     /**
      * Checks the the given |index| exists in this.cards_.
@@ -487,10 +480,8 @@ cr.define('cr.ui', function() {
      * @param {boolean=} opt_forceChange If true, ignore if the card already
      *     selected.
      */
-    selectCard: function(newCardIndex,
-                         opt_animate,
-                         opt_dontNotify,
-                         opt_forceChange) {
+    selectCard: function(
+        newCardIndex, opt_animate, opt_dontNotify, opt_forceChange) {
       this.assertValidIndex_(newCardIndex);
 
       var previousCard = this.currentCardValue;
@@ -516,11 +507,10 @@ cr.define('cr.ui', function() {
 
         // We also dispatch an event on the cards themselves.
         if (previousCard) {
-          cr.dispatchSimpleEvent(previousCard, 'carddeselected',
-                                 true, true);
+          cr.dispatchSimpleEvent(previousCard, 'carddeselected', true, true);
         }
-        cr.dispatchSimpleEvent(this.currentCardValue, 'cardselected',
-                               true, true);
+        cr.dispatchSimpleEvent(
+            this.currentCardValue, 'cardselected', true, true);
       }
 
       // If we're not changing, animated, or transitioning, fire a
@@ -566,8 +556,8 @@ cr.define('cr.ui', function() {
       // enough to change cards.
       var transition = '';
       if (opt_animate) {
-        transition = 'transform ' + CardSlider.TRANSITION_TIME_ +
-                     'ms ease-in-out';
+        transition =
+            'transform ' + CardSlider.TRANSITION_TIME_ + 'ms ease-in-out';
       }
       this.container_.style.WebkitTransition = transition;
       this.translateTo_(this.currentLeft_);
@@ -598,7 +588,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     onTouchStart_: function(e) {
-      e = /** @type {!cr.ui.TouchHandler.Event} */(e);
+      e = /** @type {!cr.ui.TouchHandler.Event} */ (e);
       this.container_.style.WebkitTransition = '';
       e.enableDrag = true;
     },
@@ -610,9 +600,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     onDragStart_: function(e) {
-      e = /** @type {!cr.ui.TouchHandler.Event} */(e);
-      e.enableDrag = this.cardCount > 1 && Math.abs(e.dragDeltaX) >
-          Math.abs(e.dragDeltaY);
+      e = /** @type {!cr.ui.TouchHandler.Event} */ (e);
+      e.enableDrag =
+          this.cardCount > 1 && Math.abs(e.dragDeltaX) > Math.abs(e.dragDeltaY);
     },
 
     /**
@@ -622,7 +612,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     onDragMove_: function(e) {
-      e = /** @type {!cr.ui.TouchHandler.Event} */(e);
+      e = /** @type {!cr.ui.TouchHandler.Event} */ (e);
       var deltaX = e.dragDeltaX;
       // If dragging beyond the first or last card then apply a backoff so the
       // dragging feels stickier than usual.
@@ -640,14 +630,14 @@ cr.define('cr.ui', function() {
      * @private
      */
     onDragEnd_: function(e) {
-      e = /** @type {!cr.ui.TouchHandler.Event} */(e);
+      e = /** @type {!cr.ui.TouchHandler.Event} */ (e);
       var deltaX = e.dragDeltaX;
       var velocity = this.touchHandler_.getEndVelocity().x;
       var newX = this.currentLeft_ + deltaX;
       var newCardIndex = Math.round(-newX / this.cardWidth_);
 
-      if (newCardIndex == this.currentCard && Math.abs(velocity) >
-          CardSlider.TRANSITION_VELOCITY_THRESHOLD_) {
+      if (newCardIndex == this.currentCard &&
+          Math.abs(velocity) > CardSlider.TRANSITION_VELOCITY_THRESHOLD_) {
         // The drag wasn't far enough to change cards but the velocity was
         // high enough to transition anyways. If the velocity is to the left
         // (negative) then the user wishes to go right (card + 1).
@@ -675,7 +665,5 @@ cr.define('cr.ui', function() {
     },
   };
 
-  return {
-    CardSlider: CardSlider
-  };
+  return {CardSlider: CardSlider};
 });

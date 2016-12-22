@@ -29,9 +29,7 @@ cr.define('cr.ui', function() {
      * The number of items in the model.
      * @type {number}
      */
-    get length() {
-      return this.length_;
-    },
+    get length() { return this.length_; },
 
     /**
      * @type {!Array} The selected indexes.
@@ -49,9 +47,7 @@ cr.define('cr.ui', function() {
      * Setter also changes lead and anchor indexes if value is nonegative.
      * @type {number}
      */
-    get selectedIndex() {
-      return this.selectedIndex_;
-    },
+    get selectedIndex() { return this.selectedIndex_; },
     set selectedIndex(selectedIndex) {
       var oldSelectedIndex = this.selectedIndex;
       var i = Math.max(-1, Math.min(this.length_ - 1, selectedIndex));
@@ -95,9 +91,7 @@ cr.define('cr.ui', function() {
     /**
      * Unselects all selected items.
      */
-    unselectAll: function() {
-      this.selectedIndex = -1;
-    },
+    unselectAll: function() { this.selectedIndex = -1; },
 
     /**
      * Sets the selected state for an index.
@@ -121,9 +115,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to check.
      * @return {boolean} Whether an index is selected.
      */
-    getIndexSelected: function(index) {
-      return index == this.selectedIndex_;
-    },
+    getIndexSelected: function(index) { return index == this.selectedIndex_; },
 
     /**
      * This is used to begin batching changes. Call {@code endChange} when you
@@ -161,14 +153,11 @@ cr.define('cr.ui', function() {
     createChangeEvent: function(eventName) {
       var e = new Event(eventName);
       var indexes = [this.selectedIndexBefore_, this.selectedIndex_];
-      e.changes = indexes.filter(function(index) {
-        return index != -1;
-      }).map(function(index) {
-        return {
-          index: index,
-          selected: index == this.selectedIndex_
-        };
-      }, this);
+      e.changes =
+          indexes.filter(function(index) { return index != -1; })
+              .map(function(index) {
+                return {index: index, selected: index == this.selectedIndex_};
+              }, this);
 
       return e;
     },
@@ -180,9 +169,7 @@ cr.define('cr.ui', function() {
      * the user is moving using the arrow keys.
      * @type {number}
      */
-    get leadIndex() {
-      return this.leadIndex_;
-    },
+    get leadIndex() { return this.leadIndex_; },
     set leadIndex(leadIndex) {
       var li = this.adjustIndex_(leadIndex);
       if (li != this.leadIndex_) {
@@ -204,20 +191,14 @@ cr.define('cr.ui', function() {
      * The anchorIndex is used with multiple selection.
      * @type {number}
      */
-    get anchorIndex() {
-      return this.leadIndex;
-    },
-    set anchorIndex(anchorIndex) {
-      this.leadIndex = anchorIndex;
-    },
+    get anchorIndex() { return this.leadIndex; },
+    set anchorIndex(anchorIndex) { this.leadIndex = anchorIndex; },
 
     /**
      * Whether the selection model supports multiple selected items.
      * @type {boolean}
      */
-    get multiple() {
-      return false;
-    },
+    get multiple() { return false; },
 
     /**
      * Adjusts the selection after reordering of items in the table.
@@ -237,12 +218,8 @@ cr.define('cr.ui', function() {
      * Adjusts selection model length.
      * @param {number} length New selection model length.
      */
-    adjustLength: function(length) {
-      this.length_ = length;
-    }
+    adjustLength: function(length) { this.length_ = length; }
   };
 
-  return {
-    ListSingleSelectionModel: ListSingleSelectionModel
-  };
+  return {ListSingleSelectionModel: ListSingleSelectionModel};
 });

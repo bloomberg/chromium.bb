@@ -61,13 +61,13 @@ cr.define('cr.ui.pageManager', function() {
       this.handleScroll_();
 
       // Shake the dialog if the user clicks outside the dialog bounds.
-      var containers = /** @type {!NodeList<!HTMLElement>} */(
+      var containers = /** @type {!NodeList<!HTMLElement>} */ (
           document.querySelectorAll('body > .overlay'));
       for (var i = 0; i < containers.length; i++) {
         var overlay = containers[i];
         cr.ui.overlay.setupOverlay(overlay);
-        overlay.addEventListener('cancelOverlay',
-                                 this.cancelOverlay.bind(this));
+        overlay.addEventListener(
+            'cancelOverlay', this.cancelOverlay.bind(this));
       }
 
       cr.ui.overlay.globalInitialization();
@@ -90,9 +90,7 @@ cr.define('cr.ui.pageManager', function() {
      * @param {Array} associatedControls Array of control elements associated
      *     with this page.
      */
-    registerOverlay: function(overlay,
-                              parentPage,
-                              associatedControls) {
+    registerOverlay: function(overlay, parentPage, associatedControls) {
       this.registeredOverlayPages[overlay.name.toLowerCase()] = overlay;
       overlay.parentPage = parentPage;
       if (associatedControls) {
@@ -121,8 +119,9 @@ cr.define('cr.ui.pageManager', function() {
      *     showing the page (defaults to true).
      */
     showDefaultPage: function(opt_updateHistory) {
-      assert(this.defaultPage_ instanceof cr.ui.pageManager.Page,
-             'PageManager must be initialized with a default page.');
+      assert(
+          this.defaultPage_ instanceof cr.ui.pageManager.Page,
+          'PageManager must be initialized with a default page.');
       this.showPageByName(this.defaultPage_.name, opt_updateHistory);
     },
 
@@ -135,9 +134,7 @@ cr.define('cr.ui.pageManager', function() {
      *     replaceState (if history state should be replaced instead of pushed).
      *     hash (a hash state to attach to the page).
      */
-    showPageByName: function(pageName,
-                             opt_updateHistory,
-                             opt_propertyBag) {
+    showPageByName: function(pageName, opt_updateHistory, opt_propertyBag) {
       opt_updateHistory = opt_updateHistory !== false;
       opt_propertyBag = opt_propertyBag || {};
 
@@ -188,8 +185,8 @@ cr.define('cr.ui.pageManager', function() {
 
       // Update visibilities to show only the hierarchy of the target page.
       this.forEachPage_(!isRootPageLocked, function(page) {
-        page.visible = page.name == pageName ||
-                       this.isAncestorOfPage(page, targetPage);
+        page.visible =
+            page.name == pageName || this.isAncestorOfPage(page, targetPage);
       });
 
       // Update the history and current location.
@@ -276,7 +273,7 @@ cr.define('cr.ui.pageManager', function() {
      */
     isTopLevelOverlay: function(page) {
       return page.isOverlay &&
-            (page.alwaysOnTop || this.getNestingLevel(page) == 1);
+          (page.alwaysOnTop || this.getNestingLevel(page) == 1);
     },
 
     /**
@@ -409,8 +406,7 @@ cr.define('cr.ui.pageManager', function() {
       var currentOverlay = this.getVisibleOverlay_();
       var lowercaseName = pageName.toLowerCase();
       var newPage = this.registeredPages[lowercaseName] ||
-                    this.registeredOverlayPages[lowercaseName] ||
-                    this.defaultPage_;
+          this.registeredOverlayPages[lowercaseName] || this.defaultPage_;
       if (currentOverlay && !this.isAncestorOfPage(currentOverlay, newPage)) {
         currentOverlay.visible = false;
         currentOverlay.didClosePage();
@@ -451,17 +447,13 @@ cr.define('cr.ui.pageManager', function() {
      * Change the horizontal offset used to reposition elements while showing an
      * overlay from the default.
      */
-    set horizontalOffset(value) {
-      this.horizontalOffset_ = value;
-    },
+    set horizontalOffset(value) { this.horizontalOffset_ = value; },
 
     /**
      * @param {!cr.ui.pageManager.PageManager.Observer} observer The observer to
      *     register.
      */
-    addObserver: function(observer) {
-      this.observers_.push(observer);
-    },
+    addObserver: function(observer) { this.observers_.push(observer); },
 
     /**
      * Shows a registered overlay page. Does not update history.
@@ -484,8 +476,7 @@ cr.define('cr.ui.pageManager', function() {
       if (currentPage && focusOutlineManager.visible)
         currentPage.lastFocusedElement = document.activeElement;
 
-      if ((!rootPage || !rootPage.sticky) &&
-          overlay.parentPage &&
+      if ((!rootPage || !rootPage.sticky) && overlay.parentPage &&
           !overlay.parentPage.visible) {
         this.showPageByName(overlay.parentPage.name, false);
       }
@@ -518,9 +509,7 @@ cr.define('cr.ui.pageManager', function() {
      * @return {boolean} True if an overlay is visible.
      * @private
      */
-    isOverlayVisible_: function() {
-      return this.getVisibleOverlay_() != null;
-    },
+    isOverlayVisible_: function() { return this.getVisibleOverlay_() != null; },
 
     /**
      * Returns the currently visible overlay, or null if no page is visible.
@@ -538,7 +527,7 @@ cr.define('cr.ui.pageManager', function() {
           return page;
 
         if (!topmostPage ||
-             this.getNestingLevel(page) > this.getNestingLevel(topmostPage)) {
+            this.getNestingLevel(page) > this.getNestingLevel(topmostPage)) {
           topmostPage = page;
         }
       }
@@ -684,9 +673,7 @@ cr.define('cr.ui.pageManager', function() {
      * but should only behave as if they are fixed for vertical scrolling.
      * @private
      */
-    handleScroll_: function() {
-      this.updateAllFrozenElementPositions_();
-    },
+    handleScroll_: function() { this.updateAllFrozenElementPositions_(); },
 
     /**
      * Updates all frozen pages to match the horizontal scroll position.
@@ -725,8 +712,9 @@ cr.define('cr.ui.pageManager', function() {
         pageNames = Object.keys(this.registeredPages).concat(pageNames);
 
       pageNames.forEach(function(name) {
-        callback.call(this, this.registeredOverlayPages[name] ||
-                            this.registeredPages[name]);
+        callback.call(
+            this,
+            this.registeredOverlayPages[name] || this.registeredPages[name]);
       }, this);
     },
   };
@@ -735,7 +723,7 @@ cr.define('cr.ui.pageManager', function() {
    * An observer of PageManager.
    * @interface
    */
-  PageManager.Observer = function() {}
+  PageManager.Observer = function() {};
 
   PageManager.Observer.prototype = {
     /**
@@ -759,7 +747,5 @@ cr.define('cr.ui.pageManager', function() {
   };
 
   // Export
-  return {
-    PageManager: PageManager
-  };
+  return {PageManager: PageManager};
 });

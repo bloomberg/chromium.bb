@@ -46,9 +46,7 @@ cr.define('cr', function() {
    *     links.
    * @constructor
    */
-  function LinkController(localStrings) {
-    this.localStrings_ = localStrings;
-  }
+  function LinkController(localStrings) { this.localStrings_ = localStrings; }
 
   LinkController.prototype = {
     /**
@@ -85,10 +83,10 @@ cr.define('cr', function() {
         var kind;
         var ctrl = cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey;
 
-        if (e.button == 1 || ctrl) // middle, ctrl or keyboard
+        if (e.button == 1 || ctrl)  // middle, ctrl or keyboard
           kind = e.shiftKey ? cr.LinkKind.FOREGROUND_TAB :
-              cr.LinkKind.BACKGROUND_TAB;
-        else // left or keyboard
+                              cr.LinkKind.BACKGROUND_TAB;
+        else  // left or keyboard
           kind = e.shiftKey ? cr.LinkKind.WINDOW : cr.LinkKind.SELF;
 
         this.openUrls([url], kind);
@@ -101,9 +99,7 @@ cr.define('cr', function() {
      * @param {string} url The URL to open.
      * @param {cr.LinkKind} kind The kind of open we want to do.
      */
-    openUrl: function(url, kind) {
-      this.openUrls([url], kind);
-    },
+    openUrl: function(url, kind) { this.openUrls([url], kind); },
 
     /**
      * Opens URLs in new tab, window or incognito mode.
@@ -122,23 +118,18 @@ cr.define('cr', function() {
       // Fix '#124' URLs since opening those in a new window does not work. We
       // prepend the base URL when we encounter those.
       var base = this.window.location.href.split('#')[0];
-      urls = urls.map(function(url) {
-        return url[0] == '#' ? base + url : url;
-      });
+      urls =
+          urls.map(function(url) { return url[0] == '#' ? base + url : url; });
 
       var incognito = kind == cr.LinkKind.INCOGNITO;
       if (kind == cr.LinkKind.WINDOW || incognito) {
-        chrome.windows.create({
-          url: urls,
-          incognito: incognito
-        });
-      } else if (kind == cr.LinkKind.FOREGROUND_TAB ||
-                 kind == cr.LinkKind.BACKGROUND_TAB) {
+        chrome.windows.create({url: urls, incognito: incognito});
+      } else if (
+          kind == cr.LinkKind.FOREGROUND_TAB ||
+          kind == cr.LinkKind.BACKGROUND_TAB) {
         urls.forEach(function(url, i) {
-          chrome.tabs.create({
-            url: url,
-            selected: kind == cr.LinkKind.FOREGROUND_TAB && !i
-          });
+          chrome.tabs.create(
+              {url: url, selected: kind == cr.LinkKind.FOREGROUND_TAB && !i});
         });
       } else {
         this.window.location.href = urls[0];

@@ -25,10 +25,9 @@ cr.define('cr.ui', function() {
 
     decorate: function() {
       this.className = 'expandable-bubble';
-      this.innerHTML =
-          '<div class="expandable-bubble-contents">' +
-            '<div class="expandable-bubble-title"></div>' +
-            '<div class="expandable-bubble-main" hidden></div>' +
+      this.innerHTML = '<div class="expandable-bubble-contents">' +
+          '<div class="expandable-bubble-title"></div>' +
+          '<div class="expandable-bubble-main" hidden></div>' +
           '</div>' +
           '<div class="expandable-bubble-close" hidden></div>';
 
@@ -76,9 +75,7 @@ cr.define('cr.ui', function() {
      * is clicked. By default is set to this.hide.
      * @param {Function} func A function with no parameters.
      */
-    set handleCloseEvent(func) {
-      this.handleCloseEvent_ = func;
-    },
+    set handleCloseEvent(func) { this.handleCloseEvent_ = func; },
 
     /**
      * Temporarily suppresses the bubble from view (and toggles it back).
@@ -197,7 +194,7 @@ cr.define('cr.ui', function() {
      * Node.prototype.contains() will be fixed.
      */
     onNotificationClick_: function(e) {
-      if (!this.contains(/** @type {!Node} */(e.target)))
+      if (!this.contains(/** @type {!Node} */ (e.target)))
         return;
 
       if (!this.expanded) {
@@ -223,10 +220,10 @@ cr.define('cr.ui', function() {
       this.resizeAndReposition();
 
       this.eventTracker_ = new EventTracker;
-      this.eventTracker_.add(window,
-                             'load', this.resizeAndReposition.bind(this));
-      this.eventTracker_.add(window,
-                             'resize', this.resizeAndReposition.bind(this));
+      this.eventTracker_.add(
+          window, 'load', this.resizeAndReposition.bind(this));
+      this.eventTracker_.add(
+          window, 'resize', this.resizeAndReposition.bind(this));
       this.eventTracker_.add(this, 'click', this.onNotificationClick_);
 
       var doc = this.ownerDocument;
@@ -269,7 +266,7 @@ cr.define('cr.ui', function() {
           if (e.target == this.querySelector('.expandable-bubble-close')) {
             this.handleCloseEvent_();
             handled = true;
-          } else if (!this.contains(/** @type {!Node} */(e.target))) {
+          } else if (!this.contains(/** @type {!Node} */ (e.target))) {
             if (this.expanded) {
               this.collapseBubble_();
               handled = true;
@@ -301,7 +298,5 @@ cr.define('cr.ui', function() {
    */
   cr.defineProperty(ExpandableBubble, 'masked', cr.PropertyKind.BOOL_ATTR);
 
-  return {
-    ExpandableBubble: ExpandableBubble
-  };
+  return {ExpandableBubble: ExpandableBubble};
 });

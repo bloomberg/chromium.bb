@@ -41,9 +41,7 @@ Polymer({
   },
 
   /** override */
-  detached: function() {
-    this.removeResizeListener_();
-  },
+  detached: function() { this.removeResizeListener_(); },
 
   /** @private */
   removeResizeListener_: function() {
@@ -75,7 +73,7 @@ Polymer({
     if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')
       return;
 
-    var nextOption = this.getNextOption_(e.key == 'ArrowDown' ? 1 : - 1);
+    var nextOption = this.getNextOption_(e.key == 'ArrowDown' ? 1 : -1);
     if (nextOption)
       nextOption.focus();
 
@@ -95,8 +93,8 @@ Polymer({
     var counter = 0;
     var nextOption = null;
     var numOptions = this.options_.length;
-    var focusedIndex = Array.prototype.indexOf.call(
-        this.options_, this.root.activeElement);
+    var focusedIndex =
+        Array.prototype.indexOf.call(this.options_, this.root.activeElement);
 
     do {
       focusedIndex = (numOptions + focusedIndex + step) % numOptions;
@@ -144,10 +142,9 @@ Polymer({
     // Attempt to show the menu starting from the top of the rectangle and
     // extending downwards. If that does not fit within the window, fallback to
     // starting from the bottom and extending upwards.
-    var top = rect.top + this.offsetHeight <= window.innerHeight ?
-        rect.top :
-        rect.bottom - this.offsetHeight - Math.max(
-            rect.bottom - window.innerHeight, 0);
+    var top = rect.top + this.offsetHeight <= window.innerHeight ? rect.top :
+                                                                   rect.bottom -
+            this.offsetHeight - Math.max(rect.bottom - window.innerHeight, 0);
 
     this.style.top = top + 'px';
   },

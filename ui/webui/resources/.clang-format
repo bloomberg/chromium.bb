@@ -1,0 +1,5 @@
+BasedOnStyle: Chromium
+
+# Renaming quotes in <include> and <if> break things.
+# For normal JS code, please prefer ' to ".
+JavaScriptQuotes: Leave

@@ -77,9 +77,7 @@ cr.define('cr.ui', function() {
     /**
      * Clears menu.
      */
-    clear: function() {
-      this.textContent = '';
-    },
+    clear: function() { this.textContent = ''; },
 
     /**
      * Walks up the ancestors of |node| until a menu item belonging to this menu
@@ -101,7 +99,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleMouseOver_: function(e) {
-      var overItem = this.findMenuItem_(/** @type {Element} */(e.target));
+      var overItem = this.findMenuItem_(/** @type {Element} */ (e.target));
       this.selectedItem = overItem;
     },
 
@@ -110,9 +108,7 @@ cr.define('cr.ui', function() {
      * @param {Event} e The mouseout event.
      * @private
      */
-    handleMouseOut_: function(e) {
-      this.selectedItem = null;
-    },
+    handleMouseOut_: function(e) { this.selectedItem = null; },
 
     /**
      * If there's a mouseup that happens quickly in about the same position,
@@ -122,7 +118,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleMouseUp_: function(e) {
-      assert(this.contains(/** @type {Element} */(e.target)));
+      assert(this.contains(/** @type {Element} */ (e.target)));
 
       if (!this.trustEvent_(e) || Date.now() - this.shown_.time > 200)
         return;
@@ -141,9 +137,7 @@ cr.define('cr.ui', function() {
      * @private
      * @suppress {checkTypes}
      */
-    trustEvent_: function(e) {
-      return e.isTrusted || e.isTrustedForTesting;
-    },
+    trustEvent_: function(e) { return e.isTrusted || e.isTrustedForTesting; },
 
     get menuItems() {
       return this.querySelectorAll(this.menuItemSelector || '*');
@@ -153,9 +147,7 @@ cr.define('cr.ui', function() {
      * The selected menu item or null if none.
      * @type {cr.ui.MenuItem}
      */
-    get selectedItem() {
-      return this.menuItems[this.selectedIndex];
-    },
+    get selectedItem() { return this.menuItems[this.selectedIndex]; },
     set selectedItem(item) {
       var index = Array.prototype.indexOf.call(this.menuItems, item);
       this.selectedIndex = index;
@@ -180,9 +172,7 @@ cr.define('cr.ui', function() {
     /**
      * Menu length
      */
-    get length() {
-      return this.menuItems.length;
-    },
+    get length() { return this.menuItems.length; },
 
     /**
      * Returns if the menu has any visible item.
@@ -310,8 +300,8 @@ cr.define('cr.ui', function() {
    * The selected menu item.
    * type {number}
    */
-  cr.defineProperty(Menu, 'selectedIndex', cr.PropertyKind.JS,
-      selectedIndexChanged);
+  cr.defineProperty(
+      Menu, 'selectedIndex', cr.PropertyKind.JS, selectedIndexChanged);
 
   /**
    * Selector for children which are menu items.
@@ -319,7 +309,5 @@ cr.define('cr.ui', function() {
   cr.defineProperty(Menu, 'menuItemSelector', cr.PropertyKind.ATTR);
 
   // Export
-  return {
-    Menu: Menu
-  };
+  return {Menu: Menu};
 });

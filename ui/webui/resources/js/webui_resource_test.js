@@ -64,7 +64,7 @@ function assertThrows(f) {
   var triggeredError = false;
   try {
     f();
-  } catch(err) {
+  } catch (err) {
     triggeredError = true;
   }
   if (!triggeredError)
@@ -90,7 +90,7 @@ function assertArrayEquals(expected, observed) {
   }
   if (!equal) {
     var message =
-       ['Assertion Failed', 'Observed: ' + v2, 'Expected: ' + v1].join('\n  ');
+        ['Assertion Failed', 'Observed: ' + v2, 'Expected: ' + v1].join('\n  ');
     throw new Error(message);
   }
 }
@@ -154,7 +154,7 @@ function assertDeepEquals(expected, observed, opt_message) {
     try {
       if (window.setUpPage)
         window.setUpPage();
-    } catch(err) {
+    } catch (err) {
       cleanTestRun = false;
     }
     continueTesting();
@@ -182,7 +182,7 @@ function assertDeepEquals(expected, observed, opt_message) {
           window.setUp();
         pendingTearDown = window.tearDown;
         window[fn](continueTesting);
-      } catch(err) {
+      } catch (err) {
         console.error('Failure in test ' + fn + '\n' + err);
         console.log(err.stack);
         cleanTestRun = false;

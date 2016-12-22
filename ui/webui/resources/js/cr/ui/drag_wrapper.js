@@ -41,14 +41,11 @@ cr.define('cr.ui', function() {
    * @param {!cr.ui.DragWrapperDelegate} delegate
    * @constructor
    */
-  function DragWrapper(target, delegate) {
-    this.initialize(target, delegate);
-  }
+  function DragWrapper(target, delegate) { this.initialize(target, delegate); }
 
   DragWrapper.prototype = {
     initialize: function(target, delegate) {
-      target.addEventListener('dragenter',
-                              this.onDragEnter_.bind(this));
+      target.addEventListener('dragenter', this.onDragEnter_.bind(this));
       target.addEventListener('dragover', this.onDragOver_.bind(this));
       target.addEventListener('drop', this.onDrop_.bind(this));
       target.addEventListener('dragleave', this.onDragLeave_.bind(this));

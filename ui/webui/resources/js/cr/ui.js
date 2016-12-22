@@ -123,7 +123,7 @@ cr.define('cr.ui', function() {
     var inputRect = el.getBoundingClientRect();  // box-sizing
     var parentRect = parentEl.getBoundingClientRect();
     var startPos = rtl ? parentRect.right - inputRect.right :
-        inputRect.left - parentRect.left;
+                         inputRect.left - parentRect.left;
 
     // Add up border and padding of the input.
     var inner = parseInt(computedStyle.borderLeftWidth, 10) +
@@ -133,7 +133,7 @@ cr.define('cr.ui', function() {
 
     // We also need to subtract the padding of parent to prevent it to overflow.
     var parentPadding = rtl ? parseInt(parentComputedStyle.paddingLeft, 10) :
-        parseInt(parentComputedStyle.paddingRight, 10);
+                              parseInt(parentComputedStyle.paddingRight, 10);
 
     var max = parentEl.clientWidth - startPos - inner - parentPadding;
     if (opt_scale)
