@@ -819,7 +819,7 @@ define("mojo/public/js/codec", [
 
   Interface.prototype.encode = function(encoder, val) {
     var interfacePtrInfo =
-        val ? val.ptr.passInterface() : new InterfacePtrInfo(null, 0);
+        val ? val.ptr.passInterface() : new types.InterfacePtrInfo(null, 0);
     encoder.encodeHandle(interfacePtrInfo.handle);
     encoder.writeUint32(interfacePtrInfo.version);
   };
