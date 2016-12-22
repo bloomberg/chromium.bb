@@ -21,6 +21,30 @@ CSSKeywordValue* CSSKeywordValue::create(const AtomicString& keyword,
   return new CSSKeywordValue(keyword);
 }
 
+CSSKeywordValue* CSSKeywordValue::fromCSSValue(const CSSValue& value) {
+  if (value.isInheritedValue())
+    return new CSSKeywordValue(getValueName(CSSValueInherit));
+  if (value.isInitialValue())
+    return new CSSKeywordValue(getValueName(CSSValueInitial));
+  if (value.isUnsetValue())
+    return new CSSKeywordValue(getValueName(CSSValueUnset));
+  if (value.isIdentifierValue()) {
+    return new CSSKeywordValue(
+        getValueName(toCSSIdentifierValue(value).getValueID()));
+  }
+  if (value.isCustomIdentValue()) {
+    const CSSCustomIdentValue& identValue = toCSSCustomIdentValue(value);
+    if (identValue.isKnownPropertyID()) {
+      // CSSPropertyID represents the LHS of a CSS declaration, and
+      // CSSKeywordValue represents a RHS.
+      return nullptr;
+    }
+    return new CSSKeywordValue(identValue.value());
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 const AtomicString& CSSKeywordValue::keywordValue() const {
   return m_keywordValue;
 }

@@ -12,31 +12,31 @@
 // supporting some of these properties.
 
 test(function() {
-  testElement.style.backgroundColor = 'green';
+  testElement.style.backgroundColor = '#00FF00';
 
   var result = testElement.styleMap.get('background-color');
   assert_equals(result.constructor, CSSStyleValue);
-  assert_equals(result.cssText, 'green');
+  assert_equals(result.cssText, 'rgb(0, 255, 0)');
 }, 'Unsupported property returns a base StyleValue with the correct cssText.');
 
 test(function() {
-  testElement.style.backgroundColor = 'green';
+  testElement.style.backgroundColor = '#00FF00';
 
   secondElement.styleMap.set('background-color', testElement.styleMap.get('background-color'));
 
   var result = secondElement.styleMap.get('background-color');
   assert_equals(result.constructor, CSSStyleValue);
-  assert_equals(result.cssText, 'green');
+  assert_equals(result.cssText, 'rgb(0, 255, 0)');
 }, 'Setting the same property using the result of getting an unknown value works');
 
 test(function() {
-  testElement.style.color = 'green';
+  testElement.style.color = '#00FF00';
 
   secondElement.styleMap.set('border-left-color', testElement.styleMap.get('color'));
 
   var result = secondElement.styleMap.get('border-left-color');
   assert_equals(result.constructor, CSSStyleValue);
-  assert_equals(result.cssText, 'green');
+  assert_equals(result.cssText, 'rgb(0, 255, 0)');
 }, 'Setting a different property using the result of getting an unknown value works');
 
 </script>

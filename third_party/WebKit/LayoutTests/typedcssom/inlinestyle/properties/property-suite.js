@@ -219,11 +219,7 @@ function runGetAllTests(
       let result = element.styleMap.getAll(propertyName);
       assert_equals(result.length, 2,
           'Expected getAll to return an array containing two instances ' +
-          'of CSSStyleValue');
-      assert_equals(result[0].constructor, CSSStyleValue,
-          'Expected first result to be an instance of CSSStyleValue');
-      assert_equals(result[1].constructor, CSSStyleValue,
-          'Expected second result to be an instance of CSSStyleValue');
+          'of ' + validObject.constructor.name);
       assert_equals(result[0].constructor.name, validObject.constructor.name);
       assert_equals(result[1].constructor.name, validObject.constructor.name);
       assert_equals(result[0].cssText, validObject.cssText);
