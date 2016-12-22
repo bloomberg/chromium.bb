@@ -730,7 +730,7 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
         for (; writeIndex < fillToFrame; ++writeIndex)
           values[writeIndex] = value;
       } else {
-        float numSampleFrames = deltaTime * sampleRate;
+        double numSampleFrames = deltaTime * sampleRate;
         // The value goes exponentially from value1 to value2 in a duration of
         // deltaTime seconds according to
         //
