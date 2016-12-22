@@ -16,8 +16,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Android wrapper of the TemplateUrlService which provides access from the Java
@@ -64,24 +62,20 @@ public class TemplateUrlService {
     public static class TemplateUrl {
         private final int mIndex;
         private final String mShortName;
-        private final String mUrl;
         private final boolean mIsPrepopulated;
         private final String mKeyword;
         @TemplateUrlType private int mTemplateUrlType;
 
         @CalledByNative("TemplateUrl")
         public static TemplateUrl create(
-                int id, String shortName, String url, boolean isPrepopulated, String keyword) {
-            return new TemplateUrl(id, shortName, url, isPrepopulated, keyword);
+                int id, String shortName, boolean isPrepopulated, String keyword) {
+            return new TemplateUrl(id, shortName, isPrepopulated, keyword);
         }
 
         public TemplateUrl(
-                int index, String shortName, String url, boolean isPrepopulated, String keyword) {
+                int index, String shortName, boolean isPrepopulated, String keyword) {
             mIndex = index;
             mShortName = shortName;
-            Pattern pattern = Pattern.compile("[^/]+.com");
-            Matcher m = pattern.matcher(url);
-            mUrl = m.find() ? m.group(0) : "";
             mIsPrepopulated = isPrepopulated;
             mKeyword = keyword;
         }
@@ -92,10 +86,6 @@ public class TemplateUrlService {
 
         public String getShortName() {
             return mShortName;
-        }
-
-        public String getUrl() {
-            return mUrl;
         }
 
         public boolean getIsPrepopulated() {

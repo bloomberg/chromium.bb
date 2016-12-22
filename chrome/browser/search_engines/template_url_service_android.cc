@@ -125,7 +125,6 @@ TemplateUrlServiceAndroid::GetTemplateUrlAt(JNIEnv* env,
   return Java_TemplateUrl_create(
       env, index,
       base::android::ConvertUTF16ToJavaString(env, template_url->short_name()),
-      base::android::ConvertUTF8ToJavaString(env, template_url->url()),
       template_url_service_->IsPrepopulatedOrCreatedByPolicy(template_url),
       base::android::ConvertUTF16ToJavaString(env, template_url->keyword()));
 }

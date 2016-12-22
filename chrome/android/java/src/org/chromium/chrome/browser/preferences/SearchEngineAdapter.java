@@ -227,10 +227,10 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         description.setText(templateUrl.getShortName());
 
         TextView url = (TextView) view.findViewById(R.id.url);
-        url.setText(templateUrl.getUrl());
+        url.setText(templateUrl.getKeyword());
         if (templateUrl.getType() == TemplateUrlService.TYPE_PREPOPULATED
                 || templateUrl.getType() == TemplateUrlService.TYPE_DEFAULT
-                || templateUrl.getUrl().length() == 0) {
+                || templateUrl.getKeyword().length() == 0) {
             url.setVisibility(View.GONE);
         }
 
