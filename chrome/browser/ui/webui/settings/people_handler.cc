@@ -775,7 +775,10 @@ void PeopleHandler::PushSyncPrefs() {
     return;
 
   ProfileSyncService* service = GetSyncService();
-  DCHECK(service);
+  // The sync service may be nullptr if it has been just disabled by policy.
+  if (!service)
+    return;
+
   if (!service->IsEngineInitialized()) {
     // Requesting the sync service to start may trigger another reentrant call
     // to PushSyncPrefs. Setting up the startup tracker beforehand correctly
@@ -903,8 +906,8 @@ void PeopleHandler::MarkFirstSetupComplete() {
   signin::SetUserSkippedPromo(profile_);
 
   ProfileSyncService* service = GetSyncService();
-  DCHECK(service);
-  if (service->IsFirstSetupComplete())
+  // The sync service may be nullptr if it has been just disabled by policy.
+  if (!service || service->IsFirstSetupComplete())
     return;
 
   // This is the first time configuring sync, so log it.
