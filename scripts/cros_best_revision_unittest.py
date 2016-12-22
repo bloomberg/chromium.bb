@@ -8,9 +8,10 @@ from __future__ import print_function
 
 import os
 
-from chromite.lib import constants
+from chromite.cbuildbot import build_status
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
+from chromite.lib import constants
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs_unittest
@@ -26,9 +27,9 @@ class BaseChromeCommitterTest(cros_test_lib.MockTempDirTestCase):
     """Common set up method for all tests."""
     self.committer = cros_best_revision.ChromeCommitter(self.tempdir, False)
     self.lkgm_file = os.path.join(self.tempdir, constants.PATH_TO_CHROME_LKGM)
-    self.pass_status = manifest_version.BuilderStatus(
+    self.pass_status = build_status.BuilderStatus(
         constants.BUILDER_STATUS_PASSED, None)
-    self.fail_status = manifest_version.BuilderStatus(
+    self.fail_status = build_status.BuilderStatus(
         constants.BUILDER_STATUS_FAILED, None)
 
 

@@ -6,22 +6,22 @@
 
 from __future__ import print_function
 
+from chromite.cbuildbot import buildbucket_lib
+from chromite.cbuildbot import build_status
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
-from chromite.lib import config_lib
-from chromite.lib import failures_lib
-from chromite.lib import results_lib
-from chromite.lib import constants
-from chromite.cbuildbot import buildbucket_lib
-from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import clactions
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import failures_lib
 from chromite.lib import patch as cros_patch
+from chromite.lib import results_lib
 
 
 def GetBuilderSuccessMap(builder_run, overall_success):
@@ -143,8 +143,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   def _GetLocalBuildStatus(self):
     """Return the status for this build as a dictionary."""
-    status = manifest_version.BuilderStatus.GetCompletedStatus(self.success)
-    status_obj = manifest_version.BuilderStatus(status, self.message)
+    status = build_status.BuilderStatus.GetCompletedStatus(self.success)
+    status_obj = build_status.BuilderStatus(status, self.message)
     return {self._bot_id: status_obj}
 
   def _FetchSlaveStatuses(self):
@@ -153,9 +153,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     If this build is not a master then return just the status of this build.
 
     Returns:
-      A dict of build_config name -> BuilderStatus objects, for all important
-      slave build configs. Build configs that never started will have a
-      BuilderStatus of MISSING.
+      A dict of build_config name -> build_status.BuilderStatus objects,
+      for all important slave build configs. Build configs that never started
+      will have a build_status.BuilderStatus of MISSING.
     """
     # Wait for slaves if we're a master, in production or mock-production.
     # Otherwise just look at our own status.
@@ -393,7 +393,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     should only be called after PerformStage has returned.
 
     Returns:
-      A dictionary from build names to manifest_version.BuilderStatus
+      A dictionary from build names to build_status.BuilderStatus
       builder status objects.
     """
     return self._slave_statuses
@@ -861,7 +861,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     Args:
       sanity_check_slaves: Names of slave builders that are "sanity check"
         builders for the current master.
-      slave_statuses: Dict of BuilderStatus objects by builder name keys.
+      slave_statuses: Dict of build_status.BuilderStatus objects by builder
+        name keys.
 
     Returns:
       True if no sanity builders ran and failed.

@@ -20,24 +20,24 @@ import pickle
 import sys
 
 from chromite.cbuildbot import builders
+from chromite.cbuildbot import build_status
 from chromite.cbuildbot import cbuildbot_run
-from chromite.lib import config_lib
-from chromite.lib import constants
-from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tee
 from chromite.cbuildbot import topology
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import trybot_patch_pool
-from chromite.lib import failures_lib
 from chromite.cbuildbot.stages import completion_stages
 from chromite.lib import cidb
 from chromite.lib import cgroups
 from chromite.lib import cleanup
 from chromite.lib import commandline
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import failures_lib
 from chromite.lib import git
 from chromite.lib import graphite
 from chromite.lib import gob_util
@@ -1263,7 +1263,7 @@ def main(argv):
       with open(options.mock_slave_status, 'r') as f:
         mock_statuses = pickle.load(f)
         for key, value in mock_statuses.iteritems():
-          mock_statuses[key] = manifest_version.BuilderStatus(**value)
+          mock_statuses[key] = build_status.BuilderStatus(**value)
       stack.Add(mock.patch.object,
                 completion_stages.MasterSlaveSyncCompletionStage,
                 '_FetchSlaveStatuses',

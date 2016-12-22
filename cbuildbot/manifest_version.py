@@ -346,79 +346,6 @@ class VersionInfo(object):
     return '%s(%s)' % (self.__class__, self.VersionString())
 
 
-class BuilderStatus(object):
-  """Object representing the status of a build."""
-
-  def __init__(self, status, message, dashboard_url=None):
-    """Constructor for BuilderStatus.
-
-    Args:
-      status: Status string (should be one of STATUS_FAILED, STATUS_PASSED,
-              STATUS_INFLIGHT, or STATUS_MISSING).
-      message: A failures_lib.BuildFailureMessage object with details
-               of builder failure. Or, None.
-      dashboard_url: Optional url linking to builder dashboard for this build.
-    """
-    self.status = status
-    self.message = message
-    self.dashboard_url = dashboard_url
-
-  # Helper methods to make checking the status object easy.
-
-  def Failed(self):
-    """Returns True if the Builder failed."""
-    return self.status == constants.BUILDER_STATUS_FAILED
-
-  def Passed(self):
-    """Returns True if the Builder passed."""
-    return self.status == constants.BUILDER_STATUS_PASSED
-
-  def Inflight(self):
-    """Returns True if the Builder is still inflight."""
-    return self.status == constants.BUILDER_STATUS_INFLIGHT
-
-  def Missing(self):
-    """Returns True if the Builder is missing any status."""
-    return self.status == constants.BUILDER_STATUS_MISSING
-
-  def Completed(self):
-    """Returns True if the Builder has completed."""
-    return self.status in constants.BUILDER_COMPLETED_STATUSES
-
-  @classmethod
-  def GetCompletedStatus(cls, success):
-    """Return the appropriate status constant for a completed build.
-
-    Args:
-      success: Whether the build was successful or not.
-    """
-    if success:
-      return constants.BUILDER_STATUS_PASSED
-    else:
-      return constants.BUILDER_STATUS_FAILED
-
-  def AsFlatDict(self):
-    """Returns a flat json-able representation of this builder status.
-
-    Returns:
-      A dictionary of the form {'status' : status, 'message' : message,
-      'dashboard_url' : dashboard_url} where all values are guaranteed
-      to be strings. If dashboard_url is None, the key will be excluded.
-    """
-    flat_dict = {'status' : str(self.status),
-                 'message' : str(self.message),
-                 'reason' : str(None if self.message is None
-                                else self.message.reason)}
-    if self.dashboard_url is not None:
-      flat_dict['dashboard_url'] = str(self.dashboard_url)
-    return flat_dict
-
-  def AsPickledDict(self):
-    """Returns a pickled dictionary representation of this builder status."""
-    return cPickle.dumps(dict(status=self.status, message=self.message,
-                              dashboard_url=self.dashboard_url))
-
-
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
 
@@ -644,7 +571,7 @@ class BuildSpecsManager(object):
 
   @staticmethod
   def GetBuildStatus(builder, version, retries=NUM_RETRIES):
-    """Returns a BuilderStatus instance for the given the builder.
+    """Returns a build_status.BuilderStatus instance for the given the builder.
 
     Args:
       builder: Builder to look at.
@@ -652,17 +579,17 @@ class BuildSpecsManager(object):
       retries: Number of retries for getting the status.
 
     Returns:
-      A BuilderStatus instance containing the builder status and any optional
-      message associated with the status passed by the builder.  If no status
-      is found for this builder then the returned BuilderStatus object will
-      have status STATUS_MISSING.
+      A build_status.BuilderStatus instance containing the builder status and
+      any optional message associated with the status passed by the builder.
+      If no status is found for this builder then the returned
+      build_status.BuilderStatus object will have status STATUS_MISSING.
     """
     url = BuildSpecsManager._GetStatusUrl(builder, version)
     ctx = gs.GSContext(retries=retries)
     try:
       output = ctx.Cat(url)
     except gs.GSNoSuchKey:
-      return BuilderStatus(constants.BUILDER_STATUS_MISSING, None)
+      return build_status.BuilderStatus(constants.BUILDER_STATUS_MISSING, None)
 
     return BuildSpecsManager._UnpickleBuildStatus(output)
 
@@ -724,7 +651,7 @@ class BuildSpecsManager(object):
 
   @staticmethod
   def _UnpickleBuildStatus(pickle_string):
-    """Returns a BuilderStatus instance from a pickled string."""
+    """Returns a build_status.BuilderStatus instance from a pickled string."""
     try:
       status_dict = cPickle.loads(pickle_string)
     except (cPickle.UnpicklingError, AttributeError, EOFError,
@@ -734,9 +661,10 @@ class BuildSpecsManager(object):
       # In addition to the exceptions listed in the doc, we've also observed
       # TypeError in the wild.
       logging.warning('Failed with %r to unpickle status file.', e)
-      return BuilderStatus(constants.BUILDER_STATUS_FAILED, message=None)
+      return build_status.BuilderStatus(
+          constants.BUILDER_STATUS_FAILED, message=None)
 
-    return BuilderStatus(**status_dict)
+    return build_status.BuilderStatus(**status_dict)
 
   def GetLatestPassingSpec(self):
     """Get the last spec file that passed in the current branch."""
@@ -843,7 +771,8 @@ class BuildSpecsManager(object):
       fail_if_exists: If set, fail if the status already exists.
       dashboard_url: Optional url linking to builder dashboard for this build.
     """
-    data = BuilderStatus(status, message, dashboard_url).AsPickledDict()
+    data = build_status.BuilderStatus(
+        status, message, dashboard_url).AsPickledDict()
 
     gs_version = None
     # This HTTP header tells Google Storage to return the PreconditionFailed
@@ -874,7 +803,7 @@ class BuildSpecsManager(object):
                of builder failure, or None (default).
       dashboard_url: Optional url linking to builder dashboard for this build.
     """
-    status = BuilderStatus.GetCompletedStatus(success)
+    status = build_status.BuilderStatus.GetCompletedStatus(success)
     self._UploadStatus(self.current_version, status, message=message,
                        dashboard_url=dashboard_url)
 
@@ -908,7 +837,8 @@ class BuildSpecsManager(object):
       else:
         sym_dir = self.fail_dirs[i]
       dest_file = '%s.xml' % os.path.join(sym_dir, self.current_version)
-      status = BuilderStatus.GetCompletedStatus(success_map[build_name])
+      status = build_status.BuilderStatus.GetCompletedStatus(
+          success_map[build_name])
       logging.debug('Build %s: %s -> %s', status, src_file, dest_file)
       CreateSymlink(src_file, dest_file)
 
@@ -935,7 +865,8 @@ class BuildSpecsManager(object):
         git.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
         success = all(success_map.values())
         commit_message = ('Automatic checkin: status=%s build_version %s for '
-                          '%s' % (BuilderStatus.GetCompletedStatus(success),
+                          '%s' % (build_status.BuilderStatus.GetCompletedStatus(
+                              success),
                                   self.current_version,
                                   self.build_names[0]))
 

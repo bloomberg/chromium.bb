@@ -258,8 +258,8 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
       osutils.Touch(m)
 
     # Fake BuilderStatus with status MISSING.
-    missing = manifest_version.BuilderStatus(constants.BUILDER_STATUS_MISSING,
-                                             None)
+    missing = build_status.BuilderStatus(constants.BUILDER_STATUS_MISSING,
+                                         None)
 
     # Fail 1, pass 2, leave 3,4 unprocessed.
     manifest_version.CreateSymlink(m1, os.path.join(
@@ -341,9 +341,9 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.manager = self.BuildManager()
     failed_msg = failures_lib.BuildFailureMessage(
         'you failed', ['traceback'], True, 'taco', 'bot')
-    failed_input_status = manifest_version.BuilderStatus(
+    failed_input_status = build_status.BuilderStatus(
         constants.BUILDER_STATUS_FAILED, failed_msg)
-    passed_input_status = manifest_version.BuilderStatus(
+    passed_input_status = build_status.BuilderStatus(
         constants.BUILDER_STATUS_PASSED, None)
 
     failed_output_status = self.manager._UnpickleBuildStatus(
@@ -371,7 +371,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
 
     final_status_dict = status_runs[-1]
     build_statuses = [
-        manifest_version.BuilderStatus(final_status_dict.get(x).status, None)
+        build_status.BuilderStatus(final_status_dict.get(x).status, None)
         for x in builders
     ]
     self.PatchObject(manifest_version.BuildSpecsManager,
@@ -462,7 +462,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
 
     final_status_dict = status_runs[-1]
     build_statuses = [
-        manifest_version.BuilderStatus(final_status_dict.get(x).status, None)
+        build_status.BuilderStatus(final_status_dict.get(x).status, None)
         for x in builders
     ]
     self.PatchObject(manifest_version.BuildSpecsManager,
