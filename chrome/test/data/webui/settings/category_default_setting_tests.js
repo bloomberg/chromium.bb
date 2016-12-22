@@ -193,7 +193,6 @@ cr.define('category_default_setting', function() {
 
             assertEquals(category, contentType);
             assertTrue(testElement.categoryEnabled);
-            assertTrue(testElement.categoryEnabled);
             assertFalse(secondaryToggle.disabled);
             assertTrue(secondaryToggle.checked);
 
