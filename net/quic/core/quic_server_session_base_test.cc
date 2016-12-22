@@ -35,22 +35,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::test::CryptoTestUtils;
-using net::test::MockQuicConnection;
-using net::test::MockQuicConnectionHelper;
-using net::test::QuicConfigPeer;
-using net::test::QuicConnectionPeer;
-using net::test::QuicSpdyStreamPeer;
-using net::test::QuicSentPacketManagerPeer;
-using net::test::QuicSessionPeer;
-using net::test::QuicSpdySessionPeer;
-using net::test::QuicSustainedBandwidthRecorderPeer;
-using net::test::SupportedVersions;
-using net::test::kClientDataStreamId1;
-using net::test::kClientDataStreamId2;
-using net::test::kClientDataStreamId3;
-using net::test::kInitialSessionFlowControlWindowForTest;
-using net::test::kInitialStreamFlowControlWindowForTest;
 using std::string;
 using testing::StrictMock;
 using testing::_;

@@ -29,13 +29,6 @@
 #include "url/gurl.h"
 
 using base::StringPiece;
-using net::test::MockQuicConnection;
-using net::test::MockQuicConnectionHelper;
-using net::test::MockQuicSpdySession;
-using net::test::QuicStreamPeer;
-using net::test::SupportedVersions;
-using net::test::kInitialSessionFlowControlWindowForTest;
-using net::test::kInitialStreamFlowControlWindowForTest;
 using std::string;
 using testing::_;
 using testing::AnyNumber;

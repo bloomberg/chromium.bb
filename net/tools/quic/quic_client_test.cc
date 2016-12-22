@@ -18,9 +18,6 @@
 #include "net/tools/quic/test_tools/quic_client_peer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::EpollServer;
-using net::test::CryptoTestUtils;
-
 namespace net {
 namespace test {
 namespace {

@@ -56,9 +56,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using net::test::IsError;
-using net::test::IsOk;
-
 using std::string;
 
 namespace net {

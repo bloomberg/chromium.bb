@@ -44,9 +44,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::test::IsError;
-using net::test::IsOk;
-
 namespace net {
 
 namespace test {

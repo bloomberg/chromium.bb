@@ -18,16 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::IntToString;
-using net::test::CryptoTestUtils;
-using net::test::DefaultQuicConfig;
-using net::test::MockQuicConnection;
-using net::test::MockQuicConnectionHelper;
-using net::test::SupportedVersions;
-using net::test::kClientDataStreamId1;
-using net::test::kServerDataStreamId1;
-using net::test::kInitialSessionFlowControlWindowForTest;
-using net::test::kInitialStreamFlowControlWindowForTest;
-
 using std::string;
 using testing::StrictMock;
 using testing::TestWithParam;

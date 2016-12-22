@@ -24,22 +24,6 @@
 
 using base::StringPrintf;
 using google::protobuf::implicit_cast;
-using net::test::ConstructEncryptedPacket;
-using net::test::ConstructMisFramedEncryptedPacket;
-using net::test::CryptoTestUtils;
-using net::test::DefaultQuicConfig;
-using net::test::MockQuicConnection;
-using net::test::MockQuicConnectionHelper;
-using net::test::MockQuicSpdyClientStream;
-using net::test::PacketSavingConnection;
-using net::test::QuicConnectionPeer;
-using net::test::QuicPacketCreatorPeer;
-using net::test::QuicSpdySessionPeer;
-using net::test::SupportedVersions;
-using net::test::TestPeerIPAddress;
-using net::test::kClientDataStreamId1;
-using net::test::kServerDataStreamId1;
-using net::test::kTestPort;
 using std::string;
 using testing::AnyNumber;
 using testing::Invoke;

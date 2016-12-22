@@ -69,9 +69,6 @@
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 
-using net::test::IsError;
-using net::test::IsOk;
-
 namespace net {
 namespace test {
 

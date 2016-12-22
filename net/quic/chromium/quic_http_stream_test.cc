@@ -60,9 +60,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::test::IsError;
-using net::test::IsOk;
-
 using std::string;
 using testing::_;
 using testing::AnyNumber;

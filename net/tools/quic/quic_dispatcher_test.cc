@@ -39,11 +39,6 @@
 
 using base::IntToString;
 using base::StringPiece;
-using net::EpollServer;
-using net::test::ConstructEncryptedPacket;
-using net::test::CryptoTestUtils;
-using net::test::MockQuicConnection;
-using net::test::MockQuicConnectionHelper;
 using std::string;
 using testing::CreateFunctor;
 using testing::DoAll;

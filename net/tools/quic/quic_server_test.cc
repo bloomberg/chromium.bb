@@ -16,8 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
-using net::test::CryptoTestUtils;
-using net::test::MockQuicDispatcher;
 
 namespace net {
 namespace test {

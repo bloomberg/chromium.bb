@@ -22,9 +22,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 
-using net::test::IsError;
-using net::test::IsOk;
-
 using testing::AnyNumber;
 using testing::CreateFunctor;
 using testing::Invoke;

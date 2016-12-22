@@ -64,7 +64,6 @@
 using base::IntToString;
 using base::StringPiece;
 using base::WaitableEvent;
-using net::EpollServer;
 using std::string;
 
 namespace net {
