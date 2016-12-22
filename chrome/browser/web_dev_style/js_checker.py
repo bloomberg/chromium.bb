@@ -112,101 +112,6 @@ class JSChecker(object):
     else:
       return self.output_api.PresubmitPromptWarning(error_text)
 
-  def ClosureLint(self, file_to_lint, source=None):
-    """Lints |file_to_lint| and returns the errors."""
-
-    import sys
-    import warnings
-    old_path = sys.path
-    old_filters = warnings.filters
-
-    try:
-      closure_linter_path = self.input_api.os_path.join(
-          self.input_api.change.RepositoryRoot(),
-          "third_party",
-          "closure_linter")
-      gflags_path = self.input_api.os_path.join(
-          self.input_api.change.RepositoryRoot(),
-          "third_party",
-          "python_gflags")
-
-      sys.path.insert(0, closure_linter_path)
-      sys.path.insert(0, gflags_path)
-
-      warnings.filterwarnings('ignore', category=DeprecationWarning)
-
-      from closure_linter import errors, runner
-      from closure_linter.common import errorhandler
-      import gflags
-
-    finally:
-      sys.path = old_path
-      warnings.filters = old_filters
-
-    class ErrorHandlerImpl(errorhandler.ErrorHandler):
-      """Filters out errors that don't apply to Chromium JavaScript code."""
-
-      def __init__(self, re):
-        self._errors = []
-        self.re = re
-
-      def HandleFile(self, filename, first_token):
-        self._filename = filename
-
-      def HandleError(self, error):
-        if (self._valid(error)):
-          error.filename = self._filename
-          self._errors.append(error)
-
-      def GetErrors(self):
-        return self._errors
-
-      def HasErrors(self):
-        return bool(self._errors)
-
-      def _valid(self, error):
-        """Check whether an error is valid. Most errors are valid, with a few
-           exceptions which are listed here.
-        """
-
-        is_grit_statement = bool(
-            self.re.search("</?(include|if)", error.token.line))
-
-        # Ignore missing spaces before "(" until Promise#catch issue is solved.
-        # http://crbug.com/338301
-        if (error.code == errors.MISSING_SPACE and error.token.string == '(' and
-           'catch(' in error.token.line):
-          return False
-
-        # Ignore "}.bind(" errors. http://crbug.com/397697
-        if (error.code == errors.MISSING_SEMICOLON_AFTER_FUNCTION and
-            '}.bind(' in error.token.line):
-          return False
-
-        return not is_grit_statement and error.code not in [
-            errors.COMMA_AT_END_OF_LITERAL,
-            errors.JSDOC_ILLEGAL_QUESTION_WITH_PIPE,
-            errors.LINE_TOO_LONG,
-            errors.MISSING_JSDOC_TAG_THIS,
-        ]
-
-    # Keep this in sync with third_party/closure_compiler/closure_args.gypi
-    gflags.FLAGS.custom_jsdoc_tags = (
-        'abstract',
-        'attribute',
-        'default',
-        'demo',
-        'element',
-        'group',
-        'hero',
-        'polymerBehavior',
-        'status',
-        'submodule',
-    )
-    error_handler = ErrorHandlerImpl(self.input_api.re)
-    runner.Run(file_to_lint, error_handler, source=source)
-    return error_handler.GetErrors()
-
   def RunChecks(self):
     """Check for violations of the Chromium JavaScript style guide. See
        http://chromium.org/developers/web-development-style-guide#TOC-JavaScript
@@ -237,21 +142,6 @@ class JSChecker(object):
             self.WrapperTypeCheck(i, line),
             self.VarNameCheck(i, line),
         ])
-
-      # Use closure linter to check for several different errors.
-      lint_errors = self.ClosureLint(self.input_api.os_path.join(
-          self.input_api.change.RepositoryRoot(), f.LocalPath()))
-
-      for error in lint_errors:
-        highlight = self._GetErrorHighlight(
-            error.token.start_index, error.token.length)
-        error_msg = '  line %d: E%04d: %s\n%s\n%s' % (
-            error.token.line_number,
-            error.code,
-            error.message,
-            error.token.line.rstrip(),
-            highlight)
-        error_lines.append(error_msg)
 
       if error_lines:
         error_lines = [

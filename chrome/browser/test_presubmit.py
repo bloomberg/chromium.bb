@@ -5,14 +5,12 @@
 
 """Unit test runner for Web Development Style Guide checks."""
 
-from web_dev_style import closure_lint_test, \
-                          css_checker_test, \
+from web_dev_style import css_checker_test, \
                           html_checker_test, \
                           js_checker_test, \
                           resource_checker_test
 
 _TEST_MODULES = [
-    closure_lint_test,
     css_checker_test,
     html_checker_test,
     js_checker_test,
