@@ -2399,4 +2399,59 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
   RuntimeEnabledFeatures::setInertTopControlsEnabled(originalInertTopControls);
 }
 
+TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
+  bool originalInertTopControls =
+      RuntimeEnabledFeatures::inertTopControlsEnabled();
+  RuntimeEnabledFeatures::setInertTopControlsEnabled(true);
+
+  std::unique_ptr<FrameTestHelpers::TestWebViewClient>
+      fakeCompositingWebViewClient =
+          WTF::makeUnique<FrameTestHelpers::TestWebViewClient>();
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  WebViewImpl* webViewImpl = webViewHelper.initialize(
+      true, nullptr, fakeCompositingWebViewClient.get(), nullptr,
+      &configureAndroidCompositing);
+
+  int pageWidth = 320;
+  int pageHeight = 590;
+  float browserControlsHeight = 50.0f;
+  int largestHeight = pageHeight + browserControlsHeight;
+
+  webViewImpl->resizeWithBrowserControls(WebSize(pageWidth, pageHeight),
+                                         browserControlsHeight, true);
+
+  FrameTestHelpers::loadFrame(webViewImpl->mainFrame(), "about:blank");
+  webViewImpl->updateAllLifecyclePhases();
+
+  Document* document =
+      toLocalFrame(webViewImpl->page()->mainFrame())->document();
+
+  // Do a resize to check for invalidations.
+  document->view()->setTracksPaintInvalidations(true);
+  webViewImpl->resizeWithBrowserControls(WebSize(pageWidth, largestHeight),
+                                         browserControlsHeight, false);
+
+  // The layout size should not have changed.
+  ASSERT_EQ(pageWidth, document->view()->layoutSize().width());
+  ASSERT_EQ(pageHeight, document->view()->layoutSize().height());
+
+  // The entire viewport should have been invalidated.
+  {
+    const RasterInvalidationTracking* invalidationTracking =
+        document->layoutView()
+            ->layer()
+            ->graphicsLayerBacking()
+            ->getRasterInvalidationTracking();
+    ASSERT_TRUE(invalidationTracking);
+    const auto* rasterInvalidations =
+        &invalidationTracking->trackedRasterInvalidations;
+    ASSERT_EQ(1u, rasterInvalidations->size());
+    EXPECT_EQ(IntRect(0, 0, pageWidth, largestHeight),
+              (*rasterInvalidations)[0].rect);
+  }
+
+  document->view()->setTracksPaintInvalidations(false);
+  RuntimeEnabledFeatures::setInertTopControlsEnabled(originalInertTopControls);
+}
+
 }  // namespace

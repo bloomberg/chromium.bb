@@ -229,9 +229,9 @@ void LayoutView::layout() {
   IncludeScrollbarsInRect includeScrollbars =
       RuntimeEnabledFeatures::rootLayerScrollingEnabled() ? IncludeScrollbars
                                                           : ExcludeScrollbars;
-  FloatSize viewSize(frameView()->visibleContentSize(includeScrollbars));
   setShouldDoFullPaintInvalidationOnResizeIfNeeded(
-      offsetWidth() != viewSize.width(), offsetHeight() != viewSize.height());
+      offsetWidth() != layoutSize(includeScrollbars).width(),
+      offsetHeight() != layoutSize(includeScrollbars).height());
 
   if (pageLogicalHeight() && shouldUsePrintingLayout()) {
     m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = logicalWidth();

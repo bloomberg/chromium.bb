@@ -1561,6 +1561,7 @@ void FrameView::removeViewportConstrainedObject(LayoutObject* object) {
 
 void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged) {
   DCHECK(widthChanged || heightChanged);
+  DCHECK(m_frame->host());
 
   if (LayoutViewItem layoutView = this->layoutViewItem()) {
     if (layoutView.usesCompositing())
@@ -1569,15 +1570,14 @@ void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged) {
 
   // Ensure the root scroller compositing layers update geometry in response to
   // the URL bar resizing.
-  if (m_frame->isMainFrame()) {
-    m_frame->document()
-        ->frameHost()
-        ->globalRootScrollerController()
-        .mainFrameViewResized();
-  }
+  if (m_frame->isMainFrame())
+    m_frame->host()->globalRootScrollerController().mainFrameViewResized();
 
   showOverlayScrollbars();
-  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+
+  bool rootLayerScrollingEnabled =
+      RuntimeEnabledFeatures::rootLayerScrollingEnabled();
+  if (rootLayerScrollingEnabled) {
     // The background must be repainted when the FrameView is resized, even if
     // the initial containing block does not change (so we can't rely on layout
     // to issue the invalidation).  This is because the background fills the
@@ -1590,19 +1590,30 @@ void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged) {
   }
 
   if (RuntimeEnabledFeatures::inertTopControlsEnabled() && layoutView() &&
-      layoutView()->style()->hasFixedBackgroundImage()) {
-    // In the case where we don't change layout size from top control resizes,
-    // we wont perform a layout. If we have a fixed background image however,
-    // the background layer needs to get resized so we should request a layout
-    // explicitly.
-    PaintLayer* layer = layoutView()->layer();
-    if (layoutView()->compositor()->needsFixedRootBackgroundLayer(layer)) {
-      setNeedsLayout();
-    } else if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-      // If root layer scrolls is on, we've already issued a full invalidation
+      m_frame->isMainFrame() && m_frame->host()->browserControls().height()) {
+    if (layoutView()->style()->hasFixedBackgroundImage()) {
+      // In the case where we don't change layout size from top control resizes,
+      // we wont perform a layout. If we have a fixed background image however,
+      // the background layer needs to get resized so we should request a layout
+      // explicitly.
+      PaintLayer* layer = layoutView()->layer();
+      if (layoutView()->compositor()->needsFixedRootBackgroundLayer(layer)) {
+        setNeedsLayout();
+      } else if (!rootLayerScrollingEnabled) {
+        // If root layer scrolls is on, we've already issued a full invalidation
+        // above.
+        layoutView()->setShouldDoFullPaintInvalidationOnResizeIfNeeded(
+            widthChanged, heightChanged);
+      }
+    } else if (heightChanged && !rootLayerScrollingEnabled) {
+      // If the document rect doesn't fill the full view height, hiding the
+      // URL bar will expose area outside the current LayoutView so we need to
+      // paint additional background. If RLS is on, we've already invalidated
       // above.
-      layoutView()->setShouldDoFullPaintInvalidationOnResizeIfNeeded(
-          widthChanged, heightChanged);
+      LayoutViewItem lvi = layoutViewItem();
+      DCHECK(!lvi.isNull());
+      if (lvi.documentRect().height() < lvi.viewRect().height())
+        lvi.setShouldDoFullPaintInvalidation();
     }
   }
 
