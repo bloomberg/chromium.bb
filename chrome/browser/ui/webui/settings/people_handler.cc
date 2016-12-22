@@ -328,8 +328,6 @@ void PeopleHandler::DisplaySpinner() {
                          base::StringValue(kSpinnerPageStatus));
 }
 
-// TODO(kochi): Handle error conditions other than timeout.
-// http://crbug.com/128692
 void PeopleHandler::DisplayTimeout() {
   // Stop a timer to handle timeout in waiting for checking network connection.
   engine_start_timer_.reset();
@@ -779,6 +777,10 @@ void PeopleHandler::PushSyncPrefs() {
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
   if (!service->IsEngineInitialized()) {
+    // Requesting the sync service to start may trigger another reentrant call
+    // to PushSyncPrefs. Setting up the startup tracker beforehand correctly
+    // signals the re-entrant call to early exit.
+    sync_startup_tracker_.reset(new SyncStartupTracker(profile_, this));
     service->RequestStart();
 
     // See if it's even possible to bring up the sync engine - if not
@@ -789,9 +791,6 @@ void PeopleHandler::PushSyncPrefs() {
         SyncStartupTracker::SYNC_STARTUP_ERROR) {
       DisplaySpinner();
     }
-
-    // Start SyncSetupTracker to wait for sync to initialize.
-    sync_startup_tracker_.reset(new SyncStartupTracker(profile_, this));
     return;
   }
 
