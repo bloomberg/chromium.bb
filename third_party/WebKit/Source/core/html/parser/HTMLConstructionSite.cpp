@@ -103,6 +103,9 @@ static inline void insert(HTMLConstructionSiteTask& task) {
   if (isHTMLTemplateElement(*task.parent))
     task.parent = toHTMLTemplateElement(task.parent.get())->content();
 
+  // https://html.spec.whatwg.org/#insert-a-foreign-element
+  // 3.1, (3) Push (pop) an element queue
+  CEReactionsScope reactions;
   if (task.nextChild)
     task.parent->parserInsertBefore(task.child.get(), *task.nextChild);
   else

@@ -68,6 +68,31 @@ test_with_content((w) => {
 });
 </script>
 
+<template data-test="foreign content insertion executes connected">
+  <script>
+  'use strict';
+
+  customElements.define('a-a', class extends HTMLElement {
+    constructor() {
+      super();
+    }
+    connectedCallback() {
+      window.connectedChildNodeCount = this.childNodes.length;
+    }
+  });
+  </script>
+  <a-a><div></div></a-a>
+</template>
+<script>
+'use strict';
+
+test_with_content((w) => {
+  assert_equals(w.connectedChildNodeCount, 0,
+      'the parser should have run the connected callback when inserting the ' +
+      'element, before continuing tree construction');
+});
+</script>
+
 <template data-test="element creation failure produces unknown element">
   <script>
   'use strict';
