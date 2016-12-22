@@ -24,7 +24,7 @@
 void aom_encode_band_pvq_splits(aom_writer *w, od_pvq_codeword_ctx *adapt,
  const int *y, int n, int k, int level);
 
-void od_laplace_encode_special(od_ec_enc *enc, int x, unsigned decay, int max);
+void aom_laplace_encode_special(aom_writer *w, int x, unsigned decay, int max);
 
 #if OD_SIGNAL_Q_SCALING
 void od_encode_quantizer_scaling(daala_enc_ctx *enc, int q_scaling, int bx,

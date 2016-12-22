@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 
+#include "aom_dsp/bitwriter.h"
 #include "aom_dsp/entdec.h"
 #include "aom_dsp/entenc.h"
 #include "av1/common/odintrin.h"
@@ -85,7 +86,7 @@ void aom_encode_band_pvq_splits(aom_writer *w, od_pvq_codeword_ctx *adapt,
  * @param [in]     max     maximum possible value of x (used to truncate
  * the pdf)
  */
-void od_laplace_encode_special(od_ec_enc *enc, int x, unsigned decay, int max) {
+void aom_laplace_encode_special(aom_writer *w, int x, unsigned decay, int max) {
   int shift;
   int xs;
   int ms;
@@ -119,14 +120,18 @@ void od_laplace_encode_special(od_ec_enc *enc, int x, unsigned decay, int max) {
     }
     if (ms > 0 && ms < 15) {
       /* Simple way of truncating the pdf when we have a bound */
-      od_ec_encode_cdf_unscaled(enc, sym, cdf, ms + 1);
+      aom_write_cdf_unscaled(w, sym, cdf, ms + 1);
     }
     else {
-      od_ec_encode_cdf_q15(enc, sym, cdf, 16);
+      aom_write_cdf(w, sym, cdf, 16);
     }
     xs -= 15;
     ms -= 15;
   }
   while (sym >= 15 && ms != 0);
-  if (shift) od_ec_enc_bits(enc, x & ((1 << shift) - 1), shift);
+#if CONFIG_DAALA_EC
+  if (shift) od_ec_enc_bits(&w->ec, x & ((1 << shift) - 1), shift);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
 }

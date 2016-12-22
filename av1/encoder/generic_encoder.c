@@ -122,12 +122,7 @@ void generic_encode(aom_writer *w, generic_encoder *model, int x, int max,
     e = ((2**ex_q16 >> 8) + (1 << shift >> 1)) >> shift;
     decay = OD_MAXI(2, OD_MINI(254, 256*e/(e + 256)));
     /* Encode the tail of the distribution assuming exponential decay. */
-#if CONFIG_DAALA_EC
-    od_laplace_encode_special(&w->ec, xs - 15, decay,
-                              (max == -1) ? -1 : ms - 15);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
+    aom_laplace_encode_special(w, xs - 15, decay, (max == -1) ? -1 : ms - 15);
   }
   if (shift != 0) {
     int special;
