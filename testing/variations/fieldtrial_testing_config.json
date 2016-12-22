@@ -212,7 +212,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Default"
+                    "name": "Default",
+                    "params": {
+                        "RedirectHistoryService": "true"
+                    }
                 },
                 {
                     "name": "EnableViaFlag",
