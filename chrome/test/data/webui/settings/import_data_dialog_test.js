@@ -95,8 +95,8 @@ suite('ImportDataDialog', function() {
     dialog = document.createElement('settings-import-data-dialog');
     dialog.set('prefs', prefs);
     document.body.appendChild(dialog);
-    assertTrue(dialog.$.dialog.open);
     return browserProxy.whenCalled('initializeImportDialog').then(function() {
+      assertTrue(dialog.$.dialog.open);
       Polymer.dom.flush();
     });
   });
