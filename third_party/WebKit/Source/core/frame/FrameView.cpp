@@ -657,10 +657,6 @@ void FrameView::setContentsSize(const IntSize& size) {
   updateScrollbars();
   ScrollableArea::contentsResized();
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
-      !RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-    setNeedsPaintPropertyUpdate();
-
   Page* page = frame().page();
   if (!page)
     return;
@@ -4018,6 +4014,9 @@ void FrameView::updateScrollbars() {
 
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
     return;
+
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    setNeedsPaintPropertyUpdate();
 
   // Avoid drawing two sets of scrollbars when visual viewport is enabled.
   if (visualViewportSuppliesScrollbars()) {

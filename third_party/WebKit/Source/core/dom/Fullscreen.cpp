@@ -34,6 +34,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
 #include "core/events/Event.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -894,6 +895,14 @@ void Fullscreen::fullscreenElementChanged(Element* fromElement,
     // https://crbug.com/668758
     frame->eventHandler().scheduleHoverStateUpdate();
     frame->chromeClient().fullscreenElementChanged(fromElement, toElement);
+
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+        !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+      // Fullscreen status affects scroll paint properties through
+      // FrameView::userInputScrollable().
+      if (FrameView* frameView = frame->view())
+        frameView->setNeedsPaintPropertyUpdate();
+    }
   }
 
   // TODO(foolip): This should not call updateStyleAndLayoutTree.
