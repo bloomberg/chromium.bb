@@ -379,5 +379,6 @@ source_set("settings_clean_skeleton") {
     ":settings",
     "//ios/chrome/browser:browser_clean_skeleton",
     "//ios/chrome/browser/ui/actions",
+    "//ios/chrome/browser/ui/commands:commands_clean_skeleton",
   ]
 }

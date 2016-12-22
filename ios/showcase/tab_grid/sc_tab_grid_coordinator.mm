@@ -5,13 +5,14 @@
 #import "ios/showcase/tab_grid/sc_tab_grid_coordinator.h"
 
 #import "base/format_macros.h"
+#import "ios/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface SCTabGridCoordinator ()<TabGridDataSource, TabGridActionDelegate>
+@interface SCTabGridCoordinator ()<TabGridDataSource, TabCommands>
 @property(nonatomic, strong) TabGridViewController* viewController;
 @end
 
@@ -23,7 +24,8 @@
   self.viewController = [[TabGridViewController alloc] init];
   self.viewController.title = @"Tab Grid";
   self.viewController.dataSource = self;
-  self.viewController.actionDelegate = self;
+  self.viewController.tabCommandHandler = self;
+
   [self.baseViewController setHidesBarsOnSwipe:YES];
   [self.baseViewController pushViewController:self.viewController animated:YES];
 }
@@ -38,26 +40,13 @@
   return [NSString stringWithFormat:@"Tab %" PRIdNS, index];
 }
 
-#pragma mark - TabGridActionDelegate
+#pragma mark - TabCommands
 
 - (void)showTabAtIndexPath:(NSIndexPath*)indexPath {
-  [self
-      showAlertWithTitle:NSStringFromProtocol(@protocol(TabGridActionDelegate))
-                 message:[NSString
-                             stringWithFormat:@"showTabAtIndexPath:%" PRIdNS,
-                                              indexPath.item]];
-}
-
-- (void)showTabGrid {
-  [self
-      showAlertWithTitle:NSStringFromProtocol(@protocol(TabGridActionDelegate))
-                 message:NSStringFromSelector(_cmd)];
-}
-
-- (void)showSettings {
-  [self
-      showAlertWithTitle:NSStringFromProtocol(@protocol(TabGridActionDelegate))
-                 message:NSStringFromSelector(_cmd)];
+  [self showAlertWithTitle:NSStringFromProtocol(@protocol(TabCommands))
+                   message:[NSString
+                               stringWithFormat:@"showTabAtIndexPath:%" PRIdNS,
+                                                indexPath.item]];
 }
 
 #pragma mark - Private

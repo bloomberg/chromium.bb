@@ -12,6 +12,8 @@
 #import <Foundation/Foundation.h>
 
 // Target/Action methods relating to the Settings UI.
+// (Actions should only be used to communicate into or between the View
+// Controller layer).
 @protocol SettingsActions
 @optional
 // Show the Settings UI over whatever UI is currently active.

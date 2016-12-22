@@ -10,6 +10,7 @@
 
 #import "ios/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/chrome/browser/ui/actions/tools_menu_actions.h"
+#import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,7 +22,7 @@
 @end
 
 @implementation ToolbarViewController
-@synthesize actionDelegate = _actionDelegate;
+@synthesize toolbarCommandHandler = _toolbarCommandHandler;
 @synthesize omnibox = _omnibox;
 @synthesize toolsMenu = _toolsMenu;
 
@@ -86,11 +87,11 @@
 #pragma mark - ToolsMenuActions
 
 - (void)showToolsMenu:(id)sender {
-  [self.actionDelegate showToolsMenu];
+  [self.toolbarCommandHandler showToolsMenu];
 }
 
 - (void)closeToolsMenu:(id)sender {
-  [self.actionDelegate closeToolsMenu];
+  [self.toolbarCommandHandler closeToolsMenu];
 }
 
 @end

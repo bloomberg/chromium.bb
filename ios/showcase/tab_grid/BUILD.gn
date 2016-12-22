@@ -9,6 +9,7 @@ source_set("tab_grid") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/ui/commands:commands_clean_skeleton",
     "//ios/chrome/browser/ui/tab_grid:tab_grid_ui",
     "//ios/showcase/common",
   ]

@@ -13,6 +13,10 @@
 
 #import "ios/chrome/browser/ui/animators/zoom_transition_delegate.h"
 
+@protocol SettingsCommands;
+@protocol TabCommands;
+@protocol TabGridCommands;
+
 // The data source for tab grid UI.
 // Conceptually the tab grid represents a group of WebState objects (which
 // are ultimately the model-layer representation of a browser tab). The data
@@ -27,20 +31,16 @@
 
 @end
 
-@protocol TabGridActionDelegate<NSObject>
-- (void)showTabAtIndexPath:(NSIndexPath*)indexPath;
-- (void)showTabGrid;
-- (void)showSettings;
-@end
-
 // Controller for a scrolling view displaying square cells that represent
 // the user's open tabs.
 @interface TabGridViewController : UIViewController<ZoomTransitionDelegate>
 
 // Data source for the tabs to be displayed.
 @property(nonatomic, weak) id<TabGridDataSource> dataSource;
-@property(nonatomic, weak) id<TabGridActionDelegate> actionDelegate;
-
+// Command handlers.
+@property(nonatomic, weak) id<SettingsCommands> settingsCommandHandler;
+@property(nonatomic, weak) id<TabCommands> tabCommandHandler;
+@property(nonatomic, weak) id<TabGridCommands> tabGridCommandHandler;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_VIEW_CONTROLLER_H_

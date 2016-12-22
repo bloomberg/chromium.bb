@@ -12,6 +12,9 @@
 #import "ios/chrome/browser/ui/actions/settings_actions.h"
 #import "ios/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_tab_cell.h"
+#import "ios/chrome/browser/ui/commands/settings_commands.h"
+#import "ios/chrome/browser/ui/commands/tab_commands.h"
+#import "ios/chrome/browser/ui/commands/tab_grid_commands.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -33,7 +36,9 @@ const CGFloat kTabSize = 150;
 @implementation TabGridViewController
 
 @synthesize dataSource = _dataSource;
-@synthesize actionDelegate = _actionDelegate;
+@synthesize settingsCommandHandler = _settingsCommandHandler;
+@synthesize tabGridCommandHandler = _tabGridCommandHandler;
+@synthesize tabCommandHandler = _tabCommandHandler;
 @synthesize grid = _grid;
 
 - (void)viewDidLoad {
@@ -122,7 +127,7 @@ const CGFloat kTabSize = 150;
 
 - (void)collectionView:(UICollectionView*)collectionView
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [self.actionDelegate showTabAtIndexPath:indexPath];
+  [self.tabCommandHandler showTabAtIndexPath:indexPath];
 }
 
 #pragma mark - ZoomTransitionDelegate methods
@@ -138,13 +143,13 @@ const CGFloat kTabSize = 150;
 #pragma mark - SettingsActions
 
 - (void)showSettings:(id)sender {
-  [self.actionDelegate showSettings];
+  [self.settingsCommandHandler showSettings];
 }
 
 #pragma mark - TabGridActions
 
 - (void)showTabGrid:(id)sender {
-  [self.actionDelegate showTabGrid];
+  [self.tabGridCommandHandler showTabGrid];
 }
 
 @end

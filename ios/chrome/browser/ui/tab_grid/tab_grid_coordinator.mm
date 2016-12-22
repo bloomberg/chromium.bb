@@ -13,6 +13,9 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/browser_coordinator+internal.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/commands/settings_commands.h"
+#import "ios/chrome/browser/ui/commands/tab_commands.h"
+#import "ios/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/chrome/browser/ui/settings/settings_coordinator.h"
 #import "ios/chrome/browser/ui/tab/tab_coordinator.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
@@ -26,8 +29,9 @@
 #endif
 
 @interface TabGridCoordinator ()<TabGridDataSource,
-                                 TabGridActionDelegate,
-                                 SettingsActionDelegate>
+                                 SettingsCommands,
+                                 TabCommands,
+                                 TabGridCommands>
 @property(nonatomic, strong) TabGridViewController* viewController;
 @property(nonatomic, weak) SettingsCoordinator* settingsCoordinator;
 @end
@@ -44,7 +48,9 @@
 - (void)start {
   self.viewController = [[TabGridViewController alloc] init];
   self.viewController.dataSource = self;
-  self.viewController.actionDelegate = self;
+  self.viewController.settingsCommandHandler = self;
+  self.viewController.tabCommandHandler = self;
+  self.viewController.tabGridCommandHandler = self;
 
   // |rootViewController| is nullable, so this is by design a no-op if it hasn't
   // been set. This may be true in a unit test, or if this coordinator is being
@@ -76,7 +82,7 @@
   return urlText;
 }
 
-#pragma mark - TabGridActionDelegate
+#pragma mark - TabCommands
 
 - (void)showTabAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK(_placeholderWebState);
@@ -88,6 +94,8 @@
   [tabCoordinator start];
 }
 
+#pragma mark - TabGridCommands
+
 - (void)showTabGrid {
   // This object should only ever have at most one child.
   DCHECK_LE(self.children.count, 1UL);
@@ -96,17 +104,15 @@
   [self removeChildCoordinator:child];
 }
 
-#pragma mark - TabGridActionDelegate
+#pragma mark - SettingsCommands
 
 - (void)showSettings {
   SettingsCoordinator* settingsCoordinator = [[SettingsCoordinator alloc] init];
-  settingsCoordinator.actionDelegate = self;
+  settingsCoordinator.settingsCommandHandler = self;
   [self addOverlayCoordinator:settingsCoordinator];
   self.settingsCoordinator = settingsCoordinator;
   [settingsCoordinator start];
 }
-
-#pragma mark - SettingsActionDelegate
 
 - (void)closeSettings {
   [self.settingsCoordinator stop];

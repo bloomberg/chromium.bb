@@ -13,18 +13,13 @@
 
 #import "ios/chrome/browser/browser_coordinator.h"
 
-// Action delegate protocol for coordinators to handle changes to the
-// Settings UI.
-@protocol SettingsActionDelegate<NSObject>
-// Close the settings UI.
-- (void)closeSettings;
-@end
+@protocol SettingsCommands;
 
 // A coordinator for the Settings UI, which is usually presented modally
 // on top of whatever other UI is currently active.
 @interface SettingsCoordinator : BrowserCoordinator
 // Action delegate for this coordinator.
-@property(nonatomic, weak) id<SettingsActionDelegate> actionDelegate;
+@property(nonatomic, weak) id<SettingsCommands> settingsCommandHandler;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_COORDINATOR_H_

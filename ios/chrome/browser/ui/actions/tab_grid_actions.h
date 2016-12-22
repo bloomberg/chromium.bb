@@ -12,6 +12,8 @@
 #import <Foundation/Foundation.h>
 
 // Target/Action methods relating to the tab grid.
+// (Actions should only be used to communicate into or between the View
+// Controller layer).
 @protocol TabGridActions
 @optional
 // Dismisses whatever UI is currently active and shows the tab grid.

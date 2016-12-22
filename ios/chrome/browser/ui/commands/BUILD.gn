@@ -46,3 +46,15 @@ source_set("unit_tests") {
     "//url",
   ]
 }
+
+# Clean Skeleton targets
+source_set("commands_clean_skeleton") {
+  sources = [
+    "settings_commands.h",
+    "tab_commands.h",
+    "tab_grid_commands.h",
+    "toolbar_commands.h",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

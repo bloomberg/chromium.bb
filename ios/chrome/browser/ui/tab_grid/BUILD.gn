@@ -15,6 +15,7 @@ source_set("tab_grid") {
     "//base",
     "//ios/chrome/browser:browser_clean_skeleton",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ui/commands:commands_clean_skeleton",
     "//ios/chrome/browser/ui/settings:settings_clean_skeleton",
     "//ios/chrome/browser/ui/tab",
     "//ios/web",
@@ -37,5 +38,6 @@ source_set("tab_grid_ui") {
     "//base",
     "//ios/chrome/browser/ui/actions",
     "//ios/chrome/browser/ui/animators",
+    "//ios/chrome/browser/ui/commands:commands_clean_skeleton",
   ]
 }

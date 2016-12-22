@@ -22,7 +22,7 @@
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_text(@"Tab 0")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_text(@"TabGridActionDelegate")]
+  [[EarlGrey selectElementWithMatcher:grey_text(@"TabCommands")]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_text(@"Done")]
       performAction:grey_tap()];

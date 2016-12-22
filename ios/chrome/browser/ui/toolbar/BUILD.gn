@@ -219,6 +219,7 @@ source_set("toolbar_clean_skeleton") {
     "//ios/chrome/browser:browser_clean_skeleton",
     "//ios/chrome/browser/ui/actions",
     "//ios/chrome/browser/ui/animators",
+    "//ios/chrome/browser/ui/commands:commands_clean_skeleton",
     "//ios/chrome/browser/ui/tools",
     "//ios/web",
   ]

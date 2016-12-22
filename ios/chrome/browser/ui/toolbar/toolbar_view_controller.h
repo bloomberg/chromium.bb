@@ -13,16 +13,7 @@
 
 #import "ios/chrome/browser/ui/animators/zoom_transition_delegate.h"
 
-// Action delegate for coordinators that handle the toolbar UI.
-@protocol ToolbarActionDelegate<NSObject>
-
-// Shows the tools menu.
-- (void)showToolsMenu;
-
-// Closes the tools menu.
-- (void)closeToolsMenu;
-
-@end
+@protocol ToolbarCommands;
 
 // View controller for a toolbar, which will show a horizontal row of
 // controls and/or labels.
@@ -31,8 +22,8 @@
 // height for it.
 @interface ToolbarViewController : UIViewController<ZoomTransitionDelegate>
 
-// The action delegate for this view controller.:wq
-@property(nonatomic, weak) id<ToolbarActionDelegate> actionDelegate;
+// The action delegate for this view controller.
+@property(nonatomic, weak) id<ToolbarCommands> toolbarCommandHandler;
 
 // Sets the text for a label appearing in the center of the toolbar.
 - (void)setCurrentPageText:(NSString*)text;
