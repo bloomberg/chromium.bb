@@ -649,7 +649,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return !isSVG() || (isSVGContainer() && !isSVGHiddenContainer()) ||
            isSVGShape() || isSVGImage() || isSVGText();
   }
-  virtual bool hasNonIsolatedBlendingDescendants() const { return false; }
+  virtual bool hasNonIsolatedBlendingDescendants() const {
+    // This is only implemented for layout objects that containt SVG flow.
+    // For HTML/CSS layout objects, use the PaintLayer version instead.
+    DCHECK(isSVG());
+    return false;
+  }
   enum DescendantIsolationState {
     DescendantIsolationRequired,
     DescendantIsolationNeedsUpdate,
