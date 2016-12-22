@@ -804,7 +804,7 @@ crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html
 
 crbug.com/596968 [ Win ] inspector-protocol/input/eventTimestamp.html [ Failure Pass ]
 
-crbug.com/667286 inspector/sources/debugger-ui/function-generator-details.html [ NeedsManualRebaseline ]
+crbug.com/667286 inspector/sources/debugger-ui/function-generator-details.html [ NeedsRebaseline ]
 
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
