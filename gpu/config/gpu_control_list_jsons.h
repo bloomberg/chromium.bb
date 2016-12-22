@@ -10,7 +10,6 @@
 namespace gpu {
 
 GPU_EXPORT extern const char kGpuDriverBugListJson[];
-GPU_EXPORT extern const char kGpuSwitchingListJson[];
 GPU_EXPORT extern const char kSoftwareRenderingListJson[];
 
 }  // namespace gpu
