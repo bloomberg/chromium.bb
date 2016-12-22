@@ -41,22 +41,22 @@ void ProtocolHandlersHandler::OnJavascriptDisallowed() {
 
 void ProtocolHandlersHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("initializeProtocolHandlerList",
-      base::Bind(&ProtocolHandlersHandler::InitializeProtocolHandlerList,
+      base::Bind(&ProtocolHandlersHandler::HandleInitializeList,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("clearDefault",
-      base::Bind(&ProtocolHandlersHandler::ClearDefault,
+      base::Bind(&ProtocolHandlersHandler::HandleClearDefault,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("removeHandler",
-      base::Bind(&ProtocolHandlersHandler::RemoveHandler,
+      base::Bind(&ProtocolHandlersHandler::HandleRemoveHandler,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("setHandlersEnabled",
-      base::Bind(&ProtocolHandlersHandler::SetHandlersEnabled,
+      base::Bind(&ProtocolHandlersHandler::HandleSetHandlersEnabled,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("setDefault",
-      base::Bind(&ProtocolHandlersHandler::SetDefault,
+      base::Bind(&ProtocolHandlersHandler::HandleSetDefault,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("removeIgnoredHandler",
-      base::Bind(&ProtocolHandlersHandler::RemoveIgnoredHandler,
+      base::Bind(&ProtocolHandlersHandler::HandleRemoveIgnoredHandler,
                  base::Unretained(this)));
 }
 
@@ -131,7 +131,7 @@ void ProtocolHandlersHandler::UpdateHandlerList() {
                          *ignored_handlers);
 }
 
-void ProtocolHandlersHandler::InitializeProtocolHandlerList(
+void ProtocolHandlersHandler::HandleInitializeList(
     const base::ListValue* args) {
   AllowJavascript();
   SendHandlersEnabledValue();
@@ -145,7 +145,7 @@ void ProtocolHandlersHandler::SendHandlersEnabledValue() {
                              GetProtocolHandlerRegistry()->enabled()));
 }
 
-void ProtocolHandlersHandler::RemoveHandler(const base::ListValue* args) {
+void ProtocolHandlersHandler::HandleRemoveHandler(const base::ListValue* args) {
   const base::ListValue* list;
   if (!args->GetList(0, &list)) {
     NOTREACHED();
@@ -160,7 +160,7 @@ void ProtocolHandlersHandler::RemoveHandler(const base::ListValue* args) {
   // then.
 }
 
-void ProtocolHandlersHandler::RemoveIgnoredHandler(
+void ProtocolHandlersHandler::HandleRemoveIgnoredHandler(
     const base::ListValue* args) {
   const base::ListValue* list;
   if (!args->GetList(0, &list)) {
@@ -172,7 +172,8 @@ void ProtocolHandlersHandler::RemoveIgnoredHandler(
   GetProtocolHandlerRegistry()->RemoveIgnoredHandler(handler);
 }
 
-void ProtocolHandlersHandler::SetHandlersEnabled(const base::ListValue* args) {
+void ProtocolHandlersHandler::HandleSetHandlersEnabled(
+    const base::ListValue* args) {
   bool enabled = true;
   CHECK(args->GetBoolean(0, &enabled));
   if (enabled)
@@ -181,7 +182,7 @@ void ProtocolHandlersHandler::SetHandlersEnabled(const base::ListValue* args) {
     GetProtocolHandlerRegistry()->Disable();
 }
 
-void ProtocolHandlersHandler::ClearDefault(const base::ListValue* args) {
+void ProtocolHandlersHandler::HandleClearDefault(const base::ListValue* args) {
   const base::Value* value;
   CHECK(args->Get(0, &value));
   std::string protocol_to_clear;
@@ -189,7 +190,7 @@ void ProtocolHandlersHandler::ClearDefault(const base::ListValue* args) {
   GetProtocolHandlerRegistry()->ClearDefault(protocol_to_clear);
 }
 
-void ProtocolHandlersHandler::SetDefault(const base::ListValue* args) {
+void ProtocolHandlersHandler::HandleSetDefault(const base::ListValue* args) {
   const base::ListValue* list;
   CHECK(args->GetList(0, &list));
   const ProtocolHandler& handler(ParseHandlerFromArgs(list));
