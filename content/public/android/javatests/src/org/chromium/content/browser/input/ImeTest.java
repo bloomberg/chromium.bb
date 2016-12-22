@@ -776,33 +776,6 @@ public class ImeTest extends ContentShellTestBase {
         assertTextsAroundCursor("blablargblarg", null, "");
     }
 
-    // crbug.com/606059
-    @MediumTest
-    @Feature({"TextInput"})
-    @RetryOnFailure
-    public void testPasteLongText() throws Exception {
-        final int textLength = 25000;
-        final String text = new String(new char[textLength]).replace("\0", "a");
-        setClip(text);
-        assertClipboardContents(getActivity(), text);
-
-        focusElement("textarea");
-        waitAndVerifyUpdateSelection(0, 0, 0, -1, -1);
-
-        // In order to reproduce the bug, we need some text after the pasting text.
-        commitText("hello", 1);
-        waitAndVerifyUpdateSelection(1, 5, 5, -1, -1);
-
-        setSelection(0, 0);
-        waitAndVerifyUpdateSelection(2, 0, 0, -1, -1);
-
-        // It will crash after the 3rd paste if ImeThread is not enabled.
-        for (int i = 0; i < 10; i++) {
-            paste();
-            waitAndVerifyUpdateSelection(3 + i, textLength * (i + 1), textLength * (i + 1), -1, -1);
-        }
-    }
-
     @SmallTest
     @Feature({"TextInput"})
     @DisabledTest(message = "crbug.com/673588")
