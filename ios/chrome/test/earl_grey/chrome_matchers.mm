@@ -126,11 +126,6 @@ id<GREYMatcher> webViewNotContainingText(std::string text) {
   return web::webViewNotContainingText(std::move(text), GetCurrentWebState());
 }
 
-id<GREYMatcher> webViewContainingBlockedImage(std::string image_id) {
-  return web::webViewContainingBlockedImage(std::move(image_id),
-                                            GetCurrentWebState());
-}
-
 id<GREYMatcher> staticHtmlViewContainingText(NSString* text) {
   // The WKWebView in a static HTML view isn't part of a webState, but it
   // does have the StaticHtmlViewController as its navigation delegate.

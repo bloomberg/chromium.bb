@@ -36,10 +36,6 @@ id<GREYMatcher> webViewContainingText(std::string text);
 // Returns matcher for webview not containing |text|.
 id<GREYMatcher> webViewNotContainingText(std::string text);
 
-// Matcher for WKWebView containing a blocked |image_id|.  When blocked, the
-// image element will be smaller than actual image.
-id<GREYMatcher> webViewContainingBlockedImage(std::string image_id);
-
 // Returns matcher for a StaticHtmlViewController containing |text|.
 id<GREYMatcher> staticHtmlViewContainingText(NSString* text);
 
