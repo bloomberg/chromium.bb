@@ -69,6 +69,9 @@ security_state::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
 
 gfx::VectorIconId ToolbarModelImpl::GetVectorIcon() const {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+  if (GetURL().SchemeIs("chrome-extension"))
+    return gfx::VectorIconId::EXTENSION;
+
   switch (GetSecurityLevel(false)) {
     case security_state::NONE:
     case security_state::HTTP_SHOW_WARNING:

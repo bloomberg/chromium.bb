@@ -311,18 +311,21 @@ class LocationBarView : public LocationBar,
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal();
 
-  // Returns text describing the URL's security level, to be placed in the
-  // security chip.
-  base::string16 GetSecurityText() const;
+  // Returns text to be placed in the location icon view.
+  // - For secure/insecure pages, returns text describing the URL's security
+  // level.
+  // - For extension URLs, returns the extension name.
+  base::string16 GetLocationIconText() const;
 
   bool ShouldShowKeywordBubble() const;
 
-  // Returns true when the current page is explicitly secure or insecure.
-  // In these cases, we should show the state of the security chip.
-  bool ShouldShowSecurityChip() const;
+  // Returns true if any of the following is true:
+  // - the current page is explicitly secure or insecure.
+  // - the current page URL is a chrome-extension:// URL.
+  bool ShouldShowLocationIconText() const;
 
-  // Returns true if the chip should be animated
-  bool ShouldAnimateSecurityChip() const;
+  // Returns true if the location icon text should be animated.
+  bool ShouldAnimateLocationIconTextVisibilityChange() const;
 
   // Used to "reverse" the URL showing/hiding animations, since we use separate
   // animations whose curves are not true inverses of each other.  Based on the

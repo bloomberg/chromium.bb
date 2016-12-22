@@ -458,8 +458,9 @@ void LocationBarViewMac::Layout() {
   // displayed, even if the width is narrow.
   CGFloat available_width =
       [cell availableWidthInFrame:[[cell controlView] frame]];
-  is_width_available_for_security_verbose_ =
-      available_width >= kMinURLWidth || ShouldShowEVBubble();
+  is_width_available_for_security_verbose_ = available_width >= kMinURLWidth ||
+                                             ShouldShowEVBubble() ||
+                                             ShouldShowExtensionBubble();
 
   if (!keyword.empty() && !is_keyword_hint) {
     // Switch from location icon to keyword mode.
@@ -480,6 +481,15 @@ void LocationBarViewMac::Layout() {
     security_state_bubble_decoration_->SetVisible(true);
 
     base::string16 label(GetToolbarModel()->GetEVCertName());
+    security_state_bubble_decoration_->SetFullLabel(
+        base::SysUTF16ToNSString(label));
+  } else if (ShouldShowExtensionBubble()) {
+    // Switch from location icon to show the extension bubble instead.
+    location_icon_decoration_->SetVisible(false);
+    security_state_bubble_decoration_->SetVisible(true);
+
+    base::string16 label(
+        GetExtensionName(GetToolbarModel()->GetURL(), GetWebContents()));
     security_state_bubble_decoration_->SetFullLabel(
         base::SysUTF16ToNSString(label));
   } else if (ShouldShowSecurityState() ||
@@ -650,6 +660,11 @@ WebContents* LocationBarViewMac::GetWebContents() {
 bool LocationBarViewMac::ShouldShowEVBubble() const {
   return GetToolbarModel()->GetSecurityLevel(false) ==
          security_state::EV_SECURE;
+}
+
+bool LocationBarViewMac::ShouldShowExtensionBubble() const {
+  return !GetOmniboxView()->IsEditingOrEmpty() &&
+         GetToolbarModel()->GetURL().SchemeIs(extensions::kExtensionScheme);
 }
 
 bool LocationBarViewMac::ShouldShowSecurityState() const {
@@ -860,7 +875,8 @@ void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
   // out, animate it back in. Otherwise, if the security state has changed,
   // animate the decoration if animation is enabled and the state changed is
   // not from a tab switch.
-  if (ShouldShowSecurityState() && is_width_available_for_security_verbose_) {
+  if ((ShouldShowSecurityState() || ShouldShowExtensionBubble()) &&
+      is_width_available_for_security_verbose_) {
     bool is_secure_to_secure = IsSecureConnection(new_security_level) &&
                                IsSecureConnection(security_level_);
     bool is_new_security_level =

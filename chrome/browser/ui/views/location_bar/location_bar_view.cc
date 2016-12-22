@@ -456,10 +456,10 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   int leading_width = edge_thickness;
   if (ShouldShowKeywordBubble()) {
     // The selected keyword view can collapse completely.
-  } else if (ShouldShowSecurityChip()) {
-    base::string16 security_text = GetSecurityText();
+  } else if (ShouldShowLocationIconText()) {
     leading_width +=
-        location_icon_view_->GetMinimumSizeForLabelText(security_text).width();
+        location_icon_view_->GetMinimumSizeForLabelText(GetLocationIconText())
+            .width();
   } else {
     leading_width +=
         kHorizontalPadding + location_icon_view_->GetMinimumSize().width();
@@ -530,8 +530,8 @@ void LocationBarView::Layout() {
         selected_keyword_view_->ResetImage();
       }
     }
-  } else if (ShouldShowSecurityChip()) {
-    location_icon_view_->SetLabel(GetSecurityText());
+  } else if (ShouldShowLocationIconText()) {
+    location_icon_view_->SetLabel(GetLocationIconText());
     // The largest fraction of the omnibox that can be taken by the EV bubble.
     const double kMaxBubbleFraction = 0.5;
     leading_decorations.AddDecoration(vertical_padding, location_height, false,
@@ -660,9 +660,9 @@ void LocationBarView::Update(const WebContents* contents) {
   else
     omnibox_view_->Update();
 
-  location_icon_view_->SetSecurityState(
-      ShouldShowSecurityChip(), !contents && ShouldAnimateSecurityChip());
-
+  location_icon_view_->SetTextVisibility(
+      ShouldShowLocationIconText(),
+      !contents && ShouldAnimateLocationIconTextVisibilityChange());
   OnChanged();  // NOTE: Calls Layout().
 }
 
@@ -879,7 +879,12 @@ void LocationBarView::ShowFirstRunBubbleInternal() {
 #endif
 }
 
-base::string16 LocationBarView::GetSecurityText() const {
+base::string16 LocationBarView::GetLocationIconText() const {
+  const base::string16 extension_name = GetExtensionName(
+      GetToolbarModel()->GetURL(), delegate_->GetWebContents());
+  if (!extension_name.empty())
+    return extension_name;
+
   bool has_ev_cert =
       (GetToolbarModel()->GetSecurityLevel(false) == security_state::EV_SECURE);
   return has_ev_cert ? GetToolbarModel()->GetEVCertName()
@@ -891,7 +896,11 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
       !omnibox_view_->model()->is_keyword_hint();
 }
 
-bool LocationBarView::ShouldShowSecurityChip() const {
+bool LocationBarView::ShouldShowLocationIconText() const {
+  if (!GetOmniboxView()->IsEditingOrEmpty() &&
+      GetToolbarModel()->GetURL().SchemeIs(extensions::kExtensionScheme))
+    return true;
+
   using SecurityLevel = security_state::SecurityLevel;
   const SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
   return level == SecurityLevel::EV_SECURE || level == SecurityLevel::SECURE ||
@@ -899,7 +908,9 @@ bool LocationBarView::ShouldShowSecurityChip() const {
          level == SecurityLevel::HTTP_SHOW_WARNING;
 }
 
-bool LocationBarView::ShouldAnimateSecurityChip() const {
+bool LocationBarView::ShouldAnimateLocationIconTextVisibilityChange() const {
+  // Text for extension URLs should not be animated (their security level is
+  // SecurityLevel::NONE).
   using SecurityLevel = security_state::SecurityLevel;
   SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
   return level == SecurityLevel::DANGEROUS ||

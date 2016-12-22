@@ -177,6 +177,8 @@ class LocationBarViewMac : public LocationBar,
 
   bool ShouldShowEVBubble() const;
 
+  bool ShouldShowExtensionBubble() const;
+
   // Returns true if the security state decoration should be displayed. The
   // security state should only be shown for valid and invalid HTTPS states.
   bool ShouldShowSecurityState() const;

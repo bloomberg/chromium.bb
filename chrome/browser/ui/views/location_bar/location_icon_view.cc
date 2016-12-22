@@ -136,7 +136,8 @@ gfx::Size LocationIconView::GetMinimumSizeForLabelText(
       GetSizeForLabelWidth(label.GetPreferredSize().width()));
 }
 
-void LocationIconView::SetSecurityState(bool should_show, bool should_animate) {
+void LocationIconView::SetTextVisibility(bool should_show,
+                                         bool should_animate) {
   if (!should_animate) {
     animation_.Reset(should_show);
   } else if (should_show) {

@@ -53,7 +53,7 @@ function changeWidth(currentWindow) {
 chrome.test.runTests([
   // Tests windows.update use of the chrome.windows.WINDOW_ID_CURRENT constant.
   function testCurrentWindowResize() {
-    var newWidth = 400;
+    var newWidth = 500;
     chrome.windows.create(
         { 'url': 'blank.html', 'top': 0, 'left': 0, 'width': 500, 'height': 400,
           'type': 'normal' },
