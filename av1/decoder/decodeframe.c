@@ -766,12 +766,7 @@ static void dec_predict_b_extend(
   if (has_second_ref(&xd->mi[0]->mbmi))
     set_ref(cm, xd, 1, mi_row_pred, mi_col_pred);
 
-  if (!bextend) {
-    mbmi->tx_size = b_width_log2_lookup[bsize_top];
-#if CONFIG_CB4X4
-    ++mbmi->tx_size;
-#endif
-  }
+  if (!bextend) mbmi->tx_size = max_txsize_lookup[bsize_top];
 
   xd->plane[0].dst.stride = dst_stride[0];
   xd->plane[1].dst.stride = dst_stride[1];
@@ -1772,7 +1767,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_SUPERTX
   const int read_token = !supertx_enabled;
   int skip = 0;
-  TX_SIZE supertx_size = b_width_log2_lookup[bsize] + CONFIG_CB4X4;
+  TX_SIZE supertx_size = max_txsize_lookup[bsize];
   const TileInfo *const tile = &xd->tile;
   int txfm = DCT_DCT;
 #endif  // CONFIG_SUPERTX
