@@ -591,88 +591,77 @@ goog.require('__crWeb.message');
     return window.getComputedStyle(element, null)['webkitTouchCallout'];
   };
 
-  /**
-   * This method applies the various document-level overrides. Sometimes the
-   * document object gets reset in the early stages of the page lifecycle, so
-   * this is exposed as a method for the application to invoke later. That way
-   * the window-level overrides can be applied as soon as possible.
-   */
-  __gCrWeb.core.documentInject = function() {
-    // Flush the message queue.
-    if (__gCrWeb.message) {
-      __gCrWeb.message.invokeQueues();
+  // Flush the message queue.
+  if (__gCrWeb.message) {
+    __gCrWeb.message.invokeQueues();
+  }
+
+  document.addEventListener('click', function(evt) {
+    var node = getTargetLink_(evt.target);
+
+    if (!node)
+      return;
+
+    if (isInternaLink_(node)) {
+      return;
     }
-
-    document.addEventListener('click', function(evt) {
-      var node = getTargetLink_(evt.target);
-
-      if (!node)
-        return;
-
-      if (isInternaLink_(node)) {
-        return;
-      }
-      setExternalRequest_(node.href, node.target);
-      // Add listener to the target and its immediate ancesters. These event
-      // listeners will be removed if they get called. The listeners for some
-      // elements might never be removed, but if multiple identical event
-      // listeners are registered on the same event target with the same
-      // parameters the duplicate instances are discarded.
-      for (var level = 0; level < 5; ++level) {
-        if (node && node != document) {
-          node.addEventListener('click', clickBubbleListener_, false);
-          node = node.parentNode;
-        } else {
-          break;
-        }
-      }
-    }, true);
-
-    // Intercept clicks on anchors (links) during bubbling phase so that the
-    // browser can handle target type appropriately.
-    document.addEventListener('click', function(evt) {
-      var node = getTargetLink_(evt.target);
-
-      if (!node)
-        return;
-
-      if (isInternaLink_(node)) {
-        return;
+    setExternalRequest_(node.href, node.target);
+    // Add listener to the target and its immediate ancesters. These event
+    // listeners will be removed if they get called. The listeners for some
+    // elements might never be removed, but if multiple identical event
+    // listeners are registered on the same event target with the same
+    // parameters the duplicate instances are discarded.
+    for (var level = 0; level < 5; ++level) {
+      if (node && node != document) {
+        node.addEventListener('click', clickBubbleListener_, false);
+        node = node.parentNode;
       } else {
-        // Resets the external request if it has been canceled, otherwise
-        // updates the href in case it has been changed.
-        if (evt['defaultPrevented'])
-          resetExternalRequest_();
-        else
-          setExternalRequest_(node.href, node.target);
+        break;
       }
-    }, false);
+    }
+  }, true);
 
-    // Capture form submit actions.
-    document.addEventListener('submit', function(evt) {
+  // Intercept clicks on anchors (links) during bubbling phase so that the
+  // browser can handle target type appropriately.
+  document.addEventListener('click', function(evt) {
+    var node = getTargetLink_(evt.target);
+
+    if (!node)
+      return;
+
+    if (isInternaLink_(node)) {
+      return;
+    } else {
+      // Resets the external request if it has been canceled, otherwise
+      // updates the href in case it has been changed.
       if (evt['defaultPrevented'])
-        return;
+        resetExternalRequest_();
+      else
+        setExternalRequest_(node.href, node.target);
+    }
+  }, false);
 
-      var form = evt.target;
-      var targetsFrame = form.target && hasFrame_(window, form.target);
-      // TODO(stuartmorgan): Handle external targets. crbug.com/233543
+  // Capture form submit actions.
+  document.addEventListener('submit', function(evt) {
+    if (evt['defaultPrevented'])
+      return;
 
-      var action = form.getAttribute('action');
-      // Default action is to re-submit to same page.
-      if (!action)
-        action = document.location.href;
-      invokeOnHost_({
-               'command': 'document.submit',
-              'formName': __gCrWeb.common.getFormIdentifier(evt.srcElement),
-                  'href': __gCrWeb['getFullyQualifiedURL'](action),
-          'targetsFrame': targetsFrame
-      });
-    }, false);
+    var form = evt.target;
+    var targetsFrame = form.target && hasFrame_(window, form.target);
+    // TODO(stuartmorgan): Handle external targets. crbug.com/233543
 
-    addFormEventListeners_();
+    var action = form.getAttribute('action');
+    // Default action is to re-submit to same page.
+    if (!action)
+      action = document.location.href;
+    invokeOnHost_({
+             'command': 'document.submit',
+            'formName': __gCrWeb.common.getFormIdentifier(evt.srcElement),
+                'href': __gCrWeb['getFullyQualifiedURL'](action),
+        'targetsFrame': targetsFrame
+    });
+  }, false);
 
-    return true;
-  };
+  addFormEventListeners_();
 
-  __gCrWeb.core.documentInject();
 }());  // End of anonymous object
