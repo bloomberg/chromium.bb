@@ -99,31 +99,6 @@ class Executive(object):
     def cpu_count(self):
         return multiprocessing.cpu_count()
 
-    @staticmethod
-    def interpreter_for_script(script_path, fs=None):
-        fs = fs or FileSystem()
-        lines = fs.read_text_file(script_path).splitlines()
-        if not len(lines):
-            return None
-        first_line = lines[0]
-        if not first_line.startswith('#!'):
-            return None
-        if first_line.find('python') > -1:
-            return sys.executable
-        if first_line.find('ruby') > -1:
-            return 'ruby'
-        return None
-
-    @staticmethod
-    def shell_command_for_script(script_path, fs=None):
-        fs = fs or FileSystem()
-        # Win32 does not support shebang. We need to detect the interpreter ourself.
-        if sys.platform == 'win32':
-            interpreter = Executive.interpreter_for_script(script_path, fs)
-            if interpreter:
-                return [interpreter, script_path]
-        return [script_path]
-
     def kill_process(self, pid):
         """Attempts to kill the given pid.
         Will fail silently if pid does not exist or insufficient permissions.
