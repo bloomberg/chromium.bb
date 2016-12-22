@@ -1022,6 +1022,7 @@ void DeleteSelectionCommand::removeRedundantBlocks(EditingState* editingState) {
   Element* rootElement = rootEditableElement(*node);
 
   while (node != rootElement) {
+    ABORT_EDITING_COMMAND_IF(!node);
     if (isRemovableBlock(node)) {
       if (node == m_endingPosition.anchorNode())
         updatePositionForNodeRemovalPreservingChildren(m_endingPosition, *node);

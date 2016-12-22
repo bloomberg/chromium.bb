@@ -38,7 +38,7 @@ class StyleChange;
 
 enum ShouldIncludeTypingStyle { IncludeTypingStyle, IgnoreTypingStyle };
 
-class ApplyStyleCommand final : public CompositeEditCommand {
+class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
  public:
   enum EPropertyLevel { PropertyDefault, ForceBlockProperties };
   enum InlineStyleRemovalMode { RemoveIfNeeded, RemoveAlways, RemoveNone };

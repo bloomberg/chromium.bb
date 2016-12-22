@@ -234,6 +234,7 @@ source_set("unit_tests") {
     "VisibleSelectionTest.cpp",
     "VisibleUnitsTest.cpp",
     "commands/ApplyBlockElementCommandTest.cpp",
+    "commands/ApplyStyleCommandTest.cpp",
     "commands/DeleteSelectionCommandTest.cpp",
     "commands/InsertListCommandTest.cpp",
     "commands/ReplaceSelectionCommandTest.cpp",
