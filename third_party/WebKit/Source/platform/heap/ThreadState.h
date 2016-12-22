@@ -573,6 +573,15 @@ class PLATFORM_EXPORT ThreadState {
 
   static const char* gcReasonString(BlinkGC::GCReason);
 
+  // Returns |true| if |object| resides on this thread's heap.
+  // It is well-defined to call this method on any heap allocated
+  // reference, provided its associated heap hasn't been detached
+  // and shut down. Its behavior is undefined for any other pointer
+  // value.
+  bool isOnThreadHeap(const void* object) const {
+    return &fromObject(object)->heap() == &heap();
+  }
+
  private:
   template <typename T>
   friend class PrefinalizerRegistration;

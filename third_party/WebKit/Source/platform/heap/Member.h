@@ -136,12 +136,11 @@ class MemberBase {
       // constructor wasn't called.
       if (m_creationThreadState) {
         // Member should point to objects that belong in the same ThreadHeap.
-        DCHECK_EQ(&ThreadState::fromObject(m_raw)->heap(),
-                  &m_creationThreadState->heap());
+        DCHECK(m_creationThreadState->isOnThreadHeap(m_raw));
         // Member should point to objects that belong in the same ThreadHeap.
         DCHECK_EQ(&current->heap(), &m_creationThreadState->heap());
       } else {
-        DCHECK_EQ(&ThreadState::fromObject(m_raw)->heap(), &current->heap());
+        DCHECK(current->isOnThreadHeap(m_raw));
       }
     }
 
@@ -361,12 +360,11 @@ class SameThreadCheckedMember : public Member<T> {
     // constructor wasn't called.
     if (m_creationThreadState) {
       // Member should point to objects that belong in the same ThreadHeap.
-      CHECK_EQ(&ThreadState::fromObject(this->m_raw)->heap(),
-               &m_creationThreadState->heap());
+      CHECK(m_creationThreadState->isOnThreadHeap(this->m_raw));
       // Member should point to objects that belong in the same ThreadHeap.
       CHECK_EQ(&current->heap(), &m_creationThreadState->heap());
     } else {
-      CHECK_EQ(&ThreadState::fromObject(this->m_raw)->heap(), &current->heap());
+      CHECK(current->isOnThreadHeap(this->m_raw));
     }
   }
 
