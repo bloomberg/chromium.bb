@@ -1266,9 +1266,14 @@ if (is_win) {
     ]
   }
   common_optimize_on_ldflags = []
-  if (!is_component_build) {
+
+  # /OPT:ICF is not desirable in Debug builds, since code-folding can result in
+  # misleading symbols in stack traces. It is also incompatible with
+  # incremental linking, which we enable for both Debug and component builds.
+  if (!is_debug && !is_component_build) {
     common_optimize_on_ldflags += [ "/OPT:ICF" ]  # Redundant COMDAT folding.
   }
+
   if (is_official_build) {
     common_optimize_on_ldflags += [ "/OPT:REF" ]  # Remove unreferenced data.
     if (!use_lld) {
