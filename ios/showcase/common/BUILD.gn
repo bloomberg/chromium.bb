@@ -5,7 +5,12 @@
 source_set("common") {
   sources = [
     "coordinator.h",
+    "protocol_alerter.h",
+    "protocol_alerter.mm",
   ]
-  libs = [ "Foundation.framework" ]
+  deps = [
+    "//base",
+  ]
+  libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
