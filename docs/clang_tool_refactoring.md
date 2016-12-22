@@ -22,7 +22,6 @@ the tool once in each build config with code that needs to be updated.
 Other minor issues:
 
 *   Requires a git checkout.
-*   Requires [some hacks to run on Windows](https://codereview.chromium.org/718873004).
 
 ## Prerequisites
 
@@ -117,7 +116,15 @@ First, build all Chromium targets to avoid failures due to missing dependencies
 that are generated as part of the build:
 
 ```shell
-ninja -C out/Debug
+ninja -C out/Debug  # For non-Windows
+ninja -d keeprsp -C out/Debug  # For Windows
+```
+
+On Windows, generate the compile DB first, and after making any source changes.
+Then omit the `--generate-compdb` in later steps.
+
+```shell
+tools/clang/scripts/generate_win_compdb.py out/Debug
 ```
 
 Then run the actual tool:
