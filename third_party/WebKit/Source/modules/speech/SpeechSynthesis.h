@@ -26,6 +26,7 @@
 #ifndef SpeechSynthesis_h
 #define SpeechSynthesis_h
 
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/speech/SpeechSynthesisUtterance.h"
@@ -40,6 +41,7 @@ class PlatformSpeechSynthesizerClient;
 
 class MODULES_EXPORT SpeechSynthesis final
     : public EventTargetWithInlineData,
+      public ContextClient,
       public PlatformSpeechSynthesizerClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
@@ -64,7 +66,7 @@ class MODULES_EXPORT SpeechSynthesis final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged);
 
   ExecutionContext* getExecutionContext() const override {
-    return m_executionContext;
+    return ContextClient::getExecutionContext();
   }
 
   DECLARE_VIRTUAL_TRACE();
@@ -93,7 +95,6 @@ class MODULES_EXPORT SpeechSynthesis final
   // Returns the utterance at the front of the queue.
   SpeechSynthesisUtterance* currentSpeechUtterance() const;
 
-  Member<ExecutionContext> m_executionContext;
   Member<PlatformSpeechSynthesizer> m_platformSpeechSynthesizer;
   HeapVector<Member<SpeechSynthesisVoice>> m_voiceList;
   HeapDeque<Member<SpeechSynthesisUtterance>> m_utteranceQueue;

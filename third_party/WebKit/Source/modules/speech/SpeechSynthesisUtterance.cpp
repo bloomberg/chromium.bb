@@ -37,16 +37,12 @@ SpeechSynthesisUtterance* SpeechSynthesisUtterance::create(
 
 SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context,
                                                    const String& text)
-    : m_executionContext(context),
+    : ContextClient(context),
       m_platformUtterance(PlatformSpeechSynthesisUtterance::create(this)) {
   m_platformUtterance->setText(text);
 }
 
 SpeechSynthesisUtterance::~SpeechSynthesisUtterance() {}
-
-ExecutionContext* SpeechSynthesisUtterance::getExecutionContext() const {
-  return m_executionContext;
-}
 
 const AtomicString& SpeechSynthesisUtterance::interfaceName() const {
   return EventTargetNames::SpeechSynthesisUtterance;
@@ -67,9 +63,9 @@ void SpeechSynthesisUtterance::setVoice(SpeechSynthesisVoice* voice) {
 }
 
 DEFINE_TRACE(SpeechSynthesisUtterance) {
-  visitor->trace(m_executionContext);
   visitor->trace(m_platformUtterance);
   visitor->trace(m_voice);
+  ContextClient::trace(visitor);
   EventTargetWithInlineData::trace(visitor);
 }
 

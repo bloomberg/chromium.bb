@@ -37,7 +37,7 @@ SpeechSynthesis* SpeechSynthesis::create(ExecutionContext* context) {
 }
 
 SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
-    : m_executionContext(context),
+    : ContextClient(context),
       m_platformSpeechSynthesizer(PlatformSpeechSynthesizer::create(this)),
       m_isPaused(false) {}
 
@@ -48,7 +48,7 @@ void SpeechSynthesis::setPlatformSynthesizer(
 
 void SpeechSynthesis::voicesDidChange() {
   m_voiceList.clear();
-  if (!m_executionContext->isContextDestroyed())
+  if (getExecutionContext())
     dispatchEvent(Event::create(EventTypeNames::voiceschanged));
 }
 
@@ -126,12 +126,13 @@ void SpeechSynthesis::fireEvent(const AtomicString& type,
                                 SpeechSynthesisUtterance* utterance,
                                 unsigned long charIndex,
                                 const String& name) {
-  if (!m_executionContext->isContextDestroyed()) {
-    double elapsedTimeMillis =
-        (monotonicallyIncreasingTime() - utterance->startTime()) * 1000.0;
-    utterance->dispatchEvent(SpeechSynthesisEvent::create(
-        type, utterance, charIndex, elapsedTimeMillis, name));
-  }
+  if (!getExecutionContext())
+    return;
+
+  double elapsedTimeMillis =
+      (monotonicallyIncreasingTime() - utterance->startTime()) * 1000.0;
+  utterance->dispatchEvent(SpeechSynthesisEvent::create(
+      type, utterance, charIndex, elapsedTimeMillis, name));
 }
 
 void SpeechSynthesis::handleSpeakingCompleted(
@@ -234,11 +235,11 @@ const AtomicString& SpeechSynthesis::interfaceName() const {
 }
 
 DEFINE_TRACE(SpeechSynthesis) {
-  visitor->trace(m_executionContext);
   visitor->trace(m_platformSpeechSynthesizer);
   visitor->trace(m_voiceList);
   visitor->trace(m_utteranceQueue);
   PlatformSpeechSynthesizerClient::trace(visitor);
+  ContextClient::trace(visitor);
   EventTargetWithInlineData::trace(visitor);
 }
 

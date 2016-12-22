@@ -26,6 +26,7 @@
 #ifndef SpeechSynthesisUtterance_h
 #define SpeechSynthesisUtterance_h
 
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/speech/SpeechSynthesisVoice.h"
 #include "platform/heap/Handle.h"
@@ -35,6 +36,7 @@ namespace blink {
 
 class SpeechSynthesisUtterance final
     : public EventTargetWithInlineData,
+      public ContextClient,
       public PlatformSpeechSynthesisUtteranceClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesisUtterance);
@@ -75,7 +77,9 @@ class SpeechSynthesisUtterance final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(mark);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(boundary);
 
-  ExecutionContext* getExecutionContext() const override;
+  ExecutionContext* getExecutionContext() const override {
+    return ContextClient::getExecutionContext();
+  }
 
   PlatformSpeechSynthesisUtterance* platformUtterance() const {
     return m_platformUtterance;
@@ -89,7 +93,6 @@ class SpeechSynthesisUtterance final
   // EventTarget
   const AtomicString& interfaceName() const override;
 
-  Member<ExecutionContext> m_executionContext;
   Member<PlatformSpeechSynthesisUtterance> m_platformUtterance;
   Member<SpeechSynthesisVoice> m_voice;
 };
