@@ -19,31 +19,46 @@
 #  <http://www.gnu.org/licenses/>.
 
 
-# This table contains braille codes for International Phonetic Alphabet
-# REFERENCES :
-# IPA Braille: An Updated Tactile Representation of the International Phonetic Alphabet
-# Print Edition
-# Edited by Robert Englebretson, Ph.D.
-# Produced by CNIB
-# For the International Council on English Braille - 2008
-# <http://www.iceb.org/icebipa.htm>
+# This table contains braille codes for International Phonetic Alphabet (2005)
 
-# NOTES:
+
+# --------REFERENCES--------
+#   - IPA Braille: An Updated Tactile Representation of the International Phonetic Alphabet
+#     Print Edition
+#     Edited by Robert Englebretson, Ph.D.
+#     Produced by CNIB
+#     For the International Council on English Braille - 2008
+#     <http://www.iceb.org/icebipa.htm>
+#     (this reference document is reprinted in 'World Braille Usage - Third Edition - 2013 - Copyright (C) 1954, 1990 UNESCO')
+#
+#   - "IPA Chart, http://www.internationalphoneticassociation.org/content/ipa-chart,
+#      available under a Creative Commons Attribution-Sharealike 3.0 Unported License.
+#      Copyright (C) 2015 International Phonetic Association."
+
+
+#--------NOTES--------
+#
 # Some lines are commented:
 #   - Characters include in latinLetterDef6Dots.uti table (a, b, c...)
 #   - possible conflicts with some local braille codes:
-#       - French braille : ɸ (phi), β (beta), θ (theta), ç (c cedilla), ɣ (gamma), ɛ (epsilon), | (vertical line)
-#
+#       - French braille: ɸ (phi), β (beta), θ (theta), ç (c cedilla), ɣ (gamma),
+#                          ɛ (epsilon), χ (chi), ʊ (upsilon), | (vertical line), . (full stop (point))
+#       - ... (other braille code?)
 #   - Tricky character compositions, see end of 'Tones and Word Accents'
 #   - 'Phonetic and Phonemic Enclosures'
+#
 # Some IPA unicode characters are not present in the reference document so there is no braille equivalent.
-#   Example: \X02D4 for 'MODIFIER LETTER UP TACK', see <http://unicode.org/cldr/utility/list-unicodeset.jsp?a=\p{subhead=Miscellaneous%20phonetic%20modifiers}>
+#   Example: \X02D4 for 'MODIFIER LETTER UP TACK',
+#            see <http://unicode.org/cldr/utility/list-unicodeset.jsp?a=\p{subhead=Miscellaneous%20phonetic%20modifiers}>
 
-# Last updated on December 21, 2016
+
+# Last updated on December 22, 2016
 
 
-#########################
-#      PULMONIC CONSONANTS
+#-----------------------------------
+# Lines order follows the Englebretson's reference document.
+
+#--------PULMONIC CONSONANTS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
 # sign \X0070 1234      # p - lowercase p - voiceless bilabial plosive
 # sign \X0062 12        # b - lowercase b - voiced bilabial plosive
@@ -89,7 +104,7 @@ sign \X0290 256-1356    # ʐ - right-tail z - voiced retroflex fricative
 sign \X029D 236-245     # ʝ - curly-tail j - voiced palatal fricative
 # sign \X0078 1346      # x - lowercase x - voiceless velar fricative
 # sign \X0263 46-1245   # ɣ - gamma - voiced velar fricative
-sign \X03C7 46-12346    # χ - chi - voiceless uvular fricative
+# sign \X03C7 46-12346  # χ - chi - voiceless uvular fricative
 sign \X0281 35-3456     # ʁ - inverted small capital r - voiced uvular fricative
 sign \X0127 235-125     # ħ - barred h - voiceless pharyngeal fricative
 sign \X0295 235-23      # ʕ - reversed glottal stop - voiced pharyngeal fricative or approximant
@@ -107,8 +122,8 @@ sign \X026D 256-123     # ɭ - right-tail l - voiced retroflex lateral approxima
 sign \X028E 236-13456   # ʎ - turned y - voiced palatal lateral approximant
 sign \X029F 35-123      # ʟ - small capital l - voiced velar lateral approximant
 
-#########################
-#      NON-PULMONIC CONSONANTS
+
+#--------NON-PULMONIC CONSONANTS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
 sign \X0253 236-12      # ɓ - hooktop b - voiced bilabial implosive
 sign \X0257 236-145     # ɗ - hooktop d - voiced dental/alveolar implosive
@@ -121,8 +136,8 @@ sign \X01C3 12346-2345  # ǃ - exclamation point - (post-)alveolar click
 sign \X01C2 12346-156   # ǂ - double-barred pipe - palatoalveolar click
 sign \X01C1 12346-123   # ǁ - double pipe - alveolar lateral click
 
-#########################
-#      OTHER PULMONIC CONSONANTS
+
+#--------OTHER PULMONIC CONSONANTS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
 sign \X028D 235-2456    # ʍ - turned w - voiceless labial-velar fricative
 # sign \X0077 2456      # w - lowercase w - voiced labial-velar approximant
@@ -136,8 +151,8 @@ sign \X0255 236-14      # ɕ - curly-tail c - voiceless alveolopalatal fricative
 sign \X0291 236-1356    # ʑ - curly-tail z - voiced alveolopalatal fricative
 sign \X026B 235-123     # ɫ - lowercase l with tilde - velarized voiced alveolar lateral approximant
 
-#########################
-#      VOWELS
+
+#--------VOWELS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
 # sign \X0069 24        # i - lowercase i - close front unrounded vowel
 # sign \X0065 15        # e - lowercase e - close-mid front unrounded vowel
@@ -159,7 +174,7 @@ sign \X0268 356-24      # ɨ - barred i - close central unrounded vowel
 sign \X0289 356-136     # ʉ - barred u - close central rounded vowel
 sign \X026A 34          # ɪ - small capital i - near-close near-front unrounded vowel
 sign \X028F 35-13456    # ʏ - small capital y - near-close near-front rounded vowel
-sign \X028A 12356       # ʊ - upsilon - near-close near-back rounded vowel
+# sign \X028A 12356     # ʊ - upsilon - near-close near-back rounded vowel
 sign \X0259 26          # ə - schwa - mid central vowel
 sign \X0275 356-135     # ɵ - barred o - close-mid central rounded vowel
 sign \X0250 235-1       # ɐ - turned a - near-open central vowel
@@ -169,8 +184,8 @@ sign \X025A 26-5-1235   # ɚ - right-hook schwa - r-colored mid central vowel
 sign \X025E 236-345     # ɞ - closed reversed epsilon - open-mid central rounded vowel
 sign \X0258 235-15      # ɘ - reversed e - close-mid central unrounded vowel
 
-#########################
-#      DIACRITICS
+
+#--------DIACRITICS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
 sign \X02BC 5-3         # ʼ - apostrophe - ejective
 sign \X0325 6-1246      # ̥  - ring below - voiceless
@@ -207,21 +222,21 @@ sign \X0329 6-23        # ̩  - vertical line below - syllabic
 sign \X032F 6-23456     # ̯  - arch below - non-syllabic
 sign \X0361 5           # ͡  - top tie bar - affricate or double articulation
 
-#########################
-#      SUPRASEGMENTALS
+
+#--------SUPRASEGMENTALS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
 sign \X02C8 456-12      # ˈ - vertical stroke (superior) - (primary) stress
 sign \X02CC 456-23      # ˌ - vertical stroke (inferior) - secondary stress
 sign \X02D0 25          # ː - length mark - long
 sign \X02D1 5-2         # ˑ - half-length mark - half-long
 sign \X0306 4-12356     # ̆  - breve above - extra-short
-# sign \X002E 3         # . - period - syllable break
-# sign \X007C 456-1256    # | - vertical line - minor (foot) group
+# sign \X002E 3         # . - full stop - syllable break
+# sign \X007C 456-1256  # | - vertical line - minor (foot) group
 sign \X2016 456-123456  # ‖ - double vertical line - major (intonation) group
 sign \X203F 456-123     # ‿ - bottom tie bar - linking (absence of a break)
 
-#########################
-#     TONES AND WORD ACCENTS
+
+#--------TONES AND WORD ACCENTS--------
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
 sign \X030B 4-6-34      # ̋  - double acute accent above - extra high level tone
 sign \X0301 4-34        # ́  - acute accent above - high level tone
@@ -252,8 +267,7 @@ sign \X02E9 456-6-36    # ˩ - extra-low (11) tone bar - extra low level tone
 #   sign \X02E8 + \X02E5 + \X02E8 456-256 # ˨˥˨ - rising-falling (151) tone bar - rising-falling contour tone
 
 
-#########################
-# PHONETIC AND PHONEMIC ENCLOSURES
+#--------PHONETIC AND PHONEMIC ENCLOSURES--------
 # sign \X005B 45-12356  # [ - left square bracket - begin phonetic transcription
 # sign \X005D 45-23456  # ] - right square bracket - end phonetic transcription
 # sign \X002F 45-34     # / - slash - begin/end phonemic transcription
