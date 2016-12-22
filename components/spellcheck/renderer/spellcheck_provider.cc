@@ -122,7 +122,7 @@ void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
 #endif  // USE_BROWSER_SPELLCHECKER
 }
 
-void SpellCheckProvider::spellCheck(
+void SpellCheckProvider::checkSpelling(
     const WebString& text,
     int& offset,
     int& length,

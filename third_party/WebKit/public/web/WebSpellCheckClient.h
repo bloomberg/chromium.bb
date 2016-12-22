@@ -47,10 +47,10 @@ class WebSpellCheckClient {
   // will indicates its length. Otherwise, if there was not a spelling
   // error, then upon return misspelledLength is 0. If optional_suggestions
   // is given, then it will be filled with suggested words (not a cheap step).
-  virtual void spellCheck(const WebString& text,
-                          int& misspelledOffset,
-                          int& misspelledLength,
-                          WebVector<WebString>* optionalSuggestions) {}
+  virtual void checkSpelling(const WebString& text,
+                             int& misspelledOffset,
+                             int& misspelledLength,
+                             WebVector<WebString>* optionalSuggestions) {}
 
   // Requests asynchronous spelling and grammar checking, whose result should be
   // returned by passed completion object.

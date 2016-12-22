@@ -81,8 +81,9 @@ class MultilingualSpellCheckTest : public testing::Test {
       int misspelling_start = 0;
       int misspelling_length = 0;
       static_cast<blink::WebSpellCheckClient*>(provider())
-          ->spellCheck(blink::WebString(base::WideToUTF16(test_cases[i].input)),
-                       misspelling_start, misspelling_length, nullptr);
+          ->checkSpelling(
+              blink::WebString(base::WideToUTF16(test_cases[i].input)),
+              misspelling_start, misspelling_length, nullptr);
 
       EXPECT_EQ(test_cases[i].expected_misspelling_start, misspelling_start)
           << "Improper misspelling location found with the languages "
@@ -233,8 +234,9 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckSuggestions) {
     int misspelling_start;
     int misspelling_length;
     static_cast<blink::WebSpellCheckClient*>(provider())
-        ->spellCheck(blink::WebString(base::WideToUTF16(kTestCases[i].input)),
-                     misspelling_start, misspelling_length, &suggestions);
+        ->checkSpelling(
+            blink::WebString(base::WideToUTF16(kTestCases[i].input)),
+            misspelling_start, misspelling_length, &suggestions);
 
     EXPECT_EQ(kTestCases[i].expected_misspelling_start, misspelling_start);
     EXPECT_EQ(kTestCases[i].expected_misspelling_length, misspelling_length);

@@ -44,7 +44,7 @@ void SpellCheckClient::Reset() {
 }
 
 // blink::WebSpellCheckClient
-void SpellCheckClient::spellCheck(
+void SpellCheckClient::checkSpelling(
     const blink::WebString& text,
     int& misspelled_offset,
     int& misspelled_length,

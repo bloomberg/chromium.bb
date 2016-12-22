@@ -119,8 +119,8 @@ void SpellCheckerClientImpl::checkSpellingOfString(const String& text,
 
   // Check to see if the provided text is spelled correctly.
   if (m_webView->spellCheckClient()) {
-    m_webView->spellCheckClient()->spellCheck(text, spellLocation, spellLength,
-                                              nullptr);
+    m_webView->spellCheckClient()->checkSpelling(text, spellLocation,
+                                                 spellLength, nullptr);
   } else {
     spellLocation = 0;
     spellLength = 0;

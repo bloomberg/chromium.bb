@@ -76,7 +76,7 @@ class SpellCheckProvider
   void OnDestruct() override;
 
   // blink::WebSpellCheckClient implementation.
-  void spellCheck(
+  void checkSpelling(
       const blink::WebString& text,
       int& offset,
       int& length,

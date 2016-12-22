@@ -41,7 +41,7 @@ class SpellCheckClient : public blink::WebSpellCheckClient {
   void Reset();
 
   // blink::WebSpellCheckClient implementation.
-  void spellCheck(
+  void checkSpelling(
       const blink::WebString& text,
       int& offset,
       int& length,
@@ -62,7 +62,7 @@ class SpellCheckClient : public blink::WebSpellCheckClient {
   // Tests related to spell checking should enable it manually.
   bool enabled_ = false;
 
-  // The mock spellchecker used in spellCheck().
+  // The mock spellchecker used in checkSpelling().
   MockSpellCheck spell_check_;
 
   blink::WebString last_requested_text_check_string_;

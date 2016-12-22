@@ -329,7 +329,7 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
       data.dictionarySuggestions = suggestions;
     } else if (m_webView->spellCheckClient()) {
       int misspelledOffset, misspelledLength;
-      m_webView->spellCheckClient()->spellCheck(
+      m_webView->spellCheckClient()->checkSpelling(
           data.misspelledWord, misspelledOffset, misspelledLength,
           &data.dictionarySuggestions);
     }
