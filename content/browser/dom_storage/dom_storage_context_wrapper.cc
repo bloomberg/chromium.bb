@@ -282,7 +282,7 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
     base::TaskTraits dom_storage_traits =
         base::TaskTraits()
             .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN)
-            .WithFileIO()
+            .MayBlock()
             .WithPriority(base::TaskPriority::USER_BLOCKING);
     primary_sequence =
         base::CreateSequencedTaskRunnerWithTraits(dom_storage_traits);
