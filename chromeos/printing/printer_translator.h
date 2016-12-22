@@ -28,6 +28,11 @@ CHROMEOS_EXPORT std::unique_ptr<Printer> PrefToPrinter(
 CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue> PrinterToPref(
     const Printer& printer);
 
+// Returns a new printer populated with the fields from |pref|.  Processes
+// dictionaries from policy i.e. cPanel.
+CHROMEOS_EXPORT std::unique_ptr<Printer> RecommendedPrinterToPrinter(
+    const base::DictionaryValue& pref);
+
 }  // namespace printing
 }  // namespace chromeos
 

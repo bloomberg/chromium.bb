@@ -283,11 +283,13 @@ class PpdProviderImpl : public PpdProvider {
                                   uint64_t* last_updated_time) {
     std::string contents;
     if (!ValidateAndGetResponseAsString(*source, &contents)) {
+      LOG(WARNING) << "Response not validated";
       return false;
     }
 
     auto dict = base::DictionaryValue::From(base::JSONReader::Read(contents));
     if (dict == nullptr) {
+      LOG(WARNING) << "Response not a dictionary";
       return false;
     }
     std::string last_updated_time_string;
@@ -299,6 +301,7 @@ class PpdProviderImpl : public PpdProvider {
     }
 
     if (ppd_contents->size() > options_.max_ppd_contents_size_) {
+      LOG(WARNING) << "PPD too large";
       // PPD is too big.
       //
       // Note -- if we ever add shared-ppd-sourcing, e.g. we may serve a ppd to
@@ -414,9 +417,9 @@ class PpdProviderImpl : public PpdProvider {
   // return true, otherwise return false.
   bool ValidateAndGetResponseAsString(const net::URLFetcher& fetcher,
                                       std::string* contents) {
-    return ((fetcher.GetStatus().status() == net::URLRequestStatus::SUCCESS) &&
-            (fetcher.GetResponseCode() == net::HTTP_OK) &&
-            fetcher.GetResponseAsString(contents));
+    return (fetcher.GetStatus().status() == net::URLRequestStatus::SUCCESS) &&
+           (fetcher.GetResponseCode() == net::HTTP_OK) &&
+           fetcher.GetResponseAsString(contents);
   }
 
   // API key for accessing quirks server.

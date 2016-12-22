@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/guid.h"
+#include "base/json/json_reader.h"
+#include "base/md5.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -65,7 +67,16 @@ void UpdatePrinterPref(
 
 }  // anonymous namespace
 
-PrinterPrefManager::PrinterPrefManager(Profile* profile) : profile_(profile) {}
+PrinterPrefManager::PrinterPrefManager(Profile* profile) : profile_(profile) {
+  pref_change_registrar_.Init(profile->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kRecommendedNativePrinters,
+      base::Bind(&PrinterPrefManager::UpdateRecommendedPrinters,
+                 base::Unretained(this)));
+  UpdateRecommendedPrinters();
+}
+
+PrinterPrefManager::~PrinterPrefManager() {}
 
 // static
 void PrinterPrefManager::RegisterProfilePrefs(
@@ -96,8 +107,32 @@ std::vector<std::unique_ptr<Printer>> PrinterPrefManager::GetPrinters() const {
   return printers;
 }
 
+std::vector<std::unique_ptr<Printer>>
+PrinterPrefManager::GetRecommendedPrinters() const {
+  std::vector<std::unique_ptr<Printer>> printers;
+
+  for (const std::string& key : recommended_printer_ids_) {
+    const base::DictionaryValue& printer_dictionary =
+        *(recommended_printers_.at(key));
+    std::unique_ptr<Printer> printer =
+        printing::RecommendedPrinterToPrinter(printer_dictionary);
+    if (printer) {
+      printer->set_source(Printer::SRC_POLICY);
+      printers.push_back(std::move(printer));
+    }
+  }
+
+  return printers;
+}
+
 std::unique_ptr<Printer> PrinterPrefManager::GetPrinter(
     const std::string& printer_id) const {
+  // check for a policy printer first
+  const auto& policy_printers = recommended_printers_;
+  auto found = policy_printers.find(printer_id);
+  if (found != policy_printers.end())
+    return printing::RecommendedPrinterToPrinter(*(found->second));
+
   const base::ListValue* values = GetPrinterList(profile_);
   const base::DictionaryValue* printer = FindPrinterPref(values, printer_id);
 
@@ -108,6 +143,7 @@ void PrinterPrefManager::RegisterPrinter(std::unique_ptr<Printer> printer) {
   if (printer->id().empty())
     printer->set_id(base::GenerateGUID());
 
+  DCHECK_EQ(Printer::SRC_USER_PREFS, printer->source());
   std::unique_ptr<base::DictionaryValue> updated_printer =
       printing::PrinterToPref(*printer);
   UpdatePrinterPref(profile_, printer->id(), std::move(updated_printer));
@@ -121,6 +157,43 @@ bool PrinterPrefManager::RemovePrinter(const std::string& printer_id) {
   base::DictionaryValue* printer = FindPrinterPref(printer_list, printer_id);
 
   return printer && printer_list->Remove(*printer, nullptr);
+}
+
+// This method is not thread safe and could interact poorly with readers of
+// |recommended_printers_|.
+void PrinterPrefManager::UpdateRecommendedPrinters() {
+  const PrefService* prefs = profile_->GetPrefs();
+
+  const base::ListValue* values =
+      prefs->GetList(prefs::kRecommendedNativePrinters);
+
+  recommended_printer_ids_.clear();
+  for (const auto& value : *values) {
+    std::string printer_json;
+    if (!value->GetAsString(&printer_json)) {
+      NOTREACHED();
+      continue;
+    }
+
+    std::unique_ptr<base::DictionaryValue> printer_dictionary =
+        base::DictionaryValue::From(base::JSONReader::Read(
+            printer_json, base::JSON_ALLOW_TRAILING_COMMAS));
+
+    if (!printer_dictionary) {
+      LOG(WARNING) << "Ignoring invalid printer.  Invalid JSON object: "
+                   << printer_json;
+      continue;
+    }
+
+    // Policy printers don't have id's but the ids only need to be locally
+    // unique so we'll hash the record.  This will not collide with the UUIDs
+    // generated for user entries.
+    std::string id = base::MD5String(printer_json);
+    printer_dictionary->SetString(printing::kPrinterId, id);
+
+    recommended_printer_ids_.push_back(id);
+    recommended_printers_[id] = std::move(printer_dictionary);
+  }
 }
 
 }  // namespace chromeos

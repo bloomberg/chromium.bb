@@ -43,6 +43,12 @@ class CHROMEOS_EXPORT Printer {
     std::string effective_model;
   };
 
+  // The location where the printer is stored.
+  enum Source {
+    SRC_USER_PREFS,
+    SRC_POLICY,
+  };
+
   // Constructs a printer object that is completely empty.
   Printer();
 
@@ -90,6 +96,9 @@ class CHROMEOS_EXPORT Printer {
   // |uri_|.
   bool IsIppEverywhere() const;
 
+  Source source() const { return source_; }
+  void set_source(const Source source) { source_ = source; }
+
  private:
   // Globally unique identifier. Empty indicates a new printer.
   std::string id_;
@@ -115,6 +124,9 @@ class CHROMEOS_EXPORT Printer {
 
   // The UUID from an autoconf protocol for deduplication. Could be empty.
   std::string uuid_;
+
+  // The datastore which holds this printer.
+  Source source_;
 };
 
 }  // namespace chromeos

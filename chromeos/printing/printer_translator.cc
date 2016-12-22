@@ -33,6 +33,9 @@ const char kUri[] = "uri";
 const char kPpdReference[] = "ppd_reference";
 const char kUUID[] = "uuid";
 
+// The name of the PpdResource for policy printers.
+const char kPpdResource[] = "ppd_resource";
+
 Printer::PpdReference DictionaryToPpdReference(
     const base::DictionaryValue* value) {
   Printer::PpdReference ppd;
@@ -58,15 +61,11 @@ std::unique_ptr<base::DictionaryValue> PpdReferenceToDictionary(
   return dictionary;
 }
 
-}  // namespace
-
-namespace printing {
-
-const char kPrinterId[] = "id";
-
-std::unique_ptr<Printer> PrefToPrinter(const DictionaryValue& value) {
+// Converts |value| into a Printer object for the fields that are shared
+// between pref printers and policy printers.
+std::unique_ptr<Printer> DictionaryToPrinter(const DictionaryValue& value) {
   std::string id;
-  if (!value.GetString(kPrinterId, &id)) {
+  if (!value.GetString(printing::kPrinterId, &id)) {
     LOG(WARNING) << "Record id required";
     return nullptr;
   }
@@ -97,6 +96,23 @@ std::unique_ptr<Printer> PrefToPrinter(const DictionaryValue& value) {
   if (value.GetString(kUUID, &uuid))
     printer->set_uuid(uuid);
 
+  return printer;
+}
+
+}  // namespace
+
+namespace printing {
+
+const char kPrinterId[] = "id";
+
+std::unique_ptr<Printer> PrefToPrinter(const DictionaryValue& value) {
+  if (!value.HasKey(kPrinterId)) {
+    LOG(WARNING) << "Record id required";
+    return nullptr;
+  }
+
+  std::unique_ptr<Printer> printer = DictionaryToPrinter(value);
+
   const DictionaryValue* ppd;
   if (value.GetDictionary(kPpdReference, &ppd)) {
     *printer->mutable_ppd_reference() = DictionaryToPpdReference(ppd);
@@ -122,6 +138,17 @@ std::unique_ptr<base::DictionaryValue> PrinterToPref(const Printer& printer) {
   return dictionary;
 }
 
-}  // namespace printing
+std::unique_ptr<Printer> RecommendedPrinterToPrinter(
+    const base::DictionaryValue& pref) {
+  std::unique_ptr<Printer> printer = DictionaryToPrinter(pref);
 
+  const DictionaryValue* ppd;
+  if (pref.GetDictionary(kPpdResource, &ppd)) {
+    *printer->mutable_ppd_reference() = DictionaryToPpdReference(ppd);
+  }
+
+  return printer;
+}
+
+}  // namespace printing
 }  // namespace chromeos
