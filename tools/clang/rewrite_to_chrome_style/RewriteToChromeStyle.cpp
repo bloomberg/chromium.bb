@@ -14,10 +14,9 @@
 
 #include <assert.h>
 #include <algorithm>
-#include <fstream>
 #include <memory>
+#include <set>
 #include <string>
-#include <unordered_map>
 
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
@@ -33,12 +32,7 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/TargetSelect.h"
 
-#if defined(_WIN32)
-#include <windows.h>
-#else
-#include <sys/file.h>
-#include <unistd.h>
-#endif
+#include "EditTracker.h"
 
 using namespace clang::ast_matchers;
 using clang::tooling::CommonOptionsParser;
@@ -694,19 +688,17 @@ class RewriterBase : public MatchFinder::MatchCallback {
 
     clang::SourceLocation loc =
         TargetNodeTraits<TargetNode>::GetLoc(GetTargetNode(result));
+    edit_tracker_.Add(*result.SourceManager, loc, old_name, new_name);
+
     clang::CharSourceRange range = clang::CharSourceRange::getTokenRange(loc);
     replacements_->emplace(*result.SourceManager, range, new_name);
-    replacement_names_.emplace(old_name.str(), std::move(new_name));
   }
 
-  const std::unordered_map<std::string, std::string>& replacement_names()
-      const {
-    return replacement_names_;
-  }
+  const EditTracker& edit_tracker() const { return edit_tracker_; }
 
  private:
   std::set<Replacement>* const replacements_;
-  std::unordered_map<std::string, std::string> replacement_names_;
+  EditTracker edit_tracker_;
 };
 
 template <typename DeclNode, typename TargetNode>
@@ -1287,38 +1279,15 @@ int main(int argc, const char* argv[]) {
   if (result != 0)
     return result;
 
-#if defined(_WIN32)
-  HANDLE lockfd = CreateFile("rewrite-sym.lock", GENERIC_READ, FILE_SHARE_READ,
-                             NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-  OVERLAPPED overlapped = {};
-  LockFileEx(lockfd, LOCKFILE_EXCLUSIVE_LOCK, 0, 1, 0, &overlapped);
-#else
-  int lockfd = open("rewrite-sym.lock", O_RDWR | O_CREAT, 0666);
-  while (flock(lockfd, LOCK_EX)) {  // :D
-  }
-#endif
-
-  std::ofstream replacement_db_file("rewrite-sym.txt",
-                                    std::ios_base::out | std::ios_base::app);
-  for (const auto& p : field_decl_rewriter.replacement_names())
-    replacement_db_file << "var:" << p.first << ":" << p.second << "\n";
-  for (const auto& p : var_decl_rewriter.replacement_names())
-    replacement_db_file << "var:" << p.first << ":" << p.second << "\n";
-  for (const auto& p : enum_member_decl_rewriter.replacement_names())
-    replacement_db_file << "enu:" << p.first << ":" << p.second << "\n";
-  for (const auto& p : function_decl_rewriter.replacement_names())
-    replacement_db_file << "fun:" << p.first << ":" << p.second << "\n";
-  for (const auto& p : method_decl_rewriter.replacement_names())
-    replacement_db_file << "fun:" << p.first << ":" << p.second << "\n";
-  replacement_db_file.close();
-
-#if defined(_WIN32)
-  UnlockFileEx(lockfd, 0, 1, 0, &overlapped);
-  CloseHandle(lockfd);
-#else
-  flock(lockfd, LOCK_UN);
-  close(lockfd);
-#endif
+  // Supplemental data for the Blink rename rebase helper.
+  // TODO(dcheng): There's a lot of match rewriters missing from this list.
+  llvm::outs() << "==== BEGIN TRACKED EDITS ====\n";
+  field_decl_rewriter.edit_tracker().SerializeTo("var", llvm::outs());
+  var_decl_rewriter.edit_tracker().SerializeTo("var", llvm::outs());
+  enum_member_decl_rewriter.edit_tracker().SerializeTo("enu", llvm::outs());
+  function_decl_rewriter.edit_tracker().SerializeTo("fun", llvm::outs());
+  method_decl_rewriter.edit_tracker().SerializeTo("fun", llvm::outs());
+  llvm::outs() << "==== END TRACKED EDITS ====\n";
 
   // Serialization format is documented in tools/clang/scripts/run_tool.py
   llvm::outs() << "==== BEGIN EDITS ====\n";

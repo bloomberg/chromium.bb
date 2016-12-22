@@ -54,10 +54,10 @@ class Task {
 
   // These are special functions that we don't rename so that range-based
   // for loops and STL things work.
-  MyIterator begin() {}
-  my_iterator end() {}
-  my_iterator rbegin() {}
-  MyIterator rend() {}
+  MyIterator begin() { return {}; }
+  my_iterator end() { return {}; }
+  my_iterator rbegin() { return {}; }
+  MyIterator rend() { return {}; }
   // The trace() method is used by Oilpan, but we plan to tweak the Oilpan's
   // clang plugin, so that it recognizes the new method name.
   void trace() {}
@@ -69,8 +69,8 @@ class Task {
 
 class Other {
   // Static begin/end/trace don't count, and should be renamed.
-  static MyIterator begin() {}
-  static my_iterator end() {}
+  static MyIterator begin() { return {}; }
+  static my_iterator end() { return {}; }
   static void trace() {}
   static void lock() {}
 };
