@@ -32,6 +32,8 @@ PropertyConverter::PropertyConverter() {
   // Add known aura properties with associated mus properties.
   RegisterProperty(client::kAlwaysOnTopKey,
                    ui::mojom::WindowManager::kAlwaysOnTop_Property);
+  RegisterProperty(client::kAppIconKey,
+                   ui::mojom::WindowManager::kAppIcon_Property);
   RegisterProperty(client::kAppIdKey,
                    ui::mojom::WindowManager::kAppID_Property);
   RegisterProperty(client::kNameKey, ui::mojom::WindowManager::kName_Property);
@@ -45,6 +47,8 @@ PropertyConverter::PropertyConverter() {
                    ui::mojom::WindowManager::kShowState_Property);
   RegisterProperty(client::kTitleKey,
                    ui::mojom::WindowManager::kWindowTitle_Property);
+  RegisterProperty(client::kWindowIconKey,
+                   ui::mojom::WindowManager::kWindowIcon_Property);
 }
 
 PropertyConverter::~PropertyConverter() {}

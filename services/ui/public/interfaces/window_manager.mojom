@@ -75,7 +75,6 @@ interface WindowManager {
   const string kAlwaysOnTop_Property = "prop:always_on_top";
 
   // The application icon; typically larger for shelf icons, etc. Type: SkBitmap
-  // TODO(msw): map to aura::client::kAppIconKey http://crbug.com/663522?
   const string kAppIcon_Property = "prop:app-icon";
 
   // The application ID (eg. 'mojo:foo'). Maps to
@@ -123,7 +122,6 @@ interface WindowManager {
   const string kShowState_Property = "prop:show-state";
 
   // The window icon; typically 16x16 for titlebars. Type: SkBitmap
-  // TODO(msw): map to aura::client::kAppIconKey http://crbug.com/663522?
   const string kWindowIcon_Property = "prop:window-icon";
 
   // A flag controlling the window's presence on the mash shelf. Type: bool
