@@ -110,6 +110,46 @@ and [http://es6-features.org/](http://es6-features.org/)
 
 The following features are allowed in Chromium development.
 
+## `=>` (Arrow Functions)
+
+Arrow functions provide a concise syntax to create a function, and fix a number
+of difficulties with `this` (e.g. eliminating the need to write `const self =
+this`). Particularly useful for nested functions or callbacks.
+
+Prefer arrow functions over `.bind(this)`.
+
+Arrow functions have an implicit return when used without a body block.
+
+**Usage Example:**
+
+```js
+// General usage, eliminating need for .bind(this).
+setTimeout(() => {
+  this.doSomething();
+}, 1000);  // no need for .bind(this) or const self = this.
+
+// Another example...
+window.addEventListener('scroll', (event) => {
+  this.doSomething(event);
+});  // no need for .bind(this) or const self = this.
+
+// Implicit return: returns the value if expression not inside a body block.
+() => 1  // returns 1.
+() => {1}  // returns undefined - body block does not implicitly return.
+() => {return 1;}  // returns 1.
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-arrow-function-definitions)
+
+**Discussion Notes / Link to Thread:**
+
+**Note**: => does not work in iOS9.  Don't use it in code that runs on Chrome for
+iOS.  There's a presubmit that should warn you about this.
+
+[Discussion thread](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/iJrC4PVSfoU)
+
+---
+
 ## `Promise`
 
 The Promise object is used for asynchronous computations. A Promise represents a
@@ -219,41 +259,6 @@ frobber.isFrobbing = false;  // Works.
 **Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-let-and-const-declarations)
 
 **See also:** [Object.freeze()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-## `=>` (Arrow Functions)
-
-Arrow functions provide a concise syntax to create a function, and fix a number
-of difficulties with `this` (e.g. eliminating the need to write `const self =
-this`). Particularly useful for nested functions or callbacks.
-
-Prefer arrow functions over `.bind(this)`.
-
-Arrow functions have an implicit return when used without a body block.
-
-**Usage Example:**
-
-```js
-// General usage, eliminating need for .bind(this).
-setTimeout(() => {
-  this.doSomething();
-}, 1000);  // no need for .bind(this) or const self = this.
-
-// Another example...
-window.addEventListener('scroll', (event) => {
-  this.doSomething(event);
-});  // no need for .bind(this) or const self = this.
-
-// Implicit return: returns the value if expression not inside a body block.
-() => 1  // returns 1.
-() => {1}  // returns undefined - body block does not implicitly return.
-() => {return 1;}  // returns 1.
-```
-
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-arrow-function-definitions)
 
 **Discussion Notes / Link to Thread:**
 
