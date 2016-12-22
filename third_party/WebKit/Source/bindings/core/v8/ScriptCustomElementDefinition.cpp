@@ -17,6 +17,7 @@
 #include "core/dom/custom/CustomElement.h"
 #include "core/events/ErrorEvent.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/imports/HTMLImportsController.h"
 #include "v8.h"
 #include "wtf/Allocator.h"
 
@@ -185,16 +186,30 @@ HTMLElement* ScriptCustomElementDefinition::createElementSync(
   // Create an element with the synchronous custom elements flag set.
   // https://dom.spec.whatwg.org/#concept-create-element
 
-  // Create an element and push to the construction stack.
-  // V8HTMLElement::constructorCustom() can only refer to
-  // window.document(), but it is different from the document here
-  // when it is an import document. This is not exactly what the
-  // spec defines, but the non-imports behavior matches to the spec.
-  Element* element = createElementForConstructor(document);
+  // TODO(dominicc): Implement step 5 which constructs customized
+  // built-in elements.
+
+  Element* element = nullptr;
   {
-    ConstructionStackScope constructionStackScope(this, element);
     v8::TryCatch tryCatch(m_scriptState->isolate());
-    element = runConstructor();
+
+    bool isImportDocument = document.importsController() &&
+                            document.importsController()->master() != document;
+    if (isImportDocument) {
+      // V8HTMLElement::constructorCustom() can only refer to
+      // window.document() which is not the import document. Create
+      // elements in import documents ahead of time so they end up in
+      // the right document. This subtly violates recursive
+      // construction semantics, but only in import documents.
+      element = createElementForConstructor(document);
+      DCHECK(!tryCatch.HasCaught());
+
+      ConstructionStackScope constructionStackScope(this, element);
+      element = callConstructor();
+    } else {
+      element = callConstructor();
+    }
+
     if (tryCatch.HasCaught()) {
       exceptionState.rethrowV8Exception(tryCatch.Exception());
       return handleCreateElementSyncException(document, tagName, isolate,
@@ -224,9 +239,9 @@ bool ScriptCustomElementDefinition::runConstructor(Element* element) {
   v8::TryCatch tryCatch(isolate);
   tryCatch.SetVerbose(true);
 
-  Element* result = runConstructor();
+  Element* result = callConstructor();
 
-  // To report exception thrown from runConstructor()
+  // To report exception thrown from callConstructor()
   if (tryCatch.HasCaught())
     return false;
 
@@ -245,7 +260,7 @@ bool ScriptCustomElementDefinition::runConstructor(Element* element) {
   return true;
 }
 
-Element* ScriptCustomElementDefinition::runConstructor() {
+Element* ScriptCustomElementDefinition::callConstructor() {
   v8::Isolate* isolate = m_scriptState->isolate();
   DCHECK(ScriptState::current(isolate) == m_scriptState);
   ExecutionContext* executionContext = m_scriptState->getExecutionContext();

@@ -73,7 +73,9 @@ class CORE_EXPORT ScriptCustomElementDefinition final
   // Implementations of |CustomElementDefinition|
   ScriptValue getConstructorForScript() final;
   bool runConstructor(Element*) override;
-  Element* runConstructor();
+
+  // Calls the constructor. The script scope, etc. must already be set up.
+  Element* callConstructor();
 
   void runCallback(v8::Local<v8::Function>,
                    Element*,
