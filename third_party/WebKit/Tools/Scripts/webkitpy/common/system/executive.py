@@ -440,16 +440,9 @@ class Executive(object):
         # The Windows implementation of Popen cannot handle unicode strings. :(
         return map(self._encode_argument_if_needed, string_args)
 
-    # The only required argument to popen is named "args", the rest are optional keyword arguments.
     def popen(self, args, **kwargs):
-        # FIXME: We should always be stringifying the args, but callers who pass shell=True
-        # expect that the exact bytes passed will get passed to the shell (even if they're wrongly encoded).
-        # shell=True is wrong for many other reasons, and we should remove this
-        # hack as soon as we can fix all callers to not use shell=True.
-        if kwargs.get('shell') == True:
-            string_args = args
-        else:
-            string_args = self._stringify_args(args)
+        assert not kwargs.get('shell')
+        string_args = self._stringify_args(args)
         return subprocess.Popen(string_args, **kwargs)
 
     def call(self, args, **kwargs):
