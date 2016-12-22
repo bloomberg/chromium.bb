@@ -1778,10 +1778,16 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
   ChildThreadImpl::OnProcessPurgeAndSuspend();
   if (!RendererIsHidden())
     return;
+
+  // TODO(bashi): Enable the tab suspension when MemoryCoordinator is enabled.
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
+    return;
+
   if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend)) {
-    // TODO(tasak,bashi): After enabling MemoryCoordinator, stop calling
-    // SuspendRenderer() here.
-    SuspendRenderer();
+    // TODO(tasak): After enabling MemoryCoordinator, remove this Notify
+    // and follow MemoryCoordinator's request.
+    base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
+        base::MemoryState::SUSPENDED);
   }
   // Since purging is not a synchronous task (e.g. v8 GC, oilpan GC, ...),
   // we need to wait until the task is finished. So wait 15 seconds and
@@ -1888,10 +1894,16 @@ void RenderThreadImpl::OnProcessResume() {
 
   if (!RendererIsHidden())
     return;
+
+  // TODO(bashi): Enable the tab suspension when MemoryCoordinator is enabled.
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
+    return;
+
   if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend)) {
-    // TODO(tasak,bashi): After enabling MemoryCoordinator, stop calling
-    // ResumeRenderer() here.
-    ResumeRenderer();
+    // TODO(tasak): after enabling MemoryCoordinator, remove this Notify
+    // and follow MemoryCoordinator's request.
+    base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
+        base::MemoryState::NORMAL);
   }
 }
 
@@ -2258,10 +2270,10 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
   }
   switch (state) {
     case base::MemoryState::NORMAL:
-      // TODO(bashi): When the renderer is suspended, resume it.
+      ResumeRenderer();
       break;
     case base::MemoryState::THROTTLED:
-      // TODO(bashi): When the renderer is suspended, resume it.
+      ResumeRenderer();
       // TODO(bashi): Figure out what kind of strategy is suitable on
       // THROTTLED state. crbug.com/674815
 #if defined(OS_ANDROID)
@@ -2273,10 +2285,7 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
       ReleaseFreeMemory();
       break;
     case base::MemoryState::SUSPENDED:
-      // TODO(bashi): Suspend the renderer.
-      OnTrimMemoryImmediately();
-      ReleaseFreeMemory();
-      ClearMemory();
+      SuspendRenderer();
       break;
     case base::MemoryState::UNKNOWN:
       NOTREACHED();
@@ -2289,12 +2298,18 @@ void RenderThreadImpl::SuspendRenderer() {
   OnTrimMemoryImmediately();
   ReleaseFreeMemory();
   ClearMemory();
-  renderer_scheduler_->SuspendRenderer();
+  // TODO(bashi): Enable the tab suspension when MemoryCoordinator is enabled.
+  if (!base::FeatureList::IsEnabled(features::kMemoryCoordinator) &&
+      base::FeatureList::IsEnabled(features::kPurgeAndSuspend))
+    renderer_scheduler_->SuspendRenderer();
 }
 
 void RenderThreadImpl::ResumeRenderer() {
   DCHECK(IsMainThread());
-  renderer_scheduler_->ResumeRenderer();
+  // TODO(bashi): Enable the tab suspension when MemoryCoordinator is enabled.
+  if (!base::FeatureList::IsEnabled(features::kMemoryCoordinator) &&
+      base::FeatureList::IsEnabled(features::kPurgeAndSuspend))
+    renderer_scheduler_->ResumeRenderer();
 }
 
 void RenderThreadImpl::ClearMemory() {
