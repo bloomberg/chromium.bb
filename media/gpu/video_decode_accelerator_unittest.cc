@@ -56,6 +56,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "media/base/test_data_util.h"
 #include "media/filters/h264_parser.h"
 #include "media/gpu/fake_video_decode_accelerator.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
@@ -137,6 +138,10 @@ int g_fake_decoder = 0;
 // requesting the VDA itself to allocate buffers.
 bool g_test_import = false;
 
+// This is the location of the test files. If empty, they're in the current
+// working directory.
+base::FilePath g_test_file_path;
+
 // Environment to store rendering thread.
 class VideoDecodeAcceleratorTestEnvironment;
 VideoDecodeAcceleratorTestEnvironment* g_env;
@@ -188,13 +193,19 @@ const gfx::Size kThumbnailsPageSize(1600, 1200);
 const gfx::Size kThumbnailSize(160, 120);
 const int kMD5StringLength = 32;
 
+base::FilePath GetTestDataFile(const base::FilePath& input_file) {
+  if (input_file.IsAbsolute())
+    return input_file;
+  return base::MakeAbsoluteFilePath(g_test_file_path.Append(input_file));
+}
+
 // Read in golden MD5s for the thumbnailed rendering of this video
 void ReadGoldenThumbnailMD5s(const TestVideoFile* video_file,
                              std::vector<std::string>* md5_strings) {
   base::FilePath filepath(video_file->file_name);
   filepath = filepath.AddExtension(FILE_PATH_LITERAL(".md5"));
   std::string all_md5s;
-  base::ReadFileToString(base::MakeAbsoluteFilePath(filepath), &all_md5s);
+  base::ReadFileToString(GetTestDataFile(filepath), &all_md5s);
   *md5_strings = base::SplitString(all_md5s, "\n", base::TRIM_WHITESPACE,
                                    base::SPLIT_WANT_ALL);
   // Check these are legitimate MD5s.
@@ -1187,7 +1198,7 @@ void VideoDecodeAcceleratorTest::ParseAndReadTestVideoData(
 
     // Read in the video data.
     base::FilePath filepath(video_file->file_name);
-    LOG_ASSERT(base::ReadFileToString(base::MakeAbsoluteFilePath(filepath),
+    LOG_ASSERT(base::ReadFileToString(GetTestDataFile(filepath),
                                       &video_file->data_str))
         << "test_video_file: " << filepath.MaybeAsASCII();
 
@@ -1483,8 +1494,9 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
       base::FilePath filepath(test_video_files_[0]->file_name);
       filepath = filepath.AddExtension(FILE_PATH_LITERAL(".bad_thumbnails"));
       filepath = filepath.AddExtension(FILE_PATH_LITERAL(".png"));
-      int num_bytes = base::WriteFile(
-          filepath, reinterpret_cast<char*>(&png[0]), png.size());
+      int num_bytes =
+          base::WriteFile(GetTestDataFile(filepath),
+                          reinterpret_cast<char*>(&png[0]), png.size());
       ASSERT_EQ(num_bytes, static_cast<int>(png.size()));
     }
     ASSERT_NE(match, golden_md5s.end());
@@ -1817,6 +1829,10 @@ int main(int argc, char** argv) {
       continue;
     if (it->first == "test_import") {
       media::g_test_import = true;
+      continue;
+    }
+    if (it->first == "use-test-data-path") {
+      media::g_test_file_path = media::GetTestDataFilePath("");
       continue;
     }
   }

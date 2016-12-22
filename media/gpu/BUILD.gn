@@ -365,6 +365,7 @@ if (is_win || is_android || is_chromeos) {
       "//base",
       "//base/test:test_support",
       "//media",
+      "//media/base:test_support",
       "//testing/gtest",
       "//ui/base",
       "//ui/display/manager",
