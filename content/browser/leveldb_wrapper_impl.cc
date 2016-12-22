@@ -230,6 +230,10 @@ void LevelDBWrapperImpl::GetAll(
 void LevelDBWrapperImpl::OnConnectionError() {
   if (!bindings_.empty())
     return;
+  // If any tasks are waiting for load to complete, delay calling the
+  // no_bindings_callback_ until all those tasks have completed.
+  if (!on_load_complete_tasks_.empty())
+    return;
   no_bindings_callback_.Run();
 }
 
@@ -268,6 +272,11 @@ void LevelDBWrapperImpl::OnLoadComplete(
   on_load_complete_tasks_.swap(tasks);
   for (auto& task : tasks)
     task.Run();
+
+  // We might need to call the no_bindings_callback_ here if bindings became
+  // empty while waiting for load to complete.
+  if (bindings_.empty())
+    no_bindings_callback_.Run();
 }
 
 void LevelDBWrapperImpl::CreateCommitBatchIfNeeded() {

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "content/common/content_export.h"
 #include "content/common/leveldb_wrapper.mojom.h"
 #include "services/file/public/interfaces/file_system.mojom.h"
 #include "url/origin.h"
@@ -23,7 +24,7 @@ class LevelDBWrapperImpl;
 
 // Used for mojo-based LocalStorage implementation (behind --mojo-local-storage
 // for now).
-class LocalStorageContextMojo {
+class CONTENT_EXPORT LocalStorageContextMojo {
  public:
   LocalStorageContextMojo(service_manager::Connector* connector,
                           const base::FilePath& subdirectory);
@@ -31,6 +32,8 @@ class LocalStorageContextMojo {
 
   void OpenLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest request);
+
+  void SetDatabaseForTesting(leveldb::mojom::LevelDBDatabasePtr database);
 
  private:
   void OnLevelDBWrapperHasNoBindings(const url::Origin& origin);

@@ -33,7 +33,7 @@ namespace content {
 class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
  public:
   // |no_bindings_callback| will be called when this object has no more
-  // bindings.
+  // bindings and all pending modifications have been processed.
   LevelDBWrapperImpl(leveldb::mojom::LevelDBDatabase* database,
                      const std::string& prefix,
                      size_t max_size,

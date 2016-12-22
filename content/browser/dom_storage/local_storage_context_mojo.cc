@@ -12,6 +12,10 @@
 
 namespace content {
 
+namespace {
+const char kOriginSeparator = '\x00';
+}
+
 LocalStorageContextMojo::LocalStorageContextMojo(
     service_manager::Connector* connector,
     const base::FilePath& subdirectory)
@@ -63,6 +67,12 @@ void LocalStorageContextMojo::OpenLocalStorage(
   }
 
   BindLocalStorage(origin, std::move(request));
+}
+
+void LocalStorageContextMojo::SetDatabaseForTesting(
+    leveldb::mojom::LevelDBDatabasePtr database) {
+  database_ = std::move(database);
+  OnDatabaseOpened(leveldb::mojom::DatabaseError::OK);
 }
 
 void LocalStorageContextMojo::OnLevelDBWrapperHasNoBindings(
@@ -139,7 +149,7 @@ void LocalStorageContextMojo::BindLocalStorage(
   auto found = level_db_wrappers_.find(origin);
   if (found == level_db_wrappers_.end()) {
     level_db_wrappers_[origin] = base::MakeUnique<LevelDBWrapperImpl>(
-        database_.get(), origin.Serialize(),
+        database_.get(), origin.Serialize() + kOriginSeparator,
         kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
         base::TimeDelta::FromSeconds(kCommitDefaultDelaySecs), kMaxBytesPerHour,
         kMaxCommitsPerHour,
