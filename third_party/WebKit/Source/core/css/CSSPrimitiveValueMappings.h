@@ -2880,13 +2880,13 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(WritingMode e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       m_valueID = CSSValueHorizontalTb;
       break;
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalRl:
       m_valueID = CSSValueVerticalRl;
       break;
-    case LeftToRightWritingMode:
+    case WritingMode::VerticalLr:
       m_valueID = CSSValueVerticalLr;
       break;
   }
@@ -2900,19 +2900,19 @@ inline WritingMode CSSIdentifierValue::convertTo() const {
     case CSSValueLrTb:
     case CSSValueRl:
     case CSSValueRlTb:
-      return TopToBottomWritingMode;
+      return WritingMode::HorizontalTb;
     case CSSValueVerticalRl:
     case CSSValueTb:
     case CSSValueTbRl:
-      return RightToLeftWritingMode;
+      return WritingMode::VerticalRl;
     case CSSValueVerticalLr:
-      return LeftToRightWritingMode;
+      return WritingMode::VerticalLr;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return TopToBottomWritingMode;
+  return WritingMode::HorizontalTb;
 }
 
 template <>

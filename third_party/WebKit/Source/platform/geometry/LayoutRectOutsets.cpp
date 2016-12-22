@@ -68,11 +68,11 @@ LayoutRectOutsets LayoutRectOutsets::logicalOutsetsWithFlippedLines(
 
 LayoutUnit LayoutRectOutsets::before(WritingMode writingMode) const {
   switch (writingMode) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       return m_top;
-    case LeftToRightWritingMode:
+    case WritingMode::VerticalLr:
       return m_left;
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalRl:
       return m_right;
   }
   ASSERT_NOT_REACHED();
@@ -81,11 +81,11 @@ LayoutUnit LayoutRectOutsets::before(WritingMode writingMode) const {
 
 LayoutUnit LayoutRectOutsets::after(WritingMode writingMode) const {
   switch (writingMode) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       return m_bottom;
-    case LeftToRightWritingMode:
+    case WritingMode::VerticalLr:
       return m_right;
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalRl:
       return m_left;
   }
   ASSERT_NOT_REACHED();
@@ -116,13 +116,13 @@ LayoutUnit LayoutRectOutsets::under(WritingMode writingMode) const {
 
 void LayoutRectOutsets::setBefore(WritingMode writingMode, LayoutUnit value) {
   switch (writingMode) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       m_top = value;
       break;
-    case LeftToRightWritingMode:
+    case WritingMode::VerticalLr:
       m_left = value;
       break;
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalRl:
       m_right = value;
       break;
     default:
@@ -133,13 +133,13 @@ void LayoutRectOutsets::setBefore(WritingMode writingMode, LayoutUnit value) {
 
 void LayoutRectOutsets::setAfter(WritingMode writingMode, LayoutUnit value) {
   switch (writingMode) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       m_bottom = value;
       break;
-    case LeftToRightWritingMode:
+    case WritingMode::VerticalLr:
       m_right = value;
       break;
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalRl:
       m_left = value;
       break;
     default:

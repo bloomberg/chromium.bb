@@ -363,10 +363,10 @@ static void adjustStyleForDisplay(ComputedStyle& style,
   // FIXME: Since we don't support block-flow on flexible boxes yet, disallow
   // setting of block-flow to anything other than TopToBottomWritingMode.
   // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
-  if (style.getWritingMode() != TopToBottomWritingMode &&
+  if (style.getWritingMode() != WritingMode::HorizontalTb &&
       (style.display() == EDisplay::WebkitBox ||
        style.display() == EDisplay::WebkitInlineBox))
-    style.setWritingMode(TopToBottomWritingMode);
+    style.setWritingMode(WritingMode::HorizontalTb);
 
   if (parentStyle.isDisplayFlexibleOrGridBox()) {
     style.setFloating(EFloat::None);

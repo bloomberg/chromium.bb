@@ -2169,11 +2169,11 @@ Color ComputedStyle::visitedDependentColor(int colorProperty) const {
 
 const BorderValue& ComputedStyle::borderBefore() const {
   switch (getWritingMode()) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       return borderTop();
-    case LeftToRightWritingMode:
+    case WritingMode::VerticalLr:
       return borderLeft();
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalRl:
       return borderRight();
   }
   ASSERT_NOT_REACHED();
@@ -2182,11 +2182,11 @@ const BorderValue& ComputedStyle::borderBefore() const {
 
 const BorderValue& ComputedStyle::borderAfter() const {
   switch (getWritingMode()) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       return borderBottom();
-    case LeftToRightWritingMode:
+    case WritingMode::VerticalLr:
       return borderRight();
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalRl:
       return borderLeft();
   }
   ASSERT_NOT_REACHED();
@@ -2207,11 +2207,11 @@ const BorderValue& ComputedStyle::borderEnd() const {
 
 int ComputedStyle::borderBeforeWidth() const {
   switch (getWritingMode()) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       return borderTopWidth();
-    case LeftToRightWritingMode:
+    case WritingMode::VerticalLr:
       return borderLeftWidth();
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalRl:
       return borderRightWidth();
   }
   ASSERT_NOT_REACHED();
@@ -2220,11 +2220,11 @@ int ComputedStyle::borderBeforeWidth() const {
 
 int ComputedStyle::borderAfterWidth() const {
   switch (getWritingMode()) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       return borderBottomWidth();
-    case LeftToRightWritingMode:
+    case WritingMode::VerticalLr:
       return borderRightWidth();
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalRl:
       return borderLeftWidth();
   }
   ASSERT_NOT_REACHED();

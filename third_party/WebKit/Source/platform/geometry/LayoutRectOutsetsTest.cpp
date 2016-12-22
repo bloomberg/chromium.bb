@@ -12,25 +12,25 @@ namespace {
 TEST(LayoutRectOutsetsTest, LogicalOutsets_Horizontal) {
   LayoutRectOutsets outsets(1, 2, 3, 4);
   EXPECT_EQ(LayoutRectOutsets(1, 2, 3, 4),
-            outsets.logicalOutsets(TopToBottomWritingMode));
+            outsets.logicalOutsets(WritingMode::HorizontalTb));
 }
 
 TEST(LayoutRectOutsetsTest, LogicalOutsets_Vertical) {
   LayoutRectOutsets outsets(1, 2, 3, 4);
   EXPECT_EQ(LayoutRectOutsets(4, 3, 2, 1),
-            outsets.logicalOutsets(LeftToRightWritingMode));
+            outsets.logicalOutsets(WritingMode::VerticalLr));
   EXPECT_EQ(LayoutRectOutsets(4, 3, 2, 1),
-            outsets.logicalOutsets(RightToLeftWritingMode));
+            outsets.logicalOutsets(WritingMode::VerticalRl));
 }
 
 TEST(LayoutRectOutsetsTest, LogicalOutsetsWithFlippedLines) {
   LayoutRectOutsets outsets(1, 2, 3, 4);
   EXPECT_EQ(LayoutRectOutsets(1, 2, 3, 4),
-            outsets.logicalOutsetsWithFlippedLines(TopToBottomWritingMode));
+            outsets.logicalOutsetsWithFlippedLines(WritingMode::HorizontalTb));
   EXPECT_EQ(LayoutRectOutsets(2, 3, 4, 1),
-            outsets.logicalOutsetsWithFlippedLines(LeftToRightWritingMode));
+            outsets.logicalOutsetsWithFlippedLines(WritingMode::VerticalLr));
   EXPECT_EQ(LayoutRectOutsets(4, 3, 2, 1),
-            outsets.logicalOutsetsWithFlippedLines(RightToLeftWritingMode));
+            outsets.logicalOutsetsWithFlippedLines(WritingMode::VerticalRl));
 }
 
 }  // namespace

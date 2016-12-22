@@ -226,11 +226,11 @@ const Shape& ShapeOutsideInfo::computedShape() const {
 inline LayoutUnit borderBeforeInWritingMode(const LayoutBox& layoutBox,
                                             WritingMode writingMode) {
   switch (writingMode) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       return LayoutUnit(layoutBox.borderTop());
-    case LeftToRightWritingMode:
+    case WritingMode::VerticalLr:
       return LayoutUnit(layoutBox.borderLeft());
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalRl:
       return LayoutUnit(layoutBox.borderRight());
   }
 
@@ -242,11 +242,11 @@ inline LayoutUnit borderAndPaddingBeforeInWritingMode(
     const LayoutBox& layoutBox,
     WritingMode writingMode) {
   switch (writingMode) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       return layoutBox.borderTop() + layoutBox.paddingTop();
-    case LeftToRightWritingMode:
+    case WritingMode::VerticalLr:
       return layoutBox.borderLeft() + layoutBox.paddingLeft();
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalRl:
       return layoutBox.borderRight() + layoutBox.paddingRight();
   }
 

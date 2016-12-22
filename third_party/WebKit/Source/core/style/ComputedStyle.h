@@ -316,7 +316,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_direction = static_cast<unsigned>(initialDirection());
     m_inheritedData.m_rtlOrdering = static_cast<unsigned>(initialRTLOrdering());
     m_inheritedData.m_insideLink = NotInsideLink;
-    m_inheritedData.m_writingMode = initialWritingMode();
+    m_inheritedData.m_writingMode = static_cast<unsigned>(initialWritingMode());
 
     m_nonInheritedData.m_effectiveDisplay =
         m_nonInheritedData.m_originalDisplay =
@@ -2205,11 +2205,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setLineBreak(LineBreak b) { SET_VAR(m_rareInheritedData, lineBreak, b); }
 
   // writing-mode (aka -webkit-writing-mode, -epub-writing-mode)
-  static WritingMode initialWritingMode() { return TopToBottomWritingMode; }
+  static WritingMode initialWritingMode() { return WritingMode::HorizontalTb; }
   WritingMode getWritingMode() const {
     return static_cast<WritingMode>(m_inheritedData.m_writingMode);
   }
-  void setWritingMode(WritingMode v) { m_inheritedData.m_writingMode = v; }
+  void setWritingMode(WritingMode v) {
+    m_inheritedData.m_writingMode = static_cast<unsigned>(v);
+  }
 
   // Text emphasis properties.
   static TextEmphasisFill initialTextEmphasisFill() {

@@ -120,13 +120,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildrenWithWritingMode) {
   const int kMarginLeft = 100;
 
   RefPtr<ComputedStyle> div1_style = ComputedStyle::create();
-  div1_style->setWritingMode(LeftToRightWritingMode);
+  div1_style->setWritingMode(WritingMode::VerticalLr);
   NGBlockNode* div1 = new NGBlockNode(div1_style.get());
 
   RefPtr<ComputedStyle> div2_style = ComputedStyle::create();
   div2_style->setHeight(Length(kHeight, Fixed));
   div2_style->setWidth(Length(kWidth, Fixed));
-  div1_style->setWritingMode(TopToBottomWritingMode);
+  div1_style->setWritingMode(WritingMode::HorizontalTb);
   div2_style->setMarginLeft(Length(kMarginLeft, Fixed));
   NGBlockNode* div2 = new NGBlockNode(div2_style.get());
 
@@ -393,7 +393,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase5) {
 
   style_->setWidth(Length(500, Fixed));
   style_->setHeight(Length(500, Fixed));
-  style_->setWritingMode(LeftToRightWritingMode);
+  style_->setWritingMode(WritingMode::VerticalLr);
 
   // Vertical DIV
   RefPtr<ComputedStyle> vertical_style = ComputedStyle::create();
@@ -404,7 +404,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase5) {
   // Horizontal DIV
   RefPtr<ComputedStyle> horizontal_style = ComputedStyle::create();
   horizontal_style->setMarginLeft(Length(kHorizontalDivMarginLeft, Fixed));
-  horizontal_style->setWritingMode(TopToBottomWritingMode);
+  horizontal_style->setWritingMode(WritingMode::HorizontalTb);
   NGBlockNode* horizontal_div = new NGBlockNode(horizontal_style.get());
 
   vertical_div->SetNextSibling(horizontal_div);
@@ -448,7 +448,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase6) {
   RefPtr<ComputedStyle> div1_style = ComputedStyle::create();
   div1_style->setWidth(Length(kWidth, Fixed));
   div1_style->setHeight(Length(kHeight, Fixed));
-  div1_style->setWritingMode(RightToLeftWritingMode);
+  div1_style->setWritingMode(WritingMode::VerticalRl);
   div1_style->setMarginBottom(Length(kMarginBottom, Fixed));
   NGBlockNode* div1 = new NGBlockNode(div1_style.get());
 

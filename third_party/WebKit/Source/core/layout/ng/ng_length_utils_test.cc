@@ -362,7 +362,7 @@ TEST_F(NGLengthUtilsTest, testBorders) {
   style_->setBorderRightStyle(BorderStyleSolid);
   style_->setBorderBottomStyle(BorderStyleSolid);
   style_->setBorderLeftStyle(BorderStyleSolid);
-  style_->setWritingMode(LeftToRightWritingMode);
+  style_->setWritingMode(WritingMode::VerticalLr);
 
   NGBoxStrut borders = ComputeBorders(*style_);
 
@@ -377,7 +377,7 @@ TEST_F(NGLengthUtilsTest, testPadding) {
   style_->setPaddingRight(Length(52, Fixed));
   style_->setPaddingBottom(Length(Auto));
   style_->setPaddingLeft(Length(11, Percent));
-  style_->setWritingMode(RightToLeftWritingMode);
+  style_->setWritingMode(WritingMode::VerticalRl);
 
   NGConstraintSpace* constraintSpace(ConstructConstraintSpace(200, 300));
 

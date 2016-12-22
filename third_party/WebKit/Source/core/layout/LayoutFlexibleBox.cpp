@@ -611,23 +611,23 @@ LayoutFlexibleBox::getTransformedWritingMode() const {
   WritingMode mode = style()->getWritingMode();
   if (!isColumnFlow()) {
     static_assert(
-        static_cast<TransformedWritingMode>(TopToBottomWritingMode) ==
+        static_cast<TransformedWritingMode>(WritingMode::HorizontalTb) ==
                 TransformedWritingMode::TopToBottomWritingMode &&
-            static_cast<TransformedWritingMode>(LeftToRightWritingMode) ==
+            static_cast<TransformedWritingMode>(WritingMode::VerticalLr) ==
                 TransformedWritingMode::LeftToRightWritingMode &&
-            static_cast<TransformedWritingMode>(RightToLeftWritingMode) ==
+            static_cast<TransformedWritingMode>(WritingMode::VerticalRl) ==
                 TransformedWritingMode::RightToLeftWritingMode,
         "WritingMode and TransformedWritingMode must match values.");
     return static_cast<TransformedWritingMode>(mode);
   }
 
   switch (mode) {
-    case TopToBottomWritingMode:
+    case WritingMode::HorizontalTb:
       return style()->isLeftToRightDirection()
                  ? TransformedWritingMode::LeftToRightWritingMode
                  : TransformedWritingMode::RightToLeftWritingMode;
-    case LeftToRightWritingMode:
-    case RightToLeftWritingMode:
+    case WritingMode::VerticalLr:
+    case WritingMode::VerticalRl:
       return style()->isLeftToRightDirection()
                  ? TransformedWritingMode::TopToBottomWritingMode
                  : TransformedWritingMode::BottomToTopWritingMode;
