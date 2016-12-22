@@ -1752,6 +1752,8 @@
     },
 
     'ndk_next': {
+      # GCC is unsupported starting in r13.
+      'mixins': ['clang'],
       'gn_args': 'android_ndk_version="r13b" android_ndk_major_version=13',
     },
 
