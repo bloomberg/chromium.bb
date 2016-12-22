@@ -114,8 +114,10 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
   NGLayoutAlgorithm::MinAndMaxState state =
       minmax_algorithm_->ComputeMinAndMaxContentSizes(sizes);
-  if (state == NGLayoutAlgorithm::kSuccess)
+  if (state == NGLayoutAlgorithm::kSuccess) {
+    minmax_algorithm_ = nullptr;
     return true;
+  }
   if (state == NGLayoutAlgorithm::kPending)
     return false;
   DCHECK_EQ(state, NGLayoutAlgorithm::kNotImplemented);
