@@ -400,8 +400,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 // Disables browsing and purges web views if |enabled| is NO.
 // Must be called only on the main thread.
 - (void)setWebUsageEnabled:(BOOL)enabled;
-// Activates self.currentBVC iff the self.currentBVC can be made active.
-- (void)activateCurrentBVC;
+// Activates |mainBVC| and |otrBVC| and sets |currentBVC| as primary iff
+// |currentBVC| can be made active.
+- (void)activateBVCAndMakeCurrentBVCPrimary;
 // Sets |currentBVC| as the root view controller for the window.
 - (void)displayCurrentBVC;
 // Shows the settings UI.
@@ -840,12 +841,13 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   ios::ChromeBrowserState* otrBrowserState =
       _mainBrowserState->GetOffTheRecordChromeBrowserState();
   int removeAllMask = ~0;
+  void (^completion)() = ^{
+    [self activateBVCAndMakeCurrentBVCPrimary];
+  };
   [self.browsingDataRemovalController
       removeIOSSpecificIncognitoBrowsingDataFromBrowserState:otrBrowserState
                                                         mask:removeAllMask
-                                           completionHandler:^{
-                                             [self activateCurrentBVC];
-                                           }];
+                                           completionHandler:completion];
 }
 
 - (void)deleteIncognitoBrowserState {
@@ -868,7 +870,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       deleteIncognitoTabModelState:self.browsingDataRemovalController];
 
   if (otrBVCIsCurrent) {
-    [self activateCurrentBVC];
+    [self activateBVCAndMakeCurrentBVCPrimary];
   }
 
   // Always set the new otr tab model on iPad with tab switcher enabled.
@@ -888,18 +890,21 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)setWebUsageEnabled:(BOOL)enabled {
   DCHECK([NSThread isMainThread]);
   if (enabled) {
-    [self activateCurrentBVC];
+    [self activateBVCAndMakeCurrentBVCPrimary];
   } else {
-    [self.currentBVC setActive:enabled];
+    [self.mainBVC setActive:NO];
+    [self.otrBVC setActive:NO];
   }
 }
 
-- (void)activateCurrentBVC {
+- (void)activateBVCAndMakeCurrentBVCPrimary {
   // If there are pending removal operations, the activation will be deferred
   // until the callback for |removeBrowsingDataFromBrowserState:| is received.
   if (![self.browsingDataRemovalController
           hasPendingRemovalOperations:self.currentBrowserState]) {
-    [self.currentBVC setActive:YES];
+    [self.mainBVC setActive:YES];
+    [self.otrBVC setActive:YES];
+
     [self.currentBVC setPrimary:YES];
   }
 }
@@ -1738,7 +1743,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     [self displayCurrentBVC];
 
   // Tell the BVC that was made current that it can use the web.
-  [self activateCurrentBVC];
+  [self activateBVCAndMakeCurrentBVCPrimary];
 }
 
 #pragma mark - Tab closure handlers
@@ -2045,8 +2050,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                          completionHandler:(ProceduralBlock)completionHandler {
   // TODO(crbug.com/632772): Remove web usage disabling once
   // https://bugs.webkit.org/show_bug.cgi?id=149079 has been fixed.
-  if (browserState == self.currentBrowserState &&
-      (mask & IOSChromeBrowsingDataRemover::REMOVE_COOKIES)) {
+  if (mask & IOSChromeBrowsingDataRemover::REMOVE_SITE_DATA) {
     [self setWebUsageEnabled:NO];
   }
 

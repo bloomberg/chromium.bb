@@ -182,19 +182,22 @@ TEST_F(URLOpenerTest, HandleOpenURLWithNoOpenTab) {
 }
 
 TEST_F(URLOpenerTest, HandleOpenURLWithOpenTabs) {
-  // The URL should be routed to the main BVC; the OTR BVC shouldn't get calls.
   NSURL* url = [NSURL URLWithString:@"chromium://www.google.com"];
-  id otrBVCMock = [OCMockObject mockForClass:[BrowserViewController class]];
-  base::scoped_nsobject<id> bvcMock([[URLOpenerMockBVC alloc] init]);
-  TestChromeBrowserState::Builder mainBrowserStateBuilder;
+  base::scoped_nsobject<URLOpenerMockBVC> bvc_mock(
+      [[URLOpenerMockBVC alloc] init]);
+  base::scoped_nsobject<URLOpenerMockBVC> otr_bvc_mock(
+      [[URLOpenerMockBVC alloc] init]);
+  TestChromeBrowserState::Builder main_browser_state_builder;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state =
-      mainBrowserStateBuilder.Build();
-  ((URLOpenerMockBVC*)bvcMock).browserState = chrome_browser_state.get();
+      main_browser_state_builder.Build();
+  bvc_mock.get().browserState = chrome_browser_state.get();
 
   // Setup main controller.
   MainController* controller = GetMainController();
-  controller.browserViewInformation.mainBVC = bvcMock;
-  controller.browserViewInformation.otrBVC = otrBVCMock;
+  controller.browserViewInformation.mainBVC =
+      static_cast<BrowserViewController*>(bvc_mock.get());
+  controller.browserViewInformation.otrBVC =
+      static_cast<BrowserViewController*>(otr_bvc_mock.get());
 
   NSDictionary<NSString*, id>* options = nil;
   [URLOpener openURL:url
@@ -203,13 +206,12 @@ TEST_F(URLOpenerTest, HandleOpenURLWithOpenTabs) {
                tabOpener:controller
       startupInformation:controller];
 
-  EXPECT_EQ(GURL("http://www.google.com/"),
-            [(URLOpenerMockBVC*)bvcMock tabURL]);
-  EXPECT_EQ(NSNotFound,
-            static_cast<NSInteger>([(URLOpenerMockBVC*)bvcMock position]));
-  EXPECT_TRUE(PageTransitionCoreTypeIs([(URLOpenerMockBVC*)bvcMock transition],
+  EXPECT_EQ(GURL("http://www.google.com/"), [bvc_mock tabURL]);
+  EXPECT_EQ(NSNotFound, static_cast<NSInteger>([bvc_mock position]));
+  EXPECT_TRUE(PageTransitionCoreTypeIs([bvc_mock transition],
                                        ui::PAGE_TRANSITION_LINK));
-  EXPECT_OCMOCK_VERIFY(otrBVCMock);
+
+  EXPECT_FALSE([otr_bvc_mock tabURL].is_valid());
 }
 
 TEST_F(URLOpenerTest, HandleOpenURL) {
