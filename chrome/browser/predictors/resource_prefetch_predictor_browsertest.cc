@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -90,6 +92,25 @@ class InitializationObserver : public TestObserver {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(InitializationObserver);
+};
+
+class BrowsingDataRemoverObserver : public BrowsingDataRemover::Observer {
+ public:
+  explicit BrowsingDataRemoverObserver(BrowsingDataRemover* remover)
+      : remover_(remover) {
+    remover_->AddObserver(this);
+  }
+  ~BrowsingDataRemoverObserver() override { remover_->RemoveObserver(this); }
+
+  void OnBrowsingDataRemoverDone() override { run_loop_.Quit(); }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  BrowsingDataRemover* remover_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverObserver);
 };
 
 using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
@@ -222,7 +243,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
         switches::kSpeculativeResourcePrefetching,
-        switches::kSpeculativeResourcePrefetchingEnabled);
+        switches::kSpeculativeResourcePrefetchingEnabledExternal);
   }
 
   void SetUpOnMainThread() override {
@@ -332,7 +353,14 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void ClearCache() {
-    chrome::ClearCache(browser());
+    BrowsingDataRemover* remover =
+        BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
+    BrowsingDataRemoverObserver observer(remover);
+    remover->RemoveAndReply(BrowsingDataRemover::Unbounded(),
+                            BrowsingDataRemover::REMOVE_CACHE,
+                            BrowsingDataHelper::UNPROTECTED_WEB, &observer);
+    observer.Wait();
+
     for (auto& kv : resources_)
       kv.second.request.was_cached = false;
   }
