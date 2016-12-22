@@ -24,8 +24,6 @@ namespace prerender {
 PrerenderTabHelper::PrerenderTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       origin_(ORIGIN_NONE),
-      next_load_is_control_prerender_(false),
-      next_load_origin_(ORIGIN_NONE),
       weak_factory_(this) {
   // Determine if this is a prerender.
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
@@ -112,14 +110,6 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
   pplt_load_start_ = GetTimeTicksFromPrerenderManager();
   actual_load_start_ = base::TimeTicks();
 
-  if (next_load_is_control_prerender_) {
-    DCHECK_EQ(NAVIGATION_TYPE_NORMAL, navigation_type_);
-    navigation_type_ = NAVIGATION_TYPE_WOULD_HAVE_BEEN_PRERENDERED;
-    origin_ = next_load_origin_;
-    next_load_is_control_prerender_ = false;
-    next_load_origin_ = ORIGIN_NONE;
-  }
-
   MainFrameUrlDidChange(validated_url);
 }
 
@@ -167,11 +157,6 @@ void PrerenderTabHelper::PrerenderSwappedIn() {
   }
 }
 
-void PrerenderTabHelper::WouldHavePrerenderedNextLoad(Origin origin) {
-  next_load_is_control_prerender_ = true;
-  next_load_origin_ = origin;
-}
-
 void PrerenderTabHelper::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time,
     double fraction_plt_elapsed_at_swap_in) {
@@ -180,10 +165,6 @@ void PrerenderTabHelper::RecordPerceivedPageLoadTime(
   if (!prerender_manager)
     return;
 
-  // Note: it is possible for |next_load_is_control_prerender_| to be true at
-  // this point. This does not affect the classification of the current load,
-  // but only the next load. (This occurs if a WOULD_HAVE_BEEN_PRERENDERED
-  // navigation interrupts and aborts another navigation.)
   prerender_manager->RecordPerceivedPageLoadTime(
       origin_, navigation_type_, perceived_page_load_time,
       fraction_plt_elapsed_at_swap_in, url_);

@@ -241,10 +241,6 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
 // (all prefixed PerceivedPLT)
 // PerceivedPLT -- Perceived Pageloadtimes (PPLT) for all pages in the group.
 // ...Windowed -- PPLT for pages in the 30s after a prerender is created.
-// ...Matched -- A prerendered page that was swapped in.  In the NoUse
-// and Control group cases, while nothing ever gets swapped in, we do keep
-// track of what would be prerendered and would be swapped in -- and those
-// cases are what is classified as Match for these groups.
 // ...FirstAfterMiss -- First page to finish loading after a prerender, which
 // is different from the page that was prerendered.
 // ...FirstAfterMissNonOverlapping -- Same as FirstAfterMiss, but only
@@ -270,15 +266,10 @@ void PrerenderHistograms::RecordPerceivedPageLoadTime(
   if (within_window)
     RECORD_PLT("PerceivedPLTWindowed", perceived_page_load_time);
   if (navigation_type != NAVIGATION_TYPE_NORMAL) {
-    DCHECK(navigation_type == NAVIGATION_TYPE_WOULD_HAVE_BEEN_PRERENDERED ||
-           navigation_type == NAVIGATION_TYPE_PRERENDERED);
-    RECORD_PLT("PerceivedPLTMatchedComplete", perceived_page_load_time);
-    if (navigation_type == NAVIGATION_TYPE_PRERENDERED)
-      RECORD_PLT("PerceivedPLTMatched", perceived_page_load_time);
+    DCHECK(navigation_type == NAVIGATION_TYPE_PRERENDERED);
     seen_any_pageload_ = true;
     seen_pageload_started_after_prerender_ = true;
   } else if (within_window) {
-    RECORD_PLT("PerceivedPLTWindowNotMatched", perceived_page_load_time);
     if (!is_google_url) {
       bool recorded_any = false;
       bool recorded_non_overlapping = false;

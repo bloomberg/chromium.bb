@@ -367,8 +367,7 @@ PrerenderContents::~PrerenderContents() {
 
   prerender_manager_->RecordFinalStatus(origin(), final_status());
 
-  bool used = final_status() == FINAL_STATUS_USED ||
-              final_status() == FINAL_STATUS_WOULD_HAVE_BEEN_USED;
+  bool used = final_status() == FINAL_STATUS_USED;
   prerender_manager_->RecordNetworkBytes(origin(), used, network_bytes_);
 
   // Broadcast the removal of aliases.

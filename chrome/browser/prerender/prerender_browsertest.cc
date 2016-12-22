@@ -250,7 +250,6 @@ bool ShouldAbortPrerenderBeforeSwap(FinalStatus status) {
     case FINAL_STATUS_DEVTOOLS_ATTACHED:
     case FINAL_STATUS_PAGE_BEING_CAPTURED:
     case FINAL_STATUS_NAVIGATION_UNCOMMITTED:
-    case FINAL_STATUS_WOULD_HAVE_BEEN_USED:
     case FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE:
       return false;
     default:
@@ -1000,9 +999,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   EXPECT_EQ(1, GetPrerenderDomContentLoadedEventCountForLinkNumber(0));
   histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLTMatched", 0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.none_PerceivedPLTMatchedComplete", 0);
   histogram_tester().ExpectTotalCount(
       "Prerender.websame_PrerenderNotSwappedInPLT", 1);
 
@@ -1013,10 +1009,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
   channel_close_watcher.WaitForChannelClose();
 
   histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLTMatched",
-                                      1);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PerceivedPLTMatchedComplete", 1);
 
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
@@ -1026,18 +1018,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageCrossDomain) {
   PrerenderTestURL(GetCrossDomainTestUrl("prerender/prerender_page.html"),
                    FINAL_STATUS_USED, 1);
   histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLTMatched", 0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.none_PerceivedPLTMatchedComplete", 0);
   histogram_tester().ExpectTotalCount(
       "Prerender.webcross_PrerenderNotSwappedInPLT", 1);
 
   NavigateToDestURL();
   histogram_tester().ExpectTotalCount("Prerender.webcross_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.webcross_PerceivedPLTMatched",
-                                      1);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.webcross_PerceivedPLTMatchedComplete", 1);
 }
 
 // Checks that pending prerenders launch and receive proper event treatment.
@@ -1441,9 +1426,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_EQ(1, prerender->number_of_loads());
 
   histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLTMatched", 0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.none_PerceivedPLTMatchedComplete", 0);
   // Although there is a client redirect, it is dropped from histograms because
   // it is a Google URL. The target page itself does not load until after the
   // swap.
@@ -1468,9 +1450,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   histogram_tester().ExpectTotalCount("Prerender.gws_PrerenderNotSwappedInPLT",
                                       0);
   histogram_tester().ExpectTotalCount("Prerender.gws_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.gws_PerceivedPLTMatched", 1);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.gws_PerceivedPLTMatchedComplete", 1);
 
   // The client redirect does /not/ count as a miss because it's a Google URL.
   histogram_tester().ExpectTotalCount("Prerender.PerceivedPLTFirstAfterMiss",
@@ -2910,9 +2889,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredImage) {
   EXPECT_TRUE(DidPrerenderPass(prerender->contents()->prerender_contents()));
   EXPECT_EQ(0, prerender->number_of_loads());
   histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLTMatched", 0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.none_PerceivedPLTMatchedComplete", 0);
   histogram_tester().ExpectTotalCount(
       "Prerender.websame_PrerenderNotSwappedInPLT", 0);
 
@@ -2933,10 +2909,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredImage) {
   histogram_tester().ExpectTotalCount(
       "Prerender.websame_PrerenderNotSwappedInPLT", 0);
   histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLTMatched",
-                                      1);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PerceivedPLTMatchedComplete", 1);
 }
 
 // Checks that a deferred redirect to an image is not loaded until the
@@ -3085,9 +3057,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPPLTNormalNavigation) {
   GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
   ui_test_utils::NavigateToURL(current_browser(), url);
   histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLTMatched", 0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.none_PerceivedPLTMatchedComplete", 0);
 }
 
 // Checks that a prerender which calls window.close() on itself is aborted.

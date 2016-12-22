@@ -26,10 +26,6 @@ enum NavigationType {
   NAVIGATION_TYPE_NORMAL,
   // A completed navigation or swap that began as a prerender.
   NAVIGATION_TYPE_PRERENDERED,
-  // A normal completed navigation in the control group or with a control
-  // prerender that would have been prerendered.
-  NAVIGATION_TYPE_WOULD_HAVE_BEEN_PRERENDERED,
-  NAVIGATION_TYPE_MAX,
 };
 
 // PrerenderHistograms is responsible for recording all prerender specific

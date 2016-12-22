@@ -412,15 +412,7 @@ std::unique_ptr<WebContents> PrerenderManager::SwapInternal(
     return nullptr;
   }
 
-  // If we are just in the control group (which can be detected by noticing
-  // that prerendering hasn't even started yet), record that |web_contents| now
-  // would be showing a prerendered contents, but otherwise, don't do anything.
-  if (!prerender_data->contents()->prerendering_has_started()) {
-    target_tab_helper->WouldHavePrerenderedNextLoad(
-        prerender_data->contents()->origin());
-    prerender_data->contents()->Destroy(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
-    return nullptr;
-  }
+  DCHECK(prerender_data->contents()->prerendering_has_started());
 
   // Don't use prerendered pages if debugger is attached to the tab.
   // See http://crbug.com/98541

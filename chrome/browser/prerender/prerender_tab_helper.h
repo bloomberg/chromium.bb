@@ -48,9 +48,6 @@ class PrerenderTabHelper
   // Called when this prerendered WebContents has just been swapped in.
   void PrerenderSwappedIn();
 
-  // Called when a control prerender is resolved. Applies to the next load.
-  void WouldHavePrerenderedNextLoad(Origin origin);
-
  private:
   explicit PrerenderTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PrerenderTabHelper>;
@@ -78,13 +75,6 @@ class PrerenderTabHelper
   // If |navigation_type_| is not NAVIGATION_TYPE_NORMAL, the origin of the
   // relevant prerender. Otherwise, ORIGIN_NONE.
   Origin origin_;
-
-  // True if the next load will be associated with a control prerender. This
-  // extra state is needed because control prerenders are resolved before the
-  // actual load begins. |next_load_origin_| gives the origin of the control
-  // prerender.
-  bool next_load_is_control_prerender_;
-  Origin next_load_origin_;
 
   // System time at which the current load was started for the purpose of
   // the perceived page load time (PPLT). If null, there is no current
