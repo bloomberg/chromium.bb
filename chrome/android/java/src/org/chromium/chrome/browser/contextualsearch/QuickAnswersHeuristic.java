@@ -55,4 +55,9 @@ class QuickAnswersHeuristic extends ContextualSearchHeuristic {
                     wasSearchContentViewSeen, mIsConditionSatisfied, mDidAnswer);
         }
     }
+
+    @Override
+    protected void logRankerTapSuppression(ContextualSearchRankerLogger logger) {
+        logger.log(ContextualSearchRankerLogger.Feature.OUTCOME_WAS_QUICK_ANSWER_SEEN, mDidAnswer);
+    }
 }

@@ -1299,6 +1299,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             mHeuristics.add(mQuickAnswersHeuristic);
         }
         mSearchPanel.getPanelMetrics().setResultsSeenExperiments(mHeuristics);
+        mSearchPanel.getPanelMetrics().setRankerLogExperiments(mHeuristics);
     }
 
     @Override

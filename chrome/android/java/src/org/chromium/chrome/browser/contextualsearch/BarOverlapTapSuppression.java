@@ -64,6 +64,11 @@ public class BarOverlapTapSuppression extends ContextualSearchHeuristic {
         return !mIsEnabled && mIsConditionSatisfied;
     }
 
+    @Override
+    protected void logRankerTapSuppression(ContextualSearchRankerLogger logger) {
+        logger.log(ContextualSearchRankerLogger.Feature.WAS_SCREEN_BOTTOM, mIsConditionSatisfied);
+    }
+
     /**
      * @return The height of the content view area of the base page in pixels, or 0 if the
      *         Height cannot be reliably obtained.

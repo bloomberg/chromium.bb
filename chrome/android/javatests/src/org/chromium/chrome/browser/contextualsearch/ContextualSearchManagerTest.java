@@ -2003,7 +2003,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.SUPPRESSION_TAPS + "=" + PLENTY_OF_TAPS)
     public void testTapALot() throws InterruptedException, TimeoutException {
         mPolicy.setTapLimitForDecidedForTesting(PLENTY_OF_TAPS);
         mPolicy.setTapLimitForUndecidedForTesting(PLENTY_OF_TAPS);

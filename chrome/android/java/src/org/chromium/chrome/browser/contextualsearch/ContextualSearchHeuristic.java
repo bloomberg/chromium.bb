@@ -51,4 +51,12 @@ abstract class ContextualSearchHeuristic {
     protected boolean isConditionSatisfiedForAggregateLogging() {
         return false;
     }
+
+    /**
+     * Logs the heuristic to UMA through Ranker logging for the purpose of Tap Suppression.
+     * @param logger A logger to log to.
+     */
+    protected void logRankerTapSuppression(ContextualSearchRankerLogger logger) {
+        // Default is to not log.
+    }
 }
