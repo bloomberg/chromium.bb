@@ -45,8 +45,8 @@ namespace {
 // This is an unnecessarily large limit that is relatively easy to enforce.
 const uint32_t kMaxHandlesPerMessage = 1024 * 1024;
 
-// TODO: Maybe we could negotiate a debugging pipe ID for cross-process pipes
-// too; for now we just use a constant. This only affects bootstrap pipes.
+// TODO(rockot): Maybe we could negotiate a debugging pipe ID for cross-process
+// pipes too; for now we just use a constant. This only affects bootstrap pipes.
 const uint64_t kUnknownPipeIdForDebug = 0x7f7f7f7f7f7f7f7fUL;
 
 void CallWatchCallback(MojoWatchCallback callback,
@@ -815,12 +815,12 @@ MojoResult Core::CreateDataPipe(
   create_options.struct_size = sizeof(MojoCreateDataPipeOptions);
   create_options.flags = options ? options->flags : 0;
   create_options.element_num_bytes = options ? options->element_num_bytes : 1;
-  // TODO: Use Configuration to get default data pipe capacity.
+  // TODO(rockot): Use Configuration to get default data pipe capacity.
   create_options.capacity_num_bytes =
       options && options->capacity_num_bytes ? options->capacity_num_bytes
                                              : 64 * 1024;
 
-  // TODO: Broker through the parent when necessary.
+  // TODO(rockot): Broker through the parent when necessary.
   scoped_refptr<PlatformSharedBuffer> ring_buffer =
       GetNodeController()->CreateSharedBuffer(
           create_options.capacity_num_bytes);
@@ -1126,7 +1126,7 @@ MojoResult Core::WaitManyInternal(const MojoHandle* handles,
                                   const MojoHandleSignals* signals,
                                   uint32_t num_handles,
                                   MojoDeadline deadline,
-                                  uint32_t *result_index,
+                                  uint32_t* result_index,
                                   HandleSignalsState* signals_states) {
   CHECK(handles);
   CHECK(signals);

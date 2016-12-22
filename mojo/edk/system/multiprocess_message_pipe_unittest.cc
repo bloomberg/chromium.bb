@@ -443,7 +443,8 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
     }
 
     char message[128];
-    sprintf(message, "hello %d", static_cast<int>(pipe_count));
+    snprintf(message, sizeof(message), "hello %d",
+             static_cast<int>(pipe_count));
     ASSERT_EQ(MOJO_RESULT_OK,
               MojoWriteMessage(h, message,
                                static_cast<uint32_t>(strlen(message)),
@@ -465,9 +466,9 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
 #if !defined(OS_ANDROID)
 INSTANTIATE_TEST_CASE_P(PipeCount,
                         MultiprocessMessagePipeTestWithPipeCount,
-                        // TODO: Re-enable the 140-pipe case when ChannelPosix
-                        // has support for sending lots of handles.
-                        testing::Values(1u, 128u/*, 140u*/));
+                        // TODO(rockot): Re-enable the 140-pipe case when
+                        // ChannelPosix has support for sending lots of handles.
+                        testing::Values(1u, 128u /*, 140u*/));
 #endif
 
 DEFINE_TEST_CLIENT_WITH_PIPE(CheckMessagePipe, MultiprocessMessagePipeTest, h) {
@@ -997,7 +998,7 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CommandDrivenClient, MultiprocessMessagePipeTest,
     }
   }
 
-  for (auto& pipe: named_pipes)
+  for (auto& pipe : named_pipes)
     CloseHandle(pipe.second);
 
   return 0;

@@ -5,6 +5,7 @@
 #include "mojo/edk/embedder/embedder.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
