@@ -227,29 +227,6 @@ public class FindTest extends ChromeTabbedActivityTestBase {
     }
 
     /**
-     * Verify that Next/Previous buttons are disabled whenever there is no match.
-     */
-    @MediumTest
-    @Feature({"FindInPage"})
-    @RetryOnFailure
-    public void testFindNextPreviousOnNoMatch() throws InterruptedException {
-        loadTestAndVerifyFindInPage("pp", "0/0");
-
-        final TextView findQueryText = getFindQueryText();
-        View next = getActivity().findViewById(R.id.find_next_button);
-        View prev = getActivity().findViewById(R.id.find_prev_button);
-        assertFalse(next.isEnabled());
-        assertFalse(prev.isEnabled());
-
-        KeyUtils.singleKeyEventView(getInstrumentation(), findQueryText, KeyEvent.KEYCODE_DEL);
-        KeyUtils.singleKeyEventView(getInstrumentation(), findQueryText, KeyEvent.KEYCODE_DEL);
-
-        loadTestAndVerifyFindInPage("pitts", "1/7");
-        assertTrue(next.isEnabled());
-        assertTrue(prev.isEnabled());
-    }
-
-    /**
      * Verify that Find in page toolbar is dismissed on entering fullscreen.
      */
     @MediumTest
