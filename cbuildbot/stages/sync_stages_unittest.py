@@ -32,6 +32,7 @@ from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import auth
 from chromite.lib import cidb
 from chromite.lib import clactions
+from chromite.lib import cl_messages
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
@@ -435,7 +436,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
 
     # Block the CQ from contacting GoB.
     self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
-    self.PatchObject(validation_pool.PaladinMessage, 'Send')
+    self.PatchObject(cl_messages.PaladinMessage, 'Send')
     self.PatchObject(validation_pool.ValidationPool, 'SubmitChanges',
                      return_value=({}, {}))
 
