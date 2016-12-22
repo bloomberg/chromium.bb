@@ -898,11 +898,7 @@ void UserSessionManager::PreStartSession() {
 }
 
 void UserSessionManager::StoreUserContextDataBeforeProfileIsCreated() {
-  // Store obfuscated GAIA ID.
-  if (!user_context_.GetGaiaID().empty()) {
-    user_manager::known_user::UpdateGaiaID(user_context_.GetAccountId(),
-                                           user_context_.GetGaiaID());
-  }
+  user_manager::known_user::UpdateId(user_context_.GetAccountId());
 }
 
 void UserSessionManager::StartCrosSession() {

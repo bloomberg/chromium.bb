@@ -220,12 +220,12 @@ void EnsureCryptohomeMigratedToGaiaId(
   }
   const bool already_migrated = cryptohome::GetGaiaIdMigrationStatus(
       attempt->user_context.GetAccountId());
-  const bool has_gaia_id =
-      !attempt->user_context.GetAccountId().GetGaiaId().empty();
+  const bool has_account_key =
+      attempt->user_context.GetAccountId().HasAccountIdKey();
 
   bool need_migration = false;
   if (!create_if_nonexistent && !already_migrated) {
-    if (has_gaia_id) {
+    if (has_account_key) {
       need_migration = true;
     } else {
       LOG(WARNING) << "Account '"
@@ -248,7 +248,7 @@ void EnsureCryptohomeMigratedToGaiaId(
                    create_if_nonexistent));
     return;
   }
-  if (!already_migrated && has_gaia_id) {
+  if (!already_migrated && has_account_key) {
     // Mark new users migrated.
     cryptohome::SetGaiaIdMigrationStatusDone(
         attempt->user_context.GetAccountId());

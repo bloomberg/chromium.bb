@@ -19,7 +19,7 @@ const char kCryptohome[] = "cryptohome";
 
 const std::string GetCryptohomeId(const AccountId& account_id) {
   // Guest/kiosk/managed/public accounts have empty GaiaId. Default to email.
-  if (account_id.GetGaiaId().empty())
+  if (account_id.GetAccountType() == AccountType::UNKNOWN)
     return account_id.GetUserEmail();  // Migrated
 
   if (GetGaiaIdMigrationStatus(account_id))
@@ -56,7 +56,7 @@ AccountId Identification::GetAccountId() const {
   // A LOT of tests start with --login_user <user>, and not registing this user
   // before. So we might have "known_user" entry without gaia_id.
   for (const AccountId& known_id : known_account_ids) {
-    if (!known_id.GetGaiaId().empty() && known_id.GetAccountIdKey() == id_) {
+    if (known_id.HasAccountIdKey() && known_id.GetAccountIdKey() == id_) {
       return known_id;
     }
   }
@@ -67,8 +67,8 @@ AccountId Identification::GetAccountId() const {
     }
   }
 
-  return user_manager::known_user::GetAccountId(id_,
-                                                std::string() /* gaia_id */);
+  return user_manager::known_user::GetAccountId(id_, std::string() /* id */,
+                                                AccountType::UNKNOWN);
 }
 
 KeyDefinition::AuthorizationData::Secret::Secret() : encrypt(false),
