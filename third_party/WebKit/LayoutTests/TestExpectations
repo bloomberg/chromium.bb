@@ -1307,18 +1307,6 @@ crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 crbug.com/619539 [ Win ] http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
 crbug.com/619539 [ Win ] virtual/mojo-loading/http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
 
-# Temporary until we start generating Trusty baselines.
-crbug.com/498021 [ Linux ] fast/text/unicode-fallback-font.html [ Failure ]
-crbug.com/498021 [ Linux ] fast/forms/month/month-appearance-l10n.html [ Failure ]
-crbug.com/498021 [ Linux Win ] fast/text/ellipsis-stroked.html [ Failure ]
-crbug.com/498021 [ Linux ] fast/text/emphasis-complex.html [ Failure ]
-crbug.com/498021 [ Linux ] fast/text/international/danda-space.html [ Failure ]
-crbug.com/498021 [ Linux ] fast/text/international/hindi-whitespace.html [ Failure ]
-crbug.com/498021 [ Linux ] fast/text/selection-multiple-runs.html [ Failure ]
-crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
-crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
-crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
-
 crbug.com/649159 imported/wpt/shadow-dom/slotchange-event.html [ Failure ]
 
 # These are the failing tests because Chrome hasn't implemented according to the spec.
