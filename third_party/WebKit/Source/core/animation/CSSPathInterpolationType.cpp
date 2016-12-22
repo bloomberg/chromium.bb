@@ -13,20 +13,19 @@
 
 namespace blink {
 
-void CSSPathInterpolationType::apply(
+void CSSPathInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   DCHECK_EQ(cssProperty(), CSSPropertyD);
   std::unique_ptr<SVGPathByteStream> pathByteStream =
       PathInterpolationFunctions::appliedValue(interpolableValue,
                                                nonInterpolableValue);
   if (pathByteStream->isEmpty()) {
-    environment.state().style()->setD(nullptr);
+    state.style()->setD(nullptr);
     return;
   }
-  environment.state().style()->setD(
-      StylePath::create(std::move(pathByteStream)));
+  state.style()->setD(StylePath::create(std::move(pathByteStream)));
 }
 
 void CSSPathInterpolationType::composite(

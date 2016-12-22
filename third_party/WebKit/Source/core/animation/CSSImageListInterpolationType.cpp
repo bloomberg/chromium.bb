@@ -165,10 +165,10 @@ void CSSImageListInterpolationType::composite(
   underlyingValueOwner.set(*this, value);
 }
 
-void CSSImageListInterpolationType::apply(
+void CSSImageListInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   const InterpolableList& interpolableList =
       toInterpolableList(interpolableValue);
   const size_t length = interpolableList.length();
@@ -177,12 +177,13 @@ void CSSImageListInterpolationType::apply(
       toNonInterpolableList(*nonInterpolableValue);
   DCHECK_EQ(nonInterpolableList.length(), length);
   StyleImageList imageList(length);
-  for (size_t i = 0; i < length; i++)
+  for (size_t i = 0; i < length; i++) {
     imageList[i] = CSSImageInterpolationType::resolveStyleImage(
         cssProperty(), *interpolableList.get(i), nonInterpolableList.get(i),
-        environment.state());
-  ImageListPropertyFunctions::setImageList(
-      cssProperty(), *environment.state().style(), imageList);
+        state);
+  }
+  ImageListPropertyFunctions::setImageList(cssProperty(), *state.style(),
+                                           imageList);
 }
 
 }  // namespace blink

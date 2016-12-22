@@ -235,14 +235,14 @@ void CSSImageInterpolationType::composite(
   underlyingValueOwner.set(*this, value);
 }
 
-void CSSImageInterpolationType::apply(
+void CSSImageInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   ImagePropertyFunctions::setStyleImage(
-      cssProperty(), *environment.state().style(),
+      cssProperty(), *state.style(),
       resolveStyleImage(cssProperty(), interpolableValue, nonInterpolableValue,
-                        environment.state()));
+                        state));
 }
 
 }  // namespace blink

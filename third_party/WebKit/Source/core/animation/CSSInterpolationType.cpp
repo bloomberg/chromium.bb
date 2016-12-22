@@ -89,4 +89,14 @@ InterpolationValue CSSInterpolationType::maybeConvertSingle(
   return maybeConvertValue(*value, environment.state(), conversionCheckers);
 }
 
+void CSSInterpolationType::apply(
+    const InterpolableValue& interpolableValue,
+    const NonInterpolableValue* nonInterpolableValue,
+    InterpolationEnvironment& environment) const {
+  // TODO(alancutter): Add support for applying registered custom property
+  // values.
+  return applyStandardPropertyValue(interpolableValue, nonInterpolableValue,
+                                    environment.state());
+}
+
 }  // namespace blink

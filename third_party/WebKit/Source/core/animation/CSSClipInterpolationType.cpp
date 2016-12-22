@@ -262,25 +262,24 @@ void CSSClipInterpolationType::composite(
     underlyingValueOwner.set(*this, value);
 }
 
-void CSSClipInterpolationType::apply(
+void CSSClipInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   const ClipAutos& autos =
       toCSSClipNonInterpolableValue(nonInterpolableValue)->clipAutos();
   const InterpolableList& list = toInterpolableList(interpolableValue);
-  const auto& convertIndex = [&list, &environment](bool isAuto, size_t index) {
+  const auto& convertIndex = [&list, &state](bool isAuto, size_t index) {
     if (isAuto)
       return Length(Auto);
     return LengthInterpolationFunctions::createLength(
-        *list.get(index), nullptr,
-        environment.state().cssToLengthConversionData(), ValueRangeAll);
+        *list.get(index), nullptr, state.cssToLengthConversionData(),
+        ValueRangeAll);
   };
-  environment.state().style()->setClip(
-      LengthBox(convertIndex(autos.isTopAuto, ClipTop),
-                convertIndex(autos.isRightAuto, ClipRight),
-                convertIndex(autos.isBottomAuto, ClipBottom),
-                convertIndex(autos.isLeftAuto, ClipLeft)));
+  state.style()->setClip(LengthBox(convertIndex(autos.isTopAuto, ClipTop),
+                                   convertIndex(autos.isRightAuto, ClipRight),
+                                   convertIndex(autos.isBottomAuto, ClipBottom),
+                                   convertIndex(autos.isLeftAuto, ClipLeft)));
 }
 
 }  // namespace blink

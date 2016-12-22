@@ -331,10 +331,10 @@ void CSSBorderImageLengthBoxInterpolationType::composite(
   }
 }
 
-void CSSBorderImageLengthBoxInterpolationType::apply(
+void CSSBorderImageLengthBoxInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   const SideNumbers& sideNumbers =
       toCSSBorderImageLengthBoxNonInterpolableValue(nonInterpolableValue)
           ->sideNumbers();
@@ -343,18 +343,18 @@ void CSSBorderImageLengthBoxInterpolationType::apply(
           ->sideNonInterpolableValues();
   const InterpolableList& list = toInterpolableList(interpolableValue);
   const auto& convertSide =
-      [&sideNumbers, &list, &environment,
+      [&sideNumbers, &list, &state,
        &nonInterpolableValues](size_t index) -> BorderImageLength {
     if (sideNumbers.isNumber[index])
       return clampTo<double>(toInterpolableNumber(list.get(index))->value(), 0);
     return LengthInterpolationFunctions::createLength(
         *list.get(index), nonInterpolableValues[index].get(),
-        environment.state().cssToLengthConversionData(), ValueRangeNonNegative);
+        state.cssToLengthConversionData(), ValueRangeNonNegative);
   };
   BorderImageLengthBox box(convertSide(SideTop), convertSide(SideRight),
                            convertSide(SideBottom), convertSide(SideLeft));
   BorderImageLengthBoxPropertyFunctions::setBorderImageLengthBox(
-      cssProperty(), *environment.state().style(), box);
+      cssProperty(), *state.style(), box);
 }
 
 }  // namespace blink

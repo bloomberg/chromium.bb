@@ -132,11 +132,11 @@ InterpolationValue CSSFontWeightInterpolationType::maybeConvertUnderlyingValue(
   return createFontWeightValue(environment.state().style()->fontWeight());
 }
 
-void CSSFontWeightInterpolationType::apply(
+void CSSFontWeightInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue*,
-    InterpolationEnvironment& environment) const {
-  environment.state().fontBuilder().setWeight(
+    StyleResolverState& state) const {
+  state.fontBuilder().setWeight(
       doubleToFontWeight(toInterpolableNumber(interpolableValue).value()));
 }
 

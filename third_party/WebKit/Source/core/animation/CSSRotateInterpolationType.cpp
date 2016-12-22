@@ -206,15 +206,15 @@ void CSSRotateInterpolationType::composite(
       underlyingNonInterpolableValue.composite(nonInterpolableValue, progress);
 }
 
-void CSSRotateInterpolationType::apply(
+void CSSRotateInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* untypedNonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   double progress = toInterpolableNumber(interpolableValue).value();
   const CSSRotateNonInterpolableValue& nonInterpolableValue =
       toCSSRotateNonInterpolableValue(*untypedNonInterpolableValue);
   Rotation rotation = nonInterpolableValue.slerpedRotation(progress);
-  environment.state().style()->setRotate(
+  state.style()->setRotate(
       RotateTransformOperation::create(rotation, TransformOperation::Rotate3D));
 }
 

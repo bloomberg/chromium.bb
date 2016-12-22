@@ -30,6 +30,12 @@ class CSSInterpolationType : public InterpolationType {
   virtual InterpolationValue maybeConvertValue(const CSSValue&,
                                                const StyleResolverState&,
                                                ConversionCheckers&) const = 0;
+  void apply(const InterpolableValue&,
+             const NonInterpolableValue*,
+             InterpolationEnvironment&) const final;
+  virtual void applyStandardPropertyValue(const InterpolableValue&,
+                                          const NonInterpolableValue*,
+                                          StyleResolverState&) const = 0;
 };
 
 }  // namespace blink

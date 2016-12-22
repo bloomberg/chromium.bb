@@ -247,21 +247,21 @@ InterpolationValue CSSColorInterpolationType::maybeConvertUnderlyingValue(
                                               *environment.state().style()));
 }
 
-void CSSColorInterpolationType::apply(
+void CSSColorInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue*,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   const InterpolableList& colorPair = toInterpolableList(interpolableValue);
   DCHECK_EQ(colorPair.length(), InterpolableColorPairIndexCount);
   ColorPropertyFunctions::setUnvisitedColor(
-      cssProperty(), *environment.state().style(),
+      cssProperty(), *state.style(),
       resolveInterpolableColor(
-          *colorPair.get(Unvisited), environment.state(), false,
+          *colorPair.get(Unvisited), state, false,
           cssProperty() == CSSPropertyTextDecorationColor));
   ColorPropertyFunctions::setVisitedColor(
-      cssProperty(), *environment.state().style(),
+      cssProperty(), *state.style(),
       resolveInterpolableColor(
-          *colorPair.get(Visited), environment.state(), true,
+          *colorPair.get(Visited), state, true,
           cssProperty() == CSSPropertyTextDecorationColor));
 }
 

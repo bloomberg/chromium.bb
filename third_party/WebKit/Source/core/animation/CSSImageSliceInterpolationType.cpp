@@ -260,11 +260,11 @@ void CSSImageSliceInterpolationType::composite(
     underlyingValueOwner.set(*this, value);
 }
 
-void CSSImageSliceInterpolationType::apply(
+void CSSImageSliceInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
-  ComputedStyle& style = *environment.state().style();
+    StyleResolverState& state) const {
+  ComputedStyle& style = *state.style();
   const InterpolableList& list = toInterpolableList(interpolableValue);
   const SliceTypes& types =
       toCSSImageSliceNonInterpolableValue(nonInterpolableValue)->types();

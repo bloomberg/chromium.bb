@@ -100,14 +100,14 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertUnderlyingValue(
       CSSColorInterpolationType::createInterpolableColor(underlyingColor));
 }
 
-void CSSPaintInterpolationType::apply(
+void CSSPaintInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableColor,
     const NonInterpolableValue*,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   PaintPropertyFunctions::setColor(
-      cssProperty(), *environment.state().style(),
+      cssProperty(), *state.style(),
       CSSColorInterpolationType::resolveInterpolableColor(interpolableColor,
-                                                          environment.state()));
+                                                          state));
 }
 
 }  // namespace blink

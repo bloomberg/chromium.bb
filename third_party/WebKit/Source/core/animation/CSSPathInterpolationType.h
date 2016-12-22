@@ -14,9 +14,9 @@ class CSSPathInterpolationType : public CSSInterpolationType {
   CSSPathInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {}
 
-  void apply(const InterpolableValue&,
-             const NonInterpolableValue*,
-             InterpolationEnvironment&) const final;
+  void applyStandardPropertyValue(const InterpolableValue&,
+                                  const NonInterpolableValue*,
+                                  StyleResolverState&) const final;
   void composite(UnderlyingValueOwner&,
                  double underlyingFraction,
                  const InterpolationValue&,

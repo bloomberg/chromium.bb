@@ -253,14 +253,14 @@ void CSSTransformInterpolationType::composite(
       underlyingNonInterpolableValue.composite(nonInterpolableValue, progress);
 }
 
-void CSSTransformInterpolationType::apply(
+void CSSTransformInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* untypedNonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   double progress = toInterpolableNumber(interpolableValue).value();
   const CSSTransformNonInterpolableValue& nonInterpolableValue =
       toCSSTransformNonInterpolableValue(*untypedNonInterpolableValue);
-  environment.state().style()->setTransform(
+  state.style()->setTransform(
       nonInterpolableValue.getInterpolatedTransform(progress));
 }
 

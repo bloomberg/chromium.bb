@@ -177,17 +177,17 @@ void CSSVisibilityInterpolationType::composite(
   underlyingValueOwner.set(*this, value);
 }
 
-void CSSVisibilityInterpolationType::apply(
+void CSSVisibilityInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   // Visibility interpolation has been deferred to application time here due to
   // its non-linear behaviour.
   double fraction = toInterpolableNumber(interpolableValue).value();
   EVisibility visibility =
       toCSSVisibilityNonInterpolableValue(nonInterpolableValue)
           ->visibility(fraction);
-  environment.state().style()->setVisibility(visibility);
+  state.style()->setVisibility(visibility);
 }
 
 }  // namespace blink

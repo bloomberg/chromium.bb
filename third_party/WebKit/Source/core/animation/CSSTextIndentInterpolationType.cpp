@@ -234,17 +234,17 @@ void CSSTextIndentInterpolationType::composite(
       nonInterpolableValue.lengthNonInterpolableValue());
 }
 
-void CSSTextIndentInterpolationType::apply(
+void CSSTextIndentInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   const CSSTextIndentNonInterpolableValue& cssTextIndentNonInterpolableValue =
       toCSSTextIndentNonInterpolableValue(*nonInterpolableValue);
-  ComputedStyle& style = *environment.state().style();
+  ComputedStyle& style = *state.style();
   style.setTextIndent(LengthInterpolationFunctions::createLength(
       interpolableValue,
       cssTextIndentNonInterpolableValue.lengthNonInterpolableValue(),
-      environment.state().cssToLengthConversionData(), ValueRangeAll));
+      state.cssToLengthConversionData(), ValueRangeAll));
 
   const IndentMode& mode = cssTextIndentNonInterpolableValue.mode();
   style.setTextIndentLine(mode.line);

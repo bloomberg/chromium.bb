@@ -148,15 +148,15 @@ void CSSBasicShapeInterpolationType::composite(
       underlyingFraction, *value.interpolableValue);
 }
 
-void CSSBasicShapeInterpolationType::apply(
+void CSSBasicShapeInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   BasicShapePropertyFunctions::setBasicShape(
-      cssProperty(), *environment.state().style(),
+      cssProperty(), *state.style(),
       BasicShapeInterpolationFunctions::createBasicShape(
           interpolableValue, *nonInterpolableValue,
-          environment.state().cssToLengthConversionData()));
+          state.cssToLengthConversionData()));
 }
 
 }  // namespace blink

@@ -49,12 +49,12 @@ InterpolationValue CSSValueInterpolationType::maybeConvertSingle(
           toCSSPropertySpecificKeyframe(keyframe).value()));
 }
 
-void CSSValueInterpolationType::apply(
+void CSSValueInterpolationType::applyStandardPropertyValue(
     const InterpolableValue&,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   StyleBuilder::applyProperty(
-      cssProperty(), environment.state(),
+      cssProperty(), state,
       toCSSValueNonInterpolableValue(nonInterpolableValue)->cssValue());
 }
 

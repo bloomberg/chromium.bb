@@ -172,10 +172,10 @@ void CSSSizeListInterpolationType::composite(
       SizeInterpolationFunctions::composite);
 }
 
-void CSSSizeListInterpolationType::apply(
+void CSSSizeListInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   const auto& interpolableList = toInterpolableList(interpolableValue);
   const auto& nonInterpolableList =
       toNonInterpolableList(*nonInterpolableValue);
@@ -188,10 +188,10 @@ void CSSSizeListInterpolationType::apply(
     sizeList[i] = SizeInterpolationFunctions::createFillSize(
         *interpolableList.get(i * 2), nonInterpolableList.get(i * 2),
         *interpolableList.get(i * 2 + 1), nonInterpolableList.get(i * 2 + 1),
-        environment.state().cssToLengthConversionData());
+        state.cssToLengthConversionData());
   }
-  SizeListPropertyFunctions::setSizeList(
-      cssProperty(), *environment.state().style(), sizeList);
+  SizeListPropertyFunctions::setSizeList(cssProperty(), *state.style(),
+                                         sizeList);
 }
 
 }  // namespace blink

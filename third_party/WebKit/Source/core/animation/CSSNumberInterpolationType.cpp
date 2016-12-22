@@ -88,16 +88,16 @@ InterpolationValue CSSNumberInterpolationType::maybeConvertUnderlyingValue(
   return createNumberValue(underlyingNumber);
 }
 
-void CSSNumberInterpolationType::apply(
+void CSSNumberInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue*,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   double clampedNumber = NumberPropertyFunctions::clampNumber(
       cssProperty(), toInterpolableNumber(interpolableValue).value());
-  if (!NumberPropertyFunctions::setNumber(
-          cssProperty(), *environment.state().style(), clampedNumber))
+  if (!NumberPropertyFunctions::setNumber(cssProperty(), *state.style(),
+                                          clampedNumber))
     StyleBuilder::applyProperty(
-        cssProperty(), environment.state(),
+        cssProperty(), state,
         *CSSPrimitiveValue::create(clampedNumber,
                                    CSSPrimitiveValue::UnitType::Number));
 }

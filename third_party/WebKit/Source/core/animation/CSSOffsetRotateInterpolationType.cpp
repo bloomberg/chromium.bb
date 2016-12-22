@@ -166,11 +166,11 @@ void CSSOffsetRotateInterpolationType::composite(
   }
 }
 
-void CSSOffsetRotateInterpolationType::apply(
+void CSSOffsetRotateInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
-  environment.state().style()->setOffsetRotation(StyleOffsetRotation(
+    StyleResolverState& state) const {
+  state.style()->setOffsetRotation(StyleOffsetRotation(
       toInterpolableNumber(interpolableValue).value(),
       toCSSOffsetRotationNonInterpolableValue(*nonInterpolableValue)
           .rotationType()));

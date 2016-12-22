@@ -272,10 +272,10 @@ void CSSFilterListInterpolationType::composite(
       const_cast<NonInterpolableValue*>(value.nonInterpolableValue.get());
 }
 
-void CSSFilterListInterpolationType::apply(
+void CSSFilterListInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   const InterpolableList& interpolableList =
       toInterpolableList(interpolableValue);
   const NonInterpolableList& nonInterpolableList =
@@ -285,13 +285,13 @@ void CSSFilterListInterpolationType::apply(
 
   FilterOperations filterOperations;
   filterOperations.operations().reserveCapacity(length);
-  for (size_t i = 0; i < length; i++)
+  for (size_t i = 0; i < length; i++) {
     filterOperations.operations().push_back(
-        FilterInterpolationFunctions::createFilter(*interpolableList.get(i),
-                                                   *nonInterpolableList.get(i),
-                                                   environment.state()));
-  FilterListPropertyFunctions::setFilterList(
-      cssProperty(), *environment.state().style(), std::move(filterOperations));
+        FilterInterpolationFunctions::createFilter(
+            *interpolableList.get(i), *nonInterpolableList.get(i), state));
+  }
+  FilterListPropertyFunctions::setFilterList(cssProperty(), *state.style(),
+                                             std::move(filterOperations));
 }
 
 }  // namespace blink

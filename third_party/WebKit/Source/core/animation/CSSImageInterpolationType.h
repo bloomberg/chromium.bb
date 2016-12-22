@@ -22,9 +22,9 @@ class CSSImageInterpolationType : public CSSInterpolationType {
                  double underlyingFraction,
                  const InterpolationValue&,
                  double interpolationFraction) const final;
-  void apply(const InterpolableValue&,
-             const NonInterpolableValue*,
-             InterpolationEnvironment&) const final;
+  void applyStandardPropertyValue(const InterpolableValue&,
+                                  const NonInterpolableValue*,
+                                  StyleResolverState&) const final;
 
   static InterpolationValue maybeConvertCSSValue(const CSSValue&,
                                                  bool acceptGradients);

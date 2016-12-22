@@ -147,10 +147,10 @@ void CSSLengthListInterpolationType::composite(
       LengthInterpolationFunctions::composite);
 }
 
-void CSSLengthListInterpolationType::apply(
+void CSSLengthListInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   const InterpolableList& interpolableList =
       toInterpolableList(interpolableValue);
   const size_t length = interpolableList.length();
@@ -162,10 +162,10 @@ void CSSLengthListInterpolationType::apply(
   for (size_t i = 0; i < length; i++) {
     result[i] = LengthInterpolationFunctions::createLength(
         *interpolableList.get(i), nonInterpolableList.get(i),
-        environment.state().cssToLengthConversionData(), m_valueRange);
+        state.cssToLengthConversionData(), m_valueRange);
   }
-  LengthListPropertyFunctions::setLengthList(
-      cssProperty(), *environment.state().style(), std::move(result));
+  LengthListPropertyFunctions::setLengthList(cssProperty(), *state.style(),
+                                             std::move(result));
 }
 
 }  // namespace blink

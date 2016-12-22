@@ -129,11 +129,10 @@ void CSSLengthInterpolationType::composite(
       value.nonInterpolableValue.get());
 }
 
-void CSSLengthInterpolationType::apply(
+void CSSLengthInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
-  StyleResolverState& state = environment.state();
+    StyleResolverState& state) const {
   ComputedStyle& style = *state.style();
   float zoom = effectiveZoom(style);
   Length length = LengthInterpolationFunctions::createLength(

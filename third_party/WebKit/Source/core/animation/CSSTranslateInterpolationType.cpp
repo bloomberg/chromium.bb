@@ -144,13 +144,13 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertUnderlyingValue(
       environment.state().style()->effectiveZoom());
 }
 
-void CSSTranslateInterpolationType::apply(
+void CSSTranslateInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue*,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   const InterpolableList& list = toInterpolableList(interpolableValue);
   const CSSToLengthConversionData& conversionData =
-      environment.state().cssToLengthConversionData();
+      state.cssToLengthConversionData();
   Length x = LengthInterpolationFunctions::createLength(
       *list.get(TranslateX), nullptr, conversionData, ValueRangeAll);
   Length y = LengthInterpolationFunctions::createLength(
@@ -163,7 +163,7 @@ void CSSTranslateInterpolationType::apply(
   if (!x.isZero() || !y.isZero() || z != 0)
     result = TranslateTransformOperation::create(
         x, y, z, TransformOperation::Translate3D);
-  environment.state().style()->setTranslate(result.release());
+  state.style()->setTranslate(result.release());
 }
 
 }  // namespace blink

@@ -157,14 +157,13 @@ static PassRefPtr<ShadowList> createShadowList(
   return ShadowList::adopt(shadows);
 }
 
-void CSSShadowListInterpolationType::apply(
+void CSSShadowListInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   ShadowListPropertyFunctions::setShadowList(
-      cssProperty(), *environment.state().style(),
-      createShadowList(interpolableValue, nonInterpolableValue,
-                       environment.state()));
+      cssProperty(), *state.style(),
+      createShadowList(interpolableValue, nonInterpolableValue, state));
 }
 
 }  // namespace blink

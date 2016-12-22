@@ -131,18 +131,17 @@ InterpolationValue CSSFontSizeInterpolationType::maybeConvertUnderlyingValue(
   return convertFontSize(environment.state().style()->specifiedFontSize());
 }
 
-void CSSFontSizeInterpolationType::apply(
+void CSSFontSizeInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue*,
-    InterpolationEnvironment& environment) const {
-  const FontDescription& parentFont =
-      environment.state().parentFontDescription();
+    StyleResolverState& state) const {
+  const FontDescription& parentFont = state.parentFontDescription();
   Length fontSizeLength = LengthInterpolationFunctions::createLength(
-      interpolableValue, nullptr, environment.state().fontSizeConversionData(),
+      interpolableValue, nullptr, state.fontSizeConversionData(),
       ValueRangeNonNegative);
   float fontSize =
       floatValueForLength(fontSizeLength, parentFont.getSize().value);
-  environment.state().fontBuilder().setSize(FontDescription::Size(
+  state.fontBuilder().setSize(FontDescription::Size(
       0, fontSize,
       !fontSizeLength.isPercentOrCalc() || parentFont.isAbsoluteSize()));
 }

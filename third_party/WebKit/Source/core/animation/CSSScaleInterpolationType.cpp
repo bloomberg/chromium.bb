@@ -214,12 +214,12 @@ void CSSScaleInterpolationType::composite(
   }
 }
 
-void CSSScaleInterpolationType::apply(
+void CSSScaleInterpolationType::applyStandardPropertyValue(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue*,
-    InterpolationEnvironment& environment) const {
+    StyleResolverState& state) const {
   Scale scale(interpolableValue);
-  environment.state().style()->setScale(ScaleTransformOperation::create(
+  state.style()->setScale(ScaleTransformOperation::create(
       scale.array[0], scale.array[1], scale.array[2],
       TransformOperation::Scale3D));
 }

@@ -66,9 +66,9 @@ class CSSValueInterpolationType : public CSSInterpolationType {
     underlyingValueOwner.set(*this, value);
   }
 
-  void apply(const InterpolableValue&,
-             const NonInterpolableValue*,
-             InterpolationEnvironment&) const final;
+  void applyStandardPropertyValue(const InterpolableValue&,
+                                  const NonInterpolableValue*,
+                                  StyleResolverState&) const final;
 };
 
 }  // namespace blink
