@@ -16,6 +16,7 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 namespace net {
 class X509Certificate;
@@ -83,6 +84,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
 
   void StartRequestInternal();
   void CancelRequestInternal(int error, bool from_renderer);
+  void FollowDeferredRedirectInternal();
   void CompleteResponseStarted();
   void ReadMore(bool is_continuation);
   void ResumeReading();
@@ -138,6 +140,9 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   int times_cancelled_before_request_start_;
   bool started_request_;
   int times_cancelled_after_request_start_;
+
+  // Stores the URL from a deferred redirect.
+  GURL deferred_redirect_url_;
 
   base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_;
 
