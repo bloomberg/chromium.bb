@@ -588,8 +588,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
         ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('conformance2/rendering/read-draw-when-missing-image.html',
-        ['linux', 'intel', 'opengl'], bug=672719) # WebGL 2.0.1
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
