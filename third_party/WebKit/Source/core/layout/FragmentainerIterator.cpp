@@ -32,9 +32,7 @@ FragmentainerIterator::FragmentainerIterator(
   // Jump to the first interesting column set.
   m_currentColumnSet = flowThread.columnSetAtBlockOffset(
       m_logicalTopInFlowThread, LayoutBox::AssociateWithLatterPage);
-  if (!m_currentColumnSet ||
-      m_currentColumnSet->logicalTopInFlowThread() >=
-          m_logicalBottomInFlowThread) {
+  if (!m_currentColumnSet) {
     setAtEnd();
     return;
   }
