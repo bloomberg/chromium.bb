@@ -1154,11 +1154,14 @@ void DXVAVideoDecodeAccelerator::Reset() {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::NotifyResetDone, weak_ptr_));
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DXVAVideoDecodeAccelerator::NotifyInputBuffersDropped,
+                 weak_ptr_, std::move(pending_input_buffers_)));
+  pending_input_buffers_.clear();
 
   StartDecoderThread();
   SetState(kNormal);
-
-  NotifyInputBuffersDropped();
 }
 
 void DXVAVideoDecodeAccelerator::Destroy() {
@@ -2064,19 +2067,18 @@ void DXVAVideoDecodeAccelerator::NotifyPictureReady(
   }
 }
 
-void DXVAVideoDecodeAccelerator::NotifyInputBuffersDropped() {
+void DXVAVideoDecodeAccelerator::NotifyInputBuffersDropped(
+    const PendingInputs& pending_buffers) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   if (!client_)
     return;
 
-  for (PendingInputs::iterator it = pending_input_buffers_.begin();
-       it != pending_input_buffers_.end(); ++it) {
+  for (const auto& buffer : pending_buffers) {
     LONGLONG input_buffer_id = 0;
-    RETURN_ON_HR_FAILURE((*it)->GetSampleTime(&input_buffer_id),
+    RETURN_ON_HR_FAILURE(buffer->GetSampleTime(&input_buffer_id),
                          "Failed to get buffer id associated with sample", );
     client_->NotifyEndOfBitstreamBuffer(input_buffer_id);
   }
-  pending_input_buffers_.clear();
 }
 
 void DXVAVideoDecodeAccelerator::DecodePendingInputBuffers() {

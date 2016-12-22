@@ -147,6 +147,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   friend class PbufferPictureBuffer;
   typedef void* EGLConfig;
   typedef void* EGLSurface;
+  typedef std::list<base::win::ScopedComPtr<IMFSample>> PendingInputs;
 
   // Returns the minimum resolution for the |profile| passed in.
   static std::pair<int, int> GetMinResolution(const VideoCodecProfile profile);
@@ -244,7 +245,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   // Sends pending input buffer processed acks to the client if we don't have
   // output samples waiting to be processed.
-  void NotifyInputBuffersDropped();
+  void NotifyInputBuffersDropped(const PendingInputs& input_buffers);
 
   // Decodes pending input buffers.
   void DecodePendingInputBuffers();
@@ -468,7 +469,6 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   uint32_t output_array_size_ = 0;
 
   // List of input samples waiting to be processed.
-  typedef std::list<base::win::ScopedComPtr<IMFSample>> PendingInputs;
   PendingInputs pending_input_buffers_;
 
   // Callback to get current GLContext.
