@@ -5,15 +5,30 @@
 #include "chrome/browser/ui/webui/options/chromeos/options_stylus_handler.h"
 
 #include "ash/common/system/chromeos/palette/palette_utils.h"
+#include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace options {
 
-OptionsStylusHandler::OptionsStylusHandler() {}
+namespace {
 
-OptionsStylusHandler::~OptionsStylusHandler() {}
+// Keys in objects passed to updateNoteTakingApps_.
+constexpr char kAppNameKey[] = "name";
+constexpr char kAppIdKey[] = "id";
+constexpr char kAppPreferredKey[] = "preferred";
+
+}  // namespace
+
+OptionsStylusHandler::OptionsStylusHandler() : weak_ptr_factory_(this) {
+  NoteTakingHelper::Get()->AddObserver(this);
+}
+
+OptionsStylusHandler::~OptionsStylusHandler() {
+  NoteTakingHelper::Get()->RemoveObserver(this);
+}
 
 void OptionsStylusHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
@@ -34,14 +49,82 @@ void OptionsStylusHandler::GetLocalizedValues(
   localized_strings->SetString(
       "stylusFindMoreApps",
       l10n_util::GetStringUTF16(IDS_SETTINGS_STYLUS_FIND_MORE_APPS));
+  localized_strings->SetString(
+      "stylusNoteTakingApp",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_STYLUS_NOTE_TAKING_APP_LABEL));
+  localized_strings->SetString(
+      "stylusNoteTakingAppNoneAvailable",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_STYLUS_NOTE_TAKING_APP_NONE_AVAILABLE));
+  localized_strings->SetString(
+      "stylusNoteTakingAppWaitingForAndroid",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_STYLUS_NOTE_TAKING_APP_WAITING_FOR_ANDROID));
 
   localized_strings->SetBoolean("showStylusSettings",
                                 ash::IsPaletteFeatureEnabled());
 }
 
-void OptionsStylusHandler::InitializePage() {}
+void OptionsStylusHandler::InitializePage() {
+  UpdateNoteTakingApps();
+}
 
-void OptionsStylusHandler::RegisterMessages() {}
+void OptionsStylusHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "setPreferredNoteTakingApp",
+      base::Bind(&OptionsStylusHandler::SetPreferredNoteTakingApp,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void OptionsStylusHandler::OnAvailableNoteTakingAppsUpdated() {
+  UpdateNoteTakingApps();
+}
+
+void OptionsStylusHandler::UpdateNoteTakingApps() {
+  bool waiting_for_android = false;
+  note_taking_app_ids_.clear();
+  base::ListValue apps_list;
+
+  NoteTakingHelper* helper = NoteTakingHelper::Get();
+  if (helper->android_enabled() && !helper->android_apps_received()) {
+    // If Android is enabled but not ready yet, let the JS know so it can
+    // disable the menu and display an explanatory message.
+    waiting_for_android = true;
+  } else {
+    for (const NoteTakingAppInfo& info :
+         NoteTakingHelper::Get()->GetAvailableApps(
+             Profile::FromWebUI(web_ui()))) {
+      std::unique_ptr<base::DictionaryValue> dict(
+          new base::DictionaryValue());
+      dict->SetString(kAppNameKey, info.name);
+      dict->SetString(kAppIdKey, info.app_id);
+      dict->SetBoolean(kAppPreferredKey, info.preferred);
+      apps_list.Append(std::move(dict));
+
+      note_taking_app_ids_.insert(info.app_id);
+    }
+  }
+
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "StylusOverlay.updateNoteTakingApps", apps_list,
+      base::FundamentalValue(waiting_for_android));
+}
+
+void OptionsStylusHandler::SetPreferredNoteTakingApp(
+    const base::ListValue* args) {
+  std::string app_id;
+  CHECK(args->GetString(0, &app_id));
+
+  // Sanity check: make sure that the ID we got back from WebUI is in the
+  // currently-available set.
+  if (!note_taking_app_ids_.count(app_id)) {
+    LOG(ERROR) << "Got unknown note-taking-app ID \"" << app_id << "\"";
+    return;
+  }
+
+  NoteTakingHelper::Get()->SetPreferredApp(Profile::FromWebUI(web_ui()),
+                                           app_id);
+}
 
 }  // namespace options
 }  // namespace chromeos
