@@ -94,6 +94,10 @@ class CORE_EXPORT NGConstraintSpace final
 
   bool IsFixedSizeBlock() const { return is_fixed_size_block_; }
 
+  // Whether an auto inline-size should be interpreted as shrink-to-fit
+  // (ie. fit-content). This is used for inline-block, floats, etc.
+  bool IsShrinkToFit() const { return is_shrink_to_fit_; }
+
   // If specified a layout should produce a Fragment which fragments at the
   // blockSize if possible.
   NGFragmentationType BlockFragmentationType() const;
@@ -120,6 +124,7 @@ class CORE_EXPORT NGConstraintSpace final
                     NGLogicalSize percentage_resolution_size,
                     bool is_fixed_size_inline,
                     bool is_fixed_size_block,
+                    bool is_shrink_to_fit,
                     bool is_inline_direction_triggers_scrollbar,
                     bool is_block_direction_triggers_scrollbar,
                     NGFragmentationType block_direction_fragmentation_type,
@@ -131,6 +136,8 @@ class CORE_EXPORT NGConstraintSpace final
 
   unsigned is_fixed_size_inline_ : 1;
   unsigned is_fixed_size_block_ : 1;
+
+  unsigned is_shrink_to_fit_ : 1;
 
   unsigned is_inline_direction_triggers_scrollbar_ : 1;
   unsigned is_block_direction_triggers_scrollbar_ : 1;

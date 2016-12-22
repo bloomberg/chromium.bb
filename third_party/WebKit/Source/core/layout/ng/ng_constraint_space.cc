@@ -18,6 +18,7 @@ NGConstraintSpace::NGConstraintSpace(
     NGLogicalSize percentage_resolution_size,
     bool is_fixed_size_inline,
     bool is_fixed_size_block,
+    bool is_shrink_to_fit,
     bool is_inline_direction_triggers_scrollbar,
     bool is_block_direction_triggers_scrollbar,
     NGFragmentationType block_direction_fragmentation_type,
@@ -27,6 +28,7 @@ NGConstraintSpace::NGConstraintSpace(
       percentage_resolution_size_(percentage_resolution_size),
       is_fixed_size_inline_(is_fixed_size_inline),
       is_fixed_size_block_(is_fixed_size_block),
+      is_shrink_to_fit_(is_shrink_to_fit),
       is_inline_direction_triggers_scrollbar_(
           is_inline_direction_triggers_scrollbar),
       is_block_direction_triggers_scrollbar_(
@@ -78,6 +80,8 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
           box.styleRef().overflowBlockDirection() == EOverflow::Auto)
       .SetIsFixedSizeInline(fixed_inline)
       .SetIsFixedSizeBlock(fixed_block)
+      .SetIsShrinkToFit(
+          box.sizesLogicalWidthToFitContent(box.styleRef().logicalWidth()))
       .SetIsNewFormattingContext(is_new_fc)
       .SetTextDirection(box.styleRef().direction())
       .ToConstraintSpace();

@@ -200,7 +200,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
           ComputeBorders(Style()) + ComputePadding(ConstraintSpace(), Style());
 
       WTF::Optional<MinAndMaxContentSizes> sizes;
-      if (NeedMinAndMaxContentSizes(Style())) {
+      if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style())) {
         // TODOO(layout-ng): Implement
         sizes = MinAndMaxContentSizes();
       }
@@ -442,11 +442,19 @@ void NGBlockLayoutAlgorithm::UpdateMarginStrut(const NGMarginStrut& from) {
 
 NGConstraintSpace*
 NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() const {
+  // TODO(layout-ng): Orthogonal children should also shrink to fit (in *their*
+  // inline axis)
+  // We have to keep this commented out for now until we correctly compute
+  // min/max content sizes in Layout().
+  // bool shrink_to_fit = CurrentChildStyle().display() == EDisplay::InlineBlock
+  // || CurrentChildStyle().isFloating();
+  bool shrink_to_fit = false;
   DCHECK(current_child_);
   space_builder_
       ->SetIsNewFormattingContext(
           IsNewFormattingContextForInFlowBlockLevelChild(ConstraintSpace(),
                                                          CurrentChildStyle()))
+      .SetIsShrinkToFit(shrink_to_fit)
       .SetWritingMode(
           FromPlatformWritingMode(CurrentChildStyle().getWritingMode()))
       .SetTextDirection(CurrentChildStyle().direction());

@@ -17,21 +17,22 @@ namespace blink {
 // - positioned and/or replaced calculations
 // - Take scrollbars into account
 
-bool NeedMinAndMaxContentSizes(const ComputedStyle& style) {
-  // TODO(layout-ng): In the future we may pass a shrink-to-fit flag through the
-  // constraint space; if so, this function needs to take a constraint space
-  // as well to take that into account.
+bool NeedMinAndMaxContentSizes(const NGConstraintSpace& constraint_space,
+                               const ComputedStyle& style) {
   // This check is technically too broad (fill-available does not need intrinsic
   // size computation) but that's a rare case and only affects performance, not
   // correctness.
-  return style.logicalWidth().isIntrinsic() ||
+  return constraint_space.IsShrinkToFit() ||
+         style.logicalWidth().isIntrinsic() ||
          style.logicalMinWidth().isIntrinsic() ||
          style.logicalMaxWidth().isIntrinsic();
 }
 
 bool NeedMinAndMaxContentSizesForContentContribution(
     const ComputedStyle& style) {
-  return NeedMinAndMaxContentSizes(style) || style.logicalWidth().isAuto();
+  return style.logicalWidth().isIntrinsicOrAuto() ||
+         style.logicalMinWidth().isIntrinsic() ||
+         style.logicalMaxWidth().isIntrinsic();
 }
 
 LayoutUnit ResolveInlineLength(
@@ -234,9 +235,12 @@ LayoutUnit ComputeInlineSizeForFragment(
   if (space.IsFixedSizeInline())
     return space.AvailableSize().inline_size;
 
-  LayoutUnit extent =
-      ResolveInlineLength(space, style, min_and_max, style.logicalWidth(),
-                          LengthResolveType::kContentSize);
+  Length logicalWidth = style.logicalWidth();
+  if (logicalWidth.isAuto() && space.IsShrinkToFit())
+    logicalWidth = Length(FitContent);
+
+  LayoutUnit extent = ResolveInlineLength(
+      space, style, min_and_max, logicalWidth, LengthResolveType::kContentSize);
 
   Length max_length = style.logicalMaxWidth();
   if (!max_length.isMaxSizeNone()) {

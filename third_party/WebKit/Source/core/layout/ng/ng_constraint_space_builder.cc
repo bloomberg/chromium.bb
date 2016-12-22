@@ -14,6 +14,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
       parent_writing_mode_(writing_mode_),
       is_fixed_size_inline_(false),
       is_fixed_size_block_(false),
+      is_shrink_to_fit_(false),
       is_inline_direction_triggers_scrollbar_(false),
       is_block_direction_triggers_scrollbar_(false),
       fragmentation_type_(kFragmentNone),
@@ -26,6 +27,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
       parent_writing_mode_(writing_mode_),
       is_fixed_size_inline_(false),
       is_fixed_size_block_(false),
+      is_shrink_to_fit_(false),
       is_inline_direction_triggers_scrollbar_(false),
       is_block_direction_triggers_scrollbar_(false),
       fragmentation_type_(kFragmentNone),
@@ -60,6 +62,12 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsFixedSizeInline(
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsFixedSizeBlock(
     bool is_fixed_size_block) {
   is_fixed_size_block_ = is_fixed_size_block;
+  return *this;
+}
+
+NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsShrinkToFit(
+    bool shrink_to_fit) {
+  is_shrink_to_fit_ = shrink_to_fit;
   return *this;
 }
 
@@ -114,7 +122,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
         {available_size_.inline_size, available_size_.block_size},
         {percentage_resolution_size_.inline_size,
          percentage_resolution_size_.block_size},
-        is_fixed_size_inline_, is_fixed_size_block_,
+        is_fixed_size_inline_, is_fixed_size_block_, is_shrink_to_fit_,
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
@@ -127,7 +135,7 @@ NGConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
       {available_size_.block_size, available_size_.inline_size},
       {percentage_resolution_size_.block_size,
        percentage_resolution_size_.inline_size},
-      is_fixed_size_block_, is_fixed_size_inline_,
+      is_fixed_size_block_, is_fixed_size_inline_, is_shrink_to_fit_,
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,

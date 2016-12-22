@@ -33,7 +33,8 @@ enum class LengthResolveType {
 // pass them to ResolveInlineLength / ComputeInlineSizeForFragment.
 // If this function returns false, it is safe to pass an empty
 // MinAndMaxContentSizes struct to those functions.
-CORE_EXPORT bool NeedMinAndMaxContentSizes(const ComputedStyle&);
+CORE_EXPORT bool NeedMinAndMaxContentSizes(const NGConstraintSpace&,
+                                           const ComputedStyle&);
 
 // Like NeedMinAndMaxContentSizes, but for use when calling
 // ComputeMinAndMaxContentContribution.
