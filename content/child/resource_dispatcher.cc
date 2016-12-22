@@ -27,7 +27,7 @@
 #include "content/child/shared_memory_received_data_factory.h"
 #include "content/child/site_isolation_stats_gatherer.h"
 #include "content/child/sync_load_response.h"
-#include "content/child/url_response_body_consumer.h"
+#include "content/child/url_loader_client_impl.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_messages.h"
@@ -39,9 +39,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -75,82 +73,6 @@ int MakeRequestID() {
   static int next_request_id = 0;
   return next_request_id++;
 }
-
-class URLLoaderClientImpl final : public mojom::URLLoaderClient {
- public:
-  URLLoaderClientImpl(int request_id,
-                      ResourceDispatcher* resource_dispatcher,
-                      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : binding_(this),
-        request_id_(request_id),
-        resource_dispatcher_(resource_dispatcher),
-        task_runner_(std::move(task_runner)) {}
-  ~URLLoaderClientImpl() override {
-    if (body_consumer_)
-      body_consumer_->Cancel();
-  }
-
-  void OnReceiveResponse(
-      const ResourceResponseHead& response_head,
-      mojom::DownloadedTempFilePtr downloaded_file) override {
-    has_received_response_ = true;
-    if (body_consumer_)
-      body_consumer_->Start();
-    downloaded_file_ = std::move(downloaded_file);
-    resource_dispatcher_->OnMessageReceived(
-        ResourceMsg_ReceivedResponse(request_id_, response_head));
-  }
-
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override {
-    DCHECK(!has_received_response_);
-    DCHECK(!body_consumer_);
-    resource_dispatcher_->OnMessageReceived(ResourceMsg_ReceivedRedirect(
-        request_id_, redirect_info, response_head));
-  }
-
-  void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override {
-    resource_dispatcher_->OnMessageReceived(
-        ResourceMsg_DataDownloaded(request_id_, data_len, encoded_data_len));
-  }
-
-  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
-    resource_dispatcher_->OnTransferSizeUpdated(request_id_,
-                                                transfer_size_diff);
-  }
-
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override {
-    DCHECK(!body_consumer_);
-    body_consumer_ = new URLResponseBodyConsumer(
-        request_id_, resource_dispatcher_, std::move(body), task_runner_);
-    if (has_received_response_)
-      body_consumer_->Start();
-  }
-
-  void OnComplete(const ResourceRequestCompletionStatus& status) override {
-    if (!body_consumer_) {
-      resource_dispatcher_->OnMessageReceived(
-          ResourceMsg_RequestComplete(request_id_, status));
-      return;
-    }
-    body_consumer_->OnComplete(status);
-  }
-
-  void Bind(mojom::URLLoaderClientAssociatedPtrInfo* client_ptr_info,
-            mojo::AssociatedGroup* associated_group) {
-    binding_.Bind(client_ptr_info, associated_group);
-  }
-
- private:
-  mojo::AssociatedBinding<mojom::URLLoaderClient> binding_;
-  scoped_refptr<URLResponseBodyConsumer> body_consumer_;
-  mojom::DownloadedTempFilePtr downloaded_file_;
-  const int request_id_;
-  bool has_received_response_ = false;
-  ResourceDispatcher* const resource_dispatcher_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-};
 
 void CheckSchemeForReferrerPolicy(const ResourceRequest& request) {
   if ((request.referrer_policy == blink::WebReferrerPolicyDefault ||
@@ -548,7 +470,7 @@ void ResourceDispatcher::Cancel(int request_id) {
   }
   // Cancel the request if it didn't complete, and clean it up so the bridge
   // will receive no more messages.
-  if (info.completion_time.is_null())
+  if (info.completion_time.is_null() && !info.url_loader)
     message_sender_->Send(new ResourceHostMsg_CancelRequest(request_id));
   RemovePendingRequest(request_id);
 }

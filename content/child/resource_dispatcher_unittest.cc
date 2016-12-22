@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/child/request_extra_data.h"
+#include "content/child/test_request_peer.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request.h"
@@ -50,107 +51,6 @@ static const char kTestPageContents[] =
   "<html><head><title>Google</title></head><body><h1>Google</h1></body></html>";
 static const char kTestRedirectHeaders[] =
   "HTTP/1.1 302 Found\nLocation:http://www.google.com/\n\n";
-
-// Listens for request response data and stores it so that it can be compared
-// to the reference data.
-class TestRequestPeer : public RequestPeer {
- public:
-  struct Context;
-  TestRequestPeer(ResourceDispatcher* dispatcher, Context* context)
-      : dispatcher_(dispatcher), context_(context) {}
-
-  void OnUploadProgress(uint64_t position, uint64_t size) override {}
-
-  bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const ResourceResponseInfo& info) override {
-    EXPECT_FALSE(context_->cancelled);
-    ++context_->seen_redirects;
-    if (context_->defer_on_redirect)
-      dispatcher_->SetDefersLoading(context_->request_id, true);
-    return context_->follow_redirects;
-  }
-
-  void OnReceivedResponse(const ResourceResponseInfo& info) override {
-    EXPECT_FALSE(context_->cancelled);
-    EXPECT_FALSE(context_->received_response);
-    context_->received_response = true;
-    if (context_->cancel_on_receive_response) {
-      dispatcher_->Cancel(context_->request_id);
-      context_->cancelled = true;
-    }
-  }
-
-  void OnDownloadedData(int len, int encoded_data_length) override {
-    EXPECT_FALSE(context_->cancelled);
-    context_->total_downloaded_data_length += len;
-    context_->total_encoded_data_length += encoded_data_length;
-  }
-
-  void OnReceivedData(std::unique_ptr<ReceivedData> data) override {
-    if (context_->cancelled)
-      return;
-    EXPECT_TRUE(context_->received_response);
-    EXPECT_FALSE(context_->complete);
-    context_->data.append(data->payload(), data->length());
-
-    if (context_->cancel_on_receive_data) {
-      dispatcher_->Cancel(context_->request_id);
-      context_->cancelled = true;
-    }
-  }
-
-  void OnTransferSizeUpdated(int transfer_size_diff) override {
-    if (context_->cancelled)
-      return;
-    context_->total_encoded_data_length += transfer_size_diff;
-  }
-
-  void OnCompletedRequest(int error_code,
-                          bool was_ignored_by_handler,
-                          bool stale_copy_in_cache,
-                          const base::TimeTicks& completion_time,
-                          int64_t total_transfer_size,
-                          int64_t encoded_body_size) override {
-    if (context_->cancelled)
-      return;
-    EXPECT_TRUE(context_->received_response);
-    EXPECT_FALSE(context_->complete);
-    context_->complete = true;
-  }
-
-  struct Context {
-    // True if should follow redirects, false if should cancel them.
-    bool follow_redirects = true;
-    // True if the request should be deferred on redirects.
-    bool defer_on_redirect = false;
-
-    // Number of total redirects seen.
-    int seen_redirects = 0;
-
-    bool cancel_on_receive_response = false;
-    bool cancel_on_receive_data = false;
-    bool received_response = false;
-
-    // Data received. If downloading to file, remains empty.
-    std::string data;
-
-    // Total encoded data length, regardless of whether downloading to a file or
-    // not.
-    int total_encoded_data_length = 0;
-    // Total length when downloading to a file.
-    int total_downloaded_data_length = 0;
-
-    bool complete = false;
-    bool cancelled = false;
-    int request_id = -1;
-  };
-
- private:
-  ResourceDispatcher* dispatcher_;
-  Context* context_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRequestPeer);
-};
 
 // Sets up the message sender override for the unit test.
 class ResourceDispatcherTest : public testing::Test, public IPC::Sender {

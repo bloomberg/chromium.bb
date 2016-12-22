@@ -50,6 +50,7 @@ struct ResourceResponseHead;
 class SharedMemoryReceivedDataFactory;
 struct SiteIsolationResponseMetaData;
 struct SyncLoadResponse;
+class URLLoaderClientImpl;
 
 namespace mojom {
 class URLLoaderFactory;
@@ -192,7 +193,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
 
     // For mojo loading.
     mojom::URLLoaderAssociatedPtr url_loader;
-    std::unique_ptr<mojom::URLLoaderClient> url_loader_client;
+    std::unique_ptr<URLLoaderClientImpl> url_loader_client;
   };
   using PendingRequestMap = std::map<int, std::unique_ptr<PendingRequestInfo>>;
 
