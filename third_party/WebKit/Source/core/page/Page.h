@@ -60,6 +60,7 @@ class Frame;
 class FrameHost;
 class PluginData;
 class PointerLockController;
+class ScopedPageSuspender;
 class ScrollingCoordinator;
 class Settings;
 class SpellCheckerClient;
@@ -104,7 +105,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   ~Page() override;
 
-  void willBeClosed();
+  void closeSoon();
+  bool isClosing() const { return m_isClosing; }
 
   using PageSet = PersistentHeapHashSet<WeakMember<Page>>;
 
@@ -186,10 +188,13 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
     return m_tabKeyCyclesThroughElements;
   }
 
-  // DefersLoading is used to delay loads during modal dialogs.
-  // Modal dialogs are supposed to freeze all background processes
-  // in the page, including prevent additional loads from staring/continuing.
-  void setSuspended(bool);
+  // Suspension is used to implement the "Optionally, pause while waiting for
+  // the user to acknowledge the message" step of simple dialog processing:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#simple-dialogs
+  //
+  // Per https://html.spec.whatwg.org/multipage/webappapis.html#pause, no loads
+  // are allowed to start/continue in this state, and all background processing
+  // is also suspended.
   bool suspended() const { return m_suspended; }
 
   void setPageScaleFactor(float);
@@ -227,12 +232,17 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void willBeDestroyed();
 
  private:
+  friend class ScopedPageSuspender;
+
   explicit Page(PageClients&);
 
   void initGroup();
 
   // SettingsDelegate overrides.
   void settingsChanged(SettingsDelegate::ChangeType) override;
+
+  // ScopedPageSuspender helpers.
+  void setSuspended(bool);
 
   Member<PageAnimator> m_animator;
   const Member<AutoscrollController> m_autoscrollController;
@@ -269,6 +279,12 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   HostsUsingFeatures m_hostsUsingFeatures;
 
   bool m_openedByDOM;
+  // Set to true when window.close() has been called and the Page will be
+  // destroyed. The browsing contexts in this page should no longer be
+  // discoverable via JS.
+  // TODO(dcheng): Try to remove |DOMWindow::m_windowIsClosing| in favor of
+  // this. However, this depends on resolving https://crbug.com/674641
+  bool m_isClosing;
 
   bool m_tabKeyCyclesThroughElements;
   bool m_suspended;

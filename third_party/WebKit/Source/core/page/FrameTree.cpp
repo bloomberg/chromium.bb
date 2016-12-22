@@ -430,7 +430,7 @@ Frame* FrameTree::find(const AtomicString& name) const {
   // Search the entire tree of each of the other pages in this namespace.
   // FIXME: Is random order OK?
   for (const Page* otherPage : Page::ordinaryPages()) {
-    if (otherPage == page)
+    if (otherPage == page || otherPage->isClosing())
       continue;
     for (Frame* frame = otherPage->mainFrame(); frame;
          frame = frame->tree().traverseNext()) {

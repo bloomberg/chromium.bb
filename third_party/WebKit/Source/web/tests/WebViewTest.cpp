@@ -4119,6 +4119,29 @@ TEST_P(WebViewTest, NestedPageSuspensions) {
   EXPECT_FALSE(webView->page()->suspended());
 }
 
+TEST_P(WebViewTest, ClosingPageIsSuspended) {
+  WebViewImpl* webView = m_webViewHelper.initialize();
+  Page* page = m_webViewHelper.webView()->page();
+  EXPECT_FALSE(page->suspended());
+
+  webView->setOpenedByDOM();
+
+  LocalFrame* mainFrame = toLocalFrame(page->mainFrame());
+  EXPECT_FALSE(mainFrame->domWindow()->closed());
+
+  mainFrame->domWindow()->close(nullptr);
+  // The window should be marked closed...
+  EXPECT_TRUE(mainFrame->domWindow()->closed());
+  // EXPECT_TRUE(page->isClosing());
+  // ...but not yet detached.
+  EXPECT_TRUE(mainFrame->host());
+
+  {
+    ScopedPageSuspender suspender;
+    EXPECT_TRUE(page->suspended());
+  }
+}
+
 TEST_P(WebViewTest, ForceAndResetViewport) {
   URLTestHelpers::registerMockedURLFromBaseURL(
       WebString::fromUTF8(m_baseURL.c_str()),

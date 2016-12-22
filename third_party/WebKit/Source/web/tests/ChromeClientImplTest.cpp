@@ -30,6 +30,7 @@
 
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Page.h"
+#include "core/page/ScopedPageSuspender.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebLocalFrame.h"
@@ -268,14 +269,13 @@ class CreateWindowTest : public testing::Test {
 };
 
 TEST_F(CreateWindowTest, CreateWindowFromSuspendedPage) {
-  m_webView->page()->setSuspended(true);
+  ScopedPageSuspender suspender;
   LocalFrame* frame = toWebLocalFrameImpl(m_mainFrame)->frame();
   FrameLoadRequest request(frame->document());
   WindowFeatures features;
   EXPECT_EQ(nullptr,
             m_chromeClientImpl->createWindow(frame, request, features,
                                              NavigationPolicyNewForegroundTab));
-  m_webView->page()->setSuspended(false);
 }
 
 }  // namespace blink

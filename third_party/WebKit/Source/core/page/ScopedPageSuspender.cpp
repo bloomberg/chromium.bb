@@ -35,15 +35,6 @@ namespace {
 
 unsigned s_suspensionCount = 0;
 
-void setSuspended(bool isSuspended) {
-  // Make a copy of the collection. Undeferring loads can cause script to run,
-  // which would mutate ordinaryPages() in the middle of iteration.
-  HeapVector<Member<Page>> pages;
-  copyToVector(Page::ordinaryPages(), pages);
-  for (const auto& page : pages)
-    page->setSuspended(isSuspended);
-}
-
 }  // namespace
 
 ScopedPageSuspender::ScopedPageSuspender() {
@@ -60,6 +51,16 @@ ScopedPageSuspender::~ScopedPageSuspender() {
 
   setSuspended(false);
   Platform::current()->currentThread()->scheduler()->resumeTimerQueue();
+}
+
+void ScopedPageSuspender::setSuspended(bool isSuspended) {
+  // Make a copy of the collection. Undeferring loads can cause script to run,
+  // which would mutate ordinaryPages() in the middle of iteration.
+  HeapVector<Member<Page>> pages;
+  copyToVector(Page::ordinaryPages(), pages);
+
+  for (const auto& page : pages)
+    page->setSuspended(isSuspended);
 }
 
 bool ScopedPageSuspender::isActive() {
