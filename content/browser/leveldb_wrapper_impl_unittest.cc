@@ -8,6 +8,7 @@
 #include "components/leveldb/public/cpp/util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using leveldb::StdStringToUint8Vector;
@@ -163,6 +164,34 @@ class MockLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
   std::map<std::vector<uint8_t>, std::vector<uint8_t>>& mock_data_;
 };
 
+class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
+ public:
+  static mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo CreateAndBind(
+      mojo::AssociatedGroup* associated_group,
+      bool* result,
+      const base::Closure& callback) {
+    mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo ptr_info;
+    mojom::LevelDBWrapperGetAllCallbackAssociatedRequest request;
+    associated_group->CreateAssociatedInterface(
+        mojo::AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
+    mojo::MakeStrongAssociatedBinding(
+        base::WrapUnique(new GetAllCallback(result, callback)),
+        std::move(request));
+    return ptr_info;
+  }
+
+ private:
+  GetAllCallback(bool* result, const base::Closure& callback)
+      : m_result(result), m_callback(callback) {}
+  void Complete(bool success) override {
+    *m_result = success;
+    m_callback.Run();
+  }
+
+  bool* m_result;
+  base::Closure m_callback;
+};
+
 void NoOp() {}
 
 void GetCallback(const base::Closure& callback,
@@ -211,7 +240,7 @@ class LevelDBWrapperImplTest : public testing::Test,
 
     level_db_wrapper_.Bind(mojo::MakeRequest(&level_db_wrapper_ptr_));
     mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
-    observer_binding_.Bind(&ptr_info, level_db_wrapper_ptr_.associated_group());
+    observer_binding_.Bind(&ptr_info, associated_group());
     level_db_wrapper_ptr_->AddObserver(std::move(ptr_info));
   }
 
@@ -235,6 +264,9 @@ class LevelDBWrapperImplTest : public testing::Test,
   }
 
   mojom::LevelDBWrapper* wrapper() { return level_db_wrapper_ptr_.get(); }
+  mojo::AssociatedGroup* associated_group() {
+    return level_db_wrapper_ptr_.associated_group();
+  }
 
   bool GetSync(const std::vector<uint8_t>& key, std::vector<uint8_t>* result) {
     base::RunLoop run_loop;
@@ -309,7 +341,6 @@ class LevelDBWrapperImplTest : public testing::Test,
   void AllDeleted(const std::string& source) override {
     observations_.push_back({Observation::kDeleteAll, "", "", "", source});
   }
-  void GetAllComplete(const std::string& source) override {}
 
   TestBrowserThreadBundle thread_bundle_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
@@ -353,9 +384,17 @@ TEST_F(LevelDBWrapperImplTest, GetFromPutNewKey) {
 TEST_F(LevelDBWrapperImplTest, GetAll) {
   leveldb::mojom::DatabaseError status;
   std::vector<mojom::KeyValuePtr> data;
-  EXPECT_TRUE(wrapper()->GetAll(kTestSource, &status, &data));
+  base::RunLoop run_loop;
+  bool result = false;
+  EXPECT_TRUE(wrapper()->GetAll(
+      GetAllCallback::CreateAndBind(associated_group(), &result,
+                                    run_loop.QuitClosure()),
+      &status, &data));
   EXPECT_EQ(leveldb::mojom::DatabaseError::OK, status);
   EXPECT_EQ(2u, data.size());
+  EXPECT_FALSE(result);
+  run_loop.Run();
+  EXPECT_TRUE(result);
 }
 
 TEST_F(LevelDBWrapperImplTest, CommitPutToDB) {

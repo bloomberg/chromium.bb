@@ -12,7 +12,7 @@ function test() {
     sanityCheck(window.localStorage);
     debug('Checking window.sessionStorage');
     sanityCheck(window.sessionStorage);
-    done();
+    window.setTimeout(done, 0);
   } catch(e) {
     fail(e);
   }

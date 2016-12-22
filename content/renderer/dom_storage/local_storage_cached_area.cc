@@ -15,8 +15,11 @@
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/renderer/dom_storage/local_storage_area.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
+
+namespace content {
 
 namespace {
 
@@ -30,9 +33,29 @@ std::vector<uint8_t> String16ToUint8Vector(const base::string16& input) {
   return std::vector<uint8_t>(data, data + input.size() * sizeof(base::char16));
 }
 
-}  // namespace
+class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
+ public:
+  static mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo CreateAndBind(
+      mojo::AssociatedGroup* associated_group,
+      const base::Callback<void(bool)>& callback) {
+    mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo ptr_info;
+    mojom::LevelDBWrapperGetAllCallbackAssociatedRequest request;
+    associated_group->CreateAssociatedInterface(
+        mojo::AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
+    mojo::MakeStrongAssociatedBinding(
+        base::WrapUnique(new GetAllCallback(callback)), std::move(request));
+    return ptr_info;
+  }
 
-namespace content {
+ private:
+  explicit GetAllCallback(const base::Callback<void(bool)>& callback)
+      : m_callback(callback) {}
+  void Complete(bool success) override { m_callback.Run(success); }
+
+  base::Callback<void(bool)> m_callback;
+};
+
+}  // namespace
 
 // These methods are used to pack and unpack the page_url/storage_area_id into
 // source strings to/from the browser.
@@ -218,18 +241,6 @@ void LocalStorageCachedArea::AllDeleted(const std::string& source) {
       base::NullableString16(), origin_.GetURL(), page_url, originating_area);
 }
 
-void LocalStorageCachedArea::GetAllComplete(const std::string& source) {
-  // Since the GetAll method is synchronous, we need this asynchronously
-  // delivered notification to avoid applying changes to the returned array
-  // that we already have.
-  if (source == get_all_request_id_) {
-    DCHECK(ignore_all_mutations_);
-    DCHECK(!get_all_request_id_.empty());
-    ignore_all_mutations_ = false;
-    get_all_request_id_.clear();
-  }
-}
-
 void LocalStorageCachedArea::KeyAddedOrChanged(
     const std::vector<uint8_t>& key,
     const std::vector<uint8_t>& new_value,
@@ -272,10 +283,13 @@ void LocalStorageCachedArea::EnsureLoaded() {
 
   base::TimeTicks before = base::TimeTicks::Now();
   ignore_all_mutations_ = true;
-  get_all_request_id_ = base::Uint64ToString(base::RandUint64());
   leveldb::mojom::DatabaseError status = leveldb::mojom::DatabaseError::OK;
   std::vector<content::mojom::KeyValuePtr> data;
-  leveldb_->GetAll(get_all_request_id_, &status, &data);
+  leveldb_->GetAll(GetAllCallback::CreateAndBind(
+                       leveldb_.associated_group(),
+                       base::Bind(&LocalStorageCachedArea::OnGetAllComplete,
+                                  weak_factory_.GetWeakPtr())),
+                   &status, &data);
 
   DOMStorageValuesMap values;
   for (size_t i = 0; i < data.size(); ++i) {
@@ -331,6 +345,15 @@ void LocalStorageCachedArea::OnRemoveItemComplete(
 }
 
 void LocalStorageCachedArea::OnClearComplete(bool success) {
+  DCHECK(success);
+  DCHECK(ignore_all_mutations_);
+  ignore_all_mutations_ = false;
+}
+
+void LocalStorageCachedArea::OnGetAllComplete(bool success) {
+  // Since the GetAll method is synchronous, we need this asynchronously
+  // delivered notification to avoid applying changes to the returned array
+  // that we already have.
   DCHECK(success);
   DCHECK(ignore_all_mutations_);
   ignore_all_mutations_ = false;

@@ -216,12 +216,12 @@ void LevelDBWrapperImpl::Get(const std::vector<uint8_t>& key,
   callback.Run(true, found->second);
 }
 
-void LevelDBWrapperImpl::GetAll(const std::string& source,
-                                const GetAllCallback& callback) {
+void LevelDBWrapperImpl::GetAll(
+    mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
+    const GetAllCallback& callback) {
   if (!map_) {
-    LoadMap(
-        base::Bind(&LevelDBWrapperImpl::GetAll, base::Unretained(this),
-                   source, callback));
+    LoadMap(base::Bind(&LevelDBWrapperImpl::GetAll, base::Unretained(this),
+                       base::Passed(std::move(complete_callback)), callback));
     return;
   }
 
@@ -233,10 +233,11 @@ void LevelDBWrapperImpl::GetAll(const std::string& source,
     all.push_back(std::move(kv));
   }
   callback.Run(leveldb::mojom::DatabaseError::OK, std::move(all));
-  observers_.ForAllPtrs(
-      [source](mojom::LevelDBObserver* observer) {
-        observer->GetAllComplete(source);
-      });
+  if (complete_callback.is_valid()) {
+    mojom::LevelDBWrapperGetAllCallbackAssociatedPtr complete_ptr;
+    complete_ptr.Bind(std::move(complete_callback));
+    complete_ptr->Complete(true);
+  }
 }
 
 void LevelDBWrapperImpl::OnConnectionError() {

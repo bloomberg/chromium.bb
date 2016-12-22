@@ -103,8 +103,9 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
                  const DeleteAllCallback& callback) override;
   void Get(const std::vector<uint8_t>& key,
            const GetCallback& callback) override;
-  void GetAll(const std::string& source,
-              const GetAllCallback& callback) override;
+  void GetAll(
+      mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
+      const GetAllCallback& callback) override;
 
   void OnConnectionError();
   void LoadMap(const base::Closure& completion_callback);
