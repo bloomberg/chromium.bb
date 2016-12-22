@@ -196,6 +196,8 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
 // Setup/tearDown methods are used to register values when the delegate is set.
 - (void)tearDown;
 - (void)setup;
+// Resets scroll view's top content inset to |self.initialContentInset|.
+- (void)resetScrollViewTopContentInset;
 // Access the headerView from the delegate.
 - (UIView<RelaxedBoundsConstraintsHitTestSupport>*)headerView;
 // Locking/unlocking methods used to disable/enable the overscroll actions
@@ -381,8 +383,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
   // restored to initial value.
   if (contentOffset.y >= 0 ||
       self.overscrollState == ios_internal::OverscrollState::NO_PULL_STARTED) {
-    [self setScrollViewContentInset:UIEdgeInsetsMake(self.initialContentInset,
-                                                     0, 0, 0)];
+    [self resetScrollViewTopContentInset];
   }
 
   [self triggerActionIfNeeded];
@@ -588,6 +589,12 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
     [_scrollview setContentInset:contentInset];
   else
     [_webViewScrollViewProxy setContentInset:contentInset];
+}
+
+- (void)resetScrollViewTopContentInset {
+  UIEdgeInsets contentInset = self.scrollView.contentInset;
+  contentInset.top = self.initialContentInset;
+  [self setScrollViewContentInset:contentInset];
 }
 
 - (UIView<RelaxedBoundsConstraintsHitTestSupport>*)headerView {
