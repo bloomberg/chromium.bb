@@ -49,6 +49,7 @@ TEST_F(QuicCompressedCertsCacheTest, CacheMiss) {
   std::vector<string> certs = {"leaf cert", "intermediate cert", "root cert"};
   QuicReferenceCountedPointer<ProofSource::Chain> chain(
       new ProofSource::Chain(certs));
+
   string common_certs = "common certs";
   string cached_certs = "cached certs";
   string compressed = "compressed cert";

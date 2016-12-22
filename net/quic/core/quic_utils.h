@@ -5,9 +5,8 @@
 #ifndef NET_QUIC_CORE_QUIC_UTILS_H_
 #define NET_QUIC_CORE_QUIC_UTILS_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 #include "base/macros.h"
@@ -17,16 +16,6 @@
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_socket_address.h"
-
-#ifdef _MSC_VER
-// MSVC 2013 and prior don't have alignof or aligned(); they have __alignof and
-// a __declspec instead.
-#define QUIC_ALIGN_OF __alignof
-#define QUIC_ALIGNED(X) __declspec(align(X))
-#else
-#define QUIC_ALIGN_OF alignof
-#define QUIC_ALIGNED(X) __attribute__((aligned(X)))
-#endif  // _MSC_VER
 
 namespace net {
 
@@ -88,6 +77,7 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // Returns a std::string containing hex and ASCII representations of |binary|,
   // side-by-side in the style of hexdump. Non-printable characters will be
   // printed as '.' in the ASCII output.
+  // For example:
   // "0x0000:  4865 6c6c 6f2c 2051 5549 4321 0102 0304  Hello,.QUIC!...."
   static std::string HexDump(base::StringPiece binary_data);
 

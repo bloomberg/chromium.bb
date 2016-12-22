@@ -115,9 +115,9 @@ class QUIC_EXPORT_PRIVATE QuicBufferedPacketStore {
   // Delivers buffered packets for next connection with CHLO to open.
   // Return connection id for next connection in |connection_id|
   // and all buffered packets including CHLO.
-  // The returned std::list should at least has one packet(CHLO) if
+  // The returned list should at least has one packet(CHLO) if
   // store does have any connection to open. If no connection in the store has
-  // received CHLO yet, empty std::list will be returned.
+  // received CHLO yet, empty list will be returned.
   std::list<BufferedPacket> DeliverPacketsForNextConnection(
       QuicConnectionId* connection_id);
 

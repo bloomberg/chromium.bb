@@ -59,8 +59,7 @@ class QuicCryptoServerConfigPeer {
 
   // CheckConfigs compares the state of the Configs in |server_config_| to the
   // description given as arguments. The arguments are given as
-  // nullptr-terminated std:pairs. The first of each std:pair is the server
-  // config ID of
+  // nullptr-terminated pairs. The first of each pair is the server config ID of
   // a Config. The second is a boolean describing whether the config is the
   // primary. For example:
   //   CheckConfigs(nullptr);  // checks that no Configs are loaded.
@@ -74,8 +73,7 @@ class QuicCryptoServerConfigPeer {
   //     nullptr);
   void CheckConfigs(const char* server_config_id1, ...);
 
-  // ConfigsDebug returns a std::string that contains debugging information
-  // about
+  // ConfigsDebug returns a string that contains debugging information about
   // the set of Configs loaded in |server_config_| and their status.
   std::string ConfigsDebug();
 

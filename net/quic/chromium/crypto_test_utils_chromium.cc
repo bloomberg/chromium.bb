@@ -92,8 +92,7 @@ std::unique_ptr<ProofSource> CryptoTestUtils::ProofSourceForTesting() {
 }
 
 // static
-std::unique_ptr<ProofVerifier> ProofVerifierForTestingInternal(
-    bool use_real_proof_verifier) {
+std::unique_ptr<ProofVerifier> CryptoTestUtils::ProofVerifierForTesting() {
   // TODO(rch): use a real cert verifier?
   std::unique_ptr<MockCertVerifier> cert_verifier(new MockCertVerifier());
   net::CertVerifyResult verify_result;
@@ -105,26 +104,10 @@ std::unique_ptr<ProofVerifier> ProofVerifierForTestingInternal(
       GetTestCertsDirectory(), "quic_test_ecc.example.com.crt");
   cert_verifier->AddResultForCertAndHost(verify_result.verified_cert.get(),
                                          "test.example.com", verify_result, OK);
-  if (use_real_proof_verifier) {
-    return base::MakeUnique<TestProofVerifierChromium>(
-        std::move(cert_verifier), base::WrapUnique(new TransportSecurityState),
-        base::WrapUnique(new MultiLogCTVerifier),
-        base::WrapUnique(new CTPolicyEnforcer), "quic_root.crt");
-  }
   return base::MakeUnique<TestProofVerifierChromium>(
       std::move(cert_verifier), base::WrapUnique(new TransportSecurityState),
       base::WrapUnique(new MultiLogCTVerifier),
       base::WrapUnique(new CTPolicyEnforcer), "quic_root.crt");
-}
-
-// static
-std::unique_ptr<ProofVerifier> CryptoTestUtils::ProofVerifierForTesting() {
-  return ProofVerifierForTestingInternal(/*use_real_proof_verifier=*/false);
-}
-
-// static
-std::unique_ptr<ProofVerifier> CryptoTestUtils::RealProofVerifierForTesting() {
-  return ProofVerifierForTestingInternal(/*use_real_proof_verifier=*/true);
 }
 
 // static

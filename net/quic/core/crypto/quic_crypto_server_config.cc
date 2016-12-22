@@ -998,7 +998,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
   out->SetVector(kVER, supported_version_tags);
   out->SetStringPiece(
       kSourceAddressTokenTag,
-      NewSourceAddressToken(*requested_config.get(), info.source_address_tokens,
+      NewSourceAddressToken(*requested_config, info.source_address_tokens,
                             client_address.host(), rand, info.now, nullptr));
   QuicSocketAddressCoder address_coder(client_address);
   out->SetStringPiece(kCADR, address_coder.Encode());
@@ -1055,7 +1055,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
   }
 
   if (configs.empty()) {
-    if (primary_config_.get()) {
+    if (primary_config_ != nullptr) {
       QUIC_BUG << "No valid QUIC server config. Keeping the current config.";
     } else {
       QUIC_BUG << "No valid QUIC server config.";
@@ -1213,7 +1213,8 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   HandshakeFailureReason source_address_token_error = MAX_FAILURE_REASON;
   StringPiece srct;
   if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct)) {
-    Config& config = requested_config ? *requested_config : *primary_config;
+    Config& config =
+        requested_config != nullptr ? *requested_config : *primary_config;
     source_address_token_error =
         ParseSourceAddressToken(config, srct, &info->source_address_tokens);
 
@@ -1717,8 +1718,7 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
                  << orbit.size() << " want " << kOrbitSize;
     return nullptr;
   }
-  static_assert(sizeof(config->orbit) == kOrbitSize,
-                "orbit has incorrect size");
+  static_assert(sizeof(config->orbit) == kOrbitSize, "incorrect orbit size");
   memcpy(config->orbit, orbit.data(), sizeof(config->orbit));
 
   if (kexs_len != protobuf->key_size()) {
@@ -1896,12 +1896,11 @@ HandshakeFailureReason QuicCryptoServerConfig::ParseSourceAddressToken(
     // Some clients might still be using the old source token format so
     // attempt to parse that format.
     // TODO(rch): remove this code once the new format is ubiquitous.
-    SourceAddressToken source_address_token;
-    if (!source_address_token.ParseFromArray(plaintext.data(),
-                                             plaintext.size())) {
+    SourceAddressToken token;
+    if (!token.ParseFromArray(plaintext.data(), plaintext.size())) {
       return SOURCE_ADDRESS_TOKEN_PARSE_FAILURE;
     }
-    *tokens->add_tokens() = source_address_token;
+    *tokens->add_tokens() = token;
   }
 
   return HANDSHAKE_OK;

@@ -4,12 +4,11 @@
 
 #include "net/quic/core/crypto/crypto_framer.h"
 
-#include <memory>
-
 #include "base/strings/stringprintf.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/quic_data_reader.h"
 #include "net/quic/core/quic_data_writer.h"
+#include "net/quic/core/quic_packets.h"
 
 using base::StringPiece;
 
