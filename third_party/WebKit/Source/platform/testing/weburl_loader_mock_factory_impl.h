@@ -27,11 +27,8 @@ class WebURLLoaderMock;
 class WebURLLoaderTestDelegate;
 
 // A factory that creates WebURLLoaderMock to simulate resource loading in
-// tests.
-// You register files for specific URLs, the content of the file is then served
-// when these URLs are loaded.
-// In order to serve the asynchronous requests, you need to invoke
-// ServeAsynchronousRequest.
+// tests. Since there are restriction and rules to follow, please read comments
+// in WebURLLoaderMockFactory carefully to use this class correctly.
 class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
  public:
   WebURLLoaderMockFactoryImpl();

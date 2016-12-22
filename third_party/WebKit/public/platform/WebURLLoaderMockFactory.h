@@ -32,11 +32,15 @@ class WebURLLoaderMockFactory {
 
   // Registers a response and the file to be served when the specified URL
   // is loaded. If no file is specified then the response content will be empty.
+  // unregisterURL() should be called for each test entry before registering
+  // another response for the same URL from another test.
   virtual void registerURL(const WebURL&,
                            const WebURLResponse&,
                            const WebString& filePath) = 0;
 
   // Registers an error to be served when the specified URL is requested.
+  // unregisterURL() should be called for each test entry before registering
+  // another response for the same URL from another test.
   virtual void registerErrorURL(const WebURL&,
                                 const WebURLResponse&,
                                 const WebURLError&) = 0;

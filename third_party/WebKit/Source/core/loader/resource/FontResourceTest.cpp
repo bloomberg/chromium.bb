@@ -23,7 +23,11 @@
 
 namespace blink {
 
-class FontResourceTest : public ::testing::Test {};
+class FontResourceTest : public ::testing::Test {
+  void TearDown() override {
+    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+  }
+};
 
 // Tests if ResourceFetcher works fine with FontResource that requires defered
 // loading supports.
@@ -138,7 +142,6 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   EXPECT_TRUE(client3->fontLoadLongLimitExceededCalled());
 
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
-  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
   memoryCache()->remove(resource);
 }
 
