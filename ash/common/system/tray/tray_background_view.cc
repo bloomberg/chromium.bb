@@ -560,16 +560,18 @@ void TrayBackgroundView::HandlePerformActionResult(bool action_performed,
   ActionableView::HandlePerformActionResult(action_performed, event);
 }
 
-gfx::Rect TrayBackgroundView::GetFocusBounds() {
+void TrayBackgroundView::OnPaintFocus(gfx::Canvas* canvas) {
   // The tray itself expands to the right and bottom edge of the screen to make
   // sure clicking on the edges brings up the popup. However, the focus border
   // should be only around the container.
-  return GetContentsBounds();
-}
-
-void TrayBackgroundView::OnPaintFocus(gfx::Canvas* canvas) {
-  gfx::RectF paint_bounds(GetFocusBounds());
-  paint_bounds.Inset(gfx::Insets(2, -2));
+  gfx::RectF paint_bounds;
+  if (MaterialDesignController::IsShelfMaterial()) {
+    paint_bounds = gfx::RectF(GetBackgroundBounds());
+    paint_bounds.Inset(gfx::Insets(-kFocusBorderThickness));
+  } else {
+    paint_bounds = gfx::RectF(GetContentsBounds());
+    paint_bounds.Inset(gfx::Insets(1));
+  }
   canvas->DrawSolidFocusRect(paint_bounds, kFocusBorderColor,
                              kFocusBorderThickness);
 }

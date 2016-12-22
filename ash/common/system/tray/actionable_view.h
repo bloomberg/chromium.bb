@@ -48,9 +48,6 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
   // color. Subclasses can override to change the default settings.
   virtual void OnPaintFocus(gfx::Canvas* canvas);
 
-  // Returns the bounds to paint the focus rectangle in.
-  virtual gfx::Rect GetFocusBounds();
-
   // Performs an action when user clicks on the view (on mouse-press event), or
   // presses a key when this view is in focus. Returns true if the event has
   // been handled and an action was performed. Returns false otherwise.
