@@ -9636,6 +9636,65 @@ TEST_F(HTTPSOCSPTest, ExpectStapleReportSentOnMissing) {
             mock_report_sender.latest_report_uri());
 }
 
+// Tests that Expect-Staple reports are not sent for connections on which there
+// is a certificate error.
+TEST_F(HTTPSOCSPTest, ExpectStapleReportNotSentOnMissingWithCertError) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.SetSSLConfig(
+      net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+
+  // Set up a MockCertVerifier to report an error for the certificate
+  // and indicate that there was no stapled OCSP response.
+  scoped_refptr<X509Certificate> cert = https_test_server.GetCertificate();
+  ASSERT_TRUE(cert);
+  MockCertVerifier cert_verifier;
+  CertVerifyResult verify_result;
+  verify_result.cert_status = CERT_STATUS_DATE_INVALID;
+  verify_result.verified_cert = cert;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.ocsp_result.response_status = OCSPVerifyResult::MISSING;
+  cert_verifier.AddResultForCert(cert.get(), verify_result,
+                                 ERR_CERT_DATE_INVALID);
+
+  // Set up a mock report sender so that the test can check that an
+  // Expect-Staple report is not sent.
+  TransportSecurityState transport_security_state;
+  MockCertificateReportSender mock_report_sender;
+  transport_security_state.SetReportSender(&mock_report_sender);
+
+  TestNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+
+  // Force |kExpectStapleStaticHostname| to resolve to |https_test_server|.
+  MockHostResolver host_resolver;
+  context.set_host_resolver(&host_resolver);
+
+  context.set_transport_security_state(&transport_security_state);
+  context.set_network_delegate(&network_delegate);
+  context.set_cert_verifier(&cert_verifier);
+  context.Init();
+
+  // Make a connection to |kExpectStapleStaticHostname|. Because the
+  // |verify_result| used with the |cert_verifier| will indicate a certificate
+  // error, an Expect-Staple report should not be sent.
+  TestDelegate d;
+  GURL url = https_test_server.GetURL("/");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(kExpectStapleStaticHostname);
+  url = url.ReplaceComponents(replace_host);
+  std::unique_ptr<URLRequest> violating_request(
+      context.CreateRequest(url, DEFAULT_PRIORITY, &d));
+  violating_request->Start();
+  base::RunLoop().Run();
+
+  // Confirm a report was not sent.
+  EXPECT_TRUE(mock_report_sender.latest_report().empty());
+  EXPECT_EQ(GURL(), mock_report_sender.latest_report_uri());
+}
+
 TEST_F(HTTPSOCSPTest, ExpectStapleReportNotSentOnValid) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
@@ -9673,6 +9732,65 @@ TEST_F(HTTPSOCSPTest, ExpectStapleReportNotSentOnValid) {
   context.Init();
 
   // This request should not not trigger an Expect-Staple violation.
+  TestDelegate d;
+  GURL url = https_test_server.GetURL("/");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(kExpectStapleStaticHostname);
+  url = url.ReplaceComponents(replace_host);
+  std::unique_ptr<URLRequest> ok_request(
+      context.CreateRequest(url, DEFAULT_PRIORITY, &d));
+  ok_request->Start();
+  base::RunLoop().Run();
+
+  // Check that no report was sent.
+  EXPECT_TRUE(mock_report_sender.latest_report().empty());
+  EXPECT_EQ(GURL(), mock_report_sender.latest_report_uri());
+}
+
+// Tests that an Expect-Staple report is not sent when OCSP details are not
+// checked on the connection.
+TEST_F(HTTPSOCSPTest, ExpectStapleReportNotSentOnNotChecked) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.SetSSLConfig(
+      net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+
+  // Set up a MockCertVerifier to accept the certificate that the server sends,
+  // and set |ocsp_result| to indicate that OCSP stapling details were not
+  // checked on the connection.
+  scoped_refptr<X509Certificate> cert = https_test_server.GetCertificate();
+  ASSERT_TRUE(cert);
+  MockCertVerifier cert_verifier;
+  CertVerifyResult verify_result;
+  verify_result.verified_cert = cert;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.ocsp_result.response_status = OCSPVerifyResult::NOT_CHECKED;
+  cert_verifier.AddResultForCert(cert.get(), verify_result, OK);
+
+  // Set up a mock report sender so that the test can check that an
+  // Expect-Staple report is not sent.
+  TransportSecurityState transport_security_state;
+  MockCertificateReportSender mock_report_sender;
+  transport_security_state.SetReportSender(&mock_report_sender);
+
+  TestNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+
+  // Force |kExpectStapleStaticHostname| to resolve to |https_test_server|.
+  MockHostResolver host_resolver;
+  context.set_host_resolver(&host_resolver);
+
+  context.set_transport_security_state(&transport_security_state);
+  context.set_network_delegate(&network_delegate);
+  context.set_cert_verifier(&cert_verifier);
+  context.Init();
+
+  // Make a connection to |kExpectStapleStaticHostname|. Because the
+  // |verify_result| used with the |cert_verifier| will indicate that OCSP
+  // stapling details were not checked on the connection, an Expect-Staple
+  // report should not be sent.
   TestDelegate d;
   GURL url = https_test_server.GetURL("/");
   GURL::Replacements replace_host;
