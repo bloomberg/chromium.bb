@@ -5,6 +5,7 @@
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 
 #include "base/memory/ptr_util.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -32,6 +33,32 @@ class DesktopWindowTreeHostMusTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostMusTest);
 };
 
+class ExpectsNullCursorClientDuringTearDown : public aura::WindowObserver {
+ public:
+  explicit ExpectsNullCursorClientDuringTearDown(aura::Window* window)
+      : window_(window) {
+    window_->AddObserver(this);
+  }
+
+  ~ExpectsNullCursorClientDuringTearDown() override {
+    EXPECT_FALSE(window_);
+  }
+
+ private:
+  // aura::WindowObserver:
+  void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                      aura::Window* new_root) override {
+    aura::client::CursorClient* cursor_client =
+        aura::client::GetCursorClient(window->GetRootWindow());
+    EXPECT_FALSE(cursor_client);
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+  }
+
+  aura::Window* window_;
+  DISALLOW_COPY_AND_ASSIGN(ExpectsNullCursorClientDuringTearDown);
+};
+
 TEST_F(DesktopWindowTreeHostMusTest, Visibility) {
   std::unique_ptr<Widget> widget(CreateWidget(nullptr));
   EXPECT_FALSE(widget->IsVisible());
@@ -47,6 +74,18 @@ TEST_F(DesktopWindowTreeHostMusTest, Visibility) {
   EXPECT_FALSE(widget->IsVisible());
   EXPECT_FALSE(widget->GetNativeView()->IsVisible());
   EXPECT_FALSE(widget->GetNativeView()->parent()->IsVisible());
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, CursorClientDuringTearDown) {
+  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
+  widget->Show();
+
+  std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
+  window->Init(ui::LAYER_SOLID_COLOR);
+  ExpectsNullCursorClientDuringTearDown observer(window.get());
+
+  widget->GetNativeWindow()->AddChild(window.release());
+  widget.reset();
 }
 
 }  // namespace views

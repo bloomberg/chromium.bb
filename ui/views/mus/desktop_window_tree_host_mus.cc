@@ -190,6 +190,10 @@ DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
 }
 
 DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
+  // The cursor-client can be accessed during WindowTreeHostMus tear-down. So
+  // the cursor-client needs to be unset on the root-window before
+  // |cursor_manager_| is destroyed.
+  aura::client::SetCursorClient(window(), nullptr);
   MusClient::Get()->RemoveObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
