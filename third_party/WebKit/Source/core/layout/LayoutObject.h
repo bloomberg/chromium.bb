@@ -1719,6 +1719,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     friend class PaintPropertyTreeBuilder;
     FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
                              canStartAnimationOnCompositorTransformSPv2);
+    FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
+                             canStartAnimationOnCompositorEffectSPv2);
 
     // The following two functions can be called from PaintPropertyTreeBuilder
     // only.

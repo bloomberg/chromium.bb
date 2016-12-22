@@ -468,11 +468,17 @@ void PaintPropertyTreeBuilder::updateEffect(
       // We should generate a special clip node to represent this expansion.
     }
 
+    CompositingReasons compositingReasons =
+        CompositingReasonFinder::requiresCompositingForEffectAnimation(
+            object.styleRef());
+    if (compositingReasons != CompositingReasonNone)
+      effectNodeNeeded = true;
+
     if (effectNodeNeeded) {
       auto& properties = object.getMutableForPainting().ensurePaintProperties();
       context.forceSubtreeUpdate |= properties.updateEffect(
           context.currentEffect, context.current.transform, outputClip,
-          std::move(filter), opacity, blendMode);
+          std::move(filter), opacity, blendMode, compositingReasons);
     } else {
       if (auto* properties = object.getMutableForPainting().paintProperties())
         context.forceSubtreeUpdate |= properties->clearEffect();

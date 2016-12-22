@@ -178,6 +178,19 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(
   return style.shouldCompositeForCurrentAnimations();
 }
 
+bool CompositingReasonFinder::requiresCompositingForEffectAnimation(
+    const ComputedStyle& style) {
+  if (style.subtreeWillChangeContents()) {
+    return style.isRunningOpacityAnimationOnCompositor() ||
+           style.isRunningFilterAnimationOnCompositor() ||
+           style.isRunningBackdropFilterAnimationOnCompositor();
+  }
+
+  return style.hasCurrentOpacityAnimation() ||
+         style.hasCurrentFilterAnimation() ||
+         style.hasCurrentBackdropFilterAnimation();
+}
+
 bool CompositingReasonFinder::requiresCompositingForTransformAnimation(
     const ComputedStyle& style) {
   return style.subtreeWillChangeContents()

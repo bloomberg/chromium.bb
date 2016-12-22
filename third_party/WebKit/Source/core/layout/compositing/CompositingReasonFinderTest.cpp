@@ -211,4 +211,64 @@ TEST_F(CompositingReasonFinderTest, RequiresCompositingForTransformAnimation) {
       *style));
 }
 
+TEST_F(CompositingReasonFinderTest, RequiresCompositingForEffectAnimation) {
+  RefPtr<ComputedStyle> style = ComputedStyle::create();
+
+  style->setSubtreeWillChangeContents(false);
+
+  // In the interest of brevity, for each side of subtreeWillChangeContents()
+  // code path we only check that any one of the effect related animation flags
+  // being set produces true, rather than every permutation.
+
+  style->setHasCurrentOpacityAnimation(false);
+  style->setHasCurrentFilterAnimation(false);
+  style->setHasCurrentBackdropFilterAnimation(false);
+  EXPECT_FALSE(
+      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+
+  style->setHasCurrentOpacityAnimation(true);
+  style->setHasCurrentFilterAnimation(false);
+  style->setHasCurrentBackdropFilterAnimation(false);
+  EXPECT_TRUE(
+      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+
+  style->setHasCurrentOpacityAnimation(false);
+  style->setHasCurrentFilterAnimation(true);
+  style->setHasCurrentBackdropFilterAnimation(false);
+  EXPECT_TRUE(
+      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+
+  style->setHasCurrentOpacityAnimation(false);
+  style->setHasCurrentFilterAnimation(false);
+  style->setHasCurrentBackdropFilterAnimation(true);
+  EXPECT_TRUE(
+      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+
+  // Check the other side of subtreeWillChangeContents.
+  style->setSubtreeWillChangeContents(true);
+  style->setHasCurrentOpacityAnimation(false);
+  style->setHasCurrentFilterAnimation(false);
+  style->setHasCurrentBackdropFilterAnimation(false);
+  EXPECT_FALSE(
+      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+
+  style->setIsRunningOpacityAnimationOnCompositor(true);
+  style->setIsRunningFilterAnimationOnCompositor(false);
+  style->setIsRunningBackdropFilterAnimationOnCompositor(false);
+  EXPECT_TRUE(
+      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+
+  style->setIsRunningOpacityAnimationOnCompositor(false);
+  style->setIsRunningFilterAnimationOnCompositor(true);
+  style->setIsRunningBackdropFilterAnimationOnCompositor(false);
+  EXPECT_TRUE(
+      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+
+  style->setIsRunningOpacityAnimationOnCompositor(false);
+  style->setIsRunningFilterAnimationOnCompositor(false);
+  style->setIsRunningBackdropFilterAnimationOnCompositor(true);
+  EXPECT_TRUE(
+      CompositingReasonFinder::requiresCompositingForEffectAnimation(*style));
+}
+
 }  // namespace blink

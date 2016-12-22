@@ -347,10 +347,21 @@ bool CompositorAnimations::canStartAnimationOnCompositor(
     return false;
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    // TODO(wkorman): Consider effect node for opacity.
+    // We query paint property tree state below to determine whether the
+    // animation is compositable. There is a known lifecycle violation where an
+    // animation can be cancelled during style update. See
+    // CompositorAnimations::cancelAnimationOnCompositor and
+    // http://crbug.com/676456. When this is fixed we would like to enable
+    // the DCHECK below.
+    // DCHECK(document().lifecycle().state() >=
+    // DocumentLifecycle::PrePaintClean);
+    const ObjectPaintProperties* paintProperties =
+        element.layoutObject()->paintProperties();
     const TransformPaintPropertyNode* transformNode =
-        element.layoutObject()->paintProperties()->transform();
-    return transformNode && transformNode->hasDirectCompositingReasons();
+        paintProperties->transform();
+    const EffectPaintPropertyNode* effectNode = paintProperties->effect();
+    return (transformNode && transformNode->hasDirectCompositingReasons()) ||
+           (effectNode && effectNode->hasDirectCompositingReasons());
   }
 
   return element.layoutObject() &&

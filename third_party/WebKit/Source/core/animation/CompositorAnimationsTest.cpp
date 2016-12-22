@@ -1254,6 +1254,25 @@ TEST_F(AnimationCompositorAnimationsTest,
   EXPECT_TRUE(element->elementAnimations()->animations().isEmpty());
 }
 
+namespace {
+
+void updateDummyTransformNode(ObjectPaintProperties& properties,
+                              CompositingReasons reasons) {
+  properties.updateTransform(TransformPaintPropertyNode::root(),
+                             TransformationMatrix(), FloatPoint3D(), false, 0,
+                             reasons);
+}
+
+void updateDummyEffectNode(ObjectPaintProperties& properties,
+                           CompositingReasons reasons) {
+  properties.updateEffect(
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), CompositorFilterOperations(), 1.0,
+      SkBlendMode::kSrcOver, reasons);
+}
+
+}  // namespace
+
 TEST_F(AnimationCompositorAnimationsTest,
        canStartAnimationOnCompositorTransformSPv2) {
   Persistent<Element> element = m_document->createElement("shared");
@@ -1266,19 +1285,42 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   // Add a transform with a compositing reason, which should allow starting
   // animation.
-  properties.updateTransform(TransformPaintPropertyNode::root(),
-                             TransformationMatrix(), FloatPoint3D(), false, 0,
-                             CompositingReasonActiveAnimation);
+  updateDummyTransformNode(properties, CompositingReasonActiveAnimation);
   EXPECT_TRUE(CompositorAnimations::canStartAnimationOnCompositor(*element));
 
   // Setting to CompositingReasonNone should produce false.
-  properties.updateTransform(TransformPaintPropertyNode::root(),
-                             TransformationMatrix(), FloatPoint3D(), false, 0,
-                             CompositingReasonNone);
+  updateDummyTransformNode(properties, CompositingReasonNone);
   EXPECT_FALSE(CompositorAnimations::canStartAnimationOnCompositor(*element));
 
   // Clearing the transform node entirely should also produce false.
   properties.clearTransform();
+  EXPECT_FALSE(CompositorAnimations::canStartAnimationOnCompositor(*element));
+
+  element->setLayoutObject(nullptr);
+  LayoutObjectProxy::dispose(layoutObject);
+}
+
+TEST_F(AnimationCompositorAnimationsTest,
+       canStartAnimationOnCompositorEffectSPv2) {
+  Persistent<Element> element = m_document->createElement("shared");
+  LayoutObjectProxy* layoutObject = LayoutObjectProxy::create(element.get());
+  element->setLayoutObject(layoutObject);
+
+  ScopedSlimmingPaintV2ForTest enableSPv2(true);
+  auto& properties =
+      layoutObject->getMutableForPainting().ensurePaintProperties();
+
+  // Add an effect with a compositing reason, which should allow starting
+  // animation.
+  updateDummyEffectNode(properties, CompositingReasonActiveAnimation);
+  EXPECT_TRUE(CompositorAnimations::canStartAnimationOnCompositor(*element));
+
+  // Setting to CompositingReasonNone should produce false.
+  updateDummyEffectNode(properties, CompositingReasonNone);
+  EXPECT_FALSE(CompositorAnimations::canStartAnimationOnCompositor(*element));
+
+  // Clearing the effect node entirely should also produce false.
+  properties.clearEffect();
   EXPECT_FALSE(CompositorAnimations::canStartAnimationOnCompositor(*element));
 
   element->setLayoutObject(nullptr);

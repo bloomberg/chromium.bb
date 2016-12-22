@@ -468,4 +468,34 @@ TEST_P(PaintPropertyTreeUpdateTest,
   EXPECT_EQ(nullptr, properties->transform());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest,
+       EffectNodeWithAnimationLosesNodeWhenAnimationRemoved) {
+  setBodyInnerHTML(
+      "<style>"
+      "div {"
+      "  width: 100px;"
+      "  height: 100px;"
+      "  background-color: red;"
+      "} "
+      ".animate {"
+      "  animation-name: test;"
+      "  animation-duration: 4s;"
+      "}"
+      "@keyframes test {"
+      "  from { opacity: 0.0;}"
+      "  to { opacity: 1.0;}"
+      "}"
+      "</style>"
+      "<div id='target' class='animate'></div>");
+  Element* target = document().getElementById("target");
+  const ObjectPaintProperties* properties =
+      target->layoutObject()->paintProperties();
+  EXPECT_TRUE(properties->effect()->hasDirectCompositingReasons());
+
+  // Removing the animation should remove the effect node.
+  target->removeAttribute(HTMLNames::classAttr);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(nullptr, properties->effect());
+}
+
 }  // namespace blink

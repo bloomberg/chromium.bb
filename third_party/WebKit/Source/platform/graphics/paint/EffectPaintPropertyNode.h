@@ -35,18 +35,22 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       PassRefPtr<const ClipPaintPropertyNode> outputClip,
       CompositorFilterOperations filter,
       float opacity,
-      SkBlendMode blendMode) {
+      SkBlendMode blendMode,
+      CompositingReasons directCompositingReasons = CompositingReasonNone) {
     return adoptRef(new EffectPaintPropertyNode(
         std::move(parent), std::move(localTransformSpace),
-        std::move(outputClip), std::move(filter), opacity, blendMode));
+        std::move(outputClip), std::move(filter), opacity, blendMode,
+        directCompositingReasons));
   }
 
-  void update(PassRefPtr<const EffectPaintPropertyNode> parent,
-              PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
-              PassRefPtr<const ClipPaintPropertyNode> outputClip,
-              CompositorFilterOperations filter,
-              float opacity,
-              SkBlendMode blendMode) {
+  void update(
+      PassRefPtr<const EffectPaintPropertyNode> parent,
+      PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
+      PassRefPtr<const ClipPaintPropertyNode> outputClip,
+      CompositorFilterOperations filter,
+      float opacity,
+      SkBlendMode blendMode,
+      CompositingReasons directCompositingReasons = CompositingReasonNone) {
     DCHECK(!isRoot());
     DCHECK(parent != this);
     m_parent = parent;
@@ -55,6 +59,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     m_filter = std::move(filter);
     m_opacity = opacity;
     m_blendMode = blendMode;
+    m_directCompositingReasons = directCompositingReasons;
   }
 
   const TransformPaintPropertyNode* localTransformSpace() const {
@@ -76,9 +81,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // an effect node before it has been updated, to later detect changes.
   PassRefPtr<EffectPaintPropertyNode> clone() const {
-    return adoptRef(new EffectPaintPropertyNode(m_parent, m_localTransformSpace,
-                                                m_outputClip, m_filter,
-                                                m_opacity, m_blendMode));
+    return adoptRef(new EffectPaintPropertyNode(
+        m_parent, m_localTransformSpace, m_outputClip, m_filter, m_opacity,
+        m_blendMode, m_directCompositingReasons));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
@@ -95,6 +100,10 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
 
   String toString() const;
 
+  bool hasDirectCompositingReasons() const {
+    return m_directCompositingReasons != CompositingReasonNone;
+  }
+
  private:
   EffectPaintPropertyNode(
       PassRefPtr<const EffectPaintPropertyNode> parent,
@@ -102,13 +111,15 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       PassRefPtr<const ClipPaintPropertyNode> outputClip,
       CompositorFilterOperations filter,
       float opacity,
-      SkBlendMode blendMode)
+      SkBlendMode blendMode,
+      CompositingReasons directCompositingReasons)
       : m_parent(parent),
         m_localTransformSpace(localTransformSpace),
         m_outputClip(outputClip),
         m_filter(std::move(filter)),
         m_opacity(opacity),
-        m_blendMode(blendMode) {}
+        m_blendMode(blendMode),
+        m_directCompositingReasons(directCompositingReasons) {}
 
   RefPtr<const EffectPaintPropertyNode> m_parent;
   // The local transform space serves two purposes:
@@ -135,6 +146,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   // be removed in favor of a stable ID once cc::LayerImpl no longer owns
   // RenderSurfaceImpl.
   mutable scoped_refptr<cc::Layer> m_dummyLayer;
+
+  CompositingReasons m_directCompositingReasons;
 };
 
 // Redeclared here to avoid ODR issues.

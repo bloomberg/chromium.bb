@@ -414,28 +414,42 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_TRUE(properties->transform()->hasDirectCompositingReasons());
 }
 
+namespace {
+
+const char* kSimpleOpacityExampleHTML =
+    "<style>"
+    "div {"
+    "  width: 100px;"
+    "  height: 100px;"
+    "  background-color: red;"
+    "  animation-name: example;"
+    "  animation-duration: 4s;"
+    "}"
+    "@keyframes example {"
+    "  from { opacity: 0.0;}"
+    "  to { opacity: 1.0;}"
+    "}"
+    "</style>"
+    "<div id='target'></div>";
+
+}  // namespace
+
 TEST_P(PaintPropertyTreeBuilderTest,
        OpacityAnimationDoesNotCreateTransformNode) {
-  setBodyInnerHTML(
-      "<style>"
-      "div {"
-      "  width: 100px;"
-      "  height: 100px;"
-      "  background-color: red;"
-      "  animation-name: example;"
-      "  animation-duration: 4s;"
-      "}"
-      "@keyframes example {"
-      "  from { opacity: 0.0;}"
-      "  to { opacity: 1.0;}"
-      "}"
-      "</style>"
-      "<div id='target'></div>");
-
+  setBodyInnerHTML(kSimpleOpacityExampleHTML);
   Element* target = document().getElementById("target");
   const ObjectPaintProperties* properties =
       target->layoutObject()->paintProperties();
   EXPECT_EQ(nullptr, properties->transform());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       EffectNodeWithActiveAnimationHasDirectCompositingReason) {
+  setBodyInnerHTML(kSimpleOpacityExampleHTML);
+  Element* target = document().getElementById("target");
+  const ObjectPaintProperties* properties =
+      target->layoutObject()->paintProperties();
+  EXPECT_TRUE(properties->effect()->hasDirectCompositingReasons());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
