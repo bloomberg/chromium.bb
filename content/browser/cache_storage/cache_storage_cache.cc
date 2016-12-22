@@ -268,7 +268,8 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
       origin, cache_name, base::FilePath(), cache_storage,
       std::move(request_context_getter), std::move(quota_manager_proxy),
       blob_context, 0 /* cache_size */);
-  cache->SetObserver(cache_storage), cache->InitBackend();
+  cache->SetObserver(cache_storage);
+  cache->InitBackend();
   return base::WrapUnique(cache);
 }
 
