@@ -169,7 +169,7 @@ class QuicHeadersStream::SpdyFramerVisitor
   }
 
   void OnSetting(SpdySettingsIds id, uint32_t value) override {
-    if (!FLAGS_quic_respect_http2_settings_frame) {
+    if (!FLAGS_quic_reloadable_flag_quic_respect_http2_settings_frame) {
       CloseConnection("SPDY SETTINGS frame received.");
       return;
     }
@@ -178,7 +178,7 @@ class QuicHeadersStream::SpdyFramerVisitor
         stream_->UpdateHeaderEncoderTableSize(value);
         break;
       case SETTINGS_ENABLE_PUSH:
-        if (FLAGS_quic_enable_server_push_by_default &&
+        if (FLAGS_quic_reloadable_flag_quic_enable_server_push_by_default &&
             stream_->session()->perspective() == Perspective::IS_SERVER) {
           // See rfc7540, Section 6.5.2.
           if (value > 1) {
@@ -196,7 +196,7 @@ class QuicHeadersStream::SpdyFramerVisitor
       // TODO(fayang): Need to support SETTINGS_MAX_HEADER_LIST_SIZE when
       // clients are actually sending it.
       case SETTINGS_MAX_HEADER_LIST_SIZE:
-        if (FLAGS_quic_send_max_header_list_size) {
+        if (FLAGS_quic_reloadable_flag_quic_send_max_header_list_size) {
           break;
         }
       default:
@@ -206,13 +206,13 @@ class QuicHeadersStream::SpdyFramerVisitor
   }
 
   void OnSettingsAck() override {
-    if (!FLAGS_quic_respect_http2_settings_frame) {
+    if (!FLAGS_quic_reloadable_flag_quic_respect_http2_settings_frame) {
       CloseConnection("SPDY SETTINGS frame received.");
     }
   }
 
   void OnSettingsEnd() override {
-    if (!FLAGS_quic_respect_http2_settings_frame) {
+    if (!FLAGS_quic_reloadable_flag_quic_respect_http2_settings_frame) {
       CloseConnection("SPDY SETTINGS frame received.");
     }
   }
@@ -582,7 +582,7 @@ void QuicHeadersStream::UpdateEnableServerPush(bool value) {
 }
 
 void QuicHeadersStream::MaybeReleaseSequencerBuffer() {
-  if (FLAGS_quic_headers_stream_release_sequencer_buffer &&
+  if (FLAGS_quic_reloadable_flag_quic_headers_stream_release_sequencer_buffer &&
       spdy_session_->ShouldReleaseHeadersStreamSequencerBuffer()) {
     sequencer()->ReleaseBufferIfEmpty();
   }

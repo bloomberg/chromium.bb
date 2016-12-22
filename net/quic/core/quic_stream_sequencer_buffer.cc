@@ -50,7 +50,7 @@ QuicStreamSequencerBuffer::QuicStreamSequencerBuffer(size_t max_capacity_bytes)
           ceil(static_cast<double>(max_capacity_bytes) / kBlockSizeBytes)),
       total_bytes_read_(0),
       reduce_sequencer_buffer_memory_life_time_(
-          FLAGS_quic_reduce_sequencer_buffer_memory_life_time),  // NOLINT
+          FLAGS_quic_reloadable_flag_quic_reduce_sequencer_buffer_memory_life_time),  // NOLINT
       blocks_(reduce_sequencer_buffer_memory_life_time_
                   ? nullptr
                   : new BufferBlock*[blocks_count_]()),

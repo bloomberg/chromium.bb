@@ -25,7 +25,7 @@ TEST(QuicHeaderListTest, OnHeader) {
 
 TEST(QuicHeaderListTest, TooLarge) {
   test::QuicFlagSaver flags;
-  FLAGS_quic_limit_uncompressed_headers = true;
+  FLAGS_quic_reloadable_flag_quic_limit_uncompressed_headers = true;
   QuicHeaderList headers;
   string key = "key";
   string value(1 << 18, '1');

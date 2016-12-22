@@ -689,7 +689,7 @@ void QuicCryptoServerConfig::ProcessClientHello(
     if (client_hello.GetTaglist(kCOPT, &tag_ptr, &num_tags) == QUIC_NO_ERROR) {
       connection_options.assign(tag_ptr, tag_ptr + num_tags);
     }
-    if (FLAGS_enable_async_get_proof) {
+    if (FLAGS_quic_reloadable_flag_enable_async_get_proof) {
       std::unique_ptr<ProcessClientHelloCallback> cb(
           new ProcessClientHelloCallback(
               this, validate_chlo_result, reject_only, connection_id,
@@ -773,7 +773,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
                    use_stateless_rejects, server_designated_connection_id, rand,
                    compressed_certs_cache, params, *signed_config,
                    total_framing_overhead, chlo_packet_size, out.get());
-    if (FLAGS_quic_export_rej_for_all_rejects &&
+    if (FLAGS_quic_reloadable_flag_quic_export_rej_for_all_rejects &&
         rejection_observer_ != nullptr) {
       rejection_observer_->OnRejectionBuilt(info.reject_reasons, out.get());
     }
@@ -1267,7 +1267,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   if (client_hello.GetTaglist(kCOPT, &tag_ptr, &num_tags) == QUIC_NO_ERROR) {
     connection_options.assign(tag_ptr, tag_ptr + num_tags);
   }
-  if (FLAGS_enable_async_get_proof) {
+  if (FLAGS_quic_reloadable_flag_enable_async_get_proof) {
     if (need_proof) {
       // Make an async call to GetProof and setup the callback to trampoline
       // back into EvaluateClientHelloAfterGetProof
@@ -1343,7 +1343,8 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
   DVLOG(1) << "No 0-RTT replay protection in QUIC_VERSION_33 and higher.";
   // If the server nonce is empty and we're requiring handshake confirmation
   // for DoS reasons then we must reject the CHLO.
-  if (FLAGS_quic_require_handshake_confirmation && info->server_nonce.empty()) {
+  if (FLAGS_quic_reloadable_flag_quic_require_handshake_confirmation &&
+      info->server_nonce.empty()) {
     info->reject_reasons.push_back(SERVER_NONCE_REQUIRED_FAILURE);
   }
   helper.ValidationComplete(QUIC_NO_ERROR, "", std::move(proof_source_details));
@@ -1540,7 +1541,8 @@ void QuicCryptoServerConfig::BuildRejection(
     QuicByteCount total_framing_overhead,
     QuicByteCount chlo_packet_size,
     CryptoHandshakeMessage* out) const {
-  if (FLAGS_enable_quic_stateless_reject_support && use_stateless_rejects) {
+  if (FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support &&
+      use_stateless_rejects) {
     DVLOG(1) << "QUIC Crypto server config returning stateless reject "
              << "with server-designated connection ID "
              << server_designated_connection_id;

@@ -73,7 +73,7 @@ QuicPacketGenerator* QuicConnectionPeer::GetPacketGenerator(
 QuicSentPacketManager* QuicConnectionPeer::GetSentPacketManager(
     QuicConnection* connection,
     QuicPathId path_id) {
-  if (FLAGS_quic_enable_multipath) {
+  if (FLAGS_quic_reloadable_flag_quic_enable_multipath) {
     return static_cast<QuicSentPacketManager*>(
         static_cast<QuicMultipathSentPacketManager*>(
             connection->sent_packet_manager_.get())

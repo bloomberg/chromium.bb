@@ -378,11 +378,11 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     // client as well according to the test parameter.
     copt.push_back(GetParam().congestion_control_tag);
     if (GetParam().congestion_control_tag == kQBIC &&
-        FLAGS_quic_fix_cubic_convex_mode) {
+        FLAGS_quic_reloadable_flag_quic_fix_cubic_convex_mode) {
       copt.push_back(kCCVX);
     }
     if (GetParam().congestion_control_tag == kQBIC &&
-        FLAGS_quic_fix_cubic_bytes_quantization) {
+        FLAGS_quic_reloadable_flag_quic_fix_cubic_bytes_quantization) {
       copt.push_back(kCBQT);
     }
     if (support_server_push_) {
@@ -431,7 +431,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   }
 
   void StartServer() {
-    FLAGS_quic_use_cheap_stateless_rejects =
+    FLAGS_quic_reloadable_flag_quic_use_cheap_stateless_rejects =
         GetParam().use_cheap_stateless_reject;
 
     auto test_server = new QuicTestServer(
@@ -448,7 +448,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
         QuicServerPeer::GetDispatcher(server_thread_->server());
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
 
-    FLAGS_enable_quic_stateless_reject_support =
+    FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support =
         GetParam().server_uses_stateless_rejects_if_peer_supported;
 
     server_writer_->Initialize(QuicDispatcherPeer::GetHelper(dispatcher),
@@ -593,18 +593,20 @@ TEST_P(EndToEndTest, HandshakeSuccessful) {
   QuicCryptoStream* crypto_stream =
       QuicSessionPeer::GetCryptoStream(client_->client()->session());
   QuicStreamSequencer* sequencer = QuicStreamPeer::sequencer(crypto_stream);
-  EXPECT_NE(FLAGS_quic_release_crypto_stream_buffer &&
-                FLAGS_quic_reduce_sequencer_buffer_memory_life_time,  // NOLINT
-            QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
+  EXPECT_NE(
+      FLAGS_quic_reloadable_flag_quic_release_crypto_stream_buffer &&
+          FLAGS_quic_reloadable_flag_quic_reduce_sequencer_buffer_memory_life_time,  // NOLINT
+      QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
   server_thread_->Pause();
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   QuicSession* server_session = dispatcher->session_map().begin()->second.get();
   crypto_stream = QuicSessionPeer::GetCryptoStream(server_session);
   sequencer = QuicStreamPeer::sequencer(crypto_stream);
-  EXPECT_NE(FLAGS_quic_release_crypto_stream_buffer &&
-                FLAGS_quic_reduce_sequencer_buffer_memory_life_time,  // NOLINT
-            QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
+  EXPECT_NE(
+      FLAGS_quic_reloadable_flag_quic_release_crypto_stream_buffer &&
+          FLAGS_quic_reloadable_flag_quic_reduce_sequencer_buffer_memory_life_time,  // NOLINT
+      QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
 }
 
 TEST_P(EndToEndTest, SimpleRequestResponsev6) {
@@ -1156,7 +1158,7 @@ TEST_P(EndToEndTest, LargeHeaders) {
   headers["key3"] = string(15 * 1024, 'a');
 
   client_->SendCustomSynchronousRequest(headers, body);
-  if (FLAGS_quic_limit_uncompressed_headers) {
+  if (FLAGS_quic_reloadable_flag_quic_limit_uncompressed_headers) {
     EXPECT_EQ(QUIC_HEADERS_TOO_LARGE, client_->stream_error());
   } else {
     EXPECT_EQ(QUIC_STREAM_NO_ERROR, client_->stream_error());
@@ -1322,10 +1324,10 @@ TEST_P(EndToEndTest, SetIndependentMaxIncomingDynamicStreamsLimits) {
 }
 
 TEST_P(EndToEndTest, NegotiateCongestionControl) {
-  FLAGS_quic_allow_new_bbr = true;
+  FLAGS_quic_reloadable_flag_quic_allow_new_bbr = true;
   // Disable this flag because if connection uses multipath sent packet manager,
   // static_cast here does not work.
-  FLAGS_quic_enable_multipath = false;
+  FLAGS_quic_reloadable_flag_quic_enable_multipath = false;
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
@@ -1708,7 +1710,7 @@ TEST_P(EndToEndTest, DifferentFlowControlWindows) {
 
 // Test negotiation of IFWA connection option.
 TEST_P(EndToEndTest, NegotiatedServerInitialFlowControlWindow) {
-  FLAGS_quic_large_ifw_options = true;
+  FLAGS_quic_reloadable_flag_quic_large_ifw_options = true;
 
   const uint32_t kClientStreamIFCW = 123456;
   const uint32_t kClientSessionIFCW = 234567;
@@ -1834,7 +1836,7 @@ TEST_P(EndToEndTest, FlowControlsSynced) {
       QuicSpdySessionPeer::GetHeadersStream(client_session)->flow_controller();
   QuicFlowController* server_header_stream_flow_controller =
       QuicSpdySessionPeer::GetHeadersStream(server_session)->flow_controller();
-  if (FLAGS_quic_send_max_header_list_size) {
+  if (FLAGS_quic_reloadable_flag_quic_send_max_header_list_size) {
     // Both client and server are sending this SETTINGS frame, and the send
     // window is consumed. But because of timing issue, the server may send or
     // not send the frame, and the client may send/ not send / receive / not
@@ -1859,7 +1861,7 @@ TEST_P(EndToEndTest, FlowControlsSynced) {
   }
 
   if (!client_session->force_hol_blocking()) {
-    if (FLAGS_quic_send_max_header_list_size) {
+    if (FLAGS_quic_reloadable_flag_quic_send_max_header_list_size) {
       // Client *may* have received the SETTINGs frame.
       // TODO(fayang): Rewrite this part because it is hacky.
       float ratio1 =
@@ -2691,9 +2693,10 @@ TEST_P(EndToEndTestServerPush, ServerPush) {
     DVLOG(1) << "response body " << response_body;
     EXPECT_EQ(expected_body, response_body);
   }
-  EXPECT_NE(FLAGS_quic_headers_stream_release_sequencer_buffer &&
-                FLAGS_quic_reduce_sequencer_buffer_memory_life_time,  // NOLINT
-            QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
+  EXPECT_NE(
+      FLAGS_quic_reloadable_flag_quic_headers_stream_release_sequencer_buffer &&
+          FLAGS_quic_reloadable_flag_quic_reduce_sequencer_buffer_memory_life_time,  // NOLINT
+      QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
 }
 
 TEST_P(EndToEndTestServerPush, ServerPushUnderLimit) {
@@ -2873,9 +2876,9 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitWithBlocking) {
 }
 
 // TODO(ckrasic) - remove this when deprecating
-// FLAGS_quic_enable_server_push_by_default.
+// FLAGS_quic_reloadable_flag_quic_enable_server_push_by_default.
 TEST_P(EndToEndTestServerPush, DisabledWithoutConnectionOption) {
-  FLAGS_quic_enable_server_push_by_default = false;
+  FLAGS_quic_reloadable_flag_quic_enable_server_push_by_default = false;
   // Tests that server push won't be triggered when kSPSH is not set by client.
   support_server_push_ = false;
   ASSERT_TRUE(Initialize());
@@ -2995,9 +2998,10 @@ TEST_P(EndToEndTest, ReleaseHeadersStreamBufferWhenIdle) {
   QuicHeadersStream* headers_stream =
       QuicSpdySessionPeer::GetHeadersStream(client_->client()->session());
   QuicStreamSequencer* sequencer = QuicStreamPeer::sequencer(headers_stream);
-  EXPECT_NE(FLAGS_quic_headers_stream_release_sequencer_buffer &&
-                FLAGS_quic_reduce_sequencer_buffer_memory_life_time,  // NOLINT
-            QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
+  EXPECT_NE(
+      FLAGS_quic_reloadable_flag_quic_headers_stream_release_sequencer_buffer &&
+          FLAGS_quic_reloadable_flag_quic_reduce_sequencer_buffer_memory_life_time,  // NOLINT
+      QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
 }
 
 class EndToEndBufferedPacketsTest : public EndToEndTest {

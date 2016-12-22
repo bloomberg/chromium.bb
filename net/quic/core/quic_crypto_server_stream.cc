@@ -283,7 +283,7 @@ void QuicCryptoServerStream::SendServerConfigUpdate(
     return;
   }
 
-  if (FLAGS_enable_async_get_proof) {
+  if (FLAGS_quic_reloadable_flag_enable_async_get_proof) {
     if (send_server_config_update_cb_ != nullptr) {
       DVLOG(1)
           << "Skipped server config update since one is already in progress";

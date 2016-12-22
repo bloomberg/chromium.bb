@@ -2770,7 +2770,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   unsigned char packet[] = {
       // public flags (version, 8 byte connection_id)
       static_cast<unsigned char>(
-          FLAGS_quic_remove_v33_hacks2 ? 0x39 : 0x3D),
+          FLAGS_quic_reloadable_flag_quic_remove_v33_hacks2 ? 0x39 : 0x3D),
       // connection_id
       0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
       // version tag
@@ -2863,7 +2863,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithBothVersionAndMultipathFlag) {
   unsigned char packet[] = {
     // public flags (8 byte connection_id)
     static_cast<unsigned char>(
-        FLAGS_quic_remove_v33_hacks2 ? 0x79 : 0x7D),
+        FLAGS_quic_reloadable_flag_quic_remove_v33_hacks2 ? 0x79 : 0x7D),
     // connection_id
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -3519,7 +3519,7 @@ TEST_P(QuicFramerTest, BuildMtuDiscoveryPacket) {
 }
 
 TEST_P(QuicFramerTest, BuildPublicResetPacketOld) {
-  FLAGS_quic_use_old_public_reset_packets = true;
+  FLAGS_quic_reloadable_flag_quic_use_old_public_reset_packets = true;
   QuicPublicResetPacket reset_packet;
   reset_packet.public_header.connection_id = kConnectionId;
   reset_packet.public_header.reset_flag = true;
@@ -3576,7 +3576,7 @@ TEST_P(QuicFramerTest, BuildPublicResetPacketOld) {
   std::unique_ptr<QuicEncryptedPacket> data(
       framer_.BuildPublicResetPacket(reset_packet));
   ASSERT_TRUE(data != nullptr);
-  if (FLAGS_quic_remove_packet_number_from_public_reset) {
+  if (FLAGS_quic_reloadable_flag_quic_remove_packet_number_from_public_reset) {
     test::CompareCharArraysWithHexError(
         "constructed packet", data->data(), data->length(),
         AsChars(packet_no_rejected_packet_number),
@@ -3589,7 +3589,7 @@ TEST_P(QuicFramerTest, BuildPublicResetPacketOld) {
 }
 
 TEST_P(QuicFramerTest, BuildPublicResetPacket) {
-  FLAGS_quic_use_old_public_reset_packets = false;
+  FLAGS_quic_reloadable_flag_quic_use_old_public_reset_packets = false;
   QuicPublicResetPacket reset_packet;
   reset_packet.public_header.connection_id = kConnectionId;
   reset_packet.public_header.reset_flag = true;
@@ -3647,7 +3647,7 @@ TEST_P(QuicFramerTest, BuildPublicResetPacket) {
       framer_.BuildPublicResetPacket(reset_packet));
   ASSERT_TRUE(data != nullptr);
 
-  if (FLAGS_quic_remove_packet_number_from_public_reset) {
+  if (FLAGS_quic_reloadable_flag_quic_remove_packet_number_from_public_reset) {
     test::CompareCharArraysWithHexError(
         "constructed packet", data->data(), data->length(),
         AsChars(packet_no_rejected_packet_number),
@@ -3660,7 +3660,7 @@ TEST_P(QuicFramerTest, BuildPublicResetPacket) {
 }
 
 TEST_P(QuicFramerTest, BuildPublicResetPacketWithClientAddress) {
-  FLAGS_quic_use_old_public_reset_packets = false;
+  FLAGS_quic_reloadable_flag_quic_use_old_public_reset_packets = false;
   QuicPublicResetPacket reset_packet;
   reset_packet.public_header.connection_id = kConnectionId;
   reset_packet.public_header.reset_flag = true;
@@ -3736,7 +3736,7 @@ TEST_P(QuicFramerTest, BuildPublicResetPacketWithClientAddress) {
       framer_.BuildPublicResetPacket(reset_packet));
   ASSERT_TRUE(data != nullptr);
 
-  if (FLAGS_quic_remove_packet_number_from_public_reset) {
+  if (FLAGS_quic_reloadable_flag_quic_remove_packet_number_from_public_reset) {
     test::CompareCharArraysWithHexError(
         "constructed packet", data->data(), data->length(),
         AsChars(packet_no_rejected_packet_number),

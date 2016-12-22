@@ -522,7 +522,7 @@ TEST_P(QuicSessionTestServer, OnCanWriteBundlesStreams) {
   CryptoHandshakeMessage msg;
   MockPacketWriter* writer = static_cast<MockPacketWriter*>(
       QuicConnectionPeer::GetWriter(session_.connection()));
-  if (FLAGS_quic_send_max_header_list_size) {
+  if (FLAGS_quic_reloadable_flag_quic_send_max_header_list_size) {
     EXPECT_CALL(*writer, WritePacket(_, _, _, _, _))
         .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
   }
@@ -1100,7 +1100,7 @@ TEST_P(QuicSessionTestServer, InvalidSessionFlowControlWindowInHandshake) {
 
 // Test negotiation of custom server initial flow control window.
 TEST_P(QuicSessionTestServer, CustomFlowControlWindow) {
-  FLAGS_quic_large_ifw_options = true;
+  FLAGS_quic_reloadable_flag_quic_large_ifw_options = true;
   QuicTagVector copt;
   copt.push_back(kIFW7);
   QuicConfigPeer::SetReceivedConnectionOptions(session_.config(), copt);

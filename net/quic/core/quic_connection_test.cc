@@ -2045,7 +2045,7 @@ TEST_P(QuicConnectionTest, DoNotRetransmitForResetStreamOnRTO) {
 // Ensure that if the only data in flight is non-retransmittable, the
 // retransmission alarm is not set.
 TEST_P(QuicConnectionTest, CancelRetransmissionAlarmAfterResetStream) {
-  FLAGS_quic_more_conservative_retransmission_alarm = true;
+  FLAGS_quic_reloadable_flag_quic_more_conservative_retransmission_alarm = true;
   QuicStreamId stream_id = 2;
   QuicPacketNumber last_data_packet;
   SendStreamDataToPeer(stream_id, "foo", 0, !kFin, &last_data_packet);
@@ -2290,8 +2290,9 @@ TEST_P(QuicConnectionTest, RetransmitWriteBlockedAckedOriginalThenSent) {
   writer_->SetWritable();
   connection_.OnCanWrite();
   // There is now a pending packet, but with no retransmittable frames.
-  EXPECT_EQ(FLAGS_quic_more_conservative_retransmission_alarm,
-            !connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_EQ(
+      FLAGS_quic_reloadable_flag_quic_more_conservative_retransmission_alarm,
+      !connection_.GetRetransmissionAlarm()->IsSet());
   EXPECT_FALSE(QuicConnectionPeer::HasRetransmittableFrames(&connection_,
                                                             ack.path_id, 2));
 }
@@ -3504,7 +3505,7 @@ TEST_P(QuicConnectionTest, TimeoutAfter5ClientRTOs) {
 }
 
 TEST_P(QuicConnectionTest, TimeoutAfter5ServerRTOs) {
-  FLAGS_quic_only_5rto_client_side = true;
+  FLAGS_quic_reloadable_flag_quic_only_5rto_client_side = true;
   connection_.SetMaxTailLossProbes(kDefaultPathId, 2);
   set_perspective(Perspective::IS_SERVER);
   QuicFramerPeer::SetPerspective(QuicConnectionPeer::GetFramer(&connection_),
@@ -4151,7 +4152,7 @@ TEST_P(QuicConnectionTest, BundleAckForSecondCHLO) {
 }
 
 TEST_P(QuicConnectionTest, BundleAckForSecondCHLOTwoPacketReject) {
-  FLAGS_quic_receive_packet_once_decrypted = true;
+  FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted = true;
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
 
@@ -4782,7 +4783,7 @@ TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
 
 TEST_P(QuicConnectionTest, Pacing) {
   // static_cast here does not work if using multipath_sent_packet_manager.
-  FLAGS_quic_enable_multipath = false;
+  FLAGS_quic_reloadable_flag_quic_enable_multipath = false;
   TestConnection server(connection_id_, kSelfAddress, helper_.get(),
                         alarm_factory_.get(), writer_.get(),
                         Perspective::IS_SERVER, version());
@@ -4916,7 +4917,7 @@ TEST_P(QuicConnectionTest, SendingUnencryptedStreamDataFails) {
 TEST_P(QuicConnectionTest, EnableMultipathNegotiation) {
   // Test multipath negotiation during crypto handshake. Multipath is enabled
   // when both endpoints enable multipath.
-  FLAGS_quic_enable_multipath = true;
+  FLAGS_quic_reloadable_flag_quic_enable_multipath = true;
   EXPECT_TRUE(connection_.connected());
   EXPECT_FALSE(QuicConnectionPeer::IsMultipathEnabled(&connection_));
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));

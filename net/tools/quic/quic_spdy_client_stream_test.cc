@@ -110,7 +110,7 @@ TEST_F(QuicSpdyClientStreamTest, TestFraming) {
 
 TEST_F(QuicSpdyClientStreamTest, TestFraming100Continue) {
   headers_[":status"] = "100";
-  FLAGS_quic_supports_100_continue = true;
+  FLAGS_quic_restart_flag_quic_supports_100_continue = true;
   auto headers = AsHeaderList(headers_);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
                               headers);
@@ -124,7 +124,7 @@ TEST_F(QuicSpdyClientStreamTest, TestFraming100Continue) {
 
 TEST_F(QuicSpdyClientStreamTest, TestFraming100ContinueNoFlag) {
   headers_[":status"] = "100";
-  FLAGS_quic_supports_100_continue = false;
+  FLAGS_quic_restart_flag_quic_supports_100_continue = false;
   auto headers = AsHeaderList(headers_);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
                               headers);

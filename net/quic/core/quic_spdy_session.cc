@@ -105,8 +105,8 @@ QuicSpdyStream* QuicSpdySession::GetSpdyDataStream(
 
 void QuicSpdySession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   QuicSession::OnCryptoHandshakeEvent(event);
-  if (FLAGS_quic_send_max_header_list_size && event == HANDSHAKE_CONFIRMED &&
-      config()->SupportMaxHeaderListSize()) {
+  if (FLAGS_quic_reloadable_flag_quic_send_max_header_list_size &&
+      event == HANDSHAKE_CONFIRMED && config()->SupportMaxHeaderListSize()) {
     headers_stream()->SendMaxHeaderListSize(kDefaultMaxUncompressedHeaderSize);
   }
 }
@@ -127,8 +127,8 @@ void QuicSpdySession::OnConfigNegotiated() {
     headers_stream_->DisableHpackDynamicTable();
   }
   const QuicVersion version = connection()->version();
-  if (FLAGS_quic_enable_force_hol_blocking && version > QUIC_VERSION_35 &&
-      config()->ForceHolBlocking(perspective())) {
+  if (FLAGS_quic_reloadable_flag_quic_enable_force_hol_blocking &&
+      version > QUIC_VERSION_35 && config()->ForceHolBlocking(perspective())) {
     force_hol_blocking_ = true;
     // Since all streams are tunneled through the headers stream, it
     // is important that headers stream never flow control blocks.
@@ -142,7 +142,8 @@ void QuicSpdySession::OnConfigNegotiated() {
   }
 
   if (version > QUIC_VERSION_34) {
-    server_push_enabled_ = FLAGS_quic_enable_server_push_by_default;
+    server_push_enabled_ =
+        FLAGS_quic_reloadable_flag_quic_enable_server_push_by_default;
   }
 }
 

@@ -439,7 +439,8 @@ void QuicSession::OnConfigNegotiated() {
     max_streams = config_.MaxStreamsPerConnection();
   }
   set_max_open_outgoing_streams(max_streams);
-  if (FLAGS_quic_large_ifw_options && perspective() == Perspective::IS_SERVER) {
+  if (FLAGS_quic_reloadable_flag_quic_large_ifw_options &&
+      perspective() == Perspective::IS_SERVER) {
     if (config_.HasReceivedConnectionOptions()) {
       // The following variations change the initial receive flow control
       // window sizes.

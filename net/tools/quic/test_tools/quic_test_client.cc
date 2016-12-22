@@ -329,7 +329,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
     stream->WriteOrBufferBody(body.as_string(), fin, ack_listener);
     ret = body.length();
   }
-  if (FLAGS_enable_quic_stateless_reject_support) {
+  if (FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support) {
     std::unique_ptr<SpdyHeaderBlock> new_headers;
     if (headers) {
       new_headers.reset(new SpdyHeaderBlock(headers->Clone()));

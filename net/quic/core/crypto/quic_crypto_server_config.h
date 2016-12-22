@@ -334,7 +334,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   //
   // |cached_network_params| is optional, and can be nullptr.
   //
-  // TODO(gredner): remove this when --FLAGS_enable_async_get_proof is removed.
+  // TODO(gredner): remove this when
+  // FLAGS_quic_reloadable_flag_enable_async_get_proof is removed.
   bool BuildServerConfigUpdateMessage(
       QuicVersion version,
       base::StringPiece chlo_hash,

@@ -89,9 +89,9 @@ class StatelessRejectorTest : public ::testing::TestWithParam<TestParams> {
             kDefaultMaxPacketSize,
             QuicSocketAddress(QuicIpAddress::Loopback4(), 12345),
             QuicSocketAddress(QuicIpAddress::Loopback4(), 443))) {
-    FLAGS_enable_quic_stateless_reject_support =
+    FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support =
         GetParam().flags == ENABLED || GetParam().flags == CHEAP_DISABLED;
-    FLAGS_quic_use_cheap_stateless_rejects =
+    FLAGS_quic_reloadable_flag_quic_use_cheap_stateless_rejects =
         GetParam().flags == ENABLED || GetParam().flags == STATELESS_DISABLED;
 
     // Add a new primary config.

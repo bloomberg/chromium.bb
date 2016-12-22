@@ -88,11 +88,12 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
       QuicCompressedCertsCache* compressed_certs_cache,
       QuicServerSessionBase* session,
       QuicCryptoServerStream::Helper* helper)
-      : QuicCryptoServerStream(crypto_config,
-                               compressed_certs_cache,
-                               FLAGS_enable_quic_stateless_reject_support,
-                               session,
-                               helper) {}
+      : QuicCryptoServerStream(
+            crypto_config,
+            compressed_certs_cache,
+            FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support,
+            session,
+            helper) {}
   ~MockQuicCryptoServerStream() override {}
 
   MOCK_METHOD1(SendServerConfigUpdate,

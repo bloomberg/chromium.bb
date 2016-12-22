@@ -275,11 +275,11 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   DVLOG(1) << ENDPOINT
            << "Created connection with connection_id: " << connection_id;
   framer_.set_visitor(this);
-  if (!FLAGS_quic_receive_packet_once_decrypted) {
+  if (!FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted) {
     last_stop_waiting_frame_.least_unacked = 0;
   }
   stats_.connection_creation_time = clock_->ApproximateNow();
-  if (FLAGS_quic_enable_multipath) {
+  if (FLAGS_quic_reloadable_flag_quic_enable_multipath) {
     sent_packet_manager_.reset(new QuicMultipathSentPacketManager(
         sent_packet_manager_.release(), this));
   }
@@ -320,7 +320,8 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
       idle_timeout_connection_close_behavior_ =
           ConnectionCloseBehavior::SILENT_CLOSE;
     }
-    if (FLAGS_quic_enable_multipath && config.MultipathEnabled()) {
+    if (FLAGS_quic_reloadable_flag_quic_enable_multipath &&
+        config.MultipathEnabled()) {
       multipath_enabled_ = true;
     }
   } else {
@@ -361,7 +362,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   }
   if (config.HasClientSentConnectionOption(k5RTO, perspective_)) {
     if (perspective_ == Perspective::IS_CLIENT ||
-        !FLAGS_quic_only_5rto_client_side) {
+        !FLAGS_quic_reloadable_flag_quic_only_5rto_client_side) {
       close_connection_after_five_rtos_ = true;
     }
   }
@@ -645,7 +646,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   --stats_.packets_dropped;
   DVLOG(1) << ENDPOINT << "Received packet header: " << header;
   last_header_ = header;
-  if (FLAGS_quic_receive_packet_once_decrypted) {
+  if (FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted) {
     // An ack will be sent if a missing retransmittable packet was received;
     was_last_packet_missing_ =
         received_packet_manager_.IsMissing(last_header_.packet_number);
@@ -764,7 +765,7 @@ bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
     debug_visitor_->OnStopWaitingFrame(frame);
   }
 
-  if (FLAGS_quic_receive_packet_once_decrypted) {
+  if (FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted) {
     ProcessStopWaitingFrame(frame);
   } else {
     last_stop_waiting_frame_ = frame;
@@ -946,7 +947,7 @@ void QuicConnection::OnPacketComplete() {
   DVLOG(1) << ENDPOINT << "Got packet " << last_header_.packet_number << " for "
            << last_header_.public_header.connection_id;
 
-  if (FLAGS_quic_receive_packet_once_decrypted) {
+  if (FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted) {
     // An ack will be sent if a missing retransmittable packet was received;
     const bool was_missing =
         should_last_packet_instigate_acks_ && was_last_packet_missing_;
@@ -1049,7 +1050,7 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
 
 void QuicConnection::ClearLastFrames() {
   should_last_packet_instigate_acks_ = false;
-  if (!FLAGS_quic_receive_packet_once_decrypted) {
+  if (!FLAGS_quic_reloadable_flag_quic_receive_packet_once_decrypted) {
     last_stop_waiting_frame_.least_unacked = 0;
   }
 }
@@ -1246,7 +1247,7 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
   ++stats_.packets_received;
 
   // Ensure the time coming from the packet reader is within a minute of now.
-  if (FLAGS_quic_allow_large_send_deltas &&
+  if (FLAGS_quic_reloadable_flag_quic_allow_large_send_deltas &&
       std::abs((packet.receipt_time() - clock_->ApproximateNow()).ToSeconds()) >
           60) {
     QUIC_BUG << "Packet receipt time:"
