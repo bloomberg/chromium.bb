@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/device/public/cpp/constants.h"
+module device.mojom;
 
-namespace device {
-
-const char kDeviceServiceName[] = "device";
-
-}  // namespace device
+const string kServiceName = "device";

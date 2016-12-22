@@ -35,10 +35,6 @@ class TraceEventSystemStatsMonitor;
 }  // namespace trace_event
 }  // namespace base
 
-namespace device {
-class TimeZoneMonitor;
-}
-
 namespace discardable_memory {
 class DiscardableSharedMemoryManager;
 }
@@ -145,9 +141,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   }
   media::UserInputMonitor* user_input_monitor() const {
     return user_input_monitor_.get();
-  }
-  device::TimeZoneMonitor* time_zone_monitor() const {
-    return time_zone_monitor_.get();
   }
   discardable_memory::DiscardableSharedMemoryManager*
   discardable_shared_memory_manager() const {
@@ -319,7 +312,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
-  std::unique_ptr<device::TimeZoneMonitor> time_zone_monitor_;
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
   scoped_refptr<SaveFileManager> save_file_manager_;

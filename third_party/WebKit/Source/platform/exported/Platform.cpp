@@ -151,4 +151,7 @@ InterfaceProvider* Platform::interfaceProvider() {
   return InterfaceProvider::getEmptyInterfaceProvider();
 }
 
+void Platform::bindServiceConnector(
+    mojo::ScopedMessagePipeHandle remoteHandle) {}
+
 }  // namespace blink

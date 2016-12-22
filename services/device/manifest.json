@@ -5,6 +5,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
+        "device:time_zone_monitor": [ "device::mojom::TimeZoneMonitor" ]
       },
       "requires": {
       }
