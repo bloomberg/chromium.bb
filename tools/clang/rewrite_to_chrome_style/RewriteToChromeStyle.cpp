@@ -220,6 +220,7 @@ bool IsBlacklistedFunction(const clang::FunctionDecl& decl) {
 
 bool IsBlacklistedMethodName(llvm::StringRef name) {
   static const char* kBlacklistedNames[] = {
+      "hash",
       "lock", "unlock", "try_lock",
       "begin", "end", "rbegin", "rend",
   };
@@ -349,6 +350,7 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "error",
       "fileUtilities",
       "font",
+      "frameBlameContext",
       "iconURL",
       "inputMethodController",
       "inputType",
