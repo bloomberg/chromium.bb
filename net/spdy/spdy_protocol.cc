@@ -450,9 +450,7 @@ void SpdyRstStreamIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitRstStream(*this);
 }
 
-SpdySettingsIR::SpdySettingsIR()
-    : clear_settings_(false),
-      is_ack_(false) {}
+SpdySettingsIR::SpdySettingsIR() : is_ack_(false) {}
 
 SpdySettingsIR::~SpdySettingsIR() {}
 

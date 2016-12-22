@@ -380,7 +380,7 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
       DVLOG(1) << "Ignoring invalid setting id: " << setting_fields;
       return;
     }
-    visitor()->OnSetting(setting_id, 0, setting_fields.value);
+    visitor()->OnSetting(setting_id, setting_fields.value);
   }
 
   void OnSettingsEnd() override {

@@ -211,7 +211,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   void OnStreamEnd(SpdyStreamId stream_id) override {}
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {}
   void OnSettings() override {}
-  void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) override {}
+  void OnSetting(SpdySettingsIds id, uint32_t value) override {}
   void OnPing(SpdyPingId unique_id, bool is_ack) override {}
   void OnRstStream(SpdyStreamId stream_id,
                    SpdyRstStreamStatus status) override {}
@@ -408,7 +408,7 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
 
 class AllowAnyCertCTPolicyEnforcer : public CTPolicyEnforcer {
  public:
-  AllowAnyCertCTPolicyEnforcer(){};
+  AllowAnyCertCTPolicyEnforcer() {}
   ~AllowAnyCertCTPolicyEnforcer() override = default;
 
   ct::CertPolicyCompliance DoesConformToCertPolicy(
@@ -746,14 +746,9 @@ std::string SpdyTestUtil::ConstructSpdyReplyString(
 SpdySerializedFrame SpdyTestUtil::ConstructSpdySettings(
     const SettingsMap& settings) {
   SpdySettingsIR settings_ir;
-  for (SettingsMap::const_iterator it = settings.begin();
-       it != settings.end();
+  for (SettingsMap::const_iterator it = settings.begin(); it != settings.end();
        ++it) {
-    settings_ir.AddSetting(
-        it->first,
-        (it->second.first & SETTINGS_FLAG_PLEASE_PERSIST) != 0,
-        (it->second.first & SETTINGS_FLAG_PERSISTED) != 0,
-        it->second.second);
+    settings_ir.AddSetting(it->first, it->second);
   }
   return SpdySerializedFrame(
       headerless_spdy_framer_.SerializeFrame(settings_ir));

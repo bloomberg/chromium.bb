@@ -142,12 +142,10 @@ std::unique_ptr<base::Value> NetLogSpdySettingsCallback(
 
 std::unique_ptr<base::Value> NetLogSpdySettingCallback(
     SpdySettingsIds id,
-    SpdySettingsFlags flags,
     uint32_t value,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("id", id);
-  dict->SetInteger("flags", flags);
   dict->SetInteger("value", value);
   return std::move(dict);
 }
@@ -160,10 +158,9 @@ std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
   for (SettingsMap::const_iterator it = settings->begin();
        it != settings->end(); ++it) {
     const SpdySettingsIds id = it->first;
-    const SpdySettingsFlags flags = it->second.first;
-    const uint32_t value = it->second.second;
+    const uint32_t value = it->second;
     settings_list->AppendString(
-        base::StringPrintf("[id:%u flags:%u value:%u]", id, flags, value));
+        base::StringPrintf("[id:%u value:%u]", id, value));
   }
   dict->Set("settings", std::move(settings_list));
   return std::move(dict);
@@ -2098,15 +2095,14 @@ void SpdySession::OnSettings() {
           buffered_spdy_framer_->SerializeFrame(settings_ir))));
 }
 
-void SpdySession::OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) {
+void SpdySession::OnSetting(SpdySettingsIds id, uint32_t value) {
   CHECK(in_io_loop_);
 
   HandleSetting(id, value);
 
   // Log the setting.
   net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_SETTING,
-                    base::Bind(&NetLogSpdySettingCallback, id,
-                               static_cast<SpdySettingsFlags>(flags), value));
+                    base::Bind(&NetLogSpdySettingCallback, id, value));
 }
 
 void SpdySession::OnSendCompressedFrame(
@@ -2651,13 +2647,10 @@ void SpdySession::SendInitialData() {
   // First, notify the server about the settings they should use when
   // communicating with us.
   SettingsMap settings_map;
-  settings_map[SETTINGS_HEADER_TABLE_SIZE] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxHeaderTableSize);
-  settings_map[SETTINGS_MAX_CONCURRENT_STREAMS] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
+  settings_map[SETTINGS_HEADER_TABLE_SIZE] = kMaxHeaderTableSize;
+  settings_map[SETTINGS_MAX_CONCURRENT_STREAMS] = kMaxConcurrentPushedStreams;
   if (stream_max_recv_window_size_ != kDefaultInitialWindowSize) {
-    settings_map[SETTINGS_INITIAL_WINDOW_SIZE] =
-        SettingsFlagsAndValue(SETTINGS_FLAG_NONE, stream_max_recv_window_size_);
+    settings_map[SETTINGS_INITIAL_WINDOW_SIZE] = stream_max_recv_window_size_;
   }
   SendSettings(settings_map);
 

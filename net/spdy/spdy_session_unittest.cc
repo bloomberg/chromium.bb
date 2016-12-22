@@ -1132,8 +1132,7 @@ TEST_F(SpdySessionTest, MaxConcurrentStreamsZero) {
 
   // Receive SETTINGS frame that sets max_concurrent_streams to zero.
   SettingsMap settings_zero;
-  settings_zero[SETTINGS_MAX_CONCURRENT_STREAMS] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 0);
+  settings_zero[SETTINGS_MAX_CONCURRENT_STREAMS] = 0;
   SpdySerializedFrame settings_frame_zero(
       spdy_util_.ConstructSpdySettings(settings_zero));
 
@@ -1142,8 +1141,7 @@ TEST_F(SpdySessionTest, MaxConcurrentStreamsZero) {
 
   // Receive SETTINGS frame that sets max_concurrent_streams to one.
   SettingsMap settings_one;
-  settings_one[SETTINGS_MAX_CONCURRENT_STREAMS] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 1);
+  settings_one[SETTINGS_MAX_CONCURRENT_STREAMS] = 1;
   SpdySerializedFrame settings_frame_one(
       spdy_util_.ConstructSpdySettings(settings_one));
 
@@ -1782,8 +1780,7 @@ TEST_F(SpdySessionTest, OnSettings) {
 
   SettingsMap new_settings;
   const uint32_t max_concurrent_streams = kInitialMaxConcurrentStreams + 1;
-  new_settings[kSpdySettingsIds] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
+  new_settings[kSpdySettingsIds] = max_concurrent_streams;
   SpdySerializedFrame settings_frame(
       spdy_util_.ConstructSpdySettings(new_settings));
   MockRead reads[] = {
@@ -1892,10 +1889,8 @@ TEST_F(SpdySessionTest, SendInitialDataOnNewSession) {
   };
 
   SettingsMap settings;
-  settings[SETTINGS_HEADER_TABLE_SIZE] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxHeaderTableSize);
-  settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
+  settings[SETTINGS_HEADER_TABLE_SIZE] = kMaxHeaderTableSize;
+  settings[SETTINGS_MAX_CONCURRENT_STREAMS] = kMaxConcurrentPushedStreams;
   SpdySerializedFrame settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
   MockWrite writes[] = {MockWrite(ASYNC, kHttp2ConnectionHeaderPrefix,
@@ -2619,8 +2614,7 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   SettingsMap new_settings;
   const SpdySettingsIds kSpdySettingsIds1 = SETTINGS_MAX_CONCURRENT_STREAMS;
   const uint32_t max_concurrent_streams = 1;
-  new_settings[kSpdySettingsIds1] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
+  new_settings[kSpdySettingsIds1] = max_concurrent_streams;
 
   SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
   SpdySerializedFrame req1(
@@ -3659,8 +3653,7 @@ TEST_F(SpdySessionTest, UpdateStreamsSendWindowSize) {
   // gets sent.
   SettingsMap new_settings;
   int32_t window_size = 1;
-  new_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, window_size);
+  new_settings[SETTINGS_INITIAL_WINDOW_SIZE] = window_size;
 
   // Set up the socket so we read a SETTINGS frame that sets
   // INITIAL_WINDOW_SIZE.
@@ -4880,8 +4873,7 @@ TEST_F(SpdySessionTest, GoAwayOnSessionFlowControlError) {
 // limit for a long time.
 TEST_F(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
   SettingsMap new_settings;
-  new_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 2);
+  new_settings[SETTINGS_MAX_CONCURRENT_STREAMS] = 2;
   SpdySerializedFrame settings_frame(
       spdy_util_.ConstructSpdySettings(new_settings));
   SpdySerializedFrame pushed(spdy_util_.ConstructSpdyPush(

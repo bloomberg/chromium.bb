@@ -168,7 +168,7 @@ class QuicHeadersStream::SpdyFramerVisitor
     CloseConnection("SPDY RST_STREAM frame received.");
   }
 
-  void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) override {
+  void OnSetting(SpdySettingsIds id, uint32_t value) override {
     if (!FLAGS_quic_respect_http2_settings_frame) {
       CloseConnection("SPDY SETTINGS frame received.");
       return;
@@ -590,7 +590,7 @@ void QuicHeadersStream::MaybeReleaseSequencerBuffer() {
 
 size_t QuicHeadersStream::SendMaxHeaderListSize(size_t value) {
   SpdySettingsIR settings_frame;
-  settings_frame.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE, false, false, value);
+  settings_frame.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE, value);
 
   SpdySerializedFrame frame(spdy_framer_.SerializeFrame(settings_frame));
   WriteOrBufferData(StringPiece(frame.data(), frame.size()), false, nullptr);

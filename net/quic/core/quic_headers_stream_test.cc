@@ -80,8 +80,7 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD2(OnRstStream,
                void(SpdyStreamId stream_id, SpdyRstStreamStatus status));
   MOCK_METHOD1(OnSettings, void(bool clear_persisted));
-  MOCK_METHOD3(OnSetting,
-               void(SpdySettingsIds id, uint8_t flags, uint32_t value));
+  MOCK_METHOD2(OnSetting, void(SpdySettingsIds id, uint32_t value));
   MOCK_METHOD0(OnSettingsAck, void());
   MOCK_METHOD0(OnSettingsEnd, void());
   MOCK_METHOD2(OnPing, void(SpdyPingId unique_id, bool is_ack));
@@ -539,7 +538,7 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromiseDisabledSetting) {
   session_.OnConfigNegotiated();
   SpdySettingsIR data;
   // Respect supported settings frames SETTINGS_ENABLE_PUSH.
-  data.AddSetting(SETTINGS_ENABLE_PUSH, true, true, 0);
+  data.AddSetting(SETTINGS_ENABLE_PUSH, 0);
   SpdySerializedFrame frame(framer_->SerializeFrame(data));
   stream_frame_.data_buffer = frame.data();
   stream_frame_.data_length = frame.size();
@@ -734,7 +733,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyRstStreamFrame) {
 TEST_P(QuicHeadersStreamTest, ProcessSpdySettingsFrame) {
   FLAGS_quic_respect_http2_settings_frame = false;
   SpdySettingsIR data;
-  data.AddSetting(SETTINGS_HEADER_TABLE_SIZE, true, true, 0);
+  data.AddSetting(SETTINGS_HEADER_TABLE_SIZE, 0);
   SpdySerializedFrame frame(framer_->SerializeFrame(data));
   EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
                                             "SPDY SETTINGS frame received.", _))
@@ -752,8 +751,8 @@ TEST_P(QuicHeadersStreamTest, RespectHttp2SettingsFrameSupportedFields) {
   SpdySettingsIR data;
   // Respect supported settings frames SETTINGS_HEADER_TABLE_SIZE,
   // SETTINGS_MAX_HEADER_LIST_SIZE.
-  data.AddSetting(SETTINGS_HEADER_TABLE_SIZE, true, true, kTestHeaderTableSize);
-  data.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE, true, true, 2000);
+  data.AddSetting(SETTINGS_HEADER_TABLE_SIZE, kTestHeaderTableSize);
+  data.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE, 2000);
   SpdySerializedFrame frame(framer_->SerializeFrame(data));
   stream_frame_.data_buffer = frame.data();
   stream_frame_.data_length = frame.size();
@@ -770,10 +769,10 @@ TEST_P(QuicHeadersStreamTest, RespectHttp2SettingsFrameUnsupportedFields) {
   // Does not support SETTINGS_MAX_CONCURRENT_STREAMS,
   // SETTINGS_INITIAL_WINDOW_SIZE, SETTINGS_ENABLE_PUSH and
   // SETTINGS_MAX_FRAME_SIZE.
-  data.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS, true, true, 100);
-  data.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, true, true, 100);
-  data.AddSetting(SETTINGS_ENABLE_PUSH, true, true, 1);
-  data.AddSetting(SETTINGS_MAX_FRAME_SIZE, true, true, 1250);
+  data.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS, 100);
+  data.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, 100);
+  data.AddSetting(SETTINGS_ENABLE_PUSH, 1);
+  data.AddSetting(SETTINGS_MAX_FRAME_SIZE, 1250);
   SpdySerializedFrame frame(framer_->SerializeFrame(data));
   EXPECT_CALL(
       *connection_,

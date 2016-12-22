@@ -151,9 +151,7 @@ class SpdyFramerTestUtil {
                      SpdyRstStreamStatus status) override {
       LOG(FATAL);
     }
-    void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) override {
-      LOG(FATAL);
-    }
+    void OnSetting(SpdySettingsIds id, uint32_t value) override { LOG(FATAL); }
     void OnPing(SpdyPingId unique_id, bool is_ack) override { LOG(FATAL); }
     void OnSettingsEnd() override { LOG(FATAL); }
     void OnGoAway(SpdyStreamId last_accepted_stream_id,
@@ -373,9 +371,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     return true;
   }
 
-  void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) override {
-    VLOG(1) << "OnSetting(" << id << ", " << std::hex << flags << ", " << value
-            << ")";
+  void OnSetting(SpdySettingsIds id, uint32_t value) override {
+    VLOG(1) << "OnSetting(" << id << ", " << std::hex << ", " << value << ")";
     ++setting_count_;
   }
 
@@ -1692,10 +1689,8 @@ TEST_P(SpdyFramerTest, CreateSettings) {
     uint32_t kValue = 0x0a0b0c0d;
     SpdySettingsIR settings_ir;
 
-    SpdySettingsFlags kFlags = static_cast<SpdySettingsFlags>(0x01);
     SpdySettingsIds kId = SETTINGS_INITIAL_WINDOW_SIZE;
-    settings_ir.AddSetting(kId, kFlags & SETTINGS_FLAG_PLEASE_PERSIST,
-                           kFlags & SETTINGS_FLAG_PERSISTED, kValue);
+    settings_ir.AddSetting(kId, kValue);
 
     SpdySerializedFrame frame(framer.SerializeSettings(settings_ir));
     CompareFrame(kDescription, frame, kH2FrameData, arraysize(kH2FrameData));
@@ -1722,22 +1717,10 @@ TEST_P(SpdyFramerTest, CreateSettings) {
     };
 
     SpdySettingsIR settings_ir;
-    settings_ir.AddSetting(SETTINGS_HEADER_TABLE_SIZE,
-                           false,  // persist
-                           false,  // persisted
-                           5);
-    settings_ir.AddSetting(SETTINGS_ENABLE_PUSH,
-                           false,  // persist
-                           false,  // persisted
-                           6);
-    settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS,
-                           false,  // persist
-                           false,  // persisted
-                           7);
-    settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE,
-                           false,  // persist
-                           false,  // persisted
-                           8);
+    settings_ir.AddSetting(SETTINGS_HEADER_TABLE_SIZE, 5);
+    settings_ir.AddSetting(SETTINGS_ENABLE_PUSH, 6);
+    settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS, 7);
+    settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, 8);
     SpdySerializedFrame frame(framer.SerializeSettings(settings_ir));
 
     CompareFrame(kDescription, frame, kH2FrameData, arraysize(kH2FrameData));
@@ -2776,10 +2759,8 @@ TEST_P(SpdyFramerTest, ReadBogusLenSettingsFrame) {
   // overflow when calling SimulateInFramer() below.  These settings must be
   // distinct parameters because SpdySettingsIR has a map for settings, and will
   // collapse multiple copies of the same parameter.
-  settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, false, false,
-                         0x00000002);
-  settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS, false, false,
-                         0x00000002);
+  settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, 0x00000002);
+  settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS, 0x00000002);
   SpdySerializedFrame control_frame(framer.SerializeSettings(settings_ir));
   const size_t kNewLength = 8;
   SetFrameLength(&control_frame, kNewLength);
@@ -2799,18 +2780,9 @@ TEST_P(SpdyFramerTest, ReadBogusLenSettingsFrame) {
 TEST_P(SpdyFramerTest, ReadLargeSettingsFrame) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdySettingsIR settings_ir;
-  settings_ir.AddSetting(SETTINGS_HEADER_TABLE_SIZE,
-                         false,  // persist
-                         false,  // persisted
-                         5);
-  settings_ir.AddSetting(SETTINGS_ENABLE_PUSH,
-                         false,  // persist
-                         false,  // persisted
-                         6);
-  settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS,
-                         false,  // persist
-                         false,  // persisted
-                         7);
+  settings_ir.AddSetting(SETTINGS_HEADER_TABLE_SIZE, 5);
+  settings_ir.AddSetting(SETTINGS_ENABLE_PUSH, 6);
+  settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS, 7);
 
   SpdySerializedFrame control_frame(framer.SerializeSettings(settings_ir));
   EXPECT_LT(SpdyFramerPeer::ControlFrameBufferSize(), control_frame.size());
@@ -3373,10 +3345,7 @@ TEST_P(SpdyFramerTest, ReadUnknownExtensionFrame) {
   // Follow it up with a valid control frame to make sure we handle
   // subsequent frames correctly.
   SpdySettingsIR settings_ir;
-  settings_ir.AddSetting(SETTINGS_HEADER_TABLE_SIZE,
-                         false,  // persist
-                         false,  // persisted
-                         10);
+  settings_ir.AddSetting(SETTINGS_HEADER_TABLE_SIZE, 10);
   SpdySerializedFrame control_frame(framer.SerializeSettings(settings_ir));
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame.data()),
@@ -3623,7 +3592,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
     framer.set_visitor(&visitor);
 
     SpdySettingsIR settings_ir;
-    settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, 0, 0, 16);
+    settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, 16);
     SpdySerializedFrame frame(framer.SerializeSettings(settings_ir));
     SetFrameFlags(&frame, flags);
 
@@ -3631,7 +3600,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
       EXPECT_CALL(visitor, OnSettings(flags & SETTINGS_FLAG_ACK));
-      EXPECT_CALL(visitor, OnSetting(SETTINGS_INITIAL_WINDOW_SIZE, 0, 16));
+      EXPECT_CALL(visitor, OnSetting(SETTINGS_INITIAL_WINDOW_SIZE, 16));
       EXPECT_CALL(visitor, OnSettingsEnd());
     }
 
@@ -3864,18 +3833,6 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
 // TODO(mlavan): Add TEST_F(SpdyFramerTest, AltSvcFrameFlags)
 
 // TODO(hkhalil): Add TEST_F(SpdyFramerTest, BlockedFrameFlags)
-
-TEST_P(SpdyFramerTest, SettingsFlagsAndId) {
-  const uint32_t kId = 0x020304;
-  const uint32_t kFlags = 0x01;
-  const uint32_t kWireFormat = base::HostToNet32(0x01020304);
-
-  SettingsFlagsAndId id_and_flags =
-      SettingsFlagsAndId::FromWireFormat(kWireFormat);
-  EXPECT_EQ(kId, id_and_flags.id());
-  EXPECT_EQ(kFlags, id_and_flags.flags());
-  EXPECT_EQ(kWireFormat, id_and_flags.GetWireFormat());
-}
 
 // Test handling of a RST_STREAM with out-of-bounds status codes.
 TEST_P(SpdyFramerTest, RstStreamStatusBounds) {

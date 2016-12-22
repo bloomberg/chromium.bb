@@ -130,13 +130,6 @@ enum Http2SettingsControlFlags {
   SETTINGS_FLAG_ACK = 0x01,
 };
 
-// Flags for settings within a SETTINGS frame.
-enum SpdySettingsFlags {
-  SETTINGS_FLAG_NONE = 0x00,
-  SETTINGS_FLAG_PLEASE_PERSIST = 0x01,
-  SETTINGS_FLAG_PERSISTED = 0x02,
-};
-
 enum SpdySettingsIds {
   // HPACK header table maximum size.
   SETTINGS_HEADER_TABLE_SIZE = 0x1,
@@ -153,6 +146,8 @@ enum SpdySettingsIds {
   SETTINGS_MAX_HEADER_LIST_SIZE = 0x6,
   SETTINGS_MAX = SETTINGS_MAX_HEADER_LIST_SIZE
 };
+
+using SettingsMap = std::map<SpdySettingsIds, uint32_t>;
 
 // Status codes for RST_STREAM frames.
 enum SpdyRstStreamStatus {
@@ -592,33 +587,13 @@ class NET_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
 
 class NET_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
  public:
-  // Associates flags with a value.
-  struct Value {
-    Value() : persist_value(false),
-              persisted(false),
-              value(0) {}
-    bool persist_value;
-    bool persisted;
-    int32_t value;
-  };
-  typedef std::map<SpdySettingsIds, Value> ValueMap;
-
   SpdySettingsIR();
-
   ~SpdySettingsIR() override;
 
   // Overwrites as appropriate.
-  const ValueMap& values() const { return values_; }
-  void AddSetting(SpdySettingsIds id,
-                  bool persist_value,
-                  bool persisted,
-                  int32_t value) {
-    values_[id].persist_value = persist_value;
-    values_[id].persisted = persisted;
-    values_[id].value = value;
-  }
+  const SettingsMap& values() const { return values_; }
+  void AddSetting(SpdySettingsIds id, int32_t value) { values_[id] = value; }
 
-  bool clear_settings() const { return clear_settings_; }
   bool is_ack() const { return is_ack_; }
   void set_is_ack(bool is_ack) {
     is_ack_ = is_ack;
@@ -627,8 +602,7 @@ class NET_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
   void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
-  ValueMap values_;
-  bool clear_settings_;
+  SettingsMap values_;
   bool is_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdySettingsIR);

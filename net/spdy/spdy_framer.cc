@@ -128,20 +128,6 @@ const size_t SpdyFramer::kControlFrameBufferSize = 19;
   } while (false)
 #endif
 
-SettingsFlagsAndId SettingsFlagsAndId::FromWireFormat(uint32_t wire) {
-  return SettingsFlagsAndId(base::NetToHost32(wire) >> 24,
-                            base::NetToHost32(wire) & 0x00ffffff);
-}
-
-SettingsFlagsAndId::SettingsFlagsAndId(uint8_t flags, uint32_t id)
-    : flags_(flags), id_(id & 0x00ffffff) {
-  SPDY_BUG_IF(id > (1u << 24)) << "HTTP2 setting ID too large: " << id;
-}
-
-uint32_t SettingsFlagsAndId::GetWireFormat() const {
-  return base::HostToNet32(id_ & 0x00ffffff) | base::HostToNet32(flags_ << 24);
-}
-
 bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* goaway_data,
                                                    size_t len) {
   return true;
@@ -1380,7 +1366,7 @@ bool SpdyFramer::ProcessSetting(const char* data) {
   }
 
   // Validation succeeded. Pass on to visitor.
-  visitor_->OnSetting(setting_id, /*flags=*/0, value);
+  visitor_->OnSetting(setting_id, value);
   return true;
 }
 
@@ -1912,7 +1898,7 @@ SpdySerializedFrame SpdyFramer::SerializeSettings(
   if (settings.is_ack()) {
     flags |= SETTINGS_FLAG_ACK;
   }
-  const SpdySettingsIR::ValueMap* values = &(settings.values());
+  const SettingsMap* values = &(settings.values());
 
   int setting_size = 6;
   // Size, in bytes, of this SETTINGS frame.
@@ -1927,12 +1913,12 @@ SpdySerializedFrame SpdyFramer::SerializeSettings(
   }
 
   DCHECK_EQ(GetSettingsMinimumSize(), builder.length());
-  for (SpdySettingsIR::ValueMap::const_iterator it = values->begin();
-       it != values->end(); ++it) {
+  for (SettingsMap::const_iterator it = values->begin(); it != values->end();
+       ++it) {
     int setting_id = it->first;
     DCHECK_GE(setting_id, 0);
     builder.WriteUInt16(static_cast<uint16_t>(setting_id));
-    builder.WriteUInt32(it->second.value);
+    builder.WriteUInt32(it->second);
   }
   DCHECK_EQ(size, builder.length());
   return builder.take();

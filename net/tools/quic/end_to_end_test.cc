@@ -1827,7 +1827,7 @@ TEST_P(EndToEndTest, FlowControlsSynced) {
       QuicSessionPeer::GetCryptoStream(server_session)->flow_controller());
   SpdyFramer spdy_framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdySettingsIR settings_frame;
-  settings_frame.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE, false, false,
+  settings_frame.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE,
                             kDefaultMaxUncompressedHeaderSize);
   SpdySerializedFrame frame(spdy_framer.SerializeFrame(settings_frame));
   QuicFlowController* client_header_stream_flow_controller =
