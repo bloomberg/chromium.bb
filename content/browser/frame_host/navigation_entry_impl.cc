@@ -276,7 +276,8 @@ NavigationEntryImpl::NavigationEntryImpl(
       can_load_local_resources_(false),
       frame_tree_node_id_(-1),
       reload_type_(ReloadType::NONE),
-      started_from_context_menu_(false) {
+      started_from_context_menu_(false),
+      ssl_error_(false) {
 #if defined(OS_ANDROID)
   has_user_gesture_ = false;
 #endif

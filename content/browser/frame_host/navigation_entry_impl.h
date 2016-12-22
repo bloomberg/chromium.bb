@@ -388,6 +388,11 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Returns the history URL for a data URL to use in Blink.
   GURL GetHistoryURLForDataURL() const;
 
+  // These flags are set when the navigation controller gets notified of an SSL
+  // error while a navigation is pending.
+  void set_ssl_error(bool error) { ssl_error_ = error; }
+  bool ssl_error() const { return ssl_error_; }
+
 #if defined(OS_ANDROID)
   base::TimeTicks intent_received_timestamp() const {
     return intent_received_timestamp_;
@@ -542,6 +547,10 @@ class CONTENT_EXPORT NavigationEntryImpl
   // persisted, unless specific data is taken out/put back in at save/restore
   // time (see TabNavigation for an example of this).
   std::map<std::string, base::string16> extra_data_;
+
+  // Set to true if the navigation controller gets notified about a SSL error
+  // for a pending navigation. Defaults to false.
+  bool ssl_error_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationEntryImpl);
 };

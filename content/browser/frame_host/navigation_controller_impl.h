@@ -201,6 +201,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   // entry is being discarded because it failed to load.
   void DiscardPendingEntry(bool was_failure);
 
+  // Sets a flag on the pending NavigationEntryImpl instance if any that the
+  // navigation failed due to an SSL error.
+  void SetPendingNavigationSSLError(bool error);
+
  private:
   friend class RestoreHelper;
 
@@ -362,6 +366,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   // the memory management.
   NavigationEntryImpl* pending_entry_;
 
+  // Navigations could occur in succession. This field holds the last pending
+  // entry for which we haven't received a response yet.
+  NavigationEntryImpl* last_pending_entry_;
+
   // If a new entry fails loading, details about it are temporarily held here
   // until the error page is shown (or 0 otherwise).
   //
@@ -385,6 +393,13 @@ class CONTENT_EXPORT NavigationControllerImpl
   // temporarily (until the next navigation).  Any index pointing to an entry
   // after the transient entry will become invalid if you navigate forward.
   int transient_entry_index_;
+
+  // The index of the last pending entry if it is in entries, or -1 if it was
+  // created by LoadURL.
+  int last_pending_entry_index_;
+
+  // The index of the last transient entry. Defaults to -1.
+  int last_transient_entry_index_;
 
   // The delegate associated with the controller. Possibly NULL during
   // setup.

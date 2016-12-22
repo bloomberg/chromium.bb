@@ -105,9 +105,11 @@ void HandleSSLErrorOnUI(
     return;
   }
 
-  SSLManager* manager =
-      static_cast<NavigationControllerImpl*>(&web_contents->GetController())
-          ->ssl_manager();
+  NavigationControllerImpl* controller =
+      static_cast<NavigationControllerImpl*>(&web_contents->GetController());
+  controller->SetPendingNavigationSSLError(true);
+
+  SSLManager* manager = controller->ssl_manager();
   manager->OnCertError(std::move(handler));
 }
 
