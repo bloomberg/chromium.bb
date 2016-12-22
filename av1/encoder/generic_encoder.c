@@ -60,10 +60,10 @@ void aom_encode_cdf_adapt_q15(aom_writer *w, int val, uint16_t *cdf, int n,
  * @param [in]     n     number of values possible
  * @param [in]     increment adaptation speed (Q15)
  */
-void od_encode_cdf_adapt(od_ec_enc *ec, int val, uint16_t *cdf, int n,
+void aom_encode_cdf_adapt(aom_writer *w, int val, uint16_t *cdf, int n,
  int increment) {
   int i;
-  od_ec_encode_cdf_unscaled(ec, val, cdf, n);
+  aom_write_cdf_unscaled(w, val, cdf, n);
   if (cdf[n-1] + increment > 32767) {
     for (i = 0; i < n; i++) {
       /* Second term ensures that the pdf is non-null */

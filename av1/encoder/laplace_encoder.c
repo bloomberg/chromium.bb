@@ -37,9 +37,9 @@ static void aom_encode_pvq_split(aom_writer *w, od_pvq_codeword_ctx *adapt,
     sum >>= shift;
   }
   fctx = 7*ctx + sum - 1;
+  aom_encode_cdf_adapt(w, count, adapt->pvq_split_cdf[fctx], sum + 1,
+   adapt->pvq_split_increment);
 #if CONFIG_DAALA_EC
-  od_encode_cdf_adapt(&w->ec, count, adapt->pvq_split_cdf[fctx],
-   sum + 1, adapt->pvq_split_increment);
   if (shift) od_ec_enc_bits(&w->ec, rest, shift);
 #else
 # error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
@@ -58,12 +58,8 @@ void aom_encode_band_pvq_splits(aom_writer *w, od_pvq_codeword_ctx *adapt,
     cdf_id = od_pvq_k1_ctx(n, level == 0);
     for (pos = 0; !y[pos]; pos++);
     OD_ASSERT(pos < n);
-#if CONFIG_DAALA_EC
-    od_encode_cdf_adapt(&w->ec, pos, adapt->pvq_k1_cdf[cdf_id], n,
+    aom_encode_cdf_adapt(w, pos, adapt->pvq_k1_cdf[cdf_id], n,
      adapt->pvq_k1_increment);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
   }
   else {
     mid = n >> 1;

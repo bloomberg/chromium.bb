@@ -679,12 +679,8 @@ void pvq_encode_partition(aom_writer *w,
   }
   /* Jointly code gain, theta and noref for small values. Then we handle
      larger gain and theta values. For noref, theta = -1. */
-#if CONFIG_DAALA_EC
-  od_encode_cdf_adapt(&w->ec, id, &adapt->pvq.pvq_gaintheta_cdf[cdf_ctx][0],
+  aom_encode_cdf_adapt(w, id, &adapt->pvq.pvq_gaintheta_cdf[cdf_ctx][0],
    8 + 7*code_skip, adapt->pvq.pvq_gaintheta_increment);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
   if (encode_flip) {
     /* We could eventually do some smarter entropy coding here, but it would
        have to be good enough to overcome the overhead of the entropy coder.
@@ -747,13 +743,9 @@ void od_encode_quantizer_scaling(daala_enc_ctx *enc, int q_scaling,
      : 0;
     left = sbx > 0 ? enc->state.sb_q_scaling[sby*enc->state.nhsb + (sbx - 1)]
      : 0;
-#if CONFIG_DAALA_EC
-    od_encode_cdf_adapt(&enc->w.ec, q_scaling,
+    aom_encode_cdf_adapt(&enc->w, q_scaling,
      enc->state.adapt.q_cdf[above + left*4], 4,
      enc->state.adapt.q_increment);
-#else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
   }
 }
 #endif
@@ -934,12 +926,8 @@ int od_pvq_encode(daala_enc_ctx *enc,
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
   /* Code as if we're not skipping. */
-#if CONFIG_DAALA_EC
-  od_encode_cdf_adapt(&enc->w.ec, 2 + (out[0] != 0), skip_cdf,
+  aom_encode_cdf_adapt(&enc->w, 2 + (out[0] != 0), skip_cdf,
    4, enc->state.adapt.skip_increment);
-#else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
   if (pvq_info)
     pvq_info->ac_dc_coded = 2 + (out[0] != 0);
 #if OD_SIGNAL_Q_SCALING
@@ -987,13 +975,9 @@ int od_pvq_encode(daala_enc_ctx *enc,
        skip_rest, encode_flip, flip);
     }
     if (i == 0 && !skip_rest && bs > 0) {
-#if CONFIG_DAALA_EC
-      od_encode_cdf_adapt(&enc->w.ec, skip_dir,
+      aom_encode_cdf_adapt(&enc->w, skip_dir,
        &enc->state.adapt.pvq.pvq_skip_dir_cdf[(pli != 0) + 2*(bs - 1)][0], 7,
        enc->state.adapt.pvq.pvq_skip_dir_increment);
-#else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
     }
     if (encode_flip) cfl_encoded = 1;
   }
@@ -1057,12 +1041,8 @@ int od_pvq_encode(daala_enc_ctx *enc,
     }
     /* We decide to skip, roll back everything as it was before. */
     od_encode_rollback(enc, &buf);
-#if CONFIG_DAALA_EC
-    od_encode_cdf_adapt(&enc->w.ec, out[0] != 0, skip_cdf,
+    aom_encode_cdf_adapt(&enc->w, out[0] != 0, skip_cdf,
      4, enc->state.adapt.skip_increment);
-#else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
     if (pvq_info)
       pvq_info->ac_dc_coded = (out[0] != 0);
 #if OD_SIGNAL_Q_SCALING

@@ -2116,9 +2116,9 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
           pvq = get_pvq_block(cpi->td.mb.pvq_q);
 
           // encode block skip info
-          od_encode_cdf_adapt(&w->ec, pvq->ac_dc_coded,
-                              adapt->skip_cdf[2 * tx_size + (plane != 0)], 4,
-                              adapt->skip_increment);
+          aom_encode_cdf_adapt(w, pvq->ac_dc_coded,
+                               adapt->skip_cdf[2 * tx_size + (plane != 0)], 4,
+                               adapt->skip_increment);
 
           // AC coeffs coded?
           if (pvq->ac_dc_coded & 0x02) {
@@ -2136,8 +2136,8 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                     pvq->skip_rest, encode_flip, flip);
               }
               if (i == 0 && !pvq->skip_rest && pvq->bs > 0) {
-                od_encode_cdf_adapt(
-                    &w->ec, pvq->skip_dir,
+                aom_encode_cdf_adapt(
+                    w, pvq->skip_dir,
                     &adapt->pvq
                          .pvq_skip_dir_cdf[(plane != 0) + 2 * (pvq->bs - 1)][0],
                     7, adapt->pvq.pvq_skip_dir_increment);

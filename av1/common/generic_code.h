@@ -65,7 +65,7 @@ void aom_cdf_adapt_q15(int val, uint16_t *cdf, int n, int *count, int rate);
 void aom_encode_cdf_adapt_q15(aom_writer *w, int val, uint16_t *cdf, int n,
  int *count, int rate);
 
-void od_encode_cdf_adapt(od_ec_enc *ec, int val, uint16_t *cdf, int n,
+void aom_encode_cdf_adapt(aom_writer *w, int val, uint16_t *cdf, int n,
  int increment);
 
 int od_decode_cdf_adapt_(od_ec_dec *ec, uint16_t *cdf, int n,
