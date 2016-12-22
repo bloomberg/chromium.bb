@@ -100,7 +100,7 @@ const CGFloat kSeparatorInset = 10;
 // YES if there are no more history entries to load.
 @property(nonatomic, assign, getter=hasFinishedLoading) BOOL finishedLoading;
 // YES if the collection should be filtered by the next received query result.
-@property(nonatomic, assign) BOOL filterForNextQueryResult;
+@property(nonatomic, assign) BOOL filterQueryResult;
 
 // Fetches history prior to |time| for search text |query|. If |query| is nil or
 // the empty string, all history is fetched.
@@ -141,7 +141,7 @@ const CGFloat kSeparatorInset = 10;
     _shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
 @synthesize loading = _loading;
 @synthesize finishedLoading = _finishedLoading;
-@synthesize filterForNextQueryResult = _filterForNextQueryResult;
+@synthesize filterQueryResult = _filterQueryResult;
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState
@@ -355,7 +355,7 @@ const CGFloat kSeparatorInset = 10;
   // loading indicator removal will not be observed.
   [self updateEntriesStatusMessage];
 
-  __block base::scoped_nsobject<NSMutableArray> searchResults(
+  __block base::scoped_nsobject<NSMutableArray> filterResults(
       [[NSMutableArray array] retain]);
   __block base::scoped_nsobject<NSString> searchQuery(
       [base::SysUTF16ToNSString(result.query) copy]);
@@ -369,8 +369,8 @@ const CGFloat kSeparatorInset = 10;
                                      browserState:_browserState
                                          delegate:self] autorelease];
       [self.entryInserter insertHistoryEntryItem:item];
-      if ([self isSearching]) {
-        [searchResults addObject:item];
+      if ([self isSearching] || self.filterQueryResult) {
+        [filterResults addObject:item];
       }
     }
     [self.delegate historyCollectionViewControllerDidChangeEntries:self];
@@ -378,11 +378,11 @@ const CGFloat kSeparatorInset = 10;
       completion:^(BOOL) {
         if (([self isSearching] && [searchQuery length] > 0 &&
              [self.currentQuery isEqualToString:searchQuery]) ||
-            self.filterForNextQueryResult) {
+            self.filterQueryResult) {
           // If in search mode, filter out entries that are not
           // part of the search result.
-          [self filterForHistoryEntries:searchResults];
-          self.filterForNextQueryResult = NO;
+          [self filterForHistoryEntries:filterResults];
+          self.filterQueryResult = NO;
         }
       }];
 }
@@ -397,7 +397,7 @@ const CGFloat kSeparatorInset = 10;
   // If history has been deleted, reload history filtering for the current
   // results. This only observes local changes to history, i.e. removing
   // history via the clear browsing data page.
-  self.filterForNextQueryResult = YES;
+  self.filterQueryResult = YES;
   [self showHistoryMatchingQuery:nil];
 }
 
