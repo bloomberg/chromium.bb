@@ -122,8 +122,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     historySideSwipeProvider_.reset(
         [[HistorySideSwipeProvider alloc] initWithTabModel:model_]);
 
-    if (!browserState->IsOffTheRecord() &&
-        reading_list::switches::IsReadingListEnabled()) {
+    if (reading_list::switches::IsReadingListEnabled()) {
       readingListSideSwipeProvider_.reset([[ReadingListSideSwipeProvider alloc]
           initWithReadingList:ReadingListModelFactory::GetForBrowserState(
                                   browserState)]);
