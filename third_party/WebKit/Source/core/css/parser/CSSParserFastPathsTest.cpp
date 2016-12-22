@@ -4,6 +4,7 @@
 
 #include "core/css/parser/CSSParserFastPaths.h"
 
+#include "core/css/CSSColorValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,6 +97,14 @@ TEST(CSSParserFastPathsTest, ParseInvalidTransform) {
       CSSPropertyTransform, "translateZ(1px) (1px, 1px) rotateX(1deg",
       HTMLStandardMode);
   ASSERT_EQ(nullptr, value);
+}
+
+TEST(CSSParserFastPathsTest, ParseColorWithLargeAlpha) {
+  CSSValue* value = CSSParserFastPaths::parseColor("rgba(0,0,0,1893205797.13)",
+                                                   HTMLStandardMode);
+  EXPECT_NE(nullptr, value);
+  EXPECT_TRUE(value->isColorValue());
+  EXPECT_EQ(Color::black, toCSSColorValue(*value).value());
 }
 
 }  // namespace blink

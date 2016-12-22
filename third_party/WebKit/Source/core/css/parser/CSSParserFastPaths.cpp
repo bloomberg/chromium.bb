@@ -375,7 +375,9 @@ static inline bool parseAlphaValue(const CharacterType*& string,
   double alpha = 0;
   if (!parseDouble(string, end, terminator, alpha))
     return false;
-  value = negative ? 0 : static_cast<int>(alpha * nextafter(256.0, 0.0));
+  value = negative
+              ? 0
+              : static_cast<int>(std::min(alpha, 1.0) * nextafter(256.0, 0.0));
   string = end;
   return true;
 }
