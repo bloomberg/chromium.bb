@@ -318,6 +318,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Retrieve serialized length of SpdyHeaderBlock.
   static size_t GetSerializedLength(const SpdyHeaderBlock* headers);
 
+  // Gets the serialized flags for the given |frame|.
+  static uint8_t GetSerializedFlags(const SpdyFrameIR& frame);
+
   explicit SpdyFramer(CompressionOption option);
 
   // Used recursively from the above constructor in order to support

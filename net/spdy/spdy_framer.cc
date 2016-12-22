@@ -2233,12 +2233,101 @@ class FrameSerializationVisitor : public SpdyFrameVisitor {
   SpdySerializedFrame frame_;
 };
 
+// TODO(diannahu): Use also in frame serialization.
+class FlagsSerializationVisitor : public SpdyFrameVisitor {
+ public:
+  void VisitData(const SpdyDataIR& data) override {
+    flags_ = DATA_FLAG_NONE;
+    if (data.fin()) {
+      flags_ |= DATA_FLAG_FIN;
+    }
+    if (data.padded()) {
+      flags_ |= DATA_FLAG_PADDED;
+    }
+  }
+
+  void VisitRstStream(const SpdyRstStreamIR& rst_stream) override {
+    flags_ = kNoFlags;
+  }
+
+  void VisitSettings(const SpdySettingsIR& settings) override {
+    flags_ = kNoFlags;
+    if (settings.is_ack()) {
+      flags_ |= SETTINGS_FLAG_ACK;
+    }
+  }
+
+  void VisitPing(const SpdyPingIR& ping) override {
+    flags_ = kNoFlags;
+    if (ping.is_ack()) {
+      flags_ |= PING_FLAG_ACK;
+    }
+  }
+
+  void VisitGoAway(const SpdyGoAwayIR& goaway) override { flags_ = kNoFlags; }
+
+  // TODO(diannahu): The END_HEADERS flag is incorrect for HEADERS that require
+  //     CONTINUATION frames.
+  void VisitHeaders(const SpdyHeadersIR& headers) override {
+    flags_ = HEADERS_FLAG_END_HEADERS;
+    if (headers.fin()) {
+      flags_ |= CONTROL_FLAG_FIN;
+    }
+    if (headers.padded()) {
+      flags_ |= HEADERS_FLAG_PADDED;
+    }
+    if (headers.has_priority()) {
+      flags_ |= HEADERS_FLAG_PRIORITY;
+    }
+  }
+
+  void VisitWindowUpdate(const SpdyWindowUpdateIR& window_update) override {
+    flags_ = kNoFlags;
+  }
+
+  void VisitBlocked(const SpdyBlockedIR& blocked) override {
+    flags_ = kNoFlags;
+  }
+
+  // TODO(diannahu): The END_PUSH_PROMISE flag is incorrect for PUSH_PROMISEs
+  //     that require CONTINUATION frames.
+  void VisitPushPromise(const SpdyPushPromiseIR& push_promise) override {
+    flags_ = PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
+    if (push_promise.padded()) {
+      flags_ |= PUSH_PROMISE_FLAG_PADDED;
+    }
+  }
+
+  // TODO(diannahu): The END_HEADERS flag is incorrect for CONTINUATIONs that
+  //     require CONTINUATION frames.
+  void VisitContinuation(const SpdyContinuationIR& continuation) override {
+    flags_ = HEADERS_FLAG_END_HEADERS;
+  }
+
+  void VisitAltSvc(const SpdyAltSvcIR& altsvc) override { flags_ = kNoFlags; }
+
+  void VisitPriority(const SpdyPriorityIR& priority) override {
+    flags_ = kNoFlags;
+  }
+
+  uint8_t flags() const { return flags_; }
+
+ private:
+  uint8_t flags_ = kNoFlags;
+};
+
 }  // namespace
 
 SpdySerializedFrame SpdyFramer::SerializeFrame(const SpdyFrameIR& frame) {
   FrameSerializationVisitor visitor(this);
   frame.Visit(&visitor);
   return visitor.ReleaseSerializedFrame();
+}
+
+uint8_t SpdyFramer::GetSerializedFlags(const SpdyFrameIR& frame) {
+  FlagsSerializationVisitor visitor;
+  frame.Visit(&visitor);
+  return visitor.flags();
 }
 
 size_t SpdyFramer::GetNumberRequiredContinuationFrames(size_t size) {
