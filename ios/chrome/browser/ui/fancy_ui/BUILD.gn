@@ -33,4 +33,5 @@ source_set("unit_tests") {
     "//base:i18n",
     "//testing/gtest",
   ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }

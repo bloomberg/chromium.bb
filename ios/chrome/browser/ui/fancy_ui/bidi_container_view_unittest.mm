@@ -5,8 +5,11 @@
 #import "ios/chrome/browser/ui/fancy_ui/bidi_container_view.h"
 
 #include "base/i18n/rtl.h"
-#include "base/mac/scoped_nsobject.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -23,10 +26,9 @@ UIViewAutoresizing BidiContainerViewTest::AutoresizingMaskForLocale(
     const char* locale,
     UIViewAutoresizing autoresizing) {
   base::i18n::SetICUDefaultLocale(base::i18n::GetCanonicalLocale(locale));
-  base::scoped_nsobject<BidiContainerView> view(
-      [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)]);
-  base::scoped_nsobject<UILabel> label(
-      [[UILabel alloc] initWithFrame:CGRectMake(20, 30, 40, 50)]);
+  BidiContainerView* view =
+      [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  UILabel* label = [[UILabel alloc] initWithFrame:CGRectMake(20, 30, 40, 50)];
   [label setAutoresizingMask:autoresizing];
   [view addSubview:label];
   [view layoutSubviews];
@@ -36,10 +38,9 @@ UIViewAutoresizing BidiContainerViewTest::AutoresizingMaskForLocale(
 TEST_F(BidiContainerViewTest, InitializeLeftToRight) {
   base::i18n::SetICUDefaultLocale(
       base::i18n::GetCanonicalLocale("en" /* English */));
-  base::scoped_nsobject<BidiContainerView> view(
-      [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)]);
-  base::scoped_nsobject<UILabel> label(
-      [[UILabel alloc] initWithFrame:CGRectMake(20, 30, 40, 50)]);
+  BidiContainerView* view =
+      [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  UILabel* label = [[UILabel alloc] initWithFrame:CGRectMake(20, 30, 40, 50)];
   [view addSubview:label];
   [view layoutSubviews];
   CGRect labelFrame = [label frame];
@@ -52,10 +53,9 @@ TEST_F(BidiContainerViewTest, InitializeLeftToRight) {
 TEST_F(BidiContainerViewTest, InitializeRightToLeft) {
   base::i18n::SetICUDefaultLocale(
       base::i18n::GetCanonicalLocale("he" /* Hebrew */));
-  base::scoped_nsobject<BidiContainerView> view(
-      [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)]);
-  base::scoped_nsobject<UILabel> label(
-      [[UILabel alloc] initWithFrame:CGRectMake(20, 30, 40, 50)]);
+  BidiContainerView* view =
+      [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  UILabel* label = [[UILabel alloc] initWithFrame:CGRectMake(20, 30, 40, 50)];
   [view addSubview:label];
   [view layoutSubviews];
   CGRect labelFrame = [label frame];
@@ -69,13 +69,11 @@ TEST_F(BidiContainerViewTest, InitializeRightToLeft) {
 TEST_F(BidiContainerViewTest, InitializeRightToLeftTwoViews) {
   base::i18n::SetICUDefaultLocale(
       base::i18n::GetCanonicalLocale("he" /* Hebrew */));
-  base::scoped_nsobject<BidiContainerView> view(
-      [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)]);
-  base::scoped_nsobject<UILabel> label1(
-      [[UILabel alloc] initWithFrame:CGRectMake(20, 30, 40, 50)]);
+  BidiContainerView* view =
+      [[BidiContainerView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  UILabel* label1 = [[UILabel alloc] initWithFrame:CGRectMake(20, 30, 40, 50)];
   [view addSubview:label1];
-  base::scoped_nsobject<UILabel> label2(
-      [[UILabel alloc] initWithFrame:CGRectMake(60, 30, 30, 50)]);
+  UILabel* label2 = [[UILabel alloc] initWithFrame:CGRectMake(60, 30, 30, 50)];
   [view addSubview:label2];
   [view layoutSubviews];
   EXPECT_EQ(100 - 20 - 40 /* view.width - label1.originX - label1.width */,
