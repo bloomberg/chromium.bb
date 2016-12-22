@@ -30,11 +30,11 @@ def PostUploadHook(cl, change, output_api):
 
 
 def CheckChangeOnUpload(input_api, output_api):
-  return _CheckForTranslations(input_api, output_api)
+  return _CommonChecks(input_api, output_api)
 
 
 def CheckChangeOnCommit(input_api, output_api):
-  return _CheckForTranslations(input_api, output_api)
+  return _CommonChecks(input_api, output_api)
 
 
 def _CheckForTranslations(input_api, output_api):
@@ -70,3 +70,10 @@ def _CheckForTranslations(input_api, output_api):
 Don't embed translations directly in shared UI code. Instead, inject your
 translation from the place using the shared code. For an example: see
 <cr-dialog>#closeText (http://bit.ly/2eLEsqh).""")]
+
+
+def _CommonChecks(input_api, output_api):
+  results = []
+  results += _CheckForTranslations(input_api, output_api)
+  results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)
+  return results
