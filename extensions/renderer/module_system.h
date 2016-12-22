@@ -153,6 +153,13 @@ class ModuleSystem : public ObjectBackedNativeHandler,
     exception_handler_ = std::move(handler);
   }
 
+  // Called when a native binding is created in order to run any custom binding
+  // code to set up various hooks.
+  // TODO(devlin): We can get rid of this once we convert all our custom
+  // bindings.
+  void OnNativeBindingCreated(const std::string& api_name,
+                              v8::Local<v8::Value> api_bridge_value);
+
  protected:
   friend class ModuleSystemTestEnvironment;
   friend class ScriptContext;
@@ -209,6 +216,9 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   // Loads and runs a Javascript module.
   v8::Local<v8::Value> LoadModule(const std::string& module_name);
+  v8::Local<v8::Value> LoadModuleWithNativeAPIBridge(
+      const std::string& module_name,
+      v8::Local<v8::Value> api_object);
 
   // Invoked when a module is loaded in response to a requireAsync call.
   // Resolves |resolver| with |value|.

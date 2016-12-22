@@ -63,6 +63,10 @@ class APIBindingHooks {
                      const APISignature* signature,
                      gin::Arguments* arguments);
 
+  // Returns a JS interface that can be used to register hooks.
+  v8::Local<v8::Object> GetJSHookInterface(const std::string& api_name,
+                                           v8::Local<v8::Context> context);
+
  private:
   // Whether we've tried to use any hooks associated with this object.
   bool hooks_used_ = false;

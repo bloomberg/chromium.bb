@@ -55,6 +55,7 @@ void APIRequestHandler::CompleteRequest(int request_id,
   pending_requests_.erase(iter);
 
   v8::Isolate* isolate = pending_request.isolate;
+  v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = pending_request.context.Get(isolate);
   std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());

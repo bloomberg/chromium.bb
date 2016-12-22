@@ -5,7 +5,7 @@
 // test_custom_bindings.js
 // mini-framework for ExtensionApiTest browser tests
 
-var binding = require('binding').Binding.create('test');
+var binding = apiBridge || require('binding').Binding.create('test');
 
 var environmentSpecificBindings = require('test_environment_specific_bindings');
 var GetExtensionAPIDefinitionsForTest =
@@ -357,4 +357,5 @@ binding.registerCustomHook(function(api) {
   environmentSpecificBindings.registerHooks(api);
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

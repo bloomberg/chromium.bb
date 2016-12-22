@@ -19,6 +19,8 @@ source_set("renderer") {
     "api_activity_logger.h",
     "api_binding.cc",
     "api_binding.h",
+    "api_binding_bridge.cc",
+    "api_binding_bridge.h",
     "api_binding_hooks.cc",
     "api_binding_hooks.h",
     "api_binding_types.h",

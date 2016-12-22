@@ -58,7 +58,8 @@ class APIBindingsSystem {
       const std::string& api_name,
       v8::Local<v8::Context> context,
       v8::Isolate* isolate,
-      const APIBinding::AvailabilityCallback& is_available);
+      const APIBinding::AvailabilityCallback& is_available,
+      v8::Local<v8::Object>* hooks_interface_out);
 
   // Responds to the request with the given |request_id|, calling the callback
   // with |response|.

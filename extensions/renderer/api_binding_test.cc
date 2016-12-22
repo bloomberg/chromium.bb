@@ -15,6 +15,10 @@ namespace extensions {
 APIBindingTest::APIBindingTest() {}
 APIBindingTest::~APIBindingTest() {}
 
+v8::ExtensionConfiguration* APIBindingTest::GetV8ExtensionConfiguration() {
+  return nullptr;
+}
+
 void APIBindingTest::SetUp() {
   // Much of this initialization is stolen from the somewhat-similar
   // gin::V8Test.
@@ -31,7 +35,8 @@ void APIBindingTest::SetUp() {
   isolate()->Enter();
 
   v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = v8::Context::New(isolate());
+  v8::Local<v8::Context> context =
+      v8::Context::New(isolate(), GetV8ExtensionConfiguration());
   context->Enter();
   context_holder_ = base::MakeUnique<gin::ContextHolder>(isolate());
   context_holder_->SetContext(context);

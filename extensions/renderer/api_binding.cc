@@ -167,10 +167,14 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
     DCHECK(success.FromJust());
   }
 
-  if (binding_hooks_)
-    binding_hooks_->InitializeInContext(context, api_name_);
+  binding_hooks_->InitializeInContext(context, api_name_);
 
   return object;
+}
+
+v8::Local<v8::Object> APIBinding::GetJSHookInterface(
+    v8::Local<v8::Context> context) {
+  return binding_hooks_->GetJSHookInterface(api_name_, context);
 }
 
 void APIBinding::HandleCall(const std::string& name,
@@ -185,8 +189,7 @@ void APIBinding::HandleCall(const std::string& name,
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   // Check for a custom hook to handle the method.
-  if (binding_hooks_ &&
-      binding_hooks_->HandleRequest(api_name_, name, context,
+  if (binding_hooks_->HandleRequest(api_name_, name, context,
                                     signature, arguments)) {
     return;  // Handled by a custom hook.
   }

@@ -75,6 +75,10 @@ class APIBinding {
       APIEventHandler* event_handler,
       const AvailabilityCallback& is_available);
 
+  // Returns the JS interface to use when registering hooks with legacy custom
+  // bindings.
+  v8::Local<v8::Object> GetJSHookInterface(v8::Local<v8::Context> context);
+
  private:
   // Handles a call an API method with the given |name| and matches the
   // arguments against |signature|.
@@ -94,8 +98,7 @@ class APIBinding {
   // The callback to use when an API is invoked with valid arguments.
   APIMethodCallback method_callback_;
 
-  // The registered hooks for this API. Null if there are no registered custom
-  // hooks.
+  // The registered hooks for this API.
   std::unique_ptr<APIBindingHooks> binding_hooks_;
 
   // The reference map for all known types; required to outlive this object.

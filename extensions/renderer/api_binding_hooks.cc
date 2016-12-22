@@ -84,33 +84,6 @@ struct APIHooksPerContextData : public base::SupportsUserData::Data {
 gin::WrapperInfo JSHookInterface::kWrapperInfo =
     {gin::kEmbedderNativeGin};
 
-// Creates and returns JS object for the hook interface to allow for
-// registering custom hooks from JS.
-v8::Local<v8::Object> CreateJSHookInterface(const std::string& api_name,
-                                            v8::Local<v8::Context> context) {
-  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
-  DCHECK(per_context_data);
-  APIHooksPerContextData* data = static_cast<APIHooksPerContextData*>(
-      per_context_data->GetUserData(kExtensionAPIHooksPerContextKey));
-  if (!data) {
-    auto api_data =
-        base::MakeUnique<APIHooksPerContextData>(context->GetIsolate());
-    data = api_data.get();
-    per_context_data->SetUserData(kExtensionAPIHooksPerContextKey,
-                                  api_data.release());
-  }
-
-  DCHECK(data->hook_interfaces.find(api_name) == data->hook_interfaces.end());
-
-  gin::Handle<JSHookInterface> hooks =
-      gin::CreateHandle(context->GetIsolate(), new JSHookInterface(api_name));
-  CHECK(!hooks.IsEmpty());
-  v8::Local<v8::Object> hooks_object = hooks.ToV8().As<v8::Object>();
-  data->hook_interfaces[api_name].Reset(context->GetIsolate(), hooks_object);
-
-  return hooks_object;
-}
-
 }  // namespace
 
 APIBindingHooks::APIBindingHooks(const binding::RunJSFunction& run_js)
@@ -168,7 +141,7 @@ bool APIBindingHooks::HandleRequest(const std::string& api_name,
   std::vector<v8::Local<v8::Value>> v8_args;
   // TODO(devlin): Right now, this doesn't support exceptions or return values,
   // which we will need to at some point.
-  if (arguments->GetRemaining(&v8_args)) {
+  if (arguments->Length() == 0 || arguments->GetRemaining(&v8_args)) {
     v8::Local<v8::Function> handler =
         js_hook_iter->second.Get(context->GetIsolate());
     run_js_.Run(handler, context, v8_args.size(), v8_args.data());
@@ -194,9 +167,37 @@ void APIBindingHooks::InitializeInContext(
   v8::Local<v8::Function> function;
   if (!gin::ConvertFromV8(context->GetIsolate(), func_as_value, &function))
     return;
-  v8::Local<v8::Object> api_hooks = CreateJSHookInterface(api_name, context);
+  v8::Local<v8::Value> api_hooks = GetJSHookInterface(api_name, context);
   v8::Local<v8::Value> args[] = {api_hooks};
   run_js_.Run(function, context, arraysize(args), args);
+}
+
+v8::Local<v8::Object> APIBindingHooks::GetJSHookInterface(
+    const std::string& api_name,
+    v8::Local<v8::Context> context) {
+  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
+  DCHECK(per_context_data);
+  APIHooksPerContextData* data = static_cast<APIHooksPerContextData*>(
+      per_context_data->GetUserData(kExtensionAPIHooksPerContextKey));
+  if (!data) {
+    auto api_data =
+        base::MakeUnique<APIHooksPerContextData>(context->GetIsolate());
+    data = api_data.get();
+    per_context_data->SetUserData(kExtensionAPIHooksPerContextKey,
+                                  api_data.release());
+  }
+
+  auto iter = data->hook_interfaces.find(api_name);
+  if (iter != data->hook_interfaces.end())
+    return iter->second.Get(context->GetIsolate());
+
+  gin::Handle<JSHookInterface> hooks =
+      gin::CreateHandle(context->GetIsolate(), new JSHookInterface(api_name));
+  CHECK(!hooks.IsEmpty());
+  v8::Local<v8::Object> hooks_object = hooks.ToV8().As<v8::Object>();
+  data->hook_interfaces[api_name].Reset(context->GetIsolate(), hooks_object);
+
+  return hooks_object;
 }
 
 }  // namespace extensions

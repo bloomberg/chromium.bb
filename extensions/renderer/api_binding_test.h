@@ -26,6 +26,10 @@ class APIBindingTest : public testing::Test {
   APIBindingTest();
   ~APIBindingTest() override;
 
+  // Returns the V8 ExtensionConfiguration to use for contexts. The default
+  // implementation returns null.
+  virtual v8::ExtensionConfiguration* GetV8ExtensionConfiguration();
+
   // testing::Test:
   void SetUp() override;
   void TearDown() override;

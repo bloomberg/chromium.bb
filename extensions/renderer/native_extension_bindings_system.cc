@@ -10,9 +10,13 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature_provider.h"
+#include "extensions/renderer/api_binding_bridge.h"
+#include "extensions/renderer/api_binding_hooks.h"
+#include "extensions/renderer/module_system.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "gin/converter.h"
+#include "gin/handle.h"
 #include "gin/per_context_data.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -113,6 +117,7 @@ void NativeExtensionBindingsSystem::WillReleaseScriptContext(
 
 void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     ScriptContext* context) {
+  v8::HandleScope handle_scope(context->isolate());
   v8::Local<v8::Context> v8_context = context->v8_context();
   v8::Local<v8::Object> chrome = GetOrCreateChrome(v8_context);
   if (chrome.IsEmpty())
@@ -232,13 +237,28 @@ void NativeExtensionBindingsSystem::GetAPIHelper(
   if (has_property.FromJust()) {
     result = apis->GetRealNamedProperty(context, api_name).ToLocalChecked();
   } else {
+    ScriptContext* script_context =
+        ScriptContextSet::GetContextByV8Context(context);
     std::string api_name_string;
     CHECK(gin::Converter<std::string>::FromV8(isolate, api_name,
                                               &api_name_string));
-    result = data->bindings_system->api_system_.CreateAPIInstance(
+    v8::Local<v8::Object> hooks_interface;
+    APIBindingsSystem& api_system = data->bindings_system->api_system_;
+    result = api_system.CreateAPIInstance(
         api_name_string, context, isolate,
-        base::Bind(&IsAPIMethodAvailable,
-                   ScriptContextSet::GetContextByV8Context(context)));
+        base::Bind(&IsAPIMethodAvailable, script_context), &hooks_interface);
+
+    gin::Handle<APIBindingBridge> bridge_handle = gin::CreateHandle(
+        isolate,
+        new APIBindingBridge(context, result, hooks_interface,
+                             script_context->GetExtensionID(),
+                             script_context->GetContextTypeDescription(),
+                             base::Bind(&CallJsFunction)));
+    v8::Local<v8::Value> native_api_bridge = bridge_handle.ToV8();
+
+    script_context->module_system()->OnNativeBindingCreated(api_name_string,
+                                                            native_api_bridge);
+
     v8::Maybe<bool> success =
         apis->CreateDataProperty(context, api_name, result);
     if (!success.IsJust() || !success.FromJust())

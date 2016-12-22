@@ -196,7 +196,7 @@ TEST_F(APIBindingUnittest, Test) {
   APIBinding binding(
       "test", *functions, nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      nullptr, &refs);
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
   EXPECT_TRUE(refs.empty());
 
   v8::HandleScope handle_scope(isolate());
@@ -297,7 +297,7 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
   APIBinding binding(
       "test", *functions, types.get(), nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      nullptr, &refs);
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
   EXPECT_EQ(2u, refs.size());
   EXPECT_TRUE(base::ContainsKey(refs, "refObj"));
   EXPECT_TRUE(base::ContainsKey(refs, "refEnum"));
@@ -343,7 +343,7 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
   APIBinding binding(
       "test", *functions, nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      nullptr, &refs);
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -386,7 +386,7 @@ TEST_F(APIBindingUnittest, TestEventCreation) {
   APIBinding binding(
       "test", *functions, nullptr, events.get(),
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      nullptr, &refs);
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = ContextLocal();
@@ -422,7 +422,7 @@ TEST_F(APIBindingUnittest, TestDisposedContext) {
   APIBinding binding(
       "test", *functions, nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
-      nullptr, &refs);
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
   EXPECT_TRUE(refs.empty());
 
   v8::HandleScope handle_scope(isolate());

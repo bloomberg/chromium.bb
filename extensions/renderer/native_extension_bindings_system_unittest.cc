@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -15,8 +16,12 @@
 #include "extensions/common/value_builder.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
+#include "extensions/renderer/module_system.h"
+#include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
+#include "extensions/renderer/string_source_map.h"
+#include "extensions/renderer/test_v8_extension_configuration.h"
 
 namespace extensions {
 
@@ -52,6 +57,10 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   ~NativeExtensionBindingsSystemUnittest() override {}
 
  protected:
+  v8::ExtensionConfiguration* GetV8ExtensionConfiguration() override {
+    return TestV8ExtensionConfiguration::GetConfiguration();
+  }
+
   void SetUp() override {
     script_context_set_ = base::MakeUnique<ScriptContextSet>(&extension_ids_);
     bindings_system_ = base::MakeUnique<NativeExtensionBindingsSystem>(
@@ -87,6 +96,8 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
                                      Feature::Context context_type) {
     auto script_context = base::MakeUnique<ScriptContext>(
         v8_context, nullptr, extension, context_type, extension, context_type);
+    script_context->set_module_system(
+        base::MakeUnique<ModuleSystem>(script_context.get(), source_map()));
     ScriptContext* raw_script_context = script_context.get();
     raw_script_contexts_.push_back(raw_script_context);
     script_context_set_->AddForTesting(std::move(script_context));
@@ -99,6 +110,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     return bindings_system_.get();
   }
   const ExtensionHostMsg_Request_Params& last_params() { return last_params_; }
+  StringSourceMap* source_map() { return &source_map_; }
 
  private:
   ExtensionIdSet extension_ids_;
@@ -106,6 +118,7 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   std::vector<ScriptContext*> raw_script_contexts_;
   std::unique_ptr<NativeExtensionBindingsSystem> bindings_system_;
   ExtensionHostMsg_Request_Params last_params_;
+  StringSourceMap source_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeExtensionBindingsSystemUnittest);
 };
@@ -258,6 +271,84 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
       V8ValueFromScriptSource(context, "chrome.power");
   ASSERT_FALSE(power_object.IsEmpty());
   EXPECT_TRUE(power_object->IsUndefined());
+}
+
+// Tests that traditional custom bindings can be used with the native bindings
+// system.
+TEST_F(NativeExtensionBindingsSystemUnittest, TestBridgingToJSCustomBindings) {
+  // Custom binding code. This basically utilizes the interface in binding.js in
+  // order to test backwards compatibility.
+  const char kCustomBinding[] =
+      "apiBridge.registerCustomHook((api, extensionId, contextType) => {\n"
+      "  api.apiFunctions.setHandleRequest('queryState',\n"
+      "                                    (time, callback) => {\n"
+      "    this.timeArg = time;\n"
+      "    callback('active');\n"
+      "  });\n"
+      "  this.hookedExtensionId = extensionId;\n"
+      "  this.hookedContextType = contextType;\n"
+      "  api.compiledApi.hookedApiProperty = 'someProperty';\n"
+      "});\n";
+
+  source_map()->RegisterModule("idle", kCustomBinding);
+
+  scoped_refptr<Extension> extension = CreateExtension("foo", {"idle"});
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  {
+    // Call the function correctly.
+    const char kCallIdleQueryState[] =
+        "(function() {\n"
+        "  chrome.idle.queryState(30, function(state) {\n"
+        "    this.responseState = state;\n"
+        "  });\n"
+        "});";
+
+    v8::Local<v8::Function> call_idle_query_state =
+        FunctionFromString(context, kCallIdleQueryState);
+    RunFunctionOnGlobal(call_idle_query_state, context, 0, nullptr);
+  }
+
+  auto get_property_as_string = [&context](v8::Local<v8::Object> object,
+                                           base::StringPiece property_name) {
+    std::unique_ptr<base::Value> property =
+        GetBaseValuePropertyFromObject(object, context, property_name);
+    if (!property)
+      return std::string();
+    return ValueToString(*property);
+  };
+
+  // To start, check that the properties we set when running the hooks are
+  // correct. We do this after calling the function because the API objects (and
+  // thus the hooks) are set up lazily.
+  v8::Local<v8::Object> global = context->Global();
+  EXPECT_EQ(base::StringPrintf("\"%s\"", extension->id().c_str()),
+            get_property_as_string(global, "hookedExtensionId"));
+  EXPECT_EQ("\"BLESSED_EXTENSION\"",
+            get_property_as_string(global, "hookedContextType"));
+  v8::Local<v8::Value> idle_api =
+      V8ValueFromScriptSource(context, "chrome.idle");
+  ASSERT_FALSE(idle_api.IsEmpty());
+  ASSERT_TRUE(idle_api->IsObject());
+  EXPECT_EQ("\"someProperty\"",
+            get_property_as_string(idle_api.As<v8::Object>(),
+                                   "hookedApiProperty"));
+
+  // Next, we need to check two pieces: first, that the custom handler was
+  // called with the proper arguments....
+  EXPECT_EQ("30", get_property_as_string(global, "timeArg"));
+
+  // ...and second, that the callback was called with the proper result.
+  EXPECT_EQ("\"active\"", get_property_as_string(global, "responseState"));
 }
 
 }  // namespace extensions

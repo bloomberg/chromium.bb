@@ -210,10 +210,10 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
   v8::Local<v8::Context> context = ContextLocal();
 
   v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs));
+      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
   ASSERT_FALSE(alpha_api.IsEmpty());
   v8::Local<v8::Object> beta_api = bindings_system()->CreateAPIInstance(
-      kBetaAPIName, context, isolate(), base::Bind(&AllowAllAPIs));
+      kBetaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
   ASSERT_FALSE(beta_api.IsEmpty());
 
   {
@@ -321,7 +321,7 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
       base::Bind(hook, &did_call));
 
   v8::Local<v8::Object> alpha_api = bindings_system()->CreateAPIInstance(
-      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs));
+      kAlphaAPIName, context, isolate(), base::Bind(&AllowAllAPIs), nullptr);
   ASSERT_FALSE(alpha_api.IsEmpty());
 
   {
@@ -408,7 +408,8 @@ TEST_F(APIBindingsSystemTestWithRealAPI, RealAPIs) {
   auto add_api_to_chrome = [this, &chrome,
                             &context](const std::string& api_name) {
     v8::Local<v8::Object> api = bindings_system()->CreateAPIInstance(
-        api_name, context, context->GetIsolate(), base::Bind(&AllowAllAPIs));
+        api_name, context, context->GetIsolate(), base::Bind(&AllowAllAPIs),
+        nullptr);
     ASSERT_FALSE(api.IsEmpty()) << api_name;
     v8::Maybe<bool> res = chrome->Set(
         context, gin::StringToV8(context->GetIsolate(), api_name), api);
