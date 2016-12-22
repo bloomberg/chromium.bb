@@ -94,6 +94,7 @@ public class ImeTest extends ContentShellTestBase {
         waitForEventLogs("selectionchange");
         clearEventLogs();
 
+        waitAndVerifyUpdateSelection(0, 0, 0, -1, -1);
         resetAllStates();
     }
 
