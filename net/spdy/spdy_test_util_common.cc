@@ -1043,21 +1043,19 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyPostReply(
 
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(int stream_id,
                                                          bool fin) {
-  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdyDataIR data_ir(stream_id,
                      base::StringPiece(kUploadData, kUploadDataSize));
   data_ir.set_fin(fin);
-  return SpdySerializedFrame(framer.SerializeData(data_ir));
+  return SpdySerializedFrame(headerless_spdy_framer_.SerializeData(data_ir));
 }
 
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(int stream_id,
                                                          const char* data,
                                                          uint32_t len,
                                                          bool fin) {
-  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdyDataIR data_ir(stream_id, base::StringPiece(data, len));
   data_ir.set_fin(fin);
-  return SpdySerializedFrame(framer.SerializeData(data_ir));
+  return SpdySerializedFrame(headerless_spdy_framer_.SerializeData(data_ir));
 }
 
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(int stream_id,
@@ -1065,11 +1063,10 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyDataFrame(int stream_id,
                                                          uint32_t len,
                                                          bool fin,
                                                          int padding_length) {
-  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdyDataIR data_ir(stream_id, base::StringPiece(data, len));
   data_ir.set_fin(fin);
   data_ir.set_padding_len(padding_length);
-  return SpdySerializedFrame(framer.SerializeData(data_ir));
+  return SpdySerializedFrame(headerless_spdy_framer_.SerializeData(data_ir));
 }
 
 SpdySerializedFrame SpdyTestUtil::ConstructWrappedSpdyFrame(
