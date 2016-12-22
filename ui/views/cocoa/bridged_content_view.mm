@@ -1412,11 +1412,15 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   composition.underlines.push_back(ui::CompositionUnderline(
       0, [text length], SK_ColorBLACK, false, SK_ColorTRANSPARENT));
   textInputClient_->SetCompositionText(composition);
+  keyDownEvent_ = nil;  // Handled.
 }
 
 - (void)unmarkText {
-  if (textInputClient_)
-    textInputClient_->ConfirmCompositionText();
+  if (!textInputClient_)
+    return;
+
+  textInputClient_->ConfirmCompositionText();
+  keyDownEvent_ = nil;  // Handled.
 }
 
 - (NSArray*)validAttributesForMarkedText {
