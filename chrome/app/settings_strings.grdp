@@ -472,25 +472,34 @@
 
   <!-- Bluetooth Page -->
   <if expr="chromeos">
-    <message name="IDS_SETTINGS_BLUETOOTH" desc="Name of the settings page which displays bluetooth device settings.">
+    <message name="IDS_SETTINGS_BLUETOOTH" desc="Name of the settings page which displays Bluetooth device settings.">
       Bluetooth
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_ADD_DEVICE" desc="Name of the settings page for adding bluetooth devices.">
-      Add a Device
+    <message name="IDS_SETTINGS_BLUETOOTH_PAIR" desc="Label for the settings button to pair a previously paired Bluetooth device.">
+      Pair
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE" desc="Name of the settings page for pairing bluetooth devices.">
-      Pair Bluetooth Device
+    <message name="IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE" desc="Label for the settings button to add and pair a new Bluetooth device.">
+      Pair device
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_ENABLED" desc="Label for bluetooth section when enabled.">
+    <message name="IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE" desc="Title of the settings dialog for adding or pairing Bluetooth a device.">
+      Pair Bluetooth device
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_SCANNING" desc="Message displayed while scanning for Bluetooth devices.">
+      Scanning for devices...
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_NO_DEVICES" desc="Message displayed when no Bluetooth devices are found after a scan.">
+      No Bluetooth devices found.
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ENABLED" desc="Label for Bluetooth section when enabled.">
       Bluetooth enabled
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_DISABLED" desc="Label for bluetooth section when disabled.">
+    <message name="IDS_SETTINGS_BLUETOOTH_DISABLED" desc="Label for Bluetooth section when disabled.">
       Bluetooth disabled
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing available bluetooth devices. Only visible by screen reader software.">
-      Show available bluetooth devices
+    <message name="IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing available Bluetooth devices. Only visible by screen reader software.">
+      Show available Bluetooth devices
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_REMOVE" desc="Label for removing (unpairing) a paired bluetooth device">
+    <message name="IDS_SETTINGS_BLUETOOTH_REMOVE" desc="Label for removing (unpairing) a paired Bluetooth device">
       Remove from list
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_REQUEST_PINCODE" desc="Bluetooth pairing message typically displayed when the external Bluetooth 2.0 and older device has no display or means of input.">
