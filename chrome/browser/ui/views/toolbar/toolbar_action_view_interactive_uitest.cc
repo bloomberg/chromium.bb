@@ -270,8 +270,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
 // Tests that clicking on the toolbar action a second time when the action is
 // already open results in closing the popup, and doesn't re-open it.
-#if defined(OS_WIN)
-// Flaky on Windows; see https://crbug.com/617056.
+#if defined(OS_WIN) || defined(OS_LINUX) || (OS_CHROMEOS)
+// Flaky on Windows, Linux and ChromeOS; see https://crbug.com/617056.
 #define MAYBE_DoubleClickToolbarActionToClose \
     DISABLED_DoubleClickToolbarActionToClose
 #else
