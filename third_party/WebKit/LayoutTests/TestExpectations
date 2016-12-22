@@ -1976,6 +1976,8 @@ crbug.com/508728 crbug.com/664268 imported/wpt/html/browsers/history/the-locatio
 crbug.com/508728 imported/wpt/webstorage/document-domain.html [ Failure Timeout ]
 crbug.com/508728 virtual/mojo-localstorage/imported/wpt/webstorage/document-domain.html [ Failure Timeout ]
 
+crbug.com/676572 [ Debug ] virtual/mojo-localstorage/imported/wpt/webstorage/storage_local_setitem_quotaexceedederr.html [ Pass Timeout ]
+
 # Bug(dpranke)
 # crbug.com/508728 imported/wpt/workers/Worker_cross_origin_security_err.htm [ Timeout ]
 
