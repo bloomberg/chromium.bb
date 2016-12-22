@@ -32,11 +32,15 @@
    dot-product of the 1st band of chroma with the luma ref doesn't overflow.*/
 #define OD_CFL_FLIP_SHIFT (OD_LIMIT_BSIZE_MAX + 0)
 
-static void od_encode_pvq_codeword(od_ec_enc *ec, od_pvq_codeword_ctx *adapt,
+static void aom_encode_pvq_codeword(aom_writer *w, od_pvq_codeword_ctx *adapt,
  const od_coeff *in, int n, int k) {
   int i;
-  od_encode_band_pvq_splits(ec, adapt, in, n, k, 0);
-  for (i = 0; i < n; i++) if (in[i]) od_ec_enc_bits(ec, in[i] < 0, 1);
+#if CONFIG_DAALA_EC
+  od_encode_band_pvq_splits(&w->ec, adapt, in, n, k, 0);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
+  for (i = 0; i < n; i++) if (in[i]) aom_write_bit(w, in[i] < 0);
 }
 
 /* Computes 1/sqrt(i) using a table for small values. */
@@ -238,15 +242,27 @@ static double od_pvq_rate(int qg, int icgr, int theta, int ts,
     rate = (1 + .4*f)*n*OD_LOG2(1 + OD_MAXF(0, log(n*2*(1*f + .025))*k/n)) + 3;
   }
   else {
-    od_ec_enc ec;
+    aom_writer w;
     od_pvq_codeword_ctx cd;
     int tell;
-    od_ec_enc_init(&ec, 1000);
+#if CONFIG_DAALA_EC
+    od_ec_enc_init(&w.ec, 1000);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
     OD_COPY(&cd, &adapt->pvq.pvq_codeword_ctx, 1);
-    tell = od_ec_enc_tell_frac(&ec);
-    od_encode_pvq_codeword(&ec, &cd, y0, n - (theta != -1), k);
-    rate = (od_ec_enc_tell_frac(&ec)-tell)/8.;
-    od_ec_enc_clear(&ec);
+#if CONFIG_DAALA_EC
+    tell = od_ec_enc_tell_frac(&w.ec);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
+    aom_encode_pvq_codeword(&w, &cd, y0, n - (theta != -1), k);
+#if CONFIG_DAALA_EC
+    rate = (od_ec_enc_tell_frac(&w.ec)-tell)/8.;
+    od_ec_enc_clear(&w.ec);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   }
   if (qg > 0 && theta >= 0) {
     /* Approximate cost of entropy-coding theta */
@@ -693,12 +709,8 @@ void pvq_encode_partition(aom_writer *w,
      &tmp, 2);
     OD_IIR_DIADIC(*ext, theta << 16, 2);
   }
-#if CONFIG_DAALA_EC
-  od_encode_pvq_codeword(&w->ec, &adapt->pvq.pvq_codeword_ctx, in,
+  aom_encode_pvq_codeword(w, &adapt->pvq.pvq_codeword_ctx, in,
    n - (theta != -1), k);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
 }
 
 /** Quantizes a scalar with rate-distortion optimization (RDO)
