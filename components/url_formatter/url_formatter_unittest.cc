@@ -290,6 +290,34 @@ const IDNTestCase idn_cases[] = {
   // Hebrew Gershayim with Arabic is disallowed.
   {"xn--5eb7h.eg", L"\x0628\x05f4.eg", false},
 
+  // Hyphens (http://unicode.org/cldr/utility/confusables.jsp?a=-)
+  // Hyphen-Minus (the only hyphen allowed)
+  // abc-def
+  {"abc-def.com", L"abc-def.com", true},
+  // Modifier Letter Minus Sign
+  {"xn--abcdef-5od.com", L"abc\x02d7" L"def.com", false},
+  // Hyphen
+  {"xn--abcdef-dg0c.com", L"abc\x2010" L"def.com", false},
+  // Non-Breaking Hyphen
+  // This is actually an invalid IDNA domain (U+2011 normalizes to U+2010), but
+  // it is included to ensure that we do not inadvertently allow this character
+  // to be displayed as Unicode.
+  {"xn--abcdef-kg0c.com", L"abc\x2011" L"def.com", false},
+  // Figure Dash
+  {"xn--abcdef-rg0c.com", L"abc\x2012" L"def.com", false},
+  // En Dash
+  {"xn--abcdef-yg0c.com", L"abc\x2013" L"def.com", false},
+  // Hyphen Bullet
+  {"xn--abcdef-kq0c.com", L"abc\x2043" L"def.com", false},
+  // Minus Sign
+  {"xn--abcdef-5d3c.com", L"abc\x2212" L"def.com", false},
+  // Heavy Minus Sign
+  {"xn--abcdef-kg1d.com", L"abc\x2796" L"def.com", false},
+  // Coptic Capital Letter Dialect-P Ni
+  {"xn--abcdef-yy8d.com", L"abc\x2cba" L"def.com", false},
+  // Small Em Dash
+  {"xn--abcdef-5g0c.com", L"abc\xfe58" L"def.com", false},
+
   // Custom dangerous patterns
   // Two Katakana-Hiragana combining mark in a row
   {"google.xn--com-oh4ba.evil.jp", L"google.com\x309a\x309a.evil.jp", false},
