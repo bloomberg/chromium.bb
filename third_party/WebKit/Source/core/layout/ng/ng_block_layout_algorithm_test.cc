@@ -20,12 +20,14 @@ namespace {
 
 NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
                                             TextDirection direction,
-                                            NGLogicalSize size) {
+                                            NGLogicalSize size,
+                                            bool shrink_to_fit = false) {
   return NGConstraintSpaceBuilder(writing_mode)
       .SetAvailableSize(size)
       .SetPercentageResolutionSize(size)
       .SetTextDirection(direction)
       .SetWritingMode(writing_mode)
+      .SetIsShrinkToFit(shrink_to_fit)
       .ToConstraintSpace();
 }
 
@@ -47,6 +49,25 @@ class NGBlockLayoutAlgorithmTest : public ::testing::Test {
       ;
 
     return toNGPhysicalFragment(fragment);
+  }
+
+  MinAndMaxContentSizes RunComputeMinAndMax(NGBlockNode* first_child) {
+    // The constraint space is not used for min/max computation, but we need
+    // it to create the algorithm.
+    NGConstraintSpace* space =
+        ConstructConstraintSpace(kHorizontalTopBottom, TextDirection::Ltr,
+                                 NGLogicalSize(LayoutUnit(), LayoutUnit()));
+    NGBlockLayoutAlgorithm algorithm(style_.get(), first_child, space);
+    MinAndMaxContentSizes sizes;
+    NGLayoutAlgorithm::MinAndMaxState state;
+    while ((state = algorithm.ComputeMinAndMaxContentSizes(&sizes)) !=
+           NGLayoutAlgorithm::kSuccess) {
+      EXPECT_NE(NGLayoutAlgorithm::kNotImplemented, state);
+      // shouldn't happen but let's avoid an infinite loop
+      if (state == NGLayoutAlgorithm::kNotImplemented)
+        break;
+    }
+    return sizes;
   }
 
   RefPtr<ComputedStyle> style_;
@@ -777,6 +798,53 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFragmentsWithClear) {
       NGLogicalSize(LayoutUnit(kParentSize), LayoutUnit(kParentSize)));
   child3 = frag->Children()[2];
   EXPECT_EQ(kDiv1Size + kDiv2Size, child3->TopOffset());
+}
+
+// Verifies that we compute the right min and max-content size.
+TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContent) {
+  const int kWidth = 50;
+  const int kWidthChild1 = 20;
+  const int kWidthChild2 = 30;
+
+  // This should have no impact on the min/max content size.
+  style_->setWidth(Length(kWidth, Fixed));
+
+  RefPtr<ComputedStyle> first_style = ComputedStyle::create();
+  first_style->setWidth(Length(kWidthChild1, Fixed));
+  NGBlockNode* first_child = new NGBlockNode(first_style.get());
+
+  RefPtr<ComputedStyle> second_style = ComputedStyle::create();
+  second_style->setWidth(Length(kWidthChild2, Fixed));
+  NGBlockNode* second_child = new NGBlockNode(second_style.get());
+
+  first_child->SetNextSibling(second_child);
+
+  MinAndMaxContentSizes sizes = RunComputeMinAndMax(first_child);
+  EXPECT_EQ(kWidthChild2, sizes.min_content);
+  EXPECT_EQ(kWidthChild2, sizes.max_content);
+}
+
+// Tests that we correctly handle shrink-to-fit
+TEST_F(NGBlockLayoutAlgorithmTest, ShrinkToFit) {
+  const int kWidthChild1 = 20;
+  const int kWidthChild2 = 30;
+
+  RefPtr<ComputedStyle> first_style = ComputedStyle::create();
+  first_style->setWidth(Length(kWidthChild1, Fixed));
+  NGBlockNode* first_child = new NGBlockNode(first_style.get());
+
+  RefPtr<ComputedStyle> second_style = ComputedStyle::create();
+  second_style->setWidth(Length(kWidthChild2, Fixed));
+  NGBlockNode* second_child = new NGBlockNode(second_style.get());
+
+  first_child->SetNextSibling(second_child);
+
+  auto* space = ConstructConstraintSpace(
+      kHorizontalTopBottom, TextDirection::Ltr,
+      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite), true);
+  NGPhysicalFragmentBase* frag = RunBlockLayoutAlgorithm(space, first_child);
+
+  EXPECT_EQ(LayoutUnit(30), frag->Width());
 }
 
 }  // namespace

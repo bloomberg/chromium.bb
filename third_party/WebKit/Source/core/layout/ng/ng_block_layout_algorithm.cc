@@ -181,7 +181,8 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     NGConstraintSpace* constraint_space,
     NGBreakToken* break_token)
     : NGLayoutAlgorithm(kBlockLayoutAlgorithm),
-      state_(kStateInit),
+      layout_state_(kStateInit),
+      compute_minmax_state_(kStateInit),
       style_(style),
       first_child_(first_child),
       constraint_space_(constraint_space),
@@ -190,20 +191,68 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
   DCHECK(style_);
 }
 
+NGLayoutAlgorithm::MinAndMaxState
+NGBlockLayoutAlgorithm::ComputeMinAndMaxContentSizes(
+    MinAndMaxContentSizes* sizes) {
+  switch (compute_minmax_state_) {
+    case kStateInit:
+      pending_minmax_sizes_.min_content = pending_minmax_sizes_.max_content =
+          LayoutUnit();
+      // Size-contained elements don't consider their contents for intrinsic
+      // sizing.
+      if (style_->containsSize())
+        return kSuccess;
+      current_minmax_child_ = first_child_;
+      compute_minmax_state_ = kStateChildLayout;
+    case kStateChildLayout:
+      // TODO: handle floats & orthogonal children
+      if (current_minmax_child_) {
+        Optional<MinAndMaxContentSizes> child_minmax;
+        if (NeedMinAndMaxContentSizesForContentContribution(
+                *current_minmax_child_->Style())) {
+          child_minmax = MinAndMaxContentSizes();
+          if (!current_minmax_child_->ComputeMinAndMaxContentSizes(
+                  &*child_minmax))
+            return kPending;
+        }
+        MinAndMaxContentSizes child_sizes = ComputeMinAndMaxContentContribution(
+            *current_minmax_child_->Style(), child_minmax);
+        pending_minmax_sizes_.min_content = std::max(
+            pending_minmax_sizes_.min_content, child_sizes.min_content);
+        pending_minmax_sizes_.max_content = std::max(
+            pending_minmax_sizes_.max_content, child_sizes.max_content);
+
+        current_minmax_child_ = current_minmax_child_->NextSibling();
+        if (current_minmax_child_)
+          return kPending;
+      }
+
+      *sizes = pending_minmax_sizes_;
+      sizes->max_content = std::max(sizes->min_content, sizes->max_content);
+      compute_minmax_state_ = kStateInit;
+      return kSuccess;
+    default:
+      NOTREACHED();
+      return kSuccess;
+  };
+}
+
 NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
     NGPhysicalFragmentBase* child_fragment,
     NGPhysicalFragmentBase** fragment_out,
     NGLayoutAlgorithm** algorithm_out) {
-  switch (state_) {
+  switch (layout_state_) {
     case kStateInit: {
+      WTF::Optional<MinAndMaxContentSizes> sizes;
+      if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style())) {
+        sizes = MinAndMaxContentSizes();
+        if (ComputeMinAndMaxContentSizes(&*sizes) == kPending)
+          return kNotFinished;
+      }
+
       border_and_padding_ =
           ComputeBorders(Style()) + ComputePadding(ConstraintSpace(), Style());
 
-      WTF::Optional<MinAndMaxContentSizes> sizes;
-      if (NeedMinAndMaxContentSizes(ConstraintSpace(), Style())) {
-        // TODOO(layout-ng): Implement
-        sizes = MinAndMaxContentSizes();
-      }
       LayoutUnit inline_size =
           ComputeInlineSizeForFragment(ConstraintSpace(), Style(), sizes);
       LayoutUnit adjusted_inline_size =
@@ -238,7 +287,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
 
       current_child_ = first_child_;
-      state_ = kStatePrepareForChildLayout;
+      layout_state_ = kStatePrepareForChildLayout;
       return kNotFinished;
     }
     case kStatePrepareForChildLayout: {
@@ -255,11 +304,11 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
         space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
         *algorithm_out = NGLayoutInputNode::AlgorithmForInputNode(
             current_child_, space_for_current_child_);
-        state_ = kStateChildLayout;
+        layout_state_ = kStateChildLayout;
         return kChildAlgorithmRequired;
       }
 
-      state_ = kStateFinalize;
+      layout_state_ = kStateFinalize;
       return kNotFinished;
     }
     case kStateChildLayout: {
@@ -274,7 +323,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
           ConstraintSpace().WritingMode(), ConstraintSpace().Direction(),
           toNGPhysicalFragment(child_fragment)));
       current_child_ = current_child_->NextSibling();
-      state_ = kStatePrepareForChildLayout;
+      layout_state_ = kStatePrepareForChildLayout;
       return kNotFinished;
     }
     case kStateFinalize: {
@@ -288,7 +337,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
           .SetInlineOverflow(max_inline_size_)
           .SetBlockOverflow(content_size_);
       *fragment_out = builder_->ToFragment();
-      state_ = kStateInit;
+      layout_state_ = kStateInit;
       return kNewFragment;
     }
   };
@@ -446,9 +495,8 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() const {
   // inline axis)
   // We have to keep this commented out for now until we correctly compute
   // min/max content sizes in Layout().
-  // bool shrink_to_fit = CurrentChildStyle().display() == EDisplay::InlineBlock
-  // || CurrentChildStyle().isFloating();
-  bool shrink_to_fit = false;
+  bool shrink_to_fit = CurrentChildStyle().display() == EDisplay::InlineBlock ||
+                       CurrentChildStyle().isFloating();
   DCHECK(current_child_);
   space_builder_
       ->SetIsNewFormattingContext(
@@ -474,6 +522,7 @@ DEFINE_TRACE(NGBlockLayoutAlgorithm) {
   visitor->trace(space_builder_);
   visitor->trace(space_for_current_child_);
   visitor->trace(current_child_);
+  visitor->trace(current_minmax_child_);
 }
 
 }  // namespace blink
