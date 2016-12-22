@@ -22,9 +22,9 @@ GURL VirtualURLForDistilledURL(const GURL& distilled_url);
 // The file URL pointing to the local file to load to display |distilled_url|.
 // If |resources_root_url| is not nullptr, it is set to a file URL to the
 // directory conatining all the resources needed by |distilled_url|.
-// |profile_path| is the path to the profile directory.
+// |offline_path| is the root path to the directory containing offline files.
 GURL FileURLForDistilledURL(const GURL& distilled_url,
-                            const base::FilePath& profile_path,
+                            const base::FilePath& offline_path,
                             GURL* resources_root_url);
 
 // Returns whether the URL points to a chrome offline URL.

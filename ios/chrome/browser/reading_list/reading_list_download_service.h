@@ -41,6 +41,9 @@ class ReadingListDownloadService
   // Initializes the reading list download service.
   void Initialize();
 
+  // The root folder containing all the offline files.
+  virtual base::FilePath OfflineRoot() const;
+
   // KeyedService implementation.
   void Shutdown() override;
 
@@ -83,6 +86,7 @@ class ReadingListDownloadService
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   ReadingListModel* reading_list_model_;
+  base::FilePath chrome_profile_path_;
   std::unique_ptr<URLDownloader> url_downloader_;
   std::vector<GURL> url_to_download_cellular_;
   std::vector<GURL> url_to_download_wifi_;

@@ -48,20 +48,20 @@ TEST(OfflineURLUtilsTest, VirtualURLForDistilledURLWithVirtualURLTest) {
 // Checks the resource root for chrome://offline/MD5/page.html is
 // file://profile_path/Offline/MD5
 TEST(OfflineURLUtilsTest, FileURLForDistilledURLTest) {
-  base::FilePath profile_path("/profile_path");
+  base::FilePath offline_path("/profile_path/Offline");
   GURL file_url =
-      reading_list::FileURLForDistilledURL(GURL(), profile_path, nullptr);
+      reading_list::FileURLForDistilledURL(GURL(), offline_path, nullptr);
   EXPECT_FALSE(file_url.is_valid());
 
   GURL distilled_url("chrome://offline/MD5/page.html");
-  file_url = reading_list::FileURLForDistilledURL(distilled_url, profile_path,
+  file_url = reading_list::FileURLForDistilledURL(distilled_url, offline_path,
                                                   nullptr);
   EXPECT_TRUE(file_url.is_valid());
   EXPECT_TRUE(file_url.SchemeIsFile());
   EXPECT_EQ("/profile_path/Offline/MD5/page.html", file_url.path());
 
   GURL resource_url;
-  file_url = reading_list::FileURLForDistilledURL(distilled_url, profile_path,
+  file_url = reading_list::FileURLForDistilledURL(distilled_url, offline_path,
                                                   &resource_url);
   EXPECT_TRUE(resource_url.is_valid());
   EXPECT_TRUE(resource_url.SchemeIsFile());

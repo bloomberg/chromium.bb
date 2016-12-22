@@ -45,14 +45,12 @@ GURL VirtualURLForDistilledURL(const GURL& distilled_url) {
 }
 
 GURL FileURLForDistilledURL(const GURL& distilled_url,
-                            const base::FilePath& profile_path,
+                            const base::FilePath& offline_path,
                             GURL* resources_root_url) {
   if (!distilled_url.is_valid()) {
     return GURL();
   }
   DCHECK(distilled_url.SchemeIs(kChromeUIScheme));
-  base::FilePath offline_path = OfflineRootDirectoryPath(profile_path);
-
   GURL file_url(base::StringPrintf("%s%s", url::kFileScheme,
                                    url::kStandardSchemeSeparator) +
                 offline_path.value() + distilled_url.path());

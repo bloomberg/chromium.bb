@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/reading_list/ios/offline_url_utils.h"
 #include "components/reading_list/ios/reading_list_entry.h"
 #include "components/reading_list/ios/reading_list_model.h"
 #include "ios/web/public/web_thread.h"
@@ -42,6 +43,7 @@ ReadingListDownloadService::ReadingListDownloadService(
     PrefService* prefs,
     base::FilePath chrome_profile_path)
     : reading_list_model_(reading_list_model),
+      chrome_profile_path_(chrome_profile_path),
       had_connection_(!net::NetworkChangeNotifier::IsOffline()),
       weak_ptr_factory_(this) {
   DCHECK(reading_list_model);
@@ -60,6 +62,10 @@ ReadingListDownloadService::~ReadingListDownloadService() {
 
 void ReadingListDownloadService::Initialize() {
   reading_list_model_->AddObserver(this);
+}
+
+base::FilePath ReadingListDownloadService::OfflineRoot() const {
+  return reading_list::OfflineRootDirectoryPath(chrome_profile_path_);
 }
 
 void ReadingListDownloadService::Shutdown() {

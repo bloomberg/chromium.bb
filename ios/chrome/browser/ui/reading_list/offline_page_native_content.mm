@@ -10,6 +10,8 @@
 #include "components/reading_list/ios/reading_list_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
+#include "ios/chrome/browser/reading_list/reading_list_download_service.h"
+#include "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #include "ios/web/public/browser_state.h"
@@ -45,14 +47,18 @@
   DCHECK(browserState);
   DCHECK(URL.is_valid());
 
-  if (reading_list::switches::IsReadingListEnabled()) {
-    _model = ReadingListModelFactory::GetForBrowserState(
-        ios::ChromeBrowserState::FromBrowserState(browserState));
-  }
+  DCHECK(reading_list::switches::IsReadingListEnabled());
+  _model = ReadingListModelFactory::GetForBrowserState(
+      ios::ChromeBrowserState::FromBrowserState(browserState));
+  base::FilePath offline_root =
+      ReadingListDownloadServiceFactory::GetForBrowserState(
+          ios::ChromeBrowserState::FromBrowserState(browserState))
+          ->OfflineRoot();
+
   _webState = webState;
   GURL resourcesRoot;
-  GURL fileURL = reading_list::FileURLForDistilledURL(
-      URL, browserState->GetStatePath(), &resourcesRoot);
+  GURL fileURL =
+      reading_list::FileURLForDistilledURL(URL, offline_root, &resourcesRoot);
 
   StaticHtmlViewController* HTMLViewController =
       [[StaticHtmlViewController alloc] initWithFileURL:fileURL
