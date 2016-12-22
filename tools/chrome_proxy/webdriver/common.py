@@ -527,15 +527,22 @@ class IntegrationTest(unittest.TestCase):
         http_response.response_headers['via'])
 
   @staticmethod
-  def RunAllTests():
+  def RunAllTests(run_all_tests=False):
     """A simple helper method to run all tests using unittest.main().
+
+    Args:
+      run_all_tests: If True, all tests in the directory will be run, Otherwise
+        only the tests in the file given on the command line will be run.
     """
     flags = ParseFlags()
     logger = GetLogger()
     logger.debug('Command line args: %s', str(sys.argv))
     logger.info('sys.argv parsed to %s', str(flags))
-    # The unittest library uses sys.argv itself and is easily confused by our
-    # command line options. Pass it a simpler argv instead, while working in the
-    # unittest command line args functionality.
-    unittest.main(argv=[sys.argv[0]], verbosity=2, failfast=flags.failfast,
-      catchbreak=flags.catch, buffer=(not flags.disable_buffer))
+    if flags.catch:
+      unittest.installHandler()
+    pattern = '*.py' if run_all_tests else os.path.basename(sys.argv[0])
+    loader = unittest.TestLoader()
+    tests = loader.discover(os.path.dirname(__file__), pattern=pattern)
+    testRunner = unittest.runner.TextTestRunner(verbosity=2,
+      failfast=flags.failfast, buffer=(not flags.disable_buffer))
+    testRunner.run(tests)
