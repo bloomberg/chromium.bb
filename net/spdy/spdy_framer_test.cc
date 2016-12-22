@@ -3393,7 +3393,7 @@ TEST_P(SpdyFramerTest, SizesTest) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   EXPECT_EQ(9u, framer.GetDataFrameMinimumSize());
   EXPECT_EQ(9u, framer.GetFrameHeaderSize());
-  EXPECT_EQ(13u, framer.GetRstStreamMinimumSize());
+  EXPECT_EQ(13u, framer.GetRstStreamSize());
   EXPECT_EQ(9u, framer.GetSettingsMinimumSize());
   EXPECT_EQ(17u, framer.GetPingSize());
   EXPECT_EQ(17u, framer.GetGoAwayMinimumSize());

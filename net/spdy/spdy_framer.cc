@@ -238,8 +238,7 @@ size_t SpdyFramer::GetFrameHeaderSize() const {
   return SpdyConstants::kFrameHeaderSize;
 }
 
-// TODO(jamessynge): Rename this to GetRstStreamSize as the frame is fixed size.
-size_t SpdyFramer::GetRstStreamMinimumSize() const {
+size_t SpdyFramer::GetRstStreamSize() const {
   // Size, in bytes, of a RST_STREAM frame.
   // Calculated as:
   // frame prefix + 4 (status code)
@@ -812,7 +811,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
   // Do some sanity checking on the control frame sizes and flags.
   switch (current_frame_type_) {
     case RST_STREAM:
-      if (current_frame_length_ != GetRstStreamMinimumSize()) {
+      if (current_frame_length_ != GetRstStreamSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ != 0) {
         VLOG(1) << "Undefined frame flags for RST_STREAM frame: " << hex
@@ -1509,7 +1508,7 @@ size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
 
   // Check if we had already read enough bytes to parse the fixed-length portion
   // of the RST_STREAM frame.
-  const size_t header_size = GetRstStreamMinimumSize();
+  const size_t header_size = GetRstStreamSize();
   size_t unread_header_bytes = header_size - current_frame_buffer_.len();
   bool already_parsed_header = (unread_header_bytes == 0);
   if (!already_parsed_header) {
@@ -1874,12 +1873,7 @@ SpdySerializedFrame SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
 
 SpdySerializedFrame SpdyFramer::SerializeRstStream(
     const SpdyRstStreamIR& rst_stream) const {
-  // TODO(jgraettinger): For now, Chromium will support parsing RST_STREAM
-  // payloads, but will not emit them. This is used for draft HTTP/2,
-  // which doesn't currently include RST_STREAM payloads. GFE flags have been
-  // commented but left in place to simplify future patching.
-  // Compute the output buffer size, taking opaque data into account.
-  size_t expected_length = GetRstStreamMinimumSize();
+  size_t expected_length = GetRstStreamSize();
   SpdyFrameBuilder builder(expected_length);
 
   builder.BeginNewFrame(*this, RST_STREAM, 0, rst_stream.stream_id());
