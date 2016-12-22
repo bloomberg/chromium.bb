@@ -111,7 +111,8 @@ std::string getCurrentAbi() {
 std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground(
     const ShortcutInfo& shortcut_info,
     const SkBitmap& shortcut_icon,
-    const std::string& shortcut_icon_murmur2_hash) {
+    const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+    bool is_manifest_stale) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   std::unique_ptr<webapk::WebApk> webapk(new webapk::WebApk);
@@ -120,11 +121,7 @@ std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground(
       base::android::BuildInfo::GetInstance()->package_name());
   webapk->set_requester_application_version(version_info::GetVersionNumber());
   webapk->set_android_abi(getCurrentAbi());
-
-  // TODO(hanxi): crbug.com/665078. Add a flag in WebAPK's proto to indicate
-  // that the Web Manifest data in the proto might be stale.
-  if (shortcut_icon_murmur2_hash.empty())
-    return webapk;
+  webapk->set_stale_manifest(is_manifest_stale);
 
   webapk::WebAppManifest* web_app_manifest = webapk->mutable_manifest();
   web_app_manifest->set_name(base::UTF16ToUTF8(shortcut_info.name));
@@ -144,20 +141,31 @@ std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground(
   scope->assign(GetScope(shortcut_info).spec());
 
   webapk::Image* best_image = web_app_manifest->add_icons();
-  best_image->set_src(shortcut_info.best_icon_url.spec());
-  best_image->set_hash(shortcut_icon_murmur2_hash);
+  std::string best_icon_url = shortcut_info.best_icon_url.spec();
+  best_image->set_src(best_icon_url);
+  auto it = icon_url_to_murmur2_hash.find(best_icon_url);
+  if (it != icon_url_to_murmur2_hash.end())
+    best_image->set_hash(it->second);
   std::vector<unsigned char> png_bytes;
   gfx::PNGCodec::EncodeBGRASkBitmap(shortcut_icon, false, &png_bytes);
   best_image->set_image_data(&png_bytes.front(), png_bytes.size());
 
-  for (const std::string& icon_url : shortcut_info.icon_urls) {
-    if (icon_url == shortcut_info.best_icon_url.spec())
+  for (const auto& entry : icon_url_to_murmur2_hash) {
+    if (entry.first == shortcut_info.best_icon_url.spec())
       continue;
     webapk::Image* image = web_app_manifest->add_icons();
-    image->set_src(icon_url);
+    image->set_src(entry.first);
+    image->set_hash(entry.second);
   }
 
   return webapk;
+}
+
+// Calls the callback when the |webapk| request is created.
+void OnWebApkProtoBuilt(
+    const base::Callback<void(std::unique_ptr<webapk::WebApk>)>& callback,
+    std::unique_ptr<webapk::WebApk> webapk) {
+  callback.Run(std::move(webapk));
 }
 
 // Returns task runner for running background tasks.
@@ -250,33 +258,36 @@ void WebApkInstaller::InstallAsyncWithURLRequestContextGetter(
   DownloadAppIconAndComputeMurmur2Hash();
 }
 
-void WebApkInstaller::UpdateAsync(content::BrowserContext* browser_context,
-                                  const FinishCallback& finish_callback,
-                                  const std::string& icon_murmur2_hash,
-                                  const std::string& webapk_package,
-                                  int webapk_version) {
+void WebApkInstaller::UpdateAsync(
+    content::BrowserContext* browser_context,
+    const FinishCallback& finish_callback,
+    const std::string& webapk_package,
+    int webapk_version,
+    const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+    bool is_manifest_stale) {
   UpdateAsyncWithURLRequestContextGetter(
       Profile::FromBrowserContext(browser_context)->GetRequestContext(),
-      finish_callback, icon_murmur2_hash, webapk_package, webapk_version);
+      finish_callback, webapk_package, webapk_version,
+      icon_url_to_murmur2_hash, is_manifest_stale);
 }
 
 void WebApkInstaller::UpdateAsyncWithURLRequestContextGetter(
     net::URLRequestContextGetter* request_context_getter,
     const FinishCallback& finish_callback,
-    const std::string& icon_murmur2_hash,
     const std::string& webapk_package,
-    int webapk_version) {
+    int webapk_version,
+    const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+    bool is_manifest_stale) {
   request_context_getter_ = request_context_getter;
   finish_callback_ = finish_callback;
-  shortcut_icon_murmur2_hash_ = icon_murmur2_hash;
   webapk_package_ = webapk_package;
   webapk_version_ = webapk_version;
   task_type_ = UPDATE;
 
   base::PostTaskAndReplyWithResult(
       GetBackgroundTaskRunner().get(), FROM_HERE,
-      base::Bind(&BuildWebApkProtoInBackground, shortcut_info_,
-                  shortcut_icon_, shortcut_icon_murmur2_hash_),
+      base::Bind(&BuildWebApkProtoInBackground, shortcut_info_, shortcut_icon_,
+                 icon_url_to_murmur2_hash, is_manifest_stale),
       base::Bind(&WebApkInstaller::SendUpdateWebApkRequest,
                   weak_ptr_factory_.GetWeakPtr()));
 }
@@ -294,6 +305,17 @@ void WebApkInstaller::OnInstallFinished(
     OnSuccess();
   else
     OnFailure();
+}
+
+void WebApkInstaller::BuildWebApkProtoInBackgroundForTesting(
+    const base::Callback<void(std::unique_ptr<webapk::WebApk>)>& callback,
+    const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+    bool is_manifest_stale) {
+  base::PostTaskAndReplyWithResult(
+      GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&BuildWebApkProtoInBackground, shortcut_info_, shortcut_icon_,
+                 icon_url_to_murmur2_hash, is_manifest_stale),
+      base::Bind(&OnWebApkProtoBuilt, callback));
 }
 
 // static
@@ -410,18 +432,24 @@ void WebApkInstaller::OnGotIconMurmur2Hash(
   timer_.Stop();
   icon_hasher_.reset();
 
-  shortcut_icon_murmur2_hash_ = icon_murmur2_hash;
-
   // An empty hash indicates that |icon_hasher_| encountered an error.
   if (icon_murmur2_hash.empty()) {
     OnFailure();
     return;
   }
 
+  std::map<std::string, std::string> icon_url_to_murmur2_hash;
+  for (const std::string& icon_url : shortcut_info_.icon_urls) {
+    if (icon_url != shortcut_info_.best_icon_url.spec())
+      icon_url_to_murmur2_hash[icon_url] = "";
+    else
+      icon_url_to_murmur2_hash[icon_url] = icon_murmur2_hash;
+  }
+
   base::PostTaskAndReplyWithResult(
       GetBackgroundTaskRunner().get(), FROM_HERE,
-      base::Bind(&BuildWebApkProtoInBackground, shortcut_info_,
-                  shortcut_icon_, shortcut_icon_murmur2_hash_),
+      base::Bind(&BuildWebApkProtoInBackground, shortcut_info_, shortcut_icon_,
+                 icon_url_to_murmur2_hash, false /* is_manifest_stale */),
       base::Bind(&WebApkInstaller::SendCreateWebApkRequest,
                  weak_ptr_factory_.GetWeakPtr()));
 }

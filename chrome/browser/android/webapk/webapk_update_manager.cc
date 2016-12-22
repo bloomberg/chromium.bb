@@ -53,16 +53,17 @@ static void UpdateAsync(
     const JavaParamRef<jstring>& java_name,
     const JavaParamRef<jstring>& java_short_name,
     const JavaParamRef<jstring>& java_best_icon_url,
-    const JavaParamRef<jstring>& java_best_icon_murmur2_hash,
     const JavaParamRef<jobject>& java_best_icon_bitmap,
     const JavaParamRef<jobjectArray>& java_icon_urls,
+    const JavaParamRef<jobjectArray>& java_icon_hashes,
     jint java_display_mode,
     jint java_orientation,
     jlong java_theme_color,
     jlong java_background_color,
     const JavaParamRef<jstring>& java_web_manifest_url,
     const JavaParamRef<jstring>& java_webapk_package,
-    jint java_webapk_version) {
+    jint java_webapk_version,
+    jboolean java_is_manifest_stale) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   Profile* profile = ProfileManager::GetLastUsedProfile();
@@ -92,14 +93,18 @@ static void UpdateAsync(
   base::android::AppendJavaStringArrayToStringVector(
       env, java_icon_urls.obj(), &info.icon_urls);
 
+  std::vector<std::string> icon_hashes;
+  base::android::AppendJavaStringArrayToStringVector(
+      env, java_icon_hashes.obj(), &icon_hashes);
+
+  std::map<std::string, std::string> icon_url_to_murmur2_hash;
+  for (size_t i = 0; i < info.icon_urls.size(); ++i)
+    icon_url_to_murmur2_hash[info.icon_urls[i]] = icon_hashes[i];
+
   gfx::JavaBitmap java_bitmap_lock(java_best_icon_bitmap);
   SkBitmap best_icon_bitmap =
       gfx::CreateSkBitmapFromJavaBitmap(java_bitmap_lock);
   best_icon_bitmap.setImmutable();
-
-  std::string best_icon_murmur2_hash;
-  ConvertJavaStringToUTF8(env, java_best_icon_murmur2_hash,
-                          &best_icon_murmur2_hash);
 
   std::string webapk_package;
   ConvertJavaStringToUTF8(env, java_webapk_package, &webapk_package);
@@ -108,5 +113,6 @@ static void UpdateAsync(
   installer->UpdateAsync(
       profile,
       base::Bind(&WebApkUpdateManager::OnBuiltWebApk, id),
-      best_icon_murmur2_hash, webapk_package, java_webapk_version);
+      webapk_package, java_webapk_version, icon_url_to_murmur2_hash,
+      java_is_manifest_stale);
 }

@@ -75,7 +75,8 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
         }
 
         @Override
-        protected void updateAsync(WebApkInfo fetchedInfo, String bestIconUrl) {
+        protected void updateAsync(WebApkInfo fetchedInfo, String bestIconUrl,
+                boolean isManifestStale) {
             mNeedsUpdate = true;
         }
 

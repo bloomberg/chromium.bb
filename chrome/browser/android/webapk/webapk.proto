@@ -48,6 +48,10 @@ message WebApk {
   // The cpu abi of the browser making the request.
   optional string android_abi = 8;
 
+  // If set true, this flag indicates that the Web App Manifest of the site is
+  // no longer available.
+  optional bool stale_manifest = 9;
+
   reserved 4;
 }
 

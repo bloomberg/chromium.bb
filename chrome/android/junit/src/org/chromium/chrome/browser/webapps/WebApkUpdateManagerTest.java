@@ -138,7 +138,7 @@ public class WebApkUpdateManagerTest {
         }
 
         @Override
-        protected void updateAsync(WebApkInfo info, String bestIconUrl) {
+        protected void updateAsync(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
             mUpdateRequested = true;
             mUpdateName = info.name();
         }

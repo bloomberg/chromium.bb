@@ -115,13 +115,14 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         recordUpdate(storage, false);
 
         if (fetchedInfo != null) {
-            updateAsync(fetchedInfo, bestIconUrl);
+            updateAsync(fetchedInfo, bestIconUrl, false /* isManifestStale */);
             return;
         }
 
-        // Since we could not fetch the Web Manifest, we do not know what the best icon URL is. Pass
-        // an empty "best icon URL" to tell the server that there is no best icon URL.
-        updateAsync(mInfo, "");
+        // Tell the server that the our version of the Web Manifest might be stale and to ignore
+        // our Web Manifest data if the server's Web Manifest data is newer. This scenario can
+        // occur if the Web Manifest is temporarily unreachable.
+        updateAsync(mInfo, "", true /* isManifestStale */);
     }
 
     /**
@@ -134,14 +135,22 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     /**
      * Sends request to WebAPK Server to update WebAPK.
      */
-    protected void updateAsync(WebApkInfo info, String bestIconUrl) {
+    protected void updateAsync(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
         int versionCode = readVersionCodeFromAndroidManifest(info.webApkPackageName());
-        String bestIconMurmur2Hash = info.iconUrlToMurmur2HashMap().get(bestIconUrl);
+        int size = info.iconUrlToMurmur2HashMap().size();
+        String[] iconUrls = new String[size];
+        String[] iconHashes = new String[size];
+        int i = 0;
+        for (Map.Entry<String, String> entry : info.iconUrlToMurmur2HashMap().entrySet()) {
+            iconUrls[i] = entry.getKey();
+            String iconHash = entry.getValue();
+            iconHashes[i] = iconHash != null ? iconHash : "";
+            i++;
+        }
         nativeUpdateAsync(info.id(), info.manifestStartUrl(), info.scopeUri().toString(),
-                info.name(), info.shortName(), bestIconUrl, bestIconMurmur2Hash, info.icon(),
-                info.iconUrlToMurmur2HashMap().keySet().toArray(new String[0]), info.displayMode(),
-                info.orientation(), info.themeColor(), info.backgroundColor(), info.manifestUrl(),
-                info.webApkPackageName(), versionCode);
+                info.name(), info.shortName(), bestIconUrl, info.icon(), iconUrls, iconHashes,
+                info.displayMode(), info.orientation(), info.themeColor(), info.backgroundColor(),
+                info.manifestUrl(), info.webApkPackageName(), versionCode, isManifestStale);
     }
 
     /**
@@ -309,7 +318,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     }
 
     private static native void nativeUpdateAsync(String id, String startUrl, String scope,
-            String name, String shortName, String bestIconUrl, String bestIconMurmur2Hash,
-            Bitmap bestIcon, String[] iconUrls, int displayMode, int orientation, long themeColor,
-            long backgroundColor, String manifestUrl, String webApkPackage, int webApkVersion);
+            String name, String shortName, String bestIconUrl, Bitmap bestIcon, String[] iconUrls,
+            String[] iconHashes, int displayMode, int orientation, long themeColor,
+            long backgroundColor, String manifestUrl, String webApkPackage, int webApkVersion,
+            boolean isManifestStale);
 }

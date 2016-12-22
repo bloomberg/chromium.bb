@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_INSTALLER_H_
 
 #include <jni.h>
+#include <map>
 #include <memory>
 
 #include "base/android/scoped_java_ref.h"
@@ -63,19 +64,22 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Talks to the Chrome WebAPK server to update a WebAPK on the server and to
   // the Google Play server to install the downloaded WebAPK. Calls |callback|
   // after the request to install the WebAPK is sent to the Google Play server.
-  void UpdateAsync(content::BrowserContext* browser_context,
-                   const FinishCallback& callback,
-                   const std::string& icon_murmur2_hash,
-                   const std::string& webapk_package,
-                   int webapk_version);
+  void UpdateAsync(
+      content::BrowserContext* browser_context,
+      const FinishCallback& callback,
+      const std::string& webapk_package,
+      int webapk_version,
+      const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+      bool is_manifest_stale);
 
   // Same as UpdateAsync() but uses the passed in |request_context_getter|.
   void UpdateAsyncWithURLRequestContextGetter(
       net::URLRequestContextGetter* request_context_getter,
       const FinishCallback& callback,
-      const std::string& icon_murmur2_hash,
       const std::string& webapk_package,
-      int webapk_version);
+      int webapk_version,
+      const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+      bool is_manifest_stale);
 
   // Sets the timeout for the server requests.
   void SetTimeoutMs(int timeout_ms);
@@ -84,6 +88,13 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   void OnInstallFinished(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          jboolean success);
+
+  // Creates a WebApk install or update request.
+  // Should be used only for testing.
+  void BuildWebApkProtoInBackgroundForTesting(
+      const base::Callback<void(std::unique_ptr<webapk::WebApk>)>& callback,
+      const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+      bool is_manifest_stale);
 
   // Registers JNI hooks.
   static bool Register(JNIEnv* env);
@@ -221,10 +232,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
 
   // WebAPK app icon.
   const SkBitmap shortcut_icon_;
-
-  // Murmur2 hash of the bitmap at the app icon URL prior to any transformations
-  // being applied to the bitmap (such as encoding/decoding the icon bitmap).
-  std::string shortcut_icon_murmur2_hash_;
 
   // WebAPK server URL.
   GURL server_url_;

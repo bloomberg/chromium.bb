@@ -128,17 +128,18 @@ class WebApkInstallerRunner {
   }
 
   void RunUpdateWebApk() {
-    const std::string kIconMurmur2Hash = "0";
     const int kWebApkVersion = 1;
 
-    WebApkInstaller* installer = CreateWebApkInstaller();
+    std::map<std::string, std::string> icon_url_to_murmur2_hash {
+      {best_icon_url_.spec(), "0"} };
 
-    installer->UpdateAsyncWithURLRequestContextGetter(
+    CreateWebApkInstaller()->UpdateAsyncWithURLRequestContextGetter(
         url_request_context_getter_.get(),
         base::Bind(&WebApkInstallerRunner::OnCompleted, base::Unretained(this)),
-        kIconMurmur2Hash,
         kDownloadedWebApkPackageName,
-        kWebApkVersion);
+        kWebApkVersion,
+        icon_url_to_murmur2_hash,
+        false /* is_manifest_stale */);
 
     Run();
   }
@@ -204,6 +205,52 @@ std::unique_ptr<net::test_server::HttpResponse> BuildValidWebApkResponse(
   return std::move(response);
 }
 
+// Builds WebApk proto and blocks till done.
+class BuildProtoRunner {
+ public:
+  BuildProtoRunner() {}
+
+  ~BuildProtoRunner() {}
+
+  void BuildSync(
+      const GURL& best_icon_url,
+      const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
+      bool is_manifest_stale) {
+    ShortcutInfo info(GURL::EmptyGURL());
+    info.best_icon_url = best_icon_url;
+
+    // WebApkInstaller owns itself.
+    WebApkInstaller* installer =
+        new TestWebApkInstaller(info, SkBitmap(), false);
+    installer->BuildWebApkProtoInBackgroundForTesting(
+        base::Bind(&BuildProtoRunner::OnBuiltWebApkProto,
+                   base::Unretained(this)),
+        icon_url_to_murmur2_hash,
+        is_manifest_stale);
+
+    base::RunLoop run_loop;
+    on_completed_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  webapk::WebApk* GetWebApkRequest() { return webapk_request_.get(); }
+
+ private:
+  // Called when the |webapk_request_| is populated.
+  void OnBuiltWebApkProto(std::unique_ptr<webapk::WebApk> webapk) {
+    webapk_request_ = std::move(webapk);
+    on_completed_callback_.Run();
+  }
+
+  // The populated webapk::WebApk.
+  std::unique_ptr<webapk::WebApk> webapk_request_;
+
+  // Called after the |webapk_request_| is built.
+  base::Closure on_completed_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(BuildProtoRunner);
+};
+
 }  // anonymous namespace
 
 class WebApkInstallerTest : public ::testing::Test {
@@ -246,6 +293,10 @@ class WebApkInstallerTest : public ::testing::Test {
   std::unique_ptr<WebApkInstallerRunner> CreateWebApkInstallerRunner() {
     return std::unique_ptr<WebApkInstallerRunner>(
         new WebApkInstallerRunner(best_icon_url_));
+  }
+
+  std::unique_ptr<BuildProtoRunner> CreateBuildProtoRunner() {
+    return std::unique_ptr<BuildProtoRunner>(new BuildProtoRunner());
   }
 
   net::test_server::EmbeddedTestServer* test_server() { return &test_server_; }
@@ -367,4 +418,76 @@ TEST_F(WebApkInstallerTest, InstallFromGooglePlaySuccess) {
   runner->SetHasGooglePlayWebApkInstallDelegate(true);
   runner->RunInstallWebApk();
   EXPECT_TRUE(runner->success());
+}
+
+// When there is no Web Manifest available for a site, an empty |best_icon_url|
+// is used to build a WebApk update request. Tests the request can be built
+// properly.
+TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsObsolete) {
+  GURL icon_url_1 = test_server()->GetURL("/icon1.png");
+  GURL icon_url_2 = test_server()->GetURL("/icon2.png");
+  std::string icon_murmur2_hash_1 = "1";
+  std::string icon_murmur2_hash_2 = "2";
+  std::map<std::string, std::string> icon_url_to_murmur2_hash;
+  icon_url_to_murmur2_hash[icon_url_1.spec()] = icon_murmur2_hash_1;
+  icon_url_to_murmur2_hash[icon_url_2.spec()] = icon_murmur2_hash_2;
+
+  std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
+  runner->BuildSync(GURL(""), icon_url_to_murmur2_hash,
+                    true /* is_manifest_stale*/);
+  webapk::WebApk* webapk_request = runner->GetWebApkRequest();
+  ASSERT_NE(nullptr, webapk_request);
+
+  webapk::WebAppManifest manifest = webapk_request->manifest();
+  ASSERT_EQ(3, manifest.icons_size());
+
+  webapk::Image icons[3];
+  for (int i = 0; i < 3; ++i)
+    icons[i] = manifest.icons(i);
+
+  EXPECT_EQ("", icons[0].src());
+  EXPECT_FALSE(icons[0].has_hash());
+  EXPECT_TRUE(icons[0].has_image_data());
+
+  EXPECT_EQ(icon_url_1.spec(), icons[1].src());
+  EXPECT_EQ(icon_murmur2_hash_1, icons[1].hash());
+  EXPECT_FALSE(icons[1].has_image_data());
+
+  EXPECT_EQ(icon_url_2.spec(), icons[2].src());
+  EXPECT_EQ(icon_murmur2_hash_2, icons[2].hash());
+  EXPECT_FALSE(icons[2].has_image_data());
+}
+
+// Tests a WebApk install or update request is built properly when the Chrome
+// knows the best icon URL of a site after fetching its Web Manifest.
+TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsAvailable) {
+  GURL icon_url_1 = test_server()->GetURL("/icon.png");
+  GURL best_icon_url = test_server()->GetURL(kBestIconUrl);
+  std::string icon_murmur2_hash_1 = "1";
+  std::string best_icon_murmur2_hash = "0";
+  std::map<std::string, std::string> icon_url_to_murmur2_hash;
+  icon_url_to_murmur2_hash[icon_url_1.spec()] = icon_murmur2_hash_1;
+  icon_url_to_murmur2_hash[best_icon_url.spec()] =
+      best_icon_murmur2_hash;
+
+  std::unique_ptr<BuildProtoRunner> runner = CreateBuildProtoRunner();
+  runner->BuildSync(best_icon_url, icon_url_to_murmur2_hash,
+                    false /* is_manifest_stale*/);
+  webapk::WebApk* webapk_request = runner->GetWebApkRequest();
+  ASSERT_NE(nullptr, webapk_request);
+
+  webapk::WebAppManifest manifest = webapk_request->manifest();
+  ASSERT_EQ(2, manifest.icons_size());
+
+  webapk::Image icons[2];
+  for (int i = 0; i < 2; ++i)
+    icons[i] = manifest.icons(i);
+
+  EXPECT_EQ(best_icon_url.spec(), icons[0].src());
+  EXPECT_EQ(best_icon_murmur2_hash, icons[0].hash());
+  EXPECT_TRUE(icons[0].has_image_data());
+
+  EXPECT_EQ(icon_url_1.spec(), icons[1].src());
+  EXPECT_EQ(icon_murmur2_hash_1, icons[1].hash());
+  EXPECT_FALSE(icons[1].has_image_data());
 }
