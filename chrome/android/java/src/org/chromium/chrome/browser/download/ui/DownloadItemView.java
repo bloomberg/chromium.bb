@@ -12,12 +12,12 @@ import android.text.format.Formatter;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadNotificationService;
+import org.chromium.chrome.browser.widget.MaterialProgressBar;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
@@ -51,7 +51,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     private View mLayoutInProgress;
     private TextView mFilenameInProgressView;
     private TextView mDownloadStatusView;
-    private ProgressBar mProgressView;
+    private MaterialProgressBar mProgressView;
     private TintedImageButton mPauseResumeButton;
     private View mCancelButton;
 
@@ -72,7 +72,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     protected void onFinishInflate() {
         super.onFinishInflate();
         mIconView = (TintedImageView) findViewById(R.id.icon_view);
-        mProgressView = (ProgressBar) findViewById(R.id.download_progress_view);
+        mProgressView = (MaterialProgressBar) findViewById(R.id.download_progress_view);
 
         mLayoutContainer = (LinearLayout) findViewById(R.id.layout_container);
         mLayoutCompleted = findViewById(R.id.completed_layout);

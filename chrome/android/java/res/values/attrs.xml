@@ -57,6 +57,12 @@
         <attr name="backgroundColor" format="reference|color" />
     </declare-styleable>
 
+    <declare-styleable name="MaterialProgressBar">
+        <attr name="colorBackground" format="reference|color" />
+        <attr name="colorProgress" format="reference|color" />
+        <attr name="colorSecondaryProgress" format="reference|color" />
+    </declare-styleable>
+
     <declare-styleable name="RadioButtonWithDescription">
         <attr name="titleText" format="string" />
     </declare-styleable>

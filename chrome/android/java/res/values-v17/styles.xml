@@ -525,16 +525,6 @@
         <item name="android:textAllCaps">true</item>
     </style>
 
-    <!-- Progress bars -->
-    <style name="DownloadProgressBar" parent="Widget.AppCompat.ProgressBar.Horizontal">
-        <item name="android:indeterminateDrawable">@drawable/download_progressbar</item>
-        <item name="android:indeterminateDuration">250</item>
-        <item name="android:progressDrawable">@drawable/download_progressbar</item>
-    </style>
-    <style name="MaterialProgressBar" parent="Widget.AppCompat.ProgressBar.Horizontal">
-        <item name="android:progressDrawable">@drawable/material_progressbar</item>
-    </style>
-
     <!-- Misc styles -->
     <style name="LocationBarButton">
         <item name="android:background">@null</item>

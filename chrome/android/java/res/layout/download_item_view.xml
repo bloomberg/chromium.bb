@@ -96,16 +96,18 @@
                     android:textColor="@color/default_text_color"
                     android:textSize="14sp" />
 
-            <ProgressBar
+            <org.chromium.chrome.browser.widget.MaterialProgressBar
                     android:id="@+id/download_progress_view"
-                    style="@style/DownloadProgressBar"
                     android:layout_width="wrap_content"
                     android:layout_height="2dp"
                     android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:layout_below="@+id/filename_progress_view"
                     android:layout_alignParentStart="true"
-                    android:layout_toStartOf="@+id/pause_button" />
+                    android:layout_toStartOf="@+id/pause_button"
+                    chrome:colorBackground="@color/google_grey_400"
+                    chrome:colorProgress="@color/light_active_color"
+                    chrome:colorSecondaryProgress="@color/google_grey_600" />
 
             <TextView
                     android:id="@+id/status_view"

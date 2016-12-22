@@ -3,7 +3,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:chrome="http://schemas.android.com/apk/res-auto" >
 
     <!-- Widget style adapted from the UX spec:
          https://bugs.chromium.org/p/chromium/issues/detail?id=658246&desc=2#c18
@@ -26,13 +27,15 @@
                 android:textSize="20sp" />
 
         <!-- The progress bar uses 32dp of space, vertically, including spacing. -->
-        <ProgressBar
+        <org.chromium.chrome.browser.widget.MaterialProgressBar
                 android:id="@+id/space_bar"
-                style="@style/MaterialProgressBar"
                 android:layout_width="match_parent"
                 android:layout_height="4dp"
                 android:layout_marginTop="14dp"
-                android:layout_marginBottom="14dp" />
+                android:layout_marginBottom="14dp"
+                chrome:colorBackground="@color/google_grey_400"
+                chrome:colorProgress="@color/light_active_color"
+                chrome:colorSecondaryProgress="@color/google_grey_600" />
 
         <TextView
                 android:id="@+id/size_other_apps"

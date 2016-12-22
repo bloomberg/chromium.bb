@@ -10,7 +10,6 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -19,6 +18,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.MaterialProgressBar;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
@@ -108,7 +108,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
     private TextView mSpaceUsedByDownloadsTextView;
     private TextView mSpaceUsedByOtherAppsTextView;
     private TextView mSpaceFreeTextView;
-    private ProgressBar mSpaceBar;
+    private MaterialProgressBar mSpaceBar;
     private long mFreeBytes;
 
     SpaceDisplay(final ViewGroup parent, DownloadHistoryAdapter historyAdapter) {
@@ -116,7 +116,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         mSpaceUsedByDownloadsTextView = (TextView) parent.findViewById(R.id.size_downloaded);
         mSpaceUsedByOtherAppsTextView = (TextView) parent.findViewById(R.id.size_other_apps);
         mSpaceFreeTextView = (TextView) parent.findViewById(R.id.size_free);
-        mSpaceBar = (ProgressBar) parent.findViewById(R.id.space_bar);
+        mSpaceBar = (MaterialProgressBar) parent.findViewById(R.id.space_bar);
         mFileSystemBytesTask =
                 new StorageSizeTask(true).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
