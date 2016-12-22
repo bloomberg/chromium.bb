@@ -1323,6 +1323,11 @@ void FrameView::setNeedsPaintPropertyUpdate() {
     owner->setNeedsPaintPropertyUpdate();
 }
 
+void FrameView::setSubtreeNeedsPaintPropertyUpdate() {
+  setNeedsPaintPropertyUpdate();
+  layoutView()->setSubtreeNeedsPaintPropertyUpdate();
+}
+
 IntRect FrameView::computeVisibleArea() {
   // Return our clipping bounds in the root frame.
   IntRect us(frameRect());

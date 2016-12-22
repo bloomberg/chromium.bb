@@ -313,10 +313,7 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
       context.forcedSubtreeInvalidationFlags &= PaintInvalidatorContext::
           ForcedSubtreeFullInvalidationForStackedContents;
     } else {
-      // For SPv1, subtree flags don't cross paint invalidation container
-      // boundary except for ForcedWholeTreeFullInvalidation.
-      context.forcedSubtreeInvalidationFlags &=
-          PaintInvalidatorContext::ForcedWholeTreeFullInvalidation;
+      context.forcedSubtreeInvalidationFlags = 0;
     }
   }
 

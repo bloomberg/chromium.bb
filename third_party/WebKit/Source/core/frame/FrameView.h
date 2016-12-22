@@ -756,17 +756,9 @@ class CORE_EXPORT FrameView final
   }
   bool needsPaintPropertyUpdate() const { return m_needsPaintPropertyUpdate; }
 
-  // Set when the whole frame subtree needs full paint invalidation and paint
-  // property update, e.g. when beginning or finishing printing.
-  void setShouldInvalidateAllPaintAndPaintProperties() {
-    m_shouldInvalidateAllPaintAndPaintProperties = true;
-  }
-  void clearShouldInvalidateAllPaintAndPaintProperties() {
-    m_shouldInvalidateAllPaintAndPaintProperties = true;
-  }
-  bool shouldInvalidateAllPaintAndPaintProperties() const {
-    return m_shouldInvalidateAllPaintAndPaintProperties;
-  }
+  // Set when the whole frame subtree needs full paint property update,
+  // e.g. when beginning or finishing printing.
+  void setSubtreeNeedsPaintPropertyUpdate();
 
   // TODO(ojan): Merge this with IntersectionObserver once it lands.
   IntRect computeVisibleArea();
@@ -1147,7 +1139,6 @@ class CORE_EXPORT FrameView final
   // Whether the paint properties need to be updated. For more details, see
   // FrameView::needsPaintPropertyUpdate().
   bool m_needsPaintPropertyUpdate;
-  bool m_shouldInvalidateAllPaintAndPaintProperties;
 
   // This is set on the local root frame view only.
   DocumentLifecycle::LifecycleState m_currentUpdateLifecyclePhasesTargetState;

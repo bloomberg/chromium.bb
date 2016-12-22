@@ -593,7 +593,7 @@ void LocalFrame::setPrinting(bool printing,
   }
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-    view()->setShouldInvalidateAllPaintAndPaintProperties();
+    view()->setSubtreeNeedsPaintPropertyUpdate();
 
   if (!printing)
     document()->setPrinting(Document::NotPrinting);
