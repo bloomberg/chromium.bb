@@ -1,5 +1,4 @@
 -NavigationControllerBrowserTest.EnsureSamePageNavigationUpdatesFrameNavigationEntry
--RequestDataResourceDispatcherHostBrowserTest.*
 
 # Browser-initiated fragment navigations are handled improperly. https://crbug.com/663777
 -NavigationControllerBrowserTest.SamePageBrowserInitiated
