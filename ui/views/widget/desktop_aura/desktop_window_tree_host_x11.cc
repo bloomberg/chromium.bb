@@ -1027,12 +1027,15 @@ void DesktopWindowTreeHostX11::FrameTypeChanged() {
     // and does not change.
     return;
   }
-
-  SetUseNativeFrame(new_type == Widget::FRAME_TYPE_FORCE_NATIVE);
-  // Replace the frame and layout the contents. Even though we don't have a
-  // swapable glass frame like on Windows, we still replace the frame because
-  // the button assets don't update otherwise.
-  native_widget_delegate_->AsWidget()->non_client_view()->UpdateFrame();
+  // Avoid mutating |View::children_| while possibly iterating over them.
+  // See View::PropagateNativeThemeChanged().
+  // TODO(varkha, sadrul): Investigate removing this (and instead expecting the
+  // NonClientView::UpdateFrame() to update the frame-view when theme changes,
+  // like all other views).
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&DesktopWindowTreeHostX11::DelayedChangeFrameType,
+                            weak_factory_.GetWeakPtr(),
+                            new_type));
 }
 
 void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
@@ -2277,6 +2280,14 @@ void DesktopWindowTreeHostX11::DelayedResize(const gfx::Size& size_in_pixels) {
   OnHostResizedInPixels(size_in_pixels);
   ResetWindowRegion();
   delayed_resize_task_.Cancel();
+}
+
+void DesktopWindowTreeHostX11::DelayedChangeFrameType(Widget::FrameType type) {
+  SetUseNativeFrame(type == Widget::FRAME_TYPE_FORCE_NATIVE);
+  // Replace the frame and layout the contents. Even though we don't have a
+  // swappable glass frame like on Windows, we still replace the frame because
+  // the button assets don't update otherwise.
+  native_widget_delegate_->AsWidget()->non_client_view()->UpdateFrame();
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInPixels() const {

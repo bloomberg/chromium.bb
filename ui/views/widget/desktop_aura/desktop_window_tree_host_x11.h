@@ -271,6 +271,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   void DelayedResize(const gfx::Size& size_in_pixels);
+  void DelayedChangeFrameType(Widget::FrameType new_type);
 
   gfx::Rect GetWorkAreaBoundsInPixels() const;
   gfx::Rect ToDIPRect(const gfx::Rect& rect_in_pixels) const;
