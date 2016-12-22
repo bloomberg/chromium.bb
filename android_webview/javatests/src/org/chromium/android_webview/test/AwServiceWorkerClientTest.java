@@ -83,6 +83,7 @@ public class AwServiceWorkerClientTest extends AwTestBase {
     // Verify that WebView ServiceWorker code can properly handle http errors that happened
     // in ServiceWorker fetches.
     @SmallTest
+    @DisabledTest(message = "Disable for flakyness http://crbug.com/676422")
     public void testFetchHttpError() throws Throwable {
         final String fullIndexUrl = mWebServer.setResponse("/index.html", INDEX_HTML, null);
         final String fullSwUrl = mWebServer.setResponse("/sw.js", SW_HTML, null);
