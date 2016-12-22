@@ -39,13 +39,14 @@ DistillerViewer::~DistillerViewer() {}
 void DistillerViewer::OnArticleReady(
     const dom_distiller::DistilledArticleProto* article_proto) {
   DomDistillerRequestViewBase::OnArticleReady(article_proto);
-  if (article_proto->pages_size() > 0) {
+  bool is_empty = article_proto->pages_size() == 0 ||
+                  article_proto->pages(0).html().empty();
+  if (!is_empty) {
     std::vector<ImageInfo> images;
     for (int i = 0; i < article_proto->pages(0).image_size(); i++) {
       auto image = article_proto->pages(0).image(i);
       images.push_back(ImageInfo{GURL(image.url()), image.data()});
     }
-
     const std::string html = viewer::GetUnsafeArticleTemplateHtml(
         url_.spec(), distilled_page_prefs_->GetTheme(),
         distilled_page_prefs_->GetFontFamily());
