@@ -1400,6 +1400,7 @@ class CORE_EXPORT UseCounter {
     V8PeriodicWave_Constructor = 1721,
     V8StereoPannerNode_Constructor = 1722,
     V8WaveShaperNode_Constructor = 1723,
+    V8Headers_GetAll_Method = 1724,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
