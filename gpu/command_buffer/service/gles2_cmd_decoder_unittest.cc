@@ -1484,6 +1484,17 @@ class GLES2DecoderDoCommandsTest : public GLES2DecoderTest {
   int entries_per_cmd_;
 };
 
+TEST_P(GLES3DecoderTest, BeginInvalidTargetQueryFails) {
+  BeginQueryEXT begin_cmd;
+  begin_cmd.Init(GL_SAMPLES_PASSED,
+                 kNewClientId,
+                 kSharedMemoryId,
+                 kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+
 TEST_P(GLES3DecoderTest, BindTransformFeedbackValidArgs) {
   EXPECT_CALL(*gl_, BindTransformFeedback(GL_TRANSFORM_FEEDBACK,
                                           kServiceTransformFeedbackId));
