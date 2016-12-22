@@ -14,7 +14,7 @@ class ComputedStyle;
 
 class ColorPropertyFunctions {
  public:
-  static StyleColor getInitialColor(CSSPropertyID);
+  static bool getInitialColor(CSSPropertyID, StyleColor& initialColor);
   static StyleColor getUnvisitedColor(CSSPropertyID, const ComputedStyle&);
   static StyleColor getVisitedColor(CSSPropertyID, const ComputedStyle&);
   static void setUnvisitedColor(CSSPropertyID, ComputedStyle&, const Color&);

@@ -2089,7 +2089,8 @@ Color ComputedStyle::colorIncludingFallback(int colorProperty,
           visitedLink ? visitedLinkCaretColor() : caretColor();
       // TODO(rego): We may want to adjust the caret color if it's the same than
       // the background to ensure good visibility and contrast.
-      result = autoColor.toStyleColor();
+      result = autoColor.isAutoColor() ? StyleColor::currentColor()
+                                       : autoColor.toStyleColor();
       break;
     }
     case CSSPropertyColor:

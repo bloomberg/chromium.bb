@@ -8,8 +8,14 @@
 
 namespace blink {
 
-StyleColor ColorPropertyFunctions::getInitialColor(CSSPropertyID property) {
-  return getUnvisitedColor(property, ComputedStyle::initialStyle());
+bool ColorPropertyFunctions::getInitialColor(CSSPropertyID property,
+                                             StyleColor& initialColor) {
+  if (property == CSSPropertyCaretColor)
+    return false;
+  // TODO(rego): Make getUnvisitedColor() return a bool, so we don't need a
+  // special case for caret-color here (http://crbug.com/676295).
+  initialColor = getUnvisitedColor(property, ComputedStyle::initialStyle());
+  return true;
 }
 
 StyleColor ColorPropertyFunctions::getUnvisitedColor(
@@ -26,6 +32,12 @@ StyleColor ColorPropertyFunctions::getUnvisitedColor(
       return style.borderTopColor();
     case CSSPropertyBorderBottomColor:
       return style.borderBottomColor();
+    case CSSPropertyCaretColor:
+      // TODO(rego): "auto" value for caret-color should not interpolate
+      // (http://crbug.com/676295).
+      if (style.caretColor().isAutoColor())
+        return StyleColor::currentColor();
+      return style.caretColor().toStyleColor();
     case CSSPropertyColor:
       return style.color();
     case CSSPropertyOutlineColor:
@@ -67,6 +79,12 @@ StyleColor ColorPropertyFunctions::getVisitedColor(CSSPropertyID property,
       return style.visitedLinkBorderTopColor();
     case CSSPropertyBorderBottomColor:
       return style.visitedLinkBorderBottomColor();
+    case CSSPropertyCaretColor:
+      // TODO(rego): "auto" value for caret-color should not interpolate
+      // (http://crbug.com/676295).
+      if (style.visitedLinkCaretColor().isAutoColor())
+        return StyleColor::currentColor();
+      return style.visitedLinkCaretColor().toStyleColor();
     case CSSPropertyColor:
       return style.visitedLinkColor();
     case CSSPropertyOutlineColor:
@@ -114,6 +132,8 @@ void ColorPropertyFunctions::setUnvisitedColor(CSSPropertyID property,
     case CSSPropertyBorderTopColor:
       style.setBorderTopColor(color);
       return;
+    case CSSPropertyCaretColor:
+      return style.setCaretColor(color);
     case CSSPropertyColor:
       style.setColor(color);
       return;
@@ -163,6 +183,8 @@ void ColorPropertyFunctions::setVisitedColor(CSSPropertyID property,
     case CSSPropertyBorderTopColor:
       style.setVisitedLinkBorderTopColor(color);
       return;
+    case CSSPropertyCaretColor:
+      return style.setVisitedLinkCaretColor(color);
     case CSSPropertyColor:
       style.setVisitedLinkColor(color);
       return;

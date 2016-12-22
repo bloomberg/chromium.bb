@@ -142,6 +142,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::get(
     case CSSPropertyBorderLeftColor:
     case CSSPropertyBorderRightColor:
     case CSSPropertyBorderTopColor:
+    case CSSPropertyCaretColor:
     case CSSPropertyColor:
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:

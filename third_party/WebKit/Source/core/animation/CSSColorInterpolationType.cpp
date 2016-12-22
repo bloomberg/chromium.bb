@@ -184,9 +184,10 @@ InterpolationValue CSSColorInterpolationType::maybeConvertNeutral(
 InterpolationValue CSSColorInterpolationType::maybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers& conversionCheckers) const {
-  const StyleColor initialColor =
-      ColorPropertyFunctions::getInitialColor(cssProperty());
-  return convertStyleColorPair(initialColor, initialColor);
+  StyleColor initialColor;
+  if (ColorPropertyFunctions::getInitialColor(cssProperty(), initialColor))
+    return convertStyleColorPair(initialColor, initialColor);
+  return nullptr;
 }
 
 InterpolationValue CSSColorInterpolationType::maybeConvertInherit(

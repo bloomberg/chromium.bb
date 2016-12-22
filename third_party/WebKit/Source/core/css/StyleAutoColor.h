@@ -34,8 +34,10 @@ class StyleAutoColor {
   }
 
   StyleColor toStyleColor() const {
+    DCHECK(m_type != ValueType::Auto);
     if (m_type == ValueType::SpecifiedColor)
       return StyleColor(m_color);
+    DCHECK(m_type == ValueType::CurrentColor);
     return StyleColor::currentColor();
   }
 

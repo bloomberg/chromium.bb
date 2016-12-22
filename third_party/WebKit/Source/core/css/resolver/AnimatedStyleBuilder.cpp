@@ -421,6 +421,11 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property,
     case CSSPropertyBoxShadow:
       style->setBoxShadow(toAnimatableShadow(value)->getShadowList());
       return;
+    case CSSPropertyCaretColor:
+      style->setCaretColor(toAnimatableColor(value)->getColor());
+      style->setVisitedLinkCaretColor(
+          toAnimatableColor(value)->visitedLinkColor());
+      return;
     case CSSPropertyClip:
       style->setClip(animatableValueToLengthBox(value, state));
       return;

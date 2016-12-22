@@ -417,6 +417,12 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(
             CSSIdentifierValue::create(CSSValueAuto));
       }
       return createFromLengthBox(style.clip(), style);
+    case CSSPropertyCaretColor:
+      if (style.caretColor().isAutoColor()) {
+        return AnimatableUnknown::create(
+            CSSIdentifierValue::create(CSSValueAuto));
+      }
+      return createFromColor(property, style);
     case CSSPropertyColor:
       return createFromColor(property, style);
     case CSSPropertyFillOpacity:
