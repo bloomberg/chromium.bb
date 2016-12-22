@@ -18,6 +18,8 @@ struct BeginFrameArgs {
   mojo.common.mojom.TimeTicks frame_time;
   mojo.common.mojom.TimeTicks deadline;
   mojo.common.mojom.TimeDelta interval;
+  uint64 sequence_number;
+  uint32 source_id;
   BeginFrameArgsType type;
   bool on_critical_path;
 };

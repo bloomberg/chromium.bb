@@ -33,6 +33,7 @@ class WindowAndroid::WindowBeginFrameSource : public cc::BeginFrameSource {
   explicit WindowBeginFrameSource(WindowAndroid* window)
       : window_(window),
         observer_count_(0),
+        next_sequence_number_(cc::BeginFrameArgs::kStartingFrameNumber),
         in_on_vsync_(false) {}
   ~WindowBeginFrameSource() override {}
 
@@ -43,14 +44,14 @@ class WindowAndroid::WindowBeginFrameSource : public cc::BeginFrameSource {
                       size_t remaining_frames) override {}
   bool IsThrottled() const override { return true; }
 
-  void OnVSync(base::TimeTicks frame_time,
-               base::TimeDelta vsync_period);
+  void OnVSync(base::TimeTicks frame_time, base::TimeDelta vsync_period);
 
  private:
   WindowAndroid* const window_;
   base::ObserverList<cc::BeginFrameObserver> observers_;
   int observer_count_;
   cc::BeginFrameArgs last_begin_frame_args_;
+  uint64_t next_sequence_number_;
   bool in_on_vsync_;
 };
 
@@ -70,6 +71,9 @@ void WindowAndroid::WindowBeginFrameSource::AddObserver(
     cc::BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
     if (!last_args.IsValid() ||
         last_args.frame_time < last_begin_frame_args_.frame_time) {
+      DCHECK(last_args.sequence_number <
+                 last_begin_frame_args_.sequence_number ||
+             last_args.source_id != last_begin_frame_args_.source_id);
       last_begin_frame_args_.type = cc::BeginFrameArgs::MISSED;
       // TODO(crbug.com/602485): A deadline doesn't make too much sense
       // for a missed BeginFrame (the intention rather is 'immediately'),
@@ -98,10 +102,11 @@ void WindowAndroid::WindowBeginFrameSource::OnVSync(
     base::TimeDelta vsync_period) {
   // frame time is in the past, so give the next vsync period as the deadline.
   base::TimeTicks deadline = frame_time + vsync_period;
-  last_begin_frame_args_ =
-      cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
-                                 vsync_period, cc::BeginFrameArgs::NORMAL);
+  last_begin_frame_args_ = cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, source_id(), next_sequence_number_, frame_time,
+      deadline, vsync_period, cc::BeginFrameArgs::NORMAL);
   DCHECK(last_begin_frame_args_.IsValid());
+  next_sequence_number_++;
 
   // We support adding/removing observers during observer iteration through
   // base::ObserverList. We also prevent observers that are added during

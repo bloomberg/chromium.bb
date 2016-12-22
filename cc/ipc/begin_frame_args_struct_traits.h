@@ -24,6 +24,14 @@ struct StructTraits<cc::mojom::BeginFrameArgsDataView, cc::BeginFrameArgs> {
     return args.interval;
   }
 
+  static uint64_t sequence_number(const cc::BeginFrameArgs& args) {
+    return args.sequence_number;
+  }
+
+  static uint32_t source_id(const cc::BeginFrameArgs& args) {
+    return args.source_id;
+  }
+
   static cc::mojom::BeginFrameArgsType type(const cc::BeginFrameArgs& args) {
     return static_cast<cc::mojom::BeginFrameArgsType>(args.type);
   }
@@ -39,6 +47,8 @@ struct StructTraits<cc::mojom::BeginFrameArgsDataView, cc::BeginFrameArgs> {
         !data.ReadInterval(&out->interval)) {
       return false;
     }
+    out->source_id = data.source_id();
+    out->sequence_number = data.sequence_number();
     out->type =
         static_cast<cc::BeginFrameArgs::BeginFrameArgsType>(data.type());
     out->on_critical_path = data.on_critical_path();

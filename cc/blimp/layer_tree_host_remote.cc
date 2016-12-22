@@ -11,7 +11,6 @@
 #include "cc/blimp/engine_picture_cache.h"
 #include "cc/blimp/picture_data_conversions.h"
 #include "cc/blimp/remote_compositor_bridge.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/proto/gfx_conversions.h"
@@ -371,8 +370,10 @@ void LayerTreeHostRemote::BeginMainFrame() {
   current_pipeline_stage_ = FramePipelineStage::ANIMATE;
   base::TimeTicks now = base::TimeTicks::Now();
   client_->BeginMainFrame(BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, now, now + kDefaultFrameInterval,
+      BEGINFRAME_FROM_HERE, begin_frame_source_.source_id(),
+      begin_frame_number_, now, now + kDefaultFrameInterval,
       kDefaultFrameInterval, BeginFrameArgs::NORMAL));
+  begin_frame_number_++;
   // We don't run any animations on the layer because threaded animations are
   // disabled.
   // TODO(khushalsagar): Revisit this when adding support for animations.

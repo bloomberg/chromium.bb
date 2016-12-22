@@ -12,24 +12,28 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Macros to help set up expected calls on the MockBeginFrameObserver.
-#define EXPECT_BEGIN_FRAME_DROP(obs, frame_time, deadline, interval)      \
-  EXPECT_CALL((obs),                                                      \
-              OnBeginFrame(CreateBeginFrameArgsForTesting(                \
-                  BEGINFRAME_FROM_HERE, frame_time, deadline, interval))) \
-      .Times(1)                                                           \
+#define EXPECT_BEGIN_FRAME_DROP(obs, source_id, sequence_number, frame_time, \
+                                deadline, interval)                          \
+  EXPECT_CALL((obs), OnBeginFrame(CreateBeginFrameArgsForTesting(            \
+                         BEGINFRAME_FROM_HERE, source_id, sequence_number,   \
+                         frame_time, deadline, interval)))                   \
+      .Times(1)                                                              \
       .InSequence((obs).sequence)
 
-#define EXPECT_BEGIN_FRAME_USED(obs, frame_time, deadline, interval)      \
-  EXPECT_CALL((obs),                                                      \
-              OnBeginFrame(CreateBeginFrameArgsForTesting(                \
-                  BEGINFRAME_FROM_HERE, frame_time, deadline, interval))) \
-      .InSequence((obs).sequence)                                         \
+#define EXPECT_BEGIN_FRAME_USED(obs, source_id, sequence_number, frame_time, \
+                                deadline, interval)                          \
+  EXPECT_CALL((obs), OnBeginFrame(CreateBeginFrameArgsForTesting(            \
+                         BEGINFRAME_FROM_HERE, source_id, sequence_number,   \
+                         frame_time, deadline, interval)))                   \
+      .InSequence((obs).sequence)                                            \
       .WillOnce(::testing::SaveArg<0>(&((obs).last_begin_frame_args)))
 
-#define EXPECT_BEGIN_FRAME_USED_MISSED(obs, frame_time, deadline, interval)    \
-  EXPECT_CALL((obs), OnBeginFrame(CreateBeginFrameArgsForTesting(              \
-                         BEGINFRAME_FROM_HERE, frame_time, deadline, interval, \
-                         BeginFrameArgs::MISSED)))                             \
+#define EXPECT_BEGIN_FRAME_USED_MISSED(obs, source_id, sequence_number,        \
+                                       frame_time, deadline, interval)         \
+  EXPECT_CALL(                                                                 \
+      (obs), OnBeginFrame(CreateBeginFrameArgsForTesting(                      \
+                 BEGINFRAME_FROM_HERE, source_id, sequence_number, frame_time, \
+                 deadline, interval, BeginFrameArgs::MISSED)))                 \
       .InSequence((obs).sequence)                                              \
       .WillOnce(::testing::SaveArg<0>(&((obs).last_begin_frame_args)))
 
@@ -40,24 +44,29 @@
 
 // Macros to send BeginFrameArgs on a FakeBeginFrameSink (and verify resulting
 // observer behaviour).
-#define SEND_BEGIN_FRAME(args_equal_to, source, frame_time, deadline, \
-                         interval)                                    \
-  {                                                                   \
-    BeginFrameArgs old_args = (source).TestLastUsedBeginFrameArgs();  \
-    BeginFrameArgs new_args = CreateBeginFrameArgsForTesting(         \
-        BEGINFRAME_FROM_HERE, frame_time, deadline, interval);        \
-    ASSERT_FALSE(old_args == new_args);                               \
-    (source).TestOnBeginFrame(new_args);                              \
-    EXPECT_EQ(args_equal_to, (source).TestLastUsedBeginFrameArgs());  \
+#define SEND_BEGIN_FRAME(args_equal_to, source, sequence_number, frame_time, \
+                         deadline, interval)                                 \
+  {                                                                          \
+    BeginFrameArgs old_args = (source).TestLastUsedBeginFrameArgs();         \
+    BeginFrameArgs new_args = CreateBeginFrameArgsForTesting(                \
+        BEGINFRAME_FROM_HERE, (source).source_id(), sequence_number,         \
+        frame_time, deadline, interval);                                     \
+    ASSERT_FALSE(old_args == new_args);                                      \
+    (source).TestOnBeginFrame(new_args);                                     \
+    EXPECT_EQ(args_equal_to, (source).TestLastUsedBeginFrameArgs());         \
   }
 
 // When dropping LastUsedBeginFrameArgs **shouldn't** change.
-#define SEND_BEGIN_FRAME_DROP(source, frame_time, deadline, interval) \
-  SEND_BEGIN_FRAME(old_args, source, frame_time, deadline, interval);
+#define SEND_BEGIN_FRAME_DROP(source, sequence_number, frame_time, deadline, \
+                              interval)                                      \
+  SEND_BEGIN_FRAME(old_args, source, sequence_number, frame_time, deadline,  \
+                   interval);
 
 // When used LastUsedBeginFrameArgs **should** be updated.
-#define SEND_BEGIN_FRAME_USED(source, frame_time, deadline, interval) \
-  SEND_BEGIN_FRAME(new_args, source, frame_time, deadline, interval);
+#define SEND_BEGIN_FRAME_USED(source, sequence_number, frame_time, deadline, \
+                              interval)                                      \
+  SEND_BEGIN_FRAME(new_args, source, sequence_number, frame_time, deadline,  \
+                   interval);
 
 namespace cc {
 

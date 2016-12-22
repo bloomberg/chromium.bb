@@ -10,6 +10,7 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/begin_frame_source.h"
 
 namespace cc {
@@ -49,6 +50,7 @@ class FakeExternalBeginFrameSource
   const double milliseconds_per_frame_;
   Client* client_ = nullptr;
   bool paused_ = false;
+  uint64_t next_begin_frame_number_ = BeginFrameArgs::kStartingFrameNumber;
   std::set<BeginFrameObserver*> observers_;
   base::CancelableCallback<void(const BeginFrameArgs&)> begin_frame_task_;
   base::WeakPtrFactory<FakeExternalBeginFrameSource> weak_ptr_factory_;

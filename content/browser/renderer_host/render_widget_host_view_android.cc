@@ -1518,8 +1518,9 @@ void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
 }
 
 void RenderWidgetHostViewAndroid::SendBeginFrame(cc::BeginFrameArgs args) {
-  TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::SendBeginFrame",
-               "frame_time_us", args.frame_time.ToInternalValue());
+  TRACE_EVENT2("cc", "RenderWidgetHostViewAndroid::SendBeginFrame",
+               "frame_number", args.sequence_number, "frame_time_us",
+               args.frame_time.ToInternalValue());
 
   // Synchronous compositor does not use deadline-based scheduling.
   // TODO(brianderson): Replace this hardcoded deadline after Android

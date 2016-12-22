@@ -89,8 +89,9 @@ class DisplaySchedulerTest : public testing::Test {
     base::TimeTicks frame_time = now_src_.NowTicks();
     base::TimeDelta interval = BeginFrameArgs::DefaultInterval();
     base::TimeTicks deadline = frame_time + interval;
+    // FakeBeginFrameSource deals with |source_id| and |sequence_number|.
     fake_begin_frame_source_.TestOnBeginFrame(
-        BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
+        BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, 0, 1, frame_time, deadline,
                                interval, BeginFrameArgs::NORMAL));
   }
 

@@ -26,8 +26,10 @@ class CC_EXPORT BeginFrameObserver {
   virtual ~BeginFrameObserver() {}
 
   // The |args| given to OnBeginFrame is guaranteed to have
-  // |args|.IsValid()==true and have |args|.frame_time
-  // field be strictly greater than the previous call.
+  // |args|.IsValid()==true. If |args|.source_id did not change between
+  // invocations, |args|.sequence_number is guaranteed to be be strictly greater
+  // than the previous call. Further, |args|.frame_time is guaranteed to be
+  // greater than or equal to the previous call even if the source_id changes.
   //
   // Side effects: This function can (and most of the time *will*) change the
   // return value of the LastUsedBeginFrameArgs method. See the documentation
@@ -99,6 +101,7 @@ class CC_EXPORT BeginFrameObserverBase : public BeginFrameObserver {
 // all BeginFrameSources *must* provide.
 class CC_EXPORT BeginFrameSource {
  public:
+  BeginFrameSource();
   virtual ~BeginFrameSource() {}
 
   // DidFinishFrame provides back pressure to a frame source about frame
@@ -116,6 +119,15 @@ class CC_EXPORT BeginFrameSource {
   // Returns false if the begin frame source will just continue to produce
   // begin frames without waiting.
   virtual bool IsThrottled() const = 0;
+
+  // Returns an identifier for this BeginFrameSource. Guaranteed unique within a
+  // process, but not across processes. This is used to create BeginFrames that
+  // originate at this source. Note that BeginFrameSources may pass on
+  // BeginFrames created by other sources, with different IDs.
+  uint32_t source_id() const;
+
+ private:
+  uint32_t source_id_;
 };
 
 // A BeginFrameSource that does nothing.
@@ -167,6 +179,7 @@ class CC_EXPORT BackToBackBeginFrameSource : public SyntheticBeginFrameSource,
   std::unique_ptr<DelayBasedTimeSource> time_source_;
   std::unordered_set<BeginFrameObserver*> observers_;
   std::unordered_set<BeginFrameObserver*> pending_begin_frame_observers_;
+  uint64_t next_sequence_number_;
   base::WeakPtrFactory<BackToBackBeginFrameSource> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackToBackBeginFrameSource);
@@ -204,6 +217,8 @@ class CC_EXPORT DelayBasedBeginFrameSource : public SyntheticBeginFrameSource,
   std::unordered_set<BeginFrameObserver*> observers_;
   base::TimeTicks last_timebase_;
   base::TimeDelta authoritative_interval_;
+  BeginFrameArgs current_begin_frame_args_;
+  uint64_t next_sequence_number_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayBasedBeginFrameSource);
 };

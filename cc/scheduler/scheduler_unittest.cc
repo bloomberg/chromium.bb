@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/ordered_simple_task_runner.h"
@@ -236,7 +237,9 @@ class SchedulerTest : public testing::Test {
   SchedulerTest()
       : now_src_(new base::SimpleTestTickClock()),
         task_runner_(new OrderedSimpleTaskRunner(now_src_.get(), true)),
-        fake_external_begin_frame_source_(nullptr) {
+        fake_external_begin_frame_source_(nullptr),
+        fake_compositor_timing_history_(nullptr),
+        next_begin_frame_number_(BeginFrameArgs::kStartingFrameNumber) {
     now_src_->Advance(base::TimeDelta::FromMicroseconds(10000));
     // A bunch of tests require NowTicks()
     // to be > BeginFrameArgs::DefaultInterval()
@@ -405,8 +408,10 @@ class SchedulerTest : public testing::Test {
     // Creep the time forward so that any BeginFrameArgs is not equal to the
     // last one otherwise we violate the BeginFrameSource contract.
     now_src_->Advance(BeginFrameArgs::DefaultInterval());
-    BeginFrameArgs args =
-        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src());
+    BeginFrameArgs args = CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, fake_external_begin_frame_source_->source_id(),
+        next_begin_frame_number_, now_src());
+    next_begin_frame_number_++;
     fake_external_begin_frame_source_->TestOnBeginFrame(args);
     return args;
   }
@@ -435,6 +440,7 @@ class SchedulerTest : public testing::Test {
   std::unique_ptr<FakeSchedulerClient> client_;
   std::unique_ptr<TestScheduler> scheduler_;
   FakeCompositorTimingHistory* fake_compositor_timing_history_;
+  uint64_t next_begin_frame_number_;
 };
 
 TEST_F(SchedulerTest, InitializeCompositorFrameSinkDoesNotBeginImplFrame) {
@@ -1332,8 +1338,10 @@ TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateBeginFrame) {
 
   // Advance frame and create a begin frame.
   now_src_->Advance(BeginFrameArgs::DefaultInterval());
-  BeginFrameArgs args =
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src());
+  BeginFrameArgs args = CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, fake_external_begin_frame_source_->source_id(),
+      next_begin_frame_number_, now_src());
+  next_begin_frame_number_++;
 
   // Deliver this begin frame super late.
   now_src_->Advance(BeginFrameArgs::DefaultInterval() * 100);

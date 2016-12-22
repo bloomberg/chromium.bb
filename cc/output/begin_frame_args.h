@@ -5,6 +5,7 @@
 #ifndef CC_OUTPUT_BEGIN_FRAME_ARGS_H_
 #define CC_OUTPUT_BEGIN_FRAME_ARGS_H_
 
+#include <stdint.h>
 #include <memory>
 
 #include "base/location.h"
@@ -49,6 +50,9 @@ struct CC_EXPORT BeginFrameArgs {
   };
   static const char* TypeToString(BeginFrameArgsType type);
 
+  static constexpr uint64_t kInvalidFrameNumber = 0;
+  static constexpr uint64_t kStartingFrameNumber = 1;
+
   // Creates an invalid set of values.
   BeginFrameArgs();
 
@@ -63,6 +67,8 @@ struct CC_EXPORT BeginFrameArgs {
   // created by searching for "BeginFrameArgs::Create".
   // The location argument should **always** be BEGINFRAME_FROM_HERE macro.
   static BeginFrameArgs Create(CreationLocation location,
+                               uint32_t source_id,
+                               uint64_t sequence_number,
                                base::TimeTicks frame_time,
                                base::TimeTicks deadline,
                                base::TimeDelta interval,
@@ -84,11 +90,21 @@ struct CC_EXPORT BeginFrameArgs {
   base::TimeTicks frame_time;
   base::TimeTicks deadline;
   base::TimeDelta interval;
+
+  // |source_id| and |sequence_number| identify a BeginFrame within a single
+  // process and are set by the original BeginFrameSource that created the
+  // BeginFrameArgs. When |source_id| of consecutive BeginFrameArgs changes,
+  // observers should expect the continuity of |sequence_number| to break.
+  uint64_t sequence_number;
+  uint32_t source_id;  // |source_id| after |sequence_number| for packing.
+
   BeginFrameArgsType type;
   bool on_critical_path;
 
  private:
-  BeginFrameArgs(base::TimeTicks frame_time,
+  BeginFrameArgs(uint32_t source_id,
+                 uint64_t sequence_number,
+                 base::TimeTicks frame_time,
                  base::TimeTicks deadline,
                  base::TimeDelta interval,
                  BeginFrameArgsType type);

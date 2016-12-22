@@ -10,6 +10,8 @@
 #include "cc/base/cc_export.h"
 #include "cc/blimp/remote_compositor_bridge_client.h"
 #include "cc/debug/layer_tree_debug_state.h"
+#include "cc/output/begin_frame_args.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_sequence_generator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -125,6 +127,10 @@ class CC_EXPORT LayerTreeHostRemote : public LayerTreeHost,
   int source_frame_number_ = 0;
   bool visible_ = false;
   bool defer_commits_ = false;
+
+  // Provides |source_id| for BeginFrameArgs we create.
+  StubBeginFrameSource begin_frame_source_;
+  uint64_t begin_frame_number_ = BeginFrameArgs::kStartingFrameNumber;
 
   // In threaded/single-threaded mode, the LayerTree and Layers expect scroll/
   // scale updates to come from the impl thread only during the main frame.

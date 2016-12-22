@@ -450,7 +450,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   }
 
   BeginFrameArgs begin_frame_args(BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, frame_begin_time, base::TimeTicks(),
+      BEGINFRAME_FROM_HERE, 0, 1, frame_begin_time, base::TimeTicks(),
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL));
 
   // Start the impl frame.

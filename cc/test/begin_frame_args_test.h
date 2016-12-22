@@ -18,17 +18,25 @@ namespace cc {
 
 // Functions for quickly creating BeginFrameArgs
 BeginFrameArgs CreateBeginFrameArgsForTesting(
-    BeginFrameArgs::CreationLocation location);
+    BeginFrameArgs::CreationLocation location,
+    uint32_t source_id,
+    uint64_t sequence_number);
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
+    uint32_t source_id,
+    uint64_t sequence_number,
     base::TimeTicks frame_time);
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
+    uint32_t source_id,
+    uint64_t sequence_number,
     int64_t frame_time,
     int64_t deadline,
     int64_t interval);
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
+    uint32_t source_id,
+    uint64_t sequence_number,
     int64_t frame_time,
     int64_t deadline,
     int64_t interval,
@@ -38,6 +46,8 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
 // OrderSimpleTaskRunner.
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
+    uint32_t source_id,
+    uint64_t sequence_number,
     base::SimpleTestTickClock* now_src);
 
 // gtest helpers -- these *must* be in the same namespace as the types they
