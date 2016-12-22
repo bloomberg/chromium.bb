@@ -87,7 +87,7 @@ void InitializeResourceContext(BrowserContext* browser_context) {
       new UserDataAdapter<StreamContext>(
           StreamContext::GetFor(browser_context)));
 
-  resource_context->DetachUserDataThread();
+  resource_context->DetachFromSequence();
 }
 
 }  // namespace content

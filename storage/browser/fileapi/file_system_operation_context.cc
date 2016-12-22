@@ -27,7 +27,7 @@ FileSystemOperationContext::FileSystemOperationContext(
 }
 
 FileSystemOperationContext::~FileSystemOperationContext() {
-  DetachUserDataThread();
+  DetachFromSequence();
   setter_thread_checker_.DetachFromThread();
 }
 

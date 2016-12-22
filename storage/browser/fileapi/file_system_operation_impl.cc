@@ -384,7 +384,7 @@ FileSystemOperationImpl::FileSystemOperationImpl(
       pending_operation_(kOperationNone),
       weak_factory_(this) {
   DCHECK(operation_context_.get());
-  operation_context_->DetachUserDataThread();
+  operation_context_->DetachFromSequence();
   async_file_util_ = file_system_context_->GetAsyncFileUtil(url.type());
   DCHECK(async_file_util_);
 }
