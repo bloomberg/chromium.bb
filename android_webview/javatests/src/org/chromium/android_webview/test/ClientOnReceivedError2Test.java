@@ -14,7 +14,6 @@ import org.chromium.android_webview.ErrorCodeConversionHelper;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -173,7 +172,6 @@ public class ClientOnReceivedError2Test extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    @RetryOnFailure(message = "crbug.com/653130")
     public void testUserGestureForIframeSubresource() throws Throwable {
         useDefaultTestAwContentsClient();
         startWebServer();
