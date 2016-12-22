@@ -338,6 +338,9 @@ Polymer({
 
     switch (this.syncStatus.statusAction) {
       case settings.StatusAction.REAUTHENTICATE:
+        this.syncBrowserProxy_.startSignIn();
+        break;
+      case settings.StatusAction.SIGNOUT_AND_SIGNIN:
 <if expr="chromeos">
         this.syncBrowserProxy_.attemptUserExit();
 </if>

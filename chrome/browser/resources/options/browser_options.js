@@ -1226,6 +1226,9 @@ cr.define('options', function() {
       $('sync-action-link').onclick = function(event) {
         switch (syncData.statusAction) {
           case 'reauthenticate':
+            SyncSetupOverlay.startSignIn(false /* creatingSupervisedUser */);
+            break;
+          case 'signOutAndSignIn':
 <if expr="chromeos">
             // On Chrome OS, sign out the user and sign in again to get fresh
             // credentials on auth errors.

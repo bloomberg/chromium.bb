@@ -35,10 +35,11 @@ settings.SyncStatus;
  * @enum {string}
  */
 settings.StatusAction = {
-  NO_ACTION: 'noAction',                 // No action to take.
-  REAUTHENTICATE: 'reauthenticate',      // User needs to reauthenticate.
-  UPGRADE_CLIENT: 'upgradeClient',       // User needs to upgrade the client.
-  ENTER_PASSPHRASE: 'enterPassphrase',   // User needs to enter passphrase.
+  NO_ACTION: 'noAction',                  // No action to take.
+  REAUTHENTICATE: 'reauthenticate',       // User needs to reauthenticate.
+  SIGNOUT_AND_SIGNIN: 'signOutAndSignIn', // User needs to sign out and sign in.
+  UPGRADE_CLIENT: 'upgradeClient',        // User needs to upgrade the client.
+  ENTER_PASSPHRASE: 'enterPassphrase',    // User needs to enter passphrase.
 };
 
 /**
@@ -180,10 +181,7 @@ cr.define('settings', function() {
 <if expr="not chromeos">
     /** @override */
     startSignIn: function() {
-      // TODO(tommycli): Currently this is always false, but this will become
-      // a parameter once supervised users are implemented in MD Settings.
-      var creatingSupervisedUser = false;
-      chrome.send('SyncSetupStartSignIn', [creatingSupervisedUser]);
+      chrome.send('SyncSetupStartSignIn');
     },
 
     /** @override */

@@ -156,6 +156,8 @@ std::string GetSyncErrorAction(sync_ui_util::ActionType action_type) {
   switch (action_type) {
     case sync_ui_util::REAUTHENTICATE:
       return "reauthenticate";
+    case sync_ui_util::SIGNOUT_AND_SIGNIN:
+      return "signOutAndSignIn";
     case sync_ui_util::UPGRADE_CLIENT:
       return "upgradeClient";
     case sync_ui_util::ENTER_PASSPHRASE:
@@ -505,7 +507,7 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     return;
   }
 
-  OpenSyncSetup(false /* creating_supervised_user */);
+  OpenSyncSetup();
 }
 
 #if defined(OS_CHROMEOS)
@@ -521,11 +523,12 @@ void PeopleHandler::HandleAttemptUserExit(const base::ListValue* args) {
 void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
   AllowJavascript();
 
-  // Should only be called if the user is not already signed in.
-  DCHECK(!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated());
-  bool creating_supervised_user = false;
-  args->GetBoolean(0, &creating_supervised_user);
-  OpenSyncSetup(creating_supervised_user);
+  // Should only be called if the user is not already signed in or has an auth
+  // error.
+  DCHECK(!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() ||
+         SigninErrorControllerFactory::GetForProfile(profile_)->HasError());
+
+  OpenSyncSetup();
 }
 
 void PeopleHandler::HandleStopSyncing(const base::ListValue* args) {
@@ -623,7 +626,7 @@ void PeopleHandler::CloseSyncSetup() {
   configuring_sync_ = false;
 }
 
-void PeopleHandler::OpenSyncSetup(bool creating_supervised_user) {
+void PeopleHandler::OpenSyncSetup() {
   // Notify services that login UI is now active.
   GetLoginUIService()->SetLoginUI(this);
 
@@ -643,18 +646,14 @@ void PeopleHandler::OpenSyncSetup(bool creating_supervised_user) {
   //    sync configure UI, not login UI).
   // 7) User re-enables sync after disabling it via advanced settings.
 #if !defined(OS_CHROMEOS)
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
-  if (!signin->IsAuthenticated() ||
+  if (!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() ||
       SigninErrorControllerFactory::GetForProfile(profile_)->HasError()) {
     // User is not logged in (cases 1-2), or login has been specially requested
     // because previously working credentials have expired (case 3). Close sync
     // setup including any visible overlays, and display the gaia auth page.
     // Control will be returned to the sync settings page once auth is complete.
     CloseUI();
-    DisplayGaiaLogin(
-        creating_supervised_user ?
-            signin_metrics::AccessPoint::ACCESS_POINT_SUPERVISED_USER :
-            signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
+    DisplayGaiaLogin(signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
     return;
   }
 #endif

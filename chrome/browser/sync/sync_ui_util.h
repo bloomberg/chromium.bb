@@ -29,10 +29,11 @@ enum MessageType {
 
 // The action associated with the sync status.
 enum ActionType {
-  NO_ACTION,         // No action to take.
-  REAUTHENTICATE,    // User needs to reauthenticate.
-  UPGRADE_CLIENT,    // User needs to upgrade the client.
-  ENTER_PASSPHRASE,  // User needs to enter their passphrase.
+  NO_ACTION,           // No action to take.
+  REAUTHENTICATE,      // User needs to reauthenticate.
+  SIGNOUT_AND_SIGNIN,  // User needs to sign out and sign in.
+  UPGRADE_CLIENT,      // User needs to upgrade the client.
+  ENTER_PASSPHRASE,    // User needs to enter their passphrase.
 };
 
 enum StatusLabelStyle {

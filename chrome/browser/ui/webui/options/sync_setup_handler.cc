@@ -647,8 +647,11 @@ void SyncSetupHandler::HandleAttemptUserExit(const base::ListValue* args) {
 
 #if !defined(OS_CHROMEOS)
 void SyncSetupHandler::HandleStartSignin(const base::ListValue* args) {
-  // Should only be called if the user is not already signed in.
-  DCHECK(!SigninManagerFactory::GetForProfile(GetProfile())->IsAuthenticated());
+  // Should only be called if the user is not already signed in or has an auth
+  // error.
+  DCHECK(
+      !SigninManagerFactory::GetForProfile(GetProfile())->IsAuthenticated() ||
+      SigninErrorControllerFactory::GetForProfile(GetProfile())->HasError());
   bool creating_supervised_user = false;
   args->GetBoolean(0, &creating_supervised_user);
   OpenSyncSetup(creating_supervised_user);

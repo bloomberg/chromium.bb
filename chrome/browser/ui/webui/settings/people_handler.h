@@ -60,7 +60,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   ~PeopleHandler() override;
 
   // Initializes the sync setup flow and shows the setup UI.
-  void OpenSyncSetup(bool creating_supervised_user);
+  void OpenSyncSetup();
 
   // Terminates the sync setup flow.
   void CloseSyncSetup();
