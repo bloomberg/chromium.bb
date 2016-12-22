@@ -212,25 +212,25 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     if (x == m_frameRect.x())
       return;
     m_frameRect.setX(x);
-    frameRectChanged();
+    locationChanged();
   }
   void setY(LayoutUnit y) {
     if (y == m_frameRect.y())
       return;
     m_frameRect.setY(y);
-    frameRectChanged();
+    locationChanged();
   }
   void setWidth(LayoutUnit width) {
     if (width == m_frameRect.width())
       return;
     m_frameRect.setWidth(width);
-    frameRectChanged();
+    sizeChanged();
   }
   void setHeight(LayoutUnit height) {
     if (height == m_frameRect.height())
       return;
     m_frameRect.setHeight(height);
-    frameRectChanged();
+    sizeChanged();
   }
 
   LayoutUnit logicalLeft() const {
@@ -324,7 +324,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     if (location == m_frameRect.location())
       return;
     m_frameRect.setLocation(location);
-    frameRectChanged();
+    locationChanged();
   }
 
   // The ancestor box that this object's location and physicalLocation are
@@ -342,13 +342,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     if (size == m_frameRect.size())
       return;
     m_frameRect.setSize(size);
-    frameRectChanged();
+    sizeChanged();
   }
   void move(LayoutUnit dx, LayoutUnit dy) {
     if (!dx && !dy)
       return;
     m_frameRect.move(dx, dy);
-    frameRectChanged();
+    locationChanged();
   }
 
   // This function is in the container's coordinate system, meaning
@@ -356,10 +356,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // inline-start/block-start margins.
   LayoutRect frameRect() const { return m_frameRect; }
   void setFrameRect(const LayoutRect& rect) {
-    if (rect == m_frameRect)
-      return;
-    m_frameRect = rect;
-    frameRectChanged();
+    setLocation(rect.location());
+    setSize(rect.size());
   }
 
   // Note that those functions have their origin at this box's CSS border box.
@@ -1495,7 +1493,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool isBox() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
-  void frameRectChanged();
+  void locationChanged();
+  void sizeChanged();
 
   virtual bool isInSelfHitTestingPhase(HitTestAction hitTestAction) const {
     return hitTestAction == HitTestForeground;

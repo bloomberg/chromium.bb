@@ -1693,15 +1693,23 @@ ResourcePriority LayoutBox::computeResourcePriority() const {
       screenArea);
 }
 
-void LayoutBox::frameRectChanged() {
+void LayoutBox::locationChanged() {
+  // The location may change because of layout of other objects. Should check
+  // this object for paint invalidation.
+  if (!needsLayout())
+    setMayNeedPaintInvalidation();
+}
+
+void LayoutBox::sizeChanged() {
+  // The size may change because of layout of other objects. Should check this
+  // object for paint invalidation.
+  if (!needsLayout())
+    setMayNeedPaintInvalidation();
+
   if (node() && node()->isElementNode()) {
     Element& element = toElement(*node());
     element.setNeedsResizeObserverUpdate();
   }
-  // The frame rect may change because of layout of other objects.
-  // Should check this object for paint invalidation.
-  if (!needsLayout())
-    setMayNeedPaintInvalidation();
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     if (shouldClipOverflow()) {
