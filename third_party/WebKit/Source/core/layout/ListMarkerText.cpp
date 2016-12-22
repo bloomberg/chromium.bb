@@ -467,7 +467,7 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int count) {
     case EListStyleType::Cambodian:
     case EListStyleType::Circle:
     case EListStyleType::DecimalLeadingZero:
-    case EListStyleType::DecimalListStyle:
+    case EListStyleType::Decimal:
     case EListStyleType::Devanagari:
     case EListStyleType::Disc:
     case EListStyleType::Gujarati:
@@ -478,7 +478,7 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int count) {
     case EListStyleType::Malayalam:
     case EListStyleType::Mongolian:
     case EListStyleType::Myanmar:
-    case EListStyleType::NoneListStyle:
+    case EListStyleType::None:
     case EListStyleType::Oriya:
     case EListStyleType::Persian:
     case EListStyleType::Square:
@@ -489,7 +489,7 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int count) {
     case EListStyleType::KoreanHangulFormal:
     case EListStyleType::KoreanHanjaFormal:
     case EListStyleType::KoreanHanjaInformal:
-    case EListStyleType::CJKIdeographic:
+    case EListStyleType::CjkIdeographic:
     case EListStyleType::SimpChineseFormal:
     case EListStyleType::SimpChineseInformal:
     case EListStyleType::TradChineseFormal:
@@ -498,18 +498,14 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int count) {
     case EListStyleType::Armenian:
     case EListStyleType::LowerArmenian:
     case EListStyleType::UpperArmenian:
-      return (count < 1 || count > 99999999) ? EListStyleType::DecimalListStyle
-                                             : type;
+      return (count < 1 || count > 99999999) ? EListStyleType::Decimal : type;
     case EListStyleType::Georgian:
-      return (count < 1 || count > 19999) ? EListStyleType::DecimalListStyle
-                                          : type;
+      return (count < 1 || count > 19999) ? EListStyleType::Decimal : type;
     case EListStyleType::Hebrew:
-      return (count < 0 || count > 999999) ? EListStyleType::DecimalListStyle
-                                           : type;
+      return (count < 0 || count > 999999) ? EListStyleType::Decimal : type;
     case EListStyleType::LowerRoman:
     case EListStyleType::UpperRoman:
-      return (count < 1 || count > 3999) ? EListStyleType::DecimalListStyle
-                                         : type;
+      return (count < 1 || count > 3999) ? EListStyleType::Decimal : type;
     case EListStyleType::CjkEarthlyBranch:
     case EListStyleType::CjkHeavenlyStem:
     case EListStyleType::EthiopicHalehameAm:
@@ -527,7 +523,7 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int count) {
     case EListStyleType::LowerLatin:
     case EListStyleType::UpperAlpha:
     case EListStyleType::UpperLatin:
-      return (count < 1) ? EListStyleType::DecimalListStyle : type;
+      return (count < 1) ? EListStyleType::Decimal : type;
   }
 
   ASSERT_NOT_REACHED();
@@ -545,7 +541,7 @@ UChar suffix(EListStyleType type, int count) {
   switch (effectiveType) {
     case EListStyleType::Circle:
     case EListStyleType::Disc:
-    case EListStyleType::NoneListStyle:
+    case EListStyleType::None:
     case EListStyleType::Square:
       return ' ';
     case EListStyleType::EthiopicHalehame:
@@ -557,11 +553,11 @@ UChar suffix(EListStyleType type, int count) {
     case EListStyleType::ArabicIndic:
     case EListStyleType::Bengali:
     case EListStyleType::Cambodian:
-    case EListStyleType::CJKIdeographic:
+    case EListStyleType::CjkIdeographic:
     case EListStyleType::CjkEarthlyBranch:
     case EListStyleType::CjkHeavenlyStem:
     case EListStyleType::DecimalLeadingZero:
-    case EListStyleType::DecimalListStyle:
+    case EListStyleType::Decimal:
     case EListStyleType::Devanagari:
     case EListStyleType::Georgian:
     case EListStyleType::Gujarati:
@@ -614,7 +610,7 @@ String text(EListStyleType type, int count) {
   // outside its ordinal range then we fallback to some list style that can
   // represent |count|.
   switch (effectiveListMarkerType(type, count)) {
-    case EListStyleType::NoneListStyle:
+    case EListStyleType::None:
       return "";
 
     // We use the same characters for text security.
@@ -628,7 +624,7 @@ String text(EListStyleType type, int count) {
       // instead, but I think this looks better.
       return String(&blackSquareCharacter, 1);
 
-    case EListStyleType::DecimalListStyle:
+    case EListStyleType::Decimal:
       return String::number(count);
     case EListStyleType::DecimalLeadingZero:
       if (count < -9 || count > 9)
@@ -889,7 +885,7 @@ String text(EListStyleType type, int count) {
           0xC774, 0xB108, 0xC2A4, 0x0020, 0x0000};
       return toCJKIdeographic(count, koreanHanjaInformalTable, Informal);
     }
-    case EListStyleType::CJKIdeographic:
+    case EListStyleType::CjkIdeographic:
     case EListStyleType::TradChineseInformal: {
       static const UChar traditionalChineseInformalTable[22] = {
           Chinese, 0x842C, 0x0000, 0x5104, 0x0000, 0x5146, 0x0000, 0x5341,

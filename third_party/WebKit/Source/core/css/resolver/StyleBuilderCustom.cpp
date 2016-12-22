@@ -758,7 +758,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
           ContentData::create(state.styleImage(CSSPropertyContent, *item));
     } else if (item->isCounterValue()) {
       const CSSCounterValue* counterValue = toCSSCounterValue(item.get());
-      EListStyleType listStyleType = EListStyleType::NoneListStyle;
+      EListStyleType listStyleType = EListStyleType::None;
       CSSValueID listStyleIdent = counterValue->listStyle();
       if (listStyleIdent != CSSValueNone)
         listStyleType =

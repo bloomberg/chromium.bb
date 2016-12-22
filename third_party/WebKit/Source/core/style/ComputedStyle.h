@@ -198,8 +198,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // inherit
   struct InheritedData {
     bool operator==(const InheritedData& other) const {
-      return (m_listStyleType == other.m_listStyleType) &&
-             (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
+      return (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
              (m_cursorStyle == other.m_cursorStyle) &&
              (m_direction == other.m_direction) &&
              (m_rtlOrdering == other.m_rtlOrdering) &&
@@ -211,7 +210,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       return !(*this == other);
     }
 
-    unsigned m_listStyleType : 7;      // EListStyleType
     unsigned m_hasSimpleUnderline : 1;  // True if 'underline solid' is the only
                                         // text decoration on this element.
     unsigned m_cursorStyle : 6;     // ECursor
@@ -313,8 +311,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   void setBitDefaults() {
     ComputedStyleBase::setBitDefaults();
-    m_inheritedData.m_listStyleType =
-        static_cast<unsigned>(initialListStyleType());
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = static_cast<unsigned>(initialDirection());
@@ -2060,15 +2056,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setLineHeight(const Length& specifiedLineHeight);
 
   // List style properties.
-  // list-style-type
-  static EListStyleType initialListStyleType() { return EListStyleType::Disc; }
-  EListStyleType listStyleType() const {
-    return static_cast<EListStyleType>(m_inheritedData.m_listStyleType);
-  }
-  void setListStyleType(EListStyleType v) {
-    m_inheritedData.m_listStyleType = static_cast<unsigned>(v);
-  }
-
   // list-style-image
   static StyleImage* initialListStyleImage() { return 0; }
   StyleImage* listStyleImage() const;

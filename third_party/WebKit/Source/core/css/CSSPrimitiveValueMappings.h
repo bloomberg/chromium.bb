@@ -1586,13 +1586,13 @@ inline CSSIdentifierValue::CSSIdentifierValue(EListStyleType e)
     case EListStyleType::CjkHeavenlyStem:
       m_valueID = CSSValueCjkHeavenlyStem;
       break;
-    case EListStyleType::CJKIdeographic:
+    case EListStyleType::CjkIdeographic:
       m_valueID = CSSValueCjkIdeographic;
       break;
     case EListStyleType::DecimalLeadingZero:
       m_valueID = CSSValueDecimalLeadingZero;
       break;
-    case EListStyleType::DecimalListStyle:
+    case EListStyleType::Decimal:
       m_valueID = CSSValueDecimal;
       break;
     case EListStyleType::Devanagari:
@@ -1685,7 +1685,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(EListStyleType e)
     case EListStyleType::Myanmar:
       m_valueID = CSSValueMyanmar;
       break;
-    case EListStyleType::NoneListStyle:
+    case EListStyleType::None:
       m_valueID = CSSValueNone;
       break;
     case EListStyleType::Oriya:
@@ -1740,7 +1740,7 @@ template <>
 inline EListStyleType CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueNone:
-      return EListStyleType::NoneListStyle;
+      return EListStyleType::None;
     case CSSValueArabicIndic:
       return EListStyleType::ArabicIndic;
     case CSSValueArmenian:
@@ -1756,11 +1756,11 @@ inline EListStyleType CSSIdentifierValue::convertTo() const {
     case CSSValueCjkHeavenlyStem:
       return EListStyleType::CjkHeavenlyStem;
     case CSSValueCjkIdeographic:
-      return EListStyleType::CJKIdeographic;
+      return EListStyleType::CjkIdeographic;
     case CSSValueDecimalLeadingZero:
       return EListStyleType::DecimalLeadingZero;
     case CSSValueDecimal:
-      return EListStyleType::DecimalListStyle;
+      return EListStyleType::Decimal;
     case CSSValueDevanagari:
       return EListStyleType::Devanagari;
     case CSSValueDisc:
@@ -1856,7 +1856,7 @@ inline EListStyleType CSSIdentifierValue::convertTo() const {
   }
 
   NOTREACHED();
-  return EListStyleType::NoneListStyle;
+  return EListStyleType::None;
 }
 
 template <>

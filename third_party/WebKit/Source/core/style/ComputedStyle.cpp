@@ -856,8 +856,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
           other.borderRightStyle() == BorderStyleHidden)))
       return true;
   } else if (display() == EDisplay::ListItem) {
-    if (m_inheritedData.m_listStyleType !=
-            other.m_inheritedData.m_listStyleType ||
+    if (listStyleType() != other.listStyleType() ||
         listStylePosition() != other.listStylePosition())
       return true;
   }

@@ -370,7 +370,7 @@ int LayoutListMarker::baselinePosition(
 LayoutListMarker::ListStyleCategory LayoutListMarker::getListStyleCategory()
     const {
   switch (style()->listStyleType()) {
-    case EListStyleType::NoneListStyle:
+    case EListStyleType::None:
       return ListStyleCategory::None;
     case EListStyleType::Disc:
     case EListStyleType::Circle:
@@ -380,11 +380,11 @@ LayoutListMarker::ListStyleCategory LayoutListMarker::getListStyleCategory()
     case EListStyleType::Armenian:
     case EListStyleType::Bengali:
     case EListStyleType::Cambodian:
-    case EListStyleType::CJKIdeographic:
+    case EListStyleType::CjkIdeographic:
     case EListStyleType::CjkEarthlyBranch:
     case EListStyleType::CjkHeavenlyStem:
     case EListStyleType::DecimalLeadingZero:
-    case EListStyleType::DecimalListStyle:
+    case EListStyleType::Decimal:
     case EListStyleType::Devanagari:
     case EListStyleType::EthiopicHalehame:
     case EListStyleType::EthiopicHalehameAm:
