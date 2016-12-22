@@ -75,6 +75,10 @@ WebDragOperation WebFrameWidgetBase::dragTargetDragOver(
 void WebFrameWidgetBase::dragTargetDragLeave() {
   DCHECK(m_currentDragData);
 
+  if (ignoreInputEvents()) {
+    cancelDrag();
+    return;
+  }
   DragData dragData(m_currentDragData.get(), IntPoint(), IntPoint(),
                     static_cast<DragOperation>(m_operationsAllowed));
 
@@ -109,12 +113,13 @@ void WebFrameWidgetBase::dragTargetDrop(const WebDragData& webDragData,
     return;
   }
 
-  m_currentDragData->setModifiers(modifiers);
-  DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
-                    static_cast<DragOperation>(m_operationsAllowed));
+  if (!ignoreInputEvents()) {
+    m_currentDragData->setModifiers(modifiers);
+    DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
+                      static_cast<DragOperation>(m_operationsAllowed));
 
-  page()->dragController().performDrag(&dragData, *toCoreFrame(localRoot()));
-
+    page()->dragController().performDrag(&dragData, *toCoreFrame(localRoot()));
+  }
   m_dragOperation = WebDragOperationNone;
   m_currentDragData = nullptr;
 }
@@ -122,6 +127,10 @@ void WebFrameWidgetBase::dragTargetDrop(const WebDragData& webDragData,
 void WebFrameWidgetBase::dragSourceEndedAt(const WebPoint& pointInViewport,
                                            const WebPoint& screenPoint,
                                            WebDragOperation operation) {
+  if (ignoreInputEvents()) {
+    cancelDrag();
+    return;
+  }
   WebPoint pointInRootFrame(
       page()->frameHost().visualViewport().viewportToRootFrame(
           pointInViewport));
@@ -135,12 +144,16 @@ void WebFrameWidgetBase::dragSourceEndedAt(const WebPoint& pointInViewport,
 }
 
 void WebFrameWidgetBase::dragSourceSystemDragEnded() {
-  // It's possible for us to get this callback while not doing a drag if it's
-  // from a previous page that got unloaded.
-  if (m_doingDragAndDrop) {
-    page()->dragController().dragEnded();
-    m_doingDragAndDrop = false;
-  }
+  cancelDrag();
+}
+
+void WebFrameWidgetBase::cancelDrag() {
+  // It's possible for us this to be callback while we're not doing a drag if
+  // it's from a previous page that got unloaded.
+  if (!m_doingDragAndDrop)
+    return;
+  page()->dragController().dragEnded();
+  m_doingDragAndDrop = false;
 }
 
 void WebFrameWidgetBase::startDragging(WebReferrerPolicy policy,
@@ -158,6 +171,10 @@ WebDragOperation WebFrameWidgetBase::dragTargetDragEnterOrOver(
     DragAction dragAction,
     int modifiers) {
   DCHECK(m_currentDragData);
+  if (ignoreInputEvents()) {
+    cancelDrag();
+    return WebDragOperationNone;
+  }
 
   WebPoint pointInRootFrame(viewportToRootFrame(pointInViewport));
 

@@ -108,6 +108,8 @@ class WebFrameWidgetBase : public WebFrameWidget {
   WebDragOperation m_dragOperation = WebDragOperationNone;
 
  private:
+  void cancelDrag();
+
   static bool s_ignoreInputEvents;
 };
 
