@@ -56,10 +56,7 @@ bool SelectionController::OnMousePressed(const ui::MouseEvent& event,
         break;
       case 1:
         // Select the word at the click location on a double click.
-        delegate_->OnBeforePointerAction();
-        render_text->MoveCursorTo(event.location(), false);
-        render_text->SelectWord();
-        delegate_->OnAfterPointerAction(false, true);
+        SelectWord(event.location());
         double_click_word_ = render_text->selection();
         break;
       case 2:
@@ -72,6 +69,15 @@ bool SelectionController::OnMousePressed(const ui::MouseEvent& event,
         NOTREACHED();
     }
   }
+
+  // TODO(crbug.com/676296): Right clicking an unfocused text view should select
+  // all its text on Mac.
+  const bool select_word_on_right_click =
+      event.IsOnlyRightMouseButton() &&
+      PlatformStyle::kSelectWordOnRightClick &&
+      !render_text->IsPointInSelection(event.location());
+  if (select_word_on_right_click)
+    SelectWord(event.location());
 
   if (handles_selection_clipboard_ && event.IsOnlyMiddleMouseButton()) {
     if (render_text->IsPointInSelection(event.location())) {
@@ -169,6 +175,15 @@ void SelectionController::TrackMouseClicks(const ui::MouseEvent& event) {
     last_click_time_ = event.time_stamp();
     last_click_location_ = event.location();
   }
+}
+
+void SelectionController::SelectWord(const gfx::Point& point) {
+  gfx::RenderText* render_text = GetRenderText();
+  DCHECK(render_text);
+  delegate_->OnBeforePointerAction();
+  render_text->MoveCursorTo(point, false);
+  render_text->SelectWord();
+  delegate_->OnAfterPointerAction(false, true);
 }
 
 gfx::RenderText* SelectionController::GetRenderText() {

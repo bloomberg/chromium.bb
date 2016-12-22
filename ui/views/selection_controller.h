@@ -53,6 +53,9 @@ class VIEWS_EXPORT SelectionController {
   // Tracks the mouse clicks for single/double/triple clicks.
   void TrackMouseClicks(const ui::MouseEvent& event);
 
+  // Selects the word at the given |point|.
+  void SelectWord(const gfx::Point& point);
+
   // Returns the associated render text instance via the |delegate_|.
   gfx::RenderText* GetRenderText();
 

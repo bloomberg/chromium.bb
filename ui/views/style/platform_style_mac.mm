@@ -24,6 +24,7 @@ const int PlatformStyle::kMinLabelButtonHeight = 30;
 const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = false;
 const bool PlatformStyle::kDialogDefaultButtonCanBeCancel = false;
 const bool PlatformStyle::kTextDragVerticallyDragsToEnd = true;
+const bool PlatformStyle::kSelectWordOnRightClick = true;
 const bool PlatformStyle::kTreeViewHasFocusRing = true;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = true;
 const bool PlatformStyle::kUseRipples = false;

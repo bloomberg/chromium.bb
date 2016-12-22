@@ -654,31 +654,36 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     EXPECT_TRUE(menu->IsEnabledAt(7 /* SELECT ALL */));
   }
 
-  void PressLeftMouseButton(int extra_flags) {
-    ui::MouseEvent click(ui::ET_MOUSE_PRESSED, mouse_position_, mouse_position_,
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON | extra_flags);
-    textfield_->OnMousePressed(click);
+  void PressMouseButton(ui::EventFlags mouse_button_flags, int extra_flags) {
+    ui::MouseEvent press(ui::ET_MOUSE_PRESSED, mouse_position_, mouse_position_,
+                         ui::EventTimeForNow(), mouse_button_flags,
+                         mouse_button_flags | extra_flags);
+    textfield_->OnMousePressed(press);
   }
 
-  void PressLeftMouseButton() {
-    PressLeftMouseButton(0);
-  }
-
-  void ReleaseLeftMouseButton() {
+  void ReleaseMouseButton(ui::EventFlags mouse_button_flags) {
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, mouse_position_,
                            mouse_position_, ui::EventTimeForNow(),
-                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+                           mouse_button_flags, mouse_button_flags);
     textfield_->OnMouseReleased(release);
   }
 
-  void ClickLeftMouseButton(int extra_flags) {
+  void PressLeftMouseButton(int extra_flags = 0) {
+    PressMouseButton(ui::EF_LEFT_MOUSE_BUTTON, extra_flags);
+  }
+
+  void ReleaseLeftMouseButton() {
+    ReleaseMouseButton(ui::EF_LEFT_MOUSE_BUTTON);
+  }
+
+  void ClickLeftMouseButton(int extra_flags = 0) {
     PressLeftMouseButton(extra_flags);
     ReleaseLeftMouseButton();
   }
 
-  void ClickLeftMouseButton() {
-    ClickLeftMouseButton(0);
+  void ClickRightMouseButton() {
+    PressMouseButton(ui::EF_RIGHT_MOUSE_BUTTON, 0);
+    ReleaseMouseButton(ui::EF_RIGHT_MOUSE_BUTTON);
   }
 
   void DragMouseTo(const gfx::Point& where) {
@@ -1451,6 +1456,27 @@ TEST_F(TextfieldTest, DoubleAndTripleClickTest) {
   // Another click should reset back to double click.
   ClickLeftMouseButton();
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
+}
+
+// Tests text selection behavior on a right click.
+TEST_F(TextfieldTest, SelectWordOnRightClick) {
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("hello world"));
+
+  // Verify right clicking within the selection does not alter the selection.
+  textfield_->SelectRange(gfx::Range(1, 5));
+  EXPECT_STR_EQ("ello", textfield_->GetSelectedText());
+  MoveMouseTo(gfx::Point(GetCursorPositionX(3), 0));
+  ClickRightMouseButton();
+  EXPECT_STR_EQ("ello", textfield_->GetSelectedText());
+
+  // Verify right clicking outside the selection, selects the word under the
+  // cursor on platforms where this is expected.
+  MoveMouseTo(gfx::Point(GetCursorPositionX(8), 0));
+  const char* expected_right_click =
+      PlatformStyle::kSelectWordOnRightClick ? "world" : "ello";
+  ClickRightMouseButton();
+  EXPECT_STR_EQ(expected_right_click, textfield_->GetSelectedText());
 }
 
 TEST_F(TextfieldTest, DragToSelect) {

@@ -44,6 +44,9 @@ class VIEWS_EXPORT PlatformStyle {
   // the left or right end of the text from the cursor, respectively.
   static const bool kTextDragVerticallyDragsToEnd;
 
+  // Whether right clicking on text, selects the word under cursor.
+  static const bool kSelectWordOnRightClick;
+
   // The menu button's action to show the menu.
   static const CustomButton::NotifyAction kMenuNotifyActivationAction;
 
