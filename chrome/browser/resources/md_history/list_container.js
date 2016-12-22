@@ -23,6 +23,16 @@ Polymer({
 
     /** @type {!QueryResult} */
     queryResult: Object,
+
+    /**
+     * @private {?{
+     *   index: number,
+     *   item: !HistoryEntry,
+     *   path: string,
+     *   target: !HTMLElement
+     * }}
+     */
+    actionMenuModel_: Object,
   },
 
   observers: [
@@ -31,9 +41,8 @@ Polymer({
   ],
 
   listeners: {
-    'history-list-scrolled': 'closeMenu_',
     'load-more-history': 'loadMoreHistory_',
-    'toggle-menu': 'toggleMenu_',
+    'open-menu': 'openMenu_',
   },
 
   /**
@@ -222,20 +231,25 @@ Polymer({
    */
   closeMenu_: function() {
     var menu = this.$.sharedMenu.getIfExists();
-    if (menu)
-      menu.closeMenu();
+    if (menu && menu.open) {
+      this.actionMenuModel_ = null;
+      menu.close();
+    }
   },
 
   /**
-   * Opens the overflow menu unless the menu is already open and the same button
-   * is pressed.
-   * @param {{detail: {item: !HistoryEntry, target: !HTMLElement}}} e
+   * Opens the overflow menu.
+   * @param {{detail: {
+   *    index: number, item: !HistoryEntry,
+   *    path: string, target: !HTMLElement
+   * }}} e
    * @private
    */
-  toggleMenu_: function(e) {
+  openMenu_: function(e) {
     var target = e.detail.target;
+    this.actionMenuModel_ = e.detail;
     var menu = /** @type {CrSharedMenuElement} */ this.$.sharedMenu.get();
-    menu.toggleMenu(target, e.detail);
+    menu.showAt(target);
   },
 
   /** @private */
@@ -244,8 +258,9 @@ Polymer({
         'EntryMenuShowMoreFromSite');
 
     var menu = assert(this.$.sharedMenu.getIfExists());
-    this.set('queryState.searchTerm', menu.itemData.item.domain);
-    menu.closeMenu();
+    this.set('queryState.searchTerm', this.actionMenuModel_.item.domain);
+    this.actionMenuModel_ = null;
+    this.closeMenu_();
   },
 
   /** @private */
@@ -253,7 +268,7 @@ Polymer({
     var browserService = md_history.BrowserService.getInstance();
     browserService.recordAction('EntryMenuRemoveFromHistory');
     var menu = assert(this.$.sharedMenu.getIfExists());
-    var itemData = menu.itemData;
+    var itemData = this.actionMenuModel_;
     browserService.deleteItems([itemData.item]).then(function(items) {
       // This unselect-all resets the toolbar when deleting a selected item
       // and clears selection state which can be invalid if items move
@@ -277,7 +292,7 @@ Polymer({
             UMA_MAX_SUBSET_BUCKET_VALUE);
       }
     }.bind(this));
-    menu.closeMenu();
+    this.closeMenu_();
   },
 
   /**

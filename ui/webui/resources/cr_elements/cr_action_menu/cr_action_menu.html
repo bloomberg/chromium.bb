@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 
 <dom-module id="cr-action-menu">
   <template>
@@ -14,6 +15,27 @@
 
       :host::backdrop {
         background-color: transparent;
+      }
+
+      :host ::content .dropdown-item {
+        background: none;
+        border: none;
+        box-sizing: border-box;
+        color: var(--paper-grey-800);
+        font: inherit;
+        min-height: 32px;
+        padding: 0 24px;
+        text-align: start;
+        width: 100%;
+      }
+
+      :host ::content .dropdown-item:not([hidden]) {
+        align-items: center;
+        display: flex;
+      }
+
+      :host ::content .dropdown-item:not([disabled]) {
+        @apply(--cr-actionable);
       }
 
       :host ::content .dropdown-item:focus {

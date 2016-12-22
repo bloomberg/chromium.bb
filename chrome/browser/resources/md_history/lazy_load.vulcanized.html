@@ -78,13 +78,6 @@ a {
         justify-content: center;
 }
 
-.menu-item {
-  -webkit-user-select: none;
-        cursor: pointer;
-        font: inherit;
-        white-space: nowrap;
-}
-
 .website-icon {
   -webkit-margin-end: 16px;
         background-repeat: no-repeat;
@@ -252,8 +245,6 @@ history-item {
 </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-button" assetpath="chrome://resources/polymer/v1_0/paper-button/" css-build="shadow">
   <template strip-whitespace="">
     <style scope="paper-button">:host {
@@ -373,7 +364,7 @@ paper-ripple {
 }
 
 :host([disabled]), .paper-item[disabled] {
-  color: var(--paper-item-disabled-color,var(--disabled-text-color));;
+  color: var(--paper-item-disabled-color,var(--disabled-text-color));
 
         ;
 }
@@ -399,8 +390,6 @@ paper-ripple {
 </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-item" assetpath="chrome://resources/polymer/v1_0/paper-item/" css-build="shadow">
   <template>
     
@@ -431,7 +420,7 @@ paper-ripple {
 }
 
 :host([disabled]), .paper-item[disabled] {
-  color: var(--paper-item-disabled-color,var(--disabled-text-color));;
+  color: var(--paper-item-disabled-color,var(--disabled-text-color));
 
         ;
 }
@@ -468,93 +457,49 @@ paper-ripple {
   </template>
 
   </dom-module>
-<dom-module id="iron-overlay-backdrop" assetpath="chrome://resources/polymer/v1_0/iron-overlay-behavior/" css-build="shadow">
-
+<dom-module id="cr-action-menu" assetpath="chrome://resources/cr_elements/cr_action_menu/" css-build="shadow">
   <template>
-    <style scope="iron-overlay-backdrop">:host {
-  position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: var(--iron-overlay-backdrop-background-color, #000);
-        opacity: 0;
-        transition: opacity 0.2s;
-        pointer-events: none;
-        ;
-}
-
-:host(.opened) {
-  opacity: var(--iron-overlay-backdrop-opacity, 0.6);
-        pointer-events: auto;
-        ;
-}
-
-</style>
-
-    <content></content>
-  </template>
-
-</dom-module>
-
-<script src="chrome://resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js"></script>
-
-
-<dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/" css-build="shadow">
-  <template>
-    <style scope="iron-dropdown">:host {
-  position: fixed;
-}
-
-#contentWrapper ::content > * {
-  overflow: auto;
-}
-
-#contentWrapper.animating ::content > * {
-  overflow: hidden;
-}
-
-</style>
-
-    <div id="contentWrapper">
-      <content id="content" select=".dropdown-content"></content>
-    </div>
-  </template>
-
-  </dom-module>
-<dom-module id="paper-listbox" assetpath="chrome://resources/polymer/v1_0/paper-listbox/" css-build="shadow">
-  <template>
-    <style scope="paper-listbox">:host {
-  display: block;
+    <style scope="cr-action-menu">:host {
+  background-color: white;
+        border: none;
+        box-shadow: 0 2px 6px var(--paper-grey-500);
+        margin: 0;
+        outline: none;
         padding: 8px 0;
+}
 
-        background: var(--paper-listbox-background-color,var(--primary-background-color));;
-        color: var(--paper-listbox-color,var(--primary-text-color));;
+:host::backdrop {
+  background-color: transparent;
+}
 
-        ;
+:host ::content .dropdown-item {
+  background: none;
+        border: none;
+        box-sizing: border-box;
+        color: var(--paper-grey-800);
+        font: inherit;
+        min-height: 32px;
+        padding: 0 24px;
+        text-align: start;
+        width: 100%;
+}
+
+:host ::content .dropdown-item:not([hidden]) {
+  align-items: center;
+        display: flex;
+}
+
+:host ::content .dropdown-item:not([disabled]) {
+  cursor: var(--cr-actionable_-_cursor);
+}
+
+:host ::content .dropdown-item:focus {
+  background-color: var(--paper-grey-300);
+        outline: none;
 }
 
 </style>
-
-    <content></content>
-  </template>
-
-  </dom-module>
-<dom-module id="cr-shared-menu" assetpath="chrome://resources/cr_elements/cr_shared_menu/" css-build="shadow">
-  <template>
-    <style scope="cr-shared-menu">paper-listbox {
-  box-shadow: var(--shadow-elevation-2dp_-_box-shadow);
-        overflow: hidden;
-        position: relative;
-        width: var(--cr-shared-menu-width);
-}
-
-</style>
-    <iron-dropdown id="dropdown" allow-outside-scroll="" restore-focus-on-close="" vertical-align="auto" horizontal-align="right" opened="{{menuOpen}}" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]">
-      <paper-listbox id="menu" class="dropdown-content">
-        <content></content>
-      </paper-listbox>
-    </iron-dropdown>
+    <content select=".dropdown-item,hr"></content>
   </template>
   </dom-module>
 
@@ -629,13 +574,6 @@ a {
         font-weight: 500;
         height: 100%;
         justify-content: center;
-}
-
-.menu-item {
-  -webkit-user-select: none;
-        cursor: pointer;
-        font: inherit;
-        white-space: nowrap;
 }
 
 .website-icon {
@@ -819,13 +757,6 @@ a {
         font-weight: 500;
         height: 100%;
         justify-content: center;
-}
-
-.menu-item {
-  -webkit-user-select: none;
-        cursor: pointer;
-        font: inherit;
-        white-space: nowrap;
 }
 
 .website-icon {
@@ -1038,14 +969,14 @@ paper-icon-button.subpage-arrow {
     </div>
 
     <template is="cr-lazy-render" id="menu">
-      <cr-shared-menu>
-        <paper-item id="menuOpenButton" class="menu-item" on-tap="onOpenAllTap_">
+      <dialog is="cr-action-menu">
+        <button id="menuOpenButton" class="dropdown-item" on-tap="onOpenAllTap_">
           $i18n{openAll}
-        </paper-item>
-        <paper-item id="menuDeleteButton" class="menu-item" on-tap="onDeleteSessionTap_">
+        </button>
+        <button id="menuDeleteButton" class="dropdown-item" on-tap="onDeleteSessionTap_">
           $i18n{deleteSession}
-        </paper-item>
-      </cr-shared-menu>
+        </button>
+      </dialog>
     </template>
   </template>
   </dom-module>
@@ -1311,7 +1242,7 @@ paper-icon-button.subpage-arrow {
 }
 
 paper-ripple {
-  color: var(--paper-tab-ink,var(--paper-yellow-a100));;
+  color: var(--paper-tab-ink,var(--paper-yellow-a100));
 }
 
 .tab-content > ::content > a {
@@ -1334,8 +1265,6 @@ paper-ripple {
 <g id="chevron-right"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></g>
 </defs></svg>
 </iron-iconset-svg>
-
-
 <dom-module id="paper-tabs" assetpath="chrome://resources/polymer/v1_0/paper-tabs/" css-build="shadow">
   <template>
     <style scope="paper-tabs">:host {
@@ -1418,7 +1347,7 @@ paper-icon-button {
         bottom: 0;
         left: 0;
         right: 0;
-        background-color: var(--paper-tabs-selection-bar-color,var(--paper-yellow-a100));;
+        background-color: var(--paper-tabs-selection-bar-color,var(--paper-yellow-a100));
           -webkit-transform: scale(0);
         transform: scale(0);
           -webkit-transform-origin: left center;

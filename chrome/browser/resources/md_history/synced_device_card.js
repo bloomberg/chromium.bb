@@ -150,7 +150,7 @@ Polymer({
    * @private
    */
   onMenuButtonTap_: function(e) {
-    this.fire('toggle-menu', {
+    this.fire('open-menu', {
       target: Polymer.dom(e).localTarget,
       tag: this.sessionTag,
     });

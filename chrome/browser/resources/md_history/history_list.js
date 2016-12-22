@@ -28,7 +28,6 @@ Polymer({
   },
 
   listeners: {
-    'scroll': 'notifyListScroll_',
     'remove-bookmark-stars': 'removeBookmarkStars_',
   },
 
@@ -150,11 +149,6 @@ Polymer({
         this.historyData_[i].dateRelativeDay !=
         this.historyData_[i + 1].dateRelativeDay;
   },
-
-  /**
-   * @private
-   */
-  notifyListScroll_: function() { this.fire('history-list-scrolled'); },
 
   /**
    * @param {number} index

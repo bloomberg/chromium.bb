@@ -345,7 +345,7 @@ suite('<history-synced-device-manager>', function() {
     return PolymerTest.flushTasks().then(function() {
       var cards = getCards(element);
       MockInteractions.tap(cards[0].$['menu-button']);
-      assertTrue(element.$.menu.getIfExists().menuOpen);
+      assertTrue(element.$.menu.getIfExists().open);
     });
   });
 

@@ -151,6 +151,7 @@ suite('Metrics', function() {
   test('synced-device-manager', function() {
     app.selectedPage_ = 'syncedTabs';
     var histogram;
+    var menuButton;
     return PolymerTest.flushTasks().then(() => {
       histogram = histogramMap[SYNCED_TABS_HISTOGRAM_NAME];
       assertEquals(1, histogram[SyncedTabsHistogram.INITIALIZED]);
@@ -183,12 +184,16 @@ suite('Metrics', function() {
       MockInteractions.tap(polymerSelectAll(cards[0], '.website-title')[0]);
       assertEquals(1, histogram[SyncedTabsHistogram.LINK_CLICKED]);
 
-      MockInteractions.tap(cards[0].$['menu-button']);
+      menuButton = cards[0].$['menu-button'];
+      MockInteractions.tap(menuButton);
       return PolymerTest.flushTasks();
     }).then(() => {
       MockInteractions.tap(app.$$('#synced-devices').$$('#menuOpenButton'));
       assertEquals(1, histogram[SyncedTabsHistogram.OPEN_ALL]);
 
+      MockInteractions.tap(menuButton);
+      return PolymerTest.flushTasks();
+    }).then(() => {
       MockInteractions.tap(app.$$('#synced-devices').$$('#menuDeleteButton'));
       assertEquals(1, histogram[SyncedTabsHistogram.HIDE_FOR_NOW]);
     });

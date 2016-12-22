@@ -273,24 +273,6 @@ suite('<history-list>', function() {
     });
   });
 
-  test('scrolling history list closes overflow menu', function() {
-    var lazyMenu = app.$.history.$.sharedMenu;
-    for (var i = 0; i < 10; i++)
-      app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-    return PolymerTest.flushTasks().then(function() {
-      items = polymerSelectAll(element, 'history-item');
-
-      MockInteractions.tap(items[2].$['menu-button']);
-      return PolymerTest.flushTasks();
-    }).then(function() {
-      assertTrue(lazyMenu.getIfExists().menuOpen);
-      element.$['infinite-list'].scrollToIndex(20);
-      return waitForEvent(lazyMenu.getIfExists(), 'menu-open-changed');
-    }).then(function() {
-      assertFalse(lazyMenu.getIfExists().menuOpen);
-    });
-  });
-
   // TODO(calamity): Reenable this test after fixing flakiness.
   // See http://crbug.com/640862.
   test.skip('scrolling history list causes toolbar shadow to appear',

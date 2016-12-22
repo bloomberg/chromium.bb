@@ -7,7 +7,7 @@
 <link rel="import" href="chrome://history/history_list.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
-<!-- Lazy loaded: cr-dialog, cr-shared-menu, history-grouped-list, paper-button,
+<!-- Lazy loaded: cr-dialog, cr-action-menu, history-grouped-list, paper-button,
   paper-item. -->
 
 <dom-module id="history-list-container">
@@ -62,17 +62,17 @@
     </template>
 
     <template is="cr-lazy-render" id="sharedMenu">
-      <cr-shared-menu>
-        <paper-item id="menuMoreButton" class="menu-item"
+      <dialog is="cr-action-menu">
+        <button id="menuMoreButton" class="dropdown-item"
             on-tap="onMoreFromSiteTap_">
           $i18n{moreFromSite}
-        </paper-item>
-        <paper-item id="menuRemoveButton" class="menu-item"
+        </button>
+        <button id="menuRemoveButton" class="dropdown-item"
             disabled="[[!canDeleteHistory_()]]"
             on-tap="onRemoveFromHistoryTap_">
           $i18n{removeFromHistory}
-        </paper-item>
-      </cr-shared-menu>
+        </button>
+      </dialog>
     </template>
   </template>
   <script src="chrome://history/list_container.js"></script>

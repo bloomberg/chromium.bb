@@ -258,7 +258,7 @@ cr.define('md_history', function() {
      * of the history item and where the menu should appear.
      */
     onMenuButtonTap_: function(e) {
-      this.fire('toggle-menu', {
+      this.fire('open-menu', {
         target: Polymer.dom(e).localTarget,
         index: this.index,
         item: this.item,

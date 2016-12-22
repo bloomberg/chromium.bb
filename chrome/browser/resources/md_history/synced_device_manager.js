@@ -57,12 +57,18 @@ Polymer({
       value: false,
     },
 
+    /** @private */
     hasSeenForeignData_: Boolean,
+
+    /**
+     * The session ID referring to the currently active action menu.
+     * @private {?string}
+     */
+    actionMenuModel_: String,
   },
 
   listeners: {
-    'toggle-menu': 'onToggleMenu_',
-    'scroll': 'onListScroll_',
+    'open-menu': 'onOpenMenu_',
     'update-focus-grid': 'updateFocusGrid_',
   },
 
@@ -135,21 +141,13 @@ Polymer({
   onSignInTap_: function() { chrome.send('startSignInFlow'); },
 
   /** @private */
-  onListScroll_: function() {
-    var menu = this.$.menu.getIfExists();
-    if (menu)
-      menu.closeMenu();
-  },
-
-  /** @private */
-  onToggleMenu_: function(e) {
-    var menu = /** @type {CrSharedMenuElement} */ this.$.menu.get();
-    menu.toggleMenu(e.detail.target, e.detail.tag);
-    if (menu.menuOpen) {
-      md_history.BrowserService.getInstance().recordHistogram(
-          SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.SHOW_SESSION_MENU,
-          SyncedTabsHistogram.LIMIT);
-    }
+  onOpenMenu_: function(e) {
+    var menu = /** @type {CrActionMenuElement} */ this.$.menu.get();
+    this.actionMenuModel_ = e.detail.tag;
+    menu.showAt(e.detail.target);
+    md_history.BrowserService.getInstance().recordHistogram(
+        SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.SHOW_SESSION_MENU,
+        SyncedTabsHistogram.LIMIT);
   },
 
   /** @private */
@@ -159,8 +157,9 @@ Polymer({
     browserService.recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.OPEN_ALL,
         SyncedTabsHistogram.LIMIT);
-    browserService.openForeignSessionAllTabs(menu.itemData);
-    menu.closeMenu();
+    browserService.openForeignSessionAllTabs(assert(this.actionMenuModel_));
+    this.actionMenuModel_ = null;
+    menu.close();
   },
 
   /** @private */
@@ -190,8 +189,9 @@ Polymer({
     browserService.recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HIDE_FOR_NOW,
         SyncedTabsHistogram.LIMIT);
-    browserService.deleteForeignSession(menu.itemData);
-    menu.closeMenu();
+    browserService.deleteForeignSession(assert(this.actionMenuModel_));
+    this.actionMenuModel_ = null;
+    menu.close();
   },
 
   /** @private */
