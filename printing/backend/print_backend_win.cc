@@ -381,7 +381,8 @@ bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
   return printer_handle.OpenPrinter(base::UTF8ToWide(printer_name).c_str());
 }
 
-scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
+// static
+scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
     const base::DictionaryValue* print_backend_settings) {
   return new PrintBackendWin;
 }

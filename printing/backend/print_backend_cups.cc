@@ -196,7 +196,7 @@ bool PrintBackendCUPS::IsValidPrinter(const std::string& printer_name) {
 }
 
 #if !defined(OS_CHROMEOS)
-scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
+scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
     const base::DictionaryValue* print_backend_settings) {
   std::string print_server_url_str, cups_blocking;
   int encryption = HTTP_ENCRYPT_NEVER;

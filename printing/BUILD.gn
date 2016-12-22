@@ -237,6 +237,20 @@ component("printing") {
   }
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "backend/test_print_backend.cc",
+    "backend/test_print_backend.h",
+  ]
+  public_deps = [
+    "//printing",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
 test("printing_unittests") {
   sources = [
     "emf_win_unittest.cc",

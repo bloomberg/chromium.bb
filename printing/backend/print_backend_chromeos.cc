@@ -79,7 +79,8 @@ bool PrintBackendChromeOS::IsValidPrinter(const std::string& printer_name) {
   return true;
 }
 
-scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
+// static
+scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
     const base::DictionaryValue* print_backend_settings) {
   if (GetNativeCupsEnabled()) {
 #if defined(USE_CUPS)

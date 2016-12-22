@@ -4303,6 +4303,7 @@ test("unit_tests") {
       "../browser/printing/print_preview_test.h",
       "../browser/ui/webui/print_preview/extension_printer_handler_unittest.cc",
       "../browser/ui/webui/print_preview/print_preview_ui_unittest.cc",
+      "../browser/ui/webui/print_preview/printer_capabilities_unittest.cc",
       "../common/cloud_print/cloud_print_helpers_unittest.cc",
       "../common/service_process_util_mac_unittest.mm",
       "../common/service_process_util_unittest.cc",
@@ -4316,6 +4317,8 @@ test("unit_tests") {
       "../service/service_process_prefs_unittest.cc",
       "../utility/cloud_print/pwg_encoder_unittest.cc",
     ]
+
+    deps += [ "//printing:test_support" ]
   }
 
   if (enable_media_router) {

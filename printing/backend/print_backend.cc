@@ -6,6 +6,10 @@
 
 namespace {
 bool g_native_cups_enabled = false;
+
+// PrintBackend override for testing.
+printing::PrintBackend* g_print_backend_for_test = nullptr;
+
 }  // namespace
 
 namespace printing {
@@ -43,6 +47,19 @@ PrinterCapsAndDefaults::PrinterCapsAndDefaults(
 PrinterCapsAndDefaults::~PrinterCapsAndDefaults() {}
 
 PrintBackend::~PrintBackend() {}
+
+// static
+scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
+    const base::DictionaryValue* print_backend_settings) {
+  return g_print_backend_for_test
+             ? g_print_backend_for_test
+             : PrintBackend::CreateInstanceImpl(print_backend_settings);
+}
+
+// static
+void PrintBackend::SetPrintBackendForTesting(PrintBackend* backend) {
+  g_print_backend_for_test = backend;
+}
 
 // static
 bool PrintBackend::GetNativeCupsEnabled() {
