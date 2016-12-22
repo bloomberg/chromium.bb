@@ -79,7 +79,7 @@ void InitBrand(const base::Closure& callback) {
                      .WithShutdownBehavior(
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
                      .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithFileIO(),
+                     .MayBlock(),
       base::Bind(&ReadBrandFromFile), base::Bind(&SetBrand, callback));
 }
 
