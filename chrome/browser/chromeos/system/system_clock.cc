@@ -32,7 +32,8 @@ namespace {
 void SetShouldUse24HourClock(bool use_24_hour_clock) {
   user_manager::User* const user =
       user_manager::UserManager::Get()->GetActiveUser();
-  CHECK(user);
+  if (!user)
+    return;  // May occur if not running on a device.
   Profile* const profile = ProfileHelper::Get()->GetProfileByUser(user);
   if (!profile)
     return;  // May occur in tests or if not running on a device.
