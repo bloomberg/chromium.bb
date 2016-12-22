@@ -68,6 +68,10 @@ class WebApkUpdateDataFetcher : public content::WebContentsObserver {
                        const std::string& best_icon_murmur2_hash,
                        const SkBitmap& best_icon);
 
+  // Called when a page has no Web Manifest or the Web Manifest is not WebAPK
+  // compatible.
+  void OnWebManifestNotWebApkCompatible();
+
   // Points to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
@@ -76,6 +80,9 @@ class WebApkUpdateDataFetcher : public content::WebContentsObserver {
 
   // The WebAPK's Web Manifest URL that the detector is looking for.
   const GURL web_manifest_url_;
+
+  // Whether this is the initial URL fetch.
+  bool is_initial_fetch_;
 
   // The URL for which the installable data is being fetched / was last fetched.
   GURL last_fetched_url_;

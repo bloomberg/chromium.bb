@@ -264,15 +264,8 @@ public class WebApkUpdateManagerTest {
         updateManager.updateIfNeeded(null, info);
     }
 
-    private static void onGotUnchangedWebManifestForInitialUrl(WebApkUpdateManager updateManager) {
-        onFinishedFetchingWebManifestForInitialUrl(updateManager, defaultManifestData());
-    }
-
-    private static void onFinishedFetchingWebManifestForInitialUrl(
-            WebApkUpdateManager updateManager, ManifestData fetchedManifestData) {
-        String bestIconUrl = randomIconUrl(fetchedManifestData);
-        updateManager.onFinishedFetchingWebManifestForInitialUrl(
-                infoFromManifestData(fetchedManifestData), bestIconUrl);
+    private static void onGotUnchangedWebManifestData(WebApkUpdateManager updateManager) {
+        onGotManifestData(updateManager, defaultManifestData());
     }
 
     private static void onGotManifestData(WebApkUpdateManager updateManager,
@@ -310,7 +303,7 @@ public class WebApkUpdateManagerTest {
         TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
-        updateManager.onFinishedFetchingWebManifestForInitialUrl(
+        updateManager.onGotManifestData(
                 infoFromManifestData(fetchedManifestData), fetchedManifestData.bestIconUrl);
         return updateManager.updateRequested();
     }
@@ -406,15 +399,16 @@ public class WebApkUpdateManagerTest {
             assertTrue(updateManager.updateCheckStarted());
         }
 
-        // Chrome is killed.
-        // {@link WebApkUpdateManager#onFinishedFetchingWebManifestForInitialUrl()} is never called.
+        // Chrome is killed. Neither
+        // {@link WebApkUpdateManager#onWebManifestForInitialUrlNotWebApkCompatible()} nor
+        // {@link WebApkUpdateManager#OnGotManifestData()} is called.
 
         {
             // Relaunching the WebAPK should do an is-update-needed check.
             TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
             updateIfNeeded(updateManager);
             assertTrue(updateManager.updateCheckStarted());
-            onGotUnchangedWebManifestForInitialUrl(updateManager);
+            onGotUnchangedWebManifestData(updateManager);
         }
 
         {
@@ -439,7 +433,7 @@ public class WebApkUpdateManagerTest {
         TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
-        onGotUnchangedWebManifestForInitialUrl(updateManager);
+        onGotUnchangedWebManifestData(updateManager);
         assertFalse(updateManager.updateRequested());
 
         WebappDataStorage storage = getStorage();
@@ -462,7 +456,7 @@ public class WebApkUpdateManagerTest {
         TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
-        onGotUnchangedWebManifestForInitialUrl(updateManager);
+        onGotUnchangedWebManifestData(updateManager);
         assertFalse(updateManager.updateRequested());
 
         assertTrue(storage.getDidLastWebApkUpdateRequestSucceed());
@@ -483,7 +477,7 @@ public class WebApkUpdateManagerTest {
         assertTrue(updateManager.updateCheckStarted());
         ManifestData manifestData = defaultManifestData();
         manifestData.name = DIFFERENT_NAME;
-        onFinishedFetchingWebManifestForInitialUrl(updateManager, manifestData);
+        onGotManifestData(updateManager, manifestData);
         assertTrue(updateManager.updateRequested());
 
         // Chrome is killed. {@link WebApkUpdateManager#onBuiltWebApk} is never called.
@@ -513,12 +507,12 @@ public class WebApkUpdateManagerTest {
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
-        onFinishedFetchingWebManifestForInitialUrl(updateManager, null);
+        updateManager.onWebManifestForInitialUrlNotWebApkCompatible();
         assertTrue(updateManager.updateRequested());
         assertEquals(NAME, updateManager.requestedUpdateName());
 
         // Check that the {@link ManifestUpgradeDetector} has been destroyed. This prevents
-        // {@link #onFinishedFetchingWebManifestForInitialUrl()} and {@link #onGotManifestData()}
+        // {@link #onWebManifestForInitialUrlNotWebApkCompatible()} and {@link #onGotManifestData()}
         // from getting called.
         assertTrue(updateManager.destroyedFetcher());
     }
@@ -536,7 +530,7 @@ public class WebApkUpdateManagerTest {
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
-        onFinishedFetchingWebManifestForInitialUrl(updateManager, defaultManifestData());
+        onGotManifestData(updateManager, defaultManifestData());
         assertTrue(updateManager.updateRequested());
         assertEquals(NAME, updateManager.requestedUpdateName());
 
@@ -562,7 +556,7 @@ public class WebApkUpdateManagerTest {
         assertTrue(updateManager.updateCheckStarted());
 
         // start_url does not have a Web Manifest. No update should be requested.
-        onFinishedFetchingWebManifestForInitialUrl(updateManager, null);
+        updateManager.onWebManifestForInitialUrlNotWebApkCompatible();
         assertFalse(updateManager.updateRequested());
         // {@link ManifestUpgradeDetector} should still be alive so that it can get
         // {@link #onGotManifestData} when page with the Web Manifest finishes loading.
@@ -593,7 +587,7 @@ public class WebApkUpdateManagerTest {
 
         TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(mClock);
         updateIfNeeded(updateManager);
-        onFinishedFetchingWebManifestForInitialUrl(updateManager, null);
+        updateManager.onWebManifestForInitialUrlNotWebApkCompatible();
         onGotManifestData(updateManager, defaultManifestData());
         assertFalse(updateManager.updateRequested());
 

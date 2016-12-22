@@ -72,9 +72,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     }
 
     @Override
-    public void onFinishedFetchingWebManifestForInitialUrl(
-            WebApkInfo fetchedInfo, String bestIconUrl) {
-        onGotManifestData(fetchedInfo, bestIconUrl);
+    public void onWebManifestForInitialUrlNotWebApkCompatible() {
+        onGotManifestData(null, null);
     }
 
     @Override

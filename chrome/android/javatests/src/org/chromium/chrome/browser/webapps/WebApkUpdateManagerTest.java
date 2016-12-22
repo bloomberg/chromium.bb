@@ -63,9 +63,8 @@ public class WebApkUpdateManagerTest extends ChromeTabbedActivityTestBase {
         }
 
         @Override
-        public void onFinishedFetchingWebManifestForInitialUrl(
-                WebApkInfo fetchedInfo, String bestIconUrl) {
-            super.onFinishedFetchingWebManifestForInitialUrl(fetchedInfo, bestIconUrl);
+        public void onWebManifestForInitialUrlNotWebApkCompatible() {
+            super.onWebManifestForInitialUrlNotWebApkCompatible();
             mWaiter.notifyCalled();
         }
 

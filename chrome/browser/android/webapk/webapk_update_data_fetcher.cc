@@ -55,6 +55,7 @@ WebApkUpdateDataFetcher::WebApkUpdateDataFetcher(
     : content::WebContentsObserver(nullptr),
       scope_(scope),
       web_manifest_url_(web_manifest_url),
+      is_initial_fetch_(false),
       info_(GURL()),
       weak_ptr_factory_(this) {
   java_ref_.Reset(env, obj);
@@ -102,10 +103,13 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
   // installable data the first time.
   if (url == last_fetched_url_)
     return;
+  is_initial_fetch_ = last_fetched_url_.is_empty();
   last_fetched_url_ = url;
 
-  if (!IsInScope(url, scope_))
+  if (!IsInScope(url, scope_)) {
+    OnWebManifestNotWebApkCompatible();
     return;
+  }
 
   InstallableParams params;
   params.ideal_icon_size_in_dp =
@@ -125,21 +129,24 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
 
 void WebApkUpdateDataFetcher::OnDidGetInstallableData(
     const InstallableData& data) {
-  // If the manifest is empty, it means the current WebContents doesn't
-  // associate with a Web Manifest. In such case, we ignore the empty manifest
-  // and continue observing the WebContents's loading until we find a page that
-  // links to the Web Manifest that we are looking for.
+  // Determine whether or not the manifest is WebAPK-compatible. There are 3
+  // cases:
+  // 1. the site isn't installable.
+  // 2. the URLs in the manifest expose passwords.
+  // 3. there is no manifest or the manifest is different to the one we're
+  // expecting.
+  // For case 3, if the manifest is empty, it means the current WebContents
+  // doesn't associate with a Web Manifest. In such case, we ignore the empty
+  // manifest and continue observing the WebContents's loading until we find a
+  // page that links to the Web Manifest that we are looking for.
   // If the manifest URL is different from the current one, we will continue
   // observing too. It is based on our assumption that it is invalid for
   // web developers to change the Web Manifest location. When it does
   // change, we will treat the new Web Manifest as the one of another WebAPK.
-  if (data.manifest.IsEmpty() || web_manifest_url_ != data.manifest_url)
-    return;
-
-  // TODO(pkotwicz): Tell Java side that the Web Manifest was fetched but the
-  // Web Manifest is not WebAPK-compatible. (http://crbug.com/639536)
   if (data.error_code != NO_ERROR_DETECTED ||
+      data.manifest.IsEmpty() || web_manifest_url_ != data.manifest_url ||
       !AreWebManifestUrlsWebApkCompatible(data.manifest)) {
+    OnWebManifestNotWebApkCompatible();
     return;
   }
 
@@ -163,8 +170,7 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hash(
   icon_hasher_.reset();
 
   if (best_icon_murmur2_hash.empty()) {
-    // TODO(pkotwicz): Tell Java side that the Web Manifest was fetched but the
-    // Web Manifest is not WebAPK-compatible. (http://crbug.com/639536)
+    OnWebManifestNotWebApkCompatible();
     return;
   }
 
@@ -200,4 +206,12 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
       java_best_icon_url, java_best_icon_murmur2_hash, java_best_bitmap,
       java_icon_urls, info.display, info.orientation, info.theme_color,
       info.background_color);
+}
+
+void WebApkUpdateDataFetcher::OnWebManifestNotWebApkCompatible() {
+  if (!is_initial_fetch_)
+    return;
+
+  Java_WebApkUpdateDataFetcher_onWebManifestForInitialUrlNotWebApkCompatible(
+      base::android::AttachCurrentThread(), java_ref_);
 }

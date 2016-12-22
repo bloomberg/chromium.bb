@@ -22,15 +22,10 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
     /** Observes fetching of the Web Manifest. */
     public interface Observer {
         /**
-         * Called when the Web Manifest for the initial URL load has been fetched (successfully or
-         * unsuccessfully).
-         * TODO(pkotwicz): Add calls to {@link #onFinishedFetchingWebManifestForInitialUrl()}.
-         * @param fetchedInfo  The fetched Web Manifest data. Null if the initial URL does not point
-         *                     to a Web Manifest.
-         * @param bestIconUrl  The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
-         *                     suited for use as the launcher icon on this device.
+         * Called when the initial URL load has completed and the page has no Web Manifest or the
+         * Web Manifest is not WebAPK compatible.
          */
-        void onFinishedFetchingWebManifestForInitialUrl(WebApkInfo fetchedInfo, String bestIconUrl);
+        void onWebManifestForInitialUrlNotWebApkCompatible();
 
         /**
          * Called when the Web Manifest has been successfully fetched (including on the initial URL
@@ -119,6 +114,15 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
                 mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(), manifestStartUrl,
                 iconUrlToMurmur2HashMap);
         mObserver.onGotManifestData(info, bestIconUrl);
+    }
+
+    /**
+     * Called when the initial URL load has completed and the page has no Web Manifest or the
+     * Web Manifest is not WebAPK compatible.
+     */
+    @CalledByNative
+    private void onWebManifestForInitialUrlNotWebApkCompatible() {
+        mObserver.onWebManifestForInitialUrlNotWebApkCompatible();
     }
 
     private native long nativeInitialize(String scope, String webManifestUrl);
