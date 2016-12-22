@@ -154,14 +154,6 @@ class PLATFORM_EXPORT WrapperVisitor {
 
 #undef DECLARE_DISPATCH_TRACE_WRAPPERS
 
-  void dispatchTraceWrappers(const void*) const {
-    // This call should never be reached as we access all tracing through
-    // TraceTraits, which will check that we can dispatch at compile time.
-    // This handler is merely here to make adjustAndMarkWrapper compile
-    // for GarbageCollectedMixin objects.
-    NOTREACHED();
-  }
-
   virtual bool markWrapperHeader(HeapObjectHeader*) const = 0;
 
   virtual void markWrappersInAllWorlds(const ScriptWrappable*) const = 0;
