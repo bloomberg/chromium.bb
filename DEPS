@@ -427,7 +427,7 @@ deps_os = {
 
     # Userspace interface to kernel DRM services.
     'src/third_party/libdrm/src':
-      Var('chromium_git') + '/chromiumos/third_party/libdrm.git' + '@' + '4c4778123b7b11f750577199644f5d6820851dbb',
+      Var('chromium_git') + '/chromiumos/third_party/libdrm.git' + '@' + '0ce18bedd3e62d4784fa755403801934ba171084',
 
     # Display server protocol for Linux.
     'src/third_party/wayland/src':
