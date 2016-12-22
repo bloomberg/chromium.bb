@@ -4,7 +4,6 @@
 
 #include "net/quic/core/quic_utils.h"
 
-#include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/quic_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,19 +13,6 @@ using std::string;
 namespace net {
 namespace test {
 namespace {
-
-TEST(QuicUtilsTest, ParseQuicConnectionOptions) {
-  QuicTagVector empty_options = QuicUtils::ParseQuicConnectionOptions("");
-  EXPECT_EQ(0ul, empty_options.size());
-
-  QuicTagVector parsed_options =
-      QuicUtils::ParseQuicConnectionOptions("TIMER,TBBR,REJ");
-  QuicTagVector expected_options;
-  expected_options.push_back(kTIME);
-  expected_options.push_back(kTBBR);
-  expected_options.push_back(kREJ);
-  EXPECT_EQ(expected_options, parsed_options);
-}
 
 TEST(QuicUtilsTest, DetermineAddressChangeType) {
   const string kIPv4String1 = "1.2.3.4";

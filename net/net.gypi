@@ -972,6 +972,7 @@
       'quic/chromium/quic_stream_factory.cc',
       'quic/chromium/quic_stream_factory.h',
       'quic/chromium/quic_utils_chromium.h',
+      'quic/chromium/quic_utils_chromium.cc',
       'quic/core/congestion_control/bandwidth_sampler.cc',
       'quic/core/congestion_control/bandwidth_sampler.h',
       'quic/core/congestion_control/bbr_sender.cc',

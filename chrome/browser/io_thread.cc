@@ -95,6 +95,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/ssl/channel_id_service.h"
@@ -951,7 +952,7 @@ void IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
   if (params->enable_quic) {
     if (command_line.HasSwitch(switches::kQuicConnectionOptions)) {
       params->quic_connection_options =
-          net::QuicUtils::ParseQuicConnectionOptions(
+          net::ParseQuicConnectionOptions(
               command_line.GetSwitchValueASCII(
                   switches::kQuicConnectionOptions));
     }

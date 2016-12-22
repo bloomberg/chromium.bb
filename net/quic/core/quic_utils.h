@@ -14,7 +14,6 @@
 #include "base/strings/string_piece.h"
 #include "net/base/int128.h"
 #include "net/quic/core/quic_error_codes.h"
-#include "net/quic/core/quic_tag.h"
 #include "net/quic/core/quic_types.h"
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_socket_address.h"
@@ -61,11 +60,6 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
 
   // Returns TransmissionType as a char*
   static const char* TransmissionTypeToString(TransmissionType type);
-
-  // Returns the list of QUIC tags represented by the comma separated
-  // string in |connection_options|.
-  static QuicTagVector ParseQuicConnectionOptions(
-      const std::string& connection_options);
 
   // Returns PeerAddressChangeType as a std::string.
   static std::string PeerAddressChangeTypeToString(PeerAddressChangeType type);

@@ -15,8 +15,8 @@
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "net/http/http_stream_factory.h"
+#include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/quic/core/quic_packets.h"
-#include "net/quic/core/quic_utils.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace {
@@ -103,7 +103,7 @@ net::QuicTagVector GetQuicConnectionOptions(
     return net::QuicTagVector();
   }
 
-  return net::QuicUtils::ParseQuicConnectionOptions(it->second);
+  return net::ParseQuicConnectionOptions(it->second);
 }
 
 bool ShouldQuicAlwaysRequireHandshakeConfirmation(

@@ -22,8 +22,8 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_server_properties.h"
+#include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/quic/core/quic_packets.h"
-#include "net/quic/core/quic_utils.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -118,7 +118,7 @@ void ParseAndSetExperimentalOptions(
     if (quic_args->GetString(kQuicConnectionOptions,
                              &quic_connection_options)) {
       context_builder->set_quic_connection_options(
-          net::QuicUtils::ParseQuicConnectionOptions(quic_connection_options));
+          net::ParseQuicConnectionOptions(quic_connection_options));
     }
 
     // TODO(rtenneti): Delete this option after apps stop using it.
