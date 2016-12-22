@@ -82,7 +82,7 @@ class PermissionReporterBrowserTest : public SyncTest {
 
 // Test that permission action report will be sent if the user is opted into it.
 IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
-                       PermissionActionReporting) {
+                       DISABLED_PermissionActionReporting) {
   // Set up the Sync client.
   ASSERT_TRUE(SetupSync());
   Profile* profile = GetProfile(0);
@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
-                       PermissionActionReportingPriorIgnoreCount) {
+                       DISABLED_PermissionActionReportingPriorIgnoreCount) {
   // Set up the Sync client.
   ASSERT_TRUE(SetupSync());
   Profile* profile = GetProfile(0);
