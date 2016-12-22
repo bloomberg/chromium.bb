@@ -373,7 +373,7 @@ class LocalDeviceInstrumentationTestRun(
   @classmethod
   def _GetTimeoutScaleFromAnnotations(cls, annotations):
     try:
-      return int(annotations.get('TimeoutScale', 1))
+      return int(annotations.get('TimeoutScale', {}).get('value', 1))
     except ValueError as e:
       logging.warning("Non-integer value of TimeoutScale ignored. (%s)", str(e))
       return 1
