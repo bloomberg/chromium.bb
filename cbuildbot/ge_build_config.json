@@ -806,6 +806,18 @@
       ]
     },
     {
+      "name": "poppy",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": true,
+          "board_group": "poppy",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "pyro",
       "configs": [
         {
