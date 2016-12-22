@@ -128,6 +128,7 @@ MusClient::~MusClient() {
         ViewsDelegate::NativeWidgetFactory());
   }
 
+  base::DiscardableMemoryAllocator::SetInstance(nullptr);
   DCHECK_EQ(instance_, this);
   instance_ = nullptr;
 }
