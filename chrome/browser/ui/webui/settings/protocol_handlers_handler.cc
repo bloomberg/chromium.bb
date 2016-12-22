@@ -40,9 +40,13 @@ void ProtocolHandlersHandler::OnJavascriptDisallowed() {
 }
 
 void ProtocolHandlersHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("initializeProtocolHandlerList",
-      base::Bind(&ProtocolHandlersHandler::HandleInitializeList,
+  web_ui()->RegisterMessageCallback("observeProtocolHandlers",
+      base::Bind(&ProtocolHandlersHandler::HandleObserveProtocolHandlers,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("observeProtocolHandlersEnabledState",
+      base::Bind(
+          &ProtocolHandlersHandler::HandleObserveProtocolHandlersEnabledState,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback("clearDefault",
       base::Bind(&ProtocolHandlersHandler::HandleClearDefault,
                  base::Unretained(this)));
@@ -131,11 +135,17 @@ void ProtocolHandlersHandler::UpdateHandlerList() {
                          *ignored_handlers);
 }
 
-void ProtocolHandlersHandler::HandleInitializeList(
+void ProtocolHandlersHandler::HandleObserveProtocolHandlers(
     const base::ListValue* args) {
   AllowJavascript();
   SendHandlersEnabledValue();
   UpdateHandlerList();
+}
+
+void ProtocolHandlersHandler::HandleObserveProtocolHandlersEnabledState(
+    const base::ListValue* args) {
+  AllowJavascript();
+  SendHandlersEnabledValue();
 }
 
 void ProtocolHandlersHandler::SendHandlersEnabledValue() {

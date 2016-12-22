@@ -50,7 +50,8 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
     'fetchZoomLevels',
     'getDefaultValueForContentType',
     'getExceptionList',
-    'initializeProtocolHandlerList',
+    'observeProtocolHandlers',
+    'observeProtocolHandlersEnabledState',
     'removeProtocolHandler',
     'removeUsbDevice',
     'removeZoomLevel',
@@ -241,10 +242,16 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
   },
 
   /** @override */
-  initializeProtocolHandlerList: function() {
+  observeProtocolHandlers: function() {
     cr.webUIListenerCallback('setHandlersEnabled', true);
     cr.webUIListenerCallback('setProtocolHandlers', this.protocolHandlers_);
-    this.methodCalled('initializeProtocolHandlerList');
+    this.methodCalled('observeProtocolHandlers');
+  },
+
+  /** @override */
+  observeProtocolHandlersEnabledState: function() {
+    cr.webUIListenerCallback('setHandlersEnabled', true);
+    this.methodCalled('observeProtocolHandlersEnabledState');
   },
 
   /** @override */

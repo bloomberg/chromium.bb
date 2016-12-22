@@ -208,10 +208,23 @@ cr.define('settings', function() {
     removeAllCookies: function() {},
 
     /**
-     * Initializes the protocol handler list. List is returned through JS calls
-     * to setHandlersEnabled, setProtocolHandlers & setIgnoredProtocolHandlers.
+     * observes _all_ of the the protocol handler state, which includes a list
+     * that is returned through JS calls to 'setProtocolHandlers' along with
+     * other state sent with the messages 'setIgnoredProtocolHandler' and
+     * 'setHandlersEnabled'.
      */
-    initializeProtocolHandlerList: function() {},
+    observeProtocolHandlers: function() {},
+
+    /**
+     * Observes one aspect of the protocol handler so that updates to the
+     * enabled/disabled state are sent. A 'setHandlersEnabled' will be sent
+     * from C++ immediately after receiving this observe request and updates
+     * may follow via additional 'setHandlersEnabled' messages.
+     *
+     * If |observeProtocolHandlers| is called, there's no need to call this
+     * observe as well.
+     */
+    observeProtocolHandlersEnabledState: function() {},
 
     /**
      * Enables or disables the ability for sites to ask to become the default
@@ -354,8 +367,14 @@ cr.define('settings', function() {
       return cr.sendWithPromise('removeAllCookies');
     },
 
-    initializeProtocolHandlerList: function() {
-      chrome.send('initializeProtocolHandlerList');
+    /** @override */
+    observeProtocolHandlers: function() {
+      chrome.send('observeProtocolHandlers');
+    },
+
+    /** @override */
+    observeProtocolHandlersEnabledState: function() {
+      chrome.send('observeProtocolHandlersEnabledState');
     },
 
     /** @override */

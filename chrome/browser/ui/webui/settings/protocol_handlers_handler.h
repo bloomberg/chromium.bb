@@ -44,8 +44,15 @@ class ProtocolHandlersHandler : public SettingsPageUIHandler,
                const content::NotificationDetails& details) override;
 
  private:
-  // Called to fetch the initial list of data to show.
-  void HandleInitializeList(const base::ListValue* args);
+  // Called to fetch the state of the protocol handlers. If the full list of
+  // handlers is not needed, consider HandleObserveProtocolHandlersEnabledState
+  // instead.
+  void HandleObserveProtocolHandlers(const base::ListValue* args);
+
+  // Called to begin updates to the handlers enabled status. This is a subset
+  // (lighter alternative) of HandleObserveProtocolHandlers. There's no need to
+  // call this function if HandleObserveProtocolHandlers is called.
+  void HandleObserveProtocolHandlersEnabledState(const base::ListValue* args);
 
   // Notifies the JS side whether the handlers are enabled or not.
   void SendHandlersEnabledValue();

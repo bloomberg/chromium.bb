@@ -64,7 +64,7 @@ Polymer({
         this.setProtocolHandlers_.bind(this));
     this.addWebUIListener('setIgnoredProtocolHandlers',
         this.setIgnoredProtocolHandlers_.bind(this));
-    this.browserProxy.initializeProtocolHandlerList();
+    this.browserProxy.observeProtocolHandlers();
   },
 
   /**
