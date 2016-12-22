@@ -56,6 +56,8 @@ crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased
 
 crbug.com/517449 [ Android ] images/optimize-contrast-image.html [ Failure ]
 
+crbug.com/676561 [ Android ] images/paletted-png-with-color-profile.html [ Skip ]
+
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Failure ]
 # The failure in the next line is due to virtual/gpu bots using osmesa
 # Under osmesa, skia's filter quality doesn't work correctly. This test is expected to pass
