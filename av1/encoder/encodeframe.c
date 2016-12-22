@@ -1263,7 +1263,10 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
 
 #if CONFIG_REF_MV
   rf_type = av1_ref_frame_type(mbmi->ref_frame);
-  if (x->mbmi_ext->ref_mv_count[rf_type] > 1 && mbmi->sb_type >= BLOCK_8X8 &&
+  if (x->mbmi_ext->ref_mv_count[rf_type] > 1 &&
+#if !CONFIG_CB4X4
+      mbmi->sb_type >= BLOCK_8X8 &&
+#endif  // !CONFIG_CB4X4
       mbmi->mode == NEWMV) {
     for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
       int_mv this_mv =
@@ -1308,10 +1311,12 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
         xd->mi[x_idx + y * mis] = mi_addr;
       }
 
+#if !CONFIG_CB4X4
   if (is_inter_block(mbmi) && mbmi->sb_type < BLOCK_8X8) {
     mbmi->mv[0].as_int = mi->bmi[3].as_mv[0].as_int;
     mbmi->mv[1].as_int = mi->bmi[3].as_mv[1].as_int;
   }
+#endif
 
   x->skip = ctx->skip;
 
