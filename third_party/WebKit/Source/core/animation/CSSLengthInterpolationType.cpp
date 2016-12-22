@@ -107,14 +107,15 @@ PairwiseInterpolationValue CSSLengthInterpolationType::maybeMergeSingles(
                                                     std::move(end));
 }
 
-InterpolationValue CSSLengthInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
+InterpolationValue
+CSSLengthInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
   Length underlyingLength;
-  if (!LengthPropertyFunctions::getLength(
-          cssProperty(), *environment.state().style(), underlyingLength))
+  if (!LengthPropertyFunctions::getLength(cssProperty(), *state.style(),
+                                          underlyingLength))
     return nullptr;
   return LengthInterpolationFunctions::maybeConvertLength(
-      underlyingLength, effectiveZoom(*environment.state().style()));
+      underlyingLength, effectiveZoom(*state.style()));
 }
 
 void CSSLengthInterpolationType::composite(

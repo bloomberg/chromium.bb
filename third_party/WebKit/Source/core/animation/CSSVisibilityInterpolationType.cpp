@@ -152,9 +152,10 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertValue(
   }
 }
 
-InterpolationValue CSSVisibilityInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  return createVisibilityValue(environment.state().style()->visibility());
+InterpolationValue
+CSSVisibilityInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
+  return createVisibilityValue(state.style()->visibility());
 }
 
 PairwiseInterpolationValue CSSVisibilityInterpolationType::maybeMergeSingles(

@@ -124,9 +124,10 @@ PairwiseInterpolationValue CSSBasicShapeInterpolationType::maybeMergeSingles(
                                     start.nonInterpolableValue.release());
 }
 
-InterpolationValue CSSBasicShapeInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  const ComputedStyle& style = *environment.state().style();
+InterpolationValue
+CSSBasicShapeInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
+  const ComputedStyle& style = *state.style();
   return BasicShapeInterpolationFunctions::maybeConvertBasicShape(
       BasicShapePropertyFunctions::getBasicShape(cssProperty(), style),
       style.effectiveZoom());

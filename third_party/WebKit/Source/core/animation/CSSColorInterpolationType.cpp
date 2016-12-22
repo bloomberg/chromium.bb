@@ -238,13 +238,12 @@ InterpolationValue CSSColorInterpolationType::convertStyleColorPair(
   return InterpolationValue(std::move(colorPair));
 }
 
-InterpolationValue CSSColorInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
+InterpolationValue
+CSSColorInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
   return convertStyleColorPair(
-      ColorPropertyFunctions::getUnvisitedColor(cssProperty(),
-                                                *environment.state().style()),
-      ColorPropertyFunctions::getVisitedColor(cssProperty(),
-                                              *environment.state().style()));
+      ColorPropertyFunctions::getUnvisitedColor(cssProperty(), *state.style()),
+      ColorPropertyFunctions::getVisitedColor(cssProperty(), *state.style()));
 }
 
 void CSSColorInterpolationType::applyStandardPropertyValue(

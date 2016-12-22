@@ -126,14 +126,15 @@ PairwiseInterpolationValue CSSLengthListInterpolationType::maybeMergeSingles(
       LengthInterpolationFunctions::mergeSingles);
 }
 
-InterpolationValue CSSLengthListInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
+InterpolationValue
+CSSLengthListInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
   Vector<Length> underlyingLengthList;
-  if (!LengthListPropertyFunctions::getLengthList(
-          cssProperty(), *environment.state().style(), underlyingLengthList))
+  if (!LengthListPropertyFunctions::getLengthList(cssProperty(), *state.style(),
+                                                  underlyingLengthList))
     return nullptr;
   return maybeConvertLengthList(underlyingLengthList,
-                                environment.state().style()->effectiveZoom());
+                                state.style()->effectiveZoom());
 }
 
 void CSSLengthListInterpolationType::composite(

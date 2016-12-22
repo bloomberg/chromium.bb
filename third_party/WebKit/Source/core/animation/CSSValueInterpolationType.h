@@ -30,8 +30,8 @@ class CSSValueInterpolationType : public CSSInterpolationType {
                                         const InterpolationValue& underlying,
                                         ConversionCheckers&) const final;
 
-  InterpolationValue maybeConvertUnderlyingValue(
-      const InterpolationEnvironment&) const final {
+  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+      const StyleResolverState&) const final {
     return nullptr;
   }
 

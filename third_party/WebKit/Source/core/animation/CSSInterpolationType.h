@@ -30,6 +30,12 @@ class CSSInterpolationType : public InterpolationType {
   virtual InterpolationValue maybeConvertValue(const CSSValue&,
                                                const StyleResolverState&,
                                                ConversionCheckers&) const = 0;
+
+  InterpolationValue maybeConvertUnderlyingValue(
+      const InterpolationEnvironment&) const final;
+  virtual InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+      const StyleResolverState&) const = 0;
+
   void apply(const InterpolableValue&,
              const NonInterpolableValue*,
              InterpolationEnvironment&) const final;

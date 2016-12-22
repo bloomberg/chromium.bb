@@ -15,8 +15,8 @@ class CSSLengthListInterpolationType : public CSSInterpolationType {
  public:
   CSSLengthListInterpolationType(PropertyHandle);
 
-  InterpolationValue maybeConvertUnderlyingValue(
-      const InterpolationEnvironment&) const final;
+  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+      const StyleResolverState&) const final;
   void composite(UnderlyingValueOwner&,
                  double underlyingFraction,
                  const InterpolationValue&,

@@ -186,10 +186,11 @@ PairwiseInterpolationValue CSSScaleInterpolationType::maybeMergeSingles(
           toCSSScaleNonInterpolableValue(*end.nonInterpolableValue)));
 }
 
-InterpolationValue CSSScaleInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
+InterpolationValue
+CSSScaleInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
   return InterpolationValue(
-      Scale(environment.state().style()->scale()).createInterpolableValue());
+      Scale(state.style()->scale()).createInterpolableValue());
 }
 
 void CSSScaleInterpolationType::composite(

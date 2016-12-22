@@ -186,9 +186,10 @@ PairwiseInterpolationValue CSSRotateInterpolationType::maybeMergeSingles(
           toCSSRotateNonInterpolableValue(*end.nonInterpolableValue)));
 }
 
-InterpolationValue CSSRotateInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  return convertRotation(getRotation(*environment.state().style()));
+InterpolationValue
+CSSRotateInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
+  return convertRotation(getRotation(*state.style()));
 }
 
 void CSSRotateInterpolationType::composite(

@@ -119,13 +119,14 @@ PairwiseInterpolationValue CSSShadowListInterpolationType::maybeMergeSingles(
       ShadowInterpolationFunctions::maybeMergeSingles);
 }
 
-InterpolationValue CSSShadowListInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  if (!environment.state().style())
+InterpolationValue
+CSSShadowListInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
+  if (!state.style())
     return nullptr;
-  return convertShadowList(ShadowListPropertyFunctions::getShadowList(
-                               cssProperty(), *environment.state().style()),
-                           environment.state().style()->effectiveZoom());
+  return convertShadowList(
+      ShadowListPropertyFunctions::getShadowList(cssProperty(), *state.style()),
+      state.style()->effectiveZoom());
 }
 
 void CSSShadowListInterpolationType::composite(

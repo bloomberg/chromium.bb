@@ -137,11 +137,11 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertValue(
   return InterpolationValue(std::move(result));
 }
 
-InterpolationValue CSSTranslateInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  return convertTranslateOperation(
-      environment.state().style()->translate(),
-      environment.state().style()->effectiveZoom());
+InterpolationValue
+CSSTranslateInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
+  return convertTranslateOperation(state.style()->translate(),
+                                   state.style()->effectiveZoom());
 }
 
 void CSSTranslateInterpolationType::applyStandardPropertyValue(

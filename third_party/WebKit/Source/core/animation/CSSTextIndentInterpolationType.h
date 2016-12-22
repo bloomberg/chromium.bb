@@ -16,8 +16,8 @@ class CSSTextIndentInterpolationType : public CSSInterpolationType {
     DCHECK_EQ(cssProperty(), CSSPropertyTextIndent);
   }
 
-  InterpolationValue maybeConvertUnderlyingValue(
-      const InterpolationEnvironment&) const final;
+  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+      const StyleResolverState&) const final;
   PairwiseInterpolationValue maybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end) const final;

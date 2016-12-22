@@ -162,9 +162,10 @@ InterpolationValue CSSFilterListInterpolationType::maybeConvertValue(
       NonInterpolableList::create(std::move(nonInterpolableValues)));
 }
 
-InterpolationValue CSSFilterListInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  const ComputedStyle& style = *environment.state().style();
+InterpolationValue
+CSSFilterListInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
+  const ComputedStyle& style = *state.style();
   return convertFilterList(
       FilterListPropertyFunctions::getFilterList(cssProperty(), style),
       style.effectiveZoom());

@@ -261,10 +261,10 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertValue(
           SideNumbers(quad), std::move(nonInterpolableValues)));
 }
 
-InterpolationValue
-CSSBorderImageLengthBoxInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  const ComputedStyle& style = *environment.state().style();
+InterpolationValue CSSBorderImageLengthBoxInterpolationType::
+    maybeConvertStandardPropertyUnderlyingValue(
+        const StyleResolverState& state) const {
+  const ComputedStyle& style = *state.style();
   return convertBorderImageLengthBox(
       BorderImageLengthBoxPropertyFunctions::getBorderImageLengthBox(
           cssProperty(), style),

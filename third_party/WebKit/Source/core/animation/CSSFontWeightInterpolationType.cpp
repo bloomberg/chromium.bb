@@ -127,9 +127,10 @@ InterpolationValue CSSFontWeightInterpolationType::maybeConvertValue(
   }
 }
 
-InterpolationValue CSSFontWeightInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  return createFontWeightValue(environment.state().style()->fontWeight());
+InterpolationValue
+CSSFontWeightInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
+  return createFontWeightValue(state.style()->fontWeight());
 }
 
 void CSSFontWeightInterpolationType::applyStandardPropertyValue(

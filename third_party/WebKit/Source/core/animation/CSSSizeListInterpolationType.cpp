@@ -153,9 +153,10 @@ PairwiseInterpolationValue CSSSizeListInterpolationType::maybeMergeSingles(
       SizeInterpolationFunctions::maybeMergeSingles);
 }
 
-InterpolationValue CSSSizeListInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  const ComputedStyle& style = *environment.state().style();
+InterpolationValue
+CSSSizeListInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
+  const ComputedStyle& style = *state.style();
   return convertSizeList(
       SizeListPropertyFunctions::getSizeList(cssProperty(), style),
       style.effectiveZoom());

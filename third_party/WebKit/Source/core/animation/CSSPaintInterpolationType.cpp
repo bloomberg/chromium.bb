@@ -88,13 +88,14 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertValue(
   return InterpolationValue(std::move(interpolableColor));
 }
 
-InterpolationValue CSSPaintInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
+InterpolationValue
+CSSPaintInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
   // TODO(alancutter): Support capturing and animating with the visited paint
   // color.
   StyleColor underlyingColor;
-  if (!PaintPropertyFunctions::getColor(
-          cssProperty(), *environment.state().style(), underlyingColor))
+  if (!PaintPropertyFunctions::getColor(cssProperty(), *state.style(),
+                                        underlyingColor))
     return nullptr;
   return InterpolationValue(
       CSSColorInterpolationType::createInterpolableColor(underlyingColor));

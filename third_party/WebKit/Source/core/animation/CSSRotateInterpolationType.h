@@ -16,8 +16,8 @@ class CSSRotateInterpolationType : public CSSInterpolationType {
     DCHECK_EQ(cssProperty(), CSSPropertyRotate);
   }
 
-  InterpolationValue maybeConvertUnderlyingValue(
-      const InterpolationEnvironment&) const final;
+  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+      const StyleResolverState&) const final;
   InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&,
                                         const InterpolationEnvironment&,
                                         const InterpolationValue& underlying,

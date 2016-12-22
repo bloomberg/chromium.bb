@@ -16,8 +16,8 @@ class CSSTranslateInterpolationType : public CSSInterpolationType {
     DCHECK_EQ(cssProperty(), CSSPropertyTranslate);
   }
 
-  InterpolationValue maybeConvertUnderlyingValue(
-      const InterpolationEnvironment&) const final;
+  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+      const StyleResolverState&) const final;
   void applyStandardPropertyValue(const InterpolableValue&,
                                   const NonInterpolableValue*,
                                   StyleResolverState&) const final;

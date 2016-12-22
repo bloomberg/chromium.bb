@@ -222,12 +222,12 @@ InterpolationValue CSSClipInterpolationType::maybeConvertValue(
                             CSSClipNonInterpolableValue::create(autos));
 }
 
-InterpolationValue CSSClipInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  if (environment.state().style()->hasAutoClip())
+InterpolationValue
+CSSClipInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
+  if (state.style()->hasAutoClip())
     return nullptr;
-  return createClipValue(environment.state().style()->clip(),
-                         environment.state().style()->effectiveZoom());
+  return createClipValue(state.style()->clip(), state.style()->effectiveZoom());
 }
 
 PairwiseInterpolationValue CSSClipInterpolationType::maybeMergeSingles(

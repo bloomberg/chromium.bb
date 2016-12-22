@@ -176,9 +176,10 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertValue(
           length.nonInterpolableValue.release(), IndentMode(line, type)));
 }
 
-InterpolationValue CSSTextIndentInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  const ComputedStyle& style = *environment.state().style();
+InterpolationValue
+CSSTextIndentInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
+  const ComputedStyle& style = *state.style();
   return createValue(style.textIndent(), IndentMode(style),
                      style.effectiveZoom());
 }

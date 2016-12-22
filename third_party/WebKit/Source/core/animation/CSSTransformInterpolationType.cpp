@@ -233,9 +233,10 @@ PairwiseInterpolationValue CSSTransformInterpolationType::maybeMergeSingles(
               toCSSTransformNonInterpolableValue(*end.nonInterpolableValue))));
 }
 
-InterpolationValue CSSTransformInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
-  return convertTransform(environment.state().style()->transform());
+InterpolationValue
+CSSTransformInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
+  return convertTransform(state.style()->transform());
 }
 
 void CSSTransformInterpolationType::composite(

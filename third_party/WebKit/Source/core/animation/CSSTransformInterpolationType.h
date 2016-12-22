@@ -16,8 +16,8 @@ class CSSTransformInterpolationType : public CSSInterpolationType {
     DCHECK_EQ(cssProperty(), CSSPropertyTransform);
   }
 
-  InterpolationValue maybeConvertUnderlyingValue(
-      const InterpolationEnvironment&) const final;
+  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+      const StyleResolverState&) const final;
   InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&,
                                         const InterpolationEnvironment&,
                                         const InterpolationValue& underlying,

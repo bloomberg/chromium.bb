@@ -16,8 +16,8 @@ class CSSShadowListInterpolationType : public CSSInterpolationType {
   CSSShadowListInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {}
 
-  InterpolationValue maybeConvertUnderlyingValue(
-      const InterpolationEnvironment&) const final;
+  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+      const StyleResolverState&) const final;
   void composite(UnderlyingValueOwner&,
                  double underlyingFraction,
                  const InterpolationValue&,

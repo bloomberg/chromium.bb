@@ -89,6 +89,13 @@ InterpolationValue CSSInterpolationType::maybeConvertSingle(
   return maybeConvertValue(*value, environment.state(), conversionCheckers);
 }
 
+InterpolationValue CSSInterpolationType::maybeConvertUnderlyingValue(
+    const InterpolationEnvironment& environment) const {
+  // TODO(alancutter): Add support for converting underlying registered custom
+  // property values.
+  return maybeConvertStandardPropertyUnderlyingValue(environment.state());
+}
+
 void CSSInterpolationType::apply(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,

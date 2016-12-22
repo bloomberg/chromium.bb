@@ -219,11 +219,11 @@ InterpolationValue CSSImageInterpolationType::maybeConvertValue(
   return maybeConvertCSSValue(value, true);
 }
 
-InterpolationValue CSSImageInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
+InterpolationValue
+CSSImageInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
   return maybeConvertStyleImage(
-      ImagePropertyFunctions::getStyleImage(cssProperty(),
-                                            *environment.state().style()),
+      ImagePropertyFunctions::getStyleImage(cssProperty(), *state.style()),
       true);
 }
 

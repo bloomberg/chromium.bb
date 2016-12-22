@@ -95,11 +95,12 @@ InterpolationValue CSSPathInterpolationType::maybeConvertValue(
       toCSSPathValue(value).byteStream());
 }
 
-InterpolationValue CSSPathInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
+InterpolationValue
+CSSPathInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
   DCHECK_EQ(cssProperty(), CSSPropertyD);
   return PathInterpolationFunctions::convertValue(
-      environment.state().style()->svgStyle().d());
+      state.style()->svgStyle().d());
 }
 
 PairwiseInterpolationValue CSSPathInterpolationType::maybeMergeSingles(

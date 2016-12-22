@@ -79,11 +79,12 @@ InterpolationValue CSSNumberInterpolationType::maybeConvertValue(
   return createNumberValue(toCSSPrimitiveValue(value).getDoubleValue());
 }
 
-InterpolationValue CSSNumberInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
+InterpolationValue
+CSSNumberInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
   double underlyingNumber;
-  if (!NumberPropertyFunctions::getNumber(
-          cssProperty(), *environment.state().style(), underlyingNumber))
+  if (!NumberPropertyFunctions::getNumber(cssProperty(), *state.style(),
+                                          underlyingNumber))
     return nullptr;
   return createNumberValue(underlyingNumber);
 }

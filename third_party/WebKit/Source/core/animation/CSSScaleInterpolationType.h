@@ -16,8 +16,8 @@ class CSSScaleInterpolationType : public CSSInterpolationType {
     DCHECK_EQ(cssProperty(), CSSPropertyScale);
   }
 
-  InterpolationValue maybeConvertUnderlyingValue(
-      const InterpolationEnvironment&) const final;
+  InterpolationValue maybeConvertStandardPropertyUnderlyingValue(
+      const StyleResolverState&) const final;
   void composite(UnderlyingValueOwner&,
                  double underlyingFraction,
                  const InterpolationValue&,

@@ -149,11 +149,12 @@ PairwiseInterpolationValue CSSImageListInterpolationType::maybeMergeSingles(
       CSSImageInterpolationType::staticMergeSingleConversions);
 }
 
-InterpolationValue CSSImageListInterpolationType::maybeConvertUnderlyingValue(
-    const InterpolationEnvironment& environment) const {
+InterpolationValue
+CSSImageListInterpolationType::maybeConvertStandardPropertyUnderlyingValue(
+    const StyleResolverState& state) const {
   StyleImageList underlyingImageList;
-  ImageListPropertyFunctions::getImageList(
-      cssProperty(), *environment.state().style(), underlyingImageList);
+  ImageListPropertyFunctions::getImageList(cssProperty(), *state.style(),
+                                           underlyingImageList);
   return maybeConvertStyleImageList(underlyingImageList);
 }
 
