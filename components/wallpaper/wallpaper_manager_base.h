@@ -573,6 +573,9 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
       MovableOnDestroyCallbackHolder on_finish,
       std::unique_ptr<user_manager::UserImage>* result_out) = 0;
 
+  // Record the Wallpaper App that the user is using right now on Chrome OS.
+  virtual void RecordWallpaperAppType() = 0;
+
   // Returns wallpaper subdirectory name for current resolution.
   virtual const char* GetCustomWallpaperSubdirForCurrentResolution();
 

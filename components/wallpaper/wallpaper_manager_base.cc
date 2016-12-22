@@ -323,6 +323,7 @@ void WallpaperManagerBase::EnsureLoggedInUserWallpaperLoaded() {
   if (GetLoggedInUserWallpaperInfo(&info)) {
     UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Type", info.type,
                               user_manager::User::WALLPAPER_TYPE_COUNT);
+    RecordWallpaperAppType();
     if (info == current_user_wallpaper_info_)
       return;
   }

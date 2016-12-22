@@ -5,7 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_MANAGER_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_MANAGER_UTIL_H_
 
+class Profile;
+
 namespace wallpaper_manager_util {
+
+bool ShouldUseAndroidWallpapersApp(Profile* profile);
 
 // Opens wallpaper manager application.
 void OpenWallpaperManager();

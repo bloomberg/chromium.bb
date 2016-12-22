@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -86,6 +87,17 @@ const char kWallpaperFilesId[] = "wallpaper-files-id";
 // wallpaper.
 const char kDeviceWallpaperDir[] = "device_wallpaper";
 const char kDeviceWallpaperFile[] = "device_wallpaper_image.jpg";
+
+// The Wallpaper App that the user is using right now on Chrome OS. It's the
+// app that is used when the user right clicks on desktop and selects "Set
+// wallpaper" or when the user selects "Set wallpaper" from chrome://settings
+// page. This is recorded at user login. It's used to back an UMA histogram so
+// it should be treated as append-only.
+enum WallpaperAppsType {
+  WALLPAPERS_PICKER_APP_CHROMEOS = 0,
+  WALLPAPERS_APP_ANDROID = 1,
+  WALLPAPERS_APPS_NUM = 2,
+};
 
 // These global default values are used to set customized default
 // wallpaper path in WallpaperManager::InitializeWallpaper().
@@ -423,6 +435,7 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
   if (GetLoggedInUserWallpaperInfo(&info)) {
     UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Type", info.type,
                               user_manager::User::WALLPAPER_TYPE_COUNT);
+    RecordWallpaperAppType();
     if (info == current_user_wallpaper_info_)
       return;
   }
@@ -1384,6 +1397,18 @@ void WallpaperManager::SetDefaultWallpaperPath(
 
   if (need_update_screen)
     DoSetDefaultWallpaper(EmptyAccountId(), MovableOnDestroyCallbackHolder());
+}
+
+void WallpaperManager::RecordWallpaperAppType() {
+  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Ash.Wallpaper.Apps",
+      wallpaper_manager_util::ShouldUseAndroidWallpapersApp(profile)
+          ? WALLPAPERS_APP_ANDROID
+          : WALLPAPERS_PICKER_APP_CHROMEOS,
+      WALLPAPERS_APPS_NUM);
 }
 
 }  // namespace chromeos
