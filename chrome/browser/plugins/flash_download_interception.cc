@@ -116,10 +116,6 @@ std::unique_ptr<NavigationThrottle>
 FlashDownloadInterception::MaybeCreateThrottleFor(NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Never intercept Flash Download navigations in a new window.
-  if (handle->GetWebContents()->HasOpener())
-    return nullptr;
-
   // Browser initiated navigations like the Back button or the context menu
   // should never be intercepted.
   if (!handle->IsRendererInitiated())

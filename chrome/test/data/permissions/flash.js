@@ -33,3 +33,11 @@ function flashIsEnabledForPluginWithoutFallback() {
   flashIsEnabledForPlugin(
       document.getElementById('flash-object-no-fallback'));
 }
+
+function spawnPopupAndAwaitLoad() {
+  var popup = window.open(window.location.href);
+  popup.addEventListener('load', function handleLoad() {
+    popup.removeEventListener('load', handleLoad);
+    window.domAutomationController.send(true);
+  });
+}

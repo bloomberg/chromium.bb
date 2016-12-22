@@ -4,6 +4,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/permissions/permissions_browsertest.h"
 #include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
@@ -105,6 +106,37 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, CommonFailsIfBlocked) {
 
 IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, CommonSucceedsIfAllowed) {
   CommonSucceedsIfAllowed();
+}
+
+IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, SucceedsInPopupWindow) {
+  // Spawn the same page in a popup window and wait for it to finish loading.
+  content::WebContents* original_contents = GetWebContents();
+  ASSERT_TRUE(RunScriptReturnBool("spawnPopupAndAwaitLoad();"));
+
+  // Assert that the popup's WebContents is now the active one.
+  ASSERT_NE(original_contents, GetWebContents());
+
+  PermissionRequestManager* manager = PermissionRequestManager::FromWebContents(
+      GetWebContents());
+  auto popup_prompt_factory =
+      base::MakeUnique<MockPermissionPromptFactory>(manager);
+  manager->DisplayPendingRequests();
+
+  EXPECT_EQ(0, popup_prompt_factory->total_request_count());
+  popup_prompt_factory->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+  // FlashPermissionContext::UpdateTabContext will reload the page, we'll have
+  // to wait until it is ready.
+  PageReloadWaiter reload_waiter(GetWebContents());
+  EXPECT_TRUE(RunScriptReturnBool("triggerPrompt();"));
+  EXPECT_TRUE(reload_waiter.Wait());
+
+  EXPECT_TRUE(FeatureUsageSucceeds());
+  EXPECT_EQ(1, popup_prompt_factory->total_request_count());
+
+  // Shut down the popup window tab, as the normal test teardown assumes there
+  // is only one test tab.
+  popup_prompt_factory.reset();
+  GetWebContents()->Close();
 }
 
 IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, TriggerPromptViaNewWindow) {
