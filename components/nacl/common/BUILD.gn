@@ -17,6 +17,8 @@ if (enable_nacl) {
       "nacl_messages.h",
       "nacl_process_type.h",
       "nacl_sandbox_type.h",
+      "nacl_service.cc",
+      "nacl_service.h",
       "nacl_types.cc",
       "nacl_types.h",
       "nacl_types_param_traits.cc",
@@ -24,15 +26,19 @@ if (enable_nacl) {
     ]
 
     public_deps = [
+      ":minimal_content_dummy",
       ":switches",
     ]
 
     deps = [
-      ":minimal_content_dummy",
       ":nacl_error_code",
       "//base",
       "//base:base_static",
+      "//content/public/common:service_names",
       "//ipc",
+      "//ipc:mojom",
+      "//mojo/edk/system",
+      "//services/service_manager/public/cpp",
     ]
   }
 
@@ -43,7 +49,9 @@ if (enable_nacl) {
   source_set("minimal_content_dummy") {
     check_includes = false
     sources = [
+      "//content/public/common/content_descriptors.h",
       "//content/public/common/content_switches.h",
+      "//content/public/common/mojo_channel_switches.h",
       "//content/public/common/process_type.h",
       "//content/public/common/sandbox_type.h",
     ]

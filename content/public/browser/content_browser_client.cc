@@ -420,8 +420,13 @@ base::string16 ContentBrowserClient::GetAppContainerSidForSandboxType(
 #endif  // defined(OS_WIN)
 
 std::unique_ptr<base::Value> ContentBrowserClient::GetServiceManifestOverlay(
-    const std::string& name) {
+    base::StringPiece name) {
   return nullptr;
+}
+
+std::vector<ContentBrowserClient::ServiceManifestInfo>
+ContentBrowserClient::GetExtraServiceManifests() {
+  return std::vector<ContentBrowserClient::ServiceManifestInfo>();
 }
 
 std::unique_ptr<MemoryCoordinatorDelegate>

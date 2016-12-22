@@ -219,8 +219,7 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
 }
 
 std::unique_ptr<base::Value>
-ShellContentBrowserClient::GetServiceManifestOverlay(
-    const std::string& name) {
+ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   int id = -1;
   if (name == content::mojom::kBrowserServiceName)
     id = IDR_CONTENT_SHELL_BROWSER_MANIFEST_OVERLAY;

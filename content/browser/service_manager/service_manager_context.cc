@@ -114,10 +114,31 @@ class BuiltinManifestProvider : public catalog::ManifestProvider {
   BuiltinManifestProvider() {}
   ~BuiltinManifestProvider() override {}
 
-  void AddManifestValue(const std::string& name,
-                        std::unique_ptr<base::Value> manifest_contents) {
+  void AddServiceManifest(base::StringPiece name, int resource_id) {
+    std::string contents =
+        GetContentClient()
+            ->GetDataResource(resource_id, ui::ScaleFactor::SCALE_FACTOR_NONE)
+            .as_string();
+    DCHECK(!contents.empty());
+
+    std::unique_ptr<base::Value> manifest_value =
+        base::JSONReader::Read(contents);
+    DCHECK(manifest_value);
+
+    std::unique_ptr<base::Value> overlay_value =
+        GetContentClient()->browser()->GetServiceManifestOverlay(name);
+    if (overlay_value) {
+      base::DictionaryValue* manifest_dictionary = nullptr;
+      bool result = manifest_value->GetAsDictionary(&manifest_dictionary);
+      DCHECK(result);
+      base::DictionaryValue* overlay_dictionary = nullptr;
+      result = overlay_value->GetAsDictionary(&overlay_dictionary);
+      DCHECK(result);
+      MergeDictionary(manifest_dictionary, overlay_dictionary);
+    }
+
     auto result = manifests_.insert(
-        std::make_pair(name, std::move(manifest_contents)));
+        std::make_pair(name.as_string(), std::move(manifest_value)));
     DCHECK(result.second) << "Duplicate manifest entry: " << name;
   }
 
@@ -238,30 +259,13 @@ ServiceManagerContext::ServiceManagerContext() {
     };
 
     for (size_t i = 0; i < arraysize(kManifests); ++i) {
-      std::string contents = GetContentClient()->GetDataResource(
-          kManifests[i].resource_id,
-          ui::ScaleFactor::SCALE_FACTOR_NONE).as_string();
-      base::debug::Alias(&i);
-      CHECK(!contents.empty());
-
-      std::unique_ptr<base::Value> manifest_value =
-          base::JSONReader::Read(contents);
-      base::debug::Alias(&contents);
-      CHECK(manifest_value);
-
-      std::unique_ptr<base::Value> overlay_value =
-          GetContentClient()->browser()->GetServiceManifestOverlay(
-              kManifests[i].name);
-      if (overlay_value) {
-        base::DictionaryValue* manifest_dictionary = nullptr;
-        CHECK(manifest_value->GetAsDictionary(&manifest_dictionary));
-        base::DictionaryValue* overlay_dictionary = nullptr;
-        CHECK(overlay_value->GetAsDictionary(&overlay_dictionary));
-        MergeDictionary(manifest_dictionary, overlay_dictionary);
-      }
-
-      manifest_provider->AddManifestValue(kManifests[i].name,
-                                          std::move(manifest_value));
+      manifest_provider->AddServiceManifest(kManifests[i].name,
+                                            kManifests[i].resource_id);
+    }
+    for (const auto& manifest :
+         GetContentClient()->browser()->GetExtraServiceManifests()) {
+      manifest_provider->AddServiceManifest(manifest.name,
+                                            manifest.resource_id);
     }
     in_process_context_ = new InProcessServiceManagerContext;
     request = in_process_context_->Start(std::move(manifest_provider));

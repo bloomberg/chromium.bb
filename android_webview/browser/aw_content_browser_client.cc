@@ -533,8 +533,8 @@ AwContentBrowserClient::GetDevToolsManagerDelegate() {
   return new AwDevToolsManagerDelegate();
 }
 
-std::unique_ptr<base::Value>
-AwContentBrowserClient::GetServiceManifestOverlay(const std::string& name) {
+std::unique_ptr<base::Value> AwContentBrowserClient::GetServiceManifestOverlay(
+    base::StringPiece name) {
   int id = -1;
   if (name == content::mojom::kBrowserServiceName)
     id = IDR_AW_BROWSER_MANIFEST_OVERLAY;

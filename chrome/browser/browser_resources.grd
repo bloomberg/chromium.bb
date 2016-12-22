@@ -612,6 +612,10 @@
       <include name="IDR_CHROME_CONTENT_PLUGIN_MANIFEST_OVERLAY" file="chrome_content_plugin_manifest_overlay.json" type="BINDATA" />
       <include name="IDR_CHROME_CONTENT_RENDERER_MANIFEST_OVERLAY" file="chrome_content_renderer_manifest_overlay.json" type="BINDATA" />
       <include name="IDR_CHROME_CONTENT_UTILITY_MANIFEST_OVERLAY" file="chrome_content_utility_manifest_overlay.json" type="BINDATA" />
+      <include name="IDR_NACL_LOADER_MANIFEST" file="../../components/nacl/loader/nacl_loader_manifest.json" type="BINDATA" />
+      <if expr="is_win">
+        <include name="IDR_NACL_BROKER_MANIFEST" file="../../components/nacl/broker/nacl_broker_manifest.json" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

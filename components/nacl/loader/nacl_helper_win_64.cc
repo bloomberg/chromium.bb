@@ -26,8 +26,6 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "sandbox/win/src/sandbox_types.h"
 
 extern int NaClMain(const content::MainFunctionParams&);
@@ -40,12 +38,6 @@ int NaClBrokerMain(const content::MainFunctionParams& parameters) {
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
   mojo::edk::Init();
-  mojo::edk::ScopedIPCSupport mojo_ipc_support(main_message_loop.task_runner());
-  mojo::edk::ScopedPlatformHandle platform_channel(
-      mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
-          *base::CommandLine::ForCurrentProcess()));
-  DCHECK(platform_channel.is_valid());
-  mojo::edk::SetParentPipeHandle(std::move(platform_channel));
 
   std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());

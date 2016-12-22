@@ -61,7 +61,7 @@ HeadlessContentBrowserClient::GetDevToolsManagerDelegate() {
 
 std::unique_ptr<base::Value>
 HeadlessContentBrowserClient::GetServiceManifestOverlay(
-    const std::string& name) {
+    base::StringPiece name) {
   if (name != content::mojom::kBrowserServiceName ||
       browser_->options()->mojo_service_names.empty())
     return nullptr;

@@ -80,6 +80,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
       override;
   void SetName(const base::string16& name) override;
   void SetHandle(base::ProcessHandle handle) override;
+  std::string GetServiceRequestChannelToken() override;
 
   // ChildProcessHostDelegate implementation:
   bool CanShutdown() override;

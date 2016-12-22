@@ -53,8 +53,7 @@ void BlimpContentBrowserClient::ExposeInterfacesToRenderer(
 }
 
 std::unique_ptr<base::Value>
-BlimpContentBrowserClient::GetServiceManifestOverlay(
-    const std::string& name) {
+BlimpContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int id = -1;
   if (name == content::mojom::kBrowserServiceName) {

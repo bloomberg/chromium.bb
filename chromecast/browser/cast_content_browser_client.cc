@@ -434,7 +434,7 @@ void CastContentBrowserClient::RegisterInProcessServices(
 
 std::unique_ptr<base::Value>
 CastContentBrowserClient::GetServiceManifestOverlay(
-    const std::string& service_name) {
+    base::StringPiece service_name) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (service_name != content::mojom::kBrowserServiceName)
     return nullptr;

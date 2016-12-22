@@ -1,4 +1,6 @@
 include_rules = [
   "+native_client/src/public",
   "+native_client/src/trusted/service_runtime/nacl_error_code.h",
+  "+mojo/edk/embedder",
+  "+mojo/public",
 ]

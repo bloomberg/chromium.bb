@@ -131,7 +131,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationHandle* navigation_handle) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
-      const std::string& name) override;
+      base::StringPiece name) override;
   void RegisterRenderFrameMojoInterfaces(
       service_manager::InterfaceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;

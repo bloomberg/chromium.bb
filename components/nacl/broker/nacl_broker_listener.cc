@@ -19,6 +19,7 @@
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_debug_exception_handler_win.h"
 #include "components/nacl/common/nacl_messages.h"
+#include "components/nacl/common/nacl_service.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
@@ -28,6 +29,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "sandbox/win/src/sandbox_policy.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace {
 
@@ -42,14 +44,12 @@ NaClBrokerListener::NaClBrokerListener() = default;
 NaClBrokerListener::~NaClBrokerListener() = default;
 
 void NaClBrokerListener::Listen() {
-  mojo::ScopedMessagePipeHandle handle(
-      mojo::edk::CreateChildMessagePipe(
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kMojoChannelToken)));
-  DCHECK(handle.is_valid());
-  IPC::ChannelHandle channel_handle(handle.release());
+  mojo::ScopedMessagePipeHandle channel_handle;
+  std::unique_ptr<service_manager::ServiceContext> service_context =
+      CreateNaClServiceContext(base::ThreadTaskRunnerHandle::Get(),
+                               &channel_handle);
 
-  channel_ = IPC::Channel::CreateClient(channel_handle, this);
+  channel_ = IPC::Channel::CreateClient(channel_handle.release(), this);
   CHECK(channel_->Connect());
   run_loop_.Run();
 }
@@ -138,7 +138,7 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     mojo::ScopedMessagePipeHandle host_message_pipe =
         mojo::edk::CreateParentMessagePipe(mojo_channel_token,
                                            mojo_child_token);
-    cmd_line->AppendSwitchASCII(switches::kMojoChannelToken,
+    cmd_line->AppendSwitchASCII(switches::kServiceRequestChannelToken,
                                 mojo_channel_token);
     CHECK_EQ(MOJO_RESULT_OK,
              mojo::FuseMessagePipes(std::move(loader_message_pipe),

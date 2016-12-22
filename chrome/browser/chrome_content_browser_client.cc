@@ -134,6 +134,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/call_stack_profile_collector.h"
 #include "components/metrics/client_info.h"
+#include "components/nacl/common/nacl_constants.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/payments/payment_request.mojom.h"
@@ -3095,8 +3096,7 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 }
 
 std::unique_ptr<base::Value>
-ChromeContentBrowserClient::GetServiceManifestOverlay(
-    const std::string& name) {
+ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int id = -1;
   if (name == content::mojom::kBrowserServiceName)
@@ -3115,6 +3115,18 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(
   base::StringPiece manifest_contents =
       rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
   return base::JSONReader::Read(manifest_contents);
+}
+
+std::vector<content::ContentBrowserClient::ServiceManifestInfo>
+ChromeContentBrowserClient::GetExtraServiceManifests() {
+  return std::vector<content::ContentBrowserClient::ServiceManifestInfo>({
+#if !defined(DISABLE_NACL)
+    {nacl::kNaClLoaderServiceName, IDR_NACL_LOADER_MANIFEST},
+#if defined(OS_WIN)
+        {nacl::kNaClBrokerServiceName, IDR_NACL_BROKER_MANIFEST},
+#endif  // defined(OS_WIN)
+#endif  // !defined(DISABLE_NACL)
+  });
 }
 
 void ChromeContentBrowserClient::OpenURL(

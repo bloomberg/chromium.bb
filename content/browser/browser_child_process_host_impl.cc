@@ -297,6 +297,10 @@ void BrowserChildProcessHostImpl::SetHandle(base::ProcessHandle handle) {
   data_.handle = handle;
 }
 
+std::string BrowserChildProcessHostImpl::GetServiceRequestChannelToken() {
+  return child_connection_->service_token();
+}
+
 void BrowserChildProcessHostImpl::ForceShutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   g_child_process_list.Get().remove(this);

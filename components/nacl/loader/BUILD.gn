@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/nacl/config.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 assert(enable_nacl)
@@ -39,6 +40,7 @@ source_set("minimal") {
     "//ppapi/c",
     "//ppapi/proxy:ipc",
     "//sandbox",
+    "//services/service_manager/public/cpp",
   ]
 }
 
@@ -50,10 +52,7 @@ source_set("minimal_content_dummy") {
   check_includes = false
   sources = [
     "//content/public/common/child_process_sandbox_support_linux.h",
-    "//content/public/common/content_descriptors.h",
-    "//content/public/common/content_switches.h",
     "//content/public/common/main_function_params.h",
-    "//content/public/common/mojo_channel_switches.h",
     "//content/public/common/sandbox_init.h",
   ]
 
@@ -71,9 +70,11 @@ source_set("loader") {
     "//components/nacl/common",
     "//content/public/common",
     "//ppapi/shared_impl",
+    "//services/service_manager/public/cpp",
   ]
 
   data_deps = [
+    ":nacl_loader_manifest",
     "//ppapi/native_client:irt",
     "//ppapi/native_client/src/untrusted/pnacl_support_extension",
   ]
@@ -196,13 +197,6 @@ if (is_nacl_nonsfi) {
     output_name = "nacl_helper_nonsfi"
     set_sources_assignment_filter([])
     sources = [
-      # TODO(brettw) can this just depend on //components/nacl/common?
-      "../common/nacl_messages.cc",
-      "../common/nacl_messages.h",
-      "../common/nacl_types.cc",
-      "../common/nacl_types.h",
-      "../common/nacl_types_param_traits.cc",
-      "../common/nacl_types_param_traits.h",
       "nacl_helper_linux.cc",
       "nacl_helper_linux.h",
       "nacl_trusted_listener.cc",
@@ -215,6 +209,7 @@ if (is_nacl_nonsfi) {
     deps = [
       ":nacl_helper_nonsfi_sandbox",
       "//base",
+      "//components/nacl/common:minimal",
       "//components/nacl/common:mojo_bindings",
       "//components/nacl/common:switches",
       "//components/tracing",
@@ -232,6 +227,7 @@ if (is_nacl_nonsfi) {
       "//native_client/src/untrusted/nacl",
       "//ppapi/proxy",
       "//sandbox/linux:sandbox",
+      "//services/service_manager/public/cpp",
     ]
   }
 
@@ -245,6 +241,7 @@ if (is_nacl_nonsfi) {
     ]
     deps = [
       "//base",
+      "//components/nacl/common:minimal",
       "//components/nacl/common:switches",
       "//content",
       "//sandbox/linux:sandbox",
@@ -296,4 +293,9 @@ if (is_nacl_nonsfi) {
       ":nacl_helper_nonsfi_unittests_main",
     ]
   }
+}
+
+service_manifest("nacl_loader_manifest") {
+  name = "nacl_loader"
+  source = "nacl_loader_manifest.json"
 }

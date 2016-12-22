@@ -92,6 +92,9 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // this object.
   virtual void SetHandle(base::ProcessHandle handle) = 0;
 
+  // Returns the child message pipe token for the service request.
+  virtual std::string GetServiceRequestChannelToken() = 0;
+
 #if defined(OS_MACOSX)
   // Returns a PortProvider used to get the task port for child processes.
   static base::PortProvider* GetPortProvider();

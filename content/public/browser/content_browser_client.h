@@ -709,7 +709,19 @@ class CONTENT_EXPORT ContentBrowserClient {
   // with content's own for |name|. Additional entries will be appended to their
   // respective sections.
   virtual std::unique_ptr<base::Value> GetServiceManifestOverlay(
-      const std::string& name);
+      base::StringPiece name);
+
+  struct ServiceManifestInfo {
+    // The name of the service.
+    std::string name;
+
+    // The resource ID of the manifest.
+    int resource_id;
+  };
+
+  // Allows the embedder to provide extra service manifests to be registered
+  // with the service manager context.
+  virtual std::vector<ServiceManifestInfo> GetExtraServiceManifests();
 
   // Allows to override the visibility state of a RenderFrameHost.
   // |visibility_state| should not be null. It will only be set if needed.

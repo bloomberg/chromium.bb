@@ -10,6 +10,7 @@
 #include "components/nacl/browser/nacl_broker_service_win.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_cmd_line.h"
+#include "components/nacl/common/nacl_constants.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "components/nacl/common/nacl_switches.h"
@@ -47,17 +48,12 @@ NaClBrokerHost::~NaClBrokerHost() {
 }
 
 bool NaClBrokerHost::Init() {
-  const std::string mojo_child_token = mojo::edk::GenerateRandomToken();
   DCHECK(!process_);
   process_.reset(content::BrowserChildProcessHost::Create(
       static_cast<content::ProcessType>(PROCESS_TYPE_NACL_BROKER), this,
-      mojo_child_token));
+      kNaClBrokerServiceName));
 
-  // Create the channel that will be used for communicating with the broker.
-  const std::string mojo_channel_token =
-      process_->GetHost()->CreateChannelMojo(mojo_child_token);
-  if (mojo_channel_token.empty())
-    return false;
+  process_->GetHost()->CreateChannelMojo();
 
   // Create the path to the nacl broker/loader executable.
   base::FilePath nacl_path;
@@ -69,7 +65,6 @@ bool NaClBrokerHost::Init() {
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClBrokerProcess);
-  cmd_line->AppendSwitchASCII(switches::kMojoChannelToken, mojo_channel_token);
   if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 

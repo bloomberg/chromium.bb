@@ -294,7 +294,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void RegisterOutOfProcessServices(
       OutOfProcessServiceMap* services) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
-      const std::string& name) override;
+      base::StringPiece name) override;
+  std::vector<content::ContentBrowserClient::ServiceManifestInfo>
+  GetExtraServiceManifests() override;
   void OpenURL(content::BrowserContext* browser_context,
                const content::OpenURLParams& params,
                const base::Callback<void(content::WebContents*)>& callback)

@@ -152,7 +152,7 @@ void ChildNaClLoaderInit(std::vector<base::ScopedFD> child_fds,
       child_fds[content::ZygoteForkDelegate::kPIDOracleFDIndex].get()));
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kMojoChannelToken, channel_id);
+      switches::kServiceRequestChannelToken, channel_id);
 
   // Save the browser socket and close the rest.
   base::ScopedFD browser_fd(
