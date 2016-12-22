@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.webkit.WebView;
 
 import org.chromium.base.CommandLine;
@@ -44,6 +45,11 @@ public class ExternalNavigationHandler {
     private static final String SCHEME_WTAI = "wtai://wp/";
     private static final String SCHEME_WTAI_MC = "wtai://wp/mc;";
     private static final String SCHEME_SMS = "sms";
+
+    private static final String PLAY_PACKAGE_PARAM = "id";
+    private static final String PLAY_REFERRER_PARAM = "referrer";
+    private static final String PLAY_APP_PATH = "/store/apps/details";
+    private static final String PLAY_HOSTNAME = "play.google.com";
 
     @VisibleForTesting
     static final String EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url";
@@ -332,13 +338,19 @@ public class ExternalNavigationHandler {
         // check whether the intent can be resolved. If not, we will see
         // whether we can download it from the Market.
         if (!canResolveActivity) {
+            Pair<String, String> appInfo = null;
             if (hasBrowserFallbackUrl) {
-                return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
+                // If the fallback URL is a link to Play Store, send the user to Play Store app
+                // instead: crbug.com/638672.
+                appInfo = maybeGetPlayStoreAppIdAndReferrer(browserFallbackUrl);
+                if (appInfo == null) {
+                    return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
+                }
             }
 
-            String packagename = intent.getPackage();
+            String packagename = appInfo != null ? appInfo.first : intent.getPackage();
             if (packagename != null) {
-                String marketReferrer =
+                String marketReferrer = appInfo != null ? appInfo.second :
                         IntentUtils.safeGetStringExtra(intent, EXTRA_MARKET_REFERRER);
                 if (TextUtils.isEmpty(marketReferrer)) {
                     marketReferrer = mDelegate.getPackageName();
@@ -347,8 +359,8 @@ public class ExternalNavigationHandler {
                     Uri marketUri = new Uri.Builder()
                             .scheme("market")
                             .authority("details")
-                            .appendQueryParameter("id", packagename)
-                            .appendQueryParameter("referrer", Uri.decode(marketReferrer))
+                            .appendQueryParameter(PLAY_PACKAGE_PARAM, packagename)
+                            .appendQueryParameter(PLAY_REFERRER_PARAM, Uri.decode(marketReferrer))
                             .build();
                     intent = new Intent(Intent.ACTION_VIEW, marketUri);
                     intent.addCategory(Intent.CATEGORY_BROWSABLE);
@@ -565,11 +577,10 @@ public class ExternalNavigationHandler {
      */
     private OverrideUrlLoadingResult clobberCurrentTabWithFallbackUrl(
             String browserFallbackUrl, ExternalNavigationParams params) {
-        if (!params.isMainFrame()) {
-            // For subframes, we don't support fallback url for now.
-            // http://crbug.com/364522.
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
+        // For subframes, we don't support fallback url for now.
+        // http://crbug.com/364522.
+        if (!params.isMainFrame()) return OverrideUrlLoadingResult.NO_OVERRIDE;
+
         // NOTE: any further redirection from fall-back URL should not override URL loading.
         // Otherwise, it can be used in chain for fingerprinting multiple app installation
         // status in one shot. In order to prevent this scenario, we notify redirection
@@ -579,6 +590,21 @@ public class ExternalNavigationHandler {
         }
         return mDelegate.clobberCurrentTab(
                 browserFallbackUrl, params.getReferrerUrl(), params.getTab());
+    }
+
+    /**
+     * If the given URL is to Google Play, extracts the package name and referrer tracking code
+     * from the {@param url} and returns as a Pair in that order. Otherwise returns null.
+     */
+    private Pair<String, String> maybeGetPlayStoreAppIdAndReferrer(String url) {
+        Uri uri = Uri.parse(url);
+        if (PLAY_HOSTNAME.equals(uri.getHost()) && uri.getPath() != null
+                && uri.getPath().startsWith(PLAY_APP_PATH)
+                && !TextUtils.isEmpty(uri.getQueryParameter(PLAY_PACKAGE_PARAM))) {
+            return new Pair<String, String>(uri.getQueryParameter(PLAY_PACKAGE_PARAM),
+                    uri.getQueryParameter(PLAY_REFERRER_PARAM));
+        }
+        return null;
     }
 
     /**

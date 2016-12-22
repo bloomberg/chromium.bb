@@ -682,6 +682,38 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    public void testFallbackUrl_FallbackToMarketApp() {
+        mDelegate.setCanResolveActivity(false);
+
+        String intent = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
+                + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
+                + "https://play.google.com/store/apps/details?id=com.imdb.mobile"
+                + "&referrer=mypage;end";
+        checkUrl(intent)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+
+        assertEquals("market://details?id=com.imdb.mobile&referrer=mypage",
+                mDelegate.startActivityIntent.getDataString());
+
+        String intentNoRef = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
+                + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
+                + "https://play.google.com/store/apps/details?id=com.imdb.mobile;end";
+        checkUrl(intentNoRef)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+
+        assertEquals("market://details?id=com.imdb.mobile&referrer=test",
+                mDelegate.startActivityIntent.getDataString());
+
+        String intentBadUrl = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
+                + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
+                + "https://play.google.com/store/search?q=pub:imdb;end";
+        checkUrl(intentBadUrl)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
+    }
+
+    @SmallTest
     public void testFallbackUrl_IntentResolutionFailsWithoutPackageName() {
         // IMDB app isn't installed.
         mDelegate.setCanResolveActivity(false);
