@@ -73,7 +73,7 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
     scoped_refptr<PerformBridge> op = new PerformBridge(target, sel, arg);
     base::PostTaskWithTraits(
         FROM_HERE, base::TaskTraits()
-                       .WithFileIO()
+                       .MayBlock()
                        .WithPriority(base::TaskPriority::BACKGROUND)
                        .WithShutdownBehavior(
                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
