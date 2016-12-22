@@ -1205,10 +1205,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     parts_->PostMainMessageLoopRun();
   }
 
-#if defined(USE_AURA)
-  env_.reset();
-#endif
-
   system_stats_monitor_.reset();
 
   // Destroying the GpuProcessHostUIShims on the UI thread posts a task to

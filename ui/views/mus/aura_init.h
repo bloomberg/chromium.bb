@@ -75,8 +75,8 @@ class VIEWS_MUS_EXPORT AuraInit {
   const std::string resource_file_;
   const std::string resource_file_200_;
 
-  std::unique_ptr<MusClient> mus_client_;
   std::unique_ptr<aura::Env> env_;
+  std::unique_ptr<MusClient> mus_client_;
   std::unique_ptr<ViewsDelegate> views_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraInit);

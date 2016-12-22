@@ -66,9 +66,7 @@ ChromeBrowserMainExtraPartsViewsLinux::ChromeBrowserMainExtraPartsViewsLinux() {
 
 ChromeBrowserMainExtraPartsViewsLinux::
     ~ChromeBrowserMainExtraPartsViewsLinux() {
-  // X11DesktopHandler is destructed at this point, so we don't need to remove
-  // ourselves as an X11DesktopHandlerObserver
-  DCHECK(!aura::Env::GetInstanceDontCreate());
+  views::X11DesktopHandler::get()->RemoveObserver(this);
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreEarlyInitialization() {

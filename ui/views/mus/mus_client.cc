@@ -64,6 +64,7 @@ MusClient::MusClient(service_manager::Connector* connector,
                      bool create_wm_state)
     : identity_(identity) {
   DCHECK(!instance_);
+  DCHECK(aura::Env::GetInstance());
   instance_ = this;
 
   if (!io_task_runner) {
@@ -131,6 +132,7 @@ MusClient::~MusClient() {
   base::DiscardableMemoryAllocator::SetInstance(nullptr);
   DCHECK_EQ(instance_, this);
   instance_ = nullptr;
+  DCHECK(aura::Env::GetInstance());
 }
 
 // static
