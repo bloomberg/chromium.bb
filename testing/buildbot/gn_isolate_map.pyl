@@ -947,12 +947,6 @@
     "label": "//url:url_unittests",
     "type": "console_test_launcher",
   },
-
-  "video_decode_accelerator_unittest": {
-    "label": "//media/gpu:video_decode_accelerator_unittest",
-    "type": "raw",
-    "args": [],
-  },
   "views_aura_mus_unittests": {
     "label": "//ui/views/mus:views_aura_mus_unittests",
     "type": "windowed_test_launcher",

@@ -1087,17 +1087,6 @@ COMMON_GTESTS = {
       'tab_capture_end2end_tests_run',
     ],
   },
-  'video_decode_accelerator_unittest': {
-    'tester_configs': [
-      {
-        'os_types': ['win']
-      },
-    ],
-    'args': [
-      '--test_video_data='
-          '../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1'
-    ],
-  },
 }
 
 # This requires a hack because the isolate's name is different than
