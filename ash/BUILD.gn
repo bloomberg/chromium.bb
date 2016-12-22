@@ -1401,10 +1401,7 @@ test("ash_unittests") {
   ]
 
   if (!use_x11) {
-    sources -= [
-      "host/ash_window_tree_host_x11_unittest.cc",
-      "touch/touch_transformer_controller_unittest.cc",
-    ]
+    sources -= [ "host/ash_window_tree_host_x11_unittest.cc" ]
   }
 
   # Usage of content should be in ash_with_content.

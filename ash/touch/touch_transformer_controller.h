@@ -36,13 +36,7 @@ class ASH_EXPORT TouchTransformerController
   void OnDisplayConfigurationChanged() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest,
-                           MirrorModeLetterboxing);
-  FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest,
-                           MirrorModePillarboxing);
-  FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest, SoftwareMirrorMode);
-  FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest, ExtendedMode);
-  FRIEND_TEST_ALL_PREFIXES(TouchTransformerControllerTest, TouchRadiusScale);
+  friend class TouchTransformerControllerTest;
 
   // Returns a transform that will be used to change an event's location from
   // the touchscreen's coordinate system into |display|'s coordinate system.
