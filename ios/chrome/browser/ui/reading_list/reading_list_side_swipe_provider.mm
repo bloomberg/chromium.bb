@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "components/reading_list/ios/reading_list_entry.h"
 #include "components/reading_list/ios/reading_list_model.h"
-#include "ios/chrome/browser/reading_list/reading_list_entry_loading_util.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
@@ -56,18 +55,20 @@ class ReadingListObserverBridge;
   if (!webState || _readingListModel->unread_size() == 0) {
     return;
   }
-  int64_t updatetime = 0;
-  const ReadingListEntry* first_entry = nullptr;
+  int64_t updateTime = 0;
+  const ReadingListEntry* firstEntry = nullptr;
   for (const auto& url : _readingListModel->Keys()) {
     const ReadingListEntry* entry = _readingListModel->GetEntryByURL(url);
-    if (!entry->IsRead() && entry->UpdateTime() > updatetime) {
-      updatetime = entry->UpdateTime();
-      first_entry = entry;
+    if (!entry->IsRead() && entry->UpdateTime() > updateTime) {
+      updateTime = entry->UpdateTime();
+      firstEntry = entry;
     }
   }
-  DCHECK_GT(updatetime, 0);
-  DCHECK_NE(first_entry, nullptr);
-  reading_list::LoadReadingListEntry(*first_entry, _readingListModel, webState);
+  DCHECK_GT(updateTime, 0);
+  DCHECK(firstEntry);
+  web::NavigationManager::WebLoadParams params(firstEntry->URL());
+  params.transition_type = ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK;
+  webState->GetNavigationManager()->LoadURLWithParams(params);
 }
 
 @end

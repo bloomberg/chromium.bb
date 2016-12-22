@@ -41,6 +41,8 @@
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/navigation_metrics/origins_seen_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/reading_list/core/reading_list_switches.h"
+#include "components/reading_list/ios/reading_list_model.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/ios/ios_serialized_navigation_builder.h"
@@ -74,6 +76,8 @@
 #import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/passwords/passwords_ui_delegate_impl.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#include "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
@@ -578,6 +582,12 @@ void AddNetworkClientFactoryOnIOThread(
     IOSChromeSyncedTabDelegate::CreateForWebState(self.webState);
     InfoBarManagerImpl::CreateForWebState(self.webState);
     IOSSecurityStateTabHelper::CreateForWebState(self.webState);
+
+    if (reading_list::switches::IsReadingListEnabled()) {
+      ReadingListModel* model =
+          ReadingListModelFactory::GetForBrowserState(browserState_);
+      ReadingListWebStateObserver::FromWebState(self.webState, model);
+    }
 
     tabInfoBarObserver_.reset(new TabInfoBarObserver(self));
     tabInfoBarObserver_->SetShouldObserveInfoBarManager(true);

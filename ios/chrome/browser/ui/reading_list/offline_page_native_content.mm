@@ -10,18 +10,21 @@
 #include "components/reading_list/ios/reading_list_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
-#include "ios/chrome/browser/reading_list/reading_list_entry_loading_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #include "ios/web/public/browser_state.h"
-#include "net/base/network_change_notifier.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-#pragma mark -
-#pragma mark Public
+@interface OfflinePageNativeContent ()
+// Restores the last committed item to its initial state.
+- (void)restoreOnlineURL;
+@end
 
 @implementation OfflinePageNativeContent {
   // The virtual URL that will be displayed to the user.
@@ -62,21 +65,29 @@
                            URL:URL];
 }
 
+- (void)willBeDismissed {
+  [self restoreOnlineURL];
+}
+
+- (void)close {
+  [self restoreOnlineURL];
+  [super close];
+}
+
 - (GURL)virtualURL {
   return _virtualURL;
 }
 
 - (void)reload {
-  if (!_model || net::NetworkChangeNotifier::IsOffline()) {
-    [super reload];
-    return;
-  }
-  const ReadingListEntry* entry = _model->GetEntryByURL([self virtualURL]);
-  if (entry) {
-    reading_list::LoadReadingListEntry(*entry, _model, _webState);
-  } else {
-    [super reload];
-  }
+  [self restoreOnlineURL];
+  _webState->GetNavigationManager()->Reload(false);
+}
+
+- (void)restoreOnlineURL {
+  web::NavigationItem* item =
+      _webState->GetNavigationManager()->GetLastCommittedItem();
+  item->SetURL([self virtualURL]);
+  item->SetVirtualURL([self virtualURL]);
 }
 
 @end

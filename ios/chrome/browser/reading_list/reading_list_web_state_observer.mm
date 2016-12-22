@@ -9,7 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "components/reading_list/ios/reading_list_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/reading_list/reading_list_entry_loading_util.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
@@ -83,27 +84,50 @@ ReadingListWebStateObserver::ReadingListWebStateObserver(
   DCHECK(reading_list_model_);
 }
 
-void ReadingListWebStateObserver::DidStopLoading() {
-  StopCheckingProgress();
-}
-
-void ReadingListWebStateObserver::PageLoaded(
-    web::PageLoadCompletionStatus load_completion_status) {
-  if (load_completion_status == web::PageLoadCompletionStatus::SUCCESS &&
-      pending_url_.is_valid()) {
-    reading_list_model_->SetReadStatus(pending_url_, true);
+bool ReadingListWebStateObserver::ShouldObserveItem(
+    web::NavigationItem* item) const {
+  if (!item) {
+    return false;
   }
-  StopCheckingProgress();
+  GURL loading_url = item->GetURL();
+  return !loading_url.SchemeIs(kChromeUIScheme) ||
+         loading_url.host() != kChromeUIOfflineHost;
 }
 
-void ReadingListWebStateObserver::WebStateDestroyed() {
-  StopCheckingProgress();
-  web_state()->RemoveUserData(kObserverKey);
+bool ReadingListWebStateObserver::IsUrlAvailableOffline(const GURL& url) const {
+  const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+  return entry && entry->DistilledState() == ReadingListEntry::PROCESSED;
 }
 
-void ReadingListWebStateObserver::StartCheckingProgress(
-    const GURL& pending_url) {
-  pending_url_ = pending_url;
+void ReadingListWebStateObserver::DidStartLoading() {
+  if (!reading_list_model_->loaded() || !web_state() ||
+      web_state()->IsShowingWebInterstitial()) {
+    StopCheckingProgress();
+    return;
+  }
+
+  web::NavigationManager* manager = web_state()->GetNavigationManager();
+  web::NavigationItem* item = manager->GetPendingItem();
+
+  // Manager->GetPendingItem() returns null on reload.
+  // TODO(crbug.com/676129): Remove this workaround once GetPendingItem()
+  // returns the correct value on reload.
+  if (!item) {
+    item = manager->GetLastCommittedItem();
+  }
+
+  if (!ShouldObserveItem(item)) {
+    StopCheckingProgress();
+    return;
+  }
+
+  pending_url_ = item->GetVirtualURL();
+  if (!IsUrlAvailableOffline(pending_url_)) {
+    // No need to launch the timer as there is no offline version to show.
+    // Track |pending_url_| to mark the entry as read in case of a successful
+    // load.
+    return;
+  }
   try_number_ = 0;
   timer_.reset(new base::Timer(false, true));
   const base::TimeDelta kDelayUntilLoadingProgressIsChecked =
@@ -115,29 +139,82 @@ void ReadingListWebStateObserver::StartCheckingProgress(
           base::Unretained(this)));
 }
 
+void ReadingListWebStateObserver::PageLoaded(
+    web::PageLoadCompletionStatus load_completion_status) {
+  web::NavigationItem* item =
+      web_state()->GetNavigationManager()->GetLastCommittedItem();
+  if (!item || !pending_url_.is_valid()) {
+    StopCheckingProgress();
+    return;
+  }
+
+  if (load_completion_status == web::PageLoadCompletionStatus::SUCCESS) {
+    reading_list_model_->SetReadStatus(pending_url_, true);
+  } else {
+    LoadOfflineReadingListEntry(item);
+  }
+  StopCheckingProgress();
+}
+
+void ReadingListWebStateObserver::WebStateDestroyed() {
+  StopCheckingProgress();
+  web_state()->RemoveUserData(kObserverKey);
+}
+
 void ReadingListWebStateObserver::StopCheckingProgress() {
-  pending_url_ = GURL();
+  pending_url_ = GURL::EmptyGURL();
   timer_.reset();
 }
 
 void ReadingListWebStateObserver::VerifyIfReadingListEntryStartedLoading() {
   if (!pending_url_.is_valid()) {
+    StopCheckingProgress();
     return;
   }
-  const ReadingListEntry* entry =
-      reading_list_model_->GetEntryByURL(pending_url_);
-  if (!entry || entry->DistilledState() != ReadingListEntry::PROCESSED) {
+  web::NavigationManager* manager = web_state()->GetNavigationManager();
+  web::NavigationItem* item = manager->GetPendingItem();
+
+  // Manager->GetPendingItem() returns null on reload.
+  // TODO(crbug.com/676129): Remove this workaround once GetPendingItem()
+  // returns the correct value on reload.
+  if (!item) {
+    item = manager->GetLastCommittedItem();
+  }
+  if (!item || !pending_url_.is_valid() ||
+      !IsUrlAvailableOffline(pending_url_)) {
+    StopCheckingProgress();
     return;
   }
   try_number_++;
   double progress = web_state()->GetLoadingProgress();
   const double kMinimumExpectedProgressPerStep = 0.25;
   if (progress < try_number_ * kMinimumExpectedProgressPerStep) {
-    reading_list::LoadReadingListDistilled(*entry, reading_list_model_,
-                                           web_state());
+    LoadOfflineReadingListEntry(item);
+    StopCheckingProgress();
+    return;
   }
   if (try_number_ >= 3) {
     // Loading reached 75%, let the page finish normal loading.
+    // Do not call |StopCheckingProgress()| as |pending_url_| is still
+    // needed to mark the entry read on success loading or to display
+    // offline version on error.
     timer_->Stop();
   }
+}
+
+void ReadingListWebStateObserver::LoadOfflineReadingListEntry(
+    web::NavigationItem* item) {
+  DCHECK(item);
+  if (!pending_url_.is_valid() || !IsUrlAvailableOffline(pending_url_)) {
+    return;
+  }
+  const ReadingListEntry* entry =
+      reading_list_model_->GetEntryByURL(pending_url_);
+  DCHECK(entry->DistilledState() == ReadingListEntry::PROCESSED);
+  GURL url =
+      reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());
+  item->SetURL(url);
+  item->SetVirtualURL(pending_url_);
+  web_state()->GetNavigationManager()->Reload(false);
+  reading_list_model_->SetReadStatus(entry->URL(), true);
 }

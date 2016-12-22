@@ -19,7 +19,6 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service.h"
-#include "ios/chrome/browser/reading_list/reading_list_entry_loading_util.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -423,8 +422,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
   Tab* currentTab = _tabModel.currentTab;
   DCHECK(currentTab);
-  reading_list::LoadReadingListEntry(*entry, self.readingListModel,
-                                     currentTab.webState);
+  web::NavigationManager::WebLoadParams params(entry->URL());
+  params.transition_type = ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK;
+  [currentTab webState]->GetNavigationManager()->LoadURLWithParams(params);
   [self dismiss];
 }
 
