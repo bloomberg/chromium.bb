@@ -2,34 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-bundle_data("assets") {
-  sources = [
-    "resources/Icons.xcassets/ic_arrow_back.imageset/Contents.json",
-    "resources/Icons.xcassets/ic_arrow_back.imageset/ic_arrow_back.png",
-    "resources/Icons.xcassets/ic_arrow_back.imageset/ic_arrow_back_2x.png",
-    "resources/Icons.xcassets/ic_arrow_back.imageset/ic_arrow_back_3x.png",
-    "resources/Icons.xcassets/ic_chevron_right.imageset/Contents.json",
-    "resources/Icons.xcassets/ic_chevron_right.imageset/ic_chevron_right.png",
-    "resources/Icons.xcassets/ic_chevron_right.imageset/ic_chevron_right_2x.png",
-    "resources/Icons.xcassets/ic_chevron_right.imageset/ic_chevron_right_3x.png",
-    "resources/Icons.xcassets/ic_close.imageset/Contents.json",
-    "resources/Icons.xcassets/ic_close.imageset/ic_close.png",
-    "resources/Icons.xcassets/ic_close.imageset/ic_close_2x.png",
-    "resources/Icons.xcassets/ic_close.imageset/ic_close_3x.png",
-    "resources/Icons.xcassets/ic_info.imageset/Contents.json",
-    "resources/Icons.xcassets/ic_info.imageset/ic_info.png",
-    "resources/Icons.xcassets/ic_info.imageset/ic_info_2x.png",
-    "resources/Icons.xcassets/ic_info.imageset/ic_info_3x.png",
-    "resources/Icons.xcassets/ic_search.imageset/Contents.json",
-    "resources/Icons.xcassets/ic_search.imageset/ic_search.png",
-    "resources/Icons.xcassets/ic_search.imageset/ic_search_2x.png",
-    "resources/Icons.xcassets/ic_search.imageset/ic_search_3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
-}
-
 source_set("icons") {
   sources = [
     "chrome_icon.h",
@@ -58,5 +30,34 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+bundle_data("assets") {
+  sources = [
+    "resources/Icons.xcassets/ic_arrow_back.imageset/Contents.json",
+    "resources/Icons.xcassets/ic_arrow_back.imageset/ic_arrow_back.png",
+    "resources/Icons.xcassets/ic_arrow_back.imageset/ic_arrow_back_2x.png",
+    "resources/Icons.xcassets/ic_arrow_back.imageset/ic_arrow_back_3x.png",
+    "resources/Icons.xcassets/ic_chevron_right.imageset/Contents.json",
+    "resources/Icons.xcassets/ic_chevron_right.imageset/ic_chevron_right.png",
+    "resources/Icons.xcassets/ic_chevron_right.imageset/ic_chevron_right_2x.png",
+    "resources/Icons.xcassets/ic_chevron_right.imageset/ic_chevron_right_3x.png",
+    "resources/Icons.xcassets/ic_close.imageset/Contents.json",
+    "resources/Icons.xcassets/ic_close.imageset/ic_close.png",
+    "resources/Icons.xcassets/ic_close.imageset/ic_close_2x.png",
+    "resources/Icons.xcassets/ic_close.imageset/ic_close_3x.png",
+    "resources/Icons.xcassets/ic_info.imageset/Contents.json",
+    "resources/Icons.xcassets/ic_info.imageset/ic_info.png",
+    "resources/Icons.xcassets/ic_info.imageset/ic_info_2x.png",
+    "resources/Icons.xcassets/ic_info.imageset/ic_info_3x.png",
+    "resources/Icons.xcassets/ic_search.imageset/Contents.json",
+    "resources/Icons.xcassets/ic_search.imageset/ic_search.png",
+    "resources/Icons.xcassets/ic_search.imageset/ic_search_2x.png",
+    "resources/Icons.xcassets/ic_search.imageset/ic_search_3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
