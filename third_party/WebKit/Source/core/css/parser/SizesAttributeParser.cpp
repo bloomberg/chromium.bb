@@ -97,9 +97,9 @@ float SizesAttributeParser::effectiveSize() {
   return effectiveSizeDefaultValue();
 }
 
-unsigned SizesAttributeParser::effectiveSizeDefaultValue() {
+float SizesAttributeParser::effectiveSizeDefaultValue() {
   // Returning the equivalent of "100vw"
-  return m_mediaValues->viewportWidth();
+  return clampTo<float>(m_mediaValues->viewportWidth());
 }
 
 }  // namespace blink
