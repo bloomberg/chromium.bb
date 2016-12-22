@@ -16,8 +16,9 @@
       task.describe('Simple unit tests for basic assertions.');
 
       should(OfflineAudioContext, 'OfflineAudioContext').exist();
-      should(function () { var foo = 0; }, 'Setting foo to 0').notThrow();
-      should(function () { var foo = bar; }).throw('ReferenceError');
+      should(function () { var foo1 = 0; }, 'Setting foo1 to 0').notThrow();
+      should(function () { var foo2 = bar; }).throw();
+      should(function () { var foo3 = bar; }).throw('ReferenceError');
       should(3 < 5, '3 < 5').beTrue();
       should(false).beFalse();
       should(1).beEqualTo(1)

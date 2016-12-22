@@ -270,12 +270,16 @@ window.Audit = (function () {
         // Catch did not happen, so the test is failed.
         failDetail = '${actual} did not throw an exception.';
       } catch (error) {
-        if (this._expected === undefined) {
+        if (this._expected === null) {
+          // The expected error type was not given.
           didThrowCorrectly = true;
-          passDetail = '${actual} threw an exception of ' + error.name + '.';
+          passDetail = '${actual} threw ' + error.name + ': "'
+              + error.message + '".';
         } else if (error.name === this._expected) {
+          // The expected error type match the actual one.
           didThrowCorrectly = true;
-          passDetail = '${actual} threw ${expected} : "' + error.message + '".';
+          passDetail = '${actual} threw ${expected}: "'
+              + error.message + '".';
         } else {
           didThrowCorrectly = false;
           failDetail = '${actual} threw "' + error.name

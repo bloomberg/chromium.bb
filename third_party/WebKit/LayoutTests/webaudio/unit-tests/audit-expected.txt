@@ -10,8 +10,9 @@ PASS   [0.5,0.5,0.55,0.5,0.45,0.5] has no glitch above the threshold of 0.06.
 PASS < [numerical] All assertions passed. (total 5 assertions) 
 PASS > [basic] Simple unit tests for basic assertions. 
 PASS   OfflineAudioContext does exist. 
-PASS   Setting foo to 0 did not throw an exception. 
-PASS   function () { var foo = bar; } threw ReferenceError : "bar is not defined". 
+PASS   Setting foo1 to 0 did not throw an exception. 
+PASS   function () { var foo2 = bar; } threw ReferenceError: "bar is not defined". 
+PASS   function () { var foo3 = bar; } threw ReferenceError: "bar is not defined". 
 PASS   3 < 5 is true. 
 PASS   false is false. 
 PASS   1 is equal to 1. 
@@ -23,7 +24,7 @@ PASS   1 is less than 2.
 PASS   1 is less than or equal to 1. 
 PASS   Decoding audio data with no argument rejected correctly with TypeError: Failed to execute 'decodeAudioData' on 'BaseAudioContext': 1 argument required, but only 0 present.. 
 PASS   Start OAC rendering resolved correctly. 
-PASS < [basic] All assertions passed. (total 14 assertions) 
+PASS < [basic] All assertions passed. (total 15 assertions) 
 PASS # AUDIT TASK RUNNER FINISHED: 2 tasks ran successfully. 
 Harness: the test ran to completion.
 
