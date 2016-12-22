@@ -8,9 +8,12 @@ static_library("unsafe_resource") {
     "unsafe_resource.h",
   ]
 
+  public_deps = [
+    "//components/safe_browsing_db:hit_report",
+  ]
+
   deps = [
     "//base",
-    "//components/safe_browsing_db:hit_report",
     "//components/safe_browsing_db:util",
     "//content/public/browser",
   ]
