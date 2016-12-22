@@ -83,8 +83,6 @@ crbug.com/624709 [ Win ] virtual/gpu-rasterization/images/webp-color-profile-los
 crbug.com/587737 [ Mac ] virtual/gpu-rasterization/images/color-profile-filter.html [ Timeout Failure ]
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure Crash ]
 
-crbug.com/657839 [ Linux ] virtual/gpu-rasterization/images/color-profile-filter.html [ NeedsRebaseline ]
-
 crbug.com/657839 images/color-profile-layer.html [ Skip ]
 
 crbug.com/626748 paint/invalidation/table/cached-change-row-border-color.html [ Failure ]
