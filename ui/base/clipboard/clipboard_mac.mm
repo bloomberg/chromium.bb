@@ -324,17 +324,27 @@ SkBitmap ClipboardMac::ReadImage(ClipboardType type, NSPasteboard* pb) const {
   } @catch (id exception) {
   }
 
-  if (image.get()) {
-    if ([[image representations] count] == 1u) {
-      NSImageRep* rep = [[image representations] objectAtIndex:0];
+  if (!image)
+    return SkBitmap();
+  if ([[image representations] count] == 0u)
+    return SkBitmap();
+
+  // This logic prevents loss of pixels from retina images, where size != pixel
+  // size. In an ideal world, the concept of "retina-ness" would be plumbed all
+  // the way through to the web, but the clipboard API doesn't support the
+  // additional metainformation.
+  if ([[image representations] count] == 1u) {
+    NSImageRep* rep = [[image representations] objectAtIndex:0];
+    NSInteger width = [rep pixelsWide];
+    NSInteger height = [rep pixelsHigh];
+    if (width != 0 && height != 0) {
       return skia::NSImageRepToSkBitmapWithColorSpace(
-          rep, NSMakeSize([rep pixelsWide], [rep pixelsHigh]),
-          /*is_opaque=*/false, base::mac::GetSystemColorSpace());
+          rep, NSMakeSize(width, height), /*is_opaque=*/false,
+          base::mac::GetSystemColorSpace());
     }
-    return skia::NSImageToSkBitmapWithColorSpace(
-        image.get(), /*is_opaque=*/false, base::mac::GetSystemColorSpace());
   }
-  return SkBitmap();
+  return skia::NSImageToSkBitmapWithColorSpace(
+      image.get(), /*is_opaque=*/false, base::mac::GetSystemColorSpace());
 }
 
 SkBitmap ClipboardMac::ReadImage(ClipboardType type) const {

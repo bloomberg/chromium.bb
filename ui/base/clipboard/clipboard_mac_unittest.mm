@@ -4,6 +4,8 @@
 
 #import "ui/base/clipboard/clipboard_mac.h"
 
+#import <AppKit/AppKit.h>
+
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/free_deleter.h"
@@ -12,6 +14,16 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
+
+@interface RedView : NSView
+@end
+@implementation RedView
+- (void)drawRect:(NSRect)dirtyRect {
+  [[NSColor redColor] setFill];
+  NSRectFill(dirtyRect);
+  [super drawRect:dirtyRect];
+}
+@end
 
 namespace ui {
 
@@ -68,6 +80,43 @@ TEST_F(ClipboardMacTest, ReadImageNonRetina) {
   scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
   base::scoped_nsobject<NSImage> image = CreateImage(width, height, false);
   [pasteboard->get() writeObjects:@[ image.get() ]];
+
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ui::ClipboardMac* clipboard_mac = static_cast<ui::ClipboardMac*>(clipboard);
+
+  SkBitmap bitmap = clipboard_mac->ReadImage(ui::CLIPBOARD_TYPE_COPY_PASTE,
+                                             pasteboard->get());
+  EXPECT_EQ(width, bitmap.width());
+  EXPECT_EQ(height, bitmap.height());
+}
+
+TEST_F(ClipboardMacTest, EmptyImage) {
+  base::scoped_nsobject<NSImage> image([[NSImage alloc] init]);
+  scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
+  [pasteboard->get() writeObjects:@[ image.get() ]];
+
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ui::ClipboardMac* clipboard_mac = static_cast<ui::ClipboardMac*>(clipboard);
+
+  SkBitmap bitmap = clipboard_mac->ReadImage(ui::CLIPBOARD_TYPE_COPY_PASTE,
+                                             pasteboard->get());
+  EXPECT_EQ(0, bitmap.width());
+  EXPECT_EQ(0, bitmap.height());
+}
+
+TEST_F(ClipboardMacTest, PDFImage) {
+  int32_t width = 99;
+  int32_t height = 101;
+  NSRect frame = NSMakeRect(0, 0, width, height);
+
+  // This seems like a round-about way of getting a NSPDFImageRep to shove into
+  // an NSPasteboard. However, I haven't found any other way of generating a
+  // "PDF" image that makes NSPasteboard happy.
+  base::scoped_nsobject<NSView> v([[RedView alloc] initWithFrame:frame]);
+  NSData* data = [v dataWithPDFInsideRect:frame];
+
+  scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
+  [pasteboard->get() setData:data forType:NSPasteboardTypePDF];
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   ui::ClipboardMac* clipboard_mac = static_cast<ui::ClipboardMac*>(clipboard);
