@@ -66,7 +66,7 @@ class CONTENT_EXPORT CacheStorageManager {
                    const std::string& cache_name,
                    const CacheStorage::BoolAndErrorCallback& callback);
   void EnumerateCaches(const GURL& origin,
-                       const CacheStorage::StringsCallback& callback);
+                       const CacheStorage::IndexCallback& callback);
   void MatchCache(const GURL& origin,
                   const std::string& cache_name,
                   std::unique_ptr<ServiceWorkerFetchRequest> request,

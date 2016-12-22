@@ -24,6 +24,7 @@
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
+#include "content/browser/cache_storage/cache_storage_cache_observer.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/referrer.h"
@@ -263,11 +264,11 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  CacheStorageCache* cache =
-      new CacheStorageCache(origin, cache_name, base::FilePath(), cache_storage,
-                            std::move(request_context_getter),
-                            std::move(quota_manager_proxy), blob_context);
-  cache->InitBackend();
+  CacheStorageCache* cache = new CacheStorageCache(
+      origin, cache_name, base::FilePath(), cache_storage,
+      std::move(request_context_getter), std::move(quota_manager_proxy),
+      blob_context, 0 /* cache_size */);
+  cache->SetObserver(cache_storage), cache->InitBackend();
   return base::WrapUnique(cache);
 }
 
@@ -279,12 +280,13 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
     const base::FilePath& path,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-    base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  CacheStorageCache* cache =
-      new CacheStorageCache(origin, cache_name, path, cache_storage,
-                            std::move(request_context_getter),
-                            std::move(quota_manager_proxy), blob_context);
-  cache->InitBackend();
+    base::WeakPtr<storage::BlobStorageContext> blob_context,
+    int64_t cache_size) {
+  CacheStorageCache* cache = new CacheStorageCache(
+      origin, cache_name, path, cache_storage,
+      std::move(request_context_getter), std::move(quota_manager_proxy),
+      blob_context, cache_size);
+  cache->SetObserver(cache_storage), cache->InitBackend();
   return base::WrapUnique(cache);
 }
 
@@ -498,6 +500,11 @@ void CacheStorageCache::GetSizeThenClose(const SizeCallback& callback) {
                             scheduler_->WrapCallbackToRunNext(callback))));
 }
 
+void CacheStorageCache::SetObserver(CacheStorageCacheObserver* observer) {
+  DCHECK((observer == nullptr) ^ (cache_observer_ == nullptr));
+  cache_observer_ = observer;
+}
+
 CacheStorageCache::~CacheStorageCache() {
   quota_manager_proxy_->NotifyOriginNoLongerInUse(origin_);
 }
@@ -509,7 +516,8 @@ CacheStorageCache::CacheStorageCache(
     CacheStorage* cache_storage,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-    base::WeakPtr<storage::BlobStorageContext> blob_context)
+    base::WeakPtr<storage::BlobStorageContext> blob_context,
+    int64_t cache_size)
     : origin_(origin),
       cache_name_(cache_name),
       path_(path),
@@ -519,7 +527,9 @@ CacheStorageCache::CacheStorageCache(
       blob_storage_context_(blob_context),
       scheduler_(
           new CacheStorageScheduler(CacheStorageSchedulerClient::CLIENT_CACHE)),
+      cache_size_(cache_size),
       max_query_size_bytes_(kMaxQueryCacheResultBytes),
+      cache_observer_(nullptr),
       memory_only_(path.empty()),
       weak_ptr_factory_(this) {
   DCHECK(!origin_.is_empty());
@@ -1179,12 +1189,18 @@ void CacheStorageCache::UpdateCacheSize() {
 void CacheStorageCache::UpdateCacheSizeGotSize(
     std::unique_ptr<CacheStorageCacheHandle> cache_handle,
     int current_cache_size) {
+  DCHECK_NE(current_cache_size, CacheStorage::kSizeUnknown);
   int64_t old_cache_size = cache_size_;
   cache_size_ = current_cache_size;
 
+  int64_t size_delta = current_cache_size - old_cache_size;
+
   quota_manager_proxy_->NotifyStorageModified(
       storage::QuotaClient::kServiceWorkerCache, origin_,
-      storage::kStorageTypeTemporary, current_cache_size - old_cache_size);
+      storage::kStorageTypeTemporary, size_delta);
+
+  if (cache_observer_)
+    cache_observer_->CacheSizeUpdated(this, current_cache_size);
 }
 
 void CacheStorageCache::Delete(const CacheStorageBatchOperation& operation,
@@ -1369,6 +1385,15 @@ void CacheStorageCache::InitDidCreateBackend(
 void CacheStorageCache::InitGotCacheSize(const base::Closure& callback,
                                          CacheStorageError cache_create_error,
                                          int cache_size) {
+  // Now that we know the cache size either 1) the cache size should be unknown
+  // (which is why the size was calculated), or 2) it must match the current
+  // size. If the sizes aren't equal then there is a bug in how the cache size
+  // is saved in the store's index.
+  if (cache_size_ != CacheStorage::kSizeUnknown && cache_size_ != cache_size) {
+    // TODO(cmumford): Add UMA for this.
+    LOG(ERROR) << "Cache size/index mismatch";
+    DCHECK_EQ(cache_size_, cache_size);
+  }
   cache_size_ = cache_size;
   initializing_ = false;
   backend_state_ = (cache_create_error == CACHE_STORAGE_OK && backend_ &&
@@ -1378,6 +1403,9 @@ void CacheStorageCache::InitGotCacheSize(const base::Closure& callback,
 
   UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.InitBackendResult",
                             cache_create_error, CACHE_STORAGE_ERROR_LAST + 1);
+
+  if (cache_observer_)
+    cache_observer_->CacheSizeUpdated(this, cache_size_);
 
   callback.Run();
 }

@@ -282,7 +282,8 @@ class TestCacheStorageCache : public CacheStorageCache {
                           cache_storage,
                           request_context_getter,
                           quota_manager_proxy,
-                          blob_context),
+                          blob_context,
+                          0 /* cache_size */),
         delay_backend_creation_(false) {}
 
   void CreateBackend(const ErrorCallback& callback) override {

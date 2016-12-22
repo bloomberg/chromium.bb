@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
+#include "content/browser/cache_storage/cache_storage_cache_observer.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -33,6 +34,7 @@ class BlobStorageContext;
 
 namespace content {
 class CacheStorageCacheHandle;
+class CacheStorageIndex;
 class CacheStorageScheduler;
 
 // TODO(jkarlin): Constrain the total bytes used per origin.
@@ -40,14 +42,15 @@ class CacheStorageScheduler;
 // CacheStorage holds the set of caches for a given origin. It is
 // owned by the CacheStorageManager. This class expects to be run
 // on the IO thread. The asynchronous methods are executed serially.
-class CONTENT_EXPORT CacheStorage {
+class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
  public:
-  typedef std::vector<std::string> StringVector;
+  constexpr static int64_t kSizeUnknown = -1;
+
   typedef base::Callback<void(bool, CacheStorageError)> BoolAndErrorCallback;
   typedef base::Callback<void(std::unique_ptr<CacheStorageCacheHandle>,
                               CacheStorageError)>
       CacheAndErrorCallback;
-  using StringsCallback = base::Callback<void(const StringVector&)>;
+  using IndexCallback = base::Callback<void(const CacheStorageIndex&)>;
   using SizeCallback = base::Callback<void(int64_t)>;
 
   static const char kIndexFileName[];
@@ -86,8 +89,8 @@ class CONTENT_EXPORT CacheStorage {
   void DeleteCache(const std::string& cache_name,
                    const BoolAndErrorCallback& callback);
 
-  // Calls the callback with a vector of cache names (keys) available.
-  void EnumerateCaches(const StringsCallback& callback);
+  // Calls the callback with the cache index.
+  void EnumerateCaches(const IndexCallback& callback);
 
   // Calls match on the cache with the given |cache_name|.
   void MatchCache(const std::string& cache_name,
@@ -116,9 +119,13 @@ class CONTENT_EXPORT CacheStorage {
   void StartAsyncOperationForTesting();
   void CompleteAsyncOperationForTesting();
 
+  // CacheStorageCacheObserver:
+  void CacheSizeUpdated(const CacheStorageCache* cache, int64_t size) override;
+
  private:
   friend class CacheStorageCacheHandle;
   friend class CacheStorageCache;
+  friend class CacheStorageManagerTest;
   class CacheLoader;
   class MemoryLoader;
   class SimpleCacheLoader;
@@ -140,8 +147,7 @@ class CONTENT_EXPORT CacheStorage {
   // Initializer and its callback are below.
   void LazyInit();
   void LazyInitImpl();
-  void LazyInitDidLoadIndex(
-      std::unique_ptr<std::vector<std::string>> indexed_cache_names);
+  void LazyInitDidLoadIndex(std::unique_ptr<CacheStorageIndex> index);
 
   // The Open and CreateCache callbacks are below.
   void OpenCacheImpl(const std::string& cache_name,
@@ -162,8 +168,7 @@ class CONTENT_EXPORT CacheStorage {
   void DeleteCacheImpl(const std::string& cache_name,
                        const BoolAndErrorCallback& callback);
   void DeleteCacheDidWriteIndex(
-      const std::string& cache_name,
-      const StringVector& original_ordered_cache_names,
+      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
       const BoolAndErrorCallback& callback,
       bool success);
   void DeleteCacheFinalize(CacheStorageCache* doomed_cache);
@@ -172,7 +177,7 @@ class CONTENT_EXPORT CacheStorage {
   void DeleteCacheDidCleanUp(bool success);
 
   // The EnumerateCache callbacks are below.
-  void EnumerateCachesImpl(const StringsCallback& callback);
+  void EnumerateCachesImpl(const IndexCallback& callback);
 
   // The MatchCache callbacks are below.
   void MatchCacheImpl(const std::string& cache_name,
@@ -203,6 +208,20 @@ class CONTENT_EXPORT CacheStorage {
   void GetSizeThenCloseAllCachesImpl(const SizeCallback& callback);
 
   void SizeImpl(const SizeCallback& callback);
+  void SizeRetrievedFromCache(
+      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+      const base::Closure& closure,
+      int64_t* accumulator,
+      int64_t size);
+
+  void ScheduleWriteIndex();
+  void WriteIndex(const base::Callback<void(bool)>& callback);
+  void WriteIndexImpl(const base::Callback<void(bool)>& callback);
+  bool index_write_pending() const { return !index_write_task_.IsCancelled(); }
+  // Start a scheduled index write immediately. Returns true if a write was
+  // scheduled, or false if not.
+  bool InitiateScheduledIndexWriteForTest(
+      const base::Callback<void(bool)>& callback);
 
   // Whether or not we've loaded the list of cache names into memory.
   bool initialized_;
@@ -225,8 +244,8 @@ class CONTENT_EXPORT CacheStorage {
   // CacheStorageCacheHandle reference counts
   std::map<CacheStorageCache*, size_t> cache_handle_counts_;
 
-  // The names of caches in the order that they were created.
-  StringVector ordered_cache_names_;
+  // The cache index data.
+  std::unique_ptr<CacheStorageIndex> cache_index_;
 
   // The file path for this CacheStorage.
   base::FilePath origin_path_;
@@ -242,6 +261,8 @@ class CONTENT_EXPORT CacheStorage {
 
   // The origin that this CacheStorage is associated with.
   GURL origin_;
+
+  base::CancelableClosure index_write_task_;
 
   base::WeakPtrFactory<CacheStorage> weak_factory_;
 

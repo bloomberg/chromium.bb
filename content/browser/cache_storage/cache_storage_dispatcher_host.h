@@ -15,6 +15,7 @@
 
 #include "base/macros.h"
 #include "content/browser/cache_storage/cache_storage.h"
+#include "content/browser/cache_storage/cache_storage_index.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace url {
@@ -111,7 +112,7 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
                                     CacheStorageError error);
   void OnCacheStorageKeysCallback(int thread_id,
                                   int request_id,
-                                  const std::vector<std::string>& strings);
+                                  const CacheStorageIndex& cache_index);
   void OnCacheStorageMatchCallback(
       int thread_id,
       int request_id,

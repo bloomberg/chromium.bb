@@ -62,6 +62,13 @@ reference.
 3. Owned by `CacheStorage` and deleted either when `CacheStorage` deletes or
    when the last `CacheStorageCacheHandle` for the cache is gone.
 
+### CacheStorageIndex
+1. Manages an ordered collection of metadata
+   (CacheStorageIndex::CacheStorageMetadata) for each CacheStorageCache owned
+   by a given CacheStorage instance.
+2. Is serialized by CacheStorage::CacheLoader (WriteIndex/LoadIndex) as a
+   Protobuf file.
+
 ### CacheStorageCacheHandle
 1. Holds a weak reference to a `CacheStorageCache`.
 2. When the last `CacheStorageCacheHandle` to a `CacheStorageCache` is

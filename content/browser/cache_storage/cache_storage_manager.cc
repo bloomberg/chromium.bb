@@ -8,7 +8,6 @@
 
 #include <map>
 #include <set>
-#include <string>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -51,8 +50,21 @@ void DeleteOriginDidDeleteDir(
                                          : storage::kQuotaErrorAbort));
 }
 
-// Open the various cache directories' index files and extract their origins and
-// last modified times.
+// Calculate the sum of all cache sizes in this store, but only if all sizes are
+// known. If one or more sizes are not known then return kSizeUnknown.
+int64_t GetCacheStorageSize(const proto::CacheStorageIndex& index) {
+  int64_t storage_size = 0;
+  for (int i = 0, max = index.cache_size(); i < max; ++i) {
+    const proto::CacheStorageIndex::Cache& cache = index.cache(i);
+    if (!cache.has_size() || cache.size() == CacheStorage::kSizeUnknown)
+      return CacheStorage::kSizeUnknown;
+    storage_size += cache.size();
+  }
+  return storage_size;
+}
+
+// Open the various cache directories' index files and extract their origins,
+// sizes (if current), and last modified times.
 void ListOriginsAndLastModifiedOnTaskRunner(
     std::vector<CacheStorageUsageInfo>* usages,
     base::FilePath root_path) {
@@ -61,16 +73,23 @@ void ListOriginsAndLastModifiedOnTaskRunner(
 
   base::FilePath path;
   while (!(path = file_enum.Next()).empty()) {
+    base::FilePath index_path = path.AppendASCII(CacheStorage::kIndexFileName);
+    base::File::Info file_info;
+    base::Time index_last_modified;
+    if (GetFileInfo(index_path, &file_info))
+      index_last_modified = file_info.last_modified;
     std::string protobuf;
     base::ReadFileToString(path.AppendASCII(CacheStorage::kIndexFileName),
                            &protobuf);
     proto::CacheStorageIndex index;
     if (index.ParseFromString(protobuf)) {
       if (index.has_origin()) {
-        base::File::Info file_info;
         if (base::GetFileInfo(path, &file_info)) {
+          int64_t storage_size = CacheStorage::kSizeUnknown;
+          if (file_info.last_modified < index_last_modified)
+            storage_size = GetCacheStorageSize(index);
           usages->push_back(CacheStorageUsageInfo(
-              GURL(index.origin()), 0 /* size */, file_info.last_modified));
+              GURL(index.origin()), storage_size, file_info.last_modified));
         }
       }
     }
@@ -117,6 +136,7 @@ void OneOriginSizeReported(const base::Closure& callback,
                            int64_t size) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  DCHECK_NE(size, CacheStorage::kSizeUnknown);
   usage->total_size_bytes = size;
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
@@ -186,7 +206,7 @@ void CacheStorageManager::DeleteCache(
 
 void CacheStorageManager::EnumerateCaches(
     const GURL& origin,
-    const CacheStorage::StringsCallback& callback) {
+    const CacheStorage::IndexCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
@@ -276,6 +296,10 @@ void CacheStorageManager::GetAllOriginsUsageGetSizes(
                  callback));
 
   for (CacheStorageUsageInfo& usage : *usages_ptr) {
+    if (usage.total_size_bytes != CacheStorage::kSizeUnknown) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, barrier_closure);
+      continue;
+    }
     CacheStorage* cache_storage = FindOrCreateCacheStorage(usage.origin);
     cache_storage->Size(
         base::Bind(&OneOriginSizeReported, barrier_closure, &usage));

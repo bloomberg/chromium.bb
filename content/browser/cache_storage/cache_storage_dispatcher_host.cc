@@ -389,10 +389,10 @@ void CacheStorageDispatcherHost::OnCacheStorageDeleteCallback(
 void CacheStorageDispatcherHost::OnCacheStorageKeysCallback(
     int thread_id,
     int request_id,
-    const std::vector<std::string>& strings) {
+    const CacheStorageIndex& cache_index) {
   std::vector<base::string16> string16s;
-  for (size_t i = 0, max = strings.size(); i < max; ++i)
-    string16s.push_back(base::UTF8ToUTF16(strings[i]));
+  for (const auto& metadata : cache_index.ordered_cache_metadata())
+    string16s.push_back(base::UTF8ToUTF16(metadata.name));
   Send(new CacheStorageMsg_CacheStorageKeysSuccess(thread_id, request_id,
                                                    string16s));
 }
