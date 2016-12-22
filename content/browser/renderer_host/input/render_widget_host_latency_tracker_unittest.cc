@@ -91,6 +91,49 @@ class RenderWidgetHostLatencyTrackerTest
     ResetHistograms();
   }
 
+  ::testing::AssertionResult RapporSampleAssert(const char* rappor_name,
+                                                int count) {
+    rappor::TestSample::Shadow* sample_obj =
+        test_browser_client_.getTestRapporService()->GetRecordedSampleForMetric(
+            rappor_name);
+    if (count) {
+      if (!sample_obj)
+        return ::testing::AssertionFailure()
+               << rappor_name << " rappor sample should not be null";
+
+      const auto& domain_it = sample_obj->string_fields.find("Domain");
+      if (domain_it == sample_obj->string_fields.end())
+        return ::testing::AssertionFailure()
+               << rappor_name << " rappor sample should contain the string "
+                                 "attribute \"Domain\"";
+      const auto& domain = domain_it->second;
+      if (domain != "bar.com")
+        return ::testing::AssertionFailure()
+               << rappor_name << " rappor expected bar.com domain but had "
+               << domain << " domain";
+
+      const auto& latency_it = sample_obj->uint64_fields.find("Latency");
+      if (latency_it == sample_obj->uint64_fields.end())
+        return ::testing::AssertionFailure()
+               << rappor_name << " rappor sample should contain the uint64 "
+                                 "attribute \"Latency\"";
+      const auto& latency_noise = latency_it->second.second;
+      if (latency_noise != rappor::NO_NOISE)
+        return ::testing::AssertionFailure()
+               << rappor_name
+               << " rappor expected rappor::NO_NOISE latency but had "
+               << latency_noise << " latency";
+
+      return ::testing::AssertionSuccess();
+    } else {
+      if (!sample_obj)
+        return ::testing::AssertionSuccess();
+      else
+        return ::testing::AssertionFailure() << rappor_name
+                                             << " rappor sample should be null";
+    }
+  }
+
   ::testing::AssertionResult HistogramSizeEq(const char* histogram_name,
                                              int size) {
     uint64_t histogram_size =
@@ -135,6 +178,8 @@ class RenderWidgetHostLatencyTrackerTest
 };
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
+  const GURL url("http://www.foo.bar.com/subpage/1");
+  contents()->NavigateAndCommit(url);
   for (bool rendering_on_main : {false, true}) {
     for (bool is_running_navigation_hint_task : {false, true}) {
       ResetHistograms();
@@ -160,6 +205,24 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
                                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
         tracker()->OnFrameSwapped(wheel_latency,
                                   is_running_navigation_hint_task);
+
+        // Rappor metrics.
+        EXPECT_TRUE(
+            RapporSampleAssert("Event.Latency.ScrollUpdate.Touch."
+                               "TimeToScrollUpdateSwapBegin2",
+                               0));
+        EXPECT_TRUE(
+            RapporSampleAssert("Event.Latency.ScrollBegin.Touch."
+                               "TimeToScrollUpdateSwapBegin2",
+                               0));
+        EXPECT_TRUE(
+            RapporSampleAssert("Event.Latency.ScrollBegin.Wheel."
+                               "TimeToScrollUpdateSwapBegin2",
+                               2));
+        EXPECT_EQ(
+            2, test_browser_client_.getTestRapporService()->GetReportsCount());
+
+        // UMA histograms.
         EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelUI", 1));
         EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelAcked", 1));
 
@@ -289,6 +352,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
 }
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
+  const GURL url("http://www.foo.bar.com/subpage/1");
+  contents()->NavigateAndCommit(url);
   for (bool rendering_on_main : {false, true}) {
     for (bool is_running_navigation_hint_task : {false, true}) {
       ResetHistograms();
@@ -338,6 +403,23 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
                                   is_running_navigation_hint_task);
       }
 
+      // Rappor metrics.
+      EXPECT_TRUE(
+          RapporSampleAssert("Event.Latency.ScrollUpdate.Touch."
+                             "TimeToScrollUpdateSwapBegin2",
+                             0));
+      EXPECT_TRUE(
+          RapporSampleAssert("Event.Latency.ScrollBegin.Touch."
+                             "TimeToScrollUpdateSwapBegin2",
+                             2));
+      EXPECT_TRUE(
+          RapporSampleAssert("Event.Latency.ScrollBegin.Wheel."
+                             "TimeToScrollUpdateSwapBegin2",
+                             0));
+      EXPECT_EQ(2,
+                test_browser_client_.getTestRapporService()->GetReportsCount());
+
+      // UMA histograms.
       EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.TouchUI", 1));
       EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.TouchAcked", 1));
       EXPECT_TRUE(HistogramSizeEq(
@@ -472,24 +554,23 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
                                   is_running_navigation_hint_task);
       }
 
-      // Rappor metrics
-      rappor::TestSample::Shadow* sample_obj =
-          test_browser_client_.getTestRapporService()
-              ->GetRecordedSampleForMetric(
-                  "Event.Latency.ScrollUpdate.Touch."
-                  "TimeToScrollUpdateSwapBegin2");
-      EXPECT_NE(nullptr, sample_obj);
-      const auto& domain_it = sample_obj->string_fields.find("Domain");
-      EXPECT_NE(domain_it, sample_obj->string_fields.end());
-      EXPECT_EQ("bar.com", domain_it->second);
-      const auto& latency_it = sample_obj->uint64_fields.find("Latency");
-      EXPECT_NE(latency_it, sample_obj->uint64_fields.end());
-      EXPECT_EQ(rappor::NO_NOISE, latency_it->second.second);
-
+      // Rappor metrics.
+      EXPECT_TRUE(
+          RapporSampleAssert("Event.Latency.ScrollUpdate.Touch."
+                             "TimeToScrollUpdateSwapBegin2",
+                             2));
+      EXPECT_TRUE(
+          RapporSampleAssert("Event.Latency.ScrollBegin.Touch."
+                             "TimeToScrollUpdateSwapBegin2",
+                             0));
+      EXPECT_TRUE(
+          RapporSampleAssert("Event.Latency.ScrollBegin.Wheel."
+                             "TimeToScrollUpdateSwapBegin2",
+                             0));
       EXPECT_EQ(2,
                 test_browser_client_.getTestRapporService()->GetReportsCount());
 
-      // UMA histograms
+      // UMA histograms.
       EXPECT_TRUE(HistogramSizeEq(
           "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2", 0));
       EXPECT_TRUE(HistogramSizeEq(

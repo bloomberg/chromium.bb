@@ -101,6 +101,22 @@ void UpdateLatencyCoordinates(const WebInputEvent& event,
   DCHECK(!end.last_event_time.is_null());    \
   DCHECK_GE(end.last_event_time, start.first_event_time);
 
+// Touch/wheel to scroll latency using Rappor.
+#define RAPPOR_TOUCH_WHEEL_TO_SCROLL_LATENCY(delegate, name, start, end) \
+  CONFIRM_VALID_TIMING(start, end)                                       \
+  rappor::RapporService* rappor_service =                                \
+      GetContentClient()->browser()->GetRapporService();                 \
+  if (rappor_service && delegate) {                                      \
+    std::unique_ptr<rappor::Sample> sample =                             \
+        rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE);           \
+    delegate->AddDomainInfoToRapporSample(sample.get());                 \
+    sample->SetUInt64Field(                                              \
+        "Latency",                                                       \
+        (end.last_event_time - start.first_event_time).InMicroseconds(), \
+        rappor::NO_NOISE);                                               \
+    rappor_service->RecordSample(name, std::move(sample));               \
+  }
+
 // Touch/wheel to scroll latency that is mostly under 1 second.
 #define UMA_HISTOGRAM_TOUCH_WHEEL_TO_SCROLL_LATENCY(name, start, end)         \
   CONFIRM_VALID_TIMING(start, end)                                            \
@@ -248,6 +264,7 @@ void ComputeTouchAndWheelScrollLatencyHistograms(
     const ui::LatencyInfo& latency,
     const std::string event_type_name) {
   DCHECK(!latency.coalesced());
+  DCHECK(event_type_name == "Touch" || event_type_name == "Wheel");
   if (latency.coalesced())
     return;
 
@@ -262,6 +279,12 @@ void ComputeTouchAndWheelScrollLatencyHistograms(
     // scroll event's underlying touch/wheel event.
 
     UMA_HISTOGRAM_TOUCH_WHEEL_TO_SCROLL_LATENCY(
+        "Event.Latency.ScrollBegin." + event_type_name +
+            ".TimeToScrollUpdateSwapBegin2",
+        original_component, gpu_swap_begin_component);
+
+    RAPPOR_TOUCH_WHEEL_TO_SCROLL_LATENCY(
+        render_widget_host_delegate,
         "Event.Latency.ScrollBegin." + event_type_name +
             ".TimeToScrollUpdateSwapBegin2",
         original_component, gpu_swap_begin_component);
@@ -284,21 +307,10 @@ void ComputeTouchAndWheelScrollLatencyHistograms(
               ".TimeToScrollUpdateSwapBegin2",
           original_component, gpu_swap_begin_component);
 
-      rappor::RapporService* rappor_service =
-          GetContentClient()->browser()->GetRapporService();
-      if (rappor_service && render_widget_host_delegate) {
-        std::unique_ptr<rappor::Sample> sample =
-            rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE);
-        render_widget_host_delegate->AddDomainInfoToRapporSample(sample.get());
-        sample->SetUInt64Field("Latency",
-                               (gpu_swap_begin_component.last_event_time -
-                                original_component.first_event_time)
-                                   .InMicroseconds(),
-                               rappor::NO_NOISE);
-        rappor_service->RecordSample(
-            "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin2",
-            std::move(sample));
-      }
+      RAPPOR_TOUCH_WHEEL_TO_SCROLL_LATENCY(
+          render_widget_host_delegate,
+          "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin2",
+          original_component, gpu_swap_begin_component);
     }
   } else {
     // No original component found.
