@@ -58,9 +58,9 @@ bool EmbeddedWorkerDispatcher::OnMessageReceived(
 
 void EmbeddedWorkerDispatcher::WorkerContextDestroyed(
     int embedded_worker_id) {
-  UnregisterWorker(embedded_worker_id);
   RenderThreadImpl::current()->thread_safe_sender()->Send(
       new EmbeddedWorkerHostMsg_WorkerStopped(embedded_worker_id));
+  UnregisterWorker(embedded_worker_id);
 }
 
 void EmbeddedWorkerDispatcher::OnStartWorker(

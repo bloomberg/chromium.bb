@@ -28,12 +28,18 @@ void EmbeddedWorkerInstanceClientImpl::Create(
 void EmbeddedWorkerInstanceClientImpl::StopWorkerCompleted() {
   DCHECK(embedded_worker_id_);
   DCHECK(stop_callback_);
-  dispatcher_->UnregisterWorker(embedded_worker_id_.value());
-  embedded_worker_id_.reset();
-  stop_callback_.Run();
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StopWorkerCompleted");
+  // TODO(falken): The signals to the browser should be in the order:
+  // (1) WorkerStopped (via stop_callback_)
+  // (2) ProviderDestroyed (via UnregisterWorker destroying
+  //     WebEmbeddedWorkerImpl)
+  // But this ordering is currently not guaranteed since the Mojo pipes are
+  // different. https://crbug.com/676526
+  stop_callback_.Run();
   stop_callback_.Reset();
+  dispatcher_->UnregisterWorker(embedded_worker_id_.value());
+  embedded_worker_id_.reset();
   wrapper_ = nullptr;
 }
 
