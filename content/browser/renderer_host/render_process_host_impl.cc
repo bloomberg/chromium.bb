@@ -883,17 +883,19 @@ bool RenderProcessHostImpl::Init() {
   } else {
     // Build command line for renderer.  We call AppendRendererCommandLine()
     // first so the process type argument will appear first.
-    base::CommandLine* cmd_line = new base::CommandLine(renderer_path);
+    std::unique_ptr<base::CommandLine> cmd_line =
+        base::MakeUnique<base::CommandLine>(renderer_path);
     if (!renderer_prefix.empty())
       cmd_line->PrependWrapper(renderer_prefix);
-    AppendRendererCommandLine(cmd_line);
+    AppendRendererCommandLine(cmd_line.get());
 
     // Spawn the child process asynchronously to avoid blocking the UI thread.
     // As long as there's no renderer prefix, we can use the zygote process
     // at this stage.
     child_process_launcher_.reset(new ChildProcessLauncher(
-        new RendererSandboxedProcessLauncherDelegate(), cmd_line, GetID(), this,
-        child_token_, base::Bind(&RenderProcessHostImpl::OnMojoError, id_)));
+        base::MakeUnique<RendererSandboxedProcessLauncherDelegate>(),
+        std::move(cmd_line), GetID(), this, child_token_,
+        base::Bind(&RenderProcessHostImpl::OnMojoError, id_)));
     channel_->Pause();
 
     fast_shutdown_started_ = false;

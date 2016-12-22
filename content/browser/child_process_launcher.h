@@ -76,8 +76,8 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
   // is encountered when processing messages from the child process. This
   // callback must be safe to call from any thread.
   ChildProcessLauncher(
-      SandboxedProcessLauncherDelegate* delegate,
-      base::CommandLine* cmd_line,
+      std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
+      std::unique_ptr<base::CommandLine> cmd_line,
       int child_process_id,
       Client* client,
       const std::string& mojo_child_token,
@@ -115,8 +115,8 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
 
  private:
   // Posts a task to the launcher thread to do the actual work.
-  void Launch(SandboxedProcessLauncherDelegate* delegate,
-              base::CommandLine* cmd_line,
+  void Launch(std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
+              std::unique_ptr<base::CommandLine> cmd_line,
               int child_process_id);
 
   void UpdateTerminationStatus(bool known_dead);

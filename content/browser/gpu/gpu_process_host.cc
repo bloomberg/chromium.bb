@@ -206,7 +206,8 @@ void SendGpuProcessMessageByHostId(int host_id, IPC::Message* message) {
 class GpuSandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
  public:
-  explicit GpuSandboxedProcessLauncherDelegate(base::CommandLine* cmd_line)
+  explicit GpuSandboxedProcessLauncherDelegate(
+      const base::CommandLine& cmd_line)
 #if defined(OS_WIN)
       : cmd_line_(cmd_line)
 #endif
@@ -217,7 +218,7 @@ class GpuSandboxedProcessLauncherDelegate
 
 #if defined(OS_WIN)
   bool ShouldSandbox() override {
-    bool sandbox = !cmd_line_->HasSwitch(switches::kDisableGpuSandbox);
+    bool sandbox = !cmd_line_.HasSwitch(switches::kDisableGpuSandbox);
     if (!sandbox) {
       DVLOG(1) << "GPU sandbox is disabled";
     }
@@ -234,12 +235,12 @@ class GpuSandboxedProcessLauncherDelegate
   // desktop.
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
     if (base::win::GetVersion() > base::win::VERSION_XP) {
-      if (cmd_line_->GetSwitchValueASCII(switches::kUseGL) ==
+      if (cmd_line_.GetSwitchValueASCII(switches::kUseGL) ==
           gl::kGLImplementationDesktopName) {
         // Open GL path.
         policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                               sandbox::USER_LIMITED);
-        SetJobLevel(*cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
+        SetJobLevel(cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
         policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
       } else {
         policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
@@ -251,7 +252,7 @@ class GpuSandboxedProcessLauncherDelegate
         // turn blocks on the browser UI thread. So, instead we forgo a window
         // message pump entirely and just add job restrictions to prevent child
         // processes.
-        SetJobLevel(*cmd_line_,
+        SetJobLevel(cmd_line_,
                     sandbox::JOB_LIMITED_USER,
                     JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
                     JOB_OBJECT_UILIMIT_DESKTOP |
@@ -262,7 +263,7 @@ class GpuSandboxedProcessLauncherDelegate
         policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
       }
     } else {
-      SetJobLevel(*cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
+      SetJobLevel(cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
       policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
                             sandbox::USER_LIMITED);
     }
@@ -279,7 +280,7 @@ class GpuSandboxedProcessLauncherDelegate
     // Block this DLL even if it is not loaded by the browser process.
     policy->AddDllToUnload(L"cmsetac.dll");
 
-    if (cmd_line_->HasSwitch(switches::kEnableLogging)) {
+    if (cmd_line_.HasSwitch(switches::kEnableLogging)) {
       base::string16 log_file_path = logging::GetLogFileFullPath();
       if (!log_file_path.empty()) {
         result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
@@ -300,7 +301,7 @@ class GpuSandboxedProcessLauncherDelegate
 
  private:
 #if defined(OS_WIN)
-  base::CommandLine* cmd_line_;
+  base::CommandLine cmd_line_;
 #endif  // OS_WIN
 };
 
@@ -985,8 +986,8 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
   // crbug.com/447735. readlink("self/proc/exe") sometimes fails on Android
   // at startup with EACCES. As a workaround ignore this here, since the
   // executable name is actually not used or useful anyways.
-  base::CommandLine* cmd_line =
-      new base::CommandLine(base::CommandLine::NO_PROGRAM);
+  std::unique_ptr<base::CommandLine> cmd_line =
+      base::MakeUnique<base::CommandLine>(base::CommandLine::NO_PROGRAM);
 #else
 #if defined(OS_LINUX)
   int child_flags = gpu_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
@@ -999,12 +1000,13 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
   if (exe_path.empty())
     return false;
 
-  base::CommandLine* cmd_line = new base::CommandLine(exe_path);
+  std::unique_ptr<base::CommandLine> cmd_line =
+      base::MakeUnique<base::CommandLine>(exe_path);
 #endif
 
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
 
-  BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line);
+  BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line.get());
 
 #if defined(OS_WIN)
   cmd_line->AppendArg(switches::kPrefetchArgumentGpu);
@@ -1024,9 +1026,9 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
       switches::kGLSwitchesCopiedFromGpuProcessHostNumSwitches);
 
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
-      cmd_line, process_->GetData().id);
+      cmd_line.get(), process_->GetData().id);
 
-  GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line,
+  GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line.get(),
                                                           gpu_preferences);
   if (cmd_line->HasSwitch(switches::kUseGL)) {
     swiftshader_rendering_ =
@@ -1047,8 +1049,9 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
   if (!gpu_launcher.empty())
     cmd_line->PrependWrapper(gpu_launcher);
 
-  process_->Launch(new GpuSandboxedProcessLauncherDelegate(cmd_line), cmd_line,
-                   true);
+  std::unique_ptr<GpuSandboxedProcessLauncherDelegate> delegate =
+      base::MakeUnique<GpuSandboxedProcessLauncherDelegate>(*cmd_line);
+  process_->Launch(std::move(delegate), std::move(cmd_line), true);
   process_launched_ = true;
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",

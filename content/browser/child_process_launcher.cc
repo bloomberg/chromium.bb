@@ -115,14 +115,14 @@ void OnChildProcessStartedAndroid(const NotifyCallback& callback,
 }
 #endif
 
-void LaunchOnLauncherThread(const NotifyCallback& callback,
-                            BrowserThread::ID client_thread_id,
-                            int child_process_id,
-                            SandboxedProcessLauncherDelegate* delegate,
-                            mojo::edk::ScopedPlatformHandle client_handle,
-                            base::CommandLine* cmd_line) {
+void LaunchOnLauncherThread(
+    const NotifyCallback& callback,
+    BrowserThread::ID client_thread_id,
+    int child_process_id,
+    std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
+    mojo::edk::ScopedPlatformHandle client_handle,
+    std::unique_ptr<base::CommandLine> cmd_line) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
-  std::unique_ptr<SandboxedProcessLauncherDelegate> delegate_deleter(delegate);
 #if !defined(OS_ANDROID)
   ZygoteHandle zygote = nullptr;
   int launch_result = LAUNCH_RESULT_FAILURE;
@@ -134,7 +134,6 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
   base::EnvironmentMap env = delegate->GetEnvironment();
 #endif
-  std::unique_ptr<base::CommandLine> cmd_line_deleter(cmd_line);
   base::TimeTicks begin_launch_time = base::TimeTicks::Now();
 
   base::Process process;
@@ -152,8 +151,8 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
     cmd_line->AppendSwitchASCII(
         mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch,
         base::UintToString(base::win::HandleToUint32(handles[0])));
-    launch_result =
-        StartSandboxedProcess(delegate, cmd_line, handles, &process);
+    launch_result = StartSandboxedProcess(
+        delegate.get(), cmd_line.get(), handles, &process);
   }
 #elif defined(OS_POSIX)
   std::string process_type =
@@ -333,7 +332,7 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
     }
 
     // After updating the broker, release the lock and let the child's
-    // messasge be processed on the broker's thread.
+    // message be processed on the broker's thread.
     broker->GetLock().Release();
 #endif  // defined(OS_MACOSX)
   }
@@ -392,8 +391,8 @@ void SetProcessBackgroundedOnLauncherThread(base::Process process,
 }  // namespace
 
 ChildProcessLauncher::ChildProcessLauncher(
-    SandboxedProcessLauncherDelegate* delegate,
-    base::CommandLine* cmd_line,
+    std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
+    std::unique_ptr<base::CommandLine> cmd_line,
     int child_process_id,
     Client* client,
     const std::string& mojo_child_token,
@@ -416,7 +415,7 @@ ChildProcessLauncher::ChildProcessLauncher(
       weak_factory_(this) {
   DCHECK(CalledOnValidThread());
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
-  Launch(delegate, cmd_line, child_process_id);
+  Launch(std::move(delegate), std::move(cmd_line), child_process_id);
 }
 
 ChildProcessLauncher::~ChildProcessLauncher() {
@@ -430,9 +429,10 @@ ChildProcessLauncher::~ChildProcessLauncher() {
   }
 }
 
-void ChildProcessLauncher::Launch(SandboxedProcessLauncherDelegate* delegate,
-                                  base::CommandLine* cmd_line,
-                                  int child_process_id) {
+void ChildProcessLauncher::Launch(
+    std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
+    std::unique_ptr<base::CommandLine> cmd_line,
+    int child_process_id) {
   DCHECK(CalledOnValidThread());
 
 #if defined(OS_ANDROID)
@@ -458,7 +458,7 @@ void ChildProcessLauncher::Launch(SandboxedProcessLauncherDelegate* delegate,
   if (delegate->ShouldLaunchElevated()) {
     mojo::edk::NamedPlatformChannelPair named_pair;
     server_handle = named_pair.PassServerHandle();
-    named_pair.PrepareToPassClientHandleToChildProcess(cmd_line);
+    named_pair.PrepareToPassClientHandleToChildProcess(cmd_line.get());
   } else
 #endif
   {
@@ -473,8 +473,8 @@ void ChildProcessLauncher::Launch(SandboxedProcessLauncherDelegate* delegate,
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
       base::Bind(&LaunchOnLauncherThread, reply_callback, client_thread_id_,
-                 child_process_id, delegate,
-                 base::Passed(&client_handle), cmd_line));
+                 child_process_id, base::Passed(&delegate),
+                 base::Passed(&client_handle), base::Passed(&cmd_line)));
 }
 
 void ChildProcessLauncher::UpdateTerminationStatus(bool known_dead) {

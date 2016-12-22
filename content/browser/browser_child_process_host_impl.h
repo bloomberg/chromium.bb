@@ -69,8 +69,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 
   // BrowserChildProcessHost implementation:
   bool Send(IPC::Message* message) override;
-  void Launch(SandboxedProcessLauncherDelegate* delegate,
-              base::CommandLine* cmd_line,
+  void Launch(std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
+              std::unique_ptr<base::CommandLine> cmd_line,
               bool terminate_on_shutdown) override;
   const ChildProcessData& GetData() const override;
   ChildProcessHost* GetHost() const override;

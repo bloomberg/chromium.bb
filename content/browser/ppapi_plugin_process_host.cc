@@ -373,11 +373,12 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     return false;
   }
 
-  base::CommandLine* cmd_line = new base::CommandLine(exe_path);
+  std::unique_ptr<base::CommandLine> cmd_line =
+      base::MakeUnique<base::CommandLine>(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               is_broker_ ? switches::kPpapiBrokerProcess
                                          : switches::kPpapiPluginProcess);
-  BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line);
+  BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line.get());
 
 #if defined(OS_WIN)
   cmd_line->AppendArg(is_broker_ ? switches::kPrefetchArgumentPpapiBroker
@@ -436,8 +437,9 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   // On posix, never use the zygote for the broker. Also, only use the zygote if
   // we are not using a plugin launcher - having a plugin launcher means we need
   // to use another process instead of just forking the zygote.
-  process_->Launch(new PpapiPluginSandboxedProcessLauncherDelegate(is_broker_),
-                   cmd_line, true);
+  process_->Launch(
+      base::MakeUnique<PpapiPluginSandboxedProcessLauncherDelegate>(is_broker_),
+      std::move(cmd_line), true);
   return true;
 }
 

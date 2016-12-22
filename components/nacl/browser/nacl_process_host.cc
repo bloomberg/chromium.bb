@@ -577,8 +577,8 @@ bool NaClProcessHost::LaunchSelLdr() {
     return true;
   }
 #endif
-  process_->Launch(new NaClSandboxedProcessLauncherDelegate(),
-                   cmd_line.release(), true);
+  process_->Launch(base::MakeUnique<NaClSandboxedProcessLauncherDelegate>(),
+                   std::move(cmd_line), true);
   return true;
 }
 
