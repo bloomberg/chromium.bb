@@ -293,8 +293,6 @@ goog.require('__crWeb.message');
         'type': evt.type,
         'value': value
       };
-      if (evt.keyCode)
-        msg.keyCode = evt.keyCode;
       invokeOnHost_(msg);
     };
 

@@ -9,8 +9,6 @@
 
 namespace web {
 
-int WebStateObserver::kInvalidFormKeyCode = -1;
-
 WebStateObserver::WebStateObserver(WebState* web_state) : web_state_(nullptr) {
   Observe(web_state);
 }

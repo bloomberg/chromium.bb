@@ -239,11 +239,10 @@ void WebStateImpl::OnFormActivityRegistered(const std::string& form_name,
                                             const std::string& field_name,
                                             const std::string& type,
                                             const std::string& value,
-                                            int key_code,
                                             bool input_missing) {
   for (auto& observer : observers_) {
     observer.FormActivityRegistered(form_name, field_name, type, value,
-                                    key_code, input_missing);
+                                    input_missing);
   }
 }
 

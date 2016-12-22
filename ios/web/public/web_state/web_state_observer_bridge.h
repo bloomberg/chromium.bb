@@ -53,7 +53,6 @@ class GURL;
                                fieldName:(const std::string&)fieldName
                                     type:(const std::string&)type
                                    value:(const std::string&)value
-                                 keyCode:(int)keyCode
                             inputMissing:(BOOL)inputMissing;
 
 // Invoked by WebStateObserverBridge::FaviconUrlUpdated.
@@ -102,7 +101,6 @@ class WebStateObserverBridge : public web::WebStateObserver {
                               const std::string& field_name,
                               const std::string& type,
                               const std::string& value,
-                              int key_code,
                               bool input_missing) override;
   void FaviconUrlUpdated(const std::vector<FaviconURL>& candidates) override;
   void WebStateDestroyed() override;

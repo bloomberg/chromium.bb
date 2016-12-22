@@ -27,6 +27,7 @@
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
+#include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/test/web_test_with_web_controller.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
 #include "ios/web/web_state/blocked_popup_info.h"
@@ -769,6 +770,41 @@ TEST_F(CRWWebControllerNavigationTest, HTTPPassword) {
   [web_controller() didShowPasswordInputOnHTTP];
   EXPECT_TRUE(nav_manager.GetLastCommittedItem()->GetSSL().content_status &
               web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+// Real WKWebView is required for CRWWebControllerFormActivityTest.
+typedef web::WebTestWithWebController CRWWebControllerFormActivityTest;
+
+// Tests that keyup event correctly delivered to WebStateObserver.
+TEST_F(CRWWebControllerFormActivityTest, KeyUpEvent) {
+  // Observes and verifies FormActivityRegistered call.
+  class FormActivityObserver : public web::WebStateObserver {
+   public:
+    explicit FormActivityObserver(web::WebState* web_state)
+        : web::WebStateObserver(web_state) {}
+    bool form_activity_registered() const { return form_activity_registered_; }
+    // WebStateObserver overrides:
+    void FormActivityRegistered(const std::string& form_name,
+                                const std::string& field_name,
+                                const std::string& type,
+                                const std::string& value,
+                                bool input_missing) override {
+      EXPECT_EQ("keyup", type);
+      EXPECT_FALSE(input_missing);
+      form_activity_registered_ = true;
+    }
+
+   private:
+    bool form_activity_registered_ = false;
+  };
+  FormActivityObserver form_activity_observer(web_state());
+  FormActivityObserver& form_activity_observer_ref(form_activity_observer);
+
+  LoadHtml(@"<p></p>");
+  ExecuteJavaScript(@"document.dispatchEvent(new KeyboardEvent('keyup'));");
+  base::test::ios::WaitUntilCondition(^{
+    return form_activity_observer_ref.form_activity_registered();
+  });
 }
 
 // Real WKWebView is required for CRWWebControllerJSExecutionTest.

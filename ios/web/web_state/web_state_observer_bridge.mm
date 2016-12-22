@@ -85,14 +85,12 @@ void WebStateObserverBridge::FormActivityRegistered(
     const std::string& field_name,
     const std::string& type,
     const std::string& value,
-    int key_code,
     bool input_missing) {
   SEL selector = @selector(webState:
       didRegisterFormActivityWithFormNamed:
                                  fieldName:
                                       type:
                                      value:
-                                   keyCode:
                               inputMissing:);
   if ([observer_ respondsToSelector:selector]) {
     [observer_ webState:web_state()
@@ -100,7 +98,6 @@ void WebStateObserverBridge::FormActivityRegistered(
                                    fieldName:field_name
                                         type:type
                                        value:value
-                                     keyCode:key_code
                                 inputMissing:input_missing];
   }
 }

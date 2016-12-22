@@ -275,8 +275,6 @@ class PasswordGenerationAgentTest : public web::WebTestWithWebState {
                                    fieldName:base::SysNSStringToUTF8(field_name)
                                         type:base::SysNSStringToUTF8(type)
                                        value:""
-                                     keyCode:web::WebStateObserver::
-                                                 kInvalidFormKeyCode
                                 inputMissing:false];
   }
 

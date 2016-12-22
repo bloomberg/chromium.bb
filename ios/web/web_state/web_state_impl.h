@@ -114,7 +114,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                                 const std::string& field_name,
                                 const std::string& type,
                                 const std::string& value,
-                                int key_code,
                                 bool input_missing);
 
   // Called when new FaviconURL candidates are received.

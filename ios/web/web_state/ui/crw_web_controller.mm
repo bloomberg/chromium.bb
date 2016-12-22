@@ -2903,7 +2903,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   std::string fieldName;
   std::string type;
   std::string value;
-  int keyCode = web::WebStateObserver::kInvalidFormKeyCode;
   bool inputMissing = false;
   if (!message->GetString("formName", &formName) ||
       !message->GetString("fieldName", &fieldName) ||
@@ -2912,14 +2911,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     inputMissing = true;
   }
 
-  double keyCodeAsDouble = 0;
-  if (!message->GetDouble("keyCode", &keyCodeAsDouble) || keyCodeAsDouble < 0) {
-    keyCode = web::WebStateObserver::kInvalidFormKeyCode;
-  } else {
-    keyCode = static_cast<int>(keyCodeAsDouble);
-  }
   _webStateImpl->OnFormActivityRegistered(formName, fieldName, type, value,
-                                          keyCode, inputMissing);
+                                          inputMissing);
   return YES;
 }
 

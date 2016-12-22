@@ -285,8 +285,6 @@ TEST_F(FormSuggestionControllerTest,
                                  fieldName:"field"
                                       type:"type"
                                      value:"value"
-                                   keyCode:web::WebStateObserver::
-                                               kInvalidFormKeyCode
                               inputMissing:false];
   EXPECT_TRUE(GetSuggestionView(input_accessory_view_));
 
@@ -303,8 +301,6 @@ TEST_F(FormSuggestionControllerTest, FormActivityBlurShouldBeIgnored) {
                                  fieldName:"field"
                                       type:"blur"  // blur!
                                      value:"value"
-                                   keyCode:web::WebStateObserver::
-                                               kInvalidFormKeyCode
                               inputMissing:false];
   EXPECT_FALSE(GetSuggestionView(input_accessory_view_));
 }
@@ -320,8 +316,6 @@ TEST_F(FormSuggestionControllerTest,
                                  fieldName:"field"
                                       type:"type"
                                      value:"value"
-                                   keyCode:web::WebStateObserver::
-                                               kInvalidFormKeyCode
                               inputMissing:false];
 
   // The suggestions accessory view should be empty.
@@ -348,8 +342,6 @@ TEST_F(FormSuggestionControllerTest,
                                  fieldName:"field"
                                       type:"type"
                                      value:"value"
-                                   keyCode:web::WebStateObserver::
-                                               kInvalidFormKeyCode
                               inputMissing:false];
 
   // The providers should each be asked if they have suggestions for the
@@ -397,8 +389,6 @@ TEST_F(FormSuggestionControllerTest,
                                  fieldName:"field"
                                       type:"type"
                                      value:"value"
-                                   keyCode:web::WebStateObserver::
-                                               kInvalidFormKeyCode
                               inputMissing:false];
 
   // Since the first provider has suggestions available, it and only it
@@ -436,8 +426,6 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
                                  fieldName:"field"
                                       type:"type"
                                      value:"value"
-                                   keyCode:web::WebStateObserver::
-                                               kInvalidFormKeyCode
                               inputMissing:false];
 
   // Selecting a suggestion should notify the delegate.

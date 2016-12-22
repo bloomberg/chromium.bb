@@ -693,7 +693,6 @@ void GetFormAndField(autofill::FormData* form,
                                fieldName:(const std::string&)fieldName
                                     type:(const std::string&)type
                                    value:(const std::string&)value
-                                 keyCode:(int)keyCode
                             inputMissing:(BOOL)inputMissing {
   if (!browserState_->GetPrefs()->GetBoolean(autofill::prefs::kAutofillEnabled))
     return;
