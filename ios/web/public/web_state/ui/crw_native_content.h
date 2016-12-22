@@ -85,6 +85,9 @@
 // Called when a snapshot of the content will be taken.
 - (void)willUpdateSnapshot;
 
+// Notifies the CRWNativeContent that it will be removed from superview.
+- (void)willBeDismissed;
+
 // The URL that will be displayed to the user when presenting this native
 // content.
 - (GURL)virtualURL;

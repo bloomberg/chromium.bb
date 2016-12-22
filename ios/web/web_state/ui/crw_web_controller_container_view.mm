@@ -172,6 +172,9 @@
 - (void)setNativeController:(id<CRWNativeContent>)nativeController {
   if (![_nativeController isEqual:nativeController]) {
     base::WeakNSProtocol<id> oldController(_nativeController);
+    if ([oldController respondsToSelector:@selector(willBeDismissed)]) {
+      [oldController willBeDismissed];
+    }
     [[oldController view] removeFromSuperview];
     _nativeController.reset([nativeController retain]);
     // TODO(crbug.com/503297): Re-enable this DCHECK once native controller
