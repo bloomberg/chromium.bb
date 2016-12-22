@@ -68,65 +68,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
         ['win', 'amd'], bug=483282) # owner:jmadill
 
-    # Failing due to the 16.12.1 driver upgrade
-    self.Fail('conformance2/textures/canvas/tex-3d-rgb16f-rgb-float.html',
-        ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
-        ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-3d-rgb8-rgb-unsigned_byte.html', ['win', 'amd', 'd3d11'],
-        bug=676333)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-3d-rgb565-rgb-unsigned_byte.html', ['win', 'amd', 'd3d11'],
-        bug=676333)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-3d-rgb565-rgb-unsigned_short_5_6_5.html',
-        ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-3d-rgb32f-rgb-float.html', ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-3d-rgb16f-rgb-half_float.html', ['win', 'amd', 'd3d11'],
-        bug=676333)
-    self.Fail('conformance2/textures/image/' +
-        'tex-3d-rgb565-rgb-unsigned_byte.html', ['win', 'amd', 'd3d11'],
-        bug=676333)
-    self.Fail('conformance2/textures/image/tex-3d-rgb32f-rgb-float.html',
-        ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('conformance2/textures/image/' +
-        'tex-3d-rgb565-rgb-unsigned_short_5_6_5.html',
-        ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('conformance2/textures/image/tex-3d-rgb16f-rgb-float.html',
-        ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('conformance2/textures/image/' +
-        'tex-3d-srgb8-rgb-unsigned_byte.html', ['win', 'amd', 'd3d11'],
-        bug=676333)
-    self.Fail('conformance2/textures/image_data/' +
-        'tex-3d-rgb16f-rgb-half_float.html', ['win', 'amd', 'd3d11'],
-        bug=676333)
-    self.Fail('conformance2/textures/image_data/tex-3d-rgb32f-rgb-float.html',
-        ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('conformance2/textures/video/tex-3d-rgb8-rgb-unsigned_byte.html',
-        ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'basic_texsubimage3d_00.html', ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'basic_texsubimage3d_01.html', ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'basic_texsubimage3d_03.html', ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'basic_teximage3d_3d_00.html', ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'basic_teximage3d_3d_02.html', ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'basic_teximage3d_3d_03.html', ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'teximage3d_pbo_3d_01.html', ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('deqp/functional/gles3/texturefiltering/3d_formats_05.html',
-        ['win', 'amd', 'd3d11'], bug=676333)
-    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
-        ['win', 'amd', 'd3d11'], bug=676333)
-
     # Failing on old R5 230 configuration.
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texelfetchoffset.html',
