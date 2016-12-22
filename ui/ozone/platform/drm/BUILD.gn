@@ -6,7 +6,7 @@ import("//build/config/linux/pkg_config.gni")
 import("//ui/ozone/ozone.gni")
 
 declare_args() {
-  use_drm_atomic = false
+  use_drm_atomic = true
 }
 
 visibility = [ "//ui/ozone/*" ]

@@ -47,6 +47,9 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_switches.h"
+#endif
 #if defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
 #endif  // OS_MACOSX
@@ -768,6 +771,12 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     command_line->AppendSwitch(switches::kCreateDefaultGLContext);
   }
 
+#if defined(USE_OZONE)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDrmAtomic)) {
+    command_line->AppendSwitch(switches::kEnableDrmAtomic);
+  }
+#endif
 #if defined(OS_WIN)
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) &&
       gpu_preferences) {
