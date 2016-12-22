@@ -34,19 +34,6 @@ base::TimeDelta LevelDBWrapperImpl::RateLimiter::ComputeDelayNeeded(
 LevelDBWrapperImpl::CommitBatch::CommitBatch() : clear_all_first(false) {}
 LevelDBWrapperImpl::CommitBatch::~CommitBatch() {}
 
-size_t LevelDBWrapperImpl::CommitBatch::GetDataSize() const {
-  if (changed_values.empty())
-    return 0;
-
-  size_t count = 0;
-  for (const auto& pair : changed_values) {
-    count += pair.first.size();
-    if (pair.second)
-      count += pair.second->size();
-  }
-  return count;
-}
-
 LevelDBWrapperImpl::LevelDBWrapperImpl(
     leveldb::mojom::LevelDBDatabase* database,
     const std::string& prefix,
@@ -122,7 +109,7 @@ void LevelDBWrapperImpl::Put(const std::vector<uint8_t>& key,
 
   if (database_) {
     CreateCommitBatchIfNeeded();
-    commit_batch_->changed_values[key] = value;
+    commit_batch_->changed_keys.insert(key);
   }
 
   std::vector<uint8_t> old_value;
@@ -164,7 +151,7 @@ void LevelDBWrapperImpl::Delete(const std::vector<uint8_t>& key,
 
   if (database_) {
     CreateCommitBatchIfNeeded();
-    commit_batch_->changed_values[key] = base::nullopt;
+    commit_batch_->changed_keys.insert(std::move(found->first));
   }
 
   std::vector<uint8_t> old_value(std::move(found->second));
@@ -189,7 +176,7 @@ void LevelDBWrapperImpl::DeleteAll(const std::string& source,
   if (database_ && !map_->empty()) {
     CreateCommitBatchIfNeeded();
     commit_batch_->clear_all_first = true;
-    commit_batch_->changed_values.clear();
+    commit_batch_->changed_keys.clear();
   }
   map_->clear();
   bytes_used_ = 0;
@@ -325,11 +312,11 @@ base::TimeDelta LevelDBWrapperImpl::ComputeCommitDelay() const {
 
 void LevelDBWrapperImpl::CommitChanges() {
   DCHECK(database_);
+  DCHECK(map_);
   if (!commit_batch_)
     return;
 
   commit_rate_limiter_.add_samples(1);
-  data_rate_limiter_.add_samples(commit_batch_->GetDataSize());
 
   // Commit all our changes in a single batch.
   std::vector<leveldb::mojom::BatchedOperationPtr> operations;
@@ -340,21 +327,27 @@ void LevelDBWrapperImpl::CommitChanges() {
     item->key = prefix_;
     operations.push_back(std::move(item));
   }
-  for (auto& it : commit_batch_->changed_values) {
+  size_t data_size = 0;
+  for (const auto& key: commit_batch_->changed_keys) {
+    data_size += key.size();
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();
-    item->key.reserve(prefix_.size() + it.first.size());
+    item->key.reserve(prefix_.size() + key.size());
     item->key.insert(item->key.end(), prefix_.begin(), prefix_.end());
-    item->key.insert(item->key.end(), it.first.begin(), it.first.end());
-    if (!it.second) {
+    item->key.insert(item->key.end(), key.begin(), key.end());
+    auto it = map_->find(key);
+    if (it == map_->end()) {
       item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
     } else {
       item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
-      item->value = std::move(*(it.second));
+      item->value = it->second;
+      data_size += it->second.size();
     }
     operations.push_back(std::move(item));
   }
   commit_batch_.reset();
+
+  data_rate_limiter_.add_samples(data_size);
 
   ++commit_batches_in_flight_;
 

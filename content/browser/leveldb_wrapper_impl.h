@@ -55,8 +55,6 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   friend class LevelDBWrapperImplTest;
 
   using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
-  using ChangedValueMap =
-      std::map<std::vector<uint8_t>, base::Optional<std::vector<uint8_t>>>;
 
   // Used to rate limit commits.
   class RateLimiter {
@@ -83,11 +81,10 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
 
   struct CommitBatch {
     bool clear_all_first;
-    ChangedValueMap changed_values;
+    std::set<std::vector<uint8_t>> changed_keys;
 
     CommitBatch();
     ~CommitBatch();
-    size_t GetDataSize() const;
   };
 
   // LevelDBWrapperImpl:
