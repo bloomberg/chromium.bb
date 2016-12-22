@@ -433,6 +433,7 @@ bool SourceListDirective::parseScheme(const UChar* begin,
 //                   / "*"
 // host-char         = ALPHA / DIGIT / "-"
 //
+// static
 bool SourceListDirective::parseHost(
     const UChar* begin,
     const UChar* end,
@@ -447,29 +448,34 @@ bool SourceListDirective::parseHost(
 
   const UChar* position = begin;
 
+  // Parse "*" or [ "*." ].
   if (skipExactly<UChar>(position, end, '*')) {
     hostWildcard = CSPSource::HasWildcard;
 
-    if (position == end)
+    if (position == end) {
+      // "*"
       return true;
+    }
 
     if (!skipExactly<UChar>(position, end, '.'))
       return false;
   }
-
   const UChar* hostBegin = position;
 
+  // Parse 1*host-hcar.
+  if (!skipExactly<UChar, isHostCharacter>(position, end))
+    return false;
+  skipWhile<UChar, isHostCharacter>(position, end);
+
+  // Parse *( "." 1*host-char ).
   while (position < end) {
+    if (!skipExactly<UChar>(position, end, '.'))
+      return false;
     if (!skipExactly<UChar, isHostCharacter>(position, end))
       return false;
-
     skipWhile<UChar, isHostCharacter>(position, end);
-
-    if (position < end && !skipExactly<UChar>(position, end, '.'))
-      return false;
   }
 
-  DCHECK(position == end);
   host = String(hostBegin, end - hostBegin);
   return true;
 }

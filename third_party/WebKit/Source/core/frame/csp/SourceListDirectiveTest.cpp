@@ -1336,4 +1336,40 @@ TEST_F(SourceListDirectiveTest, GetSources) {
   }
 }
 
+TEST_F(SourceListDirectiveTest, ParseHost) {
+  struct TestCase {
+    String sources;
+    bool expected;
+  } cases[] = {
+      // Wildcard.
+      {"*", true},
+      {"*.", false},
+      {"*.a", true},
+      {"a.*.a", false},
+      {"a.*", false},
+
+      // Dots.
+      {"a.b.c", true},
+      {"a.b.", false},
+      {".b.c", false},
+      {"a..c", false},
+
+      // Valid/Invalid characters.
+      {"az09-", true},
+      {"+", false},
+  };
+
+  for (const auto& test : cases) {
+    String host;
+    CSPSource::WildcardDisposition disposition = CSPSource::NoWildcard;
+    Vector<UChar> characters;
+    test.sources.appendTo(characters);
+    const UChar* start = characters.data();
+    const UChar* end = start + characters.size();
+    EXPECT_EQ(test.expected,
+              SourceListDirective::parseHost(start, end, host, disposition))
+        << "SourceListDirective::parseHost fail to parse: " << test.sources;
+  }
+}
+
 }  // namespace blink

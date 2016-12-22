@@ -59,6 +59,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectNonces);
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectHashes);
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetSources);
+  FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, ParseHost);
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, GetSourceVector);
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, OperativeDirectiveGivenType);
 
@@ -71,10 +72,10 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
                    CSPSource::WildcardDisposition&,
                    CSPSource::WildcardDisposition&);
   bool parseScheme(const UChar* begin, const UChar* end, String& scheme);
-  bool parseHost(const UChar* begin,
-                 const UChar* end,
-                 String& host,
-                 CSPSource::WildcardDisposition&);
+  static bool parseHost(const UChar* begin,
+                        const UChar* end,
+                        String& host,
+                        CSPSource::WildcardDisposition&);
   bool parsePort(const UChar* begin,
                  const UChar* end,
                  int& port,
