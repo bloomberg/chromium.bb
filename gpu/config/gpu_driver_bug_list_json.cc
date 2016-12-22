@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.25",
+  "version": "9.26",
   "entries": [
     {
       "id": 1,
@@ -1739,7 +1739,11 @@ LONG_STRING_CONST(
       "description": "Mac Drivers store texture level parameters on int16_t that overflow",
       "cr_bugs": [610153],
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.12.2"
+        }
       },
       "features": [
         "use_shadowed_tex_level_params"
