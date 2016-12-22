@@ -394,11 +394,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HttpsPage) {
       false /* expect cert status error */);
 }
 
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1Broken) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1Certificate) {
   ASSERT_TRUE(https_server_.Start());
-  // The test server uses a long-lived cert by default, so a SHA1
-  // signature in it will register as a "broken" condition rather than
-  // "warning".
   SetUpMockCertVerifierForHttpsServer(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT,
                                       net::OK);
 
@@ -406,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1Broken) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::NONE, security_state::DEPRECATED_SHA1_MAJOR,
       security_state::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
 }
@@ -591,12 +588,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
 }
 
 // Same as the test above but with a long-lived SHA1 cert.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentWithBrokenSHA1) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
-  // The test server uses a long-lived cert by default, so a SHA1
-  // signature in it will register as a "broken" condition rather than
-  // "warning".
   SetUpMockCertVerifierForHttpsServer(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT,
                                       net::OK);
 
@@ -615,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentWithBrokenSHA1) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::NONE, security_state::DEPRECATED_SHA1_MAJOR,
       security_state::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
@@ -627,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentWithBrokenSHA1) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::NONE, security_state::DEPRECATED_SHA1_MAJOR,
       security_state::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
   // Load the insecure image.
@@ -638,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentWithBrokenSHA1) {
   EXPECT_TRUE(js_result);
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::NONE, security_state::DEPRECATED_SHA1_MAJOR,
       security_state::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 

@@ -171,9 +171,11 @@ SecurityLevel GetSecurityLevelForRequest(
   if (used_policy_installed_certificate)
     return SECURE_WITH_POLICY_INSTALLED_CERT;
 
-  if (sha1_status == DEPRECATED_SHA1_MAJOR)
-    return DANGEROUS;
-  if (sha1_status == DEPRECATED_SHA1_MINOR)
+  // In most cases, SHA1 use is treated as a certificate error, in which case
+  // DANGEROUS will have been returned above. If SHA1 is permitted, we downgrade
+  // the security level.
+  if (sha1_status == DEPRECATED_SHA1_MAJOR ||
+      sha1_status == DEPRECATED_SHA1_MINOR)
     return NONE;
 
   // Active mixed content is handled above.
