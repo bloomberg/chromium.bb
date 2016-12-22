@@ -122,11 +122,7 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
     OD_ASSERT(*ex_q16 < INT_MAX >> 1);
     e = ((2**ex_q16 >> 8) + (1 << shift >> 1)) >> shift;
     decay = OD_MAXI(2, OD_MINI(254, 256*e/(e + 256)));
-#if CONFIG_DAALA_EC
-    xs += laplace_decode_special(&r->ec, decay, (max == -1) ? -1 : ms - 15, ACCT_STR);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
+    xs += aom_laplace_decode_special(r, decay, (max == -1) ? -1 : ms - 15, ACCT_STR);
   }
   if (shift != 0) {
     int special;

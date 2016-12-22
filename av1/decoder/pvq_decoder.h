@@ -13,6 +13,7 @@
 
 #if !defined(_pvq_decoder_H)
 # define _pvq_decoder_H (1)
+# include "aom_dsp/bitreader.h"
 # include "aom_dsp/entdec.h"
 # include "av1/common/pvq.h"
 # include "av1/decoder/decint.h"
@@ -21,12 +22,13 @@ void aom_decode_band_pvq_splits(aom_reader *r, od_pvq_codeword_ctx *adapt,
  od_coeff *y, int n, int k, int level);
 
 #if OD_ACCOUNTING
-# define laplace_decode_special(dec, decay, max, str) od_laplace_decode_special_(dec, decay, max, str)
+# define aom_laplace_decode_special(r, decay, max, str) aom_laplace_decode_special_(r, decay, max, str)
 #else
-# define laplace_decode_special(dec, decay, max, str) od_laplace_decode_special_(dec, decay, max)
+# define aom_laplace_decode_special(r, decay, max, str) aom_laplace_decode_special_(r, decay, max)
 #endif
 
-int od_laplace_decode_special_(od_ec_dec *dec, unsigned decay, int max OD_ACC_STR);
+int aom_laplace_decode_special_(aom_reader *r, unsigned decay,
+ int max OD_ACC_STR);
 
 void od_pvq_decode(daala_dec_ctx *dec, od_coeff *ref, od_coeff *out, int q0,
  int pli, int bs, const od_val16 *beta, int robust, int is_keyframe,
