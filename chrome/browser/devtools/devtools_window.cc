@@ -1322,6 +1322,7 @@ void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
                                     NULL, NULL);
       break;
 
+    case DevToolsToggleAction::kShowElementsPanel:
     case DevToolsToggleAction::kShowConsolePanel:
     case DevToolsToggleAction::kShow:
     case DevToolsToggleAction::kToggle:
