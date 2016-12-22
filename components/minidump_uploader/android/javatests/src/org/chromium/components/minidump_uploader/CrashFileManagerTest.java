@@ -12,6 +12,7 @@ import android.support.test.filters.SmallTest;
 import android.test.MoreAsserts;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 import java.io.File;
@@ -401,6 +402,7 @@ public class CrashFileManagerTest extends CrashTestCase {
      */
     @SmallTest
     @Feature({"Android-AppBase"})
+    @DisabledTest(message = "crbug.com/676429")
     public void testMinidumpStorageRestrictionsGlobal() throws IOException {
         testMinidumpStorageRestrictions(false /* perUid */);
     }
