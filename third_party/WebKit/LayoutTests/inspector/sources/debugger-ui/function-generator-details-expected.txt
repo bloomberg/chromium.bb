@@ -14,6 +14,7 @@ iterNotStarted: type = object, subtype = generator
 lineNumber = 13
 columnNumber = 13
 script is valid: yes
+[[Scopes]] = Scopes[2]
 
 Running: testIterSuspended
 iterSuspended: type = object, subtype = generator
@@ -28,6 +29,7 @@ iterSuspended: type = object, subtype = generator
 lineNumber = 15
 columnNumber = 4
 script is valid: yes
+[[Scopes]] = Scopes[2]
 
 Running: testIterClosed
 iterClosed: type = object, subtype = generator
@@ -42,6 +44,7 @@ iterClosed: type = object, subtype = generator
 lineNumber = 13
 columnNumber = 13
 script is valid: yes
+[[Scopes]] = Scopes[2]
 
 Running: testIterObjGenerator
 iterObjGenerator: type = object, subtype = generator
@@ -56,6 +59,7 @@ iterObjGenerator: type = object, subtype = generator
 lineNumber = 24
 columnNumber = 8
 script is valid: yes
+[[Scopes]] = Scopes[2]
 
 Running: testAnonymousGenIter
 anonymousGenIter: type = object, subtype = generator
@@ -69,4 +73,5 @@ anonymousGenIter: type = object, subtype = generator
 lineNumber = 38
 columnNumber = 4
 script is valid: yes
+[[Scopes]] = Scopes[2]
 
