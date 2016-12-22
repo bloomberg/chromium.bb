@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/passwords/credential_item_button.h"
 
+#include "base/i18n/rtl.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
@@ -50,7 +51,8 @@ constexpr CGFloat kHorizontalPaddingBetweenAvatarAndLabel = 10;
   // in -drawImage, so it must be added when drawing the title.
   NSRect marginRect;
   NSDivideRect(frame, &marginRect, &frame, marginSpacing_, NSMinXEdge);
-  NSDivideRect(frame, &marginRect, &frame, imageTitleSpacing_, NSMinXEdge);
+  NSDivideRect(frame, &marginRect, &frame, imageTitleSpacing_,
+               base::i18n::IsRTL() ? NSMaxXEdge : NSMinXEdge);
   NSDivideRect(frame, &marginRect, &frame, marginSpacing_, NSMaxXEdge);
 
   return [super drawTitle:title withFrame:frame inView:controlView];
@@ -59,7 +61,10 @@ constexpr CGFloat kHorizontalPaddingBetweenAvatarAndLabel = 10;
 - (void)drawImage:(NSImage*)image
         withFrame:(NSRect)frame
            inView:(NSView*)controlView {
-  frame.origin.x = marginSpacing_;
+  if (base::i18n::IsRTL())
+    frame.origin.x -= marginSpacing_;
+  else
+    frame.origin.x += marginSpacing_;
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
   NSBezierPath* path = [NSBezierPath bezierPathWithOvalInRect:frame];
   [path addClip];
@@ -116,8 +121,7 @@ constexpr CGFloat kHorizontalPaddingBetweenAvatarAndLabel = 10;
                       .GetPrimaryFont()
                       .GetNativeFont()];
     [self setButtonType:NSMomentaryLightButton];
-    [self setImagePosition:NSImageLeft];
-    [self setAlignment:NSLeftTextAlignment];
+    [self setImagePosition:base::i18n::IsRTL() ? NSImageRight : NSImageLeft];
   }
   return self;
 }
