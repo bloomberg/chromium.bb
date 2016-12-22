@@ -13,6 +13,7 @@
 
 #if !defined(_pvq_encoder_H)
 # define _pvq_encoder_H (1)
+# include "aom_dsp/bitwriter.h"
 # include "aom_dsp/entenc.h"
 # include "av1/common/blockd.h"
 # include "av1/common/pvq.h"
@@ -30,7 +31,7 @@ void od_encode_quantizer_scaling(daala_enc_ctx *enc, int q_scaling, int bx,
  int by, int skip);
 #endif
 
-void pvq_encode_partition(od_ec_enc *ec,
+void pvq_encode_partition(aom_writer *w,
                                  int qg,
                                  int theta,
                                  int max_theta,
