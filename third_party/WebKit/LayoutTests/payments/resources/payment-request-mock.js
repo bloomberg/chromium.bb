@@ -7,24 +7,19 @@
 let paymentRequestMock = loadMojoModules(
     'paymentRequestMock',
     ['components/payments/payment_request.mojom',
-     'mojo/public/js/router',
+     'mojo/public/js/bindings',
     ]).then(mojo => {
-  let [paymentRequest, router] =  mojo.modules;
+  let [paymentRequest, bindings] =  mojo.modules;
 
   class PaymentRequestMock {
     constructor(interfaceProvider) {
       interfaceProvider.addInterfaceOverrideForTesting(
         paymentRequest.PaymentRequest.name,
-        handle => this.connectPaymentRequest_(handle));
+        handle => this.bindings_.addBinding(this, handle));
 
       this.interfaceProvider_ = interfaceProvider;
       this.pendingResponse_ = null;
-    }
-
-    connectPaymentRequest_(handle) {
-      this.paymentRequestStub_ = new paymentRequest.PaymentRequest.stubClass(this);
-      this.paymentRequestRouter_ = new router.Router(handle);
-      this.paymentRequestRouter_.setIncomingReceiver(this.paymentRequestStub_);
+      this.bindings_ = new bindings.BindingSet(paymentRequest.PaymentRequest);
     }
 
     init(client, supportedMethods, details, options) {

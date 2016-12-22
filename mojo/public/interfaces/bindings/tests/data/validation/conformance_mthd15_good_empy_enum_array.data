@@ -14,8 +14,9 @@
 
 [anchr]enum_array_0
 [dist4]enum_array_0_member  // num_bytes
-[u4]2                       // num_elements
-[u4]1
-[u4]0x5678                  // Unknown value is not allowed for non-extensible
-                            // enum.
+[u4]0                       // num_elements
 [anchr]enum_array_0_member
+
+[u8]0x5678                  // This is not part of the array above (which is
+                            // empty), so enum validation shouldn't be done on
+                            // it.

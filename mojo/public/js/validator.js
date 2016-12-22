@@ -109,7 +109,7 @@ define("mojo/public/js/validator", [
     return true;
   };
 
-  Validator.prototype.validateEnum = function(offset, enumClass, nullable) {
+  Validator.prototype.validateEnum = function(offset, enumClass) {
     // Note: Assumes that enums are always 32 bits! But this matches
     // mojom::generate::pack::PackedField::GetSizeForKind, so it should be okay.
     var value = this.message.buffer.getInt32(offset);
@@ -397,7 +397,8 @@ define("mojo/public/js/validator", [
           elementsOffset, numElements, elementType.cls, nullable,
           expectedDimensionSizes, currentDimension + 1);
     if (isEnumClass(elementType))
-      return this.validateEnum(elementsOffset, elementType.cls, nullable);
+      return this.validateEnumElements(elementsOffset, numElements,
+                                       elementType.cls);
 
     return validationError.NONE;
   };
@@ -465,6 +466,18 @@ define("mojo/public/js/validator", [
       var elementOffset = offset + i * elementSize;
       var err =
           this.validateStructPointer(elementOffset, structClass, nullable);
+      if (err != validationError.NONE)
+        return err;
+    }
+    return validationError.NONE;
+  };
+
+  Validator.prototype.validateEnumElements =
+      function(offset, numElements, enumClass) {
+    var elementSize = codec.Enum.prototype.encodedSize;
+    for (var i = 0; i < numElements; i++) {
+      var elementOffset = offset + i * elementSize;
+      var err = this.validateEnum(elementOffset, enumClass);
       if (err != validationError.NONE)
         return err;
     }

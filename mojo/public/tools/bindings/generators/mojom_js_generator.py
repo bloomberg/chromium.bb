@@ -234,9 +234,7 @@ def JavaScriptValidateArrayParams(field):
 
 
 def JavaScriptValidateEnumParams(field):
-  nullable = JavaScriptNullableParam(field)
-  enum_type = JavaScriptType(field.kind)
-  return "%s, %s" % (enum_type, nullable)
+  return JavaScriptType(field.kind)
 
 def JavaScriptValidateStructParams(field):
   nullable = JavaScriptNullableParam(field)
