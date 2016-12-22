@@ -16,7 +16,7 @@ group("media_router_perf_tests") {
     "telemetry/",
     "../../../third_party/catapult/",
     "../../../tools/perf/",
-    "../../../tools/variations/fieldtrial_util.py",
+    "../../../tools/variations/",
   ]
 }
 
