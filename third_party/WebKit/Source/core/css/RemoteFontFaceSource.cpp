@@ -218,7 +218,8 @@ PassRefPtr<SimpleFontData> RemoteFontFaceSource::createFontData(
       m_font->platformDataFromCustomData(fontDescription.effectiveFontSize(),
                                          fontDescription.isSyntheticBold(),
                                          fontDescription.isSyntheticItalic(),
-                                         fontDescription.orientation()),
+                                         fontDescription.orientation(),
+                                         fontDescription.variationSettings()),
       CustomFontData::create());
 }
 

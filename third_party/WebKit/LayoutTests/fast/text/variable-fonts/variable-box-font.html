@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+    @font-face {
+    font-family: variabletest_box;
+    src: url(../../../http/tests/resources/variabletest_box.ttf);
+    }
+
+    body {
+    font-family: variabletest_box,
+    sans-serif;
+    font-size: 200px;
+    }
+
+    .a_low {
+    font-variation-settings: "upwd" 0;
+    }
+
+    .a_up {
+    font-variation-settings: "upwd" 350;
+    }
+</style>
+<!-- The variabletest_box font has an A glyph that looks like a lower half box,
+  with deltas on the 'upwd' variation axis that allow shifting the box up. At
+  350, the box is at the top. The font also has two glyphs for UPPER HALF BLOCK
+  and LOWER HALF BLOCK, which look identical to the respective variations of A.
+-->
+A <span class="a_up">A</span>

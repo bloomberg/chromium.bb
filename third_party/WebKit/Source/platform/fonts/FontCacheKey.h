@@ -32,6 +32,7 @@
 #define FontCacheKey_h
 
 #include "FontFaceCreationParams.h"
+#include "platform/fonts/opentype/FontSettings.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashTableDeletedValueType.h"
@@ -51,21 +52,27 @@ struct FontCacheKey {
   FontCacheKey() : m_creationParams(), m_fontSize(0), m_options(0) {}
   FontCacheKey(FontFaceCreationParams creationParams,
                float fontSize,
-               unsigned options)
+               unsigned options,
+               PassRefPtr<FontVariationSettings> variationSettings)
       : m_creationParams(creationParams),
         m_fontSize(fontSize * s_fontSizePrecisionMultiplier),
-        m_options(options) {}
+        m_options(options),
+        m_variationSettings(variationSettings) {}
+
   FontCacheKey(WTF::HashTableDeletedValueType)
       : m_fontSize(hashTableDeletedSize()) {}
 
   unsigned hash() const {
-    unsigned hashCodes[3] = {m_creationParams.hash(), m_fontSize, m_options};
+    unsigned hashCodes[4] = {
+        m_creationParams.hash(), m_fontSize, m_options,
+        m_variationSettings ? m_variationSettings->hash() : 0};
     return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
   }
 
   bool operator==(const FontCacheKey& other) const {
     return m_creationParams == other.m_creationParams &&
-           m_fontSize == other.m_fontSize && m_options == other.m_options;
+           m_fontSize == other.m_fontSize && m_options == other.m_options &&
+           m_variationSettings == other.m_variationSettings;
   }
 
   bool isHashTableDeletedValue() const {
@@ -84,6 +91,7 @@ struct FontCacheKey {
   FontFaceCreationParams m_creationParams;
   unsigned m_fontSize;
   unsigned m_options;
+  RefPtr<FontVariationSettings> m_variationSettings;
 };
 
 struct FontCacheKeyHash {

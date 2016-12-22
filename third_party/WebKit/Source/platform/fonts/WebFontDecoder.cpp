@@ -99,6 +99,17 @@ ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag) {
   const uint32_t gdefTag = OTS_TAG('G', 'D', 'E', 'F');
   const uint32_t gposTag = OTS_TAG('G', 'P', 'O', 'S');
   const uint32_t gsubTag = OTS_TAG('G', 'S', 'U', 'B');
+
+  // Font Variations related tables
+  // See "Variation Tables" in Terminology section of
+  // https://www.microsoft.com/typography/otspec/otvaroverview.htm
+  const uint32_t avarTag = OTS_TAG('a', 'v', 'a', 'r');
+  const uint32_t cvarTag = OTS_TAG('c', 'v', 'a', 'r');
+  const uint32_t fvarTag = OTS_TAG('f', 'v', 'a', 'r');
+  const uint32_t gvarTag = OTS_TAG('g', 'v', 'a', 'r');
+  const uint32_t hvarTag = OTS_TAG('H', 'V', 'A', 'R');
+  const uint32_t mvarTag = OTS_TAG('M', 'V', 'A', 'R');
+  const uint32_t vvarTag = OTS_TAG('V', 'V', 'A', 'R');
 #endif
 
   switch (tag) {
@@ -110,6 +121,13 @@ ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag) {
     case cpalTag:
 #if HB_VERSION_ATLEAST(1, 0, 0)
     // Let HarfBuzz handle how to deal with broken tables.
+    case avarTag:
+    case cvarTag:
+    case fvarTag:
+    case gvarTag:
+    case hvarTag:
+    case mvarTag:
+    case vvarTag:
     case gdefTag:
     case gposTag:
     case gsubTag:

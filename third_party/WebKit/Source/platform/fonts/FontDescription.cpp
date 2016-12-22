@@ -224,7 +224,8 @@ FontCacheKey FontDescription::cacheKey(
       static_cast<unsigned>(m_fields.m_subpixelTextPosition);   // bit 1
 
   return FontCacheKey(creationParams, effectiveFontSize(),
-                      options | fontTraits.bitfield() << 8);
+                      options | fontTraits.bitfield() << 8,
+                      m_variationSettings);
 }
 
 void FontDescription::setDefaultTypesettingFeatures(
@@ -311,16 +312,9 @@ unsigned FontDescription::styleHashWithoutFamilyList() const {
       addToHash(hash, settings->at(i).value());
     }
   }
-  const FontVariationSettings* varSettings = variationSettings();
-  if (varSettings) {
-    unsigned numFeatures = varSettings->size();
-    for (unsigned i = 0; i < numFeatures; ++i) {
-      const AtomicString& tag = varSettings->at(i).tag();
-      for (unsigned j = 0; j < tag.length(); j++)
-        stringHasher.addCharacter(tag[j]);
-      addToHash(hash, varSettings->at(i).value());
-    }
-  }
+
+  if (variationSettings())
+    addToHash(hash, variationSettings()->hash());
 
   if (m_locale) {
     const AtomicString& locale = m_locale->localeString();

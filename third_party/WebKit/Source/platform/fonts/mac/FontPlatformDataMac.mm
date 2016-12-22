@@ -25,6 +25,7 @@
 
 #import "platform/LayoutTestSupport.h"
 #import "platform/fonts/Font.h"
+#import "platform/fonts/opentype/FontSettings.h"
 #import "platform/fonts/shaping/HarfBuzzFace.h"
 #import "platform/graphics/skia/SkiaUtils.h"
 #import "public/platform/Platform.h"
@@ -163,7 +164,8 @@ FontPlatformData::FontPlatformData(NSFont* nsFont,
                                    float size,
                                    bool syntheticBold,
                                    bool syntheticItalic,
-                                   FontOrientation orientation)
+                                   FontOrientation orientation,
+                                   FontVariationSettings* variationSettings)
     : m_textSize(size),
       m_syntheticBold(syntheticBold),
       m_syntheticItalic(syntheticItalic),
@@ -177,6 +179,21 @@ FontPlatformData::FontPlatformData(NSFont* nsFont,
     // software registers fonts in non system locations such as /Library/Fonts
     // and ~/Library Fonts, see crbug.com/72727 or crbug.com/108645.
     m_typeface = loadFromBrowserProcess(nsFont, size);
+  }
+
+  if (variationSettings && variationSettings->size() < UINT16_MAX) {
+    SkFontMgr::FontParameters::Axis axes[variationSettings->size()];
+    for (size_t i = 0; i < variationSettings->size(); ++i) {
+      AtomicString featureTag = variationSettings->at(i).tag();
+      axes[i] = {atomicStringToFourByteTag(featureTag),
+                 SkFloatToScalar(variationSettings->at(i).value())};
+    }
+    sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
+    // TODO crbug.com/670246: Refactor this to a future Skia API that acccepts
+    // axis parameters on system fonts directly.
+    m_typeface = sk_sp<SkTypeface>(fm->createFromStream(
+        m_typeface->openStream(nullptr)->duplicate(),
+        SkFontMgr::FontParameters().setAxes(axes, variationSettings->size())));
   }
 }
 

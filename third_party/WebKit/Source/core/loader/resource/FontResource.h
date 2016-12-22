@@ -42,6 +42,7 @@ class ResourceFetcher;
 class FontPlatformData;
 class FontCustomPlatformData;
 class FontResourceClient;
+class FontVariationSettings;
 
 class CORE_EXPORT FontResource final : public Resource {
  public:
@@ -66,7 +67,8 @@ class CORE_EXPORT FontResource final : public Resource {
       float size,
       bool bold,
       bool italic,
-      FontOrientation = FontOrientation::Horizontal);
+      FontOrientation = FontOrientation::Horizontal,
+      FontVariationSettings* = nullptr);
 
   // Returns true if the loading priority of the remote font resource can be
   // lowered. The loading priority of the font can be lowered only if the

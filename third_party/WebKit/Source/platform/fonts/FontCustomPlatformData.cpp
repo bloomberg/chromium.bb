@@ -37,6 +37,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/WebFontDecoder.h"
+#include "platform/fonts/opentype/FontSettings.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "wtf/PtrUtil.h"
@@ -46,7 +47,7 @@ namespace blink {
 
 FontCustomPlatformData::FontCustomPlatformData(sk_sp<SkTypeface> typeface,
                                                size_t dataSize)
-    : m_typeface(typeface), m_dataSize(dataSize) {}
+    : m_baseTypeface(typeface), m_dataSize(dataSize) {}
 
 FontCustomPlatformData::~FontCustomPlatformData() {}
 
@@ -54,10 +55,47 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(
     float size,
     bool bold,
     bool italic,
-    FontOrientation orientation) {
-  ASSERT(m_typeface);
-  return FontPlatformData(m_typeface, "", size, bold && !m_typeface->isBold(),
-                          italic && !m_typeface->isItalic(), orientation);
+    FontOrientation orientation,
+    const FontVariationSettings* variationSettings) {
+  DCHECK(m_baseTypeface);
+
+  sk_sp<SkTypeface> returnTypeface = m_baseTypeface;
+
+  // Maximum axis count is maximum value for the OpenType USHORT, which is a
+  // 16bit unsigned.  https://www.microsoft.com/typography/otspec/fvar.htm
+  // Variation settings coming from CSS can have duplicate assignments and the
+  // list can be longer than UINT16_MAX, but ignoring this for now, going with a
+  // reasonable upper limit and leaving the deduplication for TODO(drott),
+  // crbug.com/674878 second duplicate value should supersede first..
+  if (variationSettings && variationSettings->size() < UINT16_MAX) {
+    sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
+    Vector<SkFontMgr::FontParameters::Axis, 0> axes;
+    axes.reserveCapacity(variationSettings->size());
+    for (size_t i = 0; i < variationSettings->size(); ++i) {
+      SkFontMgr::FontParameters::Axis axis = {
+          atomicStringToFourByteTag(variationSettings->at(i).tag()),
+          SkFloatToScalar(variationSettings->at(i).value())};
+      axes.append(axis);
+    }
+
+    sk_sp<SkTypeface> skVariationFont(fm->createFromStream(
+        m_baseTypeface->openStream(nullptr)->duplicate(),
+        SkFontMgr::FontParameters().setAxes(axes.data(), axes.size())));
+
+    if (skVariationFont) {
+      returnTypeface = skVariationFont;
+    } else {
+      SkString familyName;
+      m_baseTypeface->getFamilyName(&familyName);
+      // TODO: Surface this as a console message?
+      LOG(ERROR) << "Unable for apply variation axis properties for font: "
+                 << familyName.c_str();
+    }
+  }
+
+  return FontPlatformData(returnTypeface, "", size,
+                          bold && !m_baseTypeface->isBold(),
+                          italic && !m_baseTypeface->isItalic(), orientation);
 }
 
 std::unique_ptr<FontCustomPlatformData> FontCustomPlatformData::create(

@@ -47,6 +47,7 @@ namespace blink {
 
 class FontPlatformData;
 class SharedBuffer;
+class FontVariationSettings;
 
 class PLATFORM_EXPORT FontCustomPlatformData {
   USING_FAST_MALLOC(FontCustomPlatformData);
@@ -62,14 +63,15 @@ class PLATFORM_EXPORT FontCustomPlatformData {
       float size,
       bool bold,
       bool italic,
-      FontOrientation = FontOrientation::Horizontal);
+      FontOrientation = FontOrientation::Horizontal,
+      const FontVariationSettings* = nullptr);
 
   size_t dataSize() const { return m_dataSize; }
   static bool supportsFormat(const String&);
 
  private:
   FontCustomPlatformData(sk_sp<SkTypeface>, size_t dataSize);
-  sk_sp<SkTypeface> m_typeface;
+  sk_sp<SkTypeface> m_baseTypeface;
   size_t m_dataSize;
 };
 

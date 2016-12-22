@@ -15,6 +15,8 @@
 
 namespace blink {
 
+uint32_t atomicStringToFourByteTag(AtomicString tag);
+
 template <typename T>
 class FontTagValuePair {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -51,7 +53,7 @@ class FontSettings {
   FontSettings(){};
 
  private:
-  Vector<T> m_list;
+  Vector<T, 0> m_list;
 };
 
 using FontFeature = FontTagValuePair<int>;
@@ -80,6 +82,8 @@ class PLATFORM_EXPORT FontVariationSettings
   static PassRefPtr<FontVariationSettings> create() {
     return adoptRef(new FontVariationSettings());
   }
+
+  unsigned hash() const;
 
  private:
   FontVariationSettings() = default;

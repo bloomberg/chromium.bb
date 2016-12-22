@@ -150,9 +150,11 @@ FontPlatformData FontResource::platformDataFromCustomData(
     float size,
     bool bold,
     bool italic,
-    FontOrientation orientation) {
+    FontOrientation orientation,
+    FontVariationSettings* fontVariationSettings) {
   DCHECK(m_fontData);
-  return m_fontData->fontPlatformData(size, bold, italic, orientation);
+  return m_fontData->fontPlatformData(size, bold, italic, orientation,
+                                      fontVariationSettings);
 }
 
 void FontResource::willReloadAfterDiskCacheMiss() {

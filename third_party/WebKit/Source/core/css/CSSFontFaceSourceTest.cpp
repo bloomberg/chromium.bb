@@ -44,9 +44,9 @@ TEST(CSSFontFaceSourceTest, HashCollision) {
   DummyFontFaceSource fontFaceSource;
   // Even if the hash value collide, fontface cache should return different
   // value for different fonts.
-  EXPECT_EQ(simulateHashCalculation(2821), simulateHashCalculation(3346));
-  EXPECT_NE(fontFaceSource.getFontDataForSize(2821),
-            fontFaceSource.getFontDataForSize(3346));
+  EXPECT_EQ(simulateHashCalculation(8775), simulateHashCalculation(418));
+  EXPECT_NE(fontFaceSource.getFontDataForSize(8775),
+            fontFaceSource.getFontDataForSize(418));
 }
 
 }  // namespace blink

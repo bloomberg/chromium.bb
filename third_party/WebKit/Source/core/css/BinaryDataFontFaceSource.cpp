@@ -28,7 +28,8 @@ PassRefPtr<SimpleFontData> BinaryDataFontFaceSource::createFontData(
       m_customPlatformData->fontPlatformData(
           fontDescription.effectiveFontSize(),
           fontDescription.isSyntheticBold(),
-          fontDescription.isSyntheticItalic(), fontDescription.orientation()),
+          fontDescription.isSyntheticItalic(), fontDescription.orientation(),
+          fontDescription.variationSettings()),
       CustomFontData::create());
 }
 

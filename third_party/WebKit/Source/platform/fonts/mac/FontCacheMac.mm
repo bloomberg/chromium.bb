@@ -216,7 +216,8 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
       substituteFont, platformData.size(), syntheticBold,
       (traits & NSFontItalicTrait) &&
           !(substituteFontTraits & NSFontItalicTrait),
-      platformData.orientation());
+      platformData.orientation(),
+      nullptr);  // No variation paramaters in fallback.
 
   return fontDataFromFontPlatformData(&alternateFont, DoNotRetain);
 }
@@ -281,9 +282,10 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
   // font loading failing.  Out-of-process loading occurs for registered fonts
   // stored in non-system locations.  When loading fails, we do not want to use
   // the returned FontPlatformData since it will not have a valid SkTypeface.
-  std::unique_ptr<FontPlatformData> platformData = WTF::wrapUnique(
-      new FontPlatformData(platformFont, size, syntheticBold, syntheticItalic,
-                           fontDescription.orientation()));
+  std::unique_ptr<FontPlatformData> platformData =
+      WTF::makeUnique<FontPlatformData>(
+          platformFont, size, syntheticBold, syntheticItalic,
+          fontDescription.orientation(), fontDescription.variationSettings());
   if (!platformData->typeface()) {
     return nullptr;
   }
