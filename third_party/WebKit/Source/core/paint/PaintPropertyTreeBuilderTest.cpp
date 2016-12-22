@@ -465,8 +465,10 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
       transform->layoutObject()->paintProperties();
 
   EXPECT_EQ(TransformationMatrix(), transformProperties->transform()->matrix());
-  EXPECT_EQ(FloatPoint3D(200, 150, 0),
-            transformProperties->transform()->origin());
+  EXPECT_EQ(TransformationMatrix().translate(0, 0),
+            transformProperties->transform()->matrix());
+  // The value is zero without a transform property that needs transform-offset.
+  EXPECT_EQ(FloatPoint3D(0, 0, 0), transformProperties->transform()->origin());
   EXPECT_EQ(nullptr, transformProperties->paintOffsetTranslation());
   EXPECT_TRUE(transformProperties->transform()->hasDirectCompositingReasons());
 
@@ -3083,6 +3085,75 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
   // This will change once we added clip expansion node.
   EXPECT_EQ(filterProperties->effect()->outputClip(), childPaintState.clip());
   EXPECT_EQ(filterProperties->effect(), childPaintState.effect());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutTransform) {
+  setBodyInnerHTML(
+      "<style>"
+      "  body { margin: 0 }"
+      "  div {"
+      "    width: 400px;"
+      "    height: 100px;"
+      "  }"
+      "  #transform {"
+      "    transform: translate(100px, 200px);"
+      "    transform-origin: 75% 75% 0;"
+      "  }"
+      "  #willChange {"
+      "    will-change: opacity;"
+      "    transform-origin: 75% 75% 0;"
+      "  }"
+      "</style>"
+      "<div id='transform'></div>"
+      "<div id='willChange'></div>");
+
+  auto* transform = document().getElementById("transform")->layoutObject();
+  EXPECT_EQ(TransformationMatrix().translate3d(100, 200, 0),
+            transform->paintProperties()->transform()->matrix());
+  EXPECT_EQ(FloatPoint3D(300, 75, 0),
+            transform->paintProperties()->transform()->origin());
+
+  auto* willChange = document().getElementById("willChange")->layoutObject();
+  EXPECT_EQ(TransformationMatrix().translate3d(0, 0, 0),
+            willChange->paintProperties()->transform()->matrix());
+  EXPECT_EQ(FloatPoint3D(0, 0, 0),
+            willChange->paintProperties()->transform()->origin());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutMotionPath) {
+  setBodyInnerHTML(
+      "<style>"
+      "  body { margin: 0 }"
+      "  div {"
+      "    width: 100px;"
+      "    height: 100px;"
+      "  }"
+      "  #motionPath {"
+      "    position: absolute;"
+      "    motion-path: path('M0 0 L 200 400');"
+      "    motion-offset: 50%;"
+      "    motion-rotation: 0deg;"
+      "    transform-origin: 50% 50% 0;"
+      "  }"
+      "  #willChange {"
+      "    will-change: opacity;"
+      "    transform-origin: 50% 50% 0;"
+      "  }"
+      "</style>"
+      "<div id='motionPath'></div>"
+      "<div id='willChange'></div>");
+
+  auto* motionPath = document().getElementById("motionPath")->layoutObject();
+  EXPECT_EQ(TransformationMatrix().translate3d(50, 150, 0),
+            motionPath->paintProperties()->transform()->matrix());
+  EXPECT_EQ(FloatPoint3D(50, 50, 0),
+            motionPath->paintProperties()->transform()->origin());
+
+  auto* willChange = document().getElementById("willChange")->layoutObject();
+  EXPECT_EQ(TransformationMatrix().translate3d(0, 0, 0),
+            willChange->paintProperties()->transform()->matrix());
+  EXPECT_EQ(FloatPoint3D(0, 0, 0),
+            willChange->paintProperties()->transform()->origin());
 }
 
 }  // namespace blink

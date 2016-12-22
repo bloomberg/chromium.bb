@@ -1703,12 +1703,19 @@ void LayoutBox::frameRectChanged() {
   if (!needsLayout())
     setMayNeedPaintInvalidation();
 
-  // The overflow clip paint property depends on the border box rect through
-  // overflowClipRect(). The border box rect's size equals the frame rect's
-  // size, so we trigger a paint property update when the framerect changes.
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
-      shouldClipOverflow())
-    setNeedsPaintPropertyUpdate();
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    if (shouldClipOverflow()) {
+      // The overflow clip paint property depends on the border box rect through
+      // overflowClipRect(). The border box rect's size equals the frame rect's
+      // size so we trigger a paint property update when the frame rect changes.
+      setNeedsPaintPropertyUpdate();
+    } else if (styleRef().hasTransform()) {
+      // The transform paint property's origin depends on the frame rect because
+      // transform-origin can be sized with lengths relative to the frame rect.
+      // See: PaintPropertyTreeBuilder::updateTransform(...).
+      setNeedsPaintPropertyUpdate();
+    }
+  }
 }
 
 bool LayoutBox::intersectsVisibleViewport() const {

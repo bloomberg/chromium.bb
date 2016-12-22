@@ -268,15 +268,6 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
   }
 }
 
-static FloatPoint3D transformOrigin(const LayoutBox& box) {
-  const ComputedStyle& style = box.styleRef();
-  FloatSize borderBoxSize(box.size());
-  return FloatPoint3D(
-      floatValueForLength(style.transformOriginX(), borderBoxSize.width()),
-      floatValueForLength(style.transformOriginY(), borderBoxSize.height()),
-      style.transformOriginZ());
-}
-
 // SVG does not use the general transform update of |updateTransform|, instead
 // creating a transform node for SVG-specific transforms without 3D.
 void PaintPropertyTreeBuilder::updateTransformForNonRootSVG(
@@ -330,6 +321,18 @@ static CompositingReasons compositingReasonsForTransform(
   return compositingReasons;
 }
 
+static FloatPoint3D transformOrigin(const LayoutBox& box) {
+  const ComputedStyle& style = box.styleRef();
+  // Transform origin has no effect without a transform or motion path.
+  if (!style.hasTransform())
+    return FloatPoint3D();
+  FloatSize borderBoxSize(box.size());
+  return FloatPoint3D(
+      floatValueForLength(style.transformOriginX(), borderBoxSize.width()),
+      floatValueForLength(style.transformOriginY(), borderBoxSize.height()),
+      style.transformOriginZ());
+}
+
 void PaintPropertyTreeBuilder::updateTransform(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
@@ -350,10 +353,10 @@ void PaintPropertyTreeBuilder::updateTransform(
     // descendants.
     if (object.isBox() && (style.hasTransform() || style.preserves3D() ||
                            compositingReasons != CompositingReasonNone)) {
+      auto& box = toLayoutBox(object);
       TransformationMatrix matrix;
       style.applyTransform(
-          matrix, toLayoutBox(object).size(),
-          ComputedStyle::ExcludeTransformOrigin,
+          matrix, box.size(), ComputedStyle::ExcludeTransformOrigin,
           ComputedStyle::IncludeMotionPath,
           ComputedStyle::IncludeIndependentTransformProperties);
 
@@ -367,8 +370,7 @@ void PaintPropertyTreeBuilder::updateTransform(
 
       auto& properties = object.getMutableForPainting().ensurePaintProperties();
       context.forceSubtreeUpdate |= properties.updateTransform(
-          context.current.transform, matrix,
-          transformOrigin(toLayoutBox(object)),
+          context.current.transform, matrix, transformOrigin(box),
           context.current.shouldFlattenInheritedTransform, renderingContextID,
           compositingReasons);
     } else {
