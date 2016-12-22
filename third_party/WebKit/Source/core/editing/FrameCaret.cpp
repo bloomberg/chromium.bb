@@ -29,11 +29,12 @@
 #include "core/editing/Editor.h"
 #include "core/editing/SelectionEditor.h"
 #include "core/editing/commands/CompositeEditCommand.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/TextControlElement.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/api/LayoutPartItem.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
 #include "public/platform/WebTraceLocation.h"
@@ -142,6 +143,13 @@ void FrameCaret::setCaretRectNeedsUpdate() {
 
   if (Page* page = m_frame->page())
     page->animator().scheduleVisualUpdate(m_frame->localFrameRoot());
+
+  // Ensure the frame will be checked for paint invalidation during
+  // PrePaintTreeWalk.
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    if (auto layoutItem = m_frame->ownerLayoutItem())
+      layoutItem.setMayNeedPaintInvalidation();
+  }
 }
 
 bool FrameCaret::caretPositionIsValidForDocument(
