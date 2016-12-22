@@ -74,7 +74,7 @@ void SigninViewControllerDelegateViews::DeleteDelegate() {
 }
 
 ui::ModalType SigninViewControllerDelegateViews::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
+  return ui::MODAL_TYPE_WINDOW;
 }
 
 bool SigninViewControllerDelegateViews::ShouldShowCloseButton() const {
@@ -107,9 +107,12 @@ void SigninViewControllerDelegateViews::ResizeNativeView(int height) {
 }
 
 void SigninViewControllerDelegateViews::DisplayModal() {
-  modal_signin_widget_ = constrained_window::ShowWebModalDialogViews(
-      this, browser_->tab_strip_model()->GetActiveWebContents());
-  content_view_->RequestFocus();
+  gfx::NativeWindow window = browser_->tab_strip_model()
+                                 ->GetActiveWebContents()
+                                 ->GetTopLevelNativeWindow();
+  modal_signin_widget_ =
+      constrained_window::CreateBrowserModalDialogViews(this, window);
+  modal_signin_widget_->Show();
 }
 
 // static
