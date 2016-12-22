@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -64,6 +65,10 @@
   NSTextField* titleLabel =
       [self addTitleLabel:base::SysUTF16ToNSString(self.model->title())
                    toView:view];
+  // Title should occupy the whole width to that it's aligned properly for RTL.
+  [titleLabel setFrameSize:NSMakeSize(kDesiredBubbleWidth - 2 * kFramePadding,
+                                      0)];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:titleLabel];
 
   // Text.
   confirmationText_.reset([[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);

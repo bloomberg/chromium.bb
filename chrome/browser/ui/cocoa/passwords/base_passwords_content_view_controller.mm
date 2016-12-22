@@ -38,6 +38,7 @@
   [label setDrawsBackground:NO];
   [label setBezeled:NO];
   [label setStringValue:title];
+  [label setAlignment:NSNaturalTextAlignment];
   [label setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
   [label sizeToFit];
   [view addSubview:label.get()];

@@ -84,10 +84,8 @@
   [view addSubview:contentView];
 
   // Wrap the title if necessary to match the width of the content view.
-  if (NSWidth([titleLabel frame]) > NSWidth([contentView frame])) {
-    [titleLabel setFrameSize:NSMakeSize(NSWidth([contentView frame]), 0)];
-    [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:titleLabel];
-  }
+  [titleLabel setFrameSize:NSMakeSize(NSWidth([contentView frame]), 0)];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:titleLabel];
 
   // Done button.
   doneButton_.reset([[self addButton:l10n_util::GetNSString(IDS_DONE)
