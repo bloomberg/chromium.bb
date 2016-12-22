@@ -5,13 +5,16 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 
 #include "base/command_line.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {
 
 bool IsBrowserSideNavigationEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBrowserSideNavigation);
+  return
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation) ||
+      base::FeatureList::IsEnabled(features::kBrowserSideNavigation);
 }
 
 }  // namespace content
