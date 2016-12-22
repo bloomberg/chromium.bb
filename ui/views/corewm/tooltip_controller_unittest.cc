@@ -19,7 +19,9 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/render_text.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/views/corewm/test/tooltip_aura_test_api.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
@@ -93,9 +95,9 @@ class TooltipControllerTest : public ViewsTestBase {
 
     new wm::DefaultActivationClient(root_window);
 #if defined(OS_CHROMEOS)
-    controller_.reset(
-        new TooltipController(std::unique_ptr<views::corewm::Tooltip>(
-            new views::corewm::TooltipAura)));
+    tooltip_aura_ = new views::corewm::TooltipAura();
+    controller_.reset(new TooltipController(
+        std::unique_ptr<views::corewm::Tooltip>(tooltip_aura_)));
     root_window->AddPreTargetHandler(controller_.get());
     SetTooltipClient(root_window, controller_.get());
 #endif
@@ -161,6 +163,11 @@ class TooltipControllerTest : public ViewsTestBase {
   std::unique_ptr<TooltipControllerTestHelper> helper_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
+ protected:
+#if defined(OS_CHROMEOS)
+  TooltipAura* tooltip_aura_;  // not owned.
+#endif
+
  private:
   std::unique_ptr<TooltipController> controller_;
 
@@ -200,6 +207,33 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
   EXPECT_EQ(expected_tooltip, helper_->GetTooltipText());
   EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
 }
+
+#if defined(OS_CHROMEOS)
+// crbug.com/664370.
+TEST_F(TooltipControllerTest, MaxWidth) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient() || IsMus())
+    return;
+
+  base::string16 text = base::ASCIIToUTF16(
+      "Really really realy long long long long  long tooltips that exceeds max "
+      "width");
+  view_->set_tooltip_text(text);
+  gfx::Point center = GetWindow()->bounds().CenterPoint();
+  generator_->MoveMouseTo(center);
+
+  // Fire tooltip timer so tooltip becomes visible.
+  helper_->FireTooltipTimer();
+
+  EXPECT_TRUE(helper_->IsTooltipVisible());
+  gfx::RenderText* render_text =
+      test::TooltipAuraTestApi(tooltip_aura_).GetRenderText();
+
+  int max = helper_->controller()->GetMaxWidth(center);
+  EXPECT_EQ(max, render_text->display_rect().width());
+}
+#endif
 
 TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
   // TODO: these tests use GetContext(). That should go away for aura-mus

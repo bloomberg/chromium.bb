@@ -141,11 +141,11 @@ class TooltipAura::TooltipView : public views::View {
     ResetDisplayRect();
   }
 
+  gfx::RenderText* render_text_for_test() { return render_text_.get(); }
+
  private:
   void ResetDisplayRect() {
-    gfx::Insets insets = border()->GetInsets();
-    int max_text_width = max_width_ - insets.width();
-    render_text_->SetDisplayRect(gfx::Rect(0, 0, max_text_width, 100000));
+    render_text_->SetDisplayRect(gfx::Rect(0, 0, max_width_, 100000));
   }
 
   std::unique_ptr<gfx::RenderText> render_text_;
@@ -162,6 +162,10 @@ TooltipAura::TooltipAura()
 
 TooltipAura::~TooltipAura() {
   DestroyWidget();
+}
+
+gfx::RenderText* TooltipAura::GetRenderTextForTest() {
+  return tooltip_view_->render_text_for_test();
 }
 
 void TooltipAura::SetTooltipBounds(const gfx::Point& mouse_pos,
