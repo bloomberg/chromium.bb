@@ -6,6 +6,7 @@ module gpu.mojom;
 
 import "gpu/ipc/common/dx_diag_node.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
+import "gpu/ipc/common/gpu_preferences.mojom";
 import "gpu/ipc/common/mailbox.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
@@ -46,4 +47,7 @@ interface TraitsTestService {
   EchoVideoEncodeAcceleratorSupportedProfile(
     VideoEncodeAcceleratorSupportedProfile v) =>
       (VideoEncodeAcceleratorSupportedProfile pass);
+
+  [Sync]
+  EchoGpuPreferences(GpuPreferences prefs) => (GpuPreferences pass);
 };

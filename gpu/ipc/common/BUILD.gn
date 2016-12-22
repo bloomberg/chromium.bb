@@ -141,6 +141,7 @@ mojom("interfaces") {
     "capabilities.mojom",
     "dx_diag_node.mojom",
     "gpu_info.mojom",
+    "gpu_preferences.mojom",
     "mailbox.mojom",
     "mailbox_holder.mojom",
     "surface_handle.mojom",

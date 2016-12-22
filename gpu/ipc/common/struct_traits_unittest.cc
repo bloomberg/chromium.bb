@@ -74,6 +74,11 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(v);
   }
 
+  void EchoGpuPreferences(const GpuPreferences& prefs,
+                          const EchoGpuPreferencesCallback& callback) override {
+    callback.Run(prefs);
+  }
+
   base::MessageLoop loop_;
   mojo::BindingSet<TraitsTestService> traits_test_bindings_;
 
@@ -421,6 +426,30 @@ TEST_F(StructTraitsTest, VideoEncodeAcceleratorSupportedProfile) {
   EXPECT_EQ(max_resolution, output.max_resolution);
   EXPECT_EQ(max_framerate_numerator, output.max_framerate_numerator);
   EXPECT_EQ(max_framerate_denominator, output.max_framerate_denominator);
+}
+
+TEST_F(StructTraitsTest, GpuPreferences) {
+  GpuPreferences prefs;
+  prefs.single_process = true;
+  prefs.in_process_gpu = true;
+  prefs.ui_prioritize_in_gpu_process = true;
+#if defined(OS_WIN)
+  const GpuPreferences::VpxDecodeVendors vendor =
+      GpuPreferences::VPX_VENDOR_AMD;
+  prefs.enable_accelerated_vpx_decode = vendor;
+#endif
+  prefs.enable_gpu_driver_debug_logging = true;
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  GpuPreferences echo;
+  proxy->EchoGpuPreferences(prefs, &echo);
+  EXPECT_TRUE(echo.single_process);
+  EXPECT_TRUE(echo.in_process_gpu);
+  EXPECT_TRUE(echo.ui_prioritize_in_gpu_process);
+  EXPECT_TRUE(echo.enable_gpu_driver_debug_logging);
+#if defined(OS_WIN)
+  EXPECT_EQ(vendor, echo.enable_accelerated_vpx_decode);
+#endif
 }
 
 }  // namespace gpu
