@@ -142,7 +142,6 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
   // will not be able to complete successfully.
   syncer::SyncPrefs sync_prefs(profile_->GetPrefs());
   sync_prefs.SetSyncRequested(true);
-  skip_sync_confirm_ = false;
 }
 
 void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
@@ -312,7 +311,6 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       FinishProfileSyncServiceSetup();
       Initialize(new_profile, nullptr);
       DCHECK_EQ(profile_, new_profile);
-      skip_sync_confirm_ = true;
 
       // We've transferred our credentials to the new profile - notify that
       // the signin for the original profile was cancelled (must do this after
@@ -478,14 +476,6 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
   // Regardless of whether the account was successfully added or not,
   // continue with sync starting.
 
-  // TODO(zmin): Remove this hack once the https://crbug.com/657924 fixed.
-  // Skip the Sync confirmation dialog if user choose to create a new profile
-  // for the corp signin. This is because the dialog doesn't work properly
-  // after the corp signin.
-  if (skip_sync_confirm_) {
-    OnSyncConfirmationUIClosed(LoginUIService::ABORT_SIGNIN);
-    return;
-  }
 
   if (switches::UsePasswordSeparatedSigninFlow()) {
     // Under the new signin flow, the sync confirmation dialog should always be
