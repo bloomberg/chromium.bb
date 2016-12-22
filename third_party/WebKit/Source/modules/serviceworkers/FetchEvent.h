@@ -74,7 +74,8 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
 
  private:
   Member<RespondWithObserver> m_observer;
-  Member<Request> m_request;
+  // TODO(sof): remove once crbug.com/655926 has been diagnosed.
+  SameThreadCheckedMember<Request> m_request;
   Member<PreloadResponseProperty> m_preloadResponseProperty;
   String m_clientId;
   bool m_isReload;
