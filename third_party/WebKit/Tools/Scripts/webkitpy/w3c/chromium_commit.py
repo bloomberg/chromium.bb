@@ -4,6 +4,9 @@
 
 from webkitpy.common.memoized import memoized
 from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.w3c.deps_updater import DepsUpdater
+
+CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
 
 
 class ChromiumCommit(object):
@@ -61,16 +64,37 @@ class ChromiumCommit(object):
             'git', 'show', '--format=%B', '--no-patch', self.sha
         ])
 
+    def filtered_changed_files(self):
+        """Makes a patch with just changes in files in the WPT dir for a given commit."""
+        changed_files = self.host.executive.run_command([
+            'git', 'diff-tree', '--name-only', '--no-commit-id', '-r', self.sha,
+            '--', self.absolute_chromium_wpt_dir()
+        ]).splitlines()
+
+        blacklist = [
+            'MANIFEST.json',
+            self.host.filesystem.join('resources', 'testharnessreport.js'),
+        ]
+        qualified_blacklist = [CHROMIUM_WPT_DIR + f for f in blacklist]
+        return [f for f in changed_files if f not in qualified_blacklist and not DepsUpdater.is_baseline(f)]
+
     def format_patch(self):
-        """Makes a patch with just changes in files in the WPT for a given commit."""
-        # TODO(jeffcarp): exclude expectations files
-        # TODO(jeffcarp): exclude manifest files
+        """Makes a patch with only exportable changes."""
+        filtered_files = self.filtered_changed_files()
+
+        if not filtered_files:
+            return ''
+
         return self.host.executive.run_command([
-            'git', 'format-patch', '-1', '--stdout',
-            self.sha, self.absolute_chromium_wpt_dir()
-        ])
+            'git', 'format-patch', '-1', '--stdout', self.sha, '--'
+        ] + filtered_files, cwd=self.absolute_chromium_dir())
 
     @memoized
     def absolute_chromium_wpt_dir(self):
         finder = WebKitFinder(self.host.filesystem)
         return finder.path_from_webkit_base('LayoutTests', 'imported', 'wpt')
+
+    @memoized
+    def absolute_chromium_dir(self):
+        finder = WebKitFinder(self.host.filesystem)
+        return finder.chromium_base()

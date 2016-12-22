@@ -18,7 +18,6 @@ def mock_command_exec(vals):
     return MockExecutive2(run_command_fn=run_fn)
 
 
-
 class TestExporterTest(unittest.TestCase):
 
     def setUp(self):
