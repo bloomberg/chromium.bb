@@ -7,9 +7,20 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_checker.h"
+#include "media/base/video_util.h"
 #include "media/remoting/remoting_cdm_context.h"
 
 namespace media {
+
+namespace {
+
+gfx::Size GetRotatedVideoSize(VideoRotation rotation, gfx::Size natural_size) {
+  if (rotation == VIDEO_ROTATION_90 || rotation == VIDEO_ROTATION_270)
+    return gfx::Size(natural_size.height(), natural_size.width());
+  return natural_size;
+}
+
+}  // namespace
 
 RemotingRendererController::RemotingRendererController(
     scoped_refptr<RemotingSourceImpl> remoting_source)
@@ -46,6 +57,7 @@ void RemotingRendererController::OnSessionStateChanged() {
   if (!sink_available_changed_cb_.is_null())
     sink_available_changed_cb_.Run(IsRemoteSinkAvailable());
 
+  UpdateInterstitial();
   UpdateAndMaybeSwitch();
 }
 
@@ -146,17 +158,22 @@ void RemotingRendererController::OnMetadataChanged(
     const PipelineMetadata& metadata) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  const gfx::Size old_size = pipeline_metadata_.natural_size;
   pipeline_metadata_ = metadata;
 
   is_encrypted_ = false;
   if (has_video()) {
-    video_decoder_config_ = metadata.video_decoder_config;
-    is_encrypted_ |= video_decoder_config_.is_encrypted();
+    is_encrypted_ |= metadata.video_decoder_config.is_encrypted();
+    pipeline_metadata_.natural_size = GetRotatedVideoSize(
+        pipeline_metadata_.video_rotation, pipeline_metadata_.natural_size);
   }
   if (has_audio()) {
-    audio_decoder_config_ = metadata.audio_decoder_config;
-    is_encrypted_ |= audio_decoder_config_.is_encrypted();
+    is_encrypted_ |= metadata.audio_decoder_config.is_encrypted();
   }
+
+  if (pipeline_metadata_.natural_size != old_size)
+    UpdateInterstitial();
+
   UpdateAndMaybeSwitch();
 }
 
@@ -164,13 +181,13 @@ bool RemotingRendererController::IsVideoCodecSupported() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_video());
 
-  switch (video_decoder_config_.codec()) {
+  switch (pipeline_metadata_.video_decoder_config.codec()) {
     case VideoCodec::kCodecH264:
     case VideoCodec::kCodecVP8:
       return true;
     default:
       VLOG(2) << "Remoting does not support video codec: "
-              << video_decoder_config_.codec();
+              << pipeline_metadata_.video_decoder_config.codec();
       return false;
   }
 }
@@ -179,7 +196,7 @@ bool RemotingRendererController::IsAudioCodecSupported() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_audio());
 
-  switch (audio_decoder_config_.codec()) {
+  switch (pipeline_metadata_.audio_decoder_config.codec()) {
     case AudioCodec::kCodecAAC:
     case AudioCodec::kCodecMP3:
     case AudioCodec::kCodecPCM:
@@ -199,7 +216,7 @@ bool RemotingRendererController::IsAudioCodecSupported() {
       return true;
     default:
       VLOG(2) << "Remoting does not support audio codec: "
-              << audio_decoder_config_.codec();
+              << pipeline_metadata_.audio_decoder_config.codec();
       return false;
   }
 }
@@ -307,6 +324,38 @@ void RemotingRendererController::UpdateAndMaybeSwitch() {
     switch_renderer_cb_.Run();
     remoting_source_->StopRemoting(this);
   }
+}
+
+void RemotingRendererController::SetShowInterstitialCallback(
+    const ShowInterstitialCallback& cb) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  show_interstitial_cb_ = cb;
+  UpdateInterstitial();
+}
+
+void RemotingRendererController::UpdateInterstitial() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (show_interstitial_cb_.is_null() ||
+      pipeline_metadata_.natural_size.IsEmpty())
+    return;
+
+  RemotingInterstitialType type = RemotingInterstitialType::BETWEEN_SESSIONS;
+  switch (remoting_source_->state()) {
+    case SESSION_STARTED:
+      type = RemotingInterstitialType::IN_SESSION;
+      break;
+    case SESSION_PERMANENTLY_STOPPED:
+      type = RemotingInterstitialType::ENCRYPTED_MEDIA_FATAL_ERROR;
+      break;
+    case SESSION_UNAVAILABLE:
+    case SESSION_CAN_START:
+    case SESSION_STARTING:
+    case SESSION_STOPPING:
+      break;
+  }
+
+  // TODO(xjz): Download poster image when available.
+  show_interstitial_cb_.Run(SkBitmap(), pipeline_metadata_.natural_size, type);
 }
 
 }  // namespace media

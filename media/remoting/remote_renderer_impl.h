@@ -67,6 +67,15 @@ class RemoteRendererImpl : public Renderer {
       base::WeakPtr<RemoteRendererImpl> self,
       std::unique_ptr<remoting::pb::RpcMessage> message);
 
+  // Callback when remoting interstitial needs to be updated. Will post task to
+  // media thread to avoid threading race condition.
+  static void RequestUpdateInterstitialOnMainThread(
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+      base::WeakPtr<RemoteRendererImpl> remote_renderer_impl,
+      const SkBitmap& background_image,
+      const gfx::Size& canvas_size,
+      RemotingInterstitialType interstitial_type);
+
  public:
   // media::Renderer implementation.
   void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
@@ -121,11 +130,15 @@ class RemoteRendererImpl : public Renderer {
   void OnStatisticsUpdate(std::unique_ptr<remoting::pb::RpcMessage> message);
   void OnDurationChange(std::unique_ptr<remoting::pb::RpcMessage> message);
 
+  // Called to update the remoting interstitial. Draw remoting interstitial on
+  // |interstitial_background_| if |background_image| is empty. Update
+  // |interstitial_background_| if |background_image| is not empty.
+  void UpdateInterstitial(const SkBitmap& background_image,
+                          const gfx::Size& canvas_size,
+                          RemotingInterstitialType interstitial_type);
+
   // Shut down remoting session.
   void OnFatalError(PipelineStatus status);
-
-  // Show interstial accordingly.
-  void UpdateInterstitial();
 
   State state_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -160,7 +173,12 @@ class RemoteRendererImpl : public Renderer {
   CdmAttachedCB cdm_attached_cb_;
   base::Closure flush_cb_;
 
-  RemotingInterstitialUI interstitial_ui_;
+  VideoRendererSink* const video_renderer_sink_;  // Outlives this class.
+  // The background image for remoting interstitial. When |this| is destructed,
+  // |interstitial_background_| will be paint to clear the cast messages on
+  // the interstitial.
+  SkBitmap interstitial_background_;
+  gfx::Size canvas_size_;
 
   base::WeakPtrFactory<RemoteRendererImpl> weak_factory_;
 

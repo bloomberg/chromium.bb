@@ -35,14 +35,14 @@ RemoteRendererImpl::RemoteRendererImpl(
       rpc_broker_(remoting_renderer_controller_->GetRpcBroker()),
       rpc_handle_(rpc_broker_->GetUniqueHandle()),
       remote_renderer_handle_(remoting::kInvalidHandle),
-      interstitial_ui_(video_renderer_sink,
-                       remoting_renderer_controller->pipeline_metadata()),
+      video_renderer_sink_(video_renderer_sink),
       weak_factory_(this) {
   VLOG(2) << __func__;
   // The constructor is running on the main thread.
-  DCHECK(remoting_renderer_controller);
-
-  UpdateInterstitial();
+  DCHECK(remoting_renderer_controller_);
+  remoting_renderer_controller_->SetShowInterstitialCallback(
+      base::Bind(&RemoteRendererImpl::RequestUpdateInterstitialOnMainThread,
+                 media_task_runner_, weak_factory_.GetWeakPtr()));
 
   const remoting::RpcBroker::ReceiveMessageCallback receive_callback =
       base::Bind(&RemoteRendererImpl::OnMessageReceivedOnMainThread,
@@ -53,6 +53,17 @@ RemoteRendererImpl::RemoteRendererImpl(
 RemoteRendererImpl::~RemoteRendererImpl() {
   VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  UpdateInterstitial(interstitial_background_, canvas_size_,
+                     RemotingInterstitialType::BETWEEN_SESSIONS);
+
+  // Post task on main thread to unset the interstial callback.
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RemotingRendererController::SetShowInterstitialCallback,
+                 remoting_renderer_controller_,
+                 RemotingRendererController::ShowInterstitialCallback()));
+
   // Post task on main thread to unregister message receiver.
   main_task_runner_->PostTask(
       FROM_HERE,
@@ -597,10 +608,6 @@ void RemoteRendererImpl::OnFatalError(PipelineStatus error) {
 
   VLOG(2) << __func__ << " with PipelineStatus error=" << error;
 
-  main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RemoteRendererImpl::UpdateInterstitial,
-                            weak_factory_.GetWeakPtr()));
-
   const State old_state = state_;
   state_ = STATE_ERROR;
 
@@ -618,12 +625,29 @@ void RemoteRendererImpl::OnFatalError(PipelineStatus error) {
   client_->OnError(error);
 }
 
-void RemoteRendererImpl::UpdateInterstitial() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+// static
+void RemoteRendererImpl::RequestUpdateInterstitialOnMainThread(
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+    base::WeakPtr<RemoteRendererImpl> remote_renderer_impl,
+    const SkBitmap& background_image,
+    const gfx::Size& canvas_size,
+    RemotingInterstitialType interstitial_type) {
+  media_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&RemoteRendererImpl::UpdateInterstitial, remote_renderer_impl,
+                 background_image, canvas_size, interstitial_type));
+}
 
-  interstitial_ui_.ShowInterstitial(
-      remoting_renderer_controller_->remoting_source()->state() ==
-      RemotingSessionState::SESSION_STARTED);
+void RemoteRendererImpl::UpdateInterstitial(
+    const SkBitmap& background_image,
+    const gfx::Size& canvas_size,
+    RemotingInterstitialType interstitial_type) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  if (!background_image.drawsNothing())
+    interstitial_background_ = background_image;
+  canvas_size_ = canvas_size;
+  PaintRemotingInterstitial(interstitial_background_, canvas_size_,
+                            interstitial_type, video_renderer_sink_);
 }
 
 }  // namespace media

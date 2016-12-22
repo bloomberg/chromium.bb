@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_observer.h"
+#include "media/remoting/remoting_interstitial_ui.h"
 #include "media/remoting/remoting_source_impl.h"
 
 namespace media {
@@ -46,6 +47,12 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   void SetRemoteSinkAvailableChangedCallback(
       const base::Callback<void(bool)>& cb);
 
+  using ShowInterstitialCallback = base::Callback<
+      void(const SkBitmap&, const gfx::Size&, RemotingInterstitialType type)>;
+  // Called by RemoteRendererImpl constructor to set the callback to draw and
+  // show remoting interstial.
+  void SetShowInterstitialCallback(const ShowInterstitialCallback& cb);
+
   base::WeakPtr<RemotingRendererController> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -70,11 +77,6 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
 
   base::WeakPtr<remoting::RpcBroker> GetRpcBroker() const;
 
-  PipelineMetadata pipeline_metadata() const {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    return pipeline_metadata_;
-  }
-
  private:
   bool has_audio() const {
     return pipeline_metadata_.has_audio &&
@@ -97,6 +99,17 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // necessary.
   void UpdateAndMaybeSwitch();
 
+  // Called when any of the following happens:
+  // 1. SetShowInterstitialCallback() is called (RemoteRendererImpl is
+  //    constructed);
+  // 2. The remoting session is shut down (to update the status message in the
+  //    interstitial).
+  // 3. The size of the canvas is changed (to update the background image and
+  //    the position of the status message).
+  // TODO(xjz): Call this when poster url is set/changed. Download poster image
+  // when available, and draw interstitial on it.
+  void UpdateInterstitial();
+
   // Indicates whether this media element or its ancestor is in full screen.
   bool is_fullscreen_ = false;
 
@@ -105,10 +118,6 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
 
   // Indicates whether audio or video is encrypted.
   bool is_encrypted_ = false;
-
-  // Current audio/video config.
-  VideoDecoderConfig video_decoder_config_;
-  AudioDecoderConfig audio_decoder_config_;
 
   // Indicates whether remote playback is currently disabled. This starts out as
   // true, and should be updated at least once via a call to
@@ -140,6 +149,11 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   base::ThreadChecker thread_checker_;
 
   PipelineMetadata pipeline_metadata_;
+
+  // The callback to show remoting interstitial. It is set when entering the
+  // remoting mode (RemotingRendererImpl is constructed) by calling
+  // SetShowInterstitialCallback(), and is reset when leaving the remoting mode.
+  ShowInterstitialCallback show_interstitial_cb_;
 
   base::WeakPtrFactory<RemotingRendererController> weak_factory_;
 
