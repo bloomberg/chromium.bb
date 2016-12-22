@@ -166,6 +166,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/preferences/browser_prefs_android.h"
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
+#include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
 #else
@@ -590,6 +591,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_ANDROID)
   DownloadSuggestionsProvider::RegisterProfilePrefs(registry);
+  ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
   ntp_snippets::PhysicalWebPageSuggestionsProvider::RegisterProfilePrefs(
       registry);
   ntp_snippets::RecentTabSuggestionsProvider::RegisterProfilePrefs(registry);

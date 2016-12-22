@@ -61,5 +61,8 @@ const char kUserClassifierLastTimeToShowSuggestions[] =
 const char kUserClassifierLastTimeToUseSuggestions[] =
     "ntp_suggestions.user_classifier.last_time_to_use_suggestions";
 
+const char kClickBasedCategoryRankerOrderWithClicks[] =
+    "ntp_suggestions.click_based_category_ranker.category_order_with_clicks";
+
 }  // namespace prefs
 }  // namespace ntp_snippets

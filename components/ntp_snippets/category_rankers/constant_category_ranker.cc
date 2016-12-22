@@ -9,22 +9,11 @@
 namespace ntp_snippets {
 
 ConstantCategoryRanker::ConstantCategoryRanker() {
-  // Add all local categories in a fixed order.
-  AppendKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES);
-  AppendKnownCategory(KnownCategories::DOWNLOADS);
-  AppendKnownCategory(KnownCategories::RECENT_TABS);
-  AppendKnownCategory(KnownCategories::FOREIGN_TABS);
-  AppendKnownCategory(KnownCategories::BOOKMARKS);
-
-  DCHECK_EQ(static_cast<size_t>(KnownCategories::LOCAL_CATEGORIES_COUNT),
-            ordered_categories_.size());
-
-  // Known remote categories come after. Other remote categories will be ordered
-  // after these depending on when providers notify us about them using
-  // AppendCategoryIfNecessary.
-  // TODO(treib): Consider not adding ARTICLES here, so that providers can
-  // define the order themselves.
-  AppendKnownCategory(KnownCategories::ARTICLES);
+  std::vector<KnownCategories> ordered_known_categories =
+      GetKnownCategoriesDefaultOrder();
+  for (KnownCategories known_category : ordered_known_categories) {
+    AppendKnownCategory(known_category);
+  }
 }
 
 ConstantCategoryRanker::~ConstantCategoryRanker() = default;
@@ -69,6 +58,31 @@ void ConstantCategoryRanker::AppendCategoryIfNecessary(Category category) {
 
 void ConstantCategoryRanker::OnSuggestionOpened(Category category) {
   // Ignored. The order is constant.
+}
+
+// static
+std::vector<KnownCategories>
+ConstantCategoryRanker::GetKnownCategoriesDefaultOrder() {
+  std::vector<KnownCategories> categories;
+
+  // Add all local categories in a fixed order.
+  categories.push_back(KnownCategories::PHYSICAL_WEB_PAGES);
+  categories.push_back(KnownCategories::DOWNLOADS);
+  categories.push_back(KnownCategories::RECENT_TABS);
+  categories.push_back(KnownCategories::FOREIGN_TABS);
+  categories.push_back(KnownCategories::BOOKMARKS);
+
+  DCHECK_EQ(static_cast<size_t>(KnownCategories::LOCAL_CATEGORIES_COUNT),
+            categories.size());
+
+  // Known remote categories come after. Other remote categories will be ordered
+  // after these depending on when providers notify us about them using
+  // AppendCategoryIfNecessary.
+  // TODO(treib): Consider not adding ARTICLES here, so that providers can
+  // define the order themselves.
+  categories.push_back(KnownCategories::ARTICLES);
+
+  return categories;
 }
 
 void ConstantCategoryRanker::AppendKnownCategory(

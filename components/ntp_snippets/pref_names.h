@@ -69,6 +69,9 @@ extern const char kUserClassifierLastTimeToShowSuggestions[];
 // The pref name for the last time content suggestions were used by the user.
 extern const char kUserClassifierLastTimeToUseSuggestions[];
 
+// The pref name for the current order of categories and their clicks.
+extern const char kClickBasedCategoryRankerOrderWithClicks[];
+
 }  // namespace prefs
 }  // namespace ntp_snippets
 

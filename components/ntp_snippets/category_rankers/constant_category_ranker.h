@@ -29,6 +29,8 @@ class ConstantCategoryRanker : public CategoryRanker {
   void AppendCategoryIfNecessary(Category category) override;
   void OnSuggestionOpened(Category category) override;
 
+  static std::vector<KnownCategories> GetKnownCategoriesDefaultOrder();
+
  private:
   void AppendKnownCategory(KnownCategories known_category);
 

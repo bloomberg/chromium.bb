@@ -21,6 +21,8 @@ static_library("ntp_snippets") {
     "category_info.cc",
     "category_info.h",
     "category_rankers/category_ranker.h",
+    "category_rankers/click_based_category_ranker.cc",
+    "category_rankers/click_based_category_ranker.h",
     "category_rankers/constant_category_ranker.cc",
     "category_rankers/constant_category_ranker.h",
     "category_status.cc",
@@ -126,6 +128,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "bookmarks/bookmark_last_visit_utils_unittest.cc",
+    "category_rankers/click_based_category_ranker_unittest.cc",
     "category_rankers/constant_category_ranker_unittest.cc",
     "category_unittest.cc",
     "content_suggestions_service_unittest.cc",
