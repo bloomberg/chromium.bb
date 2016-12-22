@@ -214,7 +214,6 @@
                 {
                     "name": "Default",
                     "params": {
-                        "RedirectHistoryService": "true",
                         "RedirectSequencedWorkerPools": "true"
                     }
                 },
