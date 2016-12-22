@@ -112,6 +112,8 @@ class HistoryServiceMock : public history::HistoryService {
 
   ~HistoryServiceMock() override {}
 
+  void ReleaseBackend() { backend_ = nullptr; }
+
   void set_task_runner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     DCHECK(task_runner.get());
@@ -210,6 +212,11 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   ~ProfileSyncServiceTypedUrlTest() override {
     history_service_->Shutdown();
+
+    // Release the HistoryBackend so it's deleted on data_type_thread() as part
+    // of DeleteSyncableService() instead of on the main thread when
+    // HistoryService is deleted.
+    history_service_->ReleaseBackend();
 
     // Request stop to get deletion tasks related to the HistoryService posted
     // on the Sync thread. It is important to not Shutdown at this moment,

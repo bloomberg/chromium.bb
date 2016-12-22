@@ -89,10 +89,9 @@ class QueuedHistoryDBTask {
 // *See the .cc file for more information on the design.*
 //
 // Internal history implementation which does most of the work of the history
-// system. This runs on a background thread (to not block the browser when we
-// do expensive operations) and is NOT threadsafe, so it must only be called
-// from message handlers on the background thread. Invoking on another thread
-// requires threadsafe refcounting.
+// system. This runs on a dedicated sequence (to not block the browser when we
+// do expensive operations). It is NOT threadsafe: unless otherwise noted, all
+// methods must be called from the same sequence.
 //
 // Most functions here are just the implementations of the corresponding
 // functions in the history service. These functions are not documented
@@ -167,9 +166,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     virtual void DBLoaded() = 0;
   };
 
-  // Init must be called to complete object creation. This object can be
-  // constructed on any thread, but all other functions including Init() must
-  // be called on the history thread.
+  // This constructor can be invoked on any sequence. Init() must then be called
+  // on |task_runner|'s sequence to complete object creation. Unless otherwise
+  // noted, all methods must be called on |task_runner|'s sequence.
   //
   // |history_dir| is the directory where the history files will be placed.
   // See the definition of BroadcastNotificationsCallback above. This function
@@ -358,6 +357,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Generic operations --------------------------------------------------------
 
+  // This method can be called from any sequence.
   void ProcessDBTask(
       std::unique_ptr<HistoryDBTask> task,
       scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
@@ -762,8 +762,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Generic stuff -------------------------------------------------------------
 
-  // Processes the next scheduled HistoryDBTask, scheduling this method
-  // to be invoked again if there are more tasks that need to run.
+  // Processes the next scheduled HistoryDBTask, scheduling this method to be
+  // invoked again if there are more tasks that need to run. This method can be
+  // called from any sequence.
   void ProcessDBTaskImpl();
 
   // HistoryBackendNotifier:

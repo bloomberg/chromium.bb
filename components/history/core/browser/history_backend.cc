@@ -217,6 +217,7 @@ HistoryBackend::HistoryBackend(
       task_runner_(task_runner) {}
 
 HistoryBackend::~HistoryBackend() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!scheduled_commit_) << "Deleting without cleanup";
   queued_history_db_tasks_.clear();
 
@@ -241,6 +242,8 @@ HistoryBackend::~HistoryBackend() {
 void HistoryBackend::Init(
     bool force_fail,
     const HistoryDatabaseParams& history_database_params) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // HistoryBackend is created on the UI thread by HistoryService, then the
   // HistoryBackend::Init() method is called on the DB thread. Create the
   // base::SupportsUserData on the DB thread since it is not thread-safe.
@@ -257,6 +260,8 @@ void HistoryBackend::Init(
 void HistoryBackend::SetOnBackendDestroyTask(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::Closure& task) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!backend_destroy_task_.is_null())
     DLOG(WARNING) << "Setting more than one destroy task, overriding";
   backend_destroy_task_runner_ = std::move(task_runner);
@@ -264,6 +269,8 @@ void HistoryBackend::SetOnBackendDestroyTask(
 }
 
 void HistoryBackend::Closing() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // Any scheduled commit will have a reference to us, we must make it
   // release that reference before we can be destroyed.
   CancelScheduledCommit();
@@ -275,19 +282,24 @@ void HistoryBackend::Closing() {
 
 #if defined(OS_IOS)
 void HistoryBackend::PersistState() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   Commit();
 }
 #endif
 
 void HistoryBackend::ClearCachedDataForContextID(ContextID context_id) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   tracker_.ClearCachedDataForContextID(context_id);
 }
 
 base::FilePath HistoryBackend::GetFaviconsFileName() const {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   return history_dir_.Append(kFaviconsFilename);
 }
 
 SegmentID HistoryBackend::GetLastSegmentID(VisitID from_visit) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // Set is used to detect referrer loops.  Should not happen, but can
   // if the database is corrupt.
   std::set<VisitID> visit_set;
@@ -316,6 +328,8 @@ SegmentID HistoryBackend::UpdateSegments(const GURL& url,
                                          VisitID visit_id,
                                          ui::PageTransition transition_type,
                                          const Time ts) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return 0;
 
@@ -390,12 +404,16 @@ void HistoryBackend::UpdateWithPageEndTime(ContextID context_id,
                                            int nav_entry_id,
                                            const GURL& url,
                                            Time end_ts) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // Will be filled with the URL ID and the visit ID of the last addition.
   VisitID visit_id = tracker_.GetLastVisit(context_id, nav_entry_id, url);
   UpdateVisitDuration(visit_id, end_ts);
 }
 
 void HistoryBackend::UpdateVisitDuration(VisitID visit_id, const Time end_ts) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -411,6 +429,8 @@ void HistoryBackend::UpdateVisitDuration(VisitID visit_id, const Time end_ts) {
 }
 
 TopHostsList HistoryBackend::TopHosts(size_t num_hosts) const {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return TopHostsList();
 
@@ -425,6 +445,8 @@ TopHostsList HistoryBackend::TopHosts(size_t num_hosts) const {
 
 OriginCountAndLastVisitMap HistoryBackend::GetCountsAndLastVisitForOrigins(
     const std::set<GURL>& origins) const {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return OriginCountAndLastVisitMap();
 
@@ -452,11 +474,15 @@ OriginCountAndLastVisitMap HistoryBackend::GetCountsAndLastVisitForOrigins(
 }
 
 int HistoryBackend::HostRankIfAvailable(const GURL& url) const {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   auto it = host_ranks_.find(HostForTopHosts(url));
   return it != host_ranks_.end() ? it->second : kMaxTopHosts;
 }
 
 void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -629,6 +655,8 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
 
 void HistoryBackend::InitImpl(
     const HistoryDatabaseParams& history_database_params) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   DCHECK(!db_) << "Initializing HistoryBackend twice";
   // In the rare case where the db fails to initialize a dialog may get shown
   // the blocks the caller, yet allows other messages through. For this reason
@@ -739,6 +767,8 @@ void HistoryBackend::InitImpl(
 
 void HistoryBackend::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   bool trim_aggressively =
       memory_pressure_level ==
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
@@ -749,6 +779,8 @@ void HistoryBackend::OnMemoryPressure(
 }
 
 void HistoryBackend::CloseAllDatabases() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (db_) {
     // Commit the long-running transaction.
     db_->CommitTransaction();
@@ -763,6 +795,8 @@ void HistoryBackend::CloseAllDatabases() {
 }
 
 void HistoryBackend::RecordTopHostsMetrics(const GURL& url) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // Convert index from 0-based to 1-based.
   UMA_HISTOGRAM_ENUMERATION("History.TopHostsVisitsByRank",
                             HostRankIfAvailable(url) + 1, kMaxTopHosts + 2);
@@ -774,6 +808,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     VisitID referring_visit,
     ui::PageTransition transition,
     VisitSource visit_source) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // Top-level frame navigations are visible, everything else is hidden
   bool new_hidden = !ui::PageTransitionIsMainFrame(transition);
 
@@ -848,6 +884,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
 
 void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
                                          VisitSource visit_source) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -902,11 +940,14 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
 }
 
 bool HistoryBackend::IsExpiredVisitTime(const base::Time& time) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   return time < expirer_.GetCurrentExpirationTime();
 }
 
 void HistoryBackend::SetPageTitle(const GURL& url,
                                   const base::string16& title) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -950,6 +991,8 @@ void HistoryBackend::SetPageTitle(const GURL& url,
 
 void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url,
                                                const base::string16& title) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -974,12 +1017,16 @@ void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url,
 }
 
 bool HistoryBackend::GetAllTypedURLs(URLRows* urls) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (db_)
     return db_->GetAllTypedUrls(urls);
   return false;
 }
 
 bool HistoryBackend::GetVisitsForURL(URLID id, VisitVector* visits) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (db_)
     return db_->GetVisitsForURL(id, visits);
   return false;
@@ -988,12 +1035,16 @@ bool HistoryBackend::GetVisitsForURL(URLID id, VisitVector* visits) {
 bool HistoryBackend::GetMostRecentVisitsForURL(URLID id,
                                                int max_visits,
                                                VisitVector* visits) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (db_)
     return db_->GetMostRecentVisitsForURL(id, max_visits, visits);
   return false;
 }
 
 size_t HistoryBackend::UpdateURLs(const URLRows& urls) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return 0;
 
@@ -1017,6 +1068,8 @@ size_t HistoryBackend::UpdateURLs(const URLRows& urls) {
 bool HistoryBackend::AddVisits(const GURL& url,
                                const std::vector<VisitInfo>& visits,
                                VisitSource visit_source) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (db_) {
     for (std::vector<VisitInfo>::const_iterator visit = visits.begin();
          visit != visits.end(); ++visit) {
@@ -1032,6 +1085,8 @@ bool HistoryBackend::AddVisits(const GURL& url,
 }
 
 bool HistoryBackend::RemoveVisits(const VisitVector& visits) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return false;
 
@@ -1042,6 +1097,8 @@ bool HistoryBackend::RemoveVisits(const VisitVector& visits) {
 
 bool HistoryBackend::GetVisitsSource(const VisitVector& visits,
                                      VisitSourceMap* sources) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return false;
 
@@ -1050,6 +1107,8 @@ bool HistoryBackend::GetVisitsSource(const VisitVector& visits,
 }
 
 bool HistoryBackend::GetURL(const GURL& url, URLRow* url_row) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (db_)
     return db_->GetRowForURL(url, url_row) != 0;
   return false;
@@ -1058,6 +1117,7 @@ bool HistoryBackend::GetURL(const GURL& url, URLRow* url_row) {
 void HistoryBackend::QueryURL(const GURL& url,
                               bool want_visits,
                               QueryURLResult* result) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(result);
   result->success = db_ && db_->GetRowForURL(url, &result->row);
   // Optionally query the visits.
@@ -1073,6 +1133,8 @@ TypedUrlSyncableService* HistoryBackend::GetTypedUrlSyncableService() const {
 
 HistoryCountResult HistoryBackend::GetHistoryCount(const Time& begin_time,
                                                    const Time& end_time) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   HistoryCountResult result;
   result.count = 0;
   result.success =
@@ -1085,6 +1147,8 @@ HistoryCountResult HistoryBackend::GetHistoryCount(const Time& begin_time,
 void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
                                                  KeywordID keyword_id,
                                                  const base::string16& term) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -1105,6 +1169,8 @@ void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
 }
 
 void HistoryBackend::DeleteAllSearchTermsForKeyword(KeywordID keyword_id) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -1113,6 +1179,8 @@ void HistoryBackend::DeleteAllSearchTermsForKeyword(KeywordID keyword_id) {
 }
 
 void HistoryBackend::DeleteKeywordSearchTermForURL(const GURL& url) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -1129,6 +1197,8 @@ void HistoryBackend::DeleteKeywordSearchTermForURL(const GURL& url) {
 
 void HistoryBackend::DeleteMatchingURLsForKeyword(KeywordID keyword_id,
                                                   const base::string16& term) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -1148,21 +1218,26 @@ void HistoryBackend::DeleteMatchingURLsForKeyword(KeywordID keyword_id,
 // Observers -------------------------------------------------------------------
 
 void HistoryBackend::AddObserver(HistoryBackendObserver* observer) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   observers_.AddObserver(observer);
 }
 
 void HistoryBackend::RemoveObserver(HistoryBackendObserver* observer) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   observers_.RemoveObserver(observer);
 }
 
 // Downloads -------------------------------------------------------------------
 
 uint32_t HistoryBackend::GetNextDownloadId() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   return db_ ? db_->GetNextDownloadId() : kInvalidDownloadId;
 }
 
 // Get all the download entries from the database.
 void HistoryBackend::QueryDownloads(std::vector<DownloadRow>* rows) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (db_)
     db_->QueryDownloads(rows);
 }
@@ -1171,6 +1246,8 @@ void HistoryBackend::QueryDownloads(std::vector<DownloadRow>* rows) {
 void HistoryBackend::UpdateDownload(
     const DownloadRow& data,
     bool should_commit_immediately) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
   db_->UpdateDownload(data);
@@ -1181,6 +1258,8 @@ void HistoryBackend::UpdateDownload(
 }
 
 bool HistoryBackend::CreateDownload(const DownloadRow& history_info) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return false;
   bool success = db_->CreateDownload(history_info);
@@ -1197,6 +1276,8 @@ bool HistoryBackend::CreateDownload(const DownloadRow& history_info) {
 }
 
 void HistoryBackend::RemoveDownloads(const std::set<uint32_t>& ids) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
   size_t downloads_count_before = db_->CountDownloads();
@@ -1229,6 +1310,8 @@ void HistoryBackend::RemoveDownloads(const std::set<uint32_t>& ids) {
 void HistoryBackend::QueryHistory(const base::string16& text_query,
                                   const QueryOptions& options,
                                   QueryResults* query_results) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   DCHECK(query_results);
   base::TimeTicks beginning_time = base::TimeTicks::Now();
   if (db_) {
@@ -1247,6 +1330,8 @@ void HistoryBackend::QueryHistory(const base::string16& text_query,
 // Basic time-based querying of history.
 void HistoryBackend::QueryHistoryBasic(const QueryOptions& options,
                                        QueryResults* result) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // First get all visits.
   VisitVector visits;
   bool has_more_results = db_->GetVisibleVisitsInRange(options, &visits);
@@ -1289,6 +1374,8 @@ void HistoryBackend::QueryHistoryBasic(const QueryOptions& options,
 void HistoryBackend::QueryHistoryText(const base::string16& text_query,
                                       const QueryOptions& options,
                                       QueryResults* result) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   URLRows text_matches;
   db_->GetTextMatchesWithAlgorithm(text_query, options.matching_algorithm,
                                    &text_matches);
@@ -1324,6 +1411,8 @@ void HistoryBackend::QueryHistoryText(const base::string16& text_query,
 
 void HistoryBackend::QueryRedirectsFrom(const GURL& from_url,
                                         RedirectList* redirects) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   redirects->clear();
   if (!db_)
     return;
@@ -1338,6 +1427,8 @@ void HistoryBackend::QueryRedirectsFrom(const GURL& from_url,
 
 void HistoryBackend::QueryRedirectsTo(const GURL& to_url,
                                       RedirectList* redirects) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   redirects->clear();
   if (!db_)
     return;
@@ -1353,6 +1444,8 @@ void HistoryBackend::QueryRedirectsTo(const GURL& to_url,
 void HistoryBackend::GetVisibleVisitCountToHost(
     const GURL& url,
     VisibleVisitCountToHostResult* result) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   result->count = 0;
   result->success = db_ &&
                     db_->GetVisibleVisitCountToHost(url, &result->count,
@@ -1362,6 +1455,8 @@ void HistoryBackend::GetVisibleVisitCountToHost(
 void HistoryBackend::QueryMostVisitedURLs(int result_count,
                                           int days_back,
                                           MostVisitedURLList* result) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -1383,6 +1478,8 @@ void HistoryBackend::QueryMostVisitedURLs(int result_count,
 
 void HistoryBackend::GetRedirectsFromSpecificVisit(VisitID cur_visit,
                                                    RedirectList* redirects) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // Follow any redirects from the given visit and add them to the list.
   // It *should* be impossible to get a circular chain here, but we check
   // just in case to avoid infinite loops.
@@ -1401,6 +1498,8 @@ void HistoryBackend::GetRedirectsFromSpecificVisit(VisitID cur_visit,
 
 void HistoryBackend::GetRedirectsToSpecificVisit(VisitID cur_visit,
                                                  RedirectList* redirects) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // Follow redirects going to cur_visit. These are added to |redirects| in
   // the order they are found. If a redirect chain looks like A -> B -> C and
   // |cur_visit| = C, redirects will be {B, A} in that order.
@@ -1422,10 +1521,13 @@ void HistoryBackend::GetRedirectsToSpecificVisit(VisitID cur_visit,
 
 void HistoryBackend::ScheduleAutocomplete(
     const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   callback.Run(this, db_.get());
 }
 
 void HistoryBackend::DeleteFTSIndexDatabases() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // Find files on disk matching the text databases file pattern so we can
   // quickly test for and delete them.
   base::FilePath::StringType filepattern = FILE_PATH_LITERAL("History Index *");
@@ -1446,6 +1548,7 @@ void HistoryBackend::GetFavicons(
     int icon_types,
     const std::vector<int>& desired_sizes,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   UpdateFaviconMappingsAndFetchImpl(nullptr, icon_urls, icon_types,
                                     desired_sizes, bitmap_results);
 }
@@ -1455,6 +1558,7 @@ void HistoryBackend::GetLargestFaviconForURL(
     const std::vector<int>& icon_types,
     int minimum_size_in_pixels,
     favicon_base::FaviconRawBitmapResult* favicon_bitmap_result) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(favicon_bitmap_result);
 
   if (!db_ || !thumbnail_db_)
@@ -1551,6 +1655,7 @@ void HistoryBackend::GetFaviconsForURL(
     const std::vector<int>& desired_sizes,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
   TRACE_EVENT0("browser", "HistoryBackend::GetFaviconsForURL");
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(bitmap_results);
   GetFaviconsFromDB(page_url, icon_types, desired_sizes, bitmap_results);
 
@@ -1564,6 +1669,7 @@ void HistoryBackend::GetFaviconForID(
     int desired_size,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
   TRACE_EVENT0("browser", "HistoryBackend::GetFaviconForID");
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   std::vector<favicon_base::FaviconID> favicon_ids;
   favicon_ids.push_back(favicon_id);
   std::vector<int> desired_sizes;
@@ -1583,6 +1689,7 @@ void HistoryBackend::UpdateFaviconMappingsAndFetch(
     int icon_types,
     const std::vector<int>& desired_sizes,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   UpdateFaviconMappingsAndFetchImpl(&page_url, icon_urls, icon_types,
                                     desired_sizes, bitmap_results);
 }
@@ -1593,6 +1700,8 @@ void HistoryBackend::MergeFavicon(
     favicon_base::IconType icon_type,
     scoped_refptr<base::RefCountedMemory> bitmap_data,
     const gfx::Size& pixel_size) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!thumbnail_db_ || !db_)
     return;
 
@@ -1749,6 +1858,8 @@ void HistoryBackend::SetFavicons(const GURL& page_url,
                                  favicon_base::IconType icon_type,
                                  const GURL& icon_url,
                                  const std::vector<SkBitmap>& bitmaps) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!thumbnail_db_ || !db_)
     return;
 
@@ -1784,6 +1895,8 @@ void HistoryBackend::SetFavicons(const GURL& page_url,
 }
 
 void HistoryBackend::SetFaviconsOutOfDateForPage(const GURL& page_url) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   std::vector<IconMapping> icon_mappings;
 
   if (!thumbnail_db_ ||
@@ -1799,6 +1912,8 @@ void HistoryBackend::SetFaviconsOutOfDateForPage(const GURL& page_url) {
 
 void HistoryBackend::SetImportedFavicons(
     const favicon_base::FaviconUsageDataList& favicon_usage) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_ || !thumbnail_db_)
     return;
 
@@ -1864,6 +1979,8 @@ void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
     int icon_types,
     const std::vector<int>& desired_sizes,
     std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // If |page_url| is specified, |icon_types| must be either a single icon
   // type or icon types which are equivalent.
   DCHECK(!page_url || icon_types == favicon_base::FAVICON ||
@@ -1918,6 +2035,8 @@ void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
 
 bool HistoryBackend::SetFaviconBitmaps(favicon_base::FaviconID icon_id,
                                        const std::vector<SkBitmap>& bitmaps) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
   thumbnail_db_->GetFaviconBitmapIDSizes(icon_id, &bitmap_id_sizes);
 
@@ -1977,6 +2096,8 @@ bool HistoryBackend::SetFaviconBitmaps(favicon_base::FaviconID icon_id,
 bool HistoryBackend::IsFaviconBitmapDataEqual(
     FaviconBitmapID bitmap_id,
     const scoped_refptr<base::RefCountedMemory>& new_bitmap_data) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!new_bitmap_data)
     return false;
 
@@ -1991,6 +2112,7 @@ bool HistoryBackend::GetFaviconsFromDB(
     int icon_types,
     const std::vector<int>& desired_sizes,
     std::vector<favicon_base::FaviconRawBitmapResult>* favicon_bitmap_results) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(favicon_bitmap_results);
   favicon_bitmap_results->clear();
 
@@ -2020,6 +2142,8 @@ bool HistoryBackend::GetFaviconBitmapResultsForBestMatch(
     const std::vector<favicon_base::FaviconID>& candidate_favicon_ids,
     const std::vector<int>& desired_sizes,
     std::vector<favicon_base::FaviconRawBitmapResult>* favicon_bitmap_results) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   favicon_bitmap_results->clear();
 
   if (candidate_favicon_ids.empty())
@@ -2088,6 +2212,8 @@ bool HistoryBackend::SetFaviconMappingsForPageAndRedirects(
     const GURL& page_url,
     favicon_base::IconType icon_type,
     const std::vector<favicon_base::FaviconID>& icon_ids) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!thumbnail_db_)
     return false;
 
@@ -2115,6 +2241,8 @@ bool HistoryBackend::SetFaviconMappingsForPages(
     const std::vector<GURL>& page_urls,
     favicon_base::IconType icon_type,
     const std::vector<favicon_base::FaviconID>& icon_ids) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   bool mappings_changed = false;
   for (auto i(page_urls.begin()); i != page_urls.end(); ++i) {
     mappings_changed |= SetFaviconMappingsForPage(*i, icon_type, icon_ids);
@@ -2126,6 +2254,8 @@ bool HistoryBackend::SetFaviconMappingsForPage(
     const GURL& page_url,
     favicon_base::IconType icon_type,
     const std::vector<favicon_base::FaviconID>& icon_ids) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   DCHECK_LE(icon_ids.size(), kMaxFaviconsPerPage);
   bool mappings_changed = false;
 
@@ -2181,6 +2311,8 @@ bool HistoryBackend::SetFaviconMappingsForPage(
 
 void HistoryBackend::GetCachedRecentRedirects(const GURL& page_url,
                                               RedirectList* redirect_list) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   RedirectCache::iterator iter = recent_redirects_.Get(page_url);
   if (iter != recent_redirects_.end()) {
     *redirect_list = iter->second;
@@ -2196,6 +2328,8 @@ void HistoryBackend::GetCachedRecentRedirects(const GURL& page_url,
 
 void HistoryBackend::SendFaviconChangedNotificationForPageAndRedirects(
     const GURL& page_url) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   RedirectList redirect_list;
   GetCachedRecentRedirects(page_url, &redirect_list);
   if (!redirect_list.empty()) {
@@ -2207,10 +2341,13 @@ void HistoryBackend::SendFaviconChangedNotificationForPageAndRedirects(
 
 void HistoryBackend::SendFaviconChangedNotificationForIconURL(
     const GURL& icon_url) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   NotifyFaviconsChanged(std::set<GURL>(), icon_url);
 }
 
 void HistoryBackend::Commit() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -2242,6 +2379,8 @@ void HistoryBackend::Commit() {
 }
 
 void HistoryBackend::ScheduleCommit() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (scheduled_commit_)
     return;
   scheduled_commit_ = new CommitLaterTask(this);
@@ -2252,6 +2391,8 @@ void HistoryBackend::ScheduleCommit() {
 }
 
 void HistoryBackend::CancelScheduledCommit() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (scheduled_commit_) {
     scheduled_commit_->Cancel();
     scheduled_commit_ = nullptr;
@@ -2299,6 +2440,8 @@ void HistoryBackend::ProcessDBTaskImpl() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   expirer_.DeleteURLs(urls);
 
   db_->GetStartDate(&first_recorded_time_);
@@ -2308,6 +2451,8 @@ void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
 }
 
 void HistoryBackend::DeleteURL(const GURL& url) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   expirer_.DeleteURL(url);
 
   db_->GetStartDate(&first_recorded_time_);
@@ -2319,6 +2464,8 @@ void HistoryBackend::DeleteURL(const GURL& url) {
 void HistoryBackend::ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
                                           Time begin_time,
                                           Time end_time) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -2343,6 +2490,8 @@ void HistoryBackend::ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
 void HistoryBackend::ExpireHistoryForTimes(const std::set<base::Time>& times,
                                            base::Time begin_time,
                                            base::Time end_time) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (times.empty() || !db_)
     return;
 
@@ -2390,6 +2539,8 @@ void HistoryBackend::ExpireHistoryForTimes(const std::set<base::Time>& times,
 
 void HistoryBackend::ExpireHistory(
     const std::vector<ExpireHistoryArgs>& expire_list) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (db_) {
     bool update_first_recorded_time = false;
 
@@ -2410,6 +2561,8 @@ void HistoryBackend::ExpireHistory(
 }
 
 void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!db_)
     return;
 
@@ -2427,6 +2580,8 @@ void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
 }
 
 void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!scheduled_kill_db_ && sql::IsErrorCatastrophic(error)) {
     scheduled_kill_db_ = true;
 
@@ -2442,6 +2597,8 @@ void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
 }
 
 void HistoryBackend::KillHistoryDatabase() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   scheduled_kill_db_ = false;
   if (!db_)
     return;
@@ -2466,12 +2623,14 @@ void HistoryBackend::KillHistoryDatabase() {
 
 base::SupportsUserData::Data* HistoryBackend::GetUserData(
     const void* key) const {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(supports_user_data_helper_);
   return supports_user_data_helper_->GetUserData(key);
 }
 
 void HistoryBackend::SetUserData(const void* key,
                                  base::SupportsUserData::Data* data) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(supports_user_data_helper_);
   supports_user_data_helper_->SetUserData(key, data);
 }
@@ -2489,6 +2648,8 @@ void HistoryBackend::ProcessDBTask(
 
 void HistoryBackend::NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                                            const GURL& icon_url) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (delegate_)
     delegate_->NotifyFaviconsChanged(page_urls, icon_url);
 }
@@ -2497,6 +2658,8 @@ void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
                                       const URLRow& row,
                                       const RedirectList& redirects,
                                       base::Time visit_time) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   for (HistoryBackendObserver& observer : observers_)
     observer.OnURLVisited(this, transition, row, redirects, visit_time);
 
@@ -2505,6 +2668,8 @@ void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
 }
 
 void HistoryBackend::NotifyURLsModified(const URLRows& rows) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   for (HistoryBackendObserver& observer : observers_)
     observer.OnURLsModified(this, rows);
 
@@ -2516,6 +2681,8 @@ void HistoryBackend::NotifyURLsDeleted(bool all_history,
                                        bool expired,
                                        const URLRows& rows,
                                        const std::set<GURL>& favicon_urls) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   URLRows copied_rows(rows);
   for (HistoryBackendObserver& observer : observers_) {
     observer.OnURLsDeleted(this, all_history, expired, copied_rows,
@@ -2530,6 +2697,8 @@ void HistoryBackend::NotifyURLsDeleted(bool all_history,
 // Deleting --------------------------------------------------------------------
 
 void HistoryBackend::DeleteAllHistory() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // Our approach to deleting all history is:
   //  1. Copy the bookmarks and their dependencies to new tables with temporary
   //     names.
@@ -2586,6 +2755,8 @@ void HistoryBackend::DeleteAllHistory() {
 
 bool HistoryBackend::ClearAllThumbnailHistory(
     const std::vector<GURL>& kept_urls) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   if (!thumbnail_db_) {
     // When we have no reference to the thumbnail database, maybe there was an
     // error opening it. In this case, we just try to blow it away to try to
@@ -2624,6 +2795,8 @@ bool HistoryBackend::ClearAllThumbnailHistory(
 }
 
 bool HistoryBackend::ClearAllMainHistory(const URLRows& kept_urls) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   // Create the duplicate URL table. We will copy the kept URLs into this.
   if (!db_->CreateTemporaryURLTable())
     return false;
