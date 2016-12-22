@@ -568,7 +568,7 @@ void UserSessionManager::InitRlz(Profile* profile) {
                      .WithShutdownBehavior(
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
                      .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithFileIO(),
+                     .MayBlock(),
       base::Bind(&base::PathExists, GetRlzDisabledFlagPath()),
       base::Bind(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));
 #endif
