@@ -41,7 +41,7 @@ CGFloat kToolbarHeight = 56.0;
 
 // Called after a new toolbar view controller is set, but before
 // |-didMoveToParentViewController:| is called on that view controller.
-- (void)didAddContentViewController;
+- (void)didAddToolbarViewController;
 
 // Methods to populate the constraint properties.
 - (void)updateContentConstraintsWithToolbar;
