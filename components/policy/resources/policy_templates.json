@@ -8060,7 +8060,7 @@
       'type': 'main',
       'future': True,
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:55-'],
+      'supported_on': ['chrome.*:55-', 'android:57-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,

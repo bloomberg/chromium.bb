@@ -257,6 +257,13 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     /**
+     * @return Whether force sign-in is enabled by policy.
+     */
+    public boolean isForceSigninEnabled() {
+        return nativeIsForceSigninEnabled(mNativeSigninManagerAndroid);
+    }
+
+    /**
      * Registers a SignInStateObserver to be notified when the user signs in or out of Chrome.
      */
     public void addSignInStateObserver(SignInStateObserver observer) {
@@ -376,7 +383,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         } else {
             Activity activity = mSignInState.activity;
             UserRecoverableErrorHandler errorHandler = activity != null
-                    ? new UserRecoverableErrorHandler.ModalDialog(activity)
+                    ? new UserRecoverableErrorHandler.ModalDialog(activity, !isForceSigninEnabled())
                     : new UserRecoverableErrorHandler.SystemNotification();
             ExternalAuthUtils.getInstance().canUseGooglePlayServices(mContext, errorHandler);
             Log.w(TAG, "Cancelling the sign-in process as Google Play services is unavailable");
@@ -666,6 +673,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private static native void nativeIsUserManaged(String username, Callback<Boolean> callback);
     private native long nativeInit();
     private native boolean nativeIsSigninAllowedByPolicy(long nativeSigninManagerAndroid);
+    private native boolean nativeIsForceSigninEnabled(long nativeSigninManagerAndroid);
     private native void nativeCheckPolicyBeforeSignIn(
             long nativeSigninManagerAndroid, String username);
     private native void nativeFetchPolicyBeforeSignIn(long nativeSigninManagerAndroid);

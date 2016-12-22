@@ -569,10 +569,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBrowserAddPersonEnabled,
     prefs::kBrowserAddPersonEnabled,
     base::Value::Type::BOOLEAN },
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+
   { key::kForceBrowserSignin,
     prefs::kForceBrowserSignin,
     base::Value::Type::BOOLEAN },
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
   { key::kWelcomePageOnOSUpgradeEnabled,

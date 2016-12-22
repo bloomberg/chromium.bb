@@ -9,6 +9,9 @@ import android.content.Context;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -89,5 +92,20 @@ public final class ForcedSigninProcessor {
                 });
             }
         });
+    }
+
+    /**
+     * If forced signin is required by policy, check that Google Play Services is available, and
+     * show a non-cancelable dialog otherwise.
+     * @param activity The activity for which to show the dialog.
+     */
+    // TODO(bauerb): Once external dependencies reliably use policy to force sign-in,
+    // consider removing the child account / EDU checks.
+    public static void checkCanSignIn(final ChromeActivity activity) {
+        final Context appContext = activity.getApplicationContext();
+        if (SigninManager.get(appContext).isForceSigninEnabled()) {
+            ExternalAuthUtils.getInstance().canUseGooglePlayServices(appContext,
+                    new UserRecoverableErrorHandler.ModalDialog(activity, false));
+        }
     }
 }

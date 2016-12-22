@@ -71,6 +71,10 @@ class SigninManagerAndroid : public SigninManagerBase::Observer {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  jboolean IsForceSigninEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   jboolean IsSignedInOnNative(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
 

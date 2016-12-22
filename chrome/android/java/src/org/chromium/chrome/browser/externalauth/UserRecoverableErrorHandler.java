@@ -127,7 +127,15 @@ public abstract class UserRecoverableErrorHandler {
          */
         private final Activity mActivity;
 
+        /**
+         * The modal dialog that is shown to the user.
+         */
         private Dialog mDialog;
+
+        /**
+         * Whether the dialog can be canceled by the user.
+         */
+        private final boolean mCancelable;
 
         /**
          * Create a new Modal Dialog handler for the specified activity and error code. The
@@ -136,9 +144,11 @@ public abstract class UserRecoverableErrorHandler {
          * the result via Activity's protected onActivityResult method.
          *
          * @param activity the activity to use
+         * @param cancelable whether the dialog can be canceled by the user
          */
-        public ModalDialog(Activity activity) {
+        public ModalDialog(Activity activity, boolean cancelable) {
             mActivity = activity;
+            mCancelable = cancelable;
         }
 
         /**
@@ -151,13 +161,17 @@ public abstract class UserRecoverableErrorHandler {
         protected final void handle(final Context context, final int errorCode) {
             mDialog = GoogleApiAvailability.getInstance().getErrorDialog(
                     mActivity, errorCode, NO_RESPONSE_REQUIRED);
+            // This can happen if |errorCode| is ConnectionResult.SERVICE_INVALID.
             if (mDialog != null) {
-                // This can happen if |errorCode| is ConnectionResult.SERVICE_INVALID.
+                mDialog.setCancelable(mCancelable);
                 mDialog.show();
             }
             sErrorHandlerActionHistogramSample.record(ERROR_HANDLER_ACTION_MODAL_DIALOG);
         }
 
+        /**
+         * Cancels the dialog.
+         */
         public void cancelDialog() {
             if (mDialog != null) {
                 mDialog.cancel();

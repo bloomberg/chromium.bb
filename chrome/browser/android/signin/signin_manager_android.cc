@@ -29,6 +29,7 @@
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -267,6 +268,14 @@ jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return SigninManagerFactory::GetForProfile(profile_)->IsSigninAllowed();
+}
+
+jboolean SigninManagerAndroid::IsForceSigninEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  // prefs::kForceBrowserSignin is set in Local State, not in user prefs.
+  PrefService* prefs = g_browser_process->local_state();
+  return prefs->GetBoolean(prefs::kForceBrowserSignin);
 }
 
 jboolean SigninManagerAndroid::IsSignedInOnNative(
