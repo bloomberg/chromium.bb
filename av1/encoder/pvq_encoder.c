@@ -35,11 +35,7 @@
 static void aom_encode_pvq_codeword(aom_writer *w, od_pvq_codeword_ctx *adapt,
  const od_coeff *in, int n, int k) {
   int i;
-#if CONFIG_DAALA_EC
-  od_encode_band_pvq_splits(&w->ec, adapt, in, n, k, 0);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
+  aom_encode_band_pvq_splits(w, adapt, in, n, k, 0);
   for (i = 0; i < n; i++) if (in[i]) aom_write_bit(w, in[i] < 0);
 }
 

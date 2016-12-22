@@ -23,7 +23,7 @@
 #include "av1/common/pvq.h"
 #include "pvq_encoder.h"
 
-static void od_encode_pvq_split(od_ec_enc *ec, od_pvq_codeword_ctx *adapt,
+static void aom_encode_pvq_split(aom_writer *w, od_pvq_codeword_ctx *adapt,
  int count, int sum, int ctx) {
   int shift;
   int rest;
@@ -36,12 +36,16 @@ static void od_encode_pvq_split(od_ec_enc *ec, od_pvq_codeword_ctx *adapt,
     sum >>= shift;
   }
   fctx = 7*ctx + sum - 1;
-  od_encode_cdf_adapt(ec, count, adapt->pvq_split_cdf[fctx],
+#if CONFIG_DAALA_EC
+  od_encode_cdf_adapt(&w->ec, count, adapt->pvq_split_cdf[fctx],
    sum + 1, adapt->pvq_split_increment);
-  if (shift) od_ec_enc_bits(ec, rest, shift);
+  if (shift) od_ec_enc_bits(&w->ec, rest, shift);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
 }
 
-void od_encode_band_pvq_splits(od_ec_enc *ec, od_pvq_codeword_ctx *adapt,
+void aom_encode_band_pvq_splits(aom_writer *w, od_pvq_codeword_ctx *adapt,
  const int *y, int n, int k, int level) {
   int mid;
   int i;
@@ -53,16 +57,20 @@ void od_encode_band_pvq_splits(od_ec_enc *ec, od_pvq_codeword_ctx *adapt,
     cdf_id = od_pvq_k1_ctx(n, level == 0);
     for (pos = 0; !y[pos]; pos++);
     OD_ASSERT(pos < n);
-    od_encode_cdf_adapt(ec, pos, adapt->pvq_k1_cdf[cdf_id], n,
+#if CONFIG_DAALA_EC
+    od_encode_cdf_adapt(&w->ec, pos, adapt->pvq_k1_cdf[cdf_id], n,
      adapt->pvq_k1_increment);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   }
   else {
     mid = n >> 1;
     count_right = k;
     for (i = 0; i < mid; i++) count_right -= abs(y[i]);
-    od_encode_pvq_split(ec, adapt, count_right, k, od_pvq_size_ctx(n));
-    od_encode_band_pvq_splits(ec, adapt, y, mid, k - count_right, level + 1);
-    od_encode_band_pvq_splits(ec, adapt, y + mid, n - mid, count_right,
+    aom_encode_pvq_split(w, adapt, count_right, k, od_pvq_size_ctx(n));
+    aom_encode_band_pvq_splits(w, adapt, y, mid, k - count_right, level + 1);
+    aom_encode_band_pvq_splits(w, adapt, y + mid, n - mid, count_right,
      level + 1);
   }
 }

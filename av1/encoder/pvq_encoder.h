@@ -21,7 +21,7 @@
 
 #define PVQ_CHROMA_RD 1
 
-void od_encode_band_pvq_splits(od_ec_enc *ec, od_pvq_codeword_ctx *adapt,
+void aom_encode_band_pvq_splits(aom_writer *w, od_pvq_codeword_ctx *adapt,
  const int *y, int n, int k, int level);
 
 void od_laplace_encode_special(od_ec_enc *enc, int x, unsigned decay, int max);
