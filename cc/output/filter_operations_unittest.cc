@@ -39,6 +39,14 @@ TEST(FilterOperationsTest, MapRectBlur) {
             ops.MapRect(gfx::Rect(0, -10, 10, 10), SkMatrix::MakeScale(1, -1)));
 }
 
+TEST(FilterOperationsTest, MapRectBlurOverflow) {
+  // Passes if float-cast-overflow does not occur in ubsan builds.
+  // The blur spread exceeds INT_MAX.
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateBlurFilter(2e9f));
+  ops.MapRect(gfx::Rect(0, 0, 10, 10), SkMatrix::I());
+}
+
 TEST(FilterOperationsTest, MapRectReverseBlur) {
   FilterOperations ops;
   ops.Append(FilterOperation::CreateBlurFilter(20));

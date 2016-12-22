@@ -336,9 +336,9 @@ gfx::Rect MapRectInternal(const FilterOperation& op,
       SkVector spread = MapStdDeviation(op.amount(), matrix);
       float spread_x = std::abs(spread.x());
       float spread_y = std::abs(spread.y());
-      gfx::Rect result = rect;
+      gfx::RectF result(rect);
       result.Inset(-spread_x, -spread_y, -spread_x, -spread_y);
-      return result;
+      return gfx::ToEnclosingRect(result);
     }
     case FilterOperation::DROP_SHADOW: {
       SkVector spread = MapStdDeviation(op.amount(), matrix);
