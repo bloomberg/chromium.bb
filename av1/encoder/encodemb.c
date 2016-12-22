@@ -1186,13 +1186,9 @@ int av1_pvq_encode_helper(daala_enc_ctx *daala_enc, tran_low_t *const coeff,
 
   // Encode residue of DC coeff, if required.
   if (!has_dc_skip || out_int32[0]) {
-#if CONFIG_DAALA_EC
-    generic_encode(&daala_enc->w.ec, &daala_enc->state.adapt.model_dc[plane],
+    generic_encode(&daala_enc->w, &daala_enc->state.adapt.model_dc[plane],
                    abs(out_int32[0]) - has_dc_skip, -1,
                    &daala_enc->state.adapt.ex_dc[plane][tx_size][0], 2);
-#else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
   }
   if (out_int32[0]) {
     aom_write_bit(&daala_enc->w, out_int32[0] < 0);

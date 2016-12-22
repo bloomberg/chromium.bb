@@ -2149,7 +2149,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
           }
           // Encode residue of DC coeff, if exist.
           if (!has_dc_skip || (pvq->ac_dc_coded & 1)) {  // DC coded?
-            generic_encode(&w->ec, &adapt->model_dc[plane],
+            generic_encode(w, &adapt->model_dc[plane],
                            abs(pvq->dq_dc_residue) - has_dc_skip, -1,
                            &adapt->ex_dc[plane][pvq->bs][0], 2);
           }

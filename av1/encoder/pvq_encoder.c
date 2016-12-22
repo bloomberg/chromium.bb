@@ -683,22 +683,14 @@ void pvq_encode_partition(aom_writer *w,
   if (qg > 0) {
     int tmp;
     tmp = *exg;
-#if CONFIG_DAALA_EC
-    generic_encode(&w->ec, &model[!noref], qg - 1, -1, &tmp, 2);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
+    generic_encode(w, &model[!noref], qg - 1, -1, &tmp, 2);
     OD_IIR_DIADIC(*exg, qg << 16, 2);
   }
   if (theta > 1 && (nodesync || max_theta > 3)) {
     int tmp;
     tmp = *ext;
-#if CONFIG_DAALA_EC
-    generic_encode(&w->ec, &model[2], theta - 2, nodesync ? -1 : max_theta - 3,
+    generic_encode(w, &model[2], theta - 2, nodesync ? -1 : max_theta - 3,
      &tmp, 2);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
     OD_IIR_DIADIC(*ext, theta << 16, 2);
   }
 #if CONFIG_DAALA_EC
@@ -914,9 +906,9 @@ int od_pvq_encode(daala_enc_ctx *enc,
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
       od_encode_checkpoint(enc, &dc_buf);
-#if CONFIG_DAALA_EC
-      generic_encode(&enc->w.ec, &enc->state.adapt.model_dc[pli],
+      generic_encode(&enc->w, &enc->state.adapt.model_dc[pli],
        n - 1, -1, &enc->state.adapt.ex_dc[pli][bs][0], 2);
+#if CONFIG_DAALA_EC
       tell2 = od_ec_enc_tell_frac(&enc->w.ec) - tell2;
 #else
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
@@ -1041,9 +1033,9 @@ int od_pvq_encode(daala_enc_ctx *enc,
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
 #endif
         od_encode_checkpoint(enc, &dc_buf);
-#if CONFIG_DAALA_EC
-        generic_encode(&enc->w.ec, &enc->state.adapt.model_dc[pli],
+        generic_encode(&enc->w, &enc->state.adapt.model_dc[pli],
          n - 1, -1, &enc->state.adapt.ex_dc[pli][bs][0], 2);
+#if CONFIG_DAALA_EC
         tell2 = od_ec_enc_tell_frac(&enc->w.ec) - tell2;
 #else
 #error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."

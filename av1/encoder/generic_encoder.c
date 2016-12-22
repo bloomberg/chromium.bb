@@ -77,7 +77,7 @@ void od_encode_cdf_adapt(od_ec_enc *ec, int val, uint16_t *cdf, int n,
  * distribution is one-sided (zero and up), has a single mode, and decays
  * exponentially past the model.
  *
- * @param [in,out] enc   range encoder
+ * @param [in,out] w     multi-symbol entropy encoder
  * @param [in,out] model generic probability model
  * @param [in]     x     variable being encoded
  * @param [in]     max   largest value possible
@@ -85,7 +85,7 @@ void od_encode_cdf_adapt(od_ec_enc *ec, int val, uint16_t *cdf, int n,
  * @param [in]     integration integration period of ExQ16 (leaky average over
  * 1<<integration samples)
  */
-void generic_encode(od_ec_enc *enc, generic_encoder *model, int x, int max,
+void generic_encode(aom_writer *w, generic_encoder *model, int x, int max,
  int *ex_q16, int integration) {
   int lg_q1;
   int shift;
@@ -107,9 +107,9 @@ void generic_encode(od_ec_enc *enc, generic_encoder *model, int x, int max,
   xs = (x + (1 << shift >> 1)) >> shift;
   ms = (max + (1 << shift >> 1)) >> shift;
   OD_ASSERT(max == -1 || xs <= ms);
-  if (max == -1) od_ec_encode_cdf_unscaled(enc, OD_MINI(15, xs), cdf, 16);
+  if (max == -1) aom_write_symbol_unscaled(w, OD_MINI(15, xs), cdf, 16);
   else {
-    od_ec_encode_cdf_unscaled(enc, OD_MINI(15, xs), cdf, OD_MINI(ms + 1, 16));
+    aom_write_symbol_unscaled(w, OD_MINI(15, xs), cdf, OD_MINI(ms + 1, 16));
   }
   if (xs >= 15) {
     int e;
@@ -122,7 +122,12 @@ void generic_encode(od_ec_enc *enc, generic_encoder *model, int x, int max,
     e = ((2**ex_q16 >> 8) + (1 << shift >> 1)) >> shift;
     decay = OD_MAXI(2, OD_MINI(254, 256*e/(e + 256)));
     /* Encode the tail of the distribution assuming exponential decay. */
-    od_laplace_encode_special(enc, xs - 15, decay, (max == -1) ? -1 : ms - 15);
+#if CONFIG_DAALA_EC
+    od_laplace_encode_special(&w->ec, xs - 15, decay,
+                              (max == -1) ? -1 : ms - 15);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   }
   if (shift != 0) {
     int special;
@@ -130,8 +135,12 @@ void generic_encode(od_ec_enc *enc, generic_encoder *model, int x, int max,
        for xs=0. */
     special = xs == 0;
     if (shift - special > 0) {
-      od_ec_enc_bits(enc, x - (xs << shift) + (!special << (shift - 1)),
+#if CONFIG_DAALA_EC
+      od_ec_enc_bits(&w->ec, x - (xs << shift) + (!special << (shift - 1)),
        shift - special);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
     }
   }
   generic_model_update(model, ex_q16, x, xs, id, integration);

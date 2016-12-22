@@ -69,7 +69,7 @@ void od_encode_cdf_adapt(od_ec_enc *ec, int val, uint16_t *cdf, int n,
 int od_decode_cdf_adapt_(od_ec_dec *ec, uint16_t *cdf, int n,
  int increment OD_ACC_STR);
 
-void generic_encode(od_ec_enc *enc, generic_encoder *model, int x, int max,
+void generic_encode(aom_writer *w, generic_encoder *model, int x, int max,
  int *ex_q16, int integration);
 double generic_encode_cost(generic_encoder *model, int x, int max,
  int *ex_q16);
