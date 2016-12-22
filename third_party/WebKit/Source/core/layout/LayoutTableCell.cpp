@@ -335,7 +335,7 @@ void LayoutTableCell::layout() {
 LayoutUnit LayoutTableCell::paddingTop() const {
   LayoutUnit result = computedCSSPaddingTop();
   if (isHorizontalWritingMode())
-    result += (style()->getWritingMode() == TopToBottomWritingMode
+    result += (blink::isHorizontalWritingMode(style()->getWritingMode())
                    ? intrinsicPaddingBefore()
                    : intrinsicPaddingAfter());
   // TODO(leviw): The floor call should be removed when Table is sub-pixel
@@ -346,7 +346,7 @@ LayoutUnit LayoutTableCell::paddingTop() const {
 LayoutUnit LayoutTableCell::paddingBottom() const {
   LayoutUnit result = computedCSSPaddingBottom();
   if (isHorizontalWritingMode())
-    result += (style()->getWritingMode() == TopToBottomWritingMode
+    result += (blink::isHorizontalWritingMode(style()->getWritingMode())
                    ? intrinsicPaddingAfter()
                    : intrinsicPaddingBefore());
   // TODO(leviw): The floor call should be removed when Table is sub-pixel
@@ -357,7 +357,7 @@ LayoutUnit LayoutTableCell::paddingBottom() const {
 LayoutUnit LayoutTableCell::paddingLeft() const {
   LayoutUnit result = computedCSSPaddingLeft();
   if (!isHorizontalWritingMode())
-    result += (style()->getWritingMode() == LeftToRightWritingMode
+    result += (isFlippedLinesWritingMode(style()->getWritingMode())
                    ? intrinsicPaddingBefore()
                    : intrinsicPaddingAfter());
   // TODO(leviw): The floor call should be removed when Table is sub-pixel
@@ -368,7 +368,7 @@ LayoutUnit LayoutTableCell::paddingLeft() const {
 LayoutUnit LayoutTableCell::paddingRight() const {
   LayoutUnit result = computedCSSPaddingRight();
   if (!isHorizontalWritingMode())
-    result += (style()->getWritingMode() == LeftToRightWritingMode
+    result += (isFlippedLinesWritingMode(style()->getWritingMode())
                    ? intrinsicPaddingAfter()
                    : intrinsicPaddingBefore());
   // TODO(leviw): The floor call should be removed when Table is sub-pixel

@@ -270,29 +270,29 @@ IntSize LayoutFlexibleBox::originAdjustmentForScrollbars() const {
 
   if (flexDirection == FlowRow) {
     if (textDirection == TextDirection::Rtl) {
-      if (writingMode == TopToBottomWritingMode)
+      if (blink::isHorizontalWritingMode(writingMode))
         size.expand(adjustmentWidth, 0);
       else
         size.expand(0, adjustmentHeight);
     }
-    if (writingMode == RightToLeftWritingMode)
+    if (isFlippedBlocksWritingMode(writingMode))
       size.expand(adjustmentWidth, 0);
   } else if (flexDirection == FlowRowReverse) {
     if (textDirection == TextDirection::Ltr) {
-      if (writingMode == TopToBottomWritingMode)
+      if (blink::isHorizontalWritingMode(writingMode))
         size.expand(adjustmentWidth, 0);
       else
         size.expand(0, adjustmentHeight);
     }
-    if (writingMode == RightToLeftWritingMode)
+    if (isFlippedBlocksWritingMode(writingMode))
       size.expand(adjustmentWidth, 0);
   } else if (flexDirection == FlowColumn) {
-    if (writingMode == RightToLeftWritingMode)
+    if (isFlippedBlocksWritingMode(writingMode))
       size.expand(adjustmentWidth, 0);
   } else {
-    if (writingMode == TopToBottomWritingMode)
+    if (blink::isHorizontalWritingMode(writingMode))
       size.expand(0, adjustmentHeight);
-    else if (writingMode == LeftToRightWritingMode)
+    else if (isFlippedLinesWritingMode(writingMode))
       size.expand(adjustmentWidth, 0);
   }
   return size;
@@ -459,9 +459,10 @@ bool LayoutFlexibleBox::isHorizontalFlow() const {
 }
 
 bool LayoutFlexibleBox::isLeftToRightFlow() const {
-  if (isColumnFlow())
-    return style()->getWritingMode() == TopToBottomWritingMode ||
-           style()->getWritingMode() == LeftToRightWritingMode;
+  if (isColumnFlow()) {
+    return blink::isHorizontalWritingMode(style()->getWritingMode()) ||
+           isFlippedLinesWritingMode(style()->getWritingMode());
+  }
   return style()->isLeftToRightDirection() ^
          (style()->flexDirection() == FlowRowReverse);
 }

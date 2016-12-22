@@ -54,13 +54,13 @@ static CSSPropertyID resolveToPhysicalProperty(
     LogicalBoxSide logicalSide,
     const StylePropertyShorthand& shorthand) {
   if (direction == TextDirection::Ltr) {
-    if (writingMode == TopToBottomWritingMode) {
+    if (isHorizontalWritingMode(writingMode)) {
       // The common case. The logical and physical box sides match.
       // Left = Start, Right = End, Before = Top, After = Bottom
       return shorthand.properties()[logicalSide];
     }
 
-    if (writingMode == LeftToRightWritingMode) {
+    if (isFlippedLinesWritingMode(writingMode)) {
       // Start = Top, End = Bottom, Before = Left, After = Right.
       switch (logicalSide) {
         case StartSide:
@@ -87,7 +87,7 @@ static CSSPropertyID resolveToPhysicalProperty(
     }
   }
 
-  if (writingMode == TopToBottomWritingMode) {
+  if (isHorizontalWritingMode(writingMode)) {
     // Start = Right, End = Left, Before = Top, After = Bottom
     switch (logicalSide) {
       case StartSide:
@@ -101,7 +101,7 @@ static CSSPropertyID resolveToPhysicalProperty(
     }
   }
 
-  if (writingMode == LeftToRightWritingMode) {
+  if (isFlippedLinesWritingMode(writingMode)) {
     // Start = Bottom, End = Top, Before = Left, After = Right
     switch (logicalSide) {
       case StartSide:

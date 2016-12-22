@@ -5073,8 +5073,8 @@ LayoutRect LayoutBox::visualOverflowRectForPropagation(
   // We are putting ourselves into our parent's coordinate space. If there is a
   // flipped block mismatch in a particular axis, then we have to flip the rect
   // along that axis.
-  if (style()->getWritingMode() == RightToLeftWritingMode ||
-      parentStyle.getWritingMode() == RightToLeftWritingMode)
+  if (isFlippedBlocksWritingMode(style()->getWritingMode()) ||
+      isFlippedBlocksWritingMode(parentStyle.getWritingMode()))
     rect.setX(size().width() - rect.maxX());
 
   return rect;
@@ -5129,8 +5129,8 @@ LayoutRect LayoutBox::layoutOverflowRectForPropagation(
   // We are putting ourselves into our parent's coordinate space. If there is a
   // flipped block mismatch in a particular axis, then we have to flip the rect
   // along that axis.
-  if (style()->getWritingMode() == RightToLeftWritingMode ||
-      parentStyle.getWritingMode() == RightToLeftWritingMode)
+  if (isFlippedBlocksWritingMode(style()->getWritingMode()) ||
+      isFlippedBlocksWritingMode(parentStyle.getWritingMode()))
     rect.setX(size().width() - rect.maxX());
 
   return rect;
