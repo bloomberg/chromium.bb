@@ -50,7 +50,7 @@ namespace {
 // Returns the height range of ImeListView.
 gfx::Range GetImeListViewRange() {
   const int max_items = 5;
-  const int min_items = 2;
+  const int min_items = 1;
   const int tray_item_height = GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT);
   return gfx::Range(tray_item_height * min_items, tray_item_height * max_items);
 }
@@ -306,7 +306,7 @@ class ImeMenuListView : public ImeListView {
   ImeMenuListView(SystemTrayItem* owner,
                   bool show_keyboard_toggle,
                   SingleImeBehavior single_ime_behavior)
-      : ImeListView(owner, show_keyboard_toggle, ImeListView::HIDE_SINGLE_IME) {
+      : ImeListView(owner, show_keyboard_toggle, single_ime_behavior) {
     set_should_focus_ime_after_selection_with_keyboard(true);
   }
 
