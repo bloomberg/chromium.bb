@@ -2363,7 +2363,6 @@ crbug.com/664853 virtual/mojo-loading/webexposed/web-animations-api.html [ Pass 
 crbug.com/664855 virtual/scroll_customization/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Pass Failure ]
 crbug.com/664856 virtual/sharedarraybuffer/fast/workers/worker-gc.html [ Pass Failure ]
 
-crbug.com/664857 virtual/threaded/animations/animation-transition-collision-crash.html [ Pass Failure ]
 crbug.com/664857 virtual/threaded/animations/composited-animations-simple.html [ Pass Failure ]
 
 # Possible duplicate of crbug.com/665577

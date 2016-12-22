@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <style>
@@ -19,15 +21,17 @@
 </style>
 <div id="target"></div>
 <script>
-var asyncHandle = async_test('Don\'t crash when animating transitioned properties');
-var frameWait = 7;
-function frame() {
-  frameWait--;
-  if (frameWait) {
-    requestAnimationFrame(frame);
-  } else {
-    asyncHandle.done();
+'use strict';
+async_test(t => {
+  let frameWait = 5;
+  function frame() {
+    frameWait--;
+    if (frameWait) {
+      requestAnimationFrame(frame);
+    } else {
+      t.done();
+    }
   }
-}
-requestAnimationFrame(frame);
+  requestAnimationFrame(frame);
+}, 'Don\'t crash when animating transitioned properties');
 </script>
