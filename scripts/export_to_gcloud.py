@@ -11,9 +11,7 @@ import ast
 import json
 
 from chromite.lib import commandline
-from chromite.lib import iter_utils
-
-_BATCH_CHUNK_SIZE = 500
+from chromite.lib import dslib
 
 
 def GetParser():
@@ -37,23 +35,6 @@ def GetParser():
                       help='Key of parent entity to insert into. This should '
                       'be in python tuple-literal form, e.g. ("Foo", 1)')
   return parser
-
-
-def _GetClient(creds_file, project_id=None, namespace=None):
-  """Get a datastore client instance.
-
-  Args:
-    creds_file: Path to JSON creds file.
-    project_id: Optional project_id of datastore. If not supplied,
-                will use one from creds file.
-    namespace: Optional namespace to insert into.
-  """
-  if project_id is None:
-    with open(creds_file, 'r') as f:
-      project_id = json.load(f)['project_id']
-
-  return datastore.Client.from_service_account_json(
-      creds_file, project_id, namespace=namespace), project_id
 
 
 class DuplicateKeyError(ValueError):
@@ -106,7 +87,7 @@ def main(argv):
   namespace = options.namespace
 
   entities = []
-  c, project_id = _GetClient(creds_file, project_id, namespace)
+  c, project_id = dslib.GetClient(creds_file, project_id, namespace)
 
   if options.parent_key:
     upper_parent_key = c.key(*ast.literal_eval(options.parent_key))
@@ -116,9 +97,4 @@ def main(argv):
 
   with open(entities_path, 'r') as f:
     entities = GetEntities(project_id, f, upper_parent_key, namespace)
-
-    for chunk in iter_utils.SplitToChunks(entities, _BATCH_CHUNK_SIZE):
-      batch = c.batch()
-      for e in chunk:
-        batch.put(e)
-      batch.commit()
+    dslib.ChunkedBatchWrite(entities, c)
