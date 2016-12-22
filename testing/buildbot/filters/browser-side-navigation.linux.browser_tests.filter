@@ -1,5 +1,3 @@
--ChromeServiceWorkerTest.FallbackMainResourceRequestWhenJSDisabled
-
 # NavigationHandle::IsRendererInitiated some times return differently in
 # browser side navigation tests.
 -SBNavigationObserverBrowserTest.DirectDownloadNoReferrerTargetBlank
