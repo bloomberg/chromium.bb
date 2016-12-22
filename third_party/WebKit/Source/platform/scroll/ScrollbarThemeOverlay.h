@@ -46,6 +46,15 @@ class PLATFORM_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
                         Color);
   ~ScrollbarThemeOverlay() override {}
 
+  bool shouldRepaintAllPartsOnInvalidation() const override;
+
+  ScrollbarPart invalidateOnThumbPositionChange(
+      const ScrollbarThemeClient&,
+      float oldPosition,
+      float newPosition) const override;
+
+  ScrollbarPart invalidateOnEnabledChange() const override;
+
   int scrollbarThickness(ScrollbarControlSize) override;
   int scrollbarMargin() const override;
   bool usesOverlayScrollbars() const override;

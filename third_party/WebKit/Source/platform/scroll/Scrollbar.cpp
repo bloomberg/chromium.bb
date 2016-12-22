@@ -531,7 +531,9 @@ void Scrollbar::setEnabled(bool e) {
     return;
   m_enabled = e;
   theme().updateEnabledState(*this);
-  setNeedsPaintInvalidation(AllParts);
+
+  ScrollbarPart invalidParts = theme().invalidateOnEnabledChange();
+  setNeedsPaintInvalidation(invalidParts);
 }
 
 int Scrollbar::scrollbarThickness() const {

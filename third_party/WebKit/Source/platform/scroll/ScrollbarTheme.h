@@ -94,6 +94,10 @@ class PLATFORM_EXPORT ScrollbarTheme {
     return AllParts;
   }
 
+  // Returns parts of the scrollbar which must be repainted following a change
+  // in enabled state.
+  virtual ScrollbarPart invalidateOnEnabledChange() const { return AllParts; }
+
   virtual void paintScrollCorner(GraphicsContext&,
                                  const DisplayItemClient&,
                                  const IntRect& cornerRect);

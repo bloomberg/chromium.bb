@@ -59,6 +59,21 @@ ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumbThickness,
       m_allowHitTest(allowHitTest),
       m_useSolidColor(false) {}
 
+bool ScrollbarThemeOverlay::shouldRepaintAllPartsOnInvalidation() const {
+  return false;
+}
+
+ScrollbarPart ScrollbarThemeOverlay::invalidateOnThumbPositionChange(
+    const ScrollbarThemeClient&,
+    float oldPosition,
+    float newPosition) const {
+  return NoPart;
+}
+
+ScrollbarPart ScrollbarThemeOverlay::invalidateOnEnabledChange() const {
+  return NoPart;
+}
+
 int ScrollbarThemeOverlay::scrollbarThickness(
     ScrollbarControlSize controlSize) {
   return m_thumbThickness + m_scrollbarMargin;

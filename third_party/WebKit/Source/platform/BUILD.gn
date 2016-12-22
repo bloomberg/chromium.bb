@@ -1795,6 +1795,7 @@ test("blink_platform_unittests") {
     "scheduler/renderer/web_view_scheduler_impl_unittest.cc",
     "scheduler/renderer/webthread_impl_for_renderer_scheduler_unittest.cc",
     "scroll/ScrollableAreaTest.cpp",
+    "scroll/ScrollbarThemeOverlayTest.cpp",
     "testing/ArenaTestHelpers.h",
     "testing/TreeTestHelpers.cpp",
     "testing/TreeTestHelpers.h",
