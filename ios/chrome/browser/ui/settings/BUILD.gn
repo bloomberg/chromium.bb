@@ -196,10 +196,13 @@ source_set("test_support") {
   sources = [
     "passphrase_collection_view_controller_test.h",
     "passphrase_collection_view_controller_test.mm",
+    "personal_data_manager_data_changed_observer.cc",
+    "personal_data_manager_data_changed_observer.h",
   ]
   deps = [
     ":settings",
     "//base",
+    "//components/autofill/core/browser",
     "//components/browser_sync",
     "//components/browser_sync:test_support",
     "//components/keyed_service/core",

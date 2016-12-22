@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "ios/web/public/test/web_test_suite.h"
 
 // Test suite for unit tests.
@@ -19,6 +20,8 @@ class IOSChromeUnitTestSuite : public web::WebTestSuite {
   void Initialize() override;
 
  private:
+  scoped_refptr<base::SingleThreadTaskRunner> action_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(IOSChromeUnitTestSuite);
 };
 

@@ -15,6 +15,8 @@ NSString* const kAppStartupAttemptCountKey = @"AppStartupFailureCount";
 typedef PlatformTest CrashLoopDetectionUtilTest;
 
 TEST_F(CrashLoopDetectionUtilTest, FullCycle) {
+  crash_util::ResetFailedStartupAttemptCountForTests();
+
   // Simulate one prior crash.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults setInteger:1 forKey:kAppStartupAttemptCountKey];

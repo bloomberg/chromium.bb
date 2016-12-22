@@ -6,8 +6,9 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/metrics/field_trial.h"
-#include "base/test/user_action_tester.h"
+#include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -28,12 +29,17 @@ class NotificationPromoWhatsNewTest : public PlatformTest {
  public:
   NotificationPromoWhatsNewTest()
       : promo_(&local_state_),
+        action_callback_(
+            base::Bind(&NotificationPromoWhatsNewTest::OnUserAction,
+                       base::Unretained(this))),
         field_trial_list_(new base::FieldTrialList(NULL)) {
     ios::NotificationPromo::RegisterPrefs(local_state_.registry());
     local_state_.registry()->RegisterInt64Pref(metrics::prefs::kInstallDate, 0);
+    base::AddActionCallback(action_callback_);
   }
 
   ~NotificationPromoWhatsNewTest() override {
+    base::RemoveActionCallback(action_callback_);
     variations::testing::ClearAllVariationParams();
   }
 
@@ -98,9 +104,19 @@ class NotificationPromoWhatsNewTest : public PlatformTest {
       EXPECT_EQ(icon, promo_.icon());
   }
 
+  void OnUserAction(const std::string& user_action) {
+    user_action_count_map_[user_action]++;
+  }
+
+  int GetUserActionCount(const std::string& user_action) {
+    return user_action_count_map_[user_action];
+  }
+
  protected:
   TestingPrefServiceSimple local_state_;
   NotificationPromoWhatsNew promo_;
+  base::ActionCallback action_callback_;
+  std::map<std::string, int> user_action_count_map_;
 
  private:
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
@@ -203,20 +219,16 @@ TEST_F(NotificationPromoWhatsNewTest, NotificationPromoMetricTest) {
        "IDS_IOS_APP_RATING_PROMO_STRING", "0", "chrome_command", "",
        "ratethisapp", "RateThisAppPromo", "logo", "0", "0");
 
-  base::UserActionTester user_action_tester;
   // Assert that promo is appropriately set up to be viewed.
   ASSERT_TRUE(promo_.CanShow());
   promo_.HandleViewed();
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "WhatsNewPromoViewed_RateThisAppPromo"));
+  EXPECT_EQ(1, GetUserActionCount("WhatsNewPromoViewed_RateThisAppPromo"));
 
   // Verify that the promo closed user action count is 0 before |HandleClosed()|
   // is called.
-  EXPECT_EQ(0, user_action_tester.GetActionCount(
-                   "WhatsNewPromoClosed_RateThisAppPromo"));
+  EXPECT_EQ(0, GetUserActionCount("WhatsNewPromoClosed_RateThisAppPromo"));
   promo_.HandleClosed();
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "WhatsNewPromoClosed_RateThisAppPromo"));
+  EXPECT_EQ(1, GetUserActionCount("WhatsNewPromoClosed_RateThisAppPromo"));
 }
 
 }  // namespace

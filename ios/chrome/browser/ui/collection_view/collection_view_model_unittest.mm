@@ -302,9 +302,9 @@ TEST(CollectionViewModelTest, InvalidIndexPath) {
       [[CollectionViewModel alloc] init]);
   [model addSectionWithIdentifier:SectionIdentifierCheese];
 
+  logging::SetLogAssertHandler(&LogSink);
   bool out_of_bounds_exception_thrown = false;
   @try {
-    logging::SetLogAssertHandler(&LogSink);
     [model indexInItemTypeForIndexPath:[NSIndexPath indexPathForItem:0
                                                            inSection:0]];
   } @catch (NSException* exception) {
@@ -313,6 +313,7 @@ TEST(CollectionViewModelTest, InvalidIndexPath) {
     }
   }
   EXPECT_TRUE(out_of_bounds_exception_thrown);
+  logging::SetLogAssertHandler(nullptr);
 }
 
 TEST(CollectionViewModelTest, RemoveItems) {

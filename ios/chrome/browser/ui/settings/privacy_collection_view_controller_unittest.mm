@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/settings/physical_web_collection_view_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_capabilities.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,6 +77,7 @@ class PrivacyCollectionViewControllerTest
   }
 
   web::TestWebThreadBundle thread_bundle_;
+  IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   base::scoped_nsobject<NSString> initialValueForSpdyProxyEnabled_;
 };

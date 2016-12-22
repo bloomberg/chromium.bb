@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/platform_test.h"
 
@@ -55,6 +56,7 @@ class AutofillProfileEditCollectionViewControllerTest : public PlatformTest {
     personal_data_manager_ =
         autofill::PersonalDataManagerFactory::GetForBrowserState(
             chrome_browser_state_.get());
+    PersonalDataManagerDataChangedObserver observer(personal_data_manager_);
 
     std::string guid = base::GenerateGUID();
 
@@ -67,6 +69,7 @@ class AutofillProfileEditCollectionViewControllerTest : public PlatformTest {
                                 base::UTF8ToUTF16(kTestAddressLine1));
 
     personal_data_manager_->SaveImportedProfile(autofill_profile);
+    observer.Wait();  // Wait for the completion of the asynchronous operation.
 
     autofill_profile_edit_controller_.reset(
         [[AutofillProfileEditCollectionViewController

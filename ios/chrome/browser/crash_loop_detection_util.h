@@ -25,6 +25,9 @@ void IncrementFailedStartupAttemptCount(bool flush_immediately);
 // elapsed, or some deliberate user action has been taken).
 void ResetFailedStartupAttemptCount();
 
+// Resets the hidden state of failed startup attempt count for testing.
+void ResetFailedStartupAttemptCountForTests();
+
 }  // namespace crash_util
 
 #endif  // IOS_CHROME_BROWSER_CRASH_LOOP_DETECTION_UTIL_H_

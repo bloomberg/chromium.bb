@@ -91,8 +91,6 @@ FirstUserActionRecorder::FirstUserActionRecorder(
       background_duration_(background_duration),
       action_callback_(base::Bind(&FirstUserActionRecorder::OnUserAction,
                                   base::Unretained(this))) {
-  base::SetRecordActionTaskRunner(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
   base::AddActionCallback(action_callback_);
 }
 

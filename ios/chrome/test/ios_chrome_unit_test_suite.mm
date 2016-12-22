@@ -5,7 +5,9 @@
 #include "ios/chrome/test/ios_chrome_unit_test_suite.h"
 
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
+#include "base/test/test_simple_task_runner.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 #include "ios/chrome/browser/chrome_paths.h"
@@ -55,7 +57,8 @@ class IOSChromeUnitTestSuiteInitializer
 }  // namespace
 
 IOSChromeUnitTestSuite::IOSChromeUnitTestSuite(int argc, char** argv)
-    : web::WebTestSuite(argc, argv) {}
+    : web::WebTestSuite(argc, argv),
+      action_task_runner_(new base::TestSimpleTaskRunner) {}
 
 IOSChromeUnitTestSuite::~IOSChromeUnitTestSuite() {}
 
@@ -73,6 +76,10 @@ void IOSChromeUnitTestSuite::Initialize() {
   // Ensure that all BrowserStateKeyedServiceFactories are built before any
   // test is run so that the dependencies are correctly resolved.
   EnsureBrowserStateKeyedServiceFactoriesBuilt();
+
+  // Register a SingleThreadTaskRunner for base::RecordAction as overridding
+  // it in individual tests is unsafe (as there is no way to unregister).
+  base::SetRecordActionTaskRunner(action_task_runner_);
 
   ios::RegisterPathProvider();
   ui::RegisterPathProvider();
