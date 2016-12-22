@@ -648,7 +648,6 @@ goog.require('__crWeb.message');
 
     var form = evt.target;
     var targetsFrame = form.target && hasFrame_(window, form.target);
-    // TODO(stuartmorgan): Handle external targets. crbug.com/233543
 
     var action = form.getAttribute('action');
     // Default action is to re-submit to same page.

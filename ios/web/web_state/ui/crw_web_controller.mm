@@ -5741,7 +5741,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)removeObserver:(id<CRWWebControllerObserver>)observer {
-  // TODO(jimblackler): make _observers use NSMapTable. crbug.com/367992
   DCHECK([_observers containsObject:observer]);
   [_observers removeObject:observer];
   // Remove the associated WebControllerObserverBridge.
