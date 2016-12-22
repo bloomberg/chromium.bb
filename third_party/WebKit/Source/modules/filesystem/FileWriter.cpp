@@ -86,6 +86,8 @@ bool FileWriter::hasPendingActivity() const {
 }
 
 void FileWriter::write(Blob* data, ExceptionState& exceptionState) {
+  if (!getExecutionContext())
+    return;
   ASSERT(data);
   ASSERT(writer());
   ASSERT(m_truncateLength == -1);
@@ -115,6 +117,8 @@ void FileWriter::write(Blob* data, ExceptionState& exceptionState) {
 }
 
 void FileWriter::seek(long long position, ExceptionState& exceptionState) {
+  if (!getExecutionContext())
+    return;
   ASSERT(writer());
   if (m_readyState == kWriting) {
     setError(FileError::kInvalidStateErr, exceptionState);
@@ -127,6 +131,8 @@ void FileWriter::seek(long long position, ExceptionState& exceptionState) {
 }
 
 void FileWriter::truncate(long long position, ExceptionState& exceptionState) {
+  if (!getExecutionContext())
+    return;
   ASSERT(writer());
   ASSERT(m_truncateLength == -1);
   if (m_readyState == kWriting || position < 0) {
@@ -154,6 +160,8 @@ void FileWriter::truncate(long long position, ExceptionState& exceptionState) {
 }
 
 void FileWriter::abort(ExceptionState& exceptionState) {
+  if (!getExecutionContext())
+    return;
   ASSERT(writer());
   if (m_readyState != kWriting)
     return;
