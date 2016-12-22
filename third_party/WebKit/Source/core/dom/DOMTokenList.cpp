@@ -153,8 +153,7 @@ void DOMTokenList::remove(const Vector<String>& tokens,
     }
   }
 
-  if (found)
-    setValue(removeTokens(value(), tokens));
+  setValue(found ? removeTokens(value(), tokens) : value());
 }
 
 bool DOMTokenList::toggle(const AtomicString& token,
@@ -291,8 +290,10 @@ AtomicString DOMTokenList::removeTokens(const AtomicString& input,
 }
 
 void DOMTokenList::setValue(const AtomicString& value) {
+  bool valueChanged = m_value != value;
   m_value = value;
-  m_tokens.set(value, SpaceSplitString::ShouldNotFoldCase);
+  if (valueChanged)
+    m_tokens.set(value, SpaceSplitString::ShouldNotFoldCase);
   if (m_observer)
     m_observer->valueWasSet();
 }

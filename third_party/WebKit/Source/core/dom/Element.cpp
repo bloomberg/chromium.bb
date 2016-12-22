@@ -2512,8 +2512,13 @@ void Element::removeAttributeInternal(
   AtomicString valueBeingRemoved = attributes[index].value();
 
   if (!inSynchronizationOfLazyAttribute) {
-    if (!valueBeingRemoved.isNull())
+    if (!valueBeingRemoved.isNull()) {
       willModifyAttribute(name, valueBeingRemoved, nullAtom);
+    } else if (getCustomElementState() == CustomElementState::Custom) {
+      // This would otherwise be enqueued by willModifyAttribute.
+      CustomElement::enqueueAttributeChangedCallback(
+          this, name, valueBeingRemoved, nullAtom);
+    }
   }
 
   if (Attr* attrNode = attrIfExists(name))
@@ -3512,14 +3517,17 @@ void Element::willModifyAttribute(const QualifiedName& name,
     updateName(oldValue, newValue);
   }
 
+  if (getCustomElementState() == CustomElementState::Custom) {
+    CustomElement::enqueueAttributeChangedCallback(this, name, oldValue,
+                                                   newValue);
+  }
+
   if (oldValue != newValue) {
     document().styleEngine().attributeChangedForElement(name, *this);
-    if (getCustomElementState() == CustomElementState::Custom)
-      CustomElement::enqueueAttributeChangedCallback(this, name, oldValue,
-                                                     newValue);
-    else if (isUpgradedV0CustomElement())
+    if (isUpgradedV0CustomElement()) {
       V0CustomElement::attributeDidChange(this, name.localName(), oldValue,
                                           newValue);
+    }
   }
 
   if (MutationObserverInterestGroup* recipients =
