@@ -1132,8 +1132,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return The {@link ContentViewCore} associated with the current page.
      */
     public ContentViewCore getActiveContentViewCore() {
-        // TODO(jinsukkim): Remove this along with the refactoring for Blimp.
-        //                  See https://crbug.com/650515.
         return mContentViewCore;
     }
 
