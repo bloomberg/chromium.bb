@@ -8015,12 +8015,14 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     const Framebuffer::Attachment* read_buffer =
         is_feedback_loop == FeedbackLoopUnknown ?
         read_framebuffer->GetReadBufferAttachment() : nullptr;
+    bool draw_buffer_has_image = false;
     for (uint32_t ii = 0; ii < group_->max_draw_buffers(); ++ii) {
       GLenum dst_format = GetBoundColorDrawBufferInternalFormat(
           static_cast<GLint>(ii));
       GLenum dst_type = GetBoundColorDrawBufferType(static_cast<GLint>(ii));
       if (dst_format == 0)
         continue;
+      draw_buffer_has_image = true;
       if (!src_internal_format) {
         read_framebuffer_miss_image = true;
       }
@@ -8057,6 +8059,8 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
         }
       }
     }
+    if (draw_framebuffer && !draw_buffer_has_image)
+      mask_blit &= ~GL_COLOR_BUFFER_BIT;
   }
   if (is_feedback_loop == FeedbackLoopTrue) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,

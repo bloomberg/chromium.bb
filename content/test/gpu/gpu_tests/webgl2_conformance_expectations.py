@@ -48,8 +48,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance2/rendering/rendering-sampling-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
-    self.Fail('conformance2/rendering/read-draw-when-missing-image.html',
-        ['linux', 'nvidia', 'opengl'], bug=672719) # WebGL 2.0.1
     self.Fail('conformance2/textures/misc/' +
         'integer-cubemap-specification-order-bug.html',
         bug=483282) # owner:cwallez, test might be buggy
