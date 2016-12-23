@@ -88,11 +88,13 @@
   if (!consumed)
     unhandledWheelEventReceived_ = true;
 }
+
 - (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
                                  consumed:(BOOL)consumed {
   if (!consumed && event.type == blink::WebInputEvent::GestureScrollUpdate)
     unhandledWheelEventReceived_ = true;
 }
+
 - (void)touchesBeganWithEvent:(NSEvent*)event {}
 - (void)touchesMovedWithEvent:(NSEvent*)event {}
 - (void)touchesCancelledWithEvent:(NSEvent*)event {}
@@ -160,6 +162,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void SelectAll() override {}
 
   std::unique_ptr<TextInputManager> text_input_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
 
 class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
@@ -183,7 +187,11 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
 
   MOCK_METHOD0(Focus, void());
   MOCK_METHOD0(Blur, void());
+
   ui::LatencyInfo lastWheelEventLatencyInfo;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostImpl);
 };
 
 // Generates the |length| of composition rectangle vector and save them to
@@ -230,8 +238,8 @@ gfx::Rect GetExpectedRect(const gfx::Point& origin,
 // Returns NSScrollWheel event that mocks -phase. |mockPhaseSelector| should
 // correspond to a method in |MockPhaseMethods| that returns the desired phase.
 NSEvent* MockScrollWheelEventWithPhase(SEL mockPhaseSelector, int32_t delta) {
-  CGEventRef cg_event =
-      CGEventCreateScrollWheelEvent(NULL, kCGScrollEventUnitLine, 1, delta, 0);
+  CGEventRef cg_event = CGEventCreateScrollWheelEvent(
+      nullptr, kCGScrollEventUnitLine, 1, delta, 0);
   CGEventTimestamp timestamp = 0;
   CGEventSetTimestamp(cg_event, timestamp);
   NSEvent* event = [NSEvent eventWithCGEvent:cg_event];
@@ -246,7 +254,7 @@ NSEvent* MockScrollWheelEventWithPhase(SEL mockPhaseSelector, int32_t delta) {
 
 class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
  public:
-  RenderWidgetHostViewMacTest() : old_rwhv_(NULL), rwhv_mac_(NULL) {
+  RenderWidgetHostViewMacTest() : rwhv_mac_(nullptr), old_rwhv_(nullptr) {
     std::unique_ptr<base::SimpleTestTickClock> mock_clock(
         new base::SimpleTestTickClock());
     mock_clock->Advance(base::TimeDelta::FromMilliseconds(100));
@@ -268,6 +276,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
     rwhv_cocoa_.reset([rwhv_mac_->cocoa_view() retain]);
   }
+
   void TearDown() override {
     // Make sure the rwhv_mac_ is gone once the superclass's |TearDown()| runs.
     rwhv_cocoa_.reset();
@@ -298,12 +307,6 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     view->TextInputStateChanged(state);
   }
 
- private:
-  // This class isn't derived from PlatformTest.
-  base::mac::ScopedNSAutoreleasePool pool_;
-
-  RenderWidgetHostView* old_rwhv_;
-
  protected:
   std::string selected_text() const { return rwhv_mac_->selected_text_; }
 
@@ -311,6 +314,11 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa_;
 
  private:
+  // This class isn't derived from PlatformTest.
+  base::mac::ScopedNSAutoreleasePool pool_;
+
+  RenderWidgetHostView* old_rwhv_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMacTest);
 };
 
@@ -346,7 +354,7 @@ TEST_F(RenderWidgetHostViewMacTest, NSTextInputClientConformance) {
 }
 
 TEST_F(RenderWidgetHostViewMacTest, Fullscreen) {
-  rwhv_mac_->InitAsFullscreen(NULL);
+  rwhv_mac_->InitAsFullscreen(nullptr);
   EXPECT_TRUE(rwhv_mac_->pepper_fullscreen_window());
 
   // Break the reference cycle caused by pepper_fullscreen_window() without
@@ -583,11 +591,10 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionSinglelineCase) {
   const gfx::Size kBoundsUnit(10, 20);
 
   NSRect rect;
-  // Make sure not crashing by passing NULL pointer instead of |actual_range|.
+  // Make sure not crashing by passing nullptr pointer instead of
+  // |actual_range|.
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(0, 0).ToNSRange(),
-      &rect,
-      NULL));
+      gfx::Range(0, 0).ToNSRange(), &rect, nullptr));
 
   // If there are no update from renderer, always returned caret position.
   NSRange actual_range;
@@ -617,9 +624,7 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionSinglelineCase) {
   rwhv_mac_->ImeCompositionRangeChanged(gfx::Range(10, 12),
                                         std::vector<gfx::Rect>());
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-      gfx::Range(10, 11).ToNSRange(),
-      &rect,
-      NULL));
+      gfx::Range(10, 11).ToNSRange(), &rect, nullptr));
 
   const int kCompositionLength = 10;
   std::vector<gfx::Rect> composition_bounds;
@@ -676,12 +681,10 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionSinglelineCase) {
       EXPECT_EQ(gfx::Range(request_range), gfx::Range(actual_range));
       EXPECT_EQ(expected_rect, gfx::Rect(NSRectToCGRect(rect)));
 
-      // Make sure not crashing by passing NULL pointer instead of
+      // Make sure not crashing by passing nullptr pointer instead of
       // |actual_range|.
       EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
-            request_range,
-            &rect,
-            NULL));
+          request_range, &rect, nullptr));
     }
   }
 }
@@ -1086,7 +1089,7 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
   view->SetDelegate(view_delegate.get());
 
   base::WeakPtr<RenderWidgetHostViewBase> guest_rwhv_weak =
-      (RenderWidgetHostViewGuest::Create(rwh, NULL, view->GetWeakPtr()))
+      (RenderWidgetHostViewGuest::Create(rwh, nullptr, view->GetWeakPtr()))
           ->GetWeakPtr();
 
   // Remove the cocoa_view() so |view| also goes away before |rwh|.
@@ -1153,10 +1156,10 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
 
 class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
  public:
-  RenderWidgetHostViewMacPinchTest() : process_host_(NULL) {}
+  RenderWidgetHostViewMacPinchTest() : process_host_(nullptr) {}
 
   bool ZoomDisabledForPinchUpdateMessage() {
-    const IPC::Message* message = NULL;
+    const IPC::Message* message = nullptr;
     // The first message may be a PinchBegin. Go for the second message if
     // there are two.
     switch (process_host_->sink().message_count()) {
@@ -1182,6 +1185,9 @@ class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
   }
 
   MockRenderProcessHost* process_host_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMacPinchTest);
 };
 
 TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
@@ -1358,6 +1364,7 @@ class InputMethodMacTest : public RenderWidgetHostViewMacTest {
  public:
   InputMethodMacTest() {}
   ~InputMethodMacTest() override {}
+
   void SetUp() override {
     RenderWidgetHostViewMacTest::SetUp();
 
