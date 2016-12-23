@@ -339,6 +339,8 @@ class AwContents : public FindHelper::Listener,
   // content::WebContentsObserver overrides
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
+  void DidAttachInterstitialPage() override;
+  void DidDetachInterstitialPage() override;
 
  private:
   void InitAutofillIfNecessary(bool enabled);

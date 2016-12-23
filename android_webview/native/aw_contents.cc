@@ -61,6 +61,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -95,6 +96,7 @@ using base::android::ScopedJavaLocalRef;
 using navigation_interception::InterceptNavigationDelegate;
 using content::BrowserThread;
 using content::ContentViewCore;
+using content::RenderFrameHost;
 using content::WebContents;
 
 namespace android_webview {
@@ -1272,12 +1274,34 @@ void AwContents::RenderViewHostChanged(content::RenderViewHost* old_host,
 
   int process_id = new_host->GetProcess()->GetID();
   int routing_id = new_host->GetRoutingID();
+
   // At this point, the current RVH may or may not contain a compositor. So
   // compositor_ may be nullptr, in which case
   // BrowserViewRenderer::DidInitializeCompositor() callback is time when the
   // new compositor is constructed.
   browser_view_renderer_.SetActiveCompositorID(
       CompositorID(process_id, routing_id));
+}
+
+void AwContents::DidAttachInterstitialPage() {
+  CompositorID compositor_id;
+  RenderFrameHost* rfh = web_contents_->GetInterstitialPage()->GetMainFrame();
+  compositor_id.process_id = rfh->GetProcess()->GetID();
+  compositor_id.routing_id = rfh->GetRenderViewHost()->GetRoutingID();
+  browser_view_renderer_.SetActiveCompositorID(compositor_id);
+}
+
+void AwContents::DidDetachInterstitialPage() {
+  CompositorID compositor_id;
+  if (web_contents_->GetRenderProcessHost() &&
+      web_contents_->GetRenderViewHost()) {
+    compositor_id.process_id = web_contents_->GetRenderProcessHost()->GetID();
+    compositor_id.routing_id =
+        web_contents_->GetRenderViewHost()->GetRoutingID();
+  } else {
+    LOG(WARNING) << "failed setting the compositor on detaching interstitital";
+  }
+  browser_view_renderer_.SetActiveCompositorID(compositor_id);
 }
 
 }  // namespace android_webview
