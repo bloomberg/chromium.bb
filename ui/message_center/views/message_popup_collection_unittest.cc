@@ -11,6 +11,7 @@
 #include <numeric>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"

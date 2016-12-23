@@ -7,6 +7,7 @@
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/wm/window_properties.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

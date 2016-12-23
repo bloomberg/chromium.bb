@@ -5,6 +5,7 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"

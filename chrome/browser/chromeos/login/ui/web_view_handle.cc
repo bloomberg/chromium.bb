@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/web_view_handle.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "ui/views/controls/webview/webview.h"
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/blimp/blimp_client_context_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/supports_user_data.h"
 #include "blimp/client/public/blimp_client_context.h"

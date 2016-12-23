@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/fileapi/file_system_messages.h"

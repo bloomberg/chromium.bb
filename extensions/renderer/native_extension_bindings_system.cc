@@ -5,6 +5,7 @@
 #include "extensions/renderer/native_extension_bindings_system.h"
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_api.h"

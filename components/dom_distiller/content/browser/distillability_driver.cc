@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/content/browser/distillability_driver.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"

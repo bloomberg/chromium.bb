@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "content/public/browser/notification_registrar.h"

@@ -4,6 +4,7 @@
 
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/leveldb_wrapper_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "services/file/public/interfaces/constants.mojom.h"

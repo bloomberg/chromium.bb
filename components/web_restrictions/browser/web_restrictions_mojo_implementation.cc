@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/web_restrictions/browser/web_restrictions_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/memory/ptr_util.h"
 #include "components/test_runner/mock_credential_manager_client.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_interfaces.h"

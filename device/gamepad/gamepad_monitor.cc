@@ -4,6 +4,7 @@
 
 #include "device/gamepad/gamepad_monitor.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "device/gamepad/gamepad_service.h"
 #include "device/gamepad/gamepad_shared_buffer.h"

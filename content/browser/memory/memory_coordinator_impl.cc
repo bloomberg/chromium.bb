@@ -5,6 +5,7 @@
 #include "content/browser/memory/memory_coordinator_impl.h"
 
 #include "base/memory/memory_coordinator_client_registry.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"

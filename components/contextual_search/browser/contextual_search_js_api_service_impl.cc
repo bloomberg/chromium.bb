@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "components/contextual_search/browser/contextual_search_js_api_handler.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

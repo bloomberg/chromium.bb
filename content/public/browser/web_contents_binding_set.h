@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"

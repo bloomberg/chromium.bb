@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"

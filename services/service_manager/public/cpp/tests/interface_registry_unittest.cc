@@ -4,6 +4,7 @@
 
 #include "services/service_manager/public/cpp/interface_registry.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "services/service_manager/public/cpp/interface_binder.h"
 #include "testing/gtest/include/gtest/gtest.h"

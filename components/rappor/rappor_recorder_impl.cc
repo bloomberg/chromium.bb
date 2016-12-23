@@ -4,6 +4,7 @@
 
 #include "components/rappor/rappor_recorder_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

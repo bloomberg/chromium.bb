@@ -15,6 +15,7 @@
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "base/containers/adapters.h"
+#include "base/memory/ptr_util.h"
 #include "base/timer/timer.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"

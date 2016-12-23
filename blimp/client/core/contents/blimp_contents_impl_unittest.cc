@@ -4,6 +4,7 @@
 
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"

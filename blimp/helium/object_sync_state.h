@@ -6,6 +6,7 @@
 #define BLIMP_HELIUM_OBJECT_SYNC_STATE_H_
 
 #include "base/cancelable_callback.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/helium/blimp_helium_export.h"
 #include "blimp/helium/lazy_syncable_adapter.h"
 #include "blimp/helium/syncable.h"

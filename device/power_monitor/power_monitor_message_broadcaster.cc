@@ -4,6 +4,7 @@
 
 #include "device/power_monitor/power_monitor_message_broadcaster.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/power_monitor/power_monitor.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

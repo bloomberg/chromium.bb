@@ -5,6 +5,7 @@
 #include "media/mojo/services/interface_factory_impl.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/media_log.h"
 #include "media/mojo/services/mojo_media_client.h"

@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "blimp/common/blob_cache/id_util.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/interface_provider.h"

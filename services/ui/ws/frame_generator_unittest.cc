@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/test/test_message_loop.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"

@@ -5,6 +5,7 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"

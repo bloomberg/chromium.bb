@@ -5,6 +5,7 @@
 #include "services/ui/public/cpp/window_compositor_frame_sink.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_sink_client.h"
 #include "gpu/ipc/client/gpu_channel_host.h"

@@ -12,6 +12,7 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"

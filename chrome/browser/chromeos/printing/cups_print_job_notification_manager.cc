@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/printing/cups_print_job_notification_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/profiles/profile.h"
 

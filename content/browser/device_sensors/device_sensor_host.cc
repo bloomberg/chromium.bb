@@ -4,6 +4,7 @@
 
 #include "content/browser/device_sensors/device_sensor_host.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/device_sensors/device_sensor_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

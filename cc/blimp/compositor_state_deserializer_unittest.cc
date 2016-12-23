@@ -4,6 +4,7 @@
 
 #include "compositor_state_deserializer.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "cc/animation/animation_host.h"
 #include "cc/blimp/client_picture_cache.h"

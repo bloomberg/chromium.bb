@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/memory_coordinator_client_registry.h"
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
 

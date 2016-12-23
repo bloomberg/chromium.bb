@@ -5,6 +5,7 @@
 #include "services/video_capture/device_media_to_mojo_adapter.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "services/video_capture/buffer_tracker_factory_impl.h"

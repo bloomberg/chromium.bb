@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "content/child/memory/child_memory_coordinator_impl_android.h"
 
 namespace content {

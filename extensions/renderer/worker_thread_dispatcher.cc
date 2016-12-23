@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/worker_thread_dispatcher.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
 #include "base/values.h"
 #include "content/public/child/worker_thread.h"

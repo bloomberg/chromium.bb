@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/contextual_search/renderer/contextual_search_wrapper.h"
 #include "components/contextual_search/renderer/overlay_page_notifier_service_impl.h"
 #include "content/public/renderer/render_frame.h"

@@ -4,6 +4,7 @@
 
 #include "media/mojo/clients/mojo_renderer_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "media/mojo/clients/mojo_renderer.h"
 #include "media/renderers/video_overlay_factory.h"

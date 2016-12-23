@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
+#include "base/memory/ptr_util.h"
 #include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #include "content/test/mock_gpu_channel_establish_factory.h"
 #else

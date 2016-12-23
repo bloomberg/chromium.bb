@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/ime_driver/input_method_bridge_chromeos.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
 
 InputMethodBridge::InputMethodBridge(ui::mojom::TextInputClientPtr client)

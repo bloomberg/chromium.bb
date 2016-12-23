@@ -4,6 +4,7 @@
 
 #include "services/video_capture/test/mock_device_test.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 

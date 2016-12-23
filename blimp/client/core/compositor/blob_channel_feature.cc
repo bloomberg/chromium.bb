@@ -4,6 +4,7 @@
 
 #include "blimp/client/core/compositor/blob_channel_feature.h"
 
+#include "base/memory/ptr_util.h"
 #include "blimp/common/blob_cache/in_memory_blob_cache.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blob_channel/blob_channel_receiver.h"

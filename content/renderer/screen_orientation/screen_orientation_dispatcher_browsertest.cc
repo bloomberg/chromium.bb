@@ -9,6 +9,7 @@
 #include <tuple>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationCallback.h"

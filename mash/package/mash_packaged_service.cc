@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "mash/catalog_viewer/catalog_viewer.h"
 #include "mash/catalog_viewer/public/interfaces/constants.mojom.h"

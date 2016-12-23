@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "content/child/indexed_db/indexed_db_callbacks_impl.h"

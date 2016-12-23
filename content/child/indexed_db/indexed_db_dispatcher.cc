@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "content/child/indexed_db/webidbcursor_impl.h"

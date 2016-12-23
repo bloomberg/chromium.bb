@@ -7,6 +7,7 @@
 #include <map>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"

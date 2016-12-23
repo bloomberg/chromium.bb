@@ -4,6 +4,7 @@
 
 #include "services/ui/ws/platform_display_default.h"
 
+#include "base/memory/ptr_util.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/display/screen_manager.h"
 #include "services/ui/ws/platform_display_init_params.h"

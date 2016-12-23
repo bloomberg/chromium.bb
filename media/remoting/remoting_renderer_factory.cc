@@ -5,6 +5,7 @@
 #include "media/remoting/remoting_renderer_factory.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "media/remoting/remote_renderer_impl.h"
 
 namespace media {

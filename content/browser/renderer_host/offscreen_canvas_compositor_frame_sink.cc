@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

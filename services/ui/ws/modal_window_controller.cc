@@ -4,6 +4,7 @@
 
 #include "services/ui/ws/modal_window_controller.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/server_window.h"

@@ -5,6 +5,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/tests/window_tree_client_private.h"
 #include "services/ui/public/cpp/window.h"

@@ -9,6 +9,7 @@
 #include <queue>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
 #include "services/ui/ws/drag_source.h"
 #include "services/ui/ws/drag_target_connection.h"

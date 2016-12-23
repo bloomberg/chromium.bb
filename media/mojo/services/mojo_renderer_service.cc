@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/content_decryption_module.h"

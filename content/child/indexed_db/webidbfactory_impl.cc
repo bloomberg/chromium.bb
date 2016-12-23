@@ -4,6 +4,7 @@
 
 #include "content/child/indexed_db/webidbfactory_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/child/indexed_db/indexed_db_callbacks_impl.h"
 #include "content/child/indexed_db/indexed_db_database_callbacks_impl.h"
 #include "content/child/storage_util.h"

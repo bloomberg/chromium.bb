@@ -4,6 +4,7 @@
 
 #include "media/remoting/remote_renderer_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/pipeline_status.h"

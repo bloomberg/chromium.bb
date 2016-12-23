@@ -5,6 +5,7 @@
 #include "ui/arc/notification/arc_custom_notification_view.h"
 
 #include "base/auto_reset.h"
+#include "base/memory/ptr_util.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "third_party/skia/include/core/SkColor.h"

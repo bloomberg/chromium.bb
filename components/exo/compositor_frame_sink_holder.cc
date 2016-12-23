@@ -4,6 +4,7 @@
 
 #include "components/exo/compositor_frame_sink_holder.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/resources/returned_resource.h"
 #include "components/exo/surface.h"
 

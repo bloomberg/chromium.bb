@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/notification/arc_boot_error_notification.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"

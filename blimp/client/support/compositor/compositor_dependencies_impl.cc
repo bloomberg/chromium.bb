@@ -4,6 +4,7 @@
 
 #include "blimp/client/support/compositor/compositor_dependencies_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "blimp/client/support/compositor/blimp_context_provider.h"
 #include "blimp/client/support/compositor/blimp_gpu_memory_buffer_manager.h"
 #include "blimp/client/support/compositor/blimp_layer_tree_settings.h"

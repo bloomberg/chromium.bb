@@ -4,6 +4,7 @@
 
 #include "content/renderer/mus/compositor_mus_connection.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"

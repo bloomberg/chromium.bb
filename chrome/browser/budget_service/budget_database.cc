@@ -4,6 +4,7 @@
 
 #include "chrome/browser/budget_service/budget_database.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"

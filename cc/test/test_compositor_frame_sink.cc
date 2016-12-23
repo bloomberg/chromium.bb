@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_sink_client.h"
 #include "cc/output/copy_output_request.h"

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/wm/resize_shadow.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 
 namespace ash {

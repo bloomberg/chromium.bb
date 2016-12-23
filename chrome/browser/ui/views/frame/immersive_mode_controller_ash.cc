@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"

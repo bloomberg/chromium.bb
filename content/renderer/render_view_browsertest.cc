@@ -88,6 +88,7 @@
 
 #if defined(USE_AURA) && defined(USE_X11)
 #include <X11/Xlib.h>
+#include "base/memory/ptr_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/test/events_test_utils.h"

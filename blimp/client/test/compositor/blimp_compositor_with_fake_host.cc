@@ -4,6 +4,7 @@
 
 #include "blimp/client/test/compositor/blimp_compositor_with_fake_host.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/proto/compositor_message.pb.h"

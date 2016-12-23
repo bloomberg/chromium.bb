@@ -4,6 +4,7 @@
 
 #include "cc/surfaces/sequence_surface_reference_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/surfaces/sequence_surface_reference.h"
 
 namespace cc {

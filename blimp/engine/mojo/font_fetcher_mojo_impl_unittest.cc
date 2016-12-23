@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/engine/browser/font_data_fetcher.h"
 #include "blimp/engine/mojo/font_fetcher_mojo_impl.h"
 #include "mojo/public/cpp/system/buffer.h"

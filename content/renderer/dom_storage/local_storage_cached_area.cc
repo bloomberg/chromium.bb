@@ -5,6 +5,7 @@
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"

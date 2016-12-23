@@ -12,6 +12,7 @@
 #include "android_webview/common/aw_switches.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
 #include "content/public/browser/android/synchronous_compositor.h"

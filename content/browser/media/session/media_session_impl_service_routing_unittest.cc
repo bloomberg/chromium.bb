@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/test/test_render_view_host.h"

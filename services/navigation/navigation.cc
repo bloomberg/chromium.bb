@@ -5,6 +5,7 @@
 #include "services/navigation/navigation.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

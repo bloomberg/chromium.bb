@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "ipc/ipc.mojom.h"

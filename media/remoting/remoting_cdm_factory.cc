@@ -5,6 +5,7 @@
 #include "media/remoting/remoting_cdm_factory.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/cdm_config.h"
 #include "media/remoting/remoting_cdm.h"

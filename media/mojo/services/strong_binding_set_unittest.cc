@@ -5,6 +5,7 @@
 #include "media/mojo/services/strong_binding_set.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

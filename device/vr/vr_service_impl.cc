@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_manager.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

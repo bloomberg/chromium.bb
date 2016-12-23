@@ -4,6 +4,7 @@
 
 #include "cc/animation/element_animations.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"

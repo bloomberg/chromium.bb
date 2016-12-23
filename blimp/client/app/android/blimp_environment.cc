@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
 #include "blimp/client/app/android/blimp_client_context_delegate_android.h"
 #include "blimp/client/app/blimp_startup.h"

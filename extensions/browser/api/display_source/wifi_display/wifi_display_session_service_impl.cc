@@ -5,6 +5,7 @@
 #include "extensions/browser/api/display_source/wifi_display/wifi_display_session_service_impl.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/display_source/display_source_connection_delegate_factory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

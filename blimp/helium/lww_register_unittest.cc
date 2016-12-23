@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/helium/helium_test.h"
 #include "blimp/helium/revision_generator.h"
 #include "blimp/helium/version_vector.h"

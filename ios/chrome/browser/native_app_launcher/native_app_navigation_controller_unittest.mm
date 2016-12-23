@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/installation_notifier.h"

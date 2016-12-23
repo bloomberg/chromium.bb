@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

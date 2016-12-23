@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"

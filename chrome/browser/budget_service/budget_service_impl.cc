@@ -4,6 +4,7 @@
 
 #include "chrome/browser/budget_service/budget_service_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/budget_service/budget_manager.h"
 #include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/helium/helium_test.h"
 #include "blimp/helium/mock_objects.h"
 #include "blimp/helium/serializable_struct.h"

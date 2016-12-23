@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "content/public/test/test_service.h"
 #include "content/public/test/test_service.mojom.h"

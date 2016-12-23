@@ -4,6 +4,7 @@
 
 #include "services/ui/public/cpp/gpu/gpu.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"

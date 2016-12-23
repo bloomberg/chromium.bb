@@ -4,6 +4,7 @@
 
 #include "chrome/browser/webshare/share_service_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 // static

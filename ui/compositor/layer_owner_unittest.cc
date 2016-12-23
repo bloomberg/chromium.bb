@@ -5,6 +5,7 @@
 #include "ui/compositor/layer_owner.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/null_task_runner.h"
 #include "cc/animation/animation_player.h"
 #include "testing/gtest/include/gtest/gtest.h"

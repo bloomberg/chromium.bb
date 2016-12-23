@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "services/ui/public/cpp/tests/window_tree_client_private.h"
 #include "testing/gtest/include/gtest/gtest.h"

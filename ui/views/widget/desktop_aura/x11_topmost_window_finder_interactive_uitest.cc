@@ -18,6 +18,7 @@
 #undef None
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window.h"

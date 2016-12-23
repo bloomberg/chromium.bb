@@ -4,6 +4,7 @@
 
 #include "content/browser/leveldb_wrapper_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "components/leveldb/public/cpp/util.h"
 #include "content/public/test/test_browser_thread_bundle.h"

@@ -5,6 +5,7 @@
 #include "services/ui/ws/focus_controller.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws/focus_controller_delegate.h"
 #include "services/ui/ws/focus_controller_observer.h"

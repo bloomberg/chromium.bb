@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/shared_web_view.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/ui/web_view_handle.h"
 #include "chrome/browser/profiles/profile.h"

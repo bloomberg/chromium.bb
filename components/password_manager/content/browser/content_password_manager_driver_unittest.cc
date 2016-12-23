@@ -5,6 +5,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
 #include "components/autofill/core/browser/test_autofill_client.h"

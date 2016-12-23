@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/big_endian.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"

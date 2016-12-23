@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/preferences_connection_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/preferences_manager.h"
 #include "chrome/browser/profiles/profile.h"

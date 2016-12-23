@@ -5,6 +5,7 @@
 #include "services/ui/ws/user_activity_monitor.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/default_tick_clock.h"
 
 namespace ui {

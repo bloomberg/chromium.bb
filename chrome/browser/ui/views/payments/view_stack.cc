@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/payments/view_stack.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/views/layout/fill_layout.h"
 
 ViewStack::ViewStack()
