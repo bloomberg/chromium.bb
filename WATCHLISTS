@@ -716,13 +716,15 @@
         'chrome/browser/ui/webui/snippets_internals|'\
         'components/ntp_snippets/|'\
         'chrome/android/java/res/layout/new_tab_page|'\
-        'chrome/android/java/res/layout/most_visited'
+        'chrome/android/java/res/layout/most_visited|'\
+        'ios/chrome/browser/ntp_snippets'
     },
     'ntp_tiles': {
       'filepath': 'chrome/browser/android/ntp/|'\
         'chrome/browser/ui/webui/ntp/|'\
         'chrome/common/search/ntp|'\
-        'components/ntp_tiles/'
+        'components/ntp_tiles/|'\
+        'ios/chrome/browser/ntp_tiles'
     },
     'offline_pages': {
       'filepath': 'components/offline_pages/'\
@@ -1882,7 +1884,8 @@
                 'samarth+watch@chromium.org',
                 'skanuj+watch@chromium.org'],
     'ios_chrome': ['pkl@chromium.org',
-                   'sdefresne+watch@chromium.org'],
+                   'sdefresne+watch@chromium.org',
+                   'noyau+watch@chromium.org'],
     'ipc': ['darin-cc@chromium.org',
             'jam@chromium.org'],
     'libwebp': ['jzern@chromium.org',
@@ -1938,8 +1941,10 @@
     'nqe': ['tbansal+watch-nqe@chromium.org'],
     'ntp': ['dbeam+watch-ntp@chromium.org',
             'pedrosimonetti+watch@chromium.org'],
-    'ntp_snippets': ['ntp-dev+reviews@chromium.org'],
-    'ntp_tiles': ['ntp-dev+reviews@chromium.org'],
+    'ntp_snippets': ['ntp-dev+reviews@chromium.org',
+                     'noyau+watch@chromium.org'],
+    'ntp_tiles': ['ntp-dev+reviews@chromium.org',
+                  'noyau+watch@chromium.org'],
     'offline_pages': ['chili+watch@chromium.org',
                       'dewittj+watch@chromium.org',
                       'dimich+watch@chromium.org',
