@@ -60,12 +60,10 @@ RedirectData CreateRedirectData(const std::string& primary_key,
   return data;
 }
 
-NavigationID CreateNavigationID(int process_id,
-                                int render_frame_id,
+NavigationID CreateNavigationID(SessionID::id_type tab_id,
                                 const std::string& main_frame_url) {
   NavigationID navigation_id;
-  navigation_id.render_process_id = process_id;
-  navigation_id.render_frame_id = render_frame_id;
+  navigation_id.tab_id = tab_id;
   navigation_id.main_frame_url = GURL(main_frame_url);
   navigation_id.creation_time = base::TimeTicks::Now();
   return navigation_id;
@@ -82,8 +80,7 @@ PageRequestSummary CreatePageRequestSummary(
   return summary;
 }
 
-URLRequestSummary CreateURLRequestSummary(int process_id,
-                                          int render_frame_id,
+URLRequestSummary CreateURLRequestSummary(SessionID::id_type tab_id,
                                           const std::string& main_frame_url,
                                           const std::string& resource_url,
                                           content::ResourceType resource_type,
@@ -94,8 +91,7 @@ URLRequestSummary CreateURLRequestSummary(int process_id,
                                           bool has_validators,
                                           bool always_revalidate) {
   URLRequestSummary summary;
-  summary.navigation_id =
-      CreateNavigationID(process_id, render_frame_id, main_frame_url);
+  summary.navigation_id = CreateNavigationID(tab_id, main_frame_url);
   summary.resource_url =
       resource_url.empty() ? GURL(main_frame_url) : GURL(resource_url);
   summary.resource_type = resource_type;
@@ -158,9 +154,7 @@ std::ostream& operator<<(std::ostream& os, const URLRequestSummary& summary) {
 }
 
 std::ostream& operator<<(std::ostream& os, const NavigationID& navigation_id) {
-  return os << navigation_id.render_process_id << ","
-            << navigation_id.render_frame_id << ","
-            << navigation_id.main_frame_url;
+  return os << navigation_id.tab_id << "," << navigation_id.main_frame_url;
 }
 
 bool operator==(const PrefetchData& lhs, const PrefetchData& rhs) {

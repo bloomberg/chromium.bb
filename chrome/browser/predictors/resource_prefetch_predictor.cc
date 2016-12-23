@@ -715,7 +715,7 @@ void ResourcePrefetchPredictor::CleanupAbandonedNavigations(
   base::TimeTicks time_now = base::TimeTicks::Now();
   for (NavigationMap::iterator it = inflight_navigations_.begin();
        it != inflight_navigations_.end();) {
-    if (it->first.IsSameRenderer(navigation_id) ||
+    if ((it->first.tab_id == navigation_id.tab_id) ||
         (time_now - it->first.creation_time > max_navigation_age)) {
       inflight_navigations_.erase(it++);
     } else {

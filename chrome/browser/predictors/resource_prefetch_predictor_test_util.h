@@ -9,6 +9,7 @@
 
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
+#include "components/sessions/core/session_id.h"
 
 namespace predictors {
 
@@ -34,8 +35,7 @@ PrefetchData CreatePrefetchData(const std::string& primary_key,
 RedirectData CreateRedirectData(const std::string& primary_key,
                                 uint64_t last_visit_time = 0);
 
-NavigationID CreateNavigationID(int process_id,
-                                int render_frame_id,
+NavigationID CreateNavigationID(SessionID::id_type tab_id,
                                 const std::string& main_frame_url);
 
 ResourcePrefetchPredictor::PageRequestSummary CreatePageRequestSummary(
@@ -45,8 +45,7 @@ ResourcePrefetchPredictor::PageRequestSummary CreatePageRequestSummary(
         subresource_requests);
 
 ResourcePrefetchPredictor::URLRequestSummary CreateURLRequestSummary(
-    int process_id,
-    int render_frame_id,
+    SessionID::id_type tab_id,
     const std::string& main_frame_url,
     const std::string& resource_url = std::string(),
     content::ResourceType resource_type = content::RESOURCE_TYPE_MAIN_FRAME,

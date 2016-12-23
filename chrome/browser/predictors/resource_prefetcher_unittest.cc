@@ -165,7 +165,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
                             GURL("http://yahoo.com/resource4.png"),
                             GURL("http://yahoo.com/resource5.png")};
 
-  NavigationID navigation_id = CreateNavigationID(1, 2, main_frame_url.spec());
+  NavigationID navigation_id = CreateNavigationID(1, main_frame_url.spec());
 
   prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_, config_,
                                                main_frame_url, urls));
@@ -237,7 +237,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
                             GURL("http://yahoo.com/resource3.png"),
                             GURL("http://m.google.com/resource1.jpg")};
 
-  NavigationID navigation_id = CreateNavigationID(1, 2, main_frame_url.spec());
+  NavigationID navigation_id = CreateNavigationID(1, main_frame_url.spec());
 
   prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_, config_,
                                                main_frame_url, urls));

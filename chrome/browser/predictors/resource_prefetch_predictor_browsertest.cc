@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+
+#include <set>
+
 #include "base/command_line.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -15,8 +19,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
+#include "net/base/host_port_pair.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,6 +29,9 @@
 namespace predictors {
 
 namespace {
+
+const char kFooHost[] = "foo.com";
+const char kBarHost[] = "bar.com";
 
 const char kImageMime[] = "image/png";
 const char kStyleMime[] = "text/css";
@@ -132,8 +139,7 @@ void RemoveDuplicateSubresources(std::vector<URLRequestSummary>* subresources) {
 // Fill a NavigationID with "empty" data that does not trigger
 // the is_valid DCHECK(). Allows comparing.
 void SetValidNavigationID(NavigationID* navigation_id) {
-  navigation_id->render_process_id = 0;
-  navigation_id->render_frame_id = 0;
+  navigation_id->tab_id = 0;
   navigation_id->main_frame_url = GURL("http://127.0.0.1");
 }
 
@@ -192,6 +198,8 @@ class LearningObserver : public TestObserver {
     EXPECT_EQ(url_visit_count, url_visit_count_);
     EXPECT_EQ(summary.main_frame_url, summary_.main_frame_url);
     EXPECT_EQ(summary.initial_url, summary_.initial_url);
+    for (const auto& resource : summary.subresource_requests)
+      current_navigation_ids_.insert(resource.navigation_id);
     CompareSubresources(summary.subresource_requests,
                         summary_.subresource_requests, match_navigation_id_);
     run_loop_.Quit();
@@ -199,11 +207,16 @@ class LearningObserver : public TestObserver {
 
   void Wait() { run_loop_.Run(); }
 
+  std::set<NavigationID>& current_navigation_ids() {
+    return current_navigation_ids_;
+  }
+
  private:
   base::RunLoop run_loop_;
   size_t url_visit_count_;
   PageRequestSummary summary_;
   bool match_navigation_id_;
+  std::set<NavigationID> current_navigation_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(LearningObserver);
 };
@@ -247,6 +260,9 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    // Resolving all hosts to local allows us to have
+    // cross domains navigations (matching url_visit_count_, etc).
+    host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&ResourcePrefetchPredictorBrowserTest::HandleRedirectRequest,
                    base::Unretained(this)));
@@ -284,11 +300,15 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
       url_request_summaries.push_back(
           GetURLRequestSummaryForResource(endpoint_url, kv.second));
     }
+
+    bool match_navigation_id =
+        disposition == WindowOpenDisposition::CURRENT_TAB;
+
     LearningObserver observer(
         predictor_, UpdateAndGetVisitCount(main_frame_url),
         CreatePageRequestSummary(endpoint_url.spec(), main_frame_url.spec(),
                                  url_request_summaries),
-        true);  // Matching navigation id by default
+        match_navigation_id);
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), main_frame_url, disposition,
         ui_test_utils::BROWSER_TEST_NONE);
@@ -297,6 +317,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
       if (!kv.second.is_no_store && kv.second.should_be_recorded)
         kv.second.request.was_cached = true;
     }
+    for (const auto& nav : observer.current_navigation_ids())
+      navigation_id_history_.insert(nav);
   }
 
   void PrefetchURL(const GURL& main_frame_url) {
@@ -352,6 +374,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     }
   }
 
+  void ClearResources() { resources_.clear(); }
+
   void ClearCache() {
     BrowsingDataRemover* remover =
         BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
@@ -393,6 +417,10 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
 
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
+  size_t navigation_ids_history_size() const {
+    return navigation_id_history_.size();
+  }
+
  private:
   // ResourcePrefetchPredictor needs to be initialized before the navigation
   // happens otherwise this navigation will be ignored by predictor.
@@ -416,10 +444,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     URLRequestSummary summary(resource_summary.request);
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    int process_id = web_contents->GetRenderProcessHost()->GetID();
-    int frame_id = web_contents->GetMainFrame()->GetRoutingID();
     summary.navigation_id =
-        CreateNavigationID(process_id, frame_id, main_frame_url.spec());
+        NavigationID(web_contents, main_frame_url, base::TimeTicks::Now());
     return summary;
   }
 
@@ -436,7 +462,21 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
 
   std::unique_ptr<net::test_server::HttpResponse> HandleResourceRequest(
       const net::test_server::HttpRequest& request) const {
-    auto resource_it = resources_.find(request.GetURL());
+    GURL resource_url = request.GetURL();
+    // Retrieve the host that was used in the request because
+    // resource_url contains a resolved host (e.g. 127.0.0.1).
+    if (request.headers.find("Host") != request.headers.end()) {
+      auto host_port_pair =
+          net::HostPortPair::FromString(request.headers.at("Host"));
+      GURL::Replacements replace_host;
+      replace_host.SetHostStr(host_port_pair.host());
+      resource_url = resource_url.ReplaceComponents(replace_host);
+    } else {
+      ADD_FAILURE() << "Host header was not found in a HttpRequest to url: "
+                    << resource_url.spec();
+    }
+
+    auto resource_it = resources_.find(resource_url);
     if (resource_it == resources_.end())
       return nullptr;
 
@@ -487,6 +527,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   std::map<GURL, ResourceSummary> resources_;
   std::map<GURL, RedirectEdge> redirects_;
   std::map<GURL, size_t> visit_count_;
+  std::set<NavigationID> navigation_id_history_;
 };
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, Simple) {
@@ -528,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, RedirectChain) {
 }
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
-                       LearningAfterHttpToHttpsRedirect) {
+                       HttpToHttpsRedirect) {
   EnableHttpsServer();
   AddRedirectChain(GetURL(kRedirectPath),
                    {{net::HTTP_MOVED_PERMANENTLY,
@@ -541,9 +582,7 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
               content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   AddResource(https_server()->GetURL(kFontPath),
               content::RESOURCE_TYPE_FONT_RESOURCE, net::HIGHEST);
-  NavigateToURLAndCheckSubresources(GetURL(kRedirectPath));
-  // TODO(alexilin): Test learning and prefetching once crbug.com/650246 is
-  // fixed.
+  TestLearningAndPrefetching(GetURL(kRedirectPath));
 }
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
@@ -617,6 +656,65 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   AddUnrecordedResources({GetURL(kImagePath), GetURL(kStylePath),
                           GetURL(kScriptPath), GetURL(kFontPath)});
   TestLearningAndPrefetching(GetURL(kHtmlIframePath));
+}
+
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
+                       CrossSiteNavigation) {
+  AddResource(embedded_test_server()->GetURL(kFooHost, kImagePath),
+              content::RESOURCE_TYPE_IMAGE, net::LOWEST);
+  AddResource(embedded_test_server()->GetURL(kFooHost, kStylePath),
+              content::RESOURCE_TYPE_STYLESHEET, net::HIGHEST);
+  AddResource(embedded_test_server()->GetURL(kFooHost, kScriptPath),
+              content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
+  AddResource(embedded_test_server()->GetURL(kFooHost, kFontPath),
+              content::RESOURCE_TYPE_FONT_RESOURCE, net::HIGHEST);
+  TestLearningAndPrefetching(
+      embedded_test_server()->GetURL(kFooHost, kHtmlSubresourcesPath));
+  ClearResources();
+
+  AddResource(embedded_test_server()->GetURL(kBarHost, kImagePath),
+              content::RESOURCE_TYPE_IMAGE, net::LOWEST);
+  AddResource(embedded_test_server()->GetURL(kBarHost, kStylePath),
+              content::RESOURCE_TYPE_STYLESHEET, net::HIGHEST);
+  AddResource(embedded_test_server()->GetURL(kBarHost, kScriptPath),
+              content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
+  AddResource(embedded_test_server()->GetURL(kBarHost, kFontPath),
+              content::RESOURCE_TYPE_FONT_RESOURCE, net::HIGHEST);
+  // Navigating to kBarHost, although done in the same tab, will generate a new
+  // process.
+  TestLearningAndPrefetching(
+      embedded_test_server()->GetURL(kBarHost, kHtmlSubresourcesPath));
+}
+
+// In this test we are trying to assess if :
+// - Reloading in the same tab is using the same NavigationID.
+// - Navigation into a new tab, window or popup yields different NavigationID's.
+// - Navigating twice to a new browser/popup yields different NavigationID's.
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
+                       TabIdBehavingAsExpected) {
+  AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
+  AddResource(GetURL(kStylePath), content::RESOURCE_TYPE_STYLESHEET,
+              net::HIGHEST);
+  AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
+  AddResource(GetURL(kFontPath), content::RESOURCE_TYPE_FONT_RESOURCE,
+              net::HIGHEST);
+  NavigateToURLAndCheckSubresources(GetURL(kHtmlSubresourcesPath));
+  EXPECT_EQ(navigation_ids_history_size(), 1U);
+  ClearCache();
+  NavigateToURLAndCheckSubresources(GetURL(kHtmlSubresourcesPath));
+  EXPECT_EQ(navigation_ids_history_size(), 1U);
+  ClearCache();
+  NavigateToURLAndCheckSubresources(GetURL(kHtmlSubresourcesPath),
+                                    WindowOpenDisposition::NEW_BACKGROUND_TAB);
+  EXPECT_EQ(navigation_ids_history_size(), 2U);
+  ClearCache();
+  NavigateToURLAndCheckSubresources(GetURL(kHtmlSubresourcesPath),
+                                    WindowOpenDisposition::NEW_WINDOW);
+  EXPECT_EQ(navigation_ids_history_size(), 3U);
+  ClearCache();
+  NavigateToURLAndCheckSubresources(GetURL(kHtmlSubresourcesPath),
+                                    WindowOpenDisposition::NEW_POPUP);
+  EXPECT_EQ(navigation_ids_history_size(), 4U);
 }
 
 }  // namespace predictors

@@ -70,7 +70,9 @@ bool TryToFillNavigationID(
     return false;
   *navigation_id =
       predictors::NavigationID(web_contents, main_frame_url, creation_time);
-  return true;
+  // A WebContents might be associated with something that is not a tab.
+  // In this case tab_id will be -1 and is_valid() will return false.
+  return navigation_id->is_valid();
 }
 
 }  // namespace

@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/time/time.h"
+#include "components/sessions/core/session_id.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -43,17 +44,14 @@ struct NavigationID {
                const GURL& main_frame_url,
                const base::TimeTicks& creation_time);
   NavigationID(const NavigationID& other);
+
   bool operator<(const NavigationID& rhs) const;
   bool operator==(const NavigationID& rhs) const;
 
-  bool IsSameRenderer(const NavigationID& other) const;
-
-  // Returns true iff the render_process_id_, render_frame_id_ and
-  // frame_url_ has been set correctly.
+  // Returns true iff the tab_id is valid and the Main frame URL is set.
   bool is_valid() const;
 
-  int render_process_id;
-  int render_frame_id;
+  SessionID::id_type tab_id;
   GURL main_frame_url;
 
   // NOTE: Even though we store the creation time here, it is not used during

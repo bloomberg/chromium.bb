@@ -10,11 +10,10 @@
 #include "base/command_line.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace predictors {
@@ -76,52 +75,38 @@ bool IsSpeculativeResourcePrefetchingEnabled(
   return false;
 }
 
-NavigationID::NavigationID()
-    : render_process_id(-1),
-      render_frame_id(-1) {
-}
+NavigationID::NavigationID() : tab_id(-1) {}
 
 NavigationID::NavigationID(const NavigationID& other)
-    : render_process_id(other.render_process_id),
-      render_frame_id(other.render_frame_id),
+    : tab_id(other.tab_id),
       main_frame_url(other.main_frame_url),
-      creation_time(other.creation_time) {
-}
+      creation_time(other.creation_time) {}
 
 NavigationID::NavigationID(content::WebContents* web_contents)
-    : render_process_id(web_contents->GetRenderProcessHost()->GetID()),
-      render_frame_id(web_contents->GetMainFrame()->GetRoutingID()),
-      main_frame_url(web_contents->GetURL()) {
-}
+    : tab_id(SessionTabHelper::IdForTab(web_contents)),
+      main_frame_url(web_contents->GetLastCommittedURL()),
+      creation_time(base::TimeTicks::Now()) {}
 
 NavigationID::NavigationID(content::WebContents* web_contents,
                            const GURL& main_frame_url,
                            const base::TimeTicks& creation_time)
-    : render_process_id(web_contents->GetRenderProcessHost()->GetID()),
-      render_frame_id(web_contents->GetMainFrame()->GetRoutingID()),
+    : tab_id(SessionTabHelper::IdForTab(web_contents)),
       main_frame_url(main_frame_url),
       creation_time(creation_time) {}
 
 bool NavigationID::is_valid() const {
-  return render_process_id != -1 && render_frame_id != -1 &&
-      !main_frame_url.is_empty();
+  return tab_id != -1 && !main_frame_url.is_empty();
 }
 
 bool NavigationID::operator<(const NavigationID& rhs) const {
   DCHECK(is_valid() && rhs.is_valid());
-  return std::tie(render_process_id, render_frame_id, main_frame_url) <
-    std::tie(rhs.render_process_id, rhs.render_frame_id, rhs.main_frame_url);
+  return std::tie(tab_id, main_frame_url) <
+         std::tie(rhs.tab_id, rhs.main_frame_url);
 }
 
 bool NavigationID::operator==(const NavigationID& rhs) const {
   DCHECK(is_valid() && rhs.is_valid());
-  return IsSameRenderer(rhs) && main_frame_url == rhs.main_frame_url;
-}
-
-bool NavigationID::IsSameRenderer(const NavigationID& other) const {
-  DCHECK(is_valid() && other.is_valid());
-  return render_process_id == other.render_process_id &&
-      render_frame_id == other.render_frame_id;
+  return tab_id == rhs.tab_id && main_frame_url == rhs.main_frame_url;
 }
 
 ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig()
