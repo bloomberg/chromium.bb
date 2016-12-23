@@ -49,6 +49,7 @@
 #include "net/base/ip_address.h"
 
 #if defined(USE_X11)
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/cast/test/linux_output_window.h"
 #endif  // defined(USE_X11)
 

@@ -11,6 +11,7 @@
 
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"

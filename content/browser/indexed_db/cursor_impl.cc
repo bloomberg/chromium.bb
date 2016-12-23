@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/cursor_impl.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"

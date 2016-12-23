@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/presentation_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/presentation/presentation_connection_client.h"

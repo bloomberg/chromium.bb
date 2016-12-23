@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/optional.h"
 #include "base/test/histogram_tester.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"

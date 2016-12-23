@@ -4,6 +4,7 @@
 
 #include "cc/test/test_layer_tree_host_base.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/trees/layer_tree_impl.h"

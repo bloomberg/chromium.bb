@@ -8,6 +8,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"

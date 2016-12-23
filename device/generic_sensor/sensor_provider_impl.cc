@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "device/generic_sensor/platform_sensor_provider.h"
 #include "device/generic_sensor/sensor_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

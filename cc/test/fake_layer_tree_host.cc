@@ -5,6 +5,7 @@
 #include "cc/test/fake_layer_tree_host.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_image_serialization_processor.h"

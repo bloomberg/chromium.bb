@@ -4,6 +4,7 @@
 
 #include "content/browser/compositor/vulkan_browser_compositor_output_surface.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/output_surface_client.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "gpu/vulkan/vulkan_surface.h"

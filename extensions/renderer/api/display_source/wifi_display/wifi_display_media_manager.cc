@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/task_runner_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/public/renderer/render_thread.h"

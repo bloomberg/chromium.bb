@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/in_process_context_provider.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/surfaces/display.h"

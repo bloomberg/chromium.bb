@@ -7,6 +7,7 @@
 #include <Sensors.h>
 
 #include "base/callback.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/win/iunknown_impl.h"
 #include "device/generic_sensor/generic_sensor_consts.h"

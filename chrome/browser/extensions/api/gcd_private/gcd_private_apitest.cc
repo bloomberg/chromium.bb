@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/gcd_private/gcd_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"

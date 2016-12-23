@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"

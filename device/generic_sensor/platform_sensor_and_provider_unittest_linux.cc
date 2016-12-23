@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "device/generic_sensor/generic_sensor_consts.h"
 #include "device/generic_sensor/linux/sensor_data_linux.h"
 #include "device/generic_sensor/linux/sensor_device_manager.h"

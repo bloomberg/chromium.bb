@@ -13,6 +13,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_math.h"
 #include "base/sys_info.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"

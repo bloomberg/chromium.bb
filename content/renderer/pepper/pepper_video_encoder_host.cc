@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_math.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/pepper_file_util.h"
 #include "content/public/renderer/renderer_ppapi_host.h"

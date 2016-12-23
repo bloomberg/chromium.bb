@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/mock_password_store.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace password_manager {
 

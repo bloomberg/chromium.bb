@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/grit/generated_resources.h"

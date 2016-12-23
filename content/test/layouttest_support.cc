@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/test/pixel_test_output_surface.h"

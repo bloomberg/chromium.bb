@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/gtest_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/platform_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/test/material_design_controller_test_api.h"

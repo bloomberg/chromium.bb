@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/database_impl.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"

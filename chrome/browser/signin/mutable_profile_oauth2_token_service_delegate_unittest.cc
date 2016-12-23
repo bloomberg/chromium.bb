@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/pref_registry_simple.h"

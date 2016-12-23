@@ -53,6 +53,7 @@
 
 #if defined(OS_CHROMEOS)
 #if defined(USE_V4L2_CODEC)
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/gpu/v4l2_video_encode_accelerator.h"
 #endif
 #if defined(ARCH_CPU_X86_FAMILY)

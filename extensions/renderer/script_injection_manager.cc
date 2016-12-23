@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/renderer/render_frame.h"

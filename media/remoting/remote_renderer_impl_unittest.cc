@@ -5,6 +5,7 @@
 #include "media/remoting/remote_renderer_impl.h"
 
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/test_helpers.h"
 #include "media/remoting/fake_remoting_controller.h"

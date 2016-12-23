@@ -19,6 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"

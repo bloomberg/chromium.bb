@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"

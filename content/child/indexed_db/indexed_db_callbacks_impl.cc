@@ -4,6 +4,7 @@
 
 #include "content/child/indexed_db/indexed_db_callbacks_impl.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "content/child/indexed_db/webidbcursor_impl.h"

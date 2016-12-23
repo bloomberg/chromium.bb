@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/browser_sync/test_http_bridge_factory.h"
 #include "components/browser_sync/test_profile_sync_service.h"
 #include "components/sync/driver/glue/sync_backend_host_core.h"

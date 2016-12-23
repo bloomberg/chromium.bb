@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/cdm_config.h"

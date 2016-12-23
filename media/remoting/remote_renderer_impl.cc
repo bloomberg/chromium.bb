@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
