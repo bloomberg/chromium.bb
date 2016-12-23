@@ -147,23 +147,25 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   if (is_same_page_navigation)
     return;
 
-  RecordHistogramsOnLoadCommitted();
-  if (activation_state_for_provisional_load_ != ActivationState::DISABLED &&
-      ruleset_dealer_->IsRulesetAvailable()) {
-    std::vector<GURL> ancestor_document_urls = GetAncestorDocumentURLs();
-    base::Closure first_disallowed_load_callback(
-        base::Bind(&SubresourceFilterAgent::
-                       SignalFirstSubresourceDisallowedForCommittedLoad,
-                   AsWeakPtr()));
-    std::unique_ptr<DocumentSubresourceFilter> filter(
-        new DocumentSubresourceFilter(
-            activation_state_for_provisional_load_, measure_performance_,
-            ruleset_dealer_->GetRuleset(), ancestor_document_urls,
-            first_disallowed_load_callback));
-    filter_for_last_committed_load_ = filter->AsWeakPtr();
-    SetSubresourceFilterForCommittedLoad(std::move(filter));
+  std::vector<GURL> ancestor_document_urls = GetAncestorDocumentURLs();
+  if (ancestor_document_urls.front().SchemeIsHTTPOrHTTPS() ||
+      ancestor_document_urls.front().SchemeIsFile()) {
+    RecordHistogramsOnLoadCommitted();
+    if (activation_state_for_provisional_load_ != ActivationState::DISABLED &&
+        ruleset_dealer_->IsRulesetAvailable()) {
+      base::Closure first_disallowed_load_callback(
+          base::Bind(&SubresourceFilterAgent::
+                         SignalFirstSubresourceDisallowedForCommittedLoad,
+                     AsWeakPtr()));
+      std::unique_ptr<DocumentSubresourceFilter> filter(
+          new DocumentSubresourceFilter(
+              activation_state_for_provisional_load_, measure_performance_,
+              ruleset_dealer_->GetRuleset(), ancestor_document_urls,
+              first_disallowed_load_callback));
+      filter_for_last_committed_load_ = filter->AsWeakPtr();
+      SetSubresourceFilterForCommittedLoad(std::move(filter));
+    }
   }
-
   activation_state_for_provisional_load_ = ActivationState::DISABLED;
 }
 

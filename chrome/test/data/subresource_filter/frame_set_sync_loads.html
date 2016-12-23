@@ -1,0 +1,11 @@
+<html>
+  <body>
+    <iframe name="blank_one" src="about:blank"></iframe>
+    <iframe name="blank_two" src="data:text/html,<h1>Content</h1>"></iframe>
+    <iframe id="initially_blank" name="initially_blank" src="about:blank"></iframe>
+  </body>
+  <script>
+    let f = document.getElementById("initially_blank");
+    f.src = "frame_with_included_script.html";
+  </script>
+</html>

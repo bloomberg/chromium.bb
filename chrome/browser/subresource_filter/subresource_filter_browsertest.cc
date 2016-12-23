@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -211,6 +212,29 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   content::RenderFrameHost* dynamic_frame = FindFrameByName("dynamic");
   ASSERT_TRUE(dynamic_frame);
   EXPECT_FALSE(WasParsedScriptElementLoaded(dynamic_frame));
+}
+
+// Schemes 'about:' and 'chrome-native:' are loaded synchronously as empty
+// documents in Blink, so there is no chance (or need) to send an activation
+// IPC message. Make sure that histograms are not polluted with these loads.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, NoActivationOnAboutBlank) {
+  GURL url(GetTestUrl("subresource_filter/frame_set_sync_loads.html"));
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::RenderFrameHost* frame = FindFrameByName("initially_blank");
+  ASSERT_TRUE(frame);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(frame));
+
+  // The only frames where filtering was (even considered to be) activated
+  // should be the main frame, and the child that was navigated to an HTTP URL.
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester.ExpectUniqueSample(
+      "SubresourceFilter.DocumentLoad.ActivationState",
+      static_cast<base::Histogram::Sample>(ActivationState::ENABLED), 2);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,

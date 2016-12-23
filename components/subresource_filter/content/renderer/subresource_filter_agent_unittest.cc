@@ -150,6 +150,8 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   }
 
   void ExpectNoSubresourceFilterGetsInjected() {
+    EXPECT_CALL(*agent(), GetAncestorDocumentURLs())
+        .Times(::testing::AtLeast(0));
     EXPECT_CALL(*agent(), OnSetSubresourceFilterForCommittedLoadCalled())
         .Times(0);
   }
@@ -221,6 +223,27 @@ TEST_F(SubresourceFilterAgentTest,
       kDocumentLoadActivationState, static_cast<int>(ActivationState::ENABLED),
       1);
   histogram_tester.ExpectUniqueSample(kDocumentLoadRulesetIsAvailable, 0, 1);
+
+  histogram_tester.ExpectTotalCount(kSubresourcesTotal, 0);
+  histogram_tester.ExpectTotalCount(kSubresourcesEvaluated, 0);
+  histogram_tester.ExpectTotalCount(kSubresourcesMatchedRules, 0);
+  histogram_tester.ExpectTotalCount(kSubresourcesDisallowed, 0);
+
+  histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration, 0);
+  histogram_tester.ExpectTotalCount(kEvaluationTotalCPUDuration, 0);
+}
+
+TEST_F(SubresourceFilterAgentTest, EmptyDocumentLoad_NoFilterIsInjected) {
+  base::HistogramTester histogram_tester;
+  ExpectNoSubresourceFilterGetsInjected();
+  EXPECT_CALL(*agent(), GetAncestorDocumentURLs())
+      .WillOnce(::testing::Return(
+          std::vector<GURL>({GURL("about:blank"), GURL("http://outer.com/")})));
+  StartLoadAndSetActivationState(ActivationState::ENABLED);
+  FinishLoad();
+
+  histogram_tester.ExpectTotalCount(kDocumentLoadActivationState, 0);
+  histogram_tester.ExpectTotalCount(kDocumentLoadRulesetIsAvailable, 0);
 
   histogram_tester.ExpectTotalCount(kSubresourcesTotal, 0);
   histogram_tester.ExpectTotalCount(kSubresourcesEvaluated, 0);
