@@ -119,10 +119,13 @@ const CGFloat kPadding = 10;
 // TODO(lliabraa): Figure out how to support memory warnings (or something
 // like them) in official builds.
 #if CHROMIUM_BUILD
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
   [self addButtonWithTitle:@"Trigger Memory Warning"
                     target:[UIApplication sharedApplication]
                     action:@selector(_performMemoryWarning)
                 withOrigin:[self originForSubviewAtIndex:index++]];
+#pragma clang diagnostic pop
 #endif  // CHROMIUM_BUILD
 
   // Display a text input to set the amount of artificial memory bloat and a
@@ -504,12 +507,15 @@ const CGFloat kPadding = 10;
   }
   // If a valid value was found have the timer start triggering continuous
   // memory warnings.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
   _memoryWarningTimer.reset(
       [[NSTimer scheduledTimerWithTimeInterval:timerValue
                                         target:[UIApplication sharedApplication]
                                       selector:@selector(_performMemoryWarning)
                                       userInfo:nil
                                        repeats:YES] retain]);
+#pragma clang diagnostic push
 }
 #endif  // CHROMIUM_BUILD
 

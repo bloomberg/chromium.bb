@@ -55,6 +55,13 @@ void AssertTryAgainButtonOnPage() {
 
 }  // namespace
 
+// Expose internal class methods for swizzling.
+@interface SafeModeViewController (Testing)
++ (BOOL)detectedThirdPartyMods;
++ (BOOL)hasReportToUpload;
+- (NSArray*)startupCrashModules;
+@end
+
 // Tests the display of Safe Mode Controller under different error states of
 // jailbroken-ness and whether a crash dump was saved.
 @interface SafeModeTestCase : ChromeTestCase

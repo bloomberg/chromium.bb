@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_touch_forwarding_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"

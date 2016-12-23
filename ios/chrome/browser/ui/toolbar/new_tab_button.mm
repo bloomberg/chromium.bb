@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/toolbar/new_tab_button.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"

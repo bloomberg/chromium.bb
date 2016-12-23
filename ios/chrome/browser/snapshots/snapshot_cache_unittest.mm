@@ -199,8 +199,11 @@ class SnapshotCacheTest : public PlatformTest {
   void TriggerMemoryWarning() {
     // _performMemoryWarning is a private API and must not be compiled into
     // official builds.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
     [[UIApplication sharedApplication]
         performSelector:@selector(_performMemoryWarning)];
+#pragma clang diagnostic pop
   }
 
   web::TestWebThreadBundle thread_bundle_;

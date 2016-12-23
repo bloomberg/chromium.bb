@@ -974,6 +974,12 @@ config("default_warnings") {
       cflags += [ "-Wpartial-availability" ]
     }
 
+    if (is_ios) {
+      # When compiling Objective-C, warns if a selector named via @selector has
+      # not been defined in any visible interface.
+      cflags += [ "-Wundeclared-selector" ]
+    }
+
     # Suppress warnings about ABI changes on ARM (Clang doesn't give this
     # warning).
     if (current_cpu == "arm" && !is_clang) {

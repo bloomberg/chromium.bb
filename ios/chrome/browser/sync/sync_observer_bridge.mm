@@ -27,6 +27,6 @@ void SyncObserverBridge::OnStateChanged() {
 }
 
 void SyncObserverBridge::OnSyncConfigurationCompleted() {
-  if ([delegate_ respondsToSelector:@selector(onSyncConfigurationCompleted:)])
+  if ([delegate_ respondsToSelector:@selector(onSyncConfigurationCompleted)])
     [delegate_ onSyncConfigurationCompleted];
 }

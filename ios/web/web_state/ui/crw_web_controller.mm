@@ -3968,9 +3968,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!_placeholderOverlayView || _overlayPreviewMode)
     return;
 
-  [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                           selector:@selector(removeOverlay)
-                                             object:nil];
+  [NSObject
+      cancelPreviousPerformRequestsWithTarget:self
+                                     selector:@selector(
+                                                  removePlaceholderOverlay)
+                                       object:nil];
   // Remove overlay with transition.
   [UIView animateWithDuration:kSnapshotOverlayTransition
       animations:^{

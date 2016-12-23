@@ -13,6 +13,8 @@
 - (void)setBreakpadUploadingEnabled:(BOOL)enableUploading;
 - (void)setReporting:(BOOL)enableReporting;
 - (BOOL)isMetricsReportingEnabledWifiOnly;
++ (void)recordNumTabAtStartup:(int)numTabs;
++ (void)recordNumTabAtResume:(int)numTabs;
 @end
 
 #endif  // IOS_CHROME_APP_APPLICATION_DELEGATE_METRICS_MEDIATOR_TESTING_H_

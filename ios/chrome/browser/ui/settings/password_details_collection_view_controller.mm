@@ -90,7 +90,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
         [PasswordDetailsCollectionViewController simplifyOrigin:origin];
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
-                      selector:@selector(hidePassword:)
+                      selector:@selector(hidePassword)
                           name:UIApplicationDidEnterBackgroundNotification
                         object:nil];
 

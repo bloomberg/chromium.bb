@@ -39,7 +39,10 @@ void SimulateWKWebViewCrash(WKWebView* webView) {
   if ([webView.navigationDelegate respondsToSelector:selector]) {
     [webView.navigationDelegate performSelector:selector withObject:webView];
   }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
   [webView performSelector:@selector(_processDidExit)];
+#pragma clang diagnostic pop
 }
 
 WKWebView* BuildTerminatedWKWebView() {

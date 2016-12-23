@@ -10,7 +10,10 @@ config("ocmock_config") {
 
 config("ocmock_warnings") {
   # NSInvocation+OCMAdditions.m has some `- (void) foo; {...`
-  cflags = [ "-Wno-semicolon-before-method-body" ]
+  cflags = [
+    "-Wno-semicolon-before-method-body",
+    "-Wno-undeclared-selector",
+  ]
 }
 
 source_set("ocmock") {
