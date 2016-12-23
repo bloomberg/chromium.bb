@@ -29,6 +29,13 @@ class {{export_attribute}} {{interface.name}}
   using ResponseValidator_ = mojo::PassThroughFilter;
 {%- endif %}
 
+{#--- Metadata #}
+  enum MethodMinVersions : uint32_t {
+{%- for method in interface.methods %}
+    k{{method.name}}MinVersion = {{method.min_version|default(0, true)}},
+{%- endfor %}
+  };
+
 {#--- Enums #}
 {%- for enum in interface.enums %}
   using {{enum.name}} = {{enum|get_name_for_kind(flatten_nested_kind=True)}};
