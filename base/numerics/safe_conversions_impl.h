@@ -40,8 +40,8 @@ struct PositionOfSignBit {
 template <typename T>
 constexpr bool HasSignBit(T x) {
   // Cast to unsigned since right shift on signed is undefined.
-  return !!(static_cast<typename std::make_unsigned<T>::type>(x) >>
-            PositionOfSignBit<T>::value);
+  return (static_cast<typename std::make_unsigned<T>::type>(x) >>
+          PositionOfSignBit<T>::value) != 0;
 }
 
 // This wrapper undoes the standard integer promotions.
@@ -80,22 +80,34 @@ constexpr typename std::make_signed<T>::type ConditionalNegate(
       (static_cast<UnsignedT>(x) ^ -SignedT(is_negative)) + is_negative);
 }
 
-// This performs a safe, non-branching absolute value via unsigned overflow.
+// Wrapper for the sign mask used in the absolute value function.
 template <typename T>
-constexpr T SafeUnsignedAbsImpl(T value, T sign_mask) {
-  static_assert(!std::is_signed<T>::value, "Types must be unsigned.");
-  return (value ^ sign_mask) - sign_mask;
+constexpr T SignMask(T x) {
+  using SignedT = typename std::make_signed<T>::type;
+  // Right shift on a signed number is implementation defined, but it's often
+  // implemented as arithmetic shift. If the compiler uses an arithmetic shift,
+  // then use that to avoid the extra negation.
+  return static_cast<T>(
+      (static_cast<SignedT>(-1) >> PositionOfSignBit<T>::value) ==
+              static_cast<SignedT>(-1)
+          ? (static_cast<SignedT>(x) >> PositionOfSignBit<T>::value)
+          : -static_cast<SignedT>(HasSignBit(x)));
 }
+static_assert(SignMask(-2) == -1,
+              "Inconsistent handling of signed right shift.");
+static_assert(SignMask(-3L) == -1L,
+              "Inconsistent handling of signed right shift.");
+static_assert(SignMask(-4LL) == -1LL,
+              "Inconsistent handling of signed right shift.");
 
+// This performs a safe, non-branching absolute value via unsigned overflow.
 template <typename T,
           typename std::enable_if<std::is_integral<T>::value &&
                                   std::is_signed<T>::value>::type* = nullptr>
 constexpr typename std::make_unsigned<T>::type SafeUnsignedAbs(T value) {
   using UnsignedT = typename std::make_unsigned<T>::type;
-  return SafeUnsignedAbsImpl(
-      static_cast<UnsignedT>(value),
-      // The sign mask is all ones for negative and zero otherwise.
-      static_cast<UnsignedT>(-static_cast<T>(HasSignBit(value))));
+  return static_cast<T>(static_cast<UnsignedT>(value ^ SignMask(value)) -
+                        static_cast<UnsignedT>(SignMask(value)));
 }
 
 template <typename T,
