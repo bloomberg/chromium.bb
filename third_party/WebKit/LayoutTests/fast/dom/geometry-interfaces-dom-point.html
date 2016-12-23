@@ -62,4 +62,9 @@ test(() => {
   assert_dom_point_equals(point, [10, 20, 30, 40]);
 }, 'DOMPoint setter');
 
+test(() => {
+  var point = new DOMPoint(1, 2, 3, 4);
+  assert_object_equals(point.toJSON(), {x: 1, y: 2, z: 3, w: 4});
+}, 'DOMPoint toJSON');
+
 </script>

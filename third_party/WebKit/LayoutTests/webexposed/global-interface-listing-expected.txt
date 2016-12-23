@@ -1126,6 +1126,7 @@ interface DOMPointReadOnly
     getter y
     getter z
     method constructor
+    method toJSON
 interface DOMRect : DOMRectReadOnly
     attribute @@toStringTag
     getter height

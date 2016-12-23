@@ -17,4 +17,5 @@
 
     // FIXME: Implement matrixTransform.
     // DOMPoint matrixTransform(DOMMatrixReadOnly matrix);
+    serializer = { attribute };
 };

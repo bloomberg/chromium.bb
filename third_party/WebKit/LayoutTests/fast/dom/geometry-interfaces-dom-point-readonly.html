@@ -21,4 +21,8 @@ test(() => {
   assert_readonly(point, 'w');
 }, 'DOMPointReadOnly readonly test');
 
+test(() => {
+  var point = new DOMPointReadOnly(1, 2, 3, 4);
+  assert_object_equals(point.toJSON(), {x: 1, y: 2, z: 3, w: 4});
+}, 'DOMPointReadOnly toJSON');
 </script>

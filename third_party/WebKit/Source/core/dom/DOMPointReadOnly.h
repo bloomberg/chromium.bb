@@ -11,6 +11,9 @@
 
 namespace blink {
 
+class ScriptValue;
+class ScriptState;
+
 class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
                                      public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -24,7 +27,9 @@ class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
   double w() const { return m_w; }
 
   DEFINE_INLINE_TRACE() {}
-
+  
+  ScriptValue toJSONForBinding(ScriptState*) const;
+ 
  protected:
   DOMPointReadOnly(double x, double y, double z, double w);
 
