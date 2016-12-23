@@ -1,11 +1,25 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" type="text/css" href="common.css">
     <link rel="stylesheet" type="text/css" href="popup.css">
+    <script src="libs.js"></script>
+    <script src="google-analytics-bundle.js"></script>
     <script src="popup_compiled.js"></script>
   </head>
   <body>
-    <div id="ext_name"></div>
+    <span id="ext_name"></span>
+
+    <div id="proxy_control_container">
+      <input type="checkbox" id="proxy_control">
+      <label for="proxy_control">
+        <span id="proxy_control_ui"></span>
+      </label>
+    </div>
+    <div style="clear: both;"></div>
+
+    <div id="divider_line"></div>
+    <div id="divider_line_overflow"></div>
     <div id="chrome_incompatible" style="display: none;">
       <table><tr><td>
         <img class="alert" src="images/alert.webp">
@@ -13,36 +27,26 @@
         <span id="chrome_incompatible_message"></span>
       </td></tr></table>
     </div>
-    <div id="incognito" style="display: none;">
-      <table><tr><td>
-        <img class="alert" src="images/alert.webp">
-        </td><td>
-        <span id="incognito_message"></span>
-      </td></tr></table>
-    </div>
     <div id="main" style="display: none;">
-      <div id="proxy_off" style="display: none;">
-        <div id="info1"></div>
-        <div id="info2"></div>
-          <a id="enable_proxy" href="#" tabindex="-1"></a>
-          <a tabindex="-1" id="learn_more" target="_blank" href="https://support.google.com/chrome/?p=data_saver_off"></a>
-      </div>
-      <div id="proxy_on" style="display: none;">
-        <canvas id="data_savings_graph" width="278" height="132"></canvas>
-        <span id="graph_start_date"></span>
-        <span id="graph_end_date"></span>
+      <div id="loading"></div>
+      <canvas id="data_savings_graph" width="280" height="132"></canvas>
+      <div class="data_savings_numbers" style="opacity:0;">
+        <span id="data_usage_label"></span>
+        <span id="data_usage_value"></span>
         <div style="clear: both;"></div>
-        <div class="data_savings_numbers">
-          <span id="data_savings_percent"></span>
-          <div class="data_savings_sizes">
-            <div id="original_data_size"></div>
-            <div id="compressed_data_size"></div>
-            <div style="clear: both;"></div>
-          </div>
-          <div style="clear: both;"></div>
+
+        <span id="data_savings_label" class="proxy_on"></span>
+        <span id="data_savings_value"  class="proxy_on"></span>
+        <div style="clear: both;"></div>
+
+        <div id="links_panel">
+          <span class="learn_more_container ripple_button_container">
+            <a tabindex="-1" id="learn_more" target="_blank"></a>
+          </span>
+          <span class="ripple_button_container">
+            <a tabindex="-1" id="detailed_usage_link" target="_blank"></a>
+          </span>
         </div>
-        <a id="disable_proxy" href="#" tabindex="-1"></a>
-        <a id="help_feedback" tabindex="-1" target="_blank" href="https://support.google.com/chrome/?p=data_saver_on"></a>
       </div>
     </div>
   </body>

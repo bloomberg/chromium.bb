@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "След компресиране: \u003Cb>$1 байта\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ОТКАЗ"
+   },
+   "chromeextension": {
+      "message": "Разширение за Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "След компресиране: \u003Cb>$1 ГБ\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "След компресиране: \u003Cb>$1 КБ\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Икономия на данни"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "След компресиране: \u003Cb>$1 МБ\u003C/b>",
+   "datasavingslabel": {
+      "message": "Икономия на данни"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Не оптимизираме, нито виждаме страниците, отваряни през частни връзки (HTTPS) или в раздели в режим „инкогнито“."
+   },
+   "datausage": {
+      "message": "Пренос на данни: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Разбивка на преноса на данни"
    },
-   "disabledatasaverlabel": {
-      "message": "Изключване на „Икономия на данни“"
+   "datausagecolumnheading": {
+      "message": "Пренос на данни"
    },
-   "enabledatasaverlabel": {
-      "message": "Включване на „Икономия на данни“"
+   "datausagelabel": {
+      "message": "Пренос на данни"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Изтриване на преноса на данни"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Цялата статистическа информация за преноса на данни ще бъде изтрита безвъзвратно. Наистина ли искате това?"
+   },
+   "deletedatausagelabel": {
+      "message": "ИЗТРИВАНЕ"
+   },
+   "detaileddatausagelinktext": {
+      "message": "ПОДРОБНОСТИ"
    },
    "extdesc": {
       "message": "Намалява преноса на данни, като използва сървърите на Google за оптимизиране на посещаваните от вас страници."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Икономия на данни"
    },
-   "extnamebeta": {
-      "message": "Икономия на данни (бета)"
+   "labeldatasaveroff": {
+      "message": "Изключено"
    },
-   "helpandfeedback": {
-      "message": "Помощ и отзиви"
+   "labeldatasaveron": {
+      "message": "Включено"
    },
-   "incognitomessage": {
-      "message": "Това разширение не може да се използва в режим „инкогнито“."
+   "labeldaysformat": {
+      "message": "$1 дни",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Намалете разходите за данни, като използвате Google за оптимизиране на посещаваните страници."
+   "labelhoursformat": {
+      "message": "$1 часа",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Не оптимизираме, нито виждаме страниците, отваряни с HTTPS или в режим „инкогнито“."
+   "labeloneday": {
+      "message": "1 ден"
+   },
+   "labelonehour": {
+      "message": "1 час"
    },
    "learnmorelinktext": {
-      "message": "Научете повече"
+      "message": "НАУЧЕТЕ ПОВЕЧЕ"
    },
-   "originalsizeformat": {
-      "message": "Първоначален размер: \u003Cb>$1 байта\u003C/b>",
+   "loading": {
+      "message": "Зарежда се..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Първоначален размер"
+   },
+   "resetdata": {
+      "message": "НУЛИРАНЕ НА ДАННИТЕ"
+   },
+   "sitecolumnheading": {
+      "message": "Сайт"
+   },
+   "sizeformatbytes": {
+      "message": "$1 байта",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Първоначален размер: \u003Cb>$1 ГБ\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 ГБ",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Първоначален размер: \u003Cb>$1 КБ\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 КБ",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Първоначален размер: \u003Cb>$1 МБ\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 МБ",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Намаляване на използването на данни"
-   },
-   "reportissue": {
-      "message": "Подаване на сигнал за проблем"
+   "sizeformattb": {
+      "message": "$1 ТБ",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Тази версия на Chrome не е съвместима с разширението. Моля, актуализирайте браузъра до последната версия. Първата поддържана е M41 бета."

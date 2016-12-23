@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Tömörítést követően: \u003Cb>$1 bájt\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "MÉGSE"
+   },
+   "chromeextension": {
+      "message": "Chrome-bővítmény: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Tömörítést követően: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Tömörítést követően: \u003Cb>$1 kB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Megtakarított adatmennyiség"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Tömörítést követően: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Megtakarított adatmennyiség"
+   },
+   "datasavingstooltipmessage": {
+      "message": "A privát kapcsolattal (HTTPS) vagy inkognitólapon megnyitott oldalakat a Google nem optimalizálja és nem látja."
+   },
+   "datausage": {
+      "message": "Adathasználat: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Adathasználat lebontása"
    },
-   "disabledatasaverlabel": {
-      "message": "Az Adatforgalom-csökkentő kikapcsolása"
+   "datausagecolumnheading": {
+      "message": "Adathasználat"
    },
-   "enabledatasaverlabel": {
-      "message": "Az Adatforgalom-csökkentő bekapcsolása"
+   "datausagelabel": {
+      "message": "Adathasználat"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Adathasználati statisztika törlése"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Az összes adathasználati statisztika véglegesen törlődni fog, és a műveletet nem lehet visszavonni. Biztos benne, hogy végrehajtja a műveletet?"
+   },
+   "deletedatausagelabel": {
+      "message": "TÖRLÉS"
+   },
+   "detaileddatausagelinktext": {
+      "message": "RÉSZLETEK"
    },
    "extdesc": {
       "message": "Csökkenti az adathasználatot azáltal, hogy a Google szerverei optimalizálják az Ön által felkeresett oldalakat."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Adatforgalom-csökkentő"
    },
-   "extnamebeta": {
-      "message": "Adatforgalom-csökkentő (béta)"
+   "labeldatasaveroff": {
+      "message": "Ki"
    },
-   "helpandfeedback": {
-      "message": "Súgó és visszajelzés"
+   "labeldatasaveron": {
+      "message": "Be"
    },
-   "incognitomessage": {
-      "message": "Ez a bővítmény nem használható inkognitómódban."
+   "labeldaysformat": {
+      "message": "$1 nap",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Kisebb az adatforgalom, ha a Google optimalizálja a felkeresett oldalakat."
+   "labelhoursformat": {
+      "message": "$1 óra",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "A HTTPS vagy inkognitómód segítségével megnyitott oldalakat a Google nem optimalizálja és nem látja."
+   "labeloneday": {
+      "message": "1 nap"
+   },
+   "labelonehour": {
+      "message": "1 óra"
    },
    "learnmorelinktext": {
-      "message": "További információ"
+      "message": "TOVÁBBI INFORMÁCIÓ"
    },
-   "originalsizeformat": {
-      "message": "Eredeti méret: \u003Cb>$1 bájt\u003C/b>",
+   "loading": {
+      "message": "Betöltés…"
+   },
+   "originalsizecolumnheading": {
+      "message": "Eredeti méret"
+   },
+   "resetdata": {
+      "message": "ADATOK VISSZAÁLLÍTÁSA"
+   },
+   "sitecolumnheading": {
+      "message": "Webhely"
+   },
+   "sizeformatbytes": {
+      "message": "$1 bájt",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Eredeti méret: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Eredeti méret: \u003Cb>$1 kB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 kB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Eredeti méret: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Adathasználat csökkentése"
-   },
-   "reportissue": {
-      "message": "Hibabejelentés"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "A Chrome ezen verziója nem kompatibilis ezzel a bővítménnyel. Kérjük, frissítse a Chrome-ot a legújabb verzióra. Az első támogatott verzió az M41 Beta."

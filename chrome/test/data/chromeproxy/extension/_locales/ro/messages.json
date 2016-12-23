@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "După comprimare: \u003Cb>$1 B\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ANULEAZĂ"
+   },
+   "chromeextension": {
+      "message": "Extensia Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "După comprimare: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "După comprimare: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Economie de date"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "După comprimare: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Economie de date"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Paginile accesate folosind conexiuni private (HTTPS) sau în file incognito nu vor fi optimizate sau detectate de Google."
+   },
+   "datausage": {
+      "message": "Utilizarea datelor: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Detalii privind utilizarea datelor"
    },
-   "disabledatasaverlabel": {
-      "message": "Dezactivează Economizorul de date"
+   "datausagecolumnheading": {
+      "message": "Utilizarea datelor"
    },
-   "enabledatasaverlabel": {
-      "message": "Activează Economizorul de date"
+   "datausagelabel": {
+      "message": "Utilizarea datelor"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Șterge utilizarea datelor"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Toate statisticile privind utilizarea datelor vor fi șterse definitiv și nu vor putea fi recuperate. Ești sigur(ă)?"
+   },
+   "deletedatausagelabel": {
+      "message": "ȘTERGE"
+   },
+   "detaileddatausagelinktext": {
+      "message": "DETALII"
    },
    "extdesc": {
       "message": "Reduce utilizarea de date folosind serverele Google pentru a optimiza paginile pe care le accesezi."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Economizor de date"
    },
-   "extnamebeta": {
-      "message": "Economizor de date (beta)"
+   "labeldatasaveroff": {
+      "message": "Dezactivat"
    },
-   "helpandfeedback": {
-      "message": "Ajutor și feedback"
+   "labeldatasaveron": {
+      "message": "Activat"
    },
-   "incognitomessage": {
-      "message": "Extensia nu poate fi folosită în modul incognito."
+   "labeldaysformat": {
+      "message": "$1 (de) zile",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Reduce volumul de date transferat optimizând cu Google paginile accesate."
+   "labelhoursformat": {
+      "message": "$1 (de) ore",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google nu va vedea și nu va optimiza paginile accesate prin HTTPS sau incognito."
+   "labeloneday": {
+      "message": "O zi"
+   },
+   "labelonehour": {
+      "message": "O oră"
    },
    "learnmorelinktext": {
-      "message": "Află mai multe"
+      "message": "AFLĂ MAI MULTE"
    },
-   "originalsizeformat": {
-      "message": "Dimensiune inițială: \u003Cb>$1 B\u003C/b>",
+   "loading": {
+      "message": "Se încarcă..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Dimensiune inițială"
+   },
+   "resetdata": {
+      "message": "RESETEAZĂ DATELE"
+   },
+   "sitecolumnheading": {
+      "message": "Site"
+   },
+   "sizeformatbytes": {
+      "message": "$1 byți",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Dimensiune inițială: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Dimensiune inițială: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Dimensiune inițială: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Redu utilizarea datelor"
-   },
-   "reportissue": {
-      "message": "Raportează o problemă"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Versiunea Chrome nu este compatibilă cu această extensie. Actualizează la cea mai recentă versiune Chrome. M41 Beta este prima versiune compatibilă."

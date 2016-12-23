@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Μετά τη συμπίεση: \u003Cb>$1 byte\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ΑΚΥΡΩΣΗ"
+   },
+   "chromeextension": {
+      "message": "Επέκταση Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Μετά τη συμπίεση: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Μετά τη συμπίεση: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Εξοικονόμηση δεδομένων"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Μετά τη συμπίεση: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Εξοικονόμηση δεδομένων"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Οι σελίδες στις οποίες αποκτάτε πρόσβαση μέσω ασφαλών συνδέσεων (HTTPS) ή σε καρτέλες ανώνυμης περιήγησης δεν θα βελτιστοποιηθούν ή δεν θα είναι ορατές από την Google."
+   },
+   "datausage": {
+      "message": "Χρήση δεδομένων: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1 %",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Ανάλυση χρήσης δεδομένων"
    },
-   "disabledatasaverlabel": {
-      "message": "Απενεργοποίηση Εξοικονόμησης δεδομένων"
+   "datausagecolumnheading": {
+      "message": "Χρήση δεδομένων"
    },
-   "enabledatasaverlabel": {
-      "message": "Ενεργοποίηση Εξοικονόμησης δεδομένων"
+   "datausagelabel": {
+      "message": "Χρήση δεδομένων"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Διαγραφή χρήσης δεδομένων"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Όλα τα στατιστικά στοιχεία χρήσης θα διαγραφούν οριστικά και δεν θα είναι δυνατή η ανάκτησή τους. Είστε βέβαιοι ότι θέλετε να συνεχίσετε;"
+   },
+   "deletedatausagelabel": {
+      "message": "ΔΙΑΓΡΑΦΗ"
+   },
+   "detaileddatausagelinktext": {
+      "message": "ΛΕΠΤΟΜΕΡΕΙΕΣ"
    },
    "extdesc": {
       "message": "Περιορίζει τη χρήση δεδομένων, αξιοποιώντας τους διακομιστές της Google για να βελτιστοποιήσει τις σελίδες που επισκέπτεστε."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Εξοικονόμηση δεδομένων"
    },
-   "extnamebeta": {
-      "message": "Εξοικονόμηση δεδομένων (Beta)"
+   "labeldatasaveroff": {
+      "message": "Ανενεργή"
    },
-   "helpandfeedback": {
-      "message": "Βοήθεια και σχόλια"
+   "labeldatasaveron": {
+      "message": "Ενεργή"
    },
-   "incognitomessage": {
-      "message": "Αυτή η επέκταση δεν μπορεί να χρησιμοποιηθεί σε κατάσταση ανώνυμης περιήγησης."
+   "labeldaysformat": {
+      "message": "$1 ημέρες",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Ξοδέψτε λιγότερα δεδομένα αξιοποιώντας τη βελτιστοποίηση των σελίδων που επισκέπτεστε από την Google."
+   "labelhoursformat": {
+      "message": "$1 ώρες",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Οι σελίδες στις οποίες αποκτάτε πρόσβαση μέσω του HTTPS ή της Ανώνυμης περιήγησης δεν θα βελτιστοποιηθούν ή δεν θα είναι ορατές από την Google."
+   "labeloneday": {
+      "message": "1 ημέρα"
+   },
+   "labelonehour": {
+      "message": "1 ώρα"
    },
    "learnmorelinktext": {
-      "message": "Μάθετε περισσότερα"
+      "message": "ΜΑΘΕΤΕ ΠΕΡΙΣΣΟΤΕΡΑ"
    },
-   "originalsizeformat": {
-      "message": "Αρχικό μέγεθος: \u003Cb>$1 byte\u003C/b>",
+   "loading": {
+      "message": "Φόρτωση…"
+   },
+   "originalsizecolumnheading": {
+      "message": "Αρχικό μέγεθος"
+   },
+   "resetdata": {
+      "message": "ΕΠΑΝΑΦΟΡΑ ΔΕΔΟΜΕΝΩΝ"
+   },
+   "sitecolumnheading": {
+      "message": "Ιστότοπος"
+   },
+   "sizeformatbytes": {
+      "message": "$1 byte",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Αρχικό μέγεθος: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Αρχικό μέγεθος: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Αρχικό μέγεθος: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Μείωση χρήσης δεδομένων"
-   },
-   "reportissue": {
-      "message": "Αναφορά ζητήματος"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Αυτή η έκδοση του Chrome δεν είναι συμβατή με αυτήν την επέκταση. Ενημερώστε το Chrome στην πιο πρόσφατη έκδοση. Το M41 Beta είναι η πρώτη έκδοση που υποστηρίζεται."

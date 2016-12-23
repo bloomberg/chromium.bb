@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Etter komprimering: \u003Cb>$1 byte\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "AVBRYT"
+   },
+   "chromeextension": {
+      "message": "Chrome-utvidelse: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Etter komprimering: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Etter komprimering: \u003Cb>$1 kB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Data spart"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Etter komprimering: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Sparte data"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Sider som åpnes via private tilkoblinger (HTTPS) eller i inkognitofaner, blir ikke optimalisert eller sett av Google."
+   },
+   "datausage": {
+      "message": "Databruk: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Oversikt over databruk"
    },
-   "disabledatasaverlabel": {
-      "message": "Slå av Datasparing"
+   "datausagecolumnheading": {
+      "message": "Databruk"
    },
-   "enabledatasaverlabel": {
-      "message": "Slå på Datasparing"
+   "datausagelabel": {
+      "message": "Databruk"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Slett databruken"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "All statistikk over databruk slettes permanent og kan ikke gjenopprettes. Er du sikker?"
+   },
+   "deletedatausagelabel": {
+      "message": "SLETT"
+   },
+   "detaileddatausagelinktext": {
+      "message": "DETALJER"
    },
    "extdesc": {
       "message": "Reduserer dataforbruket ved å bruke Google-tjenerne til å optimalisere sidene du besøker."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Datasparing"
    },
-   "extnamebeta": {
-      "message": "Datasparing (betaversjon)"
+   "labeldatasaveroff": {
+      "message": "Av"
    },
-   "helpandfeedback": {
-      "message": "Hjelp og tilbakemelding"
+   "labeldatasaveron": {
+      "message": "På"
    },
-   "incognitomessage": {
-      "message": "Denne utvidelsen kan ikke brukes i inkognitomodus."
+   "labeldaysformat": {
+      "message": "$1 dager",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Bruk mindre på data ved å la Google optimalisere sidene du besøker."
+   "labelhoursformat": {
+      "message": "$1 timer",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Sider som åpnes med HTTPS eller i inkognitomodus, blir ikke optimalisert eller sett av Google."
+   "labeloneday": {
+      "message": "1 dag"
+   },
+   "labelonehour": {
+      "message": "1 time"
    },
    "learnmorelinktext": {
-      "message": "Finn ut mer"
+      "message": "FINN UT MER"
    },
-   "originalsizeformat": {
-      "message": "Opprinnelig størrelse: \u003Cb>$1 byte\u003C/b>",
+   "loading": {
+      "message": "Laster inn …"
+   },
+   "originalsizecolumnheading": {
+      "message": "Opprinnelig størrelse"
+   },
+   "resetdata": {
+      "message": "NULLSTILL DATA"
+   },
+   "sitecolumnheading": {
+      "message": "Nettsted"
+   },
+   "sizeformatbytes": {
+      "message": "$1 byte",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Opprinnelig størrelse: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Opprinnelig størrelse: \u003Cb>$1 kB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 kB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Opprinnelig størrelse: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Reduser dataforbruket"
-   },
-   "reportissue": {
-      "message": "Rapportér et problem"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Denne versjonen av Chrome er ikke kompatibel med denne utvidelsen. Vennligst oppdater Chrome til den nyeste versjonen. M41 Beta er den første versjonen som støttes."

@@ -1,111 +1,175 @@
 {
-   "compressedsizeformat": {
-      "message": "پس از فشرده‌سازی: \u003Cb>$1 بایت\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "لغو"
+   },
+   "chromeextension": {
+      "message": "افزونه Chrome:‏ $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "پس از فشرده‌سازی: \u003Cb>$1 گیگابایت\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "پس از فشرده‌سازی: \u003Cb>$1 کیلوبایت\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "داده صرفه‌جویی شده"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "پس از فشرده‌سازی: \u003Cb>$1 مگابایت\u003C/b>",
+   "datasavingslabel": {
+      "message": "ذخیره داده‌ها"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Google صفحات بازدیدشده با استفاده از اتصالات خصوصی (HTTPS) یا برگه‌های حالت ناشناس را بهینه‌سازی یا مشاهده نمی‌کند."
+   },
+   "datausage": {
+      "message": "میزان مصرف داده: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1٪",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "مصرف داده به تفکیک"
    },
-   "disabledatasaverlabel": {
-      "message": "خاموش کردن صرفه‌جویی در مصرف داده"
+   "datausagecolumnheading": {
+      "message": "میزان مصرف داده"
    },
-   "enabledatasaverlabel": {
-      "message": "روشن کردن صرفه‌جویی در مصرف داده"
+   "datausagelabel": {
+      "message": "میزان مصرف داده"
+   },
+   "deletedataconfirmationheading": {
+      "message": "حذف میزان مصرف داده"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "همه آمارهای مصرف داده به‌طور دائم حذف می‌شود و نمی‌تواند بازیابی شود. مطمئنید؟"
+   },
+   "deletedatausagelabel": {
+      "message": "حذف"
+   },
+   "detaileddatausagelinktext": {
+      "message": "جزئیات"
    },
    "extdesc": {
       "message": "با استفاده از سرورهای Google جهت بهینه کردن صفحاتی که بازدید می‌کنید، مصرف داده را کاهش می‌دهد."
    },
    "extname": {
-      "message": "صرفه‌جویی در مصرف داده"
+      "message": "صرفه‌جویی داده"
    },
-   "extnamebeta": {
-      "message": "صرفه‌جویی در مصرف داده (بتا)"
+   "labeldatasaveroff": {
+      "message": "خاموش"
    },
-   "helpandfeedback": {
-      "message": "راهنما و بازخورد"
+   "labeldatasaveron": {
+      "message": "روشن"
    },
-   "incognitomessage": {
-      "message": "این افزونه نمی‌تواند در حالت ناشناس استفاده شود."
+   "labeldaysformat": {
+      "message": "$1 روز",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "با استفاده از Google برای بهینه‌سازی صفحاتی که بازدید می‌کنید، هزینه مصرف داده‌ را کاهش دهید."
+   "labelhoursformat": {
+      "message": "$1 ساعت",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google صفحات بازدیدشده با HTTPS یا حالت ناشناس را بهینه یا مشاهده نمی‌کند."
+   "labeloneday": {
+      "message": "۱ روز"
+   },
+   "labelonehour": {
+      "message": "۱ ساعت"
    },
    "learnmorelinktext": {
       "message": "بیشتر بدانید"
    },
-   "originalsizeformat": {
-      "message": "اندازه اصلی: \u003Cb>$1 بایت\u003C/b>",
+   "loading": {
+      "message": "درحال بارگیری..."
+   },
+   "originalsizecolumnheading": {
+      "message": "اندازه اصلی"
+   },
+   "resetdata": {
+      "message": "بازنشانی داده"
+   },
+   "sitecolumnheading": {
+      "message": "سایت"
+   },
+   "sizeformatbytes": {
+      "message": "$1 بایت",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "اندازه اصلی: \u003Cb>$1 گیگابایت\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 گیگابایت",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "اندازه اصلی: \u003Cb>$1 کیلوبایت\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 کیلوبایت",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "اندازه اصلی: \u003Cb>$1 مگابایت\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 مگابایت",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "کاهش مصرف داده"
-   },
-   "reportissue": {
-      "message": "گزارش مشکل"
+   "sizeformattb": {
+      "message": "$1 ترابایت",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "این نسخه از Chrome با این افزونه سازگار نیست. لطفاً Chrome را به آخرین نسخه به‌روزرسانی کنید. M41 بتا اولین نسخه پشتیبانی شده است."

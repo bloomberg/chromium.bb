@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Na compressie: \u003Cb>$1 bytes\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ANNULEREN"
+   },
+   "chromeextension": {
+      "message": "Chrome-extensie: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Na compressie: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Na compressie: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Databesparing"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Na compressie: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Databesparing"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Pagina's die via privéverbindingen (HTTPS) of op incognitotabbladen worden geopend, worden niet geoptimaliseerd of gedetecteerd door Google."
+   },
+   "datausage": {
+      "message": "Datagebruik: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Overzicht van gegevensgebruik"
    },
-   "disabledatasaverlabel": {
-      "message": "Databesparing uitschakelen"
+   "datausagecolumnheading": {
+      "message": "Datagebruik"
    },
-   "enabledatasaverlabel": {
-      "message": "Databesparing inschakelen"
+   "datausagelabel": {
+      "message": "Datagebruik"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Datagebruik verwijderen"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Alle statistieken over datagebruik worden definitief verwijderd en kunnen niet worden hersteld. Weet je het zeker?"
+   },
+   "deletedatausagelabel": {
+      "message": "VERWIJDEREN"
+   },
+   "detaileddatausagelinktext": {
+      "message": "DETAILS"
    },
    "extdesc": {
       "message": "Beperkt het gegevensverbruik door Google-servers te gebruiken om pagina's te optimaliseren die je bezoekt."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Databesparing"
    },
-   "extnamebeta": {
-      "message": "Databesparing (bèta)"
+   "labeldatasaveroff": {
+      "message": "Uit"
    },
-   "helpandfeedback": {
-      "message": "Help en feedback"
+   "labeldatasaveron": {
+      "message": "Aan"
    },
-   "incognitomessage": {
-      "message": "Deze extensie kan niet worden gebruikt in de incognitomodus."
+   "labeldaysformat": {
+      "message": "$1 dagen",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Geef minder uit aan dataverkeer door Google te gebruiken om de door jou bezochte pagina's te optimaliseren."
+   "labelhoursformat": {
+      "message": "$1 uur",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Pagina's die via HTTPS of incognito worden geopend, worden niet geoptimaliseerd of gedetecteerd door Google."
+   "labeloneday": {
+      "message": "1 dag"
+   },
+   "labelonehour": {
+      "message": "1 uur"
    },
    "learnmorelinktext": {
-      "message": "Meer informatie"
+      "message": "MEER INFORMATIE"
    },
-   "originalsizeformat": {
-      "message": "Oorspronkelijke grootte: \u003Cb>$1 bytes\u003C/b>",
+   "loading": {
+      "message": "Laden..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Oorspronkelijke grootte"
+   },
+   "resetdata": {
+      "message": "GEGEVENS RESETTEN"
+   },
+   "sitecolumnheading": {
+      "message": "Site"
+   },
+   "sizeformatbytes": {
+      "message": "$1 bytes",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Oorspronkelijke grootte: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Oorspronkelijke grootte: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Oorspronkelijke grootte: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Gegevensgebruik beperken"
-   },
-   "reportissue": {
-      "message": "Een probleem melden"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Deze versie van Chrome is niet compatibel met deze extensie. Update Chrome naar de nieuwste versie. M41 (bèta) is de eerste ondersteunde versie."

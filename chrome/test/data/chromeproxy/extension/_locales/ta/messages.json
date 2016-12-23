@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "சுருக்கிய பிறகு: \u003Cb>$1 பைட்டுகள்\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ரத்துசெய்"
+   },
+   "chromeextension": {
+      "message": "Chrome நீட்டிப்பு: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "சுருக்கிய பிறகு: \u003Cb>$1 ஜி.பை.\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "சுருக்கிய பிறகு: \u003Cb>$1 கி.பை.\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "தரவுச் சேமிப்புகள்"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "சுருக்கிய பிறகு: \u003Cb>$1 மெ.பை.\u003C/b>",
+   "datasavingslabel": {
+      "message": "தரவுச் சேமிப்புகள்"
+   },
+   "datasavingstooltipmessage": {
+      "message": "தனிப்பட்ட இணைப்புகளையோ (HTTPS) அல்லது மறைநிலைத் தாவல்களையோ பயன்படுத்தி அணுகப்பட்ட பக்கங்கள், Google ஆல் மேம்படுத்தப்படவோ Googleக்குத் தெரியும்படியோ இருக்காது."
+   },
+   "datausage": {
+      "message": "தரவுப் பயன்பாடு: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "தரவுப் பயன்பாட்டு விவரம்"
    },
-   "disabledatasaverlabel": {
-      "message": "தரவுச் சேமிப்பானை முடக்கு"
+   "datausagecolumnheading": {
+      "message": "தரவுப் பயன்பாடு"
    },
-   "enabledatasaverlabel": {
-      "message": "தரவுச் சேமிப்பானை இயக்கு"
+   "datausagelabel": {
+      "message": "தரவுப் பயன்பாடு"
+   },
+   "deletedataconfirmationheading": {
+      "message": "தரவுப் பயன்பாட்டை நீக்கு"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "தரவுப் பயன்பாட்டுப் புள்ளிவிவரங்கள் நிரந்தரமாக நீக்கப்படும், அவற்றை மீட்டெடுக்க முடியாது. நிச்சயமாக நீக்கவா?"
+   },
+   "deletedatausagelabel": {
+      "message": "நீக்கு"
+   },
+   "detaileddatausagelinktext": {
+      "message": "விவரங்கள்"
    },
    "extdesc": {
       "message": "நீங்கள் பார்வையிடும் பக்கங்களை Google சேவையகங்களைப் பயன்படுத்தி உகந்ததாக்குவதன் மூலம் தரவுப் பயன்பாட்டைக் குறைக்கும்."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "தரவு சேமிப்பான்"
    },
-   "extnamebeta": {
-      "message": "தரவு சேமிப்பான் (பீட்டா)"
+   "labeldatasaveroff": {
+      "message": "முடக்கு"
    },
-   "helpandfeedback": {
-      "message": "உதவி மற்றும் கருத்து"
+   "labeldatasaveron": {
+      "message": "இயக்கு"
    },
-   "incognitomessage": {
-      "message": "இந்த நீட்டிப்பை மறைநிலையில் பயன்படுத்த முடியாது."
+   "labeldaysformat": {
+      "message": "$1 நாட்கள்",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "நீங்கள் பார்வையிடும் பக்கங்களை உகப்பாக்க Googleஐப் பயன்படுத்துவதன் மூலம், தரவைக் குறைவாகச் செலவழிக்கலாம்."
+   "labelhoursformat": {
+      "message": "$1 மணிநேரம்",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "HTTPS அல்லது மறைநிலை மூலம் அணுகப்படும் பக்கங்களை Google ஆல் மேம்படுத்த அல்லது பார்க்க முடியாது."
+   "labeloneday": {
+      "message": "1 நாள்"
+   },
+   "labelonehour": {
+      "message": "1 மணிநேரம்"
    },
    "learnmorelinktext": {
       "message": "மேலும் அறிக"
    },
-   "originalsizeformat": {
-      "message": "அசல் அளவு: \u003Cb>$1 பைட்டுகள்\u003C/b>",
+   "loading": {
+      "message": "ஏற்றுகிறது…"
+   },
+   "originalsizecolumnheading": {
+      "message": "அசல் அளவு"
+   },
+   "resetdata": {
+      "message": "தரவை மீட்டமை"
+   },
+   "sitecolumnheading": {
+      "message": "தளம்"
+   },
+   "sizeformatbytes": {
+      "message": "$1 பைட்கள்",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "அசல் அளவு: \u003Cb>$1 ஜி.பை.\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 ஜி.பை.",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "அசல் அளவு: \u003Cb>$1 கி.பை.\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 கி.பை.",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "அசல் அளவு: \u003Cb>$1 மெ.பை.\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 மெ.பை.",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "தரவுப் பயன்பாட்டைக் குறை"
-   },
-   "reportissue": {
-      "message": "சிக்கலைப் புகாரளி"
+   "sizeformattb": {
+      "message": "$1 டெ.பை.",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "இந்த நீட்டிப்புடன் Chrome இன் இந்தப் பதிப்பு இணக்கமற்றது. சமீபத்திய Chrome பதிப்பிற்குப் புதுப்பிக்கவும். M41 பீட்டா என்பதே இதை ஆதரிக்கும் முதல் பதிப்பாகும்."

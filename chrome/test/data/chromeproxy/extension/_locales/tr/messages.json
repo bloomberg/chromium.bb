@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Sıkıştırmadan sonra: \u003Cb>$1 bayt\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "İPTAL"
+   },
+   "chromeextension": {
+      "message": "Chrome Uzantısı: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Sıkıştırmadan sonra: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Sıkıştırmadan sonra: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Veri Tasarrufu"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Sıkıştırmadan sonra: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Veri Tasarrufu"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Gizli bağlantılar (HTTPS) veya gizli sekmeler kullanılarak erişilen sayfalar Google tarafından optimize edilmez veya görülmez."
+   },
+   "datausage": {
+      "message": "Veri Kullanımı: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "%$1",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Veri Kullanımı Dökümü"
    },
-   "disabledatasaverlabel": {
-      "message": "Veri Tasarrufu'nu Kapat"
+   "datausagecolumnheading": {
+      "message": "Veri Kullanımı"
    },
-   "enabledatasaverlabel": {
-      "message": "Veri Tasarrufu'nu Aç"
+   "datausagelabel": {
+      "message": "Veri Kullanımı"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Veri Kullanımını Silin"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Tüm veri kullanımı istatistikleri kalıcı olarak silinecek. Bu bilgiler geri yüklenemez. Devam etmek istediğinizden emin misiniz?"
+   },
+   "deletedatausagelabel": {
+      "message": "SİL"
+   },
+   "detaileddatausagelinktext": {
+      "message": "AYRINTILAR"
    },
    "extdesc": {
       "message": "Ziyaret ettiğiniz sayfaları optimize etmek için Google sunucularını kullanarak veri kullanımını azaltır."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Veri Tasarrufu"
    },
-   "extnamebeta": {
-      "message": "Veri Tasarrufu (Beta)"
+   "labeldatasaveroff": {
+      "message": "Kapalı"
    },
-   "helpandfeedback": {
-      "message": "Yardım ve Geri Bildirim"
+   "labeldatasaveron": {
+      "message": "Açık"
    },
-   "incognitomessage": {
-      "message": "Bu uzantı, gizli modda kullanılamaz."
+   "labeldaysformat": {
+      "message": "$1 gün",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Ziyaret ettiğiniz sayfaları optimize etmek için Google'ı kullanarak daha az veri harcayın."
+   "labelhoursformat": {
+      "message": "$1 saat",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "HTTPS veya gizli modla erişilen sayfalar Google tarafından optimize edilmez veya görülmez."
+   "labeloneday": {
+      "message": "1 gün"
+   },
+   "labelonehour": {
+      "message": "1 saat"
    },
    "learnmorelinktext": {
-      "message": "Daha fazla bilgi edinin"
+      "message": "DAHA FAZLA BİLGİ EDİNİN"
    },
-   "originalsizeformat": {
-      "message": "Orijinal boyut: \u003Cb>$1 bayt\u003C/b>",
+   "loading": {
+      "message": "Yükleniyor..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Orijinal Boyut"
+   },
+   "resetdata": {
+      "message": "VERİLERİ SIFIRLA"
+   },
+   "sitecolumnheading": {
+      "message": "Site"
+   },
+   "sizeformatbytes": {
+      "message": "$1 bayt",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Orijinal boyut: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Orijinal boyut: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Orijinal boyut: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Veri kullanımını azalt"
-   },
-   "reportissue": {
-      "message": "Sorun bildir"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Chrome'un bu sürümü bu uzantıyla uyumlu değil. Lütfen Chrome'u son sürüme güncelleyin. M41 Beta, desteklenen ilk sürümdür."

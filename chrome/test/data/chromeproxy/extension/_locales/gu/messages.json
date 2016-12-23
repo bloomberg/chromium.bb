@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "સંકુચન પછી: \u003Cb>$1 બાઇટ્સ\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "રદ કરો"
+   },
+   "chromeextension": {
+      "message": "Chrome એક્સટેન્શન: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "સંકુચન પછી: \u003Cb>$1GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "સંકુચન પછી: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "ડેટા બચત"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "સંકુચન પછી: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "ડેટા બચત"
+   },
+   "datasavingstooltipmessage": {
+      "message": "ખાનગી કનેક્શન્સ (HTTPS) નો ઉપયોગ કરીને અથવા છુપી ટેબમાં ઍક્સેસ કરાયેલ પૃષ્ઠોને ઓપ્ટિમાઇઝ કરવામાં આવશે નહિ અથવા Google દ્વારા જોવાશે નહિ."
+   },
+   "datausage": {
+      "message": "ડેટા વપરાશ: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "ડેટા વપરાશ બ્રેકડાઉન"
    },
-   "disabledatasaverlabel": {
-      "message": "ડેટા સેવર બંધ કરો"
+   "datausagecolumnheading": {
+      "message": "ડેટા વપરાશ"
    },
-   "enabledatasaverlabel": {
-      "message": "ડેટા સેવર ચાલુ કરો"
+   "datausagelabel": {
+      "message": "ડેટા વપરાશ"
+   },
+   "deletedataconfirmationheading": {
+      "message": "ડેટા વપરાશ કાઢી નાખો"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "ડેટા ઉપયોગનાં બધા આંકડાને સ્થાયી રૂપે કાઢી નાખવામાં આવશે અને તેને પુનઃ પ્રાપ્ત કરી શકાતાં નથી. તમે ચોક્કસ છો?"
+   },
+   "deletedatausagelabel": {
+      "message": "કાઢી નાખો"
+   },
+   "detaileddatausagelinktext": {
+      "message": "વિગતો"
    },
    "extdesc": {
       "message": "તમે મુલાકાત લો છો તે પૃષ્ઠોને ઓપ્ટિમાઇઝ કરવા માટે Google સર્વર્સનો ઉપયોગ કરીને ડેટા વપરાશ ઘટાડે છે."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "ડેટા સેવર"
    },
-   "extnamebeta": {
-      "message": "ડેટા સેવર (બીટા)"
+   "labeldatasaveroff": {
+      "message": "બંધ"
    },
-   "helpandfeedback": {
-      "message": "સહાય અને પ્રતિસાદ"
+   "labeldatasaveron": {
+      "message": "ચાલુ"
    },
-   "incognitomessage": {
-      "message": "આ એક્સટેન્શનનો છુપા મોડમાં ઉપયોગ કરી શકાતો નથી."
+   "labeldaysformat": {
+      "message": "$1 દિવસ",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "તમે મુલાકાત લો છો તે પૃષ્ઠો ઓપ્ટિમાઇઝ કરવા માટે Google નો ઉપયોગ કરીને ડેટા પર ઓછો ખર્ચ કરો."
+   "labelhoursformat": {
+      "message": "$1 કલાક",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "HTTPS અથવા છુપા મોડ વડે ઍક્સેસ કરવામાં આવેલા પૃષ્ઠો ઓપ્ટિમાઇઝ થશે નહીં અથવા Google દ્વારા જોવામાં આવશે નહીં."
+   "labeloneday": {
+      "message": "1 દિવસ"
+   },
+   "labelonehour": {
+      "message": "1 કલાક"
    },
    "learnmorelinktext": {
       "message": "વધુ જાણો"
    },
-   "originalsizeformat": {
-      "message": "મૂળ કદ: \u003Cb>$1 બાઇટ્સ\u003C/b>",
+   "loading": {
+      "message": "લોડ કરી રહ્યું છે..."
+   },
+   "originalsizecolumnheading": {
+      "message": "મૂળ કદ"
+   },
+   "resetdata": {
+      "message": "ડેટા ફરીથી સેટ કરો"
+   },
+   "sitecolumnheading": {
+      "message": "સાઇટ"
+   },
+   "sizeformatbytes": {
+      "message": "$1 બાઇટ",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "મૂળ કદ: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "મૂળ કદ: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "મૂળ કદ: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "ડેટા વપરાશ ઘટાડો"
-   },
-   "reportissue": {
-      "message": "સમસ્યાની જાણ કરો"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "આ એક્સ્ટેન્શન સાથે Chrome નું આ સંસ્કરણ સુસંગત નથી. કૃપા કરીને Chrome ને નવીનતમ સંસ્કરણ પર અપડેટ કરો. M41 બીટા એ પ્રથમ સમર્થિત સંસ્કરણ છે."

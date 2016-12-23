@@ -1,7 +1,3 @@
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
 body {
   margin: 20px 20px 8px 20px;
   width: 278px;
@@ -9,113 +5,83 @@ body {
 }
 
 #ext_name {
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 16px;
+  font-family: Roboto-Medium;
+  color: #333;
 }
 
-#data_savings_heading, #graph_start_date, #graph_end_date {
-  font-size: 14px;
-}
-
-#original_data_size, #compressed_data_size {
-  text-align: __MSG_@@bidi_end_edge__;
-  font-size: 12px;
-}
-
-#data_savings_graph {
-  margin-bottom: 8px;
-}
-
-#data_savings_percent {
-  font-size: 36px;
-  float: __MSG_@@bidi_start_edge__;
-  margin-__MSG_@@bidi_end_edge__: 10px;
-}
-
-#original_data_size {
-  margin: 4px 0 4px 0;
-}
-
-#learn_more, #help_feedback {
-  display: block;
-  padding: 8px 0;
-  outline: 0;
-  margin-top: 16px;
-}
-
-#proxy_off {
-  margin-top: 8px;
-}
-
-#proxy_on {
+#main {
   margin-top: 24px;
 }
 
-#graph_start_date {
-  float: left;
+#divider_line {
+  position: absolute;
+  border-top: 1px solid rgba(0, 0, 0, 0.14);
+  bottom: 48px;
+  left: 0;
+  width: 100%;
+  height: 0px;
 }
 
-#graph_end_date {
-  float: right;
+#divider_line_overflow {
+  position: absolute;
+  border-top: 1px solid rgba(0, 0, 0, 0.14);
+  bottom: 96px;
+  left: 0;
+  width: 100%;
+  height: 0px;
+  display: none;
 }
 
-#info2 {
-  margin: 8px 0 24px 0;
+#data_usage_label, #data_usage_value {
+  font-size: 14px;
+  font-family: Roboto-Medium;
+  color: #4285F4;
+  margin-bottom: 6px;
+  width: 131px;
+  line-height: 18px;
+}
+#data_savings_label, #data_savings_value {
+  font-size: 14px;
+  font-family: Roboto-Medium;
+  color: #646464;
+  width: 131px;
+  line-height: 18px;
 }
 
-.data_savings_sizes {
-  float: __MSG_@@bidi_end_edge__;
+#links_panel {
+  height: 32px;
+  text-align: __MSG_@@bidi_end_edge__;
+  margin-__MSG_@@bidi_end_edge__: -12px;
+  margin-top: 24px;
 }
-
-.data_savings_numbers {
-  margin: 20px 0 12px 0;
-}
-
-.alert {
-  margin-__MSG_@@bidi_end_edge__: 5px;
-}
-
-#enable_proxy{
-  font-size: 12px;
-  font-weight: bold;
-  color: #FFF;
-  border-radius: 2px;
-  padding: 8px;
+#learn_more, #detailed_usage_link {
   display: inline-block;
-  margin-top: 9px;
-  outline: 0;
-  text-decoration: initial;
+  line-height: 32px;
+  outline:none;
+  padding: 0 8px;
+  outline: none;
+  font-family: Roboto-Medium;
+  font-size: 13px;
+  color: #646464;
+  cursor: pointer;
+  text-decoration: none;
+}
+.learn_more_container {
+  margin-right: 8px;
 }
 
-#chrome_incompatible_message, #incognito_message, #info1, #info2, #learn_more {
-  font-size: 12px;
+#loading {
+  position: absolute;
+  top: 100px;
+  left: 125px;
 }
 
-a#enable_proxy:link, a#enable_proxy:visited, a#enable_proxy:hover {
-  background: #4285F4;
+input[type="checkbox"]#proxy_control:checked + label span#proxy_control_ui {
+  background: url('images/checkbox-on.png') no-repeat right top;
+  background-size: 16px;
 }
-
-a#enable_proxy:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+input[type="checkbox"]#proxy_control + label span#proxy_control_ui {
+  background: url('images/checkbox-off.png') no-repeat right top;
+  background-size: 16px;
 }
-
-a#enable_proxy:active {
-  background: #3a7ce9;
-}
-
-#disable_proxy {
-  font-size: 12px;
-  padding: 8px 0;
-  display: inline-block;
-  margin-top: 9px;
-  outline: 0;
-}
-
-a#disable_proxy:link, a#disable_proxy:visited, a#disable_proxy:hover {
-  color: #0000EE;
-}
-
-a#disable_proxy:active {
-  color: #052577;
-}
-

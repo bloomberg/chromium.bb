@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "לאחר דחיסה: \u003Cb>$1 בייטים\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "בטל"
+   },
+   "chromeextension": {
+      "message": "תוסף Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "לאחר דחיסה: \u003Cb>‎$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "לאחר דחיסה: \u003Cb>‎$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "חיסכון בנתונים"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "לאחר דחיסה: \u003Cb>‎$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "חיסכון בנתונים"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Google לא תראה דפים שהגישה אליהם בוצעה בחיבור פרטי (HTTPS) או בכרטיסיות גלישה בסתר ולא תבצע אופטימיזציה שלהם."
+   },
+   "datausage": {
+      "message": "שימוש בנתונים: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "‎$1%‎",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "התפלגות שימוש בנתונים"
    },
-   "disabledatasaverlabel": {
-      "message": "כבה את חוסך הנתונים (Data Saver)"
+   "datausagecolumnheading": {
+      "message": "שימוש בנתונים"
    },
-   "enabledatasaverlabel": {
-      "message": "הפעל את חוסך הנתונים (Data Saver)"
+   "datausagelabel": {
+      "message": "שימוש בנתונים"
+   },
+   "deletedataconfirmationheading": {
+      "message": "מחק סטטיסטיקות של שימוש בנתונים"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "כל הסטטיסטיקות של השימוש בנתונים יימחקו לצמיתות ולא ניתן יהיה לשחזר אותן. האם אתה בטוח?"
+   },
+   "deletedatausagelabel": {
+      "message": "מחק"
+   },
+   "detaileddatausagelinktext": {
+      "message": "פרטים"
    },
    "extdesc": {
       "message": "מפחית את צריכת הנתונים על ידי שימוש בשרתי Google כדי לבצע אופטימיזציה של הדפים שבהם אתה מבקר."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "חוסך הנתונים (Data Saver)"
    },
-   "extnamebeta": {
-      "message": "חוסך הנתונים (Data Saver) (ביטא)"
+   "labeldatasaveroff": {
+      "message": "כבוי"
    },
-   "helpandfeedback": {
-      "message": "עזרה ומשוב"
+   "labeldatasaveron": {
+      "message": "פועל"
    },
-   "incognitomessage": {
-      "message": "לא ניתן להשתמש בתוסף הזה במצב גלישה בסתר."
+   "labeldaysformat": {
+      "message": "$1 ימים",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "חסוך בהוצאות על נתונים על ידי שימוש ב-Google לביצוע אופטימיזציה של דפים שאתה מבקר בהם."
+   "labelhoursformat": {
+      "message": "$1 שעות",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google לא תראה או תבצע אופטימיזציה של דפים שהגישה אליהם בוצעה דרך HTTPS או במצב גלישה בסתר."
+   "labeloneday": {
+      "message": "יום אחד"
+   },
+   "labelonehour": {
+      "message": "שעה אחת"
    },
    "learnmorelinktext": {
       "message": "למידע נוסף"
    },
-   "originalsizeformat": {
-      "message": "גודל מקורי: \u003Cb>$1 בייטים\u003C/b>",
+   "loading": {
+      "message": "טוען..."
+   },
+   "originalsizecolumnheading": {
+      "message": "גודל מקורי"
+   },
+   "resetdata": {
+      "message": "איפוס נתונים"
+   },
+   "sitecolumnheading": {
+      "message": "אתר"
+   },
+   "sizeformatbytes": {
+      "message": "$1 בייט",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "גודל מקורי: \u003Cb>‎$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "גודל מקורי: \u003Cb>‎$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "גודל מקורי: \u003Cb>‎$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "הפחת את צריכת הנתונים"
-   },
-   "reportissue": {
-      "message": "דווח על בעיה"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "הגרסה הזו של Chrome אינה תואמת לתוסף הזה. עדכן את Chrome לגרסה האחרונה. תמיכה קיימת החל מגרסהM41 ביטא."

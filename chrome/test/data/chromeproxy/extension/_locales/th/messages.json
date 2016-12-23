@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "หลังการบีบอัด: \u003Cb>$1 ไบต์\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ยกเลิก"
+   },
+   "chromeextension": {
+      "message": "ส่วนขยาย Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "หลังการบีบอัด: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "หลังการบีบอัด: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "การประหยัดอินเทอร์เน็ต"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "หลังการบีบอัด: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "การประหยัดอินเทอร์เน็ต"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Google จะไม่เห็นหรือเพิ่มประสิทธิภาพหน้าที่เข้าถึงด้วยการเชื่อมต่อส่วนตัว (HTTPS) หรือแท็บที่ไม่ระบุตัวตน"
+   },
+   "datausage": {
+      "message": "ปริมาณการใช้อินเทอร์เน็ต: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "รายละเอียดปริมาณการใช้อินเทอร์เน็ต"
    },
-   "disabledatasaverlabel": {
-      "message": "ปิดโปรแกรมประหยัดอินเทอร์เน็ต"
+   "datausagecolumnheading": {
+      "message": "ปริมาณการใช้อินเทอร์เน็ต"
    },
-   "enabledatasaverlabel": {
-      "message": "เปิดโปรแกรมประหยัดอินเทอร์เน็ต"
+   "datausagelabel": {
+      "message": "ปริมาณการใช้อินเทอร์เน็ต"
+   },
+   "deletedataconfirmationheading": {
+      "message": "ลบปริมาณการใช้อินเทอร์เน็ต"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "สถิติการใช้งานอินเทอร์เน็ตทั้งหมดจะถูกลบออกถาวรและไม่สามารถกู้คืนได้ คุณแน่ใจไหม"
+   },
+   "deletedatausagelabel": {
+      "message": "ลบ"
+   },
+   "detaileddatausagelinktext": {
+      "message": "รายละเอียด"
    },
    "extdesc": {
       "message": "ลดการใช้ข้อมูลโดยให้เซิร์ฟเวอร์ Google เพิ่มประสิทธิภาพให้กับหน้าที่คุณเข้าชม"
@@ -51,61 +88,88 @@
    "extname": {
       "message": "โปรแกรมประหยัดอินเทอร์เน็ต"
    },
-   "extnamebeta": {
-      "message": "โปรแกรมประหยัดอินเทอร์เน็ต (เบต้า)"
+   "labeldatasaveroff": {
+      "message": "ปิด"
    },
-   "helpandfeedback": {
-      "message": "ความช่วยเหลือและความคิดเห็น"
+   "labeldatasaveron": {
+      "message": "เปิด"
    },
-   "incognitomessage": {
-      "message": "ไม่สามารถใช้ส่วนขยายนี้ในโหมดไม่ระบุตัวตน"
+   "labeldaysformat": {
+      "message": "$1 วัน",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "ใช้ข้อมูลน้อยลงโดยใช้ Google เพื่อเพิ่มประสิทธิภาพหน้าที่คุณเข้าชม"
+   "labelhoursformat": {
+      "message": "$1 ชั่วโมง",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google จะไม่เห็นและจะไม่มีการเพิ่มประสิทธิภาพหน้าที่เข้าถึงด้วย HTTPS หรือโหมดไม่ระบุตัวตน"
+   "labeloneday": {
+      "message": "1 วัน"
+   },
+   "labelonehour": {
+      "message": "1 ชั่วโมง"
    },
    "learnmorelinktext": {
       "message": "เรียนรู้เพิ่มเติม"
    },
-   "originalsizeformat": {
-      "message": "ขนาดเดิม: \u003Cb>$1 ไบต์\u003C/b>",
+   "loading": {
+      "message": "กำลังโหลด..."
+   },
+   "originalsizecolumnheading": {
+      "message": "ขนาดดั้งเดิม"
+   },
+   "resetdata": {
+      "message": "รีเซ็ตข้อมูล"
+   },
+   "sitecolumnheading": {
+      "message": "เว็บไซต์"
+   },
+   "sizeformatbytes": {
+      "message": "$1 ไบต์",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "ขนาดเดิม: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 กิกะไบต์",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "ขนาดเดิม: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 กิโลไบต์",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "ขนาดเดิม: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 เมกะไบต์",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "ลดการใช้อินเทอร์เน็ต"
-   },
-   "reportissue": {
-      "message": "รายงานปัญหา"
+   "sizeformattb": {
+      "message": "$1 เทระไบต์",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Chrome เวอร์ชันนี้ไม่สามารถใช้ร่วมกับส่วนขยายนี้ โปรดอัปเดต Chrome ให้เป็นเวอร์ชันล่าสุด M41 เบต้าคือเวอร์ชันแรกที่ได้รับการสนับสนุน"

@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Suglaudinus: \u003Cb>$1 B\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ATŠAUKTI"
+   },
+   "chromeextension": {
+      "message": "„Chrome“ plėtinys: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Suglaudinus: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Suglaudinus: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Duomenų tausojimas"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Suglaudinus: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Duomenų tausojimas"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Puslapių, kurie buvo pasiekti naudojant privačius ryšius (HTTPS) ar inkognito skirtukus, „Google“ neoptimizuos arba nematys."
+   },
+   "datausage": {
+      "message": "Duomenų naudojimas: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1 %",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Duomenų naudojimo analizė"
    },
-   "disabledatasaverlabel": {
-      "message": "Išjungti Duomenų taupymo priemonę"
+   "datausagecolumnheading": {
+      "message": "Duomenų naudojimas"
    },
-   "enabledatasaverlabel": {
-      "message": "Įjungti Duomenų taupymo priemonę"
+   "datausagelabel": {
+      "message": "Duomenų naudojimas"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Duomenų naudojimo statistikos ištrynimas"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Visa duomenų naudojimo statistika bus visam laikui ištrinta ir jos nebus galima atkurti. Ar tikrai norite tai atlikti?"
+   },
+   "deletedatausagelabel": {
+      "message": "IŠTRINTI"
+   },
+   "detaileddatausagelinktext": {
+      "message": "IŠSAMI INFORMACIJA"
    },
    "extdesc": {
       "message": "Puslapiai optimizuojami naudojant „Google“ serverius, todėl naudojama mažiau duomenų."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Duomenų taupymo priemonė"
    },
-   "extnamebeta": {
-      "message": "Duomenų taupymo priemonė (beta versija)"
+   "labeldatasaveroff": {
+      "message": "Išjungti"
    },
-   "helpandfeedback": {
-      "message": "Pagalba ir atsiliepimai"
+   "labeldatasaveron": {
+      "message": "Įjungti"
    },
-   "incognitomessage": {
-      "message": "Plėtinio negalima naudoti inkognito režimu."
+   "labeldaysformat": {
+      "message": "$1 d.",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Išleiskite mažiau duomenims naudodami „Google“, kad optimizuotumėte puslapius, kuriuose lankotės."
+   "labelhoursformat": {
+      "message": "$1 val.",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Naudojant HTTPS arba inkognito režimą pasiekti puslapiai nebus optimizuojami ir „Google“ jų nematys."
+   "labeloneday": {
+      "message": "1 d."
+   },
+   "labelonehour": {
+      "message": "1 val."
    },
    "learnmorelinktext": {
-      "message": "Sužinokite daugiau"
+      "message": "SUŽINOTI DAUGIAU"
    },
-   "originalsizeformat": {
-      "message": "Pradinis dydis: \u003Cb>$1 B\u003C/b>",
+   "loading": {
+      "message": "Įkeliama..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Pradinis dydis"
+   },
+   "resetdata": {
+      "message": "IŠ NAUJO NUSTATYTI DUOMENIS"
+   },
+   "sitecolumnheading": {
+      "message": "Svetainė"
+   },
+   "sizeformatbytes": {
+      "message": "$1 bait.",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Pradinis dydis: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Pradinis dydis: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Pradinis dydis: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Duomenų naudojimo mažinimas"
-   },
-   "reportissue": {
-      "message": "Pranešti apie problemą"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Šios versijos „Chrome“ nesuderinama su šiuo plėtiniu. Atnaujinkite „Chrome“ į naujausią versiją. M41 beta versija yra pirmoji palaikoma versija."

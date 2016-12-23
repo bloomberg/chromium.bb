@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Pakkaamisen jälkeen: \u003Cb>$1 tavua\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "PERUUTA"
+   },
+   "chromeextension": {
+      "message": "Chrome-laajennus: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Pakkaamisen jälkeen: \u003Cb>$1 Gt\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Pakkaamisen jälkeen: \u003Cb>$1 Kt\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Datankäyttösäästöt"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Pakkaamisen jälkeen: \u003Cb>$1 Mt\u003C/b>",
+   "datasavingslabel": {
+      "message": "Datankäyttösäästöt"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Suojattuja yhteyksiä (HTTPS) käyttäviä tai incognito-välilehdillä avattuja sivuja ei optimoida eikä Google näe niitä."
+   },
+   "datausage": {
+      "message": "Dataa käytetty $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1 %",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Tiedonsiirron erittely"
    },
-   "disabledatasaverlabel": {
-      "message": "Poista Data Saver käytöstä"
+   "datausagecolumnheading": {
+      "message": "Datan käyttö"
    },
-   "enabledatasaverlabel": {
-      "message": "Ota Data Saver käyttöön"
+   "datausagelabel": {
+      "message": "Datan käyttö"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Poista datan käyttötiedot"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Kaikki datan käyttötilastot poistetaan lopullisesti ja peruuttamattomasti. Haluatko jatkaa?"
+   },
+   "deletedatausagelabel": {
+      "message": "POISTA"
+   },
+   "detaileddatausagelinktext": {
+      "message": "TARKAT TIEDOT"
    },
    "extdesc": {
       "message": "Vähentää tiedonsiirron määrää optimoimalla käyttämäsi sivut Google-palvelimien avulla."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Data Saver"
    },
-   "extnamebeta": {
-      "message": "Data Saver (beta)"
+   "labeldatasaveroff": {
+      "message": "Ei käytössä"
    },
-   "helpandfeedback": {
-      "message": "Ohjeet ja palaute"
+   "labeldatasaveron": {
+      "message": "Käytössä"
    },
-   "incognitomessage": {
-      "message": "Laajennusta ei voi käyttää incognito-tilassa."
+   "labeldaysformat": {
+      "message": "$1 päivää",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Säästä tiedonsiirrossa optimoimalla käyttämäsi sivut Googlen avulla."
+   "labelhoursformat": {
+      "message": "$1 tuntia",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google ei optimoi tai näe HTTPS- tai incognito-tilassa käytettyjä sivuja."
+   "labeloneday": {
+      "message": "1 päivä"
+   },
+   "labelonehour": {
+      "message": "1 tunti"
    },
    "learnmorelinktext": {
-      "message": "Lisätietoja"
+      "message": "LISÄTIETOJA"
    },
-   "originalsizeformat": {
-      "message": "Alkuperäinen koko: \u003Cb>$1 tavua\u003C/b>",
+   "loading": {
+      "message": "Ladataan…"
+   },
+   "originalsizecolumnheading": {
+      "message": "Alkuperäinen koko"
+   },
+   "resetdata": {
+      "message": "NOLLAA TIEDOT"
+   },
+   "sitecolumnheading": {
+      "message": "Sivusto"
+   },
+   "sizeformatbytes": {
+      "message": "$1 tavua",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Alkuperäinen koko: \u003Cb>$1 Gt\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 Gt",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Alkuperäinen koko: \u003Cb>$1 Kt\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 kt",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Alkuperäinen koko: \u003Cb>$1 Mt\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 Mt",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Tiedonsiirron vähentäminen"
-   },
-   "reportissue": {
-      "message": "Ilmoita ongelmasta"
+   "sizeformattb": {
+      "message": "$1 Tt",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Tämä Chrome-versio ei ole yhteensopiva tämän laajennuksen kanssa. Päivitä Chrome sen uusimpaan versioon. M41 Beta on ensimmäinen tuettu versio."

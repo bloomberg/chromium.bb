@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Sau khi nén: \u003Cb>$1 byte\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "HỦY"
+   },
+   "chromeextension": {
+      "message": "Tiện ích của Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Sau khi nén: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Sau khi nén: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Tiết kiệm dữ liệu"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Sau khi nén: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Tiết kiệm dữ liệu"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng kết nối riêng tư (HTTPS) hoặc trong tab ẩn danh."
+   },
+   "datausage": {
+      "message": "Mức sử dụng dữ liệu: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Chi tiết sử dụng dữ liệu"
    },
-   "disabledatasaverlabel": {
-      "message": "Tắt Trình tiết kiệm dữ liệu"
+   "datausagecolumnheading": {
+      "message": "Mức sử dụng dữ liệu"
    },
-   "enabledatasaverlabel": {
-      "message": "Bật Trình tiết kiệm dữ liệu"
+   "datausagelabel": {
+      "message": "Mức sử dụng dữ liệu"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Xóa mức sử dụng dữ liệu"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Tất cả số liệu thống kê sử dụng dữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục được. Bạn có chắc chắn không?"
+   },
+   "deletedatausagelabel": {
+      "message": "XÓA"
+   },
+   "detaileddatausagelinktext": {
+      "message": "CHI TIẾT"
    },
    "extdesc": {
       "message": "Giảm mức sử dụng dữ liệu bằng cách sử dụng máy chủ của Google để tối ưu hóa các trang bạn truy cập."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Trình tiết kiệm dữ liệu"
    },
-   "extnamebeta": {
-      "message": "Trình tiết kiệm dữ liệu (Beta)"
+   "labeldatasaveroff": {
+      "message": "Tắt"
    },
-   "helpandfeedback": {
-      "message": "Trợ giúp và phản hồi"
+   "labeldatasaveron": {
+      "message": "Bật"
    },
-   "incognitomessage": {
-      "message": "Không sử dụng được tiện ích này trong chế độ ẩn danh."
+   "labeldaysformat": {
+      "message": "$1 ngày",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Dùng ít dữ liệu hơn bằng cách dùng Google để tối ưu hóa các trang bạn truy cập."
+   "labelhoursformat": {
+      "message": "$1 giờ",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng HTTPS hoặc Chế độ ẩn danh."
+   "labeloneday": {
+      "message": "1 ngày"
+   },
+   "labelonehour": {
+      "message": "1 giờ"
    },
    "learnmorelinktext": {
-      "message": "Tìm hiểu thêm"
+      "message": "TÌM HIỂU THÊM"
    },
-   "originalsizeformat": {
-      "message": "Kích thước ban đầu: \u003Cb>$1 byte\u003C/b>",
+   "loading": {
+      "message": "Ðang tải..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Kích thước ban đầu"
+   },
+   "resetdata": {
+      "message": "ĐẶT LẠI DỮ LIỆU"
+   },
+   "sitecolumnheading": {
+      "message": "Trang web"
+   },
+   "sizeformatbytes": {
+      "message": "$1 byte",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Kích thước ban đầu: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Kích thước ban đầu: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Kích thước ban đầu: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Giảm mức sử dụng dữ liệu"
-   },
-   "reportissue": {
-      "message": "Báo cáo sự cố"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Phiên bản Chrome này không tương thích với tiện ích này. Vui lòng cập nhật Chrome lên phiên bản mới nhất. M41 Beta là phiên bản được hỗ trợ đầu tiên."

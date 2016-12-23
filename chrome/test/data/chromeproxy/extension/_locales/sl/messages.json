@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Po stiskanju: \u003Cb>$1 B\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "PREKLIČI"
+   },
+   "chromeextension": {
+      "message": "Razširitev za Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Po stiskanju: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Po stiskanju: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Prihranek pri količini prenesenih podatkov"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Po stiskanju: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Prihranek pri količini prenesenih podatkov"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Google ne optimizira in ne vidi strani, odprtih prek zasebnih povezav (protokol HTTPS) ali v načinu brez beleženja zgodovine."
+   },
+   "datausage": {
+      "message": "Prenesena količina podatkov: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1 %",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Pregled prenesene količine podatkov"
    },
-   "disabledatasaverlabel": {
-      "message": "Izklop varčevanja s podatki"
+   "datausagecolumnheading": {
+      "message": "Prenesena količina podatkov"
    },
-   "enabledatasaverlabel": {
-      "message": "Vklop varčevanja s podatki"
+   "datausagelabel": {
+      "message": "Prenesena količina podatkov"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Izbris prenesene količine podatkov"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Vsi statistični podatki o preneseni količini podatkov bodo trajno izbrisani in jih ne bo mogoče obnoviti. Ali ste prepričani?"
+   },
+   "deletedatausagelabel": {
+      "message": "IZBRIŠI"
+   },
+   "detaileddatausagelinktext": {
+      "message": "PODROBNOSTI"
    },
    "extdesc": {
       "message": "Zmanjša porabo podatkov z uporabo Googlovih strežnikov za optimizacijo strani, ki jih obiskujete."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Varčevanje s podatki"
    },
-   "extnamebeta": {
-      "message": "Varčevanje s podatki (beta)"
+   "labeldatasaveroff": {
+      "message": "Izklopljeno"
    },
-   "helpandfeedback": {
-      "message": "Pomoč in povratne informacije"
+   "labeldatasaveron": {
+      "message": "Vklopljeno"
    },
-   "incognitomessage": {
-      "message": "To razširitve ni mogoče uporabiti v načinu brez beleženja zgodovine."
+   "labeldaysformat": {
+      "message": "Št. dni: $1",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Uporabljajte Google za optimiziranje strani, ki jih obiščete, in tako porabite manj podatkov."
+   "labelhoursformat": {
+      "message": "$1 h",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google ne optimizira in ne vidi strani, odprtih prek protokola HTTPS ali v načinu brez beleženja zgodovine."
+   "labeloneday": {
+      "message": "1 dan"
+   },
+   "labelonehour": {
+      "message": "1 h"
    },
    "learnmorelinktext": {
-      "message": "Več o tem"
+      "message": "VEČ O TEM"
    },
-   "originalsizeformat": {
-      "message": "Prvotna velikost: \u003Cb>$1 B\u003C/b>",
+   "loading": {
+      "message": "Nalaganje ..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Prvotna velikost"
+   },
+   "resetdata": {
+      "message": "PONASTAVI PODATKE"
+   },
+   "sitecolumnheading": {
+      "message": "Spletno mesto"
+   },
+   "sizeformatbytes": {
+      "message": "$1 B",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Prvotna velikost: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Prvotna velikost: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Prvotna velikost: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Manjša poraba podatkov"
-   },
-   "reportissue": {
-      "message": "Prijava težave"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Ta različica Chroma ni združljiva s to razširitvijo. Posodobite Chrome na najnovejšo različico. Prva podprta različica je M41 Beta."

@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Efter komprimering: \u003Cb>$1 byte\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "AVBRYT"
+   },
+   "chromeextension": {
+      "message": "Chrome-tillägg: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Efter komprimering: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Efter komprimering: \u003Cb>$1 kB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Datakomprimering"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Efter komprimering: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Datakomprimering"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Google varken optimerar eller ser sidor som öppnas med privata anslutningar (HTTPS) eller i inkognitoflikar."
+   },
+   "datausage": {
+      "message": "Dataanvändning: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1 %",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Dataanvändningsanalys"
    },
-   "disabledatasaverlabel": {
-      "message": "Inaktivera Databesparing"
+   "datausagecolumnheading": {
+      "message": "Dataanvändning"
    },
-   "enabledatasaverlabel": {
-      "message": "Aktivera Databesparing"
+   "datausagelabel": {
+      "message": "Dataanvändning"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Radera dataanvändning"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "All dataanvändningsstatistik raderas permanent och kan inte återställas. Vill du fortsätta?"
+   },
+   "deletedatausagelabel": {
+      "message": "TA BORT"
+   },
+   "detaileddatausagelinktext": {
+      "message": "DETALJER"
    },
    "extdesc": {
       "message": "Minskar dataanvändningen genom att använda Googles servrar för att optimera sidorna som du besöker."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Databesparing"
    },
-   "extnamebeta": {
-      "message": "Databesparing (beta)"
+   "labeldatasaveroff": {
+      "message": "Av"
    },
-   "helpandfeedback": {
-      "message": "Hjälp och feedback"
+   "labeldatasaveron": {
+      "message": "På"
    },
-   "incognitomessage": {
-      "message": "Det här tillägget kan inte användas i inkognitoläge."
+   "labeldaysformat": {
+      "message": "$1 dagar",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Minska datakostnaderna genom att låta Google optimera sidorna du besöker."
+   "labelhoursformat": {
+      "message": "$1 timmar",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google varken optimerar eller ser sidor som öppnas med HTTPS eller i inkognitoläge."
+   "labeloneday": {
+      "message": "1 dag"
+   },
+   "labelonehour": {
+      "message": "1 timme"
    },
    "learnmorelinktext": {
-      "message": "Läs mer"
+      "message": "LÄS MER"
    },
-   "originalsizeformat": {
-      "message": "Originalstorlek: \u003Cb>$1 byte\u003C/b>",
+   "loading": {
+      "message": "Läser in …"
+   },
+   "originalsizecolumnheading": {
+      "message": "Originalstorlek"
+   },
+   "resetdata": {
+      "message": "ÅTERSTÄLL DATA"
+   },
+   "sitecolumnheading": {
+      "message": "Webbplats"
+   },
+   "sizeformatbytes": {
+      "message": "$1 byte",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Originalstorlek: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Originalstorlek: \u003Cb>$1 kB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 kB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Originalstorlek: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Minska dataanvändning"
-   },
-   "reportissue": {
-      "message": "Rapportera ett problem"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Den här versionen av Chrome är inte kompatibel med tillägget. Uppdatera Chrome till den senaste versionen. M41 Beta är den första versionen som stöds."

@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "압축 후: \u003Cb>$1B\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "취소"
+   },
+   "chromeextension": {
+      "message": "Chrome 확장 프로그램: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "압축 후: \u003Cb>$1GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "압축 후: \u003Cb>$1KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "데이터 절약량"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "압축 후: \u003Cb>$1MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "데이터 절약량"
+   },
+   "datasavingstooltipmessage": {
+      "message": "비공개 연결(HTTPS) 또는 시크릿 탭을 통해 액세스된 페이지는 Google에서 최적화하거나 볼 수 없습니다."
+   },
+   "datausage": {
+      "message": "데이터 사용량: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "데이터 사용량 분석"
    },
-   "disabledatasaverlabel": {
-      "message": "데이터 세이버 사용 중지"
+   "datausagecolumnheading": {
+      "message": "데이터 사용량"
    },
-   "enabledatasaverlabel": {
-      "message": "데이터 세이버 사용"
+   "datausagelabel": {
+      "message": "데이터 사용량"
+   },
+   "deletedataconfirmationheading": {
+      "message": "데이터 사용량 삭제"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "모든 데이터 사용량 통계가 영구적으로 삭제되며 복구할 수 없습니다. 삭제하시겠습니까?"
+   },
+   "deletedatausagelabel": {
+      "message": "삭제"
+   },
+   "detaileddatausagelinktext": {
+      "message": "세부정보"
    },
    "extdesc": {
       "message": "Google 서버를 통해 방문하는 페이지를 최적화하여 데이터 사용량을 줄이세요."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "데이터 세이버"
    },
-   "extnamebeta": {
-      "message": "데이터 세이버(베타)"
+   "labeldatasaveroff": {
+      "message": "사용 안함"
    },
-   "helpandfeedback": {
-      "message": "도움말 및 의견"
+   "labeldatasaveron": {
+      "message": "사용"
    },
-   "incognitomessage": {
-      "message": "이 확장 프로그램은 시크릿 모드에서 사용할 수 없습니다."
+   "labeldaysformat": {
+      "message": "$1일",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Google을 사용해 방문하는 페이지를 최적화하여 데이터 사용량을 줄이세요."
+   "labelhoursformat": {
+      "message": "$1시간",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "HTTPS 또는 시크릿 모드를 통해 액세스된 페이지는 최적화되지 않으며 Google에서 볼 수 없습니다."
+   "labeloneday": {
+      "message": "1일"
+   },
+   "labelonehour": {
+      "message": "1시간"
    },
    "learnmorelinktext": {
       "message": "자세히 알아보기"
    },
-   "originalsizeformat": {
-      "message": "원본 크기: \u003Cb>$1B\u003C/b>",
+   "loading": {
+      "message": "로드 중..."
+   },
+   "originalsizecolumnheading": {
+      "message": "원본 크기"
+   },
+   "resetdata": {
+      "message": "데이터 재설정"
+   },
+   "sitecolumnheading": {
+      "message": "사이트"
+   },
+   "sizeformatbytes": {
+      "message": "$1바이트",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "원본 크기: \u003Cb>$1GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "원본 크기: \u003Cb>$1KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "원본 크기: \u003Cb>$1MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "데이터 사용량 줄이기"
-   },
-   "reportissue": {
-      "message": "문제 신고"
+   "sizeformattb": {
+      "message": "$1TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "현재 Chrome 버전은 이 확장 프로그램과 호환되지 않습니다. Chrome을 최신 버전으로 업데이트하세요. M41 베타 버전 이상을 이용해야 합니다."

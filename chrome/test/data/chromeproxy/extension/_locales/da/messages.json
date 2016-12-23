@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Efter komprimering: \u003Cb>$1 byte\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ANNULLER"
+   },
+   "chromeextension": {
+      "message": "Chrome-udvidelse: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Efter komprimering: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Efter komprimering: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Sparet data"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Efter komprimering: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Sparet data"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Google optimerer og ser ikke sider, der besøges via private forbindelser (HTTPS) eller inkognitofaner."
+   },
+   "datausage": {
+      "message": "Dataforbrug: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1 %",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Opdeling af dataforbrug"
    },
-   "disabledatasaverlabel": {
-      "message": "Slå datasparefunktionen fra"
+   "datausagecolumnheading": {
+      "message": "Dataforbrug"
    },
-   "enabledatasaverlabel": {
-      "message": "Slå datasparefunktionen til"
+   "datausagelabel": {
+      "message": "Dataforbrug"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Slet dataforbrug"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Alle statistikker for dataforbrug slettes permanent og kan ikke gendannes. Er du sikker?"
+   },
+   "deletedatausagelabel": {
+      "message": "SLET"
+   },
+   "detaileddatausagelinktext": {
+      "message": "OPLYSNINGER"
    },
    "extdesc": {
       "message": "Reducerer dataforbrug ved at anvende Googles servere til at optimere sider, du besøger."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Datasparefunktion"
    },
-   "extnamebeta": {
-      "message": "Datasparefunktion (beta)"
+   "labeldatasaveroff": {
+      "message": "Fra"
    },
-   "helpandfeedback": {
-      "message": "Hjælp og feedback"
+   "labeldatasaveron": {
+      "message": "Til"
    },
-   "incognitomessage": {
-      "message": "Denne udvidelse kan ikke bruges i inkognitotilstand."
+   "labeldaysformat": {
+      "message": "$1 dage",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Spar penge på data ved at bruge Google til at optimere de sider, du besøger."
+   "labelhoursformat": {
+      "message": "$1 timer",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google optimerer og viser ikke sider, der besøges via HTTPS eller inkognito."
+   "labeloneday": {
+      "message": "1 dag"
+   },
+   "labelonehour": {
+      "message": "1 time"
    },
    "learnmorelinktext": {
-      "message": "Få flere oplysninger"
+      "message": "FÅ FLERE OPLYSNINGER"
    },
-   "originalsizeformat": {
-      "message": "Oprindelig størrelse: \u003Cb>$1 byte\u003C/b>",
+   "loading": {
+      "message": "Indlæser..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Oprindelig størrelse"
+   },
+   "resetdata": {
+      "message": "NULSTIL DATA"
+   },
+   "sitecolumnheading": {
+      "message": "Website"
+   },
+   "sizeformatbytes": {
+      "message": "$1 bytes",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Oprindelig størrelse: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Oprindelig størrelse: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 kB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Oprindelig størrelse: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Reducer dataforbruget"
-   },
-   "reportissue": {
-      "message": "Rapportér et problem"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Denne version af Chrome er ikke kompatibel med udvidelsen. Opdater Chrome til den nyeste version. M41 beta er den første understøttede version."

@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Po kompresi: \u003Cb>$1 B\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ZRUŠIT"
+   },
+   "chromeextension": {
+      "message": "Rozšíření pro Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Po kompresi: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Po kompresi: \u003Cb>$1 kB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Úspora dat"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Po kompresi: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Úspora dat"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Stránky zobrazené prostřednictvím soukromého připojení (HTTPS) nebo v anonymním režimu nebudou pro Google viditelné a nebudou optimalizovány."
+   },
+   "datausage": {
+      "message": "Využití dat: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1 %",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Rozpis využití dat"
    },
-   "disabledatasaverlabel": {
-      "message": "Vypnout Spořič dat"
+   "datausagecolumnheading": {
+      "message": "Využití dat"
    },
-   "enabledatasaverlabel": {
-      "message": "Zapnout Spořič dat"
+   "datausagelabel": {
+      "message": "Využití dat"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Smazat využití dat"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Všechny statistiky využití dat budou trvale smazány a nebude je možné obnovit. Jste si jisti?"
+   },
+   "deletedatausagelabel": {
+      "message": "SMAZAT"
+   },
+   "detaileddatausagelinktext": {
+      "message": "PODROBNOSTI"
    },
    "extdesc": {
       "message": "Snižuje množství dat tím, že stránky optimalizuje pomocí serverů Google."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Spořič dat"
    },
-   "extnamebeta": {
-      "message": "Spořič dat (beta)"
+   "labeldatasaveroff": {
+      "message": "Vypnuto"
    },
-   "helpandfeedback": {
-      "message": "Nápověda a zpětná vazba"
+   "labeldatasaveron": {
+      "message": "Zapnuto"
    },
-   "incognitomessage": {
-      "message": "Toto rozšíření nelze používat v anonymním režimu."
+   "labeldaysformat": {
+      "message": "$1 d",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Využijte Google k optimalizaci navštěvovaných stránek a utrácejte za data méně."
+   "labelhoursformat": {
+      "message": "$1 h",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Stránky zobrazené prostřednictvím protokolu HTTPS nebo v anonymním režimu nebudou pro Google viditelné a nebudou optimalizovány."
+   "labeloneday": {
+      "message": "1 den"
+   },
+   "labelonehour": {
+      "message": "1 hodina"
    },
    "learnmorelinktext": {
-      "message": "Další informace"
+      "message": "DALŠÍ INFORMACE"
    },
-   "originalsizeformat": {
-      "message": "Původní velikost: \u003Cb>$1 B\u003C/b>",
+   "loading": {
+      "message": "Načítání…"
+   },
+   "originalsizecolumnheading": {
+      "message": "Původní velikost"
+   },
+   "resetdata": {
+      "message": "OBNOVIT DATA"
+   },
+   "sitecolumnheading": {
+      "message": "Web"
+   },
+   "sizeformatbytes": {
+      "message": "$1 B",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Původní velikost: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Původní velikost: \u003Cb>$1 kB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 kB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Původní velikost: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Snížit využití dat"
-   },
-   "reportissue": {
-      "message": "Nahlásit problém"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Tato verze Chromu s tímto rozšířením není kompatibilní. Aktualizujte Chrome na nejnovější verzi. První podporovanou verzí je M41 Beta."

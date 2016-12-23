@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "После компримовања: \u003Cb>$1 B\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ОТКАЖИ"
+   },
+   "chromeextension": {
+      "message": "Додатак за Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "После компримовања: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "После компримовања: \u003Cb>$1 kB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Уштеда података"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "После компримовања: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Уштеда података"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Google неће оптимизовати нити видети странице којима се приступа помоћу приватних веза (HTTPS) или на картицама без архивирања."
+   },
+   "datausage": {
+      "message": "Потрошња података: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Преглед потрошње података"
    },
-   "disabledatasaverlabel": {
-      "message": "Искључи Уштеду података"
+   "datausagecolumnheading": {
+      "message": "Потрошња података"
    },
-   "enabledatasaverlabel": {
-      "message": "Укључи Уштеду података"
+   "datausagelabel": {
+      "message": "Потрошња података"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Брисање потрошње података"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Сви статистички подаци о потрошњи података ће бити трајно избрисани и не могу да се врате. Да ли стварно то желите?"
+   },
+   "deletedatausagelabel": {
+      "message": "ИЗБРИШИ"
+   },
+   "detaileddatausagelinktext": {
+      "message": "ДЕТАЉИ"
    },
    "extdesc": {
       "message": "Смањује потрошњу података помоћу Google сервера за оптимизацију страница које посећујете."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Уштеда података"
    },
-   "extnamebeta": {
-      "message": "Уштеда података (бета)"
+   "labeldatasaveroff": {
+      "message": "Искључено"
    },
-   "helpandfeedback": {
-      "message": "Помоћ и повратне информације"
+   "labeldatasaveron": {
+      "message": "Укључено"
    },
-   "incognitomessage": {
-      "message": "Овај додатак не може да се користи у режиму без архивирања."
+   "labeldaysformat": {
+      "message": "$1 дана",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Трошите мање на податке тако што ћете користити Google за оптимизацију страница које посећујете."
+   "labelhoursformat": {
+      "message": "$1 сата(и)",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google неће оптимизовати нити видети странице којима се приступа помоћу HTTPS-а или у режиму без архивирања."
+   "labeloneday": {
+      "message": "1 дан"
+   },
+   "labelonehour": {
+      "message": "1 сат"
    },
    "learnmorelinktext": {
-      "message": "Сазнајте више"
+      "message": "САЗНАЈТЕ ВИШЕ"
    },
-   "originalsizeformat": {
-      "message": "Оригинална величина: \u003Cb>$1 B\u003C/b>",
+   "loading": {
+      "message": "Учитава се..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Оригинална величина"
+   },
+   "resetdata": {
+      "message": "РЕСЕТУЈ ПОДАТКЕ"
+   },
+   "sitecolumnheading": {
+      "message": "Сајт"
+   },
+   "sizeformatbytes": {
+      "message": "$1 бајт(ов)а",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Оригинална величина: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Оригинална величина: \u003Cb>$1 kB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 kB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Оригинална величина: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Смањење потрошње података"
-   },
-   "reportissue": {
-      "message": "Пријави проблем"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Ова верзија Chrome-а није компатибилна са овим додатком. Ажурирајте Chrome на најновију верзију. M41 Beta је прва подржана верзија."

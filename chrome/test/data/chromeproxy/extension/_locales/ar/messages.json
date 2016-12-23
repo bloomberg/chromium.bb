@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "بعد الضغط: \u003Cb>$1 بايت\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "إلغاء"
+   },
+   "chromeextension": {
+      "message": "إضافة Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "بعد الضغط: \u003Cb>$1 غيغابايت\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "بعد الضغط: \u003Cb>$1 كيلوبايت\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "توفير البيانات"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "بعد الضغط: \u003Cb>$1 ميغابايت\u003C/b>",
+   "datasavingslabel": {
+      "message": "توفير البيانات"
+   },
+   "datasavingstooltipmessage": {
+      "message": "لن يتم تحسين الصفحات التي تم الوصول إليها باستخدام اتصالات خاصة (HTTPS) أو علامات تبويب التصفح المتخفي ولن يكتشفها Google."
+   },
+   "datausage": {
+      "message": "استخدام البيانات: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "تحليل استخدام البيانات"
    },
-   "disabledatasaverlabel": {
-      "message": "إيقاف توفير البيانات"
+   "datausagecolumnheading": {
+      "message": "استخدام البيانات"
    },
-   "enabledatasaverlabel": {
-      "message": "تشغيل توفير البيانات"
+   "datausagelabel": {
+      "message": "استخدام البيانات"
+   },
+   "deletedataconfirmationheading": {
+      "message": "حذف استخدام البيانات"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "سيتم حذف إحصاءات استخدام البيانات بشكلٍ دائم ولا يمكن استعادتها. هل أنت متأكد؟"
+   },
+   "deletedatausagelabel": {
+      "message": "حذف"
+   },
+   "detaileddatausagelinktext": {
+      "message": "التفاصيل"
    },
    "extdesc": {
       "message": "تقليل استخدام البيانات باستخدام خوادم Google لتحسين الصفحات التي تزورها."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "توفير البيانات"
    },
-   "extnamebeta": {
-      "message": "توفير البيانات (تجريبي)"
+   "labeldatasaveroff": {
+      "message": "إيقاف"
    },
-   "helpandfeedback": {
-      "message": "المساعدة والتعليقات"
+   "labeldatasaveron": {
+      "message": "تشغيل"
    },
-   "incognitomessage": {
-      "message": "لا يمكن استخدام هذه الإضافة في وضع التصفح المتخفي."
+   "labeldaysformat": {
+      "message": "$1 من الأيام",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "يمكنك تخفيض الاستهلاك المتعلق بالبيانات من خلال استخدام Google لتحسين الصفحات التي تزورها."
+   "labelhoursformat": {
+      "message": "$1 من الساعات",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "لن يتم تحسين الصفحات التي يتم الدخول إليها باستخدام HTTPS أو التصفح المتخفي، ولن يكتشفها متصفح Google."
+   "labeloneday": {
+      "message": "يوم واحد"
+   },
+   "labelonehour": {
+      "message": "ساعة واحدة"
    },
    "learnmorelinktext": {
-      "message": "مزيد من المعلومات"
+      "message": "معرفة المزيد"
    },
-   "originalsizeformat": {
-      "message": "الحجم الأصلي: \u003Cb>$1 بايت\u003C/b>",
+   "loading": {
+      "message": "جارٍ التحميل..."
+   },
+   "originalsizecolumnheading": {
+      "message": "الحجم الأصلي"
+   },
+   "resetdata": {
+      "message": "إعادة تعيين البيانات"
+   },
+   "sitecolumnheading": {
+      "message": "موقع"
+   },
+   "sizeformatbytes": {
+      "message": "$1 بايت",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "الحجم الأصلي: \u003Cb>$1 غيغابايت\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 غيغابايت",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "الحجم الأصلي: \u003Cb>$1 كيلوبايت\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 كيلوبايت",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "الحجم الأصلي: \u003Cb>$1 ميغابايت\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 ميغابايت",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "تقليل استخدام البيانات"
-   },
-   "reportissue": {
-      "message": "الإبلاغ عن مشكلة"
+   "sizeformattb": {
+      "message": "$1 تيرابايت",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "لا يتوافق هذا الإصدار من Chrome مع هذه الإضافة. يُرجى تحديث Chrome لأحدث إصدار. الإصدار التجريبي M41 هو الإصدار المدعوم الأول."

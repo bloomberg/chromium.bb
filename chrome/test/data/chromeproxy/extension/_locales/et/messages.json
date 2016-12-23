@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Pärast tihendamist: \u003Cb>$1 baiti\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "TÜHISTA"
+   },
+   "chromeextension": {
+      "message": "Chrome'i laiendus: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Pärast tihendamist: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Pärast tihendamist: \u003Cb>$1 kB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Andmemahu kokkuhoid"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Pärast tihendamist: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Andmemahu kokkuhoid"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Google ei optimeeri ega näe privaatühendustega (HTTPS) või inkognito vahelehtedel avatud lehti."
+   },
+   "datausage": {
+      "message": "Andmekasutus: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Andmekasutuse statistika"
    },
-   "disabledatasaverlabel": {
-      "message": "Lülita Andmemahu säästja välja"
+   "datausagecolumnheading": {
+      "message": "Andmekasutus"
    },
-   "enabledatasaverlabel": {
-      "message": "Lülita Andmemahu säästja sisse"
+   "datausagelabel": {
+      "message": "Andmekasutus"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Andmekasutuse kustutamine"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Kogu andmekasutuse statistika kustutatakse jäädavalt ja seda ei saa taastada. Kas olete kindel?"
+   },
+   "deletedatausagelabel": {
+      "message": "KUSTUTA"
+   },
+   "detaileddatausagelinktext": {
+      "message": "ÜKSIKASJAD"
    },
    "extdesc": {
       "message": "Vähendab andmekasutust, kasutades Google'i servereid külastatavate lehtede optimeerimiseks."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Andmemahu säästja"
    },
-   "extnamebeta": {
-      "message": "Data Saver (beeta)"
+   "labeldatasaveroff": {
+      "message": "Väljas"
    },
-   "helpandfeedback": {
-      "message": "Abi ja tagasiside"
+   "labeldatasaveron": {
+      "message": "Sees"
    },
-   "incognitomessage": {
-      "message": "Seda laiendust ei saa kasutada inkognito režiimis."
+   "labeldaysformat": {
+      "message": "$1 päeva",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Kulutage vähem aega andmete peale, kasutades Google'it külastatavate lehtede optimeerimiseks."
+   "labelhoursformat": {
+      "message": "$1 tundi",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Funktsiooniga HTTPS või Inkognito avatud lehti Google ei optimeeri ega näe."
+   "labeloneday": {
+      "message": "1 päev"
+   },
+   "labelonehour": {
+      "message": "1 tund"
    },
    "learnmorelinktext": {
-      "message": "Lisateave"
+      "message": "LISATEAVE"
    },
-   "originalsizeformat": {
-      "message": "Algne suurus: \u003Cb>$1 baiti\u003C/b>",
+   "loading": {
+      "message": "Laadimine ..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Algne suurus"
+   },
+   "resetdata": {
+      "message": "LÄHTESTA ANDMED"
+   },
+   "sitecolumnheading": {
+      "message": "Sait"
+   },
+   "sizeformatbytes": {
+      "message": "$1 baiti",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Algne suurus: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Algne suurus: \u003Cb>$1 kB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 kB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Algne suurus: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Andmekasutuse vähendamine"
-   },
-   "reportissue": {
-      "message": "Probleemist teavitamine"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "See Chrome'i versioon ei ühildu selle laiendusega. Värskendage Chrome uusimale versioonile. Esimene toetatud versioon on M41 beeta."

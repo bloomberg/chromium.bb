@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "圧縮後: \u003Cb>$1 バイト\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "キャンセル"
+   },
+   "chromeextension": {
+      "message": "Chrome 拡張機能: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "圧縮後: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "圧縮後: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "データ削減量"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "圧縮後: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "データ削減量"
+   },
+   "datasavingstooltipmessage": {
+      "message": "プライベート接続（HTTPS）またはシークレット タブを使用してアクセスしたページについては、Google による最適化や確認は行われません。"
+   },
+   "datausage": {
+      "message": "データ使用量: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "データ使用量の内訳"
    },
-   "disabledatasaverlabel": {
-      "message": "データセーバーをオフにする"
+   "datausagecolumnheading": {
+      "message": "データ使用量"
    },
-   "enabledatasaverlabel": {
-      "message": "データセーバーをオンにする"
+   "datausagelabel": {
+      "message": "データ使用量"
+   },
+   "deletedataconfirmationheading": {
+      "message": "データ使用情報の削除"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "データの使用に関するすべての統計情報を完全に削除します。この操作は元に戻せません。続行してもよろしいですか？"
+   },
+   "deletedatausagelabel": {
+      "message": "削除"
+   },
+   "detaileddatausagelinktext": {
+      "message": "詳細データ"
    },
    "extdesc": {
       "message": "アクセス先ページを最適に表示するためにGoogleのサーバーを使ってデータ使用量を削減します。"
@@ -51,61 +88,88 @@
    "extname": {
       "message": "データセーバー"
    },
-   "extnamebeta": {
-      "message": "データセーバー（ベータ版）"
+   "labeldatasaveroff": {
+      "message": "オフ"
    },
-   "helpandfeedback": {
-      "message": "ヘルプとフィードバック"
+   "labeldatasaveron": {
+      "message": "オン"
    },
-   "incognitomessage": {
-      "message": "この拡張機能はシークレットモードでは使用できません。"
+   "labeldaysformat": {
+      "message": "$1 日間",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Googleを使用してデータ費用を抑え、アクセスしたページを最適化します。"
+   "labelhoursformat": {
+      "message": "$1 時間",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "HTTPSやシークレットモードでアクセスしたページについては、Googleによる最適化や確認は行われません。"
+   "labeloneday": {
+      "message": "1 日"
+   },
+   "labelonehour": {
+      "message": "1 時間"
    },
    "learnmorelinktext": {
-      "message": "詳しくはこちら"
+      "message": "データセーバーについて"
    },
-   "originalsizeformat": {
-      "message": "元のサイズ: \u003Cb>$1 バイト\u003C/b>",
+   "loading": {
+      "message": "読み込んでいます..."
+   },
+   "originalsizecolumnheading": {
+      "message": "元のサイズ"
+   },
+   "resetdata": {
+      "message": "データをリセット"
+   },
+   "sitecolumnheading": {
+      "message": "サイト"
+   },
+   "sizeformatbytes": {
+      "message": "$1 バイト",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "元のサイズ: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "元のサイズ: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "元のサイズ: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "データ使用量を節約する"
-   },
-   "reportissue": {
-      "message": "問題を報告"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Chrome のこのバージョンではこの拡張機能を使用できません。Chrome を最新バージョンに更新してください。サポートされている最初のバージョンは M41 ベータ版です。"

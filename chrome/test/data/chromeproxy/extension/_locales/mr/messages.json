@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "संक्षेपानंतर: \u003Cb>$1 बाइट\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "रद्द करा"
+   },
+   "chromeextension": {
+      "message": "Chrome विस्तार: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "संक्षेपानंतर: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "संक्षेपानंतर: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "डेटा बचत"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "संक्षेपानंतर: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "डेटा बचत"
+   },
+   "datasavingstooltipmessage": {
+      "message": "खाजगी कनेक्शन (HTTPS) वापरून प्रवेश केलेली किंवा गुप्त टॅब मधील पृष्‍ठे Google द्वारे आप्टिमाइझ केली जाणार नाहीत किंवा पाहिली जाणार नाहीत."
+   },
+   "datausage": {
+      "message": "डेटा वापर: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "डेटा वापराचा तपशीलवार विश्लेषण"
    },
-   "disabledatasaverlabel": {
-      "message": "डेटा बचतकर्ता बंद करा"
+   "datausagecolumnheading": {
+      "message": "डेटा वापर"
    },
-   "enabledatasaverlabel": {
-      "message": "डेटा बचतकर्ता चालू करा"
+   "datausagelabel": {
+      "message": "डेटा वापर"
+   },
+   "deletedataconfirmationheading": {
+      "message": "डेटा वापर हटवा"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "सर्व डेटा वापर आकडेवारी कायमची हटविली जाईल आणि पुनर्प्राप्त केली जाऊ शकत नाही. आपल्‍याला खात्री आहे?"
+   },
+   "deletedatausagelabel": {
+      "message": "हटवा"
+   },
+   "detaileddatausagelinktext": {
+      "message": "तपशील"
    },
    "extdesc": {
       "message": "आपण भेट देता ती पृष्ठे ऑप्टिमाइझ करण्यासाठी Google सर्व्हर वापरून डेटा वापर कमी करते."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "डेटा बचतकर्ता"
    },
-   "extnamebeta": {
-      "message": "डेटा बचतकर्ता (बीटा)"
+   "labeldatasaveroff": {
+      "message": "बंद"
    },
-   "helpandfeedback": {
-      "message": "मदत आणि अभिप्राय"
+   "labeldatasaveron": {
+      "message": "चालू"
    },
-   "incognitomessage": {
-      "message": "हा विस्‍तार गुप्त मोडमध्‍ये वापरला जाऊ शकत नाही."
+   "labeldaysformat": {
+      "message": "$1 दिवस",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "आपण भेट देता ती पृष्ठे ऑप्टिमाइझ करण्यासाठी Google वापरून डेटावर कमी खर्च करा."
+   "labelhoursformat": {
+      "message": "$1 तास",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "HTTPS किंवा गुप्त सह प्रवेश केलेली पृष्ठे Google द्वारे ऑप्टिमाइझ केली जाणार नाहीत किंवा पाहिली जाणार नाहीत."
+   "labeloneday": {
+      "message": "1 दिवस"
+   },
+   "labelonehour": {
+      "message": "1 तास"
    },
    "learnmorelinktext": {
       "message": "अधिक जाणून घ्या"
    },
-   "originalsizeformat": {
-      "message": "मूळ आकार: \u003Cb>$1 बाइट\u003C/b>",
+   "loading": {
+      "message": "लोड करीत आहे..."
+   },
+   "originalsizecolumnheading": {
+      "message": "मूळ आकार"
+   },
+   "resetdata": {
+      "message": "डेटा रीसेट करा"
+   },
+   "sitecolumnheading": {
+      "message": "साइट"
+   },
+   "sizeformatbytes": {
+      "message": "$1 बाइट",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "मूळ आकार: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "मूळ आकार: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "मूळ आकार: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "डेटा वापर कमी करा"
-   },
-   "reportissue": {
-      "message": "समस्येचा अहवाल द्या"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Chrome ची ही आवृत्ती या विस्तारासह सुसंगत नाही. कृपया नवीनतम आवृत्तीवर Chrome अद्यतनित करा. M41 बीटा ही प्रथम समर्थित आवृत्ती आहे."

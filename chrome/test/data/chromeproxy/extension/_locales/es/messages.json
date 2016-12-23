@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Después de comprimir: \u003Cb>$1 bytes\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "CANCELAR"
+   },
+   "chromeextension": {
+      "message": "Extensión de Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Después de comprimir: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Después de comprimir: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Ahorro de datos"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Después de comprimir: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Ahorro de datos"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Google no optimizará ni verá páginas a las que accedas con conexiones privadas (HTTPS) o en pestañas de incógnito."
+   },
+   "datausage": {
+      "message": "Uso de datos: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Análisis de uso de datos"
    },
-   "disabledatasaverlabel": {
-      "message": "Desactivar Economizador de datos"
+   "datausagecolumnheading": {
+      "message": "Uso de datos"
    },
-   "enabledatasaverlabel": {
-      "message": "Activar Economizador de datos"
+   "datausagelabel": {
+      "message": "Uso de datos"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Eliminar uso de datos"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Las estadísticas de uso de datos se eliminarán de forma permanente y no se podrán recuperar. ¿Seguro que quieres continuar?"
+   },
+   "deletedatausagelabel": {
+      "message": "ELIMINAR"
+   },
+   "detaileddatausagelinktext": {
+      "message": "DETALLES"
    },
    "extdesc": {
       "message": "Utiliza los servidores de Google para optimizar las páginas que visitas y reducir el uso de datos."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Economizador de datos"
    },
-   "extnamebeta": {
-      "message": "Economizador de datos (beta)"
+   "labeldatasaveroff": {
+      "message": "Desactivado"
    },
-   "helpandfeedback": {
-      "message": "Ayuda y comentarios"
+   "labeldatasaveron": {
+      "message": "Activado"
    },
-   "incognitomessage": {
-      "message": "Esta extensión no se puede utilizar en modo incógnito."
+   "labeldaysformat": {
+      "message": "$1 días",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Optimiza las páginas que visitas utilizando Google para reducir el uso de datos."
+   "labelhoursformat": {
+      "message": "$1 horas",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google no optimizará ni verá páginas a las que accedas con HTTPS o en Incógnito."
+   "labeloneday": {
+      "message": "1 día"
+   },
+   "labelonehour": {
+      "message": "1 hora"
    },
    "learnmorelinktext": {
-      "message": "Más información"
+      "message": "MÁS INFORMACIÓN"
    },
-   "originalsizeformat": {
-      "message": "Tamaño original: \u003Cb>$1 bytes\u003C/b>",
+   "loading": {
+      "message": "Cargando..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Tamaño original"
+   },
+   "resetdata": {
+      "message": "RESTABLECER DATOS"
+   },
+   "sitecolumnheading": {
+      "message": "Sitio web"
+   },
+   "sizeformatbytes": {
+      "message": "$1 bytes",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Tamaño original: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Tamaño original: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Tamaño original: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Reducir el uso de datos"
-   },
-   "reportissue": {
-      "message": "Informar de un problema"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Esta versión de Chrome no es compatible con esta extensión. Actualiza Chrome a la última versión. La primera versión admitida es M41 Beta."

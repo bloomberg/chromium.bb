@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Po kompresii: \u003Cb>$1 B\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ZRUŠIŤ"
+   },
+   "chromeextension": {
+      "message": "Rozšírenie pre Chrome: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Po kompresii: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Po kompresii: \u003Cb>$1 kB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Úspora dát"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Po kompresii: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Úspora dát"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Google neoptimalizuje ani neuvidí stránky, ku ktorým pristupujete prostredníctvom súkromných pripojení (HTTPS) alebo na kartách inkognito."
+   },
+   "datausage": {
+      "message": "Spotreba dát: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1 %",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Rozpis spotreby dát"
    },
-   "disabledatasaverlabel": {
-      "message": "Vypnúť Šetrič dát"
+   "datausagecolumnheading": {
+      "message": "Spotreba dát"
    },
-   "enabledatasaverlabel": {
-      "message": "Zapnúť Šetrič dát"
+   "datausagelabel": {
+      "message": "Spotreba dát"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Odstránenie spotreby dát"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Všetky štatistiky spotreby dát budú natrvalo odstránené a nebude ich možné obnoviť. Naozaj chcete pokračovať?"
+   },
+   "deletedatausagelabel": {
+      "message": "ODSTRÁNIŤ"
+   },
+   "detaileddatausagelinktext": {
+      "message": "PODROBNOSTI"
    },
    "extdesc": {
       "message": "Znižuje spotrebu dát tak, že pomocou severov Google optimalizuje stránky, ktoré navštívite."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Šetrič dát"
    },
-   "extnamebeta": {
-      "message": "Šetrič dát (beta)"
+   "labeldatasaveroff": {
+      "message": "Vypnutý"
    },
-   "helpandfeedback": {
-      "message": "Pomocník a spätná väzba"
+   "labeldatasaveron": {
+      "message": "Zapnutý"
    },
-   "incognitomessage": {
-      "message": "Toto rozšírenie nie je možné použiť v režime inkognito."
+   "labeldaysformat": {
+      "message": "$1 d",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Využite službu Google na optimalizáciu navštívených stránok a ušetrite za dátové pripojenie."
+   "labelhoursformat": {
+      "message": "$1 h",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Google neoptimalizuje ani nerozpozná stránky, ku ktorým pristupujete prostredníctvom protokolu HTTPS alebo v režime inkognito."
+   "labeloneday": {
+      "message": "1 deň"
+   },
+   "labelonehour": {
+      "message": "1 hodina"
    },
    "learnmorelinktext": {
-      "message": "Viac informácií"
+      "message": "ĎALŠIE INFORMÁCIE"
    },
-   "originalsizeformat": {
-      "message": "Pôvodná veľkosť: \u003Cb>$1 B\u003C/b>",
+   "loading": {
+      "message": "Načítava sa…"
+   },
+   "originalsizecolumnheading": {
+      "message": "Pôvodná veľkosť"
+   },
+   "resetdata": {
+      "message": "OBNOVIŤ ÚDAJE"
+   },
+   "sitecolumnheading": {
+      "message": "Web"
+   },
+   "sizeformatbytes": {
+      "message": "$1 B",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Pôvodná veľkosť: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Pôvodná veľkosť: \u003Cb>$1 kB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 kB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Pôvodná veľkosť: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Znížiť využitie dát"
-   },
-   "reportissue": {
-      "message": "Nahlásiť problém"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Táto verzia prehliadača Chrome nie je kompatibilná s týmto rozšírením. Aktualizujte prehliadač Chrome na najnovšiu verziu. Najnižšia podporovaná verzia je M41 Beta."

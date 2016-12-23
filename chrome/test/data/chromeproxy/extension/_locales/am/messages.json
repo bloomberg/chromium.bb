@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "ከታመቀ በኋላ፦ \u003Cb>$1 ባይት\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ተወው"
+   },
+   "chromeextension": {
+      "message": "የChrome ቅጥያ፦ $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "ከእጨቃ በኋላ፦ \u003Cb>$1 ጊባ\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "ከእጨቃ በኋላ፦ \u003Cb>$1 ኪባ\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "የውሂብ ቁጠባዎች"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "ከእጨቃ በኋላ፦ \u003Cb>$1 ሜባ\u003C/b>",
+   "datasavingslabel": {
+      "message": "የውሂብ ቁጠባዎች"
+   },
+   "datasavingstooltipmessage": {
+      "message": "ግላዊ ግንኙነቶችን (ኤችቲቲፒኤስ) ወይም ማንነት የማያሳውቁ ትሮችን በመጠቀም የተደረሰባቸው ገጾች አይተቡም ወይም በGoogle አይታዩም።"
+   },
+   "datausage": {
+      "message": "የውሂብ አጠቃቀም፦ $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "የውሂብ አጠቃቀም ዝርዝር"
    },
-   "disabledatasaverlabel": {
-      "message": "የውሂብ አስቀማጭን አጥፋ"
+   "datausagecolumnheading": {
+      "message": "የውሂብ አጠቃቀም"
    },
-   "enabledatasaverlabel": {
-      "message": "የውሂብ አስቀማጭን አብራ"
+   "datausagelabel": {
+      "message": "የውሂብ አጠቃቀም"
+   },
+   "deletedataconfirmationheading": {
+      "message": "የውሂብ አጠቃቀም ይሰርዙ"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "ሁሉም የውሂብ አጠቃቀም ስታትስቲክስ በቋሚነት ይሰረዝና ዳግም ሊመለስ አይችልም። እርግጠኛ ነዎት?"
+   },
+   "deletedatausagelabel": {
+      "message": "ሰርዝ"
+   },
+   "detaileddatausagelinktext": {
+      "message": "ዝርዝሮች"
    },
    "extdesc": {
       "message": "የሚጎበኙዋቸውን ገጾች ለማላቅ Google አገልጋዮችን በመጠቀም የውሂብ አጠቃቀምን ይቀንሱ።"
@@ -51,61 +88,88 @@
    "extname": {
       "message": "የውሂብ አስቀማጭ"
    },
-   "extnamebeta": {
-      "message": "ውሂብ ቆጣቢ (ቅድመ-ይሁንታ)"
+   "labeldatasaveroff": {
+      "message": "አጥፋ"
    },
-   "helpandfeedback": {
-      "message": "እገዛ እና ግብረመልስ"
+   "labeldatasaveron": {
+      "message": "አብራ"
    },
-   "incognitomessage": {
-      "message": "ይህ ቅጥያ ማንነት በማያሳውቅ ሁነታ ላይ መጠቀም አይቻልም።"
+   "labeldaysformat": {
+      "message": "$1 ቀኖች",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Google የጎበኟቸውን ገጾች እንዲያመቻች በመጠቀም በውሂብ ላይ ያነሰ ያጥፉ።"
+   "labelhoursformat": {
+      "message": "$1 ሰዓቶች",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "በHTTPS ወይም ማንነት በማያሳውቅ ሁነታ የተደረሰባቸው ገጾች በGoogle አይመቻቹም ወይም አይታዩም።"
+   "labeloneday": {
+      "message": "1 ቀን"
+   },
+   "labelonehour": {
+      "message": "1 ሰዓት"
    },
    "learnmorelinktext": {
-      "message": "ተጨማሪ ለመረዳት"
+      "message": "የበለጠ ለመረዳት"
    },
-   "originalsizeformat": {
-      "message": "የመጀመሪያ መጠን፦ \u003Cb>$1 ባይት\u003C/b>",
+   "loading": {
+      "message": "በመጫን ላይ..."
+   },
+   "originalsizecolumnheading": {
+      "message": "የመጀመሪያ መጠን"
+   },
+   "resetdata": {
+      "message": "ውሂብ ዳግም አስጀምር"
+   },
+   "sitecolumnheading": {
+      "message": "ጣቢያ"
+   },
+   "sizeformatbytes": {
+      "message": "$1 ባይት",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "የመጀመሪያ መጠን፦ \u003Cb>$1 ጊባ\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 ጊባ",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "የመጀመሪያ መጠን፦ \u003Cb>$1 ኪባ\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 ኪባ",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "የመጀመሪያ መጠን፦ \u003Cb>$1 ሜባ\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 ሜባ",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "የውሂብ አጠቃቀም ቀንስ"
-   },
-   "reportissue": {
-      "message": "ችግር ሪፖርት ያድርጉ"
+   "sizeformattb": {
+      "message": "$1 ቴባ",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "ይህ የChrome ስሪት ከዚህ ቅጥያ ጋር ተኳዃኝ አይደለም። እባክዎ Chromeን ወደ ቅርብ ጊዜው ስሪት ያዘምኑት። M41 Beta የመጀመሪያው የሚደገፍ ስሪት ነው።"

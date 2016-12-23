@@ -1,49 +1,86 @@
 {
-   "compressedsizeformat": {
-      "message": "Pēc saspiešanas: \u003Cb>$1 baiti\u003C/b>",
+   "canceldeletedatausagelabel": {
+      "message": "ATCELT"
+   },
+   "chromeextension": {
+      "message": "Chrome paplašinājums: $1",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "compressedsizeformatgb": {
-      "message": "Pēc saspiešanas: \u003Cb>$1 GB\u003C/b>",
+   "datasavings": {
+      "message": "Data Savings: $1 $2 ($3) $4",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
+         },
+         "4": {
+            "content": "$4"
          }
       }
    },
-   "compressedsizeformatkb": {
-      "message": "Pēc saspiešanas: \u003Cb>$1 KB\u003C/b>",
+   "datasavingscolumnheading": {
+      "message": "Datu lietojuma samazinājums"
+   },
+   "datasavingsformat": {
+      "message": "$1 ($2)",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
          }
       }
    },
-   "compressedsizeformatmb": {
-      "message": "Pēc saspiešanas: \u003Cb>$1 MB\u003C/b>",
+   "datasavingslabel": {
+      "message": "Datu lietojuma samazinājums"
+   },
+   "datasavingstooltipmessage": {
+      "message": "Lapas, kuru atvēršanai tika izmantoti privāti savienojumi (HTTPS) vai inkognito cilnes, netiks optimizētas, un Google tās nevarēs skatīt."
+   },
+   "datausage": {
+      "message": "Datu lietojums: $1 $2 $3",
       "placeholders": {
          "1": {
             "content": "$1"
+         },
+         "2": {
+            "content": "$2"
+         },
+         "3": {
+            "content": "$3"
          }
       }
    },
-   "datasavingspercentformat": {
-      "message": "$1%",
-      "placeholders": {
-         "1": {
-            "content": "$1"
-         }
-      }
+   "datausagebreakdowntitle": {
+      "message": "Datu lietojuma sadalījums"
    },
-   "disabledatasaverlabel": {
-      "message": "Izslēgt Datu lietojuma samazinātāju"
+   "datausagecolumnheading": {
+      "message": "Datu lietojums"
    },
-   "enabledatasaverlabel": {
-      "message": "Ieslēgt Datu lietojuma samazinātāju"
+   "datausagelabel": {
+      "message": "Datu lietojums"
+   },
+   "deletedataconfirmationheading": {
+      "message": "Datu lietojuma informācijas dzēšana"
+   },
+   "deletedataconfirmationmessage": {
+      "message": "Visa datu lietojuma statistika tiks neatgriezeniski izdzēsta, un to nevarēs atkopt. Vai esat pārliecināts?"
+   },
+   "deletedatausagelabel": {
+      "message": "DZĒST"
+   },
+   "detaileddatausagelinktext": {
+      "message": "DETALIZĒTA INFORMĀCIJA"
    },
    "extdesc": {
       "message": "Izmantojot Google serverus, samazina datu lietojumu, lai optimizētu apmeklētās lapas."
@@ -51,61 +88,88 @@
    "extname": {
       "message": "Datu lietojuma samazinātājs"
    },
-   "extnamebeta": {
-      "message": "Datu lietojuma samazinātājs (Beta)"
+   "labeldatasaveroff": {
+      "message": "Izslēgts"
    },
-   "helpandfeedback": {
-      "message": "Palīdzība un atsauksmes"
+   "labeldatasaveron": {
+      "message": "Ieslēgts"
    },
-   "incognitomessage": {
-      "message": "Šo paplašinājumu nevar izmantot inkognito režīmā."
+   "labeldaysformat": {
+      "message": "$1 dienas",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info1": {
-      "message": "Tērējiet mazāk līdzekļu par datu pārraidi, apmeklēto lapu optimizēšanai izmantojot Google."
+   "labelhoursformat": {
+      "message": "$1 stundas",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
-   "info2": {
-      "message": "Lapas, kuru atvēršanai tika izmantots protokols HTTPS vai inkognito režīms, netiks optimizētas, un Google tās nevarēs skatīt."
+   "labeloneday": {
+      "message": "1 diena"
+   },
+   "labelonehour": {
+      "message": "1 stunda"
    },
    "learnmorelinktext": {
-      "message": "Uzziniet vairāk"
+      "message": "UZZINĀT VAIRĀK"
    },
-   "originalsizeformat": {
-      "message": "Sākotnējais lielums: \u003Cb>$1 baiti\u003C/b>",
+   "loading": {
+      "message": "Notiek ielāde..."
+   },
+   "originalsizecolumnheading": {
+      "message": "Sākotnējais lielums"
+   },
+   "resetdata": {
+      "message": "ATIESTATĪT DATUS"
+   },
+   "sitecolumnheading": {
+      "message": "Vietne"
+   },
+   "sizeformatbytes": {
+      "message": "$1 baiti",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatgb": {
-      "message": "Sākotnējais lielums: \u003Cb>$1 GB\u003C/b>",
+   "sizeformatgb": {
+      "message": "$1 GB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatkb": {
-      "message": "Sākotnējais lielums: \u003Cb>$1 KB\u003C/b>",
+   "sizeformatkb": {
+      "message": "$1 KB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "originalsizeformatmb": {
-      "message": "Sākotnējais lielums: \u003Cb>$1 MB\u003C/b>",
+   "sizeformatmb": {
+      "message": "$1 MB",
       "placeholders": {
          "1": {
             "content": "$1"
          }
       }
    },
-   "reducedatausagelabel": {
-      "message": "Datu lietojuma samazināšana"
-   },
-   "reportissue": {
-      "message": "Ziņot par problēmu"
+   "sizeformattb": {
+      "message": "$1 TB",
+      "placeholders": {
+         "1": {
+            "content": "$1"
+         }
+      }
    },
    "versionnotcompatible": {
       "message": "Izmantotā Chrome versija nav saderīga ar šo paplašinājumu. Lūdzu, atjauniniet pārlūku Chrome uz jaunāko versiju. Pirmā atbalstītā versija ir M41 beta versija."
