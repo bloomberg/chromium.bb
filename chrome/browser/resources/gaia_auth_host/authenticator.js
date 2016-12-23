@@ -110,6 +110,7 @@ cr.define('cr.login', function() {
     // the same account.
     'email',
     'readOnlyEmail',
+    'realm',
   ];
 
   /**

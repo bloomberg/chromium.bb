@@ -252,6 +252,10 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
   if (is_public_session)
     return false;
 
+  if (user->GetType() == user_manager::USER_TYPE_ACTIVE_DIRECTORY) {
+    return true;
+  }
+
   // At this point the reason for invalid token should be already set. If not,
   // this might be a leftover from an old version.
   if (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID)

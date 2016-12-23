@@ -25,8 +25,10 @@ typedef enum {
   USER_TYPE_CHILD = 6,
   // Android app in kiosk mode, logs in without authentication.
   USER_TYPE_ARC_KIOSK_APP = 7,
+  // Active Directory user. Authenticates against Active Directory server.
+  USER_TYPE_ACTIVE_DIRECTORY = 8,
   // Maximum histogram value.
-  NUM_USER_TYPES = 8
+  NUM_USER_TYPES = 9
 } UserType;
 
 }  // namespace user_manager

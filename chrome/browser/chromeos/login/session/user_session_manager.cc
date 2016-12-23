@@ -1088,6 +1088,14 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     return;
   }
 
+  if (user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_ACTIVE_DIRECTORY) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
+                   AsWeakPtr(), profile));
+    return;
+  }
+
   FinalizePrepareProfile(profile);
 }
 

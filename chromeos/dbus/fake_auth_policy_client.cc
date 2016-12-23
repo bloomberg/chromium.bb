@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/md5.h"
 #include "base/path_service.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
@@ -61,10 +62,18 @@ FakeAuthPolicyClient::~FakeAuthPolicyClient() {}
 void FakeAuthPolicyClient::Init(dbus::Bus* bus) {}
 
 void FakeAuthPolicyClient::JoinAdDomain(const std::string& machine_name,
-                                        const std::string& user,
+                                        const std::string& user_principal_name,
                                         int password_fd,
                                         const JoinCallback& callback) {
   callback.Run(authpolicy::types::AD_JOIN_ERROR_NONE);
+}
+
+void FakeAuthPolicyClient::AuthenticateUser(
+    const std::string& user_principal_name,
+    int password_fd,
+    const AuthCallback& callback) {
+  callback.Run(authpolicy::AUTH_USER_ERROR_NONE,
+               base::MD5String(user_principal_name));
 }
 
 void FakeAuthPolicyClient::RefreshDevicePolicy(

@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -32,6 +33,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/devicetype.h"
@@ -72,9 +75,21 @@ enum GaiaScreenMode {
 
   // An interstitial page will be used before SAML redirection.
   GAIA_SCREEN_MODE_SAML_INTERSTITIAL = 2,
+
+  // Offline UI for Active Directory authentication.
+  GAIA_SCREEN_MODE_AD = 3,
 };
 
+policy::DeviceMode GetDeviceMode() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetDeviceMode();
+}
+
 GaiaScreenMode GetGaiaScreenMode(const std::string& email, bool use_offline) {
+  if (GetDeviceMode() == policy::DEVICE_MODE_ENTERPRISE_AD)
+    return GAIA_SCREEN_MODE_AD;
+
   if (use_offline)
     return GAIA_SCREEN_MODE_OFFLINE;
 
@@ -103,6 +118,12 @@ std::string GetEnterpriseDomain() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return connector->GetEnterpriseDomain();
+}
+
+std::string GetRealm() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetRealm();
 }
 
 std::string GetChromeType() {
@@ -248,6 +269,11 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
       params.SetString("hl", app_locale);
   }
 
+  std::string realm(GetRealm());
+  if (!realm.empty()) {
+    params.SetString("realm", realm);
+  }
+
   std::string enterprise_domain(GetEnterpriseDomain());
   if (!enterprise_domain.empty())
     params.SetString("enterpriseDomain", enterprise_domain);
@@ -358,6 +384,10 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_SAML_INTERSTITIAL_CHANGE_ACCOUNT_LINK_TEXT);
   builder->Add("samlInterstitialNextBtn",
                IDS_LOGIN_SAML_INTERSTITIAL_NEXT_BUTTON_TEXT);
+
+  builder->Add("adAuthWelcomeMessage", IDS_AD_DOMAIN_AUTH_WELCOME_MESSAGE);
+  builder->Add("adLoginUser", IDS_AD_LOGIN_USER);
+  builder->Add("adLoginPassword", IDS_AD_LOGIN_PASSWORD);
 }
 
 void GaiaScreenHandler::Initialize() {
@@ -384,6 +414,8 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::set_offline_login_is_active);
   AddCallback("authExtensionLoaded",
               &GaiaScreenHandler::HandleAuthExtensionLoaded);
+  AddCallback("completeAdAuthentication",
+              &GaiaScreenHandler::HandleCompleteAdAuthentication);
 }
 
 void GaiaScreenHandler::OnPortalDetectionCompleted(
@@ -465,6 +497,55 @@ AccountId GaiaScreenHandler::GetAccountId(
   }
 
   return account_id;
+}
+
+void GaiaScreenHandler::DoAdAuth(const std::string& username,
+                                 const Key& key,
+                                 authpolicy::AuthUserErrorType error,
+                                 const std::string& uid) {
+  if (error == authpolicy::AUTH_USER_ERROR_NONE && !uid.empty()) {
+    const AccountId account_id(
+        GetAccountId(username, uid, AccountType::ACTIVE_DIRECTORY));
+    UserContext user_context(account_id);
+    user_context.SetKey(key);
+    user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
+    user_context.SetIsUsingOAuth(false);
+    user_context.SetUserType(
+        user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY);
+    Delegate()->CompleteLogin(user_context);
+  } else {
+    // TODO(rsorokin): Proper error handling.
+    DLOG(ERROR) << "Failed to auth " << username << ", code " << error;
+    LoadAuthExtension(true, false /* offline */);
+  }
+}
+
+void GaiaScreenHandler::HandleCompleteAdAuthentication(
+    const std::string& user_name,
+    const std::string& password) {
+  Delegate()->SetDisplayEmail(user_name);
+  set_populated_email(user_name);
+
+  login::GetPipeReadEnd(
+      password,
+      base::Bind(&GaiaScreenHandler::OnPasswordPipeReady,
+                 weak_factory_.GetWeakPtr(), user_name, Key(password)));
+}
+
+void GaiaScreenHandler::OnPasswordPipeReady(const std::string& user_name,
+                                            const Key& key,
+                                            base::ScopedFD password_fd) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!password_fd.is_valid()) {
+    DLOG(ERROR) << "Got invalid password_fd";
+    return;
+  }
+  chromeos::AuthPolicyClient* client =
+      chromeos::DBusThreadManager::Get()->GetAuthPolicyClient();
+  client->AuthenticateUser(
+      user_name, password_fd.get(),
+      base::Bind(&GaiaScreenHandler::DoAdAuth, weak_factory_.GetWeakPtr(),
+                 user_name, key));
 }
 
 void GaiaScreenHandler::HandleCompleteAuthentication(

@@ -15,11 +15,13 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "net/base/net_errors.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 class AccountId;
 
 namespace chromeos {
 
+class Key;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
 
@@ -96,6 +98,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
                            const std::string& password,
                            bool using_saml);
 
+  void HandleCompleteAdAuthentication(const std::string& user_name,
+                                      const std::string& password);
+
   void HandleUsingSAMLAPI();
   void HandleScrapedPasswordCount(int password_count);
   void HandleScrapedPasswordVerificationFailed();
@@ -126,6 +131,17 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Kick off DNS cache flushing.
   void StartClearingDnsCache();
   void OnDnsCleared();
+
+  // Callback for AuthPolicyClient.
+  void DoAdAuth(const std::string& username,
+                const Key& key,
+                authpolicy::AuthUserErrorType error,
+                const std::string& uid);
+
+  // Callback for writing password into pipe.
+  void OnPasswordPipeReady(const std::string& user_name,
+                           const Key& key,
+                           base::ScopedFD password_fd);
 
   // Show sign-in screen for the given credentials.
   void ShowSigninScreenForTest(const std::string& username,

@@ -83,6 +83,8 @@ struct EnumTraits<ash::mojom::UserType, user_manager::UserType> {
         return ash::mojom::UserType::CHILD;
       case user_manager::USER_TYPE_ARC_KIOSK_APP:
         return ash::mojom::UserType::ARC_KIOSK;
+      case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+        return ash::mojom::UserType::ACTIVE_DIRECTORY;
       case user_manager::NUM_USER_TYPES:
         // Bail as this is not a valid user type.
         break;
@@ -114,6 +116,9 @@ struct EnumTraits<ash::mojom::UserType, user_manager::UserType> {
         return true;
       case ash::mojom::UserType::ARC_KIOSK:
         *out = user_manager::USER_TYPE_ARC_KIOSK_APP;
+        return true;
+      case ash::mojom::UserType::ACTIVE_DIRECTORY:
+        *out = user_manager::USER_TYPE_ACTIVE_DIRECTORY;
         return true;
     }
     NOTREACHED();

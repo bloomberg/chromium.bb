@@ -218,6 +218,11 @@ void EnsureCryptohomeMigratedToGaiaId(
     DoMount(attempt, resolver, ephemeral, create_if_nonexistent);
     return;
   }
+  if (attempt->user_context.GetAccountId().GetAccountType() ==
+      AccountType::ACTIVE_DIRECTORY) {
+    cryptohome::SetGaiaIdMigrationStatusDone(
+        attempt->user_context.GetAccountId());
+  }
   const bool already_migrated = cryptohome::GetGaiaIdMigrationStatus(
       attempt->user_context.GetAccountId());
   const bool has_account_key =
@@ -501,7 +506,9 @@ void CryptohomeAuthenticator::AuthenticateToLogin(
 
 void CryptohomeAuthenticator::CompleteLogin(content::BrowserContext* context,
                                             const UserContext& user_context) {
-  DCHECK_EQ(user_manager::USER_TYPE_REGULAR, user_context.GetUserType());
+  DCHECK(user_context.GetUserType() == user_manager::USER_TYPE_REGULAR ||
+         user_context.GetUserType() ==
+             user_manager::USER_TYPE_ACTIVE_DIRECTORY);
   authentication_context_ = context;
   current_state_.reset(new AuthAttemptState(user_context,
                                             true,   // unlock

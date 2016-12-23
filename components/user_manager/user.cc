@@ -53,6 +53,14 @@ class RegularUser : public User {
   DISALLOW_COPY_AND_ASSIGN(RegularUser);
 };
 
+class ActiveDirectoryUser : public RegularUser {
+ public:
+  explicit ActiveDirectoryUser(const AccountId& account_id);
+  ~ActiveDirectoryUser() override;
+  // Overridden from User:
+  UserType GetType() const override;
+};
+
 class GuestUser : public User {
  public:
   explicit GuestUser(const AccountId& guest_account_id);
@@ -169,6 +177,10 @@ bool User::HasGaiaAccount() const {
   return TypeHasGaiaAccount(GetType());
 }
 
+bool User::IsActiveDirectoryUser() const {
+  return GetType() == user_manager::USER_TYPE_ACTIVE_DIRECTORY;
+}
+
 bool User::IsSupervised() const {
   UserType type = GetType();
   return  type == USER_TYPE_SUPERVISED ||
@@ -223,6 +235,8 @@ bool User::IsDeviceLocalAccount() const {
 }
 
 User* User::CreateRegularUser(const AccountId& account_id) {
+  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
+    return new ActiveDirectoryUser(account_id);
   return new RegularUser(account_id);
 }
 
@@ -271,13 +285,22 @@ void User::SetStubImage(std::unique_ptr<UserImage> stub_user_image,
   image_is_loading_ = is_loading;
 }
 
+UserType ActiveDirectoryUser::GetType() const {
+  return user_manager::USER_TYPE_ACTIVE_DIRECTORY;
+}
+
 RegularUser::RegularUser(const AccountId& account_id) : User(account_id) {
   set_can_lock(true);
   set_display_email(account_id.GetUserEmail());
 }
 
+ActiveDirectoryUser::ActiveDirectoryUser(const AccountId& account_id)
+    : RegularUser(account_id) {}
+
 RegularUser::~RegularUser() {
 }
+
+ActiveDirectoryUser::~ActiveDirectoryUser() {}
 
 UserType RegularUser::GetType() const {
   return is_child_ ? user_manager::USER_TYPE_CHILD :
@@ -376,8 +399,8 @@ UserType PublicAccountUser::GetType() const {
 }
 
 bool User::has_gaia_account() const {
-  static_assert(user_manager::NUM_USER_TYPES == 8,
-                "NUM_USER_TYPES should equal 8");
+  static_assert(user_manager::NUM_USER_TYPES == 9,
+                "NUM_USER_TYPES should equal 9");
   switch (GetType()) {
     case user_manager::USER_TYPE_REGULAR:
     case user_manager::USER_TYPE_CHILD:
@@ -387,6 +410,7 @@ bool User::has_gaia_account() const {
     case user_manager::USER_TYPE_SUPERVISED:
     case user_manager::USER_TYPE_KIOSK_APP:
     case user_manager::USER_TYPE_ARC_KIOSK_APP:
+    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
       return false;
     default:
       NOTREACHED();

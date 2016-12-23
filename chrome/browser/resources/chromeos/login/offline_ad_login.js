@@ -46,7 +46,7 @@ Polymer({
   /** @private */
   realmChanged_: function() {
     this.adWelcomeMessage =
-        loadTimeData.getStringF('AdAuthWelcomeMessage', this.realm);
+        loadTimeData.getStringF('adAuthWelcomeMessage', this.realm);
   },
 
   /** @private */

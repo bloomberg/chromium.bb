@@ -22,10 +22,13 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   void Init(dbus::Bus* bus) override;
   // AuthPolicyClient overrides.
   void JoinAdDomain(const std::string& machine_name,
-                    const std::string& user,
+                    const std::string& user_principal_name,
                     int password_fd,
                     const JoinCallback& callback) override;
-  void RefreshDevicePolicy(const RefreshPolicyCallback& callback) override;
+  void AuthenticateUser(const std::string& user_principal_name,
+                        int password_fd,
+                        const AuthCallback& callback) override;
+  void RefreshDevicePolicy(const RefreshPolicyCallback& calllback) override;
   void RefreshUserPolicy(const std::string& account_id,
                          const RefreshPolicyCallback& callback) override;
 

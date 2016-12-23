@@ -107,6 +107,9 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // USER_TYPE_REGULAR and USER_TYPE_CHILD.
   virtual bool HasGaiaAccount() const;
 
+  // Returns true if it's Active Directory user.
+  virtual bool IsActiveDirectoryUser() const;
+
   // Returns true if user is supervised.
   virtual bool IsSupervised() const;
 

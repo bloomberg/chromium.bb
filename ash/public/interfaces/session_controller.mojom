@@ -59,6 +59,9 @@ enum UserType {
 
   // Android app in kiosk mode, logs in without authentication.
   ARC_KIOSK,
+
+  // Active Directory user. Authenticates against Active Directory server.
+  ACTIVE_DIRECTORY,
 };
 
 // Info about a user session in ash.

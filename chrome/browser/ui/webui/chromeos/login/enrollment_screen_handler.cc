@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -105,27 +106,6 @@ std::string GetEnterpriseDomain() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return connector->GetEnterpriseDomain();
-}
-
-// Returns file descriptor of a pipe, open for reading. Pipe keeps user
-// password, which can be read from the returned descriptor.
-base::ScopedFD GetPasswordReadPipe(const std::string& password) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-  int pipe_fds[2];
-  if (!base::CreateLocalNonBlockingPipe(pipe_fds)) {
-    LOG(ERROR) << "Failed to create pipe";
-    return base::ScopedFD();
-  }
-  base::ScopedFD pipe_read_end(pipe_fds[0]);
-  base::ScopedFD pipe_write_end(pipe_fds[1]);
-
-  if (!base::WriteFileDescriptor(pipe_write_end.get(),
-                                 password.c_str(),
-                                 password.size())) {
-    LOG(ERROR) << "Failed to write to pipe";
-    return base::ScopedFD();
-  }
-  return pipe_read_end;
 }
 
 }  // namespace
@@ -554,9 +534,8 @@ void EnrollmentScreenHandler::HandleAdCompleteLogin(
     const std::string& password) {
   observe_network_failure_ = false;
   DCHECK(controller_);
-  base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(), FROM_HERE,
-      base::Bind(&GetPasswordReadPipe, password),
+  login::GetPipeReadEnd(
+      password,
       base::Bind(&EnrollmentScreenHandler::OnPasswordPipeReady,
                  weak_ptr_factory_.GetWeakPtr(), machine_name, user_name));
 }

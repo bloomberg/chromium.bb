@@ -696,7 +696,9 @@ void UserManagerBase::NotifyUserProfileImageUpdated(
 
 bool UserManagerBase::CanUserBeRemoved(const User* user) const {
   // Only regular and supervised users are allowed to be manually removed.
-  if (!user || !(user->HasGaiaAccount() || user->IsSupervised()))
+  if (!user ||
+      !(user->HasGaiaAccount() || user->IsSupervised() ||
+        user->IsActiveDirectoryUser()))
     return false;
 
   // Sanity check: we must not remove single user unless it's an enterprise
@@ -977,7 +979,8 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
       user = *it;
       it = users_.erase(it);
     } else {
-      if ((*it)->HasGaiaAccount() || (*it)->IsSupervised()) {
+      if ((*it)->HasGaiaAccount() || (*it)->IsSupervised() ||
+          (*it)->IsActiveDirectoryUser()) {
         const std::string user_email = (*it)->GetAccountId().GetUserEmail();
         prefs_users_update->AppendString(user_email);
       }
