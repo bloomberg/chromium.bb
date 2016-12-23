@@ -137,6 +137,9 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     return true;
   }
 
+  // Mocked mojom::AutofillAgent methods:
+  MOCK_METHOD0(FirstUserGestureObservedInTab, void());
+
  private:
   void CallDone() {
     if (!quit_closure_.is_null()) {
@@ -145,9 +148,7 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     }
   }
 
-  // mojom::AutofillAgent methods:
-  void FirstUserGestureObservedInTab() override {}
-
+  // mojom::AutofillAgent:
   void FillForm(int32_t id, const FormData& form) override {
     fill_form_id_ = id;
     fill_form_form_ = form;
@@ -236,6 +237,11 @@ class MockAutofillManager : public AutofillManager {
   MOCK_METHOD0(Reset, void());
 };
 
+class MockAutofillClient : public TestAutofillClient {
+ public:
+  MOCK_METHOD0(OnFirstUserGestureObserved, void());
+};
+
 class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
   TestContentAutofillDriver(content::RenderFrameHost* rfh,
@@ -259,7 +265,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
 
-    test_autofill_client_.reset(new TestAutofillClient());
+    test_autofill_client_.reset(new MockAutofillClient());
     driver_.reset(new TestContentAutofillDriver(web_contents()->GetMainFrame(),
                                                 test_autofill_client_.get()));
 
@@ -279,7 +285,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
   }
 
  protected:
-  std::unique_ptr<TestAutofillClient> test_autofill_client_;
+  std::unique_ptr<MockAutofillClient> test_autofill_client_;
   std::unique_ptr<TestContentAutofillDriver> driver_;
 
   FakeAutofillAgent fake_agent_;
@@ -477,6 +483,17 @@ TEST_F(ContentAutofillDriverTest, CreditCardFormInteractionOnHTTPS) {
   EXPECT_EQ(url, entry->GetURL());
   EXPECT_FALSE(!!(entry->GetSSL().content_status &
                   content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP));
+}
+
+TEST_F(ContentAutofillDriverTest, NotifyFirstUserGestureObservedInTab) {
+  driver_->NotifyFirstUserGestureObservedInTab();
+  EXPECT_CALL(fake_agent_, FirstUserGestureObservedInTab());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentAutofillDriverTest, FirstUserGestureObserved) {
+  EXPECT_CALL(*test_autofill_client_, OnFirstUserGestureObserved());
+  driver_->FirstUserGestureObserved();
 }
 
 }  // namespace autofill
