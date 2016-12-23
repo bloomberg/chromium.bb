@@ -4,14 +4,18 @@
 
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 
+#include <unordered_set>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/webdata/autofill_metadata_change_list.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/model_type_change_processor.h"
+#include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model/sync_error.h"
 #include "net/base/escape.h"
 
@@ -26,9 +30,18 @@ void* UserDataKey() {
   return reinterpret_cast<void*>(&user_data_key);
 }
 
-const std::string FormatStorageKey(const std::string name,
-                                   const std::string value) {
-  return net::EscapePath(name) + "|" + net::EscapePath(value);
+std::unique_ptr<syncer::EntityData> CreateEntityData(
+    const autofill::AutofillEntry& entry) {
+  auto entity_data = base::MakeUnique<syncer::EntityData>();
+  entity_data->non_unique_name = base::UTF16ToUTF8(entry.key().name());
+  sync_pb::AutofillSpecifics* autofill =
+      entity_data->specifics.mutable_autofill();
+  autofill->set_name(base::UTF16ToUTF8(entry.key().name()));
+  autofill->set_value(base::UTF16ToUTF8(entry.key().value()));
+  autofill->add_usage_timestamp(entry.date_created().ToInternalValue());
+  if (entry.date_created() != entry.date_last_used())
+    autofill->add_usage_timestamp(entry.date_last_used().ToInternalValue());
+  return entity_data;
 }
 
 }  // namespace
@@ -95,12 +108,32 @@ void AutocompleteSyncBridge::AutocompleteSyncBridge::GetData(
     StorageKeyList storage_keys,
     DataCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NOTIMPLEMENTED();
+  std::unordered_set<std::string> keys_set;
+  for (const auto& key : storage_keys) {
+    keys_set.insert(key);
+  }
+
+  auto batch = base::MakeUnique<syncer::MutableDataBatch>();
+  std::vector<AutofillEntry> entries;
+  GetAutofillTable()->GetAllAutofillEntries(&entries);
+  for (const AutofillEntry& entry : entries) {
+    std::string key = GetStorageKeyFromAutofillEntry(entry);
+    if (keys_set.find(key) != keys_set.end()) {
+      batch->Put(key, CreateEntityData(entry));
+    }
+  }
+  callback.Run(syncer::SyncError(), std::move(batch));
 }
 
 void AutocompleteSyncBridge::GetAllData(DataCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NOTIMPLEMENTED();
+  auto batch = base::MakeUnique<syncer::MutableDataBatch>();
+  std::vector<AutofillEntry> entries;
+  GetAutofillTable()->GetAllAutofillEntries(&entries);
+  for (const AutofillEntry& entry : entries) {
+    batch->Put(GetStorageKeyFromAutofillEntry(entry), CreateEntityData(entry));
+  }
+  callback.Run(syncer::SyncError(), std::move(batch));
 }
 
 std::string AutocompleteSyncBridge::GetClientTag(
@@ -126,8 +159,35 @@ void AutocompleteSyncBridge::AutofillEntriesChanged(
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
+// static
+AutofillEntry AutocompleteSyncBridge::CreateAutofillEntry(
+    const sync_pb::AutofillSpecifics& autofill_specifics) {
+  AutofillKey key(base::UTF8ToUTF16(autofill_specifics.name()),
+                  base::UTF8ToUTF16(autofill_specifics.value()));
+  base::Time date_created, date_last_used;
+  const google::protobuf::RepeatedField<int64_t>& timestamps =
+      autofill_specifics.usage_timestamp();
+  if (!timestamps.empty()) {
+    date_created = base::Time::FromInternalValue(*timestamps.begin());
+    date_last_used = base::Time::FromInternalValue(*timestamps.rbegin());
+  }
+  return AutofillEntry(key, date_created, date_last_used);
+}
+
 AutofillTable* AutocompleteSyncBridge::GetAutofillTable() const {
   return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase());
+}
+
+std::string AutocompleteSyncBridge::GetStorageKeyFromAutofillEntry(
+    const autofill::AutofillEntry& entry) {
+  return FormatStorageKey(base::UTF16ToUTF8(entry.key().name()),
+                          base::UTF16ToUTF8(entry.key().value()));
+}
+
+// static
+std::string AutocompleteSyncBridge::FormatStorageKey(const std::string& name,
+                                                     const std::string& value) {
+  return net::EscapePath(name) + "|" + net::EscapePath(value);
 }
 
 }  // namespace autofill

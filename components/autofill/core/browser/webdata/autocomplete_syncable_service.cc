@@ -317,7 +317,7 @@ void AutocompleteSyncableService::CreateOrUpdateEntry(
   if (it == loaded_data->end()) {
     // New entry.
     base::Time date_created, date_last_used;
-    if (timestamps.size() > 0) {
+    if (!timestamps.empty()) {
       date_created = base::Time::FromInternalValue(*timestamps.begin());
       date_last_used = base::Time::FromInternalValue(*timestamps.rbegin());
     }

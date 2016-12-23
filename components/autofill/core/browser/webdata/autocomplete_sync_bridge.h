@@ -64,9 +64,18 @@ class AutocompleteSyncBridge : public base::SupportsUserData::Data,
   // AutofillWebDataServiceObserverOnDBThread implementation.
   void AutofillEntriesChanged(const AutofillChangeList& changes) override;
 
+  static AutofillEntry CreateAutofillEntry(
+      const sync_pb::AutofillSpecifics& autofill_specifics);
+
  private:
   // Returns the table associated with the |web_data_backend_|.
   AutofillTable* GetAutofillTable() const;
+
+  std::string GetStorageKeyFromAutofillEntry(
+      const autofill::AutofillEntry& entry);
+
+  static std::string FormatStorageKey(const std::string& name,
+                                      const std::string& value);
 
   base::ThreadChecker thread_checker_;
 
