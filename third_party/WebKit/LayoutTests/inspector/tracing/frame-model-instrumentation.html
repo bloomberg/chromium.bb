@@ -12,6 +12,7 @@ function doActions()
 
 function test()
 {
+    UI.panels.timeline._landingPage._tabbedPane.selectTab(Timeline.TimelineLandingPage.PageId.Advanced);
     UI.panels.timeline._captureLayersAndPicturesSetting.set(true);
     InspectorTest.invokeAsyncWithTimeline("doActions", InspectorTest.safeWrap(dumpLastFrame));
     function dumpLastFrame()

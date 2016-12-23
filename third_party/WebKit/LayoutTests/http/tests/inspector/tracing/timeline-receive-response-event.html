@@ -26,8 +26,10 @@ function performActions()
 function test()
 {
     UI.viewManager.showView("timeline");
-    UI.panels.timeline._model._currentTarget = SDK.targetManager.mainTarget();
-    UI.panels.timeline._captureJSProfileSetting.set(false);
+    const panel = UI.panels.timeline;
+    panel._model._currentTarget = SDK.targetManager.mainTarget();
+    panel._landingPage._tabbedPane.selectTab(Timeline.TimelineLandingPage.PageId.Advanced);
+    panel._captureJSProfileSetting.set(false);
     InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()

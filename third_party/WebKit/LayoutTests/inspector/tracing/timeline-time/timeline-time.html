@@ -88,6 +88,7 @@ function test()
             InspectorTest.walkTimelineEventTree(dumpName);
             next();
         }
+        UI.panels.timeline._landingPage._tabbedPane.selectTab(Timeline.TimelineLandingPage.PageId.Advanced);
         UI.panels.timeline._captureJSProfileSetting.set(false);
         InspectorTest.evaluateWithTimeline(actions, InspectorTest.safeWrap(callback), true);
     }

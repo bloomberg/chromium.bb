@@ -26,8 +26,8 @@ function performActions()
 
 function test()
 {
-    var panel = UI.panels.timeline;
-
+    const panel = UI.panels.timeline;
+    panel._landingPage._tabbedPane.selectTab(Timeline.TimelineLandingPage.PageId.Advanced);
     panel._captureLayersAndPicturesSetting.set(true);
     panel._onModeChanged();
 
