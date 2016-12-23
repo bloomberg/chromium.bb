@@ -86,7 +86,6 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             true, nullptr);
     std::unique_ptr<net::CookieStoreIOS> cookie_store(
         new net::CookieStoreIOS(persistent_store.get()));
-    net::CookieStoreIOS::SwitchSynchronizedStore(nullptr, cookie_store.get());
     storage_->set_cookie_store(std::move(cookie_store));
 
     std::string user_agent = web::GetWebClient()->GetUserAgent(false);

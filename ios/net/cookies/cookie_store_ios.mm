@@ -327,22 +327,8 @@ std::unique_ptr<CookieStoreIOS> CookieStoreIOS::CreateCookieStore(
 }
 
 // static
-void CookieStoreIOS::SwitchSynchronizedStore(CookieStoreIOS* old_store,
-                                             CookieStoreIOS* new_store) {
-  DCHECK(new_store);
-  DCHECK_NE(new_store, old_store);
-  if (old_store)
-    old_store->SetSynchronizedWithSystemStore(false);
-  new_store->SetSynchronizedWithSystemStore(true);
-}
-
-// static
 void CookieStoreIOS::NotifySystemCookiesChanged() {
   NotificationTrampoline::GetInstance()->NotifyCookiesChanged();
-}
-
-void CookieStoreIOS::UnSynchronize() {
-  SetSynchronizedWithSystemStore(false);
 }
 
 void CookieStoreIOS::SetMetricsEnabled() {

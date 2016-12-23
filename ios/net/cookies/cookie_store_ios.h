@@ -83,19 +83,11 @@ class CookieStoreIOS : public net::CookieStore,
   static std::unique_ptr<CookieStoreIOS> CreateCookieStore(
       NSHTTPCookieStorage* cookie_storage);
 
-  // As there is only one system store, only one CookieStoreIOS at a time may
-  // be synchronized with it.
-  static void SwitchSynchronizedStore(CookieStoreIOS* old_store,
-                                      CookieStoreIOS* new_store);
-
   // Must be called when the state of
   // |NSHTTPCookieStorage sharedHTTPCookieStorage| changes.
   // Affects only those CookieStoreIOS instances that are backed by
   // |NSHTTPCookieStorage sharedHTTPCookieStorage|.
   static void NotifySystemCookiesChanged();
-
-  // Unsynchronizes the cookie store if it is currently synchronized.
-  void UnSynchronize();
 
   // Only one cookie store may enable metrics.
   void SetMetricsEnabled();
@@ -156,6 +148,13 @@ class CookieStoreIOS : public net::CookieStore,
 
   bool IsEphemeral() override;
 
+  // Changes the synchronization of the store.
+  // If |synchronized| is true, then the system cookie store is used as a
+  // backend, else |cookie_monster_| is used. Cookies are moved from one to
+  // the other accordingly.
+  // TODO(crbug.com/676144): Remove this method. It is used only in tests.
+  void SetSynchronizedWithSystemStore(bool synchronized);
+
  private:
   // For tests.
   friend struct CookieStoreIOSTestTraits;
@@ -173,11 +172,6 @@ class CookieStoreIOS : public net::CookieStore,
 
   // Clears the system cookie store.
   void ClearSystemStore();
-  // Changes the synchronization of the store.
-  // If |synchronized| is true, then the system cookie store is used as a
-  // backend, else |cookie_monster_| is used. Cookies are moved from one to
-  // the other accordingly.
-  void SetSynchronizedWithSystemStore(bool synchronized);
   // Returns true if the system cookie store policy is
   // |NSHTTPCookieAcceptPolicyAlways|.
   bool SystemCookiesAllowed();

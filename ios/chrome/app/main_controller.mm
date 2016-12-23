@@ -217,20 +217,6 @@ void RegisterComponentsForUpdate() {
   GetApplicationContext()->GetCRLSetFetcher()->StartInitialLoad(cus, path);
 }
 
-// Unsynchronizes the cookie store associated to |browserState| on the IO
-// thread.
-void UnSynchronizeCookieStore(ios::ChromeBrowserState* browserState) {
-  DCHECK(browserState);
-  scoped_refptr<net::URLRequestContextGetter> getter =
-      browserState->GetRequestContext();
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlock(^{
-        net::CookieStoreIOS* store = static_cast<net::CookieStoreIOS*>(
-            getter->GetURLRequestContext()->cookie_store());
-        store->UnSynchronize();
-      }));
-}
-
 // Returns YES if |url| matches chrome://newtab.
 BOOL IsURLNtp(const GURL& url) {
   return UrlHasChromeScheme(url) && url.host() == kChromeUINewTabHost;
@@ -1751,8 +1737,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)lastIncognitoTabClosed {
   DCHECK(_mainBrowserState->HasOffTheRecordChromeBrowserState());
   [self clearIOSSpecificIncognitoData];
-  UnSynchronizeCookieStore(
-      _mainBrowserState->GetOffTheRecordChromeBrowserState());
 
   // OffTheRecordProfileIOData cannot be deleted before all the requests are
   // deleted. All of the request trackers associated with the closed OTR tabs
