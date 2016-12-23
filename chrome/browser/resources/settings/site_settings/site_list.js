@@ -68,16 +68,6 @@ Polymer({
     },
 
     /**
-     * Represents the state of the main toggle shown for the category. For
-     * example, the Location category can be set to Block/Ask so false, in that
-     * case, represents Block and true represents Ask.
-     */
-    categoryEnabled: {
-      type: Boolean,
-      value: true,
-    },
-
-    /**
      * Whether to show the Allow action in the action menu.
      */
     showAllowAction_: Boolean,
