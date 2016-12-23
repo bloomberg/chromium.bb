@@ -35,6 +35,14 @@ source_set("unit_tests") {
 }
 
 test("media_mojo_unittests") {
+  # crbug.com/676418: Suppress symbol import warnings.
+  if (is_win && is_component_build) {
+    ldflags = [
+      "/ignore:4217",
+      "/ignore:4049",
+    ]
+  }
+
   deps = [
     ":unit_tests",
     "//mojo/edk/test:run_all_unittests",

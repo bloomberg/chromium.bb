@@ -1517,6 +1517,14 @@ component("platform") {
       "/wd4334",  # Result of 32-bit shift implicitly converted to 64 bits.
       "/wd4724",  # Modulo by 0.
     ]
+
+    # crbug.com/654776: Suppress symbol import warnings.
+    if (is_component_build) {
+      ldflags = [
+        "/ignore:4217",
+        "/ignore:4049",
+      ]
+    }
   } else {
     sources -= [
       "clipboard/ClipboardUtilitiesWin.cpp",

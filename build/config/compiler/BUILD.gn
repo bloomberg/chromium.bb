@@ -833,10 +833,14 @@ config("runtime_library") {
 config("default_warnings") {
   cflags = []
   cflags_cc = []
+  ldflags = []
 
   if (is_win) {
     if (treat_warnings_as_errors) {
       cflags += [ "/WX" ]
+    }
+    if (fatal_linker_warnings) {
+      ldflags += [ "/WX" ]
     }
 
     cflags += [
