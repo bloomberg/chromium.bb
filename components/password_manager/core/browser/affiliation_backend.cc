@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -88,12 +89,12 @@ void AffiliationBackend::CancelPrefetch(const FacetURI& facet_uri,
                                         const base::Time& keep_fresh_until) {
   DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
 
-  FacetManager* facet_manager = facet_managers_.get(facet_uri);
-  if (!facet_manager)
+  auto facet_manager_it = facet_managers_.find(facet_uri);
+  if (facet_manager_it == facet_managers_.end())
     return;
-  facet_manager->CancelPrefetch(keep_fresh_until);
+  facet_manager_it->second->CancelPrefetch(keep_fresh_until);
 
-  if (facet_manager->CanBeDiscarded())
+  if (facet_manager_it->second->CanBeDiscarded())
     facet_managers_.erase(facet_uri);
 }
 
@@ -121,12 +122,12 @@ void AffiliationBackend::DeleteCache(const base::FilePath& db_path) {
 
 FacetManager* AffiliationBackend::GetOrCreateFacetManager(
     const FacetURI& facet_uri) {
-  if (!facet_managers_.contains(facet_uri)) {
-    std::unique_ptr<FacetManager> new_manager(
-        new FacetManager(facet_uri, this, clock_.get()));
-    facet_managers_.add(facet_uri, std::move(new_manager));
+  std::unique_ptr<FacetManager>& facet_manager = facet_managers_[facet_uri];
+  if (!facet_manager) {
+    facet_manager =
+        base::MakeUnique<FacetManager>(facet_uri, this, clock_.get());
   }
-  return facet_managers_.get(facet_uri);
+  return facet_manager.get();
 }
 
 void AffiliationBackend::DiscardCachedDataIfNoLongerNeeded(
@@ -136,9 +137,11 @@ void AffiliationBackend::DiscardCachedDataIfNoLongerNeeded(
   // Discard the equivalence class if there is no facet in the class whose
   // FacetManager claims that it needs to keep the data.
   for (const auto& facet_uri : affiliated_facets) {
-    FacetManager* facet_manager = facet_managers_.get(facet_uri);
-    if (facet_manager && !facet_manager->CanCachedDataBeDiscarded())
+    auto facet_manager_it = facet_managers_.find(facet_uri);
+    if (facet_manager_it != facet_managers_.end() &&
+        !facet_manager_it->second->CanCachedDataBeDiscarded()) {
       return;
+    }
   }
 
   CHECK(!affiliated_facets.empty());
@@ -148,12 +151,12 @@ void AffiliationBackend::DiscardCachedDataIfNoLongerNeeded(
 void AffiliationBackend::OnSendNotification(const FacetURI& facet_uri) {
   DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
 
-  FacetManager* facet_manager = facet_managers_.get(facet_uri);
-  if (!facet_manager)
+  auto facet_manager_it = facet_managers_.find(facet_uri);
+  if (facet_manager_it == facet_managers_.end())
     return;
-  facet_manager->NotifyAtRequestedTime();
+  facet_manager_it->second->NotifyAtRequestedTime();
 
-  if (facet_manager->CanBeDiscarded())
+  if (facet_manager_it->second->CanBeDiscarded())
     facet_managers_.erase(facet_uri);
 }
 
@@ -204,9 +207,10 @@ void AffiliationBackend::OnFetchSucceeded(
     // data. See: https://crbug.com/478832.
 
     for (const auto& facet_uri : affiliated_facets) {
-      if (!facet_managers_.contains(facet_uri))
+      auto facet_manager_it = facet_managers_.find(facet_uri);
+      if (facet_manager_it == facet_managers_.end())
         continue;
-      FacetManager* facet_manager = facet_managers_.get(facet_uri);
+      FacetManager* facet_manager = facet_manager_it->second.get();
       facet_manager->OnFetchSucceeded(affiliation);
       if (facet_manager->CanBeDiscarded())
         facet_managers_.erase(facet_uri);
