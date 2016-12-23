@@ -4843,16 +4843,22 @@ TEST(HeapTest, GCParkingTimeout) {
 
 TEST(HeapTest, NeedsAdjustAndMark) {
   // class Mixin : public GarbageCollectedMixin {};
-  EXPECT_TRUE(NeedsAdjustAndMark<Mixin>::value);
-  EXPECT_TRUE(NeedsAdjustAndMark<const Mixin>::value);
+  static_assert(NeedsAdjustAndMark<Mixin>::value,
+                "A Mixin pointer needs adjustment");
+  static_assert(NeedsAdjustAndMark<Mixin>::value,
+                "A const Mixin pointer needs adjustment");
 
   // class SimpleObject : public GarbageCollected<SimpleObject> {};
-  EXPECT_FALSE(NeedsAdjustAndMark<SimpleObject>::value);
-  EXPECT_FALSE(NeedsAdjustAndMark<const SimpleObject>::value);
+  static_assert(!NeedsAdjustAndMark<SimpleObject>::value,
+                "A SimpleObject pointer does not need adjustment");
+  static_assert(!NeedsAdjustAndMark<const SimpleObject>::value,
+                "A const SimpleObject pointer does not need adjustment");
 
   // class UseMixin : public SimpleObject, public Mixin {};
-  EXPECT_FALSE(NeedsAdjustAndMark<UseMixin>::value);
-  EXPECT_FALSE(NeedsAdjustAndMark<const UseMixin>::value);
+  static_assert(!NeedsAdjustAndMark<UseMixin>::value,
+                "A UseMixin pointer does not need adjustment");
+  static_assert(!NeedsAdjustAndMark<const UseMixin>::value,
+                "A const UseMixin pointer does not need adjustment");
 }
 
 template <typename Set>

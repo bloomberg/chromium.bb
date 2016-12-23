@@ -242,8 +242,6 @@ class NeedsAdjustAndMark<T, true> {
  public:
   static const bool value = false;
 };
-template <typename T>
-const bool NeedsAdjustAndMark<T, true>::value;
 
 template <typename T>
 class NeedsAdjustAndMark<T, false> {
@@ -253,8 +251,6 @@ class NeedsAdjustAndMark<T, false> {
   static const bool value =
       IsGarbageCollectedMixin<typename std::remove_const<T>::type>::value;
 };
-template <typename T>
-const bool NeedsAdjustAndMark<T, false>::value;
 
 template <typename T,
           bool = std::is_base_of<TraceWrapperBase,
@@ -268,8 +264,6 @@ class CanTraceWrappers<T, true> {
  public:
   static const bool value = true;
 };
-template <typename T>
-const bool CanTraceWrappers<T, true>::value;
 
 template <typename T>
 class CanTraceWrappers<T, false> {
@@ -278,8 +272,6 @@ class CanTraceWrappers<T, false> {
  public:
   static const bool value = false;
 };
-template <typename T>
-const bool CanTraceWrappers<T, false>::value;
 
 // TODO(sof): migrate to wtf/TypeTraits.h
 template <typename T>
