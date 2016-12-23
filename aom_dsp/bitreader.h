@@ -223,7 +223,7 @@ static INLINE int aom_read_tree_(aom_reader *r, const aom_tree_index *tree,
 }
 
 #if CONFIG_EC_MULTISYMBOL
-static INLINE int aom_read_cdf_(aom_reader *r, aom_cdf_prob *cdf,
+static INLINE int aom_read_cdf_(aom_reader *r, const aom_cdf_prob *cdf,
                                 int nsymbs ACCT_STR_PARAM) {
   int ret;
 #if CONFIG_ANS
