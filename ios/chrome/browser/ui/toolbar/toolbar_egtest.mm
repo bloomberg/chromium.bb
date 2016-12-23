@@ -286,13 +286,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::omnibox()]
       assertWithMatcher:chrome_test_util::omniboxText(URL.GetContent())];
 
-  NSString* shareButtonLabel = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
-  if (!IsIPadIdiom()) {
-    [ChromeEarlGreyUI openToolsMenu];
-  }
-  id<GREYMatcher> share_button =
-      chrome_test_util::buttonWithAccessibilityLabel(shareButtonLabel);
-  [[EarlGrey selectElementWithMatcher:share_button] performAction:grey_tap()];
+  [ChromeEarlGreyUI openShareMenu];
 
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::buttonWithAccessibilityLabel(

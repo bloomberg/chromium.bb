@@ -59,4 +59,12 @@ using testing::kWaitForPageLoadTimeout;
       performAction:grey_tap()];
 }
 
++ (void)openShareMenu {
+  if (IsCompact()) {
+    [ChromeEarlGreyUI openToolsMenu];
+  }
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::shareButton()]
+      performAction:grey_tap()];
+}
+
 @end

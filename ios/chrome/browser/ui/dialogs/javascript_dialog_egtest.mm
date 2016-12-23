@@ -484,13 +484,7 @@ void TapSuppressDialogsButton() {
                           @"correctly.");
 #endif
 
-  // Show the share menu.
-  if (!IsIPadIdiom())
-    [ChromeEarlGreyUI openToolsMenu];
-
-  NSString* shareLabel = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(shareLabel)]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openShareMenu];
 
   // Copy URL, dismissing the share menu.
   id<GREYMatcher> printButton =

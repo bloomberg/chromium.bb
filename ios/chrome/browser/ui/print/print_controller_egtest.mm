@@ -65,12 +65,7 @@ const char kHTMLURL[] = "http://test";
 }
 
 - (void)printCurrentPage {
-  if (IsCompact())
-    [ChromeEarlGreyUI openToolsMenu];
-
-  NSString* shareLabel = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(shareLabel)]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openShareMenu];
 
   id<GREYMatcher> printButton =
       grey_allOf(grey_accessibilityLabel(@"Print"),

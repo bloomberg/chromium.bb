@@ -64,6 +64,9 @@ id<GREYMatcher> omniboxText(std::string text);
 // Matcher for Tools menu button.
 id<GREYMatcher> toolsMenuButton();
 
+// Matcher for the Share menu button.
+id<GREYMatcher> shareButton();
+
 // Matcher for show tabs button.
 id<GREYMatcher> showTabsButton();
 

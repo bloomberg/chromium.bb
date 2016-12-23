@@ -22,17 +22,6 @@
 
 namespace {
 
-// Opens the activity service menu (by tapping on the share button).
-void OpenActivityService() {
-  NSString* shareButtonLabel = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
-  if (IsCompact()) {
-    [ChromeEarlGreyUI openToolsMenu];
-  }
-  id<GREYMatcher> share_button =
-      chrome_test_util::buttonWithAccessibilityLabel(shareButtonLabel);
-  [[EarlGrey selectElementWithMatcher:share_button] performAction:grey_tap()];
-}
-
 // Assert the activity service is visible by checking the "copy" button.
 void AssertActivityServiceVisible() {
   [[EarlGrey
@@ -73,7 +62,7 @@ id<GREYMatcher> printButton() {
 
   // Open a regular page and verify that you can share.
   [ChromeEarlGrey loadURL:regularPageURL];
-  OpenActivityService();
+  [ChromeEarlGreyUI openShareMenu];
   AssertActivityServiceVisible();
 
   // Open an error page.
@@ -109,7 +98,7 @@ id<GREYMatcher> printButton() {
   [ChromeEarlGrey loadURL:ErrorPageResponseProvider::GetDnsFailureUrl()];
 
   // Verify that you can share, but that the Print action is not available.
-  OpenActivityService();
+  [ChromeEarlGreyUI openShareMenu];
   AssertActivityServiceVisible();
   [[EarlGrey selectElementWithMatcher:printButton()]
       assertWithMatcher:grey_nil()];
@@ -119,13 +108,11 @@ id<GREYMatcher> printButton() {
   // Open an un-shareable page.
   GURL kURL("chrome://version");
   [ChromeEarlGrey loadURL:kURL];
-  NSString* shareButtonLabel = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
   // Verify that the share button is disabled.
   if (IsCompact()) {
     [ChromeEarlGreyUI openToolsMenu];
   }
-  id<GREYMatcher> share_button =
-      chrome_test_util::buttonWithAccessibilityLabel(shareButtonLabel);
+  id<GREYMatcher> share_button = chrome_test_util::shareButton();
   [[EarlGrey selectElementWithMatcher:share_button]
       assertWithMatcher:grey_accessibilityTrait(
                             UIAccessibilityTraitNotEnabled)];
@@ -140,7 +127,7 @@ id<GREYMatcher> printButton() {
 
   // Open page and open the share menu.
   [ChromeEarlGrey loadURL:url];
-  OpenActivityService();
+  [ChromeEarlGreyUI openShareMenu];
 
   // Verify that the share menu is up and contains a Print action.
   AssertActivityServiceVisible();

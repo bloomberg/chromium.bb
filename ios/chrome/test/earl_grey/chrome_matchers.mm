@@ -198,6 +198,10 @@ id<GREYMatcher> toolsMenuButton() {
                     grey_sufficientlyVisible(), nil);
 }
 
+id<GREYMatcher> shareButton() {
+  return buttonWithAccessibilityLabelId(IDS_IOS_TOOLS_MENU_SHARE);
+}
+
 id<GREYMatcher> showTabsButton() {
   return grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
                     grey_sufficientlyVisible(), nil);

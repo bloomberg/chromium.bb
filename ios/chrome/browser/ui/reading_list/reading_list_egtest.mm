@@ -14,10 +14,14 @@
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/wait_util.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#import "ios/web/public/test/http_server.h"
+#import "ios/web/public/test/http_server_util.h"
 
 namespace {
 const char kReadTitle[] = "foobar";
@@ -30,6 +34,9 @@ const char kUnreadTitle2[] = "I am another unread entry";
 const char kUnreadURL2[] = "http://unreadfoobar2.com";
 const size_t kNumberReadEntries = 2;
 const size_t kNumberUnreadEntries = 2;
+const CFTimeInterval kSnackbarAppearanceTimeout = 5;
+const CFTimeInterval kSnackbarDisappearanceTimeout =
+    MDCSnackbarMessageDurationMax + 1;
 const char kReadHeader[] = "Read";
 const char kUnreadHeader[] = "Unread";
 
@@ -166,6 +173,53 @@ size_t ModelReadSize(ReadingListModel* model) {
   ReadingListModel* model = GetReadingListModel();
   for (const GURL& url : model->Keys())
     model->RemoveEntryByURL(url);
+}
+
+// Tests that sharing a web page to the Reading List results in a snackbar
+// appearing, and that the Reading List entry is present in the Reading List.
+- (void)testSavingToReadingList {
+  // Setup a server serving a page at http://potato with the title "tomato".
+  std::map<GURL, std::string> responses;
+  const GURL regularPageURL = web::test::HttpServer::MakeUrl("http://potato");
+  responses[regularPageURL] = "<html><head><title>tomato</title></head></html>";
+  web::test::SetUpSimpleHttpServer(responses);
+
+  // Open http://potato
+  [ChromeEarlGrey loadURL:regularPageURL];
+
+  // Add the page to the reading list.
+  [ChromeEarlGreyUI openShareMenu];
+  TapButtonWithID(IDS_IOS_SHARE_MENU_READING_LIST_ACTION);
+
+  // Wait for the snackbar to appear.
+  id<GREYMatcher> snackbarMatcher =
+      chrome_test_util::buttonWithAccessibilityLabelId(
+          IDS_IOS_READING_LIST_SNACKBAR_MESSAGE);
+  ConditionBlock waitForAppearance = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:snackbarMatcher]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
+  };
+  // Wait for the snackbar to disappear.
+  GREYAssert(testing::WaitUntilConditionOrTimeout(kSnackbarAppearanceTimeout,
+                                                  waitForAppearance),
+             @"Snackbar did not appear.");
+  ConditionBlock waitForDisappearance = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:snackbarMatcher]
+        assertWithMatcher:grey_nil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(testing::WaitUntilConditionOrTimeout(kSnackbarDisappearanceTimeout,
+                                                  waitForDisappearance),
+             @"Snackbar did not disappear.");
+
+  // Verify that a page with the title "tomato" is present in the reading list.
+  OpenReadingList();
+  AssertEntryVisible("tomato");
 }
 
 // Tests that only the "Edit" button is showing when not editing.

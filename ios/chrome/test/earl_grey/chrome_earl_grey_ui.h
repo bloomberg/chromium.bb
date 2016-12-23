@@ -25,6 +25,10 @@
 // Reloads the page. Does not wait until reload finishes.
 + (void)reload;
 
+// Opens the share menu by tapping on the share button.
+// Requires having a tab opened.
++ (void)openShareMenu;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_UI_H_
