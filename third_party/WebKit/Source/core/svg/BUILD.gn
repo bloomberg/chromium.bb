@@ -43,8 +43,6 @@ blink_core_sources("svg") {
     "SVGAnimatedPath.cpp",
     "SVGAnimatedString.cpp",
     "SVGAnimatedString.h",
-    "SVGAnimatedTypeAnimator.cpp",
-    "SVGAnimatedTypeAnimator.h",
     "SVGAnimationElement.cpp",
     "SVGAnimationElement.h",
     "SVGBoolean.cpp",

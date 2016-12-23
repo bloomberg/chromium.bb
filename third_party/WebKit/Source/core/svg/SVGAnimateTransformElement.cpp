@@ -24,13 +24,14 @@
 
 #include "core/SVGNames.h"
 #include "core/svg/SVGTransformList.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace blink {
 
 inline SVGAnimateTransformElement::SVGAnimateTransformElement(
     Document& document)
     : SVGAnimateElement(SVGNames::animateTransformTag, document),
-      m_type(kSvgTransformUnknown) {}
+      m_transformType(kSvgTransformUnknown) {}
 
 DEFINE_NODE_FACTORY(SVGAnimateTransformElement)
 
@@ -45,13 +46,35 @@ bool SVGAnimateTransformElement::hasValidAttributeType() {
   return animatedPropertyType() == AnimatedTransformList;
 }
 
+void SVGAnimateTransformElement::resolveTargetProperty() {
+  DCHECK(targetElement());
+  m_targetProperty = targetElement()->propertyFromAttribute(attributeName());
+  m_type = m_targetProperty ? m_targetProperty->type() : AnimatedUnknown;
+  // <animateTransform> only animates AnimatedTransformList.
+  // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties
+  if (m_type != AnimatedTransformList)
+    m_type = AnimatedUnknown;
+  // Because of the syntactic mismatch between the CSS and SVGProperty
+  // representations, disallow CSS animations of transforms. Support for that
+  // is better added to the <animate> element since the <animateTransform>
+  // element is deprecated and quirky. (We also reject this case via
+  // hasValidAttributeType above.)
+  m_cssPropertyId = CSSPropertyInvalid;
+}
+
+SVGPropertyBase* SVGAnimateTransformElement::createPropertyForAnimation(
+    const String& value) const {
+  DCHECK(isAnimatingSVGDom());
+  return SVGTransformList::create(m_transformType, value);
+}
+
 void SVGAnimateTransformElement::parseAttribute(const QualifiedName& name,
                                                 const AtomicString& oldValue,
                                                 const AtomicString& value) {
   if (name == SVGNames::typeAttr) {
-    m_type = parseTransformType(value);
-    if (m_type == kSvgTransformMatrix)
-      m_type = kSvgTransformUnknown;
+    m_transformType = parseTransformType(value);
+    if (m_transformType == kSvgTransformMatrix)
+      m_transformType = kSvgTransformUnknown;
     return;
   }
 

@@ -34,8 +34,6 @@ class SVGAnimateTransformElement final : public SVGAnimateElement {
  public:
   DECLARE_NODE_FACTORY(SVGAnimateTransformElement);
 
-  SVGTransformType transformType() const { return m_type; }
-
  private:
   explicit SVGAnimateTransformElement(Document&);
 
@@ -45,7 +43,10 @@ class SVGAnimateTransformElement final : public SVGAnimateElement {
                       const AtomicString&,
                       const AtomicString&) override;
 
-  SVGTransformType m_type;
+  void resolveTargetProperty() override;
+  SVGPropertyBase* createPropertyForAnimation(const String&) const override;
+
+  SVGTransformType m_transformType;
 };
 
 }  // namespace blink

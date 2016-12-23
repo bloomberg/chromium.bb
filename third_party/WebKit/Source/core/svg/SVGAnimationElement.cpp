@@ -467,12 +467,8 @@ void SVGAnimationElement::currentValuesForValuesAnimation(
   CalcMode calcMode = this->getCalcMode();
   if (isSVGAnimateElement(*this)) {
     SVGAnimateElement& animateElement = toSVGAnimateElement(*this);
-    if (!animateElement.animatedPropertyTypeSupportsAddition()) {
-      ASSERT(animateElement.animatedPropertyType() != AnimatedTransformList ||
-             isSVGAnimateTransformElement(*this));
-      ASSERT(animateElement.animatedPropertyType() != AnimatedUnknown);
+    if (!animateElement.animatedPropertyTypeSupportsAddition())
       calcMode = CalcModeDiscrete;
-    }
   }
   if (!m_keyPoints.isEmpty() && calcMode != CalcModePaced)
     return currentValuesFromKeyPoints(percent, effectivePercent, from, to);

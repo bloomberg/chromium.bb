@@ -23,9 +23,9 @@
 #ifndef SVGAnimateElement_h
 #define SVGAnimateElement_h
 
+#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/SVGNames.h"
-#include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "platform/heap/Handle.h"
 #include <base/gtest_prod_util.h>
@@ -101,16 +101,32 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   bool hasValidAttributeName() const;
   virtual bool hasValidAttributeType();
 
+  virtual void resolveTargetProperty();
+  void clearTargetProperty();
+
+  virtual SVGPropertyBase* createPropertyForAnimation(const String&) const;
+  SVGPropertyBase* createPropertyForAttributeAnimation(const String&) const;
+  SVGPropertyBase* createPropertyForCSSAnimation(const String&) const;
+
   SVGPropertyBase* adjustForInheritance(SVGPropertyBase*,
                                         AnimatedPropertyValueType) const;
 
   Member<SVGPropertyBase> m_fromProperty;
   Member<SVGPropertyBase> m_toProperty;
   Member<SVGPropertyBase> m_toAtEndOfDurationProperty;
-  Member<SVGPropertyBase> m_animatedProperty;
+  Member<SVGPropertyBase> m_animatedValue;
 
-  SVGAnimatedTypeAnimator m_animator;
+ protected:
+  Member<SVGAnimatedPropertyBase> m_targetProperty;
+  AnimatedPropertyType m_type;
+  CSSPropertyID m_cssPropertyId;
 
+  bool isAnimatingSVGDom() const { return m_targetProperty; }
+  bool isAnimatingCSSProperty() const {
+    return m_cssPropertyId != CSSPropertyInvalid;
+  }
+
+ private:
   AnimatedPropertyValueType m_fromPropertyValueType;
   AnimatedPropertyValueType m_toPropertyValueType;
   AttributeType m_attributeType;
