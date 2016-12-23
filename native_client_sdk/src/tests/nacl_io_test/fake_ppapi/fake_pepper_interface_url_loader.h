@@ -124,10 +124,11 @@ class FakeURLRequestInfoInterface : public nacl_io::URLRequestInfoInterface {
                                    const void* data,
                                    uint32_t len);
 
- private:
+ protected:
   FakeCoreInterface* core_interface_;  // Weak reference.
   FakeVarInterface* var_interface_;    // Weak reference.
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FakeURLRequestInfoInterface);
 };
 

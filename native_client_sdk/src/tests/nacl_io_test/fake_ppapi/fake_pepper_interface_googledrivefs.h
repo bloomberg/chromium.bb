@@ -11,6 +11,7 @@
 #include "sdk_util/macros.h"
 
 #include "fake_ppapi/fake_core_interface.h"
+#include "fake_ppapi/fake_file_io_interface.h"
 #include "fake_ppapi/fake_file_ref_interface.h"
 #include "fake_ppapi/fake_pepper_interface_url_loader.h"
 #include "fake_ppapi/fake_var_interface.h"
@@ -50,6 +51,17 @@ class FakeDriveURLLoaderInterface : public FakeURLLoaderInterface {
   DISALLOW_COPY_AND_ASSIGN(FakeDriveURLLoaderInterface);
 };
 
+class FakeDriveURLRequestInfoInterface : public FakeURLRequestInfoInterface {
+ public:
+  FakeDriveURLRequestInfoInterface(FakeCoreInterface* core_interface,
+                                   FakeVarInterface* var_interface);
+
+  virtual PP_Resource Create(PP_Instance instance);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeDriveURLRequestInfoInterface);
+};
+
 class FakeDriveURLResponseInfoInterface : public FakeURLResponseInfoInterface {
  public:
   FakeDriveURLResponseInfoInterface(FakeCoreInterface* core_interface,
@@ -57,6 +69,8 @@ class FakeDriveURLResponseInfoInterface : public FakeURLResponseInfoInterface {
                                     FakeFileRefInterface* file_ref_interface);
   ~FakeDriveURLResponseInfoInterface();
 
+  virtual PP_Var GetProperty(PP_Resource response,
+                             PP_URLResponseProperty property);
   virtual PP_Resource GetBodyAsFileRef(PP_Resource response);
 
  private:
@@ -87,6 +101,7 @@ class FakePepperInterfaceGoogleDriveFs : public nacl_io::PepperInterfaceDummy {
 
   virtual PP_Instance GetInstance() { return instance_; }
   virtual nacl_io::CoreInterface* GetCoreInterface();
+  virtual nacl_io::FileIoInterface* GetFileIoInterface();
   virtual nacl_io::FileRefInterface* GetFileRefInterface();
   virtual nacl_io::VarInterface* GetVarInterface();
   virtual nacl_io::URLLoaderInterface* GetURLLoaderInterface();
@@ -104,10 +119,11 @@ class FakePepperInterfaceGoogleDriveFs : public nacl_io::PepperInterfaceDummy {
   FakeCoreInterface core_interface_;
   FakeVarInterface var_interface_;
   FakeVarManager var_manager_;
+  FakeFileIoInterface file_io_interface_;
   FakeFileRefInterface file_ref_interface_;
   FakeGoogleDriveServer google_drive_server_template_;
   FakeDriveURLLoaderInterface drive_url_loader_interface_;
-  FakeURLRequestInfoInterface url_request_info_interface_;
+  FakeDriveURLRequestInfoInterface drive_url_request_info_interface_;
   FakeDriveURLResponseInfoInterface drive_url_response_info_interface_;
   PP_Instance instance_;
 

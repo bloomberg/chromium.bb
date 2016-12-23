@@ -44,13 +44,13 @@ class FakeDriveURLLoaderResource : public FakeResource {
 class FakeDriveResponseResource : public FakeURLResponseInfoResource {
  public:
   FakeDriveResponseResource()
-      : manager(NULL), loader(0), file_ref(0), stream_to_file(false) {}
+      : manager(NULL),
+        loader_resource(NULL),
+        file_ref(0),
+        stream_to_file(false) {}
 
   virtual void Destroy() {
     EXPECT_TRUE(manager != NULL);
-    if (loader != 0)
-      manager->Release(loader);
-
     if (file_ref != 0)
       manager->Release(file_ref);
   }
@@ -58,7 +58,7 @@ class FakeDriveResponseResource : public FakeURLResponseInfoResource {
   static const char* classname() { return "FakeDriveResponseResource"; }
 
   FakeResourceManager* manager;
-  PP_Resource loader;
+  FakeDriveURLLoaderResource* loader_resource;
   PP_Resource file_ref;
   bool stream_to_file;
   std::string body;
@@ -122,9 +122,7 @@ int32_t FakeDriveURLLoaderInterface::Open(PP_Resource loader,
       CREATE_RESOURCE(core_interface_->resource_manager(),
                       FakeDriveResponseResource, drive_response_resource);
 
-  drive_response_resource->loader = loader;
-  core_interface_->resource_manager()->AddRef(drive_response_resource->loader);
-
+  drive_response_resource->loader_resource = drive_loader_resource;
   drive_response_resource->stream_to_file = request_resource->stream_to_file;
 
   FakeGoogleDriveServerResponse server_response;
@@ -193,6 +191,23 @@ void FakeDriveURLLoaderInterface::Close(PP_Resource loader) {
   drive_loader_resource->response_body.clear();
 }
 
+FakeDriveURLRequestInfoInterface::FakeDriveURLRequestInfoInterface(
+    FakeCoreInterface* core_interface,
+    FakeVarInterface* var_interface)
+    : FakeURLRequestInfoInterface(core_interface, var_interface) {}
+
+PP_Resource FakeDriveURLRequestInfoInterface::Create(PP_Instance instance) {
+  FakeDriveInstanceResource* drive_instance_resource =
+      core_interface_->resource_manager()->Get<FakeDriveInstanceResource>(
+          instance);
+  if (drive_instance_resource == NULL)
+    return PP_ERROR_BADRESOURCE;
+
+  return CREATE_RESOURCE(core_interface_->resource_manager(),
+                         FakeURLRequestInfoResource,
+                         new FakeURLRequestInfoResource);
+}
+
 FakeDriveURLResponseInfoInterface::FakeDriveURLResponseInfoInterface(
     FakeCoreInterface* core_interface,
     FakeVarInterface* var_interface,
@@ -212,6 +227,35 @@ FakeDriveURLResponseInfoInterface::~FakeDriveURLResponseInfoInterface() {
   core_interface_->ReleaseResource(filesystem_resource_);
 }
 
+PP_Var FakeDriveURLResponseInfoInterface::GetProperty(
+    PP_Resource response,
+    PP_URLResponseProperty property) {
+  FakeDriveResponseResource* drive_response_resource =
+      core_interface_->resource_manager()->Get<FakeDriveResponseResource>(
+          response);
+  if (drive_response_resource == NULL)
+    return PP_Var();
+
+  switch (property) {
+    case PP_URLRESPONSEPROPERTY_URL:
+      return var_interface_->VarFromUtf8(drive_response_resource->url.data(),
+                                         drive_response_resource->url.size());
+
+    case PP_URLRESPONSEPROPERTY_STATUSCODE:
+      return PP_MakeInt32(drive_response_resource->status_code);
+
+    case PP_URLRESPONSEPROPERTY_HEADERS:
+      return var_interface_->VarFromUtf8(
+          drive_response_resource->headers.data(),
+          drive_response_resource->headers.size());
+    default:
+      EXPECT_TRUE(false) << "Unimplemented property " << property
+                         << " in "
+                            "FakeDriveURLResponseInfoInterface::GetProperty";
+      return PP_Var();
+  }
+}
+
 PP_Resource FakeDriveURLResponseInfoInterface::GetBodyAsFileRef(
     PP_Resource response) {
   FakeDriveResponseResource* drive_response_resource =
@@ -223,13 +267,10 @@ PP_Resource FakeDriveURLResponseInfoInterface::GetBodyAsFileRef(
   if (!drive_response_resource->stream_to_file)
     return 0;
 
-  FakeDriveURLLoaderResource* drive_loader_resource =
-      core_interface_->resource_manager()->Get<FakeDriveURLLoaderResource>(
-          drive_response_resource->loader);
-  if (drive_loader_resource == NULL)
+  if (drive_response_resource->loader_resource == NULL)
     return 0;
 
-  if (drive_loader_resource->server == NULL)
+  if (drive_response_resource->loader_resource->server == NULL)
     return 0;
 
   if (drive_response_resource->file_ref == 0) {
@@ -260,9 +301,10 @@ PP_Resource FakeDriveURLResponseInfoInterface::GetBodyAsFileRef(
 FakePepperInterfaceGoogleDriveFs::FakePepperInterfaceGoogleDriveFs()
     : core_interface_(&resource_manager_),
       var_interface_(&var_manager_),
+      file_io_interface_(&core_interface_),
       file_ref_interface_(&core_interface_, &var_interface_),
       drive_url_loader_interface_(&core_interface_),
-      url_request_info_interface_(&core_interface_, &var_interface_),
+      drive_url_request_info_interface_(&core_interface_, &var_interface_),
       drive_url_response_info_interface_(&core_interface_,
                                          &var_interface_,
                                          &file_ref_interface_) {
@@ -287,6 +329,11 @@ nacl_io::CoreInterface* FakePepperInterfaceGoogleDriveFs::GetCoreInterface() {
   return &core_interface_;
 }
 
+nacl_io::FileIoInterface*
+FakePepperInterfaceGoogleDriveFs::GetFileIoInterface() {
+  return &file_io_interface_;
+}
+
 nacl_io::FileRefInterface*
 FakePepperInterfaceGoogleDriveFs::GetFileRefInterface() {
   return &file_ref_interface_;
@@ -299,7 +346,7 @@ FakePepperInterfaceGoogleDriveFs::GetURLLoaderInterface() {
 
 nacl_io::URLRequestInfoInterface*
 FakePepperInterfaceGoogleDriveFs::GetURLRequestInfoInterface() {
-  return &url_request_info_interface_;
+  return &drive_url_request_info_interface_;
 }
 
 nacl_io::URLResponseInfoInterface*
