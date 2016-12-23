@@ -246,7 +246,7 @@ const CGFloat kSeparatorInset = 10;
 
 - (void)historyEntriesStatusItem:(HistoryEntriesStatusItem*)item
                didRequestOpenURL:(const GURL&)URL {
-  [self openURL:URL];
+  [self openURLInNewTab:URL];
 }
 
 #pragma mark - HistoryEntryInserterDelegate
