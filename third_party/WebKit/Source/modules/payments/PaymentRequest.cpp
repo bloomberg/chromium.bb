@@ -493,10 +493,8 @@ bool allowedToUsePaymentRequest(const Frame* frame) {
   // is an iframe element with an |allowpaymentrequest| attribute specified, and
   // whose node document is allowed to use the feature indicated by
   // |allowpaymentrequest|, then return true.
-  if (RuntimeEnabledFeatures::paymentRequestIFrameEnabled() && frame->owner() &&
-      frame->owner()->allowPaymentRequest()) {
+  if (frame->owner() && frame->owner()->allowPaymentRequest())
     return allowedToUsePaymentRequest(frame->tree().parent());
-  }
 
   // 4. Return false.
   return false;
@@ -694,10 +692,8 @@ PaymentRequest::PaymentRequest(Document& document,
 
   if (!allowedToUsePaymentRequest(document.frame())) {
     exceptionState.throwSecurityError(
-        RuntimeEnabledFeatures::paymentRequestIFrameEnabled()
-            ? "Must be in a top-level browsing context or an iframe needs to "
-              "specify 'allowpaymentrequest' explicitly"
-            : "Must be in a top-level browsing context");
+        "Must be in a top-level browsing context or an iframe needs to specify "
+        "'allowpaymentrequest' explicitly");
     return;
   }
 
