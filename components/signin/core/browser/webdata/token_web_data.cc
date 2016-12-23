@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted_delete_on_message_loop.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "components/signin/core/browser/webdata/token_service_table.h"
@@ -16,11 +16,10 @@ using base::Bind;
 using base::Time;
 
 class TokenWebDataBackend
-    : public base::RefCountedDeleteOnMessageLoop<TokenWebDataBackend> {
-
+    : public base::RefCountedDeleteOnSequence<TokenWebDataBackend> {
  public:
   TokenWebDataBackend(scoped_refptr<base::SingleThreadTaskRunner> db_thread)
-      : base::RefCountedDeleteOnMessageLoop<TokenWebDataBackend>(db_thread) {}
+      : base::RefCountedDeleteOnSequence<TokenWebDataBackend>(db_thread) {}
 
   WebDatabase::State RemoveAllTokens(WebDatabase* db) {
     if (TokenServiceTable::FromWebDatabase(db)->RemoveAllTokens()) {
@@ -59,7 +58,7 @@ class TokenWebDataBackend
   }
 
  private:
-  friend class base::RefCountedDeleteOnMessageLoop<TokenWebDataBackend>;
+  friend class base::RefCountedDeleteOnSequence<TokenWebDataBackend>;
   friend class base::DeleteHelper<TokenWebDataBackend>;
 };
 

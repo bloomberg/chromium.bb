@@ -8,14 +8,14 @@
 
 #include "base/callback.h"
 #include "base/files/file.h"
-#include "base/memory/ref_counted_delete_on_message_loop.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/ref_counted_memory.h"
 
 namespace content {
 
 class DevToolsIOContext {
  public:
-  class Stream : public base::RefCountedDeleteOnMessageLoop<Stream> {
+  class Stream : public base::RefCountedDeleteOnSequence<Stream> {
    public:
     enum Status {
       StatusSuccess,
@@ -34,7 +34,7 @@ class DevToolsIOContext {
     Stream();
     ~Stream();
     friend class DevToolsIOContext;
-    friend class base::RefCountedDeleteOnMessageLoop<Stream>;
+    friend class base::RefCountedDeleteOnSequence<Stream>;
     friend class base::DeleteHelper<Stream>;
 
     void ReadOnFileThread(off_t pos, size_t max_size, ReadCallback callback);

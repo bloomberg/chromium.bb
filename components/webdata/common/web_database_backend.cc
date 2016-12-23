@@ -21,7 +21,7 @@ WebDatabaseBackend::WebDatabaseBackend(
     const FilePath& path,
     Delegate* delegate,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread)
-    : base::RefCountedDeleteOnMessageLoop<WebDatabaseBackend>(db_thread),
+    : base::RefCountedDeleteOnSequence<WebDatabaseBackend>(db_thread),
       db_path_(path),
       request_manager_(new WebDataRequestManager()),
       init_status_(sql::INIT_FAILURE),

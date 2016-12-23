@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted_delete_on_message_loop.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,7 +34,7 @@ namespace extensions {
 class Extension;
 
 class SandboxedUnpackerClient
-    : public base::RefCountedDeleteOnMessageLoop<SandboxedUnpackerClient> {
+    : public base::RefCountedDeleteOnSequence<SandboxedUnpackerClient> {
  public:
   // Initialize the ref-counted base to always delete on the UI thread. Note
   // the constructor call must also happen on the UI thread.
@@ -60,7 +60,7 @@ class SandboxedUnpackerClient
   virtual void OnUnpackFailure(const CrxInstallError& error) = 0;
 
  protected:
-  friend class base::RefCountedDeleteOnMessageLoop<SandboxedUnpackerClient>;
+  friend class base::RefCountedDeleteOnSequence<SandboxedUnpackerClient>;
   friend class base::DeleteHelper<SandboxedUnpackerClient>;
 
   virtual ~SandboxedUnpackerClient() {}

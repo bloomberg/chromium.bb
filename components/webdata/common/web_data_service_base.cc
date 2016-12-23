@@ -23,10 +23,9 @@ WebDataServiceBase::WebDataServiceBase(
     scoped_refptr<WebDatabaseService> wdbs,
     const ProfileErrorCallback& callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread)
-    : base::RefCountedDeleteOnMessageLoop<WebDataServiceBase>(ui_thread),
+    : base::RefCountedDeleteOnSequence<WebDataServiceBase>(ui_thread),
       wdbs_(wdbs),
-      profile_error_callback_(callback) {
-}
+      profile_error_callback_(callback) {}
 
 void WebDataServiceBase::ShutdownOnUIThread() {
 }

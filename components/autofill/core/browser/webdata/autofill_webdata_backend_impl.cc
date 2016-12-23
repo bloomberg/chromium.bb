@@ -29,14 +29,12 @@ AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
     scoped_refptr<base::SingleThreadTaskRunner> db_thread,
     const base::Closure& on_changed_callback,
     const base::Callback<void(syncer::ModelType)>& on_sync_started_callback)
-    : base::RefCountedDeleteOnMessageLoop<AutofillWebDataBackendImpl>(
-          db_thread),
+    : base::RefCountedDeleteOnSequence<AutofillWebDataBackendImpl>(db_thread),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
       web_database_backend_(web_database_backend),
       on_changed_callback_(on_changed_callback),
-      on_sync_started_callback_(on_sync_started_callback) {
-}
+      on_sync_started_callback_(on_sync_started_callback) {}
 
 void AutofillWebDataBackendImpl::AddObserver(
     AutofillWebDataServiceObserverOnDBThread* observer) {

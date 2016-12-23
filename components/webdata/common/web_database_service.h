@@ -16,7 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_delete_on_message_loop.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
@@ -43,7 +43,7 @@ class WebDataServiceConsumer;
 ////////////////////////////////////////////////////////////////////////////////
 
 class WEBDATA_EXPORT WebDatabaseService
-    : public base::RefCountedDeleteOnMessageLoop<WebDatabaseService> {
+    : public base::RefCountedDeleteOnSequence<WebDatabaseService> {
  public:
   using ReadTask = base::Callback<std::unique_ptr<WDTypedResult>(WebDatabase*)>;
   using WriteTask = base::Callback<WebDatabase::State(WebDatabase*)>;
@@ -112,7 +112,7 @@ class WEBDATA_EXPORT WebDatabaseService
  private:
   class BackendDelegate;
   friend class BackendDelegate;
-  friend class base::RefCountedDeleteOnMessageLoop<WebDatabaseService>;
+  friend class base::RefCountedDeleteOnSequence<WebDatabaseService>;
   friend class base::DeleteHelper<WebDatabaseService>;
 
   using LoadedCallbacks = std::vector<DBLoadedCallback>;

@@ -42,7 +42,7 @@ WebDatabaseService::WebDatabaseService(
     const base::FilePath& path,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread)
-    : base::RefCountedDeleteOnMessageLoop<WebDatabaseService>(ui_thread),
+    : base::RefCountedDeleteOnSequence<WebDatabaseService>(ui_thread),
       path_(path),
       db_loaded_(false),
       db_thread_(db_thread),

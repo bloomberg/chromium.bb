@@ -20,7 +20,7 @@ unsigned s_last_stream_handle = 0;
 using Stream = DevToolsIOContext::Stream;
 
 Stream::Stream()
-    : base::RefCountedDeleteOnMessageLoop<Stream>(
+    : base::RefCountedDeleteOnSequence<Stream>(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)),
       handle_(base::UintToString(++s_last_stream_handle)),
       had_errors_(false),

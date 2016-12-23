@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_delete_on_message_loop.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "components/webdata/common/webdata_export.h"
 #include "sql/init_status.h"
 
@@ -24,7 +24,7 @@ class SingleThreadTaskRunner;
 // Base for WebDataService class hierarchy.
 // WebDataServiceBase is destroyed on the UI thread.
 class WEBDATA_EXPORT WebDataServiceBase
-    : public base::RefCountedDeleteOnMessageLoop<WebDataServiceBase> {
+    : public base::RefCountedDeleteOnSequence<WebDataServiceBase> {
  public:
   // All requests return an opaque handle of the following type.
   typedef int Handle;
@@ -84,7 +84,7 @@ class WEBDATA_EXPORT WebDataServiceBase
   virtual WebDatabase* GetDatabase();
 
  protected:
-  friend class base::RefCountedDeleteOnMessageLoop<WebDataServiceBase>;
+  friend class base::RefCountedDeleteOnSequence<WebDataServiceBase>;
   friend class base::DeleteHelper<WebDataServiceBase>;
 
   virtual ~WebDataServiceBase();
