@@ -93,6 +93,8 @@ class AndroidPortTest(port_testcase.PortTestCase):
     def test_check_build(self):
         host = MockSystemHost()
         port = self.make_port(host=host, options=optparse.Values({'child_processes': 1}))
+        # Checking the devices is not tested in this unit test.
+        port._check_devices = lambda _: None
         host.filesystem.exists = lambda p: True
         port.check_build(needs_http=True, printer=port_testcase.FakePrinter())
 

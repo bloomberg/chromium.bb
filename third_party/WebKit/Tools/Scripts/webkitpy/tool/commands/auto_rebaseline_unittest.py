@@ -245,6 +245,7 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
             ['git', 'pull'],
             ['git', 'cl', 'land', '-f', '-v'],
             ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
+            ['git', 'cl', 'set_close'],
         ])
 
         # The mac ports should both be removed since they're the only ones in builders._exact_matches.
@@ -349,6 +350,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             ['git', 'pull'],
             ['git', 'cl', 'land', '-f', '-v'],
             ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
+            ['git', 'cl', 'set_close'],
         ])
 
         # The mac ports should both be removed since they're the only ones in builders._exact_matches.
@@ -400,6 +402,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                 ['git', 'pull'],
                 ['git', 'cl', 'land', '-f', '-v'],
                 ['git', 'config', 'branch.auto-rebaseline-alt-temporary-branch.rietveldissue'],
+                ['git', 'cl', 'set_close'],
             ])
 
             self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
@@ -452,6 +455,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                 ['git', 'pull'],
                 ['git', 'cl', 'land', '-f', '-v'],
                 ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
+                ['git', 'cl', 'set_close'],
             ])
 
             self.assertEqual(self.tool.filesystem.read_text_file(test_port.path_to_generic_test_expectations_file()), """
@@ -515,6 +519,7 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
                 ['git', 'pull'],
                 ['git', 'cl', 'land', '-f', '-v', '--auth-refresh-token-json', rietveld_refresh_token],
                 ['git', 'config', 'branch.auto-rebaseline-temporary-branch.rietveldissue'],
+                ['git', 'cl', 'set_close', '--auth-refresh-token-json', rietveld_refresh_token],
             ],
             auth_refresh_token_json=rietveld_refresh_token)
 

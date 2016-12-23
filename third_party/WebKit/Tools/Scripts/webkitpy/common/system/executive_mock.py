@@ -67,16 +67,19 @@ class MockExecutive(object):
         pass
 
     def __init__(self, should_log=False, should_throw=False,
-                 should_throw_when_run=None, should_return_zero_when_run=None):
+                 output="MOCK output of child process", stderr='',
+                 exit_code=0, exception=None, run_command_fn=None):
         self._should_log = should_log
         self._should_throw = should_throw
-        self._should_throw_when_run = should_throw_when_run or set()
-        self._should_return_zero_when_run = should_return_zero_when_run or set()
         # FIXME: Once executive wraps os.getpid() we can just use a static pid for "this" process.
         self._running_pids = {'test-webkitpy': os.getpid()}
-        self.calls = []
-        self._output = "MOCK output of child process"
+        self._output = output
+        self._stderr = stderr
+        self._exit_code = exit_code
+        self._exception = exception
+        self._run_command_fn = run_command_fn
         self._proc = None
+        self.calls = []
 
     def check_running_pid(self, pid):
         return pid in self._running_pids.values()
@@ -94,22 +97,23 @@ class MockExecutive(object):
         string_args = map(unicode, args)
         return " ".join(string_args)
 
+    # The argument list should match Executive.run_command, even if
+    # some arguments are not used. pylint: disable=unused-argument
     def run_command(self,
                     args,
                     cwd=None,
-                    input=None,
-                    # pylint: disable=unused-argument
-                    timeout_seconds=None,
+                    input=None,  # pylint: disable=redefined-builtin
+                    timeout_seconds=False,
                     error_handler=None,
                     return_exit_code=False,
                     return_stderr=True,
                     decode_output=False,
                     env=None,
                     debug_logging=False):
-
         self.calls.append(args)
 
         assert isinstance(args, list) or isinstance(args, tuple)
+
         if self._should_log:
             env_string = ""
             if env:
@@ -119,14 +123,23 @@ class MockExecutive(object):
                 input_string = ", input=%s" % input
             _log.info("MOCK run_command: %s, cwd=%s%s%s", args, cwd, env_string, input_string)
 
-        if self._should_throw_when_run.intersection(args):
-            raise ScriptError("Exception for %s" % args, output="MOCK command output")
-
+        if self._exception:
+            raise self._exception  # pylint: disable=raising-bad-type
         if self._should_throw:
             raise ScriptError("MOCK ScriptError", output=self._output)
 
-        if return_exit_code and self._should_return_zero_when_run.intersection(args):
-            return 0
+        if self._run_command_fn:
+            return self._run_command_fn(args)
+
+        if return_exit_code:
+            return self._exit_code
+
+        if self._exit_code and error_handler:
+            script_error = ScriptError(script_args=args, exit_code=self._exit_code, output=self._output)
+            error_handler(script_error)
+
+        if return_stderr:
+            return self._output + self._stderr
 
         return self._output
 
@@ -139,7 +152,7 @@ class MockExecutive(object):
     def kill_process(self, pid):
         pass
 
-    def popen(self, args, cwd=None, env=None, **kwargs):
+    def popen(self, args, cwd=None, env=None, **_):
         assert all(isinstance(arg, basestring) for arg in args)
         self.calls.append(args)
         if self._should_log:
@@ -154,7 +167,7 @@ class MockExecutive(object):
             self._proc = MockProcess(self._output)
         return self._proc
 
-    def call(self, args, **kwargs):
+    def call(self, args, **_):
         assert all(isinstance(arg, basestring) for arg in args)
         self.calls.append(args)
         _log.info('Mock call: %s', args)
