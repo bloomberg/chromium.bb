@@ -12,7 +12,6 @@ import android.support.test.filters.SmallTest;
 import android.test.MoreAsserts;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 import java.io.File;
@@ -402,7 +401,6 @@ public class CrashFileManagerTest extends CrashTestCase {
      */
     @SmallTest
     @Feature({"Android-AppBase"})
-    @DisabledTest(message = "crbug.com/676429")
     public void testMinidumpStorageRestrictionsGlobal() throws IOException {
         testMinidumpStorageRestrictions(false /* perUid */);
     }
@@ -441,17 +439,10 @@ public class CrashFileManagerTest extends CrashTestCase {
         int minidumpLimit = perUid ? CrashFileManager.MAX_CRASH_REPORTS_TO_UPLOAD_PER_UID
                                    : CrashFileManager.MAX_CRASH_REPORTS_TO_UPLOAD;
         for (int n = 0; n < minidumpLimit; n++) {
-            ParcelFileDescriptor minidumpFd =
-                    ParcelFileDescriptor.open(minidumpToCopy, ParcelFileDescriptor.MODE_READ_ONLY);
-            try {
-                // If we are testing the app-throttling we want to use the same uid for each
-                // minidump, otherwise use a different one for each minidump.
-                int currentUid = perUid ? 1 : n;
-                assertNotNull(fileManager.copyMinidumpFromFD(
-                        minidumpFd.getFileDescriptor(), tmpCopyDir, currentUid));
-            } finally {
-                minidumpFd.close();
-            }
+            // If we are testing the app-throttling we want to use the same uid for each
+            // minidump, otherwise use a different one for each minidump.
+            createFdForandCopyFile(fileManager, minidumpToCopy, tmpCopyDir,
+                    perUid ? 1 : n /* uid */, true /* shouldSucceed */);
         }
 
         // Update time-stamps of copied files.
@@ -471,12 +462,34 @@ public class CrashFileManagerTest extends CrashTestCase {
 
         // Now the crash directory is full - so copying a new minidump should cause the oldest
         // existing minidump to be deleted.
-        ParcelFileDescriptor minidumpFd =
-                ParcelFileDescriptor.open(minidumpToCopy, ParcelFileDescriptor.MODE_READ_ONLY);
-        fileManager.copyMinidumpFromFD(minidumpFd.getFileDescriptor(), tmpCopyDir, 1 /* uid */);
-        assertEquals(minidumpLimit, fileManager.getAllMinidumpFiles(10000 /* maxTries */).length);
+        createFdForandCopyFile(fileManager, minidumpToCopy, tmpCopyDir, 1 /* uid */,
+                true /* shouldSucceed */);
+        assertEquals(minidumpLimit,
+                fileManager.getAllMinidumpFiles(10000 /* maxTries */).length);
         // Ensure we removed the oldest file.
         assertFalse(oldestMinidump.exists());
+    }
+
+    /**
+     * Utility method that creates (and closes) a file descriptor to {@param minidumpToCopy} and
+     * calls CrashFileManager.copyMinidumpFromFD.
+     */
+    private static void createFdForandCopyFile(CrashFileManager fileManager, File minidumpToCopy,
+            File tmpCopyDir, int uid, boolean shouldSucceed) throws IOException {
+        ParcelFileDescriptor minidumpFd = null;
+        try {
+            minidumpFd =
+                    ParcelFileDescriptor.open(minidumpToCopy, ParcelFileDescriptor.MODE_READ_ONLY);
+            File copiedFile =
+                    fileManager.copyMinidumpFromFD(minidumpFd.getFileDescriptor(), tmpCopyDir, uid);
+            if (shouldSucceed) {
+                assertNotNull(copiedFile);
+            } else {
+                assertNull(copiedFile);
+            }
+        } finally {
+            if (minidumpFd != null) minidumpFd.close();
+        }
     }
 
     /**
@@ -523,10 +536,8 @@ public class CrashFileManagerTest extends CrashTestCase {
         } finally {
             minidumpOutputStream.close();
         }
-        ParcelFileDescriptor minidumpFd =
-                ParcelFileDescriptor.open(minidumpToCopy, ParcelFileDescriptor.MODE_READ_ONLY);
-        assertNull(fileManager.copyMinidumpFromFD(
-                minidumpFd.getFileDescriptor(), tmpCopyDir, 0 /* uid */));
+        createFdForandCopyFile(fileManager, minidumpToCopy, tmpCopyDir, 0 /* uid */,
+                false /* shouldSucceed */);
         assertEquals(0, tmpCopyDir.listFiles().length);
         assertEquals(0, fileManager.getAllMinidumpFiles(10000 /* maxTries */).length);
     }
