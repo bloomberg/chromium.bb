@@ -141,13 +141,59 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
 
   source->AddBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
 
-  source->AddResourcePath("constants.html", IDR_MD_HISTORY_CONSTANTS_HTML);
-  source->AddResourcePath("constants.js", IDR_MD_HISTORY_CONSTANTS_JS);
-  source->AddResourcePath("images/100/sign_in_promo.jpg",
-                          IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_JPG);
-  source->AddResourcePath("images/200/sign_in_promo.jpg",
-                          IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_JPG);
-  source->AddResourcePath("history.js", IDR_MD_HISTORY_HISTORY_JS);
+  struct UncompressedResource {
+    const char* path;
+    int idr;
+  };
+  const UncompressedResource uncompressed_resources[] = {
+    {"constants.html", IDR_MD_HISTORY_CONSTANTS_HTML},
+    {"constants.js", IDR_MD_HISTORY_CONSTANTS_JS},
+    {"history.js", IDR_MD_HISTORY_HISTORY_JS},
+    {"images/100/sign_in_promo.jpg",
+     IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_JPG},
+    {"images/200/sign_in_promo.jpg",
+     IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_JPG},
+#if !BUILDFLAG(USE_VULCANIZE)
+    {"app.html", IDR_MD_HISTORY_APP_HTML},
+    {"app.js", IDR_MD_HISTORY_APP_JS},
+    {"browser_service.html", IDR_MD_HISTORY_BROWSER_SERVICE_HTML},
+    {"browser_service.js", IDR_MD_HISTORY_BROWSER_SERVICE_JS},
+    {"grouped_list.html", IDR_MD_HISTORY_GROUPED_LIST_HTML},
+    {"grouped_list.js", IDR_MD_HISTORY_GROUPED_LIST_JS},
+    {"history_item.html", IDR_MD_HISTORY_HISTORY_ITEM_HTML},
+    {"history_item.js", IDR_MD_HISTORY_HISTORY_ITEM_JS},
+    {"history_list.html", IDR_MD_HISTORY_HISTORY_LIST_HTML},
+    {"history_list.js", IDR_MD_HISTORY_HISTORY_LIST_JS},
+    {"history_list_behavior.html", IDR_MD_HISTORY_HISTORY_LIST_BEHAVIOR_HTML},
+    {"history_list_behavior.js", IDR_MD_HISTORY_HISTORY_LIST_BEHAVIOR_JS},
+    {"history_toolbar.html", IDR_MD_HISTORY_HISTORY_TOOLBAR_HTML},
+    {"history_toolbar.js", IDR_MD_HISTORY_HISTORY_TOOLBAR_JS},
+    {"icons.html", IDR_MD_HISTORY_ICONS_HTML},
+    {"lazy_load.html", IDR_MD_HISTORY_LAZY_LOAD_HTML},
+    {"list_container.html", IDR_MD_HISTORY_LIST_CONTAINER_HTML},
+    {"list_container.js", IDR_MD_HISTORY_LIST_CONTAINER_JS},
+    {"router.html", IDR_MD_HISTORY_ROUTER_HTML},
+    {"router.js", IDR_MD_HISTORY_ROUTER_JS},
+    {"searched_label.html", IDR_MD_HISTORY_SEARCHED_LABEL_HTML},
+    {"searched_label.js", IDR_MD_HISTORY_SEARCHED_LABEL_JS},
+    {"shared_style.html", IDR_MD_HISTORY_SHARED_STYLE_HTML},
+    {"shared_vars.html", IDR_MD_HISTORY_SHARED_VARS_HTML},
+    {"side_bar.html", IDR_MD_HISTORY_SIDE_BAR_HTML},
+    {"side_bar.js", IDR_MD_HISTORY_SIDE_BAR_JS},
+    {"synced_device_card.html", IDR_MD_HISTORY_SYNCED_DEVICE_CARD_HTML},
+    {"synced_device_card.js", IDR_MD_HISTORY_SYNCED_DEVICE_CARD_JS},
+    {"synced_device_manager.html", IDR_MD_HISTORY_SYNCED_DEVICE_MANAGER_HTML},
+    {"synced_device_manager.js", IDR_MD_HISTORY_SYNCED_DEVICE_MANAGER_JS},
+#endif
+  };
+
+  std::unordered_set<std::string> exclude_from_gzip;
+  for (size_t i = 0; i < arraysize(uncompressed_resources); ++i) {
+    const UncompressedResource& resource = uncompressed_resources[i];
+    source->AddResourcePath(resource.path, resource.idr);
+    exclude_from_gzip.insert(resource.path);
+  }
+  source->UseGzip(exclude_from_gzip);
 
 #if BUILDFLAG(USE_VULCANIZE)
   source->AddResourcePath("app.html",
@@ -158,59 +204,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
                           IDR_MD_HISTORY_LAZY_LOAD_VULCANIZED_HTML);
   source->AddResourcePath("lazy_load.crisper.js",
                           IDR_MD_HISTORY_LAZY_LOAD_CRISPER_JS);
-#else
-  source->AddResourcePath("app.html", IDR_MD_HISTORY_APP_HTML);
-  source->AddResourcePath("app.js", IDR_MD_HISTORY_APP_JS);
-  source->AddResourcePath("browser_service.html",
-                          IDR_MD_HISTORY_BROWSER_SERVICE_HTML);
-  source->AddResourcePath("browser_service.js",
-                          IDR_MD_HISTORY_BROWSER_SERVICE_JS);
-  source->AddResourcePath("grouped_list.html",
-                          IDR_MD_HISTORY_GROUPED_LIST_HTML);
-  source->AddResourcePath("grouped_list.js", IDR_MD_HISTORY_GROUPED_LIST_JS);
-  source->AddResourcePath("history_item.html",
-                          IDR_MD_HISTORY_HISTORY_ITEM_HTML);
-  source->AddResourcePath("history_item.js", IDR_MD_HISTORY_HISTORY_ITEM_JS);
-  source->AddResourcePath("history_list.html",
-                          IDR_MD_HISTORY_HISTORY_LIST_HTML);
-  source->AddResourcePath("history_list.js", IDR_MD_HISTORY_HISTORY_LIST_JS);
-  source->AddResourcePath("history_list_behavior.html",
-                          IDR_MD_HISTORY_HISTORY_LIST_BEHAVIOR_HTML);
-  source->AddResourcePath("history_list_behavior.js",
-                          IDR_MD_HISTORY_HISTORY_LIST_BEHAVIOR_JS);
-  source->AddResourcePath("history_toolbar.html",
-                          IDR_MD_HISTORY_HISTORY_TOOLBAR_HTML);
-  source->AddResourcePath("history_toolbar.js",
-                          IDR_MD_HISTORY_HISTORY_TOOLBAR_JS);
-  source->AddResourcePath("icons.html", IDR_MD_HISTORY_ICONS_HTML);
-  source->AddResourcePath("lazy_load.html", IDR_MD_HISTORY_LAZY_LOAD_HTML);
-  source->AddResourcePath("list_container.html",
-                          IDR_MD_HISTORY_LIST_CONTAINER_HTML);
-  source->AddResourcePath("list_container.js",
-                          IDR_MD_HISTORY_LIST_CONTAINER_JS);
-  source->AddResourcePath("router.html",
-                          IDR_MD_HISTORY_ROUTER_HTML);
-  source->AddResourcePath("router.js",
-                          IDR_MD_HISTORY_ROUTER_JS);
-  source->AddResourcePath("searched_label.html",
-                          IDR_MD_HISTORY_SEARCHED_LABEL_HTML);
-  source->AddResourcePath("searched_label.js",
-                          IDR_MD_HISTORY_SEARCHED_LABEL_JS);
-  source->AddResourcePath("shared_style.html",
-                          IDR_MD_HISTORY_SHARED_STYLE_HTML);
-  source->AddResourcePath("shared_vars.html",
-                          IDR_MD_HISTORY_SHARED_VARS_HTML);
-  source->AddResourcePath("side_bar.html", IDR_MD_HISTORY_SIDE_BAR_HTML);
-  source->AddResourcePath("side_bar.js", IDR_MD_HISTORY_SIDE_BAR_JS);
-  source->AddResourcePath("synced_device_card.html",
-                          IDR_MD_HISTORY_SYNCED_DEVICE_CARD_HTML);
-  source->AddResourcePath("synced_device_card.js",
-                          IDR_MD_HISTORY_SYNCED_DEVICE_CARD_JS);
-  source->AddResourcePath("synced_device_manager.html",
-                          IDR_MD_HISTORY_SYNCED_DEVICE_MANAGER_HTML);
-  source->AddResourcePath("synced_device_manager.js",
-                          IDR_MD_HISTORY_SYNCED_DEVICE_MANAGER_JS);
-#endif  // BUILDFLAG(USE_VULCANIZE)
+#endif
 
   source->SetDefaultResource(IDR_MD_HISTORY_HISTORY_HTML);
   source->SetJsonPath("strings.js");
