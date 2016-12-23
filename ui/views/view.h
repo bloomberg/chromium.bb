@@ -84,6 +84,10 @@ class PostEventDispatchHandler;
 class RootView;
 }
 
+namespace {
+class ScopedChildrenLock;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // View class
@@ -1230,6 +1234,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   friend class internal::PostEventDispatchHandler;
   friend class internal::RootView;
   friend class FocusManager;
+  friend class ScopedChildrenLock;
   friend class ViewLayerTest;
   friend class Widget;
 
@@ -1465,6 +1470,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // This view's children.
   Views children_;
+
+#if DCHECK_IS_ON()
+  // True while iterating over |children_|. Used to detect and DCHECK when
+  // |children_| is mutated during iteration.
+  mutable bool iterating_;
+#endif
 
   // Size and disposition ------------------------------------------------------
 

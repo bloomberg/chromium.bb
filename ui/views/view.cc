@@ -11,6 +11,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -89,6 +90,28 @@ const View* GetHierarchyRoot(const View* view) {
   return root;
 }
 
+#if DCHECK_IS_ON()
+  class ScopedChildrenLock {
+   public:
+    explicit ScopedChildrenLock(const View* view) : view_(view) {
+      DCHECK(!view->iterating_);
+      view->iterating_ = true;
+    }
+
+    ~ScopedChildrenLock() { view_->iterating_ = false; }
+
+    private:
+     const View* view_;
+     DISALLOW_COPY_AND_ASSIGN(ScopedChildrenLock);
+  };
+#else
+  class ScopedChildrenLock {
+    public:
+      explicit ScopedChildrenLock(const View* view) {}
+      ~ScopedChildrenLock() {}
+  };
+#endif
+
 }  // namespace
 
 // static
@@ -104,6 +127,9 @@ View::View()
       id_(0),
       group_(-1),
       parent_(NULL),
+#if DCHECK_IS_ON()
+      iterating_(false),
+#endif
       visible_(true),
       enabled_(true),
       notify_enter_exit_on_child_(false),
@@ -129,10 +155,13 @@ View::~View() {
 
   ViewStorage::GetInstance()->ViewRemoved(this);
 
-  for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i) {
-    (*i)->parent_ = NULL;
-    if (!(*i)->owned_by_client_)
-      delete *i;
+  {
+    ScopedChildrenLock(this);
+    for (auto* child : children_) {
+      child->parent_ = NULL;
+      if (!child->owned_by_client_)
+        delete child;
+    }
   }
 
   // Release ownership of the native accessibility object, but it's
@@ -179,6 +208,9 @@ void View::AddChildViewAt(View* view, int index) {
   InitFocusSiblings(view, index);
 
   view->parent_ = this;
+#if DCHECK_IS_ON()
+  DCHECK(!iterating_);
+#endif
   children_.insert(children_.begin() + index, view);
 
   // Ensure the layer tree matches the view tree before calling to any client
@@ -237,6 +269,9 @@ void View::ReorderChildView(View* view, int index) {
 
   const Views::iterator i(std::find(children_.begin(), children_.end(), view));
   DCHECK(i != children_.end());
+#if DCHECK_IS_ON()
+  DCHECK(!iterating_);
+#endif
   children_.erase(i);
 
   // Unlink the view first
@@ -554,8 +589,8 @@ void View::Layout() {
   // weren't changed by the layout manager. If there is no layout manager, we
   // just propagate the Layout() call down the hierarchy, so whoever receives
   // the call can take appropriate action.
-  for (int i = 0, count = child_count(); i < count; ++i) {
-    View* child = child_at(i);
+  ScopedChildrenLock(this);
+  for (auto* child : children_) {
     if (child->needs_layout_ || !layout_manager_.get()) {
       TRACE_EVENT1("views", "View::Layout", "class", child->GetClassName());
       child->needs_layout_ = false;
@@ -621,8 +656,9 @@ const View* View::GetViewByID(int id) const {
   if (id == id_)
     return const_cast<View*>(this);
 
-  for (int i = 0, count = child_count(); i < count; ++i) {
-    const View* view = child_at(i)->GetViewByID(id);
+  ScopedChildrenLock(this);
+  for (auto* child : children_) {
+    const View* view = child->GetViewByID(id);
     if (view)
       return view;
   }
@@ -651,8 +687,9 @@ void View::GetViewsInGroup(int group, Views* views) {
   if (group_ == group)
     views->push_back(this);
 
-  for (int i = 0, count = child_count(); i < count; ++i)
-    child_at(i)->GetViewsInGroup(group, views);
+  ScopedChildrenLock(this);
+  for (auto* child : children_)
+    child->GetViewsInGroup(group, views);
 }
 
 View* View::GetSelectedViewForGroup(int group) {
@@ -917,8 +954,7 @@ View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
 
   // Walk the child Views recursively looking for the View that most
   // tightly encloses the specified point.
-  for (int i = child_count() - 1; i >= 0; --i) {
-    View* child = child_at(i);
+  for (auto* child : base::Reversed(children_)) {
     if (!child->visible())
       continue;
 
@@ -1437,9 +1473,11 @@ void View::NativeViewHierarchyChanged() {
 
 void View::PaintChildren(const ui::PaintContext& context) {
   TRACE_EVENT1("views", "View::PaintChildren", "class", GetClassName());
-  for (int i = 0, count = child_count(); i < count; ++i)
-    if (!child_at(i)->layer())
-      child_at(i)->Paint(context);
+  ScopedChildrenLock(this);
+  for (auto* child : children_) {
+    if (!child->layer())
+      child->Paint(context);
+  }
 }
 
 void View::OnPaint(gfx::Canvas* canvas) {
@@ -1505,8 +1543,9 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
     SetLayerBounds(gfx::Rect(local_point.x(), local_point.y(),
                              width(), height()));
   } else {
-    for (int i = 0, count = child_count(); i < count; ++i)
-      child_at(i)->MoveLayerToParent(parent_layer, local_point);
+    ScopedChildrenLock(this);
+    for (auto* child : children_)
+      child->MoveLayerToParent(parent_layer, local_point);
   }
 }
 
@@ -1522,8 +1561,9 @@ void View::UpdateChildLayerVisibility(bool ancestor_visible) {
   if (layer()) {
     layer()->SetVisible(ancestor_visible && visible_);
   } else {
-    for (int i = 0, count = child_count(); i < count; ++i)
-      child_at(i)->UpdateChildLayerVisibility(ancestor_visible && visible_);
+    ScopedChildrenLock(this);
+    for (auto* child : children_)
+      child->UpdateChildLayerVisibility(ancestor_visible && visible_);
   }
 }
 
@@ -1531,8 +1571,8 @@ void View::UpdateChildLayerBounds(const gfx::Vector2d& offset) {
   if (layer()) {
     SetLayerBounds(GetLocalBounds() + offset);
   } else {
-    for (int i = 0, count = child_count(); i < count; ++i) {
-      View* child = child_at(i);
+    ScopedChildrenLock(this);
+    for (auto* child : children_) {
       child->UpdateChildLayerBounds(
           offset + gfx::Vector2d(child->GetMirroredX(), child->y()));
     }
@@ -1588,9 +1628,9 @@ void View::ReorderChildLayers(ui::Layer* parent_layer) {
     // Iterate backwards through the children so that a child with a layer
     // which is further to the back is stacked above one which is further to
     // the front.
-    for (Views::reverse_iterator it(children_.rbegin());
-         it != children_.rend(); ++it) {
-      (*it)->ReorderChildLayers(parent_layer);
+    ScopedChildrenLock(this);
+    for (auto* child : base::Reversed(children_)) {
+      child->ReorderChildLayers(parent_layer);
     }
   }
 }
@@ -1765,8 +1805,8 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
   }
 
   // Children.
-  for (int i = 0, count = view_with_children->child_count(); i < count; ++i)
-    result.append(view_with_children->child_at(i)->PrintViewGraph(false));
+  for (auto* child : view_with_children->children_)
+    result.append(child->PrintViewGraph(false));
 
   if (first)
     result.append("}\n");
@@ -1862,6 +1902,9 @@ void View::DoRemoveChildView(View* view,
   if (delete_removed_view && !view->owned_by_client_)
     view_to_be_deleted.reset(view);
 
+#if DCHECK_IS_ON()
+  DCHECK(!iterating_);
+#endif
   children_.erase(i);
 
   if (update_tool_tip)
@@ -1875,8 +1918,11 @@ void View::DoRemoveChildView(View* view,
 }
 
 void View::PropagateRemoveNotifications(View* old_parent, View* new_parent) {
-  for (int i = 0, count = child_count(); i < count; ++i)
-    child_at(i)->PropagateRemoveNotifications(old_parent, new_parent);
+  {
+    ScopedChildrenLock(this);
+    for (auto* child : children_)
+      child->PropagateRemoveNotifications(old_parent, new_parent);
+  }
 
   ViewHierarchyChangedDetails details(false, old_parent, this, new_parent);
   for (View* v = this; v; v = v->parent_)
@@ -1885,14 +1931,20 @@ void View::PropagateRemoveNotifications(View* old_parent, View* new_parent) {
 
 void View::PropagateAddNotifications(
     const ViewHierarchyChangedDetails& details) {
-  for (int i = 0, count = child_count(); i < count; ++i)
-    child_at(i)->PropagateAddNotifications(details);
+  {
+    ScopedChildrenLock(this);
+    for (auto* child : children_)
+      child->PropagateAddNotifications(details);
+  }
   ViewHierarchyChangedImpl(true, details);
 }
 
 void View::PropagateNativeViewHierarchyChanged() {
-  for (int i = 0, count = child_count(); i < count; ++i)
-    child_at(i)->PropagateNativeViewHierarchyChanged();
+  {
+    ScopedChildrenLock(this);
+    for (auto* child : children_)
+      child->PropagateNativeViewHierarchyChanged();
+  }
   NativeViewHierarchyChanged();
 }
 
@@ -1916,16 +1968,22 @@ void View::ViewHierarchyChangedImpl(
 }
 
 void View::PropagateNativeThemeChanged(const ui::NativeTheme* theme) {
-  for (int i = 0, count = child_count(); i < count; ++i)
-    child_at(i)->PropagateNativeThemeChanged(theme);
+  {
+    ScopedChildrenLock(this);
+    for (auto* child : children_)
+      child->PropagateNativeThemeChanged(theme);
+  }
   OnNativeThemeChanged(theme);
 }
 
 // Size and disposition --------------------------------------------------------
 
 void View::PropagateVisibilityNotifications(View* start, bool is_visible) {
-  for (int i = 0, count = child_count(); i < count; ++i)
-    child_at(i)->PropagateVisibilityNotifications(start, is_visible);
+  {
+    ScopedChildrenLock(this);
+    for (auto* child : children_)
+      child->PropagateVisibilityNotifications(start, is_visible);
+  }
   VisibilityChangedImpl(start, is_visible);
 }
 
@@ -2106,8 +2164,11 @@ bool View::ConvertRectFromAncestor(const View* ancestor,
 void View::CreateLayer() {
   // A new layer is being created for the view. So all the layers of the
   // sub-tree can inherit the visibility of the corresponding view.
-  for (int i = 0, count = child_count(); i < count; ++i)
-    child_at(i)->UpdateChildLayerVisibility(true);
+  {
+    ScopedChildrenLock(this);
+    for (auto* child : children_)
+      child->UpdateChildLayerVisibility(true);
+  }
 
   SetLayer(base::MakeUnique<ui::Layer>());
   layer()->set_delegate(this);
@@ -2145,8 +2206,9 @@ bool View::UpdateParentLayers() {
     return false;
   }
   bool result = false;
-  for (int i = 0, count = child_count(); i < count; ++i) {
-    if (child_at(i)->UpdateParentLayers())
+  ScopedChildrenLock(this);
+  for (auto* child : children_) {
+    if (child->UpdateParentLayers())
       result = true;
   }
   return result;
@@ -2161,8 +2223,9 @@ void View::OrphanLayers() {
     // necessary to orphan the child layers.
     return;
   }
-  for (int i = 0, count = child_count(); i < count; ++i)
-    child_at(i)->OrphanLayers();
+  ScopedChildrenLock(this);
+  for (auto* child : children_)
+    child->OrphanLayers();
 }
 
 void View::ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer) {
@@ -2345,11 +2408,14 @@ void View::InitFocusSiblings(View* v, int index) {
       // the last focusable element. Let's try to find an element with no next
       // focusable element to link to.
       View* last_focusable_view = NULL;
-      for (Views::iterator i(children_.begin()); i != children_.end(); ++i) {
-          if (!(*i)->next_focusable_view_) {
-            last_focusable_view = *i;
+      {
+        ScopedChildrenLock(this);
+        for (auto* child : children_) {
+          if (!child->next_focusable_view_) {
+            last_focusable_view = child;
             break;
           }
+        }
       }
       if (last_focusable_view == NULL) {
         // Hum... there is a cycle in the focus list. Let's just insert ourself
@@ -2391,20 +2457,29 @@ void View::AdvanceFocusIfNecessary() {
 // System events ---------------------------------------------------------------
 
 void View::PropagateThemeChanged() {
-  for (int i = child_count() - 1; i >= 0; --i)
-    child_at(i)->PropagateThemeChanged();
+  {
+    ScopedChildrenLock(this);
+    for (auto* child : base::Reversed(children_))
+      child->PropagateThemeChanged();
+  }
   OnThemeChanged();
 }
 
 void View::PropagateLocaleChanged() {
-  for (int i = child_count() - 1; i >= 0; --i)
-    child_at(i)->PropagateLocaleChanged();
+  {
+    ScopedChildrenLock(this);
+    for (auto* child : base::Reversed(children_))
+      child->PropagateLocaleChanged();
+  }
   OnLocaleChanged();
 }
 
 void View::PropagateDeviceScaleFactorChanged(float device_scale_factor) {
-  for (int i = child_count() - 1; i >= 0; --i)
-    child_at(i)->PropagateDeviceScaleFactorChanged(device_scale_factor);
+  {
+    ScopedChildrenLock(this);
+    for (auto* child : base::Reversed(children_))
+      child->PropagateDeviceScaleFactorChanged(device_scale_factor);
+  }
 
   // If the view is drawing to the layer, OnDeviceScaleFactorChanged() is called
   // through LayerDelegate callback.
