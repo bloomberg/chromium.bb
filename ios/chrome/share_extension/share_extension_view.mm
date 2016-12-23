@@ -40,7 +40,7 @@ const CGFloat kButtonFontSize = 17;
   [super setHighlighted:highlighted];
 
   if (highlighted)
-    self.backgroundColor = [UIColor colorWithWhite:0.98 alpha:1];
+    self.backgroundColor = [UIColor colorWithWhite:217.0f / 255.0f alpha:1];
   else
     self.backgroundColor = [UIColor clearColor];
 }
@@ -96,6 +96,8 @@ const CGFloat kButtonFontSize = 17;
         [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
     UIVibrancyEffect* vibrancyEffect =
         [UIVibrancyEffect effectForBlurEffect:blurEffect];
+
+    self.backgroundColor = [UIColor colorWithWhite:242.0f / 255.0f alpha:1];
 
     // Add the blur effect to the whole widget.
     UIVisualEffectView* blurringView =
