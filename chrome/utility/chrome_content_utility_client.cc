@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/common/file_patcher.mojom.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/utility/chrome_content_utility_ipc_whitelist.h"
@@ -63,6 +64,7 @@
 
 namespace {
 
+#if defined(OS_CHROMEOS) || defined(FULL_SAFE_BROWSING)
 bool Send(IPC::Message* message) {
   return content::UtilityThread::Get()->Send(message);
 }
@@ -70,6 +72,41 @@ bool Send(IPC::Message* message) {
 void ReleaseProcessIfNeeded() {
   content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
+#endif  // defined(OS_CHROMEOS) || defined(FULL_SAFE_BROWSING)
+
+class FilePatcherImpl : public chrome::mojom::FilePatcher {
+ public:
+  FilePatcherImpl() = default;
+  ~FilePatcherImpl() override = default;
+
+  static void Create(chrome::mojom::FilePatcherRequest request) {
+    mojo::MakeStrongBinding(base::MakeUnique<FilePatcherImpl>(),
+                            std::move(request));
+  }
+
+ private:
+  // chrome::mojom::FilePatcher:
+
+  void PatchFileBsdiff(base::File input_file,
+                       base::File patch_file,
+                       base::File output_file,
+                       const PatchFileBsdiffCallback& callback) override {
+    const int patch_result_status = bsdiff::ApplyBinaryPatch(
+        std::move(input_file), std::move(patch_file), std::move(output_file));
+    callback.Run(patch_result_status);
+  }
+
+  void PatchFileCourgette(base::File input_file,
+                          base::File patch_file,
+                          base::File output_file,
+                          const PatchFileCourgetteCallback& callback) override {
+    const int patch_result_status = courgette::ApplyEnsemblePatch(
+        std::move(input_file), std::move(patch_file), std::move(output_file));
+    callback.Run(patch_result_status);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(FilePatcherImpl);
+};
 
 #if !defined(OS_ANDROID)
 void CreateProxyResolverFactory(
@@ -155,10 +192,6 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeContentUtilityClient, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_PatchFileBsdiff,
-                        OnPatchFileBsdiff)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_PatchFileCourgette,
-                        OnPatchFileCourgette)
 #if defined(FULL_SAFE_BROWSING)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
                         OnAnalyzeZipFileForDownloadProtection)
@@ -200,6 +233,7 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
   if (filter_messages_)
     return;
 
+  registry->AddInterface(base::Bind(&FilePatcherImpl::Create));
 #if !defined(OS_ANDROID)
   registry->AddInterface<net::interfaces::ProxyResolverFactory>(
       base::Bind(CreateProxyResolverFactory));
@@ -263,30 +297,6 @@ void ChromeContentUtilityClient::OnCreateZipFile(
   ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_CHROMEOS)
-
-void ChromeContentUtilityClient::OnPatchFileBsdiff(
-    const IPC::PlatformFileForTransit& input_file,
-    const IPC::PlatformFileForTransit& patch_file,
-    const IPC::PlatformFileForTransit& output_file) {
-  const int patch_status = bsdiff::ApplyBinaryPatch(
-      IPC::PlatformFileForTransitToFile(input_file),
-      IPC::PlatformFileForTransitToFile(patch_file),
-      IPC::PlatformFileForTransitToFile(output_file));
-  Send(new ChromeUtilityHostMsg_PatchFile_Finished(patch_status));
-  ReleaseProcessIfNeeded();
-}
-
-void ChromeContentUtilityClient::OnPatchFileCourgette(
-    const IPC::PlatformFileForTransit& input_file,
-    const IPC::PlatformFileForTransit& patch_file,
-    const IPC::PlatformFileForTransit& output_file) {
-  const int patch_status = courgette::ApplyEnsemblePatch(
-      IPC::PlatformFileForTransitToFile(input_file),
-      IPC::PlatformFileForTransitToFile(patch_file),
-      IPC::PlatformFileForTransitToFile(output_file));
-  Send(new ChromeUtilityHostMsg_PatchFile_Finished(patch_status));
-  ReleaseProcessIfNeeded();
-}
 
 #if defined(FULL_SAFE_BROWSING)
 void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
