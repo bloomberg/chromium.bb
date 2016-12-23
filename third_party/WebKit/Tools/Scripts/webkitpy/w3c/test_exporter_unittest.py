@@ -60,18 +60,16 @@ class TestExporterTest(unittest.TestCase):
         host = MockHost()
 
         def mock_command(args):
-            git_command = args[1]
-            if git_command == 'rev-list':
-                return 'facebeef\ncafedad5'
-            elif git_command == 'footers':
-                return 'fake-cr-position'
-            elif git_command == 'show':
-                if 'cafedad5' in args:
-                    return 'newer fake text'
-                elif 'facebeef' in args:
-                    return 'older fake text'
-            else:
-                return ''
+            canned_git_outputs = {
+                'show': 'newer fake text' if 'cafedad5' in args else 'older fake text',
+                'rev-list': 'facebeef\ncafedad5',
+                'footers': 'fake-cr-position',
+                'remote': 'github',
+                'format-patch': 'fake patch',
+                'diff': 'fake patch diff',
+                'diff-tree': 'fake\n\files\nchanged',
+            }
+            return canned_git_outputs.get(args[1], '')
 
         host.executive = MockExecutive2(run_command_fn=mock_command)
         wpt_github = MockWPTGitHub(pull_requests=[])
@@ -99,10 +97,24 @@ class TestExporterTest(unittest.TestCase):
         self.assertEqual(len(commits), 1)
         self.assertIsInstance(commits[0], ChromiumCommit)
         self.assertEqual(self.host.executive.calls, [
+            ['git', 'clone', 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git', '/tmp/wpt'],
             ['git', 'rev-parse', '--show-toplevel'],
-            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--', 'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
+            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
+             'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
+            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r',
+             'badbeef8', '--', '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt'],
+            ['git', 'format-patch', '-1', '--stdout', 'badbeef8', '--', 'some', 'files'],
+            ['git', 'reset', '--hard', 'HEAD'],
+            ['git', 'clean', '-fdx'],
+            ['git', 'checkout', 'origin/master'],
+            ['git', 'apply', '-'],
+            ['git', 'add', '.'],
+            ['git', 'diff', 'origin/master'],
+            ['git', 'reset', '--hard', 'HEAD'],
+            ['git', 'clean', '-fdx'],
+            ['git', 'checkout', 'origin/master'],
             ['git', 'show', '--format=%B', '--no-patch', 'badbeef8'],
-            ['git', 'diff-tree', '--no-commit-id', '--name-only', '-r', 'badbeef8']])
+            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8']])
 
     def test_ignores_commits_with_noexport_true(self):
         self.host.executive = mock_command_exec({
@@ -116,9 +128,12 @@ class TestExporterTest(unittest.TestCase):
         commits = test_exporter.exportable_commits_since('beefcafe')
         self.assertEqual(len(commits), 0)
         self.assertEqual(self.host.executive.calls, [
+            ['git', 'clone', 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git', '/tmp/wpt'],
             ['git', 'rev-parse', '--show-toplevel'],
-            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--', 'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
-            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8']])
+            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
+             'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
+            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
+             '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt']])
 
     def test_ignores_reverted_commits_with_noexport_true(self):
         self.host.executive = mock_command_exec({
@@ -133,9 +148,12 @@ class TestExporterTest(unittest.TestCase):
         commits = test_exporter.exportable_commits_since('beefcafe')
         self.assertEqual(len(commits), 0)
         self.assertEqual(self.host.executive.calls, [
+            ['git', 'clone', 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git', '/tmp/wpt'],
             ['git', 'rev-parse', '--show-toplevel'],
-            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--', 'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
-            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8']])
+            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
+             'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
+            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
+             '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt']])
 
     def test_ignores_commits_that_start_with_import(self):
         self.host.executive = mock_command_exec({
@@ -150,6 +168,9 @@ class TestExporterTest(unittest.TestCase):
         commits = test_exporter.exportable_commits_since('beefcafe')
         self.assertEqual(len(commits), 0)
         self.assertEqual(self.host.executive.calls, [
+            ['git', 'clone', 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git', '/tmp/wpt'],
             ['git', 'rev-parse', '--show-toplevel'],
-            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--', 'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
-            ['git', 'show', '--format=%B', '--no-patch', 'badbeef8']])
+            ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
+             'badbeef8/third_party/WebKit/LayoutTests/imported/wpt/'],
+            ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'badbeef8', '--',
+             '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt']])

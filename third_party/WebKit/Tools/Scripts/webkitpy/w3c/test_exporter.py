@@ -6,10 +6,8 @@ import logging
 
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.chromium_commit import ChromiumCommit
-from webkitpy.w3c.deps_updater import DepsUpdater
 
 _log = logging.getLogger(__name__)
-
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
 
 
@@ -18,6 +16,7 @@ class TestExporter(object):
     def __init__(self, host, wpt_github, dry_run=False):
         self.host = host
         self.wpt_github = wpt_github
+        self.local_wpt = LocalWPT(self.host)
         self.dry_run = dry_run
 
     def run(self):
@@ -46,15 +45,14 @@ class TestExporter(object):
         # Second, look for exportable commits in Chromium
         # At this point, no in-flight PRs should exist
         # If there was an issue merging, it should have errored out
-        local_wpt = LocalWPT(self.host, use_github=False)
 
         # TODO(jeffcarp): have the script running this fetch Chromium origin/master
         # TODO(jeffcarp): move WPT fetch out of its constructor to match planned ChromiumWPT pattern
 
-        wpt_commit, chromium_commit = local_wpt.most_recent_chromium_commit()
+        wpt_commit, chromium_commit = self.local_wpt.most_recent_chromium_commit()
         assert chromium_commit, 'No Chromium commit found, this is impossible'
 
-        wpt_behind_master = local_wpt.commits_behind_master(wpt_commit)
+        wpt_behind_master = self.local_wpt.commits_behind_master(wpt_commit)
 
         _log.info('\nLast Chromium export commit in web-platform-tests:')
         _log.info('web-platform-tests@%s', wpt_commit)
@@ -91,7 +89,7 @@ class TestExporter(object):
             _log.info(patch)
             return
 
-        local_branch_name = local_wpt.create_branch_with_patch(message, patch)
+        local_branch_name = self.local_wpt.create_branch_with_patch(message, patch)
 
         response_data = self.wpt_github.create_pr(
             local_branch_name=local_branch_name,
@@ -118,21 +116,12 @@ class TestExporter(object):
         chromium_commits = [ChromiumCommit(self.host, sha=c) for c in commits]
 
         def is_exportable(chromium_commit):
-            message = chromium_commit.message()
+            patch = chromium_commit.format_patch()
             return (
-                'NOEXPORT=true' not in message
-                and not message.startswith('Import ')
-                # TODO(jeffcarp): change this to allow any commit with
-                #   any non-expectation changes to be exportable
-                and not self._has_expectations(chromium_commit)
+                patch
+                and self.local_wpt.test_patch(patch)
+                and 'NOEXPORT=true' not in chromium_commit.message()
+                and not chromium_commit.message().startswith('Import ')
             )
 
-        return filter(is_exportable, chromium_commits)
-
-    def _has_expectations(self, chromium_commit):
-        files = self.host.executive.run_command([
-            'git', 'diff-tree', '--no-commit-id',
-            '--name-only', '-r', chromium_commit.sha
-        ]).splitlines()
-
-        return any(DepsUpdater.is_baseline(f) for f in files)
+        return [c for c in chromium_commits if is_exportable(c)]

@@ -6,6 +6,7 @@
 
 import logging
 
+from webkitpy.common.system.executive import ScriptError
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 
 WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
@@ -106,6 +107,31 @@ class LocalWPT(object):
         self.run(['git', 'push', 'github', branch_name])
 
         return branch_name
+
+    def test_patch(self, patch):
+        """Returns the expected output of a patch against origin/master.
+
+        Args:
+            patch: The patch to test against.
+
+        Returns:
+            A string containing the diff the patch produced.
+        """
+        self.clean()
+
+        # Remove Chromium WPT directory prefix.
+        patch = patch.replace(CHROMIUM_WPT_DIR, '')
+
+        try:
+            self.run(['git', 'apply', '-'], input=patch)
+            self.run(['git', 'add', '.'])
+            output = self.run(['git', 'diff', 'origin/master'])
+        except ScriptError as error:
+            _log.error('Error while applying patch: %s', error)
+            output = ''
+
+        self.clean()
+        return output
 
     def commits_behind_master(self, commit):
         """Returns the number of commits after the given commit on origin/master.
