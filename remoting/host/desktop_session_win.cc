@@ -101,6 +101,12 @@ const wchar_t kDenyTsConnectionsValueName[] = L"fDenyTSConnections";
 const wchar_t kNetworkLevelAuthValueName[] = L"UserAuthentication";
 const wchar_t kSecurityLayerValueName[] = L"SecurityLayer";
 
+webrtc::DesktopSize GetBoundedRdpDesktopSize(int width, int height) {
+  return webrtc::DesktopSize(
+      std::min(kMaxRdpScreenWidth, std::max(kMinRdpScreenWidth, width)),
+      std::min(kMaxRdpScreenHeight, std::max(kMinRdpScreenHeight, height)));
+}
+
 // DesktopSession implementation which attaches to the host's physical console.
 // Receives IPC messages from the desktop process, running in the console
 // session, via |WorkerProcessIpcDelegate|, and monitors console session
@@ -283,11 +289,7 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
       webrtc::DesktopVector(kDefaultRdpDpi, kDefaultRdpDpi));
 
   // Make sure that the host resolution is within the limits supported by RDP.
-  host_size = webrtc::DesktopSize(
-      std::min(kMaxRdpScreenWidth,
-               std::max(kMinRdpScreenWidth, host_size.width())),
-      std::min(kMaxRdpScreenHeight,
-               std::max(kMinRdpScreenHeight, host_size.height())));
+  host_size = GetBoundedRdpDesktopSize(host_size.width(), host_size.height());
 
   // Read the port number used by RDP.
   DWORD server_port = kDefaultRdpPort;
@@ -304,6 +306,7 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
   terminal_id_ = base::GenerateGUID();
   base::win::ScopedBstr terminal_id(base::UTF8ToUTF16(terminal_id_).c_str());
   result = rdp_desktop_session_->Connect(host_size.width(), host_size.height(),
+                                         kDefaultRdpDpi, kDefaultRdpDpi,
                                          terminal_id, server_port,
                                          event_handler.get());
   if (FAILED(result)) {
@@ -330,10 +333,14 @@ void RdpSession::OnRdpClosed() {
 
 void RdpSession::SetScreenResolution(const ScreenResolution& resolution) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(!resolution.IsEmpty());
 
-  // TODO(alexeypa): implement resize-to-client for RDP sessions here.
-  // See http://crbug.com/137696.
-  NOTIMPLEMENTED();
+  webrtc::DesktopSize new_size = resolution.ScaleDimensionsToDpi(
+      webrtc::DesktopVector(kDefaultRdpDpi, kDefaultRdpDpi));
+  new_size = GetBoundedRdpDesktopSize(new_size.width(), new_size.height());
+
+  rdp_desktop_session_->ChangeResolution(new_size.width(), new_size.height(),
+      kDefaultRdpDpi, kDefaultRdpDpi);
 }
 
 void RdpSession::InjectSas() {

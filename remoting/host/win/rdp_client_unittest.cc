@@ -5,7 +5,8 @@
 // ATL headers have to go first.
 #include <atlbase.h>
 #include <atlhost.h>
-#include <stdint.h>
+
+#include <cstdint>
 #include <string>
 
 #include "base/bind.h"
@@ -17,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/win/scoped_com_initializer.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/host/screen_resolution.h"
 #include "remoting/host/win/rdp_client.h"
 #include "remoting/host/win/wts_terminal_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,9 +34,10 @@ namespace remoting {
 
 namespace {
 
-// Default width and hight of the RDP client window.
+// Default width, height, and dpi of the RDP client window.
 const long kDefaultWidth = 1024;
 const long kDefaultHeight = 768;
+const long kDefaultDpi = 96;
 
 const DWORD kDefaultRdpPort = 3389;
 
@@ -166,10 +169,11 @@ TEST_F(RdpClientTest, Basic) {
       .Times(AtMost(1))
       .WillOnce(InvokeWithoutArgs(this, &RdpClientTest::CloseRdpClient));
 
-  rdp_client_.reset(
-      new RdpClient(task_runner_, task_runner_,
-                    webrtc::DesktopSize(kDefaultWidth, kDefaultHeight),
-                    terminal_id_, kDefaultRdpPort, &event_handler_));
+  rdp_client_.reset(new RdpClient(
+      task_runner_, task_runner_,
+      ScreenResolution(webrtc::DesktopSize(kDefaultWidth, kDefaultHeight),
+                       webrtc::DesktopVector(kDefaultDpi, kDefaultDpi)),
+      terminal_id_, kDefaultRdpPort, &event_handler_));
   task_runner_ = nullptr;
 
   run_loop_.Run();

@@ -16,11 +16,9 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace webrtc {
-class DesktopSize;
-}  // namespace webrtc
-
 namespace remoting {
+
+class ScreenResolution;
 
 // Establishes a loopback RDP connection to spawn a new Windows session.
 class RdpClient : public base::NonThreadSafe {
@@ -39,7 +37,7 @@ class RdpClient : public base::NonThreadSafe {
 
   RdpClient(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
             scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-            const webrtc::DesktopSize& screen_size,
+            const ScreenResolution& resolution,
             const std::string& terminal_id,
             DWORD port_number,
             EventHandler* event_handler);
@@ -47,6 +45,9 @@ class RdpClient : public base::NonThreadSafe {
 
   // Sends Secure Attention Sequence to the session.
   void InjectSas();
+
+  // Change the resolution of the desktop.
+  void ChangeResolution(const ScreenResolution& resolution);
 
  private:
   // The actual implementation resides in Core class.

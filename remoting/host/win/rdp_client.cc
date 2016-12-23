@@ -5,7 +5,8 @@
 #include "remoting/host/win/rdp_client.h"
 
 #include <windows.h>
-#include <stdint.h>
+
+#include <cstdint>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -16,8 +17,8 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/base/typed_buffer.h"
+#include "remoting/host/screen_resolution.h"
 #include "remoting/host/win/rdp_client_window.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 
@@ -42,7 +43,7 @@ class RdpClient::Core
       RdpClient::EventHandler* event_handler);
 
   // Initiates a loopback RDP connection.
-  void Connect(const webrtc::DesktopSize& screen_size,
+  void Connect(const ScreenResolution& resolution,
                const std::string& terminal_id,
                DWORD port_number);
 
@@ -51,6 +52,9 @@ class RdpClient::Core
 
   // Sends Secure Attention Sequence to the session.
   void InjectSas();
+
+  // Change the resolution of the desktop.
+  void ChangeResolution(const ScreenResolution& resolution);
 
   // RdpClientWindow::EventHandler interface.
   void OnConnected() override;
@@ -87,14 +91,14 @@ class RdpClient::Core
 RdpClient::RdpClient(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    const webrtc::DesktopSize& screen_size,
+    const ScreenResolution& resolution,
     const std::string& terminal_id,
     DWORD port_number,
     EventHandler* event_handler) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   core_ = new Core(caller_task_runner, ui_task_runner, event_handler);
-  core_->Connect(screen_size, terminal_id, port_number);
+  core_->Connect(resolution, terminal_id, port_number);
 }
 
 RdpClient::~RdpClient() {
@@ -109,6 +113,12 @@ void RdpClient::InjectSas() {
   core_->InjectSas();
 }
 
+void RdpClient::ChangeResolution(const ScreenResolution& resolution) {
+  DCHECK(CalledOnValidThread());
+
+  core_->ChangeResolution(resolution);
+}
+
 RdpClient::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
@@ -118,13 +128,13 @@ RdpClient::Core::Core(
       event_handler_(event_handler) {
 }
 
-void RdpClient::Core::Connect(const webrtc::DesktopSize& screen_size,
+void RdpClient::Core::Connect(const ScreenResolution& resolution,
                               const std::string& terminal_id,
                               DWORD port_number) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::Connect, this, screen_size, terminal_id,
-                              port_number));
+        FROM_HERE,
+        base::Bind(&Core::Connect, this, resolution, terminal_id, port_number));
     return;
   }
 
@@ -138,7 +148,7 @@ void RdpClient::Core::Connect(const webrtc::DesktopSize& screen_size,
   // Create the ActiveX control window.
   rdp_client_window_.reset(new RdpClientWindow(server_endpoint, terminal_id,
                                                this));
-  if (!rdp_client_window_->Connect(screen_size)) {
+  if (!rdp_client_window_->Connect(resolution)) {
     rdp_client_window_.reset();
 
     // Notify the caller that connection attempt failed.
@@ -169,8 +179,21 @@ void RdpClient::Core::InjectSas() {
     return;
   }
 
-  if (rdp_client_window_)
+  if (rdp_client_window_) {
     rdp_client_window_->InjectSas();
+  }
+}
+
+void RdpClient::Core::ChangeResolution(const ScreenResolution& resolution) {
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Core::ChangeResolution, this, resolution));
+    return;
+  }
+
+  if (rdp_client_window_) {
+    rdp_client_window_->ChangeResolution(resolution);
+  }
 }
 
 void RdpClient::Core::OnConnected() {

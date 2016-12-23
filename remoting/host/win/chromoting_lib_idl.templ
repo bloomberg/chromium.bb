@@ -32,10 +32,12 @@ interface IRdpDesktopSessionEventHandler : IUnknown {
 interface IRdpDesktopSession : IUnknown {
   [ id(1), helpstring("Initiates a loopback RDP connection to spawn a new "
                       "Windows session. |width| and |height| specify the "
-                      "initial screen resolution. |terminal_id| specifies a "
-                      "unique value to be used to identify this connection."
-                      "|port_number| specifies the RDP port number to use.") ]
-  HRESULT Connect([in] long width, [in] long height, [in] BSTR terminal_id,
+                      "initial screen resolution, they must be scaled to |dpi|."
+                      " |terminal_id| specifies a unique value to be used to "
+                      "identify this connection. |port_number| specifies the "
+                      "RDP port number to use.") ]
+  HRESULT Connect([in] long width, [in] long height, [in] long dpi_x,
+                  [in] long dpi_y, [in] BSTR terminal_id,
                   [in] DWORD port_number,
                   [in] IRdpDesktopSessionEventHandler* event_handler);
 
@@ -43,7 +45,8 @@ interface IRdpDesktopSession : IUnknown {
   HRESULT Disconnect();
 
   [ id(3), helpstring("Changes the screen resolution.") ]
-  HRESULT ChangeResolution([in] long width, [in] long height);
+  HRESULT ChangeResolution([in] long width, [in] long height, [in] long dpi_x,
+                           [in] long dpi_y);
 
   [ id(4), helpstring("Sends Secure Attention Sequence to the session.") ]
   HRESULT InjectSas();
