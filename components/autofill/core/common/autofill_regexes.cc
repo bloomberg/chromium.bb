@@ -5,9 +5,9 @@
 #include "components/autofill/core/common/autofill_regexes.h"
 
 #include <memory>
+#include <unordered_map>
 #include <utility>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -30,7 +30,7 @@ class AutofillRegexes {
   friend struct base::DefaultSingletonTraits<AutofillRegexes>;
 
   // Maps patterns to their corresponding regex matchers.
-  base::ScopedPtrHashMap<base::string16, std::unique_ptr<icu::RegexMatcher>>
+  std::unordered_map<base::string16, std::unique_ptr<icu::RegexMatcher>>
       matchers_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillRegexes);
@@ -57,11 +57,11 @@ icu::RegexMatcher* AutofillRegexes::GetMatcher(const base::string16& pattern) {
         new icu::RegexMatcher(icu_pattern, UREGEX_CASE_INSENSITIVE, status));
     DCHECK(U_SUCCESS(status));
 
-    auto result = matchers_.add(pattern, std::move(matcher));
+    auto result = matchers_.insert(std::make_pair(pattern, std::move(matcher)));
     DCHECK(result.second);
     it = result.first;
   }
-  return it->second;
+  return it->second.get();
 }
 
 }  // namespace

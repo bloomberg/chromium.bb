@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -19,11 +20,6 @@
 #include "components/sync/model/sync_merge_result.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
-
-namespace base {
-template <typename, typename>
-class ScopedPtrHashMap;
-}
 
 namespace syncer {
 class SyncChangeProcessor;
@@ -96,9 +92,9 @@ class AutofillWalletMetadataSyncableService
   // to server profiles and server cards read from disk. This data contains the
   // usage stats. Returns true on success.
   virtual bool GetLocalData(
-      base::ScopedPtrHashMap<std::string, std::unique_ptr<AutofillProfile>>*
+      std::unordered_map<std::string, std::unique_ptr<AutofillProfile>>*
           profiles,
-      base::ScopedPtrHashMap<std::string, std::unique_ptr<CreditCard>>* cards)
+      std::unordered_map<std::string, std::unique_ptr<CreditCard>>* cards)
       const;
 
   // Updates the stats for |profile| stored on disk. Does not trigger
