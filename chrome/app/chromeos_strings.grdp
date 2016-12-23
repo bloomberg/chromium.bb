@@ -5562,6 +5562,9 @@ Battery full
   <message name="IDS_DEVICE_OWNED_BY_NOTICE" desc="Text for notifications showing that this is managed device.">
     This device is managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
   </message>
+  <message name="IDS_DEVICE_ENTERPRISE_MANAGED_NOTICE" desc="Text for notifications showing that this device is enterprise managed.">
+    This device is enterprise managed
+  </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT" desc="Template for text shown in the public account user pod, informing the user that this is a public, managed account.">
     Managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>
   </message>

@@ -254,16 +254,9 @@ std::string SystemTrayDelegateChromeOS::GetEnterpriseDomain() const {
   return enterprise_domain_;
 }
 
-std::string SystemTrayDelegateChromeOS::GetEnterpriseRealm() const {
-  return enterprise_realm_;
-}
-
 base::string16 SystemTrayDelegateChromeOS::GetEnterpriseMessage() const {
-  if (!GetEnterpriseRealm().empty()) {
-    // TODO(rsorokin): Maybe change a message for the Active Directory devices.
-    return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
-                                      base::UTF8ToUTF16(GetEnterpriseRealm()));
-  }
+  if (is_active_directory_managed_)
+    return l10n_util::GetStringUTF16(IDS_DEVICE_ENTERPRISE_MANAGED_NOTICE);
   if (!GetEnterpriseDomain().empty()) {
     return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
                                       base::UTF8ToUTF16(GetEnterpriseDomain()));
@@ -870,12 +863,13 @@ void SystemTrayDelegateChromeOS::OnStartBluetoothDiscoverySession(
 void SystemTrayDelegateChromeOS::UpdateEnterpriseDomain() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  std::string enterprise_domain = connector->GetEnterpriseDomain();
-  std::string enterprise_realm = connector->GetRealm();
-  if (enterprise_domain_ != enterprise_domain ||
-      enterprise_realm_ != enterprise_realm) {
-    enterprise_domain_ = enterprise_domain;
-    enterprise_realm_ = enterprise_realm;
+  std::string old_enterprise_domain(std::move(enterprise_domain_));
+  enterprise_domain_ = connector->GetEnterpriseDomain();
+  bool old_is_active_directory_managed = is_active_directory_managed_;
+  is_active_directory_managed_ = connector->IsActiveDirectoryManaged();
+  if ((!is_active_directory_managed_ &&
+       enterprise_domain_ != old_enterprise_domain) ||
+      (is_active_directory_managed_ != old_is_active_directory_managed)) {
     GetSystemTrayNotifier()->NotifyEnterpriseDomainChanged();
   }
 }
