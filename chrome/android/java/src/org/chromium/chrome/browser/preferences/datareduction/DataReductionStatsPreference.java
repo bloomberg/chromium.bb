@@ -91,7 +91,7 @@ public class DataReductionStatsPreference extends Preference {
 
     /**
      * Sets up a data usage chart and text views containing data reduction statistics.
-     * @oaram view The current view.
+     * @param view The current view.
      */
     @Override
     protected void onBindView(View view) {
@@ -160,6 +160,9 @@ public class DataReductionStatsPreference extends Preference {
 
         mStartDatePhrase = formatDate(context, start);
         mEndDatePhrase = formatDate(context, end);
+
+        DataReductionProxyUma.dataReductionProxyUserViewedSavings(
+                compressedTotalBytes, originalTotalBytes, 100.0 * percentage);
     }
 
     private static String formatDate(Context context, long millisSinceEpoch) {

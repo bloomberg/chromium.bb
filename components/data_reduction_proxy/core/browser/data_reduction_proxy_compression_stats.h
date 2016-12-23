@@ -206,11 +206,6 @@ class DataReductionProxyCompressionStats {
                               const char* original_size_via_proxy_pref,
                               const char* received_size_via_proxy_pref);
 
-  // Record UMA with data savings bytes and percent over the past
-  // |DataReductionProxy::kNumDaysInHistorySummary| days. These numbers
-  // are displayed to users as their data savings.
-  void RecordUserVisibleDataSavings();
-
   // Record data usage and original size of request broken down by host. |time|
   // is the time at which the data usage occurred. This method should be called
   // in real time, so |time| is expected to be |Time::Now()|.

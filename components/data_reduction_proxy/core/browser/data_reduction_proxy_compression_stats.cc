@@ -1142,28 +1142,6 @@ void DataReductionProxyCompressionStats::IncrementDailyUmaPrefs(
   }
 }
 
-void DataReductionProxyCompressionStats::RecordUserVisibleDataSavings() {
-  int64_t original_content_length;
-  int64_t received_content_length;
-  int64_t last_update_internal;
-  GetContentLengths(kNumDaysInHistorySummary, &original_content_length,
-                    &received_content_length, &last_update_internal);
-
-  if (original_content_length == 0)
-    return;
-
-  int64_t user_visible_savings_bytes =
-      original_content_length - received_content_length;
-  int user_visible_savings_percent =
-      user_visible_savings_bytes * 100 / original_content_length;
-  UMA_HISTOGRAM_PERCENTAGE(
-      "Net.DailyUserVisibleSavingsPercent_DataReductionProxyEnabled",
-      user_visible_savings_percent);
-  UMA_HISTOGRAM_COUNTS(
-      "Net.DailyUserVisibleSavingsSize_DataReductionProxyEnabled",
-      user_visible_savings_bytes >> 10);
-}
-
 void DataReductionProxyCompressionStats::RecordDataUsage(
     const std::string& data_usage_host,
     int64_t data_used,
