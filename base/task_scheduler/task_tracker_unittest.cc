@@ -264,7 +264,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunLongTaskBeforeShutdown) {
                       WaitableEvent::InitialState::NOT_SIGNALED);
   auto blocked_task = base::MakeUnique<Task>(
       FROM_HERE, Bind(&WaitableEvent::Wait, Unretained(&event)),
-      TaskTraits().WithSyncPrimitives().WithShutdownBehavior(GetParam()),
+      TaskTraits().WithBaseSyncPrimitives().WithShutdownBehavior(GetParam()),
       TimeDelta());
 
   // Inform |task_tracker_| that |blocked_task| will be posted.
@@ -844,7 +844,7 @@ class WaitAllowedTestThread : public SimpleThread {
     TaskTracker tracker;
 
     // Waiting is allowed by default. Expect TaskTracker to disallow it before
-    // running a task without the WithSyncPrimitives() trait.
+    // running a task without the WithBaseSyncPrimitives() trait.
     ThreadRestrictions::AssertWaitAllowed();
     auto task_without_sync_primitives = MakeUnique<Task>(
         FROM_HERE, Bind([]() {
@@ -856,14 +856,14 @@ class WaitAllowedTestThread : public SimpleThread {
                     SequenceToken::Create());
 
     // Disallow waiting. Expect TaskTracker to allow it before running a task
-    // with the WithSyncPrimitives() trait.
+    // with the WithBaseSyncPrimitives() trait.
     ThreadRestrictions::DisallowWaiting();
     auto task_with_sync_primitives =
         MakeUnique<Task>(FROM_HERE, Bind([]() {
                            // Shouldn't fail.
                            ThreadRestrictions::AssertWaitAllowed();
                          }),
-                         TaskTraits().WithSyncPrimitives(), TimeDelta());
+                         TaskTraits().WithBaseSyncPrimitives(), TimeDelta());
     EXPECT_TRUE(tracker.WillPostTask(task_with_sync_primitives.get()));
     tracker.RunTask(std::move(task_with_sync_primitives),
                     SequenceToken::Create());
@@ -874,7 +874,8 @@ class WaitAllowedTestThread : public SimpleThread {
 
 }  // namespace
 
-// Verify that AssertIOAllowed() succeeds only for a WithSyncPrimitives() task.
+// Verify that AssertIOAllowed() succeeds only for a WithBaseSyncPrimitives()
+// task.
 TEST(TaskSchedulerTaskTrackerWaitAllowedTest, WaitAllowed) {
   // Run the test on the separate thread since it is not possible to reset the
   // "wait allowed" bit of a thread without being a friend of

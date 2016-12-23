@@ -819,7 +819,7 @@ bool SequencedWorkerPool::Inner::PostTaskToTaskScheduler(
       static_cast<TaskShutdownBehavior>(sequenced.shutdown_behavior);
   const TaskTraits traits = TaskTraits()
                                 .MayBlock()
-                                .WithSyncPrimitives()
+                                .WithBaseSyncPrimitives()
                                 .WithPriority(task_priority_)
                                 .WithShutdownBehavior(task_shutdown_behavior);
   return GetTaskSchedulerTaskRunner(sequenced.sequence_token_id, traits)
@@ -870,7 +870,7 @@ bool SequencedWorkerPool::Inner::RunsTasksOnCurrentThread() const {
   if (g_all_pools_state == AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER) {
     if (!runs_tasks_on_verifier_) {
       runs_tasks_on_verifier_ = CreateTaskRunnerWithTraits(
-          TaskTraits().MayBlock().WithSyncPrimitives().WithPriority(
+          TaskTraits().MayBlock().WithBaseSyncPrimitives().WithPriority(
               task_priority_));
     }
     return runs_tasks_on_verifier_->RunsTasksOnCurrentThread();

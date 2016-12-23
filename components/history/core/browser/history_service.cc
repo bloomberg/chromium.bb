@@ -886,7 +886,8 @@ bool HistoryService::Init(
         base::TaskTraits()
             .WithPriority(base::TaskPriority::USER_BLOCKING)
             .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN)
-            .MayBlock().WithSyncPrimitives());
+            .MayBlock()
+            .WithBaseSyncPrimitives());
   }
 
   // Create the history backend.

@@ -18,7 +18,7 @@ namespace base {
 // request defaults if the behavior is critical to the task.
 TaskTraits::TaskTraits()
     : may_block_(false),
-      with_sync_primitives_(false),
+      with_base_sync_primitives_(false),
       priority_(internal::GetTaskPriorityForCurrentThread()),
       shutdown_behavior_(TaskShutdownBehavior::SKIP_ON_SHUTDOWN) {}
 
@@ -29,8 +29,8 @@ TaskTraits& TaskTraits::MayBlock() {
   return *this;
 }
 
-TaskTraits& TaskTraits::WithSyncPrimitives() {
-  with_sync_primitives_ = true;
+TaskTraits& TaskTraits::WithBaseSyncPrimitives() {
+  with_base_sync_primitives_ = true;
   return *this;
 }
 

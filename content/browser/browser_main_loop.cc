@@ -1012,7 +1012,7 @@ int BrowserMainLoop::CreateThreads() {
     // TODO(gab): Existing non-UI/non-IO BrowserThreads allow sync primitives so
     // the initial redirection will as well but they probably don't need to.
     base::TaskTraits non_ui_non_io_task_runner_traits =
-        base::TaskTraits().MayBlock().WithSyncPrimitives();
+        base::TaskTraits().MayBlock().WithBaseSyncPrimitives();
 
     switch (thread_id) {
       case BrowserThread::DB:

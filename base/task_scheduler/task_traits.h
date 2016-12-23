@@ -94,33 +94,40 @@ class BASE_EXPORT TaskTraits {
   // that wait on synchronous file I/O operations: read or write a file from
   // disk, interact with a pipe or a socket, rename or delete a file, enumerate
   // files in a directory, etc. This trait isn't required for the mere use of
-  // locks. For tasks that block on synchronization primitives (thread or
-  // process handles, waitable events, condition variables), see
-  // WithSyncPrimitives().
+  // locks. For tasks that block on base/ synchronization primitives, see
+  // WithBaseSyncPrimitives().
   TaskTraits& MayBlock();
 
-  // Tasks with this trait are allowed to wait on waitable events and condition
-  // variables as well as to join threads and processes.
+  // Tasks with this trait will pass base::AssertWaitAllowed(), i.e. will be
+  // allowed on the following methods :
+  // - base::WaitableEvent::Wait
+  // - base::ConditionVariable::Wait
+  // - base::PlatformThread::Join
+  // - base::PlatformThread::Sleep
+  // - base::Process::WaitForExit
+  // - base::Process::WaitForExitWithTimeout
   //
-  // This trait should generally not be used.
+  // Tasks should generally not use these methods.
   //
-  // Instead of waiting on a waitable event or a condition variable, put the
-  // work that should happen after the wait in a callback and post that callback
-  // from where the waitable event or condition variable would have been
-  // signaled. If something needs to be scheduled after many tasks have
-  // executed, use base::BarrierClosure.
-  //
-  // On Windows, join processes asynchronously using base::win::ObjectWatcher.
+  // Instead of waiting on a WaitableEvent or a ConditionVariable, put the work
+  // that should happen after the wait in a callback and post that callback from
+  // where the WaitableEvent or ConditionVariable would have been signaled. If
+  // something needs to be scheduled after many tasks have executed, use
+  // base::BarrierClosure.
   //
   // Avoid creating threads. Instead, use
   // base::Create(Sequenced|SingleTreaded)TaskRunnerWithTraits(). If a thread is
   // really needed, make it non-joinable and add cleanup work at the end of the
   // thread's main function (if using base::Thread, override Cleanup()).
   //
+  // On Windows, join processes asynchronously using base::win::ObjectWatcher.
+  //
   // MayBlock() must be specified in conjunction with this trait if and only if
-  // removing usage of sync primitives in the labeled tasks would still result
-  // in tasks that may block (per MayBlock()'s definition).
-  TaskTraits& WithSyncPrimitives();
+  // removing usage of methods listed above in the labeled tasks would still
+  // result in tasks that may block (per MayBlock()'s definition).
+  //
+  // In doubt, consult with base/task_scheduler/OWNERS.
+  TaskTraits& WithBaseSyncPrimitives();
 
   // Applies |priority| to tasks with these traits.
   TaskTraits& WithPriority(TaskPriority priority);
@@ -131,8 +138,8 @@ class BASE_EXPORT TaskTraits {
   // Returns true if tasks with these traits may block.
   bool may_block() const { return may_block_; }
 
-  // Returns true if tasks with these traits may wait on sync primitives.
-  bool with_sync_primitives() const { return with_sync_primitives_; }
+  // Returns true if tasks with these traits may use base/ sync primitives.
+  bool with_base_sync_primitives() const { return with_base_sync_primitives_; }
 
   // DEPRECATED
   // TODO(fdoray): Remove this as part of crbug.com/675660
@@ -146,7 +153,7 @@ class BASE_EXPORT TaskTraits {
 
  private:
   bool may_block_;
-  bool with_sync_primitives_;
+  bool with_base_sync_primitives_;
   TaskPriority priority_;
   TaskShutdownBehavior shutdown_behavior_;
 };

@@ -137,14 +137,14 @@ void RunSwReportersAfterStartup(
       base::Bind(&safe_browsing::RunSwReporters, invocations, version,
                  base::ThreadTaskRunnerHandle::Get(),
                  // Runs LaunchAndWaitForExit() which creates (MayBlock()) and
-                 // joins (WithSyncPrimitives()) a process.
+                 // joins (WithBaseSyncPrimitives()) a process.
                  base::CreateTaskRunnerWithTraits(
                      base::TaskTraits()
                          .WithShutdownBehavior(
                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
                          .WithPriority(base::TaskPriority::BACKGROUND)
                          .MayBlock()
-                         .WithSyncPrimitives())));
+                         .WithBaseSyncPrimitives())));
 }
 
 // Ensures |str| contains only alphanumeric characters and characters from

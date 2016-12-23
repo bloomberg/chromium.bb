@@ -115,7 +115,7 @@ scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
     SchedulerWorkerPoolImpl* worker_pool,
     test::ExecutionMode execution_mode) {
   // Allow tasks posted to the returned TaskRunner to wait on a WaitableEvent.
-  const TaskTraits traits = TaskTraits().WithSyncPrimitives();
+  const TaskTraits traits = TaskTraits().WithBaseSyncPrimitives();
   switch (execution_mode) {
     case test::ExecutionMode::PARALLEL:
       return worker_pool->CreateTaskRunnerWithTraits(traits);
@@ -544,7 +544,7 @@ TEST_F(TaskSchedulerWorkerPoolCheckTlsReuse, CheckDetachedThreads) {
   for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
     factories.push_back(MakeUnique<test::TestTaskFactory>(
         worker_pool_->CreateTaskRunnerWithTraits(
-            TaskTraits().WithSyncPrimitives()),
+            TaskTraits().WithBaseSyncPrimitives()),
         test::ExecutionMode::PARALLEL));
     ASSERT_TRUE(factories.back()->PostTask(
         PostNestedTask::NO,
@@ -616,7 +616,7 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaits) {
                       WaitableEvent::InitialState::NOT_SIGNALED);
   InitializeWorkerPool(TimeDelta::Max(), kNumWorkersInWorkerPool);
   auto task_runner = worker_pool_->CreateSequencedTaskRunnerWithTraits(
-      TaskTraits().WithSyncPrimitives());
+      TaskTraits().WithBaseSyncPrimitives());
 
   // Post a task.
   task_runner->PostTask(FROM_HERE,
@@ -660,7 +660,7 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithDetach) {
                                      WaitableEvent::InitialState::NOT_SIGNALED);
   InitializeWorkerPool(kReclaimTimeForDetachTests, kNumWorkersInWorkerPool);
   auto task_runner = worker_pool_->CreateTaskRunnerWithTraits(
-      TaskTraits().WithSyncPrimitives());
+      TaskTraits().WithBaseSyncPrimitives());
 
   // Post tasks to saturate the pool.
   std::vector<std::unique_ptr<WaitableEvent>> task_started_events;
