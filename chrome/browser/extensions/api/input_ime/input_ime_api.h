@@ -65,6 +65,7 @@ class ImeObserver : public input_method::InputMethodEngineBase::Observer {
                                 int cursor_pos,
                                 int anchor_pos,
                                 int offset_pos) override;
+  void OnRequestEngineSwitch() override {};
 
  protected:
   // Helper function used to forward the given event to the |profile_|'s event

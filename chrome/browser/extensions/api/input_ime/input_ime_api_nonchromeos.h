@@ -41,6 +41,10 @@ class InputImeEventRouter : public InputImeEventRouterBase {
   // previous engine if another extension was active.
   void SetActiveEngine(const std::string& extension_id);
 
+  input_method::InputMethodEngine* active_engine() {
+    return active_engine_;
+  }
+
   // Deletes the current input method engine of the specific extension.
   void DeleteInputMethodEngine(const std::string& extension_id);
 

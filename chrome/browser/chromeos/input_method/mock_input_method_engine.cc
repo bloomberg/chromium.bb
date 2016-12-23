@@ -71,6 +71,8 @@ void MockInputMethodEngine::PropertyActivate(const std::string& property_name) {
 
 void MockInputMethodEngine::Reset() {}
 
+void MockInputMethodEngine::MaybeSwitchEngine() {}
+
 bool MockInputMethodEngine::IsInterestedInKeyEvent() const {
   return true;
 }

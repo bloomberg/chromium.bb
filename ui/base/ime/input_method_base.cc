@@ -34,8 +34,13 @@ void InputMethodBase::SetDelegate(internal::InputMethodDelegate* delegate) {
 }
 
 void InputMethodBase::OnFocus() {
-  if (ui::IMEBridge::Get())
+  if (ui::IMEBridge::Get()) {
     ui::IMEBridge::Get()->SetInputContextHandler(this);
+    ui::IMEEngineHandlerInterface* engine =
+        ui::IMEBridge::Get()->GetCurrentEngineHandler();
+    if (engine)
+      engine->MaybeSwitchEngine();
+  }
 }
 
 void InputMethodBase::OnBlur() {

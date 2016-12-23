@@ -91,6 +91,17 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
         OnCompositionBoundsChanged::kEventName, std::move(args));
   }
 
+  void OnRequestEngineSwitch() override {
+    Browser* browser = chrome::FindLastActive();
+    if (!browser)
+      return;
+    extensions::InputImeEventRouter* router =
+        extensions::GetInputImeEventRouter(browser->profile());
+    if (!router)
+      return;
+    ui::IMEBridge::Get()->SetCurrentEngineHandler(router->active_engine());
+  }
+
  private:
   // ImeObserver overrides.
   void DispatchEventToExtension(

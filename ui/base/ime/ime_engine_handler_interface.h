@@ -71,6 +71,10 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
   // Called when the IME is reset.
   virtual void Reset() = 0;
 
+  // Called when the top-level-window is changed, which could switch the engine
+  // handler.
+  virtual void MaybeSwitchEngine() = 0;
+
   // Called when the key event is received.
   // Actual implementation must call |callback| after key event handling.
   virtual void ProcessKeyEvent(const KeyEvent& key_event,

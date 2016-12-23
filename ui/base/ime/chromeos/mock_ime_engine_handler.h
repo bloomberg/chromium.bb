@@ -26,6 +26,7 @@ class UI_BASE_IME_EXPORT MockIMEEngineHandler
   void Disable() override;
   void PropertyActivate(const std::string& property_name) override;
   void Reset() override;
+  void MaybeSwitchEngine() override;
   bool IsInterestedInKeyEvent() const override;
   void ProcessKeyEvent(const ui::KeyEvent& key_event,
                        KeyEventDoneCallback& callback) override;
