@@ -2329,9 +2329,17 @@ static int64_t rd_pick_intra4x4block(
                                        tx_type, &rate_pvq, x->pvq_speed, NULL);
           ratey += rate_pvq;
 #endif
+#if CONFIG_PVQ
+          if (!skip) {
+            for (j = 0; j < tx_blk_size; j++)
+              for (i = 0; i < tx_blk_size; i++) dst[j * dst_stride + i] = 0;
+#endif
+            av1_inv_txfm_add_4x4(BLOCK_OFFSET(pd->dqcoeff, block), dst,
+                                 dst_stride, p->eobs[block], tx_type, 0);
+#if CONFIG_PVQ
+          }
+#endif
           // No need for av1_block_error2_c because the ssz is unused
-          av1_inv_txfm_add_4x4(BLOCK_OFFSET(pd->dqcoeff, block), dst,
-                               dst_stride, p->eobs[block], tx_type, 0);
           cpi->fn_ptr[BLOCK_4X4].vf(src, src_stride, dst, dst_stride, &tmp);
           dist = (int64_t)tmp << 4;
           distortion += dist;
@@ -2340,14 +2348,6 @@ static int64_t rd_pick_intra4x4block(
           // in the frequency domain, the overhead of encoding effort is low.
           if (RDCOST(x->rdmult, x->rddiv, ratey, distortion) >= best_rd)
             goto next;
-#if CONFIG_PVQ
-          if (!skip) {
-            for (j = 0; j < tx_blk_size; j++)
-              for (i = 0; i < tx_blk_size; i++) dst[j * dst_stride + i] = 0;
-#endif
-#if CONFIG_PVQ
-          }
-#endif
         }
       }
     }
