@@ -1,0 +1,20 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (current_toolchain == host_toolchain) {
+  executable("validate_subdomain_origin") {
+    output_name = "validate_subdomain_origin"
+    sources = [
+      "validate_subdomain_origin.cc",
+    ]
+
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+    deps = [
+      "//base",
+      "//net",
+      "//url",
+    ]
+  }
+}
