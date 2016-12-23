@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/common/prerender_types.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
@@ -83,7 +84,11 @@ class PrerenderResourceThrottle
       const content::ResourceRequestInfo::WebContentsGetter&
           web_contents_getter);
 
+  // Sets the prerender mode. Must be called befor ResumeHandler().
+  void SetPrerenderMode(PrerenderMode mode);
+
   net::URLRequest* request_;
+  int load_flags_;  // Load flags to be OR'ed with the existing request flags.
 
   scoped_refptr<PrerenderThrottleInfo> prerender_throttle_info_;
 

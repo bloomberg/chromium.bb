@@ -13,6 +13,7 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
@@ -83,6 +84,7 @@ void PrerenderResourceThrottle::OverridePrerenderContentsForTesting(
 
 PrerenderResourceThrottle::PrerenderResourceThrottle(net::URLRequest* request)
     : request_(request),
+      load_flags_(net::LOAD_NORMAL),
       prerender_throttle_info_(new PrerenderThrottleInfo()) {}
 
 PrerenderResourceThrottle::~PrerenderResourceThrottle() {}
@@ -139,6 +141,7 @@ const char* PrerenderResourceThrottle::GetNameForLogging() const {
 }
 
 void PrerenderResourceThrottle::ResumeHandler() {
+  request_->SetLoadFlags(request_->load_flags() | load_flags_);
   Resume();
 }
 
@@ -158,6 +161,10 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
     prerender_throttle_info->Set(prerender_contents->prerender_mode(),
                                  prerender_contents->origin(),
                                  prerender_contents->prerender_manager());
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PrerenderResourceThrottle::SetPrerenderMode, throttle,
+                   prerender_contents->prerender_mode()));
 
     // Abort any prerenders that spawn requests that use unsupported HTTP
     // methods or schemes.
@@ -269,6 +276,10 @@ PrerenderContents* PrerenderResourceThrottle::PrerenderContentsFromGetter(
   if (g_prerender_contents_for_testing)
     return g_prerender_contents_for_testing;
   return PrerenderContents::FromWebContents(web_contents_getter.Run());
+}
+
+void PrerenderResourceThrottle::SetPrerenderMode(PrerenderMode mode) {
+  load_flags_ = (mode == PREFETCH_ONLY) ? net::LOAD_PREFETCH : net::LOAD_NORMAL;
 }
 
 }  // namespace prerender

@@ -4,7 +4,3 @@
 # returns null for browser-side navigations
 -PageLoadMetricsBrowserTest.Ignore204Pages
 -PageLoadMetricsBrowserTest.IgnoreDownloads
-
-# https://crbug.com/668714: Allow setting net/ flags for NavigationHandle
--NoStatePrefetchBrowserTest.PrefetchLoadFlag
--NoStatePrefetchBrowserTest.Prefetch301LoadFlags
