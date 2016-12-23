@@ -36,6 +36,7 @@
 #include "net/quic/core/quic_pending_retransmission.h"
 #include "net/quic/core/quic_sent_packet_manager.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 
 using base::StringPiece;
 using base::StringPrintf;
@@ -537,10 +538,10 @@ void QuicConnection::OnVersionNegotiationPacket(
   if (!SelectMutualVersion(packet.versions)) {
     CloseConnection(
         QUIC_INVALID_VERSION,
-        "No common version found. Supported versions: {" +
-            QuicVersionVectorToString(framer_.supported_versions()) +
-            "}, peer supported versions: {" +
-            QuicVersionVectorToString(packet.versions) + "}",
+        QuicStrCat("No common version found. Supported versions: {",
+                   QuicVersionVectorToString(framer_.supported_versions()),
+                   "}, peer supported versions: {",
+                   QuicVersionVectorToString(packet.versions), "}"),
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
@@ -1374,9 +1375,8 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
         // Packets should have the version flag till version negotiation is
         // done.
         string error_details =
-            StringPrintf("%s Packet %" PRIu64
-                         " without version flag before version negotiated.",
-                         ENDPOINT, header.packet_number);
+            QuicStrCat(ENDPOINT, "Packet ", header.packet_number,
+                       " without version flag before version negotiated.");
         DLOG(WARNING) << error_details;
         CloseConnection(QUIC_INVALID_VERSION, error_details,
                         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
@@ -1695,9 +1695,8 @@ void QuicConnection::OnWriteError(int error_code) {
   }
   write_error_occured_ = true;
 
-  const string error_details = "Write failed with error: " +
-                               base::IntToString(error_code) + " (" +
-                               ErrorToString(error_code) + ")";
+  const string error_details = QuicStrCat(
+      "Write failed with error: ", error_code, " (", strerror(error_code), ")");
   DVLOG(1) << ENDPOINT << error_details;
   // We can't send an error as the socket is presumably borked.
   switch (error_code) {

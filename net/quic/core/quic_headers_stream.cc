@@ -19,6 +19,7 @@
 #include "net/quic/core/quic_server_session_base.h"
 #include "net/quic/core/quic_spdy_session.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 #include "net/spdy/spdy_protocol.h"
 
 using base::StringPiece;
@@ -149,9 +150,9 @@ class QuicHeadersStream::SpdyFramerVisitor
   }
 
   void OnError(SpdyFramer* framer) override {
-    CloseConnection(base::StringPrintf(
-        "SPDY framing error: %s",
-        SpdyFramer::ErrorCodeToString(framer->error_code())));
+    CloseConnection(
+        QuicStrCat("SPDY framing error: ",
+                   SpdyFramer::ErrorCodeToString(framer->error_code())));
   }
 
   void OnDataFrameHeader(SpdyStreamId stream_id,
@@ -182,15 +183,15 @@ class QuicHeadersStream::SpdyFramerVisitor
             stream_->session()->perspective() == Perspective::IS_SERVER) {
           // See rfc7540, Section 6.5.2.
           if (value > 1) {
-            CloseConnection("Invalid value for SETTINGS_ENABLE_PUSH: " +
-                            base::IntToString(value));
+            CloseConnection(
+                QuicStrCat("Invalid value for SETTINGS_ENABLE_PUSH: ", value));
             return;
           }
           stream_->UpdateEnableServerPush(value > 0);
           break;
         } else {
-          CloseConnection("Unsupported field of HTTP/2 SETTINGS frame: " +
-                          base::IntToString(id));
+          CloseConnection(
+              QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ", id));
         }
         break;
       // TODO(fayang): Need to support SETTINGS_MAX_HEADER_LIST_SIZE when
@@ -200,8 +201,8 @@ class QuicHeadersStream::SpdyFramerVisitor
           break;
         }
       default:
-        CloseConnection("Unsupported field of HTTP/2 SETTINGS frame: " +
-                        base::IntToString(id));
+        CloseConnection(
+            QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ", id));
     }
   }
 

@@ -23,6 +23,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_simple_buffer_allocator.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -1150,8 +1151,8 @@ TEST_P(QuicConnectionTest, AllowSelfAddressChangeToMappedIpv4AddressAtServer) {
                                   kPeerAddress);
   // Cause self_address change to mapped Ipv4 address.
   QuicIpAddress host2;
-  host2.FromString(base::StringPrintf(
-      "::ffff:%s", connection_.self_address().host().ToString().c_str()));
+  host2.FromString(
+      QuicStrCat("::ffff:", connection_.self_address().host().ToString()));
   QuicSocketAddress self_address2(host2, connection_.self_address().port());
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address2,
                                   kPeerAddress);

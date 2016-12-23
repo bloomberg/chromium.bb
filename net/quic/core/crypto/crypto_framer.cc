@@ -9,6 +9,7 @@
 #include "net/quic/core/quic_data_reader.h"
 #include "net/quic/core/quic_data_writer.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 
 using base::StringPiece;
 
@@ -211,7 +212,7 @@ QuicErrorCode CryptoFramer::Process(StringPiece input) {
       }
       reader.ReadUInt16(&num_entries_);
       if (num_entries_ > kMaxEntries) {
-        error_detail_ = base::StringPrintf("%u entries", num_entries_);
+        error_detail_ = QuicStrCat(num_entries_, " entries");
         return QUIC_CRYPTO_TOO_MANY_ENTRIES;
       }
       uint16_t padding;
@@ -232,10 +233,10 @@ QuicErrorCode CryptoFramer::Process(StringPiece input) {
         reader.ReadUInt32(&tag);
         if (i > 0 && tag <= tags_and_lengths_[i - 1].first) {
           if (tag == tags_and_lengths_[i - 1].first) {
-            error_detail_ = base::StringPrintf("Duplicate tag:%u", tag);
+            error_detail_ = QuicStrCat("Duplicate tag:", tag);
             return QUIC_CRYPTO_DUPLICATE_TAG;
           }
-          error_detail_ = base::StringPrintf("Tag %u out of order", tag);
+          error_detail_ = QuicStrCat("Tag ", tag, " out of order");
           return QUIC_CRYPTO_TAGS_OUT_OF_ORDER;
         }
 
@@ -243,8 +244,8 @@ QuicErrorCode CryptoFramer::Process(StringPiece input) {
         reader.ReadUInt32(&end_offset);
 
         if (end_offset < last_end_offset) {
-          error_detail_ = base::StringPrintf("End offset: %u vs %u", end_offset,
-                                             last_end_offset);
+          error_detail_ =
+              QuicStrCat("End offset: ", end_offset, " vs ", last_end_offset);
           return QUIC_CRYPTO_TAGS_OUT_OF_ORDER;
         }
         tags_and_lengths_.push_back(std::make_pair(

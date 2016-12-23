@@ -16,6 +16,7 @@
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/fake_proof_source.h"
 #include "net/quic/test_tools/quic_buffered_packet_store_peer.h"
@@ -1207,9 +1208,8 @@ TEST_P(BufferedPacketStoreTest, ProcessNonChloPacketsUptoLimitAndProcessChlo) {
       .Times(1);
   for (size_t i = 1; i <= kDefaultMaxUndecryptablePackets + 1; ++i) {
     ProcessPacket(client_address, conn_id, true, false,
-                  "data packet " + IntToString(i + 1),
-                  PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER,
-                  kDefaultPathId,
+                  QuicStrCat("data packet ", i + 1), PACKET_8BYTE_CONNECTION_ID,
+                  PACKET_6BYTE_PACKET_NUMBER, kDefaultPathId,
                   /*packet_number=*/i + 1);
   }
   EXPECT_EQ(0u, dispatcher_->session_map().size())
@@ -1262,7 +1262,7 @@ TEST_P(BufferedPacketStoreTest,
       }
     }
     ProcessPacket(client_address, conn_id, true, false,
-                  "data packet on connection " + IntToString(i),
+                  QuicStrCat("data packet on connection ", i),
                   PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER,
                   kDefaultPathId,
                   /*packet_number=*/2);
@@ -1338,7 +1338,7 @@ TEST_P(BufferedPacketStoreTest, ReceiveRetransmittedCHLO) {
   server_address_ = QuicSocketAddress(QuicIpAddress::Any4(), 5);
   QuicConnectionId conn_id = 1;
   ProcessPacket(client_address, conn_id, true, false,
-                "data packet " + IntToString(2), PACKET_8BYTE_CONNECTION_ID,
+                QuicStrCat("data packet ", 2), PACKET_8BYTE_CONNECTION_ID,
                 PACKET_6BYTE_PACKET_NUMBER, kDefaultPathId,
                 /*packet_number=*/2);
 
@@ -1373,7 +1373,7 @@ TEST_P(BufferedPacketStoreTest, ReceiveCHLOAfterExpiration) {
   server_address_ = QuicSocketAddress(QuicIpAddress::Any4(), 5);
   QuicConnectionId conn_id = 1;
   ProcessPacket(client_address, conn_id, true, false,
-                "data packet " + IntToString(2), PACKET_8BYTE_CONNECTION_ID,
+                QuicStrCat("data packet ", 2), PACKET_8BYTE_CONNECTION_ID,
                 PACKET_6BYTE_PACKET_NUMBER, kDefaultPathId,
                 /*packet_number=*/2);
 

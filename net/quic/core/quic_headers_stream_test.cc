@@ -15,6 +15,7 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_headers_stream_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
@@ -777,28 +778,30 @@ TEST_P(QuicHeadersStreamTest, RespectHttp2SettingsFrameUnsupportedFields) {
   EXPECT_CALL(
       *connection_,
       CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
-                      "Unsupported field of HTTP/2 SETTINGS frame: " +
-                          base::IntToString(SETTINGS_MAX_CONCURRENT_STREAMS),
+                      QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
+                                 SETTINGS_MAX_CONCURRENT_STREAMS),
                       _));
   EXPECT_CALL(
       *connection_,
       CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
-                      "Unsupported field of HTTP/2 SETTINGS frame: " +
-                          base::IntToString(SETTINGS_INITIAL_WINDOW_SIZE),
+                      QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
+                                 SETTINGS_INITIAL_WINDOW_SIZE),
                       _));
   if (!FLAGS_quic_reloadable_flag_quic_enable_server_push_by_default ||
       session_.perspective() == Perspective::IS_CLIENT) {
     EXPECT_CALL(*connection_,
-                CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
-                                "Unsupported field of HTTP/2 SETTINGS frame: " +
-                                    base::IntToString(SETTINGS_ENABLE_PUSH),
-                                _));
+                CloseConnection(
+                    QUIC_INVALID_HEADERS_STREAM_DATA,
+                    QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
+                               SETTINGS_ENABLE_PUSH),
+                    _));
   }
-  EXPECT_CALL(*connection_,
-              CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
-                              "Unsupported field of HTTP/2 SETTINGS frame: " +
-                                  base::IntToString(SETTINGS_MAX_FRAME_SIZE),
-                              _));
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
+                      QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ",
+                                 SETTINGS_MAX_FRAME_SIZE),
+                      _));
   stream_frame_.data_buffer = frame.data();
   stream_frame_.data_length = frame.size();
   headers_stream_->OnStreamFrame(stream_frame_);

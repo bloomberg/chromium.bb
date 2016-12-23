@@ -12,6 +12,7 @@
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/crypto/proof_source.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_crypto_server_config_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -51,8 +52,8 @@ struct TestParams {
 };
 
 string TestParamToString(const testing::TestParamInfo<TestParams>& params) {
-  return base::StringPrintf("v%i_%s", params.param.version,
-                            FlagsModeToString(params.param.flags));
+  return QuicStrCat("v", params.param.version, "_",
+                    FlagsModeToString(params.param.flags));
 }
 
 std::vector<TestParams> GetTestParams() {

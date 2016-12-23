@@ -59,6 +59,7 @@
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client.h"
@@ -245,8 +246,7 @@ int main(int argc, char* argv[]) {
         net::QuicIpAddress(net::QuicIpAddressImpl(addresses[0].address()));
   }
 
-  string host_port =
-      base::StringPrintf("%s:%d", ip_addr.ToString().c_str(), port);
+  string host_port = net::QuicStrCat(ip_addr.ToString(), ":", port);
   VLOG(1) << "Resolved " << host << " to " << host_port << endl;
 
   // Build the client, and try to connect.

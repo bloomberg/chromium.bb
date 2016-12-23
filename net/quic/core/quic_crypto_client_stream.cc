@@ -17,10 +17,13 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 
 using std::string;
 
 namespace net {
+
+const int QuicCryptoClientStream::kMaxClientHellos;
 
 QuicCryptoClientStreamBase::QuicCryptoClientStreamBase(QuicSession* session)
     : QuicCryptoStream(session) {}
@@ -277,7 +280,7 @@ void QuicCryptoClientStream::DoSendCHLO(
   if (num_client_hellos_ > kMaxClientHellos) {
     CloseConnectionWithDetails(
         QUIC_CRYPTO_TOO_MANY_REJECTS,
-        base::StringPrintf("More than %u rejects", kMaxClientHellos).c_str());
+        QuicStrCat("More than ", kMaxClientHellos, " rejects"));
     return;
   }
   num_client_hellos_++;

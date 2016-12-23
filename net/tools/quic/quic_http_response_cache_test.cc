@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/tools/quic/quic_http_response_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -179,7 +180,7 @@ TEST_F(QuicHttpResponseCacheTest, AddSimpleResponseWithServerPushResources) {
     string path = "/server_push_src" + base::IntToString(i);
     string url = scheme + "://" + request_host + path;
     GURL resource_url(url);
-    string body = "This is server push response body for " + path;
+    string body = QuicStrCat("This is server push response body for ", path);
     SpdyHeaderBlock response_headers;
     response_headers[":version"] = "HTTP/1.1";
     response_headers[":status"] = "200";

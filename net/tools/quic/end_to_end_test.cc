@@ -32,6 +32,7 @@
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -2633,9 +2634,10 @@ class EndToEndTestServerPush : public EndToEndTest {
     for (size_t i = 0; i < num_resources; ++i) {
       string url = push_urls[i];
       GURL resource_url(url);
-      string body = use_large_response
-                        ? large_resource
-                        : "This is server push response body for " + url;
+      string body =
+          use_large_response
+              ? large_resource
+              : QuicStrCat("This is server push response body for ", url);
       SpdyHeaderBlock response_headers;
       response_headers[":version"] = "HTTP/1.1";
       response_headers[":status"] = "200";
@@ -2688,7 +2690,8 @@ TEST_P(EndToEndTestServerPush, ServerPush) {
 
   for (const string& url : push_urls) {
     DVLOG(1) << "send request for pushed stream on url " << url;
-    string expected_body = "This is server push response body for " + url;
+    string expected_body =
+        QuicStrCat("This is server push response body for ", url);
     string response_body = client_->SendSynchronousRequest(url);
     DVLOG(1) << "response body " << response_body;
     EXPECT_EQ(expected_body, response_body);
@@ -2735,7 +2738,8 @@ TEST_P(EndToEndTestServerPush, ServerPushUnderLimit) {
     // Sending subsequent requesets will not actually send anything on the wire,
     // as the responses are already in the client's cache.
     DVLOG(1) << "send request for pushed stream on url " << url;
-    string expected_body = "This is server push response body for " + url;
+    string expected_body =
+        QuicStrCat("This is server push response body for ", url);
     string response_body = client_->SendSynchronousRequest(url);
     DVLOG(1) << "response body " << response_body;
     EXPECT_EQ(expected_body, response_body);
@@ -2765,7 +2769,7 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitNonBlocking) {
   const size_t kNumResources = 1 + kNumMaxStreams;  // 11.
   string push_urls[11];
   for (size_t i = 0; i < kNumResources; ++i) {
-    push_urls[i] = "https://example.com/push_resources" + base::UintToString(i);
+    push_urls[i] = QuicStrCat("https://example.com/push_resources", i);
   }
   AddRequestAndResponseWithServerPush("example.com", "/push_example", kBody,
                                       push_urls, kNumResources, 0);
@@ -2782,7 +2786,7 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitNonBlocking) {
   for (const string& url : push_urls) {
     // Sending subsequent requesets will not actually send anything on the wire,
     // as the responses are already in the client's cache.
-    EXPECT_EQ("This is server push response body for " + url,
+    EXPECT_EQ(QuicStrCat("This is server push response body for ", url),
               client_->SendSynchronousRequest(url));
   }
 
@@ -2822,7 +2826,7 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitWithBlocking) {
   const size_t kNumResources = kNumMaxStreams + 1;
   string push_urls[11];
   for (size_t i = 0; i < kNumResources; ++i) {
-    push_urls[i] = "http://example.com/push_resources" + base::UintToString(i);
+    push_urls[i] = QuicStrCat("http://example.com/push_resources", i);
   }
   AddRequestAndResponseWithServerPush("example.com", "/push_example", kBody,
                                       push_urls, kNumResources, kBodySize);
@@ -2902,7 +2906,8 @@ TEST_P(EndToEndTestServerPush, DisabledWithoutConnectionOption) {
   for (const string& url : push_urls) {
     // Sending subsequent requests will trigger sending real requests because
     // client doesn't support server push.
-    const string expected_body = "This is server push response body for " + url;
+    const string expected_body =
+        QuicStrCat("This is server push response body for ", url);
     const string response_body = client_->SendSynchronousRequest(url);
     EXPECT_EQ(expected_body, response_body);
   }

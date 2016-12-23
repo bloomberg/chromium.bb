@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_flags.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 
 using base::StringPrintf;
 using std::string;
@@ -194,11 +195,11 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     }
 
     if (write_block_num >= blocks_count_) {
-      *error_details = StringPrintf(
+      *error_details = QuicStrCat(
           "QuicStreamSequencerBuffer error: OnStreamData() exceed array bounds."
-          "write offset = %" PRIu64 " write_block_num = %" PRIuS
-          " blocks_count_ = %" PRIuS,
-          offset, write_block_num, blocks_count_);
+          "write offset = ",
+          offset, " write_block_num = ", write_block_num, " blocks_count_ = ",
+          blocks_count_);
       return QUIC_STREAM_SEQUENCER_INVALID_STATE;
     }
     if (blocks_ == nullptr) {
@@ -218,18 +219,13 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     DVLOG(1) << "Write at offset: " << offset << " length: " << bytes_to_copy;
 
     if (dest == nullptr || source == nullptr) {
-      *error_details = StringPrintf(
+      *error_details = QuicStrCat(
           "QuicStreamSequencerBuffer error: OnStreamData()"
-          " dest == nullptr: %s"
-          " source == nullptr: %s"
-          " Writing at offset %" PRIu64
-          " Gaps: %s"
-          " Remaining frames: %s"
-          " total_bytes_read_ = %" PRIu64,
-          (dest == nullptr ? "true" : "false"),
-          (source == nullptr ? "true" : "false"), offset,
-          GapsDebugString().c_str(), ReceivedFramesDebugString().c_str(),
-          total_bytes_read_);
+          " dest == nullptr: ",
+          (dest == nullptr), " source == nullptr: ", (source == nullptr),
+          " Writing at offset ", offset, " Gaps: ", GapsDebugString(),
+          " Remaining frames: ", ReceivedFramesDebugString(),
+          " total_bytes_read_ = ", total_bytes_read_);
       return QUIC_STREAM_SEQUENCER_INVALID_STATE;
     }
     memcpy(dest, source, bytes_to_copy);
@@ -300,12 +296,13 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
           std::min<size_t>(bytes_available_in_block, dest_remaining);
       DCHECK_GT(bytes_to_copy, 0UL);
       if (blocks_[block_idx] == nullptr || dest == nullptr) {
-        *error_details = StringPrintf(
+        *error_details = QuicStrCat(
             "QuicStreamSequencerBuffer error:"
-            " Readv() dest == nullptr: %s"
-            " blocks_[%" PRIuS "] == nullptr: %s",
-            (dest == nullptr ? "true" : "false"), block_idx,
-            (blocks_[block_idx] == nullptr ? "true" : "false"));
+            " Readv() dest == nullptr: ",
+            (dest == nullptr), " blocks_[", block_idx, "] == nullptr: ",
+            (blocks_[block_idx] == nullptr), " Gaps: ", GapsDebugString(),
+            " Remaining frames: ", ReceivedFramesDebugString(),
+            " total_bytes_read_ = ", total_bytes_read_);
         return QUIC_STREAM_SEQUENCER_INVALID_STATE;
       }
       memcpy(dest, blocks_[block_idx]->buffer + start_offset_in_block,
@@ -323,11 +320,11 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
       if (bytes_to_copy == bytes_available_in_block) {
         bool retire_successfully = RetireBlockIfEmpty(block_idx);
         if (!retire_successfully) {
-          *error_details = StringPrintf(
-              "QuicStreamSequencerBuffer error: fail to retire block %" PRIuS
-              " as the block is already released + total_bytes_read_ = %" PRIu64
-              " Gaps: %s",
-              block_idx, total_bytes_read_, GapsDebugString().c_str());
+          *error_details = QuicStrCat(
+              "QuicStreamSequencerBuffer error: fail to retire block ",
+              block_idx,
+              " as the block is already released, total_bytes_read_ = ",
+              total_bytes_read_, " Gaps: ", GapsDebugString());
           return QUIC_STREAM_SEQUENCER_INVALID_STATE;
         }
       }

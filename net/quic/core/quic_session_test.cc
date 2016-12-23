@@ -19,6 +19,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
@@ -921,9 +922,8 @@ TEST_P(QuicSessionTestServer,
   while (!headers_stream->flow_controller()->IsBlocked() && stream_id < 2000) {
     EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
     EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-    headers["header"] = base::Uint64ToString(base::RandUint64()) +
-                        base::Uint64ToString(base::RandUint64()) +
-                        base::Uint64ToString(base::RandUint64());
+    headers["header"] = QuicStrCat("", base::RandUint64(), base::RandUint64(),
+                                   base::RandUint64());
     headers_stream->WriteHeaders(stream_id, headers.Clone(), true, 0, nullptr);
     stream_id += 2;
   }

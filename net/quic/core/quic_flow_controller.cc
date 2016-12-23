@@ -10,6 +10,7 @@
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 
 namespace net {
 
@@ -78,11 +79,8 @@ void QuicFlowController::AddBytesSent(QuicByteCount bytes_sent) {
     // This is an error on our side, close the connection as soon as possible.
     connection_->CloseConnection(
         QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA,
-        base::StringPrintf(
-            "%llu bytes over send window offset",
-            static_cast<unsigned long long>(send_window_offset_ -
-                                            (bytes_sent_ + bytes_sent)))
-            .c_str(),
+        QuicStrCat(send_window_offset_ - (bytes_sent_ + bytes_sent),
+                   "bytes over send window offset"),
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }

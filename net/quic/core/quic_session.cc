@@ -12,6 +12,7 @@
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_flow_controller.h"
+#include "net/quic/platform/api/quic_str_cat.h"
 
 using base::IntToString;
 using base::StringPiece;
@@ -677,10 +678,9 @@ bool QuicSession::MaybeIncreaseLargestPeerStreamId(
              << " streams available, which would become "
              << new_num_available_streams << ", which exceeds the limit "
              << MaxAvailableStreams() << ".";
-    string details = IntToString(new_num_available_streams) + " above " +
-                     IntToString(MaxAvailableStreams());
     connection()->CloseConnection(
-        QUIC_TOO_MANY_AVAILABLE_STREAMS, details.c_str(),
+        QUIC_TOO_MANY_AVAILABLE_STREAMS,
+        QuicStrCat(new_num_available_streams, " above ", MaxAvailableStreams()),
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return false;
   }
