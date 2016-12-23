@@ -255,10 +255,10 @@ class ServerBase(object):
             try:
                 s.connect(('localhost', port))
                 _log.debug("Server running on %d", port)
-            except IOError as e:
-                if e.errno not in (errno.ECONNREFUSED, errno.ECONNRESET):
+            except IOError as error:
+                if error.errno not in (errno.ECONNREFUSED, errno.ECONNRESET):
                     raise
-                _log.debug("Server NOT running on %d: %s", port, e)
+                _log.debug("Server NOT running on %d: %s", port, error)
                 return False
             finally:
                 s.close()
@@ -272,10 +272,10 @@ class ServerBase(object):
             port = mapping['port']
             try:
                 s.bind(('localhost', port))
-            except IOError as e:
-                if e.errno in (errno.EALREADY, errno.EADDRINUSE):
+            except IOError as error:
+                if error.errno in (errno.EALREADY, errno.EADDRINUSE):
                     raise ServerError('Port %d is already in use.' % port)
-                elif self._platform.is_win() and e.errno in (errno.WSAEACCES,):  # pylint: disable=no-member
+                elif self._platform.is_win() and error.errno in (errno.WSAEACCES,):  # pylint: disable=no-member
                     raise ServerError('Port %d is already in use.' % port)
                 else:
                     raise

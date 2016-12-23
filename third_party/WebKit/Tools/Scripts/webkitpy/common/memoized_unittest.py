@@ -71,8 +71,8 @@ class MemoizedTest(unittest.TestCase):
         try:
             test.memoized_add_one([])
             self.fail('Expected TypeError.')
-        except TypeError as e:
+        except TypeError as error:
             self.assertEqual(
-                e.message,
+                error.message,
                 'Cannot call memoized function memoized_add_one with '
                 'unhashable arguments: unhashable type: \'list\'')

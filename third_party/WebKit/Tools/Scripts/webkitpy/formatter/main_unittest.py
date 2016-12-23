@@ -16,7 +16,7 @@ def foo():
         bar = "bar"
         long_list = ['this is a list of strings that should be wrapped', "and consistently quoted"]
         longer_list = ['this is a list of strings that should be wrapped', "and consistently quoted", "because it's important to test quoting"]
-    except Exception, e:
+    except Exception, error:
         pass
 '''
 
@@ -31,7 +31,7 @@ def foo():
             'this is a list of strings that should be wrapped',
             'and consistently quoted',
             "because it's important to test quoting"]
-    except Exception as e:
+    except Exception as error:
         pass
 '''
 
@@ -48,7 +48,7 @@ def foo():
         'this is a list of strings that should be wrapped',
         'and consistently quoted',
         "because it's important to test quoting"]
-  except Exception as e:
+  except Exception as error:
     pass
 '''
 
@@ -59,7 +59,7 @@ def foo():
         bar = "bar"
         long_list = ["this is a list of strings that should be wrapped", "and consistently quoted"]
         longer_list = ["this is a list of strings that should be wrapped", "and consistently quoted", "because it's important to test quoting"]
-    except Exception, e:
+    except Exception, error:
         pass
 '''
 

@@ -145,8 +145,8 @@ class PortTestCase(unittest.TestCase):
                 test_socket = socket.socket()
                 test_socket.connect((host, port))
                 self.fail()
-            except IOError as e:
-                self.assertTrue(e.errno in (errno.ECONNREFUSED, errno.ECONNRESET))
+            except IOError as error:
+                self.assertTrue(error.errno in (errno.ECONNREFUSED, errno.ECONNRESET))
             finally:
                 test_socket.close()
 

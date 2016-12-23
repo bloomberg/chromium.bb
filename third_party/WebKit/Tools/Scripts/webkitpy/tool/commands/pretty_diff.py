@@ -73,10 +73,10 @@ class PrettyDiff(Command):
             # We return the pretty_diff_file here because we need to keep the
             # file alive until the user has had a chance to confirm the diff.
             return pretty_diff_file
-        except ScriptError as e:
+        except ScriptError as error:
             _log.warning("PrettyPatch failed.  :(")
-            _log.error(e.message_with_output())
-            self._exit(e.exit_code or 2)
+            _log.error(error.message_with_output())
+            self._exit(error.exit_code or 2)
         except OSError:
             _log.warning("PrettyPatch unavailable.")
 

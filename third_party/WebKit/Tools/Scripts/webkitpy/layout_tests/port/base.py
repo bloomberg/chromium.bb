@@ -411,8 +411,8 @@ class Port(object):
         """Checks whether we can use the PrettyPatch ruby script."""
         try:
             _ = self._executive.run_command(['ruby', '--version'])
-        except OSError as e:
-            if e.errno in [errno.ENOENT, errno.EACCES, errno.ECHILD]:
+        except OSError as error:
+            if error.errno in [errno.ENOENT, errno.EACCES, errno.ECHILD]:
                 if more_logging:
                     _log.warning("Ruby is not installed; can't generate pretty patches.")
                     _log.warning('')
@@ -510,8 +510,8 @@ class Port(object):
                 result = self._filesystem.read_binary_file(native_diff_filename)
             else:
                 err_str = "Image diff returned an exit code of %s. See http://crbug.com/278596" % exit_code
-        except OSError as e:
-            err_str = 'error running image diff: %s' % str(e)
+        except OSError as error:
+            err_str = 'error running image diff: %s' % error
         finally:
             self._filesystem.rmtree(str(tempdir))
 
@@ -1451,14 +1451,14 @@ class Port(object):
         try:
             # It's possible to raise a ScriptError we pass wdiff invalid paths.
             return self._run_wdiff(actual_filename, expected_filename)
-        except OSError as e:
-            if e.errno in [errno.ENOENT, errno.EACCES, errno.ECHILD]:
+        except OSError as error:
+            if error.errno in (errno.ENOENT, errno.EACCES, errno.ECHILD):
                 # Silently ignore cases where wdiff is missing.
                 self._wdiff_available = False
                 return ""
             raise
-        except ScriptError as e:
-            _log.error("Failed to run wdiff: %s", e)
+        except ScriptError as error:
+            _log.error("Failed to run wdiff: %s", error)
             self._wdiff_available = False
             return self._wdiff_error_html
 
@@ -1476,16 +1476,16 @@ class Port(object):
             # Diffs are treated as binary (we pass decode_output=False) as they
             # may contain multiple files of conflicting encodings.
             return self._executive.run_command(command, decode_output=False)
-        except OSError as e:
+        except OSError as error:
             # If the system is missing ruby log the error and stop trying.
             self._pretty_patch_available = False
-            _log.error("Failed to run PrettyPatch (%s): %s", command, e)
+            _log.error("Failed to run PrettyPatch (%s): %s", command, error)
             return self._pretty_patch_error_html
-        except ScriptError as e:
+        except ScriptError as error:
             # If ruby failed to run for some reason, log the command
             # output and stop trying.
             self._pretty_patch_available = False
-            _log.error("Failed to run PrettyPatch (%s):\n%s", command, e.message_with_output())
+            _log.error("Failed to run PrettyPatch (%s):\n%s", command, error.message_with_output())
             return self._pretty_patch_error_html
 
     def default_configuration(self):
@@ -1645,8 +1645,8 @@ class Port(object):
             try:
                 test_suite_json = json.loads(self._filesystem.read_text_file(path_to_virtual_test_suites))
                 self._virtual_test_suites = [VirtualTestSuite(**d) for d in test_suite_json]
-            except ValueError as e:
-                raise ValueError("LayoutTests/VirtualTestSuites is not a valid JSON file: %s" % str(e))
+            except ValueError as error:
+                raise ValueError("LayoutTests/VirtualTestSuites is not a valid JSON file: %s" % error)
         return self._virtual_test_suites
 
     def _all_virtual_tests(self, suites):

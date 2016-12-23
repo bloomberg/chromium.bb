@@ -31,11 +31,12 @@
 import errno
 import logging
 
+# The _winreg library is only available on Windows.
+# https://docs.python.org/2/library/_winreg.html
 try:
-    import _winreg
-except ImportError as e:
-    _winreg = None
-    WindowsError = Exception  # this shuts up pylint.
+    import _winreg  # pylint: disable=import-error
+except ImportError:
+    _winreg = None  # pylint: disable=invalid-name
 
 from webkitpy.layout_tests.breakpad.dump_reader_win import DumpReaderWin
 from webkitpy.layout_tests.models import test_run_results
@@ -120,9 +121,9 @@ class WinPort(base.Port):
             # existing entry points to a valid path and has the right command line.
             if len(args) == 2 and self._filesystem.exists(args[0]) and args[0].endswith('perl.exe') and args[1] == '-wT':
                 return True
-        except WindowsError as e:
-            if e.errno != errno.ENOENT:
-                raise e
+        except WindowsError as error:  # WindowsError is not defined on non-Windows platforms - pylint: disable=undefined-variable
+            if error.errno != errno.ENOENT:
+                raise
             # The key simply probably doesn't exist.
 
         # Note that we write to HKCU so that we don't need privileged access

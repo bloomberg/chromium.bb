@@ -252,9 +252,9 @@ class WebTestRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
                 try:
                     handler(request, response)
-                except HTTPException as e:
+                except HTTPException as error:
                     response.set_error(e.code, e.message)
-                except Exception as e:
+                except Exception as error:
                     if e.message:
                         err = [e.message]
                     else:
@@ -281,12 +281,12 @@ class WebTestRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 # Ensure that the whole request has been read from the socket
                 request.raw_input.read()
 
-        except socket.timeout as e:
+        except socket.timeout as error:
             self.log_error("Request timed out: %r", e)
             self.close_connection = True
             return
 
-        except Exception as e:
+        except Exception as error:
             err = traceback.format_exc()
             if response:
                 response.set_error(500, err)

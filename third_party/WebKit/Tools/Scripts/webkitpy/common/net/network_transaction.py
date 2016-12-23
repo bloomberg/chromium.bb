@@ -58,12 +58,12 @@ class NetworkTransaction(object):
         while True:
             try:
                 return request()
-            except urllib2.HTTPError as e:
-                if self._convert_404_to_None and e.code == 404:
+            except urllib2.HTTPError as error:
+                if self._convert_404_to_None and error.code == 404:
                     return None
                 self._check_for_timeout()
                 _log.warning("Received HTTP status %s loading \"%s\".  Retrying in %s seconds...",
-                             e.code, e.filename, self._backoff_seconds)
+                             error.code, error.filename, self._backoff_seconds)
                 self._sleep()
 
     def _check_for_timeout(self):

@@ -138,8 +138,8 @@ class LayoutTestFinder(object):
                     line = self._strip_comments(line)
                     if line:
                         tests.append(line)
-            except IOError as e:
-                if e.errno == errno.ENOENT:
+            except IOError as error:
+                if error.errno == errno.ENOENT:
                     _log.critical('')
                     _log.critical('--test-list file "%s" not found', file)
                 raise

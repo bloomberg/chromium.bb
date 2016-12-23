@@ -39,7 +39,9 @@ class JSONChecker(object):
         try:
             json.loads('\n'.join(lines) + '\n')
         except ValueError as error:
-            self._handle_style_error(self.line_number_from_json_exception(error), 'json/syntax', 5, str(error))
+            self._handle_style_error(
+                self.line_number_from_json_exception(error),
+                'json/syntax', 5, str(error))
 
     @staticmethod
     def line_number_from_json_exception(error):

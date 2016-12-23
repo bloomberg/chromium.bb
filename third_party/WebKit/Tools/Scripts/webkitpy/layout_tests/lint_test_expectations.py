@@ -63,9 +63,9 @@ def lint(host, options):
                 test_expectations.TestExpectations(port_to_lint,
                                                    expectations_dict={expectations_file: expectations_dict[expectations_file]},
                                                    is_lint_mode=True)
-            except test_expectations.ParseError as e:
+            except test_expectations.ParseError as error:
                 _log.error('')
-                for warning in e.warnings:
+                for warning in error.warnings:
                     _log.error(warning)
                     failures.append('%s: %s' % (expectations_file, warning))
                 _log.error('')
@@ -143,8 +143,8 @@ def main(argv, _, stderr):
         exit_status = run_checks(host, options, stderr)
     except KeyboardInterrupt:
         exit_status = INTERRUPTED_EXIT_STATUS
-    except Exception as e:
-        print >> stderr, '\n%s raised: %s' % (e.__class__.__name__, str(e))
+    except Exception as error:  # pylint: disable=broad-except
+        print >> stderr, '\n%s raised: %s' % (error.__class__.__name__, error)
         traceback.print_exc(file=stderr)
         exit_status = EXCEPTIONAL_EXIT_STATUS
 

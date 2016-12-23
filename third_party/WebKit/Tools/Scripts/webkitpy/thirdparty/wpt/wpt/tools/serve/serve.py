@@ -275,7 +275,7 @@ def check_subdomains(host, paths, bind_hostname, ssl_config, aliases):
         domain = "%s.%s" % (punycode, host)
         try:
             urllib2.urlopen("http://%s:%d/" % (domain, port))
-        except Exception as e:
+        except Exception as error:
             logger.critical("Failed probing domain %s. You may need to edit /etc/hosts or similar." % domain)
             sys.exit(1)
 

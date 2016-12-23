@@ -272,10 +272,10 @@ class ServerProcess(object):
         select_fds = (out_fd, err_fd)
         try:
             read_fds, _, _ = select.select(select_fds, [], select_fds, max(deadline - time.time(), 0))
-        except select.error as e:
+        except select.error as error:
             # We can ignore EINVAL since it's likely the process just crashed and we'll
             # figure that out the next time through the loop in _read().
-            if e.args[0] == errno.EINVAL:
+            if error.args[0] == errno.EINVAL:
                 return
             raise
 
@@ -298,9 +298,9 @@ class ServerProcess(object):
                     self._crashed = True
                 self._log_data('ERR', data)
                 self._error += data
-        except IOError as e:
-            # We can ignore the IOErrors because we will detect if the subporcess crashed
-            # the next time through the loop in _read()
+        except IOError:
+            # We can ignore the IOErrors because we will detect if the
+            # subprocess crashed the next time through the loop in _read().
             pass
 
     def _wait_for_data_and_update_buffers_using_win32_apis(self, deadline):
@@ -331,8 +331,8 @@ class ServerProcess(object):
             if avail > 0:
                 _, buf = win32file.ReadFile(handle, avail, None)
                 return buf
-        except Exception as e:
-            if e[0] not in (109, errno.ESHUTDOWN):  # 109 == win32 ERROR_BROKEN_PIPE
+        except Exception as error:  # pylint: disable=broad-except
+            if error[0] not in (109, errno.ESHUTDOWN):  # 109 == win32 ERROR_BROKEN_PIPE
                 raise
         return None
 

@@ -392,9 +392,9 @@ class AndroidPort(base.Port):
             try:
                 d._setup_test(log_safely)
                 log_safely("device prepared", throttled=False)
-            except (ScriptError, driver.DeviceFailure) as e:
+            except (ScriptError, driver.DeviceFailure) as error:
                 with lock:
-                    _log.warning("[%s] failed to prepare_device: %s", serial, str(e))
+                    _log.warning("[%s] failed to prepare_device: %s", serial, error)
             except KeyboardInterrupt:
                 if pool:
                     pool.terminate()
@@ -943,8 +943,8 @@ class ChromiumAndroidDriver(driver.Driver):
             try:
                 if self._start_once(pixel_tests, per_test_args):
                     return
-            except ScriptError as e:
-                self._abort('ScriptError("%s") in _start()' % str(e))
+            except ScriptError as error:
+                self._abort('ScriptError("%s") in _start()' % error)
 
             self._log_error('Failed to start the content_shell application. Retries=%d. Log:%s' % (retries, self._get_logcat()))
             self.stop()

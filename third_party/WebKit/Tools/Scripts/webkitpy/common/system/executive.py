@@ -121,19 +121,19 @@ class Executive(object):
                 retries_left -= 1
                 os.kill(pid, signal.SIGKILL)
                 _ = os.waitpid(pid, os.WNOHANG)
-            except OSError as e:
-                if e.errno == errno.EAGAIN:
+            except OSError as error:
+                if error.errno == errno.EAGAIN:
                     if retries_left <= 0:
                         _log.warning("Failed to kill pid %s.  Too many EAGAIN errors.", pid)
                     continue
-                if e.errno == errno.ESRCH:  # The process does not exist.
+                if error.errno == errno.ESRCH:  # The process does not exist.
                     return
-                if e.errno == errno.EPIPE:  # The process has exited already on cygwin
+                if error.errno == errno.EPIPE:  # The process has exited already on cygwin
                     return
-                if e.errno == errno.ECHILD:
+                if error.errno == errno.ECHILD:
                     # Can't wait on a non-child process, but the kill worked.
                     return
-                if e.errno == errno.EACCES and sys.platform == 'cygwin':
+                if error.errno == errno.EACCES and sys.platform == 'cygwin':
                     # Cygwin python sometimes can't kill native processes.
                     return
                 raise

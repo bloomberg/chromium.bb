@@ -292,12 +292,12 @@ class Manager(object):
             timestamp = time.strftime(
                 "%Y-%m-%d-%H-%M-%S", time.localtime(
                     self._filesystem.mtime(self._filesystem.join(self._results_directory, "results.html"))))
-        except (IOError, OSError) as e:
+        except (IOError, OSError) as error:
             # It might be possible that results.html was not generated in previous run, because the test
             # run was interrupted even before testing started. In those cases, don't archive the folder.
             # Simply override the current folder contents with new results.
             import errno
-            if e.errno == errno.EEXIST or e.errno == errno.ENOENT:
+            if error.errno in (errno.EEXIST, errno.ENOENT):
                 self._printer.write_update("No results.html file found in previous run, skipping it.")
             return None
         archived_name = ''.join((self._filesystem.basename(self._results_directory), "_", timestamp))

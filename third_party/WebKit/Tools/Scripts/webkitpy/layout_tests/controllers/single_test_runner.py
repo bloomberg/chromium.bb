@@ -50,8 +50,8 @@ def run_single_test(
         secondary_driver, test_input, stop_when_done)
     try:
         return runner.run()
-    except DeviceFailure as e:
-        _log.error("device failed: %s", str(e))
+    except DeviceFailure as error:
+        _log.error("device failed: %s", error)
         return TestResult(test_input.test_name, device_failed=True)
 
 

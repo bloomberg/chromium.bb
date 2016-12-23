@@ -67,8 +67,8 @@ class Workspace(object):
         # So, for now we depend on the environment having "zip" installed (likely fails on Win32)
         try:
             self._executive.run_command(['zip', '-9', '-r', zip_path, '.'], cwd=source_path)
-        except ScriptError as e:
-            _log.error("Workspace.create_zip failed in %s:\n%s", source_path, e.message_with_output())
+        except ScriptError as error:
+            _log.error("Workspace.create_zip failed in %s:\n%s", source_path, error.message_with_output())
             return None
 
         return zip_class(zip_path)
