@@ -1068,8 +1068,14 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_READING_LIST_EDIT_BUTTON" desc="Label of the button to edit the reading list entries (delete, mark as read/unread) [Length: 20em]" meaning="Start editing the reading list entries. [Length: 20em]">
         Edit
       </message>
-      <message name="IDS_IOS_READING_LIST_EMPTY_MESSAGE" desc="Message to explain to the user how to add entries to the reading list" meaning="[Length: unlimited]">
-        Send pages to your reading list using <ph name="SHARE_ICON">SHARE_ICON</ph> and they'll even work offline.
+      <message name="IDS_IOS_READING_LIST_EMPTY_MESSAGE_IPHONE" desc="Message to explain to the user how to add entries to the reading list" meaning="[Length: unlimited]">
+        To add a page to your reading list, tap <ph name="BEGIN_BOLD_FONT">BEGIN_BOLD_FONT</ph>Menu > Share > Read Later<ph name="END_BOLD_FONT">END_BOLD_FONT</ph>.
+      </message>
+      <message name="IDS_IOS_READING_LIST_EMPTY_MESSAGE_IPAD" desc="Message to explain to the user how to add entries to the reading list" meaning="[Length: unlimited]">
+        To add a page to your reading list, tap <ph name="BEGIN_BOLD_FONT">BEGIN_BOLD_FONT</ph>Share > Read Later<ph name="END_BOLD_FONT">END_BOLD_FONT</ph>.
+      </message>
+      <message name="IDS_IOS_READING_LIST_EMPTY_OFFLINE" desc="Message to explain to the user that the pages added to the reading list can we read offline." meaning="[Length:unlimited]">
+        Your reading list is available offline.
       </message>
       <message name="IDS_IOS_READING_LIST_MARK_ALL_BUTTON" desc="Label of the button to suggest options to mark all reading list entries read or unread [Length: 15em]" meaning="Display options letting the user mark all the entries as read or as unread. [Length: 15em]">
         Mark All…

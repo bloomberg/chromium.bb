@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/browser/ui/url_loader.h"
+#include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -47,16 +48,14 @@
 namespace {
 
 NSString* const kEmptyReadingListBackgroundIcon = @"reading_list_icon";
-NSString* const kEmptyReadingListShareIcon = @"share_icon";
-NSString* const kShareIconMarker = @"SHARE_ICON";
+NSString* const kBeginBoldMarker = @"BEGIN_BOLD_FONT";
+NSString* const kEndBoldMarker = @"END_BOLD_FONT";
 
 // Background view constants.
 const CGFloat kTextImageSpacing = 10;
 const CGFloat kTextHorizontalMargin = 32;
 const CGFloat kImageWidth = 60;
 const CGFloat kImageHeight = 44;
-const CGFloat kShareImageHeight = 14;
-const CGFloat kShareImageWidth = 10;
 const CGFloat kFontSize = 16;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -338,32 +337,43 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 - (UIView*)emptyCollectionBackground {
   UIView* emptyCollectionBackground = [[UIView alloc] initWithFrame:CGRectZero];
 
-  NSString* emptyTitle =
-      l10n_util::GetNSString(IDS_IOS_READING_LIST_EMPTY_MESSAGE);
-  NSRange iconRange = [emptyTitle rangeOfString:kShareIconMarker];
+  NSString* rawText = nil;
+  if (IsIPadIdiom())
+    rawText = l10n_util::GetNSString(IDS_IOS_READING_LIST_EMPTY_MESSAGE_IPAD);
+  else
+    rawText = l10n_util::GetNSString(IDS_IOS_READING_LIST_EMPTY_MESSAGE_IPHONE);
 
-  NSTextAttachment* textAttachment = [[NSTextAttachment alloc] init];
-  textAttachment.image = [[UIImage imageNamed:kEmptyReadingListShareIcon]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  textAttachment.bounds = CGRectMake(0, 0, kShareImageWidth, kShareImageHeight);
+  rawText = [[rawText stringByAppendingString:@"\n\n"]
+      stringByAppendingString:l10n_util::GetNSString(
+                                  IDS_IOS_READING_LIST_EMPTY_OFFLINE)];
 
-  NSAttributedString* attachmentAttributedString =
-      [NSAttributedString attributedStringWithAttachment:textAttachment];
+  NSRange tagRange;
+  NSString* untaggedString =
+      ParseStringWithTag(rawText, &tagRange, kBeginBoldMarker, kEndBoldMarker);
 
   NSDictionary* attributes = @{
+    NSFontAttributeName :
+        [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:kFontSize],
+    NSForegroundColorAttributeName : [[MDCPalette greyPalette] tint700]
+  };
+  NSMutableAttributedString* baseAttributedString =
+      [[NSMutableAttributedString alloc] initWithString:untaggedString
+                                             attributes:attributes];
+
+  NSDictionary* boldAttributes = @{
     NSFontAttributeName :
         [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:kFontSize],
     NSForegroundColorAttributeName : [[MDCPalette greyPalette] tint700]
   };
+  NSAttributedString* boldAttributedString = [[NSAttributedString alloc]
+      initWithString:[untaggedString substringWithRange:tagRange]
+          attributes:boldAttributes];
 
-  NSMutableAttributedString* labelAttributedString =
-      [[NSMutableAttributedString alloc] initWithString:emptyTitle
-                                             attributes:attributes];
-  [labelAttributedString replaceCharactersInRange:iconRange
-                             withAttributedString:attachmentAttributedString];
+  [baseAttributedString replaceCharactersInRange:tagRange
+                            withAttributedString:boldAttributedString];
 
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
-  label.attributedText = labelAttributedString;
+  label.attributedText = baseAttributedString;
   label.lineBreakMode = NSLineBreakByWordWrapping;
   label.numberOfLines = 0;
   label.textAlignment = NSTextAlignmentCenter;

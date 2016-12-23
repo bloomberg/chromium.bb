@@ -17,6 +17,17 @@
 // {NSNotFound, 0}.
 NSString* ParseStringWithLink(NSString* text, NSRange* out_link_range);
 
+// Parses a string with an embedded tag inside, delineated by |begin_tag| and
+// |end_tag|. Returns the string without the tag delimiters. If |out_tag_range|
+// is not null, then it is filled out with the range of the tag in the returned
+// string.
+// If no tag is found, then it returns |text| and sets |out_tag_range| to
+// {NSNotFound, 0}.
+NSString* ParseStringWithTag(NSString* text,
+                             NSRange* out_tag_range,
+                             NSString* begin_tag,
+                             NSString* end_tag);
+
 // Utility method that returns an NSCharacterSet containing Unicode graphics
 // and drawing characters (but not including the Braille Patterns characters).
 NSCharacterSet* GraphicCharactersSet();

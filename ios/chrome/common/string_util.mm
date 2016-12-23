@@ -18,48 +18,56 @@ typedef NSString* (^SubstringExtractionProcedure)(NSUInteger);
 }
 
 NSString* ParseStringWithLink(NSString* text, NSRange* out_link_range) {
-  // Find the range within |text| and create a substring without the link tags.
-  NSRange begin_range = [text rangeOfString:@"BEGIN_LINK[ \t]*"
-                                    options:NSRegularExpressionSearch];
-  NSRange link_text_range = NSMakeRange(NSNotFound, 0);
+  return ParseStringWithTag(text, out_link_range, @"BEGIN_LINK[ \t]*",
+                            @"[ \t]*END_LINK");
+}
+
+NSString* ParseStringWithTag(NSString* text,
+                             NSRange* out_tag_range,
+                             NSString* begin_tag,
+                             NSString* end_tag) {
+  // Find the range within |text| and create a substring without the tag tags.
+  NSRange begin_range =
+      [text rangeOfString:begin_tag options:NSRegularExpressionSearch];
+  NSRange tag_text_range = NSMakeRange(NSNotFound, 0);
   if (begin_range.length == 0) {
-    if (out_link_range)
-      *out_link_range = link_text_range;
+    if (out_tag_range)
+      *out_tag_range = tag_text_range;
     return text;
   }
 
-  NSUInteger after_begin_link = NSMaxRange(begin_range);
-  NSRange range_to_search_for_end_link =
-      NSMakeRange(after_begin_link, text.length - after_begin_link);
-  NSRange end_range = [text rangeOfString:@"[ \t]*END_LINK"
+  NSUInteger after_begin_tag = NSMaxRange(begin_range);
+  NSRange range_to_search_for_end_tag =
+      NSMakeRange(after_begin_tag, text.length - after_begin_tag);
+  NSRange end_range = [text rangeOfString:end_tag
                                   options:NSRegularExpressionSearch
-                                    range:range_to_search_for_end_link];
+                                    range:range_to_search_for_end_tag];
   if (end_range.length == 0) {
-    if (out_link_range)
-      *out_link_range = link_text_range;
+    if (out_tag_range)
+      *out_tag_range = tag_text_range;
     return text;
   }
 
-  link_text_range.location = after_begin_link;
-  link_text_range.length = end_range.location - link_text_range.location;
+  tag_text_range.location = after_begin_tag;
+  tag_text_range.length = end_range.location - tag_text_range.location;
   base::scoped_nsobject<NSMutableString> out_text(
       [[NSMutableString alloc] init]);
-  // First part - before the link.
+  // First part - before the tag.
   if (begin_range.location > 0)
     [out_text appendString:[text substringToIndex:begin_range.location]];
 
-  // Link part.
-  [out_text appendString:[text substringWithRange:link_text_range]];
+  // Tag part.
+  [out_text appendString:[text substringWithRange:tag_text_range]];
 
-  // Last part - after the link.
-  NSUInteger after_end_link = NSMaxRange(end_range);
-  if (after_end_link < [text length]) {
-    [out_text appendString:[text substringFromIndex:after_end_link]];
+  // Last part - after the tag.
+  NSUInteger after_end_tag = NSMaxRange(end_range);
+  if (after_end_tag < [text length]) {
+    [out_text appendString:[text substringFromIndex:after_end_tag]];
   }
 
-  link_text_range.location = begin_range.location;
-  if (out_link_range)
-    *out_link_range = link_text_range;
+  tag_text_range.location = begin_range.location;
+  if (out_tag_range)
+    *out_tag_range = tag_text_range;
   return [NSString stringWithString:out_text];
 }
 

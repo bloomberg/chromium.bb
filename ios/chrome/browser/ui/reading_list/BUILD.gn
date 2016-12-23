@@ -16,9 +16,6 @@ bundle_data("resources") {
     "resources/reading_list_side_swipe.png",
     "resources/reading_list_side_swipe@2x.png",
     "resources/reading_list_side_swipe@3x.png",
-    "resources/share_icon.png",
-    "resources/share_icon@2x.png",
-    "resources/share_icon@3x.png",
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",
