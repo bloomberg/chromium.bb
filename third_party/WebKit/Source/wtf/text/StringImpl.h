@@ -289,12 +289,8 @@ class WTF_EXPORT StringImpl {
   ALWAYS_INLINE void ref() { ++m_refCount; }
 
   ALWAYS_INLINE void deref() {
-    if (hasOneRef()) {
+    if (!--m_refCount)
       destroyIfNotStatic();
-      return;
-    }
-
-    --m_refCount;
   }
 
   static StringImpl* empty();
