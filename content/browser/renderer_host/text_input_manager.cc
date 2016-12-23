@@ -329,14 +329,13 @@ TextInputManager::TextSelection::~TextSelection() {}
 bool TextInputManager::TextSelection::GetSelectedText(
     base::string16* selected_text) const {
   if (text.empty() || range.is_empty())
-    return false;
+    return true;
 
   size_t pos = range.GetMin() - offset;
   size_t n = range.length();
   if (pos + n > text.length()) {
     LOG(WARNING) << "The text can not fully cover range (selection's end point "
                     "exceeds text length).";
-    return false;
   }
 
   if (pos >= text.length()) {

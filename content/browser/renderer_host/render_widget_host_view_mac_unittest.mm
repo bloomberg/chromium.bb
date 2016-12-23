@@ -305,6 +305,8 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   RenderWidgetHostView* old_rwhv_;
 
  protected:
+  std::string selected_text() const { return rwhv_mac_->selected_text_; }
+
   RenderWidgetHostViewMac* rwhv_mac_;
   base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa_;
 
@@ -1326,6 +1328,28 @@ TEST_F(RenderWidgetHostViewMacTest, EventLatencyOSMouseWheelHistogram) {
 
   // Clean up.
   host->ShutdownAndDestroyWidget(true);
+}
+
+// This test verifies that |selected_text_| is updated accordingly with
+// different variations of RWHVMac::SelectChanged updates.
+TEST_F(RenderWidgetHostViewMacTest, SelectedText) {
+  base::string16 sample_text;
+  base::UTF8ToUTF16("hello world!", 12, &sample_text);
+  gfx::Range range(6, 11);
+
+  // Send a valid selection for the word 'World'.
+  rwhv_mac_->SelectionChanged(sample_text, 0U, range);
+  EXPECT_EQ("world", selected_text());
+
+  // Make the range cover some of the text and extend more.
+  range.set_end(100);
+  rwhv_mac_->SelectionChanged(sample_text, 0U, range);
+  EXPECT_EQ("world!", selected_text());
+
+  // Finally, send an empty range. This should clear the selected text.
+  range.set_start(100);
+  rwhv_mac_->SelectionChanged(sample_text, 0U, range);
+  EXPECT_EQ("", selected_text());
 }
 
 // This class is used for IME-related unit tests which verify correctness of IME

@@ -1011,8 +1011,9 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
       GetTextInputManager()->GetTextSelection(focused_view);
 
   base::string16 text;
-  if (selection->GetSelectedText(&text))
-    selected_text_ = base::UTF16ToUTF8(text);
+  if (!selection->GetSelectedText(&text))
+    return;
+  selected_text_ = base::UTF16ToUTF8(text);
 
   [cocoa_view_ setSelectedRange:selection->range.ToNSRange()];
   // Updates markedRange when there is no marked text so that retrieving
