@@ -23,6 +23,10 @@
 #include "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
@@ -35,12 +39,27 @@ constexpr CGFloat kCredentialHeight =
 // Maximum height of the credential list. The unit is one row height.
 constexpr CGFloat kMaxHeightAccounts = 3.5;
 
+NSImageView* IconForPSL(const NSRect& parentRect, const std::string& tooltip) {
+  NSImage* image = gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
+      gfx::VectorIconId::INFO_OUTLINE, gfx::kChromeIconGrey));
+  NSRect rect = NSMakeRect(
+      base::i18n::IsRTL() ? kFramePadding
+                          : NSMaxX(parentRect) - kInfoIconSize - kFramePadding,
+      NSMinY(parentRect) + (NSHeight(parentRect) - kInfoIconSize) / 2,
+      kInfoIconSize, kInfoIconSize);
+  base::scoped_nsobject<NSImageView> icon(
+      [[NSImageView alloc] initWithFrame:rect]);
+  [icon setImage:image];
+  [icon setToolTip:base::SysUTF8ToNSString(tooltip)];
+  return icon.autorelease();
+}
+
 }  // namespace
 
 @interface AccountChooserViewController () {
   NSButton* cancelButton_;  // Weak.
   NSButton* signInButton_;  // Weak.
-  NSTextView* titleView_;   //  Weak.
+  NSTextView* titleView_;   // Weak.
   base::scoped_nsobject<NSArray> credentialButtons_;
   base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager_;
 }
@@ -141,6 +160,11 @@ constexpr CGFloat kMaxHeightAccounts = 3.5;
     CGFloat cellHeight = [[button cell] cellSize].height;
     [button setFrame:NSMakeRect(0, curY, buttonWidth,
                                 cellHeight + 2 * kVerticalAvatarMargin)];
+    if (button.passwordForm->is_public_suffix_match) {
+      NSImageView* icon = IconForPSL(
+          [button frame], button.passwordForm->origin.GetOrigin().spec());
+      [documentView addSubview:icon];
+    }
     curY = NSMaxY([button frame]);
   }
   [documentView setFrameSize:NSMakeSize(buttonWidth, curY)];

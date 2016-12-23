@@ -122,6 +122,7 @@ constexpr CGFloat kHorizontalPaddingBetweenAvatarAndLabel = 10;
                       .GetNativeFont()];
     [self setButtonType:NSMomentaryLightButton];
     [self setImagePosition:base::i18n::IsRTL() ? NSImageRight : NSImageLeft];
+    [self setAlignment:NSNaturalTextAlignment];
   }
   return self;
 }
