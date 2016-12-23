@@ -13,6 +13,7 @@
 
 #include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/v4l2_jpeg_decode_accelerator.h"
@@ -63,6 +64,17 @@
     *(out) = _out;                                                         \
   } while (0)
 
+namespace {
+
+// Input pixel format (i.e. V4L2_PIX_FMT_JPEG) has only one physical plane.
+const size_t kMaxInputPlanes = 1;
+
+// This class can only handle V4L2_PIX_FMT_JPEG as input, so kMaxInputPlanes
+// can only be 1.
+static_assert(kMaxInputPlanes == 1,
+              "kMaxInputPlanes must be 1 as input must be V4L2_PIX_FMT_JPEG");
+}
+
 namespace media {
 
 // This is default huffman segment for 8-bit precision luminance and
@@ -107,8 +119,10 @@ const uint8_t kDefaultDhtSeg[] = {
     0xD5, 0xD6, 0xD7, 0xD8, 0xD9, 0xDA, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7,
     0xE8, 0xE9, 0xEA, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA};
 
-V4L2JpegDecodeAccelerator::BufferRecord::BufferRecord()
-    : address(nullptr), length(0), at_device(false) {}
+V4L2JpegDecodeAccelerator::BufferRecord::BufferRecord() : at_device(false) {
+  memset(address, 0, sizeof(address));
+  memset(length, 0, sizeof(length));
+}
 
 V4L2JpegDecodeAccelerator::BufferRecord::~BufferRecord() {}
 
@@ -125,6 +139,7 @@ V4L2JpegDecodeAccelerator::V4L2JpegDecodeAccelerator(
     const scoped_refptr<V4L2Device>& device,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : output_buffer_pixelformat_(0),
+      output_buffer_num_planes_(0),
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(io_task_runner),
       client_(nullptr),
@@ -194,7 +209,7 @@ bool V4L2JpegDecodeAccelerator::Initialize(Client* client) {
 
   // Capabilities check.
   struct v4l2_capability caps;
-  const __u32 kCapsRequired = V4L2_CAP_STREAMING | V4L2_CAP_VIDEO_M2M;
+  const __u32 kCapsRequired = V4L2_CAP_STREAMING | V4L2_CAP_VIDEO_M2M_MPLANE;
   memset(&caps, 0, sizeof(caps));
   if (device_->Ioctl(VIDIOC_QUERYCAP, &caps) != 0) {
     PLOG(ERROR) << __func__ << ": ioctl() failed: VIDIOC_QUERYCAP";
@@ -297,7 +312,7 @@ bool V4L2JpegDecodeAccelerator::ShouldRecreateInputBuffers() {
   // Check input buffer size is enough
   return (input_buffer_map_.empty() ||
           (job_record->shm.size() + sizeof(kDefaultDhtSeg)) >
-              input_buffer_map_.front().length);
+              input_buffer_map_.front().length[0]);
 }
 
 bool V4L2JpegDecodeAccelerator::RecreateInputBuffers() {
@@ -344,16 +359,17 @@ bool V4L2JpegDecodeAccelerator::CreateInputBuffers() {
   size_t reserve_size = (job_record->shm.size() + sizeof(kDefaultDhtSeg)) * 2;
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
-  format.fmt.pix.pixelformat = V4L2_PIX_FMT_JPEG;
-  format.fmt.pix.sizeimage = reserve_size;
-  format.fmt.pix.field = V4L2_FIELD_ANY;
+  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  format.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_JPEG;
+  format.fmt.pix_mp.plane_fmt[0].sizeimage = reserve_size;
+  format.fmt.pix_mp.field = V4L2_FIELD_ANY;
+  format.fmt.pix_mp.num_planes = kMaxInputPlanes;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
   reqbufs.count = kBufferCount;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
 
@@ -364,20 +380,30 @@ bool V4L2JpegDecodeAccelerator::CreateInputBuffers() {
     free_input_buffers_.push_back(i);
 
     struct v4l2_buffer buffer;
+    struct v4l2_plane planes[VIDEO_MAX_PLANES];
     memset(&buffer, 0, sizeof(buffer));
+    memset(planes, 0, sizeof(planes));
     buffer.index = i;
-    buffer.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    buffer.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+    buffer.m.planes = planes;
+    buffer.length = arraysize(planes);
     buffer.memory = V4L2_MEMORY_MMAP;
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &buffer);
-    void* address = device_->Mmap(NULL, buffer.length, PROT_READ | PROT_WRITE,
-                                  MAP_SHARED, buffer.m.offset);
-    if (address == MAP_FAILED) {
-      PLOG(ERROR) << __func__ << ": mmap() failed";
-      PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+    if (buffer.length != kMaxInputPlanes) {
       return false;
     }
-    input_buffer_map_[i].address = address;
-    input_buffer_map_[i].length = buffer.length;
+    for (size_t j = 0; j < buffer.length; ++j) {
+      void* address =
+          device_->Mmap(NULL, planes[j].length, PROT_READ | PROT_WRITE,
+                        MAP_SHARED, planes[j].m.mem_offset);
+      if (address == MAP_FAILED) {
+        PLOG(ERROR) << __func__ << ": mmap() failed";
+        PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+        return false;
+      }
+      input_buffer_map_[i].address[j] = address;
+      input_buffer_map_[i].length[j] = planes[j].length;
+    }
   }
 
   return true;
@@ -394,54 +420,74 @@ bool V4L2JpegDecodeAccelerator::CreateOutputBuffers() {
       PIXEL_FORMAT_I420, job_record->out_frame->coded_size());
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  format.fmt.pix.width = job_record->out_frame->coded_size().width();
-  format.fmt.pix.height = job_record->out_frame->coded_size().height();
-  format.fmt.pix.sizeimage = frame_size;
-  format.fmt.pix.pixelformat = V4L2_PIX_FMT_YUV420;
-  format.fmt.pix.field = V4L2_FIELD_ANY;
+  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  format.fmt.pix_mp.width = job_record->out_frame->coded_size().width();
+  format.fmt.pix_mp.height = job_record->out_frame->coded_size().height();
+  format.fmt.pix_mp.num_planes = 1;
+  format.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_YUV420;
+  format.fmt.pix_mp.plane_fmt[0].sizeimage = frame_size;
+  format.fmt.pix_mp.field = V4L2_FIELD_ANY;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
-  output_buffer_pixelformat_ = format.fmt.pix.pixelformat;
-  output_buffer_coded_size_.SetSize(format.fmt.pix.width,
-                                    format.fmt.pix.height);
+  output_buffer_pixelformat_ = format.fmt.pix_mp.pixelformat;
+  output_buffer_coded_size_.SetSize(format.fmt.pix_mp.width,
+                                    format.fmt.pix_mp.height);
+  output_buffer_num_planes_ = format.fmt.pix_mp.num_planes;
+
+  VideoPixelFormat output_format =
+      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_buffer_pixelformat_);
+  if (output_format == PIXEL_FORMAT_UNKNOWN) {
+    PLOG(ERROR) << __func__ << ": unknown V4L2 pixel format: "
+                << output_buffer_pixelformat_;
+    PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+    return false;
+  }
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
   reqbufs.count = kBufferCount;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
 
   DCHECK(output_buffer_map_.empty());
   output_buffer_map_.resize(reqbufs.count);
 
-  VideoPixelFormat output_format =
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_buffer_pixelformat_);
-
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     free_output_buffers_.push_back(i);
 
     struct v4l2_buffer buffer;
+    struct v4l2_plane planes[VIDEO_MAX_PLANES];
     memset(&buffer, 0, sizeof(buffer));
+    memset(planes, 0, sizeof(planes));
     buffer.index = i;
-    buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     buffer.memory = V4L2_MEMORY_MMAP;
+    buffer.m.planes = planes;
+    buffer.length = arraysize(planes);
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &buffer);
 
-    DCHECK_GE(buffer.length,
-              VideoFrame::AllocationSize(
-                  output_format,
-                  gfx::Size(format.fmt.pix.width, format.fmt.pix.height)));
-
-    void* address = device_->Mmap(NULL, buffer.length, PROT_READ | PROT_WRITE,
-                                  MAP_SHARED, buffer.m.offset);
-    if (address == MAP_FAILED) {
-      PLOG(ERROR) << __func__ << ": mmap() failed";
-      PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+    if (output_buffer_num_planes_ != buffer.length) {
       return false;
     }
-    output_buffer_map_[i].address = address;
-    output_buffer_map_[i].length = buffer.length;
+    for (size_t j = 0; j < buffer.length; ++j) {
+      if (base::checked_cast<int64_t>(planes[j].length) <
+          VideoFrame::PlaneSize(
+              output_format, j,
+              gfx::Size(format.fmt.pix_mp.width, format.fmt.pix_mp.height))
+              .GetArea()) {
+        return false;
+      }
+      void* address =
+          device_->Mmap(NULL, planes[j].length, PROT_READ | PROT_WRITE,
+                        MAP_SHARED, planes[j].m.mem_offset);
+      if (address == MAP_FAILED) {
+        PLOG(ERROR) << __func__ << ": mmap() failed";
+        PostNotifyError(kInvalidBitstreamBufferId, PLATFORM_FAILURE);
+        return false;
+      }
+      output_buffer_map_[i].address[j] = address;
+      output_buffer_map_[i].length[j] = planes[j].length;
+    }
   }
 
   return true;
@@ -456,20 +502,21 @@ void V4L2JpegDecodeAccelerator::DestroyInputBuffers() {
     return;
 
   if (input_streamon_) {
-    __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMOFF, &type);
     input_streamon_ = false;
   }
 
-  for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
-    BufferRecord& input_record = input_buffer_map_[i];
-    device_->Munmap(input_record.address, input_record.length);
+  for (const auto& input_record : input_buffer_map_) {
+    for (size_t i = 0; i < kMaxInputPlanes; ++i) {
+      device_->Munmap(input_record.address[i], input_record.length[i]);
+    }
   }
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
   reqbufs.count = 0;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
   IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
 
@@ -485,24 +532,26 @@ void V4L2JpegDecodeAccelerator::DestroyOutputBuffers() {
     return;
 
   if (output_streamon_) {
-    __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMOFF, &type);
     output_streamon_ = false;
   }
 
-  for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
-    BufferRecord& output_record = output_buffer_map_[i];
-    device_->Munmap(output_record.address, output_record.length);
+  for (const auto& output_record : output_buffer_map_) {
+    for (size_t i = 0; i < output_buffer_num_planes_; ++i) {
+      device_->Munmap(output_record.address[i], output_record.length[i]);
+    }
   }
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
   reqbufs.count = 0;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
   IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
 
   output_buffer_map_.clear();
+  output_buffer_num_planes_ = 0;
 }
 
 void V4L2JpegDecodeAccelerator::DevicePollTask() {
@@ -597,7 +646,7 @@ void V4L2JpegDecodeAccelerator::EnqueueInput() {
   // Check here because we cannot STREAMON before QBUF in earlier kernel.
   // (kernel version < 3.14)
   if (!input_streamon_ && InputBufferQueuedCount()) {
-    __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
     input_streamon_ = true;
   }
@@ -615,19 +664,15 @@ void V4L2JpegDecodeAccelerator::EnqueueOutput() {
   // Check here because we cannot STREAMON before QBUF in earlier kernel.
   // (kernel version < 3.14)
   if (!output_streamon_ && OutputBufferQueuedCount()) {
-    __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
     output_streamon_ = true;
   }
 }
 
-static bool CopyOutputImage(const uint32_t src_pixelformat,
-                            const void* src_addr,
-                            const gfx::Size& src_coded_size,
-                            const scoped_refptr<VideoFrame>& dst_frame) {
-  VideoPixelFormat format =
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(src_pixelformat);
-  size_t src_size = VideoFrame::AllocationSize(format, src_coded_size);
+bool V4L2JpegDecodeAccelerator::ConvertOutputImage(
+    const BufferRecord& output_buffer,
+    const scoped_refptr<VideoFrame>& dst_frame) {
   uint8_t* dst_y = dst_frame->data(VideoFrame::kYPlane);
   uint8_t* dst_u = dst_frame->data(VideoFrame::kUPlane);
   uint8_t* dst_v = dst_frame->data(VideoFrame::kVPlane);
@@ -635,20 +680,54 @@ static bool CopyOutputImage(const uint32_t src_pixelformat,
   size_t dst_u_stride = dst_frame->stride(VideoFrame::kUPlane);
   size_t dst_v_stride = dst_frame->stride(VideoFrame::kVPlane);
 
-  // If the source format is I420, ConvertToI420 will simply copy the frame.
-  if (libyuv::ConvertToI420(static_cast<uint8_t*>(const_cast<void*>(src_addr)),
-                            src_size,
-                            dst_y, dst_y_stride,
-                            dst_u, dst_u_stride,
-                            dst_v, dst_v_stride,
-                            0, 0,
-                            src_coded_size.width(),
-                            src_coded_size.height(),
-                            dst_frame->coded_size().width(),
-                            dst_frame->coded_size().height(),
-                            libyuv::kRotate0,
-                            src_pixelformat)) {
-    LOG(ERROR) << "ConvertToI420 failed. Source format: " << src_pixelformat;
+  if (output_buffer_num_planes_ == 1) {
+    // Use ConvertToI420 to convert all splane buffers.
+    // If the source format is I420, ConvertToI420 will simply copy the frame.
+    VideoPixelFormat format =
+        V4L2Device::V4L2PixFmtToVideoPixelFormat(output_buffer_pixelformat_);
+    size_t src_size =
+        VideoFrame::AllocationSize(format, output_buffer_coded_size_);
+    if (libyuv::ConvertToI420(
+            static_cast<uint8_t*>(output_buffer.address[0]), src_size, dst_y,
+            dst_y_stride, dst_u, dst_u_stride, dst_v, dst_v_stride, 0, 0,
+            output_buffer_coded_size_.width(),
+            output_buffer_coded_size_.height(), dst_frame->coded_size().width(),
+            dst_frame->coded_size().height(), libyuv::kRotate0,
+            output_buffer_pixelformat_)) {
+      LOG(ERROR) << "ConvertToI420 failed. Source format: "
+                 << output_buffer_pixelformat_;
+      return false;
+    }
+  } else if (output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV420M ||
+             output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV422M) {
+    uint8_t* src_y = static_cast<uint8_t*>(output_buffer.address[0]);
+    uint8_t* src_u = static_cast<uint8_t*>(output_buffer.address[1]);
+    uint8_t* src_v = static_cast<uint8_t*>(output_buffer.address[2]);
+    size_t src_y_stride = output_buffer_coded_size_.width();
+    size_t src_u_stride = output_buffer_coded_size_.width() / 2;
+    size_t src_v_stride = output_buffer_coded_size_.width() / 2;
+    if (output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV420M) {
+      if (libyuv::I420Copy(src_y, src_y_stride, src_u, src_u_stride, src_v,
+                           src_v_stride, dst_y, dst_y_stride, dst_u,
+                           dst_u_stride, dst_v, dst_v_stride,
+                           output_buffer_coded_size_.width(),
+                           output_buffer_coded_size_.height())) {
+        LOG(ERROR) << "I420Copy failed";
+        return false;
+      }
+    } else {  // output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV422M
+      if (libyuv::I422ToI420(src_y, src_y_stride, src_u, src_u_stride, src_v,
+                             src_v_stride, dst_y, dst_y_stride, dst_u,
+                             dst_u_stride, dst_v, dst_v_stride,
+                             output_buffer_coded_size_.width(),
+                             output_buffer_coded_size_.height())) {
+        LOG(ERROR) << "I422ToI420 failed";
+        return false;
+      }
+    }
+  } else {
+    LOG(ERROR) << "Unsupported source buffer format: "
+               << output_buffer_pixelformat_;
     return false;
   }
   return true;
@@ -660,11 +739,15 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
   // Dequeue completed input (VIDEO_OUTPUT) buffers,
   // and recycle to the free list.
   struct v4l2_buffer dqbuf;
+  struct v4l2_plane planes[VIDEO_MAX_PLANES];
   while (InputBufferQueuedCount() > 0) {
     DCHECK(input_streamon_);
     memset(&dqbuf, 0, sizeof(dqbuf));
-    dqbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    memset(planes, 0, sizeof(planes));
+    dqbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     dqbuf.memory = V4L2_MEMORY_MMAP;
+    dqbuf.length = arraysize(planes);
+    dqbuf.m.planes = planes;
     if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
         // EAGAIN if we're just out of buffers to dequeue.
@@ -694,11 +777,14 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
   while (!running_jobs_.empty() && OutputBufferQueuedCount() > 0) {
     DCHECK(output_streamon_);
     memset(&dqbuf, 0, sizeof(dqbuf));
-    dqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    memset(planes, 0, sizeof(planes));
+    dqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     // From experiments, using MMAP and memory copy is still faster than
     // USERPTR. Also, client doesn't need to consider the buffer alignment and
     // JpegDecodeAccelerator API will be simpler.
     dqbuf.memory = V4L2_MEMORY_MMAP;
+    dqbuf.length = arraysize(planes);
+    dqbuf.m.planes = planes;
     if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
         // EAGAIN if we're just out of buffers to dequeue.
@@ -724,12 +810,10 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
       // Copy the decoded data from output buffer to the buffer provided by the
       // client. Do format conversion when output format is not
       // V4L2_PIX_FMT_YUV420.
-      if (!CopyOutputImage(output_buffer_pixelformat_, output_record.address,
-                           output_buffer_coded_size_, job_record->out_frame)) {
+      if (!ConvertOutputImage(output_record, job_record->out_frame)) {
         PostNotifyError(job_record->bitstream_buffer_id, PLATFORM_FAILURE);
         return;
       }
-
       DVLOG(3) << "Decoding finished, returning bitstream buffer, id="
                << job_record->bitstream_buffer_id;
 
@@ -834,16 +918,22 @@ bool V4L2JpegDecodeAccelerator::EnqueueInputRecord() {
 
   // It will add default huffman segment if it's missing.
   if (!AddHuffmanTable(job_record->shm.memory(), job_record->shm.size(),
-                       input_record.address, input_record.length)) {
+                       input_record.address[0], input_record.length[0])) {
     PostNotifyError(job_record->bitstream_buffer_id, PARSE_JPEG_FAILED);
     return false;
   }
 
   struct v4l2_buffer qbuf;
+  struct v4l2_plane planes[VIDEO_MAX_PLANES];
   memset(&qbuf, 0, sizeof(qbuf));
+  memset(planes, 0, sizeof(planes));
   qbuf.index = index;
-  qbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+  qbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   qbuf.memory = V4L2_MEMORY_MMAP;
+  qbuf.length = arraysize(planes);
+  // There is only one plane for V4L2_PIX_FMT_JPEG.
+  planes[0].bytesused = input_record.length[0];
+  qbuf.m.planes = planes;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   input_record.at_device = true;
   running_jobs_.push(job_record);
@@ -857,16 +947,21 @@ bool V4L2JpegDecodeAccelerator::EnqueueInputRecord() {
 
 bool V4L2JpegDecodeAccelerator::EnqueueOutputRecord() {
   DCHECK(!free_output_buffers_.empty());
+  DCHECK_GT(output_buffer_num_planes_, 0u);
 
   // Enqueue an output (VIDEO_CAPTURE) buffer.
   const int index = free_output_buffers_.back();
   BufferRecord& output_record = output_buffer_map_[index];
   DCHECK(!output_record.at_device);
   struct v4l2_buffer qbuf;
+  struct v4l2_plane planes[VIDEO_MAX_PLANES];
   memset(&qbuf, 0, sizeof(qbuf));
+  memset(planes, 0, sizeof(planes));
   qbuf.index = index;
-  qbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  qbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   qbuf.memory = V4L2_MEMORY_MMAP;
+  qbuf.length = arraysize(planes);
+  qbuf.m.planes = planes;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   output_record.at_device = true;
   free_output_buffers_.pop_back();

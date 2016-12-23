@@ -434,7 +434,7 @@ void GenericV4L2Device::EnumerateDevicesForType(Type type) {
       break;
     case Type::kJpegDecoder:
       device_pattern = kJpegDecoderDevicePattern;
-      buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+      buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
       break;
   }
 

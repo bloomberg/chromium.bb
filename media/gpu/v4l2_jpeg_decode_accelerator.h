@@ -46,8 +46,8 @@ class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
   struct BufferRecord {
     BufferRecord();
     ~BufferRecord();
-    void* address;  // mmap() address.
-    size_t length;  // mmap() length.
+    void* address[VIDEO_MAX_PLANES];  // mmap() address.
+    size_t length[VIDEO_MAX_PLANES];  // mmap() length.
 
     // Set true during QBUF and DQBUF. |address| will be accessed by hardware.
     bool at_device;
@@ -81,6 +81,14 @@ class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
   bool CreateOutputBuffers();
   void DestroyInputBuffers();
   void DestroyOutputBuffers();
+
+  // Convert |output_buffer| to I420 and copy the result to |dst_frame|.
+  // The function can convert to I420 from the following formats:
+  //   - All splane formats that libyuv::ConvertToI420 can handle.
+  //   - V4L2_PIX_FMT_YUV_420M
+  //   - V4L2_PIX_FMT_YUV_422M
+  bool ConvertOutputImage(const BufferRecord& output_buffer,
+                          const scoped_refptr<VideoFrame>& dst_frame);
 
   // Return the number of input/output buffers enqueued to the device.
   size_t InputBufferQueuedCount();
@@ -126,6 +134,9 @@ class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
 
   // Pixel format of output buffer.
   uint32_t output_buffer_pixelformat_;
+
+  // Number of physical planes the output buffers have.
+  size_t output_buffer_num_planes_;
 
   // ChildThread's task runner.
   scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
