@@ -214,10 +214,9 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   // Wait for the password store before checking the prompt because it pops up
   // after the store replies.
   WaitForPasswordStore();
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
-  EXPECT_FALSE(prompt_observer->IsShowingUpdatePrompt());
+  BubbleObserver prompt_observer(WebContents());
+  EXPECT_FALSE(prompt_observer.IsShowingSavePrompt());
+  EXPECT_FALSE(prompt_observer.IsShowingUpdatePrompt());
 
   // There should be an entry for both psl.example.com and www.example.com.
   password_manager::TestPasswordStore::PasswordMap passwords =
@@ -263,11 +262,10 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   observer.SetPathToWaitFor("/password/done.html");
   observer.Wait();
 
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
+  BubbleObserver prompt_observer(WebContents());
   // The autofill password manager shouldn't react to the successful login
   // because it was suppressed when the site got the credential back.
-  EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
+  EXPECT_FALSE(prompt_observer.IsShowingSavePrompt());
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
@@ -291,10 +289,9 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
   form_submit_observer.Wait();
 
   WaitForPasswordStore();
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  ASSERT_TRUE(prompt_observer->IsShowingSavePrompt());
-  prompt_observer->AcceptSavePrompt();
+  BubbleObserver prompt_observer(WebContents());
+  ASSERT_TRUE(prompt_observer.IsShowingSavePrompt());
+  prompt_observer.AcceptSavePrompt();
 
   WaitForPasswordStore();
   password_manager::TestPasswordStore::PasswordMap stored =
@@ -350,10 +347,9 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
   // Wait for the password store before checking the prompt because it pops up
   // after the store replies.
   WaitForPasswordStore();
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
-  EXPECT_FALSE(prompt_observer->IsShowingUpdatePrompt());
+  BubbleObserver prompt_observer(WebContents());
+  EXPECT_FALSE(prompt_observer.IsShowingSavePrompt());
+  EXPECT_FALSE(prompt_observer.IsShowingUpdatePrompt());
   signin_form.skip_zero_click = false;
   signin_form.times_used = 1;
   signin_form.password_value = base::ASCIIToUTF16("API");
