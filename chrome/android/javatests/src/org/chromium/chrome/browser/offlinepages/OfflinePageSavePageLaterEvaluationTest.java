@@ -15,6 +15,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Manual;
+import org.chromium.base.test.util.TimeoutScale;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.evaluation.OfflinePageEvaluationBridge;
 import org.chromium.chrome.browser.offlinepages.evaluation.OfflinePageEvaluationBridge.OfflinePageEvaluationObserver;
@@ -273,6 +274,7 @@ public class OfflinePageSavePageLaterEvaluationTest
                 timeDelta.setStartTime(System.currentTimeMillis());
                 metadata.mTimeDelta = timeDelta;
                 mRequestMetadata.put(request.getRequestId(), metadata);
+                log("SavePageRequest Added for " + metadata.mUrl + "  with id " + metadata.mId);
             }
             public void savePageRequestCompleted(SavePageRequest request, int status) {
                 RequestMetadata metadata = mRequestMetadata.get(request.getRequestId());
@@ -323,6 +325,7 @@ public class OfflinePageSavePageLaterEvaluationTest
             return;
         }
         int count = 0;
+        log("# of Urls in file: " + mUrls.size());
         for (int i = 0; i < mUrls.size(); i++) {
             savePageLater(mUrls.get(i), NAMESPACE);
             count++;
@@ -332,6 +335,7 @@ public class OfflinePageSavePageLaterEvaluationTest
                 mCompletionLatch.await();
             }
         }
+        log("All urls are processed, going to write results.");
         writeResults();
     }
 
@@ -495,8 +499,11 @@ public class OfflinePageSavePageLaterEvaluationTest
     /**
      * The test is the entry point for all kinds of testing of SavePageLater.
      * It is encouraged to use run_offline_page_evaluation_test.py to run this test.
+     * TimeoutScale is set to 4, in case we hit the hard limit for @Manual tests(10 hours)
+     * and gets killed. It expand the timeout to 10 * 4 hours.
      */
     @Manual
+    @TimeoutScale(4)
     public void testFailureRate() throws IOException, InterruptedException {
         parseConfigFile();
         setUpIOAndBridge(mUseTestScheduler);

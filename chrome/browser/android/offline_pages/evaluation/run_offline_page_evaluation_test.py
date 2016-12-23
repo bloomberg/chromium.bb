@@ -88,7 +88,7 @@ def main(args):
   parser.set_defaults(
       output_dir=os.path.expanduser('~/offline_eval_output'),
       user_request=DEFAULT_USER_REQUEST,
-      user_test_scheduler=DEFAULT_USE_TEST_SCHEDULER,
+      use_test_scheduler=DEFAULT_USE_TEST_SCHEDULER,
       schedule_batch_size=DEFAULT_BATCH_SIZE,
       verbose=DEFAULT_VERBOSE)
 
@@ -145,13 +145,24 @@ def main(args):
       is_user_requested=options.user_request,
       use_test_scheduler=options.use_test_scheduler,
       schedule_batch_size=options.schedule_batch_size)
-  # Run test
+  # Run test with timeout-scale as 20.0 and strict mode off.
+  # This scale is only applied to timeouts which are defined as scalable ones
+  # in the test framework (like the timeout used to decide if Chrome doesn't
+  # start properly), on svelte devices we would hit the 'no tab selected'
+  # assertion since the starting time is longer than expected by the framework.
+  # So we're setting the scale to 20. It will not affect the annotation-based
+  # timeouts.
+  # Also turning off the strict mode so that we won't run into StrictMode
+  # violations when writing to files.
   test_runner_cmd = [
       test_runner_path, '-f',
-      'OfflinePageSavePageLaterEvaluationTest.testFailureRate'
+      'OfflinePageSavePageLaterEvaluationTest.testFailureRate',
+      '--timeout-scale', '20.0', '--strict-mode', 'off',
   ]
   if options.verbose:
     test_runner_cmd += ['-v']
+  if options.device_id != None:
+    test_runner_cmd += ['-d', options.device_id]
   subprocess.call(test_runner_cmd)
 
   print 'Fetching results from device...'
