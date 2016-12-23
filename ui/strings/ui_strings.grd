@@ -656,6 +656,11 @@ need to be translated for each locale.-->
       <message name="IDS_APP_LIST_SPEECH_NETWORK_ERROR_HINT_TEXT" desc="The text label in the speech recognition UI to show the speech recognition can't start because of network error.">
         No internet connection
       </message>
+
+      <!-- Strings describing the touch calibration UX -->
+      <message name="IDS_DISPLAY_TOUCH_CALIBRATION_EXIT_LABEL" desc="A message to notify the user about using the escape key to exit the calibration mode.">
+        To exit calibration press Esc.
+      </message>
       
       <!-- Display names -->
       <message name="IDS_DISPLAY_NAME_UNKNOWN" desc="The name used for a display whose name is unknown, which is shown in the display settings and ash tray.">

@@ -55,7 +55,13 @@ class TouchCalibratorControllerTest : public ash::test::AshTestBase {
     TouchCalibratorView* target_calibrator_view =
         ctrl->touch_calibrator_views_[target_display.id()].get();
 
-    EXPECT_EQ(target_calibrator_view->state(), TouchCalibratorView::UNKNOWN);
+    // End the background fade in animation.
+    target_calibrator_view->SkipCurrentAnimationForTest();
+
+    // TouchCalibratorView on the display being calibrated should be at the
+    // state where the first display point is visible.
+    EXPECT_EQ(target_calibrator_view->state(),
+              TouchCalibratorView::DISPLAY_POINT_1);
   }
 
  private:

@@ -11,7 +11,13 @@
 #include "ui/views/view.h"
 
 namespace views {
+class Label;
 class Widget;
+}
+
+namespace gfx {
+class Animation;
+class LinearAnimation;
 }
 
 namespace chromeos {
@@ -72,10 +78,15 @@ class TouchCalibratorView : public views::View, public gfx::AnimationDelegate {
   // the touch calibration UX.
   bool GetDisplayPointLocation(gfx::Point* location);
 
+  // Skips/cancels any ongoing animation to its end.
+  void SkipCurrentAnimationForTest();
+
   // Returns the current state of the view.
   State state() { return state_; }
 
  private:
+  void InitViewContents();
+
   // The target display on which this view is rendered on.
   const display::Display display_;
 
@@ -83,6 +94,23 @@ class TouchCalibratorView : public views::View, public gfx::AnimationDelegate {
   bool is_primary_view_ = false;
 
   std::unique_ptr<views::Widget> widget_;
+
+  SkPaint paint_;
+
+  // Defines the bounds for the background animation.
+  gfx::RectF background_rect_;
+
+  // Text label indicating how to exit the touch calibration.
+  views::Label* exit_label_;
+
+  // Start and end opacity values used during the fade animation. This is set
+  // before the animation begins.
+  float start_opacity_value_;
+  float end_opacity_value_;
+
+  // Linear animation used for various aniations including fade-in, fade out,
+  // and view translation.
+  std::unique_ptr<gfx::LinearAnimation> animator_;
 
   State state_ = UNKNOWN;
 
