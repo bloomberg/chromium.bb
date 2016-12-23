@@ -31,11 +31,13 @@ cr.define('cr.ui', function() {
 
     var self = this;
 
-    doc.addEventListener(
-        'keydown', function(e) { self.focusByKeyboard_ = true; }, true);
+    doc.addEventListener('keydown', function(e) {
+      self.focusByKeyboard_ = true;
+    }, true);
 
-    doc.addEventListener(
-        'mousedown', function(e) { self.focusByKeyboard_ = false; }, true);
+    doc.addEventListener('mousedown', function(e) {
+      self.focusByKeyboard_ = false;
+    }, true);
 
     doc.addEventListener('focus', function(event) {
       // Update visibility only when focus is actually changed.
@@ -62,14 +64,20 @@ cr.define('cr.ui', function() {
      */
     focusByKeyboard_: true,
 
-    updateVisibility: function() { this.visible = this.focusByKeyboard_; },
+    updateVisibility: function() {
+      this.visible = this.focusByKeyboard_;
+    },
 
     /**
      * Whether the focus outline should be visible.
      * @type {boolean}
      */
-    set visible(visible) { this.classList_.toggle(CLASS_NAME, visible); },
-    get visible() { return this.classList_.contains(CLASS_NAME); }
+    set visible(visible) {
+      this.classList_.toggle(CLASS_NAME, visible);
+    },
+    get visible() {
+      return this.classList_.contains(CLASS_NAME);
+    }
   };
 
   /**

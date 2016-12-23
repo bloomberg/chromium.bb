@@ -58,7 +58,9 @@ cr.define('cr.ui', function() {
      * @type {cr.ui.Command}
      */
     command_: null,
-    get command() { return this.command_; },
+    get command() {
+      return this.command_;
+    },
     set command(command) {
       if (this.command_) {
         this.command_.removeEventListener('labelChange', this);
@@ -96,20 +98,30 @@ cr.define('cr.ui', function() {
      * The text label.
      * @type {string}
      */
-    get label() { return this.textContent; },
-    set label(label) { this.textContent = label; },
+    get label() {
+      return this.textContent;
+    },
+    set label(label) {
+      this.textContent = label;
+    },
 
     /**
      * Menu icon.
      * @type {string}
      */
-    get iconUrl() { return this.style.backgroundImage; },
-    set iconUrl(url) { this.style.backgroundImage = 'url(' + url + ')'; },
+    get iconUrl() {
+      return this.style.backgroundImage;
+    },
+    set iconUrl(url) {
+      this.style.backgroundImage = 'url(' + url + ')';
+    },
 
     /**
      * @return {boolean} Whether the menu item is a separator.
      */
-    isSeparator: function() { return this.tagName == 'HR'; },
+    isSeparator: function() {
+      return this.tagName == 'HR';
+    },
 
     /**
      * Updates shortcut text according to associated command. If command has

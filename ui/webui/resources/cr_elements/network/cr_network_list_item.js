@@ -101,7 +101,9 @@ Polymer({
   },
 
   /** @private */
-  isStateTextConnected_() { return this.isListItem && this.isConnected_(); },
+  isStateTextConnected_() {
+    return this.isListItem && this.isConnected_();
+  },
 
   /**
    * This only gets called for network items once networkState is set.

@@ -54,7 +54,9 @@ var ActionLink = document.registerElement('action-link', {
         }
       });
 
-      function preventDefault(e) { e.preventDefault(); }
+      function preventDefault(e) {
+        e.preventDefault();
+      }
 
       function removePreventDefault() {
         document.removeEventListener('selectstart', preventDefault);
@@ -73,8 +75,9 @@ var ActionLink = document.registerElement('action-link', {
           this.classList.add('no-outline');
       });
 
-      this.addEventListener(
-          'blur', function() { this.classList.remove('no-outline'); });
+      this.addEventListener('blur', function() {
+        this.classList.remove('no-outline');
+      });
     },
 
     /** @type {boolean} */
@@ -85,7 +88,9 @@ var ActionLink = document.registerElement('action-link', {
         HTMLAnchorElement.prototype.removeAttribute.call(this, 'disabled');
       this.tabIndex = disabled ? -1 : 0;
     },
-    get disabled() { return this.hasAttribute('disabled'); },
+    get disabled() {
+      return this.hasAttribute('disabled');
+    },
 
     /** @override */
     setAttribute: function(attr, val) {

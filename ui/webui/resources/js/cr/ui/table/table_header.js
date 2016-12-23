@@ -64,7 +64,9 @@ cr.define('cr.ui.table', function() {
 
     batchCount_: 0,
 
-    startBatchUpdates: function() { this.batchCount_++; },
+    startBatchUpdates: function() {
+      this.batchCount_++;
+    },
 
     endBatchUpdates: function() {
       this.batchCount_--;
@@ -180,7 +182,9 @@ cr.define('cr.ui.table', function() {
      * @param {number} index The index of the column to sort by.
      */
     createSortFunction_: function(index) {
-      return function() { this.table_.sort(index); }.bind(this);
+      return function() {
+        this.table_.sort(index);
+      }.bind(this);
     },
 
     /**
@@ -221,7 +225,9 @@ cr.define('cr.ui.table', function() {
      * @param {number} index Column index.
      * @param {Event} e The double click event.
      */
-    handleDblClick_: function(index, e) { this.table_.fitColumn(index); },
+    handleDblClick_: function(index, e) {
+      this.table_.fitColumn(index);
+    },
 
     /**
      * Determines whether a full redraw is required.

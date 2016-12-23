@@ -10,8 +10,9 @@ cr.define('cr.ui', function() {
    * @return {TabBox} The tab box if found.
    */
   function getTabBox(el) {
-    return findAncestor(
-        el, function(node) { return node.tagName == 'TABBOX'; });
+    return findAncestor(el, function(node) {
+      return node.tagName == 'TABBOX';
+    });
   }
 
   /**

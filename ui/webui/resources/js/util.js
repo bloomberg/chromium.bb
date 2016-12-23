@@ -40,7 +40,9 @@ function announceAccessibleMessage(msg) {
   element.style.height = '0px';
   element.innerText = msg;
   document.body.appendChild(element);
-  window.setTimeout(function() { document.body.removeChild(element); }, 0);
+  window.setTimeout(function() {
+    document.body.removeChild(element);
+  }, 0);
 }
 
 /**
@@ -523,7 +525,9 @@ if (!('key' in KeyboardEvent.prototype)) {
  */
 function importModules(moduleNames) {
   return new Promise(function(resolve) {
-    define(moduleNames, function() { resolve(Array.from(arguments)); });
+    define(moduleNames, function() {
+      resolve(Array.from(arguments));
+    });
   });
 }
 

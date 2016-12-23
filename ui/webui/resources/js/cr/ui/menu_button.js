@@ -67,7 +67,9 @@ cr.define('cr.ui', function() {
      * The menu associated with the menu button.
      * @type {cr.ui.Menu}
      */
-    get menu() { return this.menu_; },
+    get menu() {
+      return this.menu_;
+    },
     set menu(menu) {
       if (typeof menu == 'string' && menu[0] == '#') {
         menu = assert(this.ownerDocument.getElementById(menu.slice(1)));
@@ -240,7 +242,9 @@ cr.define('cr.ui', function() {
     /**
      * Whether the menu is shown.
      */
-    isMenuShown: function() { return this.hasAttribute('menu-shown'); },
+    isMenuShown: function() {
+      return this.hasAttribute('menu-shown');
+    },
 
     /**
      * Positions the menu below the menu button. At this point we do not use any

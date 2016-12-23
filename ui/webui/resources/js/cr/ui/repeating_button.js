@@ -115,7 +115,9 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The triggered event.
      * @private
      */
-    buttonUp_: function(e) { this.clearTimeout_(); },
+    buttonUp_: function(e) {
+      this.clearTimeout_();
+    },
 
     /**
      * Resets the interval callback.
@@ -144,25 +146,33 @@ cr.define('cr.ui', function() {
      * Getter for the initial delay before repeating.
      * @type {number} The delay in milliseconds.
      */
-    get repeatDelay() { return this.holdDelayTime_; },
+    get repeatDelay() {
+      return this.holdDelayTime_;
+    },
 
     /**
      * Setter for the initial delay before repeating.
      * @type {number} The delay in milliseconds.
      */
-    set repeatDelay(delay) { this.holdDelayTime_ = delay; },
+    set repeatDelay(delay) {
+      this.holdDelayTime_ = delay;
+    },
 
     /**
      * Getter for the repeat interval.
      * @type {number} The repeat interval in milliseconds.
      */
-    get repeatInterval() { return this.holdRepeatIntervalTime_; },
+    get repeatInterval() {
+      return this.holdRepeatIntervalTime_;
+    },
 
     /**
      * Setter for the repeat interval.
      * @type {number} The interval in milliseconds.
      */
-    set repeatInterval(delay) { this.holdRepeatIntervalTime_ = delay; }
+    set repeatInterval(delay) {
+      this.holdRepeatIntervalTime_ = delay;
+    }
   };
 
   return {RepeatingButton: RepeatingButton};

@@ -64,13 +64,17 @@ cr.define('cr.ui', function() {
     /**
      * Returns the tree item that are children of this tree.
      */
-    get items() { return this.children; },
+    get items() {
+      return this.children;
+    },
 
     /**
      * Adds a tree item to the tree.
      * @param {!cr.ui.TreeItem} treeItem The item to add.
      */
-    add: function(treeItem) { this.addAt(treeItem, 0xffffffff); },
+    add: function(treeItem) {
+      this.addAt(treeItem, 0xffffffff);
+    },
 
     /**
      * Adds a tree item at the given index.
@@ -98,7 +102,9 @@ cr.define('cr.ui', function() {
      * The depth of the node. This is 0 for the tree itself.
      * @type {number}
      */
-    get depth() { return 0; },
+    get depth() {
+      return 0;
+    },
 
     /**
      * Handles click events on the tree and forwards the event to the relevant
@@ -186,7 +192,9 @@ cr.define('cr.ui', function() {
      * The selected tree item or null if none.
      * @type {cr.ui.TreeItem}
      */
-    get selectedItem() { return this.selectedItem_ || null; },
+    get selectedItem() {
+      return this.selectedItem_ || null;
+    },
     set selectedItem(item) {
       var oldSelectedItem = this.selectedItem_;
       if (oldSelectedItem != item) {
@@ -282,13 +290,18 @@ cr.define('cr.ui', function() {
     /**
      * The tree items children.
      */
-    get items() { return this.lastElementChild.children; },
+    get items() {
+      return this.lastElementChild.children;
+    },
 
     /**
      * The depth of the tree item.
      * @type {number}
      */
-    depth_: 0, get depth() { return this.depth_; },
+    depth_: 0,
+    get depth() {
+      return this.depth_;
+    },
 
     /**
      * Sets the depth.
@@ -311,7 +324,9 @@ cr.define('cr.ui', function() {
      * Adds a tree item as a child.
      * @param {!cr.ui.TreeItem} child The child to add.
      */
-    add: function(child) { this.addAt(child, 0xffffffff); },
+    add: function(child) {
+      this.addAt(child, 0xffffffff);
+    },
 
     /**
      * Adds a tree item as a child at a given index.
@@ -370,7 +385,9 @@ cr.define('cr.ui', function() {
      * Whether the tree item is expanded or not.
      * @type {boolean}
      */
-    get expanded() { return this.hasAttribute('expanded'); },
+    get expanded() {
+      return this.hasAttribute('expanded');
+    },
     set expanded(b) {
       if (this.expanded == b)
         return;
@@ -417,20 +434,28 @@ cr.define('cr.ui', function() {
      * The element representing the row that gets highlighted.
      * @type {!HTMLElement}
      */
-    get rowElement() { return this.firstElementChild; },
+    get rowElement() {
+      return this.firstElementChild;
+    },
 
     /**
      * The element containing the label text and the icon.
      * @type {!HTMLElement}
      */
-    get labelElement() { return this.firstElementChild.lastElementChild; },
+    get labelElement() {
+      return this.firstElementChild.lastElementChild;
+    },
 
     /**
      * The label text.
      * @type {string}
      */
-    get label() { return this.labelElement.textContent; },
-    set label(s) { this.labelElement.textContent = s; },
+    get label() {
+      return this.labelElement.textContent;
+    },
+    set label(s) {
+      this.labelElement.textContent = s;
+    },
 
     /**
      * The URL for the icon.
@@ -447,7 +472,9 @@ cr.define('cr.ui', function() {
      * Whether the tree item is selected or not.
      * @type {boolean}
      */
-    get selected() { return this.hasAttribute('selected'); },
+    get selected() {
+      return this.hasAttribute('selected');
+    },
     set selected(b) {
       if (this.selected == b)
         return;
@@ -472,7 +499,9 @@ cr.define('cr.ui', function() {
      * Whether the tree item has children.
      * @type {boolean}
      */
-    get mayHaveChildren_() { return this.hasAttribute('may-have-children'); },
+    get mayHaveChildren_() {
+      return this.hasAttribute('may-have-children');
+    },
     set mayHaveChildren_(b) {
       var rowItem = this.firstElementChild;
       if (b) {
@@ -488,7 +517,9 @@ cr.define('cr.ui', function() {
      * Whether the tree item has children.
      * @type {boolean}
      */
-    get hasChildren() { return !!this.items[0]; },
+    get hasChildren() {
+      return !!this.items[0];
+    },
 
     /**
      * Whether the tree item has children.
@@ -547,7 +578,9 @@ cr.define('cr.ui', function() {
         }
       }
 
-      function stopPropagation(e) { e.stopPropagation(); }
+      function stopPropagation(e) {
+        e.stopPropagation();
+      }
 
       if (editing) {
         this.selected = true;
@@ -564,8 +597,9 @@ cr.define('cr.ui', function() {
           labelEl.appendChild(input);
 
         input.addEventListener('keydown', handleKeydown);
-        input.addEventListener(
-            'blur', (function() { this.editing = false; }).bind(this));
+        input.addEventListener('blur', (function() {
+                                         this.editing = false;
+                                       }).bind(this));
 
         // Make sure that double clicks do not expand and collapse the tree
         // item.
@@ -603,7 +637,9 @@ cr.define('cr.ui', function() {
       }
     },
 
-    get editing() { return this.hasAttribute('editing'); }
+    get editing() {
+      return this.hasAttribute('editing');
+    }
   };
 
   /**

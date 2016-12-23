@@ -78,7 +78,9 @@ cr.define('cr.ui.pageManager', function() {
      * Sets focus on the first focusable element. Override for a custom focus
      * strategy.
      */
-    focus: function() { cr.ui.setInitialFocus(this.pageDiv); },
+    focus: function() {
+      cr.ui.setInitialFocus(this.pageDiv);
+    },
 
     /**
      * Reverse any buttons strips in this page (only applies to overlays).
@@ -94,7 +96,9 @@ cr.define('cr.ui.pageManager', function() {
      * Whether it should be possible to show the page.
      * @return {boolean} True if the page should be shown.
      */
-    canShowPage: function() { return true; },
+    canShowPage: function() {
+      return true;
+    },
 
     /**
      * Updates the hash of the current page. If the page is topmost, the history
@@ -183,13 +187,17 @@ cr.define('cr.ui.pageManager', function() {
      * page even if sub-pages change.
      * @type {boolean} True if this page is sticky.
      */
-    get sticky() { return false; },
+    get sticky() {
+      return false;
+    },
 
     /**
      * @type {boolean} True if this page should always be considered the
      *     top-most page when visible.
      */
-    get alwaysOnTop() { return this.alwaysOnTop_; },
+    get alwaysOnTop() {
+      return this.alwaysOnTop_;
+    },
 
     /**
      * @type {boolean} True if this page should always be considered the

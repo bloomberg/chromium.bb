@@ -291,7 +291,9 @@ cr.define('cr.ui', function() {
      * Attach the bubble to the document's DOM.
      * @private
      */
-    attachToDOM_: function() { document.body.appendChild(this); },
+    attachToDOM_: function() {
+      document.body.appendChild(this);
+    },
 
     /**
      * Update the arrow so that it appears at the correct position.

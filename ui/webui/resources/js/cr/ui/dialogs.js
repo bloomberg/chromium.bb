@@ -171,8 +171,10 @@ cr.define('cr.ui.dialogs', function() {
 
   /** @private */
   BaseDialog.prototype.findFocusableElements_ = function(doc) {
-    var elements = Array.prototype.filter.call(
-        doc.querySelectorAll('*'), function(n) { return n.tabIndex >= 0; });
+    var elements =
+        Array.prototype.filter.call(doc.querySelectorAll('*'), function(n) {
+          return n.tabIndex >= 0;
+        });
 
     var iframes = doc.querySelectorAll('iframe');
     for (var i = 0; i < iframes.length; i++) {
@@ -217,7 +219,9 @@ cr.define('cr.ui.dialogs', function() {
     this.tabIndexes_ = this.deactivatedNodes_.map(function(n) {
       return n.getAttribute('tabindex');
     });
-    this.deactivatedNodes_.forEach(function(n) { n.tabIndex = -1; });
+    this.deactivatedNodes_.forEach(function(n) {
+      n.tabIndex = -1;
+    });
 
     this.previousActiveElement_ = this.document_.activeElement;
     this.parentNode_.appendChild(this.container_);
@@ -306,7 +310,9 @@ cr.define('cr.ui.dialogs', function() {
    * @constructor
    * @extends {cr.ui.dialogs.BaseDialog}
    */
-  function ConfirmDialog(parentNode) { BaseDialog.call(this, parentNode); }
+  function ConfirmDialog(parentNode) {
+    BaseDialog.call(this, parentNode);
+  }
 
   ConfirmDialog.prototype = {__proto__: BaseDialog.prototype};
 
@@ -357,7 +363,9 @@ cr.define('cr.ui.dialogs', function() {
         this, message, opt_onOk, opt_onCancel, opt_onShow);
   };
 
-  PromptDialog.prototype.getValue = function() { return this.input_.value; };
+  PromptDialog.prototype.getValue = function() {
+    return this.input_.value;
+  };
 
   /** @private */
   PromptDialog.prototype.onOkClick_ = function(event) {

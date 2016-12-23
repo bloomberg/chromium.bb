@@ -37,7 +37,9 @@ Polymer({
    * @return {?Element} The element contained in the template, if it has
    *   already been stamped.
    */
-  getIfExists: function() { return this.child_; },
+  getIfExists: function() {
+    return this.child_;
+  },
 
   /** @private */
   render_: function() {

@@ -414,7 +414,9 @@ cr.define('cr.ui', function() {
      * Begin tracking the touchable element, it is eligible for dragging.
      * @private
      */
-    beginTracking_: function() { this.tracking_ = true; },
+    beginTracking_: function() {
+      this.tracking_ = true;
+    },
 
     /**
      * Stop tracking the touchable element, it is no longer dragging.

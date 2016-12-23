@@ -39,13 +39,17 @@ function LoadTimeData(){}
      * Returns a JsEvalContext for |data_|.
      * @returns {JsEvalContext}
      */
-    createJsEvalContext: function() { return new JsEvalContext(this.data_); },
+    createJsEvalContext: function() {
+      return new JsEvalContext(this.data_);
+    },
 
     /**
      * @param {string} id An ID of a value that might exist.
      * @return {boolean} True if |id| is a key in the dictionary.
      */
-    valueExists: function(id) { return id in this.data_; },
+    valueExists: function(id) {
+      return id in this.data_;
+    },
 
     /**
      * Fetches a value, expecting that it exists.
@@ -84,8 +88,9 @@ function LoadTimeData(){}
         return '';
 
       var varArgs = arguments;
-      return value.replace(
-          /\$[$1-9]/g, function(m) { return m == '$$' ? '$' : varArgs[m[1]]; });
+      return value.replace(/\$[$1-9]/g, function(m) {
+        return m == '$$' ? '$' : varArgs[m[1]];
+      });
     },
 
     /**

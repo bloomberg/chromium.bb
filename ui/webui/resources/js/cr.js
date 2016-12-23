@@ -109,13 +109,19 @@ var cr = cr || function() {
     switch (kind) {
       case PropertyKind.JS:
         var privateName = name + '_';
-        return function() { return this[privateName]; };
+        return function() {
+          return this[privateName];
+        };
       case PropertyKind.ATTR:
         var attributeName = getAttributeName(name);
-        return function() { return this.getAttribute(attributeName); };
+        return function() {
+          return this.getAttribute(attributeName);
+        };
       case PropertyKind.BOOL_ATTR:
         var attributeName = getAttributeName(name);
-        return function() { return this.hasAttribute(attributeName); };
+        return function() {
+          return this.hasAttribute(attributeName);
+        };
     }
 
     // TODO(dbeam): replace with assertNotReached() in assert.js when I can coax
@@ -214,7 +220,9 @@ var cr = cr || function() {
   /**
    * @return {number} A new unique ID.
    */
-  function createUid() { return uidCounter++; }
+  function createUid() {
+    return uidCounter++;
+  }
 
   /**
    * Returns a unique ID for the item. This mutates the item so it needs to be
@@ -440,24 +448,38 @@ var cr = cr || function() {
     webUIListenerCallback: webUIListenerCallback,
     webUIResponse: webUIResponse,
 
-    get doc() { return document; },
+    get doc() {
+      return document;
+    },
 
     /** Whether we are using a Mac or not. */
-    get isMac() { return /Mac/.test(navigator.platform); },
+    get isMac() {
+      return /Mac/.test(navigator.platform);
+    },
 
     /** Whether this is on the Windows platform or not. */
-    get isWindows() { return /Win/.test(navigator.platform); },
+    get isWindows() {
+      return /Win/.test(navigator.platform);
+    },
 
     /** Whether this is on chromeOS or not. */
-    get isChromeOS() { return /CrOS/.test(navigator.userAgent); },
+    get isChromeOS() {
+      return /CrOS/.test(navigator.userAgent);
+    },
 
     /** Whether this is on vanilla Linux (not chromeOS). */
-    get isLinux() { return /Linux/.test(navigator.userAgent); },
+    get isLinux() {
+      return /Linux/.test(navigator.userAgent);
+    },
 
     /** Whether this is on Android. */
-    get isAndroid() { return /Android/.test(navigator.userAgent); },
+    get isAndroid() {
+      return /Android/.test(navigator.userAgent);
+    },
 
     /** Whether this is on iOS. */
-    get isIOS() { return /iPad|iPhone|iPod/.test(navigator.platform); }
+    get isIOS() {
+      return /iPad|iPhone|iPod/.test(navigator.platform);
+    }
   };
 }();

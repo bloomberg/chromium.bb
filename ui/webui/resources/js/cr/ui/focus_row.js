@@ -126,7 +126,9 @@ cr.define('cr.ui', function() {
     },
 
     /** Dereferences nodes and removes event handlers. */
-    destroy: function() { this.eventTracker.removeAll(); },
+    destroy: function() {
+      this.eventTracker.removeAll();
+    },
 
     /**
      * @param {!Element} sampleElement An element for to find an equivalent for.

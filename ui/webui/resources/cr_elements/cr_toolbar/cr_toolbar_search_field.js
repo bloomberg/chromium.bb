@@ -50,7 +50,9 @@ Polymer({
   },
 
   /** @return {!HTMLInputElement} */
-  getSearchInput: function() { return this.$.searchInput; },
+  getSearchInput: function() {
+    return this.$.searchInput;
+  },
 
   /**
    * Sets the value of the search field. Overridden from CrSearchFieldBehavior.
@@ -64,7 +66,9 @@ Polymer({
   },
 
   /** @return {boolean} */
-  isSearchFocused: function() { return this.searchFocused_; },
+  isSearchFocused: function() {
+    return this.searchFocused_;
+  },
 
   showAndFocus: function() {
     this.showingSearch = true;
@@ -72,14 +76,18 @@ Polymer({
   },
 
   /** @private */
-  focus_: function() { this.getSearchInput().focus(); },
+  focus_: function() {
+    this.getSearchInput().focus();
+  },
 
   /**
    * @param {boolean} narrow
    * @return {number}
    * @private
    */
-  computeIconTabIndex_: function(narrow) { return narrow ? 0 : -1; },
+  computeIconTabIndex_: function(narrow) {
+    return narrow ? 0 : -1;
+  },
 
   /**
    * @return {boolean}
@@ -90,7 +98,9 @@ Polymer({
   },
 
   /** @private */
-  onInputFocus_: function() { this.searchFocused_ = true; },
+  onInputFocus_: function() {
+    this.searchFocused_ = true;
+  },
 
   /** @private */
   onInputBlur_: function() {

@@ -41,7 +41,9 @@ Polymer({
   },
 
   /** override */
-  detached: function() { this.removeResizeListener_(); },
+  detached: function() {
+    this.removeResizeListener_();
+  },
 
   /** @private */
   removeResizeListener_: function() {

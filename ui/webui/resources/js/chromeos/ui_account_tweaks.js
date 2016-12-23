@@ -166,7 +166,9 @@ cr.define('uiAccountTweaks', function() {
         element.nodeName == 'BUTTON') {
       element.disabled = true;
     } else if (element.nodeName == 'A') {
-      element.onclick = function() { return false; };
+      element.onclick = function() {
+        return false;
+      };
     }
   };
 

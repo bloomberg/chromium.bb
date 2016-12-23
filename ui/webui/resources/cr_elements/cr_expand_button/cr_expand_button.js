@@ -38,5 +38,7 @@ Polymer({
    * @param {Event} event
    * @private
    */
-  stopTap_: function(event) { event.stopPropagation(); },
+  stopTap_: function(event) {
+    event.stopPropagation();
+  },
 });

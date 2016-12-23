@@ -447,13 +447,17 @@ cr.define('cr.ui.pageManager', function() {
      * Change the horizontal offset used to reposition elements while showing an
      * overlay from the default.
      */
-    set horizontalOffset(value) { this.horizontalOffset_ = value; },
+    set horizontalOffset(value) {
+      this.horizontalOffset_ = value;
+    },
 
     /**
      * @param {!cr.ui.pageManager.PageManager.Observer} observer The observer to
      *     register.
      */
-    addObserver: function(observer) { this.observers_.push(observer); },
+    addObserver: function(observer) {
+      this.observers_.push(observer);
+    },
 
     /**
      * Shows a registered overlay page. Does not update history.
@@ -509,7 +513,9 @@ cr.define('cr.ui.pageManager', function() {
      * @return {boolean} True if an overlay is visible.
      * @private
      */
-    isOverlayVisible_: function() { return this.getVisibleOverlay_() != null; },
+    isOverlayVisible_: function() {
+      return this.getVisibleOverlay_() != null;
+    },
 
     /**
      * Returns the currently visible overlay, or null if no page is visible.
@@ -673,7 +679,9 @@ cr.define('cr.ui.pageManager', function() {
      * but should only behave as if they are fixed for vertical scrolling.
      * @private
      */
-    handleScroll_: function() { this.updateAllFrozenElementPositions_(); },
+    handleScroll_: function() {
+      this.updateAllFrozenElementPositions_();
+    },
 
     /**
      * Updates all frozen pages to match the horizontal scroll position.

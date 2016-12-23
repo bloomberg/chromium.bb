@@ -75,14 +75,18 @@ cr.define('cr.ui.table', function() {
      * The width of the column.  Hidden columns have zero width.
      * @type {number}
      */
-    get width() { return this.visible_ ? this.width_ : 0; },
+    get width() {
+      return this.visible_ ? this.width_ : 0;
+    },
 
     /**
      * The width of the column, disregarding visibility.  For hidden columns,
      * this would be the width of the column if it were to be made visible.
      * @type {number}
      */
-    get absoluteWidth() { return this.width_; },
+    get absoluteWidth() {
+      return this.width_;
+    },
   };
 
   /**

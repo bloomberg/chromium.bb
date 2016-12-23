@@ -94,7 +94,9 @@ cr.define('cr.ui', function() {
      * Function used to create grid items.
      * @return {function(new:cr.ui.ListItem, *)}
      */
-    get itemConstructor() { return this.itemConstructor_; },
+    get itemConstructor() {
+      return this.itemConstructor_;
+    },
     set itemConstructor(func) {
       if (func != this.itemConstructor_) {
         this.itemConstructor_ = func;
@@ -146,7 +148,9 @@ cr.define('cr.ui', function() {
       this.onSetDataModelComplete();
     },
 
-    get dataModel() { return this.dataModel_; },
+    get dataModel() {
+      return this.dataModel_;
+    },
 
     /**
      * Override to be notified when |this.dataModel| is set.
@@ -164,7 +168,9 @@ cr.define('cr.ui', function() {
      * The selection model to use.
      * @type {cr.ui.ListSelectionModel}
      */
-    get selectionModel() { return this.selectionModel_; },
+    get selectionModel() {
+      return this.selectionModel_;
+    },
     set selectionModel(sm) {
       var oldSm = this.selectionModel_;
       if (oldSm == sm)
@@ -194,7 +200,9 @@ cr.define('cr.ui', function() {
      * Whether or not the list auto-expands.
      * @type {boolean}
      */
-    get autoExpands() { return this.autoExpands_; },
+    get autoExpands() {
+      return this.autoExpands_;
+    },
     set autoExpands(autoExpands) {
       if (this.autoExpands_ == autoExpands)
         return;
@@ -206,7 +214,9 @@ cr.define('cr.ui', function() {
      * Whether or not the rows on list have various heights.
      * @type {boolean}
      */
-    get fixedHeight() { return this.fixedHeight_; },
+    get fixedHeight() {
+      return this.fixedHeight_;
+    },
     set fixedHeight(fixedHeight) {
       if (this.fixedHeight_ == fixedHeight)
         return;
@@ -243,7 +253,9 @@ cr.define('cr.ui', function() {
       var indexes = this.selectionModel.selectedIndexes;
       var dataModel = this.dataModel;
       if (dataModel) {
-        return indexes.map(function(i) { return dataModel.item(i); });
+        return indexes.map(function(i) {
+          return dataModel.item(i);
+        });
       }
       return [];
     },
@@ -275,7 +287,9 @@ cr.define('cr.ui', function() {
      * sure that the code will not return without calling endBatchUpdates or the
      * list will not be correctly updated.
      */
-    startBatchUpdates: function() { this.batchCount_++; },
+    startBatchUpdates: function() {
+      this.batchCount_++;
+    },
 
     /**
      * See startBatchUpdates.
@@ -684,13 +698,17 @@ cr.define('cr.ui', function() {
      * @return {number} The row of the item. May vary in the case
      *     of multiple columns.
      */
-    getItemRow: function(index) { return index; },
+    getItemRow: function(index) {
+      return index;
+    },
 
     /**
      * @param {number} row The row.
      * @return {number} The index of the first item in the row.
      */
-    getFirstItemInRow: function(row) { return row; },
+    getFirstItemInRow: function(row) {
+      return row;
+    },
 
     /**
      * Ensures that a given index is inside the viewport.
@@ -713,7 +731,9 @@ cr.define('cr.ui', function() {
 
       var self = this;
       // Function to adjust the tops of viewport and row.
-      function scrollToAdjustTop() { self.scrollTop = top; }
+      function scrollToAdjustTop() {
+        self.scrollTop = top;
+      }
       // Function to adjust the bottoms of viewport and row.
       function scrollToAdjustBottom() {
         self.scrollTop = top + itemHeight - availableHeight;

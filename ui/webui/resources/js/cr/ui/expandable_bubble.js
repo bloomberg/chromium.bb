@@ -75,7 +75,9 @@ cr.define('cr.ui', function() {
      * is clicked. By default is set to this.hide.
      * @param {Function} func A function with no parameters.
      */
-    set handleCloseEvent(func) { this.handleCloseEvent_ = func; },
+    set handleCloseEvent(func) {
+      this.handleCloseEvent_ = func;
+    },
 
     /**
      * Temporarily suppresses the bubble from view (and toggles it back).

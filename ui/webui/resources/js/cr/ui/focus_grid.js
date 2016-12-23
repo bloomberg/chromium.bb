@@ -43,7 +43,9 @@ cr.define('cr.ui', function() {
       else
         this.lastFocused_ = e.currentTarget;
 
-      this.rows.forEach(function(r) { r.makeActive(r == row); });
+      this.rows.forEach(function(r) {
+        r.makeActive(r == row);
+      });
     },
 
     /** @override */
@@ -77,7 +79,9 @@ cr.define('cr.ui', function() {
      * Unregisters event handlers and removes all |this.rows|.
      */
     destroy: function() {
-      this.rows.forEach(function(row) { row.destroy(); });
+      this.rows.forEach(function(row) {
+        row.destroy();
+      });
       this.rows.length = 0;
     },
 
@@ -109,7 +113,9 @@ cr.define('cr.ui', function() {
      * Adds |row| to the end of this list.
      * @param {!cr.ui.FocusRow} row The row that needs to be added to this grid.
      */
-    addRow: function(row) { this.addRowBefore(row, null); },
+    addRow: function(row) {
+      this.addRowBefore(row, null);
+    },
 
     /**
      * Adds |row| before |nextRow|. If |nextRow| is not in the list or it's

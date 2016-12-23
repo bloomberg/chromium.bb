@@ -26,7 +26,9 @@ cr.define('cr.ui', function() {
      * The selection model we are interacting with.
      * @type {cr.ui.ListSelectionModel}
      */
-    get selectionModel() { return this.selectionModel_; },
+    get selectionModel() {
+      return this.selectionModel_;
+    },
 
     /**
      * Returns the index below (y axis) the given element.
@@ -44,7 +46,9 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the index above.
      * @return {number} The index below or -1 if not found.
      */
-    getIndexAbove: function(index) { return index - 1; },
+    getIndexAbove: function(index) {
+      return index - 1;
+    },
 
     /**
      * Returns the index before (x axis) the given element. This returns -1
@@ -54,7 +58,9 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the index before.
      * @return {number} The index before or -1 if not found.
      */
-    getIndexBefore: function(index) { return -1; },
+    getIndexBefore: function(index) {
+      return -1;
+    },
 
     /**
      * Returns the index after (x axis) the given element. This returns -1
@@ -64,7 +70,9 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the index after.
      * @return {number} The index after or -1 if not found.
      */
-    getIndexAfter: function(index) { return -1; },
+    getIndexAfter: function(index) {
+      return -1;
+    },
 
     /**
      * Returns the next list index. This is the next logical and should not
@@ -84,17 +92,23 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the previous index for.
      * @return {number} The previous index or -1 if not found.
      */
-    getPreviousIndex: function(index) { return index - 1; },
+    getPreviousIndex: function(index) {
+      return index - 1;
+    },
 
     /**
      * @return {number} The first index.
      */
-    getFirstIndex: function() { return 0; },
+    getFirstIndex: function() {
+      return 0;
+    },
 
     /**
      * @return {number} The last index.
      */
-    getLastIndex: function() { return this.selectionModel.length - 1; },
+    getLastIndex: function() {
+      return this.selectionModel.length - 1;
+    },
 
     /**
      * Called by the view when the user does a mousedown or mouseup on the

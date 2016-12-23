@@ -64,7 +64,9 @@ var I18nBehavior = {
    * @param {string} id
    * @return {boolean}
    */
-  i18nExists: function(id) { return loadTimeData.valueExists(id); },
+  i18nExists: function(id) {
+    return loadTimeData.valueExists(id);
+  },
 };
 
 /**

@@ -129,7 +129,9 @@ cr.define('cr.ui', function() {
      * @type {string}
      */
     shortcut_: '',
-    get shortcut() { return this.shortcut_; },
+    get shortcut() {
+      return this.shortcut_;
+    },
     set shortcut(shortcut) {
       var oldShortcut = this.shortcut_;
       if (shortcut !== oldShortcut) {
@@ -310,7 +312,9 @@ cr.define('cr.ui', function() {
      * @type {boolean}
      */
     canExecute_: false,
-    get canExecute() { return this.canExecute_; },
+    get canExecute() {
+      return this.canExecute_;
+    },
     set canExecute(canExecute) {
       this.canExecute_ = !!canExecute;
       this.stopPropagation();

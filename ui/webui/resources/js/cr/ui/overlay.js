@@ -26,7 +26,9 @@ cr.define('cr.ui.overlay', function() {
    * @return {HTMLElement} The default button.
    */
   function getDefaultButton(overlay) {
-    function isHidden(node) { return node.hidden; }
+    function isHidden(node) {
+      return node.hidden;
+    }
     var defaultButtons = /** @type !NodeList<!HTMLElement> */ (
         overlay.querySelectorAll('.page .button-strip > .default-button'));
     for (var i = 0; i < defaultButtons.length; i++) {
@@ -111,8 +113,9 @@ cr.define('cr.ui.overlay', function() {
       else
         this.removeAttribute('hidden');
     });
-    overlay.__defineGetter__(
-        'hidden', function() { return this.hasAttribute('hidden'); });
+    overlay.__defineGetter__('hidden', function() {
+      return this.hasAttribute('hidden');
+    });
 
     // Shake when the user clicks away.
     overlay.addEventListener('click', function(e) {

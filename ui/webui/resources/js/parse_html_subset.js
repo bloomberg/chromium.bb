@@ -69,8 +69,9 @@ var parseHtmlSubset = (function() {
   }
 
   return function(s, opt_extraTags, opt_extraAttrs) {
-    var extraTags =
-        (opt_extraTags || []).map(function(str) { return str.toUpperCase(); });
+    var extraTags = (opt_extraTags || []).map(function(str) {
+      return str.toUpperCase();
+    });
     var tags = allowedTags.concat(extraTags);
     var attrs = merge(allowedAttributes, opt_extraAttrs || {});
 

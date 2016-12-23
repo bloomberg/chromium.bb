@@ -14,7 +14,9 @@ cr.define('cr.ui', function() {
    * @extends {cr.EventTarget}
    * @implements {EventListener}
    */
-  function ContextMenuHandler() { this.showingEvents_ = new EventTracker(); }
+  function ContextMenuHandler() {
+    this.showingEvents_ = new EventTracker();
+  }
 
   ContextMenuHandler.prototype = {
     __proto__: EventTarget.prototype,
@@ -23,7 +25,10 @@ cr.define('cr.ui', function() {
      * The menu that we are currently showing.
      * @type {cr.ui.Menu}
      */
-    menu_: null, get menu() { return this.menu_; },
+    menu_: null,
+    get menu() {
+      return this.menu_;
+    },
 
     /**
      * Shows a menu as a context menu.
@@ -217,8 +222,9 @@ cr.define('cr.ui', function() {
           elementOrClass.prototype :
           elementOrClass;
 
-      target.__defineGetter__(
-          'contextMenu', function() { return this.contextMenu_; });
+      target.__defineGetter__('contextMenu', function() {
+        return this.contextMenu_;
+      });
       target.__defineSetter__('contextMenu', function(menu) {
         var oldContextMenu = this.contextMenu;
 

@@ -73,7 +73,9 @@ cr.define('cr.ui', function() {
      * Shows a warning at the setter because cr.ui.Grid does not support this.
      * @type {boolean}
      */
-    get fixedHeight() { return true; },
+    get fixedHeight() {
+      return true;
+    },
     set fixedHeight(fixedHeight) {
       if (!fixedHeight)
         console.warn('cr.ui.Grid does not support fixedHeight = false');
@@ -206,14 +208,18 @@ cr.define('cr.ui', function() {
      *     of multiple columns.
      * @override
      */
-    getItemRow: function(index) { return Math.floor(index / this.columns); },
+    getItemRow: function(index) {
+      return Math.floor(index / this.columns);
+    },
 
     /**
      * @param {number} row The row.
      * @return {number} The index of the first item in the row.
      * @override
      */
-    getFirstItemInRow: function(row) { return row * this.columns; },
+    getFirstItemInRow: function(row) {
+      return row * this.columns;
+    },
 
     /**
      * Creates the selection controller to use internally.
@@ -404,7 +410,9 @@ cr.define('cr.ui', function() {
      * @return {number} The index before or -1 if not found.
      * @override
      */
-    getIndexBefore: function(index) { return index - 1; },
+    getIndexBefore: function(index) {
+      return index - 1;
+    },
 
     /**
      * Returns the index after (x axis) the given element.

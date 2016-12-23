@@ -228,32 +228,42 @@ cr.define('cr.ui', function() {
      * Returns the index of the current card.
      * @return {number} index of the current card.
      */
-    get currentCard() { return this.currentCard_; },
+    get currentCard() {
+      return this.currentCard_;
+    },
 
     /**
      * Allows setting the current card index.
      * @param {number} index A new index to set the current index to.
      * @return {number} The new index after having been set.
      */
-    set currentCard(index) { return (this.currentCard_ = index); },
+    set currentCard(index) {
+      return (this.currentCard_ = index);
+    },
 
     /**
      * Returns the number of cards.
      * @return {number} number of cards.
      */
-    get cardCount() { return this.cards_.length; },
+    get cardCount() {
+      return this.cards_.length;
+    },
 
     /**
      * Returns the current card itself.
      * @return {!Element} the currently shown card.
      */
-    get currentCardValue() { return this.cards_[this.currentCard_]; },
+    get currentCardValue() {
+      return this.cards_[this.currentCard_];
+    },
 
     /**
      * Returns the frame holding the cards.
      * @return {Element} The frame used to position the cards.
      */
-    get frame() { return this.frame_; },
+    get frame() {
+      return this.frame_;
+    },
 
     /**
      * Handle horizontal scrolls to flip between pages.
@@ -458,7 +468,9 @@ cr.define('cr.ui', function() {
      * the likely event it needs to be updated by a card being inserted or
      * removed in the flow.
      */
-    repositionFrame: function() { this.transformToCurrentCard_(); },
+    repositionFrame: function() {
+      this.transformToCurrentCard_();
+    },
 
     /**
      * Checks the the given |index| exists in this.cards_.

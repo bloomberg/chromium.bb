@@ -36,14 +36,26 @@ function PromiseResolver() {
 
 PromiseResolver.prototype = {
   /** @return {!Promise<T>} */
-  get promise() { return this.promise_; },
-  set promise(p) { assertNotReached(); },
+  get promise() {
+    return this.promise_;
+  },
+  set promise(p) {
+    assertNotReached();
+  },
 
   /** @return {function(T=): void} */
-  get resolve() { return this.resolve_; },
-  set resolve(r) { assertNotReached(); },
+  get resolve() {
+    return this.resolve_;
+  },
+  set resolve(r) {
+    assertNotReached();
+  },
 
   /** @return {function(*=): void} */
-  get reject() { return this.reject_; },
-  set reject(s) { assertNotReached(); },
+  get reject() {
+    return this.reject_;
+  },
+  set reject(s) {
+    assertNotReached();
+  },
 };

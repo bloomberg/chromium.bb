@@ -52,13 +52,19 @@ Polymer({
   ],
 
   /** @return {!CrToolbarSearchFieldElement} */
-  getSearchField: function() { return this.$.search; },
+  getSearchField: function() {
+    return this.$.search;
+  },
 
   /** @private */
-  onClosePromoTap_: function() { this.fire('cr-toolbar-menu-promo-close'); },
+  onClosePromoTap_: function() {
+    this.fire('cr-toolbar-menu-promo-close');
+  },
 
   /** @private */
-  onMenuTap_: function() { this.fire('cr-toolbar-menu-tap'); },
+  onMenuTap_: function() {
+    this.fire('cr-toolbar-menu-tap');
+  },
 
   /** @private */
   possiblyShowMenuPromo_: function() {

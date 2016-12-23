@@ -76,7 +76,12 @@ Polymer({
      * List of all network state data for all visible networks.
      * @type {!Array<!CrOnc.NetworkStateProperties>}
      */
-    networkStateList: {type: Array, value: function() { return []; }},
+    networkStateList: {
+      type: Array,
+      value: function() {
+        return [];
+      }
+    },
 
     /**
      * The list of custom items to display after the list of networks.
@@ -85,7 +90,9 @@ Polymer({
      */
     customItems: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
 
     /**

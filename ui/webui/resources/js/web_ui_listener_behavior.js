@@ -17,7 +17,9 @@ var WebUIListenerBehavior = {
      */
     webUIListeners_: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
   },
 

@@ -76,7 +76,9 @@ cr.define('cr', function() {
       // Since we are using DOM Event objects we need to override some of the
       // properties and methods so that we can emulate this correctly.
       var self = this;
-      event.__defineGetter__('target', function() { return self; });
+      event.__defineGetter__('target', function() {
+        return self;
+      });
 
       var type = event.type;
       var prevented = 0;

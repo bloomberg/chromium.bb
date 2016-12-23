@@ -63,7 +63,9 @@ cr.define('cr.ui', function() {
      * implementation does not set any strings.
      * @return {Object}
      */
-    getDefaultStrings: function() { return {}; },
+    getDefaultStrings: function() {
+      return {};
+    },
 
     /**
      * Returns the text shown in the bubble.

@@ -78,7 +78,9 @@ cr.define('cr.ui', function() {
      * @param {boolean} resizeNext True if resize the next element.
      *     By default, splitter resizes previous (left) element.
      */
-    set resizeNextElement(resizeNext) { this.resizeNextElement_ = resizeNext; },
+    set resizeNextElement(resizeNext) {
+      this.resizeNextElement_ = resizeNext;
+    },
 
     /**
      * Starts the dragging of the splitter. Adds listeners for mouse or touch
@@ -187,7 +189,9 @@ cr.define('cr.ui', function() {
      * @param {!MouseEvent} e The mouse event.
      * @private
      */
-    handleMouseMove_: function(e) { this.handleMove_(e.clientX); },
+    handleMouseMove_: function(e) {
+      this.handleMove_(e.clientX);
+    },
 
     /**
      * Handles the touch move event.
@@ -218,7 +222,9 @@ cr.define('cr.ui', function() {
      * @param {!MouseEvent} e The mouse event.
      * @private
      */
-    handleMouseUp_: function(e) { this.endDrag_(); },
+    handleMouseUp_: function(e) {
+      this.endDrag_();
+    },
 
     /**
      * Handles start of the splitter dragging. Saves current width of the

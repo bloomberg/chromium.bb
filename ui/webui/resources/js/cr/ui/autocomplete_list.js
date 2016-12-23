@@ -133,7 +133,9 @@ cr.define('cr.ui', function() {
      * By default, clears and hides the autocomplete popup. Note that the
      * keydown event bubbles up, so the input field can handle the event.
      */
-    handleEnterKeydown: function() { this.suggestions = []; },
+    handleEnterKeydown: function() {
+      this.suggestions = [];
+    },
 
     /**
      * Handles the selected suggestion. Called when a suggestion is selected.
@@ -222,7 +224,9 @@ cr.define('cr.ui', function() {
      * @return {HTMLElement} The text field the autocomplete popup is currently
      *     attached to, if any.
      */
-    get targetInput() { return this.targetInput_; },
+    get targetInput() {
+      return this.targetInput_;
+    },
 
     /**
      * Handles input field key events that should be interpreted as autocomplete
