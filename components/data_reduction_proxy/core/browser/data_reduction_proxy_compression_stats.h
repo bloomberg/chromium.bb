@@ -11,8 +11,8 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -45,7 +45,7 @@ class PerSiteDataUsage;
 // prefs must be stored and read on the UI thread.
 class DataReductionProxyCompressionStats {
  public:
-  typedef base::ScopedPtrHashMap<std::string, std::unique_ptr<PerSiteDataUsage>>
+  typedef std::unordered_map<std::string, std::unique_ptr<PerSiteDataUsage>>
       SiteUsageMap;
 
   // Collects and store data usage and compression statistics. Basic data usage
@@ -140,7 +140,7 @@ class DataReductionProxyCompressionStats {
   friend class DataReductionProxyCompressionStatsTest;
 
   typedef std::map<const char*, int64_t> DataReductionProxyPrefMap;
-  typedef base::ScopedPtrHashMap<const char*, std::unique_ptr<base::ListValue>>
+  typedef std::unordered_map<const char*, std::unique_ptr<base::ListValue>>
       DataReductionProxyListPrefMap;
 
   class DailyContentLengthUpdate;

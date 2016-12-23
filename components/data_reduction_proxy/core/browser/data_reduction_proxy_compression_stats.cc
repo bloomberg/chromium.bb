@@ -491,7 +491,7 @@ void DataReductionProxyCompressionStats::InitListPref(const char* pref) {
   std::unique_ptr<base::ListValue> pref_value =
       std::unique_ptr<base::ListValue>(
           pref_service_->GetList(pref)->DeepCopy());
-  list_pref_map_.add(pref, std::move(pref_value));
+  list_pref_map_[pref] = std::move(pref_value);
 }
 
 int64_t DataReductionProxyCompressionStats::GetInt64(const char* pref_path) {
@@ -525,7 +525,10 @@ base::ListValue* DataReductionProxyCompressionStats::GetList(
     return ListPrefUpdate(pref_service_, pref_path).Get();
 
   DelayedWritePrefs();
-  return list_pref_map_.get(pref_path);
+  auto it = list_pref_map_.find(pref_path);
+  if (it == list_pref_map_.end())
+    return nullptr;
+  return it->second.get();
 }
 
 void DataReductionProxyCompressionStats::WritePrefs() {
@@ -538,9 +541,9 @@ void DataReductionProxyCompressionStats::WritePrefs() {
     pref_service_->SetInt64(iter->first, iter->second);
   }
 
-  for (DataReductionProxyListPrefMap::iterator iter = list_pref_map_.begin();
-       iter != list_pref_map_.end(); ++iter) {
-    TransferList(*(iter->second),
+  for (auto iter = list_pref_map_.begin(); iter != list_pref_map_.end();
+       ++iter) {
+    TransferList(*(iter->second.get()),
                  ListPrefUpdate(pref_service_, iter->first).Get());
   }
 }
@@ -687,8 +690,8 @@ void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
          data_usage->connection_usage_size() == 1);
   for (const auto& connection_usage : data_usage->connection_usage()) {
     for (const auto& site_usage : connection_usage.site_usage()) {
-      data_usage_map_.set(site_usage.hostname(),
-                          base::MakeUnique<PerSiteDataUsage>(site_usage));
+      data_usage_map_[site_usage.hostname()] =
+          base::MakeUnique<PerSiteDataUsage>(site_usage);
     }
   }
 
@@ -718,8 +721,8 @@ void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
   pref_service_->ClearPref(
       prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
 
-  for (DataReductionProxyListPrefMap::iterator iter = list_pref_map_.begin();
-       iter != list_pref_map_.end(); ++iter) {
+  for (auto iter = list_pref_map_.begin(); iter != list_pref_map_.end();
+       ++iter) {
     iter->second->Clear();
   }
 }
@@ -1159,9 +1162,9 @@ void DataReductionProxyCompressionStats::RecordDataUsage(
   }
 
   std::string normalized_host = NormalizeHostname(data_usage_host);
-  auto j = data_usage_map_.add(normalized_host,
-                               base::MakeUnique<PerSiteDataUsage>());
-  PerSiteDataUsage* per_site_usage = j.first->second;
+  auto j = data_usage_map_.insert(
+      std::make_pair(normalized_host, base::MakeUnique<PerSiteDataUsage>()));
+  PerSiteDataUsage* per_site_usage = j.first->second.get();
   per_site_usage->set_hostname(normalized_host);
   per_site_usage->set_original_size(per_site_usage->original_size() +
                                     original_size);
@@ -1182,7 +1185,7 @@ void DataReductionProxyCompressionStats::PersistDataUsage() {
         data_usage_bucket->add_connection_usage();
     for (auto i = data_usage_map_.begin(); i != data_usage_map_.end(); ++i) {
         PerSiteDataUsage* per_site_usage = connection_usage->add_site_usage();
-        per_site_usage->CopyFrom(*(i->second));
+        per_site_usage->CopyFrom(*(i->second.get()));
     }
     service_->StoreCurrentDataUsageBucket(std::move(data_usage_bucket));
   }
