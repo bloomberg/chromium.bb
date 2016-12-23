@@ -78,26 +78,26 @@ class EidGenerator {
   // filter. In the normal case, two DataWithTimestamp values are returned, one
   // for each EID seed rotation period. If data has not been synced from the
   // backend recently and EID seeds are unavailable, nullptr is returned.
-  std::unique_ptr<EidData> GenerateBackgroundScanFilter(
+  virtual std::unique_ptr<EidData> GenerateBackgroundScanFilter(
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const;
 
   // Generates advertisement data for the given EID seeds. If data has not been
   // synced from the back-end recently and EID seeds are unavailable, nullptr is
   // returned.
-  std::unique_ptr<DataWithTimestamp> GenerateAdvertisement(
+  virtual std::unique_ptr<DataWithTimestamp> GenerateAdvertisement(
       const std::string& advertising_device_public_key,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const;
 
   // Generates all possible advertisements that could be created by a device
   // given that device's public key and the beacon seeds of the device which is
   // intended to scan for the advertisement.
-  std::vector<std::string> GeneratePossibleAdvertisements(
+  virtual std::vector<std::string> GeneratePossibleAdvertisements(
       const std::string& advertising_device_public_key,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const;
 
   // Given a list of RemoteDevices, identifies the device which could have
   // produced the supplied advertisement service data.
-  RemoteDevice const* IdentifyRemoteDeviceByAdvertisement(
+  virtual RemoteDevice const* IdentifyRemoteDeviceByAdvertisement(
       const std::string& advertisement_service_data,
       const std::vector<RemoteDevice>& device_list,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const;

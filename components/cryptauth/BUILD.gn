@@ -86,6 +86,8 @@ static_library("test_support") {
     "fake_secure_message_delegate.h",
     "mock_cryptauth_client.cc",
     "mock_cryptauth_client.h",
+    "mock_eid_generator.cc",
+    "mock_eid_generator.h",
     "mock_sync_scheduler.cc",
     "mock_sync_scheduler.h",
     "remote_device_test_util.cc",
