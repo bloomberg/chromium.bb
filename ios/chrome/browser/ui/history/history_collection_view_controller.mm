@@ -390,6 +390,10 @@ const CGFloat kSeparatorInset = 10;
 - (void)historyServiceFacade:(HistoryServiceFacade*)facade
     shouldShowNoticeAboutOtherFormsOfBrowsingHistory:(BOOL)shouldShowNotice {
   self.shouldShowNoticeAboutOtherFormsOfBrowsingHistory = shouldShowNotice;
+  // Update the history entries status message if there is no query in progress.
+  if (!self.isLoading) {
+    [self updateEntriesStatusMessage];
+  }
 }
 
 - (void)historyServiceFacadeDidObserveHistoryDeletion:
