@@ -73,7 +73,11 @@ void TaskSwitchMetricsRecorder::OnTaskSwitchInternal(
 
 TaskSwitchTimeTracker* TaskSwitchMetricsRecorder::FindTaskSwitchTimeTracker(
     TaskSwitchSource task_switch_source) {
-  return histogram_map_.get(static_cast<int>(task_switch_source));
+  auto it = histogram_map_.find(static_cast<int>(task_switch_source));
+  if (it == histogram_map_.end())
+    return nullptr;
+
+  return it->second.get();
 }
 
 void TaskSwitchMetricsRecorder::AddTaskSwitchTimeTracker(
@@ -84,8 +88,8 @@ void TaskSwitchMetricsRecorder::AddTaskSwitchTimeTracker(
   const char* histogram_name = GetHistogramName(task_switch_source);
   DCHECK(histogram_name);
 
-  histogram_map_.add(static_cast<int>(task_switch_source),
-                     base::MakeUnique<TaskSwitchTimeTracker>(histogram_name));
+  histogram_map_[static_cast<int>(task_switch_source)] =
+      base::MakeUnique<TaskSwitchTimeTracker>(histogram_name);
 }
 
 }  // namespace ash

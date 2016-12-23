@@ -7,10 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "ash/ash_export.h"
 #include "ash/common/metrics/task_switch_source.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -62,7 +62,7 @@ class ASH_EXPORT TaskSwitchMetricsRecorder {
   // Tracks TaskSwitchSource to TaskSwitchTimeTracker mappings. The
   // |histogram_map_| is populated on demand the first time a
   // TaskSwitchTimeTracker is needed for a given source.
-  base::ScopedPtrHashMap<int, std::unique_ptr<TaskSwitchTimeTracker>>
+  std::unordered_map<int, std::unique_ptr<TaskSwitchTimeTracker>>
       histogram_map_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSwitchMetricsRecorder);
