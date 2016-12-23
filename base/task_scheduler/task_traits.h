@@ -122,14 +122,6 @@ class BASE_EXPORT TaskTraits {
   // in tasks that may block (per MayBlock()'s definition).
   TaskTraits& WithSyncPrimitives();
 
-  // DEPRECATED
-  // TODO(fdoray): Remove this as part of crbug.com/675660
-  TaskTraits& WithFileIO();
-
-  // DEPRECATED
-  // TODO(fdoray): Remove this as part of crbug.com/675660
-  TaskTraits& WithWait();
-
   // Applies |priority| to tasks with these traits.
   TaskTraits& WithPriority(TaskPriority priority);
 

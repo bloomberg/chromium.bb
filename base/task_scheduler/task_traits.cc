@@ -34,14 +34,6 @@ TaskTraits& TaskTraits::WithSyncPrimitives() {
   return *this;
 }
 
-TaskTraits& TaskTraits::WithFileIO() {
-  return MayBlock();
-}
-
-TaskTraits& TaskTraits::WithWait() {
-  return MayBlock().WithSyncPrimitives();
-}
-
 TaskTraits& TaskTraits::WithPriority(TaskPriority priority) {
   priority_ = priority;
   return *this;
