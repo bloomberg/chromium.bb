@@ -34,6 +34,10 @@ namespace remoting {
 
 namespace {
 
+#ifndef NDEBUG
+const char kDaemonDevScript[] = "remoting/chrome-remote-desktop";
+#endif  // NDEBUG
+
 const char kDaemonScript[] =
     "/opt/google/chrome-remote-desktop/chrome-remote-desktop";
 
@@ -54,6 +58,16 @@ base::FilePath GetConfigPath() {
 }
 
 bool GetScriptPath(base::FilePath* result) {
+#ifndef NDEBUG
+  base::FilePath out_dir;
+  PathService::Get(base::DIR_EXE, &out_dir);
+  base::FilePath dev_exe = out_dir.AppendASCII(kDaemonDevScript);
+  if (access(dev_exe.value().c_str(), X_OK) == 0) {
+    *result = dev_exe;
+    return true;
+  }
+#endif  // NDEBUG
+
   base::FilePath candidate_exe(kDaemonScript);
   if (access(candidate_exe.value().c_str(), X_OK) == 0) {
     *result = candidate_exe;
@@ -157,9 +171,7 @@ void DaemonControllerDelegateLinux::SetConfigAndStart(
     bool consent,
     const DaemonController::CompletionCallback& done) {
   // Add the user to chrome-remote-desktop group first.
-  std::vector<std::string> args;
-  args.push_back("--add-user");
-  if (!RunHostScript(args)) {
+  if (!RunHostScript({"--add-user"})) {
     LOG(ERROR) << "Failed to add user to chrome-remote-desktop group.";
     done.Run(DaemonController::RESULT_FAILED);
     return;
@@ -185,8 +197,9 @@ void DaemonControllerDelegateLinux::SetConfigAndStart(
   }
 
   // Finally start the host.
-  args.clear();
-  args.push_back("--start");
+  std::vector<std::string> args = {"--start",
+                                   "--config=" + GetConfigPath().value()};
+
   DaemonController::AsyncResult result = DaemonController::RESULT_FAILED;
   if (RunHostScript(args))
     result = DaemonController::RESULT_OK;

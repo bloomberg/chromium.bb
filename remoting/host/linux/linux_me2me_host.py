@@ -37,6 +37,27 @@ import uuid
 
 LOG_FILE_ENV_VAR = "CHROME_REMOTE_DESKTOP_LOG_FILE"
 
+ENV_VARS_FORWARDED_TO_CHILD_ENV = [
+    "HOME",
+    "LANG",
+    "LOGNAME",
+    "PATH",
+    "SHELL",
+    "USER",
+    "USERNAME",
+    LOG_FILE_ENV_VAR,
+    "GOOGLE_CLIENT_ID_REMOTING",
+    "GOOGLE_CLIENT_ID_REMOTING_HOST",
+    "GOOGLE_CLIENT_SECRET_REMOTING",
+    "GOOGLE_CLIENT_SECRET_REMOTING_HOST"
+]
+
+# If this env var is defined, extra host params will be loaded from this env var
+# as a list of strings separated by space (\s+). Note that param that contains
+# space is currently NOT supported and will be broken down into two params at
+# the space character.
+HOST_EXTRA_PARAMS_ENV_VAR = "CHROME_REMOTE_DESKTOP_HOST_EXTRA_PARAMS"
+
 # This script has a sensible default for the initial and maximum desktop size,
 # which can be overridden either on the command-line, or via a comma-separated
 # list of sizes in this environment variable.
@@ -367,15 +388,7 @@ class Desktop:
       # from the user's console X session.
       self.child_env = {}
 
-      for key in [
-          "HOME",
-          "LANG",
-          "LOGNAME",
-          "PATH",
-          "SHELL",
-          "USER",
-          "USERNAME",
-          LOG_FILE_ENV_VAR]:
+      for key in ENV_VARS_FORWARDED_TO_CHILD_ENV:
         if key in os.environ:
           self.child_env[key] = os.environ[key]
 
@@ -676,7 +689,7 @@ class Desktop:
     self._launch_x_server(x_args)
     self._launch_x_session()
 
-  def launch_host(self, host_config):
+  def launch_host(self, host_config, extra_start_host_args):
     # Start remoting host
     args = [HOST_BINARY_PATH, "--host-config=-"]
     if self.pulseaudio_pipe:
@@ -685,6 +698,8 @@ class Desktop:
       args.append("--server-supports-exact-resize")
     if self.ssh_auth_sockname:
       args.append("--ssh-auth-sockname=%s" % self.ssh_auth_sockname)
+
+    args.extend(extra_start_host_args)
 
     # Have the host process use SIGUSR1 to signal a successful start.
     def sigusr1_handler(signum, frame):
@@ -1499,7 +1514,13 @@ Web Store: https://chrome.google.com/remotedesktop"""
         relaunch_times.append(host_inhibitor.earliest_relaunch_time)
       else:
         logging.info("Launching host process")
-        desktop.launch_host(host_config)
+
+        extra_start_host_args = []
+        if HOST_EXTRA_PARAMS_ENV_VAR in os.environ:
+            extra_start_host_args = \
+                re.split('\s+', os.environ[HOST_EXTRA_PARAMS_ENV_VAR].strip())
+        desktop.launch_host(host_config, extra_start_host_args)
+
         host_inhibitor.record_started(MINIMUM_PROCESS_LIFETIME,
                                       backoff_time)
 
