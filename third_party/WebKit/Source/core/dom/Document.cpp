@@ -4217,6 +4217,9 @@ void Document::nodeWillBeRemoved(Node& n) {
 
   if (containsV1ShadowTree())
     n.checkSlotChangeBeforeRemoved();
+
+  if (n.inActiveDocument() && n.isElementNode())
+    styleEngine().elementWillBeRemoved(toElement(n));
 }
 
 void Document::dataWillChange(const CharacterData& characterData) {

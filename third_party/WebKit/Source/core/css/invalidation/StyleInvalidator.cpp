@@ -132,6 +132,25 @@ void StyleInvalidator::scheduleSiblingInvalidationsAsDescendants(
   }
 }
 
+void StyleInvalidator::rescheduleSiblingInvalidationsAsDescendants(
+    Element& element) {
+  DCHECK(element.parentNode());
+  PendingInvalidations* pendingInvalidations =
+      m_pendingInvalidationMap.get(&element);
+  if (!pendingInvalidations || pendingInvalidations->siblings().isEmpty())
+    return;
+
+  InvalidationLists invalidationLists;
+  for (const auto& invalidationSet : pendingInvalidations->siblings()) {
+    invalidationLists.descendants.push_back(invalidationSet);
+    if (DescendantInvalidationSet* descendants =
+            toSiblingInvalidationSet(*invalidationSet).siblingDescendants()) {
+      invalidationLists.descendants.push_back(descendants);
+    }
+  }
+  scheduleInvalidationSetsForNode(invalidationLists, *element.parentNode());
+}
+
 void StyleInvalidator::clearInvalidation(ContainerNode& node) {
   if (!node.needsStyleInvalidation())
     return;

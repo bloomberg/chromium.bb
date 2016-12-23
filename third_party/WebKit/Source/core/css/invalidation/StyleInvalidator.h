@@ -31,6 +31,7 @@ class StyleInvalidator {
   void scheduleSiblingInvalidationsAsDescendants(
       const InvalidationLists&,
       ContainerNode& schedulingParent);
+  void rescheduleSiblingInvalidationsAsDescendants(Element&);
   void clearInvalidation(ContainerNode&);
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_pendingInvalidationMap); }

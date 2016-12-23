@@ -240,6 +240,10 @@ class CORE_EXPORT StyleEngine final
   void scheduleInvalidationsForRuleSets(TreeScope&,
                                         const HeapHashSet<Member<RuleSet>>&);
 
+  void elementWillBeRemoved(Element& element) {
+    m_styleInvalidator.rescheduleSiblingInvalidationsAsDescendants(element);
+  }
+
   unsigned styleForElementCount() const { return m_styleForElementCount; }
   void incStyleForElementCount() { m_styleForElementCount++; }
 
