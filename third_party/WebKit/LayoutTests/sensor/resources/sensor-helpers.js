@@ -39,6 +39,7 @@ function sensor_mocks(mojo) {
         this.reporting_mode_ = reportingMode;
         this.sensor_reading_timer_id_ = null;
         this.update_reading_function_ = null;
+        this.reading_updates_count_ = 0;
         this.suspend_called_ = null;
         this.resume_called_ = null;
         this.add_configuration_called_ = null;
@@ -62,6 +63,9 @@ function sensor_mocks(mojo) {
         return Promise.resolve({frequency: 5});
       }
 
+      reading_updates_count() {
+        return this.reading_updates_count_;
+      }
       // Adds configuration for the sensor and starts reporting fake data
       // through update_reading_function_ callback.
       addConfiguration(configuration) {
@@ -126,6 +130,7 @@ function sensor_mocks(mojo) {
         this.stopReading();
 
         this.expects_modified_reading_ = false;
+        this.reading_updates_count_ = 0;
         this.start_should_fail_ = false;
         this.update_reading_function_ = null;
         this.active_sensor_configurations_ = [];
@@ -193,13 +198,17 @@ function sensor_mocks(mojo) {
 
       startReading() {
         if (this.update_reading_function_ != null) {
+          this.stopReading();
           let max_frequency_used =
               this.active_sensor_configurations_[0].frequency;
           let timeout = (1 / max_frequency_used) * 1000;
           this.sensor_reading_timer_id_ = window.setInterval(() => {
-            if (this.update_reading_function_)
+            if (this.update_reading_function_) {
               this.update_reading_function_(this.buffer_,
-                                            this.expects_modified_reading_);
+                                            this.expects_modified_reading_,
+                                            this.reading_updates_count_);
+              this.reading_updates_count_++;
+            }
             if (this.reporting_mode_ === sensor.ReportingMode.ON_CHANGE) {
               this.client_.sensorReadingChanged();
             }
