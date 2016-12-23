@@ -134,7 +134,9 @@ FYI_WATERFALL = {
     'Linux ChromiumOS Builder' : {
       'additional_compile_targets' : [ "All" ]
     },
-    'Linux ChromiumOS Ozone Builder' : {},
+    'Linux ChromiumOS Ozone Builder' : {
+      'additional_compile_targets' : [ "All" ]
+    },
   },
 
   'testers': {
