@@ -28,6 +28,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -677,12 +678,18 @@ bool NavigationHandleImpl::MaybeTransferAndProceed() {
 
   // Inform observers that the navigation is now ready to commit, unless a
   // transfer of the navigation failed.
-  ReadyToCommitNavigation(render_frame_host_);
+  // PlzNavigate: when a navigation is not set to commit (204/205s/downloads) do
+  // not call ReadyToCommitNavigation.
+  DCHECK(!IsBrowserSideNavigationEnabled() || render_frame_host_ ||
+         net_error_code_ == net::ERR_ABORTED);
+  if (!IsBrowserSideNavigationEnabled() || render_frame_host_)
+    ReadyToCommitNavigation(render_frame_host_);
   return true;
 }
 
 bool NavigationHandleImpl::MaybeTransferAndProceedInternal() {
-  DCHECK(render_frame_host_);
+  DCHECK(render_frame_host_ || (IsBrowserSideNavigationEnabled() &&
+                                net_error_code_ == net::ERR_ABORTED));
 
   // PlzNavigate: the final RenderFrameHost handling this navigation has been
   // decided before calling WillProcessResponse in

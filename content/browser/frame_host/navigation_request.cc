@@ -38,6 +38,7 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/redirect_info.h"
@@ -298,6 +299,7 @@ NavigationRequest::NavigationRequest(
       restore_type_(RestoreType::NONE),
       is_view_source_(false),
       bindings_(NavigationEntryImpl::kInvalidBindings),
+      response_should_be_rendered_(true),
       associated_site_instance_type_(AssociatedSiteInstanceType::NONE),
       may_transfer_(may_transfer) {
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
@@ -452,19 +454,19 @@ void NavigationRequest::OnResponseStarted(
     bool is_download,
     bool is_stream) {
   DCHECK(state_ == STARTED);
+  DCHECK(response);
   state_ = RESPONSE_STARTED;
 
-  // HTTP 204 (No Content) and HTTP 205 (Reset Content) responses should not
-  // commit; they leave the frame showing the previous page.
-  DCHECK(response);
-  if (response->head.headers.get() &&
-      (response->head.headers->response_code() == 204 ||
-       response->head.headers->response_code() == 205)) {
-    frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
-        navigation_handle_.get());
-    frame_tree_node_->ResetNavigationRequest(false);
-    return;
-  }
+  // Check if the response should be sent to a renderer.
+  response_should_be_rendered_ =
+      !is_download && (!response->head.headers.get() ||
+                       (response->head.headers->response_code() != 204 &&
+                        response->head.headers->response_code() != 205));
+
+  // Response that will not commit should be marked as aborted in the
+  // NavigationHandle.
+  if (!response_should_be_rendered_)
+    navigation_handle_->set_net_error_code(net::ERR_ABORTED);
 
   // Update the service worker params of the request params.
   bool did_create_service_worker_host =
@@ -490,14 +492,18 @@ void NavigationRequest::OnResponseStarted(
     common_params_.lofi_state = LOFI_OFF;
 
   // Select an appropriate renderer to commit the navigation.
-  RenderFrameHostImpl* render_frame_host =
-      frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
-  NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host,
-                                                           common_params_.url);
+  RenderFrameHostImpl* render_frame_host = nullptr;
+  if (response_should_be_rendered_) {
+    render_frame_host =
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+    NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+        render_frame_host, common_params_.url);
+  }
+  DCHECK(render_frame_host || !response_should_be_rendered_);
 
   // For renderer-initiated navigations that are set to commit in a different
   // renderer, allow the embedder to cancel the transfer.
-  if (!browser_initiated_ &&
+  if (!browser_initiated_ && render_frame_host &&
       render_frame_host != frame_tree_node_->current_frame_host() &&
       !frame_tree_node_->navigator()->GetDelegate()->ShouldTransferNavigation(
           frame_tree_node_->IsMainFrame())) {
@@ -658,10 +664,14 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(result != NavigationThrottle::DEFER);
 
-  // Abort the request if needed. This will destroy the NavigationRequest.
+  // Abort the request if needed. This includes requests that were blocked by
+  // NavigationThrottles and requests that should not commit (e.g. downloads,
+  // 204/205s). This will destroy the NavigationRequest.
   if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
-      result == NavigationThrottle::CANCEL) {
+      result == NavigationThrottle::CANCEL || !response_should_be_rendered_) {
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
+    frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
+        navigation_handle_.get());
     frame_tree_node_->ResetNavigationRequest(false);
     return;
   }

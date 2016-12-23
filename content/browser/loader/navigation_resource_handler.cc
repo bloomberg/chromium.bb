@@ -94,16 +94,6 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
-  // If the MimeTypeResourceHandler intercepted this request and converted it
-  // into a download, it will still call OnResponseStarted and immediately
-  // cancel. Ignore the call; OnReadCompleted will happen shortly.
-  //
-  // TODO(davidben): Move the dispatch out of MimeTypeResourceHandler. Perhaps
-  // all the way to the UI thread. Downloads, user certificates, etc., should be
-  // dispatched at the navigation layer.
-  if (info->IsDownload())
-    return true;
-
   StreamContext* stream_context =
       GetStreamContextForResourceContext(info->GetContext());
   writer_.InitializeStream(stream_context->registry(),
@@ -138,8 +128,16 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
   // Make sure that the requests go through the throttle checks. Currently this
   // does not work as the InterceptingResourceHandler is above us and hence it
   // does not expect the old handler to defer the request.
-  if (!info->is_stream())
+  // TODO(clamy): We should also make the downloads wait on the
+  // NavigationThrottle checks be performed. Similarly to streams, it doesn't
+  // work because of the InterceptingResourceHandler.
+  // TODO(clamy): This NavigationResourceHandler should be split in two, with
+  // one part that wait on the NavigationThrottle to execute located between the
+  // MIME sniffing and the ResourceThrotlle, and one part that write the
+  // response to the stream being the leaf ResourceHandler.
+  if (!info->is_stream() && !info->IsDownload())
     *defer = true;
+
   return true;
 }
 

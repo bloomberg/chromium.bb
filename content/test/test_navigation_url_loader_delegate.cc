@@ -65,8 +65,8 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
     bool is_stream) {
   response_ = response;
   body_ = std::move(body);
-  ASSERT_TRUE(response_started_);
-  response_started_->Quit();
+  if (response_started_)
+    response_started_->Quit();
 }
 
 void TestNavigationURLLoaderDelegate::OnRequestFailed(bool in_cache,
