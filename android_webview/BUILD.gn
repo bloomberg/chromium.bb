@@ -597,10 +597,6 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/JsResultReceiver.java",
     "java/src/org/chromium/android_webview/NullAwViewMethods.java",
     "java/src/org/chromium/android_webview/OverScrollGlow.java",
-
-    # TODO(gsennton): remove PlatformServiceBridge after downstream has been updated to depend on
-    # android_webview_platform_services_java
-    "java/src/org/chromium/android_webview/PlatformServiceBridge.java",
     "java/src/org/chromium/android_webview/PopupTouchHandleDrawable.java",
     "java/src/org/chromium/android_webview/ResourcesContextWrapperFactory.java",
     "java/src/org/chromium/android_webview/ScrollAccessibilityHelper.java",
@@ -611,6 +607,7 @@ android_library("android_webview_java") {
   ]
   deps = [
     ":android_webview_crash_services_java",
+    ":android_webview_platform_services_java",
     ":resources",
     ":strings_grd",
     "//base:base_java",
