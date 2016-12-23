@@ -22,7 +22,7 @@ void AccountAvatarFetcher::Start(
   fetcher_.Init(request_context, std::string(),
                 net::URLRequest::NEVER_CLEAR_REFERRER,
                 net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
-                    net::LOAD_MAYBE_USER_GESTURE);
+                net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_MAYBE_USER_GESTURE);
   fetcher_.Start();
 }
 
