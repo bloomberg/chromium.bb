@@ -626,6 +626,8 @@ void PaintPropertyTreeBuilder::updateOverflowClip(
 
 static FloatPoint perspectiveOrigin(const LayoutBox& box) {
   const ComputedStyle& style = box.styleRef();
+  // Perspective origin has no effect without perspective.
+  DCHECK(style.hasPerspective());
   FloatSize borderBoxSize(box.size());
   return FloatPoint(
       floatValueForLength(style.perspectiveOriginX(), borderBoxSize.width()),

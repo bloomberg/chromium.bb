@@ -498,4 +498,57 @@ TEST_P(PaintPropertyTreeUpdateTest,
   EXPECT_EQ(nullptr, properties->effect());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, PerspectiveOriginUpdatesOnSizeChanges) {
+  setBodyInnerHTML(
+      "<style>"
+      "  body { margin: 0 }"
+      "  #perspective {"
+      "    position: absolute;"
+      "    perspective: 100px;"
+      "    width: 100px;"
+      "    perspective-origin: 50% 50% 0;"
+      "  }"
+      "</style>"
+      "<div id='perspective'>"
+      "  <div id='contents'></div>"
+      "</div>");
+
+  auto* perspective = document().getElementById("perspective")->layoutObject();
+  EXPECT_EQ(TransformationMatrix().applyPerspective(100),
+            perspective->paintProperties()->perspective()->matrix());
+  EXPECT_EQ(FloatPoint3D(50, 0, 0),
+            perspective->paintProperties()->perspective()->origin());
+
+  auto* contents = document().getElementById("contents");
+  contents->setAttribute(HTMLNames::styleAttr, "height: 200px;");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(TransformationMatrix().applyPerspective(100),
+            perspective->paintProperties()->perspective()->matrix());
+  EXPECT_EQ(FloatPoint3D(50, 100, 0),
+            perspective->paintProperties()->perspective()->origin());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, TransformUpdatesOnRelativeLengthChanges) {
+  setBodyInnerHTML(
+      "<style>"
+      "  body { margin: 0 }"
+      "  #transform {"
+      "    transform: translate3d(50%, 50%, 0);"
+      "    width: 100px;"
+      "    height: 200px;"
+      "  }"
+      "</style>"
+      "<div id='transform'></div>");
+
+  auto* transform = document().getElementById("transform");
+  auto* transformObject = transform->layoutObject();
+  EXPECT_EQ(TransformationMatrix().translate3d(50, 100, 0),
+            transformObject->paintProperties()->transform()->matrix());
+
+  transform->setAttribute(HTMLNames::styleAttr, "width: 200px; height: 300px;");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(TransformationMatrix().translate3d(100, 150, 0),
+            transformObject->paintProperties()->transform()->matrix());
+}
+
 }  // namespace blink
