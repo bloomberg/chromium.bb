@@ -5,6 +5,7 @@
 #include "net/quic/core/quic_packet_creator.h"
 
 #include <algorithm>
+#include <cstdint>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -131,7 +132,7 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
       frame->stream_frame->data_length >= sizeof(kCHLO) &&
       strncmp(frame->stream_frame->data_buffer,
               reinterpret_cast<const char*>(&kCHLO), sizeof(kCHLO)) == 0) {
-    DCHECK_EQ(static_cast<size_t>(0), iov_offset);
+    DCHECK_EQ(0u, iov_offset);
     if (FLAGS_quic_enforce_single_packet_chlo &&
         frame->stream_frame->data_length < iov.iov->iov_len) {
       const string error_details = "Client hello won't fit in a single packet.";

@@ -4,9 +4,8 @@
 
 #include "net/quic/core/quic_framer.h"
 
-#include <string.h>
-
 #include <algorithm>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -18,11 +17,12 @@
 #include "net/quic/core/crypto/null_encrypter.h"
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
+#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/test/gtest_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
 using std::string;
@@ -1197,7 +1197,7 @@ TEST_P(QuicFramerTest, PacketWithDiversificationNonce) {
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
   ASSERT_TRUE(visitor_.public_header_->nonce != nullptr);
   for (char i = 0; i < 32; ++i) {
-    EXPECT_EQ(i, (*visitor_.public_header_->nonce)[static_cast<int>(i)]);
+    EXPECT_EQ(i, (*visitor_.public_header_->nonce)[static_cast<size_t>(i)]);
   }
 };
 
@@ -1658,7 +1658,7 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
-  const QuicAckFrame& frame = *visitor_.ack_frames_[0].get();
+  const QuicAckFrame& frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(kSmallLargestObserved, frame.largest_observed);
   ASSERT_EQ(4660u, frame.packets.NumPacketsSlow());
 
@@ -1753,7 +1753,7 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
-  const QuicAckFrame& frame = *visitor_.ack_frames_[0].get();
+  const QuicAckFrame& frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(kSmallLargestObserved, frame.largest_observed);
   ASSERT_EQ(4254u, frame.packets.NumPacketsSlow());
 
@@ -1868,7 +1868,7 @@ TEST_P(QuicFramerTest, NewStopWaitingFrame) {
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
   ASSERT_EQ(1u, visitor_.stop_waiting_frames_.size());
-  const QuicStopWaitingFrame& frame = *visitor_.stop_waiting_frames_[0].get();
+  const QuicStopWaitingFrame& frame = *visitor_.stop_waiting_frames_[0];
   EXPECT_EQ(kLeastUnacked, frame.least_unacked);
 
   const size_t frame_size = 7;
@@ -3914,7 +3914,7 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   ASSERT_TRUE(framer_.ProcessPacket(
       QuicEncryptedPacket(buffer, encrypted_length, false)));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
-  QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0].get();
+  QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(600u, processed_ack_frame.largest_observed);
   ASSERT_EQ(256u, processed_ack_frame.packets.NumPacketsSlow());
   EXPECT_EQ(90u, processed_ack_frame.packets.Min());
@@ -3946,7 +3946,7 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
   ASSERT_TRUE(framer_.ProcessPacket(
       QuicEncryptedPacket(buffer, encrypted_length, false)));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
-  QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0].get();
+  QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(600u, processed_ack_frame.largest_observed);
   ASSERT_EQ(239u, processed_ack_frame.packets.NumPacketsSlow());
   EXPECT_EQ(124u, processed_ack_frame.packets.Min());

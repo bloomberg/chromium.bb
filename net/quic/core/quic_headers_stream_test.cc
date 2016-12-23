@@ -4,6 +4,7 @@
 
 #include "net/quic/core/quic_headers_stream.h"
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 #include <tuple>
@@ -11,6 +12,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/core/quic_bug_tracker.h"
+#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -27,7 +29,6 @@
 
 using base::StringPiece;
 using std::string;
-using testing::ElementsAre;
 using testing::_;
 using testing::AtLeast;
 using testing::HasSubstr;
@@ -36,7 +37,6 @@ using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 using testing::WithArgs;
-using testing::_;
 
 // TODO(bnc): Merge these correctly.
 bool FLAGS_use_http2_frame_decoder_adapter;
@@ -556,7 +556,7 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromiseDisabledSetting) {
 
 TEST_P(QuicHeadersStreamTest, EmptyHeaderHOLBlockedTime) {
   EXPECT_CALL(session_, OnHeadersHeadOfLineBlocking(_)).Times(0);
-  testing::InSequence seq;
+  InSequence seq;
   bool fin = true;
   for (int stream_num = 0; stream_num < 10; stream_num++) {
     QuicStreamId stream_id = QuicClientDataStreamId(stream_num);
@@ -861,7 +861,7 @@ TEST_P(QuicHeadersStreamTest, HpackDecoderDebugVisitor) {
   headers_["key1"] = string(1 << 2, '.');
   headers_["key2"] = string(1 << 3, '.');
   {
-    testing::InSequence seq;
+    InSequence seq;
     // Number of indexed representations generated in headers below.
     for (int i = 1; i < 28; i++) {
       EXPECT_CALL(*hpack_decoder_visitor,
@@ -908,13 +908,13 @@ TEST_P(QuicHeadersStreamTest, HpackEncoderDebugVisitor) {
       std::move(hpack_encoder_visitor_));
 
   if (perspective() == Perspective::IS_SERVER) {
-    testing::InSequence seq;
+    InSequence seq;
     for (int i = 1; i < 4; i++) {
       EXPECT_CALL(*hpack_encoder_visitor,
                   OnUseEntry(QuicTime::Delta::FromMilliseconds(i)));
     }
   } else {
-    testing::InSequence seq;
+    InSequence seq;
     for (int i = 1; i < 28; i++) {
       EXPECT_CALL(*hpack_encoder_visitor,
                   OnUseEntry(QuicTime::Delta::FromMilliseconds(i)));

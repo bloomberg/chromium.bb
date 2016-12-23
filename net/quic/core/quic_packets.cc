@@ -5,7 +5,6 @@
 #include "net/quic/core/quic_packets.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/quic_versions.h"

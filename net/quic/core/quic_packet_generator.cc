@@ -4,9 +4,10 @@
 
 #include "net/quic/core/quic_packet_generator.h"
 
+#include <cstdint>
+
 #include "base/logging.h"
 #include "net/quic/core/quic_bug_tracker.h"
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
 
 using base::StringPiece;
@@ -199,7 +200,7 @@ void QuicPacketGenerator::SendQueuedFrames(bool flush) {
                << " number of queued_control_frames: "
                << queued_control_frames_.size();
       if (!queued_control_frames_.empty()) {
-        DVLOG(1) << queued_control_frames_[0];
+        VLOG(1) << queued_control_frames_[0];
       }
       delegate_->OnUnrecoverableError(QUIC_FAILED_TO_SERIALIZE_PACKET,
                                       "Single frame cannot fit into a packet",

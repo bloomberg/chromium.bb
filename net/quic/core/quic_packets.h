@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_CORE_QUIC_PACKETS_H_
 #define NET_QUIC_CORE_QUIC_PACKETS_H_
 
+#include <cstdint>
 #include <limits>
 #include <list>
 #include <memory>
@@ -16,7 +17,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "net/base/int128.h"
 #include "net/base/iovec.h"
 #include "net/quic/core/frames/quic_frame.h"
 #include "net/quic/core/quic_ack_listener_interface.h"
@@ -60,7 +60,7 @@ GetStartOfEncryptedData(QuicVersion version,
 
 struct QUIC_EXPORT_PRIVATE QuicPacketPublicHeader {
   QuicPacketPublicHeader();
-  explicit QuicPacketPublicHeader(const QuicPacketPublicHeader& other);
+  QuicPacketPublicHeader(const QuicPacketPublicHeader& other);
   ~QuicPacketPublicHeader();
 
   // Universal header. All QuicPacket headers will have a connection_id and

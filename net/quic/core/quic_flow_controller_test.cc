@@ -8,14 +8,11 @@
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
-#include "net/quic/core/quic_flags.h"
-#include "net/quic/core/quic_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/test/gtest_util.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 

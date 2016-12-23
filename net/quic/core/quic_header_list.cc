@@ -4,10 +4,10 @@
 
 #include "net/quic/core/quic_header_list.h"
 
-using std::string;
-
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
+
+using std::string;
 
 namespace net {
 

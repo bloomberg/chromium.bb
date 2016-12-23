@@ -10,8 +10,7 @@
 #ifndef NET_QUIC_CORE_QUIC_PACKET_CREATOR_H_
 #define NET_QUIC_CORE_QUIC_PACKET_CREATOR_H_
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <unordered_map>

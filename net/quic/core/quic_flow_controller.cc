@@ -4,10 +4,11 @@
 
 #include "net/quic/core/quic_flow_controller.h"
 
+#include <cstdint>
+
 #include "base/strings/stringprintf.h"
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_connection.h"
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
 
 namespace net {

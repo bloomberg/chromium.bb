@@ -5,6 +5,7 @@
 #include "net/quic/core/quic_headers_stream.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <string>
 #include <utility>
 
@@ -21,7 +22,6 @@
 #include "net/spdy/spdy_protocol.h"
 
 using base::StringPiece;
-using net::SpdyFrameType;
 using std::string;
 
 namespace net {
@@ -115,6 +115,21 @@ class QuicHeadersStream::SpdyFramerVisitor
  public:
   explicit SpdyFramerVisitor(QuicHeadersStream* stream) : stream_(stream) {}
 
+  SpdyHeadersHandlerInterface* OnHeaderFrameStart(
+      SpdyStreamId /* stream_id */) override {
+    return &header_list_;
+  }
+
+  void OnHeaderFrameEnd(SpdyStreamId /* stream_id */,
+                        bool end_headers) override {
+    if (end_headers) {
+      if (stream_->IsConnected()) {
+        stream_->OnHeaderList(header_list_);
+      }
+      header_list_.Clear();
+    }
+  }
+
   void OnStreamFrameData(SpdyStreamId stream_id,
                          const char* data,
                          size_t len) override {
@@ -131,21 +146,6 @@ class QuicHeadersStream::SpdyFramerVisitor
 
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {
     CloseConnection("SPDY frame padding received.");
-  }
-
-  SpdyHeadersHandlerInterface* OnHeaderFrameStart(
-      SpdyStreamId /* stream_id */) override {
-    return &header_list_;
-  }
-
-  void OnHeaderFrameEnd(SpdyStreamId /* stream_id */,
-                        bool end_headers) override {
-    if (end_headers) {
-      if (stream_->IsConnected()) {
-        stream_->OnHeaderList(header_list_);
-      }
-      header_list_.Clear();
-    }
   }
 
   void OnError(SpdyFramer* framer) override {
@@ -229,8 +229,8 @@ class QuicHeadersStream::SpdyFramerVisitor
   void OnHeaders(SpdyStreamId stream_id,
                  bool has_priority,
                  int weight,
-                 SpdyStreamId parent_stream_id,
-                 bool exclusive,
+                 SpdyStreamId /*parent_stream_id*/,
+                 bool /*exclusive*/,
                  bool fin,
                  bool end) override {
     if (!stream_->IsConnected()) {

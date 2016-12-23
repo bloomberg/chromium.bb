@@ -4,7 +4,7 @@
 
 #include "net/quic/core/quic_utils.h"
 
-#include "net/quic/core/quic_flags.h"
+#include "net/quic/core/crypto/crypto_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;

@@ -5,8 +5,7 @@
 #ifndef NET_QUIC_CORE_QUIC_HEADERS_STREAM_H_
 #define NET_QUIC_CORE_QUIC_HEADERS_STREAM_H_
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <memory>
 
 #include "base/macros.h"
@@ -24,10 +23,9 @@ namespace test {
 class QuicHeadersStreamPeer;
 }  // namespace test
 
-// Headers in QUIC are sent as HTTP/2 HEADERS or PUSH_PROMISE frames
-// over a reserved reliable stream with the id 3.  Each endpoint
-// (client and server) will allocate an instance of QuicHeadersStream
-// to send and receive headers.
+// Headers in QUIC are sent as HTTP/2 HEADERS or PUSH_PROMISE frames over a
+// reserved stream with the id 3.  Each endpoint (client and server) will
+// allocate an instance of QuicHeadersStream to send and receive headers.
 class QUIC_EXPORT_PRIVATE QuicHeadersStream : public QuicStream {
  public:
   class QUIC_EXPORT_PRIVATE HpackDebugVisitor {

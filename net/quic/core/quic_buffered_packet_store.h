@@ -5,6 +5,8 @@
 #ifndef NET_QUIC_CORE_QUIC_BUFFERED_PACKET_STORE_H_
 #define NET_QUIC_CORE_QUIC_BUFFERED_PACKET_STORE_H_
 
+#include <list>
+
 #include "net/base/linked_hash_map.h"
 #include "net/quic/core/quic_alarm.h"
 #include "net/quic/core/quic_alarm_factory.h"

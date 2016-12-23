@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "net/quic/core/congestion_control/send_algorithm_interface.h"
+#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_multipath_sent_packet_manager.h"
 #include "net/quic/core/quic_packet_writer.h"
 #include "net/quic/core/quic_received_packet_manager.h"

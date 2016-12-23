@@ -40,9 +40,8 @@
 #ifndef NET_QUIC_CORE_QUIC_PACKET_GENERATOR_H_
 #define NET_QUIC_CORE_QUIC_PACKET_GENERATOR_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
+#include <cstddef>
+#include <cstdint>
 #include <list>
 
 #include "base/macros.h"

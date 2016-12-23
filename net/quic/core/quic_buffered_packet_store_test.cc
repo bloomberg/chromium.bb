@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/stl_util.h"
+#include "net/quic/core/quic_flags.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_buffered_packet_store_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
