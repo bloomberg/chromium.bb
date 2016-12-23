@@ -16,6 +16,9 @@ fi
 
 for arg in "${@}"; do
   dir=`readlink -f "${arg}"`
+  if [[ -d "${dir}" ]]; then
+    dir="${dir}/stripped-by-dirname-on-next-line"
+  fi
   while dir=`dirname ${dir}`; do
     if [[ -f "${dir}/.clang-format" ]]; then
       echo "Using style from: ${dir}/.clang-format";
