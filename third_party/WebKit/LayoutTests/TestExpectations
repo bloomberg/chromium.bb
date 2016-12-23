@@ -775,9 +775,7 @@ crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/gesture-scroll-amount.
 crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/mousewheel-scroll-amount.html [ Skip ]
 crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/gesture-scroll-amount.html [ Skip ]
 
-crbug.com/676233 [ Linux ] virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Failure ]
-crbug.com/676233 [ Linux ] virtual/scalefactor150/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Failure ]
-crbug.com/676233 virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Skip ]
+crbug.com/676754 [ Linux ] virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Pass Failure ]
 
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
