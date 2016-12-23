@@ -45,7 +45,7 @@ enum OnFailureType {
 #if defined(WIN32)
   // The shared_section parameter is passed to gfx::PlatformDevice::create.
   // See it for details.
-SK_API std::unique_ptr<SkCanvas> CreatePlatformCanvas(
+SK_API std::unique_ptr<SkCanvas> CreatePlatformCanvasWithSharedSection(
     int width,
     int height,
     bool is_opaque,
@@ -61,27 +61,11 @@ SK_API void DrawToNativeContext(SkCanvas* canvas,
                                 int x,
                                 int y,
                                 const RECT* src_rect);
-#elif defined(__APPLE__)
-SK_API std::unique_ptr<SkCanvas> CreatePlatformCanvas(
-    CGContextRef context,
-    int width,
-    int height,
-    bool is_opaque,
-    OnFailureType failure_type);
-
-SK_API std::unique_ptr<SkCanvas> CreatePlatformCanvas(
-    int width,
-    int height,
-    bool is_opaque,
-    uint8_t* context,
-    OnFailureType failure_type);
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
-      defined(__sun) || defined(ANDROID)
-  // Linux ---------------------------------------------------------------------
-
+      defined(__sun) || defined(ANDROID) || defined(__APPLE__)
   // Construct a canvas from the given memory region. The memory is not cleared
   // first. @data must be, at least, @height * StrideForWidth(@width) bytes.
-SK_API std::unique_ptr<SkCanvas> CreatePlatformCanvas(
+SK_API std::unique_ptr<SkCanvas> CreatePlatformCanvasWithPixels(
     int width,
     int height,
     bool is_opaque,
@@ -92,23 +76,28 @@ SK_API std::unique_ptr<SkCanvas> CreatePlatformCanvas(
 static inline std::unique_ptr<SkCanvas> CreatePlatformCanvas(int width,
                                                              int height,
                                                              bool is_opaque) {
-  return CreatePlatformCanvas(width, height, is_opaque, 0, CRASH_ON_FAILURE);
+#if defined(WIN32)
+  return CreatePlatformCanvasWithSharedSection(width, height, is_opaque, 0,
+                                               CRASH_ON_FAILURE);
+#else
+  return CreatePlatformCanvasWithPixels(width, height, is_opaque, 0,
+                                        CRASH_ON_FAILURE);
+#endif
 }
 
 SK_API std::unique_ptr<SkCanvas> CreateCanvas(const sk_sp<SkBaseDevice>& device,
                                               OnFailureType failure_type);
 
-static inline std::unique_ptr<SkCanvas> CreateBitmapCanvas(int width,
-                                                           int height,
-                                                           bool is_opaque) {
-  return CreatePlatformCanvas(width, height, is_opaque, 0, CRASH_ON_FAILURE);
-}
-
 static inline std::unique_ptr<SkCanvas> TryCreateBitmapCanvas(int width,
                                                               int height,
                                                               bool is_opaque) {
-  return CreatePlatformCanvas(width, height, is_opaque, 0,
-                              RETURN_NULL_ON_FAILURE);
+#if defined(WIN32)
+  return CreatePlatformCanvasWithSharedSection(width, height, is_opaque, 0,
+                                               RETURN_NULL_ON_FAILURE);
+#else
+  return CreatePlatformCanvasWithPixels(width, height, is_opaque, 0,
+                                        RETURN_NULL_ON_FAILURE);
+#endif
 }
 
 // Return the stride (length of a line in bytes) for the given width. Because

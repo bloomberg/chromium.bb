@@ -139,7 +139,7 @@ SkCanvas* SoftwareOutputDeviceWin::BeginPaint(const gfx::Rect& damage_rect) {
       }
     }
     if (can_create_contents) {
-      contents_ = skia::CreatePlatformCanvas(
+      contents_ = skia::CreatePlatformCanvasWithSharedSection(
           viewport_pixel_size_.width(), viewport_pixel_size_.height(), true,
           shared_section, skia::CRASH_ON_FAILURE);
     }

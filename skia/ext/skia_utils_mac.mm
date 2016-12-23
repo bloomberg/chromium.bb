@@ -190,8 +190,8 @@ SkBitmap CGImageToSkBitmap(CGImageRef image) {
   int width = CGImageGetWidth(image);
   int height = CGImageGetHeight(image);
 
-  std::unique_ptr<SkCanvas> canvas(skia::CreatePlatformCanvas(
-      nullptr, width, height, false, RETURN_NULL_ON_FAILURE));
+  std::unique_ptr<SkCanvas> canvas(
+      skia::TryCreateBitmapCanvas(width, height, false));
   ScopedPlatformPaint p(canvas.get());
   CGContextRef context = p.GetNativeDrawingContext();
 
