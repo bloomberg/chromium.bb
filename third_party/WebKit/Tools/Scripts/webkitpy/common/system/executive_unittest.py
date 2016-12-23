@@ -158,20 +158,6 @@ class ExecutiveTest(unittest.TestCase):
         executive = Executive()
         executive.run_command(command_line('sleep', '0'), timeout_seconds=1000)
 
-    def _assert_windows_image_name(self, name, expected_windows_name):
-        executive = Executive()
-        windows_name = executive._windows_image_name(name)
-        self.assertEqual(windows_name, expected_windows_name)
-
-    def test_windows_image_name(self):
-        self._assert_windows_image_name("foo", "foo.exe")
-        self._assert_windows_image_name("foo.exe", "foo.exe")
-        self._assert_windows_image_name("foo.com", "foo.com")
-        # If the name looks like an extension, even if it isn't
-        # supposed to, we have no choice but to return the original name.
-        self._assert_windows_image_name("foo.baz", "foo.baz")
-        self._assert_windows_image_name("foo.baz.exe", "foo.baz.exe")
-
     def test_check_running_pid(self):
         executive = Executive()
         self.assertTrue(executive.check_running_pid(os.getpid()))

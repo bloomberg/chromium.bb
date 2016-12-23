@@ -258,14 +258,6 @@ class Executive(object):
             seconds_left -= sleep_length
             time.sleep(sleep_length)
 
-    def _windows_image_name(self, process_name):
-        name, extension = os.path.splitext(process_name)
-        if not extension:
-            # taskkill expects processes to end in .exe
-            # If necessary we could add a flag to disable appending .exe.
-            process_name = "%s.exe" % name
-        return process_name
-
     def interrupt(self, pid):
         interrupt_signal = signal.SIGINT
         # Note: The python docs seem to suggest that on Windows, we may want to use
