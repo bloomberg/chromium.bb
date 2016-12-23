@@ -4,11 +4,14 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/favicon_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#include "ui/base/l10n/l10n_util.h"
 #import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -34,6 +37,9 @@ const CGFloat kDistillationIndicatorSize = 18;
 @interface ReadingListCell ()
 
 @property(nonatomic, weak) id<ReadingListCellDelegate> delegate;
+// Status of the offline version. Updates the visual indicator when updated.
+@property(nonatomic, assign)
+    ReadingListEntry::DistillationState distillationState;
 
 @end
 
@@ -102,6 +108,11 @@ const CGFloat kDistillationIndicatorSize = 18;
   self.displayedCell = cell;
   cell.delegate = self;
   cell.distillationState = _distillationState;
+  cell.isAccessibilityElement = YES;
+  cell.accessibilityLabel =
+      l10n_util::GetNSStringF(IDS_IOS_READING_LIST_ENTRY_ACCESSIBILITY_LABEL,
+                              base::SysNSStringToUTF16(self.text),
+                              base::SysNSStringToUTF16(self.detailText));
 }
 
 #pragma mark - ReadingListCellDelegate
