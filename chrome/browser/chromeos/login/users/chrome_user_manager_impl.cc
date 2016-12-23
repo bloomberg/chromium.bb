@@ -298,6 +298,12 @@ user_manager::UserList ChromeUserManagerImpl::GetUsersAllowedForMultiProfile()
     return user_manager::UserList();
   }
 
+  // Multiprofile mode is not allowed on the Active Directory managed devices.
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->IsActiveDirectoryManaged())
+    return user_manager::UserList();
+
   user_manager::UserList result;
   const user_manager::UserList& users = GetUsers();
   for (user_manager::UserList::const_iterator it = users.begin();
