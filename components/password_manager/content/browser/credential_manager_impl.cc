@@ -86,6 +86,14 @@ void CredentialManagerImpl::OnProvisionalSaveComplete() {
   DCHECK(client_->IsSavingAndFillingEnabledForCurrentPage());
   const autofill::PasswordForm& form = form_manager_->pending_credentials();
 
+  if (form_manager_->IsPendingCredentialsPublicSuffixMatch()) {
+    // Having a credential with a PSL match implies there is no credential with
+    // an exactly matching origin and username. In order to avoid showing a save
+    // bubble to the user Save() is called directly.
+    form_manager_->Save();
+    return;
+  }
+
   if (!form.federation_origin.unique()) {
     // If this is a federated credential, check it against the federated matches
     // produced by the PasswordFormManager. If a match is found, update it and

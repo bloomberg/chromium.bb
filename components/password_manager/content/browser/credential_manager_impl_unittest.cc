@@ -521,6 +521,94 @@ TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwrite) {
             passwords[form_.signon_realm][0].password_value);
 }
 
+TEST_F(CredentialManagerImplTest,
+       CredentialManagerStorePSLMatchDoesNotTriggerBubble) {
+  autofill::PasswordForm psl_form = subdomain_form_;
+  psl_form.username_value = form_.username_value;
+  psl_form.password_value = form_.password_value;
+  store_->AddLogin(psl_form);
+
+  // Calling 'Store' with a new credential that is a PSL match for an existing
+  // credential with identical username and password should result in a silent
+  // save without prompting the user.
+  CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(_, _))
+      .Times(testing::Exactly(0));
+  EXPECT_CALL(*client_, NotifyStorePasswordCalled());
+  bool called = false;
+  CallStore(info, base::Bind(&RespondCallback, &called));
+  RunAllPendingTasks();
+  EXPECT_TRUE(called);
+
+  // Check that both credentials are present in the password store.
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_EQ(2U, passwords.size());
+  EXPECT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_EQ(1U, passwords[psl_form.signon_realm].size());
+}
+
+TEST_F(CredentialManagerImplTest,
+       CredentialManagerStorePSLMatchWithDifferentUsernameTriggersBubble) {
+  base::string16 delta = base::ASCIIToUTF16("_totally_different");
+  autofill::PasswordForm psl_form = subdomain_form_;
+  psl_form.username_value = form_.username_value + delta;
+  psl_form.password_value = form_.password_value;
+  store_->AddLogin(psl_form);
+
+  // Calling 'Store' with a new credential that is a PSL match for an existing
+  // credential but has a different username should prompt the user and not
+  // result in a silent save.
+  CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(_, _))
+      .Times(testing::Exactly(1));
+  EXPECT_CALL(*client_, NotifyStorePasswordCalled());
+  bool called = false;
+  CallStore(info, base::Bind(&RespondCallback, &called));
+  RunAllPendingTasks();
+  EXPECT_TRUE(called);
+
+  // Check that only the initial credential is present in the password store
+  // and the new one is still pending.
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_EQ(1U, passwords.size());
+  EXPECT_EQ(1U, passwords[psl_form.signon_realm].size());
+
+  const auto& pending_cred = client_->pending_manager()->pending_credentials();
+  EXPECT_EQ(info.id, pending_cred.username_value);
+  EXPECT_EQ(info.password, pending_cred.password_value);
+}
+
+TEST_F(CredentialManagerImplTest,
+       CredentialManagerStorePSLMatchWithDifferentPasswordTriggersBubble) {
+  base::string16 delta = base::ASCIIToUTF16("_totally_different");
+  autofill::PasswordForm psl_form = subdomain_form_;
+  psl_form.username_value = form_.username_value;
+  psl_form.password_value = form_.password_value + delta;
+  store_->AddLogin(psl_form);
+
+  // Calling 'Store' with a new credential that is a PSL match for an existing
+  // credential but has a different password should prompt the user and not
+  // result in a silent save.
+  CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(_, _))
+      .Times(testing::Exactly(1));
+  EXPECT_CALL(*client_, NotifyStorePasswordCalled());
+  bool called = false;
+  CallStore(info, base::Bind(&RespondCallback, &called));
+  RunAllPendingTasks();
+  EXPECT_TRUE(called);
+
+  // Check that only the initial credential is present in the password store
+  // and the new one is still pending.
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_EQ(1U, passwords.size());
+  EXPECT_EQ(1U, passwords[psl_form.signon_realm].size());
+
+  const auto& pending_cred = client_->pending_manager()->pending_credentials();
+  EXPECT_EQ(info.id, pending_cred.username_value);
+  EXPECT_EQ(info.password, pending_cred.password_value);
+}
+
 TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwriteZeroClick) {
   form_.skip_zero_click = true;
   store_->AddLogin(form_);

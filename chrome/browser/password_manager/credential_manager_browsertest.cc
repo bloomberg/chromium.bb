@@ -3,17 +3,23 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/cert/cert_verify_result.h"
+#include "net/cert/mock_cert_verifier.h"
+#include "net/dns/mock_host_resolver.h"
 
 namespace {
 
@@ -59,8 +65,33 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
     syncer.Wait();
   }
 
- private:
+  // Similarly to PasswordManagerBrowserTestBase::NavigateToFile this is a
+  // wrapper around ui_test_utils::NavigateURL that waits until DidFinishLoad()
+  // fires. Different to NavigateToFile this method allows passing a test_server
+  // and modifications to the hostname.
+  void NavigateToURL(const net::EmbeddedTestServer& test_server,
+                     const std::string& hostname,
+                     const std::string& relative_url) {
+    NavigationObserver observer(WebContents());
+    GURL url = test_server.GetURL(hostname, relative_url);
+    ui_test_utils::NavigateToURL(browser(), url);
+    observer.Wait();
+  }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    ProfileIOData::SetCertVerifierForTesting(nullptr);
+  }
+
+  net::MockCertVerifier& mock_cert_verifier() {
+    return mock_cert_verifier_;
+  }
+
+ private:
+  net::MockCertVerifier mock_cert_verifier_;
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerBrowserTest);
 };
 
@@ -119,6 +150,83 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   EXPECT_FALSE(form.skip_zero_click);
 }
 
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
+                       StoreSavesPSLMatchedCredential) {
+  // Setup HTTPS server serving files from standard test directory.
+  static constexpr base::FilePath::CharType kDocRoot[] =
+      FILE_PATH_LITERAL("chrome/test/data");
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_test_server.Start());
+
+  // Setup mock certificate for all origins.
+  auto cert = https_test_server.GetCertificate();
+  net::CertVerifyResult verify_result;
+  verify_result.cert_status = 0;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.verified_cert = cert;
+  mock_cert_verifier().AddResultForCert(cert.get(), verify_result, net::OK);
+
+  // Redirect all requests to localhost.
+  host_resolver()->AddRule("*", "127.0.0.1");
+
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+
+  // The call to |GetURL| is needed to get the correct port.
+  GURL psl_url = https_test_server.GetURL("psl.example.com", "/");
+
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = psl_url.spec();
+  signin_form.password_value = base::ASCIIToUTF16("password");
+  signin_form.username_value = base::ASCIIToUTF16("user");
+  signin_form.origin = psl_url;
+  password_store->AddLogin(signin_form);
+
+  NavigateToURL(https_test_server, "www.example.com",
+                "/password/password_form.html");
+
+  // Call the API to trigger |get| and |store| and redirect.
+  ASSERT_TRUE(
+      content::ExecuteScript(RenderViewHost(),
+                             "navigator.credentials.get({password: true})"
+                             ".then(cred => "
+                             "navigator.credentials.store(cred)"
+                             ".then(cred => "
+                             "window.location = '/password/done.html'))"));
+
+  WaitForPasswordStore();
+  ASSERT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
+            PasswordsModelDelegateFromWebContents(WebContents())->GetState());
+  PasswordsModelDelegateFromWebContents(WebContents())
+      ->ChooseCredential(
+          signin_form,
+          password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+
+  NavigationObserver observer(WebContents());
+  observer.SetPathToWaitFor("/password/done.html");
+  observer.Wait();
+
+  // Wait for the password store before checking the prompt because it pops up
+  // after the store replies.
+  WaitForPasswordStore();
+  std::unique_ptr<BubbleObserver> prompt_observer(
+      new BubbleObserver(WebContents()));
+  EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
+  EXPECT_FALSE(prompt_observer->IsShowingUpdatePrompt());
+
+  // There should be an entry for both psl.example.com and www.example.com.
+  password_manager::TestPasswordStore::PasswordMap passwords =
+      password_store->stored_passwords();
+  GURL www_url = https_test_server.GetURL("www.example.com", "/");
+  EXPECT_EQ(2U, passwords.size());
+  EXPECT_TRUE(base::ContainsKey(passwords, psl_url.spec()));
+  EXPECT_TRUE(base::ContainsKey(passwords, www_url.spec()));
+}
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
                        AutoSigninOldCredentialAndNavigation) {
