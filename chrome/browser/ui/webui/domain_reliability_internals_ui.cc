@@ -26,7 +26,7 @@ DomainReliabilityInternalsUI::DomainReliabilityInternalsUI(
   html_source->AddResourcePath("domain_reliability_internals.js",
       IDR_DOMAIN_RELIABILITY_INTERNALS_JS);
   html_source->SetDefaultResource(IDR_DOMAIN_RELIABILITY_INTERNALS_HTML);
-  html_source->DisableI18nAndUseGzipForAllPaths();
+  html_source->UseGzip(std::unordered_set<std::string>());
 
   web_ui->RegisterMessageCallback("updateData",
       base::Bind(&DomainReliabilityInternalsUI::UpdateData,

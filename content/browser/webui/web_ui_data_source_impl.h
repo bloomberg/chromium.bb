@@ -9,7 +9,6 @@
 
 #include <map>
 #include <string>
-#include <unordered_set>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -49,14 +48,11 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
-  void DisableI18nAndUseGzipForAllPaths() override;
+  void UseGzip(const std::unordered_set<std::string>& excluded_paths) override;
   const ui::TemplateReplacements* GetReplacements() const override;
 
   // Add the locale to the load time data defaults. May be called repeatedly.
   void EnsureLoadTimeDataDefaultsAdded();
-
-  // When DisableI18nAndUseGzipForAllPaths is enabled, exclude the given |path|.
-  void ExcludePathFromGzip(const std::string& path);
 
   bool IsWebUIDataSourceImpl() const override;
 
@@ -116,7 +112,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   bool deny_xframe_options_;
   bool add_load_time_data_defaults_;
   bool replace_existing_source_;
-  bool use_gzip_for_all_paths_;
+  bool use_gzip_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIDataSourceImpl);
 };

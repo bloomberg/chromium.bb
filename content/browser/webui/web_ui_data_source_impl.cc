@@ -88,7 +88,7 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
     return parent_->deny_xframe_options_;
   }
   bool IsGzipped(const std::string& path) const override {
-    return parent_->use_gzip_for_all_paths_ &&
+    return parent_->use_gzip_ &&
         parent_->excluded_paths_.find(path) == parent_->excluded_paths_.end();
   }
 
@@ -107,7 +107,7 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
       deny_xframe_options_(true),
       add_load_time_data_defaults_(true),
       replace_existing_source_(true),
-      use_gzip_for_all_paths_(false) {}
+      use_gzip_(false) {}
 
 WebUIDataSourceImpl::~WebUIDataSourceImpl() {
 }
@@ -165,7 +165,7 @@ void WebUIDataSourceImpl::SetJsonPath(const std::string& path) {
   DCHECK(!path.empty());
 
   json_path_ = path;
-  ExcludePathFromGzip(json_path_);
+  excluded_paths_.insert(json_path_);
 }
 
 void WebUIDataSourceImpl::AddResourcePath(const std::string &path,
@@ -184,10 +184,6 @@ void WebUIDataSourceImpl::SetRequestFilter(
 
 void WebUIDataSourceImpl::DisableReplaceExistingSource() {
   replace_existing_source_ = false;
-}
-
-void WebUIDataSourceImpl::ExcludePathFromGzip(const std::string& path) {
-  excluded_paths_.insert(path);
 }
 
 bool WebUIDataSourceImpl::IsWebUIDataSourceImpl() const {
@@ -220,8 +216,11 @@ void WebUIDataSourceImpl::DisableDenyXFrameOptions() {
   deny_xframe_options_ = false;
 }
 
-void WebUIDataSourceImpl::DisableI18nAndUseGzipForAllPaths() {
-  use_gzip_for_all_paths_ = true;
+void WebUIDataSourceImpl::UseGzip(
+    const std::unordered_set<std::string>& excluded_paths) {
+  use_gzip_ = true;
+  for (const auto& path : excluded_paths)
+    excluded_paths_.insert(path);
 }
 
 const ui::TemplateReplacements* WebUIDataSourceImpl::GetReplacements() const {

@@ -22,7 +22,7 @@ content::WebUIDataSource* CreateSupervisedUserInternalsHTMLSource() {
   source->AddResourcePath("supervised_user_internals.css",
                           IDR_SUPERVISED_USER_INTERNALS_CSS);
   source->SetDefaultResource(IDR_SUPERVISED_USER_INTERNALS_HTML);
-  source->DisableI18nAndUseGzipForAllPaths();
+  source->UseGzip(std::unordered_set<std::string>());
   return source;
 }
 

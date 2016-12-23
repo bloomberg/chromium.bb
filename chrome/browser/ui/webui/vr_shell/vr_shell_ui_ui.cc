@@ -190,8 +190,8 @@ content::WebUIDataSource* CreateVrShellUIHTMLSource() {
   source->SetDefaultResource(IDR_VR_SHELL_UI_HTML);
   // We're localizing strings, so we can't currently use gzip since it's
   // incompatible with i18n. TODO(klausw): re-enable gzip once an i18n
-  // compatible variant of WebUIDataSource's DisableI18nAndUseGzipForAllPaths
-  // gets added, and add compress=gzip to browser_resources.grd as appropriate.
+  // compatible variant of WebUIDataSource's UseGzip gets added, and add
+  // compress=gzip to browser_resources.grd as appropriate.
   source->AddLocalizedString(
       "insecureWebVrContentPermanent",
       IDS_WEBSITE_SETTINGS_INSECURE_WEBVR_CONTENT_PERMANENT);
