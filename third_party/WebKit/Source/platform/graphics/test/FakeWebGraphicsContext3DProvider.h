@@ -5,18 +5,17 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
 class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
  public:
   FakeWebGraphicsContext3DProvider(gpu::gles2::GLES2Interface* gl) : m_gl(gl) {
-    RefPtr<const GrGLInterface> glInterface =
-        adoptRef(GrGLCreateNullInterface());
-    m_grContext = adoptRef(GrContext::Create(
+    sk_sp<const GrGLInterface> glInterface(GrGLCreateNullInterface());
+    m_grContext.reset(GrContext::Create(
         kOpenGL_GrBackend,
         reinterpret_cast<GrBackendContext>(glInterface.get())));
   }
@@ -37,7 +36,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
 
  private:
   gpu::gles2::GLES2Interface* m_gl;
-  RefPtr<GrContext> m_grContext;
+  sk_sp<GrContext> m_grContext;
 };
 
 }  // namespace blink
