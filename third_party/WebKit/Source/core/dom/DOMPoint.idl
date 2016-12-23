@@ -13,6 +13,7 @@
     // FIXME: Exposed=(Window,Worker)
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMPoint : DOMPointReadOnly {
+    [NewObject] static DOMPoint fromPoint(optional DOMPointInit other);
     inherit attribute unrestricted double x;
     inherit attribute unrestricted double y;
     inherit attribute unrestricted double z;

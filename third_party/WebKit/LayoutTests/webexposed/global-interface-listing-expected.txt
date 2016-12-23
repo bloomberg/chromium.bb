@@ -1120,6 +1120,7 @@ interface DOMPoint : DOMPointReadOnly
     setter y
     setter z
 interface DOMPointReadOnly
+    static method fromPoint
     attribute @@toStringTag
     getter w
     getter x

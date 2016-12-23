@@ -13,6 +13,7 @@ namespace blink {
 
 class ScriptValue;
 class ScriptState;
+class DOMPointInit;
 
 class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
                                      public ScriptWrappable {
@@ -20,6 +21,7 @@ class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
 
  public:
   static DOMPointReadOnly* create(double x, double y, double z, double w);
+  static DOMPointReadOnly* fromPoint(const DOMPointInit&);
 
   double x() const { return m_x; }
   double y() const { return m_y; }

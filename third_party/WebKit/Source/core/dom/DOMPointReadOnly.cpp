@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
+#include "core/dom/DOMPointInit.h"
 
 namespace blink {
 
@@ -24,6 +25,10 @@ ScriptValue DOMPointReadOnly::toJSONForBinding(
   result.addNumber("z", z());
   result.addNumber("w", w());
   return result.scriptValue();
+}
+
+DOMPointReadOnly* DOMPointReadOnly::fromPoint(const DOMPointInit& other) {
+  return new DOMPointReadOnly(other.x(), other.y(), other.z(), other.w());
 }
 
 DOMPointReadOnly::DOMPointReadOnly(double x, double y, double z, double w)

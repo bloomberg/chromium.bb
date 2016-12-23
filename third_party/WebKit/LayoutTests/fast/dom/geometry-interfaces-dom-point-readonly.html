@@ -25,4 +25,25 @@ test(() => {
   var point = new DOMPointReadOnly(1, 2, 3, 4);
   assert_object_equals(point.toJSON(), {x: 1, y: 2, z: 3, w: 4});
 }, 'DOMPointReadOnly toJSON');
+
+test(() => {
+  var point = DOMPointReadOnly.fromPoint({x: 1, y: 2, z: 3, w: 4});
+  assert_dom_point_equals(point, [1, 2, 3, 4]);
+}, 'DOMPointReadOnly.fromPoint({x: 1, y: 2, z: 3, w: 4}) should create a DOMPointReadOnly');
+
+test(() => {
+  var point = DOMPointReadOnly.fromPoint();
+  assert_dom_point_equals(point, [0, 0, 0, 1]);
+}, 'DOMPointReadOnly.fromPoint() should create a DOMPointReadOnly');
+
+test(() => {
+  var point1 = DOMPointReadOnly.fromPoint();
+  var point2 = DOMPointReadOnly.fromPoint();
+  assert_false(point1 == point2);
+  assert_true(point1.x == point2.x);
+  assert_true(point1.y == point2.y);
+  assert_true(point1.z == point2.z);
+  assert_true(point1.w == point2.w);
+}, 'DOMPointReadOnly.fromPoint() should create a new DOMPointReadOnly');
+
 </script>
