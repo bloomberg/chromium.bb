@@ -203,7 +203,7 @@ void WontCompile() {
   Closure callback_mismatches_bind_type = Bind(&VoidPolymorphic1<int>);
 }
 
-#elif defined(NCTEST_DISALLOW_CAPTURING_LAMBDA)  // [r"fatal error: implicit instantiation of undefined template 'base::internal::FunctorTraits<\(lambda at ../../base/bind_unittest.nc:[0-9]+:[0-9]+\), void>'"]
+#elif defined(NCTEST_DISALLOW_CAPTURING_LAMBDA)  // [r"fatal error: implicit instantiation of undefined template 'base::internal::FunctorTraits<\(lambda at (\.\./)+base/bind_unittest.nc:[0-9]+:[0-9]+\), void>'"]
 
 void WontCompile() {
   int i = 0;
