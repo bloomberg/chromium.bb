@@ -42,6 +42,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "offline_url_utils_unittest.cc",
+    "reading_list_web_state_observer_unittest.mm",
     "url_downloader_unittest.mm",
   ]
   deps = [

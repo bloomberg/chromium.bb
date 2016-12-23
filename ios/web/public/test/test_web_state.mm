@@ -61,11 +61,16 @@ UIView* TestWebState::GetView() {
 }
 
 const NavigationManager* TestWebState::GetNavigationManager() const {
-  return nullptr;
+  return navigation_manager_.get();
 }
 
 NavigationManager* TestWebState::GetNavigationManager() {
-  return nullptr;
+  return navigation_manager_.get();
+}
+
+void TestWebState::SetNavigationManager(
+    std::unique_ptr<NavigationManager> navigation_manager) {
+  navigation_manager_ = std::move(navigation_manager);
 }
 
 CRWJSInjectionReceiver* TestWebState::GetJSInjectionReceiver() const {
@@ -145,6 +150,12 @@ void TestWebState::SetLoading(bool is_loading) {
     for (auto& observer : observers_)
       observer.DidStopLoading();
   }
+}
+
+void TestWebState::OnPageLoaded(
+    PageLoadCompletionStatus load_completion_status) {
+  for (auto& observer : observers_)
+    observer.PageLoaded(load_completion_status);
 }
 
 void TestWebState::SetCurrentURL(const GURL& url) {

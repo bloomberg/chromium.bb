@@ -11,8 +11,10 @@
 
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_state/web_state_observer.h"
 #include "url/gurl.h"
 
 namespace web {
@@ -79,6 +81,11 @@ class TestWebState : public WebState {
   void SetLoading(bool is_loading);
   void SetCurrentURL(const GURL& url);
   void SetTrustLevel(URLVerificationTrustLevel trust_level);
+  void SetNavigationManager(
+      std::unique_ptr<NavigationManager> navigation_manager);
+
+  // Notifier for tests.
+  void OnPageLoaded(PageLoadCompletionStatus load_completion_status);
 
  private:
   bool web_usage_enabled_;
@@ -89,6 +96,7 @@ class TestWebState : public WebState {
   bool content_is_html_;
   std::string mime_type_;
   std::string content_language_;
+  std::unique_ptr<NavigationManager> navigation_manager_;
 
   // A list of observers notified when page state changes. Weak references.
   base::ObserverList<WebStateObserver, true> observers_;
