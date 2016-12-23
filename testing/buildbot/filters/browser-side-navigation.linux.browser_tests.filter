@@ -1,10 +1,4 @@
-# NavigationHandle::IsRendererInitiated some times return differently in
-# browser side navigation tests.
--SBNavigationObserverBrowserTest.DirectDownloadNoReferrerTargetBlank
--SBNavigationObserverBrowserTest.SingleMetaRefreshRedirectTargetBlank
--SBNavigationObserverBrowserTest.NewTabDownload
--SBNavigationObserverBrowserTest.NewTabDownloadWithDataURL
--SBNavigationObserverBrowserTest.SubFrameNewTabDownload
+-ChromeServiceWorkerTest.FallbackMainResourceRequestWhenJSDisabled
 
 # https://crbug.com/652767: NavigationHandle::GetResponseHeaders sometimes
 # returns null for browser-side navigations

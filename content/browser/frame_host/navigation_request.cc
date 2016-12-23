@@ -214,6 +214,11 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           ? base::Optional<url::Origin>()
           : base::Optional<url::Origin>(
                 frame_tree_node->frame_tree()->root()->current_origin());
+
+  // While the navigation was started via the LoadURL path it may have come from
+  // the renderer in the first place as part of OpenURL.
+  bool browser_initiated = !entry.is_renderer_initiated();
+
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, entry.ConstructCommonNavigationParams(
                            frame_entry, request_body, dest_url, dest_referrer,
@@ -231,7 +236,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           controller->GetIndexOfEntry(&entry),
           controller->GetLastCommittedEntryIndex(),
           controller->GetEntryCount()),
-      true, &frame_entry, &entry));
+      browser_initiated,
+      true, // may_transfer
+      &frame_entry, &entry));
   return navigation_request;
 }
 
@@ -266,7 +273,10 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       begin_params.has_user_gesture);
   std::unique_ptr<NavigationRequest> navigation_request(
       new NavigationRequest(frame_tree_node, common_params, begin_params,
-                            request_params, false, nullptr, nullptr));
+                            request_params,
+                            false, // browser_initiated
+                            false, // may_transfer
+                            nullptr, nullptr));
   return navigation_request;
 }
 
@@ -276,6 +286,7 @@ NavigationRequest::NavigationRequest(
     const BeginNavigationParams& begin_params,
     const RequestNavigationParams& request_params,
     bool browser_initiated,
+    bool may_transfer,
     const FrameNavigationEntry* frame_entry,
     const NavigationEntryImpl* entry)
     : frame_tree_node_(frame_tree_node),
@@ -287,9 +298,10 @@ NavigationRequest::NavigationRequest(
       restore_type_(RestoreType::NONE),
       is_view_source_(false),
       bindings_(NavigationEntryImpl::kInvalidBindings),
-      associated_site_instance_type_(AssociatedSiteInstanceType::NONE) {
+      associated_site_instance_type_(AssociatedSiteInstanceType::NONE),
+      may_transfer_(may_transfer) {
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
-  if (browser_initiated) {
+  if (may_transfer) {
     FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame_tree_node);
     if (frame_entry) {
       source_site_instance_ = frame_entry->source_site_instance();

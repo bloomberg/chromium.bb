@@ -812,7 +812,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
                                               request.common_params().url);
 
     no_renderer_swap |=
-        !request.browser_initiated() && !can_renderer_initiate_transfer;
+        !request.may_transfer() && !can_renderer_initiate_transfer;
   } else {
     // Subframe navigations will use the current renderer, unless specifically
     // allowed to swap processes.

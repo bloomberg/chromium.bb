@@ -130,6 +130,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   bool browser_initiated() const { return browser_initiated_ ; }
 
+  bool may_transfer() const { return may_transfer_; }
+
   void SetWaitingForRendererResponse() {
     DCHECK(state_ == NOT_STARTED);
     state_ = WAITING_FOR_RENDERER_RESPONSE;
@@ -169,6 +171,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                     const BeginNavigationParams& begin_params,
                     const RequestNavigationParams& request_params,
                     bool browser_initiated,
+                    bool may_transfer,
                     const FrameNavigationEntry* frame_navigation_entry,
                     const NavigationEntryImpl* navitation_entry);
 
@@ -228,6 +231,15 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   // The type of SiteInstance associated with this navigation.
   AssociatedSiteInstanceType associated_site_instance_type_;
+
+  // Whether the request may be transferred to a different process upon commit.
+  // True for browser-initiated navigations and renderer-inititated navigations
+  // started via the OpenURL path.
+  // Note: the RenderFrameHostManager may still decide to have the navigation
+  // commit in a different renderer process if it detects that a renderer
+  // transfer is needed. This is the case in particular when --site-per-process
+  // is enabled.
+  bool may_transfer_;
 
   std::unique_ptr<NavigationHandleImpl> navigation_handle_;
 
