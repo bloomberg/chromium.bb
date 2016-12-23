@@ -80,6 +80,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     const std::string& email,
     const std::string& password,
     const std::string& refresh_token,
+    ProfileMode profile_mode,
     StartSyncMode start_mode,
     content::WebContents* web_contents,
     ConfirmationRequired confirmation_required,
@@ -100,13 +101,10 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
   BrowserList::AddObserver(this);
   Initialize(profile, browser);
 
-  // Policy is enabled, so pass in a callback to do extra policy-related UI
-  // before signin completes.
-  SigninManagerFactory::GetForProfile(profile_)->
-      StartSignInWithRefreshToken(
-          refresh_token, gaia_id, email, password,
-          base::Bind(&OneClickSigninSyncStarter::ConfirmSignin,
-                     weak_pointer_factory_.GetWeakPtr()));
+  SigninManagerFactory::GetForProfile(profile_)->StartSignInWithRefreshToken(
+      refresh_token, gaia_id, email, password,
+      base::Bind(&OneClickSigninSyncStarter::ConfirmSignin,
+                 weak_pointer_factory_.GetWeakPtr(), profile_mode));
 }
 
 void OneClickSigninSyncStarter::OnBrowserRemoved(Browser* browser) {
@@ -142,26 +140,42 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
   // will not be able to complete successfully.
   syncer::SyncPrefs sync_prefs(profile_->GetPrefs());
   sync_prefs.SetSyncRequested(true);
+  skip_sync_confirm_ = false;
 }
 
-void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
+void OneClickSigninSyncStarter::ConfirmSignin(ProfileMode profile_mode,
+                                              const std::string& oauth_token) {
   DCHECK(!oauth_token.empty());
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
-  // If this is a new signin (no account authenticated yet) try loading
-  // policy for this user now, before any signed in services are initialized.
-  if (!signin->IsAuthenticated()) {
-    policy::UserPolicySigninService* policy_service =
-        policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
-    policy_service->RegisterForPolicy(
-        signin->GetUsernameForAuthInProgress(),
-        oauth_token,
-        base::Bind(&OneClickSigninSyncStarter::OnRegisteredForPolicy,
-                   weak_pointer_factory_.GetWeakPtr()));
-    return;
-  } else {
+  if (signin->IsAuthenticated()) {
     // The user is already signed in - just tell SigninManager to continue
     // with its re-auth flow.
+    DCHECK_EQ(CURRENT_PROFILE, profile_mode);
     signin->CompletePendingSignin();
+    return;
+  }
+
+  switch (profile_mode) {
+    case CURRENT_PROFILE: {
+      // If this is a new signin (no account authenticated yet) try loading
+      // policy for this user now, before any signed in services are
+      // initialized.
+      policy::UserPolicySigninService* policy_service =
+          policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
+      policy_service->RegisterForPolicy(
+          signin->GetUsernameForAuthInProgress(), oauth_token,
+          base::Bind(&OneClickSigninSyncStarter::OnRegisteredForPolicy,
+                     weak_pointer_factory_.GetWeakPtr()));
+      break;
+    }
+    case NEW_PROFILE:
+      // If this is a new signin (no account authenticated yet) in a new
+      // profile, then just create the new signed-in profile and skip loading
+      // the policy as there is no need to ask the user again if they should be
+      // signed in to a new profile. Note that in this case the policy will be
+      // applied after the new profile is signed in.
+      CreateNewSignedInProfile();
+      break;
   }
 }
 
@@ -263,8 +277,7 @@ void OneClickSigninSyncStarter::OnPolicyFetchComplete(bool success) {
 void OneClickSigninSyncStarter::CreateNewSignedInProfile() {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   DCHECK(!signin->GetUsernameForAuthInProgress().empty());
-  DCHECK(!dm_token_.empty());
-  DCHECK(!client_id_.empty());
+
   // Create a new profile and have it call back when done so we can inject our
   // signin credentials.
   size_t icon_index = g_browser_process->profile_manager()->
@@ -302,8 +315,6 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       DCHECK(!old_signin_manager->GetUsernameForAuthInProgress().empty());
       DCHECK(!old_signin_manager->IsAuthenticated());
       DCHECK(!new_signin_manager->IsAuthenticated());
-      DCHECK(!dm_token_.empty());
-      DCHECK(!client_id_.empty());
 
       // Copy credentials from the old profile to the just-created profile,
       // and switch over to tracking that profile.
@@ -311,6 +322,7 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       FinishProfileSyncServiceSetup();
       Initialize(new_profile, nullptr);
       DCHECK_EQ(profile_, new_profile);
+      skip_sync_confirm_ = true;
 
       // We've transferred our credentials to the new profile - notify that
       // the signin for the original profile was cancelled (must do this after
@@ -319,9 +331,15 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       old_signin_manager->SignOut(signin_metrics::TRANSFER_CREDENTIALS,
                                   signin_metrics::SignoutDelete::IGNORE_METRIC);
 
-      // Load policy for the just-created profile - once policy has finished
-      // loading the signin process will complete.
-      LoadPolicyWithCachedCredentials();
+      if (!dm_token_.empty()) {
+        // Load policy for the just-created profile - once policy has finished
+        // loading the signin process will complete.
+        DCHECK(!client_id_.empty());
+        LoadPolicyWithCachedCredentials();
+      } else {
+        // No policy to load - simply complete the signin process.
+        SigninManagerFactory::GetForProfile(profile_)->CompletePendingSignin();
+      }
 
       // Unlock the new profile.
       ProfileAttributesEntry* entry;
@@ -476,6 +494,14 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
   // Regardless of whether the account was successfully added or not,
   // continue with sync starting.
 
+  // TODO(zmin): Remove this hack once the https://crbug.com/657924 fixed.
+  // Skip the Sync confirmation dialog if user choose to create a new profile
+  // for the corp signin. This is because the dialog doesn't work properly
+  // after the corp signin.
+  if (skip_sync_confirm_) {
+    OnSyncConfirmationUIClosed(LoginUIService::ABORT_SIGNIN);
+    return;
+  }
 
   if (switches::UsePasswordSeparatedSigninFlow()) {
     // Under the new signin flow, the sync confirmation dialog should always be

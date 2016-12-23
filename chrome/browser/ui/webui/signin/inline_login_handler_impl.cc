@@ -285,7 +285,8 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     if (start_signin) {
       CreateSyncStarter(browser, contents, current_url_,
                         signin::GetNextPageURLForPromoURL(current_url_),
-                        result.refresh_token, start_mode,
+                        result.refresh_token,
+                        OneClickSigninSyncStarter::CURRENT_PROFILE, start_mode,
                         confirmation_required);
       base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
     }
@@ -298,12 +299,14 @@ void InlineSigninHelper::CreateSyncStarter(
     const GURL& current_url,
     const GURL& continue_url,
     const std::string& refresh_token,
+    OneClickSigninSyncStarter::ProfileMode profile_mode,
     OneClickSigninSyncStarter::StartSyncMode start_mode,
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required) {
   // OneClickSigninSyncStarter will delete itself once the job is done.
   new OneClickSigninSyncStarter(
-      profile_, browser, gaia_id_, email_, password_, refresh_token, start_mode,
-      contents, confirmation_required, current_url, continue_url,
+      profile_, browser, gaia_id_, email_, password_, refresh_token,
+      profile_mode, start_mode, contents, confirmation_required, current_url,
+      continue_url,
       base::Bind(&InlineLoginHandlerImpl::SyncStarterCallback, handler_));
 }
 
@@ -346,18 +349,17 @@ void InlineSigninHelper::ConfirmEmailAction(
     case SigninEmailConfirmationDialog::CREATE_NEW_USER:
       content::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_DontImport"));
-      if (handler_) {
-        handler_->SyncStarterCallback(
-            OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
-      }
-      UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
-                        profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE);
+      CreateSyncStarter(browser, web_contents, current_url_, GURL(),
+                        refresh_token, OneClickSigninSyncStarter::NEW_PROFILE,
+                        start_mode, confirmation_required);
       break;
     case SigninEmailConfirmationDialog::START_SYNC:
       content::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_ImportData"));
       CreateSyncStarter(browser, web_contents, current_url_, GURL(),
-                        refresh_token, start_mode, confirmation_required);
+                        refresh_token,
+                        OneClickSigninSyncStarter::CURRENT_PROFILE, start_mode,
+                        confirmation_required);
       break;
     case SigninEmailConfirmationDialog::CLOSE:
       content::RecordAction(

@@ -189,6 +189,7 @@ class InlineSigninHelper : public GaiaAuthConsumer {
       const GURL& current_url,
       const GURL& continue_url,
       const std::string& refresh_token,
+      OneClickSigninSyncStarter::ProfileMode profile_mode,
       OneClickSigninSyncStarter::StartSyncMode start_mode,
       OneClickSigninSyncStarter::ConfirmationRequired confirmation_required);
 

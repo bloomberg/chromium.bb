@@ -41,6 +41,17 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                                   public content::WebContentsObserver,
                                   public LoginUIService::Observer {
  public:
+  enum ProfileMode {
+    // Attempts to sign the user in |profile_|. Note that if the account to be
+    // signed in is a managed account, then a profile confirmation dialog is
+    // shown and the user has the possibility to create a new profile before
+    // signing in.
+    CURRENT_PROFILE,
+
+    // Creates a new profile and signs the user in this new profile.
+    NEW_PROFILE
+  };
+
   enum StartSyncMode {
     // Starts the process of signing the user in with the SigninManager, and
     // once completed automatically starts sync with all data types enabled.
@@ -105,6 +116,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             const std::string& email,
                             const std::string& password,
                             const std::string& refresh_token,
+                            ProfileMode profile_mode,
                             StartSyncMode start_mode,
                             content::WebContents* web_contents,
                             ConfirmationRequired display_confirmation,
@@ -184,7 +196,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
 
   // Callback invoked to check whether the user needs policy or if a
   // confirmation is required (in which case we have to prompt the user first).
-  void ConfirmSignin(const std::string& oauth_token);
+  void ConfirmSignin(ProfileMode profile_mode, const std::string& oauth_token);
 
   // Displays confirmation UI to the user if confirmation_required_ ==
   // CONFIRM_UNTRUSTED_SIGNIN, otherwise completes the pending signin process.
@@ -247,6 +259,10 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
 
   // Prevents Sync from running until configuration is complete.
   std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
+
+  // Temporary flag to disable new sync confirm page if user choose to create a
+  // new profile after the corp account signin.
+  bool skip_sync_confirm_;
 
   base::WeakPtrFactory<OneClickSigninSyncStarter> weak_pointer_factory_;
 

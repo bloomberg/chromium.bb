@@ -63,17 +63,10 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     // This dialog assumes the signin flow was completed, which kicks off the
     // SigninManager.
     new OneClickSigninSyncStarter(
-        profile(),
-        browser(),
-        "gaia",
-        "foo@example.com",
-        "password",
-        "refresh_token",
-        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
-        nullptr,
-        OneClickSigninSyncStarter::NO_CONFIRMATION,
-        GURL(),
-        GURL(),
+        profile(), browser(), "gaia", "foo@example.com", "password",
+        "refresh_token", OneClickSigninSyncStarter::CURRENT_PROFILE,
+        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS, nullptr,
+        OneClickSigninSyncStarter::NO_CONFIRMATION, GURL(), GURL(),
         OneClickSigninSyncStarter::Callback());
   }
 
