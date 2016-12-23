@@ -147,11 +147,8 @@ string FilenameIdentifier(const string& filename);
 // Return the name of the AddDescriptors() function for a given file.
 string GlobalAddDescriptorsName(const string& filename);
 
-// Return the name of the InitDefaults() function for a given file.
-string GlobalInitDefaultsName(const string& filename);
-
-// Return the name of the offset table function for a given file.
-string GlobalOffsetTableName(const string& filename);
+// Return the name of the AssignDescriptors() function for a given file.
+string GlobalAssignDescriptorsName(const string& filename);
 
 // Return the qualified C++ name for a file level symbol.
 string QualifiedFileLevelSymbol(const string& package, const string& name);
@@ -226,6 +223,22 @@ inline bool HasFastArraySerialization(const FileDescriptor* file,
 bool StaticInitializersForced(const FileDescriptor* file,
                               const Options& options);
 
+// Prints 'with_static_init' if static initializers have to be used for the
+// provided file. Otherwise emits both 'with_static_init' and
+// 'without_static_init' using #ifdef.
+void PrintHandlingOptionalStaticInitializers(
+    const FileDescriptor* file, const Options& options, io::Printer* printer,
+    const char* with_static_init, const char* without_static_init,
+    const char* var1 = NULL, const string& val1 = "", const char* var2 = NULL,
+    const string& val2 = "");
+
+void PrintHandlingOptionalStaticInitializers(const map<string, string>& vars,
+                                             const FileDescriptor* file,
+                                             const Options& options,
+                                             io::Printer* printer,
+                                             const char* with_static_init,
+                                             const char* without_static_init);
+
 
 inline bool IsMapEntryMessage(const Descriptor* descriptor) {
   return descriptor->options().map_entry();
@@ -269,13 +282,13 @@ bool IsWellKnownMessage(const FileDescriptor* descriptor);
 
 void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
-                                    const std::map<string, string>& variables,
+                                    const map<string, string>& variables,
                                     const char* parameters,
                                     io::Printer* printer);
 
 void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  const std::map<string, string>& variables,
+                                  const map<string, string>& variables,
                                   const char* parameters, io::Printer* printer);
 
 inline ::google::protobuf::FileOptions_OptimizeMode GetOptimizeFor(

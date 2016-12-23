@@ -35,9 +35,11 @@ import com.google.protobuf.UnittestLite.TestAllTypesLite;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
+
+import junit.framework.TestCase;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import junit.framework.TestCase;
 
 /**
  * Tests for {@link UnknownFieldSetLite}.

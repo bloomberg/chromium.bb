@@ -55,7 +55,7 @@ public class LiteEqualsAndHashTest extends TestCase {
     // correctly when linked only against the lite library.
 
     // We do however do some basic testing to make sure that equals is actually
-    // overridden to test for value equality rather than simple object equality.
+    // overriden to test for value equality rather than simple object equality.
 
     // Check that two identical objs are equal.
     Foo foo1a = Foo.newBuilder()

@@ -147,8 +147,9 @@ function doTestSignedValue(readValue,
 describe('binaryDecoderTest', function() {
   /**
    * Tests the decoder instance cache.
+   * @suppress {visibility}
    */
-  it('testInstanceCache', /** @suppress {visibility} */ function() {
+  it('testInstanceCache', function() {
     // Empty the instance caches.
     jspb.BinaryDecoder.instanceCache_ = [];
 
@@ -209,30 +210,7 @@ describe('binaryDecoderTest', function() {
     assertEquals(hashC, decoder.readFixedHash64());
     assertEquals(hashD, decoder.readFixedHash64());
   });
-  
-  /**
-   * Test encoding and decoding utf-8.
-   */
-   it('testUtf8', function() {
-    var encoder = new jspb.BinaryEncoder();
 
-    var ascii = "ASCII should work in 3, 2, 1..."
-    var utf8_two_bytes = "©";
-    var utf8_three_bytes = "❄";
-    var utf8_four_bytes = "😁";
-    
-    encoder.writeString(ascii);
-    encoder.writeString(utf8_two_bytes);
-    encoder.writeString(utf8_three_bytes);
-    encoder.writeString(utf8_four_bytes);
-    
-    var decoder = jspb.BinaryDecoder.alloc(encoder.end());
-    
-    assertEquals(ascii, decoder.readString(ascii.length));
-    assertEquals(utf8_two_bytes, decoder.readString(utf8_two_bytes.length));
-    assertEquals(utf8_three_bytes, decoder.readString(utf8_three_bytes.length));
-    assertEquals(utf8_four_bytes, decoder.readString(utf8_four_bytes.length));
-   });
 
   /**
    * Verifies that misuse of the decoder class triggers assertions.

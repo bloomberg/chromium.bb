@@ -66,9 +66,6 @@ namespace protobuf {
 
 string TestSourceDir() {
 #ifndef GOOGLE_THIRD_PARTY_PROTOBUF
-#ifdef GOOGLE_PROTOBUF_TEST_SOURCE_PATH
-  return GOOGLE_PROTOBUF_TEST_SOURCE_PATH;
-#else
 #ifndef _MSC_VER
   // automake sets the "srcdir" environment variable.
   char* result = getenv("srcdir");
@@ -89,7 +86,6 @@ string TestSourceDir() {
     prefix += "/..";
   }
   return prefix + "/src";
-#endif  // GOOGLE_PROTOBUF_TEST_SOURCE_PATH
 #else
   return "third_party/protobuf/src";
 #endif  // GOOGLE_THIRD_PARTY_PROTOBUF

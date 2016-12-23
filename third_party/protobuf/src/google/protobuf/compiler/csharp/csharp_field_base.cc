@@ -124,13 +124,12 @@ void FieldGeneratorBase::GenerateCodecCode(io::Printer* printer) {
 void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
   if (descriptor_->options().deprecated())
   {
-    printer->Print("[global::System.ObsoleteAttribute]\n");
+    printer->Print("[global::System.ObsoleteAttribute()]\n");
   }
 }
 
 void FieldGeneratorBase::AddPublicMemberAttributes(io::Printer* printer) {
   AddDeprecatedFlag(printer);
-  WriteGeneratedCodeAttributes(printer);
 }
 
 std::string FieldGeneratorBase::oneof_property_name() {

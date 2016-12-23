@@ -54,7 +54,7 @@ class MessageFactory;
 
 #ifdef _SHARED_PTR_H
 using std::shared_ptr;
-using std::string;
+using ::std::string;
 #else
 using internal::shared_ptr;
 #endif
@@ -62,7 +62,7 @@ using internal::shared_ptr;
 namespace python {
 
 struct ExtensionDict;
-struct PyMessageFactory;
+struct PyDescriptorPool;
 
 typedef struct CMessage {
   PyObject_HEAD;
@@ -112,12 +112,8 @@ typedef struct CMessage {
   // Similar to composite_fields, acting as a cache, but also contains the
   // required extension dict logic.
   ExtensionDict* extensions;
-
-  // Implements the "weakref" protocol for this object.
-  PyObject* weakreflist;
 } CMessage;
 
-extern PyTypeObject CMessageClass_Type;
 extern PyTypeObject CMessage_Type;
 
 
@@ -136,11 +132,14 @@ struct CMessageClass {
   // Owned reference, used to keep the pointer above alive.
   PyObject* py_message_descriptor;
 
-  // The Python MessageFactory used to create the class. It is needed to resolve
+  // The Python DescriptorPool used to create the class. It is needed to resolve
   // fields descriptors, including extensions fields; its C++ MessageFactory is
   // used to instantiate submessages.
-  // We own the reference, because it's important to keep the factory alive.
-  PyMessageFactory* py_message_factory;
+  // This can be different from DESCRIPTOR.file.pool, in the case of a custom
+  // DescriptorPool which defines new extensions.
+  // We own the reference, because it's important to keep the descriptors and
+  // factory alive.
+  PyDescriptorPool* py_descriptor_pool;
 
   PyObject* AsPyObject() {
     return reinterpret_cast<PyObject*>(this);
@@ -154,6 +153,14 @@ namespace cmessage {
 // pointers to the C++ objects.
 // The caller must fill self->message, self->owner and eventually self->parent.
 CMessage* NewEmptyMessage(CMessageClass* type);
+
+// Release a submessage from its proto tree, making it a new top-level messgae.
+// A new message will be created if this is a read-only default instance.
+//
+// Corresponds to reflection api method ReleaseMessage.
+int ReleaseSubMessage(CMessage* self,
+                      const FieldDescriptor* field_descriptor,
+                      CMessage* child_cmessage);
 
 // Retrieves the C++ descriptor of a Python Extension descriptor.
 // On error, return NULL with an exception set.
@@ -230,15 +237,9 @@ PyObject* HasFieldByDescriptor(
 PyObject* HasField(CMessage* self, PyObject* arg);
 
 // Initializes values of fields on a newly constructed message.
-// Note that positional arguments are disallowed: 'args' must be NULL or the
-// empty tuple.
-int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs);
+int InitAttributes(CMessage* self, PyObject* kwargs);
 
 PyObject* MergeFrom(CMessage* self, PyObject* arg);
-
-// This method does not do anything beyond checking that no other extension
-// has been registered with the same field number on this class.
-PyObject* RegisterExtension(PyObject* cls, PyObject* extension_handle);
 
 // Retrieves an attribute named 'name' from CMessage 'self'. Returns
 // the attribute value on success, or NULL on failure.
@@ -259,15 +260,14 @@ int SetOwner(CMessage* self, const shared_ptr<Message>& new_owner);
 
 int AssureWritable(CMessage* self);
 
-// Returns the message factory for the given message.
-// This is equivalent to message.MESSAGE_FACTORY
+// Returns the "best" DescriptorPool for the given message.
+// This is often equivalent to message.DESCRIPTOR.pool, but not always, when
+// the message class was created from a MessageFactory using a custom pool which
+// uses the generated pool as an underlay.
 //
-// The returned factory is suitable for finding fields and building submessages,
+// The returned pool is suitable for finding fields and building submessages,
 // even in the case of extensions.
-// Returns a *borrowed* reference, and never fails because we pass a CMessage.
-PyMessageFactory* GetFactoryForMessage(CMessage* message);
-
-PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
+PyDescriptorPool* GetDescriptorPoolForMessage(CMessage* message);
 
 }  // namespace cmessage
 
@@ -280,25 +280,25 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
 
 #define GOOGLE_CHECK_GET_INT32(arg, value, err)                        \
     int32 value;                                            \
-    if (!CheckAndGetInteger(arg, &value)) { \
+    if (!CheckAndGetInteger(arg, &value, kint32min_py, kint32max_py)) { \
       return err;                                          \
     }
 
 #define GOOGLE_CHECK_GET_INT64(arg, value, err)                        \
     int64 value;                                            \
-    if (!CheckAndGetInteger(arg, &value)) { \
+    if (!CheckAndGetInteger(arg, &value, kint64min_py, kint64max_py)) { \
       return err;                                          \
     }
 
 #define GOOGLE_CHECK_GET_UINT32(arg, value, err)                       \
     uint32 value;                                           \
-    if (!CheckAndGetInteger(arg, &value)) { \
+    if (!CheckAndGetInteger(arg, &value, kPythonZero, kuint32max_py)) { \
       return err;                                          \
     }
 
 #define GOOGLE_CHECK_GET_UINT64(arg, value, err)                       \
     uint64 value;                                           \
-    if (!CheckAndGetInteger(arg, &value)) { \
+    if (!CheckAndGetInteger(arg, &value, kPythonZero, kuint64max_py)) { \
       return err;                                          \
     }
 
@@ -321,11 +321,20 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
     }
 
 
+extern PyObject* kPythonZero;
+extern PyObject* kint32min_py;
+extern PyObject* kint32max_py;
+extern PyObject* kuint32max_py;
+extern PyObject* kint64min_py;
+extern PyObject* kint64max_py;
+extern PyObject* kuint64max_py;
+
 #define FULL_MODULE_NAME "google.protobuf.pyext._message"
 
 void FormatTypeError(PyObject* arg, char* expected_types);
 template<class T>
-bool CheckAndGetInteger(PyObject* arg, T* value);
+bool CheckAndGetInteger(
+    PyObject* arg, T* value, PyObject* min, PyObject* max);
 bool CheckAndGetDouble(PyObject* arg, double* value);
 bool CheckAndGetFloat(PyObject* arg, float* value);
 bool CheckAndGetBool(PyObject* arg, bool* value);
@@ -344,8 +353,6 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
                                 const Message* message);
 
 extern PyObject* PickleError_class;
-
-bool InitProto2MessageModule(PyObject *m);
 
 }  // namespace python
 }  // namespace protobuf

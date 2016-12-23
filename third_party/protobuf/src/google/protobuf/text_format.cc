@@ -154,7 +154,7 @@ TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::CreateNested(
     const FieldDescriptor* field) {
   // Owned by us in the map.
   TextFormat::ParseInfoTree* instance = new TextFormat::ParseInfoTree();
-  std::vector<TextFormat::ParseInfoTree*>* trees = &nested_[field];
+  vector<TextFormat::ParseInfoTree*>* trees = &nested_[field];
   GOOGLE_CHECK(trees);
   trees->push_back(instance);
   return instance;
@@ -177,7 +177,7 @@ TextFormat::ParseLocation TextFormat::ParseInfoTree::GetLocation(
   CheckFieldIndex(field, index);
   if (index == -1) { index = 0; }
 
-  const std::vector<TextFormat::ParseLocation>* locations =
+  const vector<TextFormat::ParseLocation>* locations =
       FindOrNull(locations_, field);
   if (locations == NULL || index >= locations->size()) {
     return TextFormat::ParseLocation();
@@ -191,8 +191,7 @@ TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::GetTreeForNested(
   CheckFieldIndex(field, index);
   if (index == -1) { index = 0; }
 
-  const std::vector<TextFormat::ParseInfoTree*>* trees =
-      FindOrNull(nested_, field);
+  const vector<TextFormat::ParseInfoTree*>* trees = FindOrNull(nested_, field);
   if (trees == NULL || index >= trees->size()) {
     return NULL;
   }
@@ -235,8 +234,7 @@ class TextFormat::Parser::ParserImpl {
              bool allow_unknown_field,
              bool allow_unknown_enum,
              bool allow_field_number,
-             bool allow_relaxed_whitespace,
-             bool allow_partial)
+             bool allow_relaxed_whitespace)
     : error_collector_(error_collector),
       finder_(finder),
       parse_info_tree_(parse_info_tree),
@@ -248,7 +246,6 @@ class TextFormat::Parser::ParserImpl {
       allow_unknown_field_(allow_unknown_field),
       allow_unknown_enum_(allow_unknown_enum),
       allow_field_number_(allow_field_number),
-      allow_partial_(allow_partial),
       had_errors_(false) {
     // For backwards-compatibility with proto1, we need to allow the 'f' suffix
     // for floats.
@@ -394,16 +391,6 @@ class TextFormat::Parser::ParserImpl {
       DO(ConsumeAnyValue(full_type_name,
                          message->GetDescriptor()->file()->pool(),
                          &serialized_value));
-      if (singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) {
-        // Fail if any_type_url_field has already been specified.
-        if ((!any_type_url_field->is_repeated() &&
-             reflection->HasField(*message, any_type_url_field)) ||
-            (!any_value_field->is_repeated() &&
-             reflection->HasField(*message, any_value_field))) {
-          ReportError("Non-repeated Any specified multiple times.");
-          return false;
-        }
-      }
       reflection->SetString(
           message, any_type_url_field,
           string(prefix + full_type_name));
@@ -519,42 +506,32 @@ class TextFormat::Parser::ParserImpl {
     // Perform special handling for embedded message types.
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // ':' is optional here.
-      bool consumed_semicolon = TryConsume(":");
-      if (consumed_semicolon && field->options().weak() && LookingAtType(io::Tokenizer::TYPE_STRING)) {
-        // we are getting a bytes string for a weak field.
-        string tmp;
-        DO(ConsumeString(&tmp));
-        reflection->MutableMessage(message, field)->ParseFromString(tmp);
-        goto label_skip_parsing;
-      }
+      TryConsume(":");
     } else {
       // ':' is required here.
       DO(Consume(":"));
     }
 
     if (field->is_repeated() && TryConsume("[")) {
-      // Short repeated format, e.g.  "foo: [1, 2, 3]".
-      if (!TryConsume("]")) {
-        // "foo: []" is treated as empty.
-        while (true) {
-          if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-            // Perform special handling for embedded message types.
-            DO(ConsumeFieldMessage(message, reflection, field));
-          } else {
-            DO(ConsumeFieldValue(message, reflection, field));
-          }
-          if (TryConsume("]")) {
-            break;
-          }
-          DO(Consume(","));
+      // Short repeated format, e.g.  "foo: [1, 2, 3]"
+      while (true) {
+        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+          // Perform special handling for embedded message types.
+          DO(ConsumeFieldMessage(message, reflection, field));
+        } else {
+          DO(ConsumeFieldValue(message, reflection, field));
         }
+        if (TryConsume("]")) {
+          break;
+        }
+        DO(Consume(","));
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       DO(ConsumeFieldMessage(message, reflection, field));
     } else {
       DO(ConsumeFieldValue(message, reflection, field));
     }
-label_skip_parsing:
+
     // For historical reasons, fields may optionally be separated by commas or
     // semicolons.
     TryConsume(";") || TryConsume(",");
@@ -741,8 +718,7 @@ label_skip_parsing:
           value = SimpleItoa(int_value);        // for error reporting
           enum_value = enum_type->FindValueByNumber(int_value);
         } else {
-          ReportError("Expected integer or identifier, got: " +
-                      tokenizer_.current().text);
+          ReportError("Expected integer or identifier.");
           return false;
         }
 
@@ -777,20 +753,6 @@ label_skip_parsing:
     if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
       while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
         tokenizer_.Next();
-      }
-      return true;
-    }
-    if (TryConsume("[")) {
-      while (true) {
-        if (!LookingAt("{") && !LookingAt("<")) {
-          DO(SkipFieldValue());
-        } else {
-          DO(SkipFieldMessage());
-        }
-        if (TryConsume("]")) {
-          break;
-        }
-        DO(Consume(","));
       }
       return true;
     }
@@ -869,7 +831,7 @@ label_skip_parsing:
       return true;
     }
 
-    ReportError("Expected identifier, got: " + tokenizer_.current().text);
+    ReportError("Expected identifier.");
     return false;
   }
 
@@ -889,7 +851,7 @@ label_skip_parsing:
   // Returns false if the token is not of type STRING.
   bool ConsumeString(string* text) {
     if (!LookingAtType(io::Tokenizer::TYPE_STRING)) {
-      ReportError("Expected string, got: " + tokenizer_.current().text);
+      ReportError("Expected string.");
       return false;
     }
 
@@ -907,13 +869,13 @@ label_skip_parsing:
   // Returns false if the token is not of type INTEGER.
   bool ConsumeUnsignedInteger(uint64* value, uint64 max_value) {
     if (!LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
-      ReportError("Expected integer, got: " + tokenizer_.current().text);
+      ReportError("Expected integer.");
       return false;
     }
 
     if (!io::Tokenizer::ParseInteger(tokenizer_.current().text,
                                      max_value, value)) {
-      ReportError("Integer out of range (" + tokenizer_.current().text + ")");
+      ReportError("Integer out of range.");
       return false;
     }
 
@@ -940,14 +902,10 @@ label_skip_parsing:
 
     DO(ConsumeUnsignedInteger(&unsigned_value, max_value));
 
+    *value = static_cast<int64>(unsigned_value);
+
     if (negative) {
-      if ((static_cast<uint64>(kint64max) + 1) == unsigned_value) {
-        *value = kint64min;
-      } else {
-        *value = -static_cast<int64>(unsigned_value);
-      }
-    } else {
-      *value = static_cast<int64>(unsigned_value);
+      *value = -*value;
     }
 
     return true;
@@ -957,18 +915,18 @@ label_skip_parsing:
   // Accepts decimal numbers only, rejects hex or oct numbers.
   bool ConsumeUnsignedDecimalInteger(uint64* value, uint64 max_value) {
     if (!LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
-      ReportError("Expected integer, got: " + tokenizer_.current().text);
+      ReportError("Expected integer.");
       return false;
     }
 
     const string& text = tokenizer_.current().text;
     if (IsHexNumber(text) || IsOctNumber(text)) {
-      ReportError("Expect a decimal number, got: " + text);
+      ReportError("Expect a decimal number.");
       return false;
     }
 
     if (!io::Tokenizer::ParseInteger(text, max_value, value)) {
-      ReportError("Integer out of range (" + text + ")");
+      ReportError("Integer out of range.");
       return false;
     }
 
@@ -1013,11 +971,11 @@ label_skip_parsing:
         *value = std::numeric_limits<double>::quiet_NaN();
         tokenizer_.Next();
       } else {
-        ReportError("Expected double, got: " + text);
+        ReportError("Expected double.");
         return false;
       }
     } else {
-      ReportError("Expected double, got: " + tokenizer_.current().text);
+      ReportError("Expected double.");
       return false;
     }
 
@@ -1075,17 +1033,7 @@ label_skip_parsing:
     DO(ConsumeMessageDelimiter(&sub_delimiter));
     DO(ConsumeMessage(value.get(), sub_delimiter));
 
-    if (allow_partial_) {
-      value->AppendPartialToString(serialized_value);
-    } else {
-      if (!value->IsInitialized()) {
-        ReportError(
-            "Value of type \"" + full_type_name +
-            "\" stored in google.protobuf.Any has missing required fields");
-        return false;
-      }
-      value->AppendToString(serialized_value);
-    }
+    value->AppendToString(serialized_value);
     return true;
   }
 
@@ -1150,7 +1098,6 @@ label_skip_parsing:
   const bool allow_unknown_field_;
   const bool allow_unknown_enum_;
   const bool allow_field_number_;
-  const bool allow_partial_;
   bool had_errors_;
 };
 
@@ -1312,7 +1259,7 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                     overwrites_policy,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_enum_, allow_field_number_,
-                    allow_relaxed_whitespace_, allow_partial_);
+                    allow_relaxed_whitespace_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -1329,7 +1276,7 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
                     ParserImpl::ALLOW_SINGULAR_OVERWRITES,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_enum_, allow_field_number_,
-                    allow_relaxed_whitespace_, allow_partial_);
+                    allow_relaxed_whitespace_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -1344,7 +1291,7 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* /* input */,
                                         ParserImpl* parser_impl) {
   if (!parser_impl->Parse(output)) return false;
   if (!allow_partial_ && !output->IsInitialized()) {
-    std::vector<string> missing_fields;
+    vector<string> missing_fields;
     output->FindInitializationErrors(&missing_fields);
     parser_impl->ReportError(-1, 0, "Message missing required fields: " +
                                         Join(missing_fields, ", "));
@@ -1363,7 +1310,7 @@ bool TextFormat::Parser::ParseFieldValueFromString(
                     ParserImpl::ALLOW_SINGULAR_OVERWRITES,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_enum_, allow_field_number_,
-                    allow_relaxed_whitespace_, allow_partial_);
+                    allow_relaxed_whitespace_);
   return parser.ParseField(field, output);
 }
 
@@ -1618,7 +1565,7 @@ void TextFormat::Printer::Print(const Message& message,
       PrintAny(message, generator)) {
     return;
   }
-  std::vector<const FieldDescriptor*> fields;
+  vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
   if (print_message_fields_in_index_order_) {
     std::sort(fields.begin(), fields.end(), FieldIndexSorter());
