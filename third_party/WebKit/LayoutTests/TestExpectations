@@ -1769,6 +1769,8 @@ crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-007.xhtml [ Failure ]
+crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001a.html [ Failure ]
+crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001b.html [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/logical-physical-mapping-001.html [ Failure ]
 crbug.com/626703 imported/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu.html [ Failure ]
 crbug.com/626703 imported/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html [ Failure ]
@@ -2026,10 +2028,11 @@ crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-018.html [ Failure ]
 crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-019.html [ Failure ]
 crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-024.html [ Failure ]
 crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-025.html [ Failure ]
+crbug.com/676295 imported/csswg-test/css-ui-3/caret-color-009.html [ Failure ]
+crbug.com/676295 imported/csswg-test/css-ui-3/caret-color-013.html [ Failure ]
 crbug.com/676295 imported/csswg-test/css-ui-3/caret-color-021.html [ Failure ]
 crbug.com/669473 imported/csswg-test/css-ui-3/text-overflow-002.html [ Failure ]
 crbug.com/669473 imported/csswg-test/css-ui-3/text-overflow-004.html [ Failure ]
-
 
 # Suppress wptserve-related failures temporarily.
 Bug(dpranke) imported/wpt/FileAPI/url/url_xmlhttprequest.html [ Failure ]
