@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_CONTEXT_BASE_H_
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/callback_forward.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -170,7 +170,7 @@ class PermissionContextBase : public KeyedService {
 #if defined(OS_ANDROID)
   std::unique_ptr<PermissionQueueController> permission_queue_controller_;
 #endif
-  base::ScopedPtrHashMap<std::string, std::unique_ptr<PermissionRequest>>
+  std::unordered_map<std::string, std::unique_ptr<PermissionRequest>>
       pending_requests_;
 
   // Must be the last member, to ensure that it will be

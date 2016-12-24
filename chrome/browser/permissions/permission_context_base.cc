@@ -151,11 +151,11 @@ void PermissionContextBase::CancelPermissionRequest(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (PermissionRequestManager::IsEnabled()) {
-    PermissionRequest* cancelling = pending_requests_.get(id.ToString());
-    if (cancelling != nullptr && web_contents != nullptr &&
+    auto it = pending_requests_.find(id.ToString());
+    if (it != pending_requests_.end() && web_contents != nullptr &&
         PermissionRequestManager::FromWebContents(web_contents) != nullptr) {
       PermissionRequestManager::FromWebContents(web_contents)
-          ->CancelRequest(cancelling);
+          ->CancelRequest(it->second.get());
     }
   } else {
 #if defined(OS_ANDROID)
@@ -210,7 +210,9 @@ void PermissionContextBase::DecidePermission(
     PermissionRequest* request = request_ptr.get();
 
     bool inserted =
-        pending_requests_.add(id.ToString(), std::move(request_ptr)).second;
+        pending_requests_
+            .insert(std::make_pair(id.ToString(), std::move(request_ptr)))
+            .second;
     DCHECK(inserted) << "Duplicate id " << id.ToString();
     permission_request_manager->AddRequest(request);
   } else {
