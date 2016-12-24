@@ -7,10 +7,11 @@
 
 #include <jni.h>
 
+#include <unordered_map>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/layers/ui_resource_layer.h"
@@ -101,10 +102,10 @@ class TabContentManager : public ThumbnailCacheObserver {
 
  private:
   class TabReadbackRequest;
-  typedef base::hash_map<int, scoped_refptr<cc::Layer>> LayerMap;
-  typedef base::hash_map<int, scoped_refptr<ThumbnailLayer>> ThumbnailLayerMap;
-  typedef base::ScopedPtrHashMap<int, std::unique_ptr<TabReadbackRequest>>
-      TabReadbackRequestMap;
+  using LayerMap = base::hash_map<int, scoped_refptr<cc::Layer>>;
+  using ThumbnailLayerMap = base::hash_map<int, scoped_refptr<ThumbnailLayer>>;
+  using TabReadbackRequestMap =
+      std::unordered_map<int, std::unique_ptr<TabReadbackRequest>>;
 
   void PutThumbnailIntoCache(int tab_id,
                              float thumbnail_scale,

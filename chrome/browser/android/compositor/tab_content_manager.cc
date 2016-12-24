@@ -231,9 +231,8 @@ void TabContentManager::CacheTab(JNIEnv* env,
     TabReadbackCallback readback_done_callback =
         base::Bind(&TabContentManager::PutThumbnailIntoCache,
                    weak_factory_.GetWeakPtr(), tab_id);
-    pending_tab_readbacks_.set(
-        tab_id, base::MakeUnique<TabReadbackRequest>(
-                    web_contents, thumbnail_scale, readback_done_callback));
+    pending_tab_readbacks_[tab_id] = base::MakeUnique<TabReadbackRequest>(
+        web_contents, thumbnail_scale, readback_done_callback);
   }
 }
 
