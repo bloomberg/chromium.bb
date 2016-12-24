@@ -97,6 +97,9 @@ extern NSString* const kSideSwipeDidStopNotification;
 // Returns |NO| if the device should not rotate.
 - (BOOL)shouldAutorotate;
 
+// Resets the swipeDelegate's contentView frame origin x position to zero.
+- (void)resetContentView;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SIDE_SWIPE_SIDE_SWIPE_CONTROLLER_H_

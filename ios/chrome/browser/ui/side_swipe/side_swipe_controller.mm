@@ -506,6 +506,12 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
              afterDelay:3];
 }
 
+- (void)resetContentView {
+  CGRect frame = [swipeDelegate_ contentView].frame;
+  frame.origin.x = 0;
+  [swipeDelegate_ contentView].frame = frame;
+}
+
 - (void)dismissCurtainWithCompletionHandler:(ProceduralBlock)completionHandler {
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
   webStateObserverBridge_.reset();

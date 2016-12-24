@@ -1420,6 +1420,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
 
   self.presenting = YES;
+  if ([_sideSwipeController inSwipe]) {
+    [_sideSwipeController resetContentView];
+  }
 
   [super presentViewController:viewControllerToPresent
                       animated:flag
