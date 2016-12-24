@@ -69,59 +69,61 @@ struct TraceMethodDelegate {
   }
 };
 
-#define DECLARE_TRACE_IMPL(maybevirtual)                \
- public:                                                \
-  maybevirtual void trace(Visitor*);                    \
-  maybevirtual void trace(InlinedGlobalMarkingVisitor); \
-                                                        \
- private:                                               \
-  template <typename VisitorDispatcher>                 \
-  void traceImpl(VisitorDispatcher);                    \
-                                                        \
+#define DECLARE_TRACE_IMPL(maybevirtual)                       \
+ public:                                                       \
+  maybevirtual void trace(blink::Visitor*);                    \
+  maybevirtual void trace(blink::InlinedGlobalMarkingVisitor); \
+                                                               \
+ private:                                                      \
+  template <typename VisitorDispatcher>                        \
+  void traceImpl(VisitorDispatcher);                           \
+                                                               \
  public:
-#define DEFINE_TRACE(T)                                                      \
-  void T::trace(Visitor* visitor) { traceImpl(visitor); }                    \
-  void T::trace(InlinedGlobalMarkingVisitor visitor) { traceImpl(visitor); } \
-  template <typename VisitorDispatcher>                                      \
-  ALWAYS_INLINE void T::traceImpl(VisitorDispatcher visitor)
-
-#define DEFINE_INLINE_TRACE_IMPL(maybevirtual)                      \
-  maybevirtual void trace(Visitor* visitor) { traceImpl(visitor); } \
-  maybevirtual void trace(InlinedGlobalMarkingVisitor visitor) {    \
-    traceImpl(visitor);                                             \
-  }                                                                 \
-  template <typename VisitorDispatcher>                             \
-  inline void traceImpl(VisitorDispatcher visitor)
-
-#define DECLARE_TRACE_AFTER_DISPATCH()                  \
- public:                                                \
-  void traceAfterDispatch(Visitor*);                    \
-  void traceAfterDispatch(InlinedGlobalMarkingVisitor); \
-                                                        \
- private:                                               \
-  template <typename VisitorDispatcher>                 \
-  void traceAfterDispatchImpl(VisitorDispatcher);       \
-                                                        \
- public:
-
-#define DEFINE_TRACE_AFTER_DISPATCH(T)                              \
-  void T::traceAfterDispatch(Visitor* visitor) {                    \
-    traceAfterDispatchImpl(visitor);                                \
-  }                                                                 \
-  void T::traceAfterDispatch(InlinedGlobalMarkingVisitor visitor) { \
-    traceAfterDispatchImpl(visitor);                                \
-  }                                                                 \
-  template <typename VisitorDispatcher>                             \
-  ALWAYS_INLINE void T::traceAfterDispatchImpl(VisitorDispatcher visitor)
-
-#define DEFINE_INLINE_TRACE_AFTER_DISPATCH()                     \
-  void traceAfterDispatch(Visitor* visitor) {                    \
-    traceAfterDispatchImpl(visitor);                             \
-  }                                                              \
-  void traceAfterDispatch(InlinedGlobalMarkingVisitor visitor) { \
-    traceAfterDispatchImpl(visitor);                             \
+#define DEFINE_TRACE(T)                                          \
+  void T::trace(blink::Visitor* visitor) { traceImpl(visitor); } \
+  void T::trace(blink::InlinedGlobalMarkingVisitor visitor) {    \
+    traceImpl(visitor);                                          \
   }                                                              \
   template <typename VisitorDispatcher>                          \
+  ALWAYS_INLINE void T::traceImpl(VisitorDispatcher visitor)
+
+#define DEFINE_INLINE_TRACE_IMPL(maybevirtual)                             \
+  maybevirtual void trace(blink::Visitor* visitor) { traceImpl(visitor); } \
+  maybevirtual void trace(blink::InlinedGlobalMarkingVisitor visitor) {    \
+    traceImpl(visitor);                                                    \
+  }                                                                        \
+  template <typename VisitorDispatcher>                                    \
+  inline void traceImpl(VisitorDispatcher visitor)
+
+#define DECLARE_TRACE_AFTER_DISPATCH()                         \
+ public:                                                       \
+  void traceAfterDispatch(blink::Visitor*);                    \
+  void traceAfterDispatch(blink::InlinedGlobalMarkingVisitor); \
+                                                               \
+ private:                                                      \
+  template <typename VisitorDispatcher>                        \
+  void traceAfterDispatchImpl(VisitorDispatcher);              \
+                                                               \
+ public:
+
+#define DEFINE_TRACE_AFTER_DISPATCH(T)                                     \
+  void T::traceAfterDispatch(blink::Visitor* visitor) {                    \
+    traceAfterDispatchImpl(visitor);                                       \
+  }                                                                        \
+  void T::traceAfterDispatch(blink::InlinedGlobalMarkingVisitor visitor) { \
+    traceAfterDispatchImpl(visitor);                                       \
+  }                                                                        \
+  template <typename VisitorDispatcher>                                    \
+  ALWAYS_INLINE void T::traceAfterDispatchImpl(VisitorDispatcher visitor)
+
+#define DEFINE_INLINE_TRACE_AFTER_DISPATCH()                            \
+  void traceAfterDispatch(blink::Visitor* visitor) {                    \
+    traceAfterDispatchImpl(visitor);                                    \
+  }                                                                     \
+  void traceAfterDispatch(blink::InlinedGlobalMarkingVisitor visitor) { \
+    traceAfterDispatchImpl(visitor);                                    \
+  }                                                                     \
+  template <typename VisitorDispatcher>                                 \
   inline void traceAfterDispatchImpl(VisitorDispatcher visitor)
 
 #define EMPTY_MACRO_ARGUMENT
