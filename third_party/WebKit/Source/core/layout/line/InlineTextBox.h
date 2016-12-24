@@ -135,22 +135,20 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   bool isSelected(int startPos, int endPos) const;
   void selectionStartEnd(int& sPos, int& ePos) const;
 
-  // These functions both paint markers and update the DocumentMarker's
-  // renderedRect.
   virtual void paintDocumentMarker(GraphicsContext&,
                                    const LayoutPoint& boxOrigin,
-                                   DocumentMarker*,
+                                   const DocumentMarker&,
                                    const ComputedStyle&,
                                    const Font&,
                                    bool grammar) const;
   virtual void paintTextMatchMarkerForeground(const PaintInfo&,
                                               const LayoutPoint& boxOrigin,
-                                              DocumentMarker*,
+                                              const DocumentMarker&,
                                               const ComputedStyle&,
                                               const Font&) const;
   virtual void paintTextMatchMarkerBackground(const PaintInfo&,
                                               const LayoutPoint& boxOrigin,
-                                              DocumentMarker*,
+                                              const DocumentMarker&,
                                               const ComputedStyle&,
                                               const Font&) const;
 

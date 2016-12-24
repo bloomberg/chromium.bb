@@ -79,18 +79,18 @@ class SVGInlineTextBox final : public InlineTextBox {
  private:
   void paintDocumentMarker(GraphicsContext&,
                            const LayoutPoint&,
-                           DocumentMarker*,
+                           const DocumentMarker&,
                            const ComputedStyle&,
                            const Font&,
                            bool) const final;
   void paintTextMatchMarkerForeground(const PaintInfo&,
                                       const LayoutPoint&,
-                                      DocumentMarker*,
+                                      const DocumentMarker&,
                                       const ComputedStyle&,
                                       const Font&) const final;
   void paintTextMatchMarkerBackground(const PaintInfo&,
                                       const LayoutPoint&,
-                                      DocumentMarker*,
+                                      const DocumentMarker&,
                                       const ComputedStyle&,
                                       const Font&) const final;
 

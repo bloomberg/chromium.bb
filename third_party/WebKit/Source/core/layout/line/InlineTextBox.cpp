@@ -484,7 +484,7 @@ void InlineTextBox::selectionStartEnd(int& sPos, int& ePos) const {
 
 void InlineTextBox::paintDocumentMarker(GraphicsContext& pt,
                                         const LayoutPoint& boxOrigin,
-                                        DocumentMarker* marker,
+                                        const DocumentMarker& marker,
                                         const ComputedStyle& style,
                                         const Font& font,
                                         bool grammar) const {
@@ -494,7 +494,7 @@ void InlineTextBox::paintDocumentMarker(GraphicsContext& pt,
 
 void InlineTextBox::paintTextMatchMarkerForeground(const PaintInfo& paintInfo,
                                                    const LayoutPoint& boxOrigin,
-                                                   DocumentMarker* marker,
+                                                   const DocumentMarker& marker,
                                                    const ComputedStyle& style,
                                                    const Font& font) const {
   InlineTextBoxPainter(*this).paintTextMatchMarkerForeground(
@@ -503,7 +503,7 @@ void InlineTextBox::paintTextMatchMarkerForeground(const PaintInfo& paintInfo,
 
 void InlineTextBox::paintTextMatchMarkerBackground(const PaintInfo& paintInfo,
                                                    const LayoutPoint& boxOrigin,
-                                                   DocumentMarker* marker,
+                                                   const DocumentMarker& marker,
                                                    const ComputedStyle& style,
                                                    const Font& font) const {
   InlineTextBoxPainter(*this).paintTextMatchMarkerBackground(

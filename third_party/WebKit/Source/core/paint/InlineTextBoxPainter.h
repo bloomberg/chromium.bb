@@ -43,18 +43,18 @@ class InlineTextBoxPainter {
                             DocumentMarkerPaintPhase);
   void paintDocumentMarker(GraphicsContext&,
                            const LayoutPoint& boxOrigin,
-                           DocumentMarker*,
+                           const DocumentMarker&,
                            const ComputedStyle&,
                            const Font&,
                            bool grammar);
   void paintTextMatchMarkerForeground(const PaintInfo&,
                                       const LayoutPoint& boxOrigin,
-                                      DocumentMarker*,
+                                      const DocumentMarker&,
                                       const ComputedStyle&,
                                       const Font&);
   void paintTextMatchMarkerBackground(const PaintInfo&,
                                       const LayoutPoint& boxOrigin,
-                                      DocumentMarker*,
+                                      const DocumentMarker&,
                                       const ComputedStyle&,
                                       const Font&);
 

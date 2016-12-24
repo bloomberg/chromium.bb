@@ -539,21 +539,21 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo,
 }
 
 Vector<SVGTextFragmentWithRange> SVGInlineTextBoxPainter::collectTextMatches(
-    DocumentMarker* marker) const {
+    const DocumentMarker& marker) const {
   const Vector<SVGTextFragmentWithRange> emptyTextMatchList;
 
   // SVG does not support grammar or spellcheck markers, so skip anything but
   // TextMatch.
-  if (marker->type() != DocumentMarker::TextMatch)
+  if (marker.type() != DocumentMarker::TextMatch)
     return emptyTextMatchList;
 
   if (!inlineLayoutObject().frame()->editor().markedTextMatchesAreHighlighted())
     return emptyTextMatchList;
 
   int markerStartPosition =
-      std::max<int>(marker->startOffset() - m_svgInlineTextBox.start(), 0);
+      std::max<int>(marker.startOffset() - m_svgInlineTextBox.start(), 0);
   int markerEndPosition =
-      std::min<int>(marker->endOffset() - m_svgInlineTextBox.start(),
+      std::min<int>(marker.endOffset() - m_svgInlineTextBox.start(),
                     m_svgInlineTextBox.len());
 
   if (markerStartPosition >= markerEndPosition)
@@ -584,7 +584,7 @@ SVGInlineTextBoxPainter::collectFragmentsInRange(int startPosition,
 void SVGInlineTextBoxPainter::paintTextMatchMarkerForeground(
     const PaintInfo& paintInfo,
     const LayoutPoint& point,
-    DocumentMarker* marker,
+    const DocumentMarker& marker,
     const ComputedStyle& style,
     const Font& font) {
   const Vector<SVGTextFragmentWithRange> textMatchInfoList =
@@ -593,7 +593,7 @@ void SVGInlineTextBoxPainter::paintTextMatchMarkerForeground(
     return;
 
   Color textColor =
-      LayoutTheme::theme().platformTextSearchColor(marker->activeMatch());
+      LayoutTheme::theme().platformTextSearchColor(marker.activeMatch());
 
   SkPaint fillPaint;
   fillPaint.setColor(textColor.rgb());
@@ -625,7 +625,7 @@ void SVGInlineTextBoxPainter::paintTextMatchMarkerForeground(
 void SVGInlineTextBoxPainter::paintTextMatchMarkerBackground(
     const PaintInfo& paintInfo,
     const LayoutPoint& point,
-    DocumentMarker* marker,
+    const DocumentMarker& marker,
     const ComputedStyle& style,
     const Font& font) {
   const Vector<SVGTextFragmentWithRange> textMatchInfoList =
@@ -634,7 +634,7 @@ void SVGInlineTextBoxPainter::paintTextMatchMarkerBackground(
     return;
 
   Color color = LayoutTheme::theme().platformTextSearchHighlightColor(
-      marker->activeMatch());
+      marker.activeMatch());
   for (const SVGTextFragmentWithRange& textMatchInfo : textMatchInfoList) {
     const SVGTextFragment& fragment = textMatchInfo.fragment;
 

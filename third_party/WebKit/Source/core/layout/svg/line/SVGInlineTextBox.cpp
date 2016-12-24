@@ -231,7 +231,7 @@ bool SVGInlineTextBox::mapStartEndPositionsIntoFragmentCoordinates(
 
 void SVGInlineTextBox::paintDocumentMarker(GraphicsContext&,
                                            const LayoutPoint&,
-                                           DocumentMarker*,
+                                           const DocumentMarker&,
                                            const ComputedStyle&,
                                            const Font&,
                                            bool) const {
@@ -242,7 +242,7 @@ void SVGInlineTextBox::paintDocumentMarker(GraphicsContext&,
 void SVGInlineTextBox::paintTextMatchMarkerForeground(
     const PaintInfo& paintInfo,
     const LayoutPoint& point,
-    DocumentMarker* marker,
+    const DocumentMarker& marker,
     const ComputedStyle& style,
     const Font& font) const {
   SVGInlineTextBoxPainter(*this).paintTextMatchMarkerForeground(
@@ -252,7 +252,7 @@ void SVGInlineTextBox::paintTextMatchMarkerForeground(
 void SVGInlineTextBox::paintTextMatchMarkerBackground(
     const PaintInfo& paintInfo,
     const LayoutPoint& point,
-    DocumentMarker* marker,
+    const DocumentMarker& marker,
     const ComputedStyle& style,
     const Font& font) const {
   SVGInlineTextBoxPainter(*this).paintTextMatchMarkerBackground(

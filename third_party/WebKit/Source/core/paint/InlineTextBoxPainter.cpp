@@ -22,6 +22,20 @@
 
 namespace blink {
 
+namespace {
+
+std::pair<unsigned, unsigned> GetMarkerPaintOffsets(
+    const DocumentMarker& marker,
+    const InlineTextBox& textBox) {
+  const unsigned startOffset = marker.startOffset() > textBox.start()
+                                   ? marker.startOffset() - textBox.start()
+                                   : 0U;
+  const unsigned endOffset =
+      std::min(marker.endOffset() - textBox.start(), textBox.len());
+  return std::make_pair(startOffset, endOffset);
+}
+}
+
 static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition,
                                   const FontMetrics& fontMetrics,
                                   const InlineTextBox* inlineTextBox,
@@ -736,11 +750,12 @@ void InlineTextBoxPainter::paintDocumentMarkers(
   // text has been drawn.  Note end() points at the last char, not one past it
   // like endOffset and ranges do.
   for (; markerIt != markers.end(); ++markerIt) {
-    DocumentMarker* marker = *markerIt;
+    DCHECK(*markerIt);
+    const DocumentMarker& marker = **markerIt;
 
     // Paint either the background markers or the foreground markers, but not
     // both.
-    switch (marker->type()) {
+    switch (marker.type()) {
       case DocumentMarker::Grammar:
       case DocumentMarker::Spelling:
         if (markerPaintPhase == DocumentMarkerPaintPhase::Background)
@@ -753,19 +768,19 @@ void InlineTextBoxPainter::paintDocumentMarkers(
         continue;
     }
 
-    if (marker->endOffset() <= m_inlineTextBox.start()) {
+    if (marker.endOffset() <= m_inlineTextBox.start()) {
       // marker is completely before this run.  This might be a marker that sits
       // before the first run we draw, or markers that were within runs we
       // skipped due to truncation.
       continue;
     }
-    if (marker->startOffset() > m_inlineTextBox.end()) {
+    if (marker.startOffset() > m_inlineTextBox.end()) {
       // marker is completely after this run, bail.  A later run will paint it.
       break;
     }
 
     // marker intersects this run.  Paint it.
-    switch (marker->type()) {
+    switch (marker.type()) {
       case DocumentMarker::Spelling:
         m_inlineTextBox.paintDocumentMarker(paintInfo.context, boxOrigin,
                                             marker, style, font, false);
@@ -783,10 +798,9 @@ void InlineTextBoxPainter::paintDocumentMarkers(
                                                          marker, style, font);
         break;
       case DocumentMarker::Composition: {
-        CompositionUnderline underline(
-            marker->startOffset(), marker->endOffset(),
-            marker->underlineColor(), marker->thick(),
-            marker->backgroundColor());
+        CompositionUnderline underline(marker.startOffset(), marker.endOffset(),
+                                       marker.underlineColor(), marker.thick(),
+                                       marker.backgroundColor());
         if (markerPaintPhase == DocumentMarkerPaintPhase::Background)
           paintSingleCompositionBackgroundRun(
               paintInfo.context, boxOrigin, style, font,
@@ -816,7 +830,7 @@ static GraphicsContext::DocumentMarkerLineStyle lineStyleForMarkerType(
 
 void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext& context,
                                                const LayoutPoint& boxOrigin,
-                                               DocumentMarker* marker,
+                                               const DocumentMarker& marker,
                                                const ComputedStyle& style,
                                                const Font& font,
                                                bool grammar) {
@@ -832,20 +846,18 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext& context,
 
   // Determine whether we need to measure text
   bool markerSpansWholeBox = true;
-  if (m_inlineTextBox.start() <= marker->startOffset())
+  if (m_inlineTextBox.start() <= marker.startOffset())
     markerSpansWholeBox = false;
   if ((m_inlineTextBox.end() + 1) !=
-      marker->endOffset())  // end points at the last char, not past it
+      marker.endOffset())  // end points at the last char, not past it
     markerSpansWholeBox = false;
   if (m_inlineTextBox.truncation() != cNoTruncation)
     markerSpansWholeBox = false;
 
   if (!markerSpansWholeBox || grammar) {
-    int startPosition =
-        std::max<int>(marker->startOffset() - m_inlineTextBox.start(), 0);
-    int endPosition = std::min<int>(
-        marker->endOffset() - static_cast<int>(m_inlineTextBox.start()),
-        m_inlineTextBox.len());
+    int startPosition, endPosition;
+    std::tie(startPosition, endPosition) =
+        GetMarkerPaintOffsets(marker, m_inlineTextBox);
 
     if (m_inlineTextBox.truncation() != cNoTruncation)
       endPosition = std::min<int>(endPosition, m_inlineTextBox.truncation());
@@ -900,7 +912,7 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext& context,
   context.drawLineForDocumentMarker(
       FloatPoint((boxOrigin.x() + start).toFloat(),
                  (boxOrigin.y() + underlineOffset).toFloat()),
-      width.toFloat(), lineStyleForMarkerType(marker->type()));
+      width.toFloat(), lineStyleForMarkerType(marker.type()));
 }
 
 template <InlineTextBoxPainter::PaintOptions options>
@@ -1206,22 +1218,17 @@ void InlineTextBoxPainter::paintCompositionUnderline(
 void InlineTextBoxPainter::paintTextMatchMarkerForeground(
     const PaintInfo& paintInfo,
     const LayoutPoint& boxOrigin,
-    DocumentMarker* marker,
+    const DocumentMarker& marker,
     const ComputedStyle& style,
     const Font& font) {
   if (!inlineLayoutObject().frame()->editor().markedTextMatchesAreHighlighted())
     return;
 
-  // TODO(ramya.v): Extract this into a helper function and share many copies of
-  // this code.
-  int sPos =
-      std::max(marker->startOffset() - m_inlineTextBox.start(), (unsigned)0);
-  int ePos = std::min(marker->endOffset() - m_inlineTextBox.start(),
-                      m_inlineTextBox.len());
+  const auto paintOffsets = GetMarkerPaintOffsets(marker, m_inlineTextBox);
   TextRun run = m_inlineTextBox.constructTextRun(style);
 
   Color textColor =
-      LayoutTheme::theme().platformTextSearchColor(marker->activeMatch());
+      LayoutTheme::theme().platformTextSearchColor(marker.activeMatch());
   if (style.visitedDependentColor(CSSPropertyColor) == textColor)
     return;
 
@@ -1243,13 +1250,14 @@ void InlineTextBoxPainter::paintTextMatchMarkerForeground(
   TextPainter textPainter(paintInfo.context, font, run, textOrigin, boxRect,
                           m_inlineTextBox.isHorizontal());
 
-  textPainter.paint(sPos, ePos, m_inlineTextBox.len(), textStyle, 0);
+  textPainter.paint(paintOffsets.first, paintOffsets.second,
+                    m_inlineTextBox.len(), textStyle, 0);
 }
 
 void InlineTextBoxPainter::paintTextMatchMarkerBackground(
     const PaintInfo& paintInfo,
     const LayoutPoint& boxOrigin,
-    DocumentMarker* marker,
+    const DocumentMarker& marker,
     const ComputedStyle& style,
     const Font& font) {
   if (!LineLayoutAPIShim::layoutObjectFrom(m_inlineTextBox.getLineLayoutItem())
@@ -1258,14 +1266,11 @@ void InlineTextBoxPainter::paintTextMatchMarkerBackground(
            .markedTextMatchesAreHighlighted())
     return;
 
-  int sPos =
-      std::max(marker->startOffset() - m_inlineTextBox.start(), (unsigned)0);
-  int ePos = std::min(marker->endOffset() - m_inlineTextBox.start(),
-                      m_inlineTextBox.len());
+  const auto paintOffsets = GetMarkerPaintOffsets(marker, m_inlineTextBox);
   TextRun run = m_inlineTextBox.constructTextRun(style);
 
   Color color = LayoutTheme::theme().platformTextSearchHighlightColor(
-      marker->activeMatch());
+      marker.activeMatch());
   GraphicsContext& context = paintInfo.context;
   GraphicsContextStateSaver stateSaver(context);
 
@@ -1273,7 +1278,8 @@ void InlineTextBoxPainter::paintTextMatchMarkerBackground(
                                            m_inlineTextBox.logicalHeight()));
   context.clip(FloatRect(boxRect));
   context.drawHighlightForText(font, run, FloatPoint(boxOrigin),
-                               boxRect.height().toInt(), color, sPos, ePos);
+                               boxRect.height().toInt(), color,
+                               paintOffsets.first, paintOffsets.second);
 }
 
 }  // namespace blink
