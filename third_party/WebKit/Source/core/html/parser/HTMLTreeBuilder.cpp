@@ -65,13 +65,13 @@ static TextPosition uninitializedPositionValue1() {
                       OrdinalNumber::first());
 }
 
-static inline bool isAllWhitespace(const String& string) {
-  return string.isAllSpecialCharacters<isHTMLSpace<UChar>>();
+static inline bool isAllWhitespace(const StringView& stringView) {
+  return stringView.isAllSpecialCharacters<isHTMLSpace<UChar>>();
 }
 
 static inline bool isAllWhitespaceOrReplacementCharacters(
-    const String& string) {
-  return string.isAllSpecialCharacters<isHTMLSpaceOrReplacementCharacter>();
+    const StringView& stringView) {
+  return stringView.isAllSpecialCharacters<isHTMLSpaceOrReplacementCharacter>();
 }
 
 static bool isNumberedHeaderTag(const AtomicString& tagName) {
@@ -137,18 +137,19 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
 
   void skipLeadingWhitespace() { skipLeading<isHTMLSpace<UChar>>(); }
 
-  String takeLeadingWhitespace() { return takeLeading<isHTMLSpace<UChar>>(); }
+  StringView takeLeadingWhitespace() {
+    return takeLeading<isHTMLSpace<UChar>>();
+  }
 
   void skipLeadingNonWhitespace() { skipLeading<isNotHTMLSpace<UChar>>(); }
 
   void skipRemaining() { m_current = m_end; }
 
-  String takeRemaining() {
+  StringView takeRemaining() {
     ASSERT(!isEmpty());
     unsigned start = m_current;
     m_current = m_end;
-    // Notice that substring is smart enough to return *this when start == 0.
-    return String(m_characters->substring(start, m_end - start));
+    return StringView(m_characters.get(), start, m_end - start);
   }
 
   void giveRemainingTo(StringBuilder& recipient) {
@@ -201,13 +202,11 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
   }
 
   template <bool characterPredicate(UChar)>
-  String takeLeading() {
+  StringView takeLeading() {
     ASSERT(!isEmpty());
     const unsigned start = m_current;
     skipLeading<characterPredicate>();
-    if (start == m_current)
-      return String();
-    return String(m_characters->substring(start, m_current - start));
+    return StringView(m_characters.get(), start, m_current - start);
   }
 
   RefPtr<StringImpl> m_characters;
@@ -2212,7 +2211,7 @@ ReprocessBuffer:
     }
     case InHeadMode: {
       ASSERT(getInsertionMode() == InHeadMode);
-      String leadingWhitespace = buffer.takeLeadingWhitespace();
+      StringView leadingWhitespace = buffer.takeLeadingWhitespace();
       if (!leadingWhitespace.isEmpty())
         m_tree.insertTextNode(leadingWhitespace, AllWhitespace);
       if (buffer.isEmpty())
@@ -2222,7 +2221,7 @@ ReprocessBuffer:
     }
     case AfterHeadMode: {
       ASSERT(getInsertionMode() == AfterHeadMode);
-      String leadingWhitespace = buffer.takeLeadingWhitespace();
+      StringView leadingWhitespace = buffer.takeLeadingWhitespace();
       if (!leadingWhitespace.isEmpty())
         m_tree.insertTextNode(leadingWhitespace, AllWhitespace);
       if (buffer.isEmpty())
@@ -2270,7 +2269,7 @@ ReprocessBuffer:
     }
     case InColumnGroupMode: {
       ASSERT(getInsertionMode() == InColumnGroupMode);
-      String leadingWhitespace = buffer.takeLeadingWhitespace();
+      StringView leadingWhitespace = buffer.takeLeadingWhitespace();
       if (!leadingWhitespace.isEmpty())
         m_tree.insertTextNode(leadingWhitespace, AllWhitespace);
       if (buffer.isEmpty())
@@ -2299,7 +2298,7 @@ ReprocessBuffer:
     }
     case InHeadNoscriptMode: {
       ASSERT(getInsertionMode() == InHeadNoscriptMode);
-      String leadingWhitespace = buffer.takeLeadingWhitespace();
+      StringView leadingWhitespace = buffer.takeLeadingWhitespace();
       if (!leadingWhitespace.isEmpty())
         m_tree.insertTextNode(leadingWhitespace, AllWhitespace);
       if (buffer.isEmpty())
@@ -2342,7 +2341,7 @@ ReprocessBuffer:
 void HTMLTreeBuilder::processCharacterBufferForInBody(
     CharacterTokenBuffer& buffer) {
   m_tree.reconstructTheActiveFormattingElements();
-  const String& characters = buffer.takeRemaining();
+  StringView characters = buffer.takeRemaining();
   m_tree.insertTextNode(characters);
   if (m_framesetOk && !isAllWhitespaceOrReplacementCharacters(characters))
     m_framesetOk = false;

@@ -137,6 +137,9 @@ class WTF_EXPORT StringView {
   String toString() const;
   AtomicString toAtomicString() const;
 
+  template <bool isSpecialCharacter(UChar)>
+  bool isAllSpecialCharacters() const;
+
  private:
   void set(const StringImpl&, unsigned offset, unsigned length);
 
@@ -237,10 +240,33 @@ inline bool operator!=(const StringView& a, const StringView& b) {
   return !(a == b);
 }
 
+template <bool isSpecialCharacter(UChar), typename CharacterType>
+inline bool isAllSpecialCharacters(const CharacterType* characters,
+                                   size_t length) {
+  for (size_t i = 0; i < length; ++i) {
+    if (!isSpecialCharacter(characters[i]))
+      return false;
+  }
+  return true;
+}
+
+template <bool isSpecialCharacter(UChar)>
+inline bool StringView::isAllSpecialCharacters() const {
+  size_t len = length();
+  if (!len)
+    return true;
+
+  return is8Bit() ? WTF::isAllSpecialCharacters<isSpecialCharacter, LChar>(
+                        characters8(), len)
+                  : WTF::isAllSpecialCharacters<isSpecialCharacter, UChar>(
+                        characters16(), len);
+}
+
 }  // namespace WTF
 
 using WTF::StringView;
 using WTF::equalIgnoringASCIICase;
 using WTF::equalIgnoringCase;
+using WTF::isAllSpecialCharacters;
 
 #endif

@@ -764,7 +764,7 @@ void HTMLConstructionSite::insertForeignElement(
     m_openElements.push(HTMLStackItem::create(element, token, namespaceURI));
 }
 
-void HTMLConstructionSite::insertTextNode(const String& string,
+void HTMLConstructionSite::insertTextNode(const StringView& string,
                                           WhitespaceMode whitespaceMode) {
   HTMLConstructionSiteTask dummyTask(HTMLConstructionSiteTask::Insert);
   dummyTask.parent = currentNode();

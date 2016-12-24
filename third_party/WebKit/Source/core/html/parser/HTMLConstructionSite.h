@@ -155,7 +155,7 @@ class HTMLConstructionSite final {
   void insertHTMLBodyElement(AtomicHTMLToken*);
   void insertHTMLFormElement(AtomicHTMLToken*, bool isDemoted = false);
   void insertScriptElement(AtomicHTMLToken*);
-  void insertTextNode(const String&, WhitespaceMode = WhitespaceUnknown);
+  void insertTextNode(const StringView&, WhitespaceMode = WhitespaceUnknown);
   void insertForeignElement(AtomicHTMLToken*, const AtomicString& namespaceURI);
 
   void insertHTMLHtmlStartTagBeforeHTML(AtomicHTMLToken*);
@@ -289,7 +289,7 @@ class HTMLConstructionSite final {
 
     void append(ContainerNode* newParent,
                 Node* newNextChild,
-                const String& newString,
+                const StringView& newString,
                 WhitespaceMode newWhitespaceMode) {
       ASSERT(!parent || parent == newParent);
       parent = newParent;

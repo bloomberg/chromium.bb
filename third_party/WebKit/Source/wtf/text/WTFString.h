@@ -58,9 +58,6 @@ enum UTF8ConversionMode {
              ? op##IgnoringASCIICase args              \
              : op##IgnoringCase args)
 
-template <bool isSpecialCharacter(UChar), typename CharacterType>
-bool isAllSpecialCharacters(const CharacterType*, size_t);
-
 // You can find documentation about this class in this doc:
 // https://docs.google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit?usp=sharing
 class WTF_EXPORT String {
@@ -574,28 +571,9 @@ inline bool codePointCompareLessThan(const String& a, const String& b) {
 
 WTF_EXPORT int codePointCompareIgnoringASCIICase(const String&, const char*);
 
-template <bool isSpecialCharacter(UChar), typename CharacterType>
-inline bool isAllSpecialCharacters(const CharacterType* characters,
-                                   size_t length) {
-  for (size_t i = 0; i < length; ++i) {
-    if (!isSpecialCharacter(characters[i]))
-      return false;
-  }
-  return true;
-}
-
 template <bool isSpecialCharacter(UChar)>
 inline bool String::isAllSpecialCharacters() const {
-  size_t len = length();
-
-  if (!len)
-    return true;
-
-  if (is8Bit())
-    return WTF::isAllSpecialCharacters<isSpecialCharacter, LChar>(characters8(),
-                                                                  len);
-  return WTF::isAllSpecialCharacters<isSpecialCharacter, UChar>(characters16(),
-                                                                len);
+  return StringView(*this).isAllSpecialCharacters<isSpecialCharacter>();
 }
 
 template <typename BufferType>
@@ -655,7 +633,6 @@ using WTF::emptyString16Bit;
 using WTF::charactersAreAllASCII;
 using WTF::equal;
 using WTF::find;
-using WTF::isAllSpecialCharacters;
 using WTF::isSpaceOrNewline;
 
 #include "wtf/text/AtomicString.h"
