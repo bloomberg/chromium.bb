@@ -20,7 +20,6 @@ import json
 import re
 import os
 import struct
-import subprocess
 import sys
 import time
 import urlparse
@@ -39,9 +38,6 @@ VERSION = "\x02"
 
 # Default key file, relative to script_dir.
 DEFAULT_KEY_FILE = 'eftest.key'
-
-# Default location of validate subdomain utility, relative to script_dir.
-DEFAULT_TARGET_PATH = '../../out/Default/'
 
 def HostnameFromArg(arg):
   """Determines whether a string represents a valid hostname.
@@ -90,28 +86,6 @@ def ExpiryFromArgs(args):
     return int(args.expire_timestamp)
   return (int(time.time()) + (int(args.expire_days) * 86400))
 
-def ValidateSubdomainTokenOrigin(origin, target_path):
-  """ Calls validate_subdomain_origin utility to check the origin
-
-  If the utility is not found, prints a warning for manual validation, and
-  returns True
-  """
-  utility_path = "%s/validate_subdomain_origin" % target_path
-  if not os.path.exists(utility_path):
-    print "WARNING!"
-    print "Origin not validated for use in subdomain token"
-    print "  (missing '%s' utility)" % utility_path
-    print "Must manually check origin against the Public Suffix List"
-    print
-    return True
-
-  rc = subprocess.call([utility_path, "--quiet", origin])
-  if (rc < 0 or rc > 4):
-    print("Unexpected return code from %s: %d" % (utility_path, rc))
-    sys.exit(1)
-
-  return rc == 0
-
 def GenerateTokenData(origin, is_subdomain, feature_name, expiry):
   data = {"origin": origin,
           "feature": feature_name,
@@ -132,7 +106,6 @@ def FormatToken(version, signature, data):
 
 def main():
   default_key_file_absolute = os.path.join(script_dir, DEFAULT_KEY_FILE)
-  default_target_path_absolute = os.path.join(script_dir, DEFAULT_TARGET_PATH)
 
   parser = argparse.ArgumentParser(
       description="Generate tokens for enabling experimental features")
@@ -172,11 +145,6 @@ def main():
                                  "00:00:00 UTC) when the token should expire",
                             type=int)
 
-  parser.add_argument("--target",
-                      help="Path to the output directory for compiled "
-                           "resources",
-                      default=default_target_path_absolute)
-
   args = parser.parse_args()
   expiry = ExpiryFromArgs(args)
 
@@ -190,13 +158,6 @@ def main():
     ed25519.publickey(private_key[:32]) != private_key[32:]):
     print("Unable to use the specified private key file.")
     sys.exit(1)
-
-  # For subdomain tokens, validate that the origin is allowed
-  if args.is_subdomain:
-    target_path = os.path.expanduser(args.target)
-    if not ValidateSubdomainTokenOrigin(args.origin, target_path):
-      print "The specified origin is not valid for use in a subdomain token."
-      sys.exit(1)
 
   token_data = GenerateTokenData(args.origin, args.is_subdomain,
                                  args.trial_name, expiry)
