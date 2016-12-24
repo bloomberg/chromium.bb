@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_OWNERSHIP_OWNER_SETTINGS_SERVICE_CHROMEOS_H_
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
@@ -171,7 +171,7 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   bool has_pending_fixups_;
 
   // A set of pending changes to device settings.
-  base::ScopedPtrHashMap<std::string, std::unique_ptr<base::Value>>
+  std::unordered_map<std::string, std::unique_ptr<base::Value>>
       pending_changes_;
 
   // A protobuf containing pending changes to device settings.

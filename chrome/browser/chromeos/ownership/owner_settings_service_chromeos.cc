@@ -251,7 +251,7 @@ bool OwnerSettingsServiceChromeOS::Set(const std::string& setting,
   if (!IsOwner() && !IsOwnerInTests(user_id_))
     return false;
 
-  pending_changes_.add(setting, base::WrapUnique(value.DeepCopy()));
+  pending_changes_[setting] = base::WrapUnique(value.DeepCopy());
 
   em::ChromeDeviceSettingsProto settings;
   if (tentative_settings_.get()) {
@@ -691,7 +691,7 @@ void OwnerSettingsServiceChromeOS::StorePendingChanges() {
   }
 
   for (const auto& change : pending_changes_)
-    UpdateDeviceSettings(change.first, *change.second, settings);
+    UpdateDeviceSettings(change.first, *change.second.get(), settings);
   pending_changes_.clear();
 
   std::unique_ptr<em::PolicyData> policy =

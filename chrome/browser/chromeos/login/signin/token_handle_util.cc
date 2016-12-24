@@ -91,11 +91,11 @@ void TokenHandleUtil::CheckToken(const AccountId& account_id,
     gaia_client_.reset(new gaia::GaiaOAuthClient(request_context));
   }
 
-  validation_delegates_.set(
-      token, std::unique_ptr<TokenDelegate>(new TokenDelegate(
-                 weak_factory_.GetWeakPtr(), account_id, token, callback)));
+  validation_delegates_[token] =
+      std::unique_ptr<TokenDelegate>(new TokenDelegate(
+          weak_factory_.GetWeakPtr(), account_id, token, callback));
   gaia_client_->GetTokenHandleInfo(token, kMaxRetries,
-                                   validation_delegates_.get(token));
+                                   validation_delegates_[token].get());
 }
 
 void TokenHandleUtil::StoreTokenHandle(const AccountId& account_id,
@@ -107,10 +107,6 @@ void TokenHandleUtil::StoreTokenHandle(const AccountId& account_id,
 
 void TokenHandleUtil::OnValidationComplete(const std::string& token) {
   validation_delegates_.erase(token);
-}
-
-void TokenHandleUtil::OnObtainTokenComplete(const AccountId& account_id) {
-  obtain_delegates_.erase(account_id);
 }
 
 TokenHandleUtil::TokenDelegate::TokenDelegate(
