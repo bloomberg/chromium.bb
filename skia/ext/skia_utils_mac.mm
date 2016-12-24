@@ -184,31 +184,10 @@ NSColor* SkColorToSRGBNSColor(SkColor color) {
 }
 
 SkBitmap CGImageToSkBitmap(CGImageRef image) {
-  if (!image)
-    return SkBitmap();
-
-  int width = CGImageGetWidth(image);
-  int height = CGImageGetHeight(image);
-
-  std::unique_ptr<SkCanvas> canvas(
-      skia::TryCreateBitmapCanvas(width, height, false));
-  ScopedPlatformPaint p(canvas.get());
-  CGContextRef context = p.GetNativeDrawingContext();
-
-  // We need to invert the y-axis of the canvas so that Core Graphics drawing
-  // happens right-side up. Skia has an upper-left origin and CG has a lower-
-  // left one.
-  CGContextScaleCTM(context, 1.0, -1.0);
-  CGContextTranslateCTM(context, 0, -height);
-
-  // We want to copy transparent pixels from |image|, instead of blending it
-  // onto uninitialized pixels.
-  CGContextSetBlendMode(context, kCGBlendModeCopy);
-
-  CGRect rect = CGRectMake(0, 0, width, height);
-  CGContextDrawImage(context, rect, image);
-
-  return skia::ReadPixels(canvas.get());
+  SkBitmap bitmap;
+  if (image && SkCreateBitmapFromCGImage(&bitmap, image))
+    return bitmap;
+  return SkBitmap();
 }
 
 SkBitmap NSImageToSkBitmapWithColorSpace(
