@@ -7,6 +7,8 @@
 #include "core/frame/UseCounter.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/testing/HistogramTester.h"
+#include "platform/testing/URLTestHelpers.h"
+#include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -60,7 +62,7 @@ TEST(UseCounterTest, MAYBE_RecordingFeatures) {
   histogramTester.expectTotalCount(kLegacyFeaturesHistogramName, 0);
 
   // Test the impact of page load on the new histogram
-  useCounter.didCommitLoad();
+  useCounter.didCommitLoad(URLTestHelpers::toKURL("https://dummysite.com/"));
   histogramTester.expectBucketCount(kFeaturesHistogramName, UseCounter::Fetch,
                                     1);
   histogramTester.expectBucketCount(kFeaturesHistogramName,
@@ -88,7 +90,7 @@ TEST(UseCounterTest, MAYBE_RecordingFeatures) {
   histogramTester.expectTotalCount(kFeaturesHistogramName, 4);
 
   // And on the next page load, the legacy histogram will again be updated
-  useCounter.didCommitLoad();
+  useCounter.didCommitLoad(URLTestHelpers::toKURL("https://dummysite.com/"));
   histogramTester.expectBucketCount(kLegacyFeaturesHistogramName,
                                     UseCounter::Fetch, 2);
   histogramTester.expectBucketCount(kLegacyFeaturesHistogramName,
@@ -140,7 +142,7 @@ TEST(UseCounterTest, RecordingCSSProperties) {
   histogramTester.expectTotalCount(kLegacyCSSHistogramName, 0);
 
   // Test the impact of page load on the new histogram
-  useCounter.didCommitLoad();
+  useCounter.didCommitLoad(URLTestHelpers::toKURL("https://dummysite.com/"));
   histogramTester.expectBucketCount(
       kCSSHistogramName,
       UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
@@ -176,7 +178,7 @@ TEST(UseCounterTest, RecordingCSSProperties) {
   histogramTester.expectTotalCount(kCSSHistogramName, 4);
 
   // And on the next page load, the legacy histogram will again be updated
-  useCounter.didCommitLoad();
+  useCounter.didCommitLoad(URLTestHelpers::toKURL("https://dummysite.com/"));
   histogramTester.expectBucketCount(
       kLegacyCSSHistogramName,
       UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
@@ -223,8 +225,10 @@ TEST(UseCounterTest, MAYBE_SVGImageContext) {
       UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyFont),
       1);
 
-  // After a page load, the histograms will be updated
-  useCounter.didCommitLoad();
+  // After a page load, the histograms will be updated, even when the URL
+  // scheme is internal (in practice SVGs always appear to get loaded with
+  // an about:blank URL).
+  useCounter.didCommitLoad(URLTestHelpers::toKURL("about:blank"));
   histogramTester.expectBucketCount(kSVGFeaturesHistogramName,
                                     UseCounter::PageVisits, 1);
   histogramTester.expectTotalCount(kSVGFeaturesHistogramName, 2);
@@ -300,6 +304,118 @@ TEST(UseCounterTest, MAYBE_InspectorDisablesMeasurement) {
   histogramTester.expectUniqueSample(
       kCSSHistogramName,
       UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property), 1);
+}
+
+void expectHistograms(const HistogramTester& histogramTester,
+                      int visitsCount,
+                      UseCounter::Feature feature,
+                      int featureCount,
+                      CSSPropertyID property,
+                      int propertyCount) {
+  histogramTester.expectBucketCount(kFeaturesHistogramName,
+                                    UseCounter::PageVisits, visitsCount);
+  histogramTester.expectBucketCount(kFeaturesHistogramName, feature,
+                                    featureCount);
+  histogramTester.expectTotalCount(kFeaturesHistogramName,
+                                   visitsCount + featureCount);
+  histogramTester.expectBucketCount(kCSSHistogramName, 1, visitsCount);
+  histogramTester.expectBucketCount(
+      kCSSHistogramName,
+      UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property),
+      propertyCount);
+  histogramTester.expectTotalCount(kCSSHistogramName,
+                                   visitsCount + propertyCount);
+}
+
+// Failing on Android: crbug.com/667913
+#if OS(ANDROID)
+#define MAYBE_MutedDocuments DISABLED_MutedDocuments
+#else
+#define MAYBE_MutedDocuments MutedDocuments
+#endif
+TEST(UseCounterTest, MAYBE_MutedDocuments) {
+  UseCounter useCounter;
+  HistogramTester histogramTester;
+
+  // Counters triggered before any load are always reported.
+  useCounter.recordMeasurement(UseCounter::Fetch);
+  useCounter.count(HTMLStandardMode, CSSPropertyFontWeight);
+  expectHistograms(histogramTester, 0, UseCounter::Fetch, 1,
+                   CSSPropertyFontWeight, 1);
+
+  // Loading an internal page doesn't bump PageVisits and metrics not reported.
+  useCounter.didCommitLoad(URLTestHelpers::toKURL("about:blank"));
+  EXPECT_FALSE(useCounter.hasRecordedMeasurement(UseCounter::Fetch));
+  EXPECT_FALSE(useCounter.isCounted(CSSPropertyFontWeight));
+  useCounter.recordMeasurement(UseCounter::Fetch);
+  useCounter.count(HTMLStandardMode, CSSPropertyFontWeight);
+  expectHistograms(histogramTester, 0, UseCounter::Fetch, 1,
+                   CSSPropertyFontWeight, 1);
+
+  // But the fact that the features were seen is still known.
+  EXPECT_TRUE(useCounter.hasRecordedMeasurement(UseCounter::Fetch));
+  EXPECT_TRUE(useCounter.isCounted(CSSPropertyFontWeight));
+
+  // Inspector muting then unmuting doesn't change the behavior.
+  useCounter.muteForInspector();
+  useCounter.unmuteForInspector();
+  useCounter.recordMeasurement(UseCounter::Fetch);
+  useCounter.count(HTMLStandardMode, CSSPropertyFontWeight);
+  expectHistograms(histogramTester, 0, UseCounter::Fetch, 1,
+                   CSSPropertyFontWeight, 1);
+
+  // If we now load a real web page, metrics are reported again.
+  useCounter.didCommitLoad(URLTestHelpers::toKURL("http://foo.com/"));
+  useCounter.recordMeasurement(UseCounter::Fetch);
+  useCounter.count(HTMLStandardMode, CSSPropertyFontWeight);
+  expectHistograms(histogramTester, 1, UseCounter::Fetch, 2,
+                   CSSPropertyFontWeight, 2);
+
+  // HTTPs URLs are the same.
+  useCounter.didCommitLoad(
+      URLTestHelpers::toKURL("https://baz.com:1234/blob.html"));
+  useCounter.recordMeasurement(UseCounter::Fetch);
+  useCounter.count(HTMLStandardMode, CSSPropertyFontWeight);
+  expectHistograms(histogramTester, 2, UseCounter::Fetch, 3,
+                   CSSPropertyFontWeight, 3);
+
+  // Extensions aren't counted.
+  useCounter.didCommitLoad(
+      URLTestHelpers::toKURL("chrome-extension://1238ba908adf/"));
+  useCounter.recordMeasurement(UseCounter::Fetch);
+  useCounter.count(HTMLStandardMode, CSSPropertyFontWeight);
+  expectHistograms(histogramTester, 2, UseCounter::Fetch, 3,
+                   CSSPropertyFontWeight, 3);
+
+  // Nor is devtools
+  useCounter.didCommitLoad(
+      URLTestHelpers::toKURL("chrome-devtools://1238ba908adf/"));
+  useCounter.recordMeasurement(UseCounter::Fetch);
+  useCounter.count(HTMLStandardMode, CSSPropertyFontWeight);
+  expectHistograms(histogramTester, 2, UseCounter::Fetch, 3,
+                   CSSPropertyFontWeight, 3);
+
+  // Nor are data URLs
+  useCounter.didCommitLoad(
+      URLTestHelpers::toKURL("data:text/plain,thisisaurl"));
+  useCounter.recordMeasurement(UseCounter::Fetch);
+  useCounter.count(HTMLStandardMode, CSSPropertyFontWeight);
+  expectHistograms(histogramTester, 2, UseCounter::Fetch, 3,
+                   CSSPropertyFontWeight, 3);
+
+  // Or empty URLs (a main frame with no Document)
+  useCounter.didCommitLoad(KURL());
+  useCounter.recordMeasurement(UseCounter::Fetch);
+  useCounter.count(HTMLStandardMode, CSSPropertyFontWeight);
+  expectHistograms(histogramTester, 2, UseCounter::Fetch, 3,
+                   CSSPropertyFontWeight, 3);
+
+  // But file URLs are
+  useCounter.didCommitLoad(URLTestHelpers::toKURL("file:///c/autoexec.bat"));
+  useCounter.recordMeasurement(UseCounter::Fetch);
+  useCounter.count(HTMLStandardMode, CSSPropertyFontWeight);
+  expectHistograms(histogramTester, 3, UseCounter::Fetch, 4,
+                   CSSPropertyFontWeight, 4);
 }
 
 class DeprecationTest : public ::testing::Test {

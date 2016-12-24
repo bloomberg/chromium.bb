@@ -29,6 +29,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserMode.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/BitVector.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
@@ -1429,7 +1430,8 @@ class CORE_EXPORT UseCounter {
   static bool isCounted(Document&, const String&);
   bool isCounted(CSSPropertyID unresolvedProperty);
 
-  void didCommitLoad();
+  // Invoked when a new document is loaded into the main frame of the page.
+  void didCommitLoad(KURL);
 
   static UseCounter* getFrom(const Document*);
   static UseCounter* getFrom(const CSSStyleSheet*);
@@ -1437,19 +1439,28 @@ class CORE_EXPORT UseCounter {
 
   static int mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID);
 
+  // When muted, all calls to "count" functions are ignoed.  May be nested.
   void muteForInspector();
   void unmuteForInspector();
 
   void recordMeasurement(Feature);
-  void updateMeasurements();
 
+  // Return whether the feature has been seen since the last page load
+  // (except when muted).  Does include features seen in documents which have
+  // reporting disabled.
   bool hasRecordedMeasurement(Feature) const;
 
  private:
   EnumerationHistogram& featuresHistogram() const;
   EnumerationHistogram& cssHistogram() const;
 
+  // If non-zero, ignore all 'count' calls completely.
   unsigned m_muteCount;
+
+  // If true, disable reporting all histogram entries.
+  bool m_disableReporting;
+
+  // The scope represented by this UseCounter instance.
   Context m_context;
 
   // Track what features/properties have been reported to the (non-legacy)
@@ -1459,7 +1470,7 @@ class CORE_EXPORT UseCounter {
 
   // Encapsulates the work to preserve the old "FeatureObserver" histogram with
   // original semantics
-  // TODO(rbyers): remove this - http://crbug.com/597963
+  // TODO(rbyers): remove this - http://crbug.com/676837
   class CORE_EXPORT LegacyCounter {
    public:
     LegacyCounter();

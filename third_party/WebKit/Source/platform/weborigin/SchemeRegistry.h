@@ -95,6 +95,9 @@ class PLATFORM_EXPORT SchemeRegistry {
   // differently from "webby" schemes.
   static bool shouldTreatURLSchemeAsLegacy(const String& scheme);
 
+  // Does the scheme represent a location relevant to web compatibility metrics?
+  static bool shouldTrackUsageMetricsForScheme(const String& scheme);
+
   // Schemes that can register a service worker.
   static void registerURLSchemeAsAllowingServiceWorkers(const String& scheme);
   static bool shouldTreatURLSchemeAsAllowingServiceWorkers(
