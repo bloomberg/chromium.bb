@@ -10,11 +10,11 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -144,13 +144,12 @@ class PrefHashFilter : public InterceptablePrefFilter {
 
   // A map of paths to TrackedPreferences; this map owns this individual
   // TrackedPreference objects.
-  typedef base::ScopedPtrHashMap<std::string,
-                                 std::unique_ptr<TrackedPreference>>
-      TrackedPreferencesMap;
+  using TrackedPreferencesMap =
+      std::unordered_map<std::string, std::unique_ptr<TrackedPreference>>;
 
   // A map from changed paths to their corresponding TrackedPreferences (which
   // aren't owned by this map).
-  typedef std::map<std::string, const TrackedPreference*> ChangedPathsMap;
+  using ChangedPathsMap = std::map<std::string, const TrackedPreference*>;
 
   std::unique_ptr<PrefHashStore> pref_hash_store_;
 
