@@ -431,6 +431,18 @@
             "url": "/pointerevents/pointerevent_releasepointercapture_onpointerup_mouse-manual.html"
           }
         ],
+        "pointerevents/pointerevent_sequence_at_implicit_release_on_click-manual.html": [
+          {
+            "path": "pointerevents/pointerevent_sequence_at_implicit_release_on_click-manual.html",
+            "url": "/pointerevents/pointerevent_sequence_at_implicit_release_on_click-manual.html"
+          }
+        ],
+        "pointerevents/pointerevent_sequence_at_implicit_release_on_drag-manual.html": [
+          {
+            "path": "pointerevents/pointerevent_sequence_at_implicit_release_on_drag-manual.html",
+            "url": "/pointerevents/pointerevent_sequence_at_implicit_release_on_drag-manual.html"
+          }
+        ],
         "pointerevents/pointerevent_setpointercapture_disconnected-manual.html": [
           {
             "path": "pointerevents/pointerevent_setpointercapture_disconnected-manual.html",
@@ -8342,12 +8354,14 @@
         "encrypted-media/drm-events.html": [
           {
             "path": "encrypted-media/drm-events.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-events.html"
           }
         ],
         "encrypted-media/drm-expiration.html": [
           {
             "path": "encrypted-media/drm-expiration.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-expiration.html"
           }
         ],
@@ -8366,12 +8380,14 @@
         "encrypted-media/drm-keystatuses-multiple-sessions.html": [
           {
             "path": "encrypted-media/drm-keystatuses-multiple-sessions.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-keystatuses-multiple-sessions.html"
           }
         ],
         "encrypted-media/drm-keystatuses.html": [
           {
             "path": "encrypted-media/drm-keystatuses.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-keystatuses.html"
           }
         ],
@@ -8384,24 +8400,28 @@
         "encrypted-media/drm-mp4-playback-destroy-persistent-license.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-destroy-persistent-license.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-destroy-persistent-license.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-persistent-license-events.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-persistent-license-events.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-persistent-license-events.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-persistent-license.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-persistent-license.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-persistent-license.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-persistent-usage-record-events.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-persistent-usage-record-events.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-persistent-usage-record-events.html"
           }
         ],
@@ -8429,12 +8449,14 @@
         "encrypted-media/drm-mp4-playback-retrieve-persistent-usage-record.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-retrieve-persistent-usage-record.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-retrieve-persistent-usage-record.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-temporary-clear-encrypted.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-temporary-clear-encrypted.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-temporary-clear-encrypted.html"
           }
         ],
@@ -8448,6 +8470,7 @@
         "encrypted-media/drm-mp4-playback-temporary-encrypted-clear.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-temporary-encrypted-clear.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-temporary-encrypted-clear.html"
           }
         ],
@@ -8482,61 +8505,69 @@
         "encrypted-media/drm-mp4-playback-temporary-multikey.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-temporary-multikey.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-temporary-multikey.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-temporary-multisession.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-temporary-multisession.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-temporary-multisession.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-src.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-src.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-src.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-update.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-update.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-temporary-setMediaKeys-after-update.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-immediately.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-immediately.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-temporary-setMediaKeys-immediately.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-onencrypted.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-temporary-setMediaKeys-onencrypted.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-temporary-setMediaKeys-onencrypted.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-temporary-two-videos.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-temporary-two-videos.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-temporary-two-videos.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-temporary-waitingforkey.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-temporary-waitingforkey.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-temporary-waitingforkey.html"
           }
         ],
         "encrypted-media/drm-mp4-playback-temporary.html": [
           {
             "path": "encrypted-media/drm-mp4-playback-temporary.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-playback-temporary.html"
           }
         ],
         "encrypted-media/drm-mp4-requestmediakeysystemaccess.html": [
           {
             "path": "encrypted-media/drm-mp4-requestmediakeysystemaccess.html",
-            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-requestmediakeysystemaccess.html"
           }
         ],
@@ -8549,36 +8580,42 @@
         "encrypted-media/drm-mp4-setmediakeys-again-after-playback.html": [
           {
             "path": "encrypted-media/drm-mp4-setmediakeys-again-after-playback.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-setmediakeys-again-after-playback.html"
           }
         ],
         "encrypted-media/drm-mp4-setmediakeys-again-after-resetting-src.html": [
           {
             "path": "encrypted-media/drm-mp4-setmediakeys-again-after-resetting-src.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-setmediakeys-again-after-resetting-src.html"
           }
         ],
         "encrypted-media/drm-mp4-setmediakeys-at-same-time.html": [
           {
             "path": "encrypted-media/drm-mp4-setmediakeys-at-same-time.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-setmediakeys-at-same-time.html"
           }
         ],
         "encrypted-media/drm-mp4-setmediakeys-multiple-times-with-different-mediakeys.html": [
           {
             "path": "encrypted-media/drm-mp4-setmediakeys-multiple-times-with-different-mediakeys.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-setmediakeys-multiple-times-with-different-mediakeys.html"
           }
         ],
         "encrypted-media/drm-mp4-setmediakeys-multiple-times-with-the-same-mediakeys.html": [
           {
             "path": "encrypted-media/drm-mp4-setmediakeys-multiple-times-with-the-same-mediakeys.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-setmediakeys-multiple-times-with-the-same-mediakeys.html"
           }
         ],
         "encrypted-media/drm-mp4-setmediakeys-to-multiple-video-elements.html": [
           {
             "path": "encrypted-media/drm-mp4-setmediakeys-to-multiple-video-elements.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-setmediakeys-to-multiple-video-elements.html"
           }
         ],
@@ -8615,6 +8652,7 @@
         "encrypted-media/drm-mp4-waiting-for-a-key.html": [
           {
             "path": "encrypted-media/drm-mp4-waiting-for-a-key.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-mp4-waiting-for-a-key.html"
           }
         ],
@@ -8627,6 +8665,7 @@
         "encrypted-media/drm-temporary-license-type.html": [
           {
             "path": "encrypted-media/drm-temporary-license-type.html",
+            "timeout": "long",
             "url": "/encrypted-media/drm-temporary-license-type.html"
           }
         ],
@@ -8802,6 +8841,12 @@
           {
             "path": "html/browsers/browsing-the-web/history-traversal/popstate_event.html",
             "url": "/html/browsers/browsing-the-web/history-traversal/popstate_event.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/history-traversal/same-url.html": [
+          {
+            "path": "html/browsers/browsing-the-web/history-traversal/same-url.html",
+            "url": "/html/browsers/browsing-the-web/history-traversal/same-url.html"
           }
         ],
         "html/browsers/browsing-the-web/history-traversal/unset_context_name-1.html": [
@@ -16687,6 +16732,12 @@
           {
             "path": "user-timing/test_user_timing_measure_navigation_timing.html",
             "url": "/user-timing/test_user_timing_measure_navigation_timing.html"
+          }
+        ],
+        "vr/idlharness.html": [
+          {
+            "path": "vr/idlharness.html",
+            "url": "/vr/idlharness.html"
           }
         ],
         "web-animations/animation-model/animation-types/discrete-animation.html": [

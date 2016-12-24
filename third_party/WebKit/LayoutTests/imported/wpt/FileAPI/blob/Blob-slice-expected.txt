@@ -3,6 +3,9 @@ PASS no-argument Blob slice
 PASS Slices 
 PASS blob1. 
 PASS blob2. 
+PASS null type Blob slice 
+PASS undefined type Blob slice 
+PASS no type Blob slice 
 PASS Slicing test (0,0). 
 PASS Slicing test: slice (0,0). 
 PASS Slicing test (0,1). 

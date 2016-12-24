@@ -1755,6 +1755,8 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # ====== New tests from w3c-test-autoroller added here ======
+crbug.com/626703 imported/wpt/pointerevents/pointerevent_sequence_at_implicit_release_on_drag-manual.html [ Timeout ]
+crbug.com/626703 imported/wpt/pointerevents/pointerevent_sequence_at_implicit_release_on_click-manual.html [ Timeout ]
 crbug.com/626703 imported/wpt/clear-site-data/navigation.html [ Timeout ]
 crbug.com/626703 imported/wpt/auxclick/auxclick_event-manual.html [ Timeout ]
 crbug.com/626703 imported/wpt/pointerevents/pointerevent_boundary_events_in_capturing-manual.html [ Timeout ]
