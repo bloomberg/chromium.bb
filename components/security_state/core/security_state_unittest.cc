@@ -122,7 +122,7 @@ TEST(SecurityStateTest, SHA1Warning) {
   SecurityInfo security_info;
   helper.GetSecurityInfo(&security_info);
   EXPECT_EQ(DEPRECATED_SHA1_MINOR, security_info.sha1_deprecation_status);
-  EXPECT_EQ(NONE, security_info.security_level);
+  EXPECT_EQ(DANGEROUS, security_info.security_level);
 }
 
 // Tests that SHA1 warnings don't interfere with the handling of mixed
@@ -134,7 +134,7 @@ TEST(SecurityStateTest, SHA1WarningMixedContent) {
   helper.GetSecurityInfo(&security_info1);
   EXPECT_EQ(DEPRECATED_SHA1_MINOR, security_info1.sha1_deprecation_status);
   EXPECT_EQ(CONTENT_STATUS_DISPLAYED, security_info1.mixed_content_status);
-  EXPECT_EQ(NONE, security_info1.security_level);
+  EXPECT_EQ(DANGEROUS, security_info1.security_level);
 
   helper.SetDisplayedMixedContent(false);
   helper.SetRanMixedContent(true);

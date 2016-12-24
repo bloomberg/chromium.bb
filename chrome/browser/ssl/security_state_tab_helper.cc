@@ -14,7 +14,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/security_state/content/content_utils.h"
+#include "components/ssl_config/ssl_config_prefs.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -198,6 +200,17 @@ SecurityStateTabHelper::GetVisibleSecurityState() const {
   // Malware status might already be known even if connection security
   // information is still being initialized, thus no need to check for that.
   state->malicious_content_status = GetMaliciousContentStatus();
+
+  // If the chain contains SHA1, populate the display policy field.
+  // In M56, we want to display a Neutral security state if the SHA1
+  // certificate was not blocked because the kCertEnableSha1LocalAnchors
+  // policy has been set.
+  // TODO(elawrence): remove this in M57, https://crbug.com/676826
+  if (state->cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT) {
+    state->display_sha1_from_local_anchors_as_neutral =
+        g_browser_process->local_state()->GetBoolean(
+            ssl_config::prefs::kCertEnableSha1LocalAnchors);
+  }
 
   return state;
 }

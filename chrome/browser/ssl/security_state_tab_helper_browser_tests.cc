@@ -403,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1Certificate) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
       security_state::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
 }
@@ -609,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
       security_state::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
@@ -621,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
       security_state::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
   // Load the insecure image.
@@ -632,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
   EXPECT_TRUE(js_result);
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      security_state::NONE, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
       security_state::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 

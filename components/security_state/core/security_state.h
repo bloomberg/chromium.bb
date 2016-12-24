@@ -198,6 +198,10 @@ struct VisibleSecurityState {
   bool displayed_password_field_on_http;
   // True if the page was an HTTP page that displayed a credit card field.
   bool displayed_credit_card_field_on_http;
+  // True if Enterprise Policy configured to display as neutral all SHA-1 chains
+  // to a local trust anchor.
+  // TODO(elawrence): remove this in M57, https://crbug.com/676826
+  bool display_sha1_from_local_anchors_as_neutral;
 };
 
 // These security levels describe the treatment given to pages that

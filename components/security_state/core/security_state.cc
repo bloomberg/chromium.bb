@@ -173,10 +173,13 @@ SecurityLevel GetSecurityLevelForRequest(
 
   // In most cases, SHA1 use is treated as a certificate error, in which case
   // DANGEROUS will have been returned above. If SHA1 is permitted, we downgrade
-  // the security level.
+  // the security level to Neutral or Dangerous depending on policy.
   if (sha1_status == DEPRECATED_SHA1_MAJOR ||
-      sha1_status == DEPRECATED_SHA1_MINOR)
-    return NONE;
+      sha1_status == DEPRECATED_SHA1_MINOR) {
+    return (visible_security_state.display_sha1_from_local_anchors_as_neutral)
+               ? NONE
+               : DANGEROUS;
+  }
 
   // Active mixed content is handled above.
   DCHECK_NE(CONTENT_STATUS_RAN, mixed_content_status);
@@ -304,7 +307,8 @@ VisibleSecurityState::VisibleSecurityState()
       ran_content_with_cert_errors(false),
       pkp_bypassed(false),
       displayed_password_field_on_http(false),
-      displayed_credit_card_field_on_http(false) {}
+      displayed_credit_card_field_on_http(false),
+      display_sha1_from_local_anchors_as_neutral(false) {}
 
 VisibleSecurityState::~VisibleSecurityState() {}
 
@@ -326,7 +330,9 @@ bool VisibleSecurityState::operator==(const VisibleSecurityState& other) const {
           displayed_password_field_on_http ==
               other.displayed_password_field_on_http &&
           displayed_credit_card_field_on_http ==
-              other.displayed_credit_card_field_on_http);
+              other.displayed_credit_card_field_on_http &&
+          display_sha1_from_local_anchors_as_neutral ==
+              other.display_sha1_from_local_anchors_as_neutral);
 }
 
 }  // namespace security_state
