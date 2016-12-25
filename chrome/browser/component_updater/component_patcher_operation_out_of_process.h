@@ -10,9 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/file_patcher.mojom.h"
 #include "components/update_client/component_patcher_operation.h"
-#include "content/public/browser/utility_process_mojo_client.h"
 
 namespace base {
 class FilePath;
@@ -21,11 +19,14 @@ class SequencedTaskRunner;
 
 namespace component_updater {
 
+class PatchHost;
+
+// Implements the DeltaUpdateOpPatch out-of-process patching.
 class ChromeOutOfProcessPatcher : public update_client::OutOfProcessPatcher {
  public:
   ChromeOutOfProcessPatcher();
 
-  // update_client::OutOfProcessPatcher:
+  // DeltaUpdateOpPatch::OutOfProcessPatcher implementation.
   void Patch(const std::string& operation,
              scoped_refptr<base::SequencedTaskRunner> task_runner,
              const base::FilePath& input_abs_path,
@@ -36,16 +37,7 @@ class ChromeOutOfProcessPatcher : public update_client::OutOfProcessPatcher {
  private:
   ~ChromeOutOfProcessPatcher() override;
 
-  // Patch() request operation result.
-  void PatchDone(int result);
-
-  // Used to signal the operation result back to the Patch() requester.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::Callback<void(int result)> callback_;
-
-  // Utility process used for out-of-process file patching.
-  std::unique_ptr<content::UtilityProcessMojoClient<chrome::mojom::FilePatcher>>
-      utility_process_mojo_client_;
+  scoped_refptr<PatchHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOutOfProcessPatcher);
 };
