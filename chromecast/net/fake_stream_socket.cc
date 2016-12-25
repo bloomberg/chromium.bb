@@ -156,7 +156,7 @@ bool FakeStreamSocket::WasEverUsed() const {
   return false;
 }
 
-bool FakeStreamSocket::WasNpnNegotiated() const {
+bool FakeStreamSocket::WasAlpnNegotiated() const {
   return false;
 }
 

@@ -1936,8 +1936,8 @@ bool SpdySession::GetSSLInfo(SSLInfo* ssl_info) const {
   return connection_->socket()->GetSSLInfo(ssl_info);
 }
 
-bool SpdySession::WasNpnNegotiated() const {
-  return connection_->socket()->WasNpnNegotiated();
+bool SpdySession::WasAlpnNegotiated() const {
+  return connection_->socket()->WasAlpnNegotiated();
 }
 
 NextProto SpdySession::GetNegotiatedProtocol() const {

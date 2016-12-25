@@ -422,8 +422,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                                  std::vector<uint8_t>* out) override;
 
   // Returns true if ALPN was negotiated for the underlying socket.
-  // TODO(bnc): Rename to WasAlpnNegotiated().
-  bool WasNpnNegotiated() const;
+  bool WasAlpnNegotiated() const;
 
   // Returns the protocol negotiated via ALPN for the underlying socket.
   NextProto GetNegotiatedProtocol() const;

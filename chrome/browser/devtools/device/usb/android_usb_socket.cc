@@ -218,7 +218,7 @@ bool AndroidUsbSocket::WasEverUsed() const {
   return true;
 }
 
-bool AndroidUsbSocket::WasNpnNegotiated() const {
+bool AndroidUsbSocket::WasAlpnNegotiated() const {
   NOTIMPLEMENTED();
   return true;
 }

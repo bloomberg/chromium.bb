@@ -398,7 +398,7 @@ bool ProxyResolvingClientSocket::WasEverUsed() const {
   return false;
 }
 
-bool ProxyResolvingClientSocket::WasNpnNegotiated() const {
+bool ProxyResolvingClientSocket::WasAlpnNegotiated() const {
   return false;
 }
 

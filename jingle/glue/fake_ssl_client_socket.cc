@@ -331,8 +331,8 @@ bool FakeSSLClientSocket::WasEverUsed() const {
   return transport_socket_->WasEverUsed();
 }
 
-bool FakeSSLClientSocket::WasNpnNegotiated() const {
-  return transport_socket_->WasNpnNegotiated();
+bool FakeSSLClientSocket::WasAlpnNegotiated() const {
+  return transport_socket_->WasAlpnNegotiated();
 }
 
 net::NextProto FakeSSLClientSocket::GetNegotiatedProtocol() const {

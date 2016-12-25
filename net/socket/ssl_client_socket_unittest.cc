@@ -113,8 +113,8 @@ class WrappedStreamSocket : public StreamSocket {
   }
   void SetOmniboxSpeculation() override { transport_->SetOmniboxSpeculation(); }
   bool WasEverUsed() const override { return transport_->WasEverUsed(); }
-  bool WasNpnNegotiated() const override {
-    return transport_->WasNpnNegotiated();
+  bool WasAlpnNegotiated() const override {
+    return transport_->WasAlpnNegotiated();
   }
   NextProto GetNegotiatedProtocol() const override {
     return transport_->GetNegotiatedProtocol();

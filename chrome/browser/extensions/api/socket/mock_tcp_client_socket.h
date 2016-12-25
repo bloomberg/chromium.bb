@@ -35,7 +35,7 @@ class MockTCPClientSocket : public net::TCPClientSocket {
   MOCK_CONST_METHOD0(UsingTCPFastOpen, bool());
   MOCK_CONST_METHOD0(NumBytesRead, int64_t());
   MOCK_CONST_METHOD0(GetConnectTimeMicros, base::TimeDelta());
-  MOCK_CONST_METHOD0(WasNpnNegotiated, bool());
+  MOCK_CONST_METHOD0(WasAlpnNegotiated, bool());
   MOCK_CONST_METHOD0(GetNegotiatedProtocol, net::NextProto());
   MOCK_METHOD1(GetSSLInfo, bool(net::SSLInfo*));
   MOCK_CONST_METHOD1(GetConnectionAttempts, void(net::ConnectionAttempts*));

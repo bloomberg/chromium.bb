@@ -614,7 +614,7 @@ class FakeSpdySessionClientSocket : public MockClientSocket {
     return false;
   }
 
-  bool WasNpnNegotiated() const override {
+  bool WasAlpnNegotiated() const override {
     ADD_FAILURE();
     return false;
   }

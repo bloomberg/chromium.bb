@@ -160,7 +160,7 @@ bool FakeSocket::WasEverUsed() const {
   return true;
 }
 
-bool FakeSocket::WasNpnNegotiated() const {
+bool FakeSocket::WasAlpnNegotiated() const {
   return false;
 }
 
