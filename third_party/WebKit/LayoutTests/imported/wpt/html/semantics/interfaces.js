@@ -72,6 +72,7 @@ var elements = [
   ["ins", "Mod"],
   ["isindex", "Unknown"],
   ["kbd", ""],
+  ["keygen", "Keygen"],
   ["label", "Label"],
   ["legend", "Legend"],
   ["li", "LI"],

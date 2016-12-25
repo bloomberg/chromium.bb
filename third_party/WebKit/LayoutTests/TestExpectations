@@ -850,9 +850,6 @@ crbug.com/412381 imported/wpt/mediacapture-streams/GUM-empty-option-param.https.
 crbug.com/412381 imported/wpt/mediacapture-streams/GUM-unknownkey-option-param.https.html [ Failure ]
 crbug.com/412381 imported/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none.https.html [ Pass Timeout Failure ]
 
-crbug.com/325673 imported/wpt/custom-elements/v0/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure Timeout ]
-crbug.com/325673 imported/wpt/custom-elements/v0/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
-crbug.com/325673 imported/wpt/custom-elements/v0/concepts/custom-elements-type-naming.html [ Failure ]
 
 crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
@@ -866,7 +863,6 @@ crbug.com/404597 [ Win ] fast/selectors/007a.html [ Pass Failure ]
 # Web Components related tests (Shadow DOM, Custom Elements) failures.
 crbug.com/505364 imported/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
 crbug.com/505364 imported/wpt/shadow-dom/untriaged/elements-and-dom-objects/extensions-to-event-interface/event-path-001.html [ Failure ]
-crbug.com/505364 imported/wpt/custom-elements/v0/instantiating/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 crbug.com/505364 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-display-override.html [ Failure ]
 crbug.com/657748 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-fallback.html [ Failure ]
 crbug.com/505364 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-style.html [ Failure ]
@@ -1755,6 +1751,9 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # ====== New tests from w3c-test-autoroller added here ======
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/moving-documents.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/dynamic-append.html [ Timeout ]
+crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/html/semantics/interfaces.html [ Failure ]
 crbug.com/626703 imported/wpt/pointerevents/pointerevent_sequence_at_implicit_release_on_drag-manual.html [ Timeout ]
 crbug.com/626703 imported/wpt/pointerevents/pointerevent_sequence_at_implicit_release_on_click-manual.html [ Timeout ]
 crbug.com/626703 imported/wpt/clear-site-data/navigation.html [ Timeout ]
