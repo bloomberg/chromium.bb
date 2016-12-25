@@ -135,6 +135,7 @@ class SVGPaintContext {
 
  private:
   void applyCompositingIfNecessary();
+  void applyPaintPropertyState();
   void applyClipIfNecessary();
 
   // Return true if no masking is necessary or if the mask is successfully
@@ -155,6 +156,7 @@ class SVGPaintContext {
   std::unique_ptr<CompositingRecorder> m_compositingRecorder;
   Optional<ClipPathClipper> m_clipPathClipper;
   std::unique_ptr<SVGFilterRecordingContext> m_filterRecordingContext;
+  Optional<ScopedPaintChunkProperties> m_scopedPaintChunkProperties;
 #if ENABLE(ASSERT)
   bool m_applyClipMaskAndFilterIfNecessaryCalled;
 #endif

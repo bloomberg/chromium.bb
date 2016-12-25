@@ -61,6 +61,12 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary() {
   DCHECK(!m_applyClipMaskAndFilterIfNecessaryCalled);
   m_applyClipMaskAndFilterIfNecessaryCalled = true;
 #endif
+  // In SPv2 we should early exit once the paint property state has been
+  // applied, because all meta (non-drawing) display items are ignored in
+  // SPv2. However we can't simply omit them because there are still
+  // non-composited painting (e.g. SVG filters in particular) that rely on
+  // these meta display items.
+  applyPaintPropertyState();
 
   // When rendering clip paths as masks, only geometric operations should be
   // included so skip non-geometric operations such as compositing, masking, and
@@ -106,6 +112,28 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary() {
   }
 
   return true;
+}
+
+void SVGPaintContext::applyPaintPropertyState() {
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
+  // SVGRoot works like normal CSS replaced element and its effects are
+  // applied as stacking context effect by PaintLayerPainter.
+  if (m_object.isSVGRoot())
+    return;
+
+  const auto* paintProperties = m_object.paintProperties();
+  const EffectPaintPropertyNode* effect =
+      paintProperties ? paintProperties->effect() : nullptr;
+  if (!effect)
+    return;
+
+  auto& paintController = paintInfo().context.getPaintController();
+  PaintChunkProperties properties(
+      paintController.currentPaintChunkProperties());
+  properties.propertyTreeState.setEffect(effect);
+  m_scopedPaintChunkProperties.emplace(paintController, m_object, properties);
 }
 
 void SVGPaintContext::applyCompositingIfNecessary() {

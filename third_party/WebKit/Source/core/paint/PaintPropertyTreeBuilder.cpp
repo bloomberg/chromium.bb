@@ -11,6 +11,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositingReasonFinder.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/FindPropertiesNeedingUpdate.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
@@ -398,10 +399,10 @@ void PaintPropertyTreeBuilder::updateEffect(
     PaintPropertyTreeBuilderContext& context) {
   const ComputedStyle& style = object.styleRef();
 
-  // TODO(crbug.com/673500): style.isStackingContext() is only meaningful for
-  // HTML elements. What we really want to ask is whether the element starts
-  // an isolated group, and SVGs use a different rule.
-  if (!style.isStackingContext()) {
+  const bool isCSSIsolatedGroup =
+      object.isBoxModelObject() && style.isStackingContext();
+  const bool isSVGExceptRoot = object.isSVG() && !object.isSVGRoot();
+  if (!isCSSIsolatedGroup && !isSVGExceptRoot) {
     if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
       if (auto* properties = object.getMutableForPainting().paintProperties())
         context.forceSubtreeUpdate |= properties->clearEffect();
@@ -418,15 +419,17 @@ void PaintPropertyTreeBuilder::updateEffect(
       // Yes, including LayoutSVGRoot, because SVG layout objects don't create
       // PaintLayer so PaintLayer::hasNonIsolatedDescendantWithBlendMode()
       // doesn't catch SVG descendants.
-      if (object.hasNonIsolatedBlendingDescendants())
+      if (SVGLayoutSupport::isIsolationRequired(&object))
         effectNodeNeeded = true;
     } else if (PaintLayer* layer = toLayoutBoxModelObject(object).layer()) {
       if (layer->hasNonIsolatedDescendantWithBlendMode())
         effectNodeNeeded = true;
     }
 
-    SkBlendMode blendMode =
-        WebCoreCompositeToSkiaComposite(CompositeSourceOver, style.blendMode());
+    SkBlendMode blendMode = object.isBlendingAllowed()
+                                ? WebCoreCompositeToSkiaComposite(
+                                      CompositeSourceOver, style.blendMode())
+                                : SkBlendMode::kSrcOver;
     if (blendMode != SkBlendMode::kSrcOver)
       effectNodeNeeded = true;
 
