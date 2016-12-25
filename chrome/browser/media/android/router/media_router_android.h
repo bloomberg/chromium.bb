@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -141,7 +141,7 @@ class MediaRouterAndroid : public MediaRouterBase {
 
   base::android::ScopedJavaGlobalRef<jobject> java_media_router_;
 
-  using MediaSinkObservers = base::ScopedPtrHashMap<
+  using MediaSinkObservers = std::unordered_map<
       MediaSource::Id,
       std::unique_ptr<base::ObserverList<MediaSinksObserver>>>;
   MediaSinkObservers sinks_observers_;
@@ -169,8 +169,9 @@ class MediaRouterAndroid : public MediaRouterBase {
   using SendMessageCallbacks = IDMap<std::unique_ptr<SendRouteMessageCallback>>;
   SendMessageCallbacks message_callbacks_;
 
-  using MessageObservers = base::ScopedPtrHashMap<
-    MediaRoute::Id, std::unique_ptr<base::ObserverList<RouteMessageObserver>>>;
+  using MessageObservers = std::unordered_map<
+      MediaRoute::Id,
+      std::unique_ptr<base::ObserverList<RouteMessageObserver>>>;
   MessageObservers message_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterAndroid);

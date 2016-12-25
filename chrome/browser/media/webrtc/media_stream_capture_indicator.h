@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_MEDIA_STREAM_CAPTURE_INDICATOR_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_MEDIA_STREAM_CAPTURE_INDICATOR_H_
 
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
@@ -97,8 +97,8 @@ class MediaStreamCaptureIndicator
 
   // A map that contains the usage counts of the opened capture devices for each
   // WebContents instance.
-  base::ScopedPtrHashMap<content::WebContents*,
-                         std::unique_ptr<WebContentsDeviceUsage>>
+  std::unordered_map<content::WebContents*,
+                     std::unique_ptr<WebContentsDeviceUsage>>
       usage_map_;
 
   // A vector which maps command IDs to their associated WebContents

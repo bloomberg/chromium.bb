@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_BASE_H_
 
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback_list.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/media/router/media_route.h"
@@ -62,7 +62,7 @@ class MediaRouterBase : public MediaRouter {
   using PresentationConnectionStateChangedCallbacks = base::CallbackList<void(
       const content::PresentationConnectionStateChangeInfo&)>;
 
-  base::ScopedPtrHashMap<
+  std::unordered_map<
       MediaRoute::Id,
       std::unique_ptr<PresentationConnectionStateChangedCallbacks>>
       presentation_connection_state_callbacks_;

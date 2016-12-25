@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -369,14 +368,14 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // becomes ready.
   std::deque<base::Closure> pending_requests_;
 
-  base::ScopedPtrHashMap<MediaSource::Id, std::unique_ptr<MediaSinksQuery>>
+  std::unordered_map<MediaSource::Id, std::unique_ptr<MediaSinksQuery>>
       sinks_queries_;
 
-  base::ScopedPtrHashMap<MediaSource::Id, std::unique_ptr<MediaRoutesQuery>>
+  std::unordered_map<MediaSource::Id, std::unique_ptr<MediaRoutesQuery>>
       routes_queries_;
 
-  base::ScopedPtrHashMap<
-      MediaRoute::Id, std::unique_ptr<base::ObserverList<RouteMessageObserver>>>
+  std::unordered_map<MediaRoute::Id,
+                     std::unique_ptr<base::ObserverList<RouteMessageObserver>>>
       message_observers_;
 
   IssueManager issue_manager_;

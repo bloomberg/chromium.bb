@@ -56,14 +56,12 @@ MediaRouterBase::AddPresentationConnectionStateChangedCallback(
     const content::PresentationConnectionStateChangedCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  auto* callbacks = presentation_connection_state_callbacks_.get(route_id);
+  auto& callbacks = presentation_connection_state_callbacks_[route_id];
   if (!callbacks) {
-    callbacks = new PresentationConnectionStateChangedCallbacks;
+    callbacks = base::MakeUnique<PresentationConnectionStateChangedCallbacks>();
     callbacks->set_removal_callback(base::Bind(
         &MediaRouterBase::OnPresentationConnectionStateCallbackRemoved,
         base::Unretained(this), route_id));
-    presentation_connection_state_callbacks_.add(route_id,
-                                                 base::WrapUnique(callbacks));
   }
 
   return callbacks->Add(callback);
@@ -91,26 +89,26 @@ void MediaRouterBase::NotifyPresentationConnectionStateChange(
   // We should call NotifyPresentationConnectionClose() for the CLOSED state.
   DCHECK_NE(state, content::PRESENTATION_CONNECTION_STATE_CLOSED);
 
-  auto* callbacks = presentation_connection_state_callbacks_.get(route_id);
-  if (!callbacks)
+  auto it = presentation_connection_state_callbacks_.find(route_id);
+  if (it == presentation_connection_state_callbacks_.end())
     return;
 
-  callbacks->Notify(content::PresentationConnectionStateChangeInfo(state));
+  it->second->Notify(content::PresentationConnectionStateChangeInfo(state));
 }
 
 void MediaRouterBase::NotifyPresentationConnectionClose(
     const MediaRoute::Id& route_id,
     content::PresentationConnectionCloseReason reason,
     const std::string& message) {
-  auto* callbacks = presentation_connection_state_callbacks_.get(route_id);
-  if (!callbacks)
+  auto it = presentation_connection_state_callbacks_.find(route_id);
+  if (it == presentation_connection_state_callbacks_.end())
     return;
 
   content::PresentationConnectionStateChangeInfo info(
       content::PRESENTATION_CONNECTION_STATE_CLOSED);
   info.close_reason = reason;
   info.message = message;
-  callbacks->Notify(info);
+  it->second->Notify(info);
 }
 
 bool MediaRouterBase::HasJoinableRoute() const {
@@ -127,9 +125,11 @@ void MediaRouterBase::Initialize() {
 
 void MediaRouterBase::OnPresentationConnectionStateCallbackRemoved(
     const MediaRoute::Id& route_id) {
-  auto* callbacks = presentation_connection_state_callbacks_.get(route_id);
-  if (callbacks && callbacks->empty())
+  auto it = presentation_connection_state_callbacks_.find(route_id);
+  if (it != presentation_connection_state_callbacks_.end() &&
+      it->second->empty()) {
     presentation_connection_state_callbacks_.erase(route_id);
+  }
 }
 
 void MediaRouterBase::Shutdown() {

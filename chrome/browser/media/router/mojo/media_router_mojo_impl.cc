@@ -202,7 +202,7 @@ void MediaRouterMojoImpl::OnSinksReceived(
   for (size_t i = 0; i < sinks.size(); ++i)
     sink_list.push_back(sinks[i].To<MediaSink>());
 
-  auto* sinks_query = it->second;
+  auto* sinks_query = it->second.get();
   sinks_query->has_cached_result = true;
   sinks_query->origins.swap(origin_list);
   sinks_query->cached_sink_list.swap(sink_list);
@@ -446,12 +446,11 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   // Create an observer list for the media source and add |observer|
   // to it. Fail if |observer| is already registered.
   const std::string& source_id = observer->source().id();
-  auto* sinks_query = sinks_queries_.get(source_id);
+  std::unique_ptr<MediaSinksQuery>& sinks_query = sinks_queries_[source_id];
   bool new_query = false;
   if (!sinks_query) {
     new_query = true;
-    sinks_query = new MediaSinksQuery;
-    sinks_queries_.add(source_id, base::WrapUnique(sinks_query));
+    sinks_query = base::MakeUnique<MediaSinksQuery>();
   } else {
     DCHECK(!sinks_query->observers.HasObserver(observer));
   }
@@ -480,8 +479,9 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const MediaSource::Id& source_id = observer->source().id();
-  auto* sinks_query = sinks_queries_.get(source_id);
-  if (!sinks_query || !sinks_query->observers.HasObserver(observer)) {
+  auto it = sinks_queries_.find(source_id);
+  if (it == sinks_queries_.end() ||
+      !it->second->observers.HasObserver(observer)) {
     return;
   }
 
@@ -489,8 +489,8 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
   // observing sinks for it.
   // might_have_observers() is reliable here on the assumption that this call
   // is not inside the ObserverList iteration.
-  sinks_query->observers.RemoveObserver(observer);
-  if (!sinks_query->observers.might_have_observers()) {
+  it->second->observers.RemoveObserver(observer);
+  if (!it->second->observers.might_have_observers()) {
     // Only ask MRPM to stop observing media sinks if the availability is not
     // UNAVAILABLE.
     // Otherwise, the MRPM would have discarded the queries already.
@@ -511,10 +511,9 @@ void MediaRouterMojoImpl::RegisterMediaRoutesObserver(
     MediaRoutesObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const MediaSource::Id source_id = observer->source_id();
-  auto* routes_query = routes_queries_.get(source_id);
+  auto& routes_query = routes_queries_[source_id];
   if (!routes_query) {
-    routes_query = new MediaRoutesQuery;
-    routes_queries_.add(source_id, base::WrapUnique(routes_query));
+    routes_query = base::MakeUnique<MediaRoutesQuery>();
   } else {
     DCHECK(!routes_query->observers.HasObserver(observer));
   }
@@ -528,8 +527,9 @@ void MediaRouterMojoImpl::RegisterMediaRoutesObserver(
 void MediaRouterMojoImpl::UnregisterMediaRoutesObserver(
     MediaRoutesObserver* observer) {
   const MediaSource::Id source_id = observer->source_id();
-  auto* routes_query = routes_queries_.get(source_id);
-  if (!routes_query || !routes_query->observers.HasObserver(observer)) {
+  auto it = routes_queries_.find(source_id);
+  if (it == routes_queries_.end() ||
+      !it->second->observers.HasObserver(observer)) {
     return;
   }
 
@@ -537,8 +537,8 @@ void MediaRouterMojoImpl::UnregisterMediaRoutesObserver(
   // observing routes for it.
   // might_have_observers() is reliable here on the assumption that this call
   // is not inside the ObserverList iteration.
-  routes_query->observers.RemoveObserver(observer);
-  if (!routes_query->observers.might_have_observers()) {
+  it->second->observers.RemoveObserver(observer);
+  if (!it->second->observers.might_have_observers()) {
     SetWakeReason(MediaRouteProviderWakeReason::STOP_OBSERVING_MEDIA_ROUTES);
     RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStopObservingMediaRoutes,
                           base::Unretained(this), source_id));
@@ -560,10 +560,10 @@ void MediaRouterMojoImpl::RegisterRouteMessageObserver(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(observer);
   const MediaRoute::Id& route_id = observer->route_id();
-  auto* observer_list = message_observers_.get(route_id);
+  auto& observer_list = message_observers_[route_id];
   if (!observer_list) {
-    observer_list = new base::ObserverList<RouteMessageObserver>;
-    message_observers_.add(route_id, base::WrapUnique(observer_list));
+    observer_list =
+        base::MakeUnique<base::ObserverList<RouteMessageObserver>>();
   } else {
     DCHECK(!observer_list->HasObserver(observer));
   }
@@ -585,12 +585,12 @@ void MediaRouterMojoImpl::UnregisterRouteMessageObserver(
   DCHECK(observer);
 
   const MediaRoute::Id& route_id = observer->route_id();
-  auto* observer_list = message_observers_.get(route_id);
-  if (!observer_list || !observer_list->HasObserver(observer))
+  auto it = message_observers_.find(route_id);
+  if (it == message_observers_.end() || !it->second->HasObserver(observer))
     return;
 
-  observer_list->RemoveObserver(observer);
-  if (!observer_list->might_have_observers()) {
+  it->second->RemoveObserver(observer);
+  if (!it->second->might_have_observers()) {
     message_observers_.erase(route_id);
     SetWakeReason(
         MediaRouteProviderWakeReason::STOP_LISTENING_FOR_ROUTE_MESSAGES);
@@ -719,12 +719,12 @@ void MediaRouterMojoImpl::OnRouteMessagesReceived(
   if (messages.empty())
     return;
 
-  auto* observer_list = message_observers_.get(route_id);
-  if (!observer_list) {
+  auto it = message_observers_.find(route_id);
+  if (it == message_observers_.end()) {
     return;
   }
 
-  for (auto& observer : *observer_list)
+  for (auto& observer : *it->second)
     observer.OnMessagesReceived(messages);
 }
 
@@ -737,7 +737,7 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
   if (availability_ == mojom::MediaRouter::SinkAvailability::UNAVAILABLE) {
     // Sinks are no longer available. MRPM has already removed all sink queries.
     for (auto& source_and_query : sinks_queries_) {
-      auto* query = source_and_query.second;
+      const auto& query = source_and_query.second;
       query->is_active = false;
       query->has_cached_result = false;
       query->cached_sink_list.clear();
@@ -789,7 +789,7 @@ void MediaRouterMojoImpl::DoStartObservingMediaSinks(
     return;
 
   // No need to call MRPM if all observers have been removed in the meantime.
-  auto* sinks_query = sinks_queries_.get(source_id);
+  auto* sinks_query = sinks_queries_[source_id].get();
   if (!sinks_query || !sinks_query->observers.might_have_observers())
     return;
 
@@ -802,11 +802,11 @@ void MediaRouterMojoImpl::DoStopObservingMediaSinks(
     const MediaSource::Id& source_id) {
   DVLOG_WITH_INSTANCE(1) << "DoStopObservingMediaSinks: " << source_id;
 
-  auto* sinks_query = sinks_queries_.get(source_id);
+  auto it = sinks_queries_.find(source_id);
   // No need to call MRPM if observers have been added in the meantime,
   // or StopObservingMediaSinks has already been called.
-  if (!sinks_query || !sinks_query->is_active ||
-      sinks_query->observers.might_have_observers()) {
+  if (it == sinks_queries_.end() || !it->second->is_active ||
+      it->second->observers.might_have_observers()) {
     return;
   }
 
@@ -820,13 +820,14 @@ void MediaRouterMojoImpl::DoStartObservingMediaRoutes(
   DVLOG_WITH_INSTANCE(1) << "DoStartObservingMediaRoutes";
 
   // No need to call MRPM if all observers have been removed in the meantime.
-  auto* routes_query = routes_queries_.get(source_id);
-  if (!routes_query || !routes_query->observers.might_have_observers())
+  auto it = routes_queries_.find(source_id);
+  if (it == routes_queries_.end() ||
+      !it->second->observers.might_have_observers())
     return;
 
   DVLOG_WITH_INSTANCE(1) << "MRPM.StartObservingMediaRoutes: " << source_id;
   media_route_provider_->StartObservingMediaRoutes(source_id);
-  routes_query->is_active = true;
+  it->second->is_active = true;
 }
 
 void MediaRouterMojoImpl::DoStopObservingMediaRoutes(
@@ -835,9 +836,9 @@ void MediaRouterMojoImpl::DoStopObservingMediaRoutes(
 
   // No need to call MRPM if observers have been added in the meantime,
   // or StopObservingMediaRoutes has already been called.
-  auto* routes_query = routes_queries_.get(source_id);
-  if (!routes_query || !routes_query->is_active ||
-      routes_query->observers.might_have_observers()) {
+  auto it = routes_queries_.find(source_id);
+  if (it == routes_queries_.end() || !it->second->is_active ||
+      it->second->observers.might_have_observers()) {
     return;
   }
 
