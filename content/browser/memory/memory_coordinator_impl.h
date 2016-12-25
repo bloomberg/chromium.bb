@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/memory_coordinator.mojom.h"
+#include "content/public/browser/memory_coordinator.h"
 #include "content/public/browser/memory_coordinator_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -21,8 +22,6 @@
 namespace content {
 
 // NOTE: Memory coordinator is under development and not fully working.
-// TODO(bashi): Add content::MemoryCoordinator which is a pure virtual
-// interface to expose APIs outside content/.
 
 class MemoryCoordinatorHandleImpl;
 class MemoryCoordinatorImplTest;
@@ -34,7 +33,8 @@ struct MemoryCoordinatorSingletonTraits;
 // MemoryCoordinatorImpl is an implementation of MemoryCoordinator.
 // The current implementation uses MemoryStateUpdater to update the global
 // memory state. See comments in MemoryStateUpdater for details.
-class CONTENT_EXPORT MemoryCoordinatorImpl : public NotificationObserver,
+class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
+                                             public NotificationObserver,
                                              public base::NonThreadSafe {
  public:
   using MemoryState = base::MemoryState;
@@ -79,6 +79,9 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public NotificationObserver,
 
   // Sets the global memory state for testing.
   void SetCurrentMemoryStateForTesting(MemoryState memory_state);
+
+  // MemoryCoordinator implementation:
+  MemoryState GetStateForProcess(base::ProcessHandle handle) override;
 
   // NotificationObserver implementation:
   void Observe(int type,

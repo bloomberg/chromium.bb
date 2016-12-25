@@ -64,6 +64,15 @@ IN_PROC_BROWSER_TEST_F(MemoryCoordinatorImplBrowserTest, CanSuspendRenderer) {
   EXPECT_FALSE(memory_coordinator->CanSuspendRenderer(render_process_id));
 }
 
+IN_PROC_BROWSER_TEST_F(MemoryCoordinatorImplBrowserTest, GetStateForProcess) {
+  GURL url = GetTestUrl("", "simple_page.html");
+  NavigateToURL(shell(), url);
+  auto* memory_coordinator = MemoryCoordinator::GetInstance();
+  base::ProcessHandle handle = base::GetCurrentProcessHandle();
+  EXPECT_NE(base::MemoryState::UNKNOWN,
+            memory_coordinator->GetStateForProcess(handle));
+}
+
 #endif  // !defined(OS_MACOSX)
 
 }  // namespace content

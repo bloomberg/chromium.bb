@@ -154,6 +154,11 @@ struct MemoryCoordinatorImplSingletonTraits
 };
 
 // static
+MemoryCoordinator* MemoryCoordinator::GetInstance() {
+  return MemoryCoordinatorImpl::GetInstance();
+}
+
+// static
 MemoryCoordinatorImpl* MemoryCoordinatorImpl::GetInstance() {
   if (!base::FeatureList::IsEnabled(features::kMemoryCoordinator))
     return nullptr;
@@ -295,6 +300,22 @@ void MemoryCoordinatorImpl::Observe(int type,
   iter->second.is_visible = *Details<bool>(details).ptr();
   auto new_state = GetGlobalMemoryState();
   SetChildMemoryState(iter->first, new_state);
+}
+
+base::MemoryState MemoryCoordinatorImpl::GetStateForProcess(
+    base::ProcessHandle handle) {
+  DCHECK(CalledOnValidThread());
+  if (handle == base::kNullProcessHandle)
+    return MemoryState::UNKNOWN;
+  if (handle == base::GetCurrentProcessHandle())
+    return GetCurrentMemoryState();
+
+  for (auto& iter : children()) {
+    auto* render_process_host = GetRenderProcessHost(iter.first);
+    if (render_process_host && render_process_host->GetHandle() == handle)
+      return iter.second.memory_state;
+  }
+  return MemoryState::UNKNOWN;
 }
 
 bool MemoryCoordinatorImpl::ChangeStateIfNeeded(base::MemoryState prev_state,

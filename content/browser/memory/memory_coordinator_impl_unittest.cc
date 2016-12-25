@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/multiprocess_test.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "content/browser/memory/memory_monitor.h"
@@ -162,11 +163,12 @@ class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
 
 }  // namespace
 
-class MemoryCoordinatorImplTest : public testing::Test {
+class MemoryCoordinatorImplTest : public base::MultiProcessTest {
  public:
   using MemoryState = base::MemoryState;
 
   void SetUp() override {
+    base::MultiProcessTest::SetUp();
     scoped_feature_list_.InitAndEnableFeature(features::kMemoryCoordinator);
 
     task_runner_ = new base::TestMockTimeTaskRunner();
@@ -469,6 +471,34 @@ TEST_F(MemoryCoordinatorImplTest, ForceSetGlobalState) {
   task_runner_->FastForwardBy(minimum_transition);
   task_runner_->RunUntilIdle();
   EXPECT_EQ(base::MemoryState::THROTTLED, coordinator_->GetGlobalMemoryState());
+}
+
+TEST_F(MemoryCoordinatorImplTest, GetStateForProcess) {
+  EXPECT_EQ(base::MemoryState::UNKNOWN,
+            coordinator_->GetStateForProcess(base::kNullProcessHandle));
+  EXPECT_EQ(base::MemoryState::NORMAL,
+            coordinator_->GetStateForProcess(base::GetCurrentProcessHandle()));
+
+  coordinator_->CreateChildMemoryCoordinator(1);
+  coordinator_->CreateChildMemoryCoordinator(2);
+  base::Process process1 = SpawnChild("process1");
+  base::Process process2 = SpawnChild("process2");
+  coordinator_->GetMockRenderProcessHost(1)->SetProcessHandle(
+      base::MakeUnique<base::ProcessHandle>(process1.Handle()));
+  coordinator_->GetMockRenderProcessHost(2)->SetProcessHandle(
+      base::MakeUnique<base::ProcessHandle>(process2.Handle()));
+
+  EXPECT_EQ(base::MemoryState::NORMAL,
+            coordinator_->GetStateForProcess(process1.Handle()));
+  EXPECT_EQ(base::MemoryState::NORMAL,
+            coordinator_->GetStateForProcess(process2.Handle()));
+
+  EXPECT_TRUE(
+      coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
+  EXPECT_EQ(base::MemoryState::THROTTLED,
+            coordinator_->GetStateForProcess(process1.Handle()));
+  EXPECT_EQ(base::MemoryState::NORMAL,
+            coordinator_->GetStateForProcess(process2.Handle()));
 }
 
 }  // namespace content
