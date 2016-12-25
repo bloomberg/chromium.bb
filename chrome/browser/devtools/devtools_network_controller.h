@@ -7,8 +7,8 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 
@@ -31,8 +31,8 @@ class DevToolsNetworkController {
 
  private:
   using InterceptorMap =
-      base::ScopedPtrHashMap<std::string,
-                             std::unique_ptr<DevToolsNetworkInterceptor>>;
+      std::unordered_map<std::string,
+                         std::unique_ptr<DevToolsNetworkInterceptor>>;
 
   std::unique_ptr<DevToolsNetworkInterceptor> appcache_interceptor_;
   InterceptorMap interceptors_;

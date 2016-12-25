@@ -23,11 +23,11 @@ DevToolsNetworkInterceptor* DevToolsNetworkController::GetInterceptor(
   if (interceptors_.empty() || client_id.empty())
     return nullptr;
 
-  DevToolsNetworkInterceptor* interceptor = interceptors_.get(client_id);
-  if (!interceptor)
+  auto it = interceptors_.find(client_id);
+  if (it == interceptors_.end())
     return nullptr;
 
-  return interceptor;
+  return it->second.get();
 }
 
 void DevToolsNetworkController::SetNetworkState(
@@ -35,29 +35,28 @@ void DevToolsNetworkController::SetNetworkState(
     std::unique_ptr<DevToolsNetworkConditions> conditions) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  DevToolsNetworkInterceptor* interceptor = interceptors_.get(client_id);
-  if (!interceptor) {
+  auto it = interceptors_.find(client_id);
+  if (it == interceptors_.end()) {
     if (!conditions)
       return;
     std::unique_ptr<DevToolsNetworkInterceptor> new_interceptor(
         new DevToolsNetworkInterceptor());
     new_interceptor->UpdateConditions(std::move(conditions));
-    interceptors_.set(client_id, std::move(new_interceptor));
+    interceptors_[client_id] = std::move(new_interceptor);
   } else {
     if (!conditions) {
       std::unique_ptr<DevToolsNetworkConditions> online_conditions(
           new DevToolsNetworkConditions());
-      interceptor->UpdateConditions(std::move(online_conditions));
+      it->second->UpdateConditions(std::move(online_conditions));
       interceptors_.erase(client_id);
     } else {
-      interceptor->UpdateConditions(std::move(conditions));
+      it->second->UpdateConditions(std::move(conditions));
     }
   }
 
   bool has_offline_interceptors = false;
-  InterceptorMap::iterator it = interceptors_.begin();
-  for (; it != interceptors_.end(); ++it) {
-    if (it->second->IsOffline()) {
+  for (const auto& interceptor : interceptors_) {
+    if (interceptor.second->IsOffline()) {
       has_offline_interceptors = true;
       break;
     }
