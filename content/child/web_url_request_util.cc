@@ -245,7 +245,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
         break;
       case ResourceRequestBodyImpl::Element::TYPE_FILE:
         http_body.appendFileRange(
-            element.path().AsUTF16Unsafe(), element.offset(),
+            blink::FilePathToWebString(element.path()), element.offset(),
             (element.length() != std::numeric_limits<uint64_t>::max())
                 ? element.length()
                 : -1,
@@ -260,7 +260,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
             element.expected_modification_time().ToDoubleT());
         break;
       case ResourceRequestBodyImpl::Element::TYPE_BLOB:
-        http_body.appendBlob(WebString::fromUTF8(element.blob_uuid()));
+        http_body.appendBlob(WebString::fromASCII(element.blob_uuid()));
         break;
       case ResourceRequestBodyImpl::Element::TYPE_BYTES_DESCRIPTION:
       case ResourceRequestBodyImpl::Element::TYPE_DISK_CACHE_ENTRY:
@@ -487,7 +487,7 @@ blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
                                      bool stale_copy_in_cache,
                                      int reason) {
   blink::WebURLError error;
-  error.domain = WebString::fromUTF8(net::kErrorDomain);
+  error.domain = WebString::fromASCII(net::kErrorDomain);
   error.reason = reason;
   error.unreachableURL = unreachable_url;
   error.staleCopyInCache = stale_copy_in_cache;
@@ -497,10 +497,10 @@ blink::WebURLError CreateWebURLError(const blink::WebURL& unreachable_url,
     error.isCacheMiss = true;
   } else if (reason == net::ERR_TEMPORARILY_THROTTLED) {
     error.localizedDescription =
-        WebString::fromUTF8(kThrottledErrorDescription);
+        WebString::fromASCII(kThrottledErrorDescription);
   } else {
     error.localizedDescription =
-        WebString::fromUTF8(net::ErrorToString(reason));
+        WebString::fromASCII(net::ErrorToString(reason));
   }
   return error;
 }

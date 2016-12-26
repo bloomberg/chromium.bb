@@ -52,6 +52,7 @@
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/url_request_data_job.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSecurityStyle.h"
@@ -234,18 +235,19 @@ int GetInfoFromDataURL(const GURL& url,
 blink::WebURLResponse::SignedCertificateTimestamp NetSCTToBlinkSCT(
     const net::SignedCertificateTimestampAndStatus& sct_and_status) {
   return blink::WebURLResponse::SignedCertificateTimestamp(
-      WebString::fromUTF8(net::ct::StatusToString(sct_and_status.status)),
-      WebString::fromUTF8(net::ct::OriginToString(sct_and_status.sct->origin)),
+      WebString::fromASCII(net::ct::StatusToString(sct_and_status.status)),
+      WebString::fromASCII(net::ct::OriginToString(sct_and_status.sct->origin)),
       WebString::fromUTF8(sct_and_status.sct->log_description),
-      WebString::fromUTF8(base::HexEncode(sct_and_status.sct->log_id.c_str(),
-                                          sct_and_status.sct->log_id.length())),
+      WebString::fromASCII(
+          base::HexEncode(sct_and_status.sct->log_id.c_str(),
+                          sct_and_status.sct->log_id.length())),
       sct_and_status.sct->timestamp.ToJavaTime(),
-      WebString::fromUTF8(net::ct::HashAlgorithmToString(
+      WebString::fromASCII(net::ct::HashAlgorithmToString(
           sct_and_status.sct->signature.hash_algorithm)),
-      WebString::fromUTF8(net::ct::SignatureAlgorithmToString(
+      WebString::fromASCII(net::ct::SignatureAlgorithmToString(
           sct_and_status.sct->signature.signature_algorithm)),
-      WebString::fromUTF8(
-          base::HexEncode(sct_and_status.sct->signature.signature_data.c_str(),
+      WebString::fromASCII(base::HexEncode(
+          sct_and_status.sct->signature.signature_data.c_str(),
           sct_and_status.sct->signature.signature_data.length())));
 }
 
@@ -337,16 +339,11 @@ void SetSecurityStyleAndDetails(const GURL& url,
       [](const std::string& h) { return blink::WebString::fromLatin1(h); });
 
   blink::WebURLResponse::WebSecurityDetails webSecurityDetails(
-      WebString::fromUTF8(protocol), WebString::fromUTF8(key_exchange),
-      WebString::fromUTF8(key_exchange_group),
-      WebString::fromUTF8(cipher), WebString::fromUTF8(mac),
-      WebString::fromUTF8(subject),
-      web_san,
-      WebString::fromUTF8(issuer),
-      valid_start.ToDoubleT(),
-      valid_expiry.ToDoubleT(),
-      web_cert,
-      sct_list);
+      WebString::fromASCII(protocol), WebString::fromASCII(key_exchange),
+      WebString::fromASCII(key_exchange_group), WebString::fromASCII(cipher),
+      WebString::fromASCII(mac), WebString::fromUTF8(subject), web_san,
+      WebString::fromUTF8(issuer), valid_start.ToDoubleT(),
+      valid_expiry.ToDoubleT(), web_cert, sct_list);
 
   response->setSecurityDetails(webSecurityDetails);
 }
@@ -546,7 +543,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
          request.getFrameType() == WebURLRequest::FrameTypeNone);
 
   GURL referrer_url(
-      request.httpHeaderField(WebString::fromUTF8("Referer")).latin1());
+      request.httpHeaderField(WebString::fromASCII("Referer")).latin1());
   const std::string& method = request.httpMethod().latin1();
 
   // TODO(brettw) this should take parameter encoding into account when
@@ -1055,7 +1052,8 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setRemotePort(info.socket_address.port());
   response->setConnectionID(info.load_timing.socket_log_id);
   response->setConnectionReused(info.load_timing.socket_reused);
-  response->setDownloadFilePath(info.download_file_path.AsUTF16Unsafe());
+  response->setDownloadFilePath(
+      blink::FilePathToWebString(info.download_file_path));
   response->setWasFetchedViaSPDY(info.was_fetched_via_spdy);
   response->setWasFetchedViaServiceWorker(info.was_fetched_via_service_worker);
   response->setWasFetchedViaForeignFetch(info.was_fetched_via_foreign_fetch);
@@ -1155,13 +1153,12 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   // pass it to GetSuggestedFilename.
   std::string value;
   headers->EnumerateHeader(NULL, "content-disposition", &value);
-  response->setSuggestedFileName(
-      net::GetSuggestedFilename(url,
-                                value,
-                                std::string(),  // referrer_charset
-                                std::string(),  // suggested_name
-                                std::string(),  // mime_type
-                                std::string()));  // default_name
+  response->setSuggestedFileName(blink::WebString::fromUTF16(
+      net::GetSuggestedFilename(url, value,
+                                std::string(),     // referrer_charset
+                                std::string(),     // suggested_name
+                                std::string(),     // mime_type
+                                std::string())));  // default_name
 
   Time time_val;
   if (headers->GetLastModifiedValue(&time_val))
@@ -1223,7 +1220,7 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
   int error_code = sync_load_response.error_code;
   if (error_code != net::OK) {
     response.setURL(final_url);
-    error.domain = WebString::fromUTF8(net::kErrorDomain);
+    error.domain = WebString::fromASCII(net::kErrorDomain);
     error.reason = error_code;
     error.unreachableURL = final_url;
     return;
