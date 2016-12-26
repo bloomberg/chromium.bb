@@ -2158,7 +2158,7 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
   }
 
   ScriptValue partialCallbackTypeArg;
-  if (!info[0]->IsFunction()) {
+  if (!info[0]->IsObject() || !v8::Local<v8::Object>::Cast(info[0])->IsCallable()) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partialVoidMethodPartialCallbackTypeArg", "TestInterface", "The callback provided as parameter 1 is not a function."));
 
     return;

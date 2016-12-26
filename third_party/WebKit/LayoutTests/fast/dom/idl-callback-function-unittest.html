@@ -42,4 +42,16 @@ test(function() {
     assert_equals('4', results[1]);
     assert_equals('9', results[2]);
 }, 'Callback function which takes a number sequence');
+
+test(function() {
+    assert_throws(new TypeError(), function() {
+        callbackFunctionTest.testCallback(null, 'hello', 'world');
+    });
+    assert_throws(new TypeError(), function() {
+        callbackFunctionTest.testCallback({}, 'hello', 'world');
+    });
+    assert_throws(new TypeError(), function() {
+        callbackFunctionTest.testCallback(1, 'hello', 'world');
+    });
+}, 'Passing non-callable values should throw a TypeError');
 </script>

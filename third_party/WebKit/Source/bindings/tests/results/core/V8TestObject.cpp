@@ -8598,7 +8598,7 @@ static void overloadedMethodK1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
   ScriptValue functionArg;
-  if (!info[0]->IsFunction()) {
+  if (!info[0]->IsObject() || !v8::Local<v8::Object>::Cast(info[0])->IsCallable()) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadedMethodK", "TestObject", "The callback provided as parameter 1 is not a function."));
 
     return;
@@ -10834,7 +10834,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   ScriptValue callback;
   ScriptValue thisArg;
-  if (!info[0]->IsFunction()) {
+  if (!info[0]->IsObject() || !v8::Local<v8::Object>::Cast(info[0])->IsCallable()) {
     exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
 
     return;
