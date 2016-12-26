@@ -26,18 +26,29 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#the-location-interface
+// https://html.spec.whatwg.org/multipage/browsers.html#location
 
 [
     CheckSecurity=Receiver,
     Unforgeable,
 ] interface Location {
-    // |assign|, |replace|, and *writing* |href| do not require a security
-    // check, as they *change* the page, and thus these do not change any
-    // property of an *existing* document at a different origin.
+    // |assign| is *NOT* cross-origin accessible in the spec, but it needs
+    // the Incumbent realm when navigating the page.  See the below link.
+    // https://html.spec.whatwg.org/multipage/browsers.html#location-object-navigate
+    // Unfortunately, Blink does not support the Incumbent realm so far, and
+    // we need a hack of assignOriginSafeMethodGetter to simulate the Incumbent
+    // realm.  Thus, we have [CrossOrigin] here just for the hack although
+    // |assign| itself is not cross-origin accessible.
+    // TODO(yukishiino): Remove [CrossOrigin] once we support the Incumbent
+    // realm correctly.
+    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void assign(DOMString url);
+
+    // |replace|, and *writing* |href| do not require a security check, as they
+    // *change* the page, and thus these do not change any property of an
+    // *existing* document at a different origin.
     // However, *reading* |href|, or accessing any component, is a security
     // problem, since that allows tracking navigation.
-    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void assign(DOMString url);
+    // https://html.spec.whatwg.org/multipage/browsers.html#crossoriginproperties-(-o-)
     [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void replace(DOMString url);
     [CallWith=CurrentWindow] void reload();
 

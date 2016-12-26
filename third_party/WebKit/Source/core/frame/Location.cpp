@@ -28,6 +28,7 @@
 
 #include "core/frame/Location.h"
 
+#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/DOMURLUtilsReadOnly.h"
@@ -228,6 +229,14 @@ void Location::assign(LocalDOMWindow* currentWindow,
                       LocalDOMWindow* enteredWindow,
                       const String& url,
                       ExceptionState& exceptionState) {
+  // TODO(yukishiino): Remove this check once we remove [CrossOrigin] from
+  // the |assign| DOM operation's definition in Location.idl.  See the comment
+  // in Location.idl for details.
+  if (!BindingSecurity::shouldAllowAccessTo(currentWindow, this,
+                                            exceptionState)) {
+    return;
+  }
+
   if (!m_frame)
     return;
   setLocation(url, currentWindow, enteredWindow, &exceptionState);
