@@ -62,6 +62,13 @@ class ReadingListModel : public base::NonThreadSafe {
   // Returns the total number of unread entries in the model.
   virtual size_t unread_size() const = 0;
 
+  // Returns the total number of unseen entries in the model. Note: These
+  // entries are also unread so unseen_size() <= unread_size().
+  virtual size_t unseen_size() const = 0;
+
+  // Mark all unseen entries as unread.
+  virtual void MarkAllSeen() = 0;
+
   // Returns true if there are entries in the model that were not seen by the
   // user yet. Reset to true when new unread entries are added. Reset to false
   // when ResetUnseenEntries is called.

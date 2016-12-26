@@ -464,7 +464,7 @@ TEST_F(ReadingListModelTest, ReadEntry) {
   AssertObserverCount(0, 0, 0, 0, 0, 1, 0, 0, 1);
   EXPECT_EQ(0ul, UnreadSize());
   EXPECT_EQ(1ul, ReadSize());
-  EXPECT_FALSE(model_->HasUnseenEntries());
+  EXPECT_EQ(0ul, model_->unseen_size());
 
   const ReadingListEntry* other_entry =
       model_->GetEntryByURL(GURL("http://example.com"));

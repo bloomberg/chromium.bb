@@ -46,7 +46,9 @@ class ReadingListModelImpl : public ReadingListModel,
 
   size_t size() const override;
   size_t unread_size() const override;
+  size_t unseen_size() const override;
 
+  void MarkAllSeen() override;
   bool HasUnseenEntries() const override;
   void ResetUnseenEntries() override;
 
@@ -115,6 +117,11 @@ class ReadingListModelImpl : public ReadingListModel,
   std::unique_ptr<ReadingListEntries> entries_;
   size_t unread_entry_count_;
   size_t read_entry_count_;
+  size_t unseen_entry_count_;
+
+  // Update the 3 counts above considering addition/removal of |entry|.
+  void UpdateEntryStateCountersOnEntryRemoval(const ReadingListEntry& entry);
+  void UpdateEntryStateCountersOnEntryInsertion(const ReadingListEntry& entry);
 
   std::unique_ptr<ReadingListModelStorage> storage_layer_;
   PrefService* pref_service_;

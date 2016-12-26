@@ -152,12 +152,20 @@ void ReadingListEntry::SetTitle(const std::string& title) {
 }
 
 void ReadingListEntry::SetRead(bool read) {
+  State previous_state = state_;
   state_ = read ? READ : UNREAD;
+  if (state_ == previous_state) {
+    return;
+  }
   if (FirstReadTime() == 0 && read) {
     first_read_time_us_ =
         (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
   }
-  MarkEntryUpdated();
+  if (!(previous_state == UNSEEN && state_ == UNREAD)) {
+    // If changing UNSEEN -> UNREAD, entry is not marked updated to preserve
+    // order in Reading List View.
+    MarkEntryUpdated();
+  }
 }
 
 bool ReadingListEntry::IsRead() const {

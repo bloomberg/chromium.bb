@@ -303,7 +303,6 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 #pragma mark - ReadingListModelBridgeObserver
 
 - (void)readingListModelLoaded:(const ReadingListModel*)model {
-  _readingListModel->ResetUnseenEntries();
   [self loadModel];
   UMA_HISTOGRAM_COUNTS_1000("ReadingList.Unread.Number", model->unread_size());
   UMA_HISTOGRAM_COUNTS_1000("ReadingList.Read.Number",
@@ -443,6 +442,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 - (void)dismiss {
+  _readingListModel->MarkAllSeen();
   // Reset observer to prevent further model update notifications.
   _modelBridge.reset();
   [_actionSheet stop];

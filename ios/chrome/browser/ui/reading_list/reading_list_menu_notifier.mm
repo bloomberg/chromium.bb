@@ -86,7 +86,7 @@ class ReadingListObserverBridge : public ReadingListModelObserver {
 
 - (void)readingListModelCompletedBatchUpdates:(const ReadingListModel*)model {
   [_delegate unreadCountChanged:model->unread_size()];
-  [_delegate unseenStateChanged:model->HasUnseenEntries()];
+  [_delegate unseenStateChanged:[self readingListUnseenItemsExist]];
 }
 
 - (NSInteger)readingListUnreadCount {
@@ -94,7 +94,7 @@ class ReadingListObserverBridge : public ReadingListModelObserver {
 }
 
 - (BOOL)readingListUnseenItemsExist {
-  return _readingListModel->HasUnseenEntries();
+  return _readingListModel->unseen_size() > 0;
 }
 
 @end
