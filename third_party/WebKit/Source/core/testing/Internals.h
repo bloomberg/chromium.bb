@@ -258,6 +258,8 @@ class Internals final : public GarbageCollected<Internals>,
   Vector<AtomicString> userPreferredLanguages() const;
   void setUserPreferredLanguages(const Vector<String>&);
 
+  unsigned mediaKeysCount();
+  unsigned mediaKeySessionCount();
   unsigned suspendableObjectCount(Document*);
   unsigned wheelEventHandlerCount(Document*);
   unsigned scrollEventHandlerCount(Document*);

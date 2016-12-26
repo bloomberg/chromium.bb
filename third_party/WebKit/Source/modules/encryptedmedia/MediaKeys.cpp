@@ -36,6 +36,7 @@
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
+#include "platform/InstanceCounters.h"
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "wtf/RefPtr.h"
@@ -146,10 +147,12 @@ MediaKeys::MediaKeys(
       m_reservedForMediaElement(false),
       m_timer(this, &MediaKeys::timerFired) {
   DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ")";
+  InstanceCounters::incrementCounter(InstanceCounters::MediaKeysCounter);
 }
 
 MediaKeys::~MediaKeys() {
   DVLOG(MEDIA_KEYS_LOG_LEVEL) << __func__ << "(" << this << ")";
+  InstanceCounters::decrementCounter(InstanceCounters::MediaKeysCounter);
 }
 
 MediaKeySession* MediaKeys::createSession(ScriptState* scriptState,

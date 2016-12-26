@@ -40,6 +40,7 @@
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "platform/ContentDecryptionModuleResult.h"
+#include "platform/InstanceCounters.h"
 #include "platform/Timer.h"
 #include "platform/network/mime/ContentType.h"
 #include "public/platform/WebContentDecryptionModule.h"
@@ -378,6 +379,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState,
                                         ClosedPromise::Closed)),
       m_actionTimer(this, &MediaKeySession::actionTimerFired) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
+  InstanceCounters::incrementCounter(InstanceCounters::MediaKeySessionCounter);
 
   // Create the matching Chromium object. It will not be usable until
   // initializeNewSession() is called in response to the user calling
@@ -419,6 +421,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState,
 
 MediaKeySession::~MediaKeySession() {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
+  InstanceCounters::decrementCounter(InstanceCounters::MediaKeySessionCounter);
 }
 
 void MediaKeySession::dispose() {

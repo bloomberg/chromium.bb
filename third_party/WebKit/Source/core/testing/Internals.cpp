@@ -1481,6 +1481,15 @@ void Internals::setUserPreferredLanguages(const Vector<String>& languages) {
   overrideUserPreferredLanguages(atomicLanguages);
 }
 
+unsigned Internals::mediaKeysCount() {
+  return InstanceCounters::counterValue(InstanceCounters::MediaKeysCounter);
+}
+
+unsigned Internals::mediaKeySessionCount() {
+  return InstanceCounters::counterValue(
+      InstanceCounters::MediaKeySessionCounter);
+}
+
 unsigned Internals::suspendableObjectCount(Document* document) {
   DCHECK(document);
   return document->suspendableObjectCount();

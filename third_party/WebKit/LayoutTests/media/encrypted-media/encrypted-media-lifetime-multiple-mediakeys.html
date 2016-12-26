@@ -11,12 +11,13 @@
             // For this test, create several MediaKeys and verify lifetime.
             async_test(function(test)
             {
+                gc();
                 var mediaKeys;
-                var startingSuspendableObjectCount = window.internals.suspendableObjectCount(document);
+                var startingMediaKeysCount = window.internals.mediaKeysCount();
 
-                function numSuspendableObjectsCreated()
+                function numMediaKeysCreated()
                 {
-                    return window.internals.suspendableObjectCount(document) - startingSuspendableObjectCount;
+                    return window.internals.mediaKeysCount() - startingMediaKeysCount;
                 }
 
                 // Create a MediaKeys object. Returns a promise that resolves
@@ -33,54 +34,23 @@
                 // Create a few MediaKeys objects. Only keep a reference to the
                 // last one created.
                 createMediaKeys().then(function(result) {
-                    // Should be 1 MediaKeys.
-                    // In non-Oilpan, numSuspendableObjectsCreate() == 1.
-                    // In Oilpan, numSuspendableObjectsCreated() <= 4.
-                    // (1 MediaKeysInitializer,
-                    //  1 MediaKeySystemAccessInitializer (navigator.requestMediaKeySystemAccess() use above),
-                    //  1 MediaKeySystemAccessInitializer (isInitDataSupported() (via getSupportedInitDataType())) and
-                    //  1 ContentDecryptionModuleResultPromise).
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 1, 4);
+                    assert_equals(numMediaKeysCreated(), 1);
 
                     return createMediaKeys();
                 }).then(function(result) {
-                    // Should be 2 MediaKeys.
-                    // In non-Oilpan, numSuspendableObjectsCreate() == 2.
-                    // In Oilpan, numSuspendableObjectsCreate() <= 8.
-                    // (2 MediaKeysInitializer,
-                    //  4 MediaKeySystemAccessInitializer and
-                    //  2 ContentDecryptionModuleResultPromise).
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 2, 8);
+                    assert_equals(numMediaKeysCreated(), 2);
 
                     return createMediaKeys();
                 }).then(function(result) {
-                    // Should be 3 MediaKeys.
-                    // In non-Oilpan, numSuspendableObjectsCreate() == 3.
-                    // In Oilpan, numSuspendableObjectsCreate() <= 12.
-                    // (3 MediaKeysInitializer,
-                    //  6 MediaKeySystemAccessInitializer and
-                    //  3 ContentDecryptionModuleResultPromise).
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 3, 12);
+                    assert_equals(numMediaKeysCreated(), 3);
 
                     return createMediaKeys();
                 }).then(function(result) {
-                    // Should be 4 MediaKeys.
-                    // In non-Oilpan, numSuspendableObjectsCreate() == 4.
-                    // In Oilpan, numSuspendableObjectsCreate() <= 16.
-                    // (4 MediaKeysInitializer,
-                    //  8 MediaKeySystemAccessInitializer and
-                    //  4 ContentDecryptionModuleResultPromise).
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 4, 16);
+                    assert_equals(numMediaKeysCreated(), 4);
 
                     return createMediaKeys();
                 }).then(function(result) {
-                    // Should be 5 MediaKeys.
-                    // In non-Oilpan, numSuspendableObjectsCreate() == 5.
-                    // In Oilpan, numSuspendableObjectsCreate() <= 20.
-                    // (5 MediaKeysInitializer,
-                    //  10 MediaKeySystemAccessInitializer and
-                    //  5 ContentDecryptionModuleResultPromise).
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 5, 20);
+                    assert_equals(numMediaKeysCreated(), 5);
 
                     // |mediaKeys| refers to the most recently created MediaKeys
                     // object.
@@ -90,22 +60,14 @@
                     // collected, it needs time to process any pending events.
                     return delayToAllowEventProcessingPromise();
                 }).then(function(result) {
-                    // In non-Oilpan, numSuspendableObjectsCreated() == 5
-                    // (5 MediaKeySession objects).
-                    // In Oilpan, numSuspendableObjectsCreated() <= 23
-                    // (5 MediaKeysInitializer,
-                    //  12 MediaKeySystemAccessInitializer,
-                    //  5 ContentDecryptionModuleResultPromise and
-                    //  1 DOMTimer (in delayToAllowEventProcessingPromise))
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 5, 23);
+                    assert_equals(numMediaKeysCreated(), 5);
 
                     // As we only have a reference (|mediaKeys|) to the last
                     // created MediaKeys object, the other 4 MediaKeys objects
                     // are available to be garbage collected.
                     return createGCPromise();
                 }).then(function(result) {
-                    // Should be 1 MediaKeys and DOMTimer.
-                    assert_less_than_equal(numSuspendableObjectsCreated(), 2);
+                    assert_equals(numMediaKeysCreated(), 1);
                     assert_equals(typeof mediaKeys.createSession, 'function');
 
                     // Release the last MediaKeys object created.
@@ -114,8 +76,7 @@
                     // Run gc() again to reclaim the remaining MediaKeys object.
                     return createGCPromise();
                 }).then(function(result) {
-                    // Should be just a DOMTimer.
-                    assert_less_than_equal(numSuspendableObjectsCreated(), 1);
+                    assert_equals(numMediaKeysCreated(), 0);
                     test.done();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);

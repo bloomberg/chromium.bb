@@ -8,24 +8,29 @@
     </head>
     <body>
         <script>
-            // Since MediaKeySession (and MediaKeys) are SuspendableObjects,
-            // we can determine when they are garbage collected.
             // MediaKeySessions remain as long as:
             //   JavaScript has a reference to it
             //   OR (MediaKeys is around
             //       AND the session has not received a close() event)
             async_test(function(test)
             {
+                gc();
                 var mediaKeys;
                 var mediaKeySession1;
                 var mediaKeySession2;
                 var initDataType;
                 var initData;
-                var startingSuspendableObjectCount = window.internals.suspendableObjectCount(document);
+                var startingMediaKeysCount = window.internals.mediaKeysCount();
+                var startingMediaKeySessionCount = window.internals.mediaKeySessionCount();
 
-                function numSuspendableObjectsCreated()
+                function numMediaKeysCreated()
                 {
-                    return window.internals.suspendableObjectCount(document) - startingSuspendableObjectCount;
+                    return window.internals.mediaKeysCount() - startingMediaKeysCount;
+                }
+
+                function numMediaKeySessionCreated()
+                {
+                    return window.internals.mediaKeySessionCount() - startingMediaKeySessionCount;
                 }
 
                 // Create 2 sessions.
@@ -36,40 +41,20 @@
                 }).then(function(result) {
                     mediaKeys = result;
 
-                    // Verify MediaKeys is an SuspendableObject.
-                    // In non-Oilpan, numSuspendableObjectsCreate() == 1.
-                    // In Oilpan, numSuspendableObjectsCreate() <= 4.
-                    // (1 MediaKeys,
-                    //  1 MediaKeysInitializer and
-                    //  1 MediaKeySystemAccessInitializer (navigator.requestMediaKeySystemAccess() use above),
-                    //  1 MediaKeySystemAccessInitializer (isInitDataSupported() (via getSupportedInitDataType())))
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 1, 4, 'MediaKeys.create()');
+                    assert_equals(numMediaKeysCreated(), 1, 'MediaKeys.create()');
+                    assert_equals(numMediaKeySessionCreated(), 0, 'MediaKeys.create()');
 
                     mediaKeySession1 = mediaKeys.createSession();
                     return mediaKeySession1.generateRequest(initDataType, initData);
                 }).then(function() {
-                    // Should be 1 MediaKeys + 1 MediaKeySession.
-                    // In non-Oilpan, numSuspendableObjectsCreate() == 2.
-                    // In Oilpan, numSuspendableObjectsCreate() <= 6.
-                    // (1 MediaKeys,
-                    //  1 MediaKeysInitializer,
-                    //  2 MediaKeySystemAccessInitializers,
-                    //  1 ContentDecryptionModuleResultPromise and
-                    //  1 MediaKeySession).
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 2, 6, 'MediaKeys.createSession(1)');
+                    assert_equals(numMediaKeysCreated(), 1, 'MediaKeys.createSession(1)');
+                    assert_equals(numMediaKeySessionCreated(), 1, 'MediaKeys.createSession(1)');
 
                     mediaKeySession2 = mediaKeys.createSession();
                     return mediaKeySession2.generateRequest(initDataType, initData);
                 }).then(function() {
-                    // Should be 1 MediaKeys + 2 MediaKeySessions.
-                    // In non-Oilpan, numSuspendableObjectsCreate() == 3.
-                    // In Oilpan, numSuspendableObjectsCreate() <= 8.
-                    // (1 MediaKeys,
-                    //  1 MediaKeysInitializer,
-                    //  2 MediaKeySystemAccessInitializers,
-                    //  2 ContentDecryptionModuleResultPromise and
-                    //  2 MediaKeySession).
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 3, 8, 'mediaKeys.createSession(2)');
+                    assert_equals(numMediaKeysCreated(), 1, 'mediaKeys.createSession(2)');
+                    assert_equals(numMediaKeySessionCreated(), 2, 'mediaKeys.createSession(2)');
 
                     // Close the sessions. Once completed, only the JS
                     // reference to them keeps them around.
@@ -80,29 +65,20 @@
                     // Since both sessions have been closed, dropping the
                     // reference to them from JS will result in the session
                     // being garbage-collected.
-                    // Should be 1 MediaKeys + 2 MediaKeySessions.
-                    // In non-Oilpan, numSuspendableObjectsCreate() == 3.
-                    // In Oilpan, numSuspendableObjectsCreate() <= 10.
-                    // (1 MediaKeys,
-                    //  1 MediaKeysInitializer,
-                    //  2 MediaKeySystemAccessInitializers,
-                    //  4 ContentDecryptionModuleResultPromise and
-                    //  2 MediaKeySession).
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 3, 10, 'after close');
+                    assert_equals(numMediaKeysCreated(), 1, 'after close');
+                    assert_equals(numMediaKeySessionCreated(), 2, 'after close');
 
                     mediaKeySession1 = null;
                     return createGCPromise();
                 }).then(function() {
-                    // Only MediaKeys + mediaKeySession2 should remain.
-                    // In non-Oilpan, there is also something from createGCPromise().
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 2, 3, 'mediaKeySession1 not collected');
+                    assert_equals(numMediaKeysCreated(), 1, 'mediaKeySession1 not collected');
+                    assert_equals(numMediaKeySessionCreated(), 1, 'mediaKeySession1 not collected');
 
                     mediaKeySession2 = null;
                     return createGCPromise();
                 }).then(function() {
-                    // Only MediaKeys should remain.
-                    // In non-Oilpan, there is also something from createGCPromise().
-                    assert_between_inclusive(numSuspendableObjectsCreated(), 1, 2, 'mediaKeySession2 not collected');
+                    assert_equals(numMediaKeysCreated(), 1, 'mediaKeySession2 not collected');
+                    assert_equals(numMediaKeySessionCreated(), 0, 'mediaKeySession2 not collected');
                     test.done();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);

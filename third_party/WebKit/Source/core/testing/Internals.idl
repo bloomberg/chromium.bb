@@ -145,6 +145,8 @@
     sequence<DOMString> userPreferredLanguages();
     void setUserPreferredLanguages(sequence<DOMString> languages);
 
+    unsigned long mediaKeysCount();
+    unsigned long mediaKeySessionCount();
     unsigned long suspendableObjectCount(Document document);
     unsigned long wheelEventHandlerCount(Document document);
     unsigned long scrollEventHandlerCount(Document document);
