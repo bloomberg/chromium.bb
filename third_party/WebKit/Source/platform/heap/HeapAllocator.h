@@ -584,13 +584,9 @@ struct VectorTraits<blink::HeapDeque<T, inlineCapacity>>
 template <typename T>
 struct HashTraits<blink::Member<T>> : SimpleClassHashTraits<blink::Member<T>> {
   STATIC_ONLY(HashTraits);
-  // FIXME: The distinction between PeekInType and PassInType is there for
-  // the sake of the reference counting handles. When they are gone the two
-  // types can be merged into PassInType.
   // FIXME: Implement proper const'ness for iterator types. Requires support
   // in the marking Visitor.
   using PeekInType = T*;
-  using PassInType = T*;
   using IteratorGetType = blink::Member<T>*;
   using IteratorConstGetType = const blink::Member<T>*;
   using IteratorReferenceType = blink::Member<T>&;
@@ -617,13 +613,9 @@ template <typename T>
 struct HashTraits<blink::SameThreadCheckedMember<T>>
     : SimpleClassHashTraits<blink::SameThreadCheckedMember<T>> {
   STATIC_ONLY(HashTraits);
-  // FIXME: The distinction between PeekInType and PassInType is there for
-  // the sake of the reference counting handles. When they are gone the two
-  // types can be merged into PassInType.
   // FIXME: Implement proper const'ness for iterator types. Requires support
   // in the marking Visitor.
   using PeekInType = T*;
-  using PassInType = T*;
   using IteratorGetType = blink::SameThreadCheckedMember<T>*;
   using IteratorConstGetType = const blink::SameThreadCheckedMember<T>*;
   using IteratorReferenceType = blink::SameThreadCheckedMember<T>&;
@@ -657,13 +649,9 @@ template <typename T>
 struct HashTraits<blink::TraceWrapperMember<T>>
     : SimpleClassHashTraits<blink::TraceWrapperMember<T>> {
   STATIC_ONLY(HashTraits);
-  // FIXME: The distinction between PeekInType and PassInType is there for
-  // the sake of the reference counting handles. When they are gone the two
-  // types can be merged into PassInType.
   // FIXME: Implement proper const'ness for iterator types. Requires support
   // in the marking Visitor.
   using PeekInType = T*;
-  using PassInType = T*;
   using IteratorGetType = blink::TraceWrapperMember<T>*;
   using IteratorConstGetType = const blink::TraceWrapperMember<T>*;
   using IteratorReferenceType = blink::TraceWrapperMember<T>&;
@@ -697,13 +685,9 @@ struct HashTraits<blink::WeakMember<T>>
     : SimpleClassHashTraits<blink::WeakMember<T>> {
   STATIC_ONLY(HashTraits);
   static const bool needsDestruction = false;
-  // FIXME: The distinction between PeekInType and PassInType is there for
-  // the sake of the reference counting handles. When they are gone the two
-  // types can be merged into PassInType.
   // FIXME: Implement proper const'ness for iterator types. Requires support
   // in the marking Visitor.
   using PeekInType = T*;
-  using PassInType = T*;
   using IteratorGetType = blink::WeakMember<T>*;
   using IteratorConstGetType = const blink::WeakMember<T>*;
   using IteratorReferenceType = blink::WeakMember<T>&;
@@ -742,12 +726,8 @@ struct HashTraits<blink::UntracedMember<T>>
     : SimpleClassHashTraits<blink::UntracedMember<T>> {
   STATIC_ONLY(HashTraits);
   static const bool needsDestruction = false;
-  // FIXME: The distinction between PeekInType and PassInType is there for
-  // the sake of the reference counting handles. When they are gone the two
-  // types can be merged into PassInType.
   // FIXME: Implement proper const'ness for iterator types.
   using PeekInType = T*;
-  using PassInType = T*;
   using IteratorGetType = blink::UntracedMember<T>*;
   using IteratorConstGetType = const blink::UntracedMember<T>*;
   using IteratorReferenceType = blink::UntracedMember<T>&;
@@ -811,13 +791,9 @@ struct IsGarbageCollectedType<ListHashSetConstReverseIterator<Set>> {
 template <typename T, typename H>
 struct HandleHashTraits : SimpleClassHashTraits<H> {
   STATIC_ONLY(HandleHashTraits);
-  // TODO: The distinction between PeekInType and PassInType is there for
-  // the sake of the reference counting handles. When they are gone the two
-  // types can be merged into PassInType.
   // TODO: Implement proper const'ness for iterator types. Requires support
   // in the marking Visitor.
   using PeekInType = T*;
-  using PassInType = T*;
   using IteratorGetType = H*;
   using IteratorConstGetType = const H*;
   using IteratorReferenceType = H&;
