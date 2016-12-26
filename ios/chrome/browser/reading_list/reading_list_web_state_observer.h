@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "components/reading_list/ios/reading_list_model_observer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "url/gurl.h"
 
@@ -19,13 +20,18 @@ class NavigationItem;
 // Observes the loading of pages coming from the reading list, determines
 // whether loading an offline version of the page is needed, and actually
 // trigger the loading of the offline page (if possible).
-class ReadingListWebStateObserver : public web::WebStateObserver {
+class ReadingListWebStateObserver : public web::WebStateObserver,
+                                    public ReadingListModelObserver {
  public:
   static ReadingListWebStateObserver* FromWebState(
       web::WebState* web_state,
       ReadingListModel* reading_list_model);
 
   ~ReadingListWebStateObserver() override;
+
+  // ReadingListModelObserver implementation.
+  void ReadingListModelLoaded(const ReadingListModel* model) override;
+  void ReadingListModelBeingDeleted(const ReadingListModel* model) override;
 
  private:
   ReadingListWebStateObserver(web::WebState* web_state,
@@ -54,21 +60,23 @@ class ReadingListWebStateObserver : public web::WebStateObserver {
   // URL.
   bool ShouldObserveItem(web::NavigationItem* item) const;
 
-  // WebContentsObserver implementation.
-  void PageLoaded(
-      web::PageLoadCompletionStatus load_completion_status) override;
-  void WebStateDestroyed() override;
-
   // Starts checking that the current navigation is loading quickly enough [1].
   // If not, starts to load a distilled version of the page (if there is any).
   // [1] A page loading quickly enough is a page that has loaded 25% within
   // 1 second, 50% within 2 seconds and 75% within 3 seconds.
+  void StartCheckingLoading();
+
+  // WebContentsObserver implementation.
+  void PageLoaded(
+      web::PageLoadCompletionStatus load_completion_status) override;
+  void WebStateDestroyed() override;
   void DidStartLoading() override;
 
   ReadingListModel* reading_list_model_;
   std::unique_ptr<base::Timer> timer_;
   GURL pending_url_;
   int try_number_;
+  web::PageLoadCompletionStatus last_load_result_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListWebStateObserver);
 };

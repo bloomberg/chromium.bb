@@ -73,13 +73,19 @@ ReadingListWebStateObserver* ReadingListWebStateObserver::FromWebState(
       ->observer();
 }
 
-ReadingListWebStateObserver::~ReadingListWebStateObserver() {}
+ReadingListWebStateObserver::~ReadingListWebStateObserver() {
+  if (reading_list_model_) {
+    reading_list_model_->RemoveObserver(this);
+  }
+}
 
 ReadingListWebStateObserver::ReadingListWebStateObserver(
     web::WebState* web_state,
     ReadingListModel* reading_list_model)
     : web::WebStateObserver(web_state),
-      reading_list_model_(reading_list_model) {
+      reading_list_model_(reading_list_model),
+      last_load_result_(web::PageLoadCompletionStatus::SUCCESS) {
+  reading_list_model_->AddObserver(this);
   DCHECK(web_state);
   DCHECK(reading_list_model_);
 }
@@ -89,9 +95,8 @@ bool ReadingListWebStateObserver::ShouldObserveItem(
   if (!item) {
     return false;
   }
-  GURL loading_url = item->GetURL();
-  return !loading_url.SchemeIs(kChromeUIScheme) ||
-         loading_url.host() != kChromeUIOfflineHost;
+
+  return !reading_list::IsOfflineURL(item->GetURL());
 }
 
 bool ReadingListWebStateObserver::IsUrlAvailableOffline(const GURL& url) const {
@@ -99,8 +104,50 @@ bool ReadingListWebStateObserver::IsUrlAvailableOffline(const GURL& url) const {
   return entry && entry->DistilledState() == ReadingListEntry::PROCESSED;
 }
 
+void ReadingListWebStateObserver::ReadingListModelLoaded(
+    const ReadingListModel* model) {
+  DCHECK(model == reading_list_model_);
+  if (web_state()->IsLoading()) {
+    DidStartLoading();
+    return;
+  }
+  if (last_load_result_ == web::PageLoadCompletionStatus::SUCCESS ||
+      web_state()->IsShowingWebInterstitial()) {
+    return;
+  }
+  // An error page is being displayed.
+  web::NavigationManager* manager = web_state()->GetNavigationManager();
+  web::NavigationItem* item = manager->GetLastCommittedItem();
+  if (!ShouldObserveItem(item)) {
+    return;
+  }
+  const GURL& currentURL = item->GetVirtualURL();
+  if (IsUrlAvailableOffline(currentURL)) {
+    pending_url_ = currentURL;
+    LoadOfflineReadingListEntry(item);
+    StopCheckingProgress();
+  }
+}
+
+void ReadingListWebStateObserver::ReadingListModelBeingDeleted(
+    const ReadingListModel* model) {
+  DCHECK(model == reading_list_model_);
+  StopCheckingProgress();
+  reading_list_model_->RemoveObserver(this);
+  reading_list_model_ = nullptr;
+  web::WebState* local_web_state = web_state();
+  Observe(nullptr);
+  local_web_state->RemoveUserData(kObserverKey);
+}
+
 void ReadingListWebStateObserver::DidStartLoading() {
-  if (!reading_list_model_->loaded() || !web_state() ||
+  StartCheckingLoading();
+}
+
+void ReadingListWebStateObserver::StartCheckingLoading() {
+  DCHECK(reading_list_model_);
+  DCHECK(web_state());
+  if (!reading_list_model_->loaded() ||
       web_state()->IsShowingWebInterstitial()) {
     StopCheckingProgress();
     return;
@@ -141,6 +188,9 @@ void ReadingListWebStateObserver::DidStartLoading() {
 
 void ReadingListWebStateObserver::PageLoaded(
     web::PageLoadCompletionStatus load_completion_status) {
+  DCHECK(reading_list_model_);
+  DCHECK(web_state());
+  last_load_result_ = load_completion_status;
   web::NavigationItem* item =
       web_state()->GetNavigationManager()->GetLastCommittedItem();
   if (!item || !pending_url_.is_valid()) {
@@ -158,6 +208,10 @@ void ReadingListWebStateObserver::PageLoaded(
 
 void ReadingListWebStateObserver::WebStateDestroyed() {
   StopCheckingProgress();
+  if (reading_list_model_) {
+    reading_list_model_->RemoveObserver(this);
+    reading_list_model_ = nullptr;
+  }
   web_state()->RemoveUserData(kObserverKey);
 }
 
@@ -205,6 +259,7 @@ void ReadingListWebStateObserver::VerifyIfReadingListEntryStartedLoading() {
 void ReadingListWebStateObserver::LoadOfflineReadingListEntry(
     web::NavigationItem* item) {
   DCHECK(item);
+  DCHECK(reading_list_model_);
   if (!pending_url_.is_valid() || !IsUrlAvailableOffline(pending_url_)) {
     return;
   }
