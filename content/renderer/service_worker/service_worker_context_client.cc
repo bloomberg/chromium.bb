@@ -166,15 +166,6 @@ ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
   return web_client_info;
 }
 
-// Use this template in willDestroyWorkerContext to abort all the pending
-// events callbacks.
-template <typename T>
-void AbortPendingEventCallbacks(T& callbacks) {
-  for (typename T::iterator it(&callbacks); !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
-  }
-}
-
 }  // namespace
 
 // Holding data that needs to be bound to the worker context on the
@@ -189,8 +180,6 @@ struct ServiceWorkerContextClient::WorkerContextData {
   using SkipWaitingCallbacksMap =
       IDMap<std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks>>;
   using SyncEventCallbacksMap = IDMap<std::unique_ptr<const SyncCallback>>;
-  using PushEventCallbacksMap =
-      IDMap<std::unique_ptr<const DispatchPushEventCallback>>;
   using FetchEventCallbacksMap = IDMap<std::unique_ptr<const FetchCallback>>;
   using ExtendableMessageEventCallbacksMap =
       IDMap<std::unique_ptr<const DispatchExtendableMessageEventCallback>>;
@@ -222,9 +211,6 @@ struct ServiceWorkerContextClient::WorkerContextData {
 
   // Pending callbacks for Background Sync Events.
   SyncEventCallbacksMap sync_event_callbacks;
-
-  // Pending callbacks for Push Events.
-  PushEventCallbacksMap push_event_callbacks;
 
   // Pending callbacks for Fetch Events.
   FetchEventCallbacksMap fetch_event_callbacks;
@@ -425,6 +411,7 @@ void ServiceWorkerContextClient::OnMessageReceived(
                         OnNotificationClickEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NotificationCloseEvent,
                         OnNotificationCloseEvent)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClient, OnDidGetClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClients, OnDidGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowResponse,
@@ -586,11 +573,24 @@ void ServiceWorkerContextClient::willDestroyWorkerContext(
   // (while we're still on the worker thread).
   proxy_ = NULL;
 
-  // Aborts all the pending events callbacks.
-  AbortPendingEventCallbacks(context_->sync_event_callbacks);
-  AbortPendingEventCallbacks(context_->push_event_callbacks);
-  AbortPendingEventCallbacks(context_->fetch_event_callbacks);
-  AbortPendingEventCallbacks(context_->message_event_callbacks);
+  // Aborts the all pending sync event callbacks.
+  for (WorkerContextData::SyncEventCallbacksMap::iterator it(
+           &context_->sync_event_callbacks);
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
+  }
+  // Aborts the all pending fetch event callbacks.
+  for (WorkerContextData::FetchEventCallbacksMap::iterator it(
+           &context_->fetch_event_callbacks);
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
+  }
+  // Aborts the all pending extendable message event callbacks.
+  for (WorkerContextData::ExtendableMessageEventCallbacksMap::iterator it(
+           &context_->message_event_callbacks);
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
+  }
 
   // We have to clear callbacks now, as they need to be freed on the
   // same thread.
@@ -766,14 +766,9 @@ void ServiceWorkerContextClient::didHandlePushEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result,
     double event_dispatch_time) {
-  const DispatchPushEventCallback* callback =
-      context_->push_event_callbacks.Lookup(request_id);
-  DCHECK(callback);
-  callback->Run(result == blink::WebServiceWorkerEventResultCompleted
-                    ? SERVICE_WORKER_OK
-                    : SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED,
-                base::Time::FromDoubleT(event_dispatch_time));
-  context_->push_event_callbacks.Remove(request_id);
+  Send(new ServiceWorkerHostMsg_PushEventFinished(
+      GetRoutingID(), request_id, result,
+      base::Time::FromDoubleT(event_dispatch_time)));
 }
 
 void ServiceWorkerContextClient::didHandleSyncEvent(
@@ -1066,14 +1061,10 @@ void ServiceWorkerContextClient::OnNotificationCloseEvent(
       ToWebNotificationData(notification_data));
 }
 
-void ServiceWorkerContextClient::DispatchPushEvent(
-    const PushEventPayload& payload,
-    const DispatchPushEventCallback& callback) {
+void ServiceWorkerContextClient::OnPushEvent(int request_id,
+                                             const PushEventPayload& payload) {
   TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerContextClient::DispatchPushEvent");
-  int request_id = context_->push_event_callbacks.Add(
-      base::MakeUnique<DispatchPushEventCallback>(callback));
-
+               "ServiceWorkerContextClient::OnPushEvent");
   // Only set data to be a valid string if the payload had decrypted data.
   blink::WebString data;
   if (!payload.is_null)

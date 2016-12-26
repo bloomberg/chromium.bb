@@ -197,10 +197,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                             const ServiceWorkerFetchRequest& request,
                             mojom::FetchEventPreloadHandlePtr preload_handle,
                             const FetchCallback& callback);
-  virtual void OnPushEvent(
-      const PushEventPayload& payload,
-      const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&
-          callback);
+  virtual void OnPushEvent(int embedded_worker_id,
+                           int request_id,
+                           const PushEventPayload& payload);
 
   // These functions simulate sending an EmbeddedHostMsg message to the
   // browser.
@@ -240,10 +239,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                         const ServiceWorkerFetchRequest& request,
                         mojom::FetchEventPreloadHandlePtr preload_handle,
                         const FetchCallback& callback);
-  void OnPushEventStub(
-      const PushEventPayload& payload,
-      const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&
-          callback);
+  void OnPushEventStub(int request_id, const PushEventPayload& payload);
 
   MessagePortMessageFilter* NewMessagePortMessageFilter();
 

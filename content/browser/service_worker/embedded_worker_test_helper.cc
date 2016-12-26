@@ -179,13 +179,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
                               std::move(preload_handle), callback);
   }
 
-  void DispatchPushEvent(const PushEventPayload& payload,
-                         const DispatchPushEventCallback& callback) override {
-    if (!helper_)
-      return;
-    helper_->OnPushEventStub(payload, callback);
-  }
-
   void DispatchSyncEvent(
       const std::string& tag,
       blink::mojom::BackgroundSyncEventLastChance last_chance,
@@ -332,6 +325,7 @@ bool EmbeddedWorkerTestHelper::OnMessageToWorker(int thread_id,
   IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerTestHelper, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ActivateEvent, OnActivateEventStub)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEventStub)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEventStub)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // Record all messages directed to inner script context.
@@ -392,11 +386,12 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
   callback.Run(SERVICE_WORKER_OK, base::Time::Now());
 }
 
-void EmbeddedWorkerTestHelper::OnPushEvent(
-    const PushEventPayload& payload,
-    const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&
-        callback) {
-  callback.Run(SERVICE_WORKER_OK, base::Time::Now());
+void EmbeddedWorkerTestHelper::OnPushEvent(int embedded_worker_id,
+                                           int request_id,
+                                           const PushEventPayload& payload) {
+  SimulateSend(new ServiceWorkerHostMsg_PushEventFinished(
+      embedded_worker_id, request_id,
+      blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerReadyForInspection(
@@ -548,12 +543,11 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
 }
 
 void EmbeddedWorkerTestHelper::OnPushEventStub(
-    const PushEventPayload& payload,
-    const mojom::ServiceWorkerEventDispatcher::DispatchPushEventCallback&
-        callback) {
+    int request_id,
+    const PushEventPayload& payload) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnPushEvent, AsWeakPtr(),
-                            payload, callback));
+                            current_embedded_worker_id_, request_id, payload));
 }
 
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {
