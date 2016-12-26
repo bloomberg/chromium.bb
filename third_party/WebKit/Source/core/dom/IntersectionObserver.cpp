@@ -54,7 +54,7 @@ class IntersectionObserverCallbackImpl final
   }
 
  private:
-  WeakMember<ExecutionContext> m_context;
+  Member<ExecutionContext> m_context;
   std::unique_ptr<IntersectionObserver::EventCallback> m_callback;
 };
 
@@ -222,7 +222,6 @@ bool IntersectionObserver::rootIsValid() const {
 Document& IntersectionObserver::trackingDocument() const {
   Document* document = nullptr;
   if (rootIsImplicit()) {
-    DCHECK(m_callback->getExecutionContext());
     document = toDocument(m_callback->getExecutionContext());
   } else {
     DCHECK(root());
@@ -310,10 +309,8 @@ void IntersectionObserver::unobserve(Element* target,
 void IntersectionObserver::computeIntersectionObservations() {
   if (!rootIsValid())
     return;
-  Document* callbackDocument = toDocument(m_callback->getExecutionContext());
-  if (!callbackDocument)
-    return;
-  LocalDOMWindow* callbackDOMWindow = callbackDocument->domWindow();
+  LocalDOMWindow* callbackDOMWindow =
+      toDocument(m_callback->getExecutionContext())->domWindow();
   if (!callbackDOMWindow)
     return;
   DOMHighResTimeStamp timestamp =
