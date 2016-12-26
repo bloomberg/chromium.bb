@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/history/core/common/thumbnail_score.h"
@@ -64,12 +63,6 @@ class TopSites : public RefcountedKeyedService {
   virtual bool SetPageThumbnail(const GURL& url,
                                 const gfx::Image& thumbnail,
                                 const ThumbnailScore& score) = 0;
-
-  // While testing the history system, we want to set the thumbnail to a piece
-  // of static memory.
-  virtual bool SetPageThumbnailToJPEGBytes(const GURL& url,
-                                           const base::RefCountedMemory* memory,
-                                           const ThumbnailScore& score) = 0;
 
   typedef base::Callback<void(const MostVisitedURLList&)>
       GetMostVisitedURLsCallback;
@@ -128,19 +121,9 @@ class TopSites : public RefcountedKeyedService {
   // Clear the blacklist. Should be called from the UI thread.
   virtual void ClearBlacklistedURLs() = 0;
 
-  // Query history service for the list of available thumbnails. Returns the
-  // task id for the request, or |base::CancelableTaskTracker::kBadTaskId| if a
-  // request could not be made. Public only for testing purposes.
-  virtual base::CancelableTaskTracker::TaskId StartQueryForMostVisited() = 0;
-
   // Returns true if the given URL is known to the top sites service.
   // This function also returns false if TopSites isn't loaded yet.
   virtual bool IsKnownURL(const GURL& url) = 0;
-
-  // Follows the cached redirect chain to convert any URL to its
-  // canonical version. If no redirect chain is known for the URL,
-  // return it without modification.
-  virtual const std::string& GetCanonicalURLString(const GURL& url) const = 0;
 
   // Returns true if the top sites list of non-forced URLs is full (i.e. we
   // already have the maximum number of non-forced top sites).  This function

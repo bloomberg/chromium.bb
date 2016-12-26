@@ -56,7 +56,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/keep_alive_registry.h"
@@ -137,7 +136,6 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
@@ -163,7 +161,6 @@
 #include "components/bubble/bubble_controller.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
-#include "components/history/core/browser/top_sites.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/security_state/content/content_utils.h"
@@ -1887,17 +1884,6 @@ void Browser::OnWebContentsInstantSupportDisabled(
 
 OmniboxView* Browser::GetOmniboxView() {
   return window_->GetLocationBar()->GetOmniboxView();
-}
-
-std::set<std::string> Browser::GetOpenUrls() {
-  scoped_refptr<history::TopSites> top_sites =
-      TopSitesFactory::GetForProfile(profile_);
-  if (!top_sites)  // NULL for Incognito profiles.
-    return std::set<std::string>();
-
-  std::set<std::string> open_urls;
-  chrome::GetOpenUrls(*tab_strip_model_, *top_sites, &open_urls);
-  return open_urls;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

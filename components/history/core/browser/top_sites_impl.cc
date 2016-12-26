@@ -172,41 +172,6 @@ bool TopSitesImpl::SetPageThumbnail(const GURL& url,
   return SetPageThumbnailEncoded(url, thumbnail_data.get(), score);
 }
 
-bool TopSitesImpl::SetPageThumbnailToJPEGBytes(
-    const GURL& url,
-    const base::RefCountedMemory* memory,
-    const ThumbnailScore& score) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!loaded_) {
-    // TODO(sky): I need to cache these and apply them after the load
-    // completes.
-    return false;
-  }
-
-  bool add_temp_thumbnail = false;
-  if (!IsKnownURL(url)) {
-    if (!IsNonForcedFull()) {
-      add_temp_thumbnail = true;
-    } else {
-      return false;  // This URL is not known to us.
-    }
-  }
-
-  if (!can_add_url_to_history_.Run(url))
-    return false;  // It's not a real webpage.
-
-  if (add_temp_thumbnail) {
-    // Always remove the existing entry and then add it back. That way if we end
-    // up with too many temp thumbnails we'll prune the oldest first.
-    RemoveTemporaryThumbnailByURL(url);
-    AddTemporaryThumbnail(url, memory, score);
-    return true;
-  }
-
-  return SetPageThumbnailEncoded(url, memory, score);
-}
-
 // WARNING: this function may be invoked on any thread.
 void TopSitesImpl::GetMostVisitedURLs(
     const GetMostVisitedURLsCallback& callback,
@@ -366,6 +331,79 @@ void TopSitesImpl::ClearBlacklistedURLs() {
   NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLACKLIST);
 }
 
+bool TopSitesImpl::IsKnownURL(const GURL& url) {
+  return loaded_ && cache_->IsKnownURL(url);
+}
+
+bool TopSitesImpl::IsNonForcedFull() {
+  return loaded_ && cache_->GetNumNonForcedURLs() >= kNonForcedTopSitesNumber;
+}
+
+bool TopSitesImpl::IsForcedFull() {
+  return loaded_ && cache_->GetNumForcedURLs() >= kForcedTopSitesNumber;
+}
+
+PrepopulatedPageList TopSitesImpl::GetPrepopulatedPages() {
+  return prepopulated_pages_;
+}
+
+bool TopSitesImpl::loaded() const {
+  return loaded_;
+}
+
+bool TopSitesImpl::AddForcedURL(const GURL& url, const base::Time& time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!loaded_) {
+    // Optimally we could cache this and apply it after the load completes, but
+    // in practice it's not an issue since AddForcedURL will be called again
+    // next time the user hits the NTP.
+    return false;
+  }
+
+  size_t num_forced = cache_->GetNumForcedURLs();
+  MostVisitedURLList new_list(cache_->top_sites());
+  MostVisitedURL new_url;
+
+  if (cache_->IsKnownURL(url)) {
+    size_t index = cache_->GetURLIndex(url);
+    // Do nothing if we currently have that URL as non-forced.
+    if (new_list[index].last_forced_time.is_null())
+      return false;
+
+    // Update the |last_forced_time| of the already existing URL. Delete it and
+    // reinsert it at the right location.
+    new_url = new_list[index];
+    new_list.erase(new_list.begin() + index);
+    num_forced--;
+  } else {
+    new_url.url = url;
+    new_url.redirects.push_back(url);
+  }
+  new_url.last_forced_time = time;
+  // Add forced URLs and sort. Added to the end of the list of forced URLs
+  // since this is almost always where it needs to go, unless the user's local
+  // clock is fiddled with.
+  MostVisitedURLList::iterator mid = new_list.begin() + num_forced;
+  new_list.insert(mid, new_url);
+  mid = new_list.begin() + num_forced;  // Mid was invalidated.
+  std::inplace_merge(new_list.begin(), mid, mid + 1, ForcedURLComparator);
+  SetTopSites(new_list, CALL_LOCATION_FROM_FORCED_URLS);
+  return true;
+}
+
+void TopSitesImpl::OnNavigationCommitted(const GURL& url) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!loaded_ || IsNonForcedFull())
+    return;
+
+  if (!cache_->IsKnownURL(url) && can_add_url_to_history_.Run(url)) {
+    // To avoid slamming history we throttle requests when the url updates. To
+    // do otherwise negatively impacts perf tests.
+    RestartQueryForTopSitesTimer(GetUpdateDelay());
+  }
+}
+
 void TopSitesImpl::ShutdownOnUIThread() {
   history_service_ = nullptr;
   history_service_observer_.RemoveAll();
@@ -380,6 +418,20 @@ void TopSitesImpl::ShutdownOnUIThread() {
 // static
 void TopSitesImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kMostVisitedURLsBlacklist);
+}
+
+TopSitesImpl::~TopSitesImpl() = default;
+
+void TopSitesImpl::StartQueryForMostVisited() {
+  DCHECK(loaded_);
+  if (!history_service_)
+    return;
+
+  history_service_->QueryMostVisitedURLs(
+      num_results_to_request_from_history(), kDaysOfHistory,
+      base::Bind(&TopSitesImpl::OnTopSitesAvailableFromHistory,
+                 base::Unretained(this)),
+      &cancelable_task_tracker_);
 }
 
 // static
@@ -442,37 +494,6 @@ void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
     if (i->second != kAlreadyFoundMarker)
       delta->deleted.push_back(old_list[i->second]);
   }
-}
-
-base::CancelableTaskTracker::TaskId TopSitesImpl::StartQueryForMostVisited() {
-  DCHECK(loaded_);
-  if (!history_service_)
-    return base::CancelableTaskTracker::kBadTaskId;
-
-  return history_service_->QueryMostVisitedURLs(
-      num_results_to_request_from_history(), kDaysOfHistory,
-      base::Bind(&TopSitesImpl::OnTopSitesAvailableFromHistory,
-                 base::Unretained(this)),
-      &cancelable_task_tracker_);
-}
-
-bool TopSitesImpl::IsKnownURL(const GURL& url) {
-  return loaded_ && cache_->IsKnownURL(url);
-}
-
-const std::string& TopSitesImpl::GetCanonicalURLString(const GURL& url) const {
-  return cache_->GetCanonicalURL(url).spec();
-}
-
-bool TopSitesImpl::IsNonForcedFull() {
-  return loaded_ && cache_->GetNumNonForcedURLs() >= kNonForcedTopSitesNumber;
-}
-
-bool TopSitesImpl::IsForcedFull() {
-  return loaded_ && cache_->GetNumForcedURLs() >= kForcedTopSitesNumber;
-}
-
-TopSitesImpl::~TopSitesImpl() {
 }
 
 bool TopSitesImpl::SetPageThumbnailNoDB(
@@ -579,67 +600,6 @@ int TopSitesImpl::GetRedirectDistanceForURL(const MostVisitedURL& most_visited,
   }
   NOTREACHED() << "URL should always be found.";
   return 0;
-}
-
-PrepopulatedPageList TopSitesImpl::GetPrepopulatedPages() {
-  return prepopulated_pages_;
-}
-
-bool TopSitesImpl::loaded() const {
-  return loaded_;
-}
-
-bool TopSitesImpl::AddForcedURL(const GURL& url, const base::Time& time) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!loaded_) {
-    // Optimally we could cache this and apply it after the load completes, but
-    // in practice it's not an issue since AddForcedURL will be called again
-    // next time the user hits the NTP.
-    return false;
-  }
-
-  size_t num_forced = cache_->GetNumForcedURLs();
-  MostVisitedURLList new_list(cache_->top_sites());
-  MostVisitedURL new_url;
-
-  if (cache_->IsKnownURL(url)) {
-    size_t index = cache_->GetURLIndex(url);
-    // Do nothing if we currently have that URL as non-forced.
-    if (new_list[index].last_forced_time.is_null())
-      return false;
-
-    // Update the |last_forced_time| of the already existing URL. Delete it and
-    // reinsert it at the right location.
-    new_url = new_list[index];
-    new_list.erase(new_list.begin() + index);
-    num_forced--;
-  } else {
-    new_url.url = url;
-    new_url.redirects.push_back(url);
-  }
-  new_url.last_forced_time = time;
-  // Add forced URLs and sort. Added to the end of the list of forced URLs
-  // since this is almost always where it needs to go, unless the user's local
-  // clock is fiddled with.
-  MostVisitedURLList::iterator mid = new_list.begin() + num_forced;
-  new_list.insert(mid, new_url);
-  mid = new_list.begin() + num_forced;  // Mid was invalidated.
-  std::inplace_merge(new_list.begin(), mid, mid + 1, ForcedURLComparator);
-  SetTopSites(new_list, CALL_LOCATION_FROM_FORCED_URLS);
-  return true;
-}
-
-void TopSitesImpl::OnNavigationCommitted(const GURL& url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!loaded_ || IsNonForcedFull())
-    return;
-
-  if (!cache_->IsKnownURL(url) && can_add_url_to_history_.Run(url)) {
-    // To avoid slamming history we throttle requests when the url updates. To
-    // do otherwise negatively impacts perf tests.
-    RestartQueryForTopSitesTimer(GetUpdateDelay());
-  }
 }
 
 bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls,

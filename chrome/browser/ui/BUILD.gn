@@ -849,8 +849,6 @@ split_static_library("ui") {
       "tabs/tab_strip_model_order_controller.h",
       "tabs/tab_strip_model_stats_recorder.cc",
       "tabs/tab_strip_model_stats_recorder.h",
-      "tabs/tab_strip_model_utils.cc",
-      "tabs/tab_strip_model_utils.h",
       "tabs/tab_utils.cc",
       "tabs/tab_utils.h",
       "task_manager/task_manager_columns.cc",

@@ -73,9 +73,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   bool SetPageThumbnail(const GURL& url,
                         const gfx::Image& thumbnail,
                         const ThumbnailScore& score) override;
-  bool SetPageThumbnailToJPEGBytes(const GURL& url,
-                                   const base::RefCountedMemory* memory,
-                                   const ThumbnailScore& score) override;
   void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback,
                           bool include_forced_urls) override;
   bool GetPageThumbnail(const GURL& url,
@@ -90,9 +87,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   void RemoveBlacklistedURL(const GURL& url) override;
   bool IsBlacklisted(const GURL& url) override;
   void ClearBlacklistedURLs() override;
-  base::CancelableTaskTracker::TaskId StartQueryForMostVisited() override;
   bool IsKnownURL(const GURL& url) override;
-  const std::string& GetCanonicalURLString(const GURL& url) const override;
   bool IsNonForcedFull() override;
   bool IsForcedFull() override;
   PrepopulatedPageList GetPrepopulatedPages() override;
@@ -136,6 +131,8 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   typedef std::pair<GURL, Images> TempImage;
   typedef std::list<TempImage> TempImages;
   typedef std::vector<PendingCallback> PendingCallbacks;
+
+  void StartQueryForMostVisited();
 
   // Generates the diff of things that happened between "old" and "new."
   //

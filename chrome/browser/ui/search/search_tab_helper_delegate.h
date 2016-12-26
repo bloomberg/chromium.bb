@@ -5,11 +5,6 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_DELEGATE_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_DELEGATE_H_
 
-#include <set>
-#include <string>
-
-#include "ui/base/window_open_disposition.h"
-
 namespace content {
 class WebContents;
 }
@@ -26,9 +21,6 @@ class SearchTabHelperDelegate {
 
   // Returns the OmniboxView or NULL if not available.
   virtual OmniboxView* GetOmniboxView();
-
-  // Returns a set containing the canonical URLs of the currently open tabs.
-  virtual std::set<std::string> GetOpenUrls();
 
  protected:
   virtual ~SearchTabHelperDelegate();

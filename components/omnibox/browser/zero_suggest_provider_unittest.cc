@@ -36,11 +36,6 @@ class FakeEmptyTopSites : public history::TopSites {
                         const ThumbnailScore& score) override {
     return false;
   }
-  bool SetPageThumbnailToJPEGBytes(const GURL& url,
-                                   const base::RefCountedMemory* memory,
-                                   const ThumbnailScore& score) override {
-    return false;
-  }
   void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback,
                           bool include_forced_urls) override;
   bool GetPageThumbnail(const GURL& url, bool prefix_match,
@@ -64,15 +59,8 @@ class FakeEmptyTopSites : public history::TopSites {
     return false;
   }
   void ClearBlacklistedURLs() override {}
-  base::CancelableTaskTracker::TaskId StartQueryForMostVisited() override {
-    return 0;
-  }
   bool IsKnownURL(const GURL& url) override {
     return false;
-  }
-  const std::string& GetCanonicalURLString(const GURL& url) const override {
-    CHECK(false);
-    return *(new std::string());
   }
   bool IsNonForcedFull() override {
     return false;

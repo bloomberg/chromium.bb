@@ -9,11 +9,7 @@ void SearchTabHelperDelegate::OnWebContentsInstantSupportDisabled(
 }
 
 OmniboxView* SearchTabHelperDelegate::GetOmniboxView() {
-  return NULL;
-}
-
-std::set<std::string> SearchTabHelperDelegate::GetOpenUrls() {
-  return std::set<std::string>();
+  return nullptr;
 }
 
 SearchTabHelperDelegate::~SearchTabHelperDelegate() {
