@@ -15,7 +15,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "net/quic/core/quic_types.h"
+#include "net/quic/platform/api/quic_aligned.h"
 
 namespace net {
 

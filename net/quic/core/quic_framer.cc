@@ -24,6 +24,7 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_socket_address_coder.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_aligned.h"
 
 using base::ContainsKey;
 using base::StringPiece;
@@ -531,10 +532,7 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   } else if (packet.length() <= kMaxPacketSize) {
     // The optimized decryption algorithm implementations run faster when
     // operating on aligned memory.
-    //
-    // TODO(rtenneti): Change the default 64 alignas value (used the default
-    // value from CACHELINE_SIZE).
-    ALIGNAS(64) char buffer[kMaxPacketSize];
+    QUIC_CACHELINE_ALIGNED char buffer[kMaxPacketSize];
     rv = ProcessDataPacket(&reader, public_header, packet, buffer,
                            kMaxPacketSize);
   } else {

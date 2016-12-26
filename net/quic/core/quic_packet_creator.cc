@@ -14,6 +14,7 @@
 #include "net/quic/core/quic_data_writer.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_aligned.h"
 
 using base::StringPiece;
 using std::string;
@@ -313,9 +314,7 @@ void QuicPacketCreator::Flush() {
     return;
   }
 
-  // TODO(rtenneti): Change the default 64 alignas value (used the default
-  // value from CACHELINE_SIZE).
-  ALIGNAS(64) char seralized_packet_buffer[kMaxPacketSize];
+  QUIC_CACHELINE_ALIGNED char seralized_packet_buffer[kMaxPacketSize];
   SerializePacket(seralized_packet_buffer, kMaxPacketSize);
   OnSerializedPacket();
 }
@@ -360,7 +359,7 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
   // Write out the packet header
   QuicPacketHeader header;
   FillPacketHeader(&header);
-  ALIGNAS(64) char encrypted_buffer[kMaxPacketSize];
+  QUIC_CACHELINE_ALIGNED char encrypted_buffer[kMaxPacketSize];
   QuicDataWriter writer(arraysize(encrypted_buffer), encrypted_buffer);
   if (!framer_->AppendPacketHeader(header, &writer)) {
     QUIC_BUG << "AppendPacketHeader failed";

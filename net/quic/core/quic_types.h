@@ -14,16 +14,6 @@
 #include "net/quic/core/quic_time.h"
 #include "net/quic/platform/api/quic_export.h"
 
-#ifdef _MSC_VER
-// MSVC 2013 and prior don't have alignof or aligned(); they have __alignof and
-// a __declspec instead.
-#define QUIC_ALIGN_OF __alignof
-#define QUIC_ALIGNED(X) __declspec(align(X))
-#else
-#define QUIC_ALIGN_OF alignof
-#define QUIC_ALIGNED(X) __attribute__((aligned(X)))
-#endif  // _MSC_VER
-
 namespace net {
 
 typedef uint8_t QuicPathId;

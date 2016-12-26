@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "net/quic/core/quic_types.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_aligned.h"
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
