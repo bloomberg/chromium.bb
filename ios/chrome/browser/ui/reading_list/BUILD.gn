@@ -112,6 +112,7 @@ source_set("eg_tests") {
     "reading_list_egtest.mm",
   ]
   deps = [
+    ":reading_list",
     "//base",
     "//components/reading_list/ios",
     "//ios/chrome/app/strings",

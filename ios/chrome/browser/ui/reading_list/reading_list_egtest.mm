@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -88,11 +89,12 @@ void TapEntry(std::string title) {
 // Asserts that the entry |title| is visible.
 void AssertEntryVisible(std::string title) {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::staticTextWithAccessibilityLabel(
-                                base::SysUTF8ToNSString(title)),
-                            grey_sufficientlyVisible(), nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(chrome_test_util::staticTextWithAccessibilityLabel(
+                         base::SysUTF8ToNSString(title)),
+                     grey_ancestor(grey_kindOfClass([ReadingListCell class])),
+                     nil)] assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Asserts that all the entries are visible.
@@ -112,11 +114,12 @@ void AssertAllEntriesVisible() {
 // Asserts that the entry |title| is not visible.
 void AssertEntryNotVisible(std::string title) {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::staticTextWithAccessibilityLabel(
-                                base::SysUTF8ToNSString(title)),
-                            grey_sufficientlyVisible(), nil)]
-      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(chrome_test_util::staticTextWithAccessibilityLabel(
+                         base::SysUTF8ToNSString(title)),
+                     grey_ancestor(grey_kindOfClass([ReadingListCell class])),
+                     nil)] assertWithMatcher:grey_notVisible()];
 }
 
 // Asserts |header| is visible.
