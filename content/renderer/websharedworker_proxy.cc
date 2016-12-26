@@ -19,17 +19,13 @@ WebSharedWorkerProxy::WebSharedWorkerProxy(IPC::MessageRouter* router,
                                            int route_id)
     : route_id_(route_id),
       router_(router),
-      connect_listener_(NULL),
+      connect_listener_(nullptr),
       created_(false) {
   router_->AddRoute(route_id_, this);
 }
 
 WebSharedWorkerProxy::~WebSharedWorkerProxy() {
   Disconnect();
-
-  // Free up any unsent queued messages.
-  for (size_t i = 0; i < queued_messages_.size(); ++i)
-    delete queued_messages_[i];
 }
 
 void WebSharedWorkerProxy::Disconnect() {
@@ -44,31 +40,30 @@ void WebSharedWorkerProxy::Disconnect() {
   route_id_ = MSG_ROUTING_NONE;
 }
 
-bool WebSharedWorkerProxy::Send(IPC::Message* message) {
+bool WebSharedWorkerProxy::Send(std::unique_ptr<IPC::Message> message) {
   // It's possible that messages will be sent before the worker is created, in
   // which case route_id_ will be none.  Or the worker object can be interacted
   // with before the browser process told us that it started, in which case we
   // also want to queue the message.
   if (!created_) {
-    queued_messages_.push_back(message);
+    queued_messages_.push_back(std::move(message));
     return true;
   }
 
   // For now we proxy all messages to the worker process through the browser.
   // Revisit if we find this slow.
   // TODO(jabdelmalek): handle sync messages if we need them.
-  IPC::Message* wrapped_msg = new ViewHostMsg_ForwardToWorker(*message);
-  delete message;
-  return router_->Send(wrapped_msg);
+  return router_->Send(new ViewHostMsg_ForwardToWorker(*message));
 }
 
 void WebSharedWorkerProxy::SendQueuedMessages() {
+  DCHECK(created_);
   DCHECK(queued_messages_.size());
-  std::vector<IPC::Message*> queued_messages = queued_messages_;
-  queued_messages_.clear();
+  std::vector<std::unique_ptr<IPC::Message>> queued_messages;
+  queued_messages.swap(queued_messages_);
   for (size_t i = 0; i < queued_messages.size(); ++i) {
     queued_messages[i]->set_routing_id(route_id_);
-    Send(queued_messages[i]);
+    Send(std::move(queued_messages[i]));
   }
 }
 
@@ -78,10 +73,11 @@ void WebSharedWorkerProxy::connect(blink::WebMessagePortChannel* channel,
         static_cast<WebMessagePortChannelImpl*>(channel);
 
   int message_port_id = webchannel->message_port_id();
-  DCHECK(message_port_id != MSG_ROUTING_NONE);
+  DCHECK_NE(MSG_ROUTING_NONE, message_port_id);
   webchannel->QueueMessages();
 
-  Send(new WorkerMsg_Connect(route_id_, message_port_id, MSG_ROUTING_NONE));
+  Send(base::MakeUnique<WorkerMsg_Connect>(route_id_, message_port_id,
+                                           MSG_ROUTING_NONE));
   connect_listener_ = listener;
 }
 
