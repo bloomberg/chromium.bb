@@ -35,6 +35,7 @@
 #include "WebSharedWorkerCreationContextType.h"
 #include "WebSharedWorkerCreationErrors.h"
 #include "public/platform/WebAddressSpace.h"
+#include <memory>
 
 namespace blink {
 
@@ -46,10 +47,10 @@ class WebSharedWorkerRepositoryClient {
  public:
   // Unique identifier for the parent document of a worker (unique within a
   // given process).
-  typedef unsigned long long DocumentID;
+  using DocumentID = unsigned long long;
 
   // Creates a new shared worker connector. This may return null.
-  virtual WebSharedWorkerConnector* createSharedWorkerConnector(
+  virtual std::unique_ptr<WebSharedWorkerConnector> createSharedWorkerConnector(
       const WebURL& url,
       const WebString& name,
       DocumentID id,
@@ -58,7 +59,7 @@ class WebSharedWorkerRepositoryClient {
       WebAddressSpace,
       WebSharedWorkerCreationContextType,
       WebWorkerCreationError* error) {
-    return 0;
+    return nullptr;
   }
 
   // Invoked when a document has been detached. DocumentID can be re-used after

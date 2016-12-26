@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_SHARED_WORKER_REPOSITORY_H_
 #define CONTENT_RENDERER_SHARED_WORKER_REPOSITORY_H_
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
@@ -25,7 +26,7 @@ class SharedWorkerRepository : public RenderFrameObserver,
   ~SharedWorkerRepository() override;
 
   // WebSharedWorkerRepositoryClient overrides.
-  blink::WebSharedWorkerConnector* createSharedWorkerConnector(
+  std::unique_ptr<blink::WebSharedWorkerConnector> createSharedWorkerConnector(
       const blink::WebURL& url,
       const blink::WebString& name,
       DocumentID document_id,

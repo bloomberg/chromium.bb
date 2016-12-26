@@ -20,7 +20,7 @@ SharedWorkerRepository::SharedWorkerRepository(RenderFrameImpl* render_frame)
 
 SharedWorkerRepository::~SharedWorkerRepository() {}
 
-blink::WebSharedWorkerConnector*
+std::unique_ptr<blink::WebSharedWorkerConnector>
 SharedWorkerRepository::createSharedWorkerConnector(
     const blink::WebURL& url,
     const blink::WebString& name,
@@ -42,12 +42,11 @@ SharedWorkerRepository::createSharedWorkerConnector(
   ViewHostMsg_CreateWorker_Reply reply;
   Send(new ViewHostMsg_CreateWorker(params, &reply));
   *error = reply.error;
-  if (reply.route_id == MSG_ROUTING_NONE) {
-    return NULL;
-  }
+  if (reply.route_id == MSG_ROUTING_NONE)
+    return nullptr;
   documents_with_workers_.insert(document_id);
-  return new WebSharedWorkerProxy(ChildThreadImpl::current()->GetRouter(),
-                                  reply.route_id);
+  return base::MakeUnique<WebSharedWorkerProxy>(
+      ChildThreadImpl::current()->GetRouter(), reply.route_id);
 }
 
 void SharedWorkerRepository::documentDetached(DocumentID document) {

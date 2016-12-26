@@ -52,6 +52,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -62,13 +63,9 @@ class SharedWorkerConnector
  public:
   SharedWorkerConnector(
       SharedWorker* worker,
-      const KURL& url,
-      const String& name,
       WebMessagePortChannelUniquePtr channel,
       std::unique_ptr<WebSharedWorkerConnector> webWorkerConnector)
       : m_worker(worker),
-        m_url(url),
-        m_name(name),
         m_webWorkerConnector(std::move(webWorkerConnector)),
         m_channel(std::move(channel)) {}
 
@@ -81,8 +78,6 @@ class SharedWorkerConnector
   void scriptLoadFailed() override;
 
   Persistent<SharedWorker> m_worker;
-  KURL m_url;
-  String m_name;
   std::unique_ptr<WebSharedWorkerConnector> m_webWorkerConnector;
   WebMessagePortChannelUniquePtr m_channel;
 };
@@ -146,14 +141,17 @@ void SharedWorkerRepositoryClientImpl::connect(
   WebWorkerCreationError creationError;
   bool isSecureContext = worker->getExecutionContext()->isSecureContext();
   std::unique_ptr<WebSharedWorkerConnector> webWorkerConnector =
-      WTF::wrapUnique(m_client->createSharedWorkerConnector(
+      m_client->createSharedWorkerConnector(
           url, name, getId(document), header, headerType,
           worker->getExecutionContext()->securityContext().addressSpace(),
           isSecureContext ? WebSharedWorkerCreationContextTypeSecure
                           : WebSharedWorkerCreationContextTypeNonsecure,
-          &creationError));
-  if (creationError != WebWorkerCreationErrorNone) {
-    if (creationError == WebWorkerCreationErrorURLMismatch) {
+          &creationError);
+
+  switch (creationError) {
+    case WebWorkerCreationErrorNone:
+      break;
+    case WebWorkerCreationErrorURLMismatch:
       // Existing worker does not match this url, so return an error back to the
       // caller.
       exceptionState.throwDOMException(
@@ -161,23 +159,19 @@ void SharedWorkerRepositoryClientImpl::connect(
                                 "' does not exactly match the provided URL ('" +
                                 url.elidedString() + "').");
       return;
-    } else if (creationError == WebWorkerCreationErrorSecureContextMismatch) {
-      if (isSecureContext) {
-        UseCounter::count(
-            document,
-            UseCounter::NonSecureSharedWorkerAccessedFromSecureContext);
-      } else {
-        UseCounter::count(
-            document,
-            UseCounter::SecureSharedWorkerAccessedFromNonSecureContext);
-      }
-    }
+    case WebWorkerCreationErrorSecureContextMismatch:
+      UseCounter::Feature feature =
+          isSecureContext
+              ? UseCounter::NonSecureSharedWorkerAccessedFromSecureContext
+              : UseCounter::SecureSharedWorkerAccessedFromNonSecureContext;
+      UseCounter::count(document, feature);
+      break;
   }
 
   // The connector object manages its own lifecycle (and the lifecycles of the
   // two worker objects).  It will free itself once connecting is completed.
   SharedWorkerConnector* connector = new SharedWorkerConnector(
-      worker, url, name, std::move(port), std::move(webWorkerConnector));
+      worker, std::move(port), std::move(webWorkerConnector));
   connector->connect();
 }
 
