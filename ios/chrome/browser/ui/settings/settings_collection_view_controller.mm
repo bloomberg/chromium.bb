@@ -639,27 +639,39 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       break;
     }
     case ItemTypeViewSource: {
+#if CHROMIUM_BUILD && !defined(NDEBUG)
       CollectionViewSwitchCell* switchCell =
           base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(viewSourceSwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
+#else
+      NOTREACHED();
+#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
       break;
     }
     case ItemTypeLogJavascript: {
+#if CHROMIUM_BUILD && !defined(NDEBUG)
       CollectionViewSwitchCell* switchCell =
           base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(logJSSwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
+#else
+      NOTREACHED();
+#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
       break;
     }
     case ItemTypeShowAutofillTypePredictions: {
+#if CHROMIUM_BUILD && !defined(NDEBUG)
       CollectionViewSwitchCell* switchCell =
           base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(showAutoFillSwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
+#else
+      NOTREACHED();
+#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
       break;
     }
     default:
