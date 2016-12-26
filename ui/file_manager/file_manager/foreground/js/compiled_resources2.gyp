@@ -12,10 +12,6 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'actions_model_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'app_state_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
@@ -56,10 +52,6 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'file_list_model_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'file_manager',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
@@ -73,10 +65,6 @@
 #    },
 #    {
 #      'target_name': 'file_tasks',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'file_tasks_unittest',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
@@ -99,10 +87,6 @@
 #      'target_name': 'import_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'import_controller_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
     {
       'target_name': 'launch_param',
       'dependencies': [
@@ -113,10 +97,6 @@
     },
 #    {
 #      'target_name': 'list_thumbnail_loader',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'list_thumbnail_loader_unittest',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
@@ -144,26 +124,6 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'mock_actions_model',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'mock_directory_model',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'mock_folder_shortcut_data_model',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'mock_navigation_list_model',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'mock_thumbnail_loader',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'mouse_inactivity_watcher',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
@@ -176,23 +136,11 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'navigation_list_model_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'progress_center_item_group',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'progress_center_item_group_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'providers_model',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'providers_model_unittest',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
@@ -228,23 +176,11 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'spinner_controller_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'task_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'task_controller_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'thumbnail_loader',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'thumbnail_loader_unittest',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {

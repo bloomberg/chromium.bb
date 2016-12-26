@@ -12,10 +12,6 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'exif_encoder_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'filter',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
@@ -36,10 +32,6 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'image_encoder_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'image_transform',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
@@ -49,10 +41,6 @@
 #    },
 #    {
 #      'target_name': 'image_view',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'image_view_unittest',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {

@@ -20,10 +20,6 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'device_handler_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'drive_sync_handler',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
@@ -32,23 +28,11 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'duplicate_finder_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'file_operation_handler',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'file_operation_handler_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'file_operation_manager',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'file_operation_manager_unittest',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
@@ -60,10 +44,6 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'import_history_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'launcher_search',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
@@ -72,15 +52,7 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'media_import_handler_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'media_scanner',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'media_scanner_unittest',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
@@ -112,10 +84,6 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'task_queue_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'test_duplicate_finder',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
@@ -133,10 +101,6 @@
 #    },
 #    {
 #      'target_name': 'volume_manager',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'volume_manager_unittest',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
   ],

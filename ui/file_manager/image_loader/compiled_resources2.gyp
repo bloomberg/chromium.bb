@@ -12,23 +12,11 @@
 #      'includes': ['../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'cache_unittest',
-#      'includes': ['../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'image_loader',
 #      'includes': ['../compile_js2.gypi'],
 #    },
 #    {
 #      'target_name': 'image_loader_client',
-#      'includes': ['../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'image_loader_client_unittest',
-#      'includes': ['../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'image_loader_unittest',
 #      'includes': ['../compile_js2.gypi'],
 #    },
 #    {

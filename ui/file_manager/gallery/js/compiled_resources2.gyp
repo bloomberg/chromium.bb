@@ -12,15 +12,7 @@
 #      'includes': ['../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'dimmable_ui_controller_unittest',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'entry_list_watcher',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'entry_list_watcher_unittest',
 #      'includes': ['../../compile_js2.gypi'],
 #    },
 #    {
@@ -36,15 +28,7 @@
 #      'includes': ['../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'gallery_data_model_unittest',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'gallery_item',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'gallery_item_unittest',
 #      'includes': ['../../compile_js2.gypi'],
 #    },
 #    {
@@ -56,10 +40,6 @@
 #      'includes': ['../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'gallery_util_unittest',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'metadata_worker',
 #      'includes': ['../../compile_js2.gypi'],
 #    },
@@ -68,19 +48,7 @@
 #      'includes': ['../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'ribbon_unittest',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'slide_mode',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'slide_mode_unittest',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'test_util',
 #      'includes': ['../../compile_js2.gypi'],
 #    },
 #    {

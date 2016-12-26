@@ -16,10 +16,6 @@
 #      'includes': ['../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'test_util',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'video_player',
 #      'includes': ['../../compile_js2.gypi'],
 #    },

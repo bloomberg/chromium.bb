@@ -19,9 +19,5 @@
       'target_name': 'metadata_worker',
       'includes': ['../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'test_util',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
   ],
 }

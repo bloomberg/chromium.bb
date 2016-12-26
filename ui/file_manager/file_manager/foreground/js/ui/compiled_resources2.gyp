@@ -8,10 +8,6 @@
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'actions_submenu_unittest',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'banners',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
@@ -33,10 +29,6 @@
 #    },
 #    {
 #      'target_name': 'directory_tree',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'directory_tree_unittest',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
@@ -77,10 +69,6 @@
 #    },
 #    {
 #      'target_name': 'file_table_list',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'file_table_unittest',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {

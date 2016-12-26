@@ -36,27 +36,11 @@
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'metrics_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'mock_entry',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'progress_center_common',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
 #      'target_name': 'test_importer_common',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'test_tracker',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'unittest_util',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {

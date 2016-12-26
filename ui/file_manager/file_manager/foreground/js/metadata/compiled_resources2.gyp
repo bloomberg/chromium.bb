@@ -12,10 +12,6 @@
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'content_metadata_provider_unittest',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'exif_constants',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
@@ -24,23 +20,11 @@
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'exif_parser_unittest',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'external_metadata_provider',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'external_metadata_provider_unittest',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'file_system_metadata_provider',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'file_system_metadata_provider_unittest',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
@@ -60,10 +44,6 @@
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'image_orientation_unittest',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'image_parsers',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
@@ -72,15 +52,7 @@
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'metadata_cache_item_unittest',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'metadata_cache_set',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'metadata_cache_set_unittest',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
@@ -96,10 +68,6 @@
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'metadata_model_unittest',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'metadata_parser',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
@@ -112,19 +80,11 @@
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'multi_metadata_provider_unittest',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'new_metadata_provider',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
 #    {
 #      'target_name': 'thumbnail_model',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'thumbnail_model_unittest',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
   ],
