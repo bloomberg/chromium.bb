@@ -8,6 +8,10 @@
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
+      'target_name': 'background_window',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'chrome_cast',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
@@ -36,11 +40,23 @@
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
+      'target_name': 'directory_change_event',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
+      'target_name': 'entries_changed_event',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'es6_workaround',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
       'target_name': 'exif_entry',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
+      'target_name': 'file_operation_progress_event',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {

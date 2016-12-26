@@ -116,6 +116,7 @@ function testLRUCacheWithIndividualSizes() {
   assertEquals(8, cache.size());
 }
 
+/** @constructor */
 function RandomNumberGenerator(seed) {
   this.x = seed;
 }

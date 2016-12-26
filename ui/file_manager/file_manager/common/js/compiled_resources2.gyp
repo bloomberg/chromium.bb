@@ -3,42 +3,26 @@
 # found in the LICENSE file.
 {
   'targets': [
-#    {
-#      'target_name': 'async_util',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'async_util_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'error_util',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'externs',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'file_type',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'async_util',
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'error_util',
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'file_type',
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'importer_common',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'importer_common_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'lru_cache',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'lru_cache_unittest',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'lru_cache',
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'metrics',
 #      'includes': ['../../../compile_js2.gypi'],
