@@ -31,9 +31,9 @@
 #define DOMSelection_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/editing/Position.h"
 #include "core/editing/VisibleSelection.h"
-#include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
@@ -46,7 +46,7 @@ class TreeScope;
 
 class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
                                        public ScriptWrappable,
-                                       public DOMWindowProperty {
+                                       public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMSelection);
 

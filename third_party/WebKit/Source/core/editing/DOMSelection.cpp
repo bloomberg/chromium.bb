@@ -59,7 +59,7 @@ static Node* selectionShadowAncestor(LocalFrame* frame) {
 }
 
 DOMSelection::DOMSelection(const TreeScope* treeScope)
-    : DOMWindowProperty(treeScope->rootNode().document().frame()),
+    : ContextClient(treeScope->rootNode().document().frame()),
       m_treeScope(treeScope) {}
 
 void DOMSelection::clearTreeScope() {
@@ -669,7 +669,7 @@ void DOMSelection::addConsoleError(const String& message) {
 
 DEFINE_TRACE(DOMSelection) {
   visitor->trace(m_treeScope);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

@@ -30,7 +30,7 @@
 #define Screen_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
@@ -40,7 +40,7 @@ class LocalFrame;
 
 class Screen final : public GarbageCollected<Screen>,
                      public ScriptWrappable,
-                     public DOMWindowProperty,
+                     public ContextClient,
                      public Supplementable<Screen> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Screen);

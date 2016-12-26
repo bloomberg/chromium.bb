@@ -6,8 +6,8 @@
 #define MainThreadWorkletGlobalScope_h
 
 #include "core/CoreExport.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/DOMWindowProperty.h"
 #include "core/workers/WorkletGlobalScope.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
 
@@ -19,7 +19,7 @@ class ScriptSourceCode;
 
 class CORE_EXPORT MainThreadWorkletGlobalScope : public WorkletGlobalScope,
                                                  public WorkletGlobalScopeProxy,
-                                                 public DOMWindowProperty {
+                                                 public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(MainThreadWorkletGlobalScope);
 
  public:
@@ -45,7 +45,7 @@ class CORE_EXPORT MainThreadWorkletGlobalScope : public WorkletGlobalScope,
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     WorkletGlobalScope::trace(visitor);
-    DOMWindowProperty::trace(visitor);
+    ContextClient::trace(visitor);
   }
 };
 

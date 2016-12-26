@@ -20,7 +20,7 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
     PassRefPtr<SecurityOrigin> securityOrigin,
     v8::Isolate* isolate)
     : WorkletGlobalScope(url, userAgent, std::move(securityOrigin), isolate),
-      DOMWindowProperty(frame) {}
+      ContextClient(frame) {}
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}
 
