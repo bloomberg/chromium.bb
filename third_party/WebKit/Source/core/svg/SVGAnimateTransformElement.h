@@ -37,7 +37,7 @@ class SVGAnimateTransformElement final : public SVGAnimateElement {
  private:
   explicit SVGAnimateTransformElement(Document&);
 
-  bool hasValidAttributeType() override;
+  bool hasValidTarget() override;
 
   void parseAttribute(const QualifiedName&,
                       const AtomicString&,

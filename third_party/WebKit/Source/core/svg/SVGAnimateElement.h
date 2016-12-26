@@ -54,6 +54,8 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
  protected:
   SVGAnimateElement(const QualifiedName&, Document&);
 
+  bool hasValidTarget() override;
+
   void resetAnimatedType() final;
   void clearAnimatedType() final;
 
@@ -94,12 +96,7 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   void setAttributeType(const AtomicString&);
 
   void checkInvalidCSSAttributeType();
-  bool hasInvalidCSSAttributeType() const {
-    return m_hasInvalidCSSAttributeType;
-  }
-  bool hasValidTarget() final;
   bool hasValidAttributeName() const;
-  virtual bool hasValidAttributeType();
 
   virtual void resolveTargetProperty();
   void clearTargetProperty();

@@ -164,19 +164,16 @@ AnimatedPropertyType SVGAnimateElement::animatedPropertyType() {
 }
 
 bool SVGAnimateElement::hasValidTarget() {
-  return SVGAnimationElement::hasValidTarget() && hasValidAttributeName() &&
-         hasValidAttributeType();
+  if (!SVGAnimationElement::hasValidTarget())
+    return false;
+  if (!hasValidAttributeName())
+    return false;
+  resolveTargetProperty();
+  return m_type != AnimatedUnknown && !m_hasInvalidCSSAttributeType;
 }
 
 bool SVGAnimateElement::hasValidAttributeName() const {
   return attributeName() != anyQName();
-}
-
-bool SVGAnimateElement::hasValidAttributeType() {
-  if (!targetElement())
-    return false;
-  return animatedPropertyType() != AnimatedUnknown &&
-         !hasInvalidCSSAttributeType();
 }
 
 bool SVGAnimateElement::shouldApplyAnimation(

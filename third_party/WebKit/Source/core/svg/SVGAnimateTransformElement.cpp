@@ -35,15 +35,12 @@ inline SVGAnimateTransformElement::SVGAnimateTransformElement(
 
 DEFINE_NODE_FACTORY(SVGAnimateTransformElement)
 
-bool SVGAnimateTransformElement::hasValidAttributeType() {
-  SVGElement* targetElement = this->targetElement();
-  if (!targetElement)
+bool SVGAnimateTransformElement::hasValidTarget() {
+  if (!SVGAnimateElement::hasValidTarget())
     return false;
-
   if (getAttributeType() == AttributeTypeCSS)
     return false;
-
-  return animatedPropertyType() == AnimatedTransformList;
+  return m_type == AnimatedTransformList;
 }
 
 void SVGAnimateTransformElement::resolveTargetProperty() {
