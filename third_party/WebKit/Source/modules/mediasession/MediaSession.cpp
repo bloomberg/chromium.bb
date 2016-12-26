@@ -93,7 +93,7 @@ mojom::blink::MediaSessionPlaybackState stringToMediaSessionPlaybackState(
 }  // anonymous namespace
 
 MediaSession::MediaSession(ExecutionContext* executionContext)
-    : ContextLifecycleObserver(executionContext),
+    : ContextClient(executionContext),
       m_playbackState(mojom::blink::MediaSessionPlaybackState::NONE),
       m_clientBinding(this) {}
 
@@ -145,7 +145,7 @@ const WTF::AtomicString& MediaSession::interfaceName() const {
 }
 
 ExecutionContext* MediaSession::getExecutionContext() const {
-  return ContextLifecycleObserver::getExecutionContext();
+  return ContextClient::getExecutionContext();
 }
 
 mojom::blink::MediaSessionService* MediaSession::getService() {
@@ -207,7 +207,7 @@ void MediaSession::DidReceiveAction(
 DEFINE_TRACE(MediaSession) {
   visitor->trace(m_metadata);
   EventTargetWithInlineData::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

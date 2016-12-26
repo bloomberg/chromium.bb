@@ -21,7 +21,7 @@ class MediaMetadata;
 
 class MODULES_EXPORT MediaSession final
     : public EventTargetWithInlineData,
-      public ContextLifecycleObserver,
+      public ContextClient,
       blink::mojom::blink::MediaSessionClient {
   USING_GARBAGE_COLLECTED_MIXIN(MediaSession);
   DEFINE_WRAPPERTYPEINFO();
