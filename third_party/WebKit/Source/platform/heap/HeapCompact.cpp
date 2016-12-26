@@ -343,7 +343,7 @@ bool HeapCompact::shouldCompact(ThreadState* state,
 #endif
 }
 
-BlinkGC::GCType HeapCompact::initialize(ThreadState* state) {
+void HeapCompact::initialize(ThreadState* state) {
   DCHECK(RuntimeEnabledFeatures::heapCompactionEnabled());
   LOG_HEAP_COMPACTION("Compacting: free=%zu\n", m_freeListSize);
   m_doCompact = true;
@@ -353,7 +353,6 @@ BlinkGC::GCType HeapCompact::initialize(ThreadState* state) {
   m_fixups.reset();
   m_gcCountSinceLastCompaction = 0;
   s_forceCompactionGC = false;
-  return BlinkGC::GCWithSweepCompaction;
 }
 
 void HeapCompact::registerMovingObjectReference(MovableReference* slot) {

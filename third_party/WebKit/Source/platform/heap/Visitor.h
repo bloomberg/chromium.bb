@@ -318,7 +318,7 @@ class PLATFORM_EXPORT Visitor : public VisitorHelper<Visitor> {
     GlobalMarkingWithCompaction,
   };
 
-  static std::unique_ptr<Visitor> create(ThreadState*, BlinkGC::GCType);
+  static std::unique_ptr<Visitor> create(ThreadState*, MarkingMode);
 
   virtual ~Visitor();
 

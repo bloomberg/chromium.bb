@@ -507,7 +507,7 @@ void ThreadState::threadLocalWeakProcessing() {
 
   GCForbiddenScope gcForbiddenScope(this);
   std::unique_ptr<Visitor> visitor =
-      Visitor::create(this, BlinkGC::ThreadLocalWeakProcessing);
+      Visitor::create(this, Visitor::WeakProcessing);
 
   // Perform thread-specific weak processing.
   while (popAndInvokeThreadLocalWeakCallback(visitor.get())) {
@@ -1708,8 +1708,6 @@ void ThreadState::takeSnapshot(SnapshotType type) {
 void ThreadState::collectGarbage(BlinkGC::StackState stackState,
                                  BlinkGC::GCType gcType,
                                  BlinkGC::GCReason reason) {
-  DCHECK_NE(gcType, BlinkGC::ThreadTerminationGC);
-
   // Nested collectGarbage() invocations aren't supported.
   RELEASE_ASSERT(!isGCForbidden());
   completeSweep();
@@ -1725,11 +1723,18 @@ void ThreadState::collectGarbage(BlinkGC::StackState stackState,
   if (!parkThreadsScope.parkThreads())
     return;
 
-  BlinkGC::GCType visitorType = gcType;
-  if (heap().compaction()->shouldCompact(this, gcType, reason))
-    visitorType = heap().compaction()->initialize(this);
-
-  std::unique_ptr<Visitor> visitor = Visitor::create(this, visitorType);
+  std::unique_ptr<Visitor> visitor;
+  if (gcType == BlinkGC::TakeSnapshot) {
+    visitor = Visitor::create(this, Visitor::SnapshotMarking);
+  } else {
+    DCHECK(gcType == BlinkGC::GCWithSweep || gcType == BlinkGC::GCWithoutSweep);
+    if (heap().compaction()->shouldCompact(this, gcType, reason)) {
+      heap().compaction()->initialize(this);
+      visitor = Visitor::create(this, Visitor::GlobalMarkingWithCompaction);
+    } else {
+      visitor = Visitor::create(this, Visitor::GlobalMarking);
+    }
+  }
 
   ScriptForbiddenIfMainThreadScope scriptForbidden;
 
@@ -1833,7 +1838,7 @@ void ThreadState::collectGarbageForTerminatingThread() {
     // ThreadTerminationGC.
     GCForbiddenScope gcForbiddenScope(this);
     std::unique_ptr<Visitor> visitor =
-        Visitor::create(this, BlinkGC::ThreadTerminationGC);
+        Visitor::create(this, Visitor::ThreadLocalMarking);
 
     NoAllocationScope noAllocationScope(this);
 

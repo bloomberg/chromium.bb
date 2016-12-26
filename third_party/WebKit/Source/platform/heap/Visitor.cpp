@@ -12,26 +12,8 @@
 
 namespace blink {
 
-std::unique_ptr<Visitor> Visitor::create(ThreadState* state,
-                                         BlinkGC::GCType gcType) {
-  switch (gcType) {
-    case BlinkGC::GCWithSweep:
-    case BlinkGC::GCWithoutSweep:
-      return WTF::makeUnique<MarkingVisitor<Visitor::GlobalMarking>>(state);
-    case BlinkGC::GCWithSweepCompaction:
-      return WTF::makeUnique<
-          MarkingVisitor<Visitor::GlobalMarkingWithCompaction>>(state);
-    case BlinkGC::TakeSnapshot:
-      return WTF::makeUnique<MarkingVisitor<Visitor::SnapshotMarking>>(state);
-    case BlinkGC::ThreadTerminationGC:
-      return WTF::makeUnique<MarkingVisitor<Visitor::ThreadLocalMarking>>(
-          state);
-    case BlinkGC::ThreadLocalWeakProcessing:
-      return WTF::makeUnique<MarkingVisitor<Visitor::WeakProcessing>>(state);
-    default:
-      ASSERT_NOT_REACHED();
-  }
-  return nullptr;
+std::unique_ptr<Visitor> Visitor::create(ThreadState* state, MarkingMode mode) {
+  return WTF::makeUnique<MarkingVisitor>(state, mode);
 }
 
 Visitor::Visitor(ThreadState* state, MarkingMode markingMode)

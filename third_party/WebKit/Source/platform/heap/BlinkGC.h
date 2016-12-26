@@ -68,22 +68,10 @@ class PLATFORM_EXPORT BlinkGC final {
     // Only the marking task runs in ThreadHeap::collectGarbage().
     // The sweeping task is split into chunks and scheduled lazily.
     GCWithoutSweep,
-    // After the marking task has run in ThreadHeap::collectGarbage(),
-    // sweep compaction of some heap arenas is performed. The sweeping
-    // of the remaining arenas is split into chunks and scheduled lazily.
-    GCWithSweepCompaction,
     // Only the marking task runs just to take a heap snapshot.
     // The sweeping task doesn't run. The marks added in the marking task
     // are just cleared.
     TakeSnapshot,
-    // The marking task does not mark objects outside the heap of the GCing
-    // thread.
-    ThreadTerminationGC,
-    // Just run thread-local weak processing. The weak processing may trace
-    // already marked objects but it must not trace any unmarked object.
-    // It's unfortunate that the thread-local weak processing requires
-    // a marking visitor. See TODO in HashTable::process.
-    ThreadLocalWeakProcessing,
   };
 
   enum GCReason {

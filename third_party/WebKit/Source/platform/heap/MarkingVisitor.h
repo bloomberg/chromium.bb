@@ -9,14 +9,14 @@
 
 namespace blink {
 
-template <Visitor::MarkingMode Mode>
 class MarkingVisitor final : public Visitor,
-                             public MarkingVisitorImpl<MarkingVisitor<Mode>> {
+                             public MarkingVisitorImpl<MarkingVisitor> {
  public:
-  using Impl = MarkingVisitorImpl<MarkingVisitor<Mode>>;
-  friend class MarkingVisitorImpl<MarkingVisitor<Mode>>;
+  using Impl = MarkingVisitorImpl<MarkingVisitor>;
+  friend class MarkingVisitorImpl<MarkingVisitor>;
 
-  explicit MarkingVisitor(ThreadState* state) : Visitor(state, Mode) {}
+  explicit MarkingVisitor(ThreadState* state, Visitor::MarkingMode mode)
+      : Visitor(state, mode) {}
 
   void markHeader(HeapObjectHeader* header, TraceCallback callback) override {
     Impl::markHeader(header, header->payload(), callback);
@@ -69,7 +69,7 @@ class MarkingVisitor final : public Visitor,
 
  protected:
   inline bool shouldMarkObject(const void* objectPointer) const {
-    if (Mode != ThreadLocalMarking)
+    if (getMarkingMode() != ThreadLocalMarking)
       return true;
 
     BasePage* page = pageFromObject(objectPointer);

@@ -55,7 +55,7 @@ class PLATFORM_EXPORT HeapCompact final {
   // Compaction should be performed as part of the ongoing GC, initialize
   // the heap compaction pass. Returns the appropriate visitor type to
   // use when running the marking phase.
-  BlinkGC::GCType initialize(ThreadState*);
+  void initialize(ThreadState*);
 
   // Returns true if the ongoing GC will perform compaction.
   bool isCompacting() const { return m_doCompact; }
