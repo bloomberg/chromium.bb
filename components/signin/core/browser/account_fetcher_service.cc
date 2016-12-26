@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
@@ -201,13 +202,16 @@ void AccountFetcherService::StartFetchingUserInfo(
   DCHECK(CalledOnValidThread());
   DCHECK(network_fetches_enabled_);
 
-  if (!ContainsKey(user_info_requests_, account_id)) {
+  std::unique_ptr<AccountInfoFetcher>& request =
+      user_info_requests_[account_id];
+  if (!request) {
     DVLOG(1) << "StartFetching " << account_id;
-    std::unique_ptr<AccountInfoFetcher> fetcher(new AccountInfoFetcher(
-        token_service_, signin_client_->GetURLRequestContext(), this,
-        account_id));
-    user_info_requests_.set(account_id, std::move(fetcher));
-    user_info_requests_.get(account_id)->Start();
+    std::unique_ptr<AccountInfoFetcher> fetcher =
+        base::MakeUnique<AccountInfoFetcher>(
+            token_service_, signin_client_->GetURLRequestContext(), this,
+            account_id);
+    request = std::move(fetcher);
+    request->Start();
   }
 }
 
@@ -271,7 +275,7 @@ void AccountFetcherService::SendRefreshTokenAnnotationRequest(
     // If request was sent AccountFetcherService needs to own request till it
     // finishes.
     if (request)
-      refresh_token_annotation_requests_.set(account_id, std::move(request));
+      refresh_token_annotation_requests_[account_id] = std::move(request);
   }
 #endif
 }

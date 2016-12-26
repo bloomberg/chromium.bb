@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
@@ -132,11 +132,11 @@ class AccountFetcherService : public KeyedService,
   std::unique_ptr<ChildAccountInfoFetcher> child_info_request_;
 
   // Holds references to account info fetchers keyed by account_id.
-  base::ScopedPtrHashMap<std::string, std::unique_ptr<AccountInfoFetcher>>
+  std::unordered_map<std::string, std::unique_ptr<AccountInfoFetcher>>
       user_info_requests_;
   // Holds references to refresh token annotation requests keyed by account_id.
-  base::ScopedPtrHashMap<std::string,
-                         std::unique_ptr<RefreshTokenAnnotationRequest>>
+  std::unordered_map<std::string,
+                     std::unique_ptr<RefreshTokenAnnotationRequest>>
       refresh_token_annotation_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountFetcherService);
