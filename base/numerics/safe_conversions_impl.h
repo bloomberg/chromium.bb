@@ -37,19 +37,6 @@ struct PositionOfSignBit {
   static const size_t value = IntegerBitsPlusSign<Integer>::value - 1;
 };
 
-template <typename T>
-constexpr bool HasSignBit(T x) {
-  // Cast to unsigned since right shift on signed is undefined.
-  return (static_cast<typename std::make_unsigned<T>::type>(x) >>
-          PositionOfSignBit<T>::value) != 0;
-}
-
-// This wrapper undoes the standard integer promotions.
-template <typename T>
-constexpr T BinaryComplement(T x) {
-  return static_cast<T>(~x);
-}
-
 // Determines if a numeric value is negative without throwing compiler
 // warnings on: unsigned(value) < 0.
 template <typename T,
@@ -91,7 +78,7 @@ constexpr T SignMask(T x) {
       (static_cast<SignedT>(-1) >> PositionOfSignBit<T>::value) ==
               static_cast<SignedT>(-1)
           ? (static_cast<SignedT>(x) >> PositionOfSignBit<T>::value)
-          : -static_cast<SignedT>(HasSignBit(x)));
+          : -static_cast<SignedT>(static_cast<SignedT>(x) < 0));
 }
 static_assert(SignMask(-2) == -1,
               "Inconsistent handling of signed right shift.");
