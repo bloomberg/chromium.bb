@@ -4260,13 +4260,18 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
             DocumentState::FromDataSource(frame->dataSource()));
     DCHECK(provider);
     provider_id = provider->provider_id();
-    // Explicitly set the SkipServiceWorker flag here if the renderer process
-    // hasn't received SetControllerServiceWorker message.
+    // If the provider does not have a controller at this point, the renderer
+    // expects the request to never be handled by a controlling service worker,
+    // so set the SkipServiceWorker flag here. Otherwise, a service worker that
+    // is in the process of becoming the controller (i.e., via claim()) on the
+    // browser-side could handle the request and break the assumptions of the
+    // renderer.
     if (!provider->IsControlledByServiceWorker() &&
         request.skipServiceWorker() !=
-            blink::WebURLRequest::SkipServiceWorker::All)
+            blink::WebURLRequest::SkipServiceWorker::All) {
       request.setSkipServiceWorker(
           blink::WebURLRequest::SkipServiceWorker::Controlling);
+    }
   }
 
   WebFrame* parent = frame->parent();
