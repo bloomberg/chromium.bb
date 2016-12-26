@@ -236,7 +236,7 @@ camera.Camera.prototype.start = function() {
       camera.util.setAriaAttributes();
     }.bind(this)).
     catch(function(error) {
-      console.error('Failed to initialize the Camera app.');
+      console.error('Failed to initialize the Camera app.', error);
     });
 };
 
