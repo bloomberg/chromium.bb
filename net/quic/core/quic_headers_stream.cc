@@ -404,8 +404,7 @@ QuicConsumedData QuicHeadersStream::WritevStreamData(
     QuicStreamOffset offset,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  const size_t max_len =
-      kSpdyInitialFrameSizeLimit - SpdyConstants::kDataFrameMinimumSize;
+  const size_t max_len = kSpdyInitialFrameSizeLimit - kDataFrameMinimumSize;
 
   QuicConsumedData result(0, false);
   size_t total_length = iov.total_length;

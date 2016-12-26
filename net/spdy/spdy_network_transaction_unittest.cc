@@ -3234,8 +3234,7 @@ TEST_F(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
   // This is the length field that's too short.
   SpdySerializedFrame reply_wrong_length(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-  size_t right_size =
-      reply_wrong_length.size() - SpdyConstants::kFrameHeaderSize;
+  size_t right_size = reply_wrong_length.size() - kFrameHeaderSize;
   size_t wrong_size = right_size - 4;
   test::SetFrameLength(&reply_wrong_length, wrong_size);
 

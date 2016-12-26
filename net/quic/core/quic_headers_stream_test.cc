@@ -1041,7 +1041,7 @@ TEST_P(QuicHeadersStreamTest, WritevStreamDataSendBlocked) {
   // bytes_consumed is max HTTP/2 data frame size minus the HTTP/2
   // data header size.
   EXPECT_EQ(consumed_data.bytes_consumed,
-            kSpdyInitialFrameSizeLimit - SpdyConstants::kDataFrameMinimumSize);
+            kSpdyInitialFrameSizeLimit - kDataFrameMinimumSize);
   EXPECT_EQ(consumed_data.fin_consumed, false);
 
   // If session already blocked, then bytes_consumed should be zero.

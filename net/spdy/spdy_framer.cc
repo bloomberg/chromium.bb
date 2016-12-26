@@ -230,12 +230,12 @@ SpdyFramer::SpdyState SpdyFramer::state() const {
 }
 
 size_t SpdyFramer::GetDataFrameMinimumSize() const {
-  return SpdyConstants::kDataFrameMinimumSize;
+  return kDataFrameMinimumSize;
 }
 
 // Size, in bytes, of the control frame header.
 size_t SpdyFramer::GetFrameHeaderSize() const {
-  return SpdyConstants::kFrameHeaderSize;
+  return kFrameHeaderSize;
 }
 
 size_t SpdyFramer::GetRstStreamSize() const {
@@ -315,7 +315,7 @@ size_t SpdyFramer::GetFrameMinimumSize() const {
 }
 
 size_t SpdyFramer::GetFrameMaximumSize() const {
-  return send_frame_size_limit_ + SpdyConstants::kFrameHeaderSize;
+  return send_frame_size_limit_ + kFrameHeaderSize;
 }
 
 size_t SpdyFramer::GetDataFrameMaximumPayload() const {
@@ -648,7 +648,7 @@ void SpdyFramer::SpdySettingsScratch::Reset() {
 SpdyFrameType SpdyFramer::ValidateFrameHeader(bool is_control_frame,
                                               int frame_type_field,
                                               size_t payload_length_field) {
-  if (!SpdyConstants::IsValidFrameType(frame_type_field)) {
+  if (!IsValidFrameType(frame_type_field)) {
     // We ignore unknown frame types for extensibility, as long as
     // the rest of the control frame header is valid.
     // We rely on the visitor to check validity of current_frame_stream_id_.
@@ -675,10 +675,9 @@ SpdyFrameType SpdyFramer::ValidateFrameHeader(bool is_control_frame,
     return DATA;
   }
 
-  SpdyFrameType frame_type = SpdyConstants::ParseFrameType(frame_type_field);
+  SpdyFrameType frame_type = ParseFrameType(frame_type_field);
 
-  if (!SpdyConstants::IsValidHTTP2FrameStreamId(current_frame_stream_id_,
-                                                frame_type)) {
+  if (!IsValidHTTP2FrameStreamId(current_frame_stream_id_, frame_type)) {
     DLOG(ERROR) << "The framer received an invalid streamID of "
                 << current_frame_stream_id_ << " for a frame of type "
                 << FrameTypeToString(frame_type);
@@ -728,7 +727,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
                          current_frame_buffer_.len());
   bool is_control_frame = false;
 
-  int control_frame_type_field = SpdyConstants::kDataFrameType;
+  int control_frame_type_field = kDataFrameType;
   // ProcessControlFrameHeader() will set current_frame_type_ to the
   // correct value if this is a valid control frame.
   current_frame_type_ = DATA;
@@ -742,7 +741,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   // We check control_frame_type_field's validity in
   // ProcessControlFrameHeader().
   control_frame_type_field = control_frame_type_field_uint8;
-  is_control_frame = control_frame_type_field != SpdyConstants::kDataFrameType;
+  is_control_frame = control_frame_type_field != kDataFrameType;
 
   current_frame_length_ = length_field + GetFrameHeaderSize();
 
@@ -1358,7 +1357,7 @@ bool SpdyFramer::ProcessSetting(const char* data) {
 
   // Validate id.
   SpdySettingsIds setting_id;
-  if (!SpdyConstants::ParseSettingsId(id_field, &setting_id)) {
+  if (!ParseSettingsId(id_field, &setting_id)) {
     DLOG(WARNING) << "Unknown SETTINGS ID: " << id_field;
     // Ignore unknown settings for extensibility.
     return true;
@@ -1468,8 +1467,8 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
       uint32_t status_raw = GOAWAY_OK;
       successful_read = reader.ReadUInt32(&status_raw);
       DCHECK(successful_read);
-      if (SpdyConstants::IsValidGoAwayStatus(status_raw)) {
-        status = SpdyConstants::ParseGoAwayStatus(status_raw);
+      if (IsValidGoAwayStatus(status_raw)) {
+        status = ParseGoAwayStatus(status_raw);
       } else {
         // Treat unrecognized status codes as INTERNAL_ERROR as
         // recommended by the HTTP/2 spec.
@@ -1526,8 +1525,8 @@ size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
       uint32_t status_raw = status;
       bool successful_read = reader.ReadUInt32(&status_raw);
       DCHECK(successful_read);
-      if (SpdyConstants::IsValidRstStreamStatus(status_raw)) {
-        status = SpdyConstants::ParseRstStreamStatus(status_raw);
+      if (IsValidRstStreamStatus(status_raw)) {
+        status = ParseRstStreamStatus(status_raw);
       } else {
         // Treat unrecognized status codes as INTERNAL_ERROR as
         // recommended by the HTTP/2 spec.
@@ -1878,8 +1877,7 @@ SpdySerializedFrame SpdyFramer::SerializeRstStream(
 
   builder.BeginNewFrame(*this, RST_STREAM, 0, rst_stream.stream_id());
 
-  builder.WriteUInt32(
-      SpdyConstants::SerializeRstStreamStatus(rst_stream.status()));
+  builder.WriteUInt32(SerializeRstStreamStatus(rst_stream.status()));
 
   DCHECK_EQ(expected_length, builder.length());
   return builder.take();
@@ -1944,7 +1942,7 @@ SpdySerializedFrame SpdyFramer::SerializeGoAway(
   builder.WriteUInt32(goaway.last_good_stream_id());
 
   // GOAWAY frames also specify the error status code.
-  builder.WriteUInt32(SpdyConstants::SerializeGoAwayStatus(goaway.status()));
+  builder.WriteUInt32(SerializeGoAwayStatus(goaway.status()));
 
   // GOAWAY frames may also specify opaque data.
   if (!goaway.description().empty()) {

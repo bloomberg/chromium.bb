@@ -509,8 +509,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   void InitHeaderStreaming(SpdyFrameType header_control_type,
                            SpdyStreamId stream_id) {
-    if (!SpdyConstants::IsValidFrameType(
-            SpdyConstants::SerializeFrameType(header_control_type))) {
+    if (!IsValidFrameType(SerializeFrameType(header_control_type))) {
       DLOG(FATAL) << "Attempted to init header streaming with "
                   << "invalid control frame type: " << header_control_type;
     }
@@ -598,7 +597,8 @@ StringPiece GetSerializedHeaders(const SpdySerializedFrame& frame,
 
   uint8_t serialized_type;
   reader.ReadUInt8(&serialized_type);
-  SpdyFrameType type = SpdyConstants::ParseFrameType(serialized_type);
+
+  SpdyFrameType type = ParseFrameType(serialized_type);
   DCHECK_EQ(HEADERS, type);
   uint8_t flags;
   reader.ReadUInt8(&flags);
@@ -2129,8 +2129,7 @@ TEST_P(SpdyFramerTest, SerializeBlocked) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
 
   const char kDescription[] = "BLOCKED frame";
-  const unsigned char kType =
-      static_cast<unsigned char>(SpdyConstants::SerializeFrameType(BLOCKED));
+  const char kType = static_cast<unsigned char>(SerializeFrameType(BLOCKED));
   const unsigned char kFrameData[] = {
       0x00,  0x00, 0x00,        // Length: 0
       kType,                    //   Type: BLOCKED
@@ -2480,8 +2479,7 @@ TEST_P(SpdyFramerTest, CreateAltSvc) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
 
   const char kDescription[] = "ALTSVC frame";
-  const char kType =
-      static_cast<unsigned char>(SpdyConstants::SerializeFrameType(ALTSVC));
+  const char kType = static_cast<unsigned char>(SerializeFrameType(ALTSVC));
   const unsigned char kFrameData[] = {
       0x00, 0x00, 0x49, kType, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x06, 'o',
       'r',  'i',  'g',  'i',   'n',  'p',  'i',  'd',  '1',  '=',  '"',  'h',
@@ -2708,9 +2706,9 @@ TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
 
   // HTTP/2 GOAWAY frames are only bound by a minimal length, since they may
   // carry opaque data. Verify that minimal length is tested.
-  ASSERT_GT(framer.GetGoAwayMinimumSize(), SpdyConstants::kFrameHeaderSize);
+  ASSERT_GT(framer.GetGoAwayMinimumSize(), kFrameHeaderSize);
   const size_t less_than_min_length =
-      framer.GetGoAwayMinimumSize() - SpdyConstants::kFrameHeaderSize - 1;
+      framer.GetGoAwayMinimumSize() - kFrameHeaderSize - 1;
   ASSERT_LE(less_than_min_length, std::numeric_limits<unsigned char>::max());
   const unsigned char kH2Len = static_cast<unsigned char>(less_than_min_length);
   const unsigned char kH2FrameData[] = {
@@ -2721,8 +2719,7 @@ TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
       0x00, 0x00, 0x00,   0x00,  //   Last: 0
       0x00, 0x00, 0x00,          // Truncated Status Field
   };
-  const size_t pad_length =
-      length + SpdyConstants::kFrameHeaderSize - sizeof(kH2FrameData);
+  const size_t pad_length = length + kFrameHeaderSize - sizeof(kH2FrameData);
   string pad(pad_length, 'A');
   TestSpdyVisitor visitor(SpdyFramer::DISABLE_COMPRESSION);
 
@@ -4014,27 +4011,21 @@ TEST_P(SpdyFramerTest, OnAltSvcEmptyProtocolId) {
 }
 
 TEST_P(SpdyFramerTest, OnAltSvcBadLengths) {
-  const SpdyStreamId kStreamId = 1;
+  const char kType = static_cast<unsigned char>(SerializeFrameType(ALTSVC));
+  const unsigned char kFrameDataOriginLenLargerThanFrame[] = {
+      0x00, 0x00, 0x05, kType, 0x00, 0x00, 0x00,
+      0x00, 0x03, 0x42, 0x42,  'f',  'o',  'o',
+  };
 
-  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  TestSpdyVisitor visitor(SpdyFramer::DISABLE_COMPRESSION);
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   framer.set_visitor(&visitor);
+  visitor.SimulateInFramer(kFrameDataOriginLenLargerThanFrame,
+                           sizeof(kFrameDataOriginLenLargerThanFrame));
 
-  SpdyAltSvcWireFormat::AlternativeService altsvc(
-      "pid", "h1", 443, 10, SpdyAltSvcWireFormat::VersionVector());
-  SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
-  altsvc_vector.push_back(altsvc);
-  EXPECT_CALL(visitor, OnAltSvc(kStreamId, StringPiece("o1"), altsvc_vector));
-
-  SpdyAltSvcIR altsvc_ir(1);
-  altsvc_ir.set_origin("o1");
-  altsvc_ir.add_altsvc(altsvc);
-  SpdySerializedFrame frame(framer.SerializeFrame(altsvc_ir));
-  framer.ProcessInput(frame.data(), frame.size());
-
-  EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
-  EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
+  EXPECT_EQ(1, visitor.error_count_);
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME,
+            visitor.framer_.error_code());
 }
 
 // Tests handling of ALTSVC frames delivered in small chunks.
