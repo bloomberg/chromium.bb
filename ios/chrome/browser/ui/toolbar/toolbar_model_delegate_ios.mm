@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -52,7 +53,25 @@ bool ToolbarModelDelegateIOS::GetURL(GURL* url) const {
   web::NavigationItem* item = GetNavigationItem();
   if (!item)
     return false;
-  *url = ShouldDisplayURL() ? item->GetVirtualURL() : GURL();
+
+  if (!ShouldDisplayURL()) {
+    *url = GURL();
+    return true;
+  }
+
+  // For security reasons, we shouldn't display the https scheme and secure
+  // padlock when there's no active ssl session.
+  // To hide the scheme we set it http when the loaded url is offline.
+  if (reading_list::IsOfflineURL(item->GetURL()) &&
+      item->GetVirtualURL().SchemeIs(url::kHttpsScheme)) {
+    GURL::Replacements replacements;
+    replacements.SetScheme(url::kHttpScheme,
+                           url::Component(0, strlen(url::kHttpScheme)));
+    *url = item->GetVirtualURL().ReplaceComponents(replacements);
+    return true;
+  }
+
+  *url = item->GetVirtualURL();
   return true;
 }
 
