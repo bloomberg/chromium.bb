@@ -3,13 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * This definition is required by
- * ui/file_manager/file_manager/common/js/util.js.
- * @type {string}
- */
-Window.prototype.appID;
-
-/**
  * @typedef {?{
  *   position: (number|undefined),
  *   time: (number|undefined),

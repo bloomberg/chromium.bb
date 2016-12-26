@@ -4,6 +4,10 @@
 {
   'targets': [
     {
+      'target_name': 'app_window_common',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'audio_player_foreground',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
@@ -45,6 +49,10 @@
     },
     {
       'target_name': 'entries_changed_event',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
+      'target_name': 'entry_location',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {

@@ -14,10 +14,3 @@ function GalleryWindow() {}
  * @type {Promise}
  */
 window.initializePromise;
-
-/**
- * This definition is required by
- * ui/file_manager/file_manager/common/js/util.js.
- * @type {string}
- */
-Window.prototype.appID;

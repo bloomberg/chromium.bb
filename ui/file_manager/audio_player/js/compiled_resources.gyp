@@ -107,6 +107,7 @@
           '<(EXTERNS_DIR)/file_manager_private.js',
           '<(EXTERNS_DIR)/metrics_private.js',
           '../../../../third_party/analytics/externs.js',
+          '../../externs/app_window_common.js',
           '../../externs/audio_player_foreground.js',
           '../../externs/background_window_common.js',
           '../../externs/chrome_test.js',

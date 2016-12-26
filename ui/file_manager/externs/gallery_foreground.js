@@ -29,13 +29,6 @@ function BackgroundComponents() {
 function FileManager() {}
 
 /**
- * This definition is required by
- * ui/file_manager/file_manager/common/js/util.js.
- * @type {string}
- */
-Window.prototype.appID;
-
-/**
  * A global flag which indicates whether it is in tests or not. This is set in
  * gallery/js/background.js.
  *

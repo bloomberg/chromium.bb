@@ -35,18 +35,26 @@
 #      'target_name': 'metrics_events',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'progress_center_common',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'test_importer_common',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'util',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'progress_center_common',
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'util',
+      'dependencies': [
+        '<(DEPTH)/ui/file_manager/externs/compiled_resources2.gyp:app_window_common',
+        '<(DEPTH)/ui/file_manager/externs/compiled_resources2.gyp:entry_location',
+        '<(DEPTH)/ui/file_manager/externs/compiled_resources2.gyp:platform',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
+        '<(EXTERNS_GYP):chrome_extensions',
+        '<(EXTERNS_GYP):file_manager_private',
+        'volume_manager_common',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'volume_manager_common',
       'dependencies': [
