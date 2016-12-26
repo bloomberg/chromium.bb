@@ -224,7 +224,7 @@ bool Body::hasPendingActivity() const {
   return bodyBuffer()->hasPendingActivity();
 }
 
-Body::Body(ExecutionContext* context) : ContextLifecycleObserver(context) {}
+Body::Body(ExecutionContext* context) : ContextClient(context) {}
 
 ScriptPromise Body::rejectInvalidConsumption(ScriptState* scriptState) {
   if (isBodyLocked() || bodyUsed())
