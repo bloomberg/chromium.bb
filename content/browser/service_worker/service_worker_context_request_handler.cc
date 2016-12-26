@@ -29,6 +29,8 @@ ServiceWorkerContextRequestHandler::ServiceWorkerContextRequestHandler(
                                   resource_type),
       version_(provider_host_->running_hosted_version()) {
   DCHECK(provider_host_->IsHostToRunningServiceWorker());
+  if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER)
+    version_->NotifyMainScriptRequestHandlerCreated();
 }
 
 ServiceWorkerContextRequestHandler::~ServiceWorkerContextRequestHandler() {
@@ -38,12 +40,38 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     ResourceContext* resource_context) {
-  if (!provider_host_ || !version_.get() || !context_)
-    return NULL;
+  CreateJobStatus status = CreateJobStatus::DID_NOT_SET_STATUS;
+  net::URLRequestJob* job =
+      MaybeCreateJobImpl(&status, request, network_delegate, resource_context);
+  if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER) {
+    version_->NotifyMainScriptJobCreated(status);
+  }
+  return job;
+}
+
+net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJobImpl(
+    CreateJobStatus* out_status,
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    ResourceContext* resource_context) {
+  if (!provider_host_) {
+    *out_status = CreateJobStatus::NO_PROVIDER;
+    return nullptr;
+  }
+  if (!version_) {
+    *out_status = CreateJobStatus::NO_VERSION;
+    return nullptr;
+  }
+  if (!context_) {
+    *out_status = CreateJobStatus::NO_CONTEXT;
+    return nullptr;
+  }
 
   // We currently have no use case for hijacking a redirected request.
-  if (request->url_chain().size() > 1)
-    return NULL;
+  if (request->url_chain().size() > 1) {
+    *out_status = CreateJobStatus::IGNORE_REDIRECT;
+    return nullptr;
+  }
 
   // We only use the script cache for main script loading and
   // importScripts(), even if a cached script is xhr'd, we don't
@@ -52,7 +80,8 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
   // and make tweak the behavior here to match.
   if (resource_type_ != RESOURCE_TYPE_SERVICE_WORKER &&
       resource_type_ != RESOURCE_TYPE_SCRIPT) {
-    return NULL;
+    *out_status = CreateJobStatus::IGNORE_NON_SCRIPT;
+    return nullptr;
   }
 
   if (ShouldAddToScriptCache(request->url())) {
@@ -61,8 +90,10 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
     DCHECK(registration);  // We're registering or updating so must be there.
 
     int64_t resource_id = context_->storage()->NewResourceId();
-    if (resource_id == kInvalidServiceWorkerResourceId)
-      return NULL;
+    if (resource_id == kInvalidServiceWorkerResourceId) {
+      *out_status = CreateJobStatus::OUT_OF_RESOURCE_IDS;
+      return nullptr;
+    }
 
     // Bypass the browser cache for initial installs and update
     // checks after 24 hours have passed.
@@ -85,6 +116,9 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
     }
     if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER)
       version_->embedded_worker()->OnURLJobCreatedForMainScript();
+    *out_status = incumbent_resource_id == kInvalidServiceWorkerResourceId
+                      ? CreateJobStatus::CREATED_WRITE_JOB_FOR_REGISTER
+                      : CreateJobStatus::CREATED_WRITE_JOB_FOR_UPDATE;
     return new ServiceWorkerWriteToCacheJob(
         request, network_delegate, resource_type_, context_, version_.get(),
         extra_load_flags, resource_id, incumbent_resource_id);
@@ -94,13 +128,15 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
   if (ShouldReadFromScriptCache(request->url(), &resource_id)) {
     if (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER)
       version_->embedded_worker()->OnURLJobCreatedForMainScript();
+    *out_status = CreateJobStatus::CREATED_READ_JOB;
     return new ServiceWorkerReadFromCacheJob(request, network_delegate,
                                              resource_type_, context_, version_,
                                              resource_id);
   }
 
   // NULL means use the network.
-  return NULL;
+  *out_status = CreateJobStatus::IGNORE_UNKNOWN;
+  return nullptr;
 }
 
 bool ServiceWorkerContextRequestHandler::ShouldAddToScriptCache(

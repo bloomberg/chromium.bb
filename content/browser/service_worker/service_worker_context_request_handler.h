@@ -19,6 +19,23 @@ class ServiceWorkerVersion;
 class CONTENT_EXPORT ServiceWorkerContextRequestHandler
     : public ServiceWorkerRequestHandler {
  public:
+  enum class CreateJobStatus {
+    UNINITIALIZED,
+    CREATED_WRITE_JOB_FOR_REGISTER,
+    CREATED_WRITE_JOB_FOR_UPDATE,
+    CREATED_READ_JOB,
+    NO_PROVIDER,
+    NO_VERSION,
+    NO_CONTEXT,
+    IGNORE_REDIRECT,
+    IGNORE_NON_SCRIPT,
+    OUT_OF_RESOURCE_IDS,
+    IGNORE_UNKNOWN,
+    // This is just to distinguish from UNINITIALIZED in case the function that
+    // is supposed to set status didn't do so.
+    DID_NOT_SET_STATUS
+  };
+
   ServiceWorkerContextRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
@@ -33,6 +50,10 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
       ResourceContext* resource_context) override;
 
  private:
+  net::URLRequestJob* MaybeCreateJobImpl(CreateJobStatus* out_status,
+                                         net::URLRequest* request,
+                                         net::NetworkDelegate* network_delegate,
+                                         ResourceContext* resource_context);
   bool ShouldAddToScriptCache(const GURL& url);
   bool ShouldReadFromScriptCache(const GURL& url, int64_t* resource_id_out);
 

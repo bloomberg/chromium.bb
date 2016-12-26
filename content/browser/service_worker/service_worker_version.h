@@ -31,6 +31,7 @@
 #include "base/timer/timer.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_context_request_handler.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
@@ -423,6 +424,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
                              ServiceWorkerStatusCode status,
                              base::Time dispatch_event_time);
 
+  void NotifyMainScriptRequestHandlerCreated();
+  void NotifyMainScriptJobCreated(
+      ServiceWorkerContextRequestHandler::CreateJobStatus status);
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerMetrics;
@@ -798,6 +803,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Keeps the first purpose of starting the worker for UMA. Cleared in
   // FinishStartWorker().
   base::Optional<ServiceWorkerMetrics::EventType> start_worker_first_purpose_;
+
+  bool main_script_request_handler_created_ = false;
+  ServiceWorkerContextRequestHandler::CreateJobStatus main_script_job_created_ =
+      ServiceWorkerContextRequestHandler::CreateJobStatus::UNINITIALIZED;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

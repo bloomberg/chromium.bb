@@ -30,6 +30,9 @@ class ServiceWorkerResponseMetadataWriter;
 // for a particular version's implicit script resources.
 class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
  public:
+  enum class StartStatus { UNINITIALIZED, NO_CONTEXT, STARTED };
+  enum class FinishStatus { UNINITIALIZED, NO_CONTEXT, NET_ERROR, FINISHED };
+
   int64_t LookupResourceId(const GURL& url);
 
   // Used during the initial run of a new version to build the map
@@ -80,11 +83,15 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
       const net::CompletionCallback& callback,
       int result);
 
+  bool IsMainScript(const GURL& url);
+
   ServiceWorkerVersion* owner_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ResourceMap resource_map_;
   net::URLRequestStatus main_script_status_;
   std::string main_script_status_message_;
+  StartStatus main_script_start_status_ = StartStatus::UNINITIALIZED;
+  FinishStatus main_script_finish_status_ = FinishStatus::UNINITIALIZED;
 
   base::WeakPtrFactory<ServiceWorkerScriptCacheMap> weak_factory_;
 
