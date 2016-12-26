@@ -474,6 +474,27 @@ camera.views.Camera = function(context, router) {
    */
   this.performanceTestUIInterval_ = null;
 
+  /**
+   * DeviceId of the camera device used for the last time.
+   * @type {string?}
+   * @private
+   */
+  this.videoDeviceId_ = null;
+
+  /**
+   * Legacy mirroring set per all devices.
+   * @type {boolean}
+   * @private
+   */
+  this.legacyMirroringToggle_ = true;
+
+  /**
+   * Mirroring set per device.
+   * @type {!Object}
+   * @private
+   */
+  this.mirroringToggles_ = {};
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -667,7 +688,9 @@ camera.views.Camera.prototype.initialize = function(callback) {
             effectIndex: 0,
             toggleTimer: false,
             toggleMulti: false,
-            toggleMirror: true,
+            toggleMirror: true,  // Deprecated.
+            videoDeviceId: null,
+            mirroringToggles: {},  // Per device.
           },
           function(values) {
             if (values.effectIndex < this.effectProcessors_.length)
@@ -675,9 +698,14 @@ camera.views.Camera.prototype.initialize = function(callback) {
             else
               this.setCurrentEffect_(0);
             document.querySelector('#toggle-timer').checked = values.toggleTimer;
-            document.querySelector('#toggle-multi').checked = values.toggleMulti;
-            document.querySelector('#toggle-mirror').checked = values.toggleMirror;
-            document.body.classList.toggle('mirror', values.toggleMirror);
+            document.querySelector('#toggle-multi').checked =
+                values.toggleMulti;
+            this.videoDeviceId_ = values.videoDeviceId;
+            this.legacyMirroringToggle_ = values.toggleMirror;
+            this.mirroringToggles_ = values.mirroringToggles;
+
+            // Initialize the web camera.
+            this.start_();
           }.bind(this));
     }
 
@@ -688,9 +716,6 @@ camera.views.Camera.prototype.initialize = function(callback) {
       else if (newState == 'active')
         this.locked_ = false;
     }.bind(this));
-
-    // Initialize the web camera.
-    this.start_();
 
     // Acquire the gallery model.
     camera.models.Gallery.getInstance(function(model) {
@@ -917,11 +942,12 @@ camera.views.Camera.prototype.onToggleMirrorClicked_ = function(event) {
   if (this.performanceTestTimer_)
     return;
   var enabled = document.querySelector('#toggle-mirror').checked;
-  document.body.classList.toggle('mirror', enabled);
   this.showToastMessage_(
       chrome.i18n.getMessage(enabled ? 'toggleMirrorActiveMessage' :
                                        'toggleMirrorInactiveMessage'));
-  chrome.storage.local.set({toggleMirror: enabled});
+  this.mirroringToggles_[this.videoDeviceId_] = enabled;
+  chrome.storage.local.set({mirroringToggles: this.mirroringToggles_});
+  this.updateMirroring_();
 };
 
 /**
@@ -967,6 +993,19 @@ camera.views.Camera.prototype.onScrollEnded_ = function() {
         this.currentEffectIndex_);
     effect.focus();
   }
+};
+
+/**
+ * Updates the UI to reflect the mirroring from settings.
+ * @private
+ */
+camera.views.Camera.prototype.updateMirroring_ = function() {
+  var enabled = this.legacyMirroringToggle_;
+  if (this.videoDeviceId_ in this.mirroringToggles_)
+    enabled = this.mirroringToggles_[this.videoDeviceId_];
+
+  document.querySelector('#toggle-mirror').checked = enabled;
+  document.body.classList.toggle('mirror', enabled);
 };
 
 /**
@@ -1657,7 +1696,6 @@ camera.views.Camera.prototype.takePictureImmediately_ = function() {
 camera.views.Camera.RESOLUTIONS =
     [[1920, 1080], [1280, 720], [800, 600], [640, 480]];
 
-
 /**
  * Synchronizes video size with the window's current size.
  * @private
@@ -1749,31 +1787,35 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
 };
 
 /**
- * Starts capturing with the specified resolution.
+ * Starts capturing with the specified constraints.
  *
- * @param {Array.<number>} resolution Width and height of the capturing mode,
- *     eg. [800, 600].
- * @param {function(number, number)} onSuccess Success callback with the set
- *     resolution.
- * @param {function()} onFailure Failure callback, eg. the resolution is
+ * @param {!Object} constraints Constraints passed to WebRTC as mandatory ones.
+ * @param {function()} onSuccess Success callback.
+ * @param {function()} onFailure Failure callback, eg. the constraints are
  *     not supported.
  * @param {function()} onDisconnected Called when the camera connection is lost.
  * @private
  */
- camera.views.Camera.prototype.startWithResolution_ =
-     function(resolution, onSuccess, onFailure, onDisconnected) {
+ camera.views.Camera.prototype.startWithConstraints_ =
+     function(constraints, onSuccess, onFailure, onDisconnected) {
   if (this.running_)
     this.stop();
 
-  navigator.webkitGetUserMedia({
-    audio: true,
+  // Convert the constraints to legacy ones, as the new format is not well
+  // supported yet and it's buggy.
+  var legacyConstraints = {
     video: {
       mandatory: {
-        minWidth: resolution[0],
-        minHeight: resolution[1]
+        sourceId: constraints.video.deviceId,
+        minWidth: constraints.video.width,
+        minHeight: constraints.video.height
       }
     }
-  }, function(stream) {
+  };
+
+  // TODO(mtomasz): Move to navigator.mediaDevices.getUserMedia() when
+  // it's fully implemented.
+  navigator.webkitGetUserMedia(legacyConstraints, function(stream) {
     // Mute to avoid echo from the captured audio.
     this.video_.muted = true;
     this.video_.src = window.URL.createObjectURL(stream);
@@ -1781,7 +1823,7 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
       this.video_.removeEventListener('loadedmetadata', onLoadedMetadata);
       this.running_ = true;
       // Use a watchdog since the stream.onended event is unreliable in the
-      // recent version of Chrome.
+      // recent version of Chrome. As of 55, the event is still broken.
       this.watchdog_ = setInterval(function() {
         // Check if video stream is ended (audio stream may still be live).
         if (!stream.getVideoTracks().length ||
@@ -1808,6 +1850,10 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
     this.video_.addEventListener('loadedmetadata', onLoadedMetadata);
     this.video_.play();
   }.bind(this), function(error) {
+    if (error && error.name != 'ConstraintNotSatisfiedError') {
+      // Constraint errors are expected, so don't report them.
+      console.error(error);
+    }
     onFailure();
   });
 };
@@ -1862,8 +1908,6 @@ camera.views.Camera.prototype.start_ = function() {
     return;
   }
 
-  var index = 0;
-
   var onSuccess = function() {
     // Set the default dimensions to at most half of the available width
     // and to the compatible aspect ratio. 640/360 dimensions are used to
@@ -1897,27 +1941,62 @@ camera.views.Camera.prototype.start_ = function() {
     scheduleRetry();
   }.bind(this);
 
-  var tryNextResolution = function() {
+  var constraintsCandidates = [];
+
+  var tryStartWithConstraints = function(index) {
     if (this.locked_) {
       scheduleRetry();
       return;
     }
-    this.startWithResolution_(
-        camera.views.Camera.RESOLUTIONS[index],
-        onSuccess,
+    if (index >= constraintsCandidates.length) {
+      onFailure();
+      return;
+    }
+    this.startWithConstraints_(
+        constraintsCandidates[index],
         function() {
-          index++;
-          if (index < camera.views.Camera.RESOLUTIONS.length) {
-            // TODO(mtomasz): Workaround for crbug.com/383241.
-            setTimeout(tryNextResolution, 0);
-          } else {
-            onFailure();
-          }
+          this.videoDeviceId_ = constraintsCandidates[index].video.deviceId;
+          chrome.storage.local.set({deviceId: this.videoDeviceId_});
+          this.updateMirroring_();
+          onSuccess();
+        }.bind(this),
+        function() {
+          // TODO(mtomasz): Workaround for crbug.com/383241.
+          setTimeout(tryStartWithConstraints.bind(this, index + 1), 0);
         },
         scheduleRetry);  // onDisconnected
   }.bind(this);
 
-  tryNextResolution();
+  // TODO(mtomasz): Remove this when support for advanced (multiple)
+  // constraints is added to Chrome. For now try to obtain stream with
+  // each candidate separately.
+  navigator.mediaDevices.enumerateDevices().then(function(devices) {
+    devices.forEach(function(device) {
+      if (device.kind != 'videoinput')
+        return;
+      camera.views.Camera.RESOLUTIONS.forEach(function(resolution) {
+        constraintsCandidates.push({
+          video: {
+            deviceId: device.deviceId,
+            width: resolution[0],
+            height: resolution[1]
+          }
+        });
+      });
+    });
+
+    // Put the last used camera first.
+    constraintsCandidates.sort(function(a, b) {
+      if (a.video.deviceId == b.video.deviceId)
+        return 0;
+      if (a.video.deviceId == this.videoDeviceId_)
+        return 1;
+      else
+        return -1;
+    }.bind(this));
+
+    tryStartWithConstraints(0);
+  }.bind(this));
 };
 
 /**
