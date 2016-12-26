@@ -9,6 +9,7 @@
         'depends': [
           '<@(cws_widget_container)',
           '../../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
+          '../../../../../ui/webui/resources/js/action_link.js',
           '../../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../../ui/webui/resources/js/cr.js',
           '../../../../../ui/webui/resources/js/promise_resolver.js',

@@ -30,6 +30,7 @@
 //<include src="../../../image_loader/image_loader_client.js">
 //
 //<include src="../../../../webui/resources/js/load_time_data.js">
+//<include src="../../../../webui/resources/js/action_link.js">
 //<include src="../../../../webui/resources/js/cr.js">
 //<include src="../../../../webui/resources/js/util.js">
 //<include src="../../../../webui/resources/js/i18n_template_no_process.js">

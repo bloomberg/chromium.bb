@@ -623,6 +623,10 @@ importer.RuntimeCommandWidget = function() {
   this.clickListener_;
 
   document.addEventListener('keydown', this.onKeyDown_.bind(this));
+
+  /** @private{number} */
+  this.cloudImportButtonTabIndex_ =
+      document.querySelector('button#cloud-import-button').tabIndex;
 };
 
 /**
@@ -772,6 +776,19 @@ importer.RuntimeCommandWidget.prototype.onDetailsFocusLost_ =
   this.setDetailsVisible(false);
 };
 
+/**
+ * Overwrites the tabIndexes of all anchors under the given element.
+ *
+ * @param {Element} root The root node of all nodes to process.
+ * @param {number} newTabIndex The tabindex value to be given to <a> elements.
+ * @private
+ */
+importer.RuntimeCommandWidget.prototype.updateTabindexOfAnchors_ =
+    function(root, newTabIndex) {
+  var anchors = root.querySelectorAll('a');
+  anchors.forEach(element => { element.tabIndex = newTabIndex; });
+};
+
 /** @override */
 importer.RuntimeCommandWidget.prototype.update =
     function(activityState, opt_scan) {
@@ -884,6 +901,10 @@ importer.RuntimeCommandWidget.prototype.update =
     default:
       assertNotReached('Unrecognized response id: ' + activityState);
   }
+  // Make all anchors synthesized from the localized text focusable.
+  if (this.cloudImportButtonTabIndex_)
+    this.updateTabindexOfAnchors_(this.statusContent_,
+                                  this.cloudImportButtonTabIndex_);
 };
 
 /**

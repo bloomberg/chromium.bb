@@ -525,9 +525,8 @@ html[dir='rtl'] #cloud-import-details {
   color: #333333;
 }
 
-#cloud-import-details .status .destination-link {
+#cloud-import-details .status a[is='action-link'] {
   color: #3367D6;
-  cursor: pointer;
 }
 
 #cloud-import-details .progress {

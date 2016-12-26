@@ -14,3 +14,10 @@
  * @param {number=} opt_position
  */
 String.prototype.startsWith = function(searchString, opt_position) {};
+
+/**
+ * @param {?function(this:S, T, number, !NodeList<T>): ?} callback
+ * @template T,S
+ * @return {undefined}
+ */
+NodeList.prototype.forEach = function(callback) {};
