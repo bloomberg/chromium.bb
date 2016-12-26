@@ -117,10 +117,9 @@ void WebServiceWorkerImpl::postMessage(
       base::Bind(&SendPostMessageToWorkerOnMainThread,
                  base::RetainedRef(thread_safe_sender_),
                  handle_ref_->handle_id(), provider_impl->provider_id(),
-                 // We cast WebString to string16 before crossing
+                 // We convert WebString to string16 before crossing
                  // threads for thread-safety.
-                 static_cast<base::string16>(message),
-                 url::Origin(source_origin),
+                 message.utf16(), url::Origin(source_origin),
                  base::Passed(base::WrapUnique(channels))));
 }
 

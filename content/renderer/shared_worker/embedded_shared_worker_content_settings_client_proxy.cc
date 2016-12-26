@@ -44,7 +44,7 @@ bool EmbeddedSharedWorkerContentSettingsClientProxy::allowIndexedDB(
     return false;
   bool result = false;
   thread_safe_sender_->Send(new WorkerProcessHostMsg_AllowIndexedDB(
-      routing_id_, origin_url_, name, &result));
+      routing_id_, origin_url_, name.utf16(), &result));
   return result;
 }
 

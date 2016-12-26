@@ -139,7 +139,8 @@ EmbeddedWorkerDispatcher::StartWorkerContext(
 
   blink::WebEmbeddedWorkerStartData start_data;
   start_data.scriptURL = params.script_url;
-  start_data.userAgent = base::UTF8ToUTF16(GetContentClient()->GetUserAgent());
+  start_data.userAgent =
+      blink::WebString::fromUTF8(GetContentClient()->GetUserAgent());
   start_data.waitForDebuggerMode =
       params.wait_for_debugger
           ? blink::WebEmbeddedWorkerStartData::WaitForDebugger

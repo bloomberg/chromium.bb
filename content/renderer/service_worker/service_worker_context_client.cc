@@ -156,7 +156,7 @@ ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
 
   blink::WebServiceWorkerClientInfo web_client_info;
 
-  web_client_info.uuid = base::UTF8ToUTF16(client_info.client_uuid);
+  web_client_info.uuid = blink::WebString::fromASCII(client_info.client_uuid);
   web_client_info.pageVisibilityState = client_info.page_visibility_state;
   web_client_info.isFocused = client_info.is_focused;
   web_client_info.url = client_info.url;
@@ -248,7 +248,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
         fetch_event_id_,
         base::MakeUnique<blink::WebServiceWorkerError>(
             blink::WebServiceWorkerError::ErrorTypeAbort,
-            blink::WebString::fromUTF8(
+            blink::WebString::fromASCII(
                 "Service Worker navigation preload aborted. Need to guard with "
                 "respondWith or waitUntil.")));
   }
@@ -442,8 +442,8 @@ void ServiceWorkerContextClient::getClient(
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
   DCHECK(callbacks);
   int request_id = context_->client_callbacks.Add(std::move(callbacks));
-  Send(new ServiceWorkerHostMsg_GetClient(
-      GetRoutingID(), request_id, base::UTF16ToUTF8(base::StringPiece16(id))));
+  Send(new ServiceWorkerHostMsg_GetClient(GetRoutingID(), request_id,
+                                          id.utf8()));
 }
 
 void ServiceWorkerContextClient::getClients(
@@ -631,7 +631,7 @@ void ServiceWorkerContextClient::reportException(
     int column_number,
     const blink::WebString& source_url) {
   Send(new EmbeddedWorkerHostMsg_ReportException(
-      embedded_worker_id_, error_message, line_number, column_number,
+      embedded_worker_id_, error_message.utf16(), line_number, column_number,
       blink::WebStringToGURL(source_url)));
 }
 
@@ -644,7 +644,7 @@ void ServiceWorkerContextClient::reportConsoleMessage(
   EmbeddedWorkerHostMsg_ReportConsoleMessage_Params params;
   params.source_identifier = source;
   params.message_level = level;
-  params.message = message;
+  params.message = message.utf16();
   params.line_number = line_number;
   params.source_url = blink::WebStringToGURL(source_url);
 
@@ -837,11 +837,10 @@ void ServiceWorkerContextClient::postMessageToClient(
   // to overtake those messages.
   std::unique_ptr<blink::WebMessagePortChannelArray> channel_array(channels);
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SendPostMessageToClientOnMainThread,
-                            base::RetainedRef(sender_), GetRoutingID(),
-                            base::UTF16ToUTF8(base::StringPiece16(uuid)),
-                            static_cast<base::string16>(message),
-                            base::Passed(&channel_array)));
+      FROM_HERE,
+      base::Bind(&SendPostMessageToClientOnMainThread,
+                 base::RetainedRef(sender_), GetRoutingID(), uuid.utf8(),
+                 message.utf16(), base::Passed(&channel_array)));
 }
 
 void ServiceWorkerContextClient::focus(
@@ -849,9 +848,8 @@ void ServiceWorkerContextClient::focus(
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callback) {
   DCHECK(callback);
   int request_id = context_->client_callbacks.Add(std::move(callback));
-  Send(new ServiceWorkerHostMsg_FocusClient(
-      GetRoutingID(), request_id,
-      base::UTF16ToUTF8(base::StringPiece16(uuid))));
+  Send(new ServiceWorkerHostMsg_FocusClient(GetRoutingID(), request_id,
+                                            uuid.utf8()));
 }
 
 void ServiceWorkerContextClient::navigate(
@@ -860,9 +858,8 @@ void ServiceWorkerContextClient::navigate(
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callback) {
   DCHECK(callback);
   int request_id = context_->client_callbacks.Add(std::move(callback));
-  Send(new ServiceWorkerHostMsg_NavigateClient(
-      GetRoutingID(), request_id, base::UTF16ToUTF8(base::StringPiece16(uuid)),
-      url));
+  Send(new ServiceWorkerHostMsg_NavigateClient(GetRoutingID(), request_id,
+                                               uuid.utf8(), url));
 }
 
 void ServiceWorkerContextClient::skipWaiting(
@@ -958,7 +955,8 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
     blink::WebServiceWorkerClientInfo web_client =
         ToWebServiceWorkerClientInfo(event->source.client_info);
     proxy_->dispatchExtendableMessageEvent(
-        request_id, event->message, event->source_origin, ports, web_client);
+        request_id, blink::WebString::fromUTF16(event->message),
+        event->source_origin, ports, web_client);
     return;
   }
 
@@ -972,8 +970,8 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
   scoped_refptr<WebServiceWorkerImpl> worker =
       dispatcher->GetOrCreateServiceWorker(std::move(handle));
   proxy_->dispatchExtendableMessageEvent(
-      request_id, event->message, event->source_origin, ports,
-      WebServiceWorkerImpl::CreateHandle(worker));
+      request_id, blink::WebString::fromUTF16(event->message),
+      event->source_origin, ports, WebServiceWorkerImpl::CreateHandle(worker));
 }
 
 void ServiceWorkerContextClient::OnInstallEvent(int request_id) {
@@ -1012,7 +1010,7 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
                          blink::WebString::fromUTF8(it->second));
   }
   if (!request.blob_uuid.empty()) {
-    webRequest.setBlob(blink::WebString::fromUTF8(request.blob_uuid),
+    webRequest.setBlob(blink::WebString::fromASCII(request.blob_uuid),
                        request.blob_size);
   }
   webRequest.setReferrer(
@@ -1047,7 +1045,7 @@ void ServiceWorkerContextClient::OnNotificationClickEvent(
   proxy_->dispatchNotificationClickEvent(
       request_id, blink::WebString::fromUTF8(notification_id),
       ToWebNotificationData(notification_data), action_index,
-      blink::WebString(reply));
+      blink::WebString::fromUTF16(reply));
 }
 
 void ServiceWorkerContextClient::OnNotificationCloseEvent(
@@ -1251,7 +1249,8 @@ void ServiceWorkerContextClient::OnClaimClientsError(
     NOTREACHED() << "Got stray response: " << request_id;
     return;
   }
-  callbacks->onError(blink::WebServiceWorkerError(error_type, message));
+  callbacks->onError(blink::WebServiceWorkerError(
+      error_type, blink::WebString::fromUTF16(message)));
   context_->claim_clients_callbacks.Remove(request_id);
 }
 

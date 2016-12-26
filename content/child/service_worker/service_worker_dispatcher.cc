@@ -131,7 +131,7 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
     error_message += "The provided scriptURL or scope is too long.";
     callbacks->onError(
         WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
-                              blink::WebString::fromUTF8(error_message)));
+                              blink::WebString::fromASCII(error_message)));
     return;
   }
 
@@ -179,7 +179,7 @@ void ServiceWorkerDispatcher::GetRegistration(
     error_message += "The provided documentURL is too long.";
     callbacks->onError(
         WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity,
-                              blink::WebString::fromUTF8(error_message)));
+                              blink::WebString::fromASCII(error_message)));
     return;
   }
 
@@ -617,7 +617,8 @@ void ServiceWorkerDispatcher::OnRegistrationError(
   if (!callbacks)
     return;
 
-  callbacks->onError(WebServiceWorkerError(error_type, message));
+  callbacks->onError(
+      WebServiceWorkerError(error_type, blink::WebString::fromUTF16(message)));
   pending_registration_callbacks_.Remove(request_id);
 }
 
@@ -638,7 +639,8 @@ void ServiceWorkerDispatcher::OnUpdateError(
   if (!callbacks)
     return;
 
-  callbacks->onError(WebServiceWorkerError(error_type, message));
+  callbacks->onError(
+      WebServiceWorkerError(error_type, blink::WebString::fromUTF16(message)));
   pending_update_callbacks_.Remove(request_id);
 }
 
@@ -661,7 +663,8 @@ void ServiceWorkerDispatcher::OnUnregistrationError(
   if (!callbacks)
     return;
 
-  callbacks->onError(WebServiceWorkerError(error_type, message));
+  callbacks->onError(
+      WebServiceWorkerError(error_type, blink::WebString::fromUTF16(message)));
   pending_unregistration_callbacks_.Remove(request_id);
 }
 
@@ -684,7 +687,8 @@ void ServiceWorkerDispatcher::OnGetRegistrationError(
   if (!callbacks)
     return;
 
-  callbacks->onError(WebServiceWorkerError(error_type, message));
+  callbacks->onError(
+      WebServiceWorkerError(error_type, blink::WebString::fromUTF16(message)));
   pending_get_registration_callbacks_.Remove(request_id);
 }
 
@@ -707,7 +711,8 @@ void ServiceWorkerDispatcher::OnGetRegistrationsError(
   if (!callbacks)
     return;
 
-  callbacks->onError(WebServiceWorkerError(error_type, message));
+  callbacks->onError(
+      WebServiceWorkerError(error_type, blink::WebString::fromUTF16(message)));
   pending_get_registrations_callbacks_.Remove(request_id);
 }
 
@@ -866,7 +871,8 @@ void ServiceWorkerDispatcher::OnPostMessage(
           base::ThreadTaskRunnerHandle::Get());
 
   found->second->dispatchMessageEvent(
-      WebServiceWorkerImpl::CreateHandle(worker), params.message, ports);
+      WebServiceWorkerImpl::CreateHandle(worker),
+      blink::WebString::fromUTF16(params.message), ports);
 }
 
 void ServiceWorkerDispatcher::AddServiceWorker(

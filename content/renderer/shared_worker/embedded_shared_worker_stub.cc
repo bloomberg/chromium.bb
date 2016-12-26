@@ -152,8 +152,10 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   }
   worker_devtools_agent_.reset(
       new SharedWorkerDevToolsAgent(route_id, impl_));
-  impl_->startWorkerContext(url, name_, content_security_policy,
-                            security_policy_type, creation_address_space);
+  impl_->startWorkerContext(
+      url, blink::WebString::fromUTF16(name_),
+      blink::WebString::fromUTF16(content_security_policy),
+      security_policy_type, creation_address_space);
 }
 
 EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {

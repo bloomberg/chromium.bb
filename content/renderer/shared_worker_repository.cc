@@ -32,8 +32,8 @@ SharedWorkerRepository::createSharedWorkerConnector(
     blink::WebWorkerCreationError* error) {
   ViewHostMsg_CreateWorker_Params params;
   params.url = url;
-  params.name = name;
-  params.content_security_policy = content_security_policy;
+  params.name = name.utf16();
+  params.content_security_policy = content_security_policy.utf16();
   params.security_policy_type = security_policy_type;
   params.document_id = document_id;
   params.render_frame_route_id = render_frame()->GetRoutingID();
