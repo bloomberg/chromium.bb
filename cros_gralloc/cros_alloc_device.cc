@@ -29,6 +29,14 @@ static struct cros_gralloc_bo *cros_gralloc_bo_create(struct driver *drv,
 							 DRM_FORMAT_MOD_NONE);
 	}
 
+	if (!supported && (drv_usage & BO_USE_RENDERING) &&
+	    (drv_usage && (BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN))) {
+		drv_usage &= ~BO_USE_RENDERING;
+		supported = drv_is_combination_supported(drv, drv_format,
+							 drv_usage,
+							 DRM_FORMAT_MOD_NONE);
+	}
+
 	if (!supported) {
 		cros_gralloc_error("Unsupported combination -- HAL format: %u, "
 				   "HAL flags: %u, drv_format: %u, "
