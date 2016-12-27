@@ -20,7 +20,9 @@
 #include "chrome/browser/android/compositor/layer/thumbnail_layer.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/readback_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -45,21 +47,17 @@ namespace android {
 
 class TabContentManager::TabReadbackRequest {
  public:
-  TabReadbackRequest(content::WebContents* web_contents,
+  TabReadbackRequest(content::RenderWidgetHost* rwh,
                      float thumbnail_scale,
                      const TabReadbackCallback& end_callback)
       : thumbnail_scale_(thumbnail_scale),
         end_callback_(end_callback),
         drop_after_readback_(false),
         weak_factory_(this) {
-    DCHECK(web_contents);
+    DCHECK(rwh);
     content::ReadbackRequestCallback result_callback =
         base::Bind(&TabReadbackRequest::OnFinishGetTabThumbnailBitmap,
                    weak_factory_.GetWeakPtr());
-
-    content::RenderWidgetHost* rwh =
-        web_contents->GetRenderViewHost()->GetWidget();
-    DCHECK(rwh);
 
     SkColorType color_type = kN32_SkColorType;
     gfx::Rect src_rect = rwh->GetView()->GetViewBounds();
@@ -217,11 +215,17 @@ void TabContentManager::CacheTab(JNIEnv* env,
   content::WebContents* web_contents = tab_android->web_contents();
   DCHECK(web_contents);
 
-  if (!web_contents->GetRenderViewHost() ||
-      !web_contents->GetRenderViewHost()->GetWidget() ||
-      !web_contents->GetRenderViewHost()
-           ->GetWidget()
-           ->CanCopyFromBackingStore() ||
+  content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
+  if (web_contents->ShowingInterstitialPage()) {
+    if (!web_contents->GetInterstitialPage()->GetMainFrame())
+      return;
+
+    rvh = web_contents->GetInterstitialPage()->GetMainFrame()->
+        GetRenderViewHost();
+  }
+
+  if (!rvh || !rvh->GetWidget() ||
+      !rvh->GetWidget()->CanCopyFromBackingStore() ||
       pending_tab_readbacks_.find(tab_id) != pending_tab_readbacks_.end() ||
       pending_tab_readbacks_.size() >= kMaxReadbacks) {
     return;
@@ -232,7 +236,7 @@ void TabContentManager::CacheTab(JNIEnv* env,
         base::Bind(&TabContentManager::PutThumbnailIntoCache,
                    weak_factory_.GetWeakPtr(), tab_id);
     pending_tab_readbacks_[tab_id] = base::MakeUnique<TabReadbackRequest>(
-        web_contents, thumbnail_scale, readback_done_callback);
+        rvh->GetWidget(), thumbnail_scale, readback_done_callback);
   }
 }
 
