@@ -133,24 +133,16 @@ public class BluetoothChooserDialog
 
         String positiveButton = mActivity.getString(R.string.bluetooth_confirm_button);
 
-        SpannableString statusIdleNoneFound = SpanApplier.applySpans(
-                mActivity.getString(R.string.bluetooth_not_seeing_it_idle_none_found),
-                new SpanInfo("<link1>", "</link1>",
-                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)),
-                new SpanInfo("<link2>", "</link2>",
-                        new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mActivity)));
+        SpannableString statusIdleNoneFound =
+                SpanApplier.applySpans(mActivity.getString(R.string.bluetooth_not_seeing_it_idle),
+                        new SpanInfo("<link1>", "</link1>",
+                                new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)),
+                        new SpanInfo("<link2>", "</link2>",
+                                new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mActivity)));
 
-        SpannableString statusActive = SpanApplier.applySpans(
-                mActivity.getString(R.string.bluetooth_not_seeing_it),
-                new SpanInfo("<link>", "</link>",
-                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)));
+        SpannableString statusActive = searching;
 
-        SpannableString statusIdleSomeFound = SpanApplier.applySpans(
-                mActivity.getString(R.string.bluetooth_not_seeing_it_idle_some_found),
-                new SpanInfo("<link1>", "</link1>",
-                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)),
-                new SpanInfo("<link2>", "</link2>",
-                        new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mActivity)));
+        SpannableString statusIdleSomeFound = statusIdleNoneFound;
 
         ItemChooserDialog.ItemChooserLabels labels =
                 new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound, statusActive,
