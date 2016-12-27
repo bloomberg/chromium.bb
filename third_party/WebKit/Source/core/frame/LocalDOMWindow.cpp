@@ -498,9 +498,7 @@ void LocalDOMWindow::registerEventListenerObserver(
 
 void LocalDOMWindow::reset() {
   DCHECK(document());
-  // Since |Document| class has multiple |LifecycleNotifier| as base class,
-  // we need to have |static_cast<ExecutionContext>| here.
-  static_cast<ExecutionContext*>(document())->notifyContextDestroyed();
+  DCHECK(document()->isContextDestroyed());
   frameDestroyed();
 
   m_screen = nullptr;
