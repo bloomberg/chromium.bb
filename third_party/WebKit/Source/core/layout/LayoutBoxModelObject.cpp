@@ -306,17 +306,14 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
   }
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
-    // hasLayer status will affect whether to create localBorderBoxProperties.
-    // hasTransformRelatedProperty will affect whether to create transform node.
-    if (hadLayer != hasLayer() ||
-        hadTransformRelatedProperty != hasTransformRelatedProperty()) {
-      setNeedsPaintPropertyUpdate();
-    } else if (oldStyle && oldStyle->position() != styleRef().position() &&
-               (oldStyle->position() == FixedPosition ||
-                styleRef().position() == FixedPosition)) {
-      // Fixed-position status affects whether to create paintOffsetTranslation.
-      // TODO(chrishtr): Update the condition here when changing the condition
-      // in PaintPropertyTreeBuilder::updatePaintOffsetTranslation().
+    if ((oldStyle && oldStyle->position() != styleRef().position()) ||
+        hadLayer != hasLayer()) {
+      // This may affect paint properties of the current object, and descendants
+      // even if paint properties of the current object won't change. E.g. the
+      // stacking context and/or containing block of descendants may change.
+      setSubtreeNeedsPaintPropertyUpdate();
+    } else if (hadTransformRelatedProperty != hasTransformRelatedProperty()) {
+      // This affects whether to create transform node.
       setNeedsPaintPropertyUpdate();
     }
   }

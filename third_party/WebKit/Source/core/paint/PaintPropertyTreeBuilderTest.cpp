@@ -3156,4 +3156,31 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutMotionPath) {
             willChange->paintProperties()->transform()->origin());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
+  setBodyInnerHTML(
+      "<style>"
+      "  * { margin: 0; }"
+      "  #ancestor { position: absolute; overflow: hidden }"
+      "  #descendant { position: absolute }"
+      "</style>"
+      "<div id='ancestor'>"
+      "  <div id='descendant'></div>"
+      "</div>");
+
+  LayoutObject* ancestor = getLayoutObjectByElementId("ancestor");
+  LayoutObject* descendant = getLayoutObjectByElementId("descendant");
+  EXPECT_EQ(ancestor->paintProperties()->overflowClip(),
+            descendant->paintProperties()
+                ->localBorderBoxProperties()
+                ->propertyTreeState.clip());
+
+  toElement(ancestor->node())
+      ->setAttribute(HTMLNames::styleAttr, "position: static");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_NE(ancestor->paintProperties()->overflowClip(),
+            descendant->paintProperties()
+                ->localBorderBoxProperties()
+                ->propertyTreeState.clip());
+}
+
 }  // namespace blink
