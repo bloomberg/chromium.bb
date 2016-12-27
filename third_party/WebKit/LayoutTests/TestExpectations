@@ -2406,3 +2406,7 @@ crbug.com/676229 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ Fa
 
 # Temporarily disable sharedarraybuffer test to land API change in v8
 crbug.com/676063 virtual/sharedarraybuffer/fast/workers/worker-sharedarraybuffer-transfer.html [ Pass Timeout ]
+
+# Flaky on Win7 (dbg)
+crbug.com/677145 [ Win7 Debug ] inspector/tracing/timeline-js/timeline-script-tag-1.html [ Pass Failure ]
+crbug.com/677145 [ Win7 Debug ] virtual/threaded/inspector/tracing/timeline-js/timeline-script-tag-1.html [ Pass Failure ]
