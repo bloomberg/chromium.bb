@@ -113,12 +113,10 @@ std::unique_ptr<base::DictionaryValue>
 ExtensionManagement::GetForceInstallList() const {
   std::unique_ptr<base::DictionaryValue> install_list(
       new base::DictionaryValue());
-  for (SettingsIdMap::const_iterator it = settings_by_id_.begin();
-       it != settings_by_id_.end();
-       ++it) {
-    if (it->second->installation_mode == INSTALLATION_FORCED) {
-      ExternalPolicyLoader::AddExtension(
-          install_list.get(), it->first, it->second->update_url);
+  for (const auto& entry : settings_by_id_) {
+    if (entry.second->installation_mode == INSTALLATION_FORCED) {
+      ExternalPolicyLoader::AddExtension(install_list.get(), entry.first,
+                                         entry.second->update_url);
     }
   }
   return install_list;
@@ -128,12 +126,10 @@ std::unique_ptr<base::DictionaryValue>
 ExtensionManagement::GetRecommendedInstallList() const {
   std::unique_ptr<base::DictionaryValue> install_list(
       new base::DictionaryValue());
-  for (SettingsIdMap::const_iterator it = settings_by_id_.begin();
-       it != settings_by_id_.end();
-       ++it) {
-    if (it->second->installation_mode == INSTALLATION_RECOMMENDED) {
-      ExternalPolicyLoader::AddExtension(
-          install_list.get(), it->first, it->second->update_url);
+  for (const auto& entry : settings_by_id_) {
+    if (entry.second->installation_mode == INSTALLATION_RECOMMENDED) {
+      ExternalPolicyLoader::AddExtension(install_list.get(), entry.first,
+                                         entry.second->update_url);
     }
   }
   return install_list;
@@ -141,7 +137,7 @@ ExtensionManagement::GetRecommendedInstallList() const {
 
 bool ExtensionManagement::IsInstallationExplicitlyAllowed(
     const ExtensionId& id) const {
-  SettingsIdMap::const_iterator it = settings_by_id_.find(id);
+  auto it = settings_by_id_.find(id);
   // No settings explicitly specified for |id|.
   if (it == settings_by_id_.end())
     return false;
@@ -445,25 +441,24 @@ void ExtensionManagement::NotifyExtensionManagementPrefChanged() {
 internal::IndividualSettings* ExtensionManagement::AccessById(
     const ExtensionId& id) {
   DCHECK(crx_file::id_util::IdIsValid(id)) << "Invalid ID: " << id;
-  SettingsIdMap::iterator it = settings_by_id_.find(id);
-  if (it == settings_by_id_.end()) {
-    std::unique_ptr<internal::IndividualSettings> settings(
-        new internal::IndividualSettings(default_settings_.get()));
-    it = settings_by_id_.add(id, std::move(settings)).first;
+  std::unique_ptr<internal::IndividualSettings>& settings = settings_by_id_[id];
+  if (!settings) {
+    settings =
+        base::MakeUnique<internal::IndividualSettings>(default_settings_.get());
   }
-  return it->second;
+  return settings.get();
 }
 
 internal::IndividualSettings* ExtensionManagement::AccessByUpdateUrl(
     const std::string& update_url) {
   DCHECK(GURL(update_url).is_valid()) << "Invalid update URL: " << update_url;
-  SettingsUpdateUrlMap::iterator it = settings_by_update_url_.find(update_url);
-  if (it == settings_by_update_url_.end()) {
-    std::unique_ptr<internal::IndividualSettings> settings(
-        new internal::IndividualSettings(default_settings_.get()));
-    it = settings_by_update_url_.add(update_url, std::move(settings)).first;
+  std::unique_ptr<internal::IndividualSettings>& settings =
+      settings_by_update_url_[update_url];
+  if (!settings) {
+    settings =
+        base::MakeUnique<internal::IndividualSettings>(default_settings_.get());
   }
-  return it->second;
+  return settings.get();
 }
 
 ExtensionManagement* ExtensionManagementFactory::GetForBrowserContext(

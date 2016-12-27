@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
@@ -130,12 +130,12 @@ class ExtensionManagement : public KeyedService {
                            std::string* required_version) const;
 
  private:
-  typedef base::ScopedPtrHashMap<ExtensionId,
-                                 std::unique_ptr<internal::IndividualSettings>>
-      SettingsIdMap;
-  typedef base::ScopedPtrHashMap<std::string,
-                                 std::unique_ptr<internal::IndividualSettings>>
-      SettingsUpdateUrlMap;
+  using SettingsIdMap =
+      std::unordered_map<ExtensionId,
+                         std::unique_ptr<internal::IndividualSettings>>;
+  using SettingsUpdateUrlMap =
+      std::unordered_map<std::string,
+                         std::unique_ptr<internal::IndividualSettings>>;
   friend class ExtensionManagementServiceTest;
 
   // Load all extension management preferences from |pref_service|, and
