@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h"
@@ -25,6 +26,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_session.h"
+#include "components/arc/arc_session_runner.h"
 #include "components/arc/audio/arc_audio_bridge.h"
 #include "components/arc/bluetooth/arc_bluetooth_bridge.h"
 #include "components/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
@@ -78,7 +81,9 @@ void ArcServiceLauncher::Initialize() {
 
   // Creates ArcSessionManager at first.
   arc_session_manager_ =
-      base::MakeUnique<ArcSessionManager>(arc_bridge_service);
+      base::MakeUnique<ArcSessionManager>(base::MakeUnique<ArcSessionRunner>(
+          base::Bind(ArcSession::Create, arc_bridge_service,
+                     arc_service_manager_->blocking_task_runner())));
 
   // List in lexicographical order.
   arc_service_manager_->AddService(

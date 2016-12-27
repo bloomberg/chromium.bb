@@ -26,7 +26,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
 #endif
@@ -71,12 +70,9 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
     BrowserWithTestWindowTest::SetUp();
 #if defined(OS_CHROMEOS)
     arc::ArcSessionManager::DisableUIForTesting();
-    bridge_service_ = base::MakeUnique<arc::ArcBridgeService>();
-    bridge_service_->InitializeArcSessionRunner(
+    arc_session_manager_ = base::MakeUnique<arc::ArcSessionManager>(
         base::MakeUnique<arc::ArcSessionRunner>(
             base::Bind(arc::FakeArcSession::Create)));
-    arc_session_manager_ =
-        base::MakeUnique<arc::ArcSessionManager>(bridge_service_.get());
     arc_session_manager_->OnPrimaryUserProfilePrepared(
         extension_environment_.profile());
 #endif
@@ -143,7 +139,6 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   scoped_refptr<extensions::Extension> extension_;
   extensions::TestExtensionEnvironment extension_environment_;
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<arc::ArcBridgeService> bridge_service_;
   std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;
 #endif
 

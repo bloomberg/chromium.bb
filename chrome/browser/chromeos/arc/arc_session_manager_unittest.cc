@@ -29,7 +29,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
@@ -74,14 +73,12 @@ class ArcSessionManagerTestBase : public testing::Test {
     profile_ = profile_builder.Build();
     StartPreferenceSyncing();
 
-    ArcServiceManager::SetArcSessionRunnerForTesting(
-        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
     arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
-        arc_service_manager_->arc_bridge_service());
+        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
 
     // Check initial conditions.
-    EXPECT_TRUE(bridge_service()->stopped());
+    EXPECT_TRUE(arc_session_manager_->IsSessionStopped());
 
     chromeos::WallpaperManager::Initialize();
   }
@@ -100,9 +97,7 @@ class ArcSessionManagerTestBase : public testing::Test {
 
  protected:
   Profile* profile() { return profile_.get(); }
-  ArcBridgeService* bridge_service() {
-    return arc_service_manager_->arc_bridge_service();
-  }
+
   ArcSessionManager* arc_session_manager() {
     return arc_session_manager_.get();
   }
@@ -226,7 +221,7 @@ TEST_F(ArcSessionManagerTest, DisabledForEphemeralDataUsers) {
 }
 
 TEST_F(ArcSessionManagerTest, BaseWorkflow) {
-  ASSERT_FALSE(bridge_service()->ready());
+  ASSERT_TRUE(arc_session_manager()->IsSessionStopped());
   ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
             arc_session_manager()->state());
 
@@ -247,12 +242,12 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   arc_session_manager()->StartArc();
 
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  ASSERT_TRUE(bridge_service()->ready());
+  ASSERT_TRUE(arc_session_manager()->IsSessionRunning());
 
   arc_session_manager()->Shutdown();
   ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
             arc_session_manager()->state());
-  ASSERT_FALSE(bridge_service()->ready());
+  ASSERT_TRUE(arc_session_manager()->IsSessionStopped());
 
   // Send profile and don't provide a code.
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
@@ -339,22 +334,22 @@ TEST_F(ArcSessionManagerTest, SignInStatus) {
   prefs->SetBoolean(prefs::kArcTermsAccepted, true);
   arc_session_manager()->StartArc();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_TRUE(bridge_service()->ready());
+  EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_TRUE(bridge_service()->ready());
+  EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
 
   // Second start, no fetching code is expected.
   arc_session_manager()->Shutdown();
   EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
             arc_session_manager()->state());
-  EXPECT_FALSE(bridge_service()->ready());
+  EXPECT_TRUE(arc_session_manager()->IsSessionStopped());
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_TRUE(bridge_service()->ready());
+  EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
 
   // Report failure.
   arc_session_manager()->OnProvisioningFinished(
@@ -363,7 +358,7 @@ TEST_F(ArcSessionManagerTest, SignInStatus) {
   // the ARC is still necessary to run on background for gathering the logs.
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_TRUE(bridge_service()->ready());
+  EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
 
   // Correctly stop service.
   arc_session_manager()->Shutdown();

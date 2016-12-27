@@ -11,7 +11,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/arc/arc_session_runner.h"
 
 namespace arc {
 
@@ -36,47 +35,6 @@ bool ArcBridgeService::GetEnabled(const base::CommandLine* command_line) {
 // static
 bool ArcBridgeService::GetAvailable(const base::CommandLine* command_line) {
   return command_line->HasSwitch(chromeos::switches::kArcAvailable);
-}
-
-void ArcBridgeService::InitializeArcSessionRunner(
-    std::unique_ptr<ArcSessionRunner> arc_session_runner) {
-  DCHECK(!arc_session_runner_);
-  arc_session_runner_ = std::move(arc_session_runner);
-}
-
-void ArcBridgeService::AddObserver(ArcSessionObserver* observer) {
-  DCHECK(arc_session_runner_);
-  arc_session_runner_->AddObserver(observer);
-}
-
-void ArcBridgeService::RemoveObserver(ArcSessionObserver* observer) {
-  DCHECK(arc_session_runner_);
-  arc_session_runner_->RemoveObserver(observer);
-}
-
-void ArcBridgeService::RequestStart() {
-  DCHECK(arc_session_runner_);
-  arc_session_runner_->RequestStart();
-}
-
-void ArcBridgeService::RequestStop() {
-  DCHECK(arc_session_runner_);
-  arc_session_runner_->RequestStop();
-}
-
-void ArcBridgeService::OnShutdown() {
-  DCHECK(arc_session_runner_);
-  arc_session_runner_->OnShutdown();
-}
-
-bool ArcBridgeService::ready() const {
-  DCHECK(arc_session_runner_);
-  return arc_session_runner_->IsRunning();
-}
-
-bool ArcBridgeService::stopped() const {
-  DCHECK(arc_session_runner_);
-  return arc_session_runner_->IsStopped();
 }
 
 }  // namespace arc

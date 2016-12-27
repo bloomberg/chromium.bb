@@ -154,10 +154,6 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::unique_ptr<chromeos::SessionManagerClient>(
             fake_session_manager_client));
-
-    // Mock out ARC instance.
-    ArcServiceManager::SetArcSessionRunnerForTesting(
-        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
   }
 
   void SetUpOnMainThread() override {
@@ -166,6 +162,8 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     // Init ArcSessionManager for testing.
     ArcSessionManager::DisableUIForTesting();
     ArcSessionManager::EnableCheckAndroidManagementForTesting();
+    ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
+        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
 

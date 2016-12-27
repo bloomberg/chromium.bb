@@ -21,7 +21,6 @@ namespace arc {
 class ArcBridgeService;
 class ArcIntentHelperObserver;
 class ArcService;
-class ArcSessionRunner;
 
 // Manages creation and destruction of services that communicate with the ARC
 // instance via the ArcBridgeService.
@@ -65,11 +64,6 @@ class ArcServiceManager {
   scoped_refptr<base::TaskRunner> blocking_task_runner() const {
     return blocking_task_runner_;
   }
-
-  // Set ArcSessionRunner instance for testing. Call before ArcServiceManager
-  // creation.
-  static void SetArcSessionRunnerForTesting(
-      std::unique_ptr<ArcSessionRunner> arc_session_runner);
 
   // Returns the icon loader owned by ArcServiceManager and shared by services.
   scoped_refptr<ActivityIconLoader> icon_loader() { return icon_loader_; }

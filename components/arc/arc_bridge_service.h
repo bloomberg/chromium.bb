@@ -48,40 +48,18 @@ class WallpaperInstance;
 
 }  // namespace mojom
 
-class ArcSessionObserver;
-class ArcSessionRunner;
-
-// The Chrome-side service that handles ARC instances and ARC bridge creation.
-// This service handles the lifetime of ARC instances and sets up the
-// communication channel (the ARC bridge) used to send and receive messages.
+// Holds Mojo channels which proxy to ARC side implementation. The actual
+// instances are set/removed via ArcBridgeHostImpl.
 class ArcBridgeService {
  public:
   ArcBridgeService();
-  virtual ~ArcBridgeService();
+  ~ArcBridgeService();
 
-  // Return true if ARC has been enabled through a commandline
-  // switch.
+  // Returns true if ARC has been enabled through a commandline switch.
   static bool GetEnabled(const base::CommandLine* command_line);
 
-  // Return true if ARC is available on the current board.
+  // Returns true if ARC is available on the current board.
   static bool GetAvailable(const base::CommandLine* command_line);
-
-  // Initializes the ArcSessionRunner with the given instance.
-  // This must be called before following proxy methods.
-  void InitializeArcSessionRunner(
-      std::unique_ptr<ArcSessionRunner> arc_session_runner);
-
-  // Proxies the method to ArcSessionRunner. See details in the
-  // ArcSessionRunner's comment.
-  // TODO(hidehiko): Move the ownership from ArcBridgeService to
-  // ArcSessionManager, and remove these methods.
-  void AddObserver(ArcSessionObserver* observer);
-  void RemoveObserver(ArcSessionObserver* observer);
-  void RequestStart();
-  void RequestStop();
-  void OnShutdown();
-  bool ready() const;
-  bool stopped() const;
 
   InstanceHolder<mojom::AppInstance>* app() { return &app_; }
   InstanceHolder<mojom::AudioInstance>* audio() { return &audio_; }
@@ -125,7 +103,6 @@ class ArcBridgeService {
   InstanceHolder<mojom::WallpaperInstance>* wallpaper() { return &wallpaper_; }
 
  private:
-  // Instance holders.
   InstanceHolder<mojom::AppInstance> app_;
   InstanceHolder<mojom::AudioInstance> audio_;
   InstanceHolder<mojom::AuthInstance> auth_;
@@ -150,8 +127,6 @@ class ArcBridgeService {
   InstanceHolder<mojom::TtsInstance> tts_;
   InstanceHolder<mojom::VideoInstance> video_;
   InstanceHolder<mojom::WallpaperInstance> wallpaper_;
-
-  std::unique_ptr<ArcSessionRunner> arc_session_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeService);
 };

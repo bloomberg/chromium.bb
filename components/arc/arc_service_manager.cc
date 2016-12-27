@@ -20,9 +20,6 @@ namespace {
 // Weak pointer.  This class is owned by arc::ArcServiceLauncher.
 ArcServiceManager* g_arc_service_manager = nullptr;
 
-// This pointer is owned by ArcServiceManager.
-ArcSessionRunner* g_arc_session_runner_for_testing = nullptr;
-
 }  // namespace
 
 class ArcServiceManager::IntentHelperObserverImpl
@@ -52,30 +49,17 @@ ArcServiceManager::ArcServiceManager(
     scoped_refptr<base::TaskRunner> blocking_task_runner)
     : blocking_task_runner_(blocking_task_runner),
       intent_helper_observer_(base::MakeUnique<IntentHelperObserverImpl>(this)),
+      arc_bridge_service_(base::MakeUnique<ArcBridgeService>()),
       icon_loader_(new ActivityIconLoader()),
       activity_resolver_(new LocalActivityResolver()) {
   DCHECK(!g_arc_service_manager);
   g_arc_service_manager = this;
-
-  arc_bridge_service_ = base::MakeUnique<ArcBridgeService>();
-  if (g_arc_session_runner_for_testing) {
-    arc_bridge_service_->InitializeArcSessionRunner(
-        base::WrapUnique(g_arc_session_runner_for_testing));
-    g_arc_session_runner_for_testing = nullptr;
-  } else {
-    arc_bridge_service_->InitializeArcSessionRunner(
-        base::MakeUnique<ArcSessionRunner>(base::Bind(&ArcSession::Create,
-                                                      arc_bridge_service_.get(),
-                                                      blocking_task_runner)));
-  }
 }
 
 ArcServiceManager::~ArcServiceManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(g_arc_service_manager == this);
+  DCHECK_EQ(g_arc_service_manager, this);
   g_arc_service_manager = nullptr;
-  if (g_arc_session_runner_for_testing)
-    delete g_arc_session_runner_for_testing;
 }
 
 // static
@@ -116,15 +100,6 @@ void ArcServiceManager::Shutdown() {
   icon_loader_ = nullptr;
   activity_resolver_ = nullptr;
   services_.clear();
-  arc_bridge_service_->OnShutdown();
-}
-
-// static
-void ArcServiceManager::SetArcSessionRunnerForTesting(
-    std::unique_ptr<ArcSessionRunner> arc_session_runner) {
-  if (g_arc_session_runner_for_testing)
-    delete g_arc_session_runner_for_testing;
-  g_arc_session_runner_for_testing = arc_session_runner.release();
 }
 
 }  // namespace arc

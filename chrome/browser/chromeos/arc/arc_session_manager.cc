@@ -42,6 +42,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_session_runner.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -83,22 +84,22 @@ ash::ShelfDelegate* GetShelfDelegate() {
 
 }  // namespace
 
-ArcSessionManager::ArcSessionManager(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service),
+ArcSessionManager::ArcSessionManager(
+    std::unique_ptr<ArcSessionRunner> arc_session_runner)
+    : arc_session_runner_(std::move(arc_session_runner)),
       attempt_user_exit_callback_(base::Bind(chrome::AttemptUserExit)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!g_arc_session_manager);
   g_arc_session_manager = this;
-
-  arc_bridge_service()->AddObserver(this);
+  arc_session_runner_->AddObserver(this);
 }
 
 ArcSessionManager::~ArcSessionManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   Shutdown();
-  arc_bridge_service()->RemoveObserver(this);
+  arc_session_runner_->RemoveObserver(this);
 
   DCHECK_EQ(this, g_arc_session_manager);
   g_arc_session_manager = nullptr;
@@ -195,6 +196,11 @@ bool ArcSessionManager::IsArcKioskMode() {
   return user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp();
 }
 
+void ArcSessionManager::OnSessionReady() {
+  for (auto& observer : arc_session_observer_list_)
+    observer.OnSessionReady();
+}
+
 void ArcSessionManager::OnSessionStopped(StopReason reason) {
   // TODO(crbug.com/625923): Use |reason| to report more detailed errors.
   if (arc_sign_in_timer_.IsRunning())
@@ -203,7 +209,7 @@ void ArcSessionManager::OnSessionStopped(StopReason reason) {
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested)) {
     // This should be always true, but just in case as this is looked at
     // inside RemoveArcData() at first.
-    DCHECK(arc_bridge_service()->stopped());
+    DCHECK(arc_session_runner_->IsStopped());
     RemoveArcData();
   } else {
     // To support special "Stop and enable ARC" procedure for enterprise,
@@ -213,6 +219,9 @@ void ArcSessionManager::OnSessionStopped(StopReason reason) {
         FROM_HERE, base::Bind(&ArcSessionManager::MaybeReenableArc,
                               weak_ptr_factory_.GetWeakPtr()));
   }
+
+  for (auto& observer : arc_session_observer_list_)
+    observer.OnSessionStopped(reason);
 }
 
 void ArcSessionManager::RemoveArcData() {
@@ -223,8 +232,8 @@ void ArcSessionManager::RemoveArcData() {
   // OnArcDataRemoved resets this flag.
   profile_->GetPrefs()->SetBoolean(prefs::kArcDataRemoveRequested, true);
 
-  if (!arc_bridge_service()->stopped()) {
-    // Just set a flag. On bridge stopped, this will be re-called,
+  if (!arc_session_runner_->IsStopped()) {
+    // Just set a flag. On session stopped, this will be re-called,
     // then session manager should remove the data.
     return;
   }
@@ -258,7 +267,7 @@ void ArcSessionManager::OnArcDataRemoved(bool success) {
 void ArcSessionManager::MaybeReenableArc() {
   // Here check if |reenable_arc_| is marked or not.
   // The only case this happens should be in the special case for enterprise
-  // "on managed lost" case. In that case, OnBridgeStopped() should trigger
+  // "on managed lost" case. In that case, OnSessionStopped() should trigger
   // the RemoveArcData(), then this.
   if (!reenable_arc_ || !IsArcEnabled())
     return;
@@ -273,10 +282,10 @@ void ArcSessionManager::MaybeReenableArc() {
 void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Due asynchronous nature of stopping Arc bridge, OnProvisioningFinished may
-  // arrive after setting the |State::STOPPED| state and |State::Active| is not
-  // guaranty set here. prefs::kArcDataRemoveRequested is also can be active
-  // for now.
+  // Due asynchronous nature of stopping the ARC instance,
+  // OnProvisioningFinished may arrive after setting the |State::STOPPED| state
+  // and |State::Active| is not guaranteed to be set here.
+  // prefs::kArcDataRemoveRequested also can be active for now.
 
   if (provisioning_reported_) {
     // We don't expect ProvisioningResult::SUCCESS is reported twice or reported
@@ -370,7 +379,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
     if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
       profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
-    ShutdownBridge();
+    ShutdownSession();
     if (support_host_)
       support_host_->ShowError(error, false);
     return;
@@ -387,8 +396,8 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     RemoveArcData();
   }
 
-  // We'll delay shutting down the bridge in this case to allow people to send
-  // feedback.
+  // We'll delay shutting down the ARC instance in this case to allow people
+  // to send feedback.
   if (support_host_)
     support_host_->ShowError(error, true /* = show send feedback button */);
 }
@@ -493,7 +502,7 @@ void ArcSessionManager::Shutdown() {
   if (!g_disable_ui_for_testing)
     ArcAuthNotification::Hide();
 
-  ShutdownBridge();
+  ShutdownSession();
   if (support_host_) {
     support_host_->Close();
     support_host_->RemoveObserver(this);
@@ -535,7 +544,7 @@ void ArcSessionManager::StopArc() {
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, false);
   }
-  ShutdownBridge();
+  ShutdownSession();
   if (support_host_)
     support_host_->Close();
 }
@@ -634,12 +643,15 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
   StartTermsOfServiceNegotiation();
 }
 
-void ArcSessionManager::ShutdownBridge() {
+void ArcSessionManager::ShutdownSession() {
   arc_sign_in_timer_.Stop();
   playstore_launcher_.reset();
   terms_of_service_negotiator_.reset();
   android_management_checker_.reset();
-  arc_bridge_service()->RequestStop();
+  arc_session_runner_->RequestStop();
+  // TODO(hidehiko): The ARC instance's stopping is asynchronous, so it might
+  // still be running when we return from this function. Do not set the
+  // STOPPED state immediately here.
   if (state_ != State::NOT_INITIALIZED && state_ != State::REMOVING_DATA_DIR)
     SetState(State::STOPPED);
   for (auto& observer : observer_list_)
@@ -656,11 +668,31 @@ void ArcSessionManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void ArcSessionManager::AddSessionObserver(ArcSessionObserver* observer) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  arc_session_observer_list_.AddObserver(observer);
+}
+
+void ArcSessionManager::RemoveSessionObserver(ArcSessionObserver* observer) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  arc_session_observer_list_.RemoveObserver(observer);
+}
+
+bool ArcSessionManager::IsSessionRunning() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return arc_session_runner_->IsRunning();
+}
+
+bool ArcSessionManager::IsSessionStopped() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return arc_session_runner_->IsStopped();
+}
+
 // This is the special method to support enterprise mojo API.
 // TODO(hidehiko): Remove this.
 void ArcSessionManager::StopAndEnableArc() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!arc_bridge_service()->stopped());
+  DCHECK(!arc_session_runner_->IsStopped());
   reenable_arc_ = true;
   StopArc();
 }
@@ -673,7 +705,7 @@ void ArcSessionManager::StartArc() {
 
   provisioning_reported_ = false;
 
-  arc_bridge_service()->RequestStart();
+  arc_session_runner_->RequestStart();
   SetState(State::ACTIVE);
 }
 
@@ -760,9 +792,10 @@ void ArcSessionManager::StartTermsOfServiceNegotiation() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!terms_of_service_negotiator_);
 
-  if (!arc_bridge_service()->stopped()) {
-    // If the user attempts to re-enable ARC while the bridge is still running
-    // the user should not be able to continue until the bridge has stopped.
+  if (!arc_session_runner_->IsStopped()) {
+    // If the user attempts to re-enable ARC while the ARC instance is still
+    // running the user should not be able to continue until the ARC instance
+    // has stopped.
     if (support_host_) {
       support_host_->ShowError(
           ArcSupportHost::Error::SIGN_IN_SERVICE_UNAVAILABLE_ERROR, false);
@@ -801,7 +834,7 @@ void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
 
 void ArcSessionManager::StartArcAndroidManagementCheck() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(arc_bridge_service()->stopped());
+  DCHECK(arc_session_runner_->IsStopped());
   DCHECK(state_ == State::SHOWING_TERMS_OF_SERVICE ||
          state_ == State::CHECKING_ANDROID_MANAGEMENT);
   SetState(State::CHECKING_ANDROID_MANAGEMENT);
@@ -830,7 +863,7 @@ void ArcSessionManager::OnAndroidManagementChecked(
       StartArc();
       break;
     case policy::AndroidManagementClient::Result::MANAGED:
-      ShutdownBridge();
+      ShutdownSession();
       if (support_host_) {
         support_host_->ShowError(
             ArcSupportHost::Error::ANDROID_MANAGEMENT_REQUIRED_ERROR, false);
@@ -838,7 +871,7 @@ void ArcSessionManager::OnAndroidManagementChecked(
       UpdateOptInCancelUMA(OptInCancelReason::ANDROID_MANAGEMENT_REQUIRED);
       break;
     case policy::AndroidManagementClient::Result::ERROR:
-      ShutdownBridge();
+      ShutdownSession();
       if (support_host_) {
         support_host_->ShowError(
             ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR, false);
@@ -895,13 +928,13 @@ void ArcSessionManager::OnRetryClicked() {
   } else if (!profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
     StartTermsOfServiceNegotiation();
   } else if (support_host_->ui_page() == ArcSupportHost::UIPage::ERROR &&
-             !arc_bridge_service()->stopped()) {
+             !arc_session_runner_->IsStopped()) {
     // ERROR_WITH_FEEDBACK is set in OnSignInFailed(). In the case, stopping
     // ARC was postponed to contain its internal state into the report.
     // Here, on retry, stop it, then restart.
     DCHECK_EQ(State::ACTIVE, state_);
     support_host_->ShowArcLoading();
-    ShutdownBridge();
+    ShutdownSession();
     reenable_arc_ = true;
   } else if (state_ == State::ACTIVE) {
     // This case is handled in ArcAuthService.
@@ -918,6 +951,16 @@ void ArcSessionManager::OnRetryClicked() {
 void ArcSessionManager::OnSendFeedbackClicked() {
   DCHECK(support_host_);
   chrome::OpenFeedbackDialog(nullptr);
+}
+
+void ArcSessionManager::SetArcSessionRunnerForTesting(
+    std::unique_ptr<ArcSessionRunner> arc_session_runner) {
+  DCHECK(arc_session_runner);
+  DCHECK(arc_session_runner_);
+  DCHECK(arc_session_runner_->IsStopped());
+  arc_session_runner_->RemoveObserver(this);
+  arc_session_runner_ = std::move(arc_session_runner);
+  arc_session_runner_->AddObserver(this);
 }
 
 void ArcSessionManager::SetAttemptUserExitCallbackForTesting(

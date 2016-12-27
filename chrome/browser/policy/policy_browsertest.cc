@@ -209,8 +209,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -4052,6 +4050,9 @@ class ArcPolicyTest : public PolicyTest {
  protected:
   void SetUpTest() {
     arc::ArcSessionManager::DisableUIForTesting();
+    arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
+        base::MakeUnique<arc::ArcSessionRunner>(
+            base::Bind(arc::FakeArcSession::Create)));
 
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted,
@@ -4067,10 +4068,6 @@ class ArcPolicyTest : public PolicyTest {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::unique_ptr<chromeos::SessionManagerClient>(
             fake_session_manager_client_));
-
-    arc::ArcServiceManager::SetArcSessionRunnerForTesting(
-        base::MakeUnique<arc::ArcSessionRunner>(
-            base::Bind(arc::FakeArcSession::Create)));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -4103,20 +4100,19 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
   SetUpTest();
 
   const PrefService* const pref = browser()->profile()->GetPrefs();
-  const arc::ArcBridgeService* const arc_bridge_service =
-      arc::ArcServiceManager::Get()->arc_bridge_service();
+  const auto* const arc_session_manager = arc::ArcSessionManager::Get();
 
   // ARC is switched off by default.
-  EXPECT_TRUE(arc_bridge_service->stopped());
+  EXPECT_TRUE(arc_session_manager->IsSessionStopped());
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
 
   // Enable ARC.
   SetArcEnabledByPolicy(true);
-  EXPECT_TRUE(arc_bridge_service->ready());
+  EXPECT_TRUE(arc_session_manager->IsSessionRunning());
 
   // Disable ARC.
   SetArcEnabledByPolicy(false);
-  EXPECT_TRUE(arc_bridge_service->stopped());
+  EXPECT_TRUE(arc_session_manager->IsSessionStopped());
 
   TearDownTest();
 }

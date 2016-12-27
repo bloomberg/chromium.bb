@@ -79,12 +79,10 @@ void ArcAppTest::SetUp(Profile* profile) {
     ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
         profile_);
   }
-  arc::ArcServiceManager::SetArcSessionRunnerForTesting(
-      base::MakeUnique<arc::ArcSessionRunner>(
-          base::Bind(arc::FakeArcSession::Create)));
   arc_service_manager_ = base::MakeUnique<arc::ArcServiceManager>(nullptr);
   arc_session_manager_ = base::MakeUnique<arc::ArcSessionManager>(
-      arc_service_manager_->arc_bridge_service());
+      base::MakeUnique<arc::ArcSessionRunner>(
+          base::Bind(arc::FakeArcSession::Create)));
   DCHECK(arc::ArcSessionManager::Get());
   arc::ArcSessionManager::DisableUIForTesting();
   arc_session_manager_->OnPrimaryUserProfilePrepared(profile_);
@@ -96,12 +94,12 @@ void ArcAppTest::SetUp(Profile* profile) {
   run_loop.Run();
 
   arc_session_manager_->EnableArc();
+  // Check initial conditions.
+  EXPECT_FALSE(arc_session_manager_->IsSessionRunning());
+
   app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
   arc_service_manager_->arc_bridge_service()->app()->SetInstance(
       app_instance_.get());
-
-  // Check initial conditions.
-  EXPECT_FALSE(arc_service_manager_->arc_bridge_service()->ready());
 }
 
 void ArcAppTest::CreateFakeAppsAndPackages() {
