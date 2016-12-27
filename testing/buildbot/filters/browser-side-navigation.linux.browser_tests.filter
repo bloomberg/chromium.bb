@@ -1,6 +1,0 @@
--ChromeServiceWorkerTest.FallbackMainResourceRequestWhenJSDisabled
-
-# https://crbug.com/652767: NavigationHandle::GetResponseHeaders sometimes
-# returns null for browser-side navigations
--PageLoadMetricsBrowserTest.Ignore204Pages
--PageLoadMetricsBrowserTest.IgnoreDownloads
