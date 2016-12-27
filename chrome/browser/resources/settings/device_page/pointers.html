@@ -36,15 +36,12 @@
       </div>
       <div class="settings-box">
         <div class="start" id="mouseSpeedLabel">$i18n{mouseSpeed}</div>
-        <div class="layout horizontal center">
-          <div>$i18n{pointerSlow}</div>
-          <cr-slider class="always-on" snaps
-              value="{{prefs.settings.mouse.sensitivity2.value}}"
-              tick-values="[[sensitivityValues_]]"
-              aria-labelledby="mouseSpeedLabel">
-          </cr-slider>
-          <div>$i18n{pointerFast}</div>
-        </div>
+        <cr-slider value="{{prefs.settings.mouse.sensitivity2.value}}"
+            tick-values="[[sensitivityValues_]]"
+            aria-labelledby="mouseSpeedLabel"
+            label-min="$i18n{pointerSlow}"
+            label-max="$i18n{pointerFast}">
+        </cr-slider>
       </div>
     </div>
     <div id="touchpad" hidden$="[[!hasTouchpad]]"
@@ -63,15 +60,13 @@
       </div>
       <div class="settings-box">
         <div class="start" id="touchpadSpeedLabel">$i18n{touchpadSpeed}</div>
-        <div class="layout horizontal center">
-          <div>$i18n{pointerSlow}</div>
-          <cr-slider id="touchpadSensitivity" class="always-on" snaps
+          <cr-slider id="touchpadSensitivity"
               value="{{prefs.settings.touchpad.sensitivity2.value}}"
               tick-values="[[sensitivityValues_]]"
-              aria-labelledby="touchpadSpeedLabel">
+              aria-labelledby="touchpadSpeedLabel"
+              label-min="$i18n{pointerSlow}"
+              label-max="$i18n{pointerFast}">
           </cr-slider>
-          <div>$i18n{pointerFast}</div>
-        </div>
       </div>
       <div class="settings-box">$i18n{scrollLabel}</div>
       <div class="list-frame">

@@ -53,15 +53,15 @@ Polymer({
       notify: true,
     },
 
-    /** Maximum mode index value for slider. */
-    maxModeIndex_: {type: Number, value: 0},
+    /** @private {!Array<number>} Mode index values for slider. */
+    modeValues_: Array,
 
-    /** Selected mode index value for slider. */
-    selectedModeIndex_: {type: Number},
-
-    /** Immediate selected mode index value for slider. */
-    immediateSelectedModeIndex_: {type: Number, value: 0}
+    /** @private Selected mode index value for slider. */
+    selectedModeIndex_: Number,
   },
+
+  /** @private {number} Selected mode index received from chrome. */
+  currentSelectedModeIndex_: -1,
 
   /**
    * Listener for chrome.system.display.onDisplayChanged events.
@@ -84,6 +84,7 @@ Polymer({
       settings.display.systemDisplayApi.onDisplayChanged.removeListener(
           this.displayChangedListener_);
     }
+    this.currentSelectedModeIndex_ = -1;
   },
 
   /**
@@ -150,15 +151,18 @@ Polymer({
 
   /** @private */
   selectedDisplayChanged_: function() {
-    // Set maxModeIndex first so that the slider updates correctly.
-    if (this.selectedDisplay.modes.length == 0) {
-      this.maxModeIndex_ = 0;
+    // Set |modeValues_| before |selectedModeIndex_| so that the slider updates
+    // correctly.
+    let numModes = this.selectedDisplay.modes.length;
+    if (numModes == 0) {
+      this.modeValues_ = [];
       this.selectedModeIndex_ = 0;
+      this.currentSelectedModeIndex_ = 0;
       return;
     }
-    this.maxModeIndex_ = this.selectedDisplay.modes.length - 1;
+    this.modeValues_ = Array.from(Array(numModes).keys());
     this.selectedModeIndex_ = this.getSelectedModeIndex_(this.selectedDisplay);
-    this.immediateSelectedModeIndex_ = this.selectedModeIndex_;
+    this.currentSelectedModeIndex_ = this.selectedModeIndex_;
   },
 
   /**
@@ -248,23 +252,19 @@ Polymer({
    * @private
    */
   getResolutionText_: function() {
-    if (this.selectedDisplay.modes.length == 0) {
-      var widthStr = this.selectedDisplay.bounds.width.toString();
-      var heightStr = this.selectedDisplay.bounds.height.toString();
+    if (this.selectedDisplay.modes.length == 0 ||
+        this.currentSelectedModeIndex_ == -1) {
+      // If currentSelectedModeIndex_ == -1, selectedDisplay and
+      // selectedModeIndex_ are not in sync.
+      let widthStr = this.selectedDisplay.bounds.width.toString();
+      let heightStr = this.selectedDisplay.bounds.height.toString();
       return this.i18n('displayResolutionText', widthStr, heightStr);
     }
-    // immediateSelectedModeIndex_ is bound to paper-slider.immediate-value
-    // which may not be valid, or may not have updated yet when this is called.
-    if (isNaN(this.immediateSelectedModeIndex_) ||
-        this.immediateSelectedModeIndex_ >= this.selectedDisplay.modes.length) {
-      this.immediateSelectedModeIndex_ =
-          this.getSelectedModeIndex_(this.selectedDisplay);
-    }
-    var mode = this.selectedDisplay.modes[this.immediateSelectedModeIndex_];
-    var best =
+    let mode = this.selectedDisplay.modes[this.selectedModeIndex_];
+    let best =
         this.selectedDisplay.isInternal ? mode.uiScale == 1.0 : mode.isNative;
-    var widthStr = mode.width.toString();
-    var heightStr = mode.height.toString();
+    let widthStr = mode.width.toString();
+    let heightStr = mode.height.toString();
     if (best)
       return this.i18n('displayResolutionTextBest', widthStr, heightStr);
     else if (mode.isNative)
@@ -281,6 +281,7 @@ Polymer({
     for (let display of this.displays) {
       if (id != display.id)
         continue;
+      this.currentSelectedModeIndex_ = -1;
       this.selectedDisplay = display;
     }
   },
@@ -317,18 +318,20 @@ Polymer({
   },
 
   /**
-   * @param {!{target: !PaperSliderElement}} e
+   * Triggered when the 'change' event for the selected mode slider is
+   * triggered. This only occurs when the value is comitted (i.e. not while
+   * the slider is being dragged).
    * @private
    */
-  onChangeMode_: function(e) {
-    var curIndex = this.selectedModeIndex_;
-    var newIndex = parseInt(e.target.value, 10);
-    if (newIndex == curIndex)
+  onSelectedModeChange_: function() {
+    if (this.currentSelectedModeIndex_ == -1 ||
+        this.currentSelectedModeIndex_ == this.selectedModeIndex_) {
+      // Don't change the selected display mode until we have received an update
+      // from Chrome and the mode differs from the current mode.
       return;
-    assert(newIndex >= 0);
-    assert(newIndex < this.selectedDisplay.modes.length);
+    }
     /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
-      displayMode: this.selectedDisplay.modes[newIndex]
+      displayMode: this.selectedDisplay.modes[this.selectedModeIndex_]
     };
     settings.display.systemDisplayApi.setDisplayProperties(
         this.selectedDisplay.id, properties,
@@ -398,6 +401,11 @@ Polymer({
     this.primaryDisplayId = (primaryDisplay && primaryDisplay.id) || '';
     this.selectedDisplay = selectedDisplay || primaryDisplay ||
         (this.displays && this.displays[0]);
+    // Save the selected mode index received from Chrome so that we do not
+    // send an unnecessary setDisplayProperties call (which would log an error).
+    this.currentSelectedModeIndex_ =
+        this.getSelectedModeIndex_(this.selectedDisplay);
+
     this.$.displayLayout.updateDisplays(this.displays, this.layouts);
   },
 

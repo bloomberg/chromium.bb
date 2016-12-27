@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
@@ -5,7 +6,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="/device_page/display_layout.html">
@@ -109,16 +109,13 @@
         <div class="start textarea layout vertical">
           <div>$i18n{displayResolutionTitle}</div>
           <div class="secondary layout self-start">
-            [[getResolutionText_(selectedDisplay, immediateSelectedModeIndex_)]]
+            [[getResolutionText_(selectedDisplay, selectedModeIndex_)]]
           </div>
         </div>
-        <paper-slider snaps max-markers="100" step="1"
-            disabled="[[!enableSetResolution_(selectedDisplay)]]"
-            min="0" max="[[maxModeIndex_]]"
-            value="[[selectedModeIndex_]]"
-            immediate-value="{{immediateSelectedModeIndex_}}"
-            on-change="onChangeMode_">
-        </paper-slider>
+        <cr-slider disabled="[[!enableSetResolution_(selectedDisplay)]]"
+            tick-values="[[modeValues_]]" value="{{selectedModeIndex_}}"
+            on-change="onSelectedModeChange_">
+        </cr-slider>
       </div>
       <div class="settings-box embedded">
         <div class="start textarea">$i18n{displayOrientation}</div>

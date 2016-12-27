@@ -13,9 +13,10 @@
     <style include="settings-shared"></style>
     <div class="settings-box first">
       <div class="start">$i18n{fontSize}</div>
-      <cr-slider class="always-on" id="sizeSlider" snaps max-markers="5"
+      <cr-slider id="sizeSlider"
           value="{{prefs.webkit.webprefs.default_font_size.value}}"
-          tick-values="[[fontSizeRange_]]">
+          tick-values="[[fontSizeRange_]]"
+          label-min="$i18n{tiny}" label-max="$i18n{huge}">
       </cr-slider>
     </div>
     <div class="settings-box">
@@ -27,9 +28,10 @@
         <span>[[prefs.webkit.webprefs.minimum_font_size.value]]</span>
         : $i18n{quickBrownFox}
       </div>
-      <cr-slider class="always-on" id="minimumSizeSlider" snaps max-markers="5"
+      <cr-slider id="minimumSizeSlider"
           value="{{prefs.webkit.webprefs.minimum_font_size.value}}"
-          tick-values="[[minimumFontSizeRange_]]">
+          tick-values="[[minimumFontSizeRange_]]"
+          label-min="$i18n{tiny}" label-max="$i18n{huge}">
       </cr-slider>
     </div>
     <div class="settings-box">

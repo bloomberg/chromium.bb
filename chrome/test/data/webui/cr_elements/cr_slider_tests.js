@@ -24,20 +24,6 @@ cr.define('cr_slider', function() {
         paperSlider = slider.$$('paper-slider');
       });
 
-      test('basic properties', function() {
-        // Default properties.
-        expectEquals(1, paperSlider.step);
-        expectEquals(0, paperSlider.min);
-
-        // Configurable properties.
-        expectFalse(paperSlider.snaps);
-        slider.setAttribute('snaps', '');
-        expectTrue(paperSlider.snaps);
-
-        slider.setAttribute('max-markers', 7);
-        expectEquals(7, paperSlider.maxMarkers);
-      });
-
       test('set value', function() {
         slider.tickValues = tickValues;
         slider.value = 16;
@@ -45,18 +31,18 @@ cr.define('cr_slider', function() {
         expectEquals(3, paperSlider.value);
         expectEquals(3, paperSlider.immediateValue);
 
-        // Setting to an in-between value should choose an index but not change
-        // the value.
+        // cr-slider only supports snapping to a range of tick values. Setting
+        // to an in-between value should snap to an indexed value.
         slider.value = 70;
         expectEquals(5, paperSlider.value);
         expectEquals(5, paperSlider.immediateValue);
-        expectEquals(70, slider.value);
+        expectEquals(64, slider.value);
 
         // Setting the value out-of-range should clamp the slider.
         slider.value = -100;
         expectEquals(0, paperSlider.value);
         expectEquals(0, paperSlider.immediateValue);
-        expectEquals(-100, slider.value);
+        expectEquals(2, slider.value);
       });
 
       test('move slider', function() {

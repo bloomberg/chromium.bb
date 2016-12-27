@@ -391,10 +391,10 @@ cr.define('device_page_tests', function() {
         // Test sliders round to nearest value when prefs change.
         devicePage.set(
             'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 600);
-        expectEquals(600, keyboardPage.$.delaySlider.value);
+        expectEquals(500, keyboardPage.$.delaySlider.value);
         devicePage.set(
             'prefs.settings.language.xkb_auto_repeat_interval_r2.value', 45);
-        expectEquals(45, keyboardPage.$.repeatRateSlider.value);
+        expectEquals(50, keyboardPage.$.repeatRateSlider.value);
 
         devicePage.set(
             'prefs.settings.language.xkb_auto_repeat_enabled_r2.value',
