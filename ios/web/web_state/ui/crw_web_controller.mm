@@ -5234,6 +5234,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)webView:(WKWebView*)webView
     didCommitNavigation:(WKNavigation*)navigation {
+  // This method will crash if |currentSessionEntry| is null. If this check is
+  // hit it means that |didStartProvisionalNavigation| was called as expected
+  // but it did not call |registerLoadRequest|. TODO(crbug.com/676721): remove
+  // this CHECK once there is at least one crash on this line (which means that
+  // |didStartProvisionalNavigation| did not call |registerLoadRequest| and it
+  // should be fixed.
+  CHECK([self currentSessionEntry] ||
+        ![_latestWKNavigation isEqual:navigation]);
+
   DCHECK_EQ(_webView, webView);
   _certVerificationErrors->Clear();
 
