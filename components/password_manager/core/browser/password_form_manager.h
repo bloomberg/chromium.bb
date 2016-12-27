@@ -481,10 +481,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // |provisionally_saved_form_| and |best_matches_|.
   autofill::PasswordForm pending_credentials_;
 
-  // Stores the form with generated password till the user makes successful
-  // login or removes the generated password.
-  std::unique_ptr<autofill::PasswordForm> presaved_form_;
-
   // Whether pending_credentials_ stores a new login or is an update
   // to an existing one.
   bool is_new_login_;
