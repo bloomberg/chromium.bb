@@ -459,11 +459,13 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(-999999998, navigation_manager()->GetIndexForOffset(-1000000000));
   EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
-  // Test with existing transient entry.
+  // Test with existing transient entry in the end of the stack.
+  [session_controller() goToEntryAtIndex:4];
+  [session_controller() setPendingEntryIndex:-1];
   [session_controller() addTransientEntryWithURL:GURL("http://www.url.com")];
   ASSERT_EQ(5, navigation_manager()->GetItemCount());
-  ASSERT_EQ(1, navigation_manager()->GetCurrentItemIndex());
-  ASSERT_EQ(4, navigation_manager()->GetPendingItemIndex());
+  ASSERT_EQ(4, navigation_manager()->GetCurrentItemIndex());
+  ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
   EXPECT_EQ(4, navigation_manager()->GetIndexForOffset(-1));
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-2));
@@ -483,6 +485,47 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(-2147483645, navigation_manager()->GetIndexForOffset(INT_MIN));
   EXPECT_EQ(-999999997, navigation_manager()->GetIndexForOffset(-1000000000));
   EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
+}
+
+// Tests offsets with pending transient entries (specifically gong back and
+// forward from a pending navigation entry that is added to the middle of the
+// navigation stack).
+TEST_F(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
+  // Create a transient item in the middle of the navigation stack and go back
+  // to it (pending index is 1, current index is 2).
+  [session_controller() addPendingEntry:GURL("http://www.url.com/0")
+                               referrer:Referrer()
+                             transition:ui::PAGE_TRANSITION_LINK
+                      rendererInitiated:NO];
+  [session_controller() commitPendingEntry];
+  [session_controller() addPendingEntry:GURL("http://www.url.com/1")
+                               referrer:Referrer()
+                             transition:ui::PAGE_TRANSITION_LINK
+                      rendererInitiated:NO];
+  [session_controller() commitPendingEntry];
+  [session_controller() addPendingEntry:GURL("http://www.url.com/2")
+                               referrer:Referrer()
+                             transition:ui::PAGE_TRANSITION_LINK
+                      rendererInitiated:NO];
+  [session_controller() commitPendingEntry];
+  [session_controller() addTransientEntryWithURL:GURL("http://www.url.com/1")];
+  [session_controller() setPendingEntryIndex:1];
+
+  ASSERT_EQ(3, navigation_manager()->GetItemCount());
+  ASSERT_EQ(2, navigation_manager()->GetCurrentItemIndex());
+  ASSERT_EQ(1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(1));
+  EXPECT_EQ(0, navigation_manager()->GetIndexForOffset(-1));
+
+  // Now go forward to that middle transient item (pending index is 1,
+  // current index is 0).
+  [session_controller() goToEntryAtIndex:0];
+  [session_controller() setPendingEntryIndex:1];
+  ASSERT_EQ(3, navigation_manager()->GetItemCount());
+  ASSERT_EQ(0, navigation_manager()->GetCurrentItemIndex());
+  ASSERT_EQ(1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(1));
+  EXPECT_EQ(0, navigation_manager()->GetIndexForOffset(-1));
 }
 
 }  // namespace web

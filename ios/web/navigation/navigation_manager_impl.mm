@@ -344,9 +344,10 @@ int NavigationManagerImpl::GetIndexForOffset(int offset) const {
                    : static_cast<int>([session_controller_ pendingEntryIndex]);
 
   if (offset < 0) {
-    if (GetTransientItem()) {
-      // Going back from transient item is a matter of discarding it and there
-      // is no need to move navigation index back.
+    if (GetTransientItem() && [session_controller_ pendingEntryIndex] == -1) {
+      // Going back from transient item that added to the end navigation stack
+      // is a matter of discarding it as there is no need to move navigation
+      // index back.
       offset++;
     }
 
