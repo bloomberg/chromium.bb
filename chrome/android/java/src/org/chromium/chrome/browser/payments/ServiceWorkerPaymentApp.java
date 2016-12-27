@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import android.os.Handler;
 
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.Set;
  * @see https://w3c.github.io/webpayments-payment-apps-api/
  */
 public class ServiceWorkerPaymentApp implements PaymentApp {
+    private final WebContents mWebContents;
     private final ServiceWorkerPaymentAppBridge.Manifest mManifest;
     private final Set<String> mMethodNames;
 
@@ -32,9 +34,12 @@ public class ServiceWorkerPaymentApp implements PaymentApp {
      *
      * @see https://w3c.github.io/webpayments-payment-apps-api/#payment-app-manifest
      *
+     * @param webContents The web contents where PaymentRequest was invoked.
      * @param manifest    A manifest that describes this payment app.
      */
-    public ServiceWorkerPaymentApp(ServiceWorkerPaymentAppBridge.Manifest manifest) {
+    public ServiceWorkerPaymentApp(
+            WebContents webContents, ServiceWorkerPaymentAppBridge.Manifest manifest) {
+        mWebContents = webContents;
         mManifest = manifest;
 
         mMethodNames = new HashSet<>();
@@ -51,7 +56,8 @@ public class ServiceWorkerPaymentApp implements PaymentApp {
                 new ArrayList<PaymentInstrument>();
 
         for (ServiceWorkerPaymentAppBridge.Option option : mManifest.options) {
-            instruments.add(new ServiceWorkerPaymentInstrument(mManifest.scopeUrl, option));
+            instruments.add(new ServiceWorkerPaymentInstrument(
+                    mWebContents, mManifest.registrationId, option));
         }
 
         new Handler().post(new Runnable() {

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.payments;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content_public.browser.WebContents;
@@ -15,7 +14,7 @@ import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * Native bridge for interacting with service worker based payment apps.
@@ -33,11 +32,11 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      */
     public static class Manifest {
         /**
-         * The scope url of the service worker.
+         * The registration ID of the service worker.
          *
          * This can be used to identify a service worker based payment app.
          */
-        public String scopeUrl;
+        public long registrationId;
         public String label;
         public Drawable icon;
         public List<Option> options = new ArrayList<>();
@@ -56,50 +55,33 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         public List<String> enabledMethods = new ArrayList<>();
     }
 
-    /**
-     * Fetch all the installed service worker app manifests.
-     *
-     * This method is protected so that it can be overridden by tests.
-     *
-     * @return The installed service worker app manifests.
-     */
-    @VisibleForTesting
-    protected List<Manifest> getAllAppManifests() {
-        return nativeGetAllAppManifests();
-    }
-
     @Override
     public void create(Context context, WebContents webContents,
             PaymentAppFactory.PaymentAppCreatedCallback callback) {
-        List<Manifest> manifests = getAllAppManifests();
-        for (int i = 0; i < manifests.size(); i++) {
-            callback.onPaymentAppCreated(new ServiceWorkerPaymentApp(manifests.get(i)));
-        }
-        callback.onAllPaymentAppsCreated();
+        nativeGetAllAppManifests(webContents, callback);
     }
 
     /**
      * Invoke a payment app with a given option and matching method data.
+     *
+     * @param webContents    The web contents that invoked PaymentRequest.
+     * @param registrationId The service worker registration ID of the Payment App.
+     * @param optionId       The ID of the PaymentOption that was selected by the user.
+     * @param methodData     The PaymentMethodData objects that are relevant for this payment app.
      */
-    public void invokePaymentapp(
-            String scopeUrl, String optionId, Map<String, PaymentMethodData> methodData) {
-        nativeInvokePaymentApp(scopeUrl, optionId, methodData);
+    public static void invokePaymentApp(WebContents webContents, long registrationId,
+            String optionId, Set<PaymentMethodData> methodData) {
+        nativeInvokePaymentApp(webContents, registrationId, optionId,
+                methodData.toArray(new PaymentMethodData[0]));
     }
 
     @CalledByNative
-    private static List<Manifest> createManifestList() {
-        return new ArrayList<Manifest>();
-    }
-
-    @CalledByNative
-    private static Manifest createAndAddManifest(
-            List<Manifest> manifestList, String scopeUrl, String label, String icon) {
+    private static Manifest createManifest(long registrationId, String label, String icon) {
         Manifest manifest = new Manifest();
-        manifest.scopeUrl = scopeUrl;
+        manifest.registrationId = registrationId;
         manifest.label = label;
         // TODO(tommyt): crbug.com/669876. Handle icons.
         manifest.icon = null;
-        manifestList.add(manifest);
         return manifest;
     }
 
@@ -120,7 +102,26 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         option.enabledMethods.add(enabledMethod);
     }
 
-    private static native List<Manifest> nativeGetAllAppManifests();
-    private static native void nativeInvokePaymentApp(
-            String scopeUrl, String optionId, Object methodDataMap);
+    @CalledByNative
+    private static void onGotManifest(Manifest manifest, WebContents webContents, Object callback) {
+        assert callback instanceof PaymentAppFactory.PaymentAppCreatedCallback;
+        ((PaymentAppFactory.PaymentAppCreatedCallback) callback)
+                .onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents, manifest));
+    }
+
+    @CalledByNative
+    private static void onGotAllManifests(Object callback) {
+        assert callback instanceof PaymentAppFactory.PaymentAppCreatedCallback;
+        ((PaymentAppFactory.PaymentAppCreatedCallback) callback).onAllPaymentAppsCreated();
+    }
+
+    /*
+     * TODO(tommyt): crbug.com/505554. Change the |callback| parameter below to
+     * be of type PaymentAppFactory.PaymentAppCreatedCallback, once this JNI bug
+     * has been resolved.
+     */
+    private static native void nativeGetAllAppManifests(WebContents webContents, Object callback);
+
+    private static native void nativeInvokePaymentApp(WebContents webContents, long registrationId,
+            String optionId, PaymentMethodData[] methodData);
 }

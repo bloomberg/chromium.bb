@@ -4,12 +4,13 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.content.Context;
 import android.support.test.filters.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -31,19 +32,20 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
     }
 
     /**
-     * Installs a service worker based payment app for testing.
+     * Installs a mock service worker based payment app for testing.
      *
      * @param optionPresence Whether the manifest has any payment options. Either NO_OPTIONS
      *                       ONE_OPTION or TWO_OPTIONS
      */
-    private void installServiceWorkerPaymentApp(final int instrumentPresence) {
+    private void installMockServiceWorkerPaymentApp(final int instrumentPresence) {
         PaymentAppFactory.getInstance().addAdditionalFactory(
-                new ServiceWorkerPaymentAppBridge() {
+                new PaymentAppFactory.PaymentAppFactoryAddition() {
                     @Override
-                    public List<Manifest> getAllAppManifests() {
+                    public void create(Context context, WebContents webContents,
+                            PaymentAppFactory.PaymentAppCreatedCallback callback) {
                         ServiceWorkerPaymentAppBridge.Manifest testManifest =
                                 new ServiceWorkerPaymentAppBridge.Manifest();
-                        testManifest.scopeUrl = "https://bobpay.com/app";
+                        testManifest.registrationId = 0;
                         testManifest.label = "BobPay";
 
                         if (instrumentPresence != NO_OPTIONS) {
@@ -66,7 +68,9 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
                             testManifest.options.add(testOption);
                         }
 
-                        return Arrays.asList(testManifest);
+                        callback.onPaymentAppCreated(
+                                new ServiceWorkerPaymentApp(webContents, testManifest));
+                        callback.onAllPaymentAppsCreated();
                     }
                 });
     }
@@ -79,7 +83,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
     @Feature({"Payments"})
     public void testNoOptions() throws InterruptedException, ExecutionException,
             TimeoutException {
-        installServiceWorkerPaymentApp(NO_OPTIONS);
+        installMockServiceWorkerPaymentApp(NO_OPTIONS);
         openPageAndClickBuyAndWait(mShowFailed);
         expectResultContains(
                 new String[]{"show() rejected", "The payment method is not supported"});
@@ -89,7 +93,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
     @Feature({"Payments"})
     public void testOneOption() throws InterruptedException, ExecutionException,
             TimeoutException {
-        installServiceWorkerPaymentApp(ONE_OPTION);
+        installMockServiceWorkerPaymentApp(ONE_OPTION);
         triggerUIAndWait(mReadyForInput);
         // TODO(tommyt): crbug.com/669876. Expand this test as we implement more
         // service worker based payment app functionality.
@@ -99,7 +103,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest extends PaymentRequestTes
     @Feature({"Payments"})
     public void testTwoOptions() throws InterruptedException, ExecutionException,
             TimeoutException {
-        installServiceWorkerPaymentApp(TWO_OPTIONS);
+        installMockServiceWorkerPaymentApp(TWO_OPTIONS);
         triggerUIAndWait(mReadyForInput);
         // TODO(tommyt): crbug.com/669876. Expand this test as we implement more
         // service worker based payment app functionality.

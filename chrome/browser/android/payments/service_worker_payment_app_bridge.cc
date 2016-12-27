@@ -8,34 +8,35 @@
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/payments/payment_app.mojom.h"
-#include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/payment_app_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/ServiceWorkerPaymentAppBridge_jni.h"
 
+using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
+using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
-static ScopedJavaLocalRef<jobject> GetAllAppManifests(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller) {
-  // TODO(tommyt): crbug.com/669876. Initialise the following two variables.
-  // At the moment, they are empty, so this function will return an empty
-  // list of manifests. We need to hook this function up to the service worker
-  // payment apps.
-  std::string scope_url;
-  std::vector<payments::mojom::PaymentAppManifestPtr> manifests;
+namespace {
 
-  ScopedJavaLocalRef<jobject> java_manifests =
-      Java_ServiceWorkerPaymentAppBridge_createManifestList(env);
-  for (const auto& manifest : manifests) {
+void OnGotAllManifests(const JavaRef<jobject>& jweb_contents,
+                       const JavaRef<jobject>& jcallback,
+                       content::PaymentAppContext::Manifests manifests) {
+  JNIEnv* env = AttachCurrentThread();
+
+  for (const auto& entry : manifests) {
     ScopedJavaLocalRef<jobject> java_manifest =
-        Java_ServiceWorkerPaymentAppBridge_createAndAddManifest(
-            env, java_manifests, ConvertUTF8ToJavaString(env, scope_url),
-            ConvertUTF8ToJavaString(env, manifest->name),
-            manifest->icon ? ConvertUTF8ToJavaString(env, *manifest->icon)
-                           : nullptr);
-    for (const auto& option : manifest->options) {
+        Java_ServiceWorkerPaymentAppBridge_createManifest(
+            env, entry.first, ConvertUTF8ToJavaString(env, entry.second->name),
+            entry.second->icon
+                ? ConvertUTF8ToJavaString(env, *entry.second->icon)
+                : nullptr);
+    for (const auto& option : entry.second->options) {
       ScopedJavaLocalRef<jobject> java_option =
           Java_ServiceWorkerPaymentAppBridge_createAndAddOption(
               env, java_manifest, ConvertUTF8ToJavaString(env, option->id),
@@ -47,16 +48,45 @@ static ScopedJavaLocalRef<jobject> GetAllAppManifests(
             env, java_option, ConvertUTF8ToJavaString(env, enabled_method));
       }
     }
+
+    Java_ServiceWorkerPaymentAppBridge_onGotManifest(env, java_manifest,
+                                                     jweb_contents, jcallback);
   }
 
-  return java_manifests;
+  Java_ServiceWorkerPaymentAppBridge_onGotAllManifests(env, jcallback);
+}
+
+}  // namespace
+
+static void GetAllAppManifests(JNIEnv* env,
+                               const JavaParamRef<jclass>& jcaller,
+                               const JavaParamRef<jobject>& jweb_contents,
+                               const JavaParamRef<jobject>& jcallback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser_context);
+
+  content::PaymentAppContext* payment_app_context =
+      storage_partition->GetPaymentAppContext();
+
+  payment_app_context->GetAllManifests(base::Bind(
+      &OnGotAllManifests, ScopedJavaGlobalRef<jobject>(env, jweb_contents),
+      ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 static void InvokePaymentApp(JNIEnv* env,
                              const JavaParamRef<jclass>& jcaller,
-                             const JavaParamRef<jstring>& scopeUrl,
-                             const JavaParamRef<jstring>& optionId,
-                             const JavaParamRef<jobject>& methodDataMap) {
+                             const JavaParamRef<jobject>& jweb_contents,
+                             jlong registration_id,
+                             const JavaParamRef<jstring>& joption_id,
+                             const JavaParamRef<jobjectArray>& jmethod_data) {
+  // TODO(tommyt): crbug.com/669876. Implement this
   NOTIMPLEMENTED();
 }
 

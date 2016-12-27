@@ -240,6 +240,9 @@ class TestStoragePartition : public StoragePartition {
       override {
     return nullptr;
   }
+  content::PaymentAppContext* GetPaymentAppContext() override {
+    return nullptr;
+  }
   content::HostZoomMap* GetHostZoomMap() override { return nullptr; }
   content::HostZoomLevelContext* GetHostZoomLevelContext() override {
     return nullptr;

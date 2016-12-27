@@ -47,6 +47,7 @@ class DOMStorageContext;
 class HostZoomLevelContext;
 class HostZoomMap;
 class IndexedDBContext;
+class PaymentAppContext;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
 class ZoomLevelDelegate;
@@ -74,6 +75,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;
   virtual ZoomLevelDelegate* GetZoomLevelDelegate() = 0;
   virtual PlatformNotificationContext* GetPlatformNotificationContext() = 0;
+  virtual PaymentAppContext* GetPaymentAppContext() = 0;
 
   enum : uint32_t {
     REMOVE_DATA_MASK_APPCACHE = 1 << 0,

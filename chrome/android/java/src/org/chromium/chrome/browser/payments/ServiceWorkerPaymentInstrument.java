@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
@@ -22,6 +23,8 @@ import java.util.Set;
  * @see https://w3c.github.io/webpayments-payment-apps-api/
  */
 public class ServiceWorkerPaymentInstrument extends PaymentInstrument {
+    private final WebContents mWebContents;
+    private final long mAppRegistrationId;
     private final ServiceWorkerPaymentAppBridge.Option mOption;
     private final Set<String> mMethodNames;
 
@@ -31,12 +34,16 @@ public class ServiceWorkerPaymentInstrument extends PaymentInstrument {
      *
      * @see https://w3c.github.io/webpayments-payment-apps-api/#payment-app-options
      *
-     * @param scopeUrl    The scope url of the corresponding service worker payment app.
-     * @param option      A payment app option from the payment app.
+     * @param webContents       The web contents where PaymentRequest was invoked.
+     * @param appRegistrationId The registration id of the corresponding service worker payment app.
+     * @param option            A payment app option from the payment app.
      */
-    public ServiceWorkerPaymentInstrument(String scopeUrl,
+    public ServiceWorkerPaymentInstrument(WebContents webContents, long appRegistrationId,
             ServiceWorkerPaymentAppBridge.Option option) {
-        super(scopeUrl + "#" + option.id, option.label, null /* icon */, option.icon);
+        super(Long.toString(appRegistrationId) + "#" + option.id, option.label, null /* icon */,
+                option.icon);
+        mWebContents = webContents;
+        mAppRegistrationId = appRegistrationId;
         mOption = option;
 
         mMethodNames = new HashSet<String>(option.enabledMethods);
@@ -51,8 +58,8 @@ public class ServiceWorkerPaymentInstrument extends PaymentInstrument {
     public void invokePaymentApp(String merchantName, String origin, PaymentItem total,
             List<PaymentItem> cart, Map<String, PaymentMethodData> methodData,
             InstrumentDetailsCallback callback) {
-        // TODO(tommyt): crbug.com/669876. Implement this for use with Service Worker Payment Apps.
-        callback.onInstrumentDetailsError();
+        ServiceWorkerPaymentAppBridge.invokePaymentApp(
+                mWebContents, mAppRegistrationId, mOption.id, new HashSet<>(methodData.values()));
     }
 
     @Override
