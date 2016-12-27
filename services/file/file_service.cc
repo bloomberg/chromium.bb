@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/filesystem/lock_table.h"
 #include "components/leveldb/leveldb_service_impl.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/file/file_system.h"
 #include "services/file/user_id_map.h"
 #include "services/service_manager/public/cpp/connection.h"
@@ -31,12 +32,12 @@ class FileService::FileSystemObjects
                            mojom::FileSystemRequest request) {
     if (!lock_table_)
       lock_table_ = new filesystem::LockTable;
-    file_system_bindings_.AddBinding(new FileSystem(user_dir_, lock_table_),
-                                     std::move(request));
+    mojo::MakeStrongBinding(
+        base::MakeUnique<FileSystem>(user_dir_, lock_table_),
+        std::move(request));
   }
 
  private:
-  mojo::BindingSet<mojom::FileSystem> file_system_bindings_;
   scoped_refptr<filesystem::LockTable> lock_table_;
   base::FilePath user_dir_;
 
