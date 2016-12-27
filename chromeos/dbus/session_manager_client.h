@@ -211,7 +211,8 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // for the device to retrieve after a device factory reset.
   //
   // The state keys are returned asynchronously via |callback|. The callback
-  // will be invoked with an empty state key vector in case of errors.
+  // is invoked with an empty state key vector in case of errors. If the time
+  // sync fails or there's no network, the callback is never invoked.
   virtual void GetServerBackedStateKeys(const StateKeysCallback& callback) = 0;
 
   // Used for several ARC methods.  Takes a boolean indicating whether the

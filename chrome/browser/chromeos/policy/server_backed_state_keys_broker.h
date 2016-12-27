@@ -46,10 +46,12 @@ class ServerBackedStateKeysBroker {
   // requested yet, calling this will also trigger their initial fetch.
   Subscription RegisterUpdateCallback(const base::Closure& callback);
 
-  // Requests state keys asynchronously. Invokes the passed callback exactly
-  // once (unless |this| gets destroyed before the callback happens), with the
-  // current state keys passed as a parameter to the callback. If there's a
-  // problem determining the state keys, the passed vector will be empty.
+  // Requests state keys asynchronously. Invokes the passed callback at most
+  // once, with the current state keys passed as a parameter to the callback. If
+  // there's a problem determining the state keys, the passed vector will be
+  // empty. If |this| gets destroyed before the callback happens or if the time
+  // sync fails / the network is not established, then the |callback| is never
+  // invoked. See http://crbug.com/649422 for more context.
   void RequestStateKeys(const StateKeysCallback& callback);
 
   // Get the set of current state keys. Empty if state keys are unavailable
