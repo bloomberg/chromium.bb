@@ -84,7 +84,8 @@ class PrivacyCollectionViewControllerTest
 
 // Tests PrivacyCollectionViewController is set up with all appropriate items
 // and sections.
-TEST_F(PrivacyCollectionViewControllerTest, TestModel) {
+// TODO(http://crbug.com/677121): reenable this test.
+TEST_F(PrivacyCollectionViewControllerTest, DISABLED_TestModel) {
   CheckController();
   EXPECT_EQ(4, NumberOfSections());
 
