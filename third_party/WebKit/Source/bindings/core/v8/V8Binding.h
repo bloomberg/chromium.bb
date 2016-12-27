@@ -658,9 +658,7 @@ inline double toCoreDate(v8::Isolate* isolate,
 inline v8::MaybeLocal<v8::Value> v8DateOrNaN(v8::Isolate* isolate,
                                              double value) {
   ASSERT(isolate);
-  return v8::Date::New(
-      isolate->GetCurrentContext(),
-      std::isfinite(value) ? value : std::numeric_limits<double>::quiet_NaN());
+  return v8::Date::New(isolate->GetCurrentContext(), value);
 }
 
 // FIXME: Remove the special casing for NodeFilter and XPathNSResolver.
