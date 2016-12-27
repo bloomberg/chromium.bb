@@ -170,6 +170,40 @@ const ReadingListEntry* ReadingListModelImpl::GetEntryByURL(
   return GetMutableEntryFromURL(gurl);
 }
 
+const ReadingListEntry* ReadingListModelImpl::GetFirstUnreadEntry(
+    bool distilled) const {
+  DCHECK(CalledOnValidThread());
+  DCHECK(loaded());
+  if (unread_entry_count_ == 0) {
+    return nullptr;
+  }
+  int64_t update_time_all = 0;
+  const ReadingListEntry* first_entry_all = nullptr;
+  int64_t update_time_distilled = 0;
+  const ReadingListEntry* first_entry_distilled = nullptr;
+  for (auto& iterator : *entries_) {
+    ReadingListEntry& entry = iterator.second;
+    if (entry.IsRead()) {
+      continue;
+    }
+    if (entry.UpdateTime() > update_time_all) {
+      update_time_all = entry.UpdateTime();
+      first_entry_all = &entry;
+    }
+    if (entry.DistilledState() == ReadingListEntry::PROCESSED &&
+        entry.UpdateTime() > update_time_distilled) {
+      update_time_distilled = entry.UpdateTime();
+      first_entry_distilled = &entry;
+    }
+  }
+  DCHECK(first_entry_all);
+  DCHECK_GT(update_time_all, 0);
+  if (distilled && first_entry_distilled) {
+    return first_entry_distilled;
+  }
+  return first_entry_all;
+}
+
 ReadingListEntry* ReadingListModelImpl::GetMutableEntryFromURL(
     const GURL& url) const {
   DCHECK(CalledOnValidThread());

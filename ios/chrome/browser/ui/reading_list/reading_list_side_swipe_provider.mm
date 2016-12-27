@@ -8,6 +8,7 @@
 #include "components/reading_list/ios/reading_list_entry.h"
 #include "components/reading_list/ios/reading_list_model.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "net/base/network_change_notifier.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -55,16 +56,8 @@ class ReadingListObserverBridge;
   if (!webState || _readingListModel->unread_size() == 0) {
     return;
   }
-  int64_t updateTime = 0;
-  const ReadingListEntry* firstEntry = nullptr;
-  for (const auto& url : _readingListModel->Keys()) {
-    const ReadingListEntry* entry = _readingListModel->GetEntryByURL(url);
-    if (!entry->IsRead() && entry->UpdateTime() > updateTime) {
-      updateTime = entry->UpdateTime();
-      firstEntry = entry;
-    }
-  }
-  DCHECK_GT(updateTime, 0);
+  const ReadingListEntry* firstEntry = _readingListModel->GetFirstUnreadEntry(
+      net::NetworkChangeNotifier::IsOffline());
   DCHECK(firstEntry);
   web::NavigationManager::WebLoadParams params(firstEntry->URL());
   params.transition_type = ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK;

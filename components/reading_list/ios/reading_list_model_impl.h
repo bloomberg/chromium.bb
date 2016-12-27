@@ -55,6 +55,7 @@ class ReadingListModelImpl : public ReadingListModel,
   const std::vector<GURL> Keys() const override;
 
   const ReadingListEntry* GetEntryByURL(const GURL& gurl) const override;
+  const ReadingListEntry* GetFirstUnreadEntry(bool distilled) const override;
 
   void RemoveEntryByURL(const GURL& url) override;
 

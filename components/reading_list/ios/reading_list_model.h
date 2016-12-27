@@ -78,6 +78,10 @@ class ReadingListModel : public base::NonThreadSafe {
   // Returns a specific entry. Returns null if the entry does not exist.
   virtual const ReadingListEntry* GetEntryByURL(const GURL& gurl) const = 0;
 
+  // Returns the first unread entry. If |distilled| is true, prioritize the
+  // entries available offline.
+  virtual const ReadingListEntry* GetFirstUnreadEntry(bool distilled) const = 0;
+
   // Adds |url| at the top of the unread entries, and removes entries with the
   // same |url| from everywhere else if they exist. The entry title will be a
   // trimmed copy of |title.
