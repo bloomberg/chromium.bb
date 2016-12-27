@@ -1514,7 +1514,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   hoverTabSelector_->CancelTabTransition();
 
   TabController* tab = [tabArray_ objectAtIndex:index];
-  if (tabStripModel_->count() > 0) {
+  if (tabStripModel_->count() > 0 && !tabStripModel_->closing_all()) {
     [self startClosingTabWithAnimation:tab];
     [self layoutTabs];
   } else {
