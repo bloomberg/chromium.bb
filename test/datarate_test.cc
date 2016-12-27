@@ -134,7 +134,7 @@ TEST_P(DatarateTestLarge, BasicRateTargetingVBR) {
   cfg_.g_lag_in_frames = 0;
 
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                       30, 1, 0, 300);
+                                       30, 1, 0, 140);
   for (int i = 400; i <= 800; i += 400) {
     cfg_.rc_target_bitrate = i;
     ResetModel();
@@ -159,7 +159,7 @@ TEST_P(DatarateTestLarge, BasicRateTargeting) {
 
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 140);
-  for (int i = 150; i < 800; i += 200) {
+  for (int i = 150; i < 800; i += 400) {
     cfg_.rc_target_bitrate = i;
     ResetModel();
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
@@ -185,7 +185,7 @@ TEST_P(DatarateTestLarge, BasicRateTargeting444) {
   cfg_.rc_max_quantizer = 63;
   cfg_.rc_end_usage = AOM_CBR;
 
-  for (int i = 250; i < 900; i += 200) {
+  for (int i = 250; i < 900; i += 400) {
     cfg_.rc_target_bitrate = i;
     ResetModel();
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
@@ -220,12 +220,12 @@ TEST_P(DatarateTestLarge, ChangingDropFrameThresh) {
   cfg_.kf_max_dist = 9999;
 
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                       30, 1, 0, 140);
+                                       30, 1, 0, 100);
 
   const int kDropFrameThreshTestStep = 30;
   aom_codec_pts_t last_drop = 140;
   int last_num_drops = 0;
-  for (int i = 10; i < 100; i += kDropFrameThreshTestStep) {
+  for (int i = 40; i < 100; i += kDropFrameThreshTestStep) {
     cfg_.rc_dropframe_thresh = i;
     ResetModel();
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
@@ -249,5 +249,5 @@ TEST_P(DatarateTestLarge, ChangingDropFrameThresh) {
 AV1_INSTANTIATE_TEST_CASE(DatarateTestLarge,
                           ::testing::Values(::libaom_test::kOnePassGood,
                                             ::libaom_test::kRealTime),
-                          ::testing::Range(2, 9));
+                          ::testing::Range(2, 9, 2));
 }  // namespace
