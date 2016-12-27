@@ -658,9 +658,8 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .withIsIncognito(true)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
-                        START_INCOGNITO);
+                        START_INCOGNITO | START_OTHER_ACTIVITY);
 
-        assertNull(mDelegate.startActivityIntent);
         assertNull(mDelegate.getNewUrlAfterClobbering());
         assertNull(mDelegate.getReferrerUrlForClobbering());
     }
@@ -752,8 +751,8 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         checkUrl(INTENT_URL_WITH_JAVASCRIPT_FALLBACK_URL)
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
                 .withIsIncognito(true)
-                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
-                        START_OTHER_ACTIVITY);
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
+                        START_INCOGNITO | START_OTHER_ACTIVITY);
 
         Intent invokedIntent = mDelegate.startActivityIntent;
         assertTrue(invokedIntent.getData().toString().startsWith("market://"));
@@ -1282,6 +1281,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         @Override
         public void startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl,
                 Tab tab, boolean needsToCloseTab, boolean proxy) {
+            startActivityIntent = intent;
             startIncognitoIntentCalled = true;
         }
 

@@ -369,8 +369,16 @@ public class ExternalNavigationHandler {
                     if (params.getReferrerUrl() != null) {
                         intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(params.getReferrerUrl()));
                     }
-                    mDelegate.startActivity(intent, false);
-                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                    if (params.isIncognito()) {
+                        mDelegate.startIncognitoIntent(intent, params.getReferrerUrl(),
+                                hasBrowserFallbackUrl ? browserFallbackUrl : null, params.getTab(),
+                                params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(),
+                                false);
+                        return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
+                    } else {
+                        mDelegate.startActivity(intent, false);
+                        return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                    }
                 } catch (ActivityNotFoundException ex) {
                     // ignore the error on devices that does not have
                     // play market installed.
