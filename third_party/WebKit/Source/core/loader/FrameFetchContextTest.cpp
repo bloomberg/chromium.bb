@@ -32,6 +32,7 @@
 
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "core/fetch/MockResource.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameOwner.h"
@@ -678,7 +679,7 @@ TEST_F(FrameFetchContextTest, DisabledDataSaver) {
 TEST_F(FrameFetchContextMockedFrameLoaderClientTest,
        DispatchDidLoadResourceFromMemoryCache) {
   ResourceRequest resourceRequest(url);
-  Resource* resource = ImageResource::create(resourceRequest);
+  Resource* resource = MockResource::create(resourceRequest);
   EXPECT_CALL(
       *client,
       dispatchDidLoadResourceFromMemoryCache(
@@ -701,7 +702,7 @@ TEST_F(FrameFetchContextMockedFrameLoaderClientTest,
   ResourceResponse response;
   response.setURL(url);
   response.setHasMajorCertificateErrors(true);
-  Resource* resource = ImageResource::create(resourceRequest);
+  Resource* resource = MockResource::create(resourceRequest);
   resource->setResponse(response);
   EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(url));
   fetchContext->dispatchDidLoadResourceFromMemoryCache(
