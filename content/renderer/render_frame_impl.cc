@@ -1237,7 +1237,9 @@ void RenderFrameImpl::Initialize() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   new PepperBrowserConnection(this);
 #endif
-  new SharedWorkerRepository(this);
+  shared_worker_repository_ = base::MakeUnique<SharedWorkerRepository>(this);
+  GetWebFrame()->setSharedWorkerRepositoryClient(
+      shared_worker_repository_.get());
 
   if (IsLocalRoot()) {
     // DevToolsAgent is a RenderFrameObserver, and will destruct itself

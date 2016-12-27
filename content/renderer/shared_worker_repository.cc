@@ -8,17 +8,13 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
-#include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 
 SharedWorkerRepository::SharedWorkerRepository(RenderFrameImpl* render_frame)
-    : RenderFrameObserver(render_frame) {
-  render_frame->GetWebFrame()->setSharedWorkerRepositoryClient(this);
-}
+    : render_frame_(render_frame){};
 
-SharedWorkerRepository::~SharedWorkerRepository() {}
+SharedWorkerRepository::~SharedWorkerRepository() = default;
 
 std::unique_ptr<blink::WebSharedWorkerConnector>
 SharedWorkerRepository::createSharedWorkerConnector(
@@ -36,11 +32,11 @@ SharedWorkerRepository::createSharedWorkerConnector(
   params.content_security_policy = content_security_policy.utf16();
   params.security_policy_type = security_policy_type;
   params.document_id = document_id;
-  params.render_frame_route_id = render_frame()->GetRoutingID();
+  params.render_frame_route_id = render_frame_->GetRoutingID();
   params.creation_address_space = creation_address_space;
   params.creation_context_type = creation_context_type;
   ViewHostMsg_CreateWorker_Reply reply;
-  Send(new ViewHostMsg_CreateWorker(params, &reply));
+  render_frame_->Send(new ViewHostMsg_CreateWorker(params, &reply));
   *error = reply.error;
   documents_with_workers_.insert(document_id);
   return base::MakeUnique<WebSharedWorkerProxy>(
@@ -51,13 +47,9 @@ void SharedWorkerRepository::documentDetached(DocumentID document) {
   std::set<DocumentID>::iterator iter = documents_with_workers_.find(document);
   if (iter != documents_with_workers_.end()) {
     // Notify the browser process that the document has shut down.
-    Send(new ViewHostMsg_DocumentDetached(document));
+    render_frame_->Send(new ViewHostMsg_DocumentDetached(document));
     documents_with_workers_.erase(iter);
   }
-}
-
-void SharedWorkerRepository::OnDestruct() {
-  delete this;
 }
 
 }  // namespace content

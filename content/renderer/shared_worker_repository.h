@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/macros.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/WebAddressSpace.h"
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h"
@@ -19,11 +18,11 @@ namespace content {
 
 class RenderFrameImpl;
 
-class SharedWorkerRepository : public RenderFrameObserver,
-                               public blink::WebSharedWorkerRepositoryClient {
+class SharedWorkerRepository final
+    : public blink::WebSharedWorkerRepositoryClient {
  public:
   explicit SharedWorkerRepository(RenderFrameImpl* render_frame);
-  ~SharedWorkerRepository() override;
+  ~SharedWorkerRepository();
 
   // WebSharedWorkerRepositoryClient overrides.
   std::unique_ptr<blink::WebSharedWorkerConnector> createSharedWorkerConnector(
@@ -38,9 +37,7 @@ class SharedWorkerRepository : public RenderFrameObserver,
   void documentDetached(DocumentID document_id) override;
 
  private:
-  // RenderFrameObserver implementation.
-  void OnDestruct() override;
-
+  RenderFrameImpl* render_frame_;
   std::set<DocumentID> documents_with_workers_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerRepository);
