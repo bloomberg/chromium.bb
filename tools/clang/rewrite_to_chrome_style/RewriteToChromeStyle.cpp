@@ -680,6 +680,60 @@ class RewriterBase : public MatchFinder::MatchCallback {
     return *target_node;
   }
 
+  bool GenerateReplacement(const MatchFinder::MatchResult& result,
+                           clang::SourceLocation loc,
+                           llvm::StringRef old_name,
+                           std::string new_name,
+                           Replacement* replacement) {
+    const clang::ASTContext& context = *result.Context;
+    const clang::SourceManager& source_manager = *result.SourceManager;
+
+    if (loc.isMacroID()) {
+      // Try to jump "above" the scratch buffer if |loc| is inside
+      // token##Concatenation.
+      const int kMaxJumps = 5;
+      bool verified_out_of_scratch_space = false;
+      for (int i = 0; i < kMaxJumps && !verified_out_of_scratch_space; i++) {
+        clang::SourceLocation spell = source_manager.getSpellingLoc(loc);
+        verified_out_of_scratch_space =
+            source_manager.getBufferName(spell) != "<scratch space>";
+        if (!verified_out_of_scratch_space)
+          loc = source_manager.getImmediateMacroCallerLoc(loc);
+      }
+      if (!verified_out_of_scratch_space)
+        return false;
+    }
+
+    // If the edit affects only the first character of the identifier, then
+    // narrow down the edit to only this single character.  This is important
+    // for dealing with toFooBar -> ToFooBar method renaming when the method
+    // name is built using macro token concatenation like to##macroArgument - in
+    // this case we should only rewrite "t" -> "T" and leave "o##macroArgument"
+    // untouched.
+    llvm::StringRef expected_old_text = old_name;
+    llvm::StringRef new_text = new_name;
+    if (loc.isMacroID() && expected_old_text.substr(1) == new_text.substr(1)) {
+      expected_old_text = expected_old_text.substr(0, 1);
+      new_text = new_text.substr(0, 1);
+    }
+    clang::SourceLocation spell = source_manager.getSpellingLoc(loc);
+    clang::CharSourceRange range = clang::CharSourceRange::getCharRange(
+        spell, spell.getLocWithOffset(expected_old_text.size()));
+
+    // We need to ensure that |actual_old_text| is the same as
+    // |expected_old_text| - it can be different if |actual_old_text| contains
+    // a macro argument (see DEFINE_WITH_TOKEN_CONCATENATION2 in
+    // macros-original.cc testcase).
+    StringRef actual_old_text = clang::Lexer::getSourceText(
+        range, source_manager, context.getLangOpts());
+    if (actual_old_text != expected_old_text)
+      return false;
+
+    if (replacement)
+      *replacement = Replacement(source_manager, range, new_text);
+    return true;
+  }
+
   void AddReplacement(const MatchFinder::MatchResult& result,
                       llvm::StringRef old_name,
                       std::string new_name) {
@@ -688,10 +742,13 @@ class RewriterBase : public MatchFinder::MatchCallback {
 
     clang::SourceLocation loc =
         TargetNodeTraits<TargetNode>::GetLoc(GetTargetNode(result));
-    edit_tracker_.Add(*result.SourceManager, loc, old_name, new_name);
 
-    clang::CharSourceRange range = clang::CharSourceRange::getTokenRange(loc);
-    replacements_->emplace(*result.SourceManager, range, new_name);
+    Replacement replacement;
+    if (!GenerateReplacement(result, loc, old_name, new_name, &replacement))
+      return;
+
+    replacements_->insert(std::move(replacement));
+    edit_tracker_.Add(*result.SourceManager, loc, old_name, new_name);
   }
 
   const EditTracker& edit_tracker() const { return edit_tracker_; }
@@ -712,26 +769,25 @@ class DeclRewriterBase : public RewriterBase<TargetNode> {
   void run(const MatchFinder::MatchResult& result) override {
     const DeclNode* decl = result.Nodes.getNodeAs<DeclNode>("decl");
     assert(decl);
-    // If false, there's no name to be renamed.
+    llvm::StringRef old_name = decl->getName();
+
+    // Return early if there's no name to be renamed.
     if (!decl->getIdentifier())
       return;
+
+    // Get the new name.
+    std::string new_name;
+    if (!GetNameForDecl(*decl, *result.Context, new_name))
+      return;  // If false, the name was not suitable for renaming.
+
+    // Check if we are able to rewrite the decl (to avoid rewriting if the
+    // decl's identifier is part of macro##Token##Concatenation).
     clang::SourceLocation decl_loc =
         TargetNodeTraits<clang::NamedDecl>::GetLoc(*decl);
-    if (decl_loc.isMacroID()) {
-      // Get the location of the spelling of the declaration. If token pasting
-      // was used this will be in "scratch space" and we don't know how to get
-      // from there back to/ the actual macro with the foo##bar text. So just
-      // don't replace in that case.
-      clang::SourceLocation spell =
-          result.SourceManager->getSpellingLoc(decl_loc);
-      if (result.SourceManager->getBufferName(spell) == "<scratch space>")
-        return;
-    }
-    clang::ASTContext* context = result.Context;
-    std::string new_name;
-    if (!GetNameForDecl(*decl, *context, new_name))
-      return;  // If false, the name was not suitable for renaming.
-    llvm::StringRef old_name = decl->getName();
+    if (!Base::GenerateReplacement(result, decl_loc, old_name, new_name,
+                                   nullptr))
+      return;
+
     Base::AddReplacement(result, old_name, std::move(new_name));
   }
 };
