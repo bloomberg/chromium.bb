@@ -20,7 +20,6 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
-from chromite.lib import patch as cros_patch
 from chromite.lib import results_lib
 
 
@@ -871,40 +870,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     return not any([x in slave_statuses and slave_statuses[x].Failed() for
                     x in sanity_check_slaves])
 
-  def GetIrrelevantChanges(self, board_metadata):
-    """Calculates irrelevant changes.
-
-    Args:
-      board_metadata: A dictionary of board specific metadata.
-
-    Returns:
-      A set of irrelevant changes to the build.
-    """
-    if not board_metadata:
-      return set()
-    # changes irrelevant to all the boards are irrelevant to the build
-    changeset_per_board_list = list()
-    for v in board_metadata.values():
-      changes_dict_list = v.get('irrelevant_changes', None)
-      if changes_dict_list:
-        changes_set = set(cros_patch.GerritFetchOnlyPatch.FromAttrDict(d) for d
-                          in changes_dict_list)
-        changeset_per_board_list.append(changes_set)
-      else:
-        # If any board has no irrelevant change, the whole build not have also.
-        return set()
-
-    return set.intersection(*changeset_per_board_list)
-
   def PerformStage(self):
     """Run CommitQueueCompletionStage."""
-    if (not self._run.config.master and
-        not self._run.config.do_not_apply_cq_patches):
-      # Slave needs to record what change are irrelevant to this build.
-      board_metadata = self._run.attrs.metadata.GetDict().get('board-metadata')
-      irrelevant_changes = self.GetIrrelevantChanges(board_metadata)
-      self.sync_stage.pool.RecordIrrelevantChanges(irrelevant_changes)
-
     super(CommitQueueCompletionStage, self).PerformStage()
 
 

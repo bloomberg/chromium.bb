@@ -1194,7 +1194,6 @@ class ValidationPool(object):
       return
 
     metadata = self._run.attrs.metadata
-    _, db = self._run.GetCIDBHandle()
     timestamp = int(time.time())
 
     for change in changes:
@@ -1203,8 +1202,7 @@ class ValidationPool(object):
       # TODO(akeshet): If a separate query for each insert here becomes
       # a performance issue, consider batch inserting all the cl actions
       # with a single query.
-      if db:
-        self._InsertCLActionToDatabase(change, constants.CL_ACTION_PICKED_UP)
+      self._InsertCLActionToDatabase(change, constants.CL_ACTION_PICKED_UP)
 
   @classmethod
   def FilterModifiedChanges(cls, changes):
@@ -1364,13 +1362,11 @@ class ValidationPool(object):
     metadata = self._run.attrs.metadata
     timestamp = int(time.time())
     metadata.RecordCLAction(change, action, timestamp)
-    _, db = self._run.GetCIDBHandle()
     # NOTE(akeshet): The same |reason| will be recorded, regardless of whether
     # the change was submitted successfully or unsuccessfully. This is
     # probably what we want, because it gives us a way to determine why we
     # tried to submit changes that failed to submit.
-    if db:
-      self._InsertCLActionToDatabase(change, action, reason)
+    self._InsertCLActionToDatabase(change, action, reason)
 
   def RemoveReady(self, change, reason=None):
     """Remove the commit ready and trybot ready bits for |change|."""
@@ -1798,19 +1794,3 @@ class ValidationPool(object):
     if failed:
       self._HandleApplyFailure(failed)
     return plans
-
-  def RecordIrrelevantChanges(self, changes):
-    """Records |changes| irrelevant to the slave build into cidb.
-
-    Args:
-      changes: A set of irrelevant changes to record.
-    """
-    if changes:
-      logging.info('The following changes are irrelevant to this build: %s',
-                   cros_patch.GetChangesAsString(changes))
-    else:
-      logging.info('All changes are considered relevant to this build.')
-
-    for change in changes:
-      self._InsertCLActionToDatabase(change,
-                                     constants.CL_ACTION_IRRELEVANT_TO_SLAVE)

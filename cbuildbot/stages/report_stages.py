@@ -14,11 +14,6 @@ import StringIO
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
-from chromite.lib import config_lib
-from chromite.lib import constants
-from chromite.lib import failures_lib
-from chromite.lib import metadata_lib
-from chromite.lib import results_lib
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import validation_pool
@@ -26,15 +21,21 @@ from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import build_time_stats
 from chromite.lib import cidb
+from chromite.lib import config_lib
+from chromite.lib import constants
+from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import graphite
+from chromite.lib import failures_lib
 from chromite.lib import git
+from chromite.lib import graphite
 from chromite.lib import gs
+from chromite.lib import metadata_lib
 from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
+from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
 
@@ -1134,6 +1135,27 @@ class DetectIrrelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
 
     return subsystem_set
 
+  def _RecordIrrelevantChanges(self, changes):
+    """Records |changes| irrelevant to the slave build into cidb.
+
+    Args:
+      builder_run: BuilderRun instance for this build.
+      changes: A set of irrelevant changes to record.
+    """
+    if not changes:
+      logging.info('All changes are considered relevant to this build.')
+      return
+
+    logging.info('The following changes are irrelevant to this build: %s',
+                 cros_patch.GetChangesAsString(changes))
+
+    build_id, db = self._run.GetCIDBHandle()
+    if db:
+      cl_actions = [clactions.CLAction.FromGerritPatchAndAction(
+          change, constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
+                    for change in changes]
+      db.InsertCLActions(build_id, cl_actions)
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Run DetectIrrelevantChangesStage."""
@@ -1150,12 +1172,23 @@ class DetectIrrelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
       self._run.attrs.metadata.UpdateBoardDictWithDict(
           self._current_board, {'irrelevant_changes': change_dict_list})
 
+      if (not self._run.config.do_not_apply_cq_patches and
+          config_lib.IsCQType(self._run.config.build_type)):
+        # As each CQ build config has only one board, it's safe to record
+        # irrelevant changes in this stage. For builds with multiple board
+        # configurations, irrelevant changes have to be sorted and reocrded in
+        # Completion stage which means each board has detected and recorded its
+        # irrelevant changes to metadata in the DetectIrrelevantChanges stage.
+
+        # Record the irrelevant changes to CIDB.
+        self._RecordIrrelevantChanges(irrelevant_changes)
+
     if irrelevant_changes:
       relevant_changes = list(set(self.changes) - irrelevant_changes)
       logging.info('Below are the irrelevant changes for board: %s.',
                    self._current_board)
-      (validation_pool.ValidationPool.
-       PrintLinksToChanges(list(irrelevant_changes)))
+      validation_pool.ValidationPool.PrintLinksToChanges(
+          list(irrelevant_changes))
     else:
       relevant_changes = self.changes
 

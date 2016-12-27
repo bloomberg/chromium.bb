@@ -430,6 +430,12 @@ class DetectIrrelevantChangesStageTest(
 
     self._Prepare()
 
+    self.fake_db = fake_cidb.FakeCIDBConnection()
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
+    build_id = self.fake_db.InsertBuild(
+        'test-paladin', 'chromeos', 1, 'test-paladin', 'bot_hostname')
+    self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
+
   def testGetSubsystemsWithoutEmptyEntry(self):
     """Tests the logic of GetSubsystemTobeTested() under normal case."""
     relevant_changes = self.changes
@@ -456,3 +462,17 @@ class DetectIrrelevantChangesStageTest(
     return report_stages.DetectIrrelevantChangesStage(self._run,
                                                       self._current_board,
                                                       self.changes)
+
+  def testRecordIrrelevantChanges(self):
+    """Test RecordIrrelevantChanges."""
+    stage = self.ConstructStage()
+    stage._RecordIrrelevantChanges(self.changes)
+    action_history = self.fake_db.GetActionHistory()
+    self.assertEqual(len(action_history), 2)
+
+  def testRecordIrrelevantChangesWithEmptySet(self):
+    """Test RecordIrrelevantChanges with an empty changes set."""
+    stage = self.ConstructStage()
+    stage._RecordIrrelevantChanges(set())
+    action_history = self.fake_db.GetActionHistory()
+    self.assertEqual(len(action_history), 0)
