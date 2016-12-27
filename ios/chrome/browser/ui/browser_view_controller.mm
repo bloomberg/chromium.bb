@@ -3872,7 +3872,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   switch (command) {
     case IDC_BACK:
-      [[_model currentTab] goBack];
+      // TODO(crbug.com.677160): Remove |canGoBack| check.
+      if ([_model currentTab].canGoBack) {
+        [[_model currentTab] goBack];
+      }
       break;
     case IDC_BOOKMARK_PAGE:
       [self initializeBookmarkInteractionController];
@@ -3913,7 +3916,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [self searchFindInPage];
       break;
     case IDC_FORWARD:
-      [[_model currentTab] goForward];
+      // TODO(crbug.com.677160): Remove |canGoForward| check.
+      if ([_model currentTab].canGoForward) {
+        [[_model currentTab] goForward];
+      }
       break;
     case IDC_FULLSCREEN:
       NOTIMPLEMENTED();
