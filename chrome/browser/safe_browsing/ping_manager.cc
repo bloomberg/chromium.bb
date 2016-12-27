@@ -99,10 +99,9 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
   DCHECK(!url_prefix_.empty());
 
   if (request_context_getter) {
-    net::ReportSender::CookiesPreference cookies_preference;
-    GURL certificate_upload_url;
-    cookies_preference = net::ReportSender::DO_NOT_SEND_COOKIES;
-    certificate_upload_url = GURL(kExtendedReportingUploadUrlInsecure);
+    const net::ReportSender::CookiesPreference cookies_preference =
+        net::ReportSender::DO_NOT_SEND_COOKIES;
+    const GURL certificate_upload_url(kExtendedReportingUploadUrlInsecure);
 
     certificate_error_reporter_.reset(new certificate_reporting::ErrorReporter(
         request_context_getter->GetURLRequestContext(), certificate_upload_url,

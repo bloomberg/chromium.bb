@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -18,12 +19,19 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
+class PrefService;
+class Profile;
+
 namespace base {
 class Clock;
 }
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace safe_browsing {
+class SafeBrowsingService;
 }
 
 // This service initiates uploads of invalid certificate reports and retries any
@@ -34,10 +42,17 @@ class URLRequestContextGetter;
 // Lifetime and dependencies:
 //
 // CertificateReportingService uses the url request context from SafeBrowsing
-// service. SafeBrowsing service is created before CertificateReportingService,
+// service. SafeBrowsingService is created before CertificateReportingService,
 // but is also shut down before any KeyedService is shut down. This means that
 // CertificateReportingService cannot depend on SafeBrowsing's url request being
-// available at all times, and it should know when SafeBrowsing shuts down.
+// available at all times, and it should know when SafeBrowsing shuts down. It
+// does this by subscribing to SafeBrowsingService shut downs when it's
+// created. When SafeBrowsingService shuts down, CertificateReportingService
+// also shuts down.
+//
+// This class also observes SafeBrowsing preference changes to enable/disable
+// reporting. It does this by subscribing to changes in SafeBrowsing and
+// extended reporting preferences.
 class CertificateReportingService : public KeyedService {
  public:
   // Represents a report to be sent.
@@ -130,12 +145,14 @@ class CertificateReportingService : public KeyedService {
   };
 
   CertificateReportingService(
+      safe_browsing::SafeBrowsingService* safe_browsing_service,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      Profile* profile,
       uint8_t server_public_key[/* 32 */],
       uint32_t server_public_key_version,
       size_t max_queued_report_count,
       base::TimeDelta max_report_age,
-      std::unique_ptr<base::Clock> clock);
+      base::Clock* clock);
 
   ~CertificateReportingService() override;
 
@@ -154,12 +171,8 @@ class CertificateReportingService : public KeyedService {
   // once the service is initialized.
   void SetEnabled(bool enabled);
 
-  // Getters and setters for testing.
+  // Getters for testing.
   Reporter* GetReporterForTesting() const;
-  void SetMaxQueuedReportCountForTesting(size_t max_report_count);
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
-  void SetMaxReportAgeForTesting(base::TimeDelta max_report_age);
-
   static GURL GetReportingURLForTesting();
 
  private:
@@ -187,12 +200,28 @@ class CertificateReportingService : public KeyedService {
                        uint8_t* server_public_key,
                        uint32_t server_public_key_version);
 
+  void OnPreferenceChanged();
+
+  const PrefService& pref_service_;
+
   // If true, reporting is enabled. When SafeBrowsing preferences change, this
   // might be set to false.
   bool enabled_;
 
   net::URLRequestContext* url_request_context_;
   std::unique_ptr<Reporter> reporter_;
+
+  // Subscription for url request context shutdowns. When this subscription is
+  // notified, it means SafeBrowsingService is shutting down, and this service
+  // must also shut down.
+  std::unique_ptr<base::CallbackList<void(void)>::Subscription>
+      safe_browsing_service_shutdown_subscription_;
+
+  // Subscription for state changes. When this subscription is notified, it
+  // means SafeBrowsingService is enabled/disabled or one of the preferences
+  // related to it is changed.
+  std::unique_ptr<base::CallbackList<void(void)>::Subscription>
+      safe_browsing_state_subscription_;
 
   // Maximum number of reports to be queued for retry.
   size_t max_queued_report_count_;
@@ -202,11 +231,7 @@ class CertificateReportingService : public KeyedService {
   // this age is ignored and is not re-uploaded.
   base::TimeDelta max_report_age_;
 
-  std::unique_ptr<base::Clock> clock_;
-
-  // Whether a send has ever been made. Used to verify that test setters are
-  // only called after initialization.
-  bool made_send_attempt_;
+  base::Clock* clock_;
 
   // Encryption parameters.
   uint8_t* server_public_key_;

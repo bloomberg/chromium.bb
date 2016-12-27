@@ -14,4 +14,23 @@ CertificateReportingMetricsProvider::CertificateReportingMetricsProvider() {}
 CertificateReportingMetricsProvider::~CertificateReportingMetricsProvider() {}
 
 void CertificateReportingMetricsProvider::ProvideGeneralMetrics(
-    metrics::ChromeUserMetricsExtension* unused) {}
+    metrics::ChromeUserMetricsExtension* unused) {
+  // When ProvideGeneralMetrics is called, this class is being asked to provide
+  // metrics to the metrics service. It doesn't provide any metrics though,
+  // instead it tells CertificateReportingService to upload any pending reports.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)
+    return;
+
+  // Do not try to create profile here if it does not exist, because this method
+  // can be called during browser shutdown.
+  Profile* profile = profile_manager->GetProfileByPath(
+      profile_manager->GetLastUsedProfileDir(profile_manager->user_data_dir()));
+  if (!profile)
+    return;
+
+  CertificateReportingService* service =
+      CertificateReportingServiceFactory::GetForBrowserContext(profile);
+  if (service)
+    service->SendPending();
+}

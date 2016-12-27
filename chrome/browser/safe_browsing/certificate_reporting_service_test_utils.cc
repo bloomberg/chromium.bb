@@ -159,12 +159,13 @@ void CertReportJobInterceptor::SetFailureMode(
                  weak_factory_.GetWeakPtr(), expected_report_result));
 }
 
-void CertReportJobInterceptor::Resume() {
+void CertReportJobInterceptor::Resume(const base::Callback<void()>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTask(
+  content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&CertReportJobInterceptor::ResumeOnIOThread,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      callback);
 }
 
 const std::set<std::string>& CertReportJobInterceptor::successful_reports()
@@ -188,6 +189,11 @@ void CertReportJobInterceptor::ClearObservedReports() {
   successful_reports_.clear();
   failed_reports_.clear();
   delayed_reports_.clear();
+}
+
+void CertReportJobInterceptor::WaitForReports(int num_reports) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  wait_helper_.Wait(num_reports);
 }
 
 void CertReportJobInterceptor::SetFailureModeOnIOThread(
@@ -218,33 +224,17 @@ void CertReportJobInterceptor::RequestCreated(
       delayed_reports_.insert(uploaded_report);
       break;
   }
+  wait_helper_.OnEvent();
 }
 
-CertificateReportingServiceTestNetworkDelegate::
-    CertificateReportingServiceTestNetworkDelegate(
-        const base::Callback<void()>& url_request_destroyed_callback)
-    : url_request_destroyed_callback_(url_request_destroyed_callback) {}
+ReportExpectation::ReportExpectation() {}
 
-CertificateReportingServiceTestNetworkDelegate::
-    ~CertificateReportingServiceTestNetworkDelegate() {}
+ReportExpectation::ReportExpectation(const ReportExpectation& other) = default;
 
-void CertificateReportingServiceTestNetworkDelegate::OnURLRequestDestroyed(
-    net::URLRequest* request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   url_request_destroyed_callback_);
-}
-
-CertificateReportingServiceTestBase::ReportExpectation::ReportExpectation() {}
-
-CertificateReportingServiceTestBase::ReportExpectation::ReportExpectation(
-    const ReportExpectation& other) = default;
-
-CertificateReportingServiceTestBase::ReportExpectation::~ReportExpectation() {}
+ReportExpectation::~ReportExpectation() {}
 
 // static
-CertificateReportingServiceTestBase::ReportExpectation
-CertificateReportingServiceTestBase::ReportExpectation::Successful(
+ReportExpectation ReportExpectation::Successful(
     const std::set<std::string>& reports) {
   ReportExpectation expectation;
   expectation.successful_reports = reports;
@@ -252,8 +242,7 @@ CertificateReportingServiceTestBase::ReportExpectation::Successful(
 }
 
 // static
-CertificateReportingServiceTestBase::ReportExpectation
-CertificateReportingServiceTestBase::ReportExpectation::Failed(
+ReportExpectation ReportExpectation::Failed(
     const std::set<std::string>& reports) {
   ReportExpectation expectation;
   expectation.failed_reports = reports;
@@ -261,124 +250,93 @@ CertificateReportingServiceTestBase::ReportExpectation::Failed(
 }
 
 // static
-CertificateReportingServiceTestBase::ReportExpectation
-CertificateReportingServiceTestBase::ReportExpectation::Delayed(
+ReportExpectation ReportExpectation::Delayed(
     const std::set<std::string>& reports) {
   ReportExpectation expectation;
   expectation.delayed_reports = reports;
   return expectation;
 }
 
-CertificateReportingServiceTestBase::CertificateReportingServiceTestBase()
-    : num_request_deletions_to_wait_for_(0), num_deleted_requests_(0) {
+int ReportExpectation::num_reports() const {
+  return successful_reports.size() + failed_reports.size() +
+         delayed_reports.size();
+}
+
+CertificateReportingServiceTestHelper::CertificateReportingServiceTestHelper() {
   memset(server_private_key_, 1, sizeof(server_private_key_));
   crypto::curve25519::ScalarBaseMult(server_private_key_, server_public_key_);
 }
 
-CertificateReportingServiceTestBase::~CertificateReportingServiceTestBase() {}
+CertificateReportingServiceTestHelper::
+    ~CertificateReportingServiceTestHelper() {}
 
-void CertificateReportingServiceTestBase::SetUpInterceptor() {
+void CertificateReportingServiceTestHelper::SetUpInterceptor() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   url_request_interceptor_ =
       new CertReportJobInterceptor(REPORTS_FAIL, server_private_key_);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &CertificateReportingServiceTestBase::SetUpInterceptorOnIOThread,
-          base::Unretained(this),
-          base::Passed(std::unique_ptr<net::URLRequestInterceptor>(
-              url_request_interceptor_))));
-}
-
-void CertificateReportingServiceTestBase::TearDownInterceptor() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &CertificateReportingServiceTestBase::TearDownInterceptorOnIOThread,
-          base::Unretained(this)));
+      base::Bind(&SetUpURLHandlersOnIOThread,
+                 base::Passed(std::unique_ptr<net::URLRequestInterceptor>(
+                     url_request_interceptor_))));
 }
 
 // Changes the behavior of report uploads to fail or succeed.
-void CertificateReportingServiceTestBase::SetFailureMode(
+void CertificateReportingServiceTestHelper::SetFailureMode(
     ReportSendingResult expected_report_result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   url_request_interceptor_->SetFailureMode(expected_report_result);
 }
 
-void CertificateReportingServiceTestBase::ResumeDelayedRequest() {
+void CertificateReportingServiceTestHelper::ResumeDelayedRequest(
+    const base::Callback<void()>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  url_request_interceptor_->Resume();
+  url_request_interceptor_->Resume(callback);
 }
 
-void CertificateReportingServiceTestBase::WaitForRequestsDestroyed(
-    const ReportExpectation& expectation) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!run_loop_);
-
-  const int num_request_deletions_to_wait_for =
-      expectation.successful_reports.size() +
-      expectation.failed_reports.size() + expectation.delayed_reports.size();
-
-  ASSERT_LE(num_deleted_requests_, num_request_deletions_to_wait_for)
-      << "Observed unexpected report";
-  if (num_deleted_requests_ < num_request_deletions_to_wait_for) {
-    num_request_deletions_to_wait_for_ = num_request_deletions_to_wait_for;
-    run_loop_.reset(new base::RunLoop());
-    run_loop_->Run();
-    run_loop_.reset(nullptr);
-    EXPECT_EQ(0, num_deleted_requests_);
-    EXPECT_EQ(0, num_request_deletions_to_wait_for_);
-  } else if (num_deleted_requests_ == num_request_deletions_to_wait_for) {
-    num_deleted_requests_ = 0;
-    num_request_deletions_to_wait_for_ = 0;
-  }
-  EXPECT_EQ(expectation.successful_reports,
-            url_request_interceptor_->successful_reports());
-  EXPECT_EQ(expectation.failed_reports,
-            url_request_interceptor_->failed_reports());
-  EXPECT_EQ(expectation.delayed_reports,
-            url_request_interceptor_->delayed_reports());
-  url_request_interceptor_->ClearObservedReports();
-}
-
-uint8_t* CertificateReportingServiceTestBase::server_public_key() {
+uint8_t* CertificateReportingServiceTestHelper::server_public_key() {
   return server_public_key_;
 }
 
-uint32_t CertificateReportingServiceTestBase::server_public_key_version()
+uint32_t CertificateReportingServiceTestHelper::server_public_key_version()
     const {
   return kServerPublicKeyTestVersion;
 }
 
-net::NetworkDelegate* CertificateReportingServiceTestBase::network_delegate() {
-  return network_delegate_.get();
-}
+ReportWaitHelper::ReportWaitHelper()
+    : num_events_to_wait_for_(0), num_received_events_(0) {}
+ReportWaitHelper::~ReportWaitHelper() {}
 
-void CertificateReportingServiceTestBase::SetUpInterceptorOnIOThread(
-    std::unique_ptr<net::URLRequestInterceptor> url_request_interceptor) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  network_delegate_.reset(new CertificateReportingServiceTestNetworkDelegate(
-      base::Bind(&CertificateReportingServiceTestBase::OnURLRequestDestroyed,
-                 base::Unretained(this))));
-  SetUpURLHandlersOnIOThread(std::move(url_request_interceptor));
-}
-
-void CertificateReportingServiceTestBase::TearDownInterceptorOnIOThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  network_delegate_.reset(nullptr);
-}
-
-void CertificateReportingServiceTestBase::OnURLRequestDestroyed() {
+void ReportWaitHelper::Wait(int num_events_to_wait_for) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  num_deleted_requests_++;
+  DCHECK(!run_loop_);
+  ASSERT_LE(num_received_events_, num_events_to_wait_for)
+      << "Observed unexpected report";
+
+  if (num_received_events_ < num_events_to_wait_for) {
+    num_events_to_wait_for_ = num_events_to_wait_for;
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+    run_loop_.reset(nullptr);
+    EXPECT_EQ(0, num_received_events_);
+    EXPECT_EQ(0, num_events_to_wait_for_);
+  } else if (num_received_events_ == num_events_to_wait_for) {
+    num_received_events_ = 0;
+    num_events_to_wait_for_ = 0;
+  }
+}
+
+void ReportWaitHelper::OnEvent() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  num_received_events_++;
   if (!run_loop_) {
     return;
   }
-  EXPECT_LE(num_deleted_requests_, num_request_deletions_to_wait_for_);
-  if (num_deleted_requests_ == num_request_deletions_to_wait_for_) {
-    num_request_deletions_to_wait_for_ = 0;
-    num_deleted_requests_ = 0;
+  ASSERT_LE(num_received_events_, num_events_to_wait_for_)
+      << "Observed unexpected report";
+  if (num_received_events_ == num_events_to_wait_for_) {
+    num_events_to_wait_for_ = 0;
+    num_received_events_ = 0;
     run_loop_->Quit();
   }
 }

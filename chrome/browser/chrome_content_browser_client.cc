@@ -73,8 +73,8 @@
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/safe_browsing/certificate_reporting_service.h"
+#include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -144,6 +144,7 @@
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_recorder_impl.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
@@ -671,28 +672,26 @@ void HandleFlashDownloadActionOnUIThread(int render_process_id,
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 // An implementation of the SSLCertReporter interface used by
-// SSLErrorHandler. Uses the SafeBrowsing UI manager to send invalid
-// certificate reports.
-class SafeBrowsingSSLCertReporter : public SSLCertReporter {
+// SSLErrorHandler. Uses CertificateReportingService to send reports. The
+// service handles queueing and re-sending of failed reports. Each certificate
+// error creates a new instance of this class.
+class CertificateReportingServiceCertReporter : public SSLCertReporter {
  public:
-  explicit SafeBrowsingSSLCertReporter(
-      const scoped_refptr<safe_browsing::SafeBrowsingUIManager>&
-          safe_browsing_ui_manager)
-      : safe_browsing_ui_manager_(safe_browsing_ui_manager) {}
-  ~SafeBrowsingSSLCertReporter() override {}
+  explicit CertificateReportingServiceCertReporter(
+      CertificateReportingService* service)
+      : service_(service) {}
+  ~CertificateReportingServiceCertReporter() override {}
 
   // SSLCertReporter implementation
   void ReportInvalidCertificateChain(
       const std::string& serialized_report) override {
-    if (safe_browsing_ui_manager_) {
-      safe_browsing_ui_manager_->ReportInvalidCertificateChain(
-          serialized_report, base::Bind(&base::DoNothing));
-    }
+    service_->Send(serialized_report);
   }
 
  private:
-  const scoped_refptr<safe_browsing::SafeBrowsingUIManager>
-      safe_browsing_ui_manager_;
+  CertificateReportingService* service_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceCertReporter);
 };
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -2201,12 +2200,12 @@ void ChromeContentBrowserClient::AllowCertificateError(
   if (expired_previous_decision)
     options_mask |= SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED;
 
-  safe_browsing::SafeBrowsingService* safe_browsing_service =
-      g_browser_process->safe_browsing_service();
-  std::unique_ptr<SafeBrowsingSSLCertReporter> cert_reporter(
-      new SafeBrowsingSSLCertReporter(safe_browsing_service
-                                          ? safe_browsing_service->ui_manager()
-                                          : nullptr));
+  CertificateReportingService* cert_reporting_service =
+      CertificateReportingServiceFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+  std::unique_ptr<CertificateReportingServiceCertReporter> cert_reporter(
+      new CertificateReportingServiceCertReporter(cert_reporting_service));
+
   SSLErrorHandler::HandleSSLError(web_contents, cert_error, ssl_info,
                                   request_url, options_mask,
                                   std::move(cert_reporter), callback);

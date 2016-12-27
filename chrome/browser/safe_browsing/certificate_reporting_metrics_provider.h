@@ -8,10 +8,13 @@
 #include "base/macros.h"
 #include "components/metrics/metrics_provider.h"
 
-// When user metrics are about to be uploaded,
+// CertificateReportingService doesn't do its own scheduling when retrying
+// uploads of failed reports. Instead, it piggybacks off of the metrics service
+// scheduler.
+//
+// When the metrics services requests metrics to be uploaded,
 // CertificateReportingMetricsProvider looks up the CertificateReportingService
-// for the current profile and tells it to record its metrics before the upload
-// occurs.
+// for the current profile and tells it send all pending reports at once.
 class CertificateReportingMetricsProvider : public metrics::MetricsProvider {
  public:
   CertificateReportingMetricsProvider();

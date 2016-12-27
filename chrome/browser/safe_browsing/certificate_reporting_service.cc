@@ -1,11 +1,17 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/time/clock.h"
-#include "base/time/default_clock.h"
-#include "chrome/browser/safe_browsing/certificate_reporting_service.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -21,6 +27,12 @@ const char kExtendedReportingUploadUrl[] =
 bool ReportCompareFunc(const CertificateReportingService::Report& item1,
                        const CertificateReportingService::Report& item2) {
   return item1.creation_time > item2.creation_time;
+}
+
+// Records an UMA histogram of the net errors when certificate reports
+// fail to send.
+void RecordUMAOnFailure(int net_error) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SSL.CertificateErrorReportFailure", -net_error);
 }
 
 }  // namespace
@@ -128,6 +140,7 @@ void CertificateReportingService::Reporter::ErrorCallback(int report_id,
                                                           const GURL& url,
                                                           int error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  RecordUMAOnFailure(error);
   if (retries_enabled_) {
     auto it = inflight_reports_.find(report_id);
     DCHECK(it != inflight_reports_.end());
@@ -142,26 +155,40 @@ void CertificateReportingService::Reporter::SuccessCallback(int report_id) {
 }
 
 CertificateReportingService::CertificateReportingService(
+    safe_browsing::SafeBrowsingService* safe_browsing_service,
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+    Profile* profile,
     uint8_t server_public_key[/* 32 */],
     uint32_t server_public_key_version,
     size_t max_queued_report_count,
     base::TimeDelta max_report_age,
-    std::unique_ptr<base::Clock> clock)
-    : enabled_(true),
+    base::Clock* clock)
+    : pref_service_(*profile->GetPrefs()),
+      enabled_(true),
       url_request_context_(nullptr),
       max_queued_report_count_(max_queued_report_count),
       max_report_age_(max_report_age),
-      clock_(std::move(clock)),
-      made_send_attempt_(false),
+      clock_(clock),
       server_public_key_(server_public_key),
       server_public_key_version_(server_public_key_version) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(clock_);
+  // Subscribe to SafeBrowsing shutdown notifications.
+  safe_browsing_service_shutdown_subscription_ =
+      safe_browsing_service->RegisterShutdownCallback(base::Bind(
+          &CertificateReportingService::Shutdown, base::Unretained(this)));
+
+  // Subscribe to SafeBrowsing preference change notifications.
+  safe_browsing_state_subscription_ =
+      safe_browsing_service->RegisterStateCallback(
+          base::Bind(&CertificateReportingService::OnPreferenceChanged,
+                     base::Unretained(this)));
+
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&CertificateReportingService::InitializeOnIOThread,
                  base::Unretained(this), enabled_, url_request_context_getter,
-                 max_queued_report_count_, max_report_age_, clock_.get(),
+                 max_queued_report_count_, max_report_age_, clock_,
                  server_public_key_, server_public_key_version_));
 }
 
@@ -178,7 +205,6 @@ void CertificateReportingService::Shutdown() {
 
 void CertificateReportingService::Send(const std::string& serialized_report) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  made_send_attempt_ = true;
   if (!reporter_) {
     return;
   }
@@ -190,7 +216,6 @@ void CertificateReportingService::Send(const std::string& serialized_report) {
 
 void CertificateReportingService::SendPending() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  made_send_attempt_ = true;
   if (!reporter_) {
     return;
   }
@@ -227,27 +252,6 @@ CertificateReportingService::GetReporterForTesting() const {
   return reporter_.get();
 }
 
-void CertificateReportingService::SetMaxQueuedReportCountForTesting(
-    size_t count) {
-  DCHECK(!made_send_attempt_);
-  max_queued_report_count_ = count;
-  Reset();
-}
-
-void CertificateReportingService::SetClockForTesting(
-    std::unique_ptr<base::Clock> clock) {
-  DCHECK(!made_send_attempt_);
-  clock_ = std::move(clock);
-  Reset();
-}
-
-void CertificateReportingService::SetMaxReportAgeForTesting(
-    base::TimeDelta max_report_age) {
-  DCHECK(!made_send_attempt_);
-  max_report_age_ = max_report_age;
-  Reset();
-}
-
 // static
 GURL CertificateReportingService::GetReportingURLForTesting() {
   return GURL(kExtendedReportingUploadUrl);
@@ -258,7 +262,7 @@ void CertificateReportingService::Reset() {
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&CertificateReportingService::ResetOnIOThread,
                  base::Unretained(this), enabled_, url_request_context_,
-                 max_queued_report_count_, max_report_age_, clock_.get(),
+                 max_queued_report_count_, max_report_age_, clock_,
                  server_public_key_, server_public_key_version_));
 }
 
@@ -295,4 +299,13 @@ void CertificateReportingService::ResetOnIOThread(
                    std::unique_ptr<BoundedReportList>(
                        new BoundedReportList(max_queued_report_count)),
                    clock, max_report_age, true /* retries_enabled */));
+}
+
+void CertificateReportingService::OnPreferenceChanged() {
+  safe_browsing::SafeBrowsingService* safe_browsing_service_ =
+      g_browser_process->safe_browsing_service();
+  const bool enabled = safe_browsing_service_ &&
+                       safe_browsing_service_->enabled_by_prefs() &&
+                       safe_browsing::IsExtendedReportingEnabled(pref_service_);
+  SetEnabled(enabled);
 }

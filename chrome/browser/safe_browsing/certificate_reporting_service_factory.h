@@ -24,6 +24,13 @@ class CertificateReportingServiceFactory
   static CertificateReportingService* GetForBrowserContext(
       content::BrowserContext* context);
 
+  // Setters for testing.
+  void SetReportEncryptionParamsForTesting(uint8_t* server_public_key,
+                                           uint32_t server_public_key_version);
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetQueuedReportTTLForTesting(base::TimeDelta queued_report_ttl);
+  void SetMaxQueuedReportCountForTesting(size_t max_report_count);
+
  private:
   friend struct base::DefaultSingletonTraits<
       CertificateReportingServiceFactory>;
@@ -36,6 +43,14 @@ class CertificateReportingServiceFactory
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
+
+  // Encryption parameters for certificate reports.
+  uint8_t* server_public_key_;
+  uint32_t server_public_key_version_;
+
+  std::unique_ptr<base::Clock> clock_;
+  base::TimeDelta queued_report_ttl_;
+  size_t max_queued_report_count_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceFactory);
 };

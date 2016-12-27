@@ -122,7 +122,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
     return services_delegate_->GetDownloadService();
   }
 
-  net::URLRequestContextGetter* url_request_context();
+  scoped_refptr<net::URLRequestContextGetter> url_request_context();
 
   const scoped_refptr<SafeBrowsingUIManager>& ui_manager() const;
 
@@ -163,11 +163,18 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   // Type for subscriptions to SafeBrowsing service state.
   typedef base::CallbackList<void(void)>::Subscription StateSubscription;
+  typedef base::CallbackList<void(void)>::Subscription ShutdownSubscription;
 
   // Adds a listener for when SafeBrowsing preferences might have changed.
   // To get the current state, the callback should call enabled_by_prefs().
   // Should only be called on the UI thread.
   std::unique_ptr<StateSubscription> RegisterStateCallback(
+      const base::Callback<void(void)>& callback);
+
+  // Adds a listener for when SafeBrowsingService starts shutting down.
+  // The callbacks run on the UI thread, and give the subscribers an opportunity
+  // to clean up any references they hold to SafeBrowsingService.
+  std::unique_ptr<ShutdownSubscription> RegisterShutdownCallback(
       const base::Callback<void(void)>& callback);
 
   // Sends serialized download report to backend.
@@ -286,6 +293,10 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // Callbacks when SafeBrowsing state might have changed.
   // Should only be accessed on the UI thread.
   base::CallbackList<void(void)> state_callback_list_;
+
+  // Callbacks when SafeBrowsing service starts shutting down.
+  // Should only be accessed on the UI thread.
+  base::CallbackList<void(void)> shutdown_callback_list_;
 
   // The UI manager handles showing interstitials.  Accessed on both UI and IO
   // thread.

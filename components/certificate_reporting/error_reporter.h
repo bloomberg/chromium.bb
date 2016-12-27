@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "net/url_request/report_sender.h"
 #include "url/gurl.h"

@@ -345,6 +345,9 @@ void SafeBrowsingService::Initialize() {
 }
 
 void SafeBrowsingService::ShutDown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  shutdown_callback_list_.Notify();
+
   // Delete the PrefChangeRegistrars, whose dtors also unregister |this| as an
   // observer of the preferences.
   prefs_map_.clear();
@@ -384,9 +387,10 @@ bool SafeBrowsingService::DownloadBinHashNeeded() const {
 #endif
 }
 
-net::URLRequestContextGetter* SafeBrowsingService::url_request_context() {
+scoped_refptr<net::URLRequestContextGetter>
+SafeBrowsingService::url_request_context() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return url_request_context_getter_.get();
+  return url_request_context_getter_;
 }
 
 const scoped_refptr<SafeBrowsingUIManager>&
@@ -688,6 +692,13 @@ SafeBrowsingService::RegisterStateCallback(
     const base::Callback<void(void)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return state_callback_list_.Add(callback);
+}
+
+std::unique_ptr<SafeBrowsingService::ShutdownSubscription>
+SafeBrowsingService::RegisterShutdownCallback(
+    const base::Callback<void(void)>& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return shutdown_callback_list_.Add(callback);
 }
 
 void SafeBrowsingService::RefreshState() {
