@@ -119,6 +119,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     // of them gets removed.
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
+    @DisabledTest(message = "https://crbug.com/677182")
     public void testRemovingTransientObjectHolders() throws Throwable {
         class Test {
             private Object mInner = new Object();
