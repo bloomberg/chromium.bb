@@ -14,6 +14,7 @@
 #include "extensions/browser/event_router.h"
 #include "ipc/ipc_message.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using base::DictionaryValue;
 
@@ -37,7 +38,12 @@ std::unique_ptr<EventListener> EventListener::ForURL(
     const GURL& listener_url,
     content::RenderProcessHost* process,
     std::unique_ptr<base::DictionaryValue> filter) {
-  return base::WrapUnique(new EventListener(event_name, "", listener_url,
+  // Use only the origin to identify the event listener, e.g. chrome://settings
+  // for chrome://settings/accounts, to avoid multiple events being triggered
+  // for the same process. See crbug.com/536858 for details. // TODO(devlin): If
+  // we dispatched events to processes more intelligently this could be avoided.
+  return base::WrapUnique(new EventListener(event_name, "",
+                                            url::Origin(listener_url).GetURL(),
                                             process, std::move(filter)));
 }
 
