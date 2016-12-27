@@ -117,6 +117,14 @@ class PLATFORM_EXPORT GeometryMapper {
                                 const PropertyTreeState& ancestorState,
                                 bool& success);
 
+  // Returns the matrix used in |LocalToAncestorRect|. Sets |success| to false
+  // iff |localTransformNode| is not equal to or a descendant of
+  // |ancestorState.transform|.
+  const TransformationMatrix& localToAncestorMatrix(
+      const TransformPaintPropertyNode* localTransformNode,
+      const PropertyTreeState& ancestorState,
+      bool& success);
+
  private:
   // Used by mapToVisualRectInDestinationSpace() after fast mapping (assuming
   // destination is an ancestor of source) failed.
@@ -132,14 +140,6 @@ class PLATFORM_EXPORT GeometryMapper {
       const FloatRect&,
       const PropertyTreeState& sourceState,
       const PropertyTreeState& destinationState,
-      bool& success);
-
-  // Returns the matrix used in |LocalToAncestorRect|. Sets |success| to false
-  // iff |localTransformNode| is not equal to or a descendant of
-  // |ancestorState.transform|.
-  const TransformationMatrix& localToAncestorMatrix(
-      const TransformPaintPropertyNode* localTransformNode,
-      const PropertyTreeState& ancestorState,
       bool& success);
 
   // Returns the "clip visual rect" between |localTransformState| and

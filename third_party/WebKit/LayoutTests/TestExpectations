@@ -43,7 +43,9 @@ crbug.com/647831 virtual/spv2/paint/invalidation/margin.html [ Pass ]
 crbug.com/596780 virtual/spv2/compositing/framesets/composited-frame-alignment.html [ Pass ]
 crbug.com/596780 virtual/spv2/compositing/geometry/outline-change.html [ Pass ]
 crbug.com/600618 virtual/spv2/svg/custom/object-current-scale.html [ Pass ]
-crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-height.xhtml [ Pass ]
+
+# Re-add this once it rebaselines.
+# crbug.com/600618 virtual/spv2/svg/custom/object-sizing-explicit-height.xhtml [ Pass ]
 # SkiaBitLocker should avoid allocating huge offscreen buffer
 crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Skip ]
 crbug.com/605812 [ Mac ] virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash2.html [ Skip ]
@@ -697,6 +699,8 @@ crbug.com/520613 http/tests/cache/freshness-header.html [ Failure Pass ]
 crbug.com/520613 virtual/mojo-loading/http/tests/cache/freshness-header.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 crbug.com/520194 virtual/mojo-loading/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
+
+crbug.com/668342 virtual/spv2/svg/custom/object-sizing-explicit-height.xhtml [ NeedsRebaseline ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]

@@ -319,6 +319,18 @@ static CompositingReasons compositingReasonsForTransform(
       !object.styleRef().subtreeWillChangeContents())
     compositingReasons |= CompositingReasonWillChangeCompositingHint;
 
+  if (object.isBoxModelObject()) {
+    const LayoutBoxModelObject* box = toLayoutBoxModelObject(&object);
+    if (box->hasLayer()) {
+      // TODO(chrishtr): move this to the descendant-dependent flags recursion
+      // PaintLayer::updateDescendantDependentFlags.
+      box->layer()->update3DTransformedDescendantStatus();
+
+      if (box->layer()->has3DTransformedDescendant())
+        compositingReasons |= CompositingReason3DTransform;
+    }
+  }
+
   return compositingReasons;
 }
 

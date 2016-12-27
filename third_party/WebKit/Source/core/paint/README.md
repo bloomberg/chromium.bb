@@ -209,7 +209,8 @@ following during the tree walk:
 
 *   Building paint property tree: creates paint property tree nodes for special
     things in the layout tree, including but not limit to: overflow clip, transform,
-    fixed-pos, animation, mask, filter, etc.
+    fixed-pos, animation, mask, filter, etc. Also sets direct compositing reasons to be
+    used later for compositing.
 
 *   Paint invalidation: Not implemented yet. TODO(wangxianzhu): add details after
     it's implemented.

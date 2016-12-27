@@ -31,9 +31,11 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   static PassRefPtr<ClipPaintPropertyNode> create(
       PassRefPtr<const ClipPaintPropertyNode> parent,
       PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
-      const FloatRoundedRect& clipRect) {
+      const FloatRoundedRect& clipRect,
+      CompositingReasons directCompositingReasons = CompositingReasonNone) {
     return adoptRef(new ClipPaintPropertyNode(
-        std::move(parent), std::move(localTransformSpace), clipRect));
+        std::move(parent), std::move(localTransformSpace), clipRect,
+        directCompositingReasons));
   }
 
   void update(PassRefPtr<const ClipPaintPropertyNode> parent,
@@ -59,8 +61,9 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a clip node before it has been updated, to later detect changes.
   PassRefPtr<ClipPaintPropertyNode> clone() const {
-    return adoptRef(
-        new ClipPaintPropertyNode(m_parent, m_localTransformSpace, m_clipRect));
+    return adoptRef(new ClipPaintPropertyNode(m_parent, m_localTransformSpace,
+                                              m_clipRect,
+                                              m_directCompositingReasons));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
@@ -74,18 +77,25 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
 
   String toString() const;
 
+  bool hasDirectCompositingReasons() const {
+    return m_directCompositingReasons != CompositingReasonNone;
+  }
+
  private:
   ClipPaintPropertyNode(
       PassRefPtr<const ClipPaintPropertyNode> parent,
       PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
-      const FloatRoundedRect& clipRect)
+      const FloatRoundedRect& clipRect,
+      CompositingReasons directCompositingReasons)
       : m_parent(parent),
         m_localTransformSpace(localTransformSpace),
-        m_clipRect(clipRect) {}
+        m_clipRect(clipRect),
+        m_directCompositingReasons(directCompositingReasons) {}
 
   RefPtr<const ClipPaintPropertyNode> m_parent;
   RefPtr<const TransformPaintPropertyNode> m_localTransformSpace;
   FloatRoundedRect m_clipRect;
+  CompositingReasons m_directCompositingReasons;
 };
 
 // Redeclared here to avoid ODR issues.
