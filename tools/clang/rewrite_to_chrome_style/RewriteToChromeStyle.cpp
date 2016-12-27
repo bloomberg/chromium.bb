@@ -344,12 +344,14 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "error",
       "fileUtilities",
       "font",
+      "frame",
       "frameBlameContext",
       "iconURL",
       "inputMethodController",
       "inputType",
       "layout",
       "layoutBlock",
+      "layoutObject",
       "layoutSize",
       "length",
       "lineCap",
@@ -364,6 +366,8 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "path",
       "processingInstruction",
       "readyState",
+      "response",
+      "sandboxSupport",
       "screenInfo",
       "scrollAnimator",
       "settings",
@@ -408,9 +412,7 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
       // hasString matches the type as spelled (Bar above).
       hasString(name),
       // hasDeclaration matches resolved type (Foo or DerivedFoo above).
-      hasDeclaration(namedDecl(hasName(name))),
-      hasDeclaration(
-          cxxRecordDecl(isDerivedFrom(namedDecl(hasName(name)))))));
+      hasDeclaration(namedDecl(hasName(name)))));
 
   // |type_containing_same_name_as_function| matcher will match all of the
   // return types below:
@@ -423,7 +425,15 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
   // https://crbug.com/582312: Prepend "Get" if method name conflicts with
   // return type.
   auto conflict_matcher = functionDecl(anyOf(
-      returns(type_containing_same_name_as_function),
+      // For functions and non-virtual or base method implementations just
+      // compare with the immediate return type.
+      functionDecl(returns(type_containing_same_name_as_function),
+                   unless(cxxMethodDecl(isOverride()))),
+      // For methods that override one or more methods, compare with the return
+      // type of the *base* methods.
+      cxxMethodDecl(isOverride(), forEachOverridden(returns(
+                                      type_containing_same_name_as_function))),
+      // And also check hardcoded list of function names to prefix with "Get".
       shouldPrefixFunctionName()));
   if (IsMatching(conflict_matcher, decl, context))
     name = "Get" + name;

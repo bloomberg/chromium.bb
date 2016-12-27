@@ -202,27 +202,35 @@ namespace get_prefix_vs_inheritance {
 // 2. Need to rename |frame| to |GetFrame| (not to |Frame|) to avoid
 //    a conflict with the Frame type.
 
-class Frame {};
-class LocalFrame : public Frame {};
+class FrameFoo {};
+class LocalFrame : public FrameFoo {};
 
 class WebFrameImplBase {
  public:
-  virtual Frame* GetFrame() const = 0;
+  // Using |frameFoo| to test inheritance, and NOT just the presence on the
+  // ShouldPrefixFunctionName list.
+  virtual FrameFoo* GetFrameFoo() const = 0;
 };
 
 class WebLocalFrameImpl : public WebFrameImplBase {
  public:
-  LocalFrame* GetFrame() const override { return nullptr; }
+  LocalFrame* GetFrameFoo() const override { return nullptr; }
 };
 
-// This is also a regression test for https://crbug.com/673031
-// (which can happen in a non-virtual-method case):
-class LayoutObject {};
-class LayoutBoxModelObject : public LayoutObject {};
+// This is also a regression test for https://crbug.com/673031.  We should NOT
+// rewrite in a non-virtual case, because walking the inheritance chain of the
+// return type depends too much on unrelated context (i.e. walking the
+// inheritance chain might not be possible if the return type is
+// forward-declared).
+class LayoutObjectFoo {};
+class LayoutBoxModelObject : public LayoutObjectFoo {};
 class PaintLayerStackingNode {
  public:
-  // |layoutObject| should be renamed to |GetLayoutObject|.
-  LayoutBoxModelObject* GetLayoutObject() { return nullptr; }
+  // |layoutObjectFoo| should NOT be renamed to |GetLayoutObjectFoo| (just to
+  // |LayoutObjectFoo|) - see the big comment above.  We use layoutObject*Foo*
+  // to test inheritance-related behavior and avoid testing whether method name
+  // is covered via ShouldPrefixFunctionName.
+  LayoutBoxModelObject* LayoutObjectFoo() { return nullptr; }
 };
 
 }  // namespace get_prefix_vs_inheritance
