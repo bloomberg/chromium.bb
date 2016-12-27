@@ -6,24 +6,26 @@
       <template data-mode='open'>
         <slot name='slot-a'>
           <slot name='slot-b'>
+            <div id='fallback-b'>fallback-b</div>
           </slot>
-          <div id='fallback-a'></div>
+          <div id='fallback-a'>fallback-a</div>
         </slot>
       </template>
       <slot name='slot1' slot='slot-b'>
-        <div id='fallback1'></div>
+        <div id='fallback1'>fallback1</div>
         <slot name='slot2'>
-          <div id='fallback2'></div>
+          <div id='fallback2'>fallback2</div>
         </slot>
       </slot>
       <slot name='slot3'>
         <slot name='slot4'>
-          <div id='fallback3'></div>
+          <div id='fallback4'>fallback4</div>
         </slot>
+        <div id='fallback3'>fallback3</div>
       </slot>
     </div>
   </template>
-  <div id='child1' slot='slot2'></div>
+  <div id='child1' slot='slot2'>child1</div>
 </div>
 <script>
 convertTemplatesToShadowRootsWithin(host);
