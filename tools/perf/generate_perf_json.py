@@ -244,9 +244,7 @@ def get_waterfall_config():
        'device_ids': [
            'build132-m1', 'build133-m1',
            'build134-m1', 'build135-m1', 'build136-m1'
-          ],
-       'perf_tests': [
-         ('media_perftests', 2)]
+          ]
       }
     ])
   waterfall = add_tester(
@@ -261,8 +259,7 @@ def get_waterfall_config():
           ],
        'perf_tests': [
          ('load_library_perf_tests', 2),
-         ('performance_browser_tests', 2),
-         ('media_perftests', 3)]
+         ('performance_browser_tests', 2)]
       }
     ])
   waterfall = add_tester(
@@ -278,8 +275,7 @@ def get_waterfall_config():
           ],
        'perf_tests': [
          ('load_library_perf_tests', 2),
-         ('performance_browser_tests', 2),
-         ('media_perftests', 3)]
+         ('performance_browser_tests', 2)]
       }
     ])
   waterfall = add_tester(
@@ -312,8 +308,7 @@ def get_waterfall_config():
        'perf_tests': [
          ('angle_perftests', 2),
          ('load_library_perf_tests', 2),
-         ('performance_browser_tests', 2),
-         ('media_perftests', 3)]
+         ('performance_browser_tests', 2)]
       }
     ])
   waterfall = add_tester(
@@ -343,8 +338,7 @@ def get_waterfall_config():
        'perf_tests': [
          ('angle_perftests', 2),
          ('load_library_perf_tests', 2),
-         ('performance_browser_tests', 2),
-         ('media_perftests', 3)]
+         ('performance_browser_tests', 2)]
       }
     ])
 
@@ -358,9 +352,7 @@ def get_waterfall_config():
        'device_ids': [
            'build102-b1', 'build103-b1',
            'build104-b1', 'build105-b1', 'build106-b1'
-          ],
-       'perf_tests': [
-         ('media_perftests', 2)]
+          ]
       }
     ])
   waterfall = add_tester(
@@ -427,8 +419,7 @@ def get_waterfall_config():
        'perf_tests': [
          ('cc_perftests', 2),
          ('load_library_perf_tests', 2),
-         ('tracing_perftests', 2),
-         ('media_perftests', 3)]
+         ('tracing_perftests', 2)]
       }
     ])
 
