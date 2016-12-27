@@ -229,9 +229,13 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, NoActivationOnAboutBlank) {
   ASSERT_TRUE(frame);
   EXPECT_FALSE(WasParsedScriptElementLoaded(frame));
 
+  // Support both pre-/post-PersistentHistograms worlds. The latter is enabled
+  // through field trials, so the former is still used on offical builders.
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
   // The only frames where filtering was (even considered to be) activated
   // should be the main frame, and the child that was navigated to an HTTP URL.
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histogram_tester.ExpectUniqueSample(
       "SubresourceFilter.DocumentLoad.ActivationState",
       static_cast<base::Histogram::Sample>(ActivationState::ENABLED), 2);
