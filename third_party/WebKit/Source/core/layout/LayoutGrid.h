@@ -149,7 +149,7 @@ class LayoutGrid final : public LayoutBlock {
       Grid&,
       GridTrackSizingDirection) const;
 
-  void placeItemsOnGrid(Grid&, SizingOperation);
+  void placeItemsOnGrid(Grid&, SizingOperation) const;
   void populateExplicitGridAndOrderIterator(Grid&) const;
   std::unique_ptr<GridArea> createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
       const Grid&,
@@ -351,7 +351,7 @@ class LayoutGrid final : public LayoutBlock {
   typedef Vector<Vector<GridCell>> GridAsMatrix;
   class Grid final {
    public:
-    Grid(LayoutGrid* grid) : m_orderIterator(grid) {}
+    Grid(const LayoutGrid* grid) : m_orderIterator(grid) {}
 
     size_t numTracks(GridTrackSizingDirection) const;
 

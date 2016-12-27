@@ -640,14 +640,6 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
 
     TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
 
-    // TODO(svillar): we won't need to do this once the intrinsic width
-    // computation is isolated from the LayoutGrid object state (it should not
-    // touch any attribute) (see crbug.com/627812)
-    size_t autoRepeatColumns = m_grid.autoRepeatTracks(ForColumns);
-    if (autoRepeatColumns &&
-        autoRepeatColumns !=
-            computeAutoRepeatTracksCount(ForColumns, TrackSizing))
-      dirtyGrid();
     placeItemsOnGrid(m_grid, TrackSizing);
 
     GridSizingData sizingData(numTracks(ForColumns, m_grid),
@@ -808,12 +800,12 @@ LayoutUnit LayoutGrid::guttersSize(const Grid& grid,
 void LayoutGrid::computeIntrinsicLogicalWidths(
     LayoutUnit& minLogicalWidth,
     LayoutUnit& maxLogicalWidth) const {
-  const_cast<LayoutGrid*>(this)->placeItemsOnGrid(const_cast<Grid&>(m_grid),
-                                                  IntrinsicSizeComputation);
+  Grid grid(this);
+  placeItemsOnGrid(grid, IntrinsicSizeComputation);
 
-  GridSizingData sizingData(numTracks(ForColumns, m_grid),
-                            numTracks(ForRows, m_grid),
-                            const_cast<Grid&>(m_grid));
+  GridSizingData sizingData(numTracks(ForColumns, grid),
+                            numTracks(ForRows, grid), grid);
+
   computeTrackSizesForIndefiniteSize(ForColumns, sizingData, minLogicalWidth,
                                      maxLogicalWidth);
 
@@ -2069,7 +2061,7 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
   size_t lastAutoRepeatTrack =
       firstAutoRepeatTrack + grid.autoRepeatTracks(direction);
 
-  if (!m_grid.hasGridItems()) {
+  if (!grid.hasGridItems()) {
     emptyTrackIndexes = WTF::wrapUnique(new OrderedTrackIndexSet);
     for (size_t trackIndex = firstAutoRepeatTrack;
          trackIndex < lastAutoRepeatTrack; ++trackIndex)
@@ -2089,23 +2081,21 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
 }
 
 void LayoutGrid::placeItemsOnGrid(LayoutGrid::Grid& grid,
-                                  SizingOperation sizingOperation) {
+                                  SizingOperation sizingOperation) const {
+  size_t autoRepeatRows =
+      computeAutoRepeatTracksCount(ForRows, sizingOperation);
+  size_t autoRepeatColumns =
+      computeAutoRepeatTracksCount(ForColumns, sizingOperation);
+  if (autoRepeatRows != grid.autoRepeatTracks(ForRows) ||
+      autoRepeatColumns != grid.autoRepeatTracks(ForColumns)) {
+    grid.setNeedsItemsPlacement(true);
+    grid.setAutoRepeatTracks(autoRepeatRows, autoRepeatColumns);
+  }
+
   if (!grid.needsItemsPlacement())
     return;
 
   DCHECK(!grid.hasGridItems());
-
-  size_t autoRepeatColumns;
-  size_t autoRepeatRows =
-      computeAutoRepeatTracksCount(ForRows, sizingOperation);
-  if (sizingOperation == IntrinsicSizeComputation) {
-    autoRepeatColumns = styleRef().gridAutoRepeatColumns().size();
-  } else {
-    autoRepeatColumns =
-        computeAutoRepeatTracksCount(ForColumns, sizingOperation);
-  }
-  m_grid.setAutoRepeatTracks(autoRepeatRows, autoRepeatColumns);
-
   populateExplicitGridAndOrderIterator(grid);
 
   Vector<LayoutBox*> autoMajorAxisAutoGridItems;

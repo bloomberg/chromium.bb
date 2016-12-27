@@ -1913,10 +1913,6 @@ crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
 
 
-# Due to a temporal revert these tests are failing:
-crbug.com/666688 fast/css-grid-layout/grid-change-intrinsic-size-with-auto-repeat-tracks.html [ Failure ]
-crbug.com/666688 fast/css-grid-layout/mozilla/grid-repeat-auto-fill-fit-001.html [ Failure ]
-
 # TODO(chrishall): this is a temporary mediation step as part of the P0 issue crbug.com/657646
 # this is not meant to be here for more than a few days (from 2016-11-03 SYD)
 crbug.com/657646 [ Win ] fast/text/font-weight.html [ Failure Pass ]
