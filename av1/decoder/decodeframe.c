@@ -3690,10 +3690,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   cm->show_existing_frame = aom_rb_read_bit(rb);
 
   if (cm->show_existing_frame) {
-// Show an existing frame directly.
-#if CONFIG_REFERENCE_BUFFER
+    // Show an existing frame directly.
     const int existing_frame_idx = aom_rb_read_literal(rb, 3);
     const int frame_to_show = cm->ref_frame_map[existing_frame_idx];
+#if CONFIG_REFERENCE_BUFFER
     if (pbi->seq_params.frame_id_numbers_present_flag) {
       int frame_id_length = pbi->seq_params.frame_id_length_minus7 + 7;
       int display_frame_id = aom_rb_read_literal(rb, frame_id_length);
@@ -3704,8 +3704,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Reference buffer frame ID mismatch");
     }
-#else
-    const int frame_to_show = cm->ref_frame_map[aom_rb_read_literal(rb, 3)];
 #endif
     lock_buffer_pool(pool);
     if (frame_to_show < 0 || frame_bufs[frame_to_show].ref_count < 1) {
