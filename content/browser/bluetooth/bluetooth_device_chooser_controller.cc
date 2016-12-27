@@ -408,6 +408,7 @@ void BluetoothDeviceChooserController::GetDevice(
     return;
   }
 
+  device_ids_.clear();
   PopulateConnectedDevices();
   if (!chooser_.get()) {
     // If the dialog's closing, no need to do any of the rest of this.
@@ -505,8 +506,6 @@ void BluetoothDeviceChooserController::StartDeviceDiscovery() {
     return;
   }
 
-  device_ids_.clear();
-
   scanning_start_time_ = base::TimeTicks::Now();
 
   chooser_->ShowDiscoveryState(BluetoothChooser::DiscoveryState::DISCOVERING);
@@ -564,6 +563,7 @@ void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
   switch (event) {
     case BluetoothChooser::Event::RESCAN:
       RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
+      device_ids_.clear();
       PopulateConnectedDevices();
       DCHECK(chooser_);
       StartDeviceDiscovery();
