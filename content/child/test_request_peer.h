@@ -65,6 +65,8 @@ class TestRequestPeer : public RequestPeer {
     // Total encoded data length, regardless of whether downloading to a file or
     // not.
     int total_encoded_data_length = 0;
+    bool defer_on_transfer_size_updated = false;
+
     // Total length when downloading to a file.
     int total_downloaded_data_length = 0;
 

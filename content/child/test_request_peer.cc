@@ -68,6 +68,8 @@ void TestRequestPeer::OnTransferSizeUpdated(int transfer_size_diff) {
   if (context_->cancelled)
     return;
   context_->total_encoded_data_length += transfer_size_diff;
+  if (context_->defer_on_transfer_size_updated)
+    dispatcher_->SetDefersLoading(context_->request_id, true);
 }
 
 void TestRequestPeer::OnCompletedRequest(int error_code,

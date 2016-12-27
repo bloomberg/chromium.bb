@@ -483,8 +483,13 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
   }
   if (value) {
     request_info->is_deferred = value;
+    if (request_info->url_loader_client)
+      request_info->url_loader_client->SetDefersLoading();
   } else if (request_info->is_deferred) {
     request_info->is_deferred = false;
+
+    if (request_info->url_loader_client)
+      request_info->url_loader_client->UnsetDefersLoading();
 
     FollowPendingRedirect(request_id, request_info);
 
@@ -553,6 +558,13 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info || request_info->is_deferred)
     return;
+
+  if (request_info->url_loader) {
+    DCHECK(request_info->deferred_message_queue.empty());
+    request_info->url_loader_client->FlushDeferredMessages();
+    return;
+  }
+
   // Because message handlers could result in request_info being destroyed,
   // we need to work with a stack reference to the deferred queue.
   MessageQueue q;

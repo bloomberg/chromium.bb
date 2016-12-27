@@ -153,6 +153,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   void OnTransferSizeUpdated(int request_id, int32_t transfer_size_diff);
 
  private:
+  friend class URLLoaderClientImpl;
   friend class URLResponseBodyConsumer;
   friend class ResourceDispatcherTest;
 

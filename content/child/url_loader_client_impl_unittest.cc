@@ -351,4 +351,221 @@ TEST_F(URLLoaderClientImplTest, CancelOnReceiveData) {
   EXPECT_TRUE(request_peer_context_.cancelled);
 }
 
+TEST_F(URLLoaderClientImplTest, Defer) {
+  ResourceResponseHead response_head;
+  ResourceRequestCompletionStatus completion_status;
+
+  url_loader_client_->OnReceiveResponse(response_head, nullptr);
+  url_loader_client_->OnComplete(completion_status);
+
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+
+  dispatcher_->SetDefersLoading(request_id_, true);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+
+  dispatcher_->SetDefersLoading(request_id_, false);
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_peer_context_.received_response);
+  EXPECT_TRUE(request_peer_context_.complete);
+}
+
+TEST_F(URLLoaderClientImplTest, DeferWithResponseBody) {
+  ResourceResponseHead response_head;
+  ResourceRequestCompletionStatus completion_status;
+
+  url_loader_client_->OnReceiveResponse(response_head, nullptr);
+  mojo::DataPipe data_pipe(DataPipeOptions());
+  uint32_t size = 5;
+  MojoResult result =
+      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
+                         MOJO_WRITE_DATA_FLAG_NONE);
+  ASSERT_EQ(MOJO_RESULT_OK, result);
+  EXPECT_EQ(5u, size);
+  data_pipe.producer_handle.reset();
+
+  url_loader_client_->OnStartLoadingResponseBody(
+      std::move(data_pipe.consumer_handle));
+  url_loader_client_->OnComplete(completion_status);
+
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ("", request_peer_context_.data);
+
+  dispatcher_->SetDefersLoading(request_id_, true);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ("", request_peer_context_.data);
+
+  dispatcher_->SetDefersLoading(request_id_, false);
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ("", request_peer_context_.data);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_peer_context_.received_response);
+  EXPECT_TRUE(request_peer_context_.complete);
+  EXPECT_EQ("hello", request_peer_context_.data);
+}
+
+// As "transfer size update" message is handled specially in the implementation,
+// we have a separate test.
+TEST_F(URLLoaderClientImplTest, DeferWithTransferSizeUpdated) {
+  ResourceResponseHead response_head;
+  ResourceRequestCompletionStatus completion_status;
+
+  url_loader_client_->OnReceiveResponse(response_head, nullptr);
+  mojo::DataPipe data_pipe(DataPipeOptions());
+  uint32_t size = 5;
+  MojoResult result =
+      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
+                         MOJO_WRITE_DATA_FLAG_NONE);
+  ASSERT_EQ(MOJO_RESULT_OK, result);
+  EXPECT_EQ(5u, size);
+  data_pipe.producer_handle.reset();
+
+  url_loader_client_->OnStartLoadingResponseBody(
+      std::move(data_pipe.consumer_handle));
+  url_loader_client_->OnTransferSizeUpdated(4);
+  url_loader_client_->OnComplete(completion_status);
+
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
+
+  dispatcher_->SetDefersLoading(request_id_, true);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
+
+  dispatcher_->SetDefersLoading(request_id_, false);
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_peer_context_.received_response);
+  EXPECT_TRUE(request_peer_context_.complete);
+  EXPECT_EQ("hello", request_peer_context_.data);
+  EXPECT_EQ(4, request_peer_context_.total_encoded_data_length);
+}
+
+TEST_F(URLLoaderClientImplTest, SetDeferredDuringFlushingDeferredMessage) {
+  request_peer_context_.defer_on_redirect = true;
+
+  net::RedirectInfo redirect_info;
+  ResourceResponseHead response_head;
+  ResourceRequestCompletionStatus completion_status;
+
+  url_loader_client_->OnReceiveRedirect(redirect_info, response_head);
+  url_loader_client_->OnReceiveResponse(response_head, nullptr);
+  mojo::DataPipe data_pipe(DataPipeOptions());
+  uint32_t size = 5;
+  MojoResult result =
+      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
+                         MOJO_WRITE_DATA_FLAG_NONE);
+  ASSERT_EQ(MOJO_RESULT_OK, result);
+  EXPECT_EQ(5u, size);
+  data_pipe.producer_handle.reset();
+
+  url_loader_client_->OnStartLoadingResponseBody(
+      std::move(data_pipe.consumer_handle));
+  url_loader_client_->OnTransferSizeUpdated(4);
+  url_loader_client_->OnComplete(completion_status);
+
+  EXPECT_EQ(0, request_peer_context_.seen_redirects);
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
+
+  dispatcher_->SetDefersLoading(request_id_, true);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, request_peer_context_.seen_redirects);
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
+
+  dispatcher_->SetDefersLoading(request_id_, false);
+  EXPECT_EQ(0, request_peer_context_.seen_redirects);
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, request_peer_context_.seen_redirects);
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ("", request_peer_context_.data);
+  EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
+  EXPECT_FALSE(request_peer_context_.cancelled);
+
+  dispatcher_->SetDefersLoading(request_id_, false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, request_peer_context_.seen_redirects);
+  EXPECT_TRUE(request_peer_context_.received_response);
+  EXPECT_TRUE(request_peer_context_.complete);
+  EXPECT_EQ("hello", request_peer_context_.data);
+  EXPECT_EQ(4, request_peer_context_.total_encoded_data_length);
+  EXPECT_FALSE(request_peer_context_.cancelled);
+}
+
+TEST_F(URLLoaderClientImplTest,
+       SetDeferredDuringFlushingDeferredMessageOnTransferSizeUpdated) {
+  request_peer_context_.defer_on_transfer_size_updated = true;
+
+  ResourceResponseHead response_head;
+  ResourceRequestCompletionStatus completion_status;
+
+  url_loader_client_->OnReceiveResponse(response_head, nullptr);
+
+  url_loader_client_->OnTransferSizeUpdated(4);
+  url_loader_client_->OnComplete(completion_status);
+
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
+
+  dispatcher_->SetDefersLoading(request_id_, true);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
+
+  dispatcher_->SetDefersLoading(request_id_, false);
+  EXPECT_FALSE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ(0, request_peer_context_.total_encoded_data_length);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_peer_context_.received_response);
+  EXPECT_FALSE(request_peer_context_.complete);
+  EXPECT_EQ(4, request_peer_context_.total_encoded_data_length);
+  EXPECT_FALSE(request_peer_context_.cancelled);
+
+  dispatcher_->SetDefersLoading(request_id_, false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_peer_context_.received_response);
+  EXPECT_TRUE(request_peer_context_.complete);
+  EXPECT_EQ(4, request_peer_context_.total_encoded_data_length);
+  EXPECT_FALSE(request_peer_context_.cancelled);
+}
+
 }  // namespace content

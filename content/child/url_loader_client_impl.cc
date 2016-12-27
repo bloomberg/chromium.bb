@@ -21,7 +21,8 @@ URLLoaderClientImpl::URLLoaderClientImpl(
     : binding_(this),
       request_id_(request_id),
       resource_dispatcher_(resource_dispatcher),
-      task_runner_(std::move(task_runner)) {}
+      task_runner_(std::move(task_runner)),
+      weak_factory_(this) {}
 
 URLLoaderClientImpl::~URLLoaderClientImpl() {
   if (body_consumer_)
@@ -32,6 +33,81 @@ void URLLoaderClientImpl::Bind(
     mojom::URLLoaderClientAssociatedPtrInfo* client_ptr_info,
     mojo::AssociatedGroup* associated_group) {
   binding_.Bind(client_ptr_info, associated_group);
+}
+
+void URLLoaderClientImpl::SetDefersLoading() {
+  is_deferred_ = true;
+  if (body_consumer_)
+    body_consumer_->SetDefersLoading();
+}
+
+void URLLoaderClientImpl::UnsetDefersLoading() {
+  is_deferred_ = false;
+}
+
+void URLLoaderClientImpl::FlushDeferredMessages() {
+  DCHECK(!is_deferred_);
+  std::vector<IPC::Message> messages;
+  messages.swap(deferred_messages_);
+  bool has_completion_message = false;
+  base::WeakPtr<URLLoaderClientImpl> weak_this = weak_factory_.GetWeakPtr();
+  // First, dispatch all messages excluding the followings:
+  //  - response body (dispatched by |body_consumer_|)
+  //  - transfer size change (dispatched later)
+  //  - completion (dispatched by |body_consumer_| or dispatched later)
+  for (size_t index = 0; index < messages.size(); ++index) {
+    if (messages[index].type() == ResourceMsg_RequestComplete::ID) {
+      // The completion message arrives at the end of the message queue.
+      DCHECK(!has_completion_message);
+      DCHECK_EQ(index, messages.size() - 1);
+      has_completion_message = true;
+      break;
+    }
+    Dispatch(messages[index]);
+    if (!weak_this)
+      return;
+    if (is_deferred_) {
+      deferred_messages_.insert(deferred_messages_.begin(),
+                                messages.begin() + index + 1, messages.end());
+      return;
+    }
+  }
+
+  // Dispatch the transfer size update.
+  if (accumulated_transfer_size_diff_during_deferred_ > 0) {
+    auto transfer_size_diff = accumulated_transfer_size_diff_during_deferred_;
+    accumulated_transfer_size_diff_during_deferred_ = 0;
+    resource_dispatcher_->OnTransferSizeUpdated(request_id_,
+                                                transfer_size_diff);
+    if (!weak_this)
+      return;
+    if (is_deferred_) {
+      if (has_completion_message) {
+        DCHECK_GT(messages.size(), 0u);
+        DCHECK_EQ(messages.back().type(),
+                  static_cast<uint32_t>(ResourceMsg_RequestComplete::ID));
+        deferred_messages_.emplace_back(std::move(messages.back()));
+      }
+      return;
+    }
+  }
+
+  if (body_consumer_) {
+    // When we have |body_consumer_|, the completion message is dispatched by
+    // it, not by this object.
+    DCHECK(!has_completion_message);
+    // Dispatch the response body.
+    body_consumer_->UnsetDefersLoading();
+    return;
+  }
+
+  // Dispatch the completion message.
+  if (has_completion_message) {
+    DCHECK_GT(messages.size(), 0u);
+    DCHECK_EQ(messages.back().type(),
+              static_cast<uint32_t>(ResourceMsg_RequestComplete::ID));
+    Dispatch(messages.back());
+  }
 }
 
 void URLLoaderClientImpl::OnReceiveResponse(
@@ -59,8 +135,12 @@ void URLLoaderClientImpl::OnDataDownloaded(int64_t data_len,
 }
 
 void URLLoaderClientImpl::OnTransferSizeUpdated(int32_t transfer_size_diff) {
-  resource_dispatcher_->OnTransferSizeUpdated(request_id_,
-                                              transfer_size_diff);
+  if (is_deferred_) {
+    accumulated_transfer_size_diff_during_deferred_ += transfer_size_diff;
+  } else {
+    resource_dispatcher_->OnTransferSizeUpdated(request_id_,
+                                                transfer_size_diff);
+  }
 }
 
 void URLLoaderClientImpl::OnStartLoadingResponseBody(
@@ -70,6 +150,8 @@ void URLLoaderClientImpl::OnStartLoadingResponseBody(
       request_id_, resource_dispatcher_, std::move(body), task_runner_);
   if (has_received_response_)
     body_consumer_->Start();
+  if (is_deferred_)
+    body_consumer_->SetDefersLoading();
 }
 
 void URLLoaderClientImpl::OnComplete(
@@ -82,7 +164,14 @@ void URLLoaderClientImpl::OnComplete(
 }
 
 void URLLoaderClientImpl::Dispatch(const IPC::Message& message) {
-  resource_dispatcher_->OnMessageReceived(message);
+  if (is_deferred_) {
+    deferred_messages_.push_back(message);
+  } else if (deferred_messages_.size() > 0) {
+    deferred_messages_.push_back(message);
+    FlushDeferredMessages();
+  } else {
+    resource_dispatcher_->DispatchMessage(message);
+  }
 }
 
 }  // namespace content
