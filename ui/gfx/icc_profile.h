@@ -53,6 +53,7 @@ class GFX_EXPORT ICCProfile {
   // Internally, this will make an effort to create an identical ICCProfile
   // to the one that created |color_space|, but this is not guaranteed.
   static ICCProfile FromColorSpace(const gfx::ColorSpace& color_space);
+  static ICCProfile FromSkColorSpace(sk_sp<SkColorSpace> color_space);
 
   // Create directly from profile data.
   static ICCProfile FromData(const char* icc_profile, size_t size);

@@ -279,6 +279,7 @@ component("media") {
   public_configs = [ "//third_party/libwebm:libwebm_config" ]
   public_deps = [
     ":filters_common",
+    "//ui/gfx:color_space",
   ]
 
   include_dirs = [ "." ]

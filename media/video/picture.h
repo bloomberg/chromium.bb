@@ -74,6 +74,8 @@ class MEDIA_EXPORT Picture {
           const gfx::Rect& visible_rect,
           const gfx::ColorSpace& color_space,
           bool allow_overlay);
+  Picture(const Picture&);
+  ~Picture();
 
   // Returns the id of the picture buffer where this picture is contained.
   int32_t picture_buffer_id() const { return picture_buffer_id_; }

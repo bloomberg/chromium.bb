@@ -24,6 +24,7 @@ class SharedBitmap;
 class CC_EXPORT TextureMailbox {
  public:
   TextureMailbox();
+  TextureMailbox(const TextureMailbox& other);
   explicit TextureMailbox(const gpu::MailboxHolder& mailbox_holder);
   TextureMailbox(const gpu::Mailbox& mailbox,
                  const gpu::SyncToken& sync_token,

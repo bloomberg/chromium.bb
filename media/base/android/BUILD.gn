@@ -117,6 +117,7 @@ if (is_android) {
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/widevine/cdm:headers",
+      "//ui/gfx:color_space",
     ]
     configs += [ "//media:media_config" ]
   }

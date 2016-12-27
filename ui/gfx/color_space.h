@@ -10,16 +10,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace IPC {
 template <class P>
 struct ParamTraits;
 }  // namespace IPC
-
-template <typename T>
-class sk_sp;
-class SkColorSpace;
 
 namespace gfx {
 
@@ -144,7 +141,9 @@ class GFX_EXPORT ColorSpace {
              TransferID transfer,
              MatrixID matrix,
              RangeID full_range);
+  ColorSpace(const ColorSpace& other);
   ColorSpace(int primaries, int transfer, int matrix, RangeID full_range);
+  ~ColorSpace();
 
   static PrimaryID PrimaryIDFromInt(int primary_id);
   static TransferID TransferIDFromInt(int transfer_id);
@@ -178,6 +177,8 @@ class GFX_EXPORT ColorSpace {
   // This is used to look up the ICCProfile from which this ColorSpace was
   // created, if possible.
   uint64_t icc_profile_id_ = 0;
+
+  sk_sp<SkColorSpace> sk_color_space_;
 
   friend class ICCProfile;
   friend class ColorSpaceToColorSpaceTransform;

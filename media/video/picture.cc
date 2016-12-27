@@ -70,4 +70,8 @@ Picture::Picture(int32_t picture_buffer_id,
       surface_texture_(false),
       wants_promotion_hint_(false) {}
 
+Picture::Picture(const Picture& other) = default;
+
+Picture::~Picture() = default;
+
 }  // namespace media

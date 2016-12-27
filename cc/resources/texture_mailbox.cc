@@ -15,6 +15,8 @@ namespace cc {
 TextureMailbox::TextureMailbox() : shared_bitmap_(NULL) {
 }
 
+TextureMailbox::TextureMailbox(const TextureMailbox& other) = default;
+
 TextureMailbox::TextureMailbox(const gpu::MailboxHolder& mailbox_holder)
     : mailbox_holder_(mailbox_holder),
       shared_bitmap_(NULL),

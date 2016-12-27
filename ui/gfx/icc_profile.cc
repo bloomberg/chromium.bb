@@ -74,7 +74,7 @@ ICCProfile ICCProfile::FromData(const char* data, size_t size) {
   for (auto iter = cache.id_to_icc_profile_mru.begin();
        iter != cache.id_to_icc_profile_mru.end(); ++iter) {
     if (icc_profile.data_ == iter->second.data_) {
-      icc_profile.id_ = iter->second.id_;
+      icc_profile = iter->second;
       cache.id_to_icc_profile_mru.Get(icc_profile.id_);
       return icc_profile;
     }
@@ -82,6 +82,11 @@ ICCProfile ICCProfile::FromData(const char* data, size_t size) {
 
   // Create a new cached id and add it to the cache.
   icc_profile.id_ = cache.next_unused_id++;
+  icc_profile.color_space_ =
+      ColorSpace(ColorSpace::PrimaryID::CUSTOM, ColorSpace::TransferID::CUSTOM,
+                 ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
+  icc_profile.color_space_.icc_profile_id_ = icc_profile.id_;
+  icc_profile.color_space_.sk_color_space_ = SkColorSpace::MakeICC(data, size);
   cache.id_to_icc_profile_mru.Put(icc_profile.id_, icc_profile);
   return icc_profile;
 }
@@ -118,6 +123,30 @@ ICCProfile ICCProfile::FromColorSpace(const gfx::ColorSpace& color_space) {
   return icc_profile;
 }
 
+ICCProfile ICCProfile::FromSkColorSpace(sk_sp<SkColorSpace> color_space) {
+  ICCProfile icc_profile;
+
+  Cache& cache = g_cache.Get();
+  base::AutoLock lock(cache.lock);
+
+  // Linearly search the cached ICC profiles to find one with the same data.
+  // If it exists, re-use its id and touch it in the cache.
+  for (auto iter = cache.id_to_icc_profile_mru.begin();
+       iter != cache.id_to_icc_profile_mru.end(); ++iter) {
+    sk_sp<SkColorSpace> iter_color_space =
+        iter->second.color_space_.ToSkColorSpace();
+    if (SkColorSpace::Equals(color_space.get(), iter_color_space.get())) {
+      icc_profile = iter->second;
+      cache.id_to_icc_profile_mru.Get(icc_profile.id_);
+      return icc_profile;
+    }
+  }
+
+  // TODO(ccameron): Support constructing ICC profiles from arbitrary
+  // SkColorSpace objects.
+  return icc_profile;
+}
+
 const std::vector<char>& ICCProfile::GetData() const {
   return data_;
 }
@@ -128,10 +157,7 @@ ColorSpace ICCProfile::GetColorSpace() const {
   if (type_ == Type::FROM_COLOR_SPACE)
     return color_space_;
 
-  ColorSpace color_space(ColorSpace::PrimaryID::CUSTOM,
-                         ColorSpace::TransferID::CUSTOM,
-                         ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
-  color_space.icc_profile_id_ = id_;
+  ColorSpace color_space = color_space_;
 
   // Move this ICC profile to the most recently used end of the cache.
   {

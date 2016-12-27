@@ -273,6 +273,7 @@ target(link_target_type, "base") {
   defines = []
   public_deps = [
     "//ppapi/features",
+    "//ui/gfx:color_space",
   ]
   deps = [
     "//base/third_party/dynamic_annotations:dynamic_annotations",

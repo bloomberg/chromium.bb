@@ -61,7 +61,6 @@ component("gfx") {
     "color_analysis.h",
     "color_palette.h",
     "color_space.cc",
-    "color_space.h",
     "color_space_win.cc",
     "color_space_win.h",
     "color_transform.cc",
@@ -245,6 +244,7 @@ component("gfx") {
   defines = [ "GFX_IMPLEMENTATION" ]
 
   public_deps = [
+    ":color_space",
     ":memory_buffer_sources",
     ":native_widget_types",
     ":selection_bound_sources",
@@ -421,6 +421,21 @@ component("gfx") {
   if (use_cairo) {
     configs += [ "//build/config/linux/pangocairo" ]
   }
+}
+
+# Depend on this to use color_space.h without pulling in all of gfx.
+source_set("color_space") {
+  sources = [
+    "color_space.h",
+  ]
+
+  defines = [ "GFX_IMPLEMENTATION" ]
+
+  public_deps = [
+    ":gfx_export",
+    "//base",
+    "//skia",
+  ]
 }
 
 # Depend on this to use native_widget_types.h without pulling in all of gfx.
@@ -612,6 +627,8 @@ test("gfx_unittests") {
       "geometry/size_unittest.cc",
       "geometry/vector2d_unittest.cc",
       "geometry/vector3d_unittest.cc",
+      "icc_profile_unittest.cc",
+      "icc_profile_unittest.h",
       "image/image_mac_unittest.mm",
       "image/image_util_unittest.cc",
       "mac/coordinate_conversion_unittest.mm",

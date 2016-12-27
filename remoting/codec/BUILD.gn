@@ -38,6 +38,7 @@ source_set("encoder") {
     "//third_party/libyuv",
     "//third_party/opus",
     "//third_party/webrtc/modules/desktop_capture:primitives",
+    "//ui/gfx:color_space",
   ]
 
   if (is_nacl) {
@@ -59,6 +60,7 @@ source_set("encoder") {
     deps -= [
       "//media",
       "//media:shared_memory_support",
+      "//ui/gfx:color_space",
     ]
   }
 
@@ -141,6 +143,7 @@ source_set("unit_tests") {
     "//remoting/proto",
     "//testing/gtest",
     "//third_party/webrtc/modules/desktop_capture",
+    "//ui/gfx:color_space",
   ]
 
   if (is_ios) {
