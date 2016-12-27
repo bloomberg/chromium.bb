@@ -8,8 +8,8 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "components/rappor/public/rappor_parameters.h"
 #include "components/rappor/public/sample.h"
@@ -42,7 +42,7 @@ class Sampler {
   std::map<std::string, int> sample_counts_;
 
   // Stores a Sample for each metric, by metric name.
-  base::ScopedPtrHashMap<std::string, std::unique_ptr<Sample>> samples_;
+  std::unordered_map<std::string, std::unique_ptr<Sample>> samples_;
 
   DISALLOW_COPY_AND_ASSIGN(Sampler);
 };
