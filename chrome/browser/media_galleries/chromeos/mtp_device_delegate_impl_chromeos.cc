@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -403,8 +404,8 @@ class MTPDeviceDelegateImplLinux::MTPFileNode {
 
  private:
   // Container for holding a node's children.
-  typedef base::ScopedPtrHashMap<std::string, std::unique_ptr<MTPFileNode>>
-      ChildNodes;
+  using ChildNodes =
+      std::unordered_map<std::string, std::unique_ptr<MTPFileNode>>;
 
   const uint32_t file_id_;
   const std::string file_name_;
@@ -441,7 +442,10 @@ const MTPDeviceDelegateImplLinux::MTPFileNode*
 MTPDeviceDelegateImplLinux::MTPFileNode::GetChild(
     const std::string& name) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  return children_.get(name);
+  auto it = children_.find(name);
+  if (it == children_.end())
+    return nullptr;
+  return it->second.get();
 }
 
 void MTPDeviceDelegateImplLinux::MTPFileNode::EnsureChildExists(
@@ -452,30 +456,26 @@ void MTPDeviceDelegateImplLinux::MTPFileNode::EnsureChildExists(
   if (child && child->file_id() == id)
     return;
 
-  children_.set(name, base::WrapUnique(new MTPFileNode(id, name, this,
-                                                       file_id_to_node_map_)));
+  children_[name] =
+      base::MakeUnique<MTPFileNode>(id, name, this, file_id_to_node_map_);
 }
 
 void MTPDeviceDelegateImplLinux::MTPFileNode::ClearNonexistentChildren(
     const std::set<std::string>& children_to_keep) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  std::set<std::string> children_to_erase;
-  for (ChildNodes::const_iterator it = children_.begin();
-       it != children_.end(); ++it) {
-    if (base::ContainsKey(children_to_keep, it->first))
+  std::vector<std::string> children_to_erase;
+  for (const auto& child : children_) {
+    if (base::ContainsKey(children_to_keep, child.first))
       continue;
-    children_to_erase.insert(it->first);
+    children_to_erase.push_back(child.first);
   }
-  for (std::set<std::string>::iterator it = children_to_erase.begin();
-       it != children_to_erase.end(); ++it) {
-    children_.take_and_erase(*it);
-  }
+  for (const auto& child : children_to_erase)
+    children_.erase(child);
 }
 
 bool MTPDeviceDelegateImplLinux::MTPFileNode::DeleteChild(uint32_t file_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  for (ChildNodes::iterator it = children_.begin();
-       it != children_.end(); ++it) {
+  for (auto it = children_.begin(); it != children_.end(); ++it) {
     if (it->second->file_id() == file_id) {
       DCHECK(!it->second->HasChildren());
       children_.erase(it);
