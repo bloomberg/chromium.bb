@@ -68,7 +68,6 @@ class SVGImageForContainer final : public Image {
         new SVGImageForContainer(image, containerSizeWithoutZoom, zoom, url));
   }
 
-  bool isTextureBacked() override;
   IntSize size() const override;
 
   bool usesContainerSize() const override {

@@ -65,7 +65,6 @@ class CORE_EXPORT SVGImage final : public Image {
   LayoutReplaced* embeddedReplacedContent() const;
 
   bool isSVGImage() const override { return true; }
-  bool isTextureBacked() override { return false; }
   IntSize size() const override { return m_intrinsicSize; }
 
   bool currentFrameHasSingleSecurityOrigin() const override;

@@ -39,7 +39,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
   IntSize size() const override;
   sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) override;
-  bool isTextureBacked() final { return true; }
+  bool isTextureBacked() const override { return true; }
 
   void draw(SkCanvas*,
             const SkPaint&,

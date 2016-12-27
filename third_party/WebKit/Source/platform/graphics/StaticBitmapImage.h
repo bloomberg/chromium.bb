@@ -23,7 +23,6 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   virtual ~StaticBitmapImage() {}
   bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) = 0;
   sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) = 0;
-  bool isTextureBacked() = 0;
   void draw(SkCanvas*,
             const SkPaint&,
             const FloatRect& dstRect,

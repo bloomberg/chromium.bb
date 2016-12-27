@@ -328,14 +328,6 @@ PassRefPtr<Image> Image::imageForDefaultFrame() {
   return image.release();
 }
 
-bool Image::isTextureBacked() {
-  // TODO(ccameron): It should not be necessary to specify color conversion for
-  // this query.
-  sk_sp<SkImage> image =
-      imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
-  return image ? image->isTextureBacked() : false;
-}
-
 bool Image::applyShader(SkPaint& paint,
                         const SkMatrix& localMatrix,
                         const ColorBehavior& colorBehavior) {
