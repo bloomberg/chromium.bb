@@ -727,8 +727,7 @@ void WmWindowAura::SetFullscreen() {
 }
 
 void WmWindowAura::Maximize() {
-  return window_->SetProperty(aura::client::kShowStateKey,
-                              ui::SHOW_STATE_MAXIMIZED);
+  window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 }
 
 void WmWindowAura::Minimize() {
