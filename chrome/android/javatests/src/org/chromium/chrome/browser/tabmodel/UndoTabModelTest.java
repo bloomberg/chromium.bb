@@ -1390,7 +1390,6 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @RetryOnFailure
-    @DisabledTest(message = "crbug.com/674654")
     public void testUndoNotSupported() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(true);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(true);
