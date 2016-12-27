@@ -49,8 +49,7 @@ public class ServiceWorkerPaymentApp implements PaymentApp {
     }
 
     @Override
-    public void getInstruments(
-            Map<String, PaymentMethodData> unusedMethodData,
+    public void getInstruments(Map<String, PaymentMethodData> unusedMethodData, String unusedOrigin,
             final InstrumentsCallback callback) {
         final List<PaymentInstrument> instruments =
                 new ArrayList<PaymentInstrument>();

@@ -36,9 +36,11 @@ public interface PaymentApp {
      * @param methodData The map from methods to method specific data. The data contains such
      *                   information as whether the app should be invoked in test or production
      *                   mode, merchant identifier, or a public key.
+     * @param origin     The origin of this merchant.
      * @param callback   The object that will receive the list of instruments.
      */
-    void getInstruments(Map<String, PaymentMethodData> methodData, InstrumentsCallback callback);
+    void getInstruments(
+            Map<String, PaymentMethodData> methodData, String origin, InstrumentsCallback callback);
 
     /**
      * Returns a list of all payment method names that this app supports. For example, ["visa",
