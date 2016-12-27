@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/reading_list/ios/reading_list_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -200,6 +201,7 @@ void ReadingListWebStateObserver::PageLoaded(
 
   if (load_completion_status == web::PageLoadCompletionStatus::SUCCESS) {
     reading_list_model_->SetReadStatus(pending_url_, true);
+    UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", false);
   } else {
     LoadOfflineReadingListEntry(item);
   }
@@ -272,4 +274,5 @@ void ReadingListWebStateObserver::LoadOfflineReadingListEntry(
   item->SetVirtualURL(pending_url_);
   web_state()->GetNavigationManager()->Reload(false);
   reading_list_model_->SetReadStatus(entry->URL(), true);
+  UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", true);
 }
