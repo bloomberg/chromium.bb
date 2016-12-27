@@ -13,7 +13,7 @@ namespace blink {
 
 class PresentationRequest;
 class ScriptPromiseResolver;
-class WebPresentationConnectionClient;
+struct WebPresentationSessionInfo;
 struct WebPresentationError;
 
 // PresentationConnectionCallbacks extends WebCallbacks to resolve the
@@ -21,13 +21,13 @@ struct WebPresentationError;
 // the PresentationRequest object that originated the call in its constructor
 // and will pass it to the created PresentationConnection.
 class PresentationConnectionCallbacks final
-    : public WebCallbacks<std::unique_ptr<WebPresentationConnectionClient>,
+    : public WebCallbacks<const WebPresentationSessionInfo&,
                           const WebPresentationError&> {
  public:
   PresentationConnectionCallbacks(ScriptPromiseResolver*, PresentationRequest*);
   ~PresentationConnectionCallbacks() override = default;
 
-  void onSuccess(std::unique_ptr<WebPresentationConnectionClient>) override;
+  void onSuccess(const WebPresentationSessionInfo&) override;
   void onError(const WebPresentationError&) override;
 
  private:

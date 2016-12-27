@@ -20,7 +20,6 @@ namespace blink {
 class PresentationConnection;
 class PresentationConnectionList;
 class WebPresentationClient;
-class WebPresentationConnectionClient;
 
 // Implements the PresentationReceiver interface from the Presentation API from
 // which websites can implement the receiving side of a presentation session.
@@ -44,7 +43,8 @@ class MODULES_EXPORT PresentationReceiver final
   ScriptPromise connectionList(ScriptState*);
 
   // Implementation of WebPresentationController.
-  void onReceiverConnectionAvailable(WebPresentationConnectionClient*) override;
+  void onReceiverConnectionAvailable(
+      const WebPresentationSessionInfo&) override;
   void registerConnection(PresentationConnection*);
 
   DECLARE_VIRTUAL_TRACE();

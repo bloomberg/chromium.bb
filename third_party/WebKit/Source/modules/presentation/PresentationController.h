@@ -18,9 +18,6 @@
 namespace blink {
 
 class PresentationConnection;
-class WebPresentationConnectionClient;
-enum class WebPresentationConnectionCloseReason;
-enum class WebPresentationConnectionState;
 
 // The coordinator between the various page exposed properties and the content
 // layer represented via |WebPresentationClient|.
@@ -48,15 +45,15 @@ class MODULES_EXPORT PresentationController final
   DECLARE_VIRTUAL_TRACE();
 
   // Implementation of WebPresentationController.
-  void didStartDefaultSession(WebPresentationConnectionClient*) override;
-  void didChangeSessionState(WebPresentationConnectionClient*,
+  void didStartDefaultSession(const WebPresentationSessionInfo&) override;
+  void didChangeSessionState(const WebPresentationSessionInfo&,
                              WebPresentationConnectionState) override;
-  void didCloseConnection(WebPresentationConnectionClient*,
+  void didCloseConnection(const WebPresentationSessionInfo&,
                           WebPresentationConnectionCloseReason,
                           const WebString& message) override;
-  void didReceiveSessionTextMessage(WebPresentationConnectionClient*,
+  void didReceiveSessionTextMessage(const WebPresentationSessionInfo&,
                                     const WebString&) override;
-  void didReceiveSessionBinaryMessage(WebPresentationConnectionClient*,
+  void didReceiveSessionBinaryMessage(const WebPresentationSessionInfo&,
                                       const uint8_t* data,
                                       size_t length) override;
 
@@ -81,7 +78,7 @@ class MODULES_EXPORT PresentationController final
 
   // Return the connection associated with the given |connectionClient| or
   // null if it doesn't exist.
-  PresentationConnection* findConnection(WebPresentationConnectionClient*);
+  PresentationConnection* findConnection(const WebPresentationSessionInfo&);
 
   // The WebPresentationClient which allows communicating with the embedder.
   // It is not owned by the PresentationController but the controller will

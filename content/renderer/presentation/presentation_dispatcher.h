@@ -71,15 +71,13 @@ class CONTENT_EXPORT PresentationDispatcher
   void setController(blink::WebPresentationController* controller) override;
   void setReceiver(blink::WebPresentationReceiver*) override;
 
-  void startSession(
-      const blink::WebVector<blink::WebURL>& presentationUrls,
-      std::unique_ptr<blink::WebPresentationConnectionClientCallbacks> callback)
-      override;
-  void joinSession(
-      const blink::WebVector<blink::WebURL>& presentationUrls,
-      const blink::WebString& presentationId,
-      std::unique_ptr<blink::WebPresentationConnectionClientCallbacks> callback)
-      override;
+  void startSession(const blink::WebVector<blink::WebURL>& presentationUrls,
+                    std::unique_ptr<blink::WebPresentationConnectionCallback>
+                        callback) override;
+  void joinSession(const blink::WebVector<blink::WebURL>& presentationUrls,
+                   const blink::WebString& presentationId,
+                   std::unique_ptr<blink::WebPresentationConnectionCallback>
+                       callback) override;
   void sendString(const blink::WebURL& presentationUrl,
                   const blink::WebString& presentationId,
                   const blink::WebString& message) override;
@@ -114,10 +112,10 @@ class CONTENT_EXPORT PresentationDispatcher
   void OnScreenAvailabilityNotSupported(const GURL& url) override;
   void OnScreenAvailabilityUpdated(const GURL& url, bool available) override;
   void OnConnectionStateChanged(
-      blink::mojom::PresentationSessionInfoPtr connection,
+      blink::mojom::PresentationSessionInfoPtr session_info,
       blink::mojom::PresentationConnectionState state) override;
   void OnConnectionClosed(
-      blink::mojom::PresentationSessionInfoPtr connection,
+      blink::mojom::PresentationSessionInfoPtr session_info,
       blink::mojom::PresentationConnectionCloseReason reason,
       const std::string& message) override;
   void OnConnectionMessagesReceived(
@@ -127,7 +125,7 @@ class CONTENT_EXPORT PresentationDispatcher
       blink::mojom::PresentationSessionInfoPtr session_info) override;
 
   void OnSessionCreated(
-      std::unique_ptr<blink::WebPresentationConnectionClientCallbacks> callback,
+      std::unique_ptr<blink::WebPresentationConnectionCallback> callback,
       blink::mojom::PresentationSessionInfoPtr session_info,
       blink::mojom::PresentationErrorPtr error);
   void OnReceiverConnectionAvailable(

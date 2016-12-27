@@ -11,7 +11,8 @@
 #include "core/fileapi/FileError.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
+#include "public/platform/modules/presentation/WebPresentationController.h"
+#include "public/platform/modules/presentation/WebPresentationSessionInfo.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 
@@ -34,19 +35,14 @@ class PresentationConnection final : public EventTargetWithInlineData,
 
  public:
   // For CallbackPromiseAdapter.
-  using WebType = std::unique_ptr<WebPresentationConnectionClient>;
-
-  static PresentationConnection* take(
-      ScriptPromiseResolver*,
-      std::unique_ptr<WebPresentationConnectionClient>,
-      PresentationRequest*);
-  static PresentationConnection* take(
-      PresentationController*,
-      std::unique_ptr<WebPresentationConnectionClient>,
-      PresentationRequest*);
-  static PresentationConnection* take(
-      PresentationReceiver*,
-      std::unique_ptr<WebPresentationConnectionClient>);
+  static PresentationConnection* take(ScriptPromiseResolver*,
+                                      const WebPresentationSessionInfo&,
+                                      PresentationRequest*);
+  static PresentationConnection* take(PresentationController*,
+                                      const WebPresentationSessionInfo&,
+                                      PresentationRequest*);
+  static PresentationConnection* take(PresentationReceiver*,
+                                      const WebPresentationSessionInfo&);
   ~PresentationConnection() override;
 
   // EventTarget implementation.
@@ -73,9 +69,9 @@ class PresentationConnection final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(terminate);
 
-  // Returns true if and only if the WebPresentationConnectionClient represents
-  // this connection.
-  bool matches(WebPresentationConnectionClient*) const;
+  // Returns true if and only if the the session info represents this
+  // connection.
+  bool matches(const WebPresentationSessionInfo&) const;
 
   // Notifies the connection about its state change.
   void didChangeState(WebPresentationConnectionState);

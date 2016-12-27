@@ -25,7 +25,6 @@
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationReceiver.h"
 #include "modules/presentation/PresentationRequest.h"
-#include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 #include <memory>
@@ -163,10 +162,9 @@ PresentationConnection::~PresentationConnection() {
 // static
 PresentationConnection* PresentationConnection::take(
     ScriptPromiseResolver* resolver,
-    std::unique_ptr<WebPresentationConnectionClient> client,
+    const WebPresentationSessionInfo& sessionInfo,
     PresentationRequest* request) {
   ASSERT(resolver);
-  ASSERT(client);
   ASSERT(request);
   ASSERT(resolver->getExecutionContext()->isDocument());
 
@@ -179,19 +177,19 @@ PresentationConnection* PresentationConnection::take(
   if (!controller)
     return nullptr;
 
-  return take(controller, std::move(client), request);
+  return take(controller, sessionInfo, request);
 }
 
 // static
 PresentationConnection* PresentationConnection::take(
     PresentationController* controller,
-    std::unique_ptr<WebPresentationConnectionClient> client,
+    const WebPresentationSessionInfo& sessionInfo,
     PresentationRequest* request) {
   ASSERT(controller);
   ASSERT(request);
 
   PresentationConnection* connection = new PresentationConnection(
-      controller->frame(), client->getId(), client->getUrl());
+      controller->frame(), sessionInfo.id, sessionInfo.url);
   controller->registerConnection(connection);
 
   // Fire onconnectionavailable event asynchronously.
@@ -208,12 +206,11 @@ PresentationConnection* PresentationConnection::take(
 // static
 PresentationConnection* PresentationConnection::take(
     PresentationReceiver* receiver,
-    std::unique_ptr<WebPresentationConnectionClient> client) {
+    const WebPresentationSessionInfo& sessionInfo) {
   DCHECK(receiver);
-  DCHECK(client);
 
   PresentationConnection* connection = new PresentationConnection(
-      receiver->frame(), client->getId(), client->getUrl());
+      receiver->frame(), sessionInfo.id, sessionInfo.url);
   receiver->registerConnection(connection);
 
   return connection;
@@ -407,9 +404,8 @@ void PresentationConnection::terminate() {
 }
 
 bool PresentationConnection::matches(
-    WebPresentationConnectionClient* client) const {
-  return client && m_url == KURL(client->getUrl()) &&
-         m_id == static_cast<String>(client->getId());
+    const WebPresentationSessionInfo& sessionInfo) const {
+  return m_url == KURL(sessionInfo.url) && m_id == String(sessionInfo.id);
 }
 
 void PresentationConnection::didChangeState(

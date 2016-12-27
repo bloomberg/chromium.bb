@@ -63,58 +63,46 @@ DEFINE_TRACE(PresentationController) {
 }
 
 void PresentationController::didStartDefaultSession(
-    WebPresentationConnectionClient* connectionClient) {
+    const WebPresentationSessionInfo& sessionInfo) {
   if (!m_presentation || !m_presentation->defaultRequest())
     return;
-  PresentationConnection::take(this, WTF::wrapUnique(connectionClient),
+  PresentationConnection::take(this, sessionInfo,
                                m_presentation->defaultRequest());
 }
 
 void PresentationController::didChangeSessionState(
-    WebPresentationConnectionClient* connectionClient,
+    const WebPresentationSessionInfo& sessionInfo,
     WebPresentationConnectionState state) {
-  std::unique_ptr<WebPresentationConnectionClient> client =
-      WTF::wrapUnique(connectionClient);
-
-  PresentationConnection* connection = findConnection(client.get());
+  PresentationConnection* connection = findConnection(sessionInfo);
   if (!connection)
     return;
   connection->didChangeState(state);
 }
 
 void PresentationController::didCloseConnection(
-    WebPresentationConnectionClient* connectionClient,
+    const WebPresentationSessionInfo& sessionInfo,
     WebPresentationConnectionCloseReason reason,
     const WebString& message) {
-  std::unique_ptr<WebPresentationConnectionClient> client =
-      WTF::wrapUnique(connectionClient);
-
-  PresentationConnection* connection = findConnection(client.get());
+  PresentationConnection* connection = findConnection(sessionInfo);
   if (!connection)
     return;
   connection->didClose(reason, message);
 }
 
 void PresentationController::didReceiveSessionTextMessage(
-    WebPresentationConnectionClient* connectionClient,
+    const WebPresentationSessionInfo& sessionInfo,
     const WebString& message) {
-  std::unique_ptr<WebPresentationConnectionClient> client =
-      WTF::wrapUnique(connectionClient);
-
-  PresentationConnection* connection = findConnection(client.get());
+  PresentationConnection* connection = findConnection(sessionInfo);
   if (!connection)
     return;
   connection->didReceiveTextMessage(message);
 }
 
 void PresentationController::didReceiveSessionBinaryMessage(
-    WebPresentationConnectionClient* connectionClient,
+    const WebPresentationSessionInfo& sessionInfo,
     const uint8_t* data,
     size_t length) {
-  std::unique_ptr<WebPresentationConnectionClient> client =
-      WTF::wrapUnique(connectionClient);
-
-  PresentationConnection* connection = findConnection(client.get());
+  PresentationConnection* connection = findConnection(sessionInfo);
   if (!connection)
     return;
   connection->didReceiveBinaryMessage(data, length);
@@ -149,9 +137,9 @@ void PresentationController::contextDestroyed() {
 }
 
 PresentationConnection* PresentationController::findConnection(
-    WebPresentationConnectionClient* connectionClient) {
+    const WebPresentationSessionInfo& sessionInfo) {
   for (const auto& connection : m_connections) {
-    if (connection->matches(connectionClient))
+    if (connection->matches(sessionInfo))
       return connection.get();
   }
 

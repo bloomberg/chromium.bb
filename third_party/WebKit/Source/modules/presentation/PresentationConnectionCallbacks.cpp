@@ -9,7 +9,6 @@
 #include "modules/presentation/PresentationConnection.h"
 #include "modules/presentation/PresentationError.h"
 #include "modules/presentation/PresentationRequest.h"
-#include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "public/platform/modules/presentation/WebPresentationError.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -25,16 +24,12 @@ PresentationConnectionCallbacks::PresentationConnectionCallbacks(
 }
 
 void PresentationConnectionCallbacks::onSuccess(
-    std::unique_ptr<WebPresentationConnectionClient>
-        PresentationConnectionClient) {
-  std::unique_ptr<WebPresentationConnectionClient> result(
-      WTF::wrapUnique(PresentationConnectionClient.release()));
-
+    const WebPresentationSessionInfo& sessionInfo) {
   if (!m_resolver->getExecutionContext() ||
       m_resolver->getExecutionContext()->isContextDestroyed())
     return;
-  m_resolver->resolve(PresentationConnection::take(
-      m_resolver.get(), std::move(result), m_request));
+  m_resolver->resolve(
+      PresentationConnection::take(m_resolver.get(), sessionInfo, m_request));
 }
 
 void PresentationConnectionCallbacks::onError(

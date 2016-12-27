@@ -40,12 +40,10 @@ ScriptPromise PresentationReceiver::connectionList(ScriptState* scriptState) {
 }
 
 void PresentationReceiver::onReceiverConnectionAvailable(
-    WebPresentationConnectionClient* connectionClient) {
-  DCHECK(connectionClient);
+    const WebPresentationSessionInfo& sessionInfo) {
   // take() will call PresentationReceiver::registerConnection()
   // and register the connection.
-  auto connection =
-      PresentationConnection::take(this, WTF::wrapUnique(connectionClient));
+  auto connection = PresentationConnection::take(this, sessionInfo);
 
   // receiver.connectionList property not accessed
   if (!m_connectionListProperty)

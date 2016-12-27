@@ -14,19 +14,19 @@ namespace blink {
 
 class WebPresentationAvailabilityObserver;
 class WebPresentationController;
-class WebPresentationConnectionClient;
+struct WebPresentationError;
 class WebPresentationReceiver;
+struct WebPresentationSessionInfo;
 class WebString;
 class WebURL;
-struct WebPresentationError;
 template <typename T>
 class WebVector;
 
 // If session was created, callback's onSuccess() is invoked with the
 // information about the presentation session created by the embedder.
 // Otherwise, onError() is invoked with the error code and message.
-using WebPresentationConnectionClientCallbacks =
-    WebCallbacks<std::unique_ptr<WebPresentationConnectionClient>,
+using WebPresentationConnectionCallback =
+    WebCallbacks<const WebPresentationSessionInfo&,
                  const WebPresentationError&>;
 
 // Callback for .getAvailability().
@@ -48,13 +48,13 @@ class WebPresentationClient {
   // Called when the frame requests to start a new session.
   virtual void startSession(
       const WebVector<WebURL>& presentationUrls,
-      std::unique_ptr<WebPresentationConnectionClientCallbacks>) = 0;
+      std::unique_ptr<WebPresentationConnectionCallback>) = 0;
 
   // Called when the frame requests to join an existing session.
   virtual void joinSession(
       const WebVector<WebURL>& presentationUrls,
       const WebString& presentationId,
-      std::unique_ptr<WebPresentationConnectionClientCallbacks>) = 0;
+      std::unique_ptr<WebPresentationConnectionCallback>) = 0;
 
   // Called when the frame requests to send String message to an existing
   // session.
