@@ -967,19 +967,19 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertNotIn('platform/test-win-win7/http/test.html', tests_run)
 
     def test_output_diffs(self):
-        # Test to ensure that we don't generate -wdiff.html or -pretty.html if wdiff and PrettyPatch
-        # aren't available.
+        # Test to ensure that we don't generate -wdiff.html if wdiff isn't available,
+        # but we always generate -diff.txt an -pretty-diff.html.
         host = MockHost()
         logging_run(['--pixel-tests', 'failures/unexpected/text-image-checksum.html'], tests_included=True, host=host)
         written_files = host.filesystem.written_files
-        self.assertTrue(any(path.endswith('-diff.txt') for path in written_files.keys()))
-        self.assertFalse(any(path.endswith('-wdiff.html') for path in written_files.keys()))
-        self.assertFalse(any(path.endswith('-pretty-diff.html') for path in written_files.keys()))
+        self.assertTrue(any(path.endswith('-diff.txt') for path in written_files))
+        self.assertTrue(any(path.endswith('-pretty-diff.html') for path in written_files))
+        self.assertFalse(any(path.endswith('-wdiff.html') for path in written_files))
 
         full_results_text = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         full_results = json.loads(full_results_text.replace("ADD_RESULTS(", "").replace(");", ""))
         self.assertEqual(full_results['has_wdiff'], False)
-        self.assertEqual(full_results['has_pretty_patch'], False)
+        self.assertEqual(full_results['has_pretty_patch'], True)
 
     def test_unsupported_platform(self):
         stdout = StringIO.StringIO()
