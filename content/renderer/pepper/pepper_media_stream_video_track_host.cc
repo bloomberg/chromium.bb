@@ -517,9 +517,9 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
   std::string source_id;
   base::Base64Encode(base::RandBytesAsString(64), &source_id);
   blink::WebMediaStreamSource webkit_source;
-  webkit_source.initialize(base::UTF8ToUTF16(source_id),
+  webkit_source.initialize(blink::WebString::fromASCII(source_id),
                            blink::WebMediaStreamSource::TypeVideo,
-                           base::UTF8ToUTF16(kPepperVideoSourceName),
+                           blink::WebString::fromASCII(kPepperVideoSourceName),
                            false /* remote */);
   MediaStreamVideoSource* const source =
       new VideoSource(weak_factory_.GetWeakPtr());

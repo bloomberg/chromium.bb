@@ -290,7 +290,7 @@ void PPB_Graphics3D_Impl::OnGpuControlErrorMessage(const char* message,
   if (!frame)
     return;
   WebConsoleMessage console_message = WebConsoleMessage(
-      WebConsoleMessage::LevelError, WebString(base::UTF8ToUTF16(message)));
+      WebConsoleMessage::LevelError, WebString::fromUTF8(message));
   frame->addMessageToConsole(console_message);
 }
 

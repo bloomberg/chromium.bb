@@ -24,6 +24,7 @@
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -86,9 +87,8 @@ bool AppendFileRefToBody(PP_Instance instance,
     default:
       NOTREACHED();
   }
-  http_body->appendFileRange(platform_path.AsUTF16Unsafe(),
-                             start_offset,
-                             number_of_bytes,
+  http_body->appendFileRange(blink::FilePathToWebString(platform_path),
+                             start_offset, number_of_bytes,
                              expected_last_modified_time);
   return true;
 }

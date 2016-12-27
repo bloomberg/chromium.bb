@@ -76,7 +76,7 @@ WebConsoleMessage MakeLogMessage(PP_LogLevel level,
     result.append(": ");
   result.append(message);
   return WebConsoleMessage(LogLevelToWebLogLevel(level),
-                           WebString(base::UTF8ToUTF16(result)));
+                           WebString::fromUTF8(result));
 }
 
 }  // namespace

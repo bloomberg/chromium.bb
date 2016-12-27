@@ -1456,7 +1456,7 @@ void PepperPluginInstanceImpl::RequestSurroundingText(
       pp_instance(), desired_number_of_characters);
 }
 
-bool PepperPluginInstanceImpl::StartFind(const base::string16& search_text,
+bool PepperPluginInstanceImpl::StartFind(const std::string& search_text,
                                          bool case_sensitive,
                                          int identifier) {
   // Keep a reference on the stack. See NOTE above.
@@ -1464,10 +1464,8 @@ bool PepperPluginInstanceImpl::StartFind(const base::string16& search_text,
   if (!LoadFindInterface())
     return false;
   find_identifier_ = identifier;
-  return PP_ToBool(
-      plugin_find_interface_->StartFind(pp_instance(),
-                                        base::UTF16ToUTF8(search_text).c_str(),
-                                        PP_FromBool(case_sensitive)));
+  return PP_ToBool(plugin_find_interface_->StartFind(
+      pp_instance(), search_text.c_str(), PP_FromBool(case_sensitive)));
 }
 
 void PepperPluginInstanceImpl::SelectFindResult(bool forward, int identifier) {

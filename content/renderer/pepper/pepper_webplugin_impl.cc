@@ -247,11 +247,11 @@ bool PepperWebPluginImpl::hasSelection() const {
 }
 
 WebString PepperWebPluginImpl::selectionAsText() const {
-  return instance_->GetSelectedText(false);
+  return WebString::fromUTF16(instance_->GetSelectedText(false));
 }
 
 WebString PepperWebPluginImpl::selectionAsMarkup() const {
-  return instance_->GetSelectedText(true);
+  return WebString::fromUTF16(instance_->GetSelectedText(true));
 }
 
 WebURL PepperWebPluginImpl::linkAtPosition(const WebPoint& position) const {
@@ -261,7 +261,7 @@ WebURL PepperWebPluginImpl::linkAtPosition(const WebPoint& position) const {
 bool PepperWebPluginImpl::startFind(const blink::WebString& search_text,
                                     bool case_sensitive,
                                     int identifier) {
-  return instance_->StartFind(search_text, case_sensitive, identifier);
+  return instance_->StartFind(search_text.utf8(), case_sensitive, identifier);
 }
 
 void PepperWebPluginImpl::selectFindResult(bool forward, int identifier) {
