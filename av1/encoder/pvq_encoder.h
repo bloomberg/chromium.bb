@@ -24,9 +24,6 @@ void od_encode_band_pvq_splits(od_ec_enc *ec, od_pvq_codeword_ctx *adapt,
  const int *y, int n, int k, int level);
 
 void od_laplace_encode_special(od_ec_enc *enc, int x, unsigned decay, int max);
-void od_laplace_encode(od_ec_enc *enc, int x, int ex_q8, int k);
-void od_laplace_encode_vector(od_ec_enc *enc, const od_coeff *y, int n, int k,
-                                  int32_t *curr, const int32_t *means);
 
 #if OD_SIGNAL_Q_SCALING
 void od_encode_quantizer_scaling(daala_enc_ctx *enc, int q_scaling, int bx,
