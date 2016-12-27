@@ -93,8 +93,8 @@ crbug.com/611232 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 crbug.com/611232 http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Failure ]
 
 # https://crbug.com/615156 - Need to make IntersectionObserver work with OOPIFs.
-crbug.com/615156 http/tests/intersection-observer/iframe-cross-origin.html [ Timeout ]
-crbug.com/615156 virtual/mojo-loading/http/tests/intersection-observer/iframe-cross-origin.html [ Timeout ]
+crbug.com/615156 http/tests/intersection-observer/iframe-cross-origin.html [ Failure Timeout ]
+crbug.com/615156 virtual/mojo-loading/http/tests/intersection-observer/iframe-cross-origin.html [ Failure Timeout ]
 
 # https://crbug.com/616626 - allow_universal_access_from_file_urls doesn't work with --site-per-process.
 # https://crbug.com/665058 - EventSender drag-and-drop simulation doesn't support OOPIFs.
