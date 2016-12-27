@@ -297,6 +297,12 @@ void ServiceWorkerURLRequestJob::ForwardToServiceWorker() {
   MaybeStartRequest();
 }
 
+void ServiceWorkerURLRequestJob::FailDueToLostController() {
+  DCHECK_EQ(NOT_DETERMINED, response_type_);
+  response_type_ = FAIL_DUE_TO_LOST_CONTROLLER;
+  MaybeStartRequest();
+}
+
 void ServiceWorkerURLRequestJob::Start() {
   is_started_ = true;
   MaybeStartRequest();
@@ -425,6 +431,12 @@ void ServiceWorkerURLRequestJob::StartRequest() {
   switch (response_type_) {
     case NOT_DETERMINED:
       NOTREACHED();
+      return;
+
+    case FAIL_DUE_TO_LOST_CONTROLLER:
+      request()->net_log().AddEvent(
+          net::NetLogEventType::SERVICE_WORKER_ERROR_NO_ACTIVE_VERSION);
+      NotifyStartError(net::URLRequestStatus::FromError(net::ERR_FAILED));
       return;
 
     case FALLBACK_TO_NETWORK:
@@ -792,30 +804,41 @@ void ServiceWorkerURLRequestJob::NotifyRestartRequired() {
 }
 
 void ServiceWorkerURLRequestJob::OnStartCompleted() const {
-  if (response_type_ != FORWARD_TO_SERVICE_WORKER &&
-      response_type_ != FALLBACK_TO_RENDERER) {
-    ServiceWorkerResponseInfo::ForRequest(request_, true)
-        ->OnStartCompleted(
-            false /* was_fetched_via_service_worker */,
-            false /* was_fetched_via_foreign_fetch */,
-            false /* was_fallback_required */,
-            std::vector<GURL>() /* url_list_via_service_worker */,
-            blink::WebServiceWorkerResponseTypeDefault,
-            base::TimeTicks() /* service_worker_start_time */,
-            base::TimeTicks() /* service_worker_ready_time */,
-            false /* respons_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */,
-            ServiceWorkerHeaderList() /* cors_exposed_header_names */);
-    return;
+  switch (response_type_) {
+    case NOT_DETERMINED:
+      NOTREACHED();
+      return;
+    case FAIL_DUE_TO_LOST_CONTROLLER:
+    case FALLBACK_TO_NETWORK:
+      // Indicate that the service worker did not respond to the request.
+      ServiceWorkerResponseInfo::ForRequest(request_, true)
+          ->OnStartCompleted(
+              false /* was_fetched_via_service_worker */,
+              false /* was_fetched_via_foreign_fetch */,
+              false /* was_fallback_required */,
+              std::vector<GURL>() /* url_list_via_service_worker */,
+              blink::WebServiceWorkerResponseTypeDefault,
+              base::TimeTicks() /* service_worker_start_time */,
+              base::TimeTicks() /* service_worker_ready_time */,
+              false /* response_is_in_cache_storage */,
+              std::string() /* response_cache_storage_cache_name */,
+              ServiceWorkerHeaderList() /* cors_exposed_header_names */);
+      break;
+    case FALLBACK_TO_RENDERER:
+    case FORWARD_TO_SERVICE_WORKER:
+      // Indicate that the service worker responded to the request, which is
+      // considered true if "fallback to renderer" was required since the
+      // renderer expects that.
+      ServiceWorkerResponseInfo::ForRequest(request_, true)
+          ->OnStartCompleted(
+              true /* was_fetched_via_service_worker */,
+              fetch_type_ == ServiceWorkerFetchType::FOREIGN_FETCH,
+              fall_back_required_, response_url_list_,
+              service_worker_response_type_, worker_start_time_,
+              worker_ready_time_, response_is_in_cache_storage_,
+              response_cache_storage_cache_name_, cors_exposed_header_names_);
+      break;
   }
-  ServiceWorkerResponseInfo::ForRequest(request_, true)
-      ->OnStartCompleted(true /* was_fetched_via_service_worker */,
-                         fetch_type_ == ServiceWorkerFetchType::FOREIGN_FETCH,
-                         fall_back_required_, response_url_list_,
-                         service_worker_response_type_, worker_start_time_,
-                         worker_ready_time_, response_is_in_cache_storage_,
-                         response_cache_storage_cache_name_,
-                         cors_exposed_header_names_);
 }
 
 bool ServiceWorkerURLRequestJob::IsMainResourceLoad() const {

@@ -122,29 +122,53 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return running_hosted_version_.get() != NULL;
   }
 
+  // Returns this provider's controller. The controller is typically the same as
+  // active_version() but can differ in the following cases:
+  // (1) The client was created before the registration existed or had an active
+  // version (in spec language, it is not "using" the registration).
+  // (2) The client had a controller but NotifyControllerLost() was called due
+  // to an exceptional circumstance (here also it is not "using" the
+  // registration).
+  // (3) During algorithms such as the update, skipWaiting(), and claim() steps,
+  // the active_version and controlling_version may temporarily differ. For
+  // example, to perform skipWaiting(), the registration's active version is
+  // updated first and then the provider host's controlling version is updated
+  // to match it.
   ServiceWorkerVersion* controlling_version() const {
+    // Only clients can have controllers.
+    DCHECK(!controlling_version_ || IsProviderForClient());
     return controlling_version_.get();
   }
+
   ServiceWorkerVersion* active_version() const {
     return associated_registration_.get() ?
         associated_registration_->active_version() : NULL;
   }
+
   ServiceWorkerVersion* waiting_version() const {
     return associated_registration_.get() ?
         associated_registration_->waiting_version() : NULL;
   }
+
   ServiceWorkerVersion* installing_version() const {
     return associated_registration_.get() ?
         associated_registration_->installing_version() : NULL;
   }
 
+  // Returns the associated registration. The provider host listens to this
+  // registration to resolve the .ready promise and set its controller.
   ServiceWorkerRegistration* associated_registration() const {
+    // Only clients can have an associated registration.
+    DCHECK(!associated_registration_ || IsProviderForClient());
     return associated_registration_.get();
   }
 
   // The running version, if any, that this provider is providing resource
   // loads for.
   ServiceWorkerVersion* running_hosted_version() const {
+    // Only providers for controllers can host a running version.
+    DCHECK(!running_hosted_version_ ||
+           provider_type_ == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER);
     return running_hosted_version_.get();
   }
 
@@ -268,8 +292,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Called when our controller has been terminated and doomed due to an
   // exceptional condition like it could no longer be read from the script
   // cache.
-  void NotifyControllerLost(bool was_deleted);
-  bool controller_was_deleted() { return controller_was_deleted_; }
+  void NotifyControllerLost();
 
  private:
   friend class ForeignFetchRequestHandlerTest;
@@ -390,8 +413,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;
   bool allow_association_;
-  // TODO(falken): Remove once https://crbug.com/655910 is resolved.
-  bool controller_was_deleted_;
 
   std::vector<base::Closure> queued_events_;
 

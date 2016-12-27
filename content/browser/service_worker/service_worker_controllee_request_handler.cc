@@ -420,10 +420,18 @@ void ServiceWorkerControlleeRequestHandler::PrepareForSubResource() {
   DCHECK(job_.get());
   DCHECK(context_);
 
+  // When this request handler was created, the provider host had a controller
+  // and hence an active version, but by the time MaybeCreateJob() is called
+  // the active version may have been lost. This happens when
+  // ServiceWorkerRegistration::DeleteVersion() was called to delete the worker
+  // because a permanent failure occurred when trying to start it.
+  //
+  // As this is an exceptional case, just error out.
+  // TODO(falken): Figure out if |active_version| can change to
+  // |controlling_version| and do it or document the findings.
   if (!provider_host_->active_version()) {
-    // TODO(falken): For debugging. Remove once https://crbug.com/655910 is
-    // resolved.
-    CHECK(provider_host_->controller_was_deleted());
+    job_->FailDueToLostController();
+    return;
   }
 
   MaybeForwardToServiceWorker(job_.get(), provider_host_->active_version());
@@ -462,7 +470,7 @@ bool ServiceWorkerControlleeRequestHandler::RequestStillValid(
 void ServiceWorkerControlleeRequestHandler::MainResourceLoadFailed() {
   DCHECK(provider_host_);
   // Detach the controller so subresource requests also skip the worker.
-  provider_host_->NotifyControllerLost(false /* was_deleted */);
+  provider_host_->NotifyControllerLost();
 }
 
 void ServiceWorkerControlleeRequestHandler::ClearJob() {

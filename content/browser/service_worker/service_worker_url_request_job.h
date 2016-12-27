@@ -114,6 +114,10 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   void FallbackToNetwork();
   void FallbackToNetworkOrRenderer();
   void ForwardToServiceWorker();
+  // Tells the job to abort with a start error. Currently this is only called
+  // because the controller was lost. This function could be made more generic
+  // if needed later.
+  void FailDueToLostController();
 
   bool ShouldFallbackToNetwork() const {
     return response_type_ == FALLBACK_TO_NETWORK;
@@ -145,12 +149,15 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
  private:
   class FileSizeResolver;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTestP,
+                           LostActiveVersion);
 
   enum ResponseType {
     NOT_DETERMINED,
+    FAIL_DUE_TO_LOST_CONTROLLER,
     FALLBACK_TO_NETWORK,
     FALLBACK_TO_RENDERER,  // Use this when falling back with CORS check
-    FORWARD_TO_SERVICE_WORKER,
+    FORWARD_TO_SERVICE_WORKER
   };
 
   enum ResponseBodyType {

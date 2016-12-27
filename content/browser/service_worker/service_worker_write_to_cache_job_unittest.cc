@@ -293,7 +293,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     std::unique_ptr<ServiceWorkerProviderHost> host(
         new ServiceWorkerProviderHost(
             process_id, MSG_ROUTING_NONE, provider_id,
-            SERVICE_WORKER_PROVIDER_FOR_WORKER,
+            SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
             ServiceWorkerProviderHost::FrameSecurityLevel::SECURE,
             context()->AsWeakPtr(), nullptr));
     base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
