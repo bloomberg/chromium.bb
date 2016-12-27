@@ -39,6 +39,20 @@ class AutoEnrollmentController {
     MODE_FORCED_RE_ENROLLMENT,
   };
 
+  // Requirement for forced re-enrollment check.
+  enum FRERequirement {
+    // The device was setup (has kActivateDateKey) but doesn't have the
+    // kCheckEnrollmentKey entry in VPD, or the VPD is corrupted.
+    REQUIRED,
+    // The device doesn't have kActivateDateKey, nor kCheckEnrollmentKey entry
+    // while the serial number has been successfully read from VPD.
+    NOT_REQUIRED,
+    // FRE check explicitly required by the flag in VPD.
+    EXPLICITLY_REQUIRED,
+    // FRE check to be skipped, explicitly stated by the flag in VPD.
+    EXPLICITLY_NOT_REQUIRED,
+  };
+
   // Gets the auto-enrollment mode based on command-line flags and official
   // build status.
   static Mode GetMode();
@@ -89,6 +103,9 @@ class AutoEnrollmentController {
   // eventually, which is crucial to not block OOBE forever. See
   // http://crbug.com/433634 for background.
   base::Timer safeguard_timer_;
+
+  // Whether the forced re-enrollment check has to be applied.
+  FRERequirement fre_requirement_ = REQUIRED;
 
   base::WeakPtrFactory<AutoEnrollmentController> client_start_weak_factory_;
 

@@ -23,7 +23,7 @@ namespace {
 
 // Maximum time to wait before forcing a decision.  Note that download time for
 // state key buckets can be non-negligible, especially on 2G connections.
-const int kSafeguardTimeoutSeconds = 60;
+const int kSafeguardTimeoutSeconds = 90;
 
 // Returns the int value of the |switch_name| argument, clamped to the [0, 62]
 // interval. Returns 0 if the argument doesn't exist or isn't an int value.
@@ -52,23 +52,50 @@ int GetSanitizedArg(const std::string& switch_name) {
   return int_value;
 }
 
-// Determine whether the auto-enrollment check can be skipped. This is true when
-// kCheckEnrollmentKey VPD entry doesn't indicate the device as being enrolled
-// in the past. For backward compatibility with devices upgrading from an older
-// version of Chrome OS, the kActivateDateKey VPD entry should be missing too.
-// The requirement for the machine serial number to be present as well is a
-// sanity-check to ensure that the VPD has actually been read successfully.
-bool CanSkipFRE() {
+// Returns whether the auto-enrollment check is required. When
+// kCheckEnrollmentKey VPD entry is present, it is explicitly stating whether
+// the forced re-enrollment is required or not. Otherwise, for backward
+// compatibility with devices upgrading from an older version of Chrome OS, the
+// kActivateDateKey VPD entry is queried. If it's missing, FRE is not required.
+// This enables factories to start full guest sessions for testing, see
+// http://crbug.com/397354 for more context. The requirement for the machine
+// serial number to be present is a sanity-check to ensure that the VPD has
+// actually been read successfully. If VPD read failed, the FRE check is
+// required.
+AutoEnrollmentController::FRERequirement GetFRERequirement() {
+  std::string check_enrollment_value;
   system::StatisticsProvider* provider =
       system::StatisticsProvider::GetInstance();
-  std::string check_enrollment_value;
-  bool is_enrolled =
-      provider->GetMachineStatistic(
-          system::kCheckEnrollmentKey, &check_enrollment_value) &&
-      check_enrollment_value == "1";
-  return !provider->GetMachineStatistic(system::kActivateDateKey, nullptr) &&
-         !is_enrolled &&
-         !provider->GetEnterpriseMachineID().empty();
+  bool fre_flag_found = provider->GetMachineStatistic(
+      system::kCheckEnrollmentKey, &check_enrollment_value);
+
+  if (fre_flag_found) {
+    if (check_enrollment_value == "0")
+      return AutoEnrollmentController::EXPLICITLY_NOT_REQUIRED;
+    if (check_enrollment_value == "1")
+      return AutoEnrollmentController::EXPLICITLY_REQUIRED;
+  }
+  if (!provider->GetMachineStatistic(system::kActivateDateKey, nullptr) &&
+      !provider->GetEnterpriseMachineID().empty())
+    return AutoEnrollmentController::NOT_REQUIRED;
+  return AutoEnrollmentController::REQUIRED;
+}
+
+std::string FRERequirementToString(
+    AutoEnrollmentController::FRERequirement requirement) {
+  switch (requirement) {
+    case AutoEnrollmentController::REQUIRED:
+      return "Auto-enrollment required.";
+    case AutoEnrollmentController::NOT_REQUIRED:
+      return "Auto-enrollment disabled: first setup.";
+    case AutoEnrollmentController::EXPLICITLY_REQUIRED:
+      return "Auto-enrollment required: flag in VPD.";
+    case AutoEnrollmentController::EXPLICITLY_NOT_REQUIRED:
+      return "Auto-enrollment disabled: flag in VPD.";
+  }
+
+  NOTREACHED();
+  return std::string();
 }
 
 }  // namespace
@@ -136,10 +163,10 @@ void AutoEnrollmentController::Start() {
     return;
   }
 
-  // This enables factories to start full guest sessions for testing, see
-  // http://crbug.com/397354 for more context.
-  if (CanSkipFRE()) {
-    VLOG(1) << "Auto-enrollment disabled: first setup.";
+  fre_requirement_ = GetFRERequirement();
+  VLOG(1) << FRERequirementToString(fre_requirement_);
+  if (fre_requirement_ == EXPLICITLY_NOT_REQUIRED ||
+      fre_requirement_ == NOT_REQUIRED) {
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;
   }
@@ -274,17 +301,17 @@ void AutoEnrollmentController::UpdateState(
 
 void AutoEnrollmentController::Timeout() {
   // TODO(mnissler): Add UMA to track results of auto-enrollment checks.
-  if (client_start_weak_factory_.HasWeakPtrs()) {
+  if (client_start_weak_factory_.HasWeakPtrs() &&
+      fre_requirement_ != EXPLICITLY_REQUIRED) {
     // If the callbacks to check ownership status or state keys are still
     // pending, there's a bug in the code running on the device. No use in
     // retrying anything, need to fix that bug.
     LOG(ERROR) << "Failed to start auto-enrollment check, fix the code!";
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
   } else {
-    // If the AutoEnrollmentClient didn't manage to come back with a result in
-    // time, blame it on the network. This can actually happen in some cases,
-    // for example when the server just doesn't reply and keeps the connection
-    // open.
+    // This can actually happen in some cases, for example when state key
+    // generation is waiting for time sync or the server just doesn't reply and
+    // keeps the connection open.
     LOG(ERROR) << "AutoEnrollmentClient didn't complete within time limit.";
     UpdateState(policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
   }
