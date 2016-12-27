@@ -10,13 +10,13 @@
 #include <memory>
 #include <numeric>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/cpu.h"
 #include "base/files/file.h"
 #include "base/json/json_reader.h"
@@ -148,16 +148,16 @@ class NaClPluginInstance {
   uint64_t pexe_size;
 };
 
-typedef base::ScopedPtrHashMap<PP_Instance, std::unique_ptr<NaClPluginInstance>>
+typedef std::unordered_map<PP_Instance, std::unique_ptr<NaClPluginInstance>>
     InstanceMap;
 base::LazyInstance<InstanceMap> g_instance_map = LAZY_INSTANCE_INITIALIZER;
 
 NaClPluginInstance* GetNaClPluginInstance(PP_Instance instance) {
   InstanceMap& map = g_instance_map.Get();
-  InstanceMap::iterator iter = map.find(instance);
+  auto iter = map.find(instance);
   if (iter == map.end())
     return NULL;
-  return iter->second;
+  return iter->second.get();
 }
 
 NexeLoadManager* GetNexeLoadManager(PP_Instance instance) {
@@ -867,23 +867,23 @@ void PPBNaClPrivate::ReportLoadError(PP_Instance instance,
 // static
 void PPBNaClPrivate::InstanceCreated(PP_Instance instance) {
   InstanceMap& map = g_instance_map.Get();
-  CHECK(!ContainsKey(map, instance));  // Sanity check.
+  CHECK(map.find(instance) == map.end());  // Sanity check.
   std::unique_ptr<NaClPluginInstance> new_instance(
       new NaClPluginInstance(instance));
-  map.add(instance, std::move(new_instance));
+  map[instance] = std::move(new_instance);
 }
 
 // static
 void PPBNaClPrivate::InstanceDestroyed(PP_Instance instance) {
   InstanceMap& map = g_instance_map.Get();
-  InstanceMap::iterator iter = map.find(instance);
+  auto iter = map.find(instance);
   CHECK(iter != map.end());
   // The erase may call NexeLoadManager's destructor prior to removing it from
   // the map. In that case, it is possible for the trusted Plugin to re-enter
   // the NexeLoadManager (e.g., by calling ReportLoadError). Passing out the
   // NexeLoadManager to a local scoped_ptr just ensures that its entry is gone
   // from the map prior to the destructor being invoked.
-  std::unique_ptr<NaClPluginInstance> temp(map.take(instance));
+  std::unique_ptr<NaClPluginInstance> temp = std::move(iter->second);
   map.erase(iter);
 }
 
