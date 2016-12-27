@@ -11,6 +11,7 @@
     style.htm: af84c3ca-0fc6-4b0d-bf7a-5ac18a4dab62
     <br><br>
 
+    <!-- Hidden but affecting layout -->
     <iframe
       id="iframeA"
       srcdoc="err_hidden_frameA">
@@ -23,6 +24,7 @@
     </iframe>
     <br><br>
 
+    <!-- Hidden but affecting layout -->
     <iframe
       id="iframeC"
       srcdoc="err_hidden_frameC"
@@ -30,6 +32,7 @@
     </iframe>
     <br><br>
 
+    <!-- Hidden and does not affect layout -->
     <iframe
       id="iframeD"
       srcdoc="err_hidden_frameD"
@@ -37,9 +40,17 @@
     </iframe>
     <br><br>
 
+    <!-- Hidden and does not affect layout -->
     <iframe
       id="iframeE"
-      srcdoc="frameE: c9539ccd-47b0-47cf-a03b-734614865872">
+      srcdoc="err_hidden_frameE"
+      style="display: none">
+    </iframe>
+    <br><br>
+
+    <iframe
+      id="iframeF"
+      srcdoc="frameF: c9539ccd-47b0-47cf-a03b-734614865872">
     </iframe>
     <br><br>
   </body>

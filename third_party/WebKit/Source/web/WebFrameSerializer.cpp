@@ -81,6 +81,7 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
  public:
   explicit MHTMLFrameSerializerDelegate(
       WebFrameSerializer::MHTMLPartsGenerationDelegate&);
+  bool shouldIgnoreElement(const Element&) override;
   bool shouldIgnoreAttribute(const Element&, const Attribute&) override;
   bool rewriteLink(const Element&, String& rewrittenLink) override;
   bool shouldSkipResourceWithURL(const KURL&) override;
@@ -95,6 +96,23 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
 MHTMLFrameSerializerDelegate::MHTMLFrameSerializerDelegate(
     WebFrameSerializer::MHTMLPartsGenerationDelegate& webDelegate)
     : m_webDelegate(webDelegate) {}
+
+bool MHTMLFrameSerializerDelegate::shouldIgnoreElement(const Element& element) {
+  // Do not include elements that are are set to hidden without affecting layout
+  // by the page. For those elements that are hidden by default, they will not
+  // be excluded:
+  // 1) All elements that are head or part of head, including head, meta, style,
+  //    link and etc.
+  // 2) Some specific elements in body: meta, datalist, option and etc.
+  if (element.layoutObject())
+    return false;
+  if (isHTMLHeadElement(element) || isHTMLMetaElement(element) ||
+      isHTMLDataListElement(element) || isHTMLOptionElement(element)) {
+    return false;
+  }
+  Element* parent = element.parentElement();
+  return parent && !isHTMLHeadElement(parent);
+}
 
 bool MHTMLFrameSerializerDelegate::shouldIgnoreAttribute(
     const Element& element,

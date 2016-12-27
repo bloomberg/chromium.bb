@@ -75,6 +75,20 @@ class SimpleMHTMLPartsGenerationDelegate
   bool useBinaryEncoding() final { return false; }
 };
 
+// Returns the count of match for substring |pattern| in string |str|.
+int matchSubstring(const String& str, const char* pattern, size_t size) {
+  int matches = 0;
+  size_t start = 0;
+  while (true) {
+    size_t pos = str.find(pattern, start);
+    if (pos == WTF::kNotFound)
+      break;
+    matches++;
+    start = pos + size;
+  }
+  return matches;
+}
+
 }  // namespace
 
 class WebFrameSerializerTest : public testing::Test {
@@ -223,17 +237,41 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveInlineScriptInAttributes) {
 TEST_F(WebFrameSerializerSanitizationTest, DisableFormElements) {
   String mhtml = generateMHTMLParts("http://www.test.com", "form.html");
 
-  int matches = 0;
-  size_t start = 0;
-  while (true) {
-    const char kDisabledAttr[] = "disabled=3D\"\"";
-    size_t pos = mhtml.find(kDisabledAttr, start);
-    if (pos == WTF::kNotFound)
-      break;
-    matches++;
-    start = pos + arraysize(kDisabledAttr) - 1;
-  }
+  const char kDisabledAttr[] = "disabled=3D\"\"";
+  int matches =
+      matchSubstring(mhtml, kDisabledAttr, arraysize(kDisabledAttr) - 1);
   EXPECT_EQ(21, matches);
+}
+
+TEST_F(WebFrameSerializerSanitizationTest, RemoveHiddenElements) {
+  String mhtml =
+      generateMHTMLParts("http://www.test.com", "hidden_elements.html");
+
+  // These hidden elements that do not affect layout should be removed.
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("<h1"));
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("<p id=3D\"hidden_id\""));
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("<input type=3D\"hidden\""));
+
+  // These default-hidden elements should not be removed.
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<html"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<head"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<style"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<title"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<link"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<datalist"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<option"));
+  // One for meta in head and another for meta in body.
+  EXPECT_EQ(2, matchSubstring(mhtml, "<meta", 5));
+
+  // These hidden elements that affect layout should remain intact.
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<h2"));
+
+  // These visible elements should remain intact.
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<h2"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<p id=3D\"visible_id\""));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<form"));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<input type=3D\"text\""));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("<div"));
 }
 
 }  // namespace blink

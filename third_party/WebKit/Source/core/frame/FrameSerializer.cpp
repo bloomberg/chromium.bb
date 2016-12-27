@@ -79,15 +79,6 @@ const int32_t maxSerializationTimeUmaMicroseconds = 10 * secondsToMicroseconds;
 
 namespace blink {
 
-static bool shouldIgnoreElement(const Element& element) {
-  if (isHTMLScriptElement(element))
-    return true;
-  if (isHTMLNoScriptElement(element))
-    return true;
-  return isHTMLMetaElement(element) &&
-         toHTMLMetaElement(element).computeEncoding().isValid();
-}
-
 class SerializerMarkupAccumulator : public MarkupAccumulator {
   STACK_ALLOCATED();
 
@@ -112,6 +103,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
   void appendEndTag(const Element&) override;
 
  private:
+  bool shouldIgnoreElement(const Element&) const;
   void appendAttributeValue(StringBuilder& out, const String& attributeValue);
   void appendRewrittenAttribute(StringBuilder& out,
                                 const Element&,
@@ -229,6 +221,19 @@ void SerializerMarkupAccumulator::appendStartTag(Node& node,
 void SerializerMarkupAccumulator::appendEndTag(const Element& element) {
   if (!shouldIgnoreElement(element))
     MarkupAccumulator::appendEndTag(element);
+}
+
+bool SerializerMarkupAccumulator::shouldIgnoreElement(
+    const Element& element) const {
+  if (isHTMLScriptElement(element))
+    return true;
+  if (isHTMLNoScriptElement(element))
+    return true;
+  if (isHTMLMetaElement(element) &&
+      toHTMLMetaElement(element).computeEncoding().isValid()) {
+    return true;
+  }
+  return m_delegate.shouldIgnoreElement(element);
 }
 
 void SerializerMarkupAccumulator::appendAttributeValue(
