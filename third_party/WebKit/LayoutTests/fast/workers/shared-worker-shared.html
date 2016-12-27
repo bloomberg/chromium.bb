@@ -19,11 +19,11 @@ var worker2 = new SharedWorker('resources/shared-worker-common.js', 'name');
 
 try {
     new SharedWorker('resources/some-other-url.js', 'name');
-    log("FAIL: Creating SharedWorker with different URLs but the same name should fail");
+    log("PASS: Creating SharedWorker with different URLs but the same name");
 } catch (ex) {
     var exString = ex.toString();
     exString = exString.replace(/file:\/\/.*\//, "")
-    log("PASS: Exception thrown when creating SharedWorker with different URLs but same name: " + exString);
+    log("FAIL: Exception thrown when creating SharedWorker with different URLs but same name: " + exString);
 }
 
 

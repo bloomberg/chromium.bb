@@ -126,9 +126,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   // RenderProcessReservedCallback() or RenderProcessReserveFailedCallback()
   // will be called on IO thread. Returns blink::WebWorkerCreationErrorNone or
   // blink::WebWorkerCreationErrorSecureContextMismatch on success.
-  // (SecureContextMismatch is used for UMA and should be handled as success.
-  // See CreateWorkerErrorIsFatal() in shared_worker_message_filter.cc for
-  // details.)
+  // (SecureContextMismatch is used for UMA and should be handled as success.)
   blink::WebWorkerCreationError ReserveRenderProcessToCreateWorker(
       std::unique_ptr<SharedWorkerPendingInstance> pending_instance);
 

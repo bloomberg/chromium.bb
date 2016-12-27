@@ -39,7 +39,6 @@
 namespace blink {
 
 class Document;
-class ExceptionState;
 class KURL;
 class SharedWorker;
 
@@ -54,8 +53,7 @@ class SharedWorkerRepositoryClient {
   virtual void connect(SharedWorker*,
                        WebMessagePortChannelUniquePtr,
                        const KURL&,
-                       const String& name,
-                       ExceptionState&) = 0;
+                       const String& name) = 0;
 
   virtual void documentDetached(Document*) = 0;
 };

@@ -16,17 +16,10 @@
 
 namespace content {
 namespace {
+
 const uint32_t kFilteredMessageClasses[] = {
     ViewMsgStart, WorkerMsgStart,
 };
-
-// TODO(estark): For now, only URLMismatch errors actually stop the
-// worker from being created. Other errors are recorded in UMA in
-// Blink but do not stop the worker from being created
-// yet. https://crbug.com/573206
-bool CreateWorkerErrorIsFatal(blink::WebWorkerCreationError error) {
-  return (error == blink::WebWorkerCreationErrorURLMismatch);
-}
 
 }  // namespace
 
@@ -93,8 +86,6 @@ void SharedWorkerMessageFilter::OnCreateWorker(
   reply->error = SharedWorkerServiceImpl::GetInstance()->CreateWorker(
       params, reply->route_id, this, resource_context_,
       WorkerStoragePartitionId(partition_));
-  if (CreateWorkerErrorIsFatal(reply->error))
-    reply->route_id = MSG_ROUTING_NONE;
 }
 
 void SharedWorkerMessageFilter::OnForwardToWorker(const IPC::Message& message) {

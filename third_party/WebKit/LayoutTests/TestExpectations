@@ -1871,8 +1871,6 @@ crbug.com/655458 imported/wpt/workers/semantics/navigation/002.html [ Failure Ti
 crbug.com/655458 imported/wpt/workers/semantics/structured-clone/dedicated.html [ Crash Failure Timeout ]
 crbug.com/655458 imported/wpt/workers/semantics/structured-clone/shared.html [ Crash Failure Timeout ]
 
-crbug.com/538914 imported/wpt/workers/constructors/SharedWorker/URLMismatchError.htm [ Failure Timeout ]
-
 crbug.com/490511 imported/wpt/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Timeout ]
 crbug.com/602693 imported/wpt/service-workers/service-worker/client-navigate.https.html [ Skip ]
 crbug.com/602693 imported/wpt/service-workers/service-worker/clients-get-cross-origin.https.html [ Skip ]

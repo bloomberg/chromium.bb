@@ -739,15 +739,18 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest) {
                        "name2",
                        kDocumentIDs[1],
                        kRenderFrameRouteIDs[1]);
-    EXPECT_EQ(MSG_ROUTING_NONE, connector1->route_id());
-    EXPECT_EQ(blink::WebWorkerCreationErrorURLMismatch,
-              connector1->creation_error());
+    EXPECT_NE(MSG_ROUTING_NONE, connector1->route_id());
+    EXPECT_EQ(blink::WebWorkerCreationErrorNone, connector1->creation_error());
     EXPECT_EQ(0U, renderer_host1->QueuedMessageCount());
     RunAllPendingInMessageLoop();
-    EXPECT_EQ(0U, renderer_host1->QueuedMessageCount());
+    EXPECT_EQ(2U, renderer_host1->QueuedMessageCount());
+    CheckWorkerProcessMsgCreateWorker(
+        renderer_host1.get(), "http://example.com/w2x.js", "name2",
+        blink::WebContentSecurityPolicyTypeReport, &worker_route_id);
+    CheckViewMsgWorkerCreated(renderer_host1.get(), connector1.get());
   }
 
-  // Pending case.
+  // Normal case (name mismatch).
   {
     std::unique_ptr<MockSharedWorkerConnector> connector0(
         new MockSharedWorkerConnector(renderer_host0.get()));
@@ -759,17 +762,46 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest) {
                        kRenderFrameRouteIDs[0]);
     EXPECT_NE(MSG_ROUTING_NONE, connector0->route_id());
     EXPECT_EQ(0U, renderer_host0->QueuedMessageCount());
-    connector1->Create("http://example.com/w3.js",
-                       "name3",
-                       kDocumentIDs[1],
+    RunAllPendingInMessageLoop();
+    EXPECT_EQ(2U, renderer_host0->QueuedMessageCount());
+    CheckWorkerProcessMsgCreateWorker(
+        renderer_host0.get(), "http://example.com/w3.js", "name3",
+        blink::WebContentSecurityPolicyTypeReport, &worker_route_id);
+    CheckViewMsgWorkerCreated(renderer_host0.get(), connector0.get());
+    connector1->Create("http://example.com/w3.js", "name3x", kDocumentIDs[1],
+                       kRenderFrameRouteIDs[1]);
+    EXPECT_NE(MSG_ROUTING_NONE, connector1->route_id());
+    EXPECT_EQ(blink::WebWorkerCreationErrorNone, connector1->creation_error());
+    EXPECT_EQ(0U, renderer_host1->QueuedMessageCount());
+    RunAllPendingInMessageLoop();
+    EXPECT_EQ(2U, renderer_host1->QueuedMessageCount());
+    CheckWorkerProcessMsgCreateWorker(
+        renderer_host1.get(), "http://example.com/w3.js", "name3x",
+        blink::WebContentSecurityPolicyTypeReport, &worker_route_id);
+    CheckViewMsgWorkerCreated(renderer_host1.get(), connector1.get());
+  }
+
+  // Pending case.
+  {
+    std::unique_ptr<MockSharedWorkerConnector> connector0(
+        new MockSharedWorkerConnector(renderer_host0.get()));
+    std::unique_ptr<MockSharedWorkerConnector> connector1(
+        new MockSharedWorkerConnector(renderer_host1.get()));
+    connector0->Create("http://example.com/w4.js",
+                       "name4",
+                       kDocumentIDs[0],
+                       kRenderFrameRouteIDs[0]);
+    EXPECT_NE(MSG_ROUTING_NONE, connector0->route_id());
+    EXPECT_EQ(0U, renderer_host0->QueuedMessageCount());
+    connector1->Create("http://example.com/w4.js", "name4", kDocumentIDs[1],
                        kRenderFrameRouteIDs[1]);
     EXPECT_NE(MSG_ROUTING_NONE, connector1->route_id());
     EXPECT_EQ(0U, renderer_host1->QueuedMessageCount());
     RunAllPendingInMessageLoop();
     EXPECT_EQ(2U, renderer_host0->QueuedMessageCount());
     CheckWorkerProcessMsgCreateWorker(renderer_host0.get(),
-                                      "http://example.com/w3.js",
-                                      "name3",
+                                      "http://example.com/w4.js",
+                                      "name4",
                                       blink::WebContentSecurityPolicyTypeReport,
                                       &worker_route_id);
     CheckViewMsgWorkerCreated(renderer_host0.get(), connector0.get());
@@ -783,27 +815,52 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest) {
         new MockSharedWorkerConnector(renderer_host0.get()));
     std::unique_ptr<MockSharedWorkerConnector> connector1(
         new MockSharedWorkerConnector(renderer_host1.get()));
-    connector0->Create("http://example.com/w4.js",
-                       "name4",
-                       kDocumentIDs[0],
+    connector0->Create("http://example.com/w5.js", "name5", kDocumentIDs[0],
                        kRenderFrameRouteIDs[0]);
     EXPECT_NE(MSG_ROUTING_NONE, connector0->route_id());
     EXPECT_EQ(0U, renderer_host0->QueuedMessageCount());
-    connector1->Create("http://example.com/w4x.js",
-                       "name4",
-                       kDocumentIDs[1],
+    connector1->Create("http://example.com/w5x.js", "name5", kDocumentIDs[1],
                        kRenderFrameRouteIDs[1]);
-    EXPECT_EQ(MSG_ROUTING_NONE, connector1->route_id());
+    EXPECT_NE(MSG_ROUTING_NONE, connector1->route_id());
     EXPECT_EQ(0U, renderer_host1->QueuedMessageCount());
     RunAllPendingInMessageLoop();
     EXPECT_EQ(2U, renderer_host0->QueuedMessageCount());
-    CheckWorkerProcessMsgCreateWorker(renderer_host0.get(),
-                                      "http://example.com/w4.js",
-                                      "name4",
-                                      blink::WebContentSecurityPolicyTypeReport,
-                                      &worker_route_id);
+    CheckWorkerProcessMsgCreateWorker(
+        renderer_host0.get(), "http://example.com/w5.js", "name5",
+        blink::WebContentSecurityPolicyTypeReport, &worker_route_id);
     CheckViewMsgWorkerCreated(renderer_host0.get(), connector0.get());
+    EXPECT_EQ(2U, renderer_host1->QueuedMessageCount());
+    CheckWorkerProcessMsgCreateWorker(
+        renderer_host1.get(), "http://example.com/w5x.js", "name5",
+        blink::WebContentSecurityPolicyTypeReport, &worker_route_id);
+    CheckViewMsgWorkerCreated(renderer_host1.get(), connector1.get());
+  }
+
+  // Pending case (name mismatch).
+  {
+    std::unique_ptr<MockSharedWorkerConnector> connector0(
+        new MockSharedWorkerConnector(renderer_host0.get()));
+    std::unique_ptr<MockSharedWorkerConnector> connector1(
+        new MockSharedWorkerConnector(renderer_host1.get()));
+    connector0->Create("http://example.com/w6.js", "name6", kDocumentIDs[0],
+                       kRenderFrameRouteIDs[0]);
+    EXPECT_NE(MSG_ROUTING_NONE, connector0->route_id());
+    EXPECT_EQ(0U, renderer_host0->QueuedMessageCount());
+    connector1->Create("http://example.com/w6.js", "name6x", kDocumentIDs[1],
+                       kRenderFrameRouteIDs[1]);
+    EXPECT_NE(MSG_ROUTING_NONE, connector1->route_id());
     EXPECT_EQ(0U, renderer_host1->QueuedMessageCount());
+    RunAllPendingInMessageLoop();
+    EXPECT_EQ(2U, renderer_host0->QueuedMessageCount());
+    CheckWorkerProcessMsgCreateWorker(
+        renderer_host0.get(), "http://example.com/w6.js", "name6",
+        blink::WebContentSecurityPolicyTypeReport, &worker_route_id);
+    CheckViewMsgWorkerCreated(renderer_host0.get(), connector0.get());
+    EXPECT_EQ(2U, renderer_host1->QueuedMessageCount());
+    CheckWorkerProcessMsgCreateWorker(
+        renderer_host1.get(), "http://example.com/w6.js", "name6x",
+        blink::WebContentSecurityPolicyTypeReport, &worker_route_id);
+    CheckViewMsgWorkerCreated(renderer_host1.get(), connector1.get());
   }
 }
 

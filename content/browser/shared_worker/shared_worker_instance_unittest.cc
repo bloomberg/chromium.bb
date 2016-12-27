@@ -76,7 +76,7 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest) {
   EXPECT_FALSE(Matches(instance2, "http://example.net/w.js", ""));
   EXPECT_FALSE(Matches(instance2, "http://example.net/w2.js", ""));
   EXPECT_TRUE(Matches(instance2, "http://example.com/w.js", "name"));
-  EXPECT_TRUE(Matches(instance2, "http://example.com/w2.js", "name"));
+  EXPECT_FALSE(Matches(instance2, "http://example.com/w2.js", "name"));
   EXPECT_FALSE(Matches(instance2, "http://example.net/w.js", "name"));
   EXPECT_FALSE(Matches(instance2, "http://example.net/w2.js", "name"));
   EXPECT_FALSE(Matches(instance2, "http://example.com/w.js", "name2"));

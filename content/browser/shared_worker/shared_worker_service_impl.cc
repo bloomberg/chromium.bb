@@ -311,8 +311,6 @@ blink::WebWorkerCreationError SharedWorkerServiceImpl::CreateWorker(
           filter, route_id, params.document_id, filter->render_process_id(),
           params.render_frame_route_id));
   if (SharedWorkerPendingInstance* pending = FindPendingInstance(*instance)) {
-    if (params.url != pending->instance()->url())
-      return blink::WebWorkerCreationErrorURLMismatch;
     pending->AddRequest(std::move(request));
     if (params.creation_context_type !=
         pending->instance()->creation_context_type())
@@ -493,8 +491,6 @@ SharedWorkerServiceImpl::ReserveRenderProcessToCreateWorker(
       blink::WebWorkerCreationErrorNone;
   SharedWorkerHost* host = FindSharedWorkerHost(*pending_instance->instance());
   if (host) {
-    if (pending_instance->instance()->url() != host->instance()->url())
-      return blink::WebWorkerCreationErrorURLMismatch;
     if (pending_instance->instance()->creation_context_type() !=
         host->instance()->creation_context_type()) {
       creation_error = blink::WebWorkerCreationErrorSecureContextMismatch;

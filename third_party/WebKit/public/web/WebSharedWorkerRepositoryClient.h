@@ -49,7 +49,7 @@ class WebSharedWorkerRepositoryClient {
   // given process).
   using DocumentID = unsigned long long;
 
-  // Creates a new shared worker connector. This may return null.
+  // Creates a new shared worker connector.
   virtual std::unique_ptr<WebSharedWorkerConnector> createSharedWorkerConnector(
       const WebURL& url,
       const WebString& name,

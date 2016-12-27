@@ -30,9 +30,6 @@
 
 #include "web/SharedWorkerRepositoryClientImpl.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
@@ -114,8 +111,7 @@ void SharedWorkerRepositoryClientImpl::connect(
     SharedWorker* worker,
     WebMessagePortChannelUniquePtr port,
     const KURL& url,
-    const String& name,
-    ExceptionState& exceptionState) {
+    const String& name) {
   DCHECK(m_client);
 
   // No nested workers (for now) - connect() should only be called from document
@@ -151,14 +147,6 @@ void SharedWorkerRepositoryClientImpl::connect(
   switch (creationError) {
     case WebWorkerCreationErrorNone:
       break;
-    case WebWorkerCreationErrorURLMismatch:
-      // Existing worker does not match this url, so return an error back to the
-      // caller.
-      exceptionState.throwDOMException(
-          URLMismatchError, "The location of the SharedWorker named '" + name +
-                                "' does not exactly match the provided URL ('" +
-                                url.elidedString() + "').");
-      return;
     case WebWorkerCreationErrorSecureContextMismatch:
       UseCounter::Feature feature =
           isSecureContext

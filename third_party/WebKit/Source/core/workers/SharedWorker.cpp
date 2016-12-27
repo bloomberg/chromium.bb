@@ -81,13 +81,13 @@ SharedWorker* SharedWorker::create(ExecutionContext* context,
   if (scriptURL.isEmpty())
     return nullptr;
 
-  if (document->frame()->loader().client()->sharedWorkerRepositoryClient())
+  if (document->frame()->loader().client()->sharedWorkerRepositoryClient()) {
     document->frame()
         ->loader()
         .client()
         ->sharedWorkerRepositoryClient()
-        ->connect(worker, std::move(remotePort), scriptURL, name,
-                  exceptionState);
+        ->connect(worker, std::move(remotePort), scriptURL, name);
+  }
 
   return worker;
 }

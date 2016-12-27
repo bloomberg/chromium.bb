@@ -57,10 +57,9 @@ bool SharedWorkerInstance::Matches(const GURL& match_url,
   if (url_.GetOrigin() != match_url.GetOrigin())
     return false;
 
-  if (name_.empty() && match_name.empty())
-    return url_ == match_url;
-
-  return name_ == match_name;
+  if (name_ != match_name || url_ != match_url)
+    return false;
+  return true;
 }
 
 bool SharedWorkerInstance::Matches(const SharedWorkerInstance& other) const {

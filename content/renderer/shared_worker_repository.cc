@@ -42,8 +42,6 @@ SharedWorkerRepository::createSharedWorkerConnector(
   ViewHostMsg_CreateWorker_Reply reply;
   Send(new ViewHostMsg_CreateWorker(params, &reply));
   *error = reply.error;
-  if (reply.route_id == MSG_ROUTING_NONE)
-    return nullptr;
   documents_with_workers_.insert(document_id);
   return base::MakeUnique<WebSharedWorkerProxy>(
       ChildThreadImpl::current()->GetRouter(), reply.route_id);
