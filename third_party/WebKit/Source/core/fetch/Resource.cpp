@@ -576,6 +576,7 @@ const ResourceRequest& Resource::lastResourceRequest() const {
 void Resource::setRevalidatingRequest(const ResourceRequest& request) {
   SECURITY_CHECK(m_redirectChain.isEmpty());
   DCHECK(!request.isNull());
+  CHECK(!m_isRevalidationStartForbidden);
   m_isRevalidating = true;
   m_resourceRequest = request;
   m_status = NotStarted;

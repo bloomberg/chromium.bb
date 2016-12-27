@@ -416,6 +416,12 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
         : AutoReset(&resource->m_isAddRemoveClientProhibited, true) {}
   };
 
+  class RevalidationStartForbiddenScope : public AutoReset<bool> {
+   public:
+    RevalidationStartForbiddenScope(Resource* resource)
+        : AutoReset(&resource->m_isRevalidationStartForbidden, true) {}
+  };
+
  private:
   class ResourceCallback;
   class CachedMetadataHandlerImpl;
@@ -467,6 +473,7 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool m_isRevalidating;
   bool m_isAlive;
   bool m_isAddRemoveClientProhibited;
+  bool m_isRevalidationStartForbidden = false;
 
   ResourceIntegrityDisposition m_integrityDisposition;
   IntegrityMetadataSet m_integrityMetadata;
