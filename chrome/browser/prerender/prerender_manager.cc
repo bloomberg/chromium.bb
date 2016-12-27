@@ -1262,8 +1262,10 @@ void PrerenderManager::RecordNetworkBytes(Origin origin,
 }
 
 bool PrerenderManager::IsPrerenderSilenceExperiment(Origin origin) const {
-  if (origin == ORIGIN_OFFLINE)
+  if (origin == ORIGIN_OFFLINE ||
+      origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR) {
     return false;
+  }
 
   // The group name should contain expiration time formatted as:
   //   "ExperimentYes_expires_YYYY-MM-DDTHH:MM:SSZ".
