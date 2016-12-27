@@ -877,6 +877,9 @@ void WebContentsCaptureMachine::RenewFrameSubscription(bool had_target) {
     subscription_.reset(new ContentCaptureSubscription(
         *rwh, oracle_proxy_, base::Bind(&WebContentsCaptureMachine::Capture,
                                         weak_ptr_factory_.GetWeakPtr())));
+    // Whenever the target changes, capture a refresh frame immediately to make
+    // sure the latest frame in the video stream has the correct content.
+    subscription_->MaybeCaptureForRefresh();
   }
 }
 

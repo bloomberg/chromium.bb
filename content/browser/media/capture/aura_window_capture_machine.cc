@@ -117,6 +117,9 @@ void AuraWindowCaptureMachine::InternalResume() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << "Resuming frame capture and delivery.";
   frame_capture_active_ = true;
+  // Whenever capture resumes, capture a refresh frame immediately to make sure
+  // no content updates are missing from the video stream.
+  MaybeCaptureForRefresh();
 }
 
 void AuraWindowCaptureMachine::Stop(const base::Closure& callback) {
