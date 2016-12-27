@@ -26,7 +26,7 @@
 #ifndef RTCDTMFSender_h
 #define RTCDTMFSender_h
 
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "public/platform/WebRTCDTMFSenderHandlerClient.h"
@@ -41,7 +41,7 @@ class WebRTCPeerConnectionHandler;
 
 class RTCDTMFSender final : public EventTargetWithInlineData,
                             public WebRTCDTMFSenderHandlerClient,
-                            public SuspendableObject {
+                            public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(RTCDTMFSender, dispose);
@@ -72,7 +72,7 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();

@@ -144,10 +144,7 @@ ServiceWorker* ServiceWorker::getOrCreate(
     return existingWorker;
   }
 
-  ServiceWorker* newWorker =
-      new ServiceWorker(executionContext, std::move(handle));
-  newWorker->suspendIfNeeded();
-  return newWorker;
+  return new ServiceWorker(executionContext, std::move(handle));
 }
 
 ServiceWorker::ServiceWorker(ExecutionContext* executionContext,

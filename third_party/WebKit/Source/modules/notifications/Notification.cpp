@@ -113,8 +113,6 @@ Notification* Notification::create(ExecutionContext* context,
   Notification* notification =
       new Notification(context, Type::NonPersistent, data);
   notification->schedulePrepareShow();
-
-  notification->suspendIfNeeded();
   return notification;
 }
 
@@ -126,15 +124,13 @@ Notification* Notification::create(ExecutionContext* context,
       new Notification(context, Type::Persistent, data);
   notification->setState(showing ? State::Showing : State::Closed);
   notification->setNotificationId(notificationId);
-
-  notification->suspendIfNeeded();
   return notification;
 }
 
 Notification::Notification(ExecutionContext* context,
                            Type type,
                            const WebNotificationData& data)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_type(type),
       m_state(State::Loading),
       m_data(data) {
@@ -404,7 +400,7 @@ DEFINE_TRACE(Notification) {
   visitor->trace(m_prepareShowMethodRunner);
   visitor->trace(m_loader);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

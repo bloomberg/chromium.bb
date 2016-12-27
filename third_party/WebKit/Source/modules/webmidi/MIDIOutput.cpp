@@ -205,10 +205,8 @@ MIDIOutput* MIDIOutput::create(MIDIAccess* access,
                                const String& version,
                                PortState state) {
   DCHECK(access);
-  MIDIOutput* output =
-      new MIDIOutput(access, portIndex, id, manufacturer, name, version, state);
-  output->suspendIfNeeded();
-  return output;
+  return new MIDIOutput(access, portIndex, id, manufacturer, name, version,
+                        state);
 }
 
 MIDIOutput::MIDIOutput(MIDIAccess* access,

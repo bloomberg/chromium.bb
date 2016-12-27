@@ -31,8 +31,8 @@
 #ifndef RTCVoidRequestImpl_h
 #define RTCVoidRequestImpl_h
 
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/SuspendableObject.h"
 #include "platform/heap/Handle.h"
 #include "platform/peerconnection/RTCVoidRequest.h"
 
@@ -43,7 +43,7 @@ class RTCPeerConnectionErrorCallback;
 class VoidCallback;
 
 class RTCVoidRequestImpl final : public RTCVoidRequest,
-                                 public SuspendableObject {
+                                 public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(RTCVoidRequestImpl);
 
  public:
@@ -57,7 +57,7 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
   void requestSucceeded() override;
   void requestFailed(const String& error) override;
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();

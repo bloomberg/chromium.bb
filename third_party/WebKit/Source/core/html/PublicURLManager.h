@@ -26,7 +26,7 @@
 #ifndef PublicURLManager_h
 #define PublicURLManager_h
 
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
@@ -40,7 +40,7 @@ class URLRegistrable;
 
 class PublicURLManager final
     : public GarbageCollectedFinalized<PublicURLManager>,
-      public SuspendableObject {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PublicURLManager);
 
  public:
@@ -60,7 +60,7 @@ class PublicURLManager final
   // Revokes all URLs associated with |uuid|.
   void revoke(const String& uuid);
 
-  // SuspendableObject interface.
+  // ContextLifecycleObserver interface.
   void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();

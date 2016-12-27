@@ -37,13 +37,11 @@ namespace blink {
 class SecurityOrigin;
 
 PublicURLManager* PublicURLManager::create(ExecutionContext* context) {
-  PublicURLManager* publicURLManager = new PublicURLManager(context);
-  publicURLManager->suspendIfNeeded();
-  return publicURLManager;
+  return new PublicURLManager(context);
 }
 
 PublicURLManager::PublicURLManager(ExecutionContext* context)
-    : SuspendableObject(context), m_isStopped(false) {}
+    : ContextLifecycleObserver(context), m_isStopped(false) {}
 
 String PublicURLManager::registerURL(ExecutionContext* context,
                                      URLRegistrable* registrable,
@@ -107,7 +105,7 @@ void PublicURLManager::contextDestroyed() {
 }
 
 DEFINE_TRACE(PublicURLManager) {
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

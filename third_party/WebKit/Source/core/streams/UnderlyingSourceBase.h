@@ -11,7 +11,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
 
@@ -23,7 +23,7 @@ class CORE_EXPORT UnderlyingSourceBase
     : public GarbageCollectedFinalized<UnderlyingSourceBase>,
       public ScriptWrappable,
       public ActiveScriptWrappable<UnderlyingSourceBase>,
-      public SuspendableObject {
+      public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
 
@@ -45,14 +45,12 @@ class CORE_EXPORT UnderlyingSourceBase
   // ScriptWrappable
   bool hasPendingActivity() const;
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   void contextDestroyed() override;
 
  protected:
   explicit UnderlyingSourceBase(ScriptState* scriptState)
-      : SuspendableObject(scriptState->getExecutionContext()) {
-    this->suspendIfNeeded();
-  }
+      : ContextLifecycleObserver(scriptState->getExecutionContext()) {}
 
   ReadableStreamController* controller() const { return m_controller; }
 

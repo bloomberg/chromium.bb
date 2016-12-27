@@ -40,10 +40,7 @@ SpeechRecognition* SpeechRecognition::create(ExecutionContext* context) {
   ASSERT(context && context->isDocument());
   Document* document = toDocument(context);
   ASSERT(document);
-  SpeechRecognition* speechRecognition =
-      new SpeechRecognition(document->page(), context);
-  speechRecognition->suspendIfNeeded();
-  return speechRecognition;
+  return new SpeechRecognition(document->page(), context);
 }
 
 void SpeechRecognition::start(ExceptionState& exceptionState) {
@@ -148,7 +145,7 @@ const AtomicString& SpeechRecognition::interfaceName() const {
 }
 
 ExecutionContext* SpeechRecognition::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 void SpeechRecognition::contextDestroyed() {
@@ -162,7 +159,7 @@ bool SpeechRecognition::hasPendingActivity() const {
 }
 
 SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_grammars(SpeechGrammarList::create()),  // FIXME: The spec is not clear
                                                 // on the default value for the
                                                 // grammars attribute.
@@ -185,7 +182,7 @@ DEFINE_TRACE(SpeechRecognition) {
   visitor->trace(m_controller);
   visitor->trace(m_finalResults);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

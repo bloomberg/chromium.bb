@@ -22,7 +22,7 @@ namespace blink {
 
 class BodyStreamBuffer::LoaderClient final
     : public GarbageCollectedFinalized<LoaderClient>,
-      public SuspendableObject,
+      public ContextLifecycleObserver,
       public FetchDataLoader::Client {
   WTF_MAKE_NONCOPYABLE(LoaderClient);
   USING_GARBAGE_COLLECTED_MIXIN(LoaderClient);
@@ -31,11 +31,9 @@ class BodyStreamBuffer::LoaderClient final
   LoaderClient(ExecutionContext* executionContext,
                BodyStreamBuffer* buffer,
                FetchDataLoader::Client* client)
-      : SuspendableObject(executionContext),
+      : ContextLifecycleObserver(executionContext),
         m_buffer(buffer),
-        m_client(client) {
-    suspendIfNeeded();
-  }
+        m_client(client) {}
 
   void didFetchDataLoadedBlobHandle(
       PassRefPtr<BlobDataHandle> blobDataHandle) override {
@@ -66,7 +64,7 @@ class BodyStreamBuffer::LoaderClient final
   DEFINE_INLINE_TRACE() {
     visitor->trace(m_buffer);
     visitor->trace(m_client);
-    SuspendableObject::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
     FetchDataLoader::Client::trace(visitor);
   }
 

@@ -356,16 +356,13 @@ MediaKeySession* MediaKeySession::create(
     ScriptState* scriptState,
     MediaKeys* mediaKeys,
     WebEncryptedMediaSessionType sessionType) {
-  MediaKeySession* session =
-      new MediaKeySession(scriptState, mediaKeys, sessionType);
-  session->suspendIfNeeded();
-  return session;
+  return new MediaKeySession(scriptState, mediaKeys, sessionType);
 }
 
 MediaKeySession::MediaKeySession(ScriptState* scriptState,
                                  MediaKeys* mediaKeys,
                                  WebEncryptedMediaSessionType sessionType)
-    : SuspendableObject(scriptState->getExecutionContext()),
+    : ContextLifecycleObserver(scriptState->getExecutionContext()),
       m_asyncEventQueue(GenericEventQueue::create(this)),
       m_mediaKeys(mediaKeys),
       m_sessionType(sessionType),
@@ -1015,7 +1012,7 @@ const AtomicString& MediaKeySession::interfaceName() const {
 }
 
 ExecutionContext* MediaKeySession::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 bool MediaKeySession::hasPendingActivity() const {
@@ -1049,7 +1046,7 @@ DEFINE_TRACE(MediaKeySession) {
   visitor->trace(m_keyStatusesMap);
   visitor->trace(m_closedPromise);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

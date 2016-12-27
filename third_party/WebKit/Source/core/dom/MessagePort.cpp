@@ -46,13 +46,13 @@
 namespace blink {
 
 MessagePort* MessagePort::create(ExecutionContext& executionContext) {
-  MessagePort* port = new MessagePort(executionContext);
-  port->suspendIfNeeded();
-  return port;
+  return new MessagePort(executionContext);
 }
 
 MessagePort::MessagePort(ExecutionContext& executionContext)
-    : SuspendableObject(&executionContext), m_started(false), m_closed(false) {}
+    : ContextLifecycleObserver(&executionContext),
+      m_started(false),
+      m_closed(false) {}
 
 MessagePort::~MessagePort() {
   DCHECK(!m_started || !isEntangled());
@@ -291,7 +291,7 @@ MessagePortArray* MessagePort::entanglePorts(
 }
 
 DEFINE_TRACE(MessagePort) {
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
   EventTargetWithInlineData::trace(visitor);
 }
 

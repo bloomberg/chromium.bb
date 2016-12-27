@@ -69,7 +69,8 @@ namespace blink {
 // 1. "outlive" the ExecutionContext.
 //    - This is needed because the DatabaseContext needs to remove itself from
 //    the
-//      ExecutionContext's SuspendableObject list and ContextLifecycleObserver
+//      ExecutionContext's ContextLifecycleObserver list and
+//      ContextLifecycleObserver
 //      list. This removal needs to be executed on the script's thread. Hence,
 //      we
 //      rely on the ExecutionContext's shutdown process to call
@@ -98,13 +99,10 @@ DatabaseContext* DatabaseContext::create(ExecutionContext* context) {
 }
 
 DatabaseContext::DatabaseContext(ExecutionContext* context)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_hasOpenDatabases(false),
       m_hasRequestedTermination(false) {
   DCHECK(isMainThread());
-
-  // SuspendableObject expects this to be called to set internal flags.
-  suspendIfNeeded();
 
   // For debug accounting only. We must do this before we register the
   // instance. The assertions assume this.
@@ -119,7 +117,7 @@ DatabaseContext::~DatabaseContext() {
 
 DEFINE_TRACE(DatabaseContext) {
   visitor->trace(m_databaseThread);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 // This is called if the associated ExecutionContext is destructing while

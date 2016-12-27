@@ -35,8 +35,8 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMTimeStamp.h"
-#include "core/dom/SuspendableObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/vibration/NavigatorVibration.h"
@@ -60,7 +60,7 @@ class ScriptState;
 class MODULES_EXPORT Notification final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<Notification>,
-      public SuspendableObject,
+      public ContextLifecycleObserver,
       public WebNotificationDelegate {
   USING_GARBAGE_COLLECTED_MIXIN(Notification);
   DEFINE_WRAPPERTYPEINFO();
@@ -121,11 +121,11 @@ class MODULES_EXPORT Notification final
 
   // EventTarget interface.
   ExecutionContext* getExecutionContext() const final {
-    return SuspendableObject::getExecutionContext();
+    return ContextLifecycleObserver::getExecutionContext();
   }
   const AtomicString& interfaceName() const override;
 
-  // SuspendableObject interface.
+  // ContextLifecycleObserver interface.
   void contextDestroyed() override;
 
   // ScriptWrappable interface.

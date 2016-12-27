@@ -33,7 +33,7 @@
 #define EventSource_h
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
@@ -55,7 +55,7 @@ class MODULES_EXPORT EventSource final
     : public EventTargetWithInlineData,
       private ThreadableLoaderClient,
       public ActiveScriptWrappable<EventSource>,
-      public SuspendableObject,
+      public ContextLifecycleObserver,
       public EventSourceParser::Client {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(EventSource);
@@ -85,12 +85,13 @@ class MODULES_EXPORT EventSource final
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   //
-  // Note: suspend() is noop since ScopedPageLoadDeferrer calls
-  // Page::setDefersLoading() and it defers delivery of events from the
-  // loader, and therefore the methods of this class for receiving
-  // asynchronous events from the loader won't be invoked.
+  // Note: We don't need to inherit from SuspendableObject since
+  // ScopedPageLoadDeferrer calls Page::setDefersLoading() and
+  // it defers delivery of events from the loader, and therefore
+  // the methods of this class for receiving asynchronous events
+  // from the loader won't be invoked.
   void contextDestroyed() override;
 
   // ScriptWrappable

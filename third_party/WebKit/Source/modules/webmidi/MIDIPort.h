@@ -34,8 +34,8 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/SuspendableObject.h"
 #include "media/midi/midi_service.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessor.h"
@@ -47,7 +47,7 @@ class MIDIAccess;
 
 class MIDIPort : public EventTargetWithInlineData,
                  public ActiveScriptWrappable<MIDIPort>,
-                 public SuspendableObject {
+                 public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MIDIPort);
 
@@ -93,7 +93,7 @@ class MIDIPort : public EventTargetWithInlineData,
   // ScriptWrappable
   bool hasPendingActivity() const final;
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   void contextDestroyed() override;
 
  protected:

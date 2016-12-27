@@ -13,9 +13,7 @@
 namespace blink {
 
 AudioWorklet* AudioWorklet::create(LocalFrame* frame) {
-  AudioWorklet* worklet = new AudioWorklet(frame);
-  worklet->suspendIfNeeded();
-  return worklet;
+  return new AudioWorklet(frame);
 }
 
 AudioWorklet::AudioWorklet(LocalFrame* frame)

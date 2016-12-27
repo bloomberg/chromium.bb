@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -51,7 +51,7 @@ class StringOrArrayBuffer;
 
 class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
                                      public ActiveScriptWrappable<FileReader>,
-                                     public SuspendableObject,
+                                     public ContextLifecycleObserver,
                                      public FileReaderLoaderClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FileReader);
@@ -74,7 +74,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   DOMException* error() { return m_error; }
   void result(StringOrArrayBuffer& resultAttribute) const;
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   void contextDestroyed() override;
 
   // ScriptWrappable
@@ -83,7 +83,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   // EventTarget
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override {
-    return SuspendableObject::getExecutionContext();
+    return ContextLifecycleObserver::getExecutionContext();
   }
 
   // FileReaderLoaderClient

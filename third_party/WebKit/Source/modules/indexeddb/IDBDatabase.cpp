@@ -92,16 +92,13 @@ const char IDBDatabase::databaseClosedErrorMessage[] =
 IDBDatabase* IDBDatabase::create(ExecutionContext* context,
                                  std::unique_ptr<WebIDBDatabase> database,
                                  IDBDatabaseCallbacks* callbacks) {
-  IDBDatabase* idbDatabase =
-      new IDBDatabase(context, std::move(database), callbacks);
-  idbDatabase->suspendIfNeeded();
-  return idbDatabase;
+  return new IDBDatabase(context, std::move(database), callbacks);
 }
 
 IDBDatabase::IDBDatabase(ExecutionContext* context,
                          std::unique_ptr<WebIDBDatabase> backend,
                          IDBDatabaseCallbacks* callbacks)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_backend(std::move(backend)),
       m_databaseCallbacks(callbacks) {
   m_databaseCallbacks->connect(this);
@@ -119,7 +116,7 @@ DEFINE_TRACE(IDBDatabase) {
   visitor->trace(m_enqueuedEvents);
   visitor->trace(m_databaseCallbacks);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 int64_t IDBDatabase::nextTransactionId() {
@@ -578,7 +575,7 @@ const AtomicString& IDBDatabase::interfaceName() const {
 }
 
 ExecutionContext* IDBDatabase::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 void IDBDatabase::recordApiCallsHistogram(IndexedDatabaseMethods method) {

@@ -56,9 +56,7 @@ DOMFileSystem* DOMFileSystem::create(ExecutionContext* context,
                                      const String& name,
                                      FileSystemType type,
                                      const KURL& rootURL) {
-  DOMFileSystem* fileSystem(new DOMFileSystem(context, name, type, rootURL));
-  fileSystem->suspendIfNeeded();
-  return fileSystem;
+  return new DOMFileSystem(context, name, type, rootURL);
 }
 
 DOMFileSystem* DOMFileSystem::createIsolatedFileSystem(
@@ -94,7 +92,7 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context,
                              FileSystemType type,
                              const KURL& rootURL)
     : DOMFileSystemBase(context, name, type, rootURL),
-      SuspendableObject(context),
+      ContextLifecycleObserver(context),
       m_numberOfPendingCallbacks(0),
       m_rootEntry(DirectoryEntry::create(this, DOMFilePath::root)) {}
 
@@ -193,7 +191,7 @@ void DOMFileSystem::createFile(const FileEntry* fileEntry,
 
 DEFINE_TRACE(DOMFileSystem) {
   DOMFileSystemBase::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
   visitor->trace(m_rootEntry);
 }
 

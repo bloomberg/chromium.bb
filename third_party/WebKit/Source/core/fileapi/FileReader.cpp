@@ -187,13 +187,11 @@ class FileReader::ThrottlingController final
 };
 
 FileReader* FileReader::create(ExecutionContext* context) {
-  FileReader* fileReader = new FileReader(context);
-  fileReader->suspendIfNeeded();
-  return fileReader;
+  return new FileReader(context);
 }
 
 FileReader::FileReader(ExecutionContext* context)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_state(kEmpty),
       m_loadingState(LoadingStateNone),
       m_stillFiringEvents(false),
@@ -472,7 +470,7 @@ void FileReader::fireEvent(const AtomicString& type) {
 DEFINE_TRACE(FileReader) {
   visitor->trace(m_error);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

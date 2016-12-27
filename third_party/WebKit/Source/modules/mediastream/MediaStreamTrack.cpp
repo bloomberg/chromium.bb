@@ -53,14 +53,12 @@ static const char kContentHintStringVideoDetailed[] = "detailed";
 
 MediaStreamTrack* MediaStreamTrack::create(ExecutionContext* context,
                                            MediaStreamComponent* component) {
-  MediaStreamTrack* track = new MediaStreamTrack(context, component);
-  track->suspendIfNeeded();
-  return track;
+  return new MediaStreamTrack(context, component);
 }
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_readyState(MediaStreamSource::ReadyStateLive),
       m_isIteratingRegisteredMediaStreams(false),
       m_stopped(false),
@@ -312,14 +310,14 @@ const AtomicString& MediaStreamTrack::interfaceName() const {
 }
 
 ExecutionContext* MediaStreamTrack::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 DEFINE_TRACE(MediaStreamTrack) {
   visitor->trace(m_registeredMediaStreams);
   visitor->trace(m_component);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

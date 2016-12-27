@@ -29,8 +29,8 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/modules/v8/StringOrStringSequenceOrDOMStringList.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"
-#include "core/dom/SuspendableObject.h"
 #include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
@@ -58,7 +58,7 @@ struct WebIDBObservation;
 class MODULES_EXPORT IDBDatabase final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<IDBDatabase>,
-      public SuspendableObject {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -123,7 +123,7 @@ class MODULES_EXPORT IDBDatabase final
   // ScriptWrappable
   bool hasPendingActivity() const final;
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   void contextDestroyed() override;
 
   // EventTarget

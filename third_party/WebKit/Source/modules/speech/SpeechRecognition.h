@@ -27,7 +27,7 @@
 #define SpeechRecognition_h
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/speech/SpeechGrammarList.h"
@@ -49,7 +49,7 @@ class SpeechRecognitionError;
 class MODULES_EXPORT SpeechRecognition final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<SpeechRecognition>,
-      public SuspendableObject {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognition);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -105,7 +105,7 @@ class MODULES_EXPORT SpeechRecognition final
   // ScriptWrappable
   bool hasPendingActivity() const final;
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   void contextDestroyed() override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart);

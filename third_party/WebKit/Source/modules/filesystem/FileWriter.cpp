@@ -44,13 +44,11 @@ static const int kMaxRecursionDepth = 3;
 static const double progressNotificationIntervalMS = 50;
 
 FileWriter* FileWriter::create(ExecutionContext* context) {
-  FileWriter* fileWriter = new FileWriter(context);
-  fileWriter->suspendIfNeeded();
-  return fileWriter;
+  return new FileWriter(context);
 }
 
 FileWriter::FileWriter(ExecutionContext* context)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_readyState(kInit),
       m_operationInProgress(OperationNone),
       m_queuedOperation(OperationNone),
@@ -323,7 +321,7 @@ DEFINE_TRACE(FileWriter) {
   visitor->trace(m_blobBeingWritten);
   EventTargetWithInlineData::trace(visitor);
   FileWriterBase::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

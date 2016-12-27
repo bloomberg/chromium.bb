@@ -65,7 +65,7 @@ const unsigned long long EventSource::defaultReconnectDelay = 3000;
 inline EventSource::EventSource(ExecutionContext* context,
                                 const KURL& url,
                                 const EventSourceInit& eventSourceInit)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_url(url),
       m_currentURL(url),
       m_withCredentials(eventSourceInit.withCredentials()),
@@ -111,7 +111,6 @@ EventSource* EventSource::create(ExecutionContext* context,
   EventSource* source = new EventSource(context, fullURL, eventSourceInit);
 
   source->scheduleInitialConnect();
-  source->suspendIfNeeded();
   return source;
 }
 
@@ -222,7 +221,7 @@ void EventSource::close() {
     m_parser->stop();
 
   // Stop trying to reconnect if EventSource was explicitly closed or if
-  // SuspendableObject::stop() was called.
+  // contextDestroyed() was called.
   if (m_connectTimer.isActive()) {
     m_connectTimer.stop();
   }
@@ -240,7 +239,7 @@ const AtomicString& EventSource::interfaceName() const {
 }
 
 ExecutionContext* EventSource::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 void EventSource::didReceiveResponse(
@@ -379,7 +378,7 @@ DEFINE_TRACE(EventSource) {
   visitor->trace(m_parser);
   visitor->trace(m_loader);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
   EventSourceParser::Client::trace(visitor);
 }
 

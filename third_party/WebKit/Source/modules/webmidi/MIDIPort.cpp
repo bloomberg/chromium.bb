@@ -46,7 +46,7 @@ MIDIPort::MIDIPort(MIDIAccess* access,
                    TypeCode type,
                    const String& version,
                    PortState state)
-    : SuspendableObject(access->getExecutionContext()),
+    : ContextLifecycleObserver(access->getExecutionContext()),
       m_id(id),
       m_manufacturer(manufacturer),
       m_name(name),
@@ -163,7 +163,7 @@ void MIDIPort::contextDestroyed() {
 DEFINE_TRACE(MIDIPort) {
   visitor->trace(m_access);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(MIDIPort) {

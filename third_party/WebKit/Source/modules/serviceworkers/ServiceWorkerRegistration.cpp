@@ -75,10 +75,7 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(
     return existingRegistration;
   }
 
-  ServiceWorkerRegistration* newRegistration =
-      new ServiceWorkerRegistration(executionContext, std::move(handle));
-  newRegistration->suspendIfNeeded();
-  return newRegistration;
+  return new ServiceWorkerRegistration(executionContext, std::move(handle));
 }
 
 NavigationPreloadManager* ServiceWorkerRegistration::navigationPreload() {
@@ -132,7 +129,7 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState) {
 ServiceWorkerRegistration::ServiceWorkerRegistration(
     ExecutionContext* executionContext,
     std::unique_ptr<WebServiceWorkerRegistration::Handle> handle)
-    : SuspendableObject(executionContext),
+    : ContextLifecycleObserver(executionContext),
       m_handle(std::move(handle)),
       m_stopped(false) {
   ASSERT(m_handle);
@@ -157,7 +154,7 @@ DEFINE_TRACE(ServiceWorkerRegistration) {
   visitor->trace(m_active);
   visitor->trace(m_navigationPreload);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
   Supplementable<ServiceWorkerRegistration>::trace(visitor);
 }
 

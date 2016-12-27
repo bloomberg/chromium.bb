@@ -130,17 +130,14 @@ MediaKeys* MediaKeys::create(
     ExecutionContext* context,
     const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes,
     std::unique_ptr<WebContentDecryptionModule> cdm) {
-  MediaKeys* mediaKeys =
-      new MediaKeys(context, supportedSessionTypes, std::move(cdm));
-  mediaKeys->suspendIfNeeded();
-  return mediaKeys;
+  return new MediaKeys(context, supportedSessionTypes, std::move(cdm));
 }
 
 MediaKeys::MediaKeys(
     ExecutionContext* context,
     const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes,
     std::unique_ptr<WebContentDecryptionModule> cdm)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_supportedSessionTypes(supportedSessionTypes),
       m_cdm(std::move(cdm)),
       m_mediaElement(nullptr),
@@ -295,7 +292,7 @@ WebContentDecryptionModule* MediaKeys::contentDecryptionModule() {
 DEFINE_TRACE(MediaKeys) {
   visitor->trace(m_pendingActions);
   visitor->trace(m_mediaElement);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 void MediaKeys::contextDestroyed() {
@@ -303,7 +300,7 @@ void MediaKeys::contextDestroyed() {
   m_pendingActions.clear();
 
   // We don't need the CDM anymore. Only destroyed after all related
-  // SuspendableObjects have been stopped.
+  // ContextLifecycleObservers have been stopped.
   m_cdm.reset();
 }
 

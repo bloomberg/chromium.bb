@@ -29,6 +29,7 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/SuspendableObject.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/EventTarget.h"

@@ -68,7 +68,6 @@ Animation* Animation::create(AnimationEffectReadOnly* effect,
 
   Animation* animation =
       new Animation(timeline->document()->contextDocument(), *timeline, effect);
-  animation->suspendIfNeeded();
 
   if (timeline) {
     timeline->animationAttached(*animation);
@@ -81,7 +80,7 @@ Animation* Animation::create(AnimationEffectReadOnly* effect,
 Animation::Animation(ExecutionContext* executionContext,
                      AnimationTimeline& timeline,
                      AnimationEffectReadOnly* content)
-    : SuspendableObject(executionContext),
+    : ContextLifecycleObserver(executionContext),
       m_playState(Idle),
       m_playbackRate(1),
       m_startTime(nullValue()),
@@ -646,7 +645,7 @@ const AtomicString& Animation::interfaceName() const {
 }
 
 ExecutionContext* Animation::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 bool Animation::hasPendingActivity() const {
@@ -1119,7 +1118,7 @@ DEFINE_TRACE(Animation) {
   visitor->trace(m_readyPromise);
   visitor->trace(m_compositorPlayer);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 Animation::CompositorAnimationPlayerHolder*

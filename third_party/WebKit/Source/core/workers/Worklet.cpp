@@ -20,7 +20,7 @@
 namespace blink {
 
 Worklet::Worklet(LocalFrame* frame)
-    : SuspendableObject(frame->document()),
+    : ContextLifecycleObserver(frame->document()),
       m_fetcher(frame->loader().documentLoader()->fetcher()) {}
 
 ScriptPromise Worklet::import(ScriptState* scriptState, const String& url) {
@@ -71,7 +71,7 @@ void Worklet::contextDestroyed() {
 DEFINE_TRACE(Worklet) {
   visitor->trace(m_fetcher);
   visitor->trace(m_scriptLoaders);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

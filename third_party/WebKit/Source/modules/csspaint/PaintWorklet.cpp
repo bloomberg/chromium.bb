@@ -13,9 +13,7 @@ namespace blink {
 
 // static
 PaintWorklet* PaintWorklet::create(LocalFrame* frame) {
-  PaintWorklet* worklet = new PaintWorklet(frame);
-  worklet->suspendIfNeeded();
-  return worklet;
+  return new PaintWorklet(frame);
 }
 
 PaintWorklet::PaintWorklet(LocalFrame* frame)

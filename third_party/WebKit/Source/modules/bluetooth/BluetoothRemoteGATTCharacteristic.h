@@ -6,9 +6,9 @@
 #define BluetoothRemoteGATTCharacteristic_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "core/dom/DOMDataView.h"
-#include "core/dom/SuspendableObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "platform/heap/Handle.h"
@@ -34,7 +34,7 @@ class ScriptState;
 // CallbackPromiseAdapter class comments.
 class BluetoothRemoteGATTCharacteristic final
     : public EventTargetWithInlineData,
-      public SuspendableObject,
+      public ContextLifecycleObserver,
       public WebBluetoothRemoteGATTCharacteristic {
   USING_PRE_FINALIZER(BluetoothRemoteGATTCharacteristic, dispose);
   DEFINE_WRAPPERTYPEINFO();
@@ -57,7 +57,7 @@ class BluetoothRemoteGATTCharacteristic final
   // WebBluetoothRemoteGATTCharacteristic interface:
   void dispatchCharacteristicValueChanged(const WebVector<uint8_t>&) override;
 
-  // SuspendableObject interface.
+  // ContextLifecycleObserver interface.
   void contextDestroyed() override;
 
   // USING_PRE_FINALIZER interface.

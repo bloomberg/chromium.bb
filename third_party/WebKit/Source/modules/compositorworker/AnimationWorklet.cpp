@@ -14,9 +14,7 @@ namespace blink {
 
 // static
 AnimationWorklet* AnimationWorklet::create(LocalFrame* frame) {
-  AnimationWorklet* worklet = new AnimationWorklet(frame);
-  worklet->suspendIfNeeded();
-  return worklet;
+  return new AnimationWorklet(frame);
 }
 
 AnimationWorklet::AnimationWorklet(LocalFrame* frame)

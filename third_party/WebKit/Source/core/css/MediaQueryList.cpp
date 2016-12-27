@@ -30,15 +30,13 @@ namespace blink {
 MediaQueryList* MediaQueryList::create(ExecutionContext* context,
                                        MediaQueryMatcher* matcher,
                                        MediaQuerySet* media) {
-  MediaQueryList* list = new MediaQueryList(context, matcher, media);
-  list->suspendIfNeeded();
-  return list;
+  return new MediaQueryList(context, matcher, media);
 }
 
 MediaQueryList::MediaQueryList(ExecutionContext* context,
                                MediaQueryMatcher* matcher,
                                MediaQuerySet* media)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_matcher(matcher),
       m_media(media),
       m_matchesDirty(true),
@@ -121,7 +119,7 @@ DEFINE_TRACE(MediaQueryList) {
   visitor->trace(m_media);
   visitor->trace(m_listeners);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 const AtomicString& MediaQueryList::interfaceName() const {
@@ -129,7 +127,7 @@ const AtomicString& MediaQueryList::interfaceName() const {
 }
 
 ExecutionContext* MediaQueryList::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 }  // namespace blink

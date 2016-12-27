@@ -76,10 +76,7 @@ PresentationRequest* PresentationRequest::create(
     return nullptr;
   }
 
-  PresentationRequest* request =
-      new PresentationRequest(executionContext, parsedUrl);
-  request->suspendIfNeeded();
-  return request;
+  return new PresentationRequest(executionContext, parsedUrl);
 }
 
 const AtomicString& PresentationRequest::interfaceName() const {
@@ -87,7 +84,7 @@ const AtomicString& PresentationRequest::interfaceName() const {
 }
 
 ExecutionContext* PresentationRequest::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 void PresentationRequest::addedEventListener(
@@ -208,11 +205,11 @@ const KURL& PresentationRequest::url() const {
 DEFINE_TRACE(PresentationRequest) {
   visitor->trace(m_availabilityProperty);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 PresentationRequest::PresentationRequest(ExecutionContext* executionContext,
                                          const KURL& url)
-    : SuspendableObject(executionContext), m_url(url) {}
+    : ContextLifecycleObserver(executionContext), m_url(url) {}
 
 }  // namespace blink

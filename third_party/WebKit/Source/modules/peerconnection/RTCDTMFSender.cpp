@@ -60,16 +60,13 @@ RTCDTMFSender* RTCDTMFSender::create(
     return nullptr;
   }
 
-  RTCDTMFSender* dtmfSender =
-      new RTCDTMFSender(context, track, std::move(handler));
-  dtmfSender->suspendIfNeeded();
-  return dtmfSender;
+  return new RTCDTMFSender(context, track, std::move(handler));
 }
 
 RTCDTMFSender::RTCDTMFSender(ExecutionContext* context,
                              MediaStreamTrack* track,
                              std::unique_ptr<WebRTCDTMFSenderHandler> handler)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_track(track),
       m_duration(defaultToneDurationMs),
       m_interToneGap(defaultInterToneGapMs),
@@ -156,7 +153,7 @@ const AtomicString& RTCDTMFSender::interfaceName() const {
 }
 
 ExecutionContext* RTCDTMFSender::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 void RTCDTMFSender::contextDestroyed() {
@@ -187,7 +184,7 @@ DEFINE_TRACE(RTCDTMFSender) {
   visitor->trace(m_track);
   visitor->trace(m_scheduledEvents);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

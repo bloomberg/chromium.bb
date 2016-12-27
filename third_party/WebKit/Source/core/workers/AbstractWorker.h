@@ -32,7 +32,7 @@
 #define AbstractWorker_h
 
 #include "core/CoreExport.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
@@ -45,13 +45,13 @@ class KURL;
 class ExecutionContext;
 
 class CORE_EXPORT AbstractWorker : public EventTargetWithInlineData,
-                                   public SuspendableObject {
+                                   public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);
 
  public:
   // EventTarget APIs
   ExecutionContext* getExecutionContext() const final {
-    return SuspendableObject::getExecutionContext();
+    return ContextLifecycleObserver::getExecutionContext();
   }
 
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error);

@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "media/midi/midi_service.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessInitializer.h"
@@ -53,7 +53,7 @@ class MIDIOutputMap;
 
 class MIDIAccess final : public EventTargetWithInlineData,
                          public ActiveScriptWrappable<MIDIAccess>,
-                         public SuspendableObject,
+                         public ContextLifecycleObserver,
                          public MIDIAccessorClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
@@ -65,10 +65,8 @@ class MIDIAccess final : public EventTargetWithInlineData,
       bool sysexEnabled,
       const Vector<MIDIAccessInitializer::PortDescriptor>& ports,
       ExecutionContext* executionContext) {
-    MIDIAccess* access = new MIDIAccess(std::move(accessor), sysexEnabled,
-                                        ports, executionContext);
-    access->suspendIfNeeded();
-    return access;
+    return new MIDIAccess(std::move(accessor), sysexEnabled, ports,
+                          executionContext);
   }
   ~MIDIAccess() override;
 
@@ -85,13 +83,13 @@ class MIDIAccess final : public EventTargetWithInlineData,
     return EventTargetNames::MIDIAccess;
   }
   ExecutionContext* getExecutionContext() const override {
-    return SuspendableObject::getExecutionContext();
+    return ContextLifecycleObserver::getExecutionContext();
   }
 
   // ScriptWrappable
   bool hasPendingActivity() const final;
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   void contextDestroyed() override;
 
   // MIDIAccessorClient

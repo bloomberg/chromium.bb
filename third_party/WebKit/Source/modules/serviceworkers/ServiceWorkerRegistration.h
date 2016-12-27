@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "modules/serviceworkers/NavigationPreloadManager.h"
 #include "modules/serviceworkers/ServiceWorker.h"
@@ -29,7 +29,7 @@ class ScriptState;
 class ServiceWorkerRegistration final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<ServiceWorkerRegistration>,
-      public SuspendableObject,
+      public ContextLifecycleObserver,
       public WebServiceWorkerRegistrationProxy,
       public Supplementable<ServiceWorkerRegistration> {
   DEFINE_WRAPPERTYPEINFO();
@@ -49,7 +49,7 @@ class ServiceWorkerRegistration final
   // EventTarget overrides.
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override {
-    return SuspendableObject::getExecutionContext();
+    return ContextLifecycleObserver::getExecutionContext();
   }
 
   // WebServiceWorkerRegistrationProxy overrides.
@@ -90,7 +90,7 @@ class ServiceWorkerRegistration final
       std::unique_ptr<WebServiceWorkerRegistration::Handle>);
   void dispose();
 
-  // SuspendableObject overrides.
+  // ContextLifecycleObserver overrides.
   void contextDestroyed() override;
 
   // A handle to the registration representation in the embedder.

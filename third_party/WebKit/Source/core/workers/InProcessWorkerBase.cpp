@@ -43,8 +43,6 @@ void InProcessWorkerBase::postMessage(ExecutionContext* context,
 bool InProcessWorkerBase::initialize(ExecutionContext* context,
                                      const String& url,
                                      ExceptionState& exceptionState) {
-  suspendIfNeeded();
-
   // TODO(mkwst): Revisit the context as
   // https://drafts.css-houdini.org/worklets/ evolves.
   KURL scriptURL =

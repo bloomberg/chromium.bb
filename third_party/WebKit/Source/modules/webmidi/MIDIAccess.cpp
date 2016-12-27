@@ -64,7 +64,7 @@ MIDIAccess::MIDIAccess(
     bool sysexEnabled,
     const Vector<MIDIAccessInitializer::PortDescriptor>& ports,
     ExecutionContext* executionContext)
-    : SuspendableObject(executionContext),
+    : ContextLifecycleObserver(executionContext),
       m_accessor(std::move(accessor)),
       m_sysexEnabled(sysexEnabled),
       m_hasPendingActivity(false) {
@@ -233,7 +233,7 @@ DEFINE_TRACE(MIDIAccess) {
   visitor->trace(m_inputs);
   visitor->trace(m_outputs);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

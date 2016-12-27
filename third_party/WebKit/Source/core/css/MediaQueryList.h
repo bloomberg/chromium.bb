@@ -23,7 +23,7 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -44,7 +44,7 @@ class MediaQuerySet;
 class CORE_EXPORT MediaQueryList final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<MediaQueryList>,
-      public SuspendableObject {
+      public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
   WTF_MAKE_NONCOPYABLE(MediaQueryList);
@@ -79,7 +79,7 @@ class CORE_EXPORT MediaQueryList final
   // From ScriptWrappable
   bool hasPendingActivity() const final;
 
-  // From SuspendableObject
+  // From ContextLifecycleObserver
   void contextDestroyed() override;
 
   const AtomicString& interfaceName() const override;

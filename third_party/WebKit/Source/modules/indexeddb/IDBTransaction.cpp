@@ -56,10 +56,7 @@ IDBTransaction* IDBTransaction::createNonVersionChange(
   DCHECK_NE(mode, WebIDBTransactionModeVersionChange);
   DCHECK(!scope.isEmpty()) << "Non-version transactions should operate on a "
                               "well-defined set of stores";
-  IDBTransaction* transaction =
-      new IDBTransaction(scriptState, id, scope, mode, db);
-  transaction->suspendIfNeeded();
-  return transaction;
+  return new IDBTransaction(scriptState, id, scope, mode, db);
 }
 
 IDBTransaction* IDBTransaction::createVersionChange(
@@ -68,10 +65,8 @@ IDBTransaction* IDBTransaction::createVersionChange(
     IDBDatabase* db,
     IDBOpenDBRequest* openDBRequest,
     const IDBDatabaseMetadata& oldMetadata) {
-  IDBTransaction* transaction =
-      new IDBTransaction(executionContext, id, db, openDBRequest, oldMetadata);
-  transaction->suspendIfNeeded();
-  return transaction;
+  return new IDBTransaction(executionContext, id, db, openDBRequest,
+                            oldMetadata);
 }
 
 namespace {
@@ -102,7 +97,7 @@ IDBTransaction::IDBTransaction(ScriptState* scriptState,
                                const HashSet<String>& scope,
                                WebIDBTransactionMode mode,
                                IDBDatabase* db)
-    : SuspendableObject(scriptState->getExecutionContext()),
+    : ContextLifecycleObserver(scriptState->getExecutionContext()),
       m_id(id),
       m_database(db),
       m_mode(mode),
@@ -126,7 +121,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* executionContext,
                                IDBDatabase* db,
                                IDBOpenDBRequest* openDBRequest,
                                const IDBDatabaseMetadata& oldMetadata)
-    : SuspendableObject(executionContext),
+    : ContextLifecycleObserver(executionContext),
       m_id(id),
       m_database(db),
       m_openDBRequest(openDBRequest),
@@ -154,7 +149,7 @@ DEFINE_TRACE(IDBTransaction) {
   visitor->trace(m_oldStoreMetadata);
   visitor->trace(m_deletedIndexes);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 void IDBTransaction::setError(DOMException* error) {
@@ -457,7 +452,7 @@ const AtomicString& IDBTransaction::interfaceName() const {
 }
 
 ExecutionContext* IDBTransaction::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event) {

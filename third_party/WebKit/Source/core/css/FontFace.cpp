@@ -154,14 +154,12 @@ FontFace* FontFace::create(Document* document,
 }
 
 FontFace::FontFace(ExecutionContext* context)
-    : SuspendableObject(context), m_status(Unloaded) {
-  suspendIfNeeded();
-}
+    : ContextLifecycleObserver(context), m_status(Unloaded) {}
 
 FontFace::FontFace(ExecutionContext* context,
                    const AtomicString& family,
                    const FontFaceDescriptors& descriptors)
-    : SuspendableObject(context), m_family(family), m_status(Unloaded) {
+    : ContextLifecycleObserver(context), m_family(family), m_status(Unloaded) {
   Document* document = toDocument(context);
   setPropertyFromString(document, descriptors.style(), CSSPropertyFontStyle);
   setPropertyFromString(document, descriptors.weight(), CSSPropertyFontWeight);
@@ -173,8 +171,6 @@ FontFace::FontFace(ExecutionContext* context,
                         CSSPropertyFontVariant);
   setPropertyFromString(document, descriptors.featureSettings(),
                         CSSPropertyFontFeatureSettings);
-
-  suspendIfNeeded();
 }
 
 FontFace::~FontFace() {}
@@ -639,7 +635,7 @@ DEFINE_TRACE(FontFace) {
   visitor->trace(m_loadedProperty);
   visitor->trace(m_cssFontFace);
   visitor->trace(m_callbacks);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 bool FontFace::hadBlankText() const {

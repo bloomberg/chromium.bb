@@ -66,7 +66,7 @@ void UnderlyingSourceBase::contextDestroyed() {
 }
 
 DEFINE_TRACE(UnderlyingSourceBase) {
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
   visitor->trace(m_controller);
 }
 

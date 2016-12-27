@@ -107,13 +107,11 @@ const AtomicString& MediaSource::endedKeyword() {
 }
 
 MediaSource* MediaSource::create(ExecutionContext* context) {
-  MediaSource* mediaSource = new MediaSource(context);
-  mediaSource->suspendIfNeeded();
-  return mediaSource;
+  return new MediaSource(context);
 }
 
 MediaSource::MediaSource(ExecutionContext* context)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_readyState(closedKeyword()),
       m_asyncEventQueue(GenericEventQueue::create(this)),
       m_attachedElement(nullptr),
@@ -319,7 +317,7 @@ const AtomicString& MediaSource::interfaceName() const {
 }
 
 ExecutionContext* MediaSource::getExecutionContext() const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 DEFINE_TRACE(MediaSource) {
@@ -329,7 +327,7 @@ DEFINE_TRACE(MediaSource) {
   visitor->trace(m_activeSourceBuffers);
   visitor->trace(m_liveSeekableRange);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 void MediaSource::setWebMediaSourceAndOpen(

@@ -27,7 +27,7 @@
 #define MediaDevicesRequest_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/MediaDeviceInfo.h"
 #include "platform/heap/Handle.h"
@@ -41,12 +41,12 @@ class ScriptPromiseResolver;
 
 class MODULES_EXPORT MediaDevicesRequest final
     : public GarbageCollectedFinalized<MediaDevicesRequest>,
-      public SuspendableObject {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(MediaDevicesRequest);
 
  public:
   static MediaDevicesRequest* create(ScriptState*, UserMediaController*);
-  ~MediaDevicesRequest() override;
+  virtual ~MediaDevicesRequest();
 
   Document* ownerDocument();
 
@@ -54,7 +54,7 @@ class MODULES_EXPORT MediaDevicesRequest final
 
   void succeed(const MediaDeviceInfoVector&);
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();

@@ -25,7 +25,7 @@
 #ifndef RTCStatsRequestImpl_h
 #define RTCStatsRequestImpl_h
 
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/peerconnection/RTCStatsResponse.h"
 #include "platform/heap/Handle.h"
 #include "platform/peerconnection/RTCStatsRequest.h"
@@ -39,7 +39,7 @@ class RTCPeerConnection;
 class RTCStatsCallback;
 
 class RTCStatsRequestImpl final : public RTCStatsRequest,
-                                  public SuspendableObject {
+                                  public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
 
  public:
@@ -55,7 +55,7 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
 
   void requestSucceeded(RTCStatsResponseBase*) override;
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();

@@ -31,7 +31,7 @@
 #ifndef RTCSessionDescriptionRequestImpl_h
 #define RTCSessionDescriptionRequestImpl_h
 
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/peerconnection/RTCSessionDescriptionRequest.h"
 #include "wtf/PassRefPtr.h"
@@ -45,7 +45,7 @@ class WebRTCSessionDescription;
 
 class RTCSessionDescriptionRequestImpl final
     : public RTCSessionDescriptionRequest,
-      public SuspendableObject {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
 
  public:
@@ -59,7 +59,7 @@ class RTCSessionDescriptionRequestImpl final
   void requestSucceeded(const WebRTCSessionDescription&) override;
   void requestFailed(const String& error) override;
 
-  // SuspendableObject
+  // ContextLifecycleObserver
   void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();

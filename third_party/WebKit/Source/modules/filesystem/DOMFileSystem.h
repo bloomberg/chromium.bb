@@ -33,9 +33,9 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "core/dom/SuspendableObject.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/ModulesExport.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
@@ -55,7 +55,7 @@ class MODULES_EXPORT DOMFileSystem final
     : public DOMFileSystemBase,
       public ScriptWrappable,
       public ActiveScriptWrappable<DOMFileSystem>,
-      public SuspendableObject {
+      public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
 

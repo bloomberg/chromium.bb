@@ -36,14 +36,12 @@ namespace blink {
 MediaDevicesRequest* MediaDevicesRequest::create(
     ScriptState* state,
     UserMediaController* controller) {
-  MediaDevicesRequest* request = new MediaDevicesRequest(state, controller);
-  request->suspendIfNeeded();
-  return request;
+  return new MediaDevicesRequest(state, controller);
 }
 
 MediaDevicesRequest::MediaDevicesRequest(ScriptState* state,
                                          UserMediaController* controller)
-    : SuspendableObject(state->getExecutionContext()),
+    : ContextLifecycleObserver(state->getExecutionContext()),
       m_controller(controller),
       m_resolver(ScriptPromiseResolver::create(state)) {}
 
@@ -79,7 +77,7 @@ void MediaDevicesRequest::contextDestroyed() {
 DEFINE_TRACE(MediaDevicesRequest) {
   visitor->trace(m_controller);
   visitor->trace(m_resolver);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

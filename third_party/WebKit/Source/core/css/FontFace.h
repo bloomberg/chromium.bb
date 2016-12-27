@@ -37,8 +37,8 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/SuspendableObject.h"
 #include "platform/fonts/FontTraits.h"
 #include "wtf/text/WTFString.h"
 
@@ -58,7 +58,7 @@ class StyleRuleFontFace;
 class FontFace : public GarbageCollectedFinalized<FontFace>,
                  public ScriptWrappable,
                  public ActiveScriptWrappable<FontFace>,
-                 public SuspendableObject {
+                 public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FontFace);
   WTF_MAKE_NONCOPYABLE(FontFace);
@@ -72,7 +72,7 @@ class FontFace : public GarbageCollectedFinalized<FontFace>,
                           const FontFaceDescriptors&);
   static FontFace* create(Document*, const StyleRuleFontFace*);
 
-  ~FontFace();
+  virtual ~FontFace();
 
   const AtomicString& family() const { return m_family; }
   String style() const;

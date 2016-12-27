@@ -44,7 +44,7 @@ BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(
     ExecutionContext* context,
     std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic,
     BluetoothRemoteGATTService* service)
-    : SuspendableObject(context),
+    : ContextLifecycleObserver(context),
       m_webCharacteristic(std::move(webCharacteristic)),
       m_service(service),
       m_stopped(false) {
@@ -58,12 +58,8 @@ BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::create(
     BluetoothRemoteGATTService* service) {
   DCHECK(webCharacteristic);
 
-  BluetoothRemoteGATTCharacteristic* characteristic =
-      new BluetoothRemoteGATTCharacteristic(
-          context, std::move(webCharacteristic), service);
-  // See note in SuspendableObject about suspendIfNeeded.
-  characteristic->suspendIfNeeded();
-  return characteristic;
+  return new BluetoothRemoteGATTCharacteristic(
+      context, std::move(webCharacteristic), service);
 }
 
 void BluetoothRemoteGATTCharacteristic::setValue(DOMDataView* domDataView) {
@@ -88,7 +84,7 @@ void BluetoothRemoteGATTCharacteristic::notifyCharacteristicObjectRemoved() {
   if (!m_stopped) {
     m_stopped = true;
     WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(
-        SuspendableObject::getExecutionContext());
+        ContextLifecycleObserver::getExecutionContext());
     webbluetooth->characteristicObjectRemoved(
         m_webCharacteristic->characteristicInstanceID, this);
   }
@@ -101,7 +97,7 @@ const WTF::AtomicString& BluetoothRemoteGATTCharacteristic::interfaceName()
 
 ExecutionContext* BluetoothRemoteGATTCharacteristic::getExecutionContext()
     const {
-  return SuspendableObject::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 void BluetoothRemoteGATTCharacteristic::addedEventListener(
@@ -393,7 +389,7 @@ DEFINE_TRACE(BluetoothRemoteGATTCharacteristic) {
   visitor->trace(m_properties);
   visitor->trace(m_value);
   EventTargetWithInlineData::trace(visitor);
-  SuspendableObject::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink
