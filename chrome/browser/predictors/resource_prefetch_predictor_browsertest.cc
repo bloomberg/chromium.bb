@@ -65,17 +65,25 @@ const char kHtmlIframePath[] = "/predictors/html_iframe.html";
 
 struct ResourceSummary {
   ResourceSummary()
-      : is_no_store(false),
-        version(0),
+      : version(0),
+        is_no_store(false),
         is_external(false),
-        should_be_recorded(true) {}
+        is_observable(true),
+        is_prohibited(false) {}
 
   ResourcePrefetchPredictor::URLRequestSummary request;
   std::string content;
-  bool is_no_store;
+  // Allows to update HTTP ETag.
   size_t version;
+  // True iff "Cache-control: no-store" header is present.
+  bool is_no_store;
+  // True iff a request for this resource must be ignored by the custom handler.
   bool is_external;
-  bool should_be_recorded;
+  // True iff the LearningObserver must observe this resource.
+  bool is_observable;
+  // A request with |is_prohibited| set to true makes the test that originates
+  // the request fail.
+  bool is_prohibited;
 };
 
 struct RedirectEdge {
@@ -175,6 +183,10 @@ void CompareSubresources(std::vector<URLRequestSummary> actual_subresources,
               testing::UnorderedElementsAreArray(expected_subresources));
 }
 
+std::string CreateVersionedETag(size_t version, const std::string& path) {
+  return base::StringPrintf("'%zu%s'", version, path.c_str());
+}
+
 }  // namespace
 
 // Helper class to track and allow waiting for a single OnNavigationLearned
@@ -270,6 +282,9 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&ResourcePrefetchPredictorBrowserTest::HandleResourceRequest,
                    base::Unretained(this)));
+    embedded_test_server()->RegisterRequestMonitor(base::Bind(
+        &ResourcePrefetchPredictorBrowserTest::MonitorResourceRequest,
+        base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
     predictor_ =
         ResourcePrefetchPredictorFactory::GetForProfile(browser()->profile());
@@ -287,7 +302,17 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     // Prefetch all needed resources and change expectations so that all
     // cacheable resources should be served from cache next navigation.
     PrefetchURL(main_frame_url);
+    // To be sure that the browser send no requests to the server after
+    // prefetching.
+    for (auto& kv : resources_) {
+      if (kv.second.is_observable)
+        kv.second.is_prohibited = true;
+    }
     NavigateToURLAndCheckSubresources(main_frame_url);
+    for (auto& kv : resources_) {
+      if (kv.second.is_observable)
+        kv.second.is_prohibited = false;
+    }
   }
 
   void NavigateToURLAndCheckSubresources(
@@ -296,10 +321,10 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     GURL endpoint_url = GetRedirectEndpoint(main_frame_url);
     std::vector<URLRequestSummary> url_request_summaries;
     for (const auto& kv : resources_) {
-      if (kv.second.is_no_store || !kv.second.should_be_recorded)
-        continue;
-      url_request_summaries.push_back(
-          GetURLRequestSummaryForResource(endpoint_url, kv.second));
+      if (kv.second.is_observable) {
+        url_request_summaries.push_back(
+            GetURLRequestSummaryForResource(endpoint_url, kv.second));
+      }
     }
 
     bool match_navigation_id =
@@ -315,7 +340,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
         ui_test_utils::BROWSER_TEST_NONE);
     observer.Wait();
     for (auto& kv : resources_) {
-      if (!kv.second.is_no_store && kv.second.should_be_recorded)
+      if (kv.second.is_observable)
         kv.second.request.was_cached = true;
     }
     for (const auto& nav : observer.current_navigation_ids())
@@ -327,7 +352,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     predictor_->StartPrefetching(main_frame_url, PrefetchOrigin::EXTERNAL);
     observer.Wait();
     for (auto& kv : resources_) {
-      if (!kv.second.is_no_store && kv.second.should_be_recorded)
+      if (kv.second.is_observable)
         kv.second.request.was_cached = true;
     }
   }
@@ -355,12 +380,12 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     return resource;
   }
 
-  void AddUnrecordedResources(const std::vector<GURL>& resource_urls) {
+  void AddUnobservableResources(const std::vector<GURL>& resource_urls) {
     for (const GURL& resource_url : resource_urls) {
       auto resource =
           AddResource(resource_url, content::RESOURCE_TYPE_SUB_RESOURCE,
                       net::DEFAULT_PRIORITY);
-      resource->should_be_recorded = false;
+      resource->is_observable = false;
     }
   }
 
@@ -407,6 +432,9 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     https_server()->RegisterRequestHandler(
         base::Bind(&ResourcePrefetchPredictorBrowserTest::HandleResourceRequest,
                    base::Unretained(this)));
+    https_server()->RegisterRequestMonitor(base::Bind(
+        &ResourcePrefetchPredictorBrowserTest::MonitorResourceRequest,
+        base::Unretained(this)));
     ASSERT_TRUE(https_server()->Start());
   }
 
@@ -453,7 +481,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   GURL GetRedirectEndpoint(const GURL& initial_url) const {
     GURL current = initial_url;
     while (true) {
-      auto it = redirects_.find(current);
+      std::map<GURL, RedirectEdge>::const_iterator it =
+          redirects_.find(current);
       if (it == redirects_.end())
         break;
       current = it->second.url;
@@ -461,6 +490,26 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     return current;
   }
 
+  void MonitorResourceRequest(
+      const net::test_server::HttpRequest& request) const {
+    std::map<GURL, ResourceSummary>::const_iterator resource_it =
+        resources_.find(request.GetURL());
+    if (resource_it == resources_.end())
+      return;
+
+    const ResourceSummary& summary = resource_it->second;
+    EXPECT_FALSE(summary.is_prohibited) << request.GetURL() << "\n"
+                                        << request.all_headers;
+  }
+
+  // The custom handler for resource requests from the browser to an
+  // EmbeddedTestServer. Runs on the EmbeddedTestServer IO thread.
+  // Finds the data to serve requests in |resources_| map keyed by a request
+  // URL.
+  // Uses also the following headers from the |request|:
+  //   - "Host" to retrieve the host that actually was issued by the browser.
+  //   - "If-None-Match" to determine if the resource is still valid. If the
+  //      ETag values match, the handler responds with a HTTP 304 status.
   std::unique_ptr<net::test_server::HttpResponse> HandleResourceRequest(
       const net::test_server::HttpRequest& request) const {
     GURL resource_url = request.GetURL();
@@ -477,7 +526,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
                     << resource_url.spec();
     }
 
-    auto resource_it = resources_.find(resource_url);
+    std::map<GURL, ResourceSummary>::const_iterator resource_it =
+        resources_.find(resource_url);
     if (resource_it == resources_.end())
       return nullptr;
 
@@ -487,7 +537,15 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
 
     auto http_response =
         base::MakeUnique<net::test_server::BasicHttpResponse>();
-    http_response->set_code(net::HTTP_OK);
+
+    if (request.headers.find("If-None-Match") != request.headers.end() &&
+        request.headers.at("If-None-Match") ==
+            CreateVersionedETag(summary.version, request.relative_url)) {
+      http_response->set_code(net::HTTP_NOT_MODIFIED);
+    } else {
+      http_response->set_code(net::HTTP_OK);
+    }
+
     if (!summary.request.mime_type.empty())
       http_response->set_content_type(summary.request.mime_type);
     if (!summary.content.empty())
@@ -496,8 +554,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
       http_response->AddCustomHeader("Cache-Control", "no-store");
     if (summary.request.has_validators) {
       http_response->AddCustomHeader(
-          "ETag", base::StringPrintf("'%zu%s'", summary.version,
-                                     request.relative_url.c_str()));
+          "ETag", CreateVersionedETag(summary.version, request.relative_url));
     }
     if (summary.request.always_revalidate)
       http_response->AddCustomHeader("Cache-Control", "no-cache");
@@ -506,9 +563,14 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     return std::move(http_response);
   }
 
+  // The custom handler for redirect requests from the browser to an
+  // EmbeddedTestServer. Running on the EmbeddedTestServer IO thread.
+  // Finds the data to serve requests in |redirects_| map keyed by a request
+  // URL.
   std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
       const net::test_server::HttpRequest& request) const {
-    auto redirect_it = redirects_.find(request.GetURL());
+    std::map<GURL, RedirectEdge>::const_iterator redirect_it =
+        redirects_.find(request.GetURL());
     if (redirect_it == redirects_.end())
       return nullptr;
 
@@ -623,7 +685,7 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
               net::HIGHEST);
   // https://www.w3.org/TR/2014/REC-html5-20141028/scripting-1.html#the-script-element
   // Script elements don't execute when inserted using innerHTML attribute.
-  AddUnrecordedResources({GetURL(kScriptPath)});
+  AddUnobservableResources({GetURL(kScriptPath)});
   TestLearningAndPrefetching(GetURL(kHtmlInnerHtmlPath));
 }
 
@@ -653,9 +715,10 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   AddResource(GetURL(kStylePath2), content::RESOURCE_TYPE_STYLESHEET,
               net::HIGHEST);
   AddResource(GetURL(kScriptPath2), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
-  // Included from <iframe src="html_subresources.html"> and not recored.
-  AddUnrecordedResources({GetURL(kImagePath), GetURL(kStylePath),
-                          GetURL(kScriptPath), GetURL(kFontPath)});
+  // Included from <iframe src="html_subresources.html"> and shouldn't be
+  // observed.
+  AddUnobservableResources({GetURL(kImagePath), GetURL(kStylePath),
+                            GetURL(kScriptPath), GetURL(kFontPath)});
   TestLearningAndPrefetching(GetURL(kHtmlIframePath));
 }
 
@@ -716,6 +779,22 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   NavigateToURLAndCheckSubresources(GetURL(kHtmlSubresourcesPath),
                                     WindowOpenDisposition::NEW_POPUP);
   EXPECT_EQ(navigation_ids_history_size(), 4U);
+}
+
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, AlwaysRevalidate) {
+  std::vector<ResourceSummary*> resources = {
+      AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE,
+                  net::LOWEST),
+      AddResource(GetURL(kStylePath), content::RESOURCE_TYPE_STYLESHEET,
+                  net::HIGHEST),
+      AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT,
+                  net::MEDIUM),
+      AddResource(GetURL(kFontPath), content::RESOURCE_TYPE_FONT_RESOURCE,
+                  net::HIGHEST),
+  };
+  for (auto& resource : resources)
+    resource->request.always_revalidate = true;
+  TestLearningAndPrefetching(GetURL(kHtmlSubresourcesPath));
 }
 
 }  // namespace predictors
