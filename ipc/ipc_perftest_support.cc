@@ -238,12 +238,18 @@ std::vector<PingPongTestParams>
 IPCChannelPerfTestBase::GetDefaultTestParams() {
   // Test several sizes. We use 12^N for message size, and limit the message
   // count to keep the test duration reasonable.
+#ifdef NDEBUG
+  const int kMultiplier = 100;
+#else
+  // Debug builds on Windows run these tests orders of magnitude more slowly.
+  const int kMultiplier = 1;
+#endif
   std::vector<PingPongTestParams> list;
-  list.push_back(PingPongTestParams(12, 50000));
-  list.push_back(PingPongTestParams(144, 50000));
-  list.push_back(PingPongTestParams(1728, 50000));
-  list.push_back(PingPongTestParams(20736, 12000));
-  list.push_back(PingPongTestParams(248832, 1000));
+  list.push_back(PingPongTestParams(12, 500 * kMultiplier));
+  list.push_back(PingPongTestParams(144, 500 * kMultiplier));
+  list.push_back(PingPongTestParams(1728, 500 * kMultiplier));
+  list.push_back(PingPongTestParams(20736, 120 * kMultiplier));
+  list.push_back(PingPongTestParams(248832, 10 * kMultiplier));
   return list;
 }
 
