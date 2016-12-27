@@ -378,6 +378,11 @@ class RedirectResponseProvider : public web::DataResponseProvider {
 
 // Tests going back via back button then forward via history.forward().
 - (void)testHistoryForwardNavigation {
+// TODO(crbug.com/677129): Reenable this test.
+#if TARGET_OS_IPHONE
+  EARL_GREY_TEST_SKIPPED(@"flaky on devices");
+#endif  // TARGET_OS_IPHONE
+
   SetupBackAndForwardResponseProvider();
 
   // Navigate to an HTML page with a forward button.
