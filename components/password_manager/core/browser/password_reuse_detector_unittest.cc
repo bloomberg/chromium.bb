@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "password_reuse_detector.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 
 #include <memory>
 #include <string>

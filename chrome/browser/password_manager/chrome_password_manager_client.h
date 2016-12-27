@@ -15,8 +15,10 @@
 #include "components/password_manager/content/browser/credential_manager_impl.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 #include "components/password_manager/sync/browser/sync_credentials_filter.h"
 #include "components/prefs/pref_member.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -38,7 +40,8 @@ class ChromePasswordManagerClient
     : public password_manager::PasswordManagerClient,
       public content::WebContentsObserver,
       public content::WebContentsUserData<ChromePasswordManagerClient>,
-      public autofill::mojom::PasswordManagerClient {
+      public autofill::mojom::PasswordManagerClient,
+      public content::RenderWidgetHost::InputEventObserver {
  public:
   ~ChromePasswordManagerClient() override;
 
@@ -122,6 +125,12 @@ class ChromePasswordManagerClient
   // content::WebContentsObserver overrides.
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
+
+  // content::RenderWidgetHost::InputEventObserver overrides.
+  void OnInputEvent(const blink::WebInputEvent&) override;
 
   // Given |bounds| in the renderers coordinate system, return the same bounds
   // in the screens coordinate system.
@@ -151,6 +160,9 @@ class ChromePasswordManagerClient
   Profile* const profile_;
 
   password_manager::PasswordManager password_manager_;
+
+  password_manager::PasswordReuseDetectionManager
+      password_reuse_detection_manager_;
 
   password_manager::ContentPasswordManagerDriverFactory* driver_factory_;
 

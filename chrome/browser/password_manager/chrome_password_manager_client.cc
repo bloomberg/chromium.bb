@@ -144,6 +144,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       password_manager_(this),
+      password_reuse_detection_manager_(this),
       driver_factory_(nullptr),
       credential_manager_impl_(web_contents, this),
       password_manager_client_bindings_(web_contents, this),
@@ -375,6 +376,28 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
 void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
   if (popup_controller_)
     popup_controller_->HideAndDestroy();
+}
+
+void ChromePasswordManagerClient::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  password_reuse_detection_manager_.DidNavigateMainFrame();
+  // After some navigations RenderViewHost persists and just adding the observer
+  // will cause multiple call of OnInputEvent. Since Widget API doesn't allow to
+  // check whether the observer is already added, the observer is removed and
+  // added again, to ensure that it is added only once.
+  web_contents()->GetRenderViewHost()->GetWidget()->RemoveInputEventObserver(
+      this);
+  web_contents()->GetRenderViewHost()->GetWidget()->AddInputEventObserver(this);
+}
+
+void ChromePasswordManagerClient::OnInputEvent(
+    const blink::WebInputEvent& event) {
+  if (event.type != blink::WebInputEvent::Char)
+    return;
+  const blink::WebKeyboardEvent& key_event =
+      static_cast<const blink::WebKeyboardEvent&>(event);
+  password_reuse_detection_manager_.OnKeyPressed(key_event.text);
 }
 
 PrefService* ChromePasswordManagerClient::GetPrefs() {

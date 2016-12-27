@@ -95,6 +95,8 @@ static_library("browser") {
     "password_manager_settings_migration_experiment.h",
     "password_manager_util.cc",
     "password_manager_util.h",
+    "password_reuse_detection_manager.cc",
+    "password_reuse_detection_manager.h",
     "password_reuse_detector.cc",
     "password_reuse_detector.h",
     "password_store.cc",
