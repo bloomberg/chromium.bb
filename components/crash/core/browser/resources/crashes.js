@@ -63,8 +63,7 @@ function updateCrashList(
     if (uploaded) {
       var date = document.createElement('p');
       date.textContent = loadTimeData.getStringF('crashTimeFormat',
-                                                 crash.time,
-                                                 crash.upload_time);
+                                                 crash.time);
       crashBlock.appendChild(date);
       var linkBlock = document.createElement('p');
       var link = document.createElement('a');
