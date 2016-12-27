@@ -24,7 +24,7 @@ source_set("mash") {
     "//services/service_manager/runner:init",
     "//services/service_manager/runner/common",
     "//services/service_manager/runner/host:lib",
-    "//services/service_manager/standalone:lib",
+    "//services/service_manager/standalone",
     "//url",
   ]
   data_deps = [

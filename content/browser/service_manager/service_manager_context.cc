@@ -211,8 +211,8 @@ class ServiceManagerContext::InProcessServiceManagerContext
     manifest_provider_ = std::move(manifest_provider);
 
     base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
-    catalog_ = base::MakeUnique<catalog::Catalog>(
-        blocking_pool, nullptr, manifest_provider_.get());
+    catalog_.reset(
+        new catalog::Catalog(blocking_pool, manifest_provider_.get()));
     service_manager_ = base::MakeUnique<service_manager::ServiceManager>(
         base::MakeUnique<NullServiceProcessLauncherFactory>(),
         catalog_->TakeService());

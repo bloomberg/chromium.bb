@@ -46,13 +46,13 @@ ServiceOverrides::ServiceOverrides(std::unique_ptr<base::Value> overrides) {
 #if defined(OS_WIN)
       executable_path_value += ".exe";
       base::ReplaceFirstSubstringAfterOffset(
-          &executable_path_value, 0, "$EXE_DIR",
+          &executable_path_value, 0, "@EXE_DIR",
           base::UTF16ToUTF8(exe_dir.value()));
       new_entry.executable_path =
           base::FilePath(base::UTF8ToUTF16(executable_path_value));
 #else
       base::ReplaceFirstSubstringAfterOffset(
-          &executable_path_value, 0, "$EXE_DIR",
+          &executable_path_value, 0, "@EXE_DIR",
           exe_dir.value());
       new_entry.executable_path = base::FilePath(executable_path_value);
 #endif

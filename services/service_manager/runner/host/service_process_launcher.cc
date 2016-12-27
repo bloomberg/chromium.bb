@@ -37,28 +37,6 @@
 #include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
 #endif
 
-#if defined(OS_WIN) && defined(COMPONENT_BUILD)
-#include <windows.h>
-
-namespace {
-
-class ScopedDllDirectoryOverride {
- public:
-  explicit ScopedDllDirectoryOverride(const base::FilePath& path) {
-    SetDllDirectory(path.value().c_str());
-  }
-
-  ~ScopedDllDirectoryOverride() {
-    SetDllDirectory(NULL);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedDllDirectoryOverride);
-};
-
-}  // namespace
-#endif  // defined(OS_WIN) && defined(COMPONENT_BUILD)
-
 namespace service_manager {
 
 ServiceProcessLauncher::ServiceProcessLauncher(
@@ -222,8 +200,6 @@ void ServiceProcessLauncher::DoLaunch(
 #if defined(OS_MACOSX)
     MachBroker* mach_broker = MachBroker::GetInstance();
     base::AutoLock locker(mach_broker->GetLock());
-#elif defined(OS_WIN) && defined(COMPONENT_BUILD)
-    ScopedDllDirectoryOverride dll_override(exe_dir);
 #endif
     child_process_ = base::LaunchProcess(*child_command_line, options);
 #if defined(OS_MACOSX)

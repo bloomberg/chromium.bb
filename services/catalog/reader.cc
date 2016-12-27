@@ -4,6 +4,7 @@
 
 #include "services/catalog/reader.h"
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -11,8 +12,11 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "services/catalog/constants.h"
 #include "services/catalog/entry.h"
 #include "services/catalog/manifest_provider.h"
@@ -27,6 +31,11 @@ const char kServiceExecutableExtension[] = ".service.exe";
 #else
 const char kServiceExecutableExtension[] = ".service";
 #endif
+
+const char kCatalogServicesKey[] = "services";
+const char kCatalogServiceEmbeddedKey[] = "embedded";
+const char kCatalogServiceExecutableKey[] = "executable";
+const char kCatalogServiceManifestKey[] = "manifest";
 
 base::FilePath GetManifestPath(const base::FilePath& package_dir,
                                const std::string& name,
@@ -44,9 +53,10 @@ base::FilePath GetExecutablePath(const base::FilePath& package_dir,
       name + "/" + name + kServiceExecutableExtension);
 }
 
-std::unique_ptr<Entry> ProcessManifest(
-    std::unique_ptr<base::Value> manifest_root,
-    const base::FilePath& package_dir) {
+std::unique_ptr<Entry> ProcessManifest(const base::Value* manifest_root,
+                                       const base::FilePath& package_dir,
+                                       const base::FilePath& executable_path) {
+
   // Manifest was malformed or did not exist.
   if (!manifest_root)
     return nullptr;
@@ -58,8 +68,17 @@ std::unique_ptr<Entry> ProcessManifest(
   std::unique_ptr<Entry> entry = Entry::Deserialize(*dictionary);
   if (!entry)
     return nullptr;
-  entry->set_path(GetExecutablePath(package_dir, entry->name()));
+  if (!executable_path.empty())
+    entry->set_path(executable_path);
+  else
+    entry->set_path(GetExecutablePath(package_dir, entry->name()));
   return entry;
+}
+
+std::unique_ptr<Entry> ProcessUniqueManifest(
+    std::unique_ptr<base::Value> manifest_root,
+    const base::FilePath& package_dir) {
+  return ProcessManifest(manifest_root.get(), package_dir, base::FilePath());
 }
 
 std::unique_ptr<Entry> CreateEntryForManifestAt(
@@ -71,8 +90,8 @@ std::unique_ptr<Entry> CreateEntryForManifestAt(
 
   // TODO(beng): probably want to do more detailed error checking. This should
   //             be done when figuring out if to unblock connection completion.
-  return ProcessManifest(deserializer.Deserialize(&error, &message),
-                         package_dir);
+  return ProcessUniqueManifest(deserializer.Deserialize(&error, &message),
+                               package_dir);
 }
 
 void ScanDir(
@@ -142,7 +161,86 @@ void AddEntryToCache(EntryCache* cache, std::unique_ptr<Entry> entry) {
 
 void DoNothing(service_manager::mojom::ResolveResultPtr) {}
 
+void LoadCatalogManifestIntoCache(const base::Value* root,
+                                  const base::FilePath& package_dir,
+                                  EntryCache* cache) {
+  DCHECK(root);
+  const base::DictionaryValue* catalog = nullptr;
+  if (!root->GetAsDictionary(&catalog)) {
+    LOG(ERROR) << "Catalog manifest is not a dictionary value.";
+    return;
+  }
+  DCHECK(catalog);
+
+  const base::DictionaryValue* services = nullptr;
+  if (!catalog->GetDictionary(kCatalogServicesKey, &services)) {
+    LOG(ERROR) << "Catalog manifest \"services\" is not a dictionary value.";
+    return;
+  }
+
+  for (base::DictionaryValue::Iterator it(*services); !it.IsAtEnd();
+       it.Advance()) {
+    const base::DictionaryValue* service_entry = nullptr;
+    if (!it.value().GetAsDictionary(&service_entry)) {
+      LOG(ERROR) << "Catalog service entry for \"" << it.key()
+                 << "\" is not a dictionary value.";
+      continue;
+    }
+
+    bool is_embedded = false;
+    service_entry->GetBoolean(kCatalogServiceEmbeddedKey, &is_embedded);
+
+    base::FilePath executable_path;
+    std::string executable_path_string;
+    if (service_entry->GetString(kCatalogServiceExecutableKey,
+                                 &executable_path_string)) {
+      base::FilePath exe_dir;
+      CHECK(base::PathService::Get(base::DIR_EXE, &exe_dir));
+#if defined(OS_WIN)
+      executable_path_string += ".exe";
+      base::ReplaceFirstSubstringAfterOffset(
+          &executable_path_string, 0, "@EXE_DIR",
+          base::UTF16ToUTF8(exe_dir.value()));
+      executable_path =
+          base::FilePath(base::UTF8ToUTF16(executable_path_string));
+#else
+      base::ReplaceFirstSubstringAfterOffset(
+          &executable_path_string, 0, "@EXE_DIR", exe_dir.value());
+      executable_path = base::FilePath(executable_path_string);
+#endif
+    }
+
+    const base::DictionaryValue* manifest = nullptr;
+    if (!service_entry->GetDictionary(kCatalogServiceManifestKey, &manifest)) {
+      LOG(ERROR) << "Catalog entry for \"" << it.key() << "\" has an invalid "
+                 << "\"manifest\" value.";
+      continue;
+    }
+
+    DCHECK(!(is_embedded && !executable_path.empty()));
+
+    auto entry = ProcessManifest(
+        manifest, is_embedded ? base::FilePath() : package_dir,
+        executable_path);
+    if (entry)
+      AddEntryToCache(cache, std::move(entry));
+    else
+      LOG(ERROR) << "Failed to read manifest entry for \"" << it.key() << "\".";
+  }
+}
+
 }  // namespace
+
+Reader::Reader(std::unique_ptr<base::Value> static_manifest,
+               EntryCache* cache)
+    : using_static_catalog_(true),
+      manifest_provider_(nullptr),
+      weak_factory_(this) {
+  PathService::Get(base::DIR_MODULE, &system_package_dir_);
+  LoadCatalogManifestIntoCache(
+      static_manifest.get(), system_package_dir_.AppendASCII(kPackagesDirName),
+      cache);
+}
 
 // A sequenced task runner is used to guarantee requests are serviced in the
 // order requested. To do otherwise means we may run callbacks in an
@@ -185,12 +283,17 @@ void Reader::CreateEntryForName(
     if (manifest_root) {
       base::PostTaskAndReplyWithResult(
           file_task_runner_.get(), FROM_HERE,
-          base::Bind(&ProcessManifest, base::Passed(&manifest_root),
+          base::Bind(&ProcessUniqueManifest, base::Passed(&manifest_root),
                      system_package_dir_),
           base::Bind(&Reader::OnReadManifest, weak_factory_.GetWeakPtr(), cache,
                      entry_created_callback));
       return;
     }
+  } else if (using_static_catalog_) {
+    // A Reader using a static catalog manifest does not support dynamic
+    // discovery or introduction of new catalog entries.
+    entry_created_callback.Run(service_manager::mojom::ResolveResultPtr());
+    return;
   }
 
   base::FilePath manifest_path_override;
@@ -225,7 +328,9 @@ void Reader::OverrideManifestPath(const std::string& service_name,
 }
 
 Reader::Reader(ManifestProvider* manifest_provider)
-    : manifest_provider_(manifest_provider), weak_factory_(this) {
+    : using_static_catalog_(false),
+      manifest_provider_(manifest_provider),
+      weak_factory_(this) {
   PathService::Get(base::DIR_MODULE, &system_package_dir_);
 }
 

@@ -161,11 +161,13 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
           blocking_pool_.get(),
           init_params ? init_params->service_process_launcher_delegate
                       : nullptr);
-  std::unique_ptr<catalog::Store> store;
-  if (init_params)
-    store = std::move(init_params->catalog_store);
-  catalog_.reset(
-      new catalog::Catalog(blocking_pool_.get(), std::move(store), nullptr));
+  if (init_params && init_params->static_catalog) {
+    catalog_.reset(
+        new catalog::Catalog(std::move(init_params->static_catalog)));
+  } else {
+    catalog_.reset(
+        new catalog::Catalog(blocking_pool_.get(), nullptr));
+  }
   service_manager_.reset(
       new ServiceManager(std::move(service_process_launcher_factory),
                          catalog_->TakeService()));

@@ -1,6 +1,6 @@
 {
   "content_browser": {
-    "executable_path": "$EXE_DIR/chrome",
+    "executable_path": "@EXE_DIR/chrome",
     "package_name": "chrome_content_browser"
   },
   "content_gpu": {

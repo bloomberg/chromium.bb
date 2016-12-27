@@ -6,7 +6,6 @@
 #define SERVICES_CATALOG_INSTANCE_H_
 
 #include "base/files/file_path.h"
-#include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -20,13 +19,12 @@
 namespace catalog {
 
 class Reader;
-class Store;
 
 class Instance : public service_manager::mojom::Resolver,
                  public mojom::Catalog {
  public:
   // |manifest_provider| may be null.
-  Instance(std::unique_ptr<Store> store, Reader* system_reader);
+  explicit Instance(Reader* system_reader);
   ~Instance() override;
 
   void BindResolver(service_manager::mojom::ResolverRequest request);
@@ -37,8 +35,8 @@ class Instance : public service_manager::mojom::Resolver,
 
  private:
   // service_manager::mojom::Resolver:
-  void ResolveMojoName(const std::string& service_name,
-                       const ResolveMojoNameCallback& callback) override;
+  void ResolveServiceName(const std::string& service_name,
+                          const ResolveServiceNameCallback& callback) override;
 
   // mojom::Catalog:
   void GetEntries(const base::Optional<std::vector<std::string>>& names,
@@ -52,20 +50,6 @@ class Instance : public service_manager::mojom::Resolver,
   void GetEntriesSupportingScheme(
       const std::string& scheme,
       const GetEntriesSupportingSchemeCallback& callback) override;
-
-  // Populate/serialize the cache from/to the supplied store.
-  void DeserializeCatalog();
-  void SerializeCatalog();
-
-  // Receives the result of manifest parsing, may be received after the
-  // catalog object that issued the request is destroyed.
-  static void OnReadManifest(base::WeakPtr<Instance> instance,
-                             const std::string& service_name,
-                             const ResolveMojoNameCallback& callback,
-                             service_manager::mojom::ResolveResultPtr result);
-
-  // User-specific persistent storage of package manifests and other settings.
-  std::unique_ptr<Store> store_;
 
   mojo::BindingSet<service_manager::mojom::Resolver> resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
@@ -82,8 +66,6 @@ class Instance : public service_manager::mojom::Resolver,
   std::vector<service_manager::mojom::ResolverRequest>
       pending_resolver_requests_;
   std::vector<mojom::CatalogRequest> pending_catalog_requests_;
-
-  base::WeakPtrFactory<Instance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };

@@ -39,7 +39,10 @@ struct ResolveResult {
 // Implemented exclusively for the Service Manager's use in resolving mojo:
 // names and reading static manifest information.
 interface Resolver {
-  // Resolves |mojo_name| and returns a ResolveResult containing metadata from
-  // the catalog that the Service Manager uses to run an instance of it.
-  ResolveMojoName(string mojo_name) => (ResolveResult result);
+  // Resolves |service_name| and returns a ResolveResult containing metadata
+  // from the catalog that the Service Manager uses to run an instance of it.
+  //
+  // If no entry for |service_name| is found in the catalog, |result| is null.
+  //
+  ResolveServiceName(string service_name) => (ResolveResult? result);
 };

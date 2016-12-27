@@ -19,6 +19,7 @@
 namespace base {
 class SequencedWorkerPool;
 class SingleThreadTaskRunner;
+class Value;
 }
 
 namespace catalog {
@@ -32,6 +33,10 @@ class Reader {
   using ReadManifestCallback = base::Callback<void(std::unique_ptr<Entry>)>;
   using CreateEntryForNameCallback =
       base::Callback<void(service_manager::mojom::ResolveResultPtr)>;
+
+  // Construct a Reader over a static manifest. This Reader never performs
+  // file I/O.
+  Reader(std::unique_ptr<base::Value> static_manifest, EntryCache* cache);
 
   Reader(base::SequencedWorkerPool* worker_pool,
          ManifestProvider* manifest_provider);
@@ -67,6 +72,7 @@ class Reader {
                       const CreateEntryForNameCallback& entry_created_callback,
                       std::unique_ptr<Entry> entry);
 
+  const bool using_static_catalog_ = false;
   base::FilePath system_package_dir_;
   scoped_refptr<base::TaskRunner> file_task_runner_;
   ManifestProvider* const manifest_provider_;

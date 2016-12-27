@@ -86,18 +86,19 @@ class Catalog::ServiceImpl : public service_manager::Service {
   DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
 };
 
+Catalog::Catalog(std::unique_ptr<base::Value> static_manifest) : Catalog() {
+  system_reader_.reset(new Reader(std::move(static_manifest), &system_cache_));
+  loaded_ = true;
+}
+
 Catalog::Catalog(base::SequencedWorkerPool* worker_pool,
-                 std::unique_ptr<Store> store,
-                 ManifestProvider* manifest_provider)
-    : Catalog(std::move(store)) {
+                 ManifestProvider* manifest_provider) : Catalog() {
   system_reader_.reset(new Reader(worker_pool, manifest_provider));
   ScanSystemPackageDir();
 }
 
 Catalog::Catalog(base::SingleThreadTaskRunner* task_runner,
-                 std::unique_ptr<Store> store,
-                 ManifestProvider* manifest_provider)
-    : Catalog(std::move(store)) {
+                 ManifestProvider* manifest_provider) : Catalog() {
   system_reader_.reset(new Reader(task_runner, manifest_provider));
   ScanSystemPackageDir();
 }
@@ -113,11 +114,10 @@ service_manager::mojom::ServicePtr Catalog::TakeService() {
   return std::move(service_);
 }
 
-Catalog::Catalog(std::unique_ptr<Store> store)
-    : store_(std::move(store)), weak_factory_(this) {
-  service_manager::mojom::ServiceRequest request(&service_);
+Catalog::Catalog() : weak_factory_(this) {
   service_context_.reset(new service_manager::ServiceContext(
-      base::MakeUnique<ServiceImpl>(this), std::move(request)));
+      base::MakeUnique<ServiceImpl>(this),
+      service_manager::mojom::ServiceRequest(&service_)));
 }
 
 void Catalog::ScanSystemPackageDir() {
@@ -172,8 +172,7 @@ Instance* Catalog::GetInstanceForUserId(const std::string& user_id) {
   if (it != instances_.end())
     return it->second.get();
 
-  // TODO(beng): There needs to be a way to load the store from different users.
-  Instance* instance = new Instance(std::move(store_), system_reader_.get());
+  Instance* instance = new Instance(system_reader_.get());
   instances_[user_id] = base::WrapUnique(instance);
   if (loaded_)
     instance->CacheReady(&system_cache_);

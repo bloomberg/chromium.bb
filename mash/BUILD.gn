@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
@@ -10,9 +11,12 @@ group("all") {
   testonly = true
 
   deps = [
+    ":mash_catalog",
     "//components/leveldb",
     "//mash/catalog_viewer",
     "//mash/example",
+    "//mash/quick_launch",
+    "//mash/runner",
     "//mash/session",
     "//mash/simple_wm",
     "//mash/task_viewer",
@@ -26,6 +30,77 @@ group("all") {
       "//mash:mash_unittests",
     ]
   }
+}
+
+# This is the catalog of services available to a standalone mash environment.
+# Build //mash/runner to generate the runner executable.
+catalog("catalog") {
+  testonly = true
+
+  standalone_services = [
+    "catalog_viewer",
+    "leveldb",
+    "mash_session",
+    "quick_launch",
+    "task_viewer",
+    "test_ime_driver",
+    "tracing",
+    "ui",
+
+    # TODO(rockot): It seems like a layering violation to have these service
+    # names referenced here, but it's the most convenient thing to do for now,
+    # and this is only for developers.
+    #
+    # Note that there are no build-time dependencies on the actual Chrome
+    # binary implied by mash:all or other targets here. This only ensures that
+    # if you have such a binary built, the runner will be able to locate it.
+    "chrome_content_browser",
+    "chrome_content_gpu",
+    "chrome_content_plugin",
+    "chrome_content_renderer",
+    "chrome_content_utility",
+  ]
+
+  executable_overrides = [ "chrome_content_browser:@EXE_DIR/chrome" ]
+
+  included_catalogs = [ "${root_gen_dir}/mash/example/catalog.json" ]
+
+  deps = [
+    "//components/leveldb:manifest",
+    "//mash/example:catalog",
+    "//mash/quick_launch:manifest",
+    "//mash/session:manifest",
+    "//mash/task_viewer:manifest",
+    "//services/tracing:manifest",
+    "//services/ui:manifest",
+    "//services/ui/ime/test_ime_driver:manifest",
+
+    # See the note above about dependencies on Chrome.
+    "//chrome/app:service_manifests",
+  ]
+
+  if (is_chromeos) {
+    standalone_services += [ "ash" ]
+
+    deps += [ "//ash/mus:manifest" ]
+  }
+
+  if (is_linux && !is_android) {
+    standalone_services += [ "font_service" ]
+
+    deps += [ "//components/font_service:manifest" ]
+  }
+}
+
+copy("mash_catalog") {
+  testonly = true
+  deps = [
+    ":catalog",
+  ]
+  sources = get_target_outputs(":catalog")
+  outputs = [
+    "$root_out_dir/mash_catalog.json",
+  ]
 }
 
 group("browser") {

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/catalog/public/tools/catalog.gni")
 import("//testing/test.gni")
 
 group("example") {
@@ -10,11 +11,25 @@ group("example") {
   deps = [
     "//mash/example/views_examples",
     "//mash/example/window_type_launcher",
+    "//mash/runner",
     "//mash/simple_wm",
-    "//services/service_manager/standalone",
   ]
 
   if (is_chromeos) {
     deps += [ "//ash/mus" ]
   }
+}
+
+catalog("catalog") {
+  standalone_services = [
+    "simple_wm",
+    "views_examples",
+    "window_type_launcher",
+  ]
+
+  deps = [
+    "//mash/example/views_examples:manifest",
+    "//mash/example/window_type_launcher:manifest",
+    "//mash/simple_wm:manifest",
+  ]
 }

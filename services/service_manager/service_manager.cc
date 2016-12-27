@@ -672,7 +672,7 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params,
       service_manager::mojom::kServiceName, params->target().user_id()));
 
   std::string name = params->target().name();
-  resolver->ResolveMojoName(
+  resolver->ResolveServiceName(
       name,
       base::Bind(&service_manager::ServiceManager::OnGotResolvedName,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&params),
@@ -819,6 +819,16 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
   // no longer around, we ignore this response.
   if (has_source_instance && !source_instance)
     return;
+
+  // If name resolution failed, we drop the connection.
+  if (!result) {
+    LOG(ERROR) << "Failed to resolve service name: " << params->target().name();
+    if (!params->connect_callback().is_null()) {
+      params->connect_callback().Run(
+          mojom::ConnectResult::INVALID_ARGUMENT, "");
+    }
+    return;
+  }
 
   std::string instance_name = params->target().instance();
   if (instance_name == params->target().name() &&
