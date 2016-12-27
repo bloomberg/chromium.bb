@@ -1259,13 +1259,6 @@ LayoutRect LayoutObject::previousVisualRectIncludingCompositedScrolling(
   return rect;
 }
 
-void LayoutObject::adjustPreviousPaintInvalidationForScrollIfNeeded(
-    const DoubleSize& scrollDelta) {
-  if (containerForPaintInvalidation().usesCompositedScrolling())
-    return;
-  m_previousVisualRect.move(LayoutSize(scrollDelta));
-}
-
 void LayoutObject::clearPreviousVisualRects() {
   setPreviousVisualRect(LayoutRect());
   ObjectPaintInvalidator(*this).setPreviousLocationInBacking(LayoutPoint());

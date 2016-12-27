@@ -933,8 +933,7 @@ class CORE_EXPORT FrameView final
   void scrollToFragmentAnchor();
   void didScrollTimerFired(TimerBase*);
 
-  void updateLayersAndCompositingAfterScrollIfNeeded(
-      const ScrollOffset& scrollDelta);
+  void updateLayersAndCompositingAfterScrollIfNeeded();
 
   static bool computeCompositedSelection(LocalFrame&, CompositedSelection&);
   void updateCompositedSelectionIfNeeded();

@@ -372,7 +372,6 @@ void PaintLayerScrollableArea::updateScrollOffset(const ScrollOffset& newOffset,
     return;
 
   showOverlayScrollbars();
-  ScrollOffset scrollDelta = getScrollOffset() - newOffset;
   m_scrollOffset = newOffset;
 
   LocalFrame* frame = box().frame();
@@ -393,7 +392,7 @@ void PaintLayerScrollableArea::updateScrollOffset(const ScrollOffset& newOffset,
   if (!frameView->isInPerformLayout()) {
     // If we're in the middle of layout, we'll just update layers once layout
     // has finished.
-    layer()->updateLayerPositionsAfterOverflowScroll(scrollDelta);
+    layer()->updateLayerPositionsAfterOverflowScroll();
     // Update regions, scrolling may change the clip of a particular region.
     frameView->updateDocumentAnnotatedRegions();
     frameView->setNeedsUpdateWidgetGeometries();

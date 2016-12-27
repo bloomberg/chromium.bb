@@ -1911,8 +1911,7 @@ void FrameView::didScrollTimerFired(TimerBase*) {
     m_frame->document()->fetcher()->updateAllImageResourcePriorities();
 }
 
-void FrameView::updateLayersAndCompositingAfterScrollIfNeeded(
-    const ScrollOffset& scrollDelta) {
+void FrameView::updateLayersAndCompositingAfterScrollIfNeeded() {
   // Nothing to do after scrolling if there are no fixed position elements.
   if (!hasViewportConstrainedObjects())
     return;
@@ -1925,7 +1924,8 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded(
       // TODO(skobes): Resolve circular dependency between scroll offset and
       // compositing state, and remove this disabler. https://crbug.com/420741
       DisableCompositingQueryAsserts disabler;
-      layer->updateLayerPositionsAfterOverflowScroll(scrollDelta);
+      layer->updateLayerPositionsAfterOverflowScroll();
+      layoutObject->setMayNeedPaintInvalidationSubtree();
     }
   }
 
@@ -3804,7 +3804,7 @@ void FrameView::updateScrollOffset(const ScrollOffset& offset,
 
   if (scrollTypeClearsFragmentAnchor(scrollType))
     clearFragmentAnchor();
-  updateLayersAndCompositingAfterScrollIfNeeded(scrollDelta);
+  updateLayersAndCompositingAfterScrollIfNeeded();
 
   Document* document = m_frame->document();
   document->enqueueScrollEventForNode(document);

@@ -292,7 +292,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void updateLayerPosition();
 
   void updateLayerPositionsAfterLayout();
-  void updateLayerPositionsAfterOverflowScroll(const DoubleSize& scrollDelta);
+  void updateLayerPositionsAfterOverflowScroll();
 
   PaintLayer* enclosingPaginationLayer() const {
     return m_rareData ? m_rareData->enclosingPaginationLayer : nullptr;
@@ -990,9 +990,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
   void updateLayerPositionRecursive();
-  void updateLayerPositionsAfterScrollRecursive(
-      const DoubleSize& scrollDelta,
-      bool paintInvalidationContainerWasScrolled);
 
   void setNextSibling(PaintLayer* next) { m_next = next; }
   void setPreviousSibling(PaintLayer* prev) { m_previous = prev; }

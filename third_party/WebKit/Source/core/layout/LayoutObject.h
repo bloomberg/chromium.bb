@@ -1577,11 +1577,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return m_previousPaintOffset;
   }
 
-  // Only adjusts if the paint invalidation container is not a composited
-  // scroller.
-  void adjustPreviousPaintInvalidationForScrollIfNeeded(
-      const DoubleSize& scrollDelta);
-
   PaintInvalidationReason fullPaintInvalidationReason() const {
     return m_bitfields.fullPaintInvalidationReason();
   }

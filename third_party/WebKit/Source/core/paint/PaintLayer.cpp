@@ -295,15 +295,6 @@ void PaintLayer::updateLayerPositionsAfterLayout() {
 void PaintLayer::updateLayerPositionRecursive() {
   updateLayerPosition();
 
-  // FIXME(400589): We would like to do this in
-  // PaintLayerScrollableArea::updateAfterLayout, but it depends on the size
-  // computed by updateLayerPosition.
-  if (m_scrollableArea) {
-    if (ScrollAnimatorBase* scrollAnimator =
-            m_scrollableArea->existingScrollAnimator())
-      scrollAnimator->updateAfterLayout();
-  }
-
   for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
     child->updateLayerPositionRecursive();
 }
@@ -378,35 +369,9 @@ bool PaintLayer::scrollsWithRespectTo(const PaintLayer* other) const {
   return ancestorScrollingLayer() != other->ancestorScrollingLayer();
 }
 
-void PaintLayer::updateLayerPositionsAfterOverflowScroll(
-    const DoubleSize& scrollDelta) {
+void PaintLayer::updateLayerPositionsAfterOverflowScroll() {
   clipper().clearClipRectsIncludingDescendants();
-  updateLayerPositionsAfterScrollRecursive(scrollDelta,
-                                           isPaintInvalidationContainer());
-}
-
-void PaintLayer::updateLayerPositionsAfterScrollRecursive(
-    const DoubleSize& scrollDelta,
-    bool paintInvalidationContainerWasScrolled) {
-  updateLayerPosition();
-  if (paintInvalidationContainerWasScrolled &&
-      !isPaintInvalidationContainer()) {
-    // Paint invalidation rects are in the coordinate space of the paint
-    // invalidation container.  If it has scrolled, the rect must be adjusted.
-    // Note that it is not safe to reset it to the current bounds rect, as the
-    // LayoutObject may have moved since the
-    // last invalidation.
-    // FIXME(416535): Ideally, pending invalidations of scrolling content should
-    // be stored in the coordinate space of the scrolling content layer, so that
-    // they need no adjustment.
-    m_layoutObject->adjustPreviousPaintInvalidationForScrollIfNeeded(
-        scrollDelta);
-  }
-  for (PaintLayer* child = firstChild(); child; child = child->nextSibling()) {
-    child->updateLayerPositionsAfterScrollRecursive(
-        scrollDelta, paintInvalidationContainerWasScrolled &&
-                         !child->isPaintInvalidationContainer());
-  }
+  updateLayerPositionRecursive();
 }
 
 void PaintLayer::updateTransformationMatrix() {

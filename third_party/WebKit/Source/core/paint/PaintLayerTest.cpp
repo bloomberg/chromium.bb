@@ -345,4 +345,59 @@ TEST_P(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
                    ->m_needsDescendantDependentFlagsUpdate);
 }
 
+TEST_P(PaintLayerTest, PaintInvalidationOnNonCompositedScroll) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
+  setBodyInnerHTML(
+      "<style>* { margin: 0 } ::-webkit-scrollbar { display: none }</style>"
+      "<div id='scroller' style='overflow: scroll; width: 50px; height: 50px'>"
+      "  <div style='height: 400px'>"
+      "    <div id='content-layer' style='position: relative; height: 10px;"
+      "        top: 30px; background: blue'>"
+      "      <div id='content' style='height: 5px; background: yellow'></div>"
+      "    </div>"
+      "  </div>"
+      "</div>");
+
+  LayoutBox* scroller = toLayoutBox(getLayoutObjectByElementId("scroller"));
+  LayoutObject* contentLayer = getLayoutObjectByElementId("content-layer");
+  LayoutObject* content = getLayoutObjectByElementId("content");
+  EXPECT_EQ(LayoutRect(0, 30, 50, 10), contentLayer->visualRect());
+  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->visualRect());
+
+  scroller->getScrollableArea()->setScrollOffset(ScrollOffset(0, 20),
+                                                 ProgrammaticScroll);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(LayoutRect(0, 10, 50, 10), contentLayer->visualRect());
+  EXPECT_EQ(LayoutRect(0, 10, 50, 5), content->visualRect());
+}
+
+TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<style>* { margin: 0 } ::-webkit-scrollbar { display: none }</style>"
+      "<div id='scroller' style='overflow: scroll; width: 50px; height: 50px;"
+      "    will-change: transform'>"
+      "  <div style='height: 400px'>"
+      "    <div id='content-layer' style='position: relative; height: 10px;"
+      "        top: 30px; background: blue'>"
+      "      <div id='content' style='height: 5px; background: yellow'></div>"
+      "    </div>"
+      "  </div>"
+      "</div>");
+
+  LayoutBox* scroller = toLayoutBox(getLayoutObjectByElementId("scroller"));
+  LayoutObject* contentLayer = getLayoutObjectByElementId("content-layer");
+  LayoutObject* content = getLayoutObjectByElementId("content");
+  EXPECT_EQ(LayoutRect(0, 30, 50, 10), contentLayer->visualRect());
+  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->visualRect());
+
+  scroller->getScrollableArea()->setScrollOffset(ScrollOffset(0, 20),
+                                                 ProgrammaticScroll);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(LayoutRect(0, 30, 50, 10), contentLayer->visualRect());
+  EXPECT_EQ(LayoutRect(0, 30, 50, 5), content->visualRect());
+}
+
 }  // namespace blink

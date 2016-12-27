@@ -90,7 +90,6 @@ class PLATFORM_EXPORT ScrollAnimatorBase
   virtual void mouseMovedInContentArea() const {}
   virtual void mouseEnteredScrollbar(Scrollbar&) const {}
   virtual void mouseExitedScrollbar(Scrollbar&) const {}
-  virtual void updateAfterLayout() {}
   virtual void contentsResized() const {}
   virtual void contentAreaDidShow() const {}
   virtual void contentAreaDidHide() const {}
