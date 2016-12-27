@@ -6,6 +6,7 @@
 #define OriginTrialContext_h
 
 #include "core/CoreExport.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/Supplementable.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"

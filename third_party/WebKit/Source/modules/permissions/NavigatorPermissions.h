@@ -5,6 +5,7 @@
 #ifndef NavigatorPermissions_h
 #define NavigatorPermissions_h
 
+#include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

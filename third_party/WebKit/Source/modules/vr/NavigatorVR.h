@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/Navigator.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "modules/ModulesExport.h"
 #include "modules/vr/VRDisplay.h"

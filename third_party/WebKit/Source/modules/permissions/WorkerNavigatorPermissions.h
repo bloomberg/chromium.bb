@@ -5,6 +5,7 @@
 #ifndef WorkerNavigatorPermissions_h
 #define WorkerNavigatorPermissions_h
 
+#include "core/workers/WorkerNavigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

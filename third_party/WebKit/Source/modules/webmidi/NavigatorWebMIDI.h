@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/frame/Navigator.h"
 #include "modules/webmidi/MIDIOptions.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"

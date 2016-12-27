@@ -27,6 +27,7 @@
 #define DOMWindowSpeechSynthesis_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "modules/ModulesExport.h"
 #include "modules/speech/SpeechSynthesis.h"
 #include "platform/Supplementable.h"

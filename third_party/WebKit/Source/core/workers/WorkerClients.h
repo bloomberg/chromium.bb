@@ -42,8 +42,8 @@ class WorkerClients;
 // This is created on the main thread, passed to the worker thread and
 // attached to WorkerGlobalScope when it is created.
 // This class can be used to provide "client" implementations to Workers.
-class WorkerClients final : public GarbageCollected<WorkerClients>,
-                            public Supplementable<WorkerClients> {
+class CORE_EXPORT WorkerClients final : public GarbageCollected<WorkerClients>,
+                                        public Supplementable<WorkerClients> {
   USING_GARBAGE_COLLECTED_MIXIN(WorkerClients);
   WTF_MAKE_NONCOPYABLE(WorkerClients);
 

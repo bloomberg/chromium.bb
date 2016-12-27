@@ -30,6 +30,7 @@
 #ifndef SharedWorkerPerformance_h
 #define SharedWorkerPerformance_h
 
+#include "core/workers/SharedWorker.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

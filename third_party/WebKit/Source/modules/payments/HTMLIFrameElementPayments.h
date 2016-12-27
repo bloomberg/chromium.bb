@@ -5,6 +5,7 @@
 #ifndef HTMLIFrameElementPayments_h
 #define HTMLIFrameElementPayments_h
 
+#include "core/html/HTMLIFrameElement.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

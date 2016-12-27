@@ -21,6 +21,7 @@
 #define NavigatorVibration_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/frame/Navigator.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/GarbageCollected.h"

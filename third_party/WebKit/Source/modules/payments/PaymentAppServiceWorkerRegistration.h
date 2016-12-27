@@ -5,6 +5,7 @@
 #ifndef PaymentAppServiceWorkerRegistration_h
 #define PaymentAppServiceWorkerRegistration_h
 
+#include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

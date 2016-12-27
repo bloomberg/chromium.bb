@@ -5,6 +5,7 @@
 #ifndef WorkerNavigatorBudget_h
 #define WorkerNavigatorBudget_h
 
+#include "core/workers/WorkerNavigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "wtf/Noncopyable.h"

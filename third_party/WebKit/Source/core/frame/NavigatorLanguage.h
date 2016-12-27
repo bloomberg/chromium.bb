@@ -5,11 +5,12 @@
 #ifndef NavigatorLanguage_h
 #define NavigatorLanguage_h
 
+#include "core/CoreExport.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
 
-class NavigatorLanguage {
+class CORE_EXPORT NavigatorLanguage {
  public:
   NavigatorLanguage();
 

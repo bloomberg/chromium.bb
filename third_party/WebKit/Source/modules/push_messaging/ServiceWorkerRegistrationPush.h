@@ -5,6 +5,7 @@
 #ifndef ServiceWorkerRegistrationPush_h
 #define ServiceWorkerRegistrationPush_h
 
+#include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

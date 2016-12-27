@@ -6,6 +6,7 @@
 #define NavigatorNetworkInformation_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 
 namespace blink {

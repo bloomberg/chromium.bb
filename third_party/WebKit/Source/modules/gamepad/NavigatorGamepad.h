@@ -28,6 +28,7 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/Navigator.h"
 #include "core/frame/PlatformEventController.h"
 #include "modules/ModulesExport.h"
 #include "platform/AsyncMethodRunner.h"

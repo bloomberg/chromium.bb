@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"

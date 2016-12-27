@@ -5,6 +5,7 @@
 #ifndef ServiceWorkerRegistrationSync_h
 #define ServiceWorkerRegistrationSync_h
 
+#include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

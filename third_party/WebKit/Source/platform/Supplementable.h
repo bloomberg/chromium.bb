@@ -95,6 +95,12 @@ class Supplementable;
 template <typename T>
 class Supplement : public GarbageCollectedMixin {
  public:
+  // TODO(haraken): Remove the default constructor.
+  // All Supplement objects should be instantiated with m_host.
+  Supplement() {}
+  explicit Supplement(T& host) : m_host(&host) {}
+  T* host() const { return m_host; }
+
   static void provideTo(Supplementable<T>& host,
                         const char* key,
                         Supplement<T>* supplement) {
@@ -109,7 +115,10 @@ class Supplement : public GarbageCollectedMixin {
     return host ? host->requireSupplement(key) : 0;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_host); }
+
+ private:
+  Member<T> m_host;
 };
 
 // Supplementable<T> inherits from GarbageCollectedMixin virtually

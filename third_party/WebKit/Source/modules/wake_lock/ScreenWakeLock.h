@@ -6,6 +6,7 @@
 #define ScreenWakeLock_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "device/wake_lock/public/interfaces/wake_lock_service.mojom-blink.h"
 #include "modules/ModulesExport.h"

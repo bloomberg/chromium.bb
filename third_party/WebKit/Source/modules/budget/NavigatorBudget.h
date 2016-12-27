@@ -5,6 +5,7 @@
 #ifndef NavigatorBudget_h
 #define NavigatorBudget_h
 
+#include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 
 namespace blink {

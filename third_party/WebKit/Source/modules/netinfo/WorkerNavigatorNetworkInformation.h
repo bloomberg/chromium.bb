@@ -5,6 +5,7 @@
 #ifndef WorkerNavigatorNetworkInformation_h
 #define WorkerNavigatorNetworkInformation_h
 
+#include "core/workers/WorkerNavigator.h"
 #include "platform/Supplementable.h"
 
 namespace blink {

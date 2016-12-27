@@ -32,6 +32,7 @@
 #define WorkerGlobalScopePerformance_h
 
 #include "core/timing/WorkerPerformance.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

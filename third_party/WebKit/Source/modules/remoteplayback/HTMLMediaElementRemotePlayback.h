@@ -5,6 +5,7 @@
 #ifndef HTMLMediaElementRemotePlayback_h
 #define HTMLMediaElementRemotePlayback_h
 
+#include "core/html/HTMLMediaElement.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"

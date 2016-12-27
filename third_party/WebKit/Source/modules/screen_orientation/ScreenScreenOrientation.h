@@ -5,6 +5,7 @@
 #ifndef ScreenScreenOrientation_h
 #define ScreenScreenOrientation_h
 
+#include "core/frame/Screen.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

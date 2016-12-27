@@ -5,6 +5,7 @@
 #ifndef NavigatorUSB_h
 #define NavigatorUSB_h
 
+#include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 

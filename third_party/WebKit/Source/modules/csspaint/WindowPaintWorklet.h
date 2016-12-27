@@ -6,6 +6,7 @@
 #define WindowPaintWorklet_h
 
 #include "core/frame/DOMWindowProperty.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
