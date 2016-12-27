@@ -200,9 +200,9 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 31,
       "cr_bugs": [154715, 10068, 269829, 294779, 285292],
-      "description": "The Mali-Txxx driver does not guarantee flush ordering",
+      "description": "The Mali-xxx driver does not guarantee flush ordering",
       "gl_vendor": "ARM.*",
-      "gl_renderer": "Mali-T.*",
+      "gl_renderer": "Mali.*",
       "features": [
         "use_virtualized_gl_contexts"
       ]
