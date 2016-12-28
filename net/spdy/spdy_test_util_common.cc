@@ -17,8 +17,8 @@
 #include "net/base/host_port_pair.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
+#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
-#include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -330,7 +330,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       cert_verifier(new MockCertVerifier),
       channel_id_service(nullptr),
       transport_security_state(new TransportSecurityState),
-      cert_transparency_verifier(new MultiLogCTVerifier),
+      cert_transparency_verifier(new DoNothingCTVerifier),
       ct_policy_enforcer(new CTPolicyEnforcer),
       proxy_service(std::move(proxy_service)),
       ssl_config_service(new SSLConfigServiceDefaults),
@@ -427,22 +427,6 @@ class AllowAnyCertCTPolicyEnforcer : public CTPolicyEnforcer {
   }
 };
 
-class IgnoresCTVerifier : public net::CTVerifier {
- public:
-  IgnoresCTVerifier() = default;
-  ~IgnoresCTVerifier() override = default;
-
-  int Verify(net::X509Certificate* cert,
-             const std::string& stapled_ocsp_response,
-             const std::string& sct_list_from_tls_extension,
-             SignedCertificateTimestampAndStatusList* output_scts,
-             const net::NetLogWithSource& net_log) override {
-    return net::OK;
-  }
-
-  void SetObserver(Observer* observer) override {}
-};
-
 SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_host_resolver(
       std::unique_ptr<HostResolver>(new MockHostResolver));
@@ -453,7 +437,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_ct_policy_enforcer(
       base::WrapUnique(new AllowAnyCertCTPolicyEnforcer()));
   storage_.set_cert_transparency_verifier(
-      base::WrapUnique(new IgnoresCTVerifier()));
+      base::WrapUnique(new DoNothingCTVerifier()));
   storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
   storage_.set_http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault(host_resolver()));

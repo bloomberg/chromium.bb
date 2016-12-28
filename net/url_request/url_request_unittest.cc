@@ -60,7 +60,7 @@
 #include "net/base/url_util.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
-#include "net/cert/ct_verifier.h"
+#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
@@ -6444,23 +6444,6 @@ class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
   uint32_t num_failures_;
 };
 
-// A CTVerifier that returns net::OK for every certificate.
-class MockCTVerifier : public CTVerifier {
- public:
-  MockCTVerifier() {}
-  ~MockCTVerifier() override {}
-
-  int Verify(X509Certificate* cert,
-             const std::string& stapled_ocsp_response,
-             const std::string& sct_list_from_tls_extension,
-             SignedCertificateTimestampAndStatusList* output_scts,
-             const NetLogWithSource& net_log) override {
-    return net::OK;
-  }
-
-  void SetObserver(Observer* observer) override {}
-};
-
 // A CTPolicyEnforcer that returns a default CertPolicyCompliance value
 // for every certificate.
 class MockCTPolicyEnforcer : public CTPolicyEnforcer {
@@ -6508,9 +6491,9 @@ TEST_F(URLRequestTestHTTP, ExpectCTHeader) {
   verify_result.is_issued_by_known_root = true;
   cert_verifier.AddResultForCert(cert.get(), verify_result, OK);
 
-  // Set up a MockCTVerifier and MockCTPolicyEnforcer to trigger an Expect CT
-  // violation.
-  MockCTVerifier ct_verifier;
+  // Set up a DoNothingCTVerifier and MockCTPolicyEnforcer to trigger an Expect
+  // CT violation.
+  DoNothingCTVerifier ct_verifier;
   MockCTPolicyEnforcer ct_policy_enforcer;
   ct_policy_enforcer.set_default_result(
       ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS);

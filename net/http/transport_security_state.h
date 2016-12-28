@@ -322,7 +322,7 @@ class NET_EXPORT TransportSecurityState
   //    for OCSP responses behind MITM proxies are not useful to site owners.
   void CheckExpectStaple(const HostPortPair& host_port_pair,
                          const SSLInfo& ssl_info,
-                         const std::string& ocsp_response);
+                         base::StringPiece ocsp_response);
 
   // Returns true if connections to |host|, using the validated certificate
   // |validated_certificate_chain|, are expected to be accompanied with

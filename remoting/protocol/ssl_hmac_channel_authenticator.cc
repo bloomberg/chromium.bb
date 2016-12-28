@@ -24,7 +24,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
-#include "net/cert/ct_verifier.h"
+#include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
@@ -65,23 +65,6 @@ class FailingCertVerifier : public net::CertVerifier {
     verify_result->cert_status = net::CERT_STATUS_INVALID;
     return net::ERR_CERT_INVALID;
   }
-};
-
-// A CTVerifier which ignores Certificate Transparency information.
-class IgnoresCTVerifier : public net::CTVerifier {
- public:
-  IgnoresCTVerifier() = default;
-  ~IgnoresCTVerifier() override = default;
-
-  int Verify(net::X509Certificate* cert,
-             const std::string& stapled_ocsp_response,
-             const std::string& sct_list_from_tls_extension,
-             net::SignedCertificateTimestampAndStatusList* output_scts,
-             const net::NetLogWithSource& net_log) override {
-    return net::OK;
-  }
-
-  void SetObserver(Observer* observer) override {}
 };
 
 // A CTPolicyEnforcer that accepts all certificates.
@@ -284,7 +267,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
   } else {
     transport_security_state_.reset(new net::TransportSecurityState);
     cert_verifier_.reset(new FailingCertVerifier);
-    ct_verifier_.reset(new IgnoresCTVerifier);
+    ct_verifier_.reset(new net::DoNothingCTVerifier);
     ct_policy_enforcer_.reset(new IgnoresCTPolicyEnforcer);
 
     net::SSLConfig ssl_config;

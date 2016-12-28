@@ -324,8 +324,7 @@ NET_ERROR(SSL_SERVER_CERT_CHANGED, -156)
 
 // Error -157 was removed (SSL_INAPPROPRIATE_FALLBACK).
 
-// Certificate Transparency: All Signed Certificate Timestamps failed to verify.
-NET_ERROR(CT_NO_SCTS_VERIFIED_OK, -158)
+// Error -158 was removed (CT_NO_SCTS_VERIFIED_OK).
 
 // The SSL server sent us a fatal unrecognized_name alert.
 NET_ERROR(SSL_UNRECOGNIZED_NAME_ALERT, -159)

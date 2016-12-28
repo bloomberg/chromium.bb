@@ -687,7 +687,7 @@ std::string SerializeExpectStapleRevocationStatus(
 
 bool SerializeExpectStapleReport(const HostPortPair& host_port_pair,
                                  const SSLInfo& ssl_info,
-                                 const std::string& ocsp_response,
+                                 base::StringPiece ocsp_response,
                                  std::string* out_serialized_report) {
   DCHECK(ssl_info.is_issued_by_known_root);
   base::DictionaryValue report;
@@ -794,7 +794,7 @@ TransportSecurityState::PKPStatus TransportSecurityState::CheckPublicKeyPins(
 void TransportSecurityState::CheckExpectStaple(
     const HostPortPair& host_port_pair,
     const SSLInfo& ssl_info,
-    const std::string& ocsp_response) {
+    base::StringPiece ocsp_response) {
   DCHECK(CalledOnValidThread());
   if (!enable_static_expect_staple_ || !report_sender_ ||
       !ssl_info.is_issued_by_known_root) {
