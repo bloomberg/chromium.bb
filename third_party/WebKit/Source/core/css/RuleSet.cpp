@@ -129,7 +129,8 @@ RuleData::RuleData(StyleRule* rule,
       m_linkMatchType(selector().computeLinkMatchType()),
       m_hasDocumentSecurityOrigin(addRuleFlags & RuleHasDocumentSecurityOrigin),
       m_propertyWhitelist(
-          determinePropertyWhitelistType(addRuleFlags, selector())) {
+          determinePropertyWhitelistType(addRuleFlags, selector())),
+      m_descendantSelectorIdentifierHashes() {
   SelectorFilter::collectIdentifierHashes(
       selector(), m_descendantSelectorIdentifierHashes, maximumIdentifierCount);
 }
