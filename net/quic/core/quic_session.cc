@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/quic/core/crypto/proof_verifier.h"
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_connection.h"
@@ -14,10 +13,8 @@
 #include "net/quic/core/quic_flow_controller.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 
-using base::IntToString;
 using base::StringPiece;
 using std::string;
-using net::SpdyPriority;
 
 namespace net {
 

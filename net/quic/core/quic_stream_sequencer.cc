@@ -11,8 +11,6 @@
 
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
@@ -22,9 +20,7 @@
 #include "net/quic/platform/api/quic_clock.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 
-using base::IntToString;
 using base::StringPiece;
-using base::StringPrintf;
 using std::string;
 
 namespace net {

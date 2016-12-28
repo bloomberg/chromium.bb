@@ -6,6 +6,7 @@
 
 #include "net/quic/core/crypto/crypto_server_config_protobuf.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -91,8 +92,8 @@ class ShloVerifier {
 
   void ProcessClientHelloDone(std::unique_ptr<CryptoHandshakeMessage> message) {
     // Verify output is a SHLO.
-    EXPECT_EQ(message->tag(), kSHLO) << "Fail to pass validation. Get "
-                                     << message->DebugString();
+    EXPECT_EQ(message->tag(), kSHLO)
+        << "Fail to pass validation. Get " << message->DebugString();
   }
 
   QuicCryptoServerConfig* crypto_config_;
@@ -139,12 +140,12 @@ TEST(CryptoTestUtilsTest, TestGenerateFullCHLO) {
       StringPiece(reinterpret_cast<const char*>(orbit.data()),
                   sizeof(orbit.size())),
       &nonce);
-  string nonce_hex = "#" + QuicUtils::HexEncode(nonce);
+  string nonce_hex = "#" + QuicTextUtils::HexEncode(nonce);
 
   char public_value[32];
   memset(public_value, 42, sizeof(public_value));
   string pub_hex =
-      "#" + QuicUtils::HexEncode(public_value, sizeof(public_value));
+      "#" + QuicTextUtils::HexEncode(public_value, sizeof(public_value));
 
   QuicVersion version(AllSupportedVersions().front());
   // clang-format off

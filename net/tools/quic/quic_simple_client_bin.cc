@@ -59,7 +59,7 @@
 #include "net/quic/core/quic_error_codes.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_server_id.h"
-#include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/tools/quic/quic_simple_client.h"
@@ -73,6 +73,7 @@ using net::CTVerifier;
 using net::MultiLogCTVerifier;
 using net::ProofVerifier;
 using net::ProofVerifierChromium;
+using net::QuicTextUtils;
 using net::TransportSecurityState;
 using std::cout;
 using std::cerr;
@@ -297,7 +298,7 @@ int main(int argc, char* argv[]) {
   string body = FLAGS_body;
   if (!FLAGS_body_hex.empty()) {
     DCHECK(FLAGS_body.empty()) << "Only set one of --body and --body_hex.";
-    body = net::QuicUtils::HexDecode(FLAGS_body_hex);
+    body = QuicTextUtils::HexDecode(FLAGS_body_hex);
   }
 
   // Construct a GET or POST request for supplied URL.
@@ -340,7 +341,7 @@ int main(int argc, char* argv[]) {
     if (!FLAGS_body_hex.empty()) {
       // Print the user provided hex, rather than binary body.
       cout << "body:\n"
-           << net::QuicUtils::HexDump(net::QuicUtils::HexDecode(FLAGS_body_hex))
+           << QuicTextUtils::HexDump(QuicTextUtils::HexDecode(FLAGS_body_hex))
            << endl;
     } else {
       cout << "body: " << body << endl;
@@ -351,7 +352,7 @@ int main(int argc, char* argv[]) {
     string response_body = client.latest_response_body();
     if (!FLAGS_body_hex.empty()) {
       // Assume response is binary data.
-      cout << "body:\n" << net::QuicUtils::HexDump(response_body) << endl;
+      cout << "body:\n" << QuicTextUtils::HexDump(response_body) << endl;
     } else {
       cout << "body: " << response_body << endl;
     }

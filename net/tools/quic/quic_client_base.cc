@@ -4,10 +4,10 @@
 
 #include "net/tools/quic/quic_client_base.h"
 
-#include "base/strings/string_number_conversions.h"
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 
 using base::StringPiece;
 using base::StringToInt;

@@ -65,22 +65,6 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
       const QuicSocketAddress& old_address,
       const QuicSocketAddress& new_address);
 
-  // This converts |length| bytes of binary to a 2*|length|-character
-  // hexadecimal representation.
-  // Return value: 2*|length| characters of ASCII std::string.
-  static std::string HexEncode(const char* data, size_t length);
-  static std::string HexEncode(base::StringPiece data);
-
-  // Converts |data| from a hexadecimal ASCII std::string to binary.
-  static std::string HexDecode(base::StringPiece data);
-
-  // Returns a std::string containing hex and ASCII representations of |binary|,
-  // side-by-side in the style of hexdump. Non-printable characters will be
-  // printed as '.' in the ASCII output.
-  // For example:
-  // "0x0000:  4865 6c6c 6f2c 2051 5549 4321 0102 0304  Hello,.QUIC!...."
-  static std::string HexDump(base::StringPiece binary_data);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicUtils);
 };

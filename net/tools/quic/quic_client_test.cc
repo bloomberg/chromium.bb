@@ -11,7 +11,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/strings/string_util.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/epoll_server/epoll_server.h"
@@ -37,8 +37,7 @@ size_t NumOpenSocketFDs() {
     if (!base::ReadSymbolicLink(entry, &fd_path)) {
       continue;
     }
-    if (base::StartsWith(fd_path.value(), "socket:",
-                         base::CompareCase::SENSITIVE)) {
+    if (QuicTextUtils::StartsWith(fd_path.value(), "socket:")) {
       socket_count++;
     }
   }

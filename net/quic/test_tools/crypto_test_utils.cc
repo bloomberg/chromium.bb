@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/secure_hash.h"
 #include "net/quic/core/crypto/channel_id.h"
@@ -24,6 +23,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_clock.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -992,13 +992,13 @@ string CryptoTestUtils::GenerateClientNonceHex(
       StringPiece(reinterpret_cast<const char*>(orbit.data()),
                   sizeof(orbit.size())),
       &nonce);
-  return ("#" + net::QuicUtils::HexEncode(nonce));
+  return ("#" + QuicTextUtils::HexEncode(nonce));
 }
 
 string CryptoTestUtils::GenerateClientPublicValuesHex() {
   char public_value[32];
   memset(public_value, 42, sizeof(public_value));
-  return ("#" + net::QuicUtils::HexEncode(public_value, sizeof(public_value)));
+  return ("#" + QuicTextUtils::HexEncode(public_value, sizeof(public_value)));
 }
 
 // static

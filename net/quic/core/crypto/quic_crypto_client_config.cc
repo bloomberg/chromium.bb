@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/strings/string_util.h"
 #include "net/quic/core/crypto/cert_compressor.h"
 #include "net/quic/core/crypto/chacha20_poly1305_encrypter.h"
 #include "net/quic/core/crypto/channel_id.h"
@@ -25,6 +24,7 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 
 using base::ContainsKey;
 using base::StringPiece;
@@ -951,8 +951,8 @@ bool QuicCryptoClientConfig::PopulateFromCanonicalConfig(
   DCHECK(server_state->IsEmpty());
   size_t i = 0;
   for (; i < canonical_suffixes_.size(); ++i) {
-    if (base::EndsWith(server_id.host(), canonical_suffixes_[i],
-                       base::CompareCase::INSENSITIVE_ASCII)) {
+    if (QuicTextUtils::EndsWithIgnoreCase(server_id.host(),
+                                          canonical_suffixes_[i])) {
       break;
     }
   }

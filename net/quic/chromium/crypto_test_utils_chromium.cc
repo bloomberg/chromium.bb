@@ -35,7 +35,6 @@
 #include "net/test/test_data_directory.h"
 
 using base::StringPiece;
-using base::StringPrintf;
 using std::string;
 
 namespace net {

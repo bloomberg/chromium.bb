@@ -5,6 +5,7 @@
 #include "net/quic/core/crypto/crypto_utils.h"
 
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -93,14 +94,15 @@ TEST(CryptoUtilsTest, TestExportKeyingMaterial) {
 
   for (size_t i = 0; i < arraysize(test_vector); i++) {
     // Decode the test vector.
-    string subkey_secret = QuicUtils::HexDecode(test_vector[i].subkey_secret);
-    string label = QuicUtils::HexDecode(test_vector[i].label);
-    string context = QuicUtils::HexDecode(test_vector[i].context);
+    string subkey_secret =
+        QuicTextUtils::HexDecode(test_vector[i].subkey_secret);
+    string label = QuicTextUtils::HexDecode(test_vector[i].label);
+    string context = QuicTextUtils::HexDecode(test_vector[i].context);
     size_t result_len = test_vector[i].result_len;
     bool expect_ok = test_vector[i].expected != nullptr;
     string expected;
     if (expect_ok) {
-      expected = QuicUtils::HexDecode(test_vector[i].expected);
+      expected = QuicTextUtils::HexDecode(test_vector[i].expected);
     }
 
     string result;

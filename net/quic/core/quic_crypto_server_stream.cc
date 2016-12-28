@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/base64.h"
 #include "crypto/secure_hash.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/crypto/crypto_utils.h"
@@ -17,6 +16,7 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_session.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 
 using base::StringPiece;
 using std::string;
@@ -421,19 +421,7 @@ bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(
   uint8_t digest[32];
   hash->Finish(digest, sizeof(digest));
 
-  base::Base64Encode(
-      string(reinterpret_cast<const char*>(digest), sizeof(digest)), output);
-  // Remove padding.
-  size_t len = output->size();
-  if (len >= 2) {
-    if ((*output)[len - 1] == '=') {
-      len--;
-      if ((*output)[len - 1] == '=') {
-        len--;
-      }
-      output->resize(len);
-    }
-  }
+  QuicTextUtils::Base64Encode(digest, arraysize(digest), output);
   return true;
 }
 

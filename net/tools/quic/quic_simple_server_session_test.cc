@@ -16,6 +16,7 @@
 #include "net/quic/core/quic_crypto_server_stream.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -462,7 +463,8 @@ class QuicSimpleServerSessionServerPushTest
     string scheme = "http";
     for (unsigned int i = 1; i <= num_resources; ++i) {
       QuicStreamId stream_id = i * 2;
-      string path = partial_push_resource_path + base::UintToString(i);
+      string path =
+          partial_push_resource_path + QuicTextUtils::Uint64ToString(i);
       string url = scheme + "://" + resource_host + path;
       GURL resource_url = GURL(url);
       string body(body_size, 'a');

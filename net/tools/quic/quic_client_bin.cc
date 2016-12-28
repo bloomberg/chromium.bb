@@ -44,10 +44,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
 #include "net/cert/cert_verifier.h"
@@ -60,6 +56,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client.h"
@@ -75,6 +72,7 @@ using net::ProofVerifier;
 using net::ProofVerifierChromium;
 using net::SpdyHeaderBlock;
 using net::TransportSecurityState;
+using net::QuicTextUtils;
 using std::cout;
 using std::cerr;
 using std::string;
@@ -299,7 +297,7 @@ int main(int argc, char* argv[]) {
   string body = FLAGS_body;
   if (!FLAGS_body_hex.empty()) {
     DCHECK(FLAGS_body.empty()) << "Only set one of --body and --body_hex.";
-    body = net::QuicUtils::HexDecode(FLAGS_body_hex);
+    body = QuicTextUtils::HexDecode(FLAGS_body_hex);
   }
 
   // Construct a GET or POST request for supplied URL.
@@ -310,21 +308,14 @@ int main(int argc, char* argv[]) {
   header_block[":path"] = url.path();
 
   // Append any additional headers supplied on the command line.
-  for (const std::string& header :
-       base::SplitString(FLAGS_headers, ";", base::KEEP_WHITESPACE,
-                         base::SPLIT_WANT_NONEMPTY)) {
-    string sp;
-    base::TrimWhitespaceASCII(header, base::TRIM_ALL, &sp);
+  for (StringPiece sp : QuicTextUtils::Split(FLAGS_headers, ';')) {
+    QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&sp);
     if (sp.empty()) {
       continue;
     }
-    std::vector<string> kv =
-        base::SplitString(sp, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    CHECK_EQ(2u, kv.size());
-    string key;
-    base::TrimWhitespaceASCII(kv[0], base::TRIM_ALL, &key);
-    string value;
-    base::TrimWhitespaceASCII(kv[1], base::TRIM_ALL, &value);
+    std::vector<StringPiece> kv = QuicTextUtils::Split(sp, ':');
+    QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[0]);
+    QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[1]);
     header_block[kv[0]] = kv[1];
   }
 
@@ -340,7 +331,7 @@ int main(int argc, char* argv[]) {
     if (!FLAGS_body_hex.empty()) {
       // Print the user provided hex, rather than binary body.
       cout << "body:\n"
-           << net::QuicUtils::HexDump(net::QuicUtils::HexDecode(FLAGS_body_hex))
+           << QuicTextUtils::HexDump(QuicTextUtils::HexDecode(FLAGS_body_hex))
            << endl;
     } else {
       cout << "body: " << body << endl;
@@ -351,7 +342,7 @@ int main(int argc, char* argv[]) {
     string response_body = client.latest_response_body();
     if (!FLAGS_body_hex.empty()) {
       // Assume response is binary data.
-      cout << "body:\n" << net::QuicUtils::HexDump(response_body) << endl;
+      cout << "body:\n" << QuicTextUtils::HexDump(response_body) << endl;
     } else {
       cout << "body: " << response_body << endl;
     }

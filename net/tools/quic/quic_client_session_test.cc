@@ -22,8 +22,8 @@
 #include "net/tools/quic/quic_spdy_client_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::StringPrintf;
 using google::protobuf::implicit_cast;
+using base::StringPrintf;
 using std::string;
 using testing::AnyNumber;
 using testing::Invoke;

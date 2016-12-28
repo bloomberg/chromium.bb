@@ -15,7 +15,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -33,6 +32,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -2254,7 +2254,8 @@ class ServerStreamWithErrorResponseBody : public QuicSimpleServerStream {
     DVLOG(1) << "Sending error response for stream " << id();
     SpdyHeaderBlock headers;
     headers[":status"] = "500";
-    headers["content-length"] = base::UintToString(response_body_.size());
+    headers["content-length"] =
+        QuicTextUtils::Uint64ToString(response_body_.size());
     // This method must call CloseReadSide to cause the test case, StopReading
     // is not sufficient.
     QuicStreamPeer::CloseReadSide(this);
@@ -2587,7 +2588,7 @@ TEST_P(EndToEndTest, Trailers) {
   SpdyHeaderBlock headers;
   headers[":status"] = "200";
   headers[":version"] = "HTTP/1.1";
-  headers["content-length"] = IntToString(kBody.size());
+  headers["content-length"] = QuicTextUtils::Uint64ToString(kBody.size());
 
   SpdyHeaderBlock trailers;
   trailers["some-trailing-header"] = "trailing-header-value";
@@ -2641,7 +2642,8 @@ class EndToEndTestServerPush : public EndToEndTest {
       SpdyHeaderBlock response_headers;
       response_headers[":version"] = "HTTP/1.1";
       response_headers[":status"] = "200";
-      response_headers["content-length"] = IntToString(body.size());
+      response_headers["content-length"] =
+          QuicTextUtils::Uint64ToString(body.size());
       push_resources.push_back(QuicHttpResponseCache::ServerPushInfo(
           resource_url, std::move(response_headers), kV3LowestPriority, body));
     }
@@ -2943,7 +2945,8 @@ TEST_P(EndToEndTest, DISABLED_TestHugePostWithPacketLoss) {
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
   headers[":authority"] = server_hostname_;
-  headers["content-length"] = IntToString(request_body_size_bytes);
+  headers["content-length"] =
+      QuicTextUtils::Uint64ToString(request_body_size_bytes);
 
   client_->SendMessage(headers, "", /*fin=*/false);
 

@@ -19,8 +19,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -37,9 +35,9 @@
 #include "net/quic/core/quic_sent_packet_manager.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 
 using base::StringPiece;
-using base::StringPrintf;
 using std::string;
 
 namespace net {
@@ -1013,9 +1011,10 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
         ack_queued_ = true;
       } else if (!ack_alarm_->IsSet()) {
         // Wait the minimum of a quarter min_rtt and the delayed ack time.
-        QuicTime::Delta ack_delay = std::min(
-            DelayedAckTime(), sent_packet_manager_->GetRttStats()->min_rtt() *
-                                  ack_decimation_delay_);
+        QuicTime::Delta ack_delay =
+            std::min(DelayedAckTime(),
+                     sent_packet_manager_->GetRttStats()->min_rtt() *
+                         ack_decimation_delay_);
         ack_alarm_->Set(clock_->ApproximateNow() + ack_delay);
       }
     } else {
@@ -1577,7 +1576,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
            << QuicUtils::EncryptionLevelToString(packet->encryption_level)
            << ", encrypted length:" << encrypted_length;
   DVLOG(2) << ENDPOINT << "packet(" << packet_number << "): " << std::endl
-           << QuicUtils::HexDump(
+           << QuicTextUtils::HexDump(
                   StringPiece(packet->encrypted_buffer, encrypted_length));
 
   // Measure the RTT from before the write begins to avoid underestimating the

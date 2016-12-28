@@ -6,7 +6,6 @@
 
 #include <cstdint>
 
-#include "base/strings/string_number_conversions.h"
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 
@@ -327,8 +326,8 @@ string QuicMultipathSentPacketManager::GetDebugState() const {
     if (debug_state.empty()) {
       continue;
     }
-    debug_state_by_path =
-        debug_state_by_path + "[" + base::IntToString(i) + "]:" + debug_state;
+    debug_state_by_path = QuicStrCat(
+        debug_state_by_path, "[", i, "]:", debug_state);
   }
   return debug_state_by_path;
 }

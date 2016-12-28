@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -20,6 +19,7 @@
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
@@ -701,8 +701,8 @@ void QuicTestClient::TestClientDataToResend::Resend() {
 bool QuicTestClient::PopulateHeaderBlockFromUrl(const string& uri,
                                                 SpdyHeaderBlock* headers) {
   string url;
-  if (base::StartsWith(uri, "https://", base::CompareCase::INSENSITIVE_ASCII) ||
-      base::StartsWith(uri, "http://", base::CompareCase::INSENSITIVE_ASCII)) {
+  if (QuicTextUtils::StartsWith(uri, "https://") ||
+      QuicTextUtils::StartsWith(uri, "http://")) {
     url = uri;
   } else if (uri[0] == '/') {
     url = "https://" + client_->server_id().host() + uri;

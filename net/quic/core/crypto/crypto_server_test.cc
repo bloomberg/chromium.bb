@@ -20,6 +20,7 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_socket_address_coder.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/delayed_verify_strike_register_client.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -142,8 +143,9 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     char public_value[32];
     memset(public_value, 42, sizeof(public_value));
 
-    nonce_hex_ = "#" + QuicUtils::HexEncode(GenerateNonce());
-    pub_hex_ = "#" + QuicUtils::HexEncode(public_value, sizeof(public_value));
+    nonce_hex_ = "#" + QuicTextUtils::HexEncode(GenerateNonce());
+    pub_hex_ =
+        "#" + QuicTextUtils::HexEncode(public_value, sizeof(public_value));
 
     // clang-format off
     CryptoHandshakeMessage client_hello = CryptoTestUtils::Message(
@@ -169,7 +171,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
 
     StringPiece srct;
     ASSERT_TRUE(out_.GetStringPiece(kSourceAddressTokenTag, &srct));
-    srct_hex_ = "#" + QuicUtils::HexEncode(srct);
+    srct_hex_ = "#" + QuicTextUtils::HexEncode(srct);
 
     StringPiece scfg;
     ASSERT_TRUE(out_.GetStringPiece(kSCFG, &scfg));
@@ -177,7 +179,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
 
     StringPiece scid;
     ASSERT_TRUE(server_config_->GetStringPiece(kSCID, &scid));
-    scid_hex_ = "#" + QuicUtils::HexEncode(scid);
+    scid_hex_ = "#" + QuicTextUtils::HexEncode(scid);
 
     signed_config_ = QuicReferenceCountedPointer<QuicSignedServerConfig>(
         new QuicSignedServerConfig());
@@ -283,12 +285,12 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
         std::unique_ptr<DiversificationNonce> diversification_nonce,
         std::unique_ptr<ProofSource::Details> proof_source_details) override {
       if (should_succeed_) {
-        ASSERT_EQ(error, QUIC_NO_ERROR) << "Message failed with error "
-                                        << error_details << ": "
-                                        << result_->client_hello.DebugString();
+        ASSERT_EQ(error, QUIC_NO_ERROR)
+            << "Message failed with error " << error_details << ": "
+            << result_->client_hello.DebugString();
       } else {
-        ASSERT_NE(error, QUIC_NO_ERROR) << "Message didn't fail: "
-                                        << result_->client_hello.DebugString();
+        ASSERT_NE(error, QUIC_NO_ERROR)
+            << "Message didn't fail: " << result_->client_hello.DebugString();
 
         EXPECT_TRUE(error_details.find(error_substr_) != string::npos)
             << error_substr_ << " not in " << error_details;
@@ -383,8 +385,8 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
 
   string XlctHexString() {
     uint64_t xlct = CryptoTestUtils::LeafCertHashForTesting();
-    return "#" +
-           QuicUtils::HexEncode(reinterpret_cast<char*>(&xlct), sizeof(xlct));
+    return "#" + QuicTextUtils::HexEncode(reinterpret_cast<char*>(&xlct),
+                                          sizeof(xlct));
   }
 
  protected:

@@ -37,6 +37,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_clock.h"
 #include "net/quic/platform/api/quic_reference_counted.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 
 using base::StringPiece;
 using crypto::SecureHash;
@@ -314,7 +315,7 @@ CryptoHandshakeMessage* QuicCryptoServerConfig::AddConfig(
     if (configs_.find(config->id) != configs_.end()) {
       LOG(WARNING) << "Failed to add config because another with the same "
                       "server config id already exists: "
-                   << QuicUtils::HexEncode(config->id);
+                   << QuicTextUtils::HexEncode(config->id);
       return nullptr;
     }
 
@@ -371,9 +372,9 @@ bool QuicCryptoServerConfig::SetConfigs(
 
       ConfigMap::iterator it = configs_.find(config->id);
       if (it != configs_.end()) {
-        VLOG(1) << "Keeping scid: " << QuicUtils::HexEncode(config->id)
+        VLOG(1) << "Keeping scid: " << QuicTextUtils::HexEncode(config->id)
                 << " orbit: "
-                << QuicUtils::HexEncode(
+                << QuicTextUtils::HexEncode(
                        reinterpret_cast<const char*>(config->orbit), kOrbitSize)
                 << " new primary_time " << config->primary_time.ToUNIXSeconds()
                 << " old primary_time "
@@ -384,9 +385,9 @@ bool QuicCryptoServerConfig::SetConfigs(
         it->second->priority = config->priority;
         new_configs.insert(*it);
       } else {
-        VLOG(1) << "Adding scid: " << QuicUtils::HexEncode(config->id)
+        VLOG(1) << "Adding scid: " << QuicTextUtils::HexEncode(config->id)
                 << " orbit: "
-                << QuicUtils::HexEncode(
+                << QuicTextUtils::HexEncode(
                        reinterpret_cast<const char*>(config->orbit), kOrbitSize)
                 << " primary_time " << config->primary_time.ToUNIXSeconds()
                 << " priority " << config->priority;
@@ -1097,7 +1098,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
     primary_config_ = new_primary;
     new_primary->is_primary = true;
     DVLOG(1) << "New primary config.  orbit: "
-             << QuicUtils::HexEncode(
+             << QuicTextUtils::HexEncode(
                     reinterpret_cast<const char*>(primary_config_->orbit),
                     kOrbitSize);
     if (primary_config_changed_cb_.get() != nullptr) {
@@ -1116,10 +1117,10 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
   primary_config_ = new_primary;
   new_primary->is_primary = true;
   DVLOG(1) << "New primary config.  orbit: "
-           << QuicUtils::HexEncode(
+           << QuicTextUtils::HexEncode(
                   reinterpret_cast<const char*>(primary_config_->orbit),
                   kOrbitSize)
-           << " scid: " << QuicUtils::HexEncode(primary_config_->id);
+           << " scid: " << QuicTextUtils::HexEncode(primary_config_->id);
   next_config_promotion_time_ = QuicWallTime::Zero();
   if (primary_config_changed_cb_.get() != nullptr) {
     primary_config_changed_cb_->Run(primary_config_->id);

@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/platform/api/quic_socket_address.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_client_session.h"
@@ -187,7 +187,8 @@ TEST_F(QuicSpdyClientStreamTest, ReceivingTrailers) {
   // promised by the final offset field.
   SpdyHeaderBlock trailer_block;
   trailer_block["trailer key"] = "trailer value";
-  trailer_block[kFinalOffsetHeaderKey] = IntToString(body_.size());
+  trailer_block[kFinalOffsetHeaderKey] =
+      QuicTextUtils::Uint64ToString(body_.size());
   auto trailers = AsHeaderList(trailer_block);
   stream_->OnStreamHeaderList(true, trailers.uncompressed_header_bytes(),
                               trailers);

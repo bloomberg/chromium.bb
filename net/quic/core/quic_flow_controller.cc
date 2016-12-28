@@ -6,7 +6,6 @@
 
 #include <cstdint>
 
-#include "base/strings/stringprintf.h"
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_packets.h"

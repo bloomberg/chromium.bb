@@ -8,6 +8,8 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/quic_versions.h"
+#include "net/quic/platform/api/quic_str_cat.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 
 using base::StringPiece;
 using std::string;
@@ -97,8 +99,9 @@ std::ostream& operator<<(std::ostream& os, const QuicPacketHeader& header) {
   }
   if (header.public_header.nonce != nullptr) {
     os << ", diversification_nonce: "
-       << QuicUtils::HexEncode(StringPiece(header.public_header.nonce->data(),
-                                           header.public_header.nonce->size()));
+       << QuicTextUtils::HexEncode(
+              StringPiece(header.public_header.nonce->data(),
+                          header.public_header.nonce->size()));
   }
   os << ", path_id: " << static_cast<int>(header.path_id)
      << ", packet_number: " << header.packet_number << " }\n";

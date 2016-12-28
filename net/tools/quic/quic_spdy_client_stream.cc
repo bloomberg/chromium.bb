@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/quic/core/quic_alarm.h"
 #include "net/quic/core/quic_client_promised_info.h"
 #include "net/quic/core/spdy_utils.h"
@@ -17,7 +16,6 @@
 
 using base::StringPiece;
 using std::string;
-using base::StringToInt;
 
 namespace net {
 

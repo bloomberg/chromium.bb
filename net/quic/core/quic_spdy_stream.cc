@@ -7,13 +7,13 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/base/parse_number.h"
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_spdy_session.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/quic_write_blocked_list.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/quic/platform/api/quic_text_utils.h"
 
 using base::IntToString;
 using base::StringPiece;
@@ -91,9 +91,10 @@ size_t QuicSpdyStream::WriteTrailers(
   // trailers may be processed out of order at the peer.
   DVLOG(1) << "Inserting trailer: (" << kFinalOffsetHeaderKey << ", "
            << stream_bytes_written() + queued_data_bytes() << ")";
-  trailer_block.insert(std::make_pair(
-      kFinalOffsetHeaderKey,
-      IntToString(stream_bytes_written() + queued_data_bytes())));
+  trailer_block.insert(
+      std::make_pair(kFinalOffsetHeaderKey,
+                     QuicTextUtils::Uint64ToString(stream_bytes_written() +
+                                                   queued_data_bytes())));
 
   // Write the trailing headers with a FIN, and close stream for writing:
   // trailers are the last thing to be sent on a stream.
