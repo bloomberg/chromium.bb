@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/test/response_providers/file_based_response_provider_impl.h"
+#import "ios/web/public/test/response_providers/file_based_response_provider_impl.h"
 
 #include "base/files/file_util.h"
-#include "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/response_providers/response_provider.h"
 #include "url/gurl.h"
 
 namespace web {

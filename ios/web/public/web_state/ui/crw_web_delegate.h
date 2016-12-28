@@ -9,12 +9,12 @@
 #import <UIKit/UIKit.h>
 #include <vector>
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;

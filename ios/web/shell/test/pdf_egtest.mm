@@ -4,8 +4,8 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#include "base/test/ios/wait_util.h"
-#include "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"

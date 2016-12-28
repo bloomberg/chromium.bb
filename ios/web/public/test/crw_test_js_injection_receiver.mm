@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
-#include "base/ios/weak_nsobject.h"
+#import "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"

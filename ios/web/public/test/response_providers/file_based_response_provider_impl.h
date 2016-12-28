@@ -6,7 +6,7 @@
 #define IOS_WEB_PUBLIC_TEST_RESPONSE_PROVIDERS_FILE_BASED_RESPONSE_PROVIDER_IMPL_H_
 
 #include "base/files/file_path.h"
-#include "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/response_providers/response_provider.h"
 
 class GURL;
 

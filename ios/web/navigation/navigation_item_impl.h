@@ -9,11 +9,11 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "ios/web/navigation/navigation_item_facade_delegate.h"
 #include "ios/web/public/favicon_status.h"
-#include "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_item.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/ssl_status.h"
 #include "url/gurl.h"

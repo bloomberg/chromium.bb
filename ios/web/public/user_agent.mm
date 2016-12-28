@@ -11,7 +11,7 @@
 #include <sys/sysctl.h>
 #include <string>
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

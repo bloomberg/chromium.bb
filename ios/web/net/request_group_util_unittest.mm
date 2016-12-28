@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/net/request_group_util.h"
+#import "ios/web/net/request_group_util.h"
 
 #import <Foundation/Foundation.h>
 #include <stddef.h>
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Checks that all newly generated groupID are unique and that there are no

@@ -6,10 +6,10 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/mac/bind_objc_block.h"
+#import "base/mac/bind_objc_block.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"

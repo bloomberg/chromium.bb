@@ -9,7 +9,7 @@
 #include "base/strings/stringprintf.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 
 // Unit tests for ios/web/web_state/js/resources/core.js.
 

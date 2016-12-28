@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/webui/crw_web_ui_page_builder.h"
+#import "ios/web/webui/crw_web_ui_page_builder.h"
 
 #import <Foundation/Foundation.h>
 
@@ -10,7 +10,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/net/clients/crw_redirect_network_client.h"
+#import "ios/web/net/clients/crw_redirect_network_client.h"
 
 #include "base/location.h"
-#include "base/mac/bind_objc_block.h"
+#import "base/mac/bind_objc_block.h"
 #include "ios/web/public/web_thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

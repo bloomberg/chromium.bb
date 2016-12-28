@@ -4,15 +4,15 @@
 
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 
-#include "base/mac/bind_objc_block.h"
+#import "base/mac/bind_objc_block.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/ios/wait_util.h"
-#include "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/web_state/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
-#include "ios/web/web_state/web_state_impl.h"
+#import "ios/web/web_state/web_state_impl.h"
 
 using web::NavigationManager;
 

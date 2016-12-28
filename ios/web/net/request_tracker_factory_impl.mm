@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/net/request_tracker_factory_impl.h"
+#import "ios/web/net/request_tracker_factory_impl.h"
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/web/net/request_group_util.h"
-#include "ios/web/net/request_tracker_impl.h"
+#import "ios/web/net/request_group_util.h"
+#import "ios/web/net/request_tracker_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

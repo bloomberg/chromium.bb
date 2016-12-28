@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/net/web_http_protocol_handler_delegate.h"
+#import "ios/web/net/web_http_protocol_handler_delegate.h"
 
 #import <Foundation/Foundation.h>
 
 #import "ios/web/public/url_scheme_util.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/interstitials/native_web_interstitial_impl.h"
+#import "ios/web/interstitials/native_web_interstitial_impl.h"
 
 #include <utility>
 
 #include "base/logging.h"
-#include "ios/web/public/interstitials/web_interstitial_delegate.h"
+#import "ios/web/public/interstitials/web_interstitial_delegate.h"
 #import "ios/web/public/web_state/ui/crw_generic_content_view.h"
-#include "ios/web/web_state/web_state_impl.h"
+#import "ios/web/web_state/web_state_impl.h"
 #include "ui/gfx/geometry/size.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

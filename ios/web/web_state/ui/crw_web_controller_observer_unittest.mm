@@ -4,7 +4,7 @@
 
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "ios/web/test/crw_fake_web_controller_observer.h"
 #import "ios/web/test/web_test_with_web_controller.h"
 

@@ -9,8 +9,8 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
-#include "ios/web/interstitials/web_interstitial_impl.h"
+#import "base/mac/scoped_nsobject.h"
+#import "ios/web/interstitials/web_interstitial_impl.h"
 
 namespace web {
 

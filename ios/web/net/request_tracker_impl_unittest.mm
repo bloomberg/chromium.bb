@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/net/request_tracker_impl.h"
+#import "ios/web/net/request_tracker_impl.h"
 
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
@@ -30,7 +30,7 @@
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"

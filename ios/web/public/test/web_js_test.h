@@ -9,7 +9,7 @@
 
 #import "base/mac/bundle_locations.h"
 #import "base/mac/scoped_nsobject.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 
 namespace web {
 

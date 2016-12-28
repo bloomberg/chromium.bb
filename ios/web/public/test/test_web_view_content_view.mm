@@ -5,7 +5,7 @@
 #import "ios/web/public/test/test_web_view_content_view.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 
 @interface TestWebViewContentView () {
   base::scoped_nsprotocol<id> _mockWebView;

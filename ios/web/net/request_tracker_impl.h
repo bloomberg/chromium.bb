@@ -11,7 +11,7 @@
 #include <set>
 
 #include "base/callback_forward.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"

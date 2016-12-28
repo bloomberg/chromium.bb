@@ -5,7 +5,7 @@
 #include "ios/web/public/test/scoped_testing_web_client.h"
 
 #include "base/logging.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 
 namespace web {
 

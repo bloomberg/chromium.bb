@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "base/supports_user_data.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 
 namespace web {
 

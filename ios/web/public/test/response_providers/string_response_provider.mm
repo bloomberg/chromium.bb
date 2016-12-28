@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/test/response_providers/string_response_provider.h"
+#import "ios/web/public/test/response_providers/string_response_provider.h"
 
 namespace web {
 

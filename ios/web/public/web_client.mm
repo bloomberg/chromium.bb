@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 
 #import <Foundation/Foundation.h>
 

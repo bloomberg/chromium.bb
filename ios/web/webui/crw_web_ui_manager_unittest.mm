@@ -21,12 +21,12 @@
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/web_test.h"
-#include "ios/web/web_state/web_state_impl.h"
+#import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/webui/crw_web_ui_page_builder.h"
-#include "ios/web/webui/url_fetcher_block_adapter.h"
+#import "ios/web/webui/url_fetcher_block_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 
 namespace web {
 

@@ -6,7 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
+#import "base/mac/bind_objc_block.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

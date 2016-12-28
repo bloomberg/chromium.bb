@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "ios/web/public/test/response_providers/file_based_response_provider_impl.h"
-#include "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/response_providers/file_based_response_provider_impl.h"
+#import "ios/web/public/test/response_providers/response_provider.h"
 
 namespace base {
 class FilePath;

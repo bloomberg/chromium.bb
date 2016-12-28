@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/net/clients/crw_redirect_network_client_factory.h"
+#import "ios/web/net/clients/crw_redirect_network_client_factory.h"
 
 #include "base/location.h"
 #include "ios/web/public/web_thread.h"

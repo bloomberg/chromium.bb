@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 

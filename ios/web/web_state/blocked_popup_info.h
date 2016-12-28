@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/ios/block_types.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/ios/block_types.h"
+#import "base/mac/scoped_nsobject.h"
 #include "ios/web/public/referrer.h"
 #include "url/gurl.h"
 

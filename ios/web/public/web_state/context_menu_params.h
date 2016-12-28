@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "ios/web/public/referrer.h"
 #include "url/gurl.h"

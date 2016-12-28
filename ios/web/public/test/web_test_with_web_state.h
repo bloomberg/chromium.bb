@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_TEST_WEB_TEST_WITH_WEB_STATE_H_
 #define IOS_WEB_PUBLIC_TEST_WEB_TEST_WITH_WEB_STATE_H_
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 #include "base/message_loop/message_loop.h"
 #include "ios/web/public/test/web_test.h"
 #include "url/gurl.h"

@@ -9,10 +9,10 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
-#include "ios/web/public/image_fetcher/webp_decoder.h"
+#import "ios/web/public/image_fetcher/webp_decoder.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"

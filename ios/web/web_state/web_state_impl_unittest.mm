@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/web_state/web_state_impl.h"
+#import "ios/web/web_state/web_state_impl.h"
 
 #include <stddef.h>
 
@@ -11,26 +11,26 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
+#import "base/mac/bind_objc_block.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "base/values.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/test/web_test.h"
-#include "ios/web/public/web_state/context_menu_params.h"
+#import "ios/web/public/web_state/context_menu_params.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
 #include "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-#include "ios/web/public/web_state/web_state_policy_decider.h"
+#import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "url/gurl.h"
 
 using testing::_;

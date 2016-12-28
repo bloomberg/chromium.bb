@@ -6,10 +6,10 @@
 
 #import <WebKit/WebKit.h>
 
-#include "ios/web/navigation/navigation_item_impl.h"
-#include "ios/web/public/navigation_item.h"
+#import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/public/navigation_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 namespace web {

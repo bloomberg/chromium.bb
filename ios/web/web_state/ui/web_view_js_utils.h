@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
-#include "ios/web/public/block_types.h"
+#import "ios/web/public/block_types.h"
 
 @class WKWebView;
 

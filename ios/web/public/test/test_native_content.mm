@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/test/test_native_content.h"
+#import "ios/web/public/test/test_native_content.h"
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 
 @implementation TestNativeContent {
   GURL _URL;

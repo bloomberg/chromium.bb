@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "ios/web/public/test/response_providers/data_response_provider.h"
+#import "ios/web/public/test/response_providers/data_response_provider.h"
 
 namespace web {
 

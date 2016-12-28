@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/public/web_state/ui/crw_content_view.h"
 
 @class CRWWebControllerContainerView;
 @class CRWWebViewContentView;

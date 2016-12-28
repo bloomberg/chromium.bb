@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_JAVA_SCRIPT_DIALOG_CALLBACK_H_
 #define IOS_WEB_PUBLIC_JAVA_SCRIPT_DIALOG_CALLBACK_H_
 
+#import <Foundation/Foundation.h>
+
 #include "base/callback.h"
 
 namespace web {

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/response_providers/response_provider.h"
 
 @class GCDWebServer;
 

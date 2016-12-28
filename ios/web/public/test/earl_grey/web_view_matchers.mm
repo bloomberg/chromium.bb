@@ -7,14 +7,14 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
-#include "base/mac/bind_objc_block.h"
+#import "base/mac/bind_objc_block.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "base/values.h"
-#include "ios/testing/wait_util.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"

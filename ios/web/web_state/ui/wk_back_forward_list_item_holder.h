@@ -7,7 +7,7 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/ios/weak_nsobject.h"
+#import "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"

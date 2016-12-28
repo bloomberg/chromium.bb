@@ -13,7 +13,7 @@
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
-#include "ios/web/web_state/web_state_impl.h"
+#import "ios/web/web_state/web_state_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

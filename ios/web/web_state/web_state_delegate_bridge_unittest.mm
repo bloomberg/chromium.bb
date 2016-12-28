@@ -8,7 +8,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ios/web/public/web_state/context_menu_params.h"
+#import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/web_state/web_state_delegate_stub.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/gtest_support.h"

@@ -5,7 +5,7 @@
 #include "ios/web/public/web_state/web_state_observer.h"
 
 #include "ios/web/public/load_committed_details.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 
 namespace web {
 

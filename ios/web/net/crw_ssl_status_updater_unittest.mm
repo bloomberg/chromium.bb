@@ -9,7 +9,7 @@
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"

@@ -6,8 +6,8 @@
 
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
-#include "ios/web/public/test/response_providers/html_response_provider.h"
-#include "ios/web/public/test/response_providers/html_response_provider_impl.h"
+#import "ios/web/public/test/response_providers/html_response_provider.h"
+#import "ios/web/public/test/response_providers/html_response_provider_impl.h"
 #import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"

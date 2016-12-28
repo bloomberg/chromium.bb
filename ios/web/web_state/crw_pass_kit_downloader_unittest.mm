@@ -15,7 +15,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "url/gurl.h"
 
 using net::HttpResponseHeaders;

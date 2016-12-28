@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/libwebp/webp/decode.h"
 

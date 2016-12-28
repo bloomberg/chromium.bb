@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
-#import "base/memory/ref_counted.h"
+#import "base/mac/bind_objc_block.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "ios/web/public/browser_state.h"

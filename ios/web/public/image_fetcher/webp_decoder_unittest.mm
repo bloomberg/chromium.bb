@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/image_fetcher/webp_decoder.h"
+#import "ios/web/public/image_fetcher/webp_decoder.h"
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
@@ -16,7 +16,7 @@
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"

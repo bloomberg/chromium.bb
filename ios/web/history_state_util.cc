@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/history_state_util.h"
+#include "ios/web/history_state_util.h"
 
 #include "base/logging.h"
 #include "url/gurl.h"

@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_NET_COOKIE_NOTIFICATION_BRIDGE_H_
 #define IOS_WEB_NET_COOKIE_NOTIFICATION_BRIDGE_H_
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 

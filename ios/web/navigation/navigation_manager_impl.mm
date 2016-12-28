@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/navigation/navigation_manager_impl.h"
+#import "ios/web/navigation/navigation_manager_impl.h"
 
 #include <stddef.h>
 
@@ -12,12 +12,12 @@
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
-#include "ios/web/navigation/navigation_item_impl.h"
-#include "ios/web/navigation/navigation_manager_delegate.h"
-#import "ios/web/navigation/navigation_manager_facade_delegate.h"
+#import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/navigation_manager_delegate.h"
+#include "ios/web/navigation/navigation_manager_facade_delegate.h"
 #include "ios/web/public/load_committed_details.h"
-#include "ios/web/public/navigation_item.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

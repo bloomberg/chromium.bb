@@ -7,7 +7,7 @@
 #import <WebKit/WebKit.h>
 #import <XCTest/XCTest.h>
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/test/http_server.h"

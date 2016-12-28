@@ -7,8 +7,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #import "ios/web/public/test/http_server.h"
-#include "ios/web/public/test/response_providers/file_based_response_provider.h"
-#include "ios/web/public/test/response_providers/html_response_provider.h"
+#import "ios/web/public/test/response_providers/file_based_response_provider.h"
+#import "ios/web/public/test/response_providers/html_response_provider.h"
 
 namespace web {
 namespace test {

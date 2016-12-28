@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

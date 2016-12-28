@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 
 namespace web {
 class ShellBrowserState;

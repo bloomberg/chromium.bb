@@ -12,7 +12,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "ios/web/app/web_main_loop.h"
 #include "ios/web/public/url_schemes.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #include "ui/base/ui_base_paths.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

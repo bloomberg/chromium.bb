@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_NET_CLIENTS_CRW_JS_INJECTION_NETWORK_CLIENT_H_
 #define IOS_WEB_NET_CLIENTS_CRW_JS_INJECTION_NETWORK_CLIENT_H_
 
-#include "ios/net/clients/crn_forwarding_network_client.h"
+#import "ios/net/clients/crn_forwarding_network_client.h"
 
 namespace web {
 // Used for UMA histogram and must be kept in sync with the histograms.xml file.

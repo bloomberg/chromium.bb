@@ -10,11 +10,11 @@
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_browser_state.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 namespace web {

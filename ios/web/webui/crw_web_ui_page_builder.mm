@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/webui/crw_web_ui_page_builder.h"
+#import "ios/web/webui/crw_web_ui_page_builder.h"
 
 #include <map>
 #include <string>
@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

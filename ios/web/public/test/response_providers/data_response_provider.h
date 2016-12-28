@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/response_providers/response_provider.h"
 #include "net/http/http_response_headers.h"
 
 namespace web {

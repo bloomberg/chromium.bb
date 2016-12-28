@@ -8,11 +8,11 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/web/navigation/navigation_item_impl.h"
-#include "ios/web/navigation/nscoder_util.h"
-#include "ios/web/public/navigation_item.h"
+#import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/nscoder_util.h"
+#import "ios/web/public/navigation_item.h"
 #include "ios/web/public/web_state/page_display_state.h"
 #import "net/base/mac/url_conversions.h"
 

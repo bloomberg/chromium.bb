@@ -4,7 +4,7 @@
 
 #import "ios/web/web_state/crw_web_view_proxy_impl.h"
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"

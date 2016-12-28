@@ -11,12 +11,12 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/http_server.h"
-#include "ios/web/public/test/response_providers/string_response_provider.h"
+#import "ios/web/public/test/response_providers/string_response_provider.h"
 #import "ios/web/test/web_int_test.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 
 // A test fixture for verifying the behavior of web::test::HttpServer.
 typedef web::WebIntTest HttpServerTest;

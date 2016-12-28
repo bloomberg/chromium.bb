@@ -8,7 +8,7 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "base/strings/stringprintf.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #import "ios/web/shell/test/earl_grey/shell_base_test_case.h"

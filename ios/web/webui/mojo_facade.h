@@ -9,7 +9,7 @@
 #include <string>
 
 #import "base/ios/weak_nsobject.h"
-#import "mojo/public/cpp/system/watcher.h"
+#include "mojo/public/cpp/system/watcher.h"
 
 @protocol CRWJSInjectionEvaluator;
 

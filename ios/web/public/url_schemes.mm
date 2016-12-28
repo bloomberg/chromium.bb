@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #include "url/url_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

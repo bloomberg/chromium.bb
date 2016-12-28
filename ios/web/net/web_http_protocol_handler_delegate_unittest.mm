@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/net/web_http_protocol_handler_delegate.h"
+#import "ios/web/net/web_http_protocol_handler_delegate.h"
 
 #import <Foundation/Foundation.h>
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"

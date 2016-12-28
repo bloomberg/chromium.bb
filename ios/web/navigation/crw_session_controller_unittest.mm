@@ -12,14 +12,14 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
-#include "ios/web/navigation/crw_session_entry.h"
-#include "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/crw_session_entry.h"
+#import "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 @interface CRWSessionController (Testing)

@@ -4,9 +4,9 @@
 
 #import "ios/web/test/web_int_test.h"
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/http_server.h"
 #import "ios/web/public/web_view_creation_util.h"
 

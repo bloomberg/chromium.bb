@@ -6,9 +6,9 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
+#import "base/mac/bind_objc_block.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "base/values.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"

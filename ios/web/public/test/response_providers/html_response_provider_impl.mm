@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/test/response_providers/html_response_provider_impl.h"
+#import "ios/web/public/test/response_providers/html_response_provider_impl.h"
 
-#include "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/response_providers/response_provider.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"

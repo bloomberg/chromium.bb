@@ -22,7 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/webui/shared_resources_data_source_ios.h"
 #include "ios/web/webui/url_data_source_ios_impl.h"

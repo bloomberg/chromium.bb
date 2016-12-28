@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "ios/web/public/test/response_providers/data_response_provider.h"
-#include "ios/web/public/test/response_providers/response_provider.h"
+#import "ios/web/public/test/response_providers/data_response_provider.h"
+#import "ios/web/public/test/response_providers/response_provider.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"

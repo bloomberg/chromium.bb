@@ -6,8 +6,8 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/objc_property_releaser.h"
+#import "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

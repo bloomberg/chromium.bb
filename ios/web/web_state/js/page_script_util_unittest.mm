@@ -15,7 +15,7 @@
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_view_creation_util.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 
 namespace web {
 namespace {

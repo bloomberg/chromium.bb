@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 #include "base/values.h"
 
 #import "ios/web/public/web_state/web_state.h"

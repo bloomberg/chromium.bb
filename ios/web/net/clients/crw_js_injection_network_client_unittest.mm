@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/net/clients/crw_js_injection_network_client.h"
+#import "ios/web/net/clients/crw_js_injection_network_client.h"
 
 #import <Foundation/Foundation.h>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/net/clients/crn_network_client_protocol.h"

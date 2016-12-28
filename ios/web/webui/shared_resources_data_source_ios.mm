@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #include "net/base/mime_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_resources.h"

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/web/public/web_client.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 
 namespace web {

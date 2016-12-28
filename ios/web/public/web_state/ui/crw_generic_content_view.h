@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_GENERIC_CONTENT_VIEW_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_GENERIC_CONTENT_VIEW_H_
 
-#include "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/public/web_state/ui/crw_content_view.h"
 
 // Wraps an arbitrary native UIView in a CRWContentView.
 @interface CRWGenericContentView : CRWContentView

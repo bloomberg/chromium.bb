@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/webui/url_fetcher_block_adapter.h"
+#import "ios/web/webui/url_fetcher_block_adapter.h"
 
 #include <string>
 
@@ -13,7 +13,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 

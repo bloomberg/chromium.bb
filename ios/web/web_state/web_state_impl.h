@@ -17,12 +17,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "ios/web/navigation/navigation_manager_delegate.h"
-#include "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/net/request_tracker_impl.h"
+#import "ios/web/navigation/navigation_manager_delegate.h"
+#import "ios/web/navigation/navigation_manager_impl.h"
+#import "ios/web/net/request_tracker_impl.h"
 #import "ios/web/public/java_script_dialog_callback.h"
 #include "ios/web/public/java_script_dialog_type.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
 @protocol CRWRequestTrackerDelegate;

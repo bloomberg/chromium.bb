@@ -7,7 +7,7 @@
 #import <WebKit/WebKit.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 
 namespace {
 

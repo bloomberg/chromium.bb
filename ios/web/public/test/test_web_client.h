@@ -8,8 +8,8 @@
 #import <Foundation/Foundation.h>
 
 #include "base/compiler_specific.h"
-#include "base/mac/scoped_nsobject.h"
-#include "ios/web/public/web_client.h"
+#import "base/mac/scoped_nsobject.h"
+#import "ios/web/public/web_client.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 

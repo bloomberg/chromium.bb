@@ -19,7 +19,7 @@
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #import "net/base/mac/url_conversions.h"

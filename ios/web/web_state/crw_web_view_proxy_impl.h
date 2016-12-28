@@ -7,8 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/web/public/web_state/crw_web_view_proxy.h"
-#include "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/public/web_state/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_content_view.h"
 
 @class CRWWebController;
 

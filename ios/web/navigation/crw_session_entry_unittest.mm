@@ -9,14 +9,14 @@
 
 #include <utility>
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#include "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/public/referrer.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"

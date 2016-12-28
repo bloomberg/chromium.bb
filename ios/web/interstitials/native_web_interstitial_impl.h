@@ -5,12 +5,12 @@
 #ifndef IOS_WEB_INTERSTITIALS_NATIVE_WEB_INTERSTITIAL_IMPL_H_
 #define IOS_WEB_INTERSTITIALS_NATIVE_WEB_INTERSTITIAL_IMPL_H_
 
-#include "ios/web/interstitials/web_interstitial_impl.h"
+#import "ios/web/interstitials/web_interstitial_impl.h"
 
 #include <memory>
 
-#include "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/ios/weak_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 
 namespace web {
 

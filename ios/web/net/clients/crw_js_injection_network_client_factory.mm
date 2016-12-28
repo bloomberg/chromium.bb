@@ -5,7 +5,7 @@
 #import "ios/web/net/clients/crw_js_injection_network_client_factory.h"
 
 #include "base/metrics/histogram.h"
-#include "ios/web/net/clients/crw_js_injection_network_client.h"
+#import "ios/web/net/clients/crw_js_injection_network_client.h"
 #include "net/url_request/url_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

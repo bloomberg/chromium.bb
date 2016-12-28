@@ -7,7 +7,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/testing/earl_grey/matchers.h"
-#include "ios/testing/wait_util.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"

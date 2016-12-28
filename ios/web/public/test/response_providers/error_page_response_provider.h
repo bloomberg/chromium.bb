@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "ios/web/public/test/response_providers/html_response_provider.h"
+#import "ios/web/public/test/response_providers/html_response_provider.h"
 #include "url/gurl.h"
 
 // A HtmlResponseProvider that supports the following additional URLs:

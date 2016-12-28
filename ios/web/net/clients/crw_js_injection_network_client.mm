@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram.h"
 #import "ios/net/crn_http_url_response.h"
 #import "ios/third_party/blink/src/html_tokenizer.h"

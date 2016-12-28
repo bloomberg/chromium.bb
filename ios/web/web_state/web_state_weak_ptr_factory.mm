@@ -4,7 +4,7 @@
 
 #include "ios/web/web_state/web_state_weak_ptr_factory.h"
 
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 
 namespace web {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/webui/url_fetcher_block_adapter.h"
+#import "ios/web/webui/url_fetcher_block_adapter.h"
 
 #include "base/logging.h"
 #include "net/url_request/url_fetcher.h"

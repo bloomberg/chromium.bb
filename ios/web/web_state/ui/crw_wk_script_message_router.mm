@@ -4,7 +4,7 @@
 
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 
-#import "base/logging.h"
+#include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 
 @interface CRWWKScriptMessageRouter ()<WKScriptMessageHandler>
