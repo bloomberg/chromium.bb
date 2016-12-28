@@ -61,12 +61,16 @@ PrintPreviewWebUITest.prototype = {
    * @override
    */
   testGenPreamble: function() {
-    // Enable print scaling for tests.
+    // Enable print scaling and print as image for tests.
     GEN('  base::FeatureList::ClearInstanceForTesting();');
     GEN('  std::unique_ptr<base::FeatureList>');
     GEN('      feature_list(new base::FeatureList);');
+    GEN('  char enabled_features[128] = {0};');
+    GEN('  strcpy(enabled_features, features::kPrintScaling.name);');
+    GEN('  strcat(strcat(enabled_features, ","), ');
+    GEN('      features::kPrintPdfAsImage.name);');
     GEN('  feature_list->InitializeFromCommandLine(');
-    GEN('      features::kPrintScaling.name, std::string());');
+    GEN('      enabled_features, std::string());');
     GEN('  base::FeatureList::SetInstance(std::move(feature_list));');
   },
 
@@ -519,7 +523,11 @@ TEST_F('PrintPreviewWebUITest', 'PrintToPDFSelectedCapabilities', function() {
   this.setCapabilities(device);
 
   var otherOptions = $('other-options-settings');
-  checkSectionVisible(otherOptions, false);
+  checkSectionVisible(otherOptions, true);
+  checkElementDisplayed(
+      otherOptions.querySelector('#fit-to-page-container'), false);
+  checkElementDisplayed(
+      otherOptions.querySelector('#rasterize-container'), true);
   checkSectionVisible($('media-size-settings'), false);
   checkSectionVisible($('scaling-settings'), false);
 
@@ -535,6 +543,7 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLCapabilities', function() {
 
   var otherOptions = $('other-options-settings');
   var fitToPage = otherOptions.querySelector('#fit-to-page-container');
+  var rasterize = otherOptions.querySelector('#rasterize-container');
   var mediaSize = $('media-size-settings');
   var scalingSettings = $('scaling-settings');
 
@@ -542,12 +551,14 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLCapabilities', function() {
   // available).
   checkSectionVisible(otherOptions, true);
   checkElementDisplayed(fitToPage, false);
+  checkElementDisplayed(rasterize, false);
   checkSectionVisible(mediaSize, false);
   checkSectionVisible(scalingSettings, false);
 
   this.expandMoreSettings();
 
   checkElementDisplayed(fitToPage, false);
+  checkElementDisplayed(rasterize, false);
   checkSectionVisible(mediaSize, true);
   checkSectionVisible(scalingSettings, true);
 
@@ -566,12 +577,18 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
   var scalingSettings = $('scaling-settings');
   var fitToPageContainer =
       otherOptions.querySelector('#fit-to-page-container');
+  var rasterizeContainer =
+      otherOptions.querySelector('#rasterize-container');
 
   checkSectionVisible(otherOptions, true);
   checkElementDisplayed(fitToPageContainer, true);
+  checkElementDisplayed(rasterizeContainer, false);
   expectTrue(
       fitToPageContainer.querySelector('.checkbox').checked);
   this.expandMoreSettings();
+  checkElementDisplayed(rasterizeContainer, true);
+  expectFalse(
+      rasterizeContainer.querySelector('.checkbox').checked);
   checkSectionVisible($('media-size-settings'), true);
   checkSectionVisible(scalingSettings, true);
 

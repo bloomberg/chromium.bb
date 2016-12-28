@@ -647,7 +647,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Queries the plugin for supported print formats and sets |format| to the
   // best format to use. Returns false if the plugin does not support any
   // print format that we can handle (we can handle only PDF).
-  bool GetPreferredPrintOutputFormat(PP_PrintOutputFormat_Dev* format);
+  bool GetPreferredPrintOutputFormat(PP_PrintOutputFormat_Dev* format,
+                                     const blink::WebPrintParams& params);
   bool PrintPDFOutput(PP_Resource print_output,
                       printing::PdfMetafileSkia* metafile);
 

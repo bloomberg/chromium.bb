@@ -57,6 +57,7 @@
 #include "third_party/pdfium/public/fpdf_transformpage.h"
 #include "third_party/pdfium/public/fpdfview.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/rect.h"
 #include "v8/include/v8.h"
 
@@ -615,6 +616,17 @@ void TearDownV8() {
   g_isolate_holder->isolate()->Exit();
   delete g_isolate_holder;
   g_isolate_holder = nullptr;
+}
+
+int GetBlockForJpeg(void* param,
+                    unsigned long pos,
+                    unsigned char* buf,
+                    unsigned long size) {
+  std::vector<uint8_t>* data_vector = static_cast<std::vector<uint8_t>*>(param);
+  if (pos + size < pos || pos + size > data_vector->size())
+    return 0;
+  memcpy(buf, data_vector->data() + pos, size);
+  return 1;
 }
 
 }  // namespace
@@ -1353,9 +1365,11 @@ bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
 }
 
 uint32_t PDFiumEngine::QuerySupportedPrintOutputFormats() {
-  if (!HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY))
-    return 0;
-  return PP_PRINTOUTPUTFORMAT_PDF;
+  if (HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY))
+    return PP_PRINTOUTPUTFORMAT_PDF | PP_PRINTOUTPUTFORMAT_RASTER;
+  if (HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY))
+    return PP_PRINTOUTPUTFORMAT_RASTER;
+  return 0;
 }
 
 void PDFiumEngine::PrintBegin() {
@@ -1366,10 +1380,13 @@ pp::Resource PDFiumEngine::PrintPages(
     const PP_PrintPageNumberRange_Dev* page_ranges, uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings) {
   ScopedSubstFont scoped_subst_font(this);
-  if (HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY))
+  if (HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY) &&
+      (print_settings.format & PP_PRINTOUTPUTFORMAT_PDF)) {
     return PrintPagesAsPDF(page_ranges, page_range_count, print_settings);
-  else if (HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY))
+  } else if (HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY)) {
     return PrintPagesAsRasterPDF(page_ranges, page_range_count, print_settings);
+  }
+
   return pp::Resource();
 }
 
@@ -1412,6 +1429,8 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
                         print_settings.orientation,
                         FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
 
+  unsigned char* bitmap_data =
+      static_cast<unsigned char*>(FPDFBitmap_GetBuffer(bitmap));
   double ratio_x = ConvertUnitDouble(bitmap_size.width(),
                                      print_settings.dpi,
                                      kPointsPerInch);
@@ -1422,7 +1441,25 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
   // Add the bitmap to an image object and add the image object to the output
   // page.
   FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImgeObj(temp_doc);
-  FPDFImageObj_SetBitmap(&temp_page, 1, temp_img, bitmap);
+
+  std::vector<uint8_t> compressed_bitmap_data;
+  int quality = 40;
+  if (!(print_settings.format & PP_PRINTOUTPUTFORMAT_PDF) &&
+      (gfx::JPEGCodec::Encode(
+          bitmap_data, gfx::JPEGCodec::FORMAT_BGRA, FPDFBitmap_GetWidth(bitmap),
+          FPDFBitmap_GetHeight(bitmap), FPDFBitmap_GetStride(bitmap), quality,
+          &compressed_bitmap_data))) {
+    FPDF_FILEACCESS file_access = {};
+    file_access.m_FileLen =
+        static_cast<unsigned long>(compressed_bitmap_data.size());
+    file_access.m_GetBlock = &GetBlockForJpeg;
+    file_access.m_Param = &compressed_bitmap_data;
+
+    FPDFImageObj_LoadJpegFileInline(&temp_page, 1, temp_img, &file_access);
+  } else {
+    FPDFImageObj_SetBitmap(&temp_page, 1, temp_img, bitmap);
+  }
+
   FPDFImageObj_SetMatrix(temp_img, ratio_x, 0, 0, ratio_y, 0, 0);
   FPDFPage_InsertObject(temp_page, temp_img);
   FPDFPage_GenerateContent(temp_page);

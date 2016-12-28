@@ -127,30 +127,42 @@ cr.define('print_preview', function() {
    *     only ticket item.
    * @param {!print_preview.ticket_items.HeaderFooter} headerFooter Header
    *     footer ticket item.
+   * @param {!print_preview.ticket_items.Rasterize} rasterize Rasterize ticket
+   *     item.
    * @constructor
    * @extends {print_preview.SettingsSection}
    */
   function OtherOptionsSettings(
-      duplex, fitToPage, cssBackground, selectionOnly, headerFooter) {
+      duplex, fitToPage, cssBackground, selectionOnly, headerFooter,
+      rasterize) {
     print_preview.SettingsSection.call(this);
+    /**
+     * @private {boolean} rasterizeEnabled Whether the print as image feature is
+     *     enabled.
+     */
+    this.rasterizeEnabled_ = loadTimeData.getBoolean('printPdfAsImageEnabled');
 
-    /*
+    /**
      * @private {!Array<!CheckboxTicketItemElement>} checkbox ticket item
      *      elements representing the different options in the section.
      *      Selection only must always be the last element in the array.
      */
     this.elements_ = [
-        new CheckboxTicketItemElement(headerFooter, true,
-                                      'header-footer-container'),
-        new CheckboxTicketItemElement(fitToPage, false,
-                                      'fit-to-page-container'),
-        new CheckboxTicketItemElement(duplex, false, 'duplex-container'),
-        new CheckboxTicketItemElement(cssBackground, true,
-                                      'css-background-container'),
-        new CheckboxTicketItemElement(selectionOnly, true,
-                                      'selection-only-container')
+      new CheckboxTicketItemElement(headerFooter, true,
+                                    'header-footer-container'),
+      new CheckboxTicketItemElement(fitToPage, false,
+                                    'fit-to-page-container'),
+      new CheckboxTicketItemElement(duplex, false, 'duplex-container'),
+      new CheckboxTicketItemElement(cssBackground, true,
+                                    'css-background-container'),
+      new CheckboxTicketItemElement(selectionOnly, true,
+                                    'selection-only-container')
     ];
-
+    if (this.rasterizeEnabled_) {
+      this.elements_.splice(4, 0,
+                            new CheckboxTicketItemElement(rasterize, true,
+                                'rasterize-container'));
+    }
   };
 
   OtherOptionsSettings.prototype = {
@@ -206,6 +218,7 @@ cr.define('print_preview', function() {
     decorateInternal: function() {
       for (var i = 0; i < this.elements_.length; i++)
         this.elements_[i].decorate();
+      $('rasterize-container').hidden = !this.rasterizeEnabled_;
     },
 
     /** @override */

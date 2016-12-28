@@ -177,6 +177,7 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
   bool collate = false;
   int copies = 1;
   int scale_factor = 100;
+  bool rasterize_pdf = false;
 
   if (!job_settings.GetBoolean(kSettingCollate, &collate) ||
       !job_settings.GetInteger(kSettingCopies, &copies) ||
@@ -184,7 +185,8 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
       !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
       !job_settings.GetBoolean(kSettingLandscape, &landscape) ||
       !job_settings.GetString(kSettingDeviceName, &device_name) ||
-      !job_settings.GetInteger(kSettingScaleFactor, &scale_factor)) {
+      !job_settings.GetInteger(kSettingScaleFactor, &scale_factor) ||
+      !job_settings.GetBoolean(kSettingRasterizePdf, &rasterize_pdf)) {
     return false;
   }
 
@@ -195,7 +197,7 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
   settings->set_duplex_mode(static_cast<DuplexMode>(duplex_mode));
   settings->set_color(static_cast<ColorModel>(color));
   settings->set_scale_factor(static_cast<double>(scale_factor) / 100.0);
-
+  settings->set_rasterize_pdf(rasterize_pdf);
 #if defined(OS_WIN)
   // Modifiable implies HTML and not other formats like PDF.
   bool can_modify = false;

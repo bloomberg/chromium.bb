@@ -288,6 +288,7 @@ cr.define('print_preview', function() {
         'generateDraftData': documentInfo.isModifiable,
         'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
         'scaleFactor': printTicketStore.scaling.getValueAsNumber(),
+        'rasterizePDF': printTicketStore.rasterize.getValue(),
         // NOTE: Even though the following fields don't directly relate to the
         // preview, they still need to be included.
         'duplex': printTicketStore.duplex.getValue() ?
@@ -367,6 +368,7 @@ cr.define('print_preview', function() {
         'printWithCloudPrint': !destination.isLocal,
         'printWithPrivet': destination.isPrivet,
         'printWithExtension': destination.isExtension,
+        'rasterizePDF': printTicketStore.rasterize.getValue(),
         'scaleFactor': printTicketStore.scaling.getValueAsNumber(),
         'deviceName': destination.id,
         'isFirstRequest': false,

@@ -5155,7 +5155,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         "No-State Prefetch" pre-downloads resources to improve load times. "Prerender" does a full pre-rendering of the page, to improve load times even more. "Simple Load" does nothing and is similar to disabling the feature, but collects more metrics for comparison purposes.
       </message>
 
-      <!-- Print scaling feature -->
+      <!-- Print Preview features -->
+      <message name="IDS_FLAGS_PRINT_PDF_AS_IMAGE_NAME" desc="Name for the flag to add the option to print PDFs as images to print preview.">
+        Print Pdf as Image
+      </message>
+      <message name="IDS_FLAGS_PRINT_PDF_AS_IMAGE_DESCRIPTION" desc="Description for the flag to add the option to print PDFs as images in print preview.">
+        If enabled, an option to print PDF files as images will be available in print preview.
+      </message>
       <message name="IDS_FLAGS_PRINT_SCALING_NAME" desc="Name for the flag to add the print scaling feature to print preview.">
         Print Scaling.
       </message>
@@ -8638,6 +8644,9 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_PRINT_PREVIEW_OPTION_SELECTION_ONLY" desc="Checkbox label shown in print preview page to print only selected content.">
           Selection only
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_RASTERIZE" desc="Checkbox label shown in print preview page to print PDF as an image (rasterize PDF).">
+          Print as image
         </message>
         <message name="IDS_PRINT_PREVIEW_MARGINS_LABEL" desc="Margins option label. Provides user the option to change the margins of the printed page.">
           Margins

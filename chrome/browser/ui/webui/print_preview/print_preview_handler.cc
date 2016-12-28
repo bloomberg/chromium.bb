@@ -142,6 +142,7 @@ enum PrintSettingsBuckets {
   NON_DEFAULT_MARGINS,
   DISTILL_PAGE_UNUSED,
   SCALING,
+  PRINT_AS_IMAGE,
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
@@ -288,6 +289,12 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
   if (settings.GetBoolean(printing::kSettingOpenPDFInPreview,
                           &external_preview) && external_preview) {
     ReportPrintSettingHistogram(EXTERNAL_PDF_PREVIEW);
+  }
+
+  bool rasterize = false;
+  if (settings.GetBoolean(printing::kSettingRasterizePdf,
+                          &rasterize) && rasterize) {
+    ReportPrintSettingHistogram(PRINT_AS_IMAGE);
   }
 }
 

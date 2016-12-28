@@ -172,6 +172,9 @@ const char kSettingPrintWithExtension[] = "printWithExtension";
 // Scaling factor
 const char kSettingScaleFactor[] = "scaleFactor";
 
+// Scaling factor
+const char kSettingRasterizePdf[] = "rasterizePDF";
+
 // Ticket option. Contains the ticket in CJT format.
 const char kSettingTicket[] = "ticket";
 

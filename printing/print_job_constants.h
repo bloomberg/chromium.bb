@@ -65,6 +65,7 @@ PRINTING_EXPORT extern const char kSettingPrintableAreaY[];
 PRINTING_EXPORT extern const char kSettingPrinterDescription[];
 PRINTING_EXPORT extern const char kSettingPrinterName[];
 PRINTING_EXPORT extern const char kSettingPrinterOptions[];
+PRINTING_EXPORT extern const char kSettingRasterizePdf[];
 PRINTING_EXPORT extern const char kSettingScaleFactor[];
 PRINTING_EXPORT extern const char kSettingTicket[];
 PRINTING_EXPORT extern const char kSettingShouldPrintBackgrounds[];

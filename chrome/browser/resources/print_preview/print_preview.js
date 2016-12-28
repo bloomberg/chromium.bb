@@ -188,7 +188,8 @@ cr.define('print_preview', function() {
         this.printTicketStore_.fitToPage,
         this.printTicketStore_.cssBackground,
         this.printTicketStore_.selectionOnly,
-        this.printTicketStore_.headerFooter);
+        this.printTicketStore_.headerFooter,
+        this.printTicketStore_.rasterize);
     this.addChild(this.otherOptionsSettings_);
 
     /**
@@ -1322,6 +1323,7 @@ cr.define('print_preview', function() {
 <include src="data/ticket_items/fit_to_page.js">
 <include src="data/ticket_items/css_background.js">
 <include src="data/ticket_items/selection_only.js">
+<include src="data/ticket_items/rasterize.js">
 <include src="data/ticket_items/vendor_items.js">
 
 <include src="native_layer.js">

@@ -42,26 +42,27 @@ namespace IPC {
 }  // namespace IPC
 
 PrintMsg_Print_Params::PrintMsg_Print_Params()
-  : page_size(),
-    content_size(),
-    printable_area(),
-    margin_top(0),
-    margin_left(0),
-    dpi(0),
-    scale_factor(1.0f),
-    desired_dpi(0),
-    document_cookie(0),
-    selection_only(false),
-    supports_alpha_blend(false),
-    preview_ui_id(-1),
-    preview_request_id(0),
-    is_first_request(false),
-    print_scaling_option(blink::WebPrintScalingOptionSourceSize),
-    print_to_pdf(false),
-    display_header_footer(false),
-    title(),
-    url(),
-    should_print_backgrounds(false) {}
+    : page_size(),
+      content_size(),
+      printable_area(),
+      margin_top(0),
+      margin_left(0),
+      dpi(0),
+      scale_factor(1.0f),
+      desired_dpi(0),
+      rasterize_pdf(false),
+      document_cookie(0),
+      selection_only(false),
+      supports_alpha_blend(false),
+      preview_ui_id(-1),
+      preview_request_id(0),
+      is_first_request(false),
+      print_scaling_option(blink::WebPrintScalingOptionSourceSize),
+      print_to_pdf(false),
+      display_header_footer(false),
+      title(),
+      url(),
+      should_print_backgrounds(false) {}
 
 PrintMsg_Print_Params::PrintMsg_Print_Params(
     const PrintMsg_Print_Params& other) = default;
@@ -77,6 +78,7 @@ void PrintMsg_Print_Params::Reset() {
   dpi = 0;
   scale_factor = 1.0f;
   desired_dpi = 0;
+  rasterize_pdf = false;
   document_cookie = 0;
   selection_only = false;
   supports_alpha_blend = false;

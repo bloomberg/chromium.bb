@@ -73,6 +73,7 @@ PrintingContext::Result PrintingContext::UsePdfSettings() {
   pdf_settings->SetBoolean(kSettingPrintWithPrivet, false);
   pdf_settings->SetBoolean(kSettingPrintWithExtension, false);
   pdf_settings->SetInteger(kSettingScaleFactor, 100);
+  pdf_settings->SetBoolean(kSettingRasterizePdf, false);
   return UpdatePrintSettings(*pdf_settings);
 }
 

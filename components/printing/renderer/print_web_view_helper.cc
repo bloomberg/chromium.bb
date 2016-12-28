@@ -286,6 +286,7 @@ void ComputeWebKitPrintParamsInDesiredDpi(
     blink::WebPrintParams* webkit_print_params) {
   int dpi = GetDPI(&print_params);
   webkit_print_params->printerDPI = dpi;
+  webkit_print_params->rasterizePDF = print_params.rasterize_pdf;
   webkit_print_params->printScalingOption = print_params.print_scaling_option;
 
   webkit_print_params->printContentArea.width = ConvertUnit(

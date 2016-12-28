@@ -96,6 +96,9 @@ class PRINTING_EXPORT PrintSettings {
   void set_scale_factor(double scale_factor) { scale_factor_ = scale_factor; }
   double scale_factor() const { return scale_factor_; }
 
+  void set_rasterize_pdf(bool rasterize_pdf) { rasterize_pdf_ = rasterize_pdf; }
+  bool rasterize_pdf() const { return rasterize_pdf_; }
+
   void set_supports_alpha_blend(bool supports_alpha_blend) {
     supports_alpha_blend_ = supports_alpha_blend;
   }
@@ -211,6 +214,9 @@ class PRINTING_EXPORT PrintSettings {
 
   // Scale factor
   double scale_factor_;
+
+  // True if PDF should be printed as a raster PDF
+  bool rasterize_pdf_;
 
   // Is the orientation landscape or portrait.
   bool landscape_;

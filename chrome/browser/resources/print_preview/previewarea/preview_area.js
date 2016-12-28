@@ -337,6 +337,7 @@ cr.define('print_preview', function() {
         this.printTicketStore_.landscape,
         this.printTicketStore_.marginsType,
         this.printTicketStore_.pageRange,
+        this.printTicketStore_.rasterize,
         this.printTicketStore_.selectionOnly,
         this.printTicketStore_.scaling
       ].forEach(function(setting) {

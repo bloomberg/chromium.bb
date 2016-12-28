@@ -110,6 +110,14 @@ cr.define('print_preview', function() {
         new print_preview.ticket_items.PageRange(this.documentInfo_);
 
     /**
+     * Rasterize PDF ticket item.
+     * @type {!print_preview.ticket_items.Rasterize}
+     * @private
+     */
+    this.rasterize_ = new print_preview.ticket_items.Rasterize(
+        this.destinationStore_, this.documentInfo_);
+
+    /**
      * Scaling ticket item.
      * @type {!print_preview.ticket_items.Scaling}
      * @private
@@ -289,6 +297,10 @@ cr.define('print_preview', function() {
 
     get pageRange() {
       return this.pageRange_;
+    },
+
+    get rasterize() {
+      return this.rasterize_;
     },
 
     get scaling() {

@@ -100,6 +100,8 @@ extern const base::Feature kPreferHtmlOverPlugins;
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+extern const base::Feature kPrintPdfAsImage;
+
 extern const base::Feature kPrintScaling;
 #endif
 

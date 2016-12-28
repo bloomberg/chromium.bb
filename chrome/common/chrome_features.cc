@@ -169,6 +169,9 @@ const base::Feature kPreferHtmlOverPlugins{"PreferHtmlOverPlugins",
 
 // Enables the Print Scaling feature in print preview.
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+const base::Feature kPrintPdfAsImage{"PrintPdfAsImage",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPrintScaling{"PrintScaling",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif

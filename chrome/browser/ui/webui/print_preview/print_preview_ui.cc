@@ -278,6 +278,8 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
       IDS_PRINT_PREVIEW_OPTION_BACKGROUND_COLORS_AND_IMAGES);
   source->AddLocalizedString("optionSelectionOnly",
                              IDS_PRINT_PREVIEW_OPTION_SELECTION_ONLY);
+  source->AddLocalizedString("optionRasterize",
+                             IDS_PRINT_PREVIEW_OPTION_RASTERIZE);
   source->AddLocalizedString("marginsLabel", IDS_PRINT_PREVIEW_MARGINS_LABEL);
   source->AddLocalizedString("defaultMargins",
                              IDS_PRINT_PREVIEW_DEFAULT_MARGINS);
@@ -409,6 +411,10 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
 
   bool scaling_enabled = base::FeatureList::IsEnabled(features::kPrintScaling);
   source->AddBoolean("scalingEnabled", scaling_enabled);
+
+  bool print_pdf_as_image_enabled = base::FeatureList::IsEnabled(
+      features::kPrintPdfAsImage);
+  source->AddBoolean("printPdfAsImageEnabled", print_pdf_as_image_enabled);
 
 #if defined(OS_CHROMEOS)
   bool cups_and_md_settings_enabled =

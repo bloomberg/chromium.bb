@@ -51,6 +51,9 @@ struct WebPrintParams {
   // Specifies user selected DPI for printing.
   int printerDPI;
 
+  // Specifies whether to print PDFs as image.
+  bool rasterizePDF = false;
+
   // Specifies whether to reduce/enlarge/retain the print contents to fit the
   // printable area. (This is used only by plugin printing).
   WebPrintScalingOption printScalingOption;

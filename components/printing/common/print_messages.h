@@ -47,6 +47,7 @@ struct PrintMsg_Print_Params {
   double dpi;
   double scale_factor;
   int desired_dpi;
+  bool rasterize_pdf;
   int document_cookie;
   bool selection_only;
   bool supports_alpha_blend;
@@ -127,6 +128,9 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
 
   // Desired apparent dpi on paper.
   IPC_STRUCT_TRAITS_MEMBER(desired_dpi)
+
+  // Whether to rasterize a PDF for printing
+  IPC_STRUCT_TRAITS_MEMBER(rasterize_pdf)
 
   // Cookie for the document to ensure correctness.
   IPC_STRUCT_TRAITS_MEMBER(document_cookie)

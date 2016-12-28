@@ -1595,6 +1595,24 @@
             ]
         }
     ],
+    "PrintPdfAsImage": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PrintPdfAsImage"
+                    ]
+                }
+            ]
+        }
+    ],
     "PrintScaling": [
         {
             "platforms": [
