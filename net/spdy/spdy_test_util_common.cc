@@ -402,6 +402,7 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.net_log = session_deps->net_log;
   params.http_09_on_non_default_ports_enabled =
       session_deps->http_09_on_non_default_ports_enabled;
+  params.restrict_to_one_preconnect_for_proxies = true;
   return params;
 }
 

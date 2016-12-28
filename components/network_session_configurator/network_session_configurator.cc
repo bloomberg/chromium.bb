@@ -396,6 +396,14 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
   }
 }
 
+void ConfigureOptimizePreconnectsToProxiesParams(
+    const std::map<std::string, std::string>& proxy_preconnects_trial_params,
+    net::HttpNetworkSession::Params* params) {
+  params->restrict_to_one_preconnect_for_proxies =
+      GetVariationParam(proxy_preconnects_trial_params,
+                        "restrict_to_one_preconnect_for_proxies") == "true";
+}
+
 }  // anonymous namespace
 
 namespace network_session_configurator {
@@ -436,6 +444,12 @@ void ParseFieldTrials(bool is_quic_force_disabled,
   const std::string tfo_trial_group =
       base::FieldTrialList::FindFullName(kTCPFastOpenFieldTrialName);
   ConfigureTCPFastOpenParams(tfo_trial_group, params);
+
+  std::map<std::string, std::string> proxy_preconnects_trial_params;
+  variations::GetVariationParams("NetProxyPreconnects",
+                                 &proxy_preconnects_trial_params);
+  ConfigureOptimizePreconnectsToProxiesParams(proxy_preconnects_trial_params,
+                                              params);
 }
 
 }  // namespace network_session_configurator

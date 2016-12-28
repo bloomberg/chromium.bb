@@ -386,7 +386,7 @@ void HttpStreamFactoryImpl::Job::OnStreamReadyCallback() {
 
   MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
-  delegate_->OnStreamReady(this, server_ssl_config_, proxy_info_);
+  delegate_->OnStreamReady(this, server_ssl_config_);
   // |this| may be deleted after this call.
 }
 

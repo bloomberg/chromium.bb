@@ -172,12 +172,8 @@ void HttpStreamFactoryImpl::JobController::SetPriority(
 
 void HttpStreamFactoryImpl::JobController::OnStreamReady(
     Job* job,
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info) {
+    const SSLConfig& used_ssl_config) {
   DCHECK(job);
-  // TODO(tbansal): Remove |used_proxy_info| from the method arguments.
-  DCHECK(job->proxy_info().is_empty() == used_proxy_info.is_empty() ||
-         job->proxy_info().proxy_server() == used_proxy_info.proxy_server());
 
   factory_->OnStreamReady(job->proxy_info());
 
@@ -197,7 +193,7 @@ void HttpStreamFactoryImpl::JobController::OnStreamReady(
   DCHECK(!factory_->for_websockets_);
   DCHECK_EQ(HttpStreamRequest::HTTP_STREAM, request_->stream_type());
   OnJobSucceeded(job);
-  request_->OnStreamReady(used_ssl_config, used_proxy_info, stream.release());
+  request_->OnStreamReady(used_ssl_config, job->proxy_info(), stream.release());
 }
 
 void HttpStreamFactoryImpl::JobController::OnBidirectionalStreamImplReady(
