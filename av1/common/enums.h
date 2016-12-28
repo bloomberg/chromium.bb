@@ -232,7 +232,11 @@ typedef enum {
 #endif  // CONFIG_DEBLOCKING_ACROSS_TILES
 
 #if CONFIG_EXT_TX
+#if CONFIG_CB4X4
+#define EXT_TX_SIZES 5  // number of sizes that use extended transforms
+#else
 #define EXT_TX_SIZES 4       // number of sizes that use extended transforms
+#endif                       // CONFIG_CB4X4
 #define EXT_TX_SETS_INTER 4  // Sets of transform selections for INTER
 #define EXT_TX_SETS_INTRA 3  // Sets of transform selections for INTRA
 #else

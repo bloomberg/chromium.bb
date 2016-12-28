@@ -1413,13 +1413,19 @@ const aom_tree_index av1_ext_tx_intra_tree[EXT_TX_SETS_INTRA]
 static const aom_prob
     default_inter_ext_tx_prob[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES - 1] = {
       {
-          // ToDo(yaowu): remove unused entry 0.
+// ToDo(yaowu): remove unused entry 0.
+#if CONFIG_CB4X4
+          { 0 },
+#endif
           { 0 },
           { 0 },
           { 0 },
           { 0 },
       },
       {
+#if CONFIG_CB4X4
+          { 0 },
+#endif
           { 10, 24, 30, 128, 128, 128, 128, 112, 160, 128, 128, 128, 128, 128,
             128 },
           { 10, 24, 30, 128, 128, 128, 128, 112, 160, 128, 128, 128, 128, 128,
@@ -1430,13 +1436,22 @@ static const aom_prob
             128 },
       },
       {
+#if CONFIG_CB4X4
+          { 0 },
+#endif
           { 10, 30, 128, 112, 160, 128, 128, 128, 128, 128, 128 },
           { 10, 30, 128, 112, 160, 128, 128, 128, 128, 128, 128 },
           { 10, 30, 128, 112, 160, 128, 128, 128, 128, 128, 128 },
           { 10, 30, 128, 112, 160, 128, 128, 128, 128, 128, 128 },
       },
       {
-          { 12 }, { 12 }, { 12 }, { 12 },
+#if CONFIG_CB4X4
+          { 0 },
+#endif
+          { 12 },
+          { 12 },
+          { 12 },
+          { 12 },
       }
     };
 
@@ -1444,7 +1459,12 @@ static const aom_prob
     default_intra_ext_tx_prob[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
                              [TX_TYPES - 1] = {
                                {
-                                   // ToDo(yaowu): remove unused entry 0.
+// ToDo(yaowu): remove unused entry 0.
+#if CONFIG_CB4X4
+                                   {
+                                       { 0 },
+                                   },
+#endif
                                    {
                                        { 0 },
                                        { 0 },
@@ -1495,6 +1515,11 @@ static const aom_prob
                                    },
                                },
                                {
+#if CONFIG_CB4X4
+                                   {
+                                       { 0 },
+                                   },
+#endif
                                    {
                                        { 8, 224, 32, 128, 64, 128 },
                                        { 10, 32, 32, 128, 16, 192 },
@@ -1545,6 +1570,11 @@ static const aom_prob
                                    },
                                },
                                {
+#if CONFIG_CB4X4
+                                   {
+                                       { 0 },
+                                   },
+#endif
                                    {
                                        { 8, 224, 64, 128 },
                                        { 10, 32, 16, 192 },

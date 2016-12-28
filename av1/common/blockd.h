@@ -573,24 +573,42 @@ static const int num_ext_tx_set_intra[EXT_TX_SETS_INTRA] = { 1, 7, 5 };
 
 static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter) {
   tx_size = txsize_sqr_map[tx_size];
+#if CONFIG_CB4X4
+  (void)bs;
+  if (tx_size > TX_32X32) return 0;
+#else
   if (tx_size > TX_32X32 || bs < BLOCK_8X8) return 0;
+#endif
   if (tx_size == TX_32X32) return is_inter ? 3 : 0;
   return (tx_size == TX_16X16 ? 2 : 1);
 }
 
 static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA]
                                             [EXT_TX_SIZES] = {
+#if CONFIG_CB4X4
+                                              { 1, 1, 1, 1, 1 },  // unused
+                                              { 0, 1, 1, 0, 0 },
+                                              { 0, 0, 0, 1, 0 },
+#else
                                               { 1, 1, 1, 1 },  // unused
                                               { 1, 1, 0, 0 },
                                               { 0, 0, 1, 0 },
+#endif  // CONFIG_CB4X4
                                             };
 
 static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER]
                                             [EXT_TX_SIZES] = {
+#if CONFIG_CB4X4
+                                              { 1, 1, 1, 1, 1 },  // unused
+                                              { 0, 1, 1, 0, 0 },
+                                              { 0, 0, 0, 1, 0 },
+                                              { 0, 0, 0, 0, 1 },
+#else
                                               { 1, 1, 1, 1 },  // unused
                                               { 1, 1, 0, 0 },
                                               { 0, 0, 1, 0 },
                                               { 0, 0, 0, 1 },
+#endif  // CONFIG_CB4X4
                                             };
 
 // Transform types used in each intra set
@@ -832,15 +850,23 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
 #endif  // ALLOW_INTRA_EXT_TX
         return mbmi->tx_type;
     }
-    if (is_inter_block(mbmi))
-      // UV Inter only
+
+    if (is_inter_block(mbmi)) {
+// UV Inter only
+#if CONFIG_CB4X4
+      if (tx_size < TX_4X4) return DCT_DCT;
+#endif
       return (mbmi->tx_type == IDTX && txsize_sqr_map[tx_size] >= TX_32X32)
                  ? DCT_DCT
                  : mbmi->tx_type;
+    }
   }
 
 #if CONFIG_CB4X4
-  return DCT_DCT;
+  if (tx_size < TX_4X4)
+    return DCT_DCT;
+  else
+    return intra_mode_to_tx_type_context[mbmi->uv_mode];
 #endif
 
   // Sub8x8-Inter/Intra OR UV-Intra
