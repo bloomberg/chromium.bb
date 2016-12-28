@@ -35,7 +35,9 @@ var HistoryListBehavior = {
      */
     selectedPaths: {
       type: Object,
-      value: /** @return {!Set<string>} */ function() { return new Set(); },
+      value: /** @return {!Set<string>} */ function() {
+        return new Set();
+      },
     },
 
     lastSelectedPath: String,
@@ -59,7 +61,9 @@ var HistoryListBehavior = {
    * @return {boolean}
    * @private
    */
-  hasResults: function(historyDataLength) { return historyDataLength > 0; },
+  hasResults: function(historyDataLength) {
+    return historyDataLength > 0;
+  },
 
   /**
    * @param {string} searchedTerm
@@ -170,7 +174,9 @@ var HistoryListBehavior = {
     var array = this.get(node.currentPath);
     var splices = [];
 
-    node.indexes.sort(function(a, b) { return b - a; });
+    node.indexes.sort(function(a, b) {
+      return b - a;
+    });
     node.indexes.forEach(function(index) {
       if (node.leaf || this.removeItemsBeneathNode_(node.children[index])) {
         var item = array.splice(index, 1)[0];

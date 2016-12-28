@@ -12,7 +12,9 @@ Polymer({
      */
     tabs: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
       observer: 'updateIcons_'
     },
 

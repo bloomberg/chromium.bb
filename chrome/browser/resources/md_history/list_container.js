@@ -114,7 +114,9 @@ Polymer({
   },
 
   /** @return {Element} */
-  getContentScrollTarget: function() { return this.getSelectedList_(); },
+  getContentScrollTarget: function() {
+    return this.getSelectedList_();
+  },
 
   /** @return {number} */
   getSelectedItemCount: function() {
@@ -178,10 +180,14 @@ Polymer({
   },
 
   /** @private */
-  groupedOffsetChanged_: function() { this.queryHistory(false); },
+  groupedOffsetChanged_: function() {
+    this.queryHistory(false);
+  },
 
   /** @private */
-  loadMoreHistory_: function() { this.queryHistory(true); },
+  loadMoreHistory_: function() {
+    this.queryHistory(true);
+  },
 
   /**
    * @param {HistoryQuery} info
@@ -299,7 +305,9 @@ Polymer({
    * @return {Element}
    * @private
    */
-  getSelectedList_: function() { return this.$$('#' + this.selectedPage_); },
+  getSelectedList_: function() {
+    return this.$$('#' + this.selectedPage_);
+  },
 
   /** @private */
   canDeleteHistory_: function() {

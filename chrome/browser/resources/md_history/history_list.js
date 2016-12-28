@@ -155,5 +155,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  pathForItem_: function(index) { return 'historyData_.' + index; },
+  pathForItem_: function(index) {
+    return 'historyData_.' + index;
+  },
 });

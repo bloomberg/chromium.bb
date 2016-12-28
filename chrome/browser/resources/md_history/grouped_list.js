@@ -139,7 +139,9 @@ Polymer({
     e.model.set('domain.rendered', true);
 
     // Give the history-items time to render.
-    setTimeout(function() { collapse.toggle() }, 0);
+    setTimeout(function() {
+      collapse.toggle()
+    }, 0);
   },
 
   /**

@@ -30,12 +30,16 @@ Polymer({
    * @param {CustomEvent} e
    * @private
    */
-  onSpacePressed_: function(e) { e.detail.keyboardEvent.path[0].click(); },
+  onSpacePressed_: function(e) {
+    e.detail.keyboardEvent.path[0].click();
+  },
 
   /**
    * @private
    */
-  onSelectorActivate_: function() { this.fire('history-close-drawer'); },
+  onSelectorActivate_: function() {
+    this.fire('history-close-drawer');
+  },
 
   /**
    * Relocates the user to the clear browsing data section of the settings page.
@@ -55,5 +59,7 @@ Polymer({
    * accessibility purposes, taps are handled separately by <iron-selector>.
    * @private
    */
-  onItemClick_: function(e) { e.preventDefault(); },
+  onItemClick_: function(e) {
+    e.preventDefault();
+  },
 });

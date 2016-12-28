@@ -83,14 +83,18 @@ Polymer({
         .getSearchField();
   },
 
-  showSearchField: function() { this.searchField.showAndFocus(); },
+  showSearchField: function() {
+    this.searchField.showAndFocus();
+  },
 
   /**
    * Changes the toolbar background color depending on whether any history items
    * are currently selected.
    * @private
    */
-  changeToolbarView_: function() { this.itemsSelected_ = this.count > 0; },
+  changeToolbarView_: function() {
+    this.itemsSelected_ = this.count > 0;
+  },
 
   /**
    * When changing the search term externally, update the search field to
@@ -123,10 +127,14 @@ Polymer({
   },
 
   /** @private */
-  onClearSelectionTap_: function() { this.fire('unselect-all'); },
+  onClearSelectionTap_: function() {
+    this.fire('unselect-all');
+  },
 
   /** @private */
-  onDeleteTap_: function() { this.fire('delete-selected'); },
+  onDeleteTap_: function() {
+    this.fire('delete-selected');
+  },
 
   /**
    * If the user is a supervised user the delete button is not shown.
@@ -170,5 +178,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isToday_: function() { return this.groupedOffset == 0; },
+  isToday_: function() {
+    return this.groupedOffset == 0;
+  },
 });

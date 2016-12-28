@@ -53,8 +53,12 @@ Polymer({
           searchTerm: '',
           groupedOffset: 0,
 
-          set range(val) { this._range = Number(val); },
-          get range() { return this._range; },
+          set range(val) {
+            this._range = Number(val);
+          },
+          get range() {
+            return this._range;
+          },
         };
       }
     },
@@ -86,7 +90,9 @@ Polymer({
 
     showMenuPromo_: {
       type: Boolean,
-      value: function() { return loadTimeData.getBoolean('showMenuPromo'); },
+      value: function() {
+        return loadTimeData.getBoolean('showMenuPromo');
+      },
     },
 
     // True if the window is narrow enough for the page to have a drawer.
@@ -164,7 +170,9 @@ Polymer({
   },
 
   /** @private */
-  onCrToolbarMenuPromoClose_: function() { this.showMenuPromo_ = false; },
+  onCrToolbarMenuPromoClose_: function() {
+    this.showMenuPromo_ = false;
+  },
 
   /** @private */
   onCrToolbarMenuPromoShown_: function() {
@@ -211,7 +219,9 @@ Polymer({
     toolbar.count = 0;
   },
 
-  deleteSelected: function() { this.$.history.deleteSelectedWithPrompt(); },
+  deleteSelected: function() {
+    this.$.history.deleteSelectedWithPrompt();
+  },
 
   /**
    * @param {HistoryQuery} info An object containing information about the
@@ -230,7 +240,9 @@ Polymer({
   /**
    * Shows and focuses the search bar in the toolbar.
    */
-  focusToolbarSearchField: function() { this.$.toolbar.showSearchField(); },
+  focusToolbarSearchField: function() {
+    this.$.toolbar.showSearchField();
+  },
 
   /**
    * @param {Event} e
@@ -276,7 +288,9 @@ Polymer({
   /**
    * Called when browsing data is cleared.
    */
-  historyDeleted: function() { this.$.history.historyDeleted(); },
+  historyDeleted: function() {
+    this.$.history.historyDeleted();
+  },
 
   /**
    * Update sign in state of synced device manager after user logs in or out.
@@ -353,7 +367,9 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSelectedPage_: function(selectedPage, items) { return selectedPage; },
+  getSelectedPage_: function(selectedPage, items) {
+    return selectedPage;
+  },
 
   /** @private */
   closeDrawer_: function() {

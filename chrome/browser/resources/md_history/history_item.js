@@ -233,7 +233,9 @@ cr.define('md_history', function() {
      * @return {string}
      * @private
      */
-    getAriaChecked_: function(selected) { return selected ? 'true' : 'false'; },
+    getAriaChecked_: function(selected) {
+      return selected ? 'true' : 'false';
+    },
 
     /**
      * Remove bookmark of current item when bookmark-star is clicked.

@@ -24,7 +24,9 @@ cr.define('md_history', function() {
     deleteItems: function(items) {
       if (this.pendingDeleteItems_ != null) {
         // There's already a deletion in progress, reject immediately.
-        return new Promise(function(resolve, reject) { reject(items); });
+        return new Promise(function(resolve, reject) {
+          reject(items);
+        });
       }
 
       var removalList = items.map(function(item) {
@@ -45,7 +47,9 @@ cr.define('md_history', function() {
     /**
      * @param {!string} url
      */
-    removeBookmark: function(url) { chrome.send('removeBookmark', [url]); },
+    removeBookmark: function(url) {
+      chrome.send('removeBookmark', [url]);
+    },
 
     /**
      * @param {string} sessionTag
@@ -74,7 +78,9 @@ cr.define('md_history', function() {
       chrome.send('deleteForeignSession', [sessionTag]);
     },
 
-    openClearBrowsingData: function() { chrome.send('clearBrowsingData'); },
+    openClearBrowsingData: function() {
+      chrome.send('clearBrowsingData');
+    },
 
     /**
      * @param {string} histogram
@@ -114,7 +120,9 @@ cr.define('md_history', function() {
       this.pendingDeletePromise_ = null;
     },
 
-    menuPromoShown: function() { chrome.send('menuPromoShown'); },
+    menuPromoShown: function() {
+      chrome.send('menuPromoShown');
+    },
   };
 
   cr.addSingletonGetter(BrowserService);

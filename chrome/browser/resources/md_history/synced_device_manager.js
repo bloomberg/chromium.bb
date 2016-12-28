@@ -36,7 +36,9 @@ Polymer({
      */
     syncedDevices_: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
 
     /** @private */
@@ -87,10 +89,14 @@ Polymer({
   },
 
   /** @override */
-  detached: function() { this.focusGrid_.destroy(); },
+  detached: function() {
+    this.focusGrid_.destroy();
+  },
 
   /** @return {HTMLElement} */
-  getContentScrollTarget: function() { return this; },
+  getContentScrollTarget: function() {
+    return this;
+  },
 
   /**
    * @param {!ForeignSession} session
@@ -106,7 +112,9 @@ Polymer({
       if (newTabs.length == 0)
         continue;
 
-      newTabs.forEach(function(tab) { tab.windowId = windowId; });
+      newTabs.forEach(function(tab) {
+        tab.windowId = windowId;
+      });
 
       var windowAdded = false;
       if (!this.searchTerm) {
@@ -138,7 +146,9 @@ Polymer({
   },
 
   /** @private */
-  onSignInTap_: function() { chrome.send('startSignInFlow'); },
+  onSignInTap_: function() {
+    chrome.send('startSignInFlow');
+  },
 
   /** @private */
   onOpenMenu_: function(e) {
@@ -177,7 +187,9 @@ Polymer({
                 return prev.concat(cur.createFocusRows());
               },
               [])
-          .forEach(function(row) { this.focusGrid_.addRow(row); }.bind(this));
+          .forEach(function(row) {
+            this.focusGrid_.addRow(row);
+          }.bind(this));
       this.focusGrid_.ensureRowActive();
     });
   },
@@ -195,7 +207,9 @@ Polymer({
   },
 
   /** @private */
-  clearDisplayedSyncedDevices_: function() { this.syncedDevices_ = []; },
+  clearDisplayedSyncedDevices_: function() {
+    this.syncedDevices_ = [];
+  },
 
   /**
    * Decide whether or not should display no synced tabs message.
