@@ -99,7 +99,7 @@ void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
   if (!isContextInitialized())
     return;
 
-  v8::HandleScope handleScope(m_isolate);
+  ScriptState::Scope scope(m_scriptState.get());
   v8::Local<v8::Context> context = m_scriptState->context();
   if (m_frame->isLocalFrame()) {
     LocalFrame* frame = toLocalFrame(m_frame);
@@ -136,18 +136,10 @@ void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
 }
 
 void WindowProxy::clearForClose() {
-  if (!isContextInitialized())
-    return;
-
   disposeContext(DoNotDetachGlobal);
 }
 
 void WindowProxy::clearForNavigation() {
-  if (!isContextInitialized())
-    return;
-
-  ScriptState::Scope scope(m_scriptState.get());
-
   disposeContext(DetachGlobal);
 }
 
