@@ -31,8 +31,8 @@ bool ServiceTestClient::OnConnect(const ServiceInfo& remote_info,
 
 ServiceTest::ServiceTest() {}
 
-ServiceTest::ServiceTest(const std::string& test_name)
-    : test_name_(test_name) {}
+ServiceTest::ServiceTest(const std::string& test_name, bool init_edk)
+    : test_name_(test_name), init_edk_(init_edk) {}
 
 ServiceTest::~ServiceTest() {}
 
@@ -62,7 +62,9 @@ void ServiceTest::SetUp() {
   message_loop_ = CreateMessageLoop();
   background_service_manager_.reset(
       new service_manager::BackgroundServiceManager);
-  background_service_manager_->Init(nullptr);
+  auto init_params = base::MakeUnique<BackgroundServiceManager::InitParams>();
+  init_params->init_edk = init_edk_;
+  background_service_manager_->Init(std::move(init_params));
 
   // Create the service manager connection. We don't proceed until we get our
   // Service's OnStart() method is called.

@@ -52,7 +52,7 @@ class ServiceTest : public testing::Test {
   // Once set via this constructor, it cannot be changed later by calling
   // InitTestName(). The test executable must provide a manifest in the
   // appropriate location that specifies this name also.
-  explicit ServiceTest(const std::string& test_name);
+  explicit ServiceTest(const std::string& test_name, bool init_edk = true);
   ~ServiceTest() override;
 
  protected:
@@ -92,6 +92,7 @@ class ServiceTest : public testing::Test {
 
   // See constructor.
   std::string test_name_;
+  bool init_edk_ = true;
 
   Connector* connector_ = nullptr;
   std::string initialize_name_;

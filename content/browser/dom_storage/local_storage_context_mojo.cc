@@ -141,10 +141,13 @@ void LocalStorageContextMojo::OnDirectoryOpened(
   // database.
   file_service_connection_->GetInterface(&leveldb_service_);
 
-  leveldb_service_->Open(std::move(directory_), "leveldb",
-                         MakeRequest(&database_),
-                         base::Bind(&LocalStorageContextMojo::OnDatabaseOpened,
-                                    weak_ptr_factory_.GetWeakPtr()));
+  auto options = leveldb::mojom::OpenOptions::New();
+  options->create_if_missing = true;
+  leveldb_service_->OpenWithOptions(
+      std::move(options), std::move(directory_), "leveldb",
+      MakeRequest(&database_),
+      base::Bind(&LocalStorageContextMojo::OnDatabaseOpened,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LocalStorageContextMojo::OnDatabaseOpened(

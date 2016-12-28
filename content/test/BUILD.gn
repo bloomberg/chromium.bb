@@ -10,6 +10,7 @@ import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/features/features.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//third_party/WebKit/public/public_features.gni")
 import("//v8/gni/v8.gni")
@@ -1442,6 +1443,9 @@ test("content_unittests") {
     "//ppapi/c",
     "//ppapi/features",
     "//printing",
+    "//services/file:lib",
+    "//services/file/public/interfaces",
+    "//services/service_manager/public/cpp:service_test_support",
     "//skia",
     "//sql",
     "//sql:test_support",
@@ -1472,6 +1476,8 @@ test("content_unittests") {
   ]
 
   data_deps = [
+    ":content_unittests_manifest",
+    "//components/filesystem:filesystem",
     "//third_party/mesa:osmesa",
   ]
 
@@ -1708,6 +1714,15 @@ test("content_unittests") {
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
   }
+}
+
+service_manifest("content_unittests_manifest") {
+  name = "content_unittests"
+  source = "unittests_manifest.json"
+  packaged_services = [ "file" ]
+  deps = [
+    "//services/file:manifest",
+  ]
 }
 
 test("content_perftests") {
