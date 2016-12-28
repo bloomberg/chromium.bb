@@ -631,6 +631,9 @@ void PaintLayer::markAncestorChainForDescendantDependentFlagsUpdate() {
     if (layer->m_needsDescendantDependentFlagsUpdate)
       break;
     layer->m_needsDescendantDependentFlagsUpdate = true;
+
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+      layer->layoutObject()->setNeedsPaintPropertyUpdate();
   }
 }
 
@@ -1012,11 +1015,6 @@ void PaintLayer::setNeedsCompositingInputsUpdate() {
   // dependent flags udpate. Reduce call sites after SPv2 launch allows
   /// removal of CompositingInputsUpdater.
   markAncestorChainForDescendantDependentFlagsUpdate();
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    // This update is needed in order to re-compute sticky position constraints,
-    // not for any other reason.
-    layoutObject()->setNeedsPaintPropertyUpdate();
-  }
 }
 
 void PaintLayer::setNeedsCompositingInputsUpdateInternal() {
