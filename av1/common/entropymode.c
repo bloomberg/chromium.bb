@@ -1491,8 +1491,8 @@ static const aom_prob
                                        { 0 },
                                        { 0 },
                                        { 0 },
-#if EXT_TX_SIZES == 4
                                    },
+#if EXT_TX_SIZES == 4
                                    {
                                        { 0 },
                                        { 0 },
@@ -1504,8 +1504,8 @@ static const aom_prob
                                        { 0 },
                                        { 0 },
                                        { 0 },
-#endif
                                    },
+#endif
                                },
                                {
                                    {
@@ -1543,8 +1543,8 @@ static const aom_prob
                                        { 10, 23, 32, 128, 80, 176 },
                                        { 10, 23, 32, 128, 80, 176 },
                                        { 10, 32, 32, 128, 16, 64 },
-#if EXT_TX_SIZES == 4
                                    },
+#if EXT_TX_SIZES == 4
                                    {
                                        { 8, 224, 32, 128, 64, 128 },
                                        { 10, 32, 32, 128, 16, 192 },
@@ -1556,8 +1556,8 @@ static const aom_prob
                                        { 10, 23, 32, 128, 80, 176 },
                                        { 10, 23, 32, 128, 80, 176 },
                                        { 10, 32, 32, 128, 16, 64 },
-#endif
                                    },
+#endif
                                },
                                {
                                    {
@@ -1595,8 +1595,8 @@ static const aom_prob
                                        { 10, 23, 80, 176 },
                                        { 10, 23, 80, 176 },
                                        { 10, 32, 16, 64 },
-#if EXT_TX_SIZES == 4
                                    },
+#if EXT_TX_SIZES == 4
                                    {
                                        { 8, 224, 64, 128 },
                                        { 10, 32, 16, 192 },
@@ -1608,11 +1608,10 @@ static const aom_prob
                                        { 10, 23, 80, 176 },
                                        { 10, 23, 80, 176 },
                                        { 10, 32, 16, 64 },
-#endif
                                    },
+#endif
                                },
                              };
-
 #else
 
 /* clang-format off */
