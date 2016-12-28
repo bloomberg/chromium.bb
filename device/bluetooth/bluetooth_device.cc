@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -23,9 +22,14 @@
 
 namespace device {
 
-BluetoothDevice::DeviceUUIDs::DeviceUUIDs() {}
+BluetoothDevice::DeviceUUIDs::DeviceUUIDs() = default;
 
-BluetoothDevice::DeviceUUIDs::~DeviceUUIDs() {}
+BluetoothDevice::DeviceUUIDs::~DeviceUUIDs() = default;
+
+BluetoothDevice::DeviceUUIDs::DeviceUUIDs(const DeviceUUIDs& other) = default;
+
+BluetoothDevice::DeviceUUIDs& BluetoothDevice::DeviceUUIDs::operator=(
+    const DeviceUUIDs& other) = default;
 
 void BluetoothDevice::DeviceUUIDs::ReplaceAdvertisedUUIDs(
     UUIDList new_advertised_uuids) {
@@ -44,9 +48,8 @@ void BluetoothDevice::DeviceUUIDs::ClearAdvertisedUUIDs() {
 void BluetoothDevice::DeviceUUIDs::ReplaceServiceUUIDs(
     const GattServiceMap& gatt_services) {
   service_uuids_.clear();
-  for (const auto& gatt_service_pair : gatt_services) {
+  for (const auto& gatt_service_pair : gatt_services)
     service_uuids_.insert(gatt_service_pair.second->GetUUID());
-  }
   UpdateDeviceUUIDs();
 }
 
@@ -371,13 +374,16 @@ std::vector<BluetoothRemoteGattService*> BluetoothDevice::GetGattServices()
     const {
   std::vector<BluetoothRemoteGattService*> services;
   for (const auto& iter : gatt_services_)
-    services.push_back(iter.second);
+    services.push_back(iter.second.get());
   return services;
 }
 
 BluetoothRemoteGattService* BluetoothDevice::GetGattService(
     const std::string& identifier) const {
-  return gatt_services_.get(identifier);
+  auto it = gatt_services_.find(identifier);
+  if (it == gatt_services_.end())
+    return nullptr;
+  return it->second.get();
 }
 
 // static

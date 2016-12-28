@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
@@ -142,8 +142,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   std::vector<uint8_t> value_;
 
   // Map of descriptors, keyed by descriptor identifier.
-  base::ScopedPtrHashMap<std::string,
-                         std::unique_ptr<BluetoothRemoteGattDescriptorAndroid>>
+  std::unordered_map<std::string,
+                     std::unique_ptr<BluetoothRemoteGattDescriptorAndroid>>
       descriptors_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicAndroid);

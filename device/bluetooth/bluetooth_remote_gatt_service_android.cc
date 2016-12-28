@@ -135,7 +135,7 @@ BluetoothRemoteGattServiceAndroid::GetCharacteristics() const {
   EnsureCharacteristicsCreated();
   std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics;
   for (const auto& map_iter : characteristics_)
-    characteristics.push_back(map_iter.second);
+    characteristics.push_back(map_iter.second.get());
   return characteristics;
 }
 
@@ -152,7 +152,7 @@ BluetoothRemoteGattServiceAndroid::GetCharacteristic(
   const auto& iter = characteristics_.find(identifier);
   if (iter == characteristics_.end())
     return nullptr;
-  return iter->second;
+  return iter->second.get();
 }
 
 void BluetoothRemoteGattServiceAndroid::CreateGattRemoteCharacteristic(
@@ -166,13 +166,12 @@ void BluetoothRemoteGattServiceAndroid::CreateGattRemoteCharacteristic(
   std::string instance_id_string =
       base::android::ConvertJavaStringToUTF8(env, instance_id);
 
-  DCHECK(!characteristics_.contains(instance_id_string));
+  DCHECK(characteristics_.find(instance_id_string) == characteristics_.end());
 
-  characteristics_.set(
-      instance_id_string,
+  characteristics_[instance_id_string] =
       BluetoothRemoteGattCharacteristicAndroid::Create(
           adapter_, this, instance_id_string,
-          bluetooth_gatt_characteristic_wrapper, chrome_bluetooth_device));
+          bluetooth_gatt_characteristic_wrapper, chrome_bluetooth_device);
 }
 
 BluetoothRemoteGattServiceAndroid::BluetoothRemoteGattServiceAndroid(

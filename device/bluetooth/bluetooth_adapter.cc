@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -110,10 +109,8 @@ BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
 
 BluetoothAdapter::ConstDeviceList BluetoothAdapter::GetDevices() const {
   ConstDeviceList devices;
-  for (DevicesMap::const_iterator iter = devices_.begin();
-       iter != devices_.end();
-       ++iter)
-    devices.push_back(iter->second);
+  for (const auto& device : devices_)
+    devices.push_back(device.second.get());
 
   return devices;
 }
@@ -130,9 +127,9 @@ const BluetoothDevice* BluetoothAdapter::GetDevice(
   if (canonicalized_address.empty())
     return nullptr;
 
-  DevicesMap::const_iterator iter = devices_.find(canonicalized_address);
+  auto iter = devices_.find(canonicalized_address);
   if (iter != devices_.end())
-    return iter->second;
+    return iter->second.get();
 
   return nullptr;
 }
@@ -376,8 +373,8 @@ BluetoothAdapter::GetMergedDiscoveryFilterHelper(
 }
 
 void BluetoothAdapter::RemoveTimedOutDevices() {
-  for (DevicesMap::iterator it = devices_.begin(); it != devices_.end();) {
-    BluetoothDevice* device = it->second;
+  for (auto it = devices_.begin(); it != devices_.end();) {
+    BluetoothDevice* device = it->second.get();
     if (device->IsPaired() || device->IsConnected() ||
         device->IsGattConnected()) {
       ++it;
@@ -398,10 +395,10 @@ void BluetoothAdapter::RemoveTimedOutDevices() {
     }
 
     VLOG(1) << "Removing device: " << device->GetAddress();
-    DevicesMap::iterator next = it;
+    auto next = it;
     next++;
-    std::unique_ptr<BluetoothDevice> removed_device =
-        devices_.take_and_erase(it);
+    std::unique_ptr<BluetoothDevice> removed_device = std::move(it->second);
+    devices_.erase(it);
     it = next;
 
     for (auto& observer : observers_)

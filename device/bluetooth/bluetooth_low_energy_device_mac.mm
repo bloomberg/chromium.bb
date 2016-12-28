@@ -206,15 +206,14 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
     if (!gatt_service) {
       gatt_service = new BluetoothRemoteGattServiceMac(this, cb_service,
                                                        true /* is_primary */);
-      auto result_iter = gatt_services_.add(gatt_service->GetIdentifier(),
-                                            base::WrapUnique(gatt_service));
+      auto result_iter = gatt_services_.insert(std::make_pair(
+          gatt_service->GetIdentifier(), base::WrapUnique(gatt_service)));
       DCHECK(result_iter.second);
       adapter_->NotifyGattServiceAdded(gatt_service);
     }
   }
-  for (GattServiceMap::const_iterator it = gatt_services_.begin();
-       it != gatt_services_.end(); ++it) {
-    device::BluetoothRemoteGattService* gatt_service = it->second;
+  for (auto it = gatt_services_.begin(); it != gatt_services_.end(); ++it) {
+    device::BluetoothRemoteGattService* gatt_service = it->second.get();
     device::BluetoothRemoteGattServiceMac* gatt_service_mac =
         static_cast<BluetoothRemoteGattServiceMac*>(gatt_service);
     gatt_service_mac->DiscoverCharacteristics();
@@ -248,8 +247,8 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverCharacteristics(
   bool discovery_complete =
       std::find_if_not(
           gatt_services_.begin(), gatt_services_.end(),
-          [](std::pair<std::string, BluetoothRemoteGattService*> pair) {
-            BluetoothRemoteGattService* gatt_service = pair.second;
+          [](GattServiceMap::value_type& pair) {
+            BluetoothRemoteGattService* gatt_service = pair.second.get();
             return static_cast<BluetoothRemoteGattServiceMac*>(gatt_service)
                 ->IsDiscoveryComplete();
           }) == gatt_services_.end();
@@ -270,7 +269,8 @@ void BluetoothLowEnergyDeviceMac::DidModifyServices(
     DCHECK(gatt_service);
     VLOG(1) << gatt_service->GetUUID().canonical_value();
     std::unique_ptr<BluetoothRemoteGattService> scoped_service =
-        gatt_services_.take_and_erase(gatt_service->GetIdentifier());
+        std::move(gatt_services_[gatt_service->GetIdentifier()]);
+    gatt_services_.erase(gatt_service->GetIdentifier());
     adapter_->NotifyGattServiceRemoved(scoped_service.get());
   }
   device_uuids_.ClearServiceUUIDs();
@@ -340,9 +340,8 @@ CBPeripheral* BluetoothLowEnergyDeviceMac::GetPeripheral() {
 device::BluetoothRemoteGattServiceMac*
 BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattService(
     CBService* cb_service) const {
-  for (GattServiceMap::const_iterator it = gatt_services_.begin();
-       it != gatt_services_.end(); ++it) {
-    device::BluetoothRemoteGattService* gatt_service = it->second;
+  for (auto it = gatt_services_.begin(); it != gatt_services_.end(); ++it) {
+    device::BluetoothRemoteGattService* gatt_service = it->second.get();
     device::BluetoothRemoteGattServiceMac* gatt_service_mac =
         static_cast<BluetoothRemoteGattServiceMac*>(gatt_service);
     if (gatt_service_mac->GetService() == cb_service)

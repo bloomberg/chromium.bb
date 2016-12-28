@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -180,7 +181,7 @@ BluetoothDeviceBlueZ::~BluetoothDeviceBlueZ() {
   for (const auto& iter : gatt_services_swapped) {
     DCHECK(adapter());
     adapter()->NotifyGattServiceRemoved(
-        static_cast<BluetoothRemoteGattServiceBlueZ*>(iter.second));
+        static_cast<BluetoothRemoteGattServiceBlueZ*>(iter.second.get()));
   }
 }
 
@@ -678,8 +679,7 @@ void BluetoothDeviceBlueZ::GattServiceAdded(
   BluetoothRemoteGattServiceBlueZ* service =
       new BluetoothRemoteGattServiceBlueZ(adapter(), this, object_path);
 
-  gatt_services_.set(service->GetIdentifier(),
-                     std::unique_ptr<BluetoothRemoteGattService>(service));
+  gatt_services_[service->GetIdentifier()] = base::WrapUnique(service);
   DCHECK(service->object_path() == object_path);
   DCHECK(service->GetUUID().IsValid());
 
@@ -689,15 +689,14 @@ void BluetoothDeviceBlueZ::GattServiceAdded(
 
 void BluetoothDeviceBlueZ::GattServiceRemoved(
     const dbus::ObjectPath& object_path) {
-  GattServiceMap::const_iterator iter =
-      gatt_services_.find(object_path.value());
+  auto iter = gatt_services_.find(object_path.value());
   if (iter == gatt_services_.end()) {
     VLOG(3) << "Unknown GATT service removed: " << object_path.value();
     return;
   }
 
   BluetoothRemoteGattServiceBlueZ* service =
-      static_cast<BluetoothRemoteGattServiceBlueZ*>(iter->second);
+      static_cast<BluetoothRemoteGattServiceBlueZ*>(iter->second.get());
 
   VLOG(1) << "Removing remote GATT service with UUID: '"
           << service->GetUUID().canonical_value()
@@ -705,7 +704,8 @@ void BluetoothDeviceBlueZ::GattServiceRemoved(
 
   DCHECK(service->object_path() == object_path);
   std::unique_ptr<BluetoothRemoteGattService> scoped_service =
-      gatt_services_.take_and_erase(iter->first);
+      std::move(gatt_services_[object_path.value()]);
+  gatt_services_.erase(iter);
 
   DCHECK(adapter());
   discovery_complete_notified_.erase(service);

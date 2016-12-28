@@ -183,7 +183,7 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     const JavaParamRef<jobjectArray>& advertised_uuids,  // Java Type: String[]
     int32_t tx_power) {
   std::string device_address = ConvertJavaStringToUTF8(env, address);
-  DevicesMap::const_iterator iter = devices_.find(device_address);
+  auto iter = devices_.find(device_address);
 
   bool is_new_device = false;
   std::unique_ptr<BluetoothDeviceAndroid> device_android_owner;
@@ -197,7 +197,7 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     device_android = device_android_owner.get();
   } else {
     // Existing device.
-    device_android = static_cast<BluetoothDeviceAndroid*>(iter->second);
+    device_android = static_cast<BluetoothDeviceAndroid*>(iter->second.get());
   }
   DCHECK(device_android);
 
@@ -219,7 +219,7 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
       tx_power == INT32_MIN ? nullptr : &clamped_tx_power);
 
   if (is_new_device) {
-    devices_.add(device_address, std::move(device_android_owner));
+    devices_[device_address] = std::move(device_android_owner);
     for (auto& observer : observers_)
       observer.DeviceAdded(this, device_android);
   } else {

@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -51,7 +51,9 @@ BluetoothDeviceWin::~BluetoothDeviceWin() {
     service_keys.push_back(gatt_service.first);
   }
   for (const auto& key : service_keys) {
-    gatt_services_.take_and_erase(key);
+    std::unique_ptr<BluetoothRemoteGattService> service =
+        std::move(gatt_services_[key]);
+    gatt_services_.erase(key);
   }
 }
 
@@ -213,9 +215,8 @@ void BluetoothDeviceWin::CreateGattConnection(
 
 const BluetoothServiceRecordWin* BluetoothDeviceWin::GetServiceRecord(
     const device::BluetoothUUID& uuid) const {
-  for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
-       iter != service_record_list_.end();
-       ++iter) {
+  for (auto iter = service_record_list_.begin();
+       iter != service_record_list_.end(); ++iter) {
     if ((*iter)->uuid() == uuid)
       return *iter;
   }
@@ -233,21 +234,17 @@ bool BluetoothDeviceWin::IsEqual(
   }
 
   // Checks service collection
-  typedef base::ScopedPtrHashMap<std::string,
-                                 std::unique_ptr<BluetoothServiceRecordWin>>
-      ServiceRecordMap;
-
   UUIDSet new_services;
-  ServiceRecordMap new_service_records;
-  for (ScopedVector<BluetoothTaskManagerWin::ServiceRecordState>::const_iterator
-           iter = device_state.service_record_states.begin();
+  std::unordered_map<std::string, std::unique_ptr<BluetoothServiceRecordWin>>
+      new_service_records;
+  for (auto iter = device_state.service_record_states.begin();
        iter != device_state.service_record_states.end(); ++iter) {
-    BluetoothServiceRecordWin* service_record = new BluetoothServiceRecordWin(
-        address_, (*iter)->name, (*iter)->sdp_bytes, (*iter)->gatt_uuid);
+    std::unique_ptr<BluetoothServiceRecordWin> service_record =
+        base::MakeUnique<BluetoothServiceRecordWin>(
+            address_, (*iter)->name, (*iter)->sdp_bytes, (*iter)->gatt_uuid);
     new_services.insert(service_record->uuid());
-    new_service_records.set(
-        service_record->uuid().canonical_value(),
-        std::unique_ptr<BluetoothServiceRecordWin>(service_record));
+    new_service_records[service_record->uuid().canonical_value()] =
+        std::move(service_record);
   }
 
   // Check that no new services have been added or removed.
@@ -255,11 +252,11 @@ bool BluetoothDeviceWin::IsEqual(
     return false;
   }
 
-  for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
+  for (auto iter = service_record_list_.begin();
        iter != service_record_list_.end(); ++iter) {
     BluetoothServiceRecordWin* service_record = (*iter);
     BluetoothServiceRecordWin* new_service_record =
-        new_service_records.get((*iter)->uuid().canonical_value());
+        new_service_records[(*iter)->uuid().canonical_value()].get();
     if (!service_record->IsEqual(*new_service_record))
       return false;
   }
@@ -300,8 +297,7 @@ void BluetoothDeviceWin::UpdateServices(
   uuids_.clear();
   service_record_list_.clear();
 
-  for (ScopedVector<BluetoothTaskManagerWin::ServiceRecordState>::const_iterator
-           iter = device_state.service_record_states.begin();
+  for (auto iter = device_state.service_record_states.begin();
        iter != device_state.service_record_states.end(); ++iter) {
     BluetoothServiceRecordWin* service_record =
         new BluetoothServiceRecordWin(device_state.address, (*iter)->name,
@@ -316,12 +312,11 @@ void BluetoothDeviceWin::UpdateServices(
 
 bool BluetoothDeviceWin::IsGattServiceDiscovered(BluetoothUUID& uuid,
                                                  uint16_t attribute_handle) {
-  GattServiceMap::iterator it = gatt_services_.begin();
-  for (; it != gatt_services_.end(); it++) {
+  for (const auto& gatt_service : gatt_services_) {
     uint16_t it_att_handle =
-        static_cast<BluetoothRemoteGattServiceWin*>(it->second)
+        static_cast<BluetoothRemoteGattServiceWin*>(gatt_service.second.get())
             ->GetAttributeHandle();
-    BluetoothUUID it_uuid = it->second->GetUUID();
+    BluetoothUUID it_uuid = gatt_service.second->GetUUID();
     if (attribute_handle == it_att_handle && uuid == it_uuid) {
       return true;
     }
@@ -337,8 +332,7 @@ bool BluetoothDeviceWin::DoesGattServiceExist(
       static_cast<BluetoothRemoteGattServiceWin*>(service)
           ->GetAttributeHandle();
   BluetoothUUID uuid = service->GetUUID();
-  ScopedVector<BluetoothTaskManagerWin::ServiceRecordState>::const_iterator it =
-      service_state.begin();
+  auto it = service_state.begin();
   for (; it != service_state.end(); ++it) {
     if (attribute_handle == (*it)->attribute_handle && uuid == (*it)->gatt_uuid)
       return true;
@@ -353,16 +347,18 @@ void BluetoothDeviceWin::UpdateGattServices(
   {
     std::vector<std::string> to_be_removed_services;
     for (const auto& gatt_service : gatt_services_) {
-      if (!DoesGattServiceExist(service_state, gatt_service.second)) {
+      if (!DoesGattServiceExist(service_state, gatt_service.second.get())) {
         to_be_removed_services.push_back(gatt_service.first);
       }
     }
     for (const auto& service : to_be_removed_services) {
-      gatt_services_.take_and_erase(service);
+      std::unique_ptr<BluetoothRemoteGattService> service_ptr =
+          std::move(gatt_services_[service]);
+      gatt_services_.erase(service);
     }
     // Update previously discovered services.
-    for (auto gatt_service : gatt_services_) {
-      static_cast<BluetoothRemoteGattServiceWin*>(gatt_service.second)
+    for (const auto& gatt_service : gatt_services_) {
+      static_cast<BluetoothRemoteGattServiceWin*>(gatt_service.second.get())
           ->Update();
     }
   }
@@ -372,17 +368,14 @@ void BluetoothDeviceWin::UpdateGattServices(
     return;
 
   // Add new services.
-  for (ScopedVector<BluetoothTaskManagerWin::ServiceRecordState>::const_iterator
-           it = service_state.begin();
-       it != service_state.end(); ++it) {
+  for (auto it = service_state.begin(); it != service_state.end(); ++it) {
     if (!IsGattServiceDiscovered((*it)->gatt_uuid, (*it)->attribute_handle)) {
       BluetoothRemoteGattServiceWin* primary_service =
           new BluetoothRemoteGattServiceWin(this, (*it)->path, (*it)->gatt_uuid,
                                             (*it)->attribute_handle, true,
                                             nullptr, ui_task_runner_);
-      gatt_services_.add(
-          primary_service->GetIdentifier(),
-          std::unique_ptr<BluetoothRemoteGattService>(primary_service));
+      gatt_services_[primary_service->GetIdentifier()] =
+          base::WrapUnique(primary_service);
       adapter_->NotifyGattServiceAdded(primary_service);
     }
   }

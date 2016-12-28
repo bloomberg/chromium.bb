@@ -49,6 +49,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   using GetServiceRecordsErrorCallback =
       base::Callback<void(BluetoothServiceRecordBlueZ::ErrorCode)>;
 
+  ~BluetoothDeviceBlueZ() override;
+
   // BluetoothDevice override
   uint32_t GetBluetoothClass() const override;
   device::BluetoothTransport GetType() const override;
@@ -164,7 +166,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
       const dbus::ObjectPath& object_path,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       scoped_refptr<device::BluetoothSocketThread> socket_thread);
-  ~BluetoothDeviceBlueZ() override;
 
   // bluez::BluetoothGattServiceClient::Observer overrides
   void GattServiceAdded(const dbus::ObjectPath& object_path) override;

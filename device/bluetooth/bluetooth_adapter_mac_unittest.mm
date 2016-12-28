@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
@@ -81,11 +82,6 @@ class BluetoothAdapterMacTest : public testing::Test {
 
   std::string GetHashAddress(CBPeripheral* peripheral) {
     return BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
-  }
-
-  void AddLowEnergyDevice(BluetoothLowEnergyDeviceMac* device) {
-    adapter_mac_->devices_.set(device->GetAddress(),
-                               std::unique_ptr<BluetoothDevice>(device));
   }
 
   int NumDevices() { return adapter_mac_->devices_.size(); }

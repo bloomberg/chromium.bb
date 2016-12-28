@@ -246,17 +246,17 @@ void BluetoothDeviceAndroid::CreateGattRemoteService(
   std::string instance_id_string =
       base::android::ConvertJavaStringToUTF8(env, instance_id);
 
-  if (gatt_services_.contains(instance_id_string))
+  if (gatt_services_.find(instance_id_string) != gatt_services_.end())
     return;
 
-  BluetoothDevice::GattServiceMap::iterator service_iterator =
-      gatt_services_.set(
-          instance_id_string,
-          BluetoothRemoteGattServiceAndroid::Create(
-              GetAndroidAdapter(), this, bluetooth_gatt_service_wrapper,
-              instance_id_string, j_device_));
+  std::unique_ptr<BluetoothRemoteGattServiceAndroid> service =
+      BluetoothRemoteGattServiceAndroid::Create(GetAndroidAdapter(), this,
+                                                bluetooth_gatt_service_wrapper,
+                                                instance_id_string, j_device_);
+  BluetoothRemoteGattServiceAndroid* service_ptr = service.get();
+  gatt_services_[instance_id_string] = std::move(service);
 
-  adapter_->NotifyGattServiceAdded(service_iterator->second);
+  adapter_->NotifyGattServiceAdded(service_ptr);
 }
 
 BluetoothDeviceAndroid::BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter)

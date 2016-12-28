@@ -42,6 +42,8 @@ class BluetoothRemoteGattServiceBlueZ
       public BluetoothGattCharacteristicClient::Observer,
       public device::BluetoothRemoteGattService {
  public:
+  ~BluetoothRemoteGattServiceBlueZ() override;
+
   // device::BluetoothRemoteGattService overrides.
   device::BluetoothUUID GetUUID() const override;
   device::BluetoothDevice* GetDevice() const override;
@@ -83,7 +85,6 @@ class BluetoothRemoteGattServiceBlueZ
   BluetoothRemoteGattServiceBlueZ(BluetoothAdapterBlueZ* adapter,
                                   BluetoothDeviceBlueZ* device,
                                   const dbus::ObjectPath& object_path);
-  ~BluetoothRemoteGattServiceBlueZ() override;
 
   // bluez::BluetoothGattServiceClient::Observer override.
   void GattServicePropertyChanged(const dbus::ObjectPath& object_path,

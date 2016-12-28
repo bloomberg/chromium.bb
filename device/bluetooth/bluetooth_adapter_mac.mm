@@ -502,7 +502,7 @@ void BluetoothAdapterMac::ClassicDeviceAdded(IOBluetoothDevice* device) {
   }
 
   device_classic = new BluetoothClassicDeviceMac(this, device);
-  devices_.set(device_address, base::WrapUnique(device_classic));
+  devices_[device_address] = base::WrapUnique(device_classic);
   VLOG(1) << "Adding new classic device: " << device_classic->GetAddress();
 
   for (auto& observer : observers_)
@@ -566,7 +566,7 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
   if (is_new_device) {
     std::string device_address =
         BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
-    devices_.add(device_address, std::unique_ptr<BluetoothDevice>(device_mac));
+    devices_[device_address] = base::WrapUnique(device_mac);
     for (auto& observer : observers_)
       observer.DeviceAdded(this, device_mac);
   } else {
@@ -620,8 +620,7 @@ BluetoothAdapterMac::RetrieveGattConnectedDevicesWithService(
       device_mac = new BluetoothLowEnergyDeviceMac(this, peripheral);
       std::string device_address =
           BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
-      devices_.add(device_address,
-                   std::unique_ptr<BluetoothDevice>(device_mac));
+      devices_[device_address] = base::WrapUnique(device_mac);
       for (auto& observer : observers_) {
         observer.DeviceAdded(this, device_mac);
       }
@@ -694,11 +693,11 @@ BluetoothLowEnergyDeviceMac*
 BluetoothAdapterMac::GetBluetoothLowEnergyDeviceMac(CBPeripheral* peripheral) {
   std::string device_address =
       BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
-  DevicesMap::const_iterator iter = devices_.find(device_address);
+  auto iter = devices_.find(device_address);
   if (iter == devices_.end()) {
     return nil;
   }
-  return static_cast<BluetoothLowEnergyDeviceMac*>(iter->second);
+  return static_cast<BluetoothLowEnergyDeviceMac*>(iter->second.get());
 }
 
 bool BluetoothAdapterMac::DoesCollideWithKnownDevice(

@@ -10,6 +10,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -234,58 +235,46 @@ void BluetoothAdapterWin::DevicesPolled(
   // new list with the list we know of (|devices_|) and raise corresponding
   // DeviceAdded, DeviceRemoved and DeviceChanged events.
 
-  typedef std::set<std::string> DeviceAddressSet;
+  using DeviceAddressSet = std::set<std::string>;
   DeviceAddressSet known_devices;
-  for (DevicesMap::const_iterator iter = devices_.begin();
-       iter != devices_.end();
-       ++iter) {
-    known_devices.insert((*iter).first);
-  }
+  for (const auto& device : devices_)
+    known_devices.insert(device.first);
 
   DeviceAddressSet new_devices;
-  for (ScopedVector<BluetoothTaskManagerWin::DeviceState>::const_iterator iter =
-           devices.begin();
-       iter != devices.end();
-       ++iter) {
+  for (auto iter = devices.begin(); iter != devices.end(); ++iter)
     new_devices.insert((*iter)->address);
-  }
 
-  // Process device removal first
+  // Process device removal first.
   DeviceAddressSet removed_devices =
       base::STLSetDifference<DeviceAddressSet>(known_devices, new_devices);
-  for (DeviceAddressSet::const_iterator iter = removed_devices.begin();
-       iter != removed_devices.end();
-       ++iter) {
-    std::unique_ptr<BluetoothDevice> device_win =
-        devices_.take_and_erase(*iter);
+  for (const auto& device : removed_devices) {
+    auto it = devices_.find(device);
+    std::unique_ptr<BluetoothDevice> device_win = std::move(it->second);
+    devices_.erase(it);
     for (auto& observer : observers_)
       observer.DeviceRemoved(this, device_win.get());
   }
 
-  // Process added and (maybe) changed devices in one pass
+  // Process added and (maybe) changed devices in one pass.
   DeviceAddressSet added_devices =
       base::STLSetDifference<DeviceAddressSet>(new_devices, known_devices);
   DeviceAddressSet changed_devices =
       base::STLSetIntersection<DeviceAddressSet>(known_devices, new_devices);
-  for (ScopedVector<BluetoothTaskManagerWin::DeviceState>::const_iterator iter =
-           devices.begin();
-       iter != devices.end();
-       ++iter) {
+  for (auto iter = devices.begin(); iter != devices.end(); ++iter) {
     BluetoothTaskManagerWin::DeviceState* device_state = (*iter);
     if (added_devices.find(device_state->address) != added_devices.end()) {
       BluetoothDeviceWin* device_win =
           new BluetoothDeviceWin(this, *device_state, ui_task_runner_,
                                  socket_thread_, NULL, net::NetLogSource());
-      devices_.set(device_state->address,
-                   std::unique_ptr<BluetoothDevice>(device_win));
+      devices_[device_state->address] = base::WrapUnique(device_win);
       for (auto& observer : observers_)
         observer.DeviceAdded(this, device_win);
     } else if (changed_devices.find(device_state->address) !=
                changed_devices.end()) {
-      DevicesMap::const_iterator iter = devices_.find(device_state->address);
+      auto iter = devices_.find(device_state->address);
       DCHECK(iter != devices_.end());
       BluetoothDeviceWin* device_win =
-          static_cast<BluetoothDeviceWin*>(iter->second);
+          static_cast<BluetoothDeviceWin*>(iter->second.get());
       if (!device_win->IsEqual(*device_state)) {
         device_win->Update(*device_state);
         for (auto& observer : observers_)

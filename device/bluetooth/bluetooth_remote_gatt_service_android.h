@@ -8,11 +8,11 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -109,9 +109,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
   std::string instance_id_;
 
   // Map of characteristics, keyed by characteristic identifier.
-  base::ScopedPtrHashMap<
-      std::string,
-      std::unique_ptr<BluetoothRemoteGattCharacteristicAndroid>>
+  std::unordered_map<std::string,
+                     std::unique_ptr<BluetoothRemoteGattCharacteristicAndroid>>
       characteristics_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceAndroid);
