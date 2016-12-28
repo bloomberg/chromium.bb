@@ -94,10 +94,8 @@ void SharedWorkerHost::Start(bool pause_on_start) {
   params.route_id = worker_route_id_;
   Send(new WorkerProcessMsg_CreateWorker(params));
 
-  for (FilterList::const_iterator i = filters_.begin(); i != filters_.end();
-       ++i) {
-    i->filter()->Send(new ViewMsg_WorkerCreated(i->route_id()));
-  }
+  for (const FilterInfo& info : filters_)
+    info.filter()->Send(new ViewMsg_WorkerCreated(info.route_id()));
 }
 
 bool SharedWorkerHost::FilterMessage(const IPC::Message& message,
@@ -177,20 +175,17 @@ void SharedWorkerHost::WorkerScriptLoadFailed() {
                       base::TimeTicks::Now() - creation_time_);
   if (!instance_)
     return;
-  for (FilterList::const_iterator i = filters_.begin(); i != filters_.end();
-       ++i) {
-    i->filter()->Send(new ViewMsg_WorkerScriptLoadFailed(i->route_id()));
-  }
+  for (const FilterInfo& info : filters_)
+    info.filter()->Send(new ViewMsg_WorkerScriptLoadFailed(info.route_id()));
 }
 
 void SharedWorkerHost::WorkerConnected(int message_port_id) {
   if (!instance_)
     return;
-  for (FilterList::const_iterator i = filters_.begin(); i != filters_.end();
-       ++i) {
-    if (i->message_port_id() != message_port_id)
+  for (const FilterInfo& info : filters_) {
+    if (info.message_port_id() != message_port_id)
       continue;
-    i->filter()->Send(new ViewMsg_WorkerConnected(i->route_id()));
+    info.filter()->Send(new ViewMsg_WorkerConnected(info.route_id()));
     return;
   }
 }
@@ -277,12 +272,9 @@ SharedWorkerHost::GetRenderFrameIDsForWorker() {
     return result;
   const WorkerDocumentSet::DocumentInfoSet& documents =
       worker_document_set_->documents();
-  for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
-           documents.begin();
-       doc != documents.end();
-       ++doc) {
+  for (const WorkerDocumentSet::DocumentInfo& doc : documents) {
     result.push_back(
-        std::make_pair(doc->render_process_id(), doc->render_frame_id()));
+        std::make_pair(doc.render_process_id(), doc.render_frame_id()));
   }
   return result;
 }
