@@ -15,11 +15,11 @@ namespace blink {
 void V8ResizeObserverCallback::handleEvent(
     const HeapVector<Member<ResizeObserverEntry>>& entries,
     ResizeObserver* observer) {
-  if (!canInvokeCallback())
-    return;
-
   v8::Isolate* isolate = m_scriptState->isolate();
-
+  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
+  if (!executionContext || executionContext->isContextSuspended() ||
+      executionContext->isContextDestroyed())
+    return;
   if (!m_scriptState->contextIsValid())
     return;
   ScriptState::Scope scope(m_scriptState.get());

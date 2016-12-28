@@ -12,7 +12,6 @@
 #ifndef V8TestCallbackInterface_h
 #define V8TestCallbackInterface_h
 
-#include "bindings/core/v8/ActiveDOMCallback.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/tests/idls/core/TestCallbackInterface.h"
@@ -20,8 +19,7 @@
 
 namespace blink {
 
-class V8TestCallbackInterface final : public TestCallbackInterface, public ActiveDOMCallback {
-  USING_GARBAGE_COLLECTED_MIXIN(V8TestCallbackInterface);
+class V8TestCallbackInterface final : public TestCallbackInterface {
  public:
   static V8TestCallbackInterface* create(v8::Local<v8::Function> callback, ScriptState* scriptState) {
     return new V8TestCallbackInterface(callback, scriptState);

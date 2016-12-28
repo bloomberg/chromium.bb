@@ -5,7 +5,6 @@
 #ifndef V8IntersectionObserverCallback_h
 #define V8IntersectionObserverCallback_h
 
-#include "bindings/core/v8/ActiveDOMCallback.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "core/CoreExport.h"
@@ -14,10 +13,7 @@
 namespace blink {
 
 class V8IntersectionObserverCallback final
-    : public IntersectionObserverCallback,
-      public ActiveDOMCallback {
-  USING_GARBAGE_COLLECTED_MIXIN(V8IntersectionObserverCallback);
-
+    : public IntersectionObserverCallback {
  public:
   CORE_EXPORT V8IntersectionObserverCallback(v8::Local<v8::Function>,
                                              v8::Local<v8::Object>,

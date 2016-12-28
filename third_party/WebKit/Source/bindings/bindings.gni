@@ -30,8 +30,6 @@ bindings_core_v8_files =
                     "core/v8/custom/V8PromiseRejectionEventCustom.cpp",
                     "core/v8/custom/V8WindowCustom.cpp",
                     "core/v8/custom/V8XMLHttpRequestCustom.cpp",
-                    "core/v8/ActiveDOMCallback.cpp",
-                    "core/v8/ActiveDOMCallback.h",
                     "core/v8/ActiveScriptWrappable.cpp",
                     "core/v8/ActiveScriptWrappable.h",
                     "core/v8/ArrayValue.cpp",

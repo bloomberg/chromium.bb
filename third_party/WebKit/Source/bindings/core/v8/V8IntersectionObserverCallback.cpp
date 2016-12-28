@@ -17,9 +17,7 @@ V8IntersectionObserverCallback::V8IntersectionObserverCallback(
     v8::Local<v8::Function> callback,
     v8::Local<v8::Object> owner,
     ScriptState* scriptState)
-    : ActiveDOMCallback(scriptState->getExecutionContext()),
-      m_callback(scriptState->isolate(), callback),
-      m_scriptState(scriptState) {
+    : m_callback(scriptState->isolate(), callback), m_scriptState(scriptState) {
   V8PrivateProperty::getIntersectionObserverCallback(scriptState->isolate())
       .set(scriptState->context(), owner, callback);
   m_callback.setPhantom();
@@ -30,9 +28,10 @@ V8IntersectionObserverCallback::~V8IntersectionObserverCallback() {}
 void V8IntersectionObserverCallback::handleEvent(
     const HeapVector<Member<IntersectionObserverEntry>>& entries,
     IntersectionObserver& observer) {
-  if (!canInvokeCallback())
+  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
+  if (!executionContext || executionContext->isContextSuspended() ||
+      executionContext->isContextDestroyed())
     return;
-
   if (!m_scriptState->contextIsValid())
     return;
   ScriptState::Scope scope(m_scriptState.get());
@@ -62,7 +61,6 @@ void V8IntersectionObserverCallback::handleEvent(
 
 DEFINE_TRACE(V8IntersectionObserverCallback) {
   IntersectionObserverCallback::trace(visitor);
-  ActiveDOMCallback::trace(visitor);
 }
 
 }  // namespace blink

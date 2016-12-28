@@ -26,7 +26,6 @@
 #ifndef V8MutationCallback_h
 #define V8MutationCallback_h
 
-#include "bindings/core/v8/ActiveDOMCallback.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/MutationCallback.h"
@@ -37,10 +36,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class V8MutationCallback final : public MutationCallback,
-                                 public ActiveDOMCallback {
-  USING_GARBAGE_COLLECTED_MIXIN(V8MutationCallback);
-
+class V8MutationCallback final : public MutationCallback {
  public:
   static V8MutationCallback* create(v8::Local<v8::Function> callback,
                                     v8::Local<v8::Object> owner,

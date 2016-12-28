@@ -10,8 +10,7 @@
 namespace blink {
 
 {{v8_class}}::{{v8_class}}(v8::Local<v8::Function> callback, ScriptState* scriptState)
-    : ActiveDOMCallback(scriptState->getExecutionContext())
-    , m_scriptState(scriptState) {
+    : m_scriptState(scriptState) {
   m_callback.set(scriptState->isolate(), callback);
 }
 
@@ -19,19 +18,18 @@ namespace blink {
 
 DEFINE_TRACE({{v8_class}}) {
   {{cpp_class}}::trace(visitor);
-  ActiveDOMCallback::trace(visitor);
 }
 
 {% for method in methods if not method.is_custom %}
 {{method.cpp_type}} {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}}) {
   {% set return_default = 'return true'
          if method.idl_type == 'boolean' else 'return' %}{# void #}
-  if (!canInvokeCallback())
+  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
+  if (!executionContext || executionContext->isContextSuspended() ||
+      executionContext->isContextDestroyed())
     {{return_default}};
-
   if (!m_scriptState->contextIsValid())
     {{return_default}};
-
   ScriptState::Scope scope(m_scriptState.get());
   {% if method.call_with_this_handle %}
   v8::Local<v8::Value> thisHandle = thisValue.v8Value();

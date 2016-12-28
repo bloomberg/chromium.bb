@@ -10,8 +10,7 @@
 
 namespace blink {
 
-class {{v8_class}} final : public {{cpp_class}}, public ActiveDOMCallback {
-  USING_GARBAGE_COLLECTED_MIXIN({{v8_class}});
+class {{v8_class}} final : public {{cpp_class}} {
  public:
   static {{v8_class}}* create(v8::Local<v8::Function> callback, ScriptState* scriptState) {
     return new {{v8_class}}(callback, scriptState);

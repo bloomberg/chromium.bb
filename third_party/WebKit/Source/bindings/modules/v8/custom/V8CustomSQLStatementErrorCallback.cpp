@@ -40,13 +40,13 @@ namespace blink {
 
 bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
                                               SQLError* error) {
-  if (!canInvokeCallback())
-    return true;
-
   v8::Isolate* isolate = m_scriptState->isolate();
+  ExecutionContext* executionContext = m_scriptState->getExecutionContext();
+  if (!executionContext || executionContext->isContextSuspended() ||
+      executionContext->isContextDestroyed())
+    return true;
   if (!m_scriptState->contextIsValid())
     return true;
-
   ScriptState::Scope scope(m_scriptState.get());
 
   v8::Local<v8::Value> transactionHandle =
