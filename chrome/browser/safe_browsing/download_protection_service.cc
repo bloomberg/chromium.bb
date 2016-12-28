@@ -1358,10 +1358,9 @@ class DownloadProtectionService::PPAPIDownloadRequest
       *(request.add_alternate_extensions()) =
           base::FilePath(default_file_path_.FinalExtension()).AsUTF8Unsafe();
     }
-    service_->AddReferrerChainToClientDownloadRequest(
-      requestor_url_,
-      nullptr,
-      &request);
+
+    // TODO(676691): We should add reliable download referrer chain for PPAPI
+    // downloads too.
 
     if (!request.SerializeToString(&client_download_request_data_)) {
       // More of an internal error than anything else. Note that the UNKNOWN
@@ -1821,7 +1820,7 @@ void DownloadProtectionService::AddReferrerChainToClientDownloadRequest(
       "SafeBrowsing.ReferrerAttributionResult.DownloadAttribution", result,
       SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
   for (auto entry : attribution_chain)
-    *out_request->add_referrer_chain() = std::move(entry);
+    out_request->add_referrer_chain()->Swap(&entry);
 }
 
 }  // namespace safe_browsing

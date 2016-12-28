@@ -394,7 +394,7 @@ void SafeBrowsingNavigationObserverManager::AddToReferrerChain(
                                           nav_event->target_tab_id);
   referrer_chain_entry.set_navigation_time_msec(
       nav_event->last_updated.ToJavaTime());
-  referrer_chain->push_back(referrer_chain_entry);
+  referrer_chain->push_back(std::move(referrer_chain_entry));
 }
 
 }  // namespace safe_browsing
