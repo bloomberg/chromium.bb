@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/persisted_logs_metrics_impl.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -163,7 +164,9 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     // Simulate a log having already been unsent from a previous session.
     {
       std::string log("proto");
-      PersistedLogs ongoing_logs(&pref_service, prefs::kMetricsOngoingLogs,
+      PersistedLogs ongoing_logs(std::unique_ptr<PersistedLogsMetricsImpl>(
+                                     new PersistedLogsMetricsImpl()),
+                                 &pref_service, prefs::kMetricsOngoingLogs,
                                  prefs::kDeprecatedMetricsOngoingLogs, 1, 1, 0);
       ongoing_logs.StoreLog(log);
       ongoing_logs.SerializeLogs();

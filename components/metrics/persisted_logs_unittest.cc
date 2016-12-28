@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/sha1.h"
 #include "base/values.h"
+#include "components/metrics/persisted_logs_metrics_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
@@ -64,7 +65,9 @@ class PersistedLogsTest : public testing::Test {
 class TestPersistedLogs : public PersistedLogs {
  public:
   TestPersistedLogs(PrefService* service, size_t min_log_bytes)
-      : PersistedLogs(service,
+      : PersistedLogs(std::unique_ptr<PersistedLogsMetricsImpl>(
+                             new PersistedLogsMetricsImpl()),
+                      service,
                       kTestPrefName,
                       kTestOutdatedPrefName,
                       kLogCountLimit,
