@@ -45,11 +45,11 @@ MediaWebContentsObserverAndroid::GetMediaPlayerManager(
     RenderFrameHost* render_frame_host) {
   auto it = media_player_managers_.find(render_frame_host);
   if (it != media_player_managers_.end())
-    return it->second;
+    return it->second.get();
 
   BrowserMediaPlayerManager* manager =
       BrowserMediaPlayerManager::Create(render_frame_host);
-  media_player_managers_.set(render_frame_host, base::WrapUnique(manager));
+  media_player_managers_[render_frame_host] = base::WrapUnique(manager);
   return manager;
 }
 
@@ -58,11 +58,11 @@ MediaWebContentsObserverAndroid::GetSurfaceViewManager(
     RenderFrameHost* render_frame_host) {
   auto it = surface_view_managers_.find(render_frame_host);
   if (it != surface_view_managers_.end())
-    return it->second;
+    return it->second.get();
 
   BrowserSurfaceViewManager* manager =
       new BrowserSurfaceViewManager(render_frame_host);
-  surface_view_managers_.set(render_frame_host, base::WrapUnique(manager));
+  surface_view_managers_[render_frame_host] = base::WrapUnique(manager);
   return manager;
 }
 

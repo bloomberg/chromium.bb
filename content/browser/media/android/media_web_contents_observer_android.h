@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "content/browser/media/media_web_contents_observer.h"
@@ -76,13 +77,13 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
 
   // Map from RenderFrameHost* to BrowserMediaPlayerManager.
   using MediaPlayerManagerMap =
-      base::ScopedPtrHashMap<RenderFrameHost*,
-                             std::unique_ptr<BrowserMediaPlayerManager>>;
+      std::unordered_map<RenderFrameHost*,
+                         std::unique_ptr<BrowserMediaPlayerManager>>;
   MediaPlayerManagerMap media_player_managers_;
 
   using SurfaceViewManagerMap =
-      base::ScopedPtrHashMap<RenderFrameHost*,
-                             std::unique_ptr<BrowserSurfaceViewManager>>;
+      std::unordered_map<RenderFrameHost*,
+                         std::unique_ptr<BrowserSurfaceViewManager>>;
   SurfaceViewManagerMap surface_view_managers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaWebContentsObserverAndroid);

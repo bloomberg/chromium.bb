@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/android/sync_compositor_messages.h"
@@ -64,7 +65,7 @@ SynchronousCompositorProxy* SynchronousCompositorFilter::FindProxy(
   if (itr == sync_compositor_map_.end()) {
     return nullptr;
   }
-  return itr->second;
+  return itr->second.get();
 }
 
 bool SynchronousCompositorFilter::GetSupportedMessageClasses(
@@ -184,11 +185,11 @@ void SynchronousCompositorFilter::UnregisterCompositorFrameSink(
 void SynchronousCompositorFilter::CreateSynchronousCompositorProxy(
     int routing_id,
     ui::SynchronousInputHandlerProxy* synchronous_input_handler_proxy) {
-  DCHECK(!sync_compositor_map_.contains(routing_id));
-  std::unique_ptr<SynchronousCompositorProxy> proxy(
-      new SynchronousCompositorProxy(routing_id, this,
-                                     synchronous_input_handler_proxy));
-  sync_compositor_map_.add(routing_id, std::move(proxy));
+  DCHECK(sync_compositor_map_.find(routing_id) == sync_compositor_map_.end());
+  std::unique_ptr<SynchronousCompositorProxy> proxy =
+      base::MakeUnique<SynchronousCompositorProxy>(
+          routing_id, this, synchronous_input_handler_proxy);
+  sync_compositor_map_[routing_id] = std::move(proxy);
 }
 
 void SynchronousCompositorFilter::SetProxyCompositorFrameSink(
@@ -224,7 +225,6 @@ void SynchronousCompositorFilter::DidRemoveSynchronousHandlerProxy(
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   if (base::ContainsKey(sync_compositor_map_, routing_id)) {
     DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-    DCHECK(sync_compositor_map_.contains(routing_id));
     sync_compositor_map_.erase(routing_id);
   }
   if (base::ContainsKey(synchronous_input_handler_proxy_map_, routing_id))

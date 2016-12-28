@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "content/renderer/android/synchronous_compositor_registry.h"
@@ -92,8 +92,8 @@ class SynchronousCompositorFilter
 
   // Compositor thread-only fields.
   using SyncCompositorMap =
-      base::ScopedPtrHashMap<int /* routing_id */,
-                             std::unique_ptr<SynchronousCompositorProxy>>;
+      std::unordered_map<int /* routing_id */,
+                         std::unique_ptr<SynchronousCompositorProxy>>;
   SyncCompositorMap sync_compositor_map_;
 
   bool filter_ready_;
