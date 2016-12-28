@@ -58,6 +58,10 @@ bool IsNodeIdIntAttribute(AXIntAttribute attr) {
     case AX_ATTR_INVALID_STATE:
     case AX_ATTR_TEXT_DIRECTION:
     case AX_ATTR_TEXT_STYLE:
+    case AX_ATTR_ARIA_COL_COUNT:
+    case AX_ATTR_ARIA_COL_INDEX:
+    case AX_ATTR_ARIA_ROW_COUNT:
+    case AX_ATTR_ARIA_ROW_INDEX:
       return false;
   }
 

@@ -51,9 +51,13 @@ namespace {
 // Private WebKit accessibility attributes.
 NSString* const NSAccessibilityARIAAtomicAttribute = @"AXARIAAtomic";
 NSString* const NSAccessibilityARIABusyAttribute = @"AXARIABusy";
+NSString* const NSAccessibilityARIAColumnCountAttribute = @"AXARIAColumnCount";
+NSString* const NSAccessibilityARIAColumnIndexAttribute = @"AXARIAColumnIndex";
 NSString* const NSAccessibilityARIALiveAttribute = @"AXARIALive";
 NSString* const NSAccessibilityARIAPosInSetAttribute = @"AXARIAPosInSet";
 NSString* const NSAccessibilityARIARelevantAttribute = @"AXARIARelevant";
+NSString* const NSAccessibilityARIARowCountAttribute = @"AXARIARowCount";
+NSString* const NSAccessibilityARIARowIndexAttribute = @"AXARIARowIndex";
 NSString* const NSAccessibilityARIASetSizeAttribute = @"AXARIASetSize";
 NSString* const NSAccessibilityAccessKeyAttribute = @"AXAccessKey";
 NSString* const NSAccessibilityDropEffectsAttribute = @"AXDropEffects";
@@ -528,9 +532,13 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   } attributeToMethodNameContainer[] = {
       {NSAccessibilityARIAAtomicAttribute, @"ariaAtomic"},
       {NSAccessibilityARIABusyAttribute, @"ariaBusy"},
+      {NSAccessibilityARIAColumnCountAttribute, @"ariaColumnCount"},
+      {NSAccessibilityARIAColumnIndexAttribute, @"ariaColumnIndex"},
       {NSAccessibilityARIALiveAttribute, @"ariaLive"},
       {NSAccessibilityARIAPosInSetAttribute, @"ariaPosInSet"},
       {NSAccessibilityARIARelevantAttribute, @"ariaRelevant"},
+      {NSAccessibilityARIARowCountAttribute, @"ariaRowCount"},
+      {NSAccessibilityARIARowIndexAttribute, @"ariaRowIndex"},
       {NSAccessibilityARIASetSizeAttribute, @"ariaSetSize"},
       {NSAccessibilityAccessKeyAttribute, @"accessKey"},
       {NSAccessibilityChildrenAttribute, @"children"},
@@ -647,6 +655,26 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
       GetState(browserAccessibility_, ui::AX_STATE_BUSY)];
 }
 
+- (NSNumber*)ariaColumnCount {
+  if (!browserAccessibility_->IsTableOrGridOrTreeGridRole())
+    return nil;
+  int count = -1;
+  if (!browserAccessibility_->GetIntAttribute(
+      ui::AX_ATTR_ARIA_COL_COUNT, &count))
+    return nil;
+  return [NSNumber numberWithInt:count];
+}
+
+- (NSNumber*)ariaColumnIndex {
+  if (!browserAccessibility_->IsCellOrTableHeaderRole())
+    return nil;
+  int index = -1;
+  if (!browserAccessibility_->GetIntAttribute(
+      ui::AX_ATTR_ARIA_COL_INDEX, &index))
+    return nil;
+  return [NSNumber numberWithInt:index];
+}
+
 - (NSString*)ariaLive {
   if (![self instanceActive])
     return nil;
@@ -666,6 +694,26 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
     return nil;
   return NSStringForStringAttribute(browserAccessibility_,
                                     ui::AX_ATTR_LIVE_RELEVANT);
+}
+
+- (NSNumber*)ariaRowCount {
+  if (!browserAccessibility_->IsTableOrGridOrTreeGridRole())
+    return nil;
+  int count = -1;
+  if (!browserAccessibility_->GetIntAttribute(
+      ui::AX_ATTR_ARIA_ROW_COUNT, &count))
+    return nil;
+  return [NSNumber numberWithInt:count];
+}
+
+- (NSNumber*)ariaRowIndex {
+  if (!browserAccessibility_->IsCellOrTableHeaderRole())
+    return nil;
+  int index = -1;
+  if (!browserAccessibility_->GetIntAttribute(
+      ui::AX_ATTR_ARIA_ROW_INDEX, &index))
+    return nil;
+  return [NSNumber numberWithInt:index];
 }
 
 - (NSNumber*)ariaSetSize {
@@ -2474,7 +2522,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
       NSAccessibilityRowsAttribute, NSAccessibilityVisibleRowsAttribute,
       NSAccessibilityVisibleCellsAttribute, NSAccessibilityHeaderAttribute,
       NSAccessibilityColumnHeaderUIElementsAttribute,
-      NSAccessibilityRowHeaderUIElementsAttribute
+      NSAccessibilityRowHeaderUIElementsAttribute,
+      NSAccessibilityARIAColumnCountAttribute,
+      NSAccessibilityARIARowCountAttribute,
     ]];
   } else if ([role isEqualToString:NSAccessibilityColumnRole]) {
     [ret addObjectsFromArray:@[
@@ -2484,7 +2534,10 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   } else if ([role isEqualToString:NSAccessibilityCellRole]) {
     [ret addObjectsFromArray:@[
       NSAccessibilityColumnIndexRangeAttribute,
-      NSAccessibilityRowIndexRangeAttribute, @"AXSortDirection"
+      NSAccessibilityRowIndexRangeAttribute,
+      NSAccessibilityARIAColumnIndexAttribute,
+      NSAccessibilityARIARowIndexAttribute,
+      @"AXSortDirection",
     ]];
   } else if ([role isEqualToString:@"AXWebArea"]) {
     [ret addObjectsFromArray:@[

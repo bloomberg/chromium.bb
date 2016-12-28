@@ -1,0 +1,31 @@
+rootWebArea
+++table ariaColCount=5
+++++row
+++++++columnHeader ariaColIndex=2
+++++++++staticText name='cell 2'
+++++++++++inlineTextBox name='cell 2'
+++++++columnHeader ariaColIndex=4
+++++++++staticText name='cell 4'
+++++++++++inlineTextBox name='cell 4'
+++++++columnHeader ariaColIndex=5
+++++++++staticText name='cell 5'
+++++++++++inlineTextBox name='cell 5'
+++++row
+++++++cell ariaColIndex=2
+++++++++staticText name='cell 2'
+++++++++++inlineTextBox name='cell 2'
+++++++cell ariaColIndex=3
+++++++++staticText name='cell 3'
+++++++++++inlineTextBox name='cell 3'
+++++++cell ariaColIndex=4
+++++++++staticText name='cell 4'
+++++++++++inlineTextBox name='cell 4'
+++++++cell ariaColIndex=5
+++++++++staticText name='cell 5'
+++++++++++inlineTextBox name='cell 5'
+++++column
+++++column
+++++column
+++++column
+++++tableHeaderContainer
+<-- End-of-file -->

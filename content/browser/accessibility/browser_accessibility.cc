@@ -991,6 +991,12 @@ bool BrowserAccessibility::IsCellOrTableHeaderRole() const {
           GetRole() == ui::AX_ROLE_ROW_HEADER);
 }
 
+bool BrowserAccessibility::IsTableOrGridOrTreeGridRole() const {
+  return (GetRole() == ui::AX_ROLE_TABLE ||
+          GetRole() == ui::AX_ROLE_GRID ||
+          GetRole() == ui::AX_ROLE_TREE_GRID);
+}
+
 bool BrowserAccessibility::HasCaret() const {
   if (IsSimpleTextControl() && HasIntAttribute(ui::AX_ATTR_TEXT_SEL_START) &&
       HasIntAttribute(ui::AX_ATTR_TEXT_SEL_END)) {

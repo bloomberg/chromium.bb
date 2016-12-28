@@ -100,6 +100,8 @@ std::string GetEquivalentAriaRoleString(const ui::AXRole role) {
       return "region";
     case ui::AX_ROLE_SLIDER:
       return "slider";
+    case ui::AX_ROLE_TIME:
+      return "time";
     default:
       break;
   }
@@ -609,6 +611,18 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
       }
     }
 
+    if (dst->role == ui::AX_ROLE_TABLE ||
+        dst->role == ui::AX_ROLE_GRID ||
+        dst->role == ui::AX_ROLE_TREE_GRID) {
+      int aria_colcount = src.ariaColumnCount();
+      if (aria_colcount)
+        dst->AddIntAttribute(ui::AX_ATTR_ARIA_COL_COUNT, aria_colcount);
+
+      int aria_rowcount = src.ariaRowCount();
+      if (aria_rowcount)
+        dst->AddIntAttribute(ui::AX_ATTR_ARIA_ROW_COUNT, aria_rowcount);
+    }
+
     if (dst->role == ui::AX_ROLE_ROW) {
       dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_INDEX, src.rowIndex());
       WebAXObject header = src.rowHeader();
@@ -625,18 +639,29 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
 
     if (dst->role == ui::AX_ROLE_CELL ||
         dst->role == ui::AX_ROLE_ROW_HEADER ||
-        dst->role == ui::AX_ROLE_COLUMN_HEADER) {
-      dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX,
-                           src.cellColumnIndex());
-      dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN,
-                           src.cellColumnSpan());
-      dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX,
-                           src.cellRowIndex());
-      dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_SPAN, src.cellRowSpan());
+        dst->role == ui::AX_ROLE_COLUMN_HEADER ||
+        dst->role == ui::AX_ROLE_ROW) {
+      if (dst->role != ui::AX_ROLE_ROW) {
+        dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX,
+                             src.cellColumnIndex());
+        dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN,
+                             src.cellColumnSpan());
+        dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX,
+                             src.cellRowIndex());
+        dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_SPAN,src.cellRowSpan());
+
+        int aria_colindex = src.ariaColumnIndex();
+        if (aria_colindex)
+          dst->AddIntAttribute(ui::AX_ATTR_ARIA_COL_INDEX, aria_colindex);
+      }
+
+      int aria_rowindex = src.ariaRowIndex();
+      if (aria_rowindex)
+        dst->AddIntAttribute(ui::AX_ATTR_ARIA_ROW_INDEX, aria_rowindex);
     }
 
     if ((dst->role == ui::AX_ROLE_ROW_HEADER ||
-        dst->role == ui::AX_ROLE_COLUMN_HEADER) && src.sortDirection()) {
+         dst->role == ui::AX_ROLE_COLUMN_HEADER) && src.sortDirection()) {
       dst->AddIntAttribute(ui::AX_ATTR_SORT_DIRECTION,
                            AXSortDirectionFromBlink(src.sortDirection()));
     }
@@ -694,8 +719,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
       std::string role = GetEquivalentAriaRoleString(dst->role);
       if (!role.empty())
         dst->AddStringAttribute(ui::AX_ATTR_ROLE, role);
-      else if (dst->role == ui::AX_ROLE_TIME)
-        dst->AddStringAttribute(ui::AX_ATTR_ROLE, "time");
     }
 
     // Browser plugin (used in a <webview>).

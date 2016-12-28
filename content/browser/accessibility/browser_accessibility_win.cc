@@ -3968,6 +3968,19 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
     }
   }
 
+  // Expose aria-colcount and aria-rowcount in a table, grid or treegrid.
+  if (IsTableOrGridOrTreeGridRole()) {
+    IntAttributeToIA2(ui::AX_ATTR_ARIA_COL_COUNT, "colcount");
+    IntAttributeToIA2(ui::AX_ATTR_ARIA_ROW_COUNT, "rowcount");
+  }
+
+  // Expose aria-colindex and aria-rowindex in a cell or row.
+  if (IsCellOrTableHeaderRole() || GetRole() == ui::AX_ROLE_ROW) {
+    if (GetRole() != ui::AX_ROLE_ROW)
+      IntAttributeToIA2(ui::AX_ATTR_ARIA_COL_INDEX, "colindex");
+    IntAttributeToIA2(ui::AX_ATTR_ARIA_ROW_INDEX, "rowindex");
+  }
+
   // Expose row or column header sort direction.
   int32_t sort_direction;
   if ((ia_role() == ROLE_SYSTEM_COLUMNHEADER ||
@@ -4022,6 +4035,15 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   int member_of_id;
   if (GetIntAttribute(ui::AX_ATTR_MEMBER_OF_ID, &member_of_id))
     AddRelation(IA2_RELATION_MEMBER_OF, member_of_id);
+
+  // Expose slider value.
+  if (ia_role() == ROLE_SYSTEM_PROGRESSBAR ||
+      ia_role() == ROLE_SYSTEM_SCROLLBAR ||
+      ia_role() == ROLE_SYSTEM_SLIDER) {
+    base::string16 value_text = GetValueText();
+    SanitizeStringAttributeForIA2(value_text, &value_text);
+    win_attributes_->ia2_attributes.push_back(L"valuetext:" + value_text);
+  }
 
   UpdateRequiredAttributes();
   // If this is a web area for a presentational iframe, give it a role of
@@ -5037,13 +5059,19 @@ void BrowserAccessibilityWin::RemoveTargetFromRelation(
 }
 
 void BrowserAccessibilityWin::UpdateRequiredAttributes() {
-  // Expose slider value.
-  if (ia_role() == ROLE_SYSTEM_PROGRESSBAR ||
-      ia_role() == ROLE_SYSTEM_SCROLLBAR ||
-      ia_role() == ROLE_SYSTEM_SLIDER) {
-    base::string16 value_text = GetValueText();
-    SanitizeStringAttributeForIA2(value_text, &value_text);
-    win_attributes_->ia2_attributes.push_back(L"valuetext:" + value_text);
+  if (IsCellOrTableHeaderRole()) {
+    // Expose colspan attribute.
+    base::string16 colspan;
+    if (GetHtmlAttribute("aria-colspan", &colspan)) {
+      SanitizeStringAttributeForIA2(colspan, &colspan);
+      win_attributes_->ia2_attributes.push_back(L"colspan:" + colspan);
+    }
+    // Expose rowspan attribute.
+    base::string16 rowspan;
+    if (GetHtmlAttribute("aria-rowspan", &rowspan)) {
+      SanitizeStringAttributeForIA2(rowspan, &rowspan);
+      win_attributes_->ia2_attributes.push_back(L"rowspan:" + rowspan);
+    }
   }
 
   // Expose dropeffect attribute.

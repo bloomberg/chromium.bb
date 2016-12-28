@@ -224,6 +224,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaChecked) {
   RunAriaTest(FILE_PATH_LITERAL("aria-checked.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaColAttr) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-col-attr.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityAriaColumnHeader) {
   RunAriaTest(FILE_PATH_LITERAL("aria-columnheader.html"));
@@ -515,6 +519,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaRequired) {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaRow) {
   RunAriaTest(FILE_PATH_LITERAL("aria-row.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaRowAttr) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-row-attr.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaRowGroup) {

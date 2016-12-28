@@ -35,7 +35,7 @@ namespace blink {
 
 class AXObjectCacheImpl;
 
-class AXTableCell : public AXLayoutObject {
+class MODULES_EXPORT AXTableCell : public AXLayoutObject {
   WTF_MAKE_NONCOPYABLE(AXTableCell);
 
  protected:
@@ -55,6 +55,10 @@ class AXTableCell : public AXLayoutObject {
   SortDirection getSortDirection() const final;
   virtual AccessibilityRole scanToDecideHeaderRole();
 
+  unsigned ariaColumnIndex() const;
+  unsigned ariaRowIndex() const;
+  void setARIAColIndexFromRow(int index) { m_ariaColIndexFromRow = index; }
+
  protected:
   virtual AXObject* parentTable() const;
   AccessibilityRole determineAccessibilityRole() final;
@@ -65,6 +69,8 @@ class AXTableCell : public AXLayoutObject {
   bool isColumnHeaderCell() const;
 
   bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
+
+  unsigned m_ariaColIndexFromRow;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableCell, isTableCell());

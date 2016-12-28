@@ -35,7 +35,7 @@ namespace blink {
 
 class AXObjectCacheImpl;
 
-class AXTableRow : public AXLayoutObject {
+class MODULES_EXPORT AXTableRow : public AXLayoutObject {
   WTF_MAKE_NONCOPYABLE(AXTableRow);
 
  protected:
@@ -45,6 +45,7 @@ class AXTableRow : public AXLayoutObject {
   static AXTableRow* create(LayoutObject*, AXObjectCacheImpl&);
   ~AXTableRow() override;
 
+  void addChildren() final;
   bool isTableRow() const final;
 
   // retrieves the "row" header (a th tag in the rightmost column)
@@ -56,6 +57,9 @@ class AXTableRow : public AXLayoutObject {
 
   void setRowIndex(int rowIndex) { m_rowIndex = rowIndex; }
   int rowIndex() const { return m_rowIndex; }
+
+  unsigned ariaColumnIndex() const;
+  unsigned ariaRowIndex() const;
 
  protected:
   AccessibilityRole determineAccessibilityRole() final;

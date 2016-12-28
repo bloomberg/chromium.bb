@@ -70,6 +70,9 @@ class MODULES_EXPORT AXTable : public AXLayoutObject {
   unsigned rowCount();
   AXTableCell* cellForColumnAndRow(unsigned column, unsigned row);
 
+  int ariaColumnCount();
+  int ariaRowCount();
+
   void columnHeaders(AXObjectVector&);
   void rowHeaders(AXObjectVector&);
 

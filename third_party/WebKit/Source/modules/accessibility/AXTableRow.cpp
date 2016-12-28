@@ -47,6 +47,23 @@ AXTableRow* AXTableRow::create(LayoutObject* layoutObject,
   return new AXTableRow(layoutObject, axObjectCache);
 }
 
+void AXTableRow::addChildren() {
+  AXLayoutObject::addChildren();
+
+  // A row is allowed to have a column index, indicating the index of the
+  // first cell in that row, and each subsequent cell gets the next index.
+  int colIndex = ariaColumnIndex();
+  if (!colIndex)
+    return;
+
+  unsigned index = 0;
+  for (const auto& cell : children()) {
+    if (cell->isTableCell())
+      toAXTableCell(cell.get())->setARIAColIndexFromRow(colIndex + index);
+    index++;
+  }
+}
+
 AccessibilityRole AXTableRow::determineAccessibilityRole() {
   if (!isTableRow())
     return AXLayoutObject::determineAccessibilityRole();
@@ -94,6 +111,22 @@ AXObject* AXTableRow::headerObject() {
     return 0;
 
   return headers[0].get();
+}
+
+unsigned AXTableRow::ariaColumnIndex() const {
+  const AtomicString& colIndexValue = getAttribute(aria_colindexAttr);
+  if (colIndexValue.toInt() >= 1)
+    return colIndexValue.toInt();
+
+  return 0;
+}
+
+unsigned AXTableRow::ariaRowIndex() const {
+  const AtomicString& rowIndexValue = getAttribute(aria_rowindexAttr);
+  if (rowIndexValue.toInt() >= 1)
+    return rowIndexValue.toInt();
+
+  return 0;
 }
 
 void AXTableRow::headerObjectsForRow(AXObjectVector& headers) {

@@ -30,6 +30,7 @@
 
 #include "core/layout/LayoutTableCell.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/accessibility/AXTableRow.h"
 
 namespace blink {
 
@@ -99,6 +100,30 @@ bool AXTableCell::isTableCell() const {
     return false;
 
   return true;
+}
+
+unsigned AXTableCell::ariaColumnIndex() const {
+  const AtomicString& colIndex = getAttribute(aria_colindexAttr);
+  if (colIndex.toInt() >= 1)
+    return colIndex.toInt();
+
+  AXObject* parent = parentObjectUnignored();
+  if (!parent || !parent->isTableRow())
+    return 0;
+
+  return m_ariaColIndexFromRow;
+}
+
+unsigned AXTableCell::ariaRowIndex() const {
+  const AtomicString& rowIndex = getAttribute(aria_rowindexAttr);
+  if (rowIndex.toInt() >= 1)
+    return rowIndex.toInt();
+
+  AXObject* parent = parentObjectUnignored();
+  if (!parent || !parent->isTableRow())
+    return 0;
+
+  return toAXTableRow(parent)->ariaRowIndex();
 }
 
 static AccessibilityRole decideRoleFromSibling(LayoutTableCell* siblingCell) {

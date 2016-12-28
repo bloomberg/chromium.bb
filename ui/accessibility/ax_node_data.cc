@@ -428,6 +428,18 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_TEXT_SEL_END:
         result += " sel_end=" + value;
         break;
+      case AX_ATTR_ARIA_COL_COUNT:
+        result += " aria_col_count=" + value;
+        break;
+      case AX_ATTR_ARIA_COL_INDEX:
+        result += " aria_col_index=" + value;
+        break;
+      case AX_ATTR_ARIA_ROW_COUNT:
+        result += " aria_row_count=" + value;
+        break;
+      case AX_ATTR_ARIA_ROW_INDEX:
+        result += " aria_row_index=" + value;
+        break;
       case AX_ATTR_TABLE_ROW_COUNT:
         result += " rows=" + value;
         break;

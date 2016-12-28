@@ -262,6 +262,10 @@ class WebAXObject {
   BLINK_EXPORT void showContextMenu() const;
 
   // For a table
+  BLINK_EXPORT int ariaColumnCount() const;
+  BLINK_EXPORT unsigned ariaColumnIndex() const;
+  BLINK_EXPORT int ariaRowCount() const;
+  BLINK_EXPORT unsigned ariaRowIndex() const;
   BLINK_EXPORT unsigned columnCount() const;
   BLINK_EXPORT unsigned rowCount() const;
   BLINK_EXPORT WebAXObject cellForColumnAndRow(unsigned column,

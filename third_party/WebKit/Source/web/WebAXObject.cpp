@@ -1107,6 +1107,49 @@ bool WebAXObject::lineBreaks(WebVector<int>& result) const {
   return true;
 }
 
+int WebAXObject::ariaColumnCount() const {
+  if (isDetached())
+    return 0;
+
+  if (!m_private->isAXTable())
+    return 0;
+
+  return toAXTable(m_private.get())->ariaColumnCount();
+}
+
+unsigned WebAXObject::ariaColumnIndex() const {
+  if (isDetached())
+    return 0;
+
+  if (!m_private->isTableCell())
+    return 0;
+
+  return toAXTableCell(m_private.get())->ariaColumnIndex();
+}
+
+int WebAXObject::ariaRowCount() const {
+  if (isDetached())
+    return 0;
+
+  if (!m_private->isAXTable())
+    return 0;
+
+  return toAXTable(m_private.get())->ariaRowCount();
+}
+
+unsigned WebAXObject::ariaRowIndex() const {
+  if (isDetached())
+    return 0;
+
+  if (m_private->isTableCell())
+    return toAXTableCell(m_private.get())->ariaRowIndex();
+
+  if (m_private->isTableRow())
+    return toAXTableRow(m_private.get())->ariaRowIndex();
+
+  return 0;
+}
+
 unsigned WebAXObject::columnCount() const {
   if (isDetached())
     return false;
@@ -1119,7 +1162,7 @@ unsigned WebAXObject::columnCount() const {
 
 unsigned WebAXObject::rowCount() const {
   if (isDetached())
-    return false;
+    return 0;
 
   if (!m_private->isAXTable())
     return 0;

@@ -491,6 +491,47 @@ void AXTable::rowHeaders(AXObjectVector& headers) {
   }
 }
 
+int AXTable::ariaColumnCount() {
+  if (!hasAttribute(aria_colcountAttr))
+    return 0;
+
+  const AtomicString& colCountValue = getAttribute(aria_colcountAttr);
+  int colCountInt = colCountValue.toInt();
+
+  if (colCountInt > (int)columnCount())
+    return colCountInt;
+
+  // Spec says that if all of the columns are present in the DOM, it
+  // is not necessary to set this attribute as the user agent can
+  // automatically calculate the total number of columns.
+  // It returns 0 in order not to set this attribute.
+  if (colCountInt == (int)columnCount() || colCountInt != -1)
+    return 0;
+
+  return -1;
+}
+
+int AXTable::ariaRowCount() {
+  if (!hasAttribute(aria_rowcountAttr))
+    return 0;
+
+  const AtomicString& rowCountValue = getAttribute(aria_rowcountAttr);
+  int rowCountInt = rowCountValue.toInt();
+
+  if (rowCountInt > (int)rowCount())
+    return rowCountInt;
+
+  // Spec says that if all of the rows are present in the DOM, it is
+  // not necessary to set this attribute as the user agent can
+  // automatically calculate the total number of rows.
+  // It returns 0 in order not to set this attribute.
+  if (rowCountInt == (int)rowCount() || rowCountInt != -1)
+    return 0;
+
+  // In the spec, -1 explicitly means an unknown number of rows.
+  return -1;
+}
+
 unsigned AXTable::columnCount() {
   updateChildrenIfNecessary();
 
