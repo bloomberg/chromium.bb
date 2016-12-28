@@ -27,12 +27,16 @@
 #include "av1/decoder/decint.h"
 #include "av1/decoder/pvq_decoder.h"
 
-static void od_decode_pvq_codeword(od_ec_dec *ec, od_pvq_codeword_ctx *ctx,
+static void aom_decode_pvq_codeword(aom_reader *r, od_pvq_codeword_ctx *ctx,
  od_coeff *y, int n, int k) {
   int i;
-  od_decode_band_pvq_splits(ec, ctx, y, n, k, 0);
+#if CONFIG_DAALA_EC
+  od_decode_band_pvq_splits(&r->ec, ctx, y, n, k, 0);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   for (i = 0; i < n; i++) {
-    if (y[i] && od_ec_dec_bits(ec, 1, "pvq:sign")) y[i] = -y[i];
+    if (y[i] && aom_read_bit(r, "pvq:sign")) y[i] = -y[i];
   }
 }
 
@@ -260,12 +264,8 @@ static void pvq_decode_partition(aom_reader *r,
   k = od_pvq_compute_k(qcg, itheta, theta, *noref, n, beta, nodesync);
   if (k != 0) {
     /* when noref==0, y is actually size n-1 */
-#if CONFIG_DAALA_EC
-    od_decode_pvq_codeword(&r->ec, &adapt->pvq.pvq_codeword_ctx, y,
+    aom_decode_pvq_codeword(r, &adapt->pvq.pvq_codeword_ctx, y,
      n - !*noref, k);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
   }
   else {
     OD_CLEAR(y, n);
