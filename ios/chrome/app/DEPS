@@ -37,8 +37,5 @@ specific_include_rules = {
     "+ios/web/net/request_tracker_factory_impl.h",
     "+ios/web/net/request_tracker_impl.h",
     "+ios/web/net/web_http_protocol_handler_delegate.h",
-
-    # TODO(crbug.com/616288): Remove this exception.
-    "+ios/web/web_state/ui/crw_web_controller.h",
   ],
 }

@@ -137,11 +137,11 @@
 #include "ios/web/net/request_tracker_factory_impl.h"
 #include "ios/web/net/request_tracker_impl.h"
 #include "ios/web/net/web_http_protocol_handler_delegate.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_capabilities.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_view_creation_util.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 #include "mojo/edk/embedder/embedder.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/url_request/url_request_context.h"
@@ -2317,7 +2317,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 #pragma mark - Tab opening utility methods.
 
 - (Tab*)openOrReuseTabInMode:(ApplicationMode)targetMode
-                     withURL:(const GURL&)url
+                     withURL:(const GURL&)URL
                   transition:(ui::PageTransition)transition {
   BrowserViewController* targetBVC =
       targetMode == ApplicationMode::NORMAL ? self.mainBVC : self.otrBVC;
@@ -2328,16 +2328,16 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     currentURL = [currentTabInTargetBVC url];
 
   if (!(currentTabInTargetBVC && IsURLNtp(currentURL))) {
-    return [targetBVC addSelectedTabWithURL:url
+    return [targetBVC addSelectedTabWithURL:URL
                                     atIndex:NSNotFound
                                  transition:transition];
   }
 
   Tab* newTab = currentTabInTargetBVC;
   // Don't call loadWithParams for chrome://newtab, it's already loaded.
-  if (!(IsURLNtp(url))) {
-    web::NavigationManager::WebLoadParams params(url);
-    [[newTab webController] loadWithParams:params];
+  if (!(IsURLNtp(URL))) {
+    web::NavigationManager::WebLoadParams params(URL);
+    [newTab webState]->GetNavigationManager()->LoadURLWithParams(params);
   }
   return newTab;
 }
