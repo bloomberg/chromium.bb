@@ -232,10 +232,9 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
     bindings_system()->CompleteRequest(last_request()->request_id,
                                        *expected_args);
 
-    std::unique_ptr<base::Value> result = GetBaseValuePropertyFromObject(
-        context->Global(), context, "callbackArguments");
-    ASSERT_TRUE(result);
-    EXPECT_EQ(ReplaceSingleQuotes(kResponseArgsJson), ValueToString(*result));
+    EXPECT_EQ(ReplaceSingleQuotes(kResponseArgsJson),
+              GetStringPropertyFromObject(context->Global(), context,
+                                          "callbackArguments"));
     reset_last_request();
   }
 
@@ -255,10 +254,8 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
     bindings_system()->CompleteRequest(last_request()->request_id,
                                        base::ListValue());
 
-    std::unique_ptr<base::Value> result = GetBaseValuePropertyFromObject(
-        context->Global(), context, "callbackArguments");
-    ASSERT_TRUE(result);
-    EXPECT_EQ("[]", ValueToString(*result));
+    EXPECT_EQ("[]", GetStringPropertyFromObject(context->Global(), context,
+                                                "callbackArguments"));
     reset_last_request();
   }
 
@@ -276,10 +273,9 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
     bindings_system()->FireEventInContext("alpha.alphaEvent", context,
                                           *expected_args);
 
-    std::unique_ptr<base::Value> result = GetBaseValuePropertyFromObject(
-        context->Global(), context, "eventArguments");
-    ASSERT_TRUE(result);
-    EXPECT_EQ(ReplaceSingleQuotes(kResponseArgsJson), ValueToString(*result));
+    EXPECT_EQ(ReplaceSingleQuotes(kResponseArgsJson),
+              GetStringPropertyFromObject(context->Global(), context,
+                                          "eventArguments"));
   }
 
   {
@@ -339,10 +335,9 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
     CallFunctionOnObject(context, alpha_api, kTestCall);
     EXPECT_TRUE(did_call);
 
-    std::unique_ptr<base::Value> result = GetBaseValuePropertyFromObject(
-        context->Global(), context, "callbackArguments");
-    ASSERT_TRUE(result);
-    EXPECT_EQ("[\"bar\"]", ValueToString(*result));
+    EXPECT_EQ("[\"bar\"]",
+              GetStringPropertyFromObject(context->Global(), context,
+                                          "callbackArguments"));
   }
 }
 
@@ -485,16 +480,13 @@ TEST_F(APIBindingsSystemTestWithRealAPI, RealAPIs) {
         "  this.idleState = state;\n"
         "});\n";
     ExecuteScript(context, kTestCall);
-    v8::Local<v8::Value> v8_result =
-        GetPropertyFromObject(context->Global(), context, "idleState");
-    EXPECT_TRUE(v8_result->IsUndefined());
+    EXPECT_EQ("undefined", GetStringPropertyFromObject(context->Global(),
+                                                       context, "idleState"));
     bindings_system()->FireEventInContext("idle.onStateChanged", context,
                                           *ListValueFromString("['active']"));
 
-    std::unique_ptr<base::Value> result =
-        GetBaseValuePropertyFromObject(context->Global(), context, "idleState");
-    ASSERT_TRUE(result);
-    EXPECT_EQ("\"active\"", ValueToString(*result));
+    EXPECT_EQ("\"active\"", GetStringPropertyFromObject(context->Global(),
+                                                        context, "idleState"));
   }
 }
 

@@ -265,10 +265,9 @@ TEST_F(APIEventHandlerTest, EventArguments) {
   ASSERT_TRUE(event_args);
   handler.FireEventInContext(kEventName, context, *event_args);
 
-  std::unique_ptr<base::Value> result =
-      GetBaseValuePropertyFromObject(context->Global(), context, "eventArgs");
-  ASSERT_TRUE(result);
-  EXPECT_EQ(ReplaceSingleQuotes(kArguments), ValueToString(*result));
+  EXPECT_EQ(
+      ReplaceSingleQuotes(kArguments),
+      GetStringPropertyFromObject(context->Global(), context, "eventArgs"));
 }
 
 // Test dispatching events to multiple contexts.
@@ -328,16 +327,13 @@ TEST_F(APIEventHandlerTest, MultipleContexts) {
 
   handler.FireEventInContext(kEventName, context_a, *arguments_a);
   {
-    std::unique_ptr<base::Value> result_a = GetBaseValuePropertyFromObject(
-        context_a->Global(), context_a, "eventArgs");
-    ASSERT_TRUE(result_a);
-    EXPECT_EQ("\"result_a:alpha\"", ValueToString(*result_a));
+    EXPECT_EQ("\"result_a:alpha\"",
+              GetStringPropertyFromObject(context_a->Global(), context_a,
+                                          "eventArgs"));
   }
   {
-    v8::Local<v8::Value> result_b =
-        GetPropertyFromObject(context_b->Global(), context_b, "eventArgs");
-    ASSERT_FALSE(result_b.IsEmpty());
-    EXPECT_TRUE(result_b->IsUndefined());
+    EXPECT_EQ("undefined", GetStringPropertyFromObject(context_b->Global(),
+                                                       context_b, "eventArgs"));
   }
 
   // Dispatch the event in context_b - the listener in context_a should not be
@@ -347,16 +343,14 @@ TEST_F(APIEventHandlerTest, MultipleContexts) {
   ASSERT_TRUE(arguments_b);
   handler.FireEventInContext(kEventName, context_b, *arguments_b);
   {
-    std::unique_ptr<base::Value> result_a = GetBaseValuePropertyFromObject(
-        context_a->Global(), context_a, "eventArgs");
-    ASSERT_TRUE(result_a);
-    EXPECT_EQ("\"result_a:alpha\"", ValueToString(*result_a));
+    EXPECT_EQ("\"result_a:alpha\"",
+              GetStringPropertyFromObject(context_a->Global(), context_a,
+                                          "eventArgs"));
   }
   {
-    std::unique_ptr<base::Value> result_b = GetBaseValuePropertyFromObject(
-        context_b->Global(), context_b, "eventArgs");
-    ASSERT_TRUE(result_b);
-    EXPECT_EQ("\"result_b:beta\"", ValueToString(*result_b));
+    EXPECT_EQ("\"result_b:beta\"",
+              GetStringPropertyFromObject(context_b->Global(), context_b,
+                                          "eventArgs"));
   }
 }
 

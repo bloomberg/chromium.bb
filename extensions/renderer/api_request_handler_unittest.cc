@@ -78,10 +78,8 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
   request_handler.CompleteRequest(request_id, *response_arguments);
 
   EXPECT_TRUE(did_run_js());
-  std::unique_ptr<base::Value> result_value =
-      GetBaseValuePropertyFromObject(context->Global(), context, "result");
-  ASSERT_TRUE(result_value);
-  EXPECT_EQ(ReplaceSingleQuotes(kArguments), ValueToString(*result_value));
+  EXPECT_EQ(ReplaceSingleQuotes(kArguments),
+            GetStringPropertyFromObject(context->Global(), context, "result"));
 
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
 }
@@ -154,11 +152,9 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
   EXPECT_THAT(request_handler.GetPendingRequestIdsForTesting(),
               testing::UnorderedElementsAre(request_b));
 
-  std::unique_ptr<base::Value> result_a =
-      GetBaseValuePropertyFromObject(context_a->Global(), context_a, "result");
-  ASSERT_TRUE(result_a);
-  EXPECT_EQ(ReplaceSingleQuotes("'response_a:alpha'"),
-            ValueToString(*result_a));
+  EXPECT_EQ(
+      ReplaceSingleQuotes("'response_a:alpha'"),
+      GetStringPropertyFromObject(context_a->Global(), context_a, "result"));
 
   std::unique_ptr<base::ListValue> response_b =
       ListValueFromString("['response_b:']");
@@ -167,10 +163,9 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
   request_handler.CompleteRequest(request_b, *response_b);
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
 
-  std::unique_ptr<base::Value> result_b =
-      GetBaseValuePropertyFromObject(context_b->Global(), context_b, "result");
-  ASSERT_TRUE(result_b);
-  EXPECT_EQ(ReplaceSingleQuotes("'response_b:beta'"), ValueToString(*result_b));
+  EXPECT_EQ(
+      ReplaceSingleQuotes("'response_b:beta'"),
+      GetStringPropertyFromObject(context_b->Global(), context_b, "result"));
 }
 
 }  // namespace extensions

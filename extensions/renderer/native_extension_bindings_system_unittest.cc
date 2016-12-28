@@ -318,37 +318,29 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestBridgingToJSCustomBindings) {
     RunFunctionOnGlobal(call_idle_query_state, context, 0, nullptr);
   }
 
-  auto get_property_as_string = [&context](v8::Local<v8::Object> object,
-                                           base::StringPiece property_name) {
-    std::unique_ptr<base::Value> property =
-        GetBaseValuePropertyFromObject(object, context, property_name);
-    if (!property)
-      return std::string();
-    return ValueToString(*property);
-  };
-
   // To start, check that the properties we set when running the hooks are
   // correct. We do this after calling the function because the API objects (and
   // thus the hooks) are set up lazily.
   v8::Local<v8::Object> global = context->Global();
   EXPECT_EQ(base::StringPrintf("\"%s\"", extension->id().c_str()),
-            get_property_as_string(global, "hookedExtensionId"));
+            GetStringPropertyFromObject(global, context, "hookedExtensionId"));
   EXPECT_EQ("\"BLESSED_EXTENSION\"",
-            get_property_as_string(global, "hookedContextType"));
+            GetStringPropertyFromObject(global, context, "hookedContextType"));
   v8::Local<v8::Value> idle_api =
       V8ValueFromScriptSource(context, "chrome.idle");
   ASSERT_FALSE(idle_api.IsEmpty());
   ASSERT_TRUE(idle_api->IsObject());
   EXPECT_EQ("\"someProperty\"",
-            get_property_as_string(idle_api.As<v8::Object>(),
-                                   "hookedApiProperty"));
+            GetStringPropertyFromObject(idle_api.As<v8::Object>(), context,
+                                        "hookedApiProperty"));
 
   // Next, we need to check two pieces: first, that the custom handler was
   // called with the proper arguments....
-  EXPECT_EQ("30", get_property_as_string(global, "timeArg"));
+  EXPECT_EQ("30", GetStringPropertyFromObject(global, context, "timeArg"));
 
   // ...and second, that the callback was called with the proper result.
-  EXPECT_EQ("\"active\"", get_property_as_string(global, "responseState"));
+  EXPECT_EQ("\"active\"",
+            GetStringPropertyFromObject(global, context, "responseState"));
 }
 
 }  // namespace extensions

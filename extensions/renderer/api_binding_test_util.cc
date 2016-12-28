@@ -175,4 +175,21 @@ std::unique_ptr<base::Value> GetBaseValuePropertyFromObject(
   return V8ToBaseValue(GetPropertyFromObject(object, context, key), context);
 }
 
+std::string GetStringPropertyFromObject(v8::Local<v8::Object> object,
+                                        v8::Local<v8::Context> context,
+                                        base::StringPiece key) {
+  v8::Local<v8::Value> v8_val = GetPropertyFromObject(object, context, key);
+  if (v8_val.IsEmpty())
+    return "empty";
+  if (v8_val->IsNull())
+    return "null";
+  if (v8_val->IsUndefined())
+    return "undefined";
+  if (v8_val->IsFunction())
+    return "function";
+  std::unique_ptr<base::Value> json_prop = V8ToBaseValue(v8_val, context);
+  DCHECK(json_prop) << key;
+  return ValueToString(*json_prop);
+}
+
 }  // namespace extensions

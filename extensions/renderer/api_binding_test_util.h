@@ -106,6 +106,12 @@ std::unique_ptr<base::Value> GetBaseValuePropertyFromObject(
     v8::Local<v8::Context> context,
     base::StringPiece key);
 
+// As above, but returns a JSON-serialized version of the value, or
+// "undefined", "null", "function", or "empty".
+std::string GetStringPropertyFromObject(v8::Local<v8::Object> object,
+                                        v8::Local<v8::Context> context,
+                                        base::StringPiece key);
+
 }  // extensions
 
 #endif  // EXTENSIONS_RENDERER_API_BINDING_TEST_UTIL_H_
