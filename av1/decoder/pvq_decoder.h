@@ -17,7 +17,7 @@
 # include "av1/common/pvq.h"
 # include "av1/decoder/decint.h"
 
-void od_decode_band_pvq_splits(od_ec_dec *ec, od_pvq_codeword_ctx *adapt,
+void aom_decode_band_pvq_splits(aom_reader *r, od_pvq_codeword_ctx *adapt,
  od_coeff *y, int n, int k, int level);
 
 #if OD_ACCOUNTING

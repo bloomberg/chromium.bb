@@ -16,17 +16,20 @@
 
 #include <stdio.h>
 
+#include "aom_dsp/bitreader.h"
 #include "aom_dsp/entdec.h"
 #include "av1/common/pvq.h"
 #include "pvq_decoder.h"
 
 #if OD_ACCOUNTING
-# define od_decode_pvq_split(ec, adapt, sum, ctx, str) od_decode_pvq_split_(ec, adapt, sum, ctx, str)
+# define aom_decode_pvq_split(r, adapt, sum, ctx, str) \
+  aom_decode_pvq_split_(r, adapt, sum, ctx, str)
 #else
-# define od_decode_pvq_split(ec, adapt, sum, ctx, str) od_decode_pvq_split_(ec, adapt, sum, ctx)
+# define aom_decode_pvq_split(r, adapt, sum, ctx, str) \
+  aom_decode_pvq_split_(r, adapt, sum, ctx)
 #endif
 
-static int od_decode_pvq_split_(od_ec_dec *ec, od_pvq_codeword_ctx *adapt,
+static int aom_decode_pvq_split_(aom_reader *r, od_pvq_codeword_ctx *adapt,
  int sum, int ctx OD_ACC_STR) {
   int shift;
   int count;
@@ -36,18 +39,26 @@ static int od_decode_pvq_split_(od_ec_dec *ec, od_pvq_codeword_ctx *adapt,
   if (sum == 0) return 0;
   shift = OD_MAXI(0, OD_ILOG(sum) - 3);
   fctx = 7*ctx + (sum >> shift) - 1;
-  msbs = od_decode_cdf_adapt(ec, adapt->pvq_split_cdf[fctx],
+#if CONFIG_DAALA_EC
+  msbs = od_decode_cdf_adapt(&r->ec, adapt->pvq_split_cdf[fctx],
    (sum >> shift) + 1, adapt->pvq_split_increment, acc_str);
-  if (shift) count = od_ec_dec_bits(ec, shift, acc_str);
+  if (shift) count = od_ec_dec_bits(&r->ec, shift, acc_str);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   count += msbs << shift;
   if (count > sum) {
     count = sum;
-    ec->error = 1;
+#if CONFIG_DAALA_EC
+    r->ec.error = 1;
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   }
   return count;
 }
 
-void od_decode_band_pvq_splits(od_ec_dec *ec, od_pvq_codeword_ctx *adapt,
+void aom_decode_band_pvq_splits(aom_reader *r, od_pvq_codeword_ctx *adapt,
  od_coeff *y, int n, int k, int level) {
   int mid;
   int count_right;
@@ -62,16 +73,20 @@ void od_decode_band_pvq_splits(od_ec_dec *ec, od_pvq_codeword_ctx *adapt,
     int pos;
     cdf_id = od_pvq_k1_ctx(n, level == 0);
     OD_CLEAR(y, n);
-    pos = od_decode_cdf_adapt(ec, adapt->pvq_k1_cdf[cdf_id], n,
+#if CONFIG_DAALA_EC
+    pos = od_decode_cdf_adapt(&r->ec, adapt->pvq_k1_cdf[cdf_id], n,
      adapt->pvq_k1_increment, "pvq:k1");
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
     y[pos] = 1;
   }
   else {
     mid = n >> 1;
-    count_right = od_decode_pvq_split(ec, adapt, k, od_pvq_size_ctx(n),
+    count_right = aom_decode_pvq_split(r, adapt, k, od_pvq_size_ctx(n),
      "pvq:split");
-    od_decode_band_pvq_splits(ec, adapt, y, mid, k - count_right, level + 1);
-    od_decode_band_pvq_splits(ec, adapt, y + mid, n - mid, count_right,
+    aom_decode_band_pvq_splits(r, adapt, y, mid, k - count_right, level + 1);
+    aom_decode_band_pvq_splits(r, adapt, y + mid, n - mid, count_right,
      level + 1);
   }
 }

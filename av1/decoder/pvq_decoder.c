@@ -30,11 +30,7 @@
 static void aom_decode_pvq_codeword(aom_reader *r, od_pvq_codeword_ctx *ctx,
  od_coeff *y, int n, int k) {
   int i;
-#if CONFIG_DAALA_EC
-  od_decode_band_pvq_splits(&r->ec, ctx, y, n, k, 0);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
+  aom_decode_band_pvq_splits(r, ctx, y, n, k, 0);
   for (i = 0; i < n; i++) {
     if (y[i] && aom_read_bit(r, "pvq:sign")) y[i] = -y[i];
   }
