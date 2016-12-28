@@ -1336,7 +1336,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // Verify that reloading a page with url anchor scrolls to correct position.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
+// Disabled due to flakiness: https://crbug.com/672545.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       DISABLED_ReloadWithUrlAnchor) {
   GURL url1(embedded_test_server()->GetURL(
       "/navigation_controller/reload-with-url-anchor.html#d2"));
   EXPECT_TRUE(NavigateToURL(shell(), url1));
