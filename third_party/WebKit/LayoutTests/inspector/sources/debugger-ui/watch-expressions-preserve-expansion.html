@@ -83,7 +83,7 @@ var test = function()
 
     function expandProperties(treeoutline, path, callback)
     {
-        treeoutline.addEventListener(TreeOutline.Events.ElementAttached, elementAttached);
+        treeoutline.addEventListener(UI.TreeOutline.Events.ElementAttached, elementAttached);
         treeoutline.expand();
 
         function elementAttached(event)
@@ -101,7 +101,7 @@ var test = function()
                 return;
             }
 
-            treeoutline.removeEventListener(TreeOutline.Events.ElementAttached, elementAttached);
+            treeoutline.removeEventListener(UI.TreeOutline.Events.ElementAttached, elementAttached);
             callback();
         }
     }
