@@ -299,3 +299,12 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'Try starting a new job for MOCK Try Win by running :\n'
             '  git cl try -b MOCK Try Win\n'
         ])
+
+    def test_bails_when_there_are_unstaged_baselines(self):
+        scm = self.tool.scm()
+        scm.unstaged_changes = lambda: {'third_party/WebKit/LayoutTests/my-test-expected.txt': '?'}
+        self.command.execute(self.command_options(issue=11112222), [], self.tool)
+        self.assertLog([
+            'ERROR: Aborting: there are unstaged baselines:\n',
+            'ERROR:   /mock-checkout/third_party/WebKit/LayoutTests/my-test-expected.txt\n',
+        ])

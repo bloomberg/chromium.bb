@@ -130,3 +130,6 @@ class MockSCM(object):
 
     def changed_files(self):
         return []
+
+    def unstaged_changes(self):
+        return {}

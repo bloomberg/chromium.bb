@@ -252,3 +252,23 @@ class GitTestWithMock(SCMTestBase):
 
         scm._run_git = lambda args: 'Date: 2013-02-08 01:55:21 -0800'
         self.assertEqual(scm.timestamp_of_revision('some-path', '12345'), '2013-02-08T09:55:21Z')
+
+    def test_unstaged_files(self):
+        scm = self.make_scm()
+        status_lines = [
+            ' M d/modified.txt',
+            ' D d/deleted.txt',
+            '?? d/untracked.txt',
+            'D  d/deleted.txt',
+            'M  d/modified-staged.txt',
+            'A  d/added-staged.txt',
+        ]
+        # pylint: disable=protected-access
+        scm._run_git = lambda args: '\x00'.join(status_lines) + '\x00'
+        self.assertEqual(
+            scm.unstaged_changes(),
+            {
+                'd/modified.txt': 'M',
+                'd/deleted.txt': 'D',
+                'd/untracked.txt': '?',
+            })

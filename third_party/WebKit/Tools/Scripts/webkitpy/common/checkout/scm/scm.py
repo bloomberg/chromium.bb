@@ -121,6 +121,9 @@ class SCM:
     def exists(self, path):
         self._subclass_must_implement()
 
+    def unstaged_changes(self):
+        self._subclass_must_implement()
+
     def changed_files(self, git_commit=None):
         self._subclass_must_implement()
 

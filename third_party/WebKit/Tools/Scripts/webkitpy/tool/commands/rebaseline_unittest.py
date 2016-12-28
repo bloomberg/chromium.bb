@@ -484,6 +484,22 @@ class TestRebaselineJson(BaseTestCase):
                   '--builder', 'MOCK Win7', '--test', 'userscripts/first-test.html', '--verbose', '--results-directory', '/tmp']]
             ])
 
+    def test_unstaged_baselines(self):
+        scm = self.tool.scm()
+        scm.unstaged_changes = lambda: {
+            'third_party/WebKit/LayoutTests/x/foo-expected.txt': 'M',
+            'third_party/WebKit/LayoutTests/x/foo-expected.something': '?',
+            'third_party/WebKit/LayoutTests/x/foo-expected.png': '?',
+            'third_party/WebKit/LayoutTests/x/foo.html': 'M',
+            'docs/something.md': '?',
+        }
+        self.assertEqual(
+            self.command.unstaged_baselines(),
+            [
+                '/mock-checkout/third_party/WebKit/LayoutTests/x/foo-expected.png',
+                '/mock-checkout/third_party/WebKit/LayoutTests/x/foo-expected.txt',
+            ])
+
 
 class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
     command_constructor = RebaselineJson

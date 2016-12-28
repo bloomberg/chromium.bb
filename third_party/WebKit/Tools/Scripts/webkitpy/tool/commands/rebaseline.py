@@ -30,6 +30,7 @@ from __future__ import print_function
 import json
 import logging
 import optparse
+import re
 import sys
 import traceback
 
@@ -523,7 +524,13 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
         self._remove_all_pass_testharness_baselines(test_prefix_list)
 
-        self._tool.scm().add_all(pathspec=self._layout_tests_dir())
+        self._tool.scm().add_list(self.unstaged_baselines())
+
+    def unstaged_baselines(self):
+        """Returns absolute paths for unstaged (including untracked) baselines."""
+        baseline_re = re.compile(r'.*[\\/]LayoutTests[\\/].*-expected\.(txt|png|wav)$')
+        unstaged_changes = self._tool.scm().unstaged_changes()
+        return sorted(self._tool.scm().absolute_path(path) for path in unstaged_changes if re.match(baseline_re, path))
 
     def _remove_all_pass_testharness_baselines(self, test_prefix_list):
         """Removes all of the all-PASS baselines for the given builders and tests.

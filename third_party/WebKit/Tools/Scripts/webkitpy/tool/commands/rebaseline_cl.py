@@ -52,10 +52,20 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
     def execute(self, options, args, tool):
         self._tool = tool
+
+        unstaged_baselines = self.unstaged_baselines()
+        if unstaged_baselines:
+            _log.error('Aborting: there are unstaged baselines:')
+            for path in unstaged_baselines:
+                _log.error('  %s', path)
+            return
+
         issue_number = self._get_issue_number(options)
         if not issue_number:
             return
 
+        # TODO(qyearsley): Replace this with git cl try-results to remove
+        # dependency on Rietveld. See crbug.com/671684.
         builds = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
 
         if options.trigger_jobs:

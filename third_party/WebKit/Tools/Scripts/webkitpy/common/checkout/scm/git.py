@@ -112,6 +112,24 @@ class Git(SCM):
         if self._rebase_in_progress():
             self._run_git(['rebase', '--abort'])
 
+    def unstaged_changes(self):
+        """Lists files with unstaged changes, including untracked files.
+
+        Returns a dict mapping modified file paths (relative to checkout root)
+        to one-character codes identifying the change, e.g. 'M' for modified,
+        'D' for deleted, '?' for untracked.
+        """
+        # `git status -z` is a version of `git status -s`, that's recommended
+        # for machine parsing. Lines are terminated with NUL rather than LF.
+        unstaged_changes = {}
+        change_lines = self._run_git(['status', '-z']).rstrip('\x00').split('\x00')
+        for line in change_lines:
+            if line[1] == ' ':
+                continue  # Already staged for commit.
+            path = line[3:]
+            unstaged_changes[path] = line[1]
+        return unstaged_changes
+
     def status_command(self):
         # git status returns non-zero when there are changes, so we use git diff name --name-status HEAD instead.
         # No file contents printed, thus utf-8 autodecoding in self.run is fine.
