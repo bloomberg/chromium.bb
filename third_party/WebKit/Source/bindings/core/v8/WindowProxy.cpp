@@ -460,10 +460,9 @@ void WindowProxy::setSecurityToken(SecurityOrigin* origin) {
 
 void WindowProxy::updateDocument() {
   DCHECK(m_world->isMainWorld());
-  if (!isGlobalInitialized())
-    return;
   if (!isContextInitialized())
     return;
+
   updateActivityLogger();
   updateDocumentProperty();
   updateSecurityOrigin(m_frame->securityContext()->getSecurityOrigin());
