@@ -11,6 +11,7 @@ from chromite.cbuildbot import build_status
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import prebuilts
+from chromite.cbuildbot import relevant_changes
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
@@ -596,78 +597,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       clactions.RecordSubmissionMetrics(action_history,
                                         submitted_change_strategies)
 
-  def _GetSlaveMappingAndCLActions(self, changes, slave_buildbucket_ids):
-    """Query CIDB to for slaves and CL actions.
-
-    Args:
-      changes: A list of GerritPatch instances to examine.
-      slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
-                             scheduled by Buildbucket.
-
-    Returns:
-      A tuple of (config_map, action_history), where the config_map
-      is a dictionary mapping build_id to config name for all slaves
-      in this run plus the master, and action_history is a list of all
-      CL actions associated with |changes|.
-    """
-    # build_id is the master build id for the run.
-    build_id, db = self._run.GetCIDBHandle()
-    assert db, 'No database connection to use.'
-
-    slave_list = db.GetSlaveStatuses(
-        build_id, buildbucket_ids=slave_buildbucket_ids)
-    # TODO(akeshet): We are getting the full action history for all changes that
-    # were in this CQ run. It would make more sense to only get the actions from
-    # build_ids of this master and its slaves.
-    action_history = db.GetActionsForChanges(changes)
-
-    config_map = dict()
-
-    for d in slave_list:
-      config_map[d['id']] = d['build_config']
-
-    # TODO(akeshet): We are giving special treatment to the CQ master, which
-    # makes this logic CQ specific. We only use this logic in the CQ anyway at
-    # the moment, but may need to reconsider if we need to generalize to other
-    # master-slave builds.
-    assert self._run.config.name == constants.CQ_MASTER
-    config_map[build_id] = constants.CQ_MASTER
-
-    return config_map, action_history
-
-  def GetRelevantChangesForSlaves(self, changes, no_stat,
-                                  slave_buildbucket_ids):
-    """Compile a set of relevant changes for each slave.
-
-    Args:
-      changes: A list of GerritPatch instances to examine.
-      no_stat: Set of builder names of slave builders that had status None.
-      slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
-                             scheduled by Buildbucket.
-
-    Returns:
-      A dictionary mapping a slave config name to a set of relevant changes.
-    """
-    # Retrieve the slaves and clactions from CIDB.
-    config_map, action_history = self._GetSlaveMappingAndCLActions(
-        changes, slave_buildbucket_ids)
-    changes_by_build_id = clactions.GetRelevantChangesForBuilds(
-        changes, action_history, config_map.keys())
-
-    # Convert index from build_ids to config names.
-    changes_by_config = dict()
-    for k, v in changes_by_build_id.iteritems():
-      changes_by_config[config_map[k]] = v
-
-    for config in no_stat:
-      # If a slave is in |no_stat|, it means that the slave never
-      # finished applying the changes in the sync stage. Hence the CL
-      # pickup actions for this slave may be
-      # inaccurate. Conservatively assume all changes are relevant.
-      changes_by_config[config] = set(changes)
-
-    return changes_by_config
-
   def GetSubsysResultForSlaves(self):
     """Get the pass/fail HWTest subsystems results for each slave.
 
@@ -766,8 +695,11 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     do_partial_submission = self._ShouldSubmitPartialPool(slave_buildbucket_ids)
 
     if do_partial_submission:
-      changes_by_config = self.GetRelevantChangesForSlaves(
-          changes, no_stat, slave_buildbucket_ids)
+      build_id, db = self._run.GetCIDBHandle()
+      changes_by_config = (
+          relevant_changes.RelevantChanges.GetRelevantChangesForSlaves(
+              build_id, db, self._run.config, changes, no_stat,
+              slave_buildbucket_ids))
       subsys_by_config = self.GetSubsysResultForSlaves()
 
       # Even if there was a failure, we can submit the changes that indicate

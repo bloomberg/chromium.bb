@@ -16,6 +16,7 @@ from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import prebuilts
+from chromite.cbuildbot import relevant_changes
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages_unittest
@@ -502,7 +503,7 @@ class BaseCommitQueueCompletionStageTest(
                      'HandleFailure')
     self.PatchObject(completion_stages.CommitQueueCompletionStage,
                      '_GetFailedMessages')
-    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+    self.PatchObject(relevant_changes.RelevantChanges,
                      '_GetSlaveMappingAndCLActions',
                      return_value=(dict(), []))
     self.PatchObject(clactions, 'GetRelevantChangesForBuilds')
@@ -732,32 +733,6 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
     stage = self.ConstructStage()
     stage._run.config.sanity_check_slaves = ['sanity']
     self.VerifyStage([], ['sanity'], build_passed=True)
-
-  def testGetRelevantChangesForSlave(self):
-    """Tests the logic of GetRelevantChangesForSlaves()."""
-    change_set1 = set(self.GetPatches(how_many=2))
-    change_set2 = set(self.GetPatches(how_many=3))
-    changes = set.union(change_set1, change_set2)
-    no_stat = ['no_stat-paladin']
-    config_map = {'123': 'foo-paladin',
-                  '124': 'bar-paladin',
-                  '125': 'no_stat-paladin'}
-    changes_by_build_id = {'123': change_set1,
-                           '124': change_set2}
-    # If a slave did not report status (no_stat), assume all changes
-    # are relevant.
-    expected = {'foo-paladin': change_set1,
-                'bar-paladin': change_set2,
-                'no_stat-paladin': changes}
-    self.PatchObject(completion_stages.CommitQueueCompletionStage,
-                     '_GetSlaveMappingAndCLActions',
-                     return_value=(config_map, []))
-    self.PatchObject(clactions, 'GetRelevantChangesForBuilds',
-                     return_value=changes_by_build_id)
-
-    stage = self.ConstructStage()
-    results = stage.GetRelevantChangesForSlaves(changes, no_stat, None)
-    self.assertEqual(results, expected)
 
   def testWithExponentialFallbackApplied(self):
     """Tests that we don't treat TOT as sane when it isn't."""
