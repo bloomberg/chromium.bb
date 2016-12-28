@@ -1,100 +1,44 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <style>
-        #target {
-            position: relative;
-            background-color: #933;
-            width: 50px;
-            height: 50px;
-            top: 0px;
-            left: 0px;
-        }
-        #target.transition-top {
-            top: 400px;
-            transition: top 2000ms linear;
-        }
-        #target.transition-left {
-            left: 400px;
-            transition: left 2000ms linear;
-        }
-    </style>
-    <script>
-        if (window.testRunner) {
-            testRunner.dumpAsText();
-            testRunner.waitUntilDone();
-        }
-
-        function fail(message) {
-            var result = "<span style='color:red'>" + message + "</span>";
-            document.getElementById('result').innerHTML = result;
-            if (window.testRunner)
-                testRunner.notifyDone();
-        }
-
-        function success() {
-            var result = "<span style='color:green'>PASS</span>";
-            document.getElementById('result').innerHTML = result;
-            if (window.testRunner)
-                testRunner.notifyDone();
-        }
-
-        function isEqual(actual, desired, tolerance)
-        {
-            var diff = Math.abs(actual - desired);
-            return diff < tolerance;
-        }
-
-        function start()
-        {
-            document.getElementById("target").classList.add('transition-top');
-            internals.pauseAnimations(1);
-            cancelTransition();
-        }
-
-        function cancelTransition()
-        {
-            var top = parseFloat(window.getComputedStyle(document.getElementById('target')).top);
-            if (isEqual(top, 200, 1)) {
-                document.getElementById("target").classList.remove('transition-top');
-                internals.pauseAnimations(1);
-                startNewTransition();
-            } else {
-                fail('top was: ' + top + ', expected: 200');
-            }
-        }
-
-        function startNewTransition()
-        {
-            var top = parseFloat(window.getComputedStyle(document.getElementById('target')).top);
-            if (isEqual(top, 0, 1)) {
-                document.getElementById("target").classList.add('transition-left');
-                internals.pauseAnimations(1);
-                check();
-            } else {
-                fail('top was: ' + top + ', expected: 0');
-            }
-        }
-
-        function check()
-        {
-            var left = parseFloat(window.getComputedStyle(document.getElementById('target')).left);
-            if (isEqual(left, 200, 1)) {
-                success();
-            } else {
-                fail('left was: ' + left + ', expected: 200');
-            }
-        }
-
-        window.onload = start;
-    </script>
-</head>
-<body>
-<p>
-    Tests that having stopped a transition before it completes, a subsequent
-    transition starts correctly.
-</p>
+<meta charset="utf-8">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<style>
+  #target {
+    left: 0px;
+    top: 0px;
+  }
+  #target.transition-top {
+    top: 100px;
+    transition: top 1s linear;
+  }
+  #target.transition-left {
+    left: 100px;
+    transition: left 50ms linear;
+  }
+</style>
 <div id="target"></div>
-<div id="result"></div>
-</body>
-</html>
+<script>
+  'use strict';
+  function waitForNextFrame() {
+    return new Promise(function(resolve, reject) {
+      requestAnimationFrame(() => {
+        resolve();
+      });
+    });
+  }
+
+  async_test(t => {
+    waitForNextFrame().then(() => {
+      target.classList.add('transition-top');
+    }).then(waitForNextFrame).then(() => {
+      target.classList.remove('transition-top');
+    }).then(waitForNextFrame).then(t.step_func(() => {
+      target.classList.add('transition-left');
+      assert_equals(getComputedStyle(target).top, '0px');
+      assert_equals(getComputedStyle(target).left, '0px');
+      target.addEventListener('transitionend', t.step_func_done(() => {
+        assert_equals(getComputedStyle(target).left, '100px');
+      }));
+    }));
+  }, 'Having stopped a transition before it completes, a subsequent transition starts correctly');
+</script>
