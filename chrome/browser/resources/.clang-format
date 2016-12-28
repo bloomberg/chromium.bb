@@ -1,13 +1,8 @@
+# Please keep this file the same as ui/webui/resources/.clang-format.
 BasedOnStyle: Chromium
 
 # Renaming quotes in <include> and <if> break things.
 # For normal JS code, please prefer ' to ".
 JavaScriptQuotes: Leave
 
-AllowShortBlocksOnASingleLine: false
-AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty
-AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
-SpacesInContainerLiterals: false
-SpacesInSquareBrackets: false
