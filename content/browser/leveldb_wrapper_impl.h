@@ -32,6 +32,9 @@ namespace content {
 // 4) Throttles requests to avoid overwhelming the disk.
 class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
  public:
+  using PrepareToCommitCallback =
+      base::Callback<std::vector<leveldb::mojom::BatchedOperationPtr>()>;
+
   // |no_bindings_callback| will be called when this object has no more
   // bindings and all pending modifications have been processed.
   LevelDBWrapperImpl(leveldb::mojom::LevelDBDatabase* database,
@@ -40,7 +43,8 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
                      base::TimeDelta default_commit_delay,
                      int max_bytes_per_hour,
                      int max_commits_per_hour,
-                     const base::Closure& no_bindings_callback);
+                     const base::Closure& no_bindings_callback,
+                     const PrepareToCommitCallback& prepare_to_commit_callback);
   ~LevelDBWrapperImpl() override;
 
   void Bind(mojom::LevelDBWrapperRequest request);
@@ -118,6 +122,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   mojo::BindingSet<mojom::LevelDBWrapper> bindings_;
   mojo::AssociatedInterfacePtrSet<mojom::LevelDBObserver> observers_;
   base::Closure no_bindings_callback_;
+  PrepareToCommitCallback prepare_to_commit_callback_;
   leveldb::mojom::LevelDBDatabase* database_;
   std::unique_ptr<ValueMap> map_;
   std::vector<base::Closure> on_load_complete_tasks_;

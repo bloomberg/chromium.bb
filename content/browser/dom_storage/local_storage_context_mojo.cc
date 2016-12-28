@@ -31,8 +31,6 @@ const char kOriginSeparator = '\x00';
 const char kDataPrefix[] = "_";
 const int64_t kMinSchemaVersion = 1;
 const int64_t kCurrentSchemaVersion = 1;
-
-void NoOpResult(leveldb::mojom::DatabaseError status) {}
 }
 
 LocalStorageContextMojo::LocalStorageContextMojo(
@@ -79,9 +77,9 @@ void LocalStorageContextMojo::OpenLocalStorage(
 
   if (connection_state_ == CONNECTION_IN_PROGRESS) {
     // Queue this OpenLocalStorage call for when we have a level db pointer.
-    on_database_opened_callbacks_.push_back(base::Bind(
+    on_database_opened_callbacks_.push_back(base::BindOnce(
         &LocalStorageContextMojo::BindLocalStorage,
-        weak_ptr_factory_.GetWeakPtr(), origin, base::Passed(&request)));
+        weak_ptr_factory_.GetWeakPtr(), origin, std::move(request)));
     return;
   }
 
@@ -100,6 +98,24 @@ void LocalStorageContextMojo::OnLevelDBWrapperHasNoBindings(
     const url::Origin& origin) {
   DCHECK(level_db_wrappers_.find(origin) != level_db_wrappers_.end());
   level_db_wrappers_.erase(origin);
+}
+
+std::vector<leveldb::mojom::BatchedOperationPtr>
+LocalStorageContextMojo::OnLevelDBWrapperPrepareToCommit() {
+  std::vector<leveldb::mojom::BatchedOperationPtr> operations;
+
+  // Write schema version if not already done so before.
+  if (!database_initialized_) {
+    leveldb::mojom::BatchedOperationPtr item =
+        leveldb::mojom::BatchedOperation::New();
+    item->key = leveldb::StdStringToUint8Vector(kVersionKey);
+    item->value = leveldb::StdStringToUint8Vector(
+        base::Int64ToString(kCurrentSchemaVersion));
+    operations.push_back(std::move(item));
+    database_initialized_ = true;
+  }
+
+  return operations;
 }
 
 void LocalStorageContextMojo::OnUserServiceConnectionComplete() {
@@ -161,13 +177,8 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
     leveldb::mojom::DatabaseError status,
     const std::vector<uint8_t>& value) {
   if (status == leveldb::mojom::DatabaseError::NOT_FOUND) {
-    // New database, write current version and continue.
-    // TODO(mek): Delay writing version until first actual data gets committed.
-    database_->Put(leveldb::StdStringToUint8Vector(kVersionKey),
-                   leveldb::StdStringToUint8Vector(
-                       base::Int64ToString(kCurrentSchemaVersion)),
-                   base::Bind(&NoOpResult));
-    // new database
+    // New database, nothing more to do. Current version will get written
+    // when first data is committed.
   } else if (status == leveldb::mojom::DatabaseError::OK) {
     // Existing database, check if version number matches current schema
     // version.
@@ -178,6 +189,8 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
       // TODO(mek): delete and recreate database, rather than failing outright.
       database_ = nullptr;
     }
+
+    database_initialized_ = true;
   } else {
     // Other read error. Possibly database corruption.
     // TODO(mek): delete and recreate database, rather than failing outright.
@@ -188,7 +201,7 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
   // delayed bindings.
   connection_state_ = CONNECTION_FINISHED;
   for (size_t i = 0; i < on_database_opened_callbacks_.size(); ++i)
-    on_database_opened_callbacks_[i].Run();
+    std::move(on_database_opened_callbacks_[i]).Run();
   on_database_opened_callbacks_.clear();
 }
 
@@ -214,7 +227,9 @@ void LocalStorageContextMojo::BindLocalStorage(
         base::TimeDelta::FromSeconds(kCommitDefaultDelaySecs), kMaxBytesPerHour,
         kMaxCommitsPerHour,
         base::Bind(&LocalStorageContextMojo::OnLevelDBWrapperHasNoBindings,
-                   base::Unretained(this), origin));
+                   base::Unretained(this), origin),
+        base::Bind(&LocalStorageContextMojo::OnLevelDBWrapperPrepareToCommit,
+                   base::Unretained(this)));
     found = level_db_wrappers_.find(origin);
   }
 

@@ -41,9 +41,11 @@ LevelDBWrapperImpl::LevelDBWrapperImpl(
     base::TimeDelta default_commit_delay,
     int max_bytes_per_hour,
     int max_commits_per_hour,
-    const base::Closure& no_bindings_callback)
+    const base::Closure& no_bindings_callback,
+    const PrepareToCommitCallback& prepare_to_commit_callback)
     : prefix_(leveldb::StdStringToUint8Vector(prefix)),
       no_bindings_callback_(no_bindings_callback),
+      prepare_to_commit_callback_(prepare_to_commit_callback),
       database_(database),
       bytes_used_(0),
       max_size_(max_size),
@@ -334,7 +336,8 @@ void LevelDBWrapperImpl::CommitChanges() {
   commit_rate_limiter_.add_samples(1);
 
   // Commit all our changes in a single batch.
-  std::vector<leveldb::mojom::BatchedOperationPtr> operations;
+  std::vector<leveldb::mojom::BatchedOperationPtr> operations =
+      prepare_to_commit_callback_.Run();
   if (commit_batch_->clear_all_first) {
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();

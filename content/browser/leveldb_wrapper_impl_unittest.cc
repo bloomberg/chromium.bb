@@ -53,6 +53,9 @@ class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
 };
 
 void NoOp() {}
+std::vector<leveldb::mojom::BatchedOperationPtr> PrepareToCommitNoOp() {
+  return std::vector<leveldb::mojom::BatchedOperationPtr>();
+}
 
 void GetCallback(const base::Closure& callback,
                  bool* success_out,
@@ -92,7 +95,8 @@ class LevelDBWrapperImplTest : public testing::Test,
                           base::TimeDelta::FromSeconds(5),
                           10 * 1024 * 1024 /* max_bytes_per_hour */,
                           60 /* max_commits_per_hour */,
-                          base::Bind(&NoOp)),
+                          base::Bind(&NoOp),
+                          base::Bind(&PrepareToCommitNoOp)),
         observer_binding_(this) {
     set_mock_data(std::string(kTestPrefix) + "def", "defdata");
     set_mock_data(std::string(kTestPrefix) + "123", "123data");

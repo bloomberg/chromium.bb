@@ -72,6 +72,7 @@ TEST_F(LocalStorageContextMojoTest, Basic) {
   wrapper.reset();
 
   base::RunLoop().RunUntilIdle();
+
   ASSERT_EQ(2u, mock_data().size());
   EXPECT_EQ(value, mock_data().rbegin()->second);
 }
@@ -132,6 +133,25 @@ TEST_F(LocalStorageContextMojoTest, InvalidVersion) {
       base::Bind(&GetCallback, run_loop.QuitClosure(), &success, &result));
   run_loop.Run();
   EXPECT_FALSE(success);
+}
+
+TEST_F(LocalStorageContextMojoTest, VersionOnlyWrittenOnCommit) {
+  mojom::LevelDBWrapperPtr wrapper;
+  context()->OpenLocalStorage(url::Origin(GURL("http://foobar.com")),
+                              MakeRequest(&wrapper));
+
+  base::RunLoop run_loop;
+  bool success = false;
+  std::vector<uint8_t> result;
+  wrapper->Get(
+      StdStringToUint8Vector("key"),
+      base::Bind(&GetCallback, run_loop.QuitClosure(), &success, &result));
+  run_loop.Run();
+  EXPECT_FALSE(success);
+  wrapper.reset();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(mock_data().empty());
 }
 
 }  // namespace content

@@ -37,6 +37,8 @@ class CONTENT_EXPORT LocalStorageContextMojo {
 
  private:
   void OnLevelDBWrapperHasNoBindings(const url::Origin& origin);
+  std::vector<leveldb::mojom::BatchedOperationPtr>
+  OnLevelDBWrapperPrepareToCommit();
   void OnUserServiceConnectionComplete();
   void OnUserServiceConnectionError();
 
@@ -59,6 +61,7 @@ class CONTENT_EXPORT LocalStorageContextMojo {
     CONNECTION_IN_PROGRESS,
     CONNECTION_FINISHED
   } connection_state_ = NO_CONNECTION;
+  bool database_initialized_ = false;
 
   std::unique_ptr<service_manager::Connection> file_service_connection_;
 
@@ -68,7 +71,7 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   leveldb::mojom::LevelDBServicePtr leveldb_service_;
   leveldb::mojom::LevelDBDatabasePtr database_;
 
-  std::vector<base::Closure> on_database_opened_callbacks_;
+  std::vector<base::OnceClosure> on_database_opened_callbacks_;
 
   // Maps between an origin and its prefixed LevelDB view.
   std::map<url::Origin, std::unique_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
