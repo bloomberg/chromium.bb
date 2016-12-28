@@ -262,6 +262,15 @@ class Foo {
   // and should cover both instance and static methods as well as functions.
   int hash() const { return 123; }
   static int hash(const Foo& x) { return x.hash(); }
+
+  // https://crbug.com672902: std-like names should not be rewritten.
+  void emplace_back(int x) {}
+  void insert(int x) {}
+  void push_back(int x) {}
+  int* back() { return nullptr; }
+  int* front() { return nullptr; }
+  void erase() {}
+  bool empty() { return true; }
 };
 
 void begin(int x) {}

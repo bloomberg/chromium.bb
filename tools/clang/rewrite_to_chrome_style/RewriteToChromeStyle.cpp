@@ -208,6 +208,12 @@ bool IsMethodOverrideOf(const clang::CXXMethodDecl& decl,
 }
 
 bool IsBlacklistedFunctionName(llvm::StringRef name) {
+  // https://crbug.com/672902: Method names with an underscore are typically
+  // mimicked after std library / are typically not originating from Blink.
+  // Do not rewrite such names (like push_back, emplace_back, etc.).
+  if (name.find('_') != llvm::StringRef::npos)
+    return true;
+
   // https://crbug.com/677166: Have to avoid renaming |hash| -> |Hash| to avoid
   // colliding with a struct already named |Hash|.
   return name == "hash";
@@ -225,6 +231,10 @@ bool IsBlacklistedInstanceMethodName(llvm::StringRef name) {
       // 2. They (begin+end) are used in range-based for syntax sugar
       //    - for (auto x : foo) { ... }  // <- foo.begin() will be called.
       "begin", "end", "rbegin", "rend", "lock", "unlock", "try_lock",
+
+      // https://crbug.com/672902: Should not rewrite names that mimick methods
+      // from std library.
+      "back", "empty", "erase", "front", "insert",
   };
   for (const auto& b : kBlacklistedNames) {
     if (name == b)
