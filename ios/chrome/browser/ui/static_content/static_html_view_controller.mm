@@ -84,8 +84,10 @@
 - (NSURL*)resourceURL;
 // Ensures that webView_ has been created, creating it if necessary.
 - (void)ensureWebViewCreated;
-// Determines if the page load should begin based on the current |resourceURL|.
-- (BOOL)shouldStartLoadWithRequest:(NSURLRequest*)request;
+// Determines if the page load should begin based on the current |resourceURL|
+// and if the request is issued by the main frame (|fromMainFrame|).
+- (BOOL)shouldStartLoadWithRequest:(NSURLRequest*)request
+                     fromMainFrame:(BOOL)fromMainFrame;
 @end
 
 @implementation StaticHtmlViewController
@@ -199,9 +201,12 @@
     decidePolicyForNavigationAction:(WKNavigationAction*)navigationAction
                     decisionHandler:
                         (void (^)(WKNavigationActionPolicy))decisionHandler {
-  decisionHandler([self shouldStartLoadWithRequest:navigationAction.request]
-                      ? WKNavigationActionPolicyAllow
-                      : WKNavigationActionPolicyCancel);
+  decisionHandler(
+      [self
+          shouldStartLoadWithRequest:navigationAction.request
+                       fromMainFrame:[navigationAction.sourceFrame isMainFrame]]
+          ? WKNavigationActionPolicyAllow
+          : WKNavigationActionPolicyCancel);
 }
 
 #pragma mark -
@@ -222,13 +227,15 @@
 #pragma mark -
 #pragma mark Private
 
-- (BOOL)shouldStartLoadWithRequest:(NSURLRequest*)request {
+- (BOOL)shouldStartLoadWithRequest:(NSURLRequest*)request
+                     fromMainFrame:(BOOL)fromMainFrame {
   // Only allow displaying the URL which correspond to the authorized resource.
   if ([[request URL] isEqual:[self resourceURL]])
     return YES;
 
-  // All other URLs will be loaded by our UrlLoader if we have one.
-  if (loader_) {
+  // All other navigation URLs will be loaded by our UrlLoader if one exists and
+  // if they are issued by the main frame.
+  if (loader_ && fromMainFrame) {
     dispatch_async(dispatch_get_main_queue(), ^{
       [loader_ loadURL:net::GURLWithNSURL([request URL])
                    referrer:referrer_
