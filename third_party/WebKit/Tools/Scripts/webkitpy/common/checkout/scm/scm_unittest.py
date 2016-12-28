@@ -255,7 +255,7 @@ class GitTestWithMock(SCMTestBase):
 
     def test_unstaged_files(self):
         scm = self.make_scm()
-        status_lines = [
+        lines = [
             ' M d/modified.txt',
             ' D d/deleted.txt',
             '?? d/untracked.txt',
@@ -263,8 +263,7 @@ class GitTestWithMock(SCMTestBase):
             'M  d/modified-staged.txt',
             'A  d/added-staged.txt',
         ]
-        # pylint: disable=protected-access
-        scm._run_git = lambda args: '\x00'.join(status_lines) + '\x00'
+        scm._run_git = lambda _: '\x00'.join(lines) + '\x00'  # pylint: disable=protected-access
         self.assertEqual(
             scm.unstaged_changes(),
             {
@@ -272,3 +271,8 @@ class GitTestWithMock(SCMTestBase):
                 'd/deleted.txt': 'D',
                 'd/untracked.txt': '?',
             })
+
+    def test_unstaged_files_with_no_changes(self):
+        scm = self.make_scm()
+        scm._run_git = lambda _: '\x00'  # pylint: disable=protected-access
+        self.assertEqual(scm.unstaged_changes(), {})

@@ -121,9 +121,12 @@ class Git(SCM):
         """
         # `git status -z` is a version of `git status -s`, that's recommended
         # for machine parsing. Lines are terminated with NUL rather than LF.
+        change_lines = self._run_git(['status', '-z']).rstrip('\x00')
+        if not change_lines:
+            return {}  # No changes.
         unstaged_changes = {}
-        change_lines = self._run_git(['status', '-z']).rstrip('\x00').split('\x00')
-        for line in change_lines:
+        for line in change_lines.split('\x00'):
+            assert len(line) > 4, 'Unexpected change line format %s' % line
             if line[1] == ' ':
                 continue  # Already staged for commit.
             path = line[3:]
