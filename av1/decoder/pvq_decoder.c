@@ -198,11 +198,7 @@ static void pvq_decode_partition(aom_reader *r,
   if (qg > 0) {
     int tmp;
     tmp = *exg;
-#if CONFIG_DAALA_EC
-    qg = 1 + generic_decode(&r->ec, &model[!*noref], -1, &tmp, 2, "pvq:gain");
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
+    qg = 1 + generic_decode(r, &model[!*noref], -1, &tmp, 2, "pvq:gain");
     OD_IIR_DIADIC(*exg, qg << 16, 2);
   }
   *skip = 0;
@@ -248,12 +244,8 @@ static void pvq_decode_partition(aom_reader *r,
     if (itheta > 1 && (nodesync || max_theta > 3)) {
       int tmp;
       tmp = *ext;
-#if CONFIG_DAALA_EC
-      itheta = 2 + generic_decode(&r->ec, &model[2],
+      itheta = 2 + generic_decode(r, &model[2],
        nodesync ? -1 : max_theta - 3, &tmp, 2, "pvq:theta");
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
       OD_IIR_DIADIC(*ext, itheta << 16, 2);
     }
     theta = od_pvq_compute_theta(itheta, max_theta);

@@ -372,14 +372,10 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
   for (i = 0; i < blk_size * blk_size; i++) dqcoeff_pvq[i] = out_int32[i];
 
   if (!has_dc_skip || dqcoeff_pvq[0]) {
-#if CONFIG_DAALA_EC
     dqcoeff_pvq[0] =
-        has_dc_skip +
-        generic_decode(&dec->r->ec, &dec->state.adapt.model_dc[pli], -1,
-                       &dec->state.adapt.ex_dc[pli][bs][0], 2, "dc:mag");
-#else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
+        has_dc_skip + generic_decode(dec->r, &dec->state.adapt.model_dc[pli],
+                                     -1, &dec->state.adapt.ex_dc[pli][bs][0], 2,
+                                     "dc:mag");
     if (dqcoeff_pvq[0])
       dqcoeff_pvq[0] *= aom_read_bit(dec->r, "dc:sign") ? -1 : 1;
   }

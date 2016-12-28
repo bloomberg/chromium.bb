@@ -78,7 +78,7 @@ int od_decode_cdf_adapt_(od_ec_dec *ec, uint16_t *cdf, int n,
  * distribution is one-sided (zero and up), has a single mode, and decays
  * exponentially past the model.
  *
- * @param [in,out] dec   range decoder
+ * @param [in,out] r     multi-symbol entropy decoder
  * @param [in,out] model generic probability model
  * @param [in]     x     variable being encoded
  * @param [in,out] ExQ16 expectation of x (adapted)
@@ -87,7 +87,7 @@ int od_decode_cdf_adapt_(od_ec_dec *ec, uint16_t *cdf, int n,
  *
  * @retval decoded variable x
  */
-int generic_decode_(od_ec_dec *dec, generic_encoder *model, int max,
+int generic_decode_(aom_reader *r, generic_encoder *model, int max,
  int *ex_q16, int integration OD_ACC_STR) {
   int lg_q1;
   int shift;
@@ -108,8 +108,8 @@ int generic_decode_(od_ec_dec *dec, generic_encoder *model, int max,
   id = OD_MINI(GENERIC_TABLES - 1, lg_q1);
   cdf = model->cdf[id];
   ms = (max + (1 << shift >> 1)) >> shift;
-  if (max == -1) xs = od_ec_decode_cdf_unscaled(dec, cdf, 16);
-  else xs = od_ec_decode_cdf_unscaled(dec, cdf, OD_MINI(ms + 1, 16));
+  if (max == -1) xs = aom_read_symbol_unscaled(r, cdf, 16, acc_str);
+  else xs = aom_read_symbol_unscaled(r, cdf, OD_MINI(ms + 1, 16), acc_str);
   if (xs == 15) {
     int e;
     unsigned decay;
@@ -120,14 +120,22 @@ int generic_decode_(od_ec_dec *dec, generic_encoder *model, int max,
     OD_ASSERT(*ex_q16 < INT_MAX >> 1);
     e = ((2**ex_q16 >> 8) + (1 << shift >> 1)) >> shift;
     decay = OD_MAXI(2, OD_MINI(254, 256*e/(e + 256)));
-    xs += laplace_decode_special(dec, decay, (max == -1) ? -1 : ms - 15, acc_str);
+#if CONFIG_DAALA_EC
+    xs += laplace_decode_special(&r->ec, decay, (max == -1) ? -1 : ms - 15, acc_str);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   }
   if (shift != 0) {
     int special;
     /* Because of the rounding, there's only half the number of possibilities
        for xs=0 */
     special = xs == 0;
-    if (shift - special > 0) lsb = od_ec_dec_bits(dec, shift - special, acc_str);
+#if CONFIG_DAALA_EC
+    if (shift - special > 0) lsb = od_ec_dec_bits(&r->ec, shift - special, acc_str);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
     lsb -= !special << (shift - 1);
   }
   x = (xs << shift) + lsb;
