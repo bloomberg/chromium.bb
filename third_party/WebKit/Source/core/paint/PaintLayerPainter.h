@@ -56,6 +56,10 @@ class CORE_EXPORT PaintLayerPainter {
  private:
   enum ClipState { HasNotClipped, HasClipped };
 
+  bool collectPaintFragmentsForPaginatedFixedPosition(
+      const PaintLayerPaintingInfo&,
+      PaintLayerFragments&);
+
   PaintResult paintLayerContentsCompositingAllPhases(
       GraphicsContext&,
       const PaintLayerPaintingInfo&,

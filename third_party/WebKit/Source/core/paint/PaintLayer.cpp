@@ -2715,6 +2715,12 @@ bool PaintLayer::hasCompositedClippingMask() const {
 }
 
 bool PaintLayer::paintsWithTransform(GlobalPaintFlags globalPaintFlags) const {
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    return transform() &&
+           ((globalPaintFlags & GlobalPaintFlattenCompositingLayers) ||
+            compositingState() != PaintsIntoOwnBacking);
+  }
+
   return (transform() ||
           layoutObject()->style()->position() == FixedPosition) &&
          ((globalPaintFlags & GlobalPaintFlattenCompositingLayers) ||

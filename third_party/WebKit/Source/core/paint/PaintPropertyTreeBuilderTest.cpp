@@ -140,18 +140,12 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   Element* target1 = document().getElementById("target1");
   const ObjectPaintProperties* target1Properties =
       target1->layoutObject()->paintProperties();
-  EXPECT_EQ(TransformationMatrix().translate(200, 150),
-            target1Properties->paintOffsetTranslation()->matrix());
-  EXPECT_EQ(framePreTranslation(),
-            target1Properties->paintOffsetTranslation()->parent());
-  EXPECT_EQ(target1Properties->paintOffsetTranslation(),
-            target1Properties->overflowClip()->localTransformSpace());
-  EXPECT_EQ(FloatRoundedRect(0, 0, 100, 100),
+  EXPECT_EQ(FloatRoundedRect(200, 150, 100, 100),
             target1Properties->overflowClip()->clipRect());
   // Likewise, it inherits clip from the viewport, skipping overflow clip of the
   // scroller.
   EXPECT_EQ(frameContentClip(), target1Properties->overflowClip()->parent());
-  // target1 should not have it's own scroll node and instead should inherit
+  // target1 should not have its own scroll node and instead should inherit
   // positionedScroll's.
   const ObjectPaintProperties* positionedScrollProperties =
       positionedScroll->layoutObject()->paintProperties();
@@ -161,7 +155,6 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
                 ->scrollOffsetTranslation()
                 ->matrix());
   EXPECT_EQ(nullptr, target1Properties->scroll());
-
   CHECK_EXACT_VISUAL_RECT(LayoutRect(200, 150, 100, 100),
                           target1->layoutObject(), frameView->layoutView());
 
@@ -173,13 +166,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   Element* scroller = document().getElementById("transformedScroll");
   const ObjectPaintProperties* scrollerProperties =
       scroller->layoutObject()->paintProperties();
-  EXPECT_EQ(TransformationMatrix().translate(200, 150),
-            target2Properties->paintOffsetTranslation()->matrix());
-  EXPECT_EQ(scrollerProperties->scrollTranslation(),
-            target2Properties->paintOffsetTranslation()->parent());
-  EXPECT_EQ(target2Properties->paintOffsetTranslation(),
-            target2Properties->overflowClip()->localTransformSpace());
-  EXPECT_EQ(FloatRoundedRect(0, 0, 100, 100),
+  EXPECT_EQ(FloatRoundedRect(200, 150, 100, 100),
             target2Properties->overflowClip()->clipRect());
   EXPECT_EQ(scrollerProperties->overflowClip(),
             target2Properties->overflowClip()->parent());
@@ -1049,12 +1036,11 @@ TEST_P(PaintPropertyTreeBuilderTest,
   Element* fixed = document().getElementById("fixed");
   const ObjectPaintProperties* fixedProperties =
       fixed->layoutObject()->paintProperties();
-  EXPECT_EQ(TransformationMatrix().translate(200, 150),
-            fixedProperties->paintOffsetTranslation()->matrix());
   // Ensure the fixed position element is rooted at the nearest transform
   // container.
   EXPECT_EQ(containerProperties->transform(),
-            fixedProperties->paintOffsetTranslation()->parent());
+            fixedProperties->localBorderBoxProperties()
+                ->propertyTreeState.transform());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ControlClip) {
@@ -1447,13 +1433,8 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant) {
       clipProperties->cssClip(),
       fixedProperties->localBorderBoxProperties()->propertyTreeState.clip());
   EXPECT_EQ(framePreTranslation(), fixedProperties->localBorderBoxProperties()
-                                       ->propertyTreeState.transform()
-                                       ->parent());
-  EXPECT_EQ(TransformationMatrix().translate(654, 321),
-            fixedProperties->localBorderBoxProperties()
-                ->propertyTreeState.transform()
-                ->matrix());
-  EXPECT_EQ(LayoutPoint(),
+                                       ->propertyTreeState.transform());
+  EXPECT_EQ(LayoutPoint(654, 321),
             fixedProperties->localBorderBoxProperties()->paintOffset);
   CHECK_VISUAL_RECT(LayoutRect(), fixed, document().view()->layoutView(),
                     // TODO(crbug.com/599939): CSS clip of fixed-position
@@ -1589,13 +1570,8 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
       clipProperties->cssClipFixedPosition(),
       fixedProperties->localBorderBoxProperties()->propertyTreeState.clip());
   EXPECT_EQ(framePreTranslation(), fixedProperties->localBorderBoxProperties()
-                                       ->propertyTreeState.transform()
-                                       ->parent());
-  EXPECT_EQ(TransformationMatrix().translate(654, 321),
-            fixedProperties->localBorderBoxProperties()
-                ->propertyTreeState.transform()
-                ->matrix());
-  EXPECT_EQ(LayoutPoint(),
+                                       ->propertyTreeState.transform());
+  EXPECT_EQ(LayoutPoint(654, 321),
             fixedProperties->localBorderBoxProperties()->paintOffset);
   CHECK_VISUAL_RECT(LayoutRect(), fixed, document().view()->layoutView(),
                     // TODO(crbug.com/599939): CSS clip of fixed-position
@@ -3078,10 +3054,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
       getLayoutObjectByElementId("child")->paintProperties();
   const PropertyTreeState& childPaintState =
       childProperties->localBorderBoxProperties()->propertyTreeState;
-  EXPECT_EQ(framePreTranslation(),
-            childProperties->paintOffsetTranslation()->parent());
-  EXPECT_EQ(childProperties->paintOffsetTranslation(),
-            childPaintState.transform());
+
   // This will change once we added clip expansion node.
   EXPECT_EQ(filterProperties->effect()->outputClip(), childPaintState.clip());
   EXPECT_EQ(filterProperties->effect(), childPaintState.effect());

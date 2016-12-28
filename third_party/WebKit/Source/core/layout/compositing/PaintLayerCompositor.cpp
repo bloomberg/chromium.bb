@@ -452,9 +452,10 @@ void PaintLayerCompositor::updateIfNeeded() {
     m_needsUpdateFixedBackground = false;
   }
 
-  for (unsigned i = 0; i < layersNeedingPaintInvalidation.size(); i++)
+  for (unsigned i = 0; i < layersNeedingPaintInvalidation.size(); i++) {
     forceRecomputeVisualRectsIncludingNonCompositingDescendants(
         layersNeedingPaintInvalidation[i]->layoutObject());
+  }
 
   // Inform the inspector that the layer tree has changed.
   if (m_layoutView.frame()->isMainFrame())
