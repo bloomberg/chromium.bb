@@ -92,9 +92,10 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   bool operator==(const EffectPaintPropertyNode& o) const {
     return m_parent == o.m_parent &&
            m_localTransformSpace == o.m_localTransformSpace &&
-           m_outputClip == o.m_outputClip && m_opacity == o.m_opacity &&
-           m_blendMode == o.m_blendMode &&
-           m_filter.equalsIgnoringReferenceFilters(o.m_filter);
+           m_outputClip == o.m_outputClip &&
+           m_filter.equalsIgnoringReferenceFilters(o.m_filter) &&
+           m_opacity == o.m_opacity && m_blendMode == o.m_blendMode &&
+           m_directCompositingReasons == o.m_directCompositingReasons;
   }
 #endif
 

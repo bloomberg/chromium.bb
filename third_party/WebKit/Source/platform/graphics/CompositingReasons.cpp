@@ -5,6 +5,7 @@
 #include "platform/graphics/CompositingReasons.h"
 
 #include "wtf/StdLibExtras.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -140,5 +141,20 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
 
 const size_t kNumberOfCompositingReasons =
     WTF_ARRAY_LENGTH(kCompositingReasonStringMap);
+
+String compositingReasonsAsString(CompositingReasons reasons) {
+  if (!reasons)
+    return "none";
+
+  StringBuilder builder;
+  for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
+    if (reasons & kCompositingReasonStringMap[i].reason) {
+      if (builder.length())
+        builder.append(',');
+      builder.append(kCompositingReasonStringMap[i].shortName);
+    }
+  }
+  return builder.toString();
+}
 
 }  // namespace blink

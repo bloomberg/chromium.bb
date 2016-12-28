@@ -71,7 +71,8 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   bool operator==(const ClipPaintPropertyNode& o) const {
     return m_parent == o.m_parent &&
            m_localTransformSpace == o.m_localTransformSpace &&
-           m_clipRect == o.m_clipRect;
+           m_clipRect == o.m_clipRect &&
+           m_directCompositingReasons == o.m_directCompositingReasons;
   }
 #endif
 

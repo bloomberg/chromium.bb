@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
+#include "wtf/text/WTFString.h"
 #include <stdint.h>
 
 namespace blink {
@@ -181,6 +182,7 @@ struct CompositingReasonStringMap {
 PLATFORM_EXPORT extern const CompositingReasonStringMap
     kCompositingReasonStringMap[];
 PLATFORM_EXPORT extern const size_t kNumberOfCompositingReasons;
+PLATFORM_EXPORT String compositingReasonsAsString(CompositingReasons);
 
 }  // namespace blink
 
