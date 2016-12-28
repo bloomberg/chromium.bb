@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "url/gurl.h"
 
@@ -49,11 +49,11 @@ BlobEntry* BlobStorageRegistry::CreateEntry(
     const std::string& uuid,
     const std::string& content_type,
     const std::string& content_disposition) {
-  DCHECK(!ContainsKey(blob_map_, uuid));
-  std::unique_ptr<BlobEntry> entry(
-      new BlobEntry(content_type, content_disposition));
+  DCHECK(blob_map_.find(uuid) == blob_map_.end());
+  std::unique_ptr<BlobEntry> entry =
+      base::MakeUnique<BlobEntry>(content_type, content_disposition);
   BlobEntry* entry_ptr = entry.get();
-  blob_map_.add(uuid, std::move(entry));
+  blob_map_[uuid] = std::move(entry);
   return entry_ptr;
 }
 
@@ -66,10 +66,10 @@ bool BlobStorageRegistry::HasEntry(const std::string& uuid) const {
 }
 
 BlobEntry* BlobStorageRegistry::GetEntry(const std::string& uuid) {
-  BlobMap::iterator found = blob_map_.find(uuid);
+  auto found = blob_map_.find(uuid);
   if (found == blob_map_.end())
     return nullptr;
-  return found->second;
+  return found->second.get();
 }
 
 const BlobEntry* BlobStorageRegistry::GetEntry(const std::string& uuid) const {
@@ -88,7 +88,7 @@ bool BlobStorageRegistry::CreateUrlMapping(const GURL& blob_url,
 bool BlobStorageRegistry::DeleteURLMapping(const GURL& blob_url,
                                            std::string* uuid) {
   DCHECK(!BlobUrlHasRef(blob_url));
-  URLMap::iterator found = url_to_uuid_.find(blob_url);
+  auto found = url_to_uuid_.find(blob_url);
   if (found == url_to_uuid_.end())
     return false;
   if (uuid)
@@ -98,12 +98,12 @@ bool BlobStorageRegistry::DeleteURLMapping(const GURL& blob_url,
 }
 
 bool BlobStorageRegistry::IsURLMapped(const GURL& blob_url) const {
-  return base::ContainsKey(url_to_uuid_, blob_url);
+  return url_to_uuid_.find(blob_url) != url_to_uuid_.end();
 }
 
 BlobEntry* BlobStorageRegistry::GetEntryFromURL(const GURL& url,
                                                 std::string* uuid) {
-  URLMap::iterator found =
+  auto found =
       url_to_uuid_.find(BlobUrlHasRef(url) ? ClearBlobUrlRef(url) : url);
   if (found == url_to_uuid_.end())
     return nullptr;

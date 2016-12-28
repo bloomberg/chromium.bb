@@ -153,8 +153,7 @@ int ViewBlobInternalsJob::GetData(
 }
 
 void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
-  for (BlobStorageRegistry::BlobMap::const_iterator iter =
-           blob_storage_context_->registry().blob_map_.begin();
+  for (auto iter = blob_storage_context_->registry().blob_map_.begin();
        iter != blob_storage_context_->registry().blob_map_.end(); ++iter) {
     AddHTMLBoldText(iter->first, out);
     GenerateHTMLForBlobData(*iter->second, iter->second->content_type(),
@@ -163,8 +162,7 @@ void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
   }
   if (!blob_storage_context_->registry().url_to_uuid_.empty()) {
     AddHorizontalRule(out);
-    for (BlobStorageRegistry::URLMap::const_iterator iter =
-             blob_storage_context_->registry().url_to_uuid_.begin();
+    for (auto iter = blob_storage_context_->registry().url_to_uuid_.begin();
          iter != blob_storage_context_->registry().url_to_uuid_.end(); ++iter) {
       AddHTMLBoldText(iter->first.spec(), out);
       StartHTMLList(out);
