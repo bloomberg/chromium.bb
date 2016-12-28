@@ -47,9 +47,9 @@ enum PixelFormat {
   do {                                                         \
     if (!(result)) {                                           \
       DLOG(ERROR) << log;                                      \
-      if (client_ptr_factory_->GetWeakPtr()) {                 \
+      if (!error_occurred_) {                                  \
         client_ptr_factory_->GetWeakPtr()->NotifyError(error); \
-        client_ptr_factory_.reset();                           \
+        error_occurred_ = true;                                \
       }                                                        \
       return;                                                  \
     }                                                          \
@@ -94,7 +94,7 @@ static bool GetSupportedColorFormatForMime(const std::string& mime,
 }
 
 AndroidVideoEncodeAccelerator::AndroidVideoEncodeAccelerator()
-    : num_buffers_at_codec_(0), last_set_bitrate_(0) {}
+    : num_buffers_at_codec_(0), last_set_bitrate_(0), error_occurred_(false) {}
 
 AndroidVideoEncodeAccelerator::~AndroidVideoEncodeAccelerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -150,6 +150,7 @@ bool AndroidVideoEncodeAccelerator::Initialize(
            << ", initial_bitrate: " << initial_bitrate;
   DCHECK(!media_codec_);
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(client);
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
 
@@ -301,7 +302,7 @@ void AndroidVideoEncodeAccelerator::DoIOTask() {
 }
 
 void AndroidVideoEncodeAccelerator::QueueInput() {
-  if (!client_ptr_factory_->GetWeakPtr() || pending_frames_.empty())
+  if (error_occurred_ || pending_frames_.empty())
     return;
 
   int input_buf_index = 0;
@@ -368,8 +369,8 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
 }
 
 void AndroidVideoEncodeAccelerator::DequeueOutput() {
-  if (!client_ptr_factory_->GetWeakPtr() ||
-      available_bitstream_buffers_.empty() || num_buffers_at_codec_ == 0) {
+  if (error_occurred_ || available_bitstream_buffers_.empty() ||
+      num_buffers_at_codec_ == 0) {
     return;
   }
 

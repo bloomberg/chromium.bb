@@ -104,6 +104,9 @@ class MEDIA_GPU_EXPORT AndroidVideoEncodeAccelerator
 
   uint32_t last_set_bitrate_;  // In bps.
 
+  // True if there is encoder error.
+  bool error_occurred_;
+
   DISALLOW_COPY_AND_ASSIGN(AndroidVideoEncodeAccelerator);
 };
 
