@@ -1007,8 +1007,8 @@ void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
 
 #if CONFIG_SUPERTX
 #if CONFIG_CB4X4
-static const uint8_t mask_4[4] = { 64, 62, 12, 0 };
-static const uint8_t mask_4_uv[4] = { 64, 62, 12, 0 };
+static const uint8_t mask_4[4] = { 64, 52, 12, 0 };
+static const uint8_t mask_4_uv[4] = { 64, 52, 12, 0 };
 #endif  // CONFIG_CB4X4
 static const uint8_t mask_8[8] = { 64, 64, 62, 52, 12, 2, 0, 0 };
 

@@ -6074,9 +6074,6 @@ static void predict_sb_complex(const AV1_COMP *const cpi, ThreadData *td,
 
           // Smooth
           for (i = 0; i < MAX_MB_PLANE; i++) {
-            if (bsize == BLOCK_8X8 && i != 0)
-              continue;  // Skip <4x4 chroma smoothing
-
             xd->plane[i].dst.buf = dst_buf[i];
             xd->plane[i].dst.stride = dst_stride[i];
             av1_build_masked_inter_predictor_complex(
@@ -6138,9 +6135,6 @@ static void predict_sb_complex(const AV1_COMP *const cpi, ThreadData *td,
                        dst_stride1, 2);
 
           for (i = 0; i < MAX_MB_PLANE; i++) {
-            if (bsize == BLOCK_8X8 && i != 0)
-              continue;  // Skip <4x4 chroma smoothing
-
             xd->plane[i].dst.buf = dst_buf[i];
             xd->plane[i].dst.stride = dst_stride[i];
             av1_build_masked_inter_predictor_complex(
@@ -6195,8 +6189,10 @@ static void predict_sb_complex(const AV1_COMP *const cpi, ThreadData *td,
                              pc_tree->split[3]);
       }
       for (i = 0; i < MAX_MB_PLANE; i++) {
+#if !CONFIG_CB4X4
         if (bsize == BLOCK_8X8 && i != 0)
           continue;  // Skip <4x4 chroma smoothing
+#endif
         if (mi_row < cm->mi_rows && mi_col + hbs < cm->mi_cols) {
           av1_build_masked_inter_predictor_complex(
               xd, dst_buf[i], dst_stride[i], dst_buf1[i], dst_stride1[i],
