@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/main/main_view_controller.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest_mac.h"

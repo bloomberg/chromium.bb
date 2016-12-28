@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/signin/authentication_service.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "base/auto_reset.h"
 #include "base/location.h"

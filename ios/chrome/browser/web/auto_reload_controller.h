@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_WEB_AUTO_RELOAD_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_WEB_AUTO_RELOAD_CONTROLLER_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "url/gurl.h"
 

@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/install_time_util.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 #include <stdint.h>
 
 #include "base/mac/foundation_util.h"

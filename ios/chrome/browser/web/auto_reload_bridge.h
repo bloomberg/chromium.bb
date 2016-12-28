@@ -4,7 +4,7 @@
 #ifndef IOS_CHROME_BROWSER_WEB_AUTO_RELOAD_BRIDGE_H_
 #define IOS_CHROME_BROWSER_WEB_AUTO_RELOAD_BRIDGE_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "ios/chrome/browser/web/auto_reload_controller.h"
 #include "url/gurl.h"

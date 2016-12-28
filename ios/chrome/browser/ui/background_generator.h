@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_BACKGROUND_GENERATOR_H_
 #define IOS_CHROME_BROWSER_UI_BACKGROUND_GENERATOR_H_
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 // Returns a UIImage of size |backgroundRect| with a radial gradient image at
 // |centerPoint| and radiates outwards to a radius of |radius|. The gradient

@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"

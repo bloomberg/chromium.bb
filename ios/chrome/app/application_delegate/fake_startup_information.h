@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_APP_APPLICATION_DELEGATE_FAKE_STARTUP_INFORMATION_H_
 #define IOS_CHROME_APP_APPLICATION_DELEGATE_FAKE_STARTUP_INFORMATION_H_
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "ios/chrome/app/application_delegate/startup_information.h"
 

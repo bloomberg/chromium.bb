@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_CRW_WEB_USER_INTERFACE_DELEGATE_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_CRW_WEB_USER_INTERFACE_DELEGATE_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 @class CRWWebController;
 class GURL;

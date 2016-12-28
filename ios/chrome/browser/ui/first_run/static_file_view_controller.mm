@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/first_run/static_file_view_controller.h"
 
-#include <WebKit/WebKit.h>
+#import <WebKit/WebKit.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"

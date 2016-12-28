@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/suggestions/image_fetcher_impl.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"

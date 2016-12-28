@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/show_mail_composer_util.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"

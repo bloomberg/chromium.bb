@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_SIGNIN_CONSTANTS_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 // Error domain for authentication error.
 extern NSString* kAuthenticationErrorDomain;

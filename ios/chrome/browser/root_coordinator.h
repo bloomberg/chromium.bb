@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_ROOT_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_ROOT_COORDINATOR_H_
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 

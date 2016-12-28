@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_MULTI_PARAMETER_H_
 #define IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_MULTI_PARAMETER_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 // CrashReportMultiParameter keeps state of multiple report values that will be
 // grouped in a single breakpad element to save limited number of breakpad

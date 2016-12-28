@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/web/chrome_web_client.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include <memory>
 

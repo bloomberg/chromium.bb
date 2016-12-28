@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "base/logging.h"
 #include "components/bookmarks/browser/bookmark_model.h"

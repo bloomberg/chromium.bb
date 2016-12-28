@@ -5,7 +5,7 @@
 #ifndef IOS_NET_NSURLREQUEST_UTIL_H_
 #define IOS_NET_NSURLREQUEST_UTIL_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 #include <string>
 
 namespace net {

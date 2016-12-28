@@ -4,7 +4,7 @@
 
 #include "ios/net/cookies/cookie_creation_time_manager.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 #include <stddef.h>
 
 #include "base/logging.h"

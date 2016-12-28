@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/contextual_search/touch_to_search_permissions_mediator.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 #include <memory>
 
 #include "base/command_line.h"

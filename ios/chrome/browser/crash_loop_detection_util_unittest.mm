@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "ios/chrome/browser/crash_loop_detection_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -4,7 +4,7 @@
 
 #include "ios/net/http_protocol_logging.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"

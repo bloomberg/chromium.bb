@@ -5,8 +5,8 @@
 #ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_VOICE_VOICE_SEARCH_PROVIDER_H_
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_VOICE_VOICE_SEARCH_PROVIDER_H_
 
-#include <Foundation/Foundation.h>
-#include <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

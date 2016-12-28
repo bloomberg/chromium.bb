@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"

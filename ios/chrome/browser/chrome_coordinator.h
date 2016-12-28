@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_CHROME_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_CHROME_COORDINATOR_H_
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 @class ChromeCoordinator;
 typedef NSMutableArray<ChromeCoordinator*> MutableCoordinatorArray;

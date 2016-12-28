@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_PROCEDURAL_BLOCK_TYPES_H_
 #define IOS_CHROME_BROWSER_PROCEDURAL_BLOCK_TYPES_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 class GURL;
 

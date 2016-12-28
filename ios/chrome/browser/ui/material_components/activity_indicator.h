@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_MATERIAL_COMPONENTS_ACTIVITY_INDICATOR_H_
 #define IOS_CHROME_BROWSER_UI_MATERIAL_COMPONENTS_ACTIVITY_INDICATOR_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 // Returns an array of UIColor objects that matches the current product
 // branding. These colors are suitable for use in an MDCActivityIndicator.

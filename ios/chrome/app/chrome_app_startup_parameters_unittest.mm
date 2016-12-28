@@ -4,7 +4,7 @@
 
 #import "ios/chrome/app/chrome_app_startup_parameters.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/stringprintf.h"

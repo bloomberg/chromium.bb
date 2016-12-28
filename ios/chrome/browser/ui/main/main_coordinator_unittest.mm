@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/main/main_coordinator.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/main/main_view_controller.h"

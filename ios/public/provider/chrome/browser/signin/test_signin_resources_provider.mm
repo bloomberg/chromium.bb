@@ -4,7 +4,7 @@
 
 #include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 TestSigninResourcesProvider::TestSigninResourcesProvider()
     : default_avatar_([[UIImage alloc] init]) {}

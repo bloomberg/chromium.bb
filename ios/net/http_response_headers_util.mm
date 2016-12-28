@@ -4,7 +4,7 @@
 
 #include "ios/net/http_response_headers_util.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"

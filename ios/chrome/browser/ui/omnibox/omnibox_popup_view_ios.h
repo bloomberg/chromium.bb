@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_IOS_H_
 #define IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_IOS_H_
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include <memory>
 

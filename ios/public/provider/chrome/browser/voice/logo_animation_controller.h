@@ -5,7 +5,7 @@
 #ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_VOICE_LOGO_ANIMATION_CONTROLLER_H_
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_VOICE_LOGO_ANIMATION_CONTROLLER_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 @protocol LogoAnimationControllerOwner;
 @protocol LogoAnimationControllerOwnerOwner;

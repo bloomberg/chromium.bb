@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_SYNC_SYNC_UTIL_H_
 #define IOS_CHROME_BROWSER_UI_SYNC_SYNC_UTIL_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"

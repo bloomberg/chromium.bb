@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 
-#include <WebKit/WebKit.h>
+#import <WebKit/WebKit.h>
 
 #include <stdlib.h>
 

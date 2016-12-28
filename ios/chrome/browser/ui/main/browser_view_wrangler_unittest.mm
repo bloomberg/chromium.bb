@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"

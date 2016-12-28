@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_SIGNIN_UTIL_H_
 #define IOS_CHROME_BROWSER_SIGNIN_SIGNIN_UTIL_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include <set>
 #include <string>

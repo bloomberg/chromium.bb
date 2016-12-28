@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_SIGNIN_CHROME_IDENTITY_SERVICE_OBSERVER_BRIDGE_H_
 #define IOS_CHROME_BROWSER_SIGNIN_CHROME_IDENTITY_SERVICE_OBSERVER_BRIDGE_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"

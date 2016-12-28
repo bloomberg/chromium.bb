@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/omaha/omaha_service.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include <memory>
 #include <utility>

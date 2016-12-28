@@ -4,7 +4,7 @@
 
 #import "ios/chrome/app/safe_mode/safe_mode_coordinator.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest_mac.h"

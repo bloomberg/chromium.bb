@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/suggestions/ios_image_decoder_impl.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"

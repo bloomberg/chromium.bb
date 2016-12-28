@@ -4,7 +4,7 @@
 
 #include "ios/web/net/request_group_util.h"
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "base/base64.h"
 #include "base/logging.h"
