@@ -61,17 +61,6 @@ void WindowProxyManager::updateSecurityOrigin(SecurityOrigin* securityOrigin) {
   }
 }
 
-WindowProxy* WindowProxyManager::existingWindowProxy(DOMWrapperWorld& world) {
-  if (world.isMainWorld())
-    return m_windowProxy->isContextInitialized() ? m_windowProxy.get()
-                                                 : nullptr;
-
-  IsolatedWorldMap::iterator iter = m_isolatedWorlds.find(world.worldId());
-  if (iter == m_isolatedWorlds.end())
-    return nullptr;
-  return iter->value->isContextInitialized() ? iter->value.get() : nullptr;
-}
-
 void WindowProxyManager::releaseGlobals(
     HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>& map) {
   map.add(&m_windowProxy->world(), m_windowProxy->releaseGlobal());

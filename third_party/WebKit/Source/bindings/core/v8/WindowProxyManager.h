@@ -38,9 +38,6 @@ class CORE_EXPORT WindowProxyManager final
   // the security origin of the context for each isolated world.
   void updateSecurityOrigin(SecurityOrigin*);
 
-  // For devtools:
-  WindowProxy* existingWindowProxy(DOMWrapperWorld&);
-
   void releaseGlobals(HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>&);
   void setGlobals(const HashMap<DOMWrapperWorld*, v8::Local<v8::Object>>&);
 

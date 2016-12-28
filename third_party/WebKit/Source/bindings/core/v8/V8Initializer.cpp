@@ -184,19 +184,8 @@ void V8Initializer::messageHandlerInMainThread(v8::Local<v8::Message> message,
   if (!messageForConsole.isEmpty())
     event->setUnsanitizedMessage("Uncaught " + messageForConsole);
 
-  // This method might be called while we're creating a new context. In this
-  // case, we avoid storing the exception object, as we can't create a wrapper
-  // during context creation.
-  // FIXME: Can we even get here during initialization now that we bail out when
-  // GetEntered returns an empty handle?
-  if (context->isDocument()) {
-    LocalFrame* frame = toDocument(context)->frame();
-    if (frame && frame->script().existingWindowProxy(scriptState->world())) {
-      V8ErrorHandler::storeExceptionOnErrorEventWrapper(
-          scriptState, event, data, scriptState->context()->Global());
-    }
-  }
-
+  V8ErrorHandler::storeExceptionOnErrorEventWrapper(
+      scriptState, event, data, scriptState->context()->Global());
   context->dispatchErrorEvent(event, accessControlStatus);
 }
 

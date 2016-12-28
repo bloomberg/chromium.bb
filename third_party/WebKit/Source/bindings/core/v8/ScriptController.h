@@ -81,7 +81,6 @@ class CORE_EXPORT ScriptController final
 
   bool initializeMainWorld();
   WindowProxy* windowProxy(DOMWrapperWorld&);
-  WindowProxy* existingWindowProxy(DOMWrapperWorld&);
 
   // Evaluate JavaScript in the main world.
   void executeScriptInMainWorld(
