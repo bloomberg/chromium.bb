@@ -505,7 +505,7 @@ test(() => {
 // Spec: https://fetch.spec.whatwg.org/#dom-request
 // Step 21:
 // If request's method is `GET` or `HEAD`, throw a TypeError.
-promise_test(function() {
+test(function() {
     var headers = new Headers;
     headers.set('Content-Language', 'ja');
     ['GET', 'HEAD'].forEach(function(method) {
