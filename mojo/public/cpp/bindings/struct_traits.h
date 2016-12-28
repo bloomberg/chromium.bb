@@ -39,7 +39,7 @@ namespace mojo {
 //        - map:
 //          Value or reference of any type that has a MapTraits defined.
 //          Supported by default: std::map, std::unordered_map, mojo::Map,
-//          WTF::HashMap (in blink), mojo::WTFMap (in blink).
+//          WTF::HashMap (in blink).
 //
 //        - struct:
 //          Value or reference of any type that has a StructTraits defined.

@@ -7,7 +7,6 @@
 
 #include "mojo/public/cpp/bindings/array_traits_wtf.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
-#include "mojo/public/cpp/bindings/map_traits_wtf.h"
 #include "mojo/public/cpp/bindings/map_traits_wtf_hash_map.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 

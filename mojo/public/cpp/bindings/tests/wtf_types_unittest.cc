@@ -177,66 +177,6 @@ TEST_F(WTFTypesTest, Serialization_WTFArrayToMojoArray) {
   EXPECT_TRUE(kUTF8HelloWorld == strs2[3]);
 }
 
-TEST_F(WTFTypesTest, Serialization_WTFMapToWTFMap) {
-  using WTFType = WTFMap<WTF::String, WTF::String>;
-  using MojomType = MapDataView<StringDataView, StringDataView>;
-
-  WTFType str_map = ConstructStringMap();
-  WTFType cloned_str_map = str_map.Clone();
-
-  mojo::internal::SerializationContext context;
-  size_t size =
-      mojo::internal::PrepareToSerialize<MojomType>(cloned_str_map, &context);
-
-  mojo::internal::FixedBufferForTesting buf(size);
-  typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
-  mojo::internal::ContainerValidateParams validate_params(
-      new mojo::internal::ContainerValidateParams(
-          0, false,
-          new mojo::internal::ContainerValidateParams(0, false, nullptr)),
-      new mojo::internal::ContainerValidateParams(
-          0, true,
-          new mojo::internal::ContainerValidateParams(0, false, nullptr)));
-  mojo::internal::Serialize<MojomType>(cloned_str_map, &buf, &data,
-                                       &validate_params, &context);
-
-  WTFType str_map2;
-  mojo::internal::Deserialize<MojomType>(data, &str_map2, &context);
-
-  EXPECT_TRUE(str_map.Equals(str_map2));
-}
-
-TEST_F(WTFTypesTest, Serialization_WTFMapToMojoMap) {
-  using WTFType = WTFMap<WTF::String, WTF::String>;
-  using MojomType = MapDataView<StringDataView, StringDataView>;
-
-  WTFType str_map = ConstructStringMap();
-
-  mojo::internal::SerializationContext context;
-  size_t size =
-      mojo::internal::PrepareToSerialize<MojomType>(str_map, &context);
-
-  mojo::internal::FixedBufferForTesting buf(size);
-  typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
-  mojo::internal::ContainerValidateParams validate_params(
-      new mojo::internal::ContainerValidateParams(
-          0, false,
-          new mojo::internal::ContainerValidateParams(0, false, nullptr)),
-      new mojo::internal::ContainerValidateParams(
-          0, true,
-          new mojo::internal::ContainerValidateParams(0, false, nullptr)));
-  mojo::internal::Serialize<MojomType>(str_map, &buf, &data, &validate_params,
-                                       &context);
-
-  Map<mojo::String, mojo::String> str_map2;
-  mojo::internal::Deserialize<MojomType>(data, &str_map2, &context);
-
-  ASSERT_EQ(3u, str_map2.size());
-  EXPECT_TRUE(str_map2["0"].is_null());
-  EXPECT_TRUE(kHelloWorld == str_map2["1"]);
-  EXPECT_TRUE(kUTF8HelloWorld == str_map2["2"]);
-}
-
 TEST_F(WTFTypesTest, Serialization_PublicAPI) {
   blink::TestWTFStructPtr input(blink::TestWTFStruct::New());
   input->str = kHelloWorld;
