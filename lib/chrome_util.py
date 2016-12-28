@@ -204,6 +204,8 @@ class Copier(object):
     else:
       for p in paths:
         rel_src = os.path.relpath(p, src_base)
+        if path.IsBlacklisted(rel_src):
+          continue
         if path.dest is None:
           rel_dest = rel_src
         elif path.dest.endswith('/'):
@@ -260,8 +262,7 @@ class Path(object):
                 mode, the Copier class treats all artifacts as optional.
       strip: If |exe| is set, whether to strip the executable.
       blacklist: A list of path patterns to ignore during the copy. This gets
-                 added to a default blacklist pattern. Only used if Path
-                 represents a directory.
+                 added to a default blacklist pattern.
     """
     self.src = src
     self.exe = exe
@@ -362,7 +363,7 @@ _COPY_PATHS_CHROME = (
     # play well with the binutils stripping tools, so skip stripping.
     Path('libwidevinecdmadapter.so',
          exe=True,
-         strip=False,
+         strip=True,
          cond=C.GnAnySetTo(((_IS_CHROME_BRANDED, True),
                             (_ENABLE_WIDEVINE, True)))),
     Path('libwidevinecdm.so',
@@ -371,6 +372,7 @@ _COPY_PATHS_CHROME = (
          cond=C.GnAnySetTo(((_IS_CHROME_BRANDED, True),
                             (_ENABLE_WIDEVINE, True)))),
     Path('*.so',
+         blacklist=(r'libwidevine.*\.so$',),
          exe=True,
          cond=C.GnSetTo(_IS_COMPONENT_BUILD, True)),
     Path('locales/'),
