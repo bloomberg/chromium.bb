@@ -436,6 +436,9 @@ bool GLES2Implementation::OnMemoryDump(
   using base::trace_event::MemoryAllocatorDump;
   using base::trace_event::MemoryDumpLevelOfDetail;
 
+  // Dump owned MappedMemoryManager memory as well.
+  mapped_memory_->OnMemoryDump(args, pmd);
+
   if (!transfer_buffer_->HaveBuffer())
     return true;
 
