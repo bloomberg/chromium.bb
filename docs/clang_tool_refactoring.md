@@ -69,14 +69,14 @@ represents one edit. Fields are separated by `:::`, and the first field must
 be `r` (for replacement). In the future, this may be extended to handle header
 insertion/removal. A deletion is an edit with no replacement text.
 
-The edits are applied by [`run_tool.py`](#Running), which understands certain
+The edits are applied by [`apply_edits.py`](#Running), which understands certain
 conventions:
 
-*   The tool should munge newlines in replacement text to `\0`. The script
+*   The clang tool should munge newlines in replacement text to `\0`. The script
     knows to translate `\0` back to newlines when applying edits.
 *   When removing an element from a 'list' (e.g. function parameters,
-    initializers), the tool should emit a deletion for just the element. The
-    script understands how to extend the deletion to remove commas, etc. as
+    initializers), the clang tool should emit a deletion for just the element.
+    The script understands how to extend the deletion to remove commas, etc. as
     needed.
 
 TODO: Document more about `SourceLocation` and how spelling loc differs from
@@ -118,6 +118,12 @@ that are generated as part of the build:
 ```shell
 ninja -C out/Debug  # For non-Windows
 ninja -d keeprsp -C out/Debug  # For Windows
+
+# experimental alternative:
+$gen_targets = $(ninja -C out/gn -t targets all \
+                 | grep '^gen/[^: ]*\.[ch][pc]*:' \
+                 | cut -f 1 -d :`)
+ninja -C out/Debug $gen_targets
 ```
 
 On Windows, generate the compile DB first, and after making any source changes.
@@ -127,27 +133,52 @@ Then omit the `--generate-compdb` in later steps.
 tools/clang/scripts/generate_win_compdb.py out/Debug
 ```
 
-Then run the actual tool:
+Then run the actual clang tool to generate a list of edits:
 
 ```shell
 tools/clang/scripts/run_tool.py <toolname> \
   --generate-compdb
-  out/Debug <path 1> <path 2> ...
+  out/Debug <path 1> <path 2> ... >/tmp/list-of-edits.debug
 ```
 
 `--generate-compdb` can be omitted if the compile DB was already generated and
 the list of build flags and source files has not changed since generation.
 
 `<path 1>`, `<path 2>`, etc are optional arguments to filter the files to run
-the tool across. This is helpful when sharding global refactorings into smaller
+the tool against. This is helpful when sharding global refactorings into smaller
 chunks. For example, the following command will run the `empty_string` tool
-across just the files in `//base`:
+against just the `.c`, `.cc`, `.cpp`, `.m`, `.mm` files in `//net`.  Note that
+the filtering is not applied to the *output* of the tool - the tool can emit
+edits that apply to files outside of `//cc` (i.e. edits that apply to headers
+from `//base` that got included by source files in `//cc`).
 
 ```shell
 tools/clang/scripts/run_tool.py empty_string  \
   --generated-compdb \
-  out/Debug base
+  out/Debug net >/tmp/list-of-edits.debug
 ```
+
+Note that some header files might only be included from generated files (e.g.
+from only from some `.cpp` files under out/Debug/gen).  To make sure that
+contents of such header files are processed by the clang tool, the clang tool
+needs to be run against the generated files.  The only way to accomplish this
+today is to pass `--all` switch to `run_tool.py` - this will run the clang tool
+against all the sources from the compilation database.
+
+Finally, apply the edits as follows:
+
+```shell
+cat /tmp/list-of-edits.debug \
+  | tools/clang/scripts/extract_edits.py \
+  | tools/clang/scripts/apply_edits.py out/Debug <path 1> <path 2> ...
+```
+
+The apply_edits.py tool will only apply edits to files actually under control of
+`git`.  `<path 1>`, `<path 2>`, etc are optional arguments to further filter the
+files that the edits are applied to.  Note that semantics of these filters is
+distinctly different from the arguments of `run_tool.py` filters - one set of
+filters controls which files are edited, the other set of filters controls which
+files the clang tool is run against.
 
 ## Debugging
 Dumping the AST for a file:
