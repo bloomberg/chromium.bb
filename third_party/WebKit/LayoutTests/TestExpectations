@@ -2234,7 +2234,7 @@ crbug.com/663855 fast/text/ellipsis-rtl-text-in-ltr-flow-underline-composition.h
 crbug.com/663855 fast/text/ellipsis-rtl-text-in-rtl-flow-underline-composition.html [ Pass Failure ]
 
 # Possible duplicate of crbug.com/498021
-# crbug.com/663855 fast/text/ellipsis-stroked.html [ Pass Failure ]
+crbug.com/663855 [ Win ] fast/text/ellipsis-stroked.html [ Pass Failure ]
 # crbug.com/663858 fast/text/emphasis.html [ Pass Failure ]
 
 crbug.com/663858 fast/text/emphasis-vertical.html [ Pass Failure ]
