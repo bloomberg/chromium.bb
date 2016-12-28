@@ -10,8 +10,8 @@
 #include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 // Actions images.
@@ -285,10 +285,8 @@ enum class OverscrollViewState {
     [_highlightMaskLayer addSublayer:_refreshActionImageViewHighlighted.layer];
     [_highlightMaskLayer addSublayer:_closeTabActionImageViewHighlighted.layer];
 
-    _shadowView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Image shadow = rb.GetNativeImageNamed(IDR_IOS_TOOLBAR_SHADOW);
-    [_shadowView setImage:shadow.ToUIImage()];
+    _shadowView =
+        [[UIImageView alloc] initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
     [self addSubview:_shadowView];
 
     _backgroundView = [[UIView alloc] initWithFrame:CGRectZero];

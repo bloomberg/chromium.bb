@@ -18,7 +18,6 @@
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #import "ios/third_party/material_text_accessibility_ios/src/src/MDFTextAccessibility.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -136,9 +135,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
     // Shadow view.
     _shadow.reset([[UIImageView alloc] initWithFrame:CGRectZero]);
     [_shadow setTranslatesAutoresizingMaskIntoConstraints:NO];
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Image shadow = rb.GetNativeImageNamed(IDR_IOS_TOOLBAR_SHADOW);
-    [_shadow setImage:shadow.ToUIImage()];
+    [_shadow setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
     [[self containerView] addSubview:_shadow];
 
     // Constraints on the Top bar, snapshot view, and shadow view.
@@ -226,10 +223,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   if (tab.favicon) {
     [_favicon setImage:tab.favicon];
   } else {
-    // No favicon is available, use placeholder instead.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    [_favicon
-        setImage:rb.GetNativeImageNamed(IDR_IOS_OMNIBOX_HTTP).ToUIImage()];
+    [_favicon setImage:NativeImage(IDR_IOS_OMNIBOX_HTTP)];
   }
 
   CGSize snapshotSize = cellSize;

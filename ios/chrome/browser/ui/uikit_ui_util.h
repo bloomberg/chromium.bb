@@ -104,6 +104,15 @@ inline UIColor* UIColorFromRGB(int rgb, CGFloat alpha = 1.0) {
 // Intended for use in debug.
 BOOL ImageHasAlphaChannel(UIImage* image);
 
+// Returns the image from the shared resource bundle with the image id
+// |imageID|. If |reversable| is YES and RTL layout is in use, the image
+// will be flipped for RTL.
+UIImage* NativeReversableImage(int imageID, BOOL reversable);
+
+// Convenience version of NativeReversableImage for images that are never
+// reversable; equivalent to NativeReversableImage(imageID, NO).
+UIImage* NativeImage(int imageID);
+
 // Returns an image resized to |targetSize|. It first calculate the projection
 // by calling CalculateProjection() and then create a new image of the desired
 // size and project the correct subset of the original image onto it.

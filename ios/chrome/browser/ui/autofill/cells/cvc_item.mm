@@ -6,13 +6,13 @@
 
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/ui/text_field_styling.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -88,9 +88,7 @@ const CGFloat kCVCTextFieldWidth = 60;
 
   cell.buttonForNewCard.hidden = !self.showNewCardButton;
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  cell.CVCImageView.image =
-      rb.GetNativeImageNamed(self.CVCImageResourceID).ToUIImage();
+  cell.CVCImageView.image = NativeImage(self.CVCImageResourceID);
 }
 
 @end

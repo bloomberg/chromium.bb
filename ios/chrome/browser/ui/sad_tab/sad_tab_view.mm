@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
@@ -26,8 +27,6 @@
 #include "ios/web/public/web_state/web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image.h"
 
 namespace {
 // Color constants.
@@ -137,11 +136,8 @@ const CGFloat kHelpLabelFontSize = 14.0f;
 
 - (UIImageView*)imageView {
   if (!_imageView) {
-    ui::ResourceBundle& resourceBundle =
-        ui::ResourceBundle::GetSharedInstance();
-    UIImage* image =
-        resourceBundle.GetNativeImageNamed(IDR_CRASH_SAD_TAB).ToUIImage();
-    _imageView.reset([[UIImageView alloc] initWithImage:image]);
+    _imageView.reset(
+        [[UIImageView alloc] initWithImage:NativeImage(IDR_CRASH_SAD_TAB)]);
     [_imageView setBackgroundColor:self.backgroundColor];
   }
   return _imageView.get();

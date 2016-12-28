@@ -11,7 +11,6 @@
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 
 // A UIViewController that forces the status bar to be visible.
 @interface RecentTabsWrapperViewController : UIViewController
@@ -43,10 +42,8 @@
   PanelBarView* panelBarView = [[[PanelBarView alloc] init] autorelease];
   rtpvc->_panelBarView.reset([panelBarView retain]);
   [panelBarView setCloseTarget:rtpvc action:@selector(didFinish)];
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Image shadowImage = rb.GetNativeImageNamed(IDR_IOS_TOOLBAR_SHADOW);
   base::scoped_nsobject<UIImageView> shadow(
-      [[UIImageView alloc] initWithImage:shadowImage.ToUIImage()]);
+      [[UIImageView alloc] initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)]);
 
   [panelBarView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [rtpvc.view setTranslatesAutoresizingMaskIntoConstraints:NO];

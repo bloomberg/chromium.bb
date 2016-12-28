@@ -16,10 +16,12 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/web/public/web_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/ios/uikit_util.h"
 #include "ui/gfx/scoped_cg_context_save_gstate_mac.h"
 
@@ -223,6 +225,19 @@ BOOL ImageHasAlphaChannel(UIImage* image) {
     case kCGImageAlphaOnly:
       return YES;
   }
+}
+
+UIImage* NativeReversableImage(int imageID, BOOL reversable) {
+  DCHECK(imageID);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  UIImage* image = rb.GetNativeImageNamed(imageID).ToUIImage();
+  return (reversable && UseRTLLayout())
+             ? [image imageFlippedForRightToLeftLayoutDirection]
+             : image;
+}
+
+UIImage* NativeImage(int imageID) {
+  return NativeReversableImage(imageID, NO);
 }
 
 UIImage* ResizeImage(UIImage* image,

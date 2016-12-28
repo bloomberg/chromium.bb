@@ -7,10 +7,10 @@
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -84,13 +84,10 @@ const CGFloat kTooltipButtonTrailingSpacing = 30;
 
     _switchView.onTintColor = [[MDCPalette cr_bluePalette] tint500];
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    UIImage* highlightedImage =
-        rb.GetNativeImageNamed(IDR_AUTOFILL_TOOLTIP_ICON_H).ToUIImage();
-    [_tooltipButton setImage:highlightedImage forState:UIControlStateSelected];
-    UIImage* normalImage =
-        rb.GetNativeImageNamed(IDR_AUTOFILL_TOOLTIP_ICON).ToUIImage();
-    [_tooltipButton setImage:normalImage forState:UIControlStateNormal];
+    [_tooltipButton setImage:NativeImage(IDR_AUTOFILL_TOOLTIP_ICON_H)
+                    forState:UIControlStateSelected];
+    [_tooltipButton setImage:NativeImage(IDR_AUTOFILL_TOOLTIP_ICON)
+                    forState:UIControlStateNormal];
 
     // Set up the constraints.
     [NSLayoutConstraint activateConstraints:@[

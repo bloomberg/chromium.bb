@@ -34,7 +34,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using base::UserMetricsAction;
 using ios::material::TimingFunction;
@@ -223,7 +222,7 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
 }
 
 // Returns the background image that should be used for |style|.
-- (const gfx::Image&)getBackgroundImageForStyle:(ToolbarControllerStyle)style;
+- (UIImage*)getBackgroundImageForStyle:(ToolbarControllerStyle)style;
 
 // Whether the share button should be visible in the toolbar.
 - (BOOL)shareButtonShouldBeVisible;
@@ -316,9 +315,7 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
     [shadowView_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
     [shadowView_ setUserInteractionEnabled:NO];
     [view_ addSubview:shadowView_];
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Image shadow = rb.GetNativeImageNamed(IDR_IOS_TOOLBAR_SHADOW);
-    [shadowView_ setImage:shadow.ToUIImage()];
+    [shadowView_ setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
 
     if (idiom == IPHONE_IDIOM) {
       // iPad omnibox does not expand to full bleed.
@@ -331,9 +328,8 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
       [fullBleedShadowView_ setUserInteractionEnabled:NO];
       [fullBleedShadowView_ setAlpha:0];
       [view_ addSubview:fullBleedShadowView_];
-      gfx::Image fullBleedShadow =
-          rb.GetNativeImageNamed(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED);
-      [fullBleedShadowView_ setImage:fullBleedShadow.ToUIImage()];
+      [fullBleedShadowView_
+          setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED)];
     }
 
     transitionLayers_.reset(
@@ -343,9 +339,9 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
     [view_ setUserInteractionEnabled:YES];
     [backgroundView_ setUserInteractionEnabled:YES];
 
-    gfx::Image tile = [self getBackgroundImageForStyle:style];
+    UIImage* tile = [self getBackgroundImageForStyle:style];
     [[self backgroundView]
-        setImage:StretchableImageFromUIImage(tile.ToUIImage(), 0.0, 3.0)];
+        setImage:StretchableImageFromUIImage(tile, 0.0, 3.0)];
 
     if (idiom == IPHONE_IDIOM) {
       stackButton_.reset(
@@ -485,16 +481,10 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
 
 - (UIImage*)imageForImageEnum:(int)imageEnum
                      forState:(ToolbarButtonUIState)state {
-  int imageId =
+  int imageID =
       [self imageIdForImageEnum:imageEnum style:[self style] forState:state];
-  DCHECK(imageId);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Image tile = rb.GetNativeImageNamed(imageId);
-  UIImage* image = tile.ToUIImage();
-  return (UseRTLLayout() &&
-          [self imageShouldFlipForRightToLeftLayoutDirection:imageEnum])
-             ? [image imageFlippedForRightToLeftLayoutDirection]
-             : image;
+  return NativeReversableImage(
+      imageID, [self imageShouldFlipForRightToLeftLayoutDirection:imageEnum]);
 }
 
 - (int)imageEnumForButton:(UIButton*)button {
@@ -640,15 +630,14 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
                     object:nil];
 }
 
-- (const gfx::Image&)getBackgroundImageForStyle:(ToolbarControllerStyle)style {
-  int backgroundImageId;
+- (UIImage*)getBackgroundImageForStyle:(ToolbarControllerStyle)style {
+  int backgroundImageID;
   if (style == ToolbarControllerStyleLightMode)
-    backgroundImageId = IDR_IOS_TOOLBAR_LIGHT_BACKGROUND;
+    backgroundImageID = IDR_IOS_TOOLBAR_LIGHT_BACKGROUND;
   else
-    backgroundImageId = IDR_IOS_TOOLBAR_DARK_BACKGROUND;
+    backgroundImageID = IDR_IOS_TOOLBAR_DARK_BACKGROUND;
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(backgroundImageId);
+  return NativeImage(backgroundImageID);
 }
 
 - (CGRect)specificControlsArea {

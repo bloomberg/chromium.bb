@@ -15,14 +15,13 @@
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace ios_internal {
 
 UIImage* DefaultFaviconImage() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(IDR_IOS_OMNIBOX_HTTP).ToUIImage();
+  return NativeImage(IDR_IOS_OMNIBOX_HTTP);
 }
 
 void GetFavicon(GURL const& url,

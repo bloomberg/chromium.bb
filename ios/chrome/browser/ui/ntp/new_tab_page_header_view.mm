@@ -11,9 +11,9 @@
 #import "ios/chrome/browser/ui/image_util.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_toolbar_controller.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 #import "ui/gfx/ios/uikit_util.h"
 
 namespace {
@@ -110,9 +110,7 @@ const CGFloat kMaxConstraintConstantDiff = 5;
                                         UIViewAutoresizingFlexibleHeight];
   [searchField insertSubview:_searchBoxBorder atIndex:0];
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  UIImage* fullBleedShadow =
-      rb.GetNativeImageNamed(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED).ToUIImage();
+  UIImage* fullBleedShadow = NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED);
   _shadow.reset([[UIImageView alloc] initWithImage:fullBleedShadow]);
   CGRect shadowFrame = [searchField bounds];
   shadowFrame.origin.y =

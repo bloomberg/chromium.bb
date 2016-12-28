@@ -35,7 +35,6 @@
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using ios::material::TimingFunction;
 
@@ -341,19 +340,6 @@ NS_INLINE void AnimateInViews(NSArray* views,
   [self addConstraints];
 }
 
-- (UIImage*)imageForImageId:(int)imageId reversed:(BOOL)reversed {
-  if (imageId == 0) {
-    return nil;
-  }
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Image image = rb.GetNativeImageNamed(imageId);
-  if (reversed) {
-    return [image.ToUIImage() imageFlippedForRightToLeftLayoutDirection];
-  } else {
-    return image.ToUIImage();
-  }
-}
-
 - (ToolsMenuButton*)newButtonForImageIds:(int[2][3])imageIds
                                commandID:(int)commandID
                     accessibilityLabelID:(int)labelID
@@ -372,9 +358,8 @@ NS_INLINE void AnimateInViews(NSArray* views,
                            reverseForRTL:(BOOL)reverseForRTL {
   ToolsMenuButton* button = [[ToolsMenuButton alloc] initWithFrame:CGRectZero];
   [button setTranslatesAutoresizingMaskIntoConstraints:NO];
-  BOOL reverseImage = reverseForRTL && UseRTLLayout();
 
-  [button setImage:[self imageForImageId:imageIds[0][0] reversed:reverseImage]
+  [button setImage:NativeReversableImage(imageIds[0][0], reverseForRTL)
           forState:UIControlStateNormal];
   [[button imageView] setContentMode:UIViewContentModeCenter];
   [button setBackgroundColor:[self backgroundColor]];
@@ -383,14 +368,12 @@ NS_INLINE void AnimateInViews(NSArray* views,
 
   SetA11yLabelAndUiAutomationName(button, labelID, name);
 
-  UIImage* pressedImage =
-      [self imageForImageId:imageIds[0][1] reversed:reverseImage];
+  UIImage* pressedImage = NativeReversableImage(imageIds[0][1], reverseForRTL);
   if (pressedImage) {
     [button setImage:pressedImage forState:UIControlStateHighlighted];
   }
 
-  UIImage* disabledImage =
-      [self imageForImageId:imageIds[0][2] reversed:reverseImage];
+  UIImage* disabledImage = NativeReversableImage(imageIds[0][2], reverseForRTL);
   if (disabledImage) {
     [button setImage:disabledImage forState:UIControlStateDisabled];
   }

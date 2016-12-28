@@ -658,8 +658,7 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
                        target:(id)target
                        action:(SEL)action {
   DCHECK(!closeButton_);
-  // TODO(jeanfrancoisg): Add IDR_ constant and use GetNativeImageNamed().
-  // crbug/228611
+  // TODO(crbug/228611): Add IDR_ constant and use GetNativeImageNamed().
   NSString* imagePath =
       [[NSBundle mainBundle] pathForResource:@"infobar_close" ofType:@"png"];
   UIImage* image = [UIImage imageWithContentsOfFile:imagePath];

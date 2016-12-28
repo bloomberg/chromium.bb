@@ -45,6 +45,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -53,7 +54,6 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -672,10 +672,8 @@ enum class SnapshotViewOption {
 
   base::scoped_nsobject<UIImageView> toolbarShadowImageView(
       [[UIImageView alloc] initWithFrame:shadowInitialFrame]);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Image shadow = rb.GetNativeImageNamed(IDR_IOS_TOOLBAR_SHADOW);
   [toolbarShadowImageView setAutoresizingMask:UIViewAutoresizingNone];
-  [toolbarShadowImageView setImage:shadow.ToUIImage()];
+  [toolbarShadowImageView setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
   [placeholderView addSubview:toolbarShadowImageView];
 
   [self.view addSubview:placeholderView];

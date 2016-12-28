@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 using base::UserMetricsAction;
@@ -56,9 +55,7 @@ const CGFloat kResizeFactor = 4;
     [self addSubview:toolbarHolder_];
 
     shadowView_.reset([[UIImageView alloc] initWithFrame:self.bounds]);
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Image shadow = rb.GetNativeImageNamed(IDR_IOS_TOOLBAR_SHADOW);
-    [shadowView_ setImage:shadow.ToUIImage()];
+    [shadowView_ setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
     [self addSubview:shadowView_];
 
     // All subviews are as wide as the parent

@@ -19,7 +19,6 @@
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #include "url/gurl.h"
 
@@ -286,10 +285,8 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
       break;
 
     case bookmark_cell::ButtonMenu: {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      UIImage* bgImage =
-          rb.GetNativeImageNamed(IDR_IOS_TOOLBAR_LIGHT_TOOLS).ToUIImage();
-      [self addButtonWithImage:bgImage animated:animated];
+      [self addButtonWithImage:NativeImage(IDR_IOS_TOOLBAR_LIGHT_TOOLS)
+                      animated:animated];
       break;
     }
   }

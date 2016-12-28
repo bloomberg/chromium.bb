@@ -152,6 +152,7 @@ source_set("utils") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/ui",
     "//ui/base",
   ]
 }

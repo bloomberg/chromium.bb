@@ -11,7 +11,6 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 const CGFloat kImageDimensionLength = 19.0;
@@ -27,9 +26,6 @@ const CGFloat kAppendButtonTrailingMargin = 4;
 
 // Set the append button normal and highlighted images.
 - (void)updateAppendButtonImages;
-
-// Set the Physical Web image view image.
-- (void)updatePhysicalWebImage;
 
 @end
 
@@ -80,7 +76,7 @@ const CGFloat kAppendButtonTrailingMargin = 4;
     _physicalWebImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     _physicalWebImageView.userInteractionEnabled = NO;
     _physicalWebImageView.contentMode = UIViewContentModeCenter;
-    [self updatePhysicalWebImage];
+    _physicalWebImageView.image = NativeImage(IDR_IOS_OMNIBOX_PHYSICAL_WEB);
     [self addSubview:_physicalWebImageView];
 
     // Left icon is only displayed on iPad.
@@ -127,11 +123,8 @@ const CGFloat kAppendButtonTrailingMargin = 4;
   _physicalWebImageView.frame = LayoutRectGetRect(rightAccessoryLayout);
 }
 
-- (void)updateLeftImage:(int)imageId {
-  // Update the image.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  UIImage* image = rb.GetNativeImageNamed(imageId).ToUIImage();
-  _imageView.image = image;
+- (void)updateLeftImage:(int)imageID {
+  _imageView.image = NativeImage(imageID);
 
   // Adjust the vertical position based on the current size of the row.
   CGRect frame = _imageView.frame;
@@ -161,30 +154,18 @@ const CGFloat kAppendButtonTrailingMargin = 4;
 }
 
 - (void)updateAppendButtonImages {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int appendResourceID = _incognito
                              ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO
                              : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
-  UIImage* appendImage = rb.GetNativeImageNamed(appendResourceID).ToUIImage();
-  if (UseRTLLayout()) {
-    appendImage = [appendImage imageFlippedForRightToLeftLayoutDirection];
-  }
+  UIImage* appendImage = NativeReversableImage(appendResourceID, YES);
 
   [_appendButton setImage:appendImage forState:UIControlStateNormal];
   int appendSelectedResourceID =
       _incognito ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO_HIGHLIGHTED
                  : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_HIGHLIGHTED;
-  UIImage* appendImageSelected =
-      rb.GetNativeImageNamed(appendSelectedResourceID).ToUIImage();
+  UIImage* appendImageSelected = NativeImage(appendSelectedResourceID);
   [_appendButton setImage:appendImageSelected
                  forState:UIControlStateHighlighted];
-}
-
-- (void)updatePhysicalWebImage {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  UIImage* physicalWebImage =
-      rb.GetNativeImageNamed(IDR_IOS_OMNIBOX_PHYSICAL_WEB).ToUIImage();
-  _physicalWebImageView.image = physicalWebImage;
 }
 
 - (NSString*)accessibilityLabel {

@@ -22,13 +22,12 @@
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/image_fetcher/image_data_fetcher.h"
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/image/image.h"
 
 namespace {
 const CGFloat kExpandAnimationDuration = 0.1;
@@ -74,11 +73,8 @@ OmniboxPopupViewIOS::OmniboxPopupViewIOS(OmniboxViewIOS* edit_view,
   [popupView_ addSubview:popupControllerView];
   if (IsIPadIdiom()) {
     [popupView_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Image shadowImage =
-        rb.GetNativeImageNamed(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED);
-    base::scoped_nsobject<UIImageView> shadowView(
-        [[UIImageView alloc] initWithImage:shadowImage.ToUIImage()]);
+    base::scoped_nsobject<UIImageView> shadowView([[UIImageView alloc]
+        initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED)]);
     [shadowView setUserInteractionEnabled:NO];
     [shadowView setTranslatesAutoresizingMaskIntoConstraints:NO];
     [popupView_ addSubview:shadowView];

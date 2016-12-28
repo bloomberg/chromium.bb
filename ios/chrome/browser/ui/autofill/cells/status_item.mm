@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -71,19 +71,17 @@ const CGFloat kHorizontalPadding = 16;
     _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
     [verticalCenteringView addSubview:_activityIndicator];
 
-    _verifiedImageView = [[UIImageView alloc] init];
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     // TODO(crbug.com/508925): Get rid of IDR_IOS_CHECKMARK, use a vector icon
     // instead.
-    _verifiedImageView.image =
-        rb.GetNativeImageNamed(IDR_IOS_CHECKMARK).ToUIImage();
+    _verifiedImageView =
+        [[UIImageView alloc] initWithImage:NativeImage(IDR_IOS_CHECKMARK)];
     _verifiedImageView.contentMode = UIViewContentModeScaleAspectFit;
     _verifiedImageView.hidden = YES;
     _verifiedImageView.translatesAutoresizingMaskIntoConstraints = NO;
     [verticalCenteringView addSubview:_verifiedImageView];
 
-    _errorImageView = [[UIImageView alloc] init];
-    _errorImageView.image = rb.GetNativeImageNamed(IDR_IOS_ERROR).ToUIImage();
+    _errorImageView =
+        [[UIImageView alloc] initWithImage:NativeImage(IDR_IOS_ERROR)];
     _errorImageView.contentMode = UIViewContentModeScaleAspectFit;
     _errorImageView.hidden = YES;
     _errorImageView.translatesAutoresizingMaskIntoConstraints = NO;

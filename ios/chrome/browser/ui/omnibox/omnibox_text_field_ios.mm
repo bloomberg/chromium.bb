@@ -28,7 +28,6 @@
 #include "skia/ext/skia_utils_ios.h"
 #include "third_party/google_toolbox_for_mac/src/iPhone/GTMFadeTruncatingLabel.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
@@ -408,9 +407,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     // For iPhone, the left view is only updated when not in editing mode (i.e.
     // the text field is not first responder).
   } else if (_leftViewImageId && (IsIPadIdiom() || ![self isFirstResponder])) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Image defaultImage = rb.GetNativeImageNamed(_leftViewImageId);
-    UIImage* image = [defaultImage.ToUIImage()
+    UIImage* image = [NativeImage(_leftViewImageId)
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     UIImageView* imageView =
         [[[UIImageView alloc] initWithImage:image] autorelease];

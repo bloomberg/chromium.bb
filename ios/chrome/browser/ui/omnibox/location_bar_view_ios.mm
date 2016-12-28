@@ -29,9 +29,6 @@
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/image/image.h"
 
 namespace {
 const CGFloat kClearTextButtonWidth = 28;
@@ -260,10 +257,8 @@ web::WebState* LocationBarViewIOS::GetWebState() {
 
 void LocationBarViewIOS::InstallLocationIcon() {
   // Set the placeholder for empty omnibox.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Image magImage = rb.GetNativeImageNamed(IDR_IOS_OMNIBOX_SEARCH);
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
-  UIImage* image = magImage.ToUIImage();
+  UIImage* image = NativeImage(IDR_IOS_OMNIBOX_SEARCH);
   [button setImage:image forState:UIControlStateNormal];
   [button setFrame:CGRectMake(0, 0, image.size.width, image.size.height)];
   [button addTarget:nil
@@ -291,17 +286,13 @@ void LocationBarViewIOS::InstallLocationIcon() {
 }
 
 void LocationBarViewIOS::CreateClearTextIcon(bool is_incognito) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
-  UIImage* omniBoxClearImage =
-      is_incognito
-          ? rb.GetNativeImageNamed(IDR_IOS_OMNIBOX_CLEAR_OTR).ToUIImage()
-          : rb.GetNativeImageNamed(IDR_IOS_OMNIBOX_CLEAR).ToUIImage();
+  UIImage* omniBoxClearImage = is_incognito
+                                   ? NativeImage(IDR_IOS_OMNIBOX_CLEAR_OTR)
+                                   : NativeImage(IDR_IOS_OMNIBOX_CLEAR);
   UIImage* omniBoxClearPressedImage =
-      is_incognito
-          ? rb.GetNativeImageNamed(IDR_IOS_OMNIBOX_CLEAR_OTR_PRESSED)
-                .ToUIImage()
-          : rb.GetNativeImageNamed(IDR_IOS_OMNIBOX_CLEAR_PRESSED).ToUIImage();
+      is_incognito ? NativeImage(IDR_IOS_OMNIBOX_CLEAR_OTR_PRESSED)
+                   : NativeImage(IDR_IOS_OMNIBOX_CLEAR_PRESSED);
   [button setImage:omniBoxClearImage forState:UIControlStateNormal];
   [button setImage:omniBoxClearPressedImage forState:UIControlStateHighlighted];
 

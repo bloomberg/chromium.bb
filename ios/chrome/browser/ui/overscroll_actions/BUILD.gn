@@ -45,7 +45,6 @@ source_set("overscroll_actions") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/voice",
     "//ios/web",
-    "//ui/base",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/static_content" ]
   libs = [
