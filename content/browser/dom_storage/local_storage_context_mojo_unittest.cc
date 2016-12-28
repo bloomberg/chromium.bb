@@ -20,20 +20,36 @@ namespace {
 
 void NoOpSuccess(bool success) {}
 
+void GetCallback(const base::Closure& callback,
+                 bool* success_out,
+                 std::vector<uint8_t>* value_out,
+                 bool success,
+                 const std::vector<uint8_t>& value) {
+  *success_out = success;
+  *value_out = value;
+  callback.Run();
+}
+
 }  // namespace
 
 class LocalStorageContextMojoTest : public testing::Test {
  public:
-  LocalStorageContextMojoTest()
-      : db_(&mock_data_),
-        db_binding_(&db_),
-        context_(nullptr, base::FilePath()) {
-    context_.SetDatabaseForTesting(db_binding_.CreateInterfacePtrAndBind());
-  }
+  LocalStorageContextMojoTest() : db_(&mock_data_), db_binding_(&db_) {}
 
-  LocalStorageContextMojo* context() { return &context_; }
+  LocalStorageContextMojo* context() {
+    if (!context_) {
+      context_ =
+          base::MakeUnique<LocalStorageContextMojo>(nullptr, base::FilePath());
+      context_->SetDatabaseForTesting(db_binding_.CreateInterfacePtrAndBind());
+    }
+    return context_.get();
+  }
   const std::map<std::vector<uint8_t>, std::vector<uint8_t>>& mock_data() {
     return mock_data_;
+  }
+
+  void set_mock_data(const std::string& key, const std::string& value) {
+    mock_data_[StdStringToUint8Vector(key)] = StdStringToUint8Vector(value);
   }
 
  private:
@@ -42,7 +58,7 @@ class LocalStorageContextMojoTest : public testing::Test {
   MockLevelDBDatabase db_;
   mojo::Binding<leveldb::mojom::LevelDBDatabase> db_binding_;
 
-  LocalStorageContextMojo context_;
+  std::unique_ptr<LocalStorageContextMojo> context_;
 };
 
 TEST_F(LocalStorageContextMojoTest, Basic) {
@@ -56,8 +72,8 @@ TEST_F(LocalStorageContextMojoTest, Basic) {
   wrapper.reset();
 
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(1u, mock_data().size());
-  EXPECT_EQ(value, mock_data().begin()->second);
+  ASSERT_EQ(2u, mock_data().size());
+  EXPECT_EQ(value, mock_data().rbegin()->second);
 }
 
 TEST_F(LocalStorageContextMojoTest, OriginsAreIndependent) {
@@ -77,8 +93,45 @@ TEST_F(LocalStorageContextMojoTest, OriginsAreIndependent) {
   wrapper.reset();
 
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(2u, mock_data().size());
-  EXPECT_EQ(value, mock_data().begin()->second);
+  ASSERT_EQ(3u, mock_data().size());
+  EXPECT_EQ(value, mock_data().rbegin()->second);
+}
+
+TEST_F(LocalStorageContextMojoTest, ValidVersion) {
+  set_mock_data("VERSION", "1");
+  set_mock_data(std::string("_http://foobar.com") + '\x00' + "key", "value");
+
+  mojom::LevelDBWrapperPtr wrapper;
+  context()->OpenLocalStorage(url::Origin(GURL("http://foobar.com")),
+                              MakeRequest(&wrapper));
+
+  base::RunLoop run_loop;
+  bool success = false;
+  std::vector<uint8_t> result;
+  wrapper->Get(
+      StdStringToUint8Vector("key"),
+      base::Bind(&GetCallback, run_loop.QuitClosure(), &success, &result));
+  run_loop.Run();
+  EXPECT_TRUE(success);
+  EXPECT_EQ(StdStringToUint8Vector("value"), result);
+}
+
+TEST_F(LocalStorageContextMojoTest, InvalidVersion) {
+  set_mock_data("VERSION", "foobar");
+  set_mock_data(std::string("_http://foobar.com") + '\x00' + "key", "value");
+
+  mojom::LevelDBWrapperPtr wrapper;
+  context()->OpenLocalStorage(url::Origin(GURL("http://foobar.com")),
+                              MakeRequest(&wrapper));
+
+  base::RunLoop run_loop;
+  bool success = false;
+  std::vector<uint8_t> result;
+  wrapper->Get(
+      StdStringToUint8Vector("key"),
+      base::Bind(&GetCallback, run_loop.QuitClosure(), &success, &result));
+  run_loop.Run();
+  EXPECT_FALSE(success);
 }
 
 }  // namespace content

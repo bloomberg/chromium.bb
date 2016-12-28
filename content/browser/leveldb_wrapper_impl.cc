@@ -243,6 +243,12 @@ void LevelDBWrapperImpl::LoadMap(const base::Closure& completion_callback) {
   if (on_load_complete_tasks_.size() > 1)
     return;
 
+  if (!database_) {
+    OnLoadComplete(leveldb::mojom::DatabaseError::IO_ERROR,
+                   std::vector<leveldb::mojom::KeyValuePtr>());
+    return;
+  }
+
   // TODO(michaeln): Import from sqlite localstorage db.
   database_->GetPrefixed(prefix_,
                          base::Bind(&LevelDBWrapperImpl::OnLoadComplete,

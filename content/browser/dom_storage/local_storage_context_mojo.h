@@ -43,6 +43,8 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   // Part of our asynchronous directory opening called from OpenLocalStorage().
   void OnDirectoryOpened(filesystem::mojom::FileError err);
   void OnDatabaseOpened(leveldb::mojom::DatabaseError status);
+  void OnGotDatabaseVersion(leveldb::mojom::DatabaseError status,
+                            const std::vector<uint8_t>& value);
 
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
