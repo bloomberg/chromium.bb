@@ -56,7 +56,7 @@ typedef SyncedProperty<AdditionGroup<gfx::Vector2dF>> SyncedElasticOverscroll;
 
 class CC_EXPORT LayerTreeImpl {
  public:
-  // This is the number of times a fixed point has to be hit contiuously by a
+  // This is the number of times a fixed point has to be hit continuously by a
   // layer to consider it as jittering.
   enum : int { kFixedPointHitsThreshold = 3 };
   LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl,

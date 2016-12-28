@@ -2420,14 +2420,13 @@ LayoutRect PaintLayer::logicalBoundingBox() const {
   return rect;
 }
 
-static inline LayoutRect flippedLogicalBoundingBox(
-    LayoutRect boundingBox,
-    LayoutObject* layoutObjects) {
+static inline LayoutRect flippedLogicalBoundingBox(LayoutRect boundingBox,
+                                                   LayoutObject* layoutObject) {
   LayoutRect result = boundingBox;
-  if (layoutObjects->isBox())
-    toLayoutBox(layoutObjects)->flipForWritingMode(result);
+  if (layoutObject->isBox())
+    toLayoutBox(layoutObject)->flipForWritingMode(result);
   else
-    layoutObjects->containingBlock()->flipForWritingMode(result);
+    layoutObject->containingBlock()->flipForWritingMode(result);
   return result;
 }
 
