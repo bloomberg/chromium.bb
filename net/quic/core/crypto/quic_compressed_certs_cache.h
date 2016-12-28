@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/mru_cache.h"
 #include "net/quic/core/crypto/proof_source.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_lru_cache.h"
 
 namespace net {
 
@@ -100,7 +100,7 @@ class QUIC_EXPORT_PRIVATE QuicCompressedCertsCache {
   // Key is a unit64_t hash for UncompressedCerts. Stored associated value is
   // CachedCerts which has both original uncompressed certs data and the
   // compressed representation of the certs.
-  base::MRUCache<uint64_t, CachedCerts> certs_cache_;
+  QuicLRUCache<uint64_t, CachedCerts> certs_cache_;
 };
 
 }  // namespace net
