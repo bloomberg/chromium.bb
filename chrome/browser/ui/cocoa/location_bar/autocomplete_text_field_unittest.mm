@@ -85,11 +85,11 @@ class AutocompleteTextFieldTest : public CocoaTest {
     AutocompleteTextFieldCell* cell = [field_ cell];
     [cell clearDecorations];
 
-    mock_left_decoration_.SetVisible(false);
-    [cell addLeftDecoration:&mock_left_decoration_];
+    mock_leading_decoration_.SetVisible(false);
+    [cell addLeadingDecoration:&mock_leading_decoration_];
 
-    mock_right_decoration_.SetVisible(false);
-    [cell addRightDecoration:&mock_right_decoration_];
+    mock_trailing_decoration_.SetVisible(false);
+    [cell addTrailingDecoration:&mock_trailing_decoration_];
 
     window_delegate_.reset(
         [[AutocompleteTextFieldWindowTestDelegate alloc] init]);
@@ -128,8 +128,8 @@ class AutocompleteTextFieldTest : public CocoaTest {
   }
 
   AutocompleteTextField* field_;
-  MockDecoration mock_left_decoration_;
-  MockDecoration mock_right_decoration_;
+  MockDecoration mock_leading_decoration_;
+  MockDecoration mock_trailing_decoration_;
   base::scoped_nsobject<AutocompleteTextFieldWindowTestDelegate>
       window_delegate_;
 };
@@ -296,14 +296,14 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBase) {
   const NSRect baseEditorFrame = EditorFrame();
 
   // A decoration should result in a strictly smaller editor frame.
-  mock_left_decoration_.SetVisible(true);
+  mock_leading_decoration_.SetVisible(true);
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_NSNE(baseEditorFrame, EditorFrame());
   EXPECT_TRUE(NSContainsRect(baseEditorFrame, EditorFrame()));
 
   // Removing the decoration and using -resetFieldEditorFrameIfNeeded
   // should result in the same frame as the standard focus machinery.
-  mock_left_decoration_.SetVisible(false);
+  mock_leading_decoration_.SetVisible(false);
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_NSEQ(baseEditorFrame, EditorFrame());
 }
@@ -316,10 +316,10 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorWithDecoration) {
   AutocompleteTextFieldCell* cell = [field_ cell];
 
   // Make sure decoration isn't already visible, then make it visible.
-  EXPECT_TRUE(NSIsEmptyRect([cell frameForDecoration:&mock_left_decoration_
+  EXPECT_TRUE(NSIsEmptyRect([cell frameForDecoration:&mock_leading_decoration_
                                              inFrame:[field_ bounds]]));
-  mock_left_decoration_.SetVisible(true);
-  EXPECT_FALSE(NSIsEmptyRect([cell frameForDecoration:&mock_left_decoration_
+  mock_leading_decoration_.SetVisible(true);
+  EXPECT_FALSE(NSIsEmptyRect([cell frameForDecoration:&mock_leading_decoration_
                                               inFrame:[field_ bounds]]));
 
   // Capture the editor frame resulting from the standard focus
@@ -329,8 +329,8 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorWithDecoration) {
   const NSRect baseEditorFrame = EditorFrame();
 
   // When the decoration is not visible the frame should be strictly larger.
-  mock_left_decoration_.SetVisible(false);
-  EXPECT_TRUE(NSIsEmptyRect([cell frameForDecoration:&mock_left_decoration_
+  mock_leading_decoration_.SetVisible(false);
+  EXPECT_TRUE(NSIsEmptyRect([cell frameForDecoration:&mock_leading_decoration_
                                              inFrame:[field_ bounds]]));
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_NSNE(baseEditorFrame, EditorFrame());
@@ -338,8 +338,8 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorWithDecoration) {
 
   // When the decoration is visible, -resetFieldEditorFrameIfNeeded
   // should result in the same frame as the standard focus machinery.
-  mock_left_decoration_.SetVisible(true);
-  EXPECT_FALSE(NSIsEmptyRect([cell frameForDecoration:&mock_left_decoration_
+  mock_leading_decoration_.SetVisible(true);
+  EXPECT_FALSE(NSIsEmptyRect([cell frameForDecoration:&mock_leading_decoration_
                                               inFrame:[field_ bounds]]));
 
   [field_ resetFieldEditorFrameIfNeeded];
@@ -368,7 +368,7 @@ TEST_F(AutocompleteTextFieldObserverTest, ResetFieldEditorContinuesEditing) {
   [editor didChangeText];
 
   // No messages to |field_observer_| when the frame actually changes.
-  mock_left_decoration_.SetVisible(true);
+  mock_leading_decoration_.SetVisible(true);
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_NSNE(baseEditorFrame, EditorFrame());
 }
@@ -378,13 +378,13 @@ TEST_F(AutocompleteTextFieldObserverTest, ResetFieldEditorContinuesEditing) {
 TEST_F(AutocompleteTextFieldTest, ClickRightDecorationPutsCaretRightmost) {
   // Decoration does not handle the mouse event, so the cell should
   // process it.  Called at least once.
-  EXPECT_CALL(mock_right_decoration_, AcceptsMousePress())
+  EXPECT_CALL(mock_trailing_decoration_, AcceptsMousePress())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(false));
 
   // Set the decoration before becoming responder.
   EXPECT_FALSE([field_ currentEditor]);
-  mock_right_decoration_.SetVisible(true);
+  mock_trailing_decoration_.SetVisible(true);
 
   // Make first responder should select all.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
@@ -396,7 +396,7 @@ TEST_F(AutocompleteTextFieldTest, ClickRightDecorationPutsCaretRightmost) {
   AutocompleteTextFieldCell* cell = [field_ cell];
   const NSRect bounds = [field_ bounds];
   const NSRect iconFrame =
-      [cell frameForDecoration:&mock_right_decoration_ inFrame:bounds];
+      [cell frameForDecoration:&mock_trailing_decoration_ inFrame:bounds];
   const NSPoint point = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
   NSEvent* downEvent = Event(field_, point, NSLeftMouseDown);
   NSEvent* upEvent = Event(field_, point, NSLeftMouseUp);
@@ -413,13 +413,13 @@ TEST_F(AutocompleteTextFieldTest, ClickRightDecorationPutsCaretRightmost) {
 TEST_F(AutocompleteTextFieldTest, ClickLeftDecorationPutsCaretLeftmost) {
   // Decoration does not handle the mouse event, so the cell should
   // process it.  Called at least once.
-  EXPECT_CALL(mock_left_decoration_, AcceptsMousePress())
+  EXPECT_CALL(mock_leading_decoration_, AcceptsMousePress())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(false));
 
   // Set the decoration before becoming responder.
   EXPECT_FALSE([field_ currentEditor]);
-  mock_left_decoration_.SetVisible(true);
+  mock_leading_decoration_.SetVisible(true);
 
   // Make first responder should select all.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
@@ -431,7 +431,7 @@ TEST_F(AutocompleteTextFieldTest, ClickLeftDecorationPutsCaretLeftmost) {
   AutocompleteTextFieldCell* cell = [field_ cell];
   const NSRect bounds = [field_ bounds];
   const NSRect iconFrame =
-      [cell frameForDecoration:&mock_left_decoration_ inFrame:bounds];
+      [cell frameForDecoration:&mock_leading_decoration_ inFrame:bounds];
   const NSPoint point = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
   NSEvent* downEvent = Event(field_, point, NSLeftMouseDown);
   NSEvent* upEvent = Event(field_, point, NSLeftMouseUp);
@@ -560,15 +560,15 @@ TEST_F(AutocompleteTextFieldTest, LeftDecorationMouseDown) {
   // At this point, not focussed.
   EXPECT_FALSE([field_ currentEditor]);
 
-  mock_left_decoration_.SetVisible(true);
-  EXPECT_CALL(mock_left_decoration_, AcceptsMousePress())
+  mock_leading_decoration_.SetVisible(true);
+  EXPECT_CALL(mock_leading_decoration_, AcceptsMousePress())
       .WillRepeatedly(Return(true));
 
   AutocompleteTextFieldCell* cell = [field_ cell];
   [cell updateMouseTrackingAndToolTipsInRect:[field_ frame] ofView:field_];
 
-  const NSRect iconFrame =
-      [cell frameForDecoration:&mock_left_decoration_ inFrame:[field_ bounds]];
+  const NSRect iconFrame = [cell frameForDecoration:&mock_leading_decoration_
+                                            inFrame:[field_ bounds]];
   const NSPoint location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
   NSEvent* downEvent = Event(field_, location, NSLeftMouseDown, 1);
   NSEvent* upEvent = Event(field_, location, NSLeftMouseUp, 1);
@@ -577,7 +577,7 @@ TEST_F(AutocompleteTextFieldTest, LeftDecorationMouseDown) {
   // mouse-up.
   [NSApp postEvent:upEvent atStart:YES];
 
-  EXPECT_CALL(mock_left_decoration_, OnMousePressed(_, _))
+  EXPECT_CALL(mock_leading_decoration_, OnMousePressed(_, _))
       .WillOnce(Return(true));
   [field_ mouseDown:downEvent];
 
@@ -591,7 +591,7 @@ TEST_F(AutocompleteTextFieldTest, LeftDecorationMouseDown) {
   downEvent = Event(field_, location, NSLeftMouseDown, 1);
   upEvent = Event(field_, location, NSLeftMouseUp, 1);
   [NSApp postEvent:upEvent atStart:YES];
-  EXPECT_CALL(mock_left_decoration_, OnMousePressed(_, _))
+  EXPECT_CALL(mock_leading_decoration_, OnMousePressed(_, _))
       .WillOnce(Return(true));
   [field_ mouseDown:downEvent];
 
@@ -609,8 +609,8 @@ TEST_F(AutocompleteTextFieldTest, RightDecorationMouseDown) {
   // At this point, not focussed.
   EXPECT_FALSE([field_ currentEditor]);
 
-  mock_right_decoration_.SetVisible(true);
-  EXPECT_CALL(mock_right_decoration_, AcceptsMousePress())
+  mock_trailing_decoration_.SetVisible(true);
+  EXPECT_CALL(mock_trailing_decoration_, AcceptsMousePress())
       .WillRepeatedly(Return(true));
 
   AutocompleteTextFieldCell* cell = [field_ cell];
@@ -618,7 +618,7 @@ TEST_F(AutocompleteTextFieldTest, RightDecorationMouseDown) {
 
   const NSRect bounds = [field_ bounds];
   const NSRect iconFrame =
-      [cell frameForDecoration:&mock_right_decoration_ inFrame:bounds];
+      [cell frameForDecoration:&mock_trailing_decoration_ inFrame:bounds];
   const NSPoint location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
   NSEvent* downEvent = Event(field_, location, NSLeftMouseDown, 1);
   NSEvent* upEvent = Event(field_, location, NSLeftMouseUp, 1);
@@ -627,7 +627,7 @@ TEST_F(AutocompleteTextFieldTest, RightDecorationMouseDown) {
   // mouse-up.
   [NSApp postEvent:upEvent atStart:YES];
 
-  EXPECT_CALL(mock_right_decoration_, OnMousePressed(_, _))
+  EXPECT_CALL(mock_trailing_decoration_, OnMousePressed(_, _))
       .WillOnce(Return(true));
   [field_ mouseDown:downEvent];
 }
@@ -648,27 +648,27 @@ TEST_F(AutocompleteTextFieldTest, DecorationMenu) {
 
   base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"Menu"]);
 
-  mock_left_decoration_.SetVisible(true);
-  mock_right_decoration_.SetVisible(true);
+  mock_leading_decoration_.SetVisible(true);
+  mock_trailing_decoration_.SetVisible(true);
 
   // The item with a menu returns it.
-  NSRect actionFrame = [cell frameForDecoration:&mock_right_decoration_
-                                        inFrame:bounds];
+  NSRect actionFrame =
+      [cell frameForDecoration:&mock_trailing_decoration_ inFrame:bounds];
   NSPoint location = NSMakePoint(NSMidX(actionFrame), NSMidY(actionFrame));
   NSEvent* event = Event(field_, location, NSRightMouseDown, 1);
 
   // Check that the decoration is called, and the field returns the
   // menu.
-  EXPECT_CALL(mock_right_decoration_, GetMenu())
+  EXPECT_CALL(mock_trailing_decoration_, GetMenu())
       .WillOnce(Return(menu.get()));
   NSMenu *decorationMenu = [field_ decorationMenuForEvent:event];
   EXPECT_EQ(decorationMenu, menu);
 
   // The item without a menu returns nil.
-  EXPECT_CALL(mock_left_decoration_, GetMenu())
+  EXPECT_CALL(mock_leading_decoration_, GetMenu())
       .WillOnce(Return(static_cast<NSMenu*>(nil)));
-  actionFrame = [cell frameForDecoration:&mock_left_decoration_
-                                 inFrame:bounds];
+  actionFrame =
+      [cell frameForDecoration:&mock_leading_decoration_ inFrame:bounds];
   location = NSMakePoint(NSMidX(actionFrame), NSMidY(actionFrame));
   event = Event(field_, location, NSRightMouseDown, 1);
   EXPECT_FALSE([field_ decorationMenuForEvent:event]);
@@ -796,13 +796,13 @@ TEST_F(AutocompleteTextFieldTest, HideFocusState) {
 TEST_F(AutocompleteTextFieldTest, UpdateTrackingAreas) {
   AutocompleteTextFieldCell* cell = [field_ cell];
 
-  mock_left_decoration_.SetVisible(true);
-  mock_right_decoration_.SetVisible(true);
+  mock_leading_decoration_.SetVisible(true);
+  mock_trailing_decoration_.SetVisible(true);
 
-  EXPECT_CALL(mock_left_decoration_, AcceptsMousePress())
+  EXPECT_CALL(mock_leading_decoration_, AcceptsMousePress())
       .WillOnce(Return(true))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(mock_right_decoration_, AcceptsMousePress())
+  EXPECT_CALL(mock_trailing_decoration_, AcceptsMousePress())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(false));
   [cell updateMouseTrackingAndToolTipsInRect:[field_ bounds] ofView:field_];
@@ -812,7 +812,7 @@ TEST_F(AutocompleteTextFieldTest, UpdateTrackingAreas) {
   [cell clearTrackingArea];
   EXPECT_TRUE([cell mouseTrackingDecorations].empty());
 
-  EXPECT_CALL(mock_right_decoration_, AcceptsMousePress())
+  EXPECT_CALL(mock_trailing_decoration_, AcceptsMousePress())
       .WillOnce(Return(true))
       .WillRepeatedly(Return(true));
 
@@ -831,14 +831,14 @@ TEST_F(AutocompleteTextFieldObserverTest,
   noninteractive_decoration.SetVisible(true);
   EXPECT_CALL(noninteractive_decoration, AcceptsMousePress())
       .WillRepeatedly(testing::Return(false));
-  [cell addLeftDecoration:&noninteractive_decoration];
+  [cell addLeadingDecoration:&noninteractive_decoration];
 
   // Set up an interactive decoration.
   MockDecoration interactive_decoration;
   EXPECT_CALL(interactive_decoration, AcceptsMousePress())
       .WillRepeatedly(testing::Return(true));
   interactive_decoration.SetVisible(true);
-  [cell addLeftDecoration:&interactive_decoration];
+  [cell addLeadingDecoration:&interactive_decoration];
   [cell updateMouseTrackingAndToolTipsInRect:[field_ frame] ofView:field_];
   EXPECT_CALL(interactive_decoration, OnMousePressed(_, _))
       .WillRepeatedly(testing::Return(true));

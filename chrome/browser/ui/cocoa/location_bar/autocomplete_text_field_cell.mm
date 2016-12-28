@@ -11,6 +11,7 @@
 #include "base/mac/mac_logging.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -32,10 +33,11 @@ const CGFloat kCornerRadius = 3.0;
 
 // How far to inset the left- and right-hand decorations from the field's
 // bounds.
-const CGFloat kRightDecorationXOffset = 2.0;
-const CGFloat kLeftDecorationXOffset = 1.0;
+const CGFloat kTrailingDecorationXPadding = 2.0;
+const CGFloat kLeadingDecorationXPadding = 1.0;
 
-// How much the text frame needs to overlap the rightmost left decoration.
+// How much the text frame needs to overlap the outermost leading
+// decoration.
 const CGFloat kTextFrameDecorationOverlap = 5.0;
 
 // How long to wait for mouse-up on the location icon before assuming
@@ -106,54 +108,64 @@ void CalculatePositionsHelper(
 }
 
 // Helper function for calculating placement of decorations w/in the cell.
-// |frame| is the cell's boundary rectangle, |remaining_frame| will get any
-// space left after decorations are laid out (for text).  |left_decorations| is
-// a set of decorations for the left-hand side of the cell, |right_decorations|
-// for the right-hand side.
+// |frame| is the cell's boundary rectangle, |text_frame| will get any
+// space left after decorations are laid out (for text).
+// |leading_decorations| is a set of decorations for the leading side of
+// the cell, |trailing_decorations| for the right-hand side.
 // |decorations| will contain the resulting visible decorations, and
 // |decoration_frames| will contain their frames in the same coordinates as
-// |frame|.  Decorations will be ordered left to right. As a convenience returns
-// the index of the first right-hand decoration.
+// |frame|.  Decorations will be ordered left to right in LTR, and right to
+// left.
+// As a convenience, returns the index of the first right-hand decoration.
 size_t CalculatePositionsInFrame(
-    NSRect frame,
-    const std::vector<LocationBarDecoration*>& left_decorations,
-    const std::vector<LocationBarDecoration*>& right_decorations,
+    const NSRect frame,
+    const std::vector<LocationBarDecoration*>& leading_decorations,
+    const std::vector<LocationBarDecoration*>& trailing_decorations,
     std::vector<LocationBarDecoration*>* decorations,
     std::vector<NSRect>* decoration_frames,
-    NSRect* remaining_frame) {
+    NSRect* text_frame) {
   decorations->clear();
   decoration_frames->clear();
+  *text_frame = frame;
 
-  // Layout |left_decorations| against the LHS.
-  CalculatePositionsHelper(frame, left_decorations, NSMinXEdge,
-                           kLeftDecorationXOffset, decorations,
-                           decoration_frames, &frame);
+  // Layout |leading_decorations| against the leading side.
+  CalculatePositionsHelper(*text_frame, leading_decorations, NSMinXEdge,
+                           kLeadingDecorationXPadding, decorations,
+                           decoration_frames, text_frame);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
-  // Capture the number of visible left-hand decorations.
-  const size_t left_count = decorations->size();
+  // Capture the number of visible leading decorations.
+  size_t leading_count = decorations->size();
 
   // Extend the text frame so that it slightly overlaps the rightmost left
   // decoration.
-  if (left_count) {
-    frame.origin.x -= kTextFrameDecorationOverlap;
-    frame.size.width += kTextFrameDecorationOverlap;
+  if (leading_count) {
+    text_frame->origin.x -= kTextFrameDecorationOverlap;
+    text_frame->size.width += kTextFrameDecorationOverlap;
   }
 
-  // Layout |right_decorations| against the RHS.
-  CalculatePositionsHelper(frame, right_decorations, NSMaxXEdge,
-                           kRightDecorationXOffset, decorations,
-                           decoration_frames, &frame);
+  // Layout |trailing_decorations| against the trailing side.
+  CalculatePositionsHelper(*text_frame, trailing_decorations, NSMaxXEdge,
+                           kTrailingDecorationXPadding, decorations,
+                           decoration_frames, text_frame);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
   // Reverse the right-hand decorations so that overall everything is
   // sorted left to right.
-  std::reverse(decorations->begin() + left_count, decorations->end());
-  std::reverse(decoration_frames->begin() + left_count,
+  std::reverse(decorations->begin() + leading_count, decorations->end());
+  std::reverse(decoration_frames->begin() + leading_count,
                decoration_frames->end());
 
-  *remaining_frame = frame;
-  return left_count;
+  // Flip all frames in RTL.
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+    for (NSRect& rect : *decoration_frames)
+      rect.origin.x = NSWidth(frame) - NSWidth(rect) - NSMinX(rect);
+    text_frame->origin.x =
+        NSWidth(frame) - NSWidth(*text_frame) - NSMinX(*text_frame);
+    leading_count = decorations->size() - leading_count;
+  }
+
+  return leading_count;
 }
 
 }  // namespace
@@ -191,24 +203,24 @@ size_t CalculatePositionsInFrame(
 }
 
 - (void)clearDecorations {
-  leftDecorations_.clear();
-  rightDecorations_.clear();
+  leadingDecorations_.clear();
+  trailingDecorations_.clear();
   [self clearTrackingArea];
 }
 
-- (void)addLeftDecoration:(LocationBarDecoration*)decoration {
-  leftDecorations_.push_back(decoration);
+- (void)addLeadingDecoration:(LocationBarDecoration*)decoration {
+  leadingDecorations_.push_back(decoration);
 }
 
-- (void)addRightDecoration:(LocationBarDecoration*)decoration {
-  rightDecorations_.push_back(decoration);
+- (void)addTrailingDecoration:(LocationBarDecoration*)decoration {
+  trailingDecorations_.push_back(decoration);
 }
 
 - (CGFloat)availableWidthInFrame:(const NSRect)frame {
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(frame, leftDecorations_, rightDecorations_,
+  CalculatePositionsInFrame(frame, leadingDecorations_, trailingDecorations_,
                             &decorations, &decorationFrames, &textFrame);
 
   return NSWidth(textFrame);
@@ -224,8 +236,9 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &textFrame);
+  CalculatePositionsInFrame(cellFrame, leadingDecorations_,
+                            trailingDecorations_, &decorations,
+                            &decorationFrames, &textFrame);
 
   // Find our decoration and return the corresponding frame.
   std::vector<LocationBarDecoration*>::const_iterator iter =
@@ -247,9 +260,12 @@ size_t CalculatePositionsInFrame(
                       isLeftDecoration:(BOOL*)isLeftDecoration {
   NSRect decorationFrame =
       [self frameForDecoration:decoration inFrame:cellFrame];
+  std::vector<LocationBarDecoration*>& left_decorations =
+      cocoa_l10n_util::ShouldDoExperimentalRTLLayout() ? trailingDecorations_
+                                                       : leadingDecorations_;
   *isLeftDecoration =
-      std::find(leftDecorations_.begin(), leftDecorations_.end(), decoration) !=
-      leftDecorations_.end();
+      std::find(left_decorations.begin(), left_decorations.end(), decoration) !=
+      left_decorations.end();
   return decoration->GetBackgroundFrame(decorationFrame);
 }
 
@@ -259,8 +275,9 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame = [super textFrameForFrame:cellFrame];
-  CalculatePositionsInFrame(textFrame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &textFrame);
+  CalculatePositionsInFrame(textFrame, leadingDecorations_,
+                            trailingDecorations_, &decorations,
+                            &decorationFrames, &textFrame);
 
   // The text needs to be slightly higher than its default position to match the
   // Material Design spec. It turns out this adjustment is equal to the single
@@ -282,9 +299,9 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  size_t left_count =
-      CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                                &decorations, &decorationFrames, &textFrame);
+  size_t left_count = CalculatePositionsInFrame(
+      cellFrame, leadingDecorations_, trailingDecorations_, &decorations,
+      &decorationFrames, &textFrame);
 
   // Determine the left-most extent for the i-beam cursor.
   CGFloat minX = NSMinX(textFrame);
@@ -383,8 +400,9 @@ size_t CalculatePositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect workingFrame;
 
-  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &workingFrame);
+  CalculatePositionsInFrame(cellFrame, leadingDecorations_,
+                            trailingDecorations_, &decorations,
+                            &decorationFrames, &workingFrame);
 
   // Draw the decorations. Do this after drawing the interior because the
   // field editor's background rect overlaps the right edge of the security
@@ -403,20 +421,13 @@ size_t CalculatePositionsInFrame(
   const NSPoint locationInView =
       [controlView convertPoint:location fromView:nil];
 
-  // If we have decorations, the drop can't occur at their horizontal padding.
-  if (!leftDecorations_.empty() && locationInView.x < kLeftDecorationXOffset)
-    return false;
-
-  if (!rightDecorations_.empty() &&
-      locationInView.x > NSWidth(cellFrame) - kRightDecorationXOffset) {
-    return false;
-  }
-
-  LocationBarDecoration* decoration =
-      [self decorationForLocationInWindow:location
-                                   inRect:cellFrame
-                                   ofView:controlView];
-  return !decoration;
+  NSRect textFrame;
+  std::vector<LocationBarDecoration*> decorations;
+  std::vector<NSRect> decorationFrames;
+  CalculatePositionsInFrame(cellFrame, leadingDecorations_,
+                            trailingDecorations_, &decorations,
+                            &decorationFrames, &textFrame);
+  return NSPointInRect(locationInView, textFrame);
 }
 
 - (LocationBarDecoration*)decorationForEvent:(NSEvent*)theEvent
@@ -439,8 +450,9 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &textFrame);
+  CalculatePositionsInFrame(cellFrame, leadingDecorations_,
+                            trailingDecorations_, &decorations,
+                            &decorationFrames, &textFrame);
 
   for (size_t i = 0; i < decorations.size(); ++i) {
     if (NSMouseInRect(locationInView, decorationFrames[i], flipped))
@@ -670,8 +682,9 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &textFrame);
+  CalculatePositionsInFrame(cellFrame, leadingDecorations_,
+                            trailingDecorations_, &decorations,
+                            &decorationFrames, &textFrame);
   [self clearTrackingArea];
 
   for (size_t i = 0; i < decorations.size(); ++i) {

@@ -410,32 +410,32 @@ void LocationBarViewMac::OnDecorationsChanged() {
 void LocationBarViewMac::Layout() {
   AutocompleteTextFieldCell* cell = [field_ cell];
 
-  // Reset the left-hand decorations.
+  // Reset the leading decorations.
   // TODO(shess): Shortly, this code will live somewhere else, like in
   // the constructor.  I am still wrestling with how best to deal with
   // right-hand decorations, which are not a static set.
   [cell clearDecorations];
-  [cell addLeftDecoration:location_icon_decoration_.get()];
-  [cell addLeftDecoration:selected_keyword_decoration_.get()];
-  [cell addLeftDecoration:security_state_bubble_decoration_.get()];
-  [cell addRightDecoration:star_decoration_.get()];
-  [cell addRightDecoration:translate_decoration_.get()];
-  [cell addRightDecoration:zoom_decoration_.get()];
-  [cell addRightDecoration:save_credit_card_decoration_.get()];
-  [cell addRightDecoration:manage_passwords_decoration_.get()];
+  [cell addLeadingDecoration:location_icon_decoration_.get()];
+  [cell addLeadingDecoration:selected_keyword_decoration_.get()];
+  [cell addLeadingDecoration:security_state_bubble_decoration_.get()];
+  [cell addTrailingDecoration:star_decoration_.get()];
+  [cell addTrailingDecoration:translate_decoration_.get()];
+  [cell addTrailingDecoration:zoom_decoration_.get()];
+  [cell addTrailingDecoration:save_credit_card_decoration_.get()];
+  [cell addTrailingDecoration:manage_passwords_decoration_.get()];
 
-  // Note that display order is right to left.
+  // Note that display order is front to back.
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
-    [cell addRightDecoration:page_action_decorations_[i]];
+    [cell addTrailingDecoration:page_action_decorations_[i]];
   }
 
   for (ScopedVector<ContentSettingDecoration>::iterator i =
        content_setting_decorations_.begin();
        i != content_setting_decorations_.end(); ++i) {
-    [cell addRightDecoration:*i];
+    [cell addTrailingDecoration:*i];
   }
 
-  [cell addRightDecoration:keyword_hint_decoration_.get()];
+  [cell addTrailingDecoration:keyword_hint_decoration_.get()];
 
   // By default only the location icon is visible.
   location_icon_decoration_->SetVisible(true);

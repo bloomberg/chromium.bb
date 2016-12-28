@@ -19,10 +19,10 @@ class LocationBarDecoration;
 // a button-like token on the left-hand side).
 @interface AutocompleteTextFieldCell : StyledTextFieldCell {
  @private
-  // Decorations which live to the left and right of the text, ordered
+  // Decorations which live before and after the text, ordered
   // from outside in.  Decorations are owned by |LocationBarViewMac|.
-  std::vector<LocationBarDecoration*> leftDecorations_;
-  std::vector<LocationBarDecoration*> rightDecorations_;
+  std::vector<LocationBarDecoration*> leadingDecorations_;
+  std::vector<LocationBarDecoration*> trailingDecorations_;
 
   // The decoration associated to the current dragging session.
   LocationBarDecoration* draggedDecoration_;
@@ -56,13 +56,13 @@ class LocationBarDecoration;
 // Clear |leftDecorations_| and |rightDecorations_|.
 - (void)clearDecorations;
 
-// Add a new left-side decoration to the right of the existing
-// left-side decorations.
-- (void)addLeftDecoration:(LocationBarDecoration*)decoration;
+// Add a new leading decoration after the existing
+// leading decorations.
+- (void)addLeadingDecoration:(LocationBarDecoration*)decoration;
 
-// Add a new right-side decoration to the left of the existing
-// right-side decorations.
-- (void)addRightDecoration:(LocationBarDecoration*)decoration;
+// Add a new trailing decoration before the existing
+// trailing decorations.
+- (void)addTrailingDecoration:(LocationBarDecoration*)decoration;
 
 // The width available after accounting for decorations.
 - (CGFloat)availableWidthInFrame:(const NSRect)frame;

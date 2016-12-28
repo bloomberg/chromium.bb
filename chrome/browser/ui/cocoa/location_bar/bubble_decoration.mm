@@ -83,7 +83,7 @@ NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
     image_rect.size = image_size;
     if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
       image_rect.origin.x =
-          NSMaxX(frame) - NSWidth(image_rect) - NSMinX(image_rect);
+          NSMaxX(frame) - NSWidth(image_rect) - kLeftSidePadding;
     }
   }
   return image_rect;
