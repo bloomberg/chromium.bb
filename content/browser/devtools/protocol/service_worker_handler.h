@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/service_worker.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
@@ -25,13 +26,14 @@ class ServiceWorkerContextWrapper;
 
 namespace protocol {
 
-class ServiceWorkerHandler : public ServiceWorker::Backend {
+class ServiceWorkerHandler : public DevToolsDomainHandler,
+                             public ServiceWorker::Backend {
  public:
   ServiceWorkerHandler();
   ~ServiceWorkerHandler() override;
 
-  void Wire(UberDispatcher*);
-  void SetRenderFrameHost(RenderFrameHostImpl* render_frame_host);
+  void Wire(UberDispatcher* dispatcher) override;
+  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
 
   Response Enable() override;
   Response Disable() override;

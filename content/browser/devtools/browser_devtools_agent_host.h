@@ -26,8 +26,11 @@ class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
   ~BrowserDevToolsAgentHost() override;
 
   // DevToolsAgentHostImpl implementation.
-  void Attach() override;
-  void Detach() override;
+  void AttachSession(DevToolsSession* session) override;
+  void DetachSession(int session_id) override;
+  bool DispatchProtocolMessage(
+      DevToolsSession* session,
+      const std::string& message) override;
 
   // DevToolsAgentHost implementation.
   std::string GetType() override;
@@ -36,7 +39,6 @@ class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
   bool Activate() override;
   void Reload() override;
   bool Close() override;
-  bool DispatchProtocolMessage(const std::string& message) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> tethering_task_runner_;
   CreateServerSocketCallback socket_callback_;

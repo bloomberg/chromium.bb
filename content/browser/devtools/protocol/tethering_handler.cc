@@ -320,7 +320,8 @@ TetheringHandler::TetheringImpl* TetheringHandler::impl_ = nullptr;
 TetheringHandler::TetheringHandler(
     const CreateServerSocketCallback& socket_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : socket_callback_(socket_callback),
+    : DevToolsDomainHandler(Tethering::Metainfo::domainName),
+      socket_callback_(socket_callback),
       task_runner_(task_runner),
       is_active_(false),
       weak_factory_(this) {
@@ -336,10 +337,6 @@ TetheringHandler::~TetheringHandler() {
 void TetheringHandler::Wire(UberDispatcher* dispatcher) {
   frontend_.reset(new Tethering::Frontend(dispatcher->channel()));
   Tethering::Dispatcher::wire(dispatcher, this);
-}
-
-Response TetheringHandler::Disable() {
-  return Response::OK();
 }
 
 void TetheringHandler::Accepted(uint16_t port, const std::string& name) {

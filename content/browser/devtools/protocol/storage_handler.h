@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_STORAGE_HANDLER_H_
 
 #include "base/macros.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/storage.h"
 
 namespace content {
@@ -14,14 +15,13 @@ class RenderFrameHostImpl;
 
 namespace protocol {
 
-class StorageHandler : public Storage::Backend {
+class StorageHandler : public DevToolsDomainHandler,
+                       public Storage::Backend {
  public:
   StorageHandler();
   ~StorageHandler() override;
 
-  void Wire(UberDispatcher*);
-  void SetRenderFrameHost(RenderFrameHostImpl* host);
-  Response Disable() override;
+  void Wire(UberDispatcher* dispatcher) override;
 
   Response ClearDataForOrigin(
       const std::string& origin,

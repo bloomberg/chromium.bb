@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/output/compositor_frame_metadata.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -21,6 +22,7 @@ class SkBitmap;
 
 namespace content {
 
+class DevToolsSession;
 class NavigationHandle;
 class PageNavigationThrottle;
 class RenderFrameHostImpl;
@@ -30,14 +32,17 @@ namespace protocol {
 
 class ColorPicker;
 
-class PageHandler : public Page::Backend,
+class PageHandler : public DevToolsDomainHandler,
+                    public Page::Backend,
                     public NotificationObserver {
  public:
   PageHandler();
   ~PageHandler() override;
 
-  void Wire(UberDispatcher*);
-  void SetRenderFrameHost(RenderFrameHostImpl* host);
+  static PageHandler* FromSession(DevToolsSession* session);
+
+  void Wire(UberDispatcher* dispatcher) override;
+  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
   void OnSwapCompositorFrame(cc::CompositorFrameMetadata frame_metadata);
   void OnSynchronousSwapCompositorFrame(
       cc::CompositorFrameMetadata frame_metadata);

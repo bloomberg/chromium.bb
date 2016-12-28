@@ -12,7 +12,9 @@
 namespace content {
 namespace protocol {
 
-DOMHandler::DOMHandler() : host_(nullptr) {
+DOMHandler::DOMHandler()
+    : DevToolsDomainHandler(DOM::Metainfo::domainName),
+      host_(nullptr) {
 }
 
 DOMHandler::~DOMHandler() {

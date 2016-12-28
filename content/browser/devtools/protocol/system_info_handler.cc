@@ -174,7 +174,8 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
   base::WeakPtrFactory<SystemInfoHandlerGpuObserver> weak_factory_;
 };
 
-SystemInfoHandler::SystemInfoHandler() {
+SystemInfoHandler::SystemInfoHandler()
+    : DevToolsDomainHandler(SystemInfo::Metainfo::domainName) {
 }
 
 SystemInfoHandler::~SystemInfoHandler() {
@@ -182,10 +183,6 @@ SystemInfoHandler::~SystemInfoHandler() {
 
 void SystemInfoHandler::Wire(UberDispatcher* dispatcher) {
   SystemInfo::Dispatcher::wire(dispatcher, this);
-}
-
-Response SystemInfoHandler::Disable() {
-  return Response::OK();
 }
 
 void SystemInfoHandler::GetInfo(

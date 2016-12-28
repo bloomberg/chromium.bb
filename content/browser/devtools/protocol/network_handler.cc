@@ -9,6 +9,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -267,10 +268,18 @@ class GetAllCookiesCommand
 }  // namespace
 
 NetworkHandler::NetworkHandler()
-    : host_(nullptr), enabled_(false) {
+    : DevToolsDomainHandler(Network::Metainfo::domainName),
+      host_(nullptr),
+      enabled_(false) {
 }
 
 NetworkHandler::~NetworkHandler() {
+}
+
+// static
+NetworkHandler* NetworkHandler::FromSession(DevToolsSession* session) {
+  return static_cast<NetworkHandler*>(
+      session->GetHandlerByName(Network::Metainfo::domainName));
 }
 
 void NetworkHandler::Wire(UberDispatcher* dispatcher) {

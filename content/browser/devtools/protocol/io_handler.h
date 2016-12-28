@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/io.h"
 
 namespace base {
@@ -18,13 +19,13 @@ class DevToolsIOContext;
 
 namespace protocol {
 
-class IOHandler : public IO::Backend {
+class IOHandler : public DevToolsDomainHandler,
+                  public IO::Backend {
  public:
   explicit IOHandler(DevToolsIOContext* io_context);
   ~IOHandler() override;
 
-  void Wire(UberDispatcher*);
-  Response Disable() override;
+  void Wire(UberDispatcher* dispatcher) override;
 
   // Protocol methods.
   void Read(

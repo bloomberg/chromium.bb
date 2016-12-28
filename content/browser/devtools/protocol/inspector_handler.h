@@ -6,21 +6,26 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_INSPECTOR_HANDLER_H_
 
 #include "base/macros.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/inspector.h"
 
 namespace content {
 
+class DevToolsSession;
 class RenderFrameHostImpl;
 
 namespace protocol {
 
-class InspectorHandler : public Inspector::Backend {
+class InspectorHandler : public DevToolsDomainHandler,
+                         public Inspector::Backend {
  public:
   InspectorHandler();
   ~InspectorHandler() override;
 
-  void Wire(UberDispatcher*);
-  void SetRenderFrameHost(RenderFrameHostImpl* host);
+  static InspectorHandler* FromSession(DevToolsSession* session);
+
+  void Wire(UberDispatcher* dispatcher) override;
+  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
 
   void TargetCrashed();
   void TargetDetached(const std::string& reason);

@@ -30,21 +30,14 @@ static const char kAll[] = "all";
 }
 
 StorageHandler::StorageHandler()
-    : host_(nullptr) {
+    : DevToolsDomainHandler(Storage::Metainfo::domainName),
+      host_(nullptr) {
 }
 
 StorageHandler::~StorageHandler() = default;
 
 void StorageHandler::Wire(UberDispatcher* dispatcher) {
   Storage::Dispatcher::wire(dispatcher, this);
-}
-
-void StorageHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
-  host_ = host;
-}
-
-Response StorageHandler::Disable() {
-  return Response::OK();
 }
 
 Response StorageHandler::ClearDataForOrigin(

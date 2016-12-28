@@ -38,22 +38,6 @@ class NavigationHandle;
 class NavigationThrottle;
 class RenderFrameHostImpl;
 
-namespace protocol {
-class DOMHandler;
-class EmulationHandler;
-class InputHandler;
-class InspectorHandler;
-class IOHandler;
-class NetworkHandler;
-class PageHandler;
-class SchemaHandler;
-class SecurityHandler;
-class ServiceWorkerHandler;
-class StorageHandler;
-class TargetHandler;
-class TracingHandler;
-}  // namespace protocol
-
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public DevToolsAgentHostImpl,
       private WebContentsObserver {
@@ -97,8 +81,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   bool Close() override;
   base::TimeTicks GetLastActivityTime() override;
 
-  bool DispatchProtocolMessage(const std::string& message) override;
-
  private:
   friend class DevToolsAgentHost;
   explicit RenderFrameDevToolsAgentHost(RenderFrameHostImpl*);
@@ -111,9 +93,12 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       RenderFrameHost* host);
 
   // DevToolsAgentHostImpl overrides.
-  void Attach() override;
-  void Detach() override;
-  void InspectElement(int x, int y) override;
+  void AttachSession(DevToolsSession* session) override;
+  void DetachSession(int session_id) override;
+  void InspectElement(DevToolsSession* session, int x, int y) override;
+  bool DispatchProtocolMessage(
+      DevToolsSession* session,
+      const std::string& message) override;
 
   // WebContentsObserver overrides.
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
@@ -180,19 +165,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // Stores per-host state between DisconnectWebContents and ConnectWebContents.
   std::unique_ptr<FrameHostHolder> disconnected_;
 
-  std::unique_ptr<protocol::DOMHandler> dom_handler_;
-  std::unique_ptr<protocol::InputHandler> input_handler_;
-  std::unique_ptr<protocol::InspectorHandler> inspector_handler_;
-  std::unique_ptr<protocol::IOHandler> io_handler_;
-  std::unique_ptr<protocol::NetworkHandler> network_handler_;
-  std::unique_ptr<protocol::PageHandler> page_handler_;
-  std::unique_ptr<protocol::SchemaHandler> schema_handler_;
-  std::unique_ptr<protocol::SecurityHandler> security_handler_;
-  std::unique_ptr<protocol::ServiceWorkerHandler> service_worker_handler_;
-  std::unique_ptr<protocol::StorageHandler> storage_handler_;
-  std::unique_ptr<protocol::TargetHandler> target_handler_;
-  std::unique_ptr<protocol::TracingHandler> tracing_handler_;
-  std::unique_ptr<protocol::EmulationHandler> emulation_handler_;
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;

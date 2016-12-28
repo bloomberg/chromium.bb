@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame_metadata.h"
+#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
@@ -180,13 +181,20 @@ void SendSynthesizeScrollGestureResponse(
 }  // namespace
 
 InputHandler::InputHandler()
-    : host_(NULL),
+    : DevToolsDomainHandler(Input::Metainfo::domainName),
+      host_(nullptr),
       page_scale_factor_(1.0),
       last_id_(0),
       weak_factory_(this) {
 }
 
 InputHandler::~InputHandler() {
+}
+
+// static
+InputHandler* InputHandler::FromSession(DevToolsSession* session) {
+  return static_cast<InputHandler*>(
+      session->GetHandlerByName(Input::Metainfo::domainName));
 }
 
 void InputHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {

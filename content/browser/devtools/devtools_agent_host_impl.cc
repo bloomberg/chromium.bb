@@ -106,8 +106,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
 
 DevToolsAgentHostImpl::DevToolsAgentHostImpl(const std::string& id)
     : id_(id),
-      last_session_id_(0),
-      client_(NULL) {
+      last_session_id_(0) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -137,68 +136,64 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::Forward(
   return new ForwardingAgentHost(id, std::move(delegate));
 }
 
-bool DevToolsAgentHostImpl::InnerAttach(DevToolsAgentHostClient* client,
-                                        bool force) {
-  if (client_ && !force)
+bool DevToolsAgentHostImpl::InnerAttachClient(DevToolsAgentHostClient* client,
+                                              bool force) {
+  if (session_ && !force)
     return false;
 
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
-  if (client_) {
-    client_->AgentHostClosed(this, true);
-    InnerDetach();
-  }
-  client_ = client;
-  session_.reset(new DevToolsSession(this, ++last_session_id_));
-  Attach();
+  if (session_)
+    ForceDetach(true);
+  session_.reset(new DevToolsSession(this, client, ++last_session_id_));
+  AttachSession(session_.get());
   NotifyAttached();
   return true;
 }
 
 bool DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
-  return InnerAttach(client, false);
+  return InnerAttachClient(client, false);
 }
 
 void DevToolsAgentHostImpl::ForceAttachClient(DevToolsAgentHostClient* client) {
-  InnerAttach(client, true);
+  InnerAttachClient(client, true);
 }
 
 bool DevToolsAgentHostImpl::DetachClient(DevToolsAgentHostClient* client) {
-  if (!client_ || client_ != client)
+  if (!session_ || session_->client() != client)
     return false;
 
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
-  client_ = NULL;
-  InnerDetach();
+  InnerDetachClient();
   return true;
 }
 
 bool DevToolsAgentHostImpl::DispatchProtocolMessage(
     DevToolsAgentHostClient* client,
     const std::string& message) {
-  if (!client_ || client_ != client)
+  if (!session_ || session_->client() != client)
     return false;
-  return DispatchProtocolMessage(message);
+  return DispatchProtocolMessage(session_.get(), message);
 }
 
-void DevToolsAgentHostImpl::InnerDetach() {
-  session_->ResetDispatcher();
-  Detach();
-  io_context_.DiscardAllStreams();
+void DevToolsAgentHostImpl::InnerDetachClient() {
+  int session_id = session_->session_id();
   session_.reset();
+  DetachSession(session_id);
+  io_context_.DiscardAllStreams();
   NotifyDetached();
 }
 
 bool DevToolsAgentHostImpl::IsAttached() {
-  return !!client_;
+  return !!session_;
 }
 
 void DevToolsAgentHostImpl::InspectElement(
     DevToolsAgentHostClient* client,
     int x,
     int y) {
- if (!client_ || client_ != client)
+ if (!session_ || session_->client() != client)
    return;
- InspectElement(x, y);
+ InspectElement(session_.get(), x, y);
 }
 
 std::string DevToolsAgentHostImpl::GetId() {
@@ -248,29 +243,28 @@ bool DevToolsAgentHostImpl::Inspect() {
   return false;
 }
 
-void DevToolsAgentHostImpl::HostClosed() {
-  if (!client_)
+void DevToolsAgentHostImpl::ForceDetach(bool replaced) {
+  if (!session_)
     return;
-
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   // Clear |client_| before notifying it.
-  DevToolsAgentHostClient* client = client_;
-  client_ = NULL;
-  client->AgentHostClosed(this, false);
-  InnerDetach();
+  DevToolsAgentHostClient* client = session_->client();
+  InnerDetachClient();
+  client->AgentHostClosed(this, replaced);
 }
 
-void DevToolsAgentHostImpl::InspectElement(int x, int y) {
+void DevToolsAgentHostImpl::InspectElement(
+    DevToolsSession* session,
+    int x,
+    int y) {
 }
 
 void DevToolsAgentHostImpl::SendMessageToClient(int session_id,
                                                 const std::string& message) {
-  if (!client_)
-    return;
   // Filter any messages from previous sessions.
   if (!session_ || session_id != session_->session_id())
     return;
-  client_->DispatchProtocolMessage(this, message);
+  session_->client()->DispatchProtocolMessage(this, message);
 }
 
 // static
@@ -283,14 +277,7 @@ void DevToolsAgentHost::DetachAllClients() {
   Instances copy = g_instances.Get();
   for (Instances::iterator it(copy.begin()); it != copy.end(); ++it) {
     DevToolsAgentHostImpl* agent_host = it->second;
-    if (agent_host->client_) {
-      scoped_refptr<DevToolsAgentHostImpl> protect(agent_host);
-      // Clear |client_| before notifying it.
-      DevToolsAgentHostClient* client = agent_host->client_;
-      agent_host->client_ = NULL;
-      client->AgentHostClosed(agent_host, true);
-      agent_host->InnerDetach();
-    }
+    agent_host->ForceDetach(true);
   }
 }
 

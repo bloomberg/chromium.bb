@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DOM_HANDLER_H_
 
 #include "base/macros.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/dom.h"
 
 namespace content {
@@ -14,13 +15,14 @@ class RenderFrameHostImpl;
 
 namespace protocol {
 
-class DOMHandler : public DOM::Backend {
+class DOMHandler : public DevToolsDomainHandler,
+                   public DOM::Backend {
  public:
   DOMHandler();
   ~DOMHandler() override;
 
-  void Wire(UberDispatcher*);
-  void SetRenderFrameHost(RenderFrameHostImpl* host);
+  void Wire(UberDispatcher* dispatcher) override;
+  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
   Response Disable() override;
 
   Response SetFileInputFiles(

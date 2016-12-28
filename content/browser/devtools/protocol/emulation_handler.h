@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_EMULATION_HANDLER_H_
 
 #include "base/macros.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/emulation.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 
@@ -16,13 +17,14 @@ class WebContentsImpl;
 
 namespace protocol {
 
-class EmulationHandler : public Emulation::Backend {
+class EmulationHandler : public DevToolsDomainHandler,
+                         public Emulation::Backend {
  public:
   EmulationHandler();
   ~EmulationHandler() override;
 
-  void SetRenderFrameHost(RenderFrameHostImpl* host);
-  void Wire(UberDispatcher*);
+  void Wire(UberDispatcher* dispatcher) override;
+  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
   Response Disable() override;
 
   Response SetGeolocationOverride(Maybe<double> latitude,

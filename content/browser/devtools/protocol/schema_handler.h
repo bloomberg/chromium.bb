@@ -6,18 +6,19 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_SCHEMA_HANDLER_H_
 
 #include "base/macros.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/schema.h"
 
 namespace content {
 namespace protocol {
 
-class SchemaHandler : public Schema::Backend {
+class SchemaHandler : public DevToolsDomainHandler,
+                      public Schema::Backend {
  public:
   SchemaHandler();
   ~SchemaHandler() override;
 
-  void Wire(UberDispatcher*);
-  Response Disable() override;
+  void Wire(UberDispatcher* dispatcher) override;
 
   Response GetDomains(
       std::unique_ptr<protocol::Array<Schema::Domain>>* domains) override;

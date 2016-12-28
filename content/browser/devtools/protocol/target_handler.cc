@@ -5,6 +5,7 @@
 #include "content/browser/devtools/protocol/target_handler.h"
 
 #include "content/browser/devtools/devtools_manager.h"
+#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -93,7 +94,8 @@ std::unique_ptr<Target::TargetInfo> CreateInfo(DevToolsAgentHost* host) {
 }  // namespace
 
 TargetHandler::TargetHandler()
-    : discover_(false),
+    : DevToolsDomainHandler(Target::Metainfo::domainName),
+      discover_(false),
       auto_attach_(false),
       wait_for_debugger_on_start_(false),
       attach_to_frames_(false),
@@ -101,6 +103,12 @@ TargetHandler::TargetHandler()
 }
 
 TargetHandler::~TargetHandler() {
+}
+
+// static
+TargetHandler* TargetHandler::FromSession(DevToolsSession* session) {
+  return static_cast<TargetHandler*>(
+      session->GetHandlerByName(Target::Metainfo::domainName));
 }
 
 void TargetHandler::Wire(UberDispatcher* dispatcher) {

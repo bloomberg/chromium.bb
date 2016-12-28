@@ -23,12 +23,6 @@ class DevToolsSession;
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
  public:
-  // Informs the hosted agent that a client host has attached.
-  virtual void Attach() = 0;
-
-  // Informs the hosted agent that a client host has detached.
-  virtual void Detach() = 0;
-
   // DevToolsAgentHost implementation.
   bool AttachClient(DevToolsAgentHostClient* client) override;
   void ForceAttachClient(DevToolsAgentHostClient* client) override;
@@ -57,28 +51,31 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   static bool ShouldForceCreation();
 
-  virtual bool DispatchProtocolMessage(const std::string& message) = 0;
-  virtual void InspectElement(int x, int y);
+  virtual void AttachSession(DevToolsSession* session) = 0;
+  virtual void DetachSession(int session_id) = 0;
+  virtual bool DispatchProtocolMessage(
+      DevToolsSession* session,
+      const std::string& message) = 0;
+  virtual void InspectElement(DevToolsSession* session, int x, int y);
 
   void NotifyCreated();
-  void HostClosed();
+  void ForceDetach(bool replaced);
   DevToolsIOContext* GetIOContext() { return &io_context_; }
 
+  // TODO(dgozman): remove this accessor.
   DevToolsSession* session() { return session_.get(); }
 
  private:
   friend class DevToolsAgentHost; // for static methods
-  bool InnerAttach(DevToolsAgentHostClient* client, bool force);
-  void InnerDetach();
+  bool InnerAttachClient(DevToolsAgentHostClient* client, bool force);
+  void InnerDetachClient();
   void NotifyAttached();
   void NotifyDetached();
   void NotifyDestroyed();
 
   const std::string id_;
-  int session_id_;
   int last_session_id_;
   std::unique_ptr<DevToolsSession> session_;
-  DevToolsAgentHostClient* client_;
   DevToolsIOContext io_context_;
   static int s_attached_count_;
   static int s_force_creation_count_;

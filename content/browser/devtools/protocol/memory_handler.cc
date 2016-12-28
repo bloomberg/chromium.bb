@@ -12,16 +12,14 @@
 namespace content {
 namespace protocol {
 
-MemoryHandler::MemoryHandler() {}
+MemoryHandler::MemoryHandler()
+    : DevToolsDomainHandler(Memory::Metainfo::domainName) {
+}
 
 MemoryHandler::~MemoryHandler() {}
 
 void MemoryHandler::Wire(UberDispatcher* dispatcher) {
   Memory::Dispatcher::wire(dispatcher, this);
-}
-
-Response MemoryHandler::Disable() {
-  return Response::OK();
 }
 
 Response MemoryHandler::SetPressureNotificationsSuppressed(

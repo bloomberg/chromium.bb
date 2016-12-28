@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/input.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
@@ -18,17 +19,21 @@ class CompositorFrameMetadata;
 
 namespace content {
 
+class DevToolsSession;
 class RenderFrameHostImpl;
 
 namespace protocol {
 
-class InputHandler : public Input::Backend {
+class InputHandler : public DevToolsDomainHandler,
+                     public Input::Backend {
  public:
   InputHandler();
   ~InputHandler() override;
 
-  void Wire(UberDispatcher*);
-  void SetRenderFrameHost(RenderFrameHostImpl* host);
+  static InputHandler* FromSession(DevToolsSession* session);
+
+  void Wire(UberDispatcher* dispatcher) override;
+  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
   void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
   Response Disable() override;
 

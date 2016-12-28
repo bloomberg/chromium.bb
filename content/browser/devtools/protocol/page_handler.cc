@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
+#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/page_navigation_throttle.h"
 #include "content/browser/devtools/protocol/color_picker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -90,7 +91,8 @@ std::string EncodeScreencastFrame(const SkBitmap& bitmap,
 }  // namespace
 
 PageHandler::PageHandler()
-    : enabled_(false),
+    : DevToolsDomainHandler(Page::Metainfo::domainName),
+      enabled_(false),
       screencast_enabled_(false),
       screencast_quality_(kDefaultScreenshotQuality),
       screencast_max_width_(-1),
@@ -109,6 +111,12 @@ PageHandler::PageHandler()
       weak_factory_(this) {}
 
 PageHandler::~PageHandler() {
+}
+
+// static
+PageHandler* PageHandler::FromSession(DevToolsSession* session) {
+  return static_cast<PageHandler*>(
+      session->GetHandlerByName(Page::Metainfo::domainName));
 }
 
 void PageHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {

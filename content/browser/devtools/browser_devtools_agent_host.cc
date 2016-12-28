@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/memory_handler.h"
@@ -36,38 +36,20 @@ BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
 BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {
 }
 
-void BrowserDevToolsAgentHost::Attach() {
-  io_handler_.reset(new protocol::IOHandler(GetIOContext()));
-  io_handler_->Wire(session()->dispatcher());
-
-  memory_handler_.reset(new protocol::MemoryHandler());
-  memory_handler_->Wire(session()->dispatcher());
-
-  system_info_handler_.reset(new protocol::SystemInfoHandler());
-  system_info_handler_->Wire(session()->dispatcher());
-
-  tethering_handler_.reset(new protocol::TetheringHandler(
-      socket_callback_, tethering_task_runner_));
-  tethering_handler_->Wire(session()->dispatcher());
-
-  tracing_handler_.reset(new protocol::TracingHandler(
+void BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
+  session->AddHandler(base::WrapUnique(new protocol::IOHandler(
+      GetIOContext())));
+  session->AddHandler(base::WrapUnique(new protocol::MemoryHandler()));
+  session->AddHandler(base::WrapUnique(new protocol::SystemInfoHandler()));
+  session->AddHandler(base::WrapUnique(new protocol::TetheringHandler(
+      socket_callback_, tethering_task_runner_)));
+  session->AddHandler(base::WrapUnique(new protocol::TracingHandler(
       protocol::TracingHandler::Browser,
       FrameTreeNode::kFrameTreeNodeInvalidId,
-      GetIOContext()));
-  tracing_handler_->Wire(session()->dispatcher());
+      GetIOContext())));
 }
 
-void BrowserDevToolsAgentHost::Detach() {
-  io_handler_->Disable();
-  io_handler_.reset();
-  memory_handler_->Disable();
-  memory_handler_.reset();
-  system_info_handler_->Disable();
-  system_info_handler_.reset();
-  tethering_handler_->Disable();
-  tethering_handler_.reset();
-  tracing_handler_->Disable();
-  tracing_handler_.reset();
+void BrowserDevToolsAgentHost::DetachSession(int session_id) {
 }
 
 std::string BrowserDevToolsAgentHost::GetType() {
@@ -94,8 +76,11 @@ void BrowserDevToolsAgentHost::Reload() {
 }
 
 bool BrowserDevToolsAgentHost::DispatchProtocolMessage(
+    DevToolsSession* session,
     const std::string& message) {
-  session()->dispatcher()->dispatch(protocol::StringUtil::parseJSON(message));
+  int call_id;
+  std::string method;
+  session->Dispatch(message, false, &call_id, &method);
   return true;
 }
 

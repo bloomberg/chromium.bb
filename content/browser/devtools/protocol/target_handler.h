@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/target.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -15,11 +16,13 @@
 
 namespace content {
 
+class DevToolsSession;
 class RenderFrameHostImpl;
 
 namespace protocol {
 
-class TargetHandler : public Target::Backend,
+class TargetHandler : public DevToolsDomainHandler,
+                      public Target::Backend,
                       public DevToolsAgentHostClient,
                       public ServiceWorkerDevToolsManager::Observer,
                       public DevToolsAgentHostObserver {
@@ -27,8 +30,10 @@ class TargetHandler : public Target::Backend,
   TargetHandler();
   ~TargetHandler() override;
 
-  void Wire(UberDispatcher*);
-  void SetRenderFrameHost(RenderFrameHostImpl* render_frame_host);
+  static TargetHandler* FromSession(DevToolsSession* session);
+
+  void Wire(UberDispatcher* dispatcher) override;
+  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
   Response Disable() override;
 
   void UpdateServiceWorkers();

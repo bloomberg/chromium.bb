@@ -55,7 +55,8 @@ ui::GestureProviderConfigType TouchEmulationConfigurationToType(
 }  // namespace
 
 EmulationHandler::EmulationHandler()
-    : touch_emulation_enabled_(false),
+    : DevToolsDomainHandler(Emulation::Metainfo::domainName),
+      touch_emulation_enabled_(false),
       device_emulation_enabled_(false),
       host_(nullptr) {
 }

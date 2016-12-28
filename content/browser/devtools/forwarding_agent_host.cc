@@ -26,18 +26,19 @@ void ForwardingAgentHost::DispatchOnClientHost(const std::string& message) {
 }
 
 void ForwardingAgentHost::ConnectionClosed() {
-  HostClosed();
+  ForceDetach(false);
 }
 
-void ForwardingAgentHost::Attach() {
+void ForwardingAgentHost::AttachSession(DevToolsSession* session) {
   delegate_->Attach(this);
 }
 
-void ForwardingAgentHost::Detach() {
+void ForwardingAgentHost::DetachSession(int session_id) {
   delegate_->Detach();
 }
 
 bool ForwardingAgentHost::DispatchProtocolMessage(
+    DevToolsSession* session,
     const std::string& message) {
   delegate_->SendMessageToBackend(message);
   return true;

@@ -7,7 +7,8 @@
 namespace content {
 namespace protocol {
 
-SchemaHandler::SchemaHandler() {
+SchemaHandler::SchemaHandler()
+    : DevToolsDomainHandler(Schema::Metainfo::domainName) {
 }
 
 SchemaHandler::~SchemaHandler() {
@@ -15,10 +16,6 @@ SchemaHandler::~SchemaHandler() {
 
 void SchemaHandler::Wire(UberDispatcher* dispatcher) {
   Schema::Dispatcher::wire(dispatcher, this);
-}
-
-Response SchemaHandler::Disable() {
-  return Response::OK();
 }
 
 Response SchemaHandler::GetDomains(

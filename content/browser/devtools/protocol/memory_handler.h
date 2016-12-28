@@ -6,18 +6,19 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_MEMORY_HANDLER_H_
 
 #include "base/macros.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/memory.h"
 
 namespace content {
 namespace protocol {
 
-class MemoryHandler : public Memory::Backend {
+class MemoryHandler : public DevToolsDomainHandler,
+                      public Memory::Backend {
  public:
   MemoryHandler();
   ~MemoryHandler() override;
 
-  void Wire(UberDispatcher*);
-  Response Disable() override;
+  void Wire(UberDispatcher* dispatcher) override;
 
   Response SetPressureNotificationsSuppressed(bool suppressed) override;
   Response SimulatePressureNotification(const std::string& level) override;

@@ -30,9 +30,11 @@ class ForwardingAgentHost
   void ConnectionClosed() override;
 
   // DevToolsAgentHostImpl implementation.
-  void Attach() override;
-  void Detach() override;
-  bool DispatchProtocolMessage(const std::string& message) override;
+  void AttachSession(DevToolsSession* session) override;
+  void DetachSession(int session_id) override;
+  bool DispatchProtocolMessage(
+      DevToolsSession* session,
+      const std::string& message) override;
 
   // DevToolsAgentHost implementation
   std::string GetType() override;

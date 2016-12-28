@@ -152,7 +152,10 @@ void DispatchSyncEventOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
 }  // namespace
 
 ServiceWorkerHandler::ServiceWorkerHandler()
-    : enabled_(false), render_frame_host_(nullptr), weak_factory_(this) {
+    : DevToolsDomainHandler(ServiceWorker::Metainfo::domainName),
+      enabled_(false),
+      render_frame_host_(nullptr),
+      weak_factory_(this) {
 }
 
 ServiceWorkerHandler::~ServiceWorkerHandler() {

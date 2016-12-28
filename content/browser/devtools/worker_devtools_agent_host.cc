@@ -5,6 +5,7 @@
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/inspector_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
@@ -20,35 +21,25 @@ BrowserContext* WorkerDevToolsAgentHost::GetBrowserContext() {
   return rph ? rph->GetBrowserContext() : nullptr;
 }
 
-void WorkerDevToolsAgentHost::Attach() {
+void WorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   if (state_ != WORKER_INSPECTED) {
     state_ = WORKER_INSPECTED;
     AttachToWorker();
   }
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
     host->Send(new DevToolsAgentMsg_Attach(
-        worker_id_.second, GetId(), session()->session_id()));
+        worker_id_.second, GetId(), session->session_id()));
   }
-  session()->dispatcher()->setFallThroughForNotFound(true);
-  inspector_handler_.reset(new protocol::InspectorHandler());
-  inspector_handler_->Wire(session()->dispatcher());
-  network_handler_.reset(new protocol::NetworkHandler());
-  network_handler_->Wire(session()->dispatcher());
-  schema_handler_.reset(new protocol::SchemaHandler());
-  schema_handler_->Wire(session()->dispatcher());
-  session()->dispatcher()->setFallThroughForNotFound(true);
+  session->SetFallThroughForNotFound(true);
+  session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
+  session->AddHandler(base::WrapUnique(new protocol::NetworkHandler()));
+  session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
   OnAttachedStateChanged(true);
 }
 
-void WorkerDevToolsAgentHost::Detach() {
+void WorkerDevToolsAgentHost::DetachSession(int session_id) {
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first))
     host->Send(new DevToolsAgentMsg_Detach(worker_id_.second));
-  inspector_handler_->Disable();
-  inspector_handler_.reset();
-  network_handler_->Disable();
-  network_handler_.reset();
-  schema_handler_->Disable();
-  schema_handler_.reset();
   OnAttachedStateChanged(false);
   if (state_ == WORKER_INSPECTED) {
     state_ = WORKER_UNINSPECTED;
@@ -59,20 +50,21 @@ void WorkerDevToolsAgentHost::Detach() {
 }
 
 bool WorkerDevToolsAgentHost::DispatchProtocolMessage(
+    DevToolsSession* session,
     const std::string& message) {
   if (state_ != WORKER_INSPECTED)
     return true;
 
   int call_id = 0;
   std::string method;
-  if (session()->Dispatch(message, &call_id, &method) !=
+  if (session->Dispatch(message, true, &call_id, &method) !=
       protocol::Response::kFallThrough) {
     return true;
   }
 
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
     host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-        worker_id_.second, session()->session_id(), call_id, method, message));
+        worker_id_.second, session->session_id(), call_id, method, message));
   }
   return true;
 }
@@ -123,7 +115,7 @@ void WorkerDevToolsAgentHost::WorkerDestroyed() {
   DCHECK_NE(WORKER_TERMINATED, state_);
   if (state_ == WORKER_INSPECTED) {
     DCHECK(IsAttached());
-    inspector_handler_->TargetCrashed();
+    protocol::InspectorHandler::FromSession(session())->TargetCrashed();
     DetachFromWorker();
   }
   state_ = WORKER_TERMINATED;

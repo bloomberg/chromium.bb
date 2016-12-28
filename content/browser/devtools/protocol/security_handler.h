@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_SECURITY_HANDLER_H_
 
 #include "base/macros.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/security.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -15,14 +16,15 @@ class RenderFrameHostImpl;
 
 namespace protocol {
 
-class SecurityHandler : public Security::Backend,
+class SecurityHandler : public DevToolsDomainHandler,
+                        public Security::Backend,
                         public WebContentsObserver {
  public:
   SecurityHandler();
   ~SecurityHandler() override;
 
-  void Wire(UberDispatcher*);
-  void SetRenderFrameHost(RenderFrameHostImpl* host);
+  void Wire(UberDispatcher* dispatcher) override;
+  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
 
   Response Enable() override;
   Response Disable() override;

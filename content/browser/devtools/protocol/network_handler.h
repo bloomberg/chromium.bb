@@ -6,22 +6,27 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_NETWORK_HANDLER_H_
 
 #include "base/macros.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "net/cookies/canonical_cookie.h"
 
 namespace content {
 
+class DevToolsSession;
 class RenderFrameHostImpl;
 
 namespace protocol {
 
-class NetworkHandler : public Network::Backend {
+class NetworkHandler : public DevToolsDomainHandler,
+                       public Network::Backend {
  public:
   NetworkHandler();
   ~NetworkHandler() override;
 
-  void SetRenderFrameHost(RenderFrameHostImpl* host);
-  void Wire(UberDispatcher*);
+  static NetworkHandler* FromSession(DevToolsSession* session);
+
+  void Wire(UberDispatcher* dispatcher) override;
+  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
 
   Response Enable(Maybe<int> max_total_size,
                   Maybe<int> max_resource_size) override;

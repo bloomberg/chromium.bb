@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/tracing.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/tracing_controller.h"
@@ -26,10 +27,12 @@ class Timer;
 namespace content {
 
 class DevToolsIOContext;
+class DevToolsSession;
 
 namespace protocol {
 
-class TracingHandler : public Tracing::Backend {
+class TracingHandler : public DevToolsDomainHandler,
+                       public Tracing::Backend {
  public:
   enum Target { Browser, Renderer };
   TracingHandler(Target target,
@@ -37,7 +40,9 @@ class TracingHandler : public Tracing::Backend {
                  DevToolsIOContext* io_context);
   ~TracingHandler() override;
 
-  void Wire(UberDispatcher*);
+  static TracingHandler* FromSession(DevToolsSession* session);
+
+  void Wire(UberDispatcher* dispatcher) override;
   Response Disable() override;
 
   void OnTraceDataCollected(const std::string& trace_fragment);

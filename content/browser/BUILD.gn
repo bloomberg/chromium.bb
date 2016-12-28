@@ -463,6 +463,8 @@ source_set("browser") {
     "devtools/page_navigation_throttle.h",
     "devtools/protocol/color_picker.cc",
     "devtools/protocol/color_picker.h",
+    "devtools/protocol/devtools_domain_handler.cc",
+    "devtools/protocol/devtools_domain_handler.h",
     "devtools/protocol/dom_handler.cc",
     "devtools/protocol/dom_handler.h",
     "devtools/protocol/emulation_handler.cc",

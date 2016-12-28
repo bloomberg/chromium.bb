@@ -19,6 +19,7 @@
 #include "base/trace_event/tracing_agent.h"
 #include "components/tracing/browser/trace_config_file.h"
 #include "content/browser/devtools/devtools_io_context.h"
+#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 
 namespace content {
@@ -118,7 +119,8 @@ class DevToolsStreamEndpoint : public TraceDataEndpoint {
 TracingHandler::TracingHandler(TracingHandler::Target target,
                                int frame_tree_node_id,
                                DevToolsIOContext* io_context)
-    : target_(target),
+    : DevToolsDomainHandler(Tracing::Metainfo::domainName),
+      target_(target),
       io_context_(io_context),
       frame_tree_node_id_(frame_tree_node_id),
       did_initiate_recording_(false),
@@ -126,6 +128,12 @@ TracingHandler::TracingHandler(TracingHandler::Target target,
       weak_factory_(this) {}
 
 TracingHandler::~TracingHandler() {
+}
+
+// static
+TracingHandler* TracingHandler::FromSession(DevToolsSession* session) {
+  return static_cast<TracingHandler*>(
+      session->GetHandlerByName(Tracing::Metainfo::domainName));
 }
 
 void TracingHandler::Wire(UberDispatcher* dispatcher) {

@@ -4,16 +4,24 @@
 
 #include "content/browser/devtools/protocol/inspector_handler.h"
 
+#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 namespace content {
 namespace protocol {
 
 InspectorHandler::InspectorHandler()
-    : host_(nullptr) {
+    : DevToolsDomainHandler(Inspector::Metainfo::domainName),
+      host_(nullptr) {
 }
 
 InspectorHandler::~InspectorHandler() {
+}
+
+// static
+InspectorHandler* InspectorHandler::FromSession(DevToolsSession* session) {
+  return static_cast<InspectorHandler*>(
+      session->GetHandlerByName(Inspector::Metainfo::domainName));
 }
 
 void InspectorHandler::Wire(UberDispatcher* dispatcher) {

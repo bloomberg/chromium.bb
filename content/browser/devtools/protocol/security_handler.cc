@@ -57,7 +57,8 @@ void AddExplanations(
 }  // namespace
 
 SecurityHandler::SecurityHandler()
-    : enabled_(false),
+    : DevToolsDomainHandler(Security::Metainfo::domainName),
+      enabled_(false),
       host_(nullptr) {
 }
 
