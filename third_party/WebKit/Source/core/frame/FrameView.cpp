@@ -1319,6 +1319,12 @@ void FrameView::invalidatePaintIfNeeded(
 
 void FrameView::setNeedsPaintPropertyUpdate() {
   m_needsPaintPropertyUpdate = true;
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    if (auto* layoutView = this->layoutView()) {
+      layoutView->setNeedsPaintPropertyUpdate();
+      return;
+    }
+  }
   if (LayoutObject* owner = frame().ownerLayoutObject())
     owner->setNeedsPaintPropertyUpdate();
 }
