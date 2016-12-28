@@ -15,16 +15,18 @@ namespace extensions {
 namespace {
 
 template <class T>
-std::unique_ptr<base::Value> GetFundamentalConvertedValueHelper(
-    v8::Local<v8::Value> arg,
-    v8::Local<v8::Context> context,
-    const base::Optional<int>& minimum) {
+bool ParseFundamentalValueHelper(v8::Local<v8::Value> arg,
+                                 v8::Local<v8::Context> context,
+                                 const base::Optional<int>& minimum,
+                                 std::unique_ptr<base::Value>* out_value) {
   T val;
   if (!gin::Converter<T>::FromV8(context->GetIsolate(), arg, &val))
-    return nullptr;
+    return false;
   if (minimum && val < minimum.value())
-    return nullptr;
-  return base::MakeUnique<base::FundamentalValue>(val);
+    return false;
+  if (out_value)
+    *out_value = base::MakeUnique<base::FundamentalValue>(val);
+  return true;
 }
 
 }  // namespace
@@ -120,55 +122,57 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
 
 ArgumentSpec::~ArgumentSpec() {}
 
-std::unique_ptr<base::Value> ArgumentSpec::ConvertArgument(
-    v8::Local<v8::Context> context,
-    v8::Local<v8::Value> value,
-    const RefMap& refs,
-    std::string* error) const {
-  // TODO(devlin): Support functions?
-  DCHECK_NE(type_, ArgumentType::FUNCTION);
+bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
+                                 v8::Local<v8::Value> value,
+                                 const RefMap& refs,
+                                 std::unique_ptr<base::Value>* out_value,
+                                 std::string* error) const {
+  if (type_ == ArgumentType::FUNCTION) {
+    // We can't serialize functions. We shouldn't be asked to.
+    DCHECK(!out_value);
+    return value->IsFunction();
+  }
+
   if (type_ == ArgumentType::REF) {
     DCHECK(ref_);
     auto iter = refs.find(ref_.value());
     DCHECK(iter != refs.end()) << ref_.value();
-    return iter->second->ConvertArgument(context, value, refs, error);
+    return iter->second->ParseArgument(context, value, refs, out_value, error);
   }
 
   if (type_ == ArgumentType::CHOICES) {
     for (const auto& choice : choices_) {
-      std::unique_ptr<base::Value> result =
-          choice->ConvertArgument(context, value, refs, error);
-      if (result)
-        return result;
+      if (choice->ParseArgument(context, value, refs, out_value, error))
+        return true;
     }
     *error = "Did not match any of the choices";
-    return nullptr;
+    return false;
   }
 
   if (IsFundamentalType())
-    return ConvertArgumentToFundamental(context, value, error);
+    return ParseArgumentToFundamental(context, value, out_value, error);
   if (type_ == ArgumentType::OBJECT) {
     // TODO(devlin): Currently, this would accept an array (if that array had
     // all the requisite properties). Is that the right thing to do?
     if (!value->IsObject()) {
       *error = "Wrong type";
-      return nullptr;
+      return false;
     }
     v8::Local<v8::Object> object = value.As<v8::Object>();
-    return ConvertArgumentToObject(context, object, refs, error);
+    return ParseArgumentToObject(context, object, refs, out_value, error);
   }
   if (type_ == ArgumentType::LIST) {
     if (!value->IsArray()) {
       *error = "Wrong type";
-      return nullptr;
+      return false;
     }
     v8::Local<v8::Array> array = value.As<v8::Array>();
-    return ConvertArgumentToArray(context, array, refs, error);
+    return ParseArgumentToArray(context, array, refs, out_value, error);
   }
   if (type_ == ArgumentType::ANY)
-    return ConvertArgumentToAny(context, value, error);
+    return ParseArgumentToAny(context, value, out_value, error);
   NOTREACHED();
-  return nullptr;
+  return false;
 }
 
 bool ArgumentSpec::IsFundamentalType() const {
@@ -176,54 +180,70 @@ bool ArgumentSpec::IsFundamentalType() const {
          type_ == ArgumentType::BOOLEAN || type_ == ArgumentType::STRING;
 }
 
-std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToFundamental(
+bool ArgumentSpec::ParseArgumentToFundamental(
     v8::Local<v8::Context> context,
     v8::Local<v8::Value> value,
+    std::unique_ptr<base::Value>* out_value,
     std::string* error) const {
   DCHECK(IsFundamentalType());
   switch (type_) {
     case ArgumentType::INTEGER:
-      return GetFundamentalConvertedValueHelper<int32_t>(value, context,
-                                                         minimum_);
+      return ParseFundamentalValueHelper<int32_t>(value, context, minimum_,
+                                                  out_value);
     case ArgumentType::DOUBLE:
-      return GetFundamentalConvertedValueHelper<double>(value, context,
-                                                        minimum_);
+      return ParseFundamentalValueHelper<double>(value, context, minimum_,
+                                                 out_value);
     case ArgumentType::STRING: {
+      if (!value->IsString())
+        return false;
+      // If we don't need to match enum values and don't need to convert, we're
+      // done...
+      if (!out_value && enum_values_.empty())
+        return true;
+      // ...Otherwise, we need to convert to a std::string.
       std::string s;
-      // TODO(devlin): If base::StringValue ever takes a std::string&&, we could
-      // use std::move to construct.
-      if (!gin::Converter<std::string>::FromV8(context->GetIsolate(),
-                                               value, &s) ||
-          (!enum_values_.empty() && enum_values_.count(s) == 0)) {
-        return nullptr;
+      // We already checked that this is a string, so this should never fail.
+      CHECK(gin::Converter<std::string>::FromV8(context->GetIsolate(), value,
+                                                &s));
+      if (!enum_values_.empty() && enum_values_.count(s) == 0)
+        return false;
+      if (out_value) {
+        // TODO(devlin): If base::StringValue ever takes a std::string&&, we
+        // could use std::move to construct.
+        *out_value = base::MakeUnique<base::StringValue>(s);
       }
-      return base::MakeUnique<base::StringValue>(s);
+      return true;
     }
     case ArgumentType::BOOLEAN: {
-      bool b = false;
-      if (value->IsBoolean() &&
-          gin::Converter<bool>::FromV8(context->GetIsolate(), value, &b)) {
-        return base::MakeUnique<base::FundamentalValue>(b);
+      if (!value->IsBoolean())
+        return false;
+      if (out_value) {
+        *out_value = base::MakeUnique<base::FundamentalValue>(
+            value.As<v8::Boolean>()->Value());
       }
-      return nullptr;
+      return true;
     }
     default:
       NOTREACHED();
   }
-  return nullptr;
+  return false;
 }
 
-std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToObject(
+bool ArgumentSpec::ParseArgumentToObject(
     v8::Local<v8::Context> context,
     v8::Local<v8::Object> object,
     const RefMap& refs,
+    std::unique_ptr<base::Value>* out_value,
     std::string* error) const {
   DCHECK_EQ(ArgumentType::OBJECT, type_);
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  std::unique_ptr<base::DictionaryValue> result;
+  // Only construct the result if we have an |out_value| to populate.
+  if (out_value)
+    result = base::MakeUnique<base::DictionaryValue>();
   gin::Dictionary dictionary(context->GetIsolate(), object);
   for (const auto& kv : properties_) {
     v8::Local<v8::Value> subvalue;
-    // See comment in ConvertArgumentToArray() about passing in custom crazy
+    // See comment in ParseArgumentToArray() about passing in custom crazy
     // values here.
     // TODO(devlin): gin::Dictionary::Get() uses Isolate::GetCurrentContext() -
     // is that always right here, or should we use the v8::Object APIs and
@@ -232,31 +252,38 @@ std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToObject(
     // v8::String for each call. Hypothetically, we could cache these, or at
     // least use an internalized string.
     if (!dictionary.Get(kv.first, &subvalue))
-      return nullptr;
+      return false;
 
     if (subvalue.IsEmpty() || subvalue->IsNull() || subvalue->IsUndefined()) {
       if (!kv.second->optional_) {
         *error = "Missing key: " + kv.first;
-        return nullptr;
+        return false;
       }
       continue;
     }
-    std::unique_ptr<base::Value> property =
-        kv.second->ConvertArgument(context, subvalue, refs, error);
-    if (!property)
-      return nullptr;
-    result->Set(kv.first, std::move(property));
+    std::unique_ptr<base::Value> property;
+    if (!kv.second->ParseArgument(context, subvalue, refs,
+                                  out_value ? &property : nullptr, error)) {
+      return false;
+    }
+    if (result)
+      result->Set(kv.first, std::move(property));
   }
-  return std::move(result);
+  if (out_value)
+    *out_value = std::move(result);
+  return true;
 }
 
-std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToArray(
-    v8::Local<v8::Context> context,
-    v8::Local<v8::Array> value,
-    const RefMap& refs,
-    std::string* error) const {
+bool ArgumentSpec::ParseArgumentToArray(v8::Local<v8::Context> context,
+                                        v8::Local<v8::Array> value,
+                                        const RefMap& refs,
+                                        std::unique_ptr<base::Value>* out_value,
+                                        std::string* error) const {
   DCHECK_EQ(ArgumentType::LIST, type_);
-  auto result = base::MakeUnique<base::ListValue>();
+  std::unique_ptr<base::ListValue> result;
+  // Only construct the result if we have an |out_value| to populate.
+  if (out_value)
+    result = base::MakeUnique<base::ListValue>();
   uint32_t length = value->Length();
   for (uint32_t i = 0; i < length; ++i) {
     v8::MaybeLocal<v8::Value> maybe_subvalue = value->Get(context, i);
@@ -269,28 +296,37 @@ std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToArray(
     // TODO(devlin): This is probably fine, but it's worth contemplating
     // catching the error and throwing our own.
     if (!maybe_subvalue.ToLocal(&subvalue))
-      return nullptr;
-    std::unique_ptr<base::Value> item =
-        list_element_type_->ConvertArgument(context, subvalue, refs, error);
-    if (!item)
-      return nullptr;
-    result->Append(std::move(item));
+      return false;
+    std::unique_ptr<base::Value> item;
+    if (!list_element_type_->ParseArgument(context, subvalue, refs,
+                                           result ? &item : nullptr, error)) {
+      return false;
+    }
+    if (result)
+      result->Append(std::move(item));
   }
-  return std::move(result);
+  if (out_value)
+    *out_value = std::move(result);
+  return true;
 }
 
-std::unique_ptr<base::Value> ArgumentSpec::ConvertArgumentToAny(
-    v8::Local<v8::Context> context,
-    v8::Local<v8::Value> value,
-    std::string* error) const {
+bool ArgumentSpec::ParseArgumentToAny(v8::Local<v8::Context> context,
+                                      v8::Local<v8::Value> value,
+                                      std::unique_ptr<base::Value>* out_value,
+                                      std::string* error) const {
   DCHECK_EQ(ArgumentType::ANY, type_);
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
-  std::unique_ptr<base::Value> converted(
-      converter->FromV8Value(value, context));
-  if (!converted)
-    *error = "Could not convert to 'any'.";
-  return converted;
+  if (out_value) {
+    std::unique_ptr<content::V8ValueConverter> converter(
+        content::V8ValueConverter::create());
+    std::unique_ptr<base::Value> converted(
+        converter->FromV8Value(value, context));
+    if (!converted) {
+      *error = "Could not convert to 'any'.";
+      return false;
+    }
+    *out_value = std::move(converted);
+  }
+  return true;
 }
 
 }  // namespace extensions

@@ -30,37 +30,27 @@ class APISignature {
   APISignature(const base::ListValue& specification);
   ~APISignature();
 
+  // Parses |arguments| against this signature, and populates |args_out| with
+  // the v8 values (performing no conversion). The resulting vector may differ
+  // from the list of arguments passed in because it will include null-filled
+  // optional arguments.
+  // Returns true if the arguments were successfully parsed and converted.
+  bool ParseArgumentsToV8(gin::Arguments* arguments,
+                          const ArgumentSpec::RefMap& type_refs,
+                          std::vector<v8::Local<v8::Value>>* args_out,
+                          std::string* error) const;
+
   // Parses |arguments| against this signature, converting to a base::ListValue.
-  // If the arguments don't match, null is returned and |error| is populated.
-  std::unique_ptr<base::ListValue> ParseArguments(
-      gin::Arguments* arguments,
-      const ArgumentSpec::RefMap& type_refs,
-      v8::Local<v8::Function>* callback_out,
-      std::string* error) const;
+  // Returns true if the arguments were successfully parsed and converted, and
+  // populates |args_out| and |callback_out| with the JSON arguments and
+  // callback values, respectively. On failure, returns false populates |error|.
+  bool ParseArgumentsToJSON(gin::Arguments* arguments,
+                            const ArgumentSpec::RefMap& type_refs,
+                            std::unique_ptr<base::ListValue>* args_out,
+                            v8::Local<v8::Function>* callback_out,
+                            std::string* error) const;
 
  private:
-  // Attempts to match an argument from |arguments| to the given |spec|.
-  // If the next argmument does not match and |spec| is optional, a null
-  // base::Value is returned.
-  // If the argument matches, |arguments| is advanced and the converted value is
-  // returned.
-  // If the argument does not match and it is not optional, returns null and
-  // populates error.
-  std::unique_ptr<base::Value> ParseArgument(
-      const ArgumentSpec& spec,
-      v8::Local<v8::Context> context,
-      gin::Arguments* arguments,
-      const ArgumentSpec::RefMap& type_refs,
-      std::string* error) const;
-
-  // Parses the callback from |arguments| according to |callback_spec|. Since
-  // the callback isn't converted into a base::Value, this is different from
-  // ParseArgument() above.
-  bool ParseCallback(gin::Arguments* arguments,
-                     const ArgumentSpec& callback_spec,
-                     std::string* error,
-                     v8::Local<v8::Function>* callback_out) const;
-
   // The list of expected arguments.
   std::vector<std::unique_ptr<ArgumentSpec>> signature_;
 

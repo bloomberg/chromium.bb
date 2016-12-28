@@ -454,12 +454,14 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
   bool did_call = false;
   auto hook = [](bool* did_call, const APISignature* signature,
-                 gin::Arguments* arguments) {
+                 gin::Arguments* arguments,
+                 const ArgumentSpec::RefMap& ref_map) {
     *did_call = true;
     EXPECT_EQ(1, arguments->Length());
     std::string argument;
     EXPECT_TRUE(arguments->GetNext(&argument));
     EXPECT_EQ("foo", argument);
+    return APIBindingHooks::RequestResult::HANDLED;
   };
   hooks->RegisterHandleRequest("test.oneString", base::Bind(hook, &did_call));
 
@@ -525,8 +527,16 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
   v8::Local<v8::Object> binding_object = binding.CreateInstance(
       context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
 
-  // First try calling the oneString() method, which has a custom hook
-  // installed.
+  // First try calling with an invalid invocation. An error should be raised and
+  // the hook should never have been called, since the arguments didn't match.
+  ExpectFailure(binding_object, "obj.oneString(1);", kError);
+  v8::Local<v8::Value> property =
+      GetPropertyFromObject(context->Global(), context, "requestArguments");
+  ASSERT_FALSE(property.IsEmpty());
+  EXPECT_TRUE(property->IsUndefined());
+
+  // Try calling the oneString() method with valid arguments. The hook should
+  // be called.
   v8::Local<v8::Function> func =
       FunctionFromString(context, "(function(obj) { obj.oneString('foo'); })");
   v8::Local<v8::Value> args[] = {binding_object};

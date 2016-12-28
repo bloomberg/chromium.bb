@@ -299,19 +299,25 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
 
   bool did_call = false;
   auto hook = [](bool* did_call, const APISignature* signature,
-                 gin::Arguments* arguments) {
+                 gin::Arguments* arguments,
+                 const ArgumentSpec::RefMap& type_refs) {
     *did_call = true;
     std::string argument;
     EXPECT_EQ(2, arguments->Length());
     EXPECT_TRUE(arguments->GetNext(&argument));
     EXPECT_EQ("foo", argument);
     v8::Local<v8::Function> function;
-    ASSERT_TRUE(arguments->GetNext(&function));
+    EXPECT_TRUE(arguments->GetNext(&function));
+    // The above EXPECT_TRUE should really be an ASSERT, but that messes with
+    // the return type.
+    if (function.IsEmpty())
+      return APIBindingHooks::RequestResult::HANDLED;
     v8::Local<v8::String> response =
         gin::StringToV8(arguments->isolate(), "bar");
     v8::Local<v8::Value> response_args[] = {response};
     RunFunctionOnGlobal(function, arguments->isolate()->GetCurrentContext(),
                         1, response_args);
+    return APIBindingHooks::RequestResult::HANDLED;
   };
 
   APIBindingHooks* hooks = bindings_system()->GetHooksForAPI(kAlphaAPIName);

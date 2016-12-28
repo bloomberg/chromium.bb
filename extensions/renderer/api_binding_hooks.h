@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "extensions/renderer/api_binding_types.h"
+#include "extensions/renderer/argument_spec.h"
 #include "v8/include/v8.h"
 
 namespace gin {
@@ -28,6 +29,13 @@ class APISignature;
 // for registration of C++ handlers. Add JS support.
 class APIBindingHooks {
  public:
+  // The result of checking for hooks to handle a request.
+  enum class RequestResult {
+    HANDLED,             // A custom hook handled the request.
+    INVALID_INVOCATION,  // The request was called with invalid arguments.
+    NOT_HANDLED,         // The request was not handled.
+  };
+
   // The callback to handle an API method. We pass in the expected signature
   // (so the caller can verify arguments, optionally after modifying/"massaging"
   // them) and the passed arguments. The handler is responsible for returning,
@@ -37,7 +45,9 @@ class APIBindingHooks {
   // handlers to register a request so that they don't have to maintain a
   // reference to the callback themselves.
   using HandleRequestHook =
-      base::Callback<void(const APISignature*, gin::Arguments*)>;
+      base::Callback<RequestResult(const APISignature*,
+                                   gin::Arguments*,
+                                   const ArgumentSpec::RefMap&)>;
 
   explicit APIBindingHooks(const binding::RunJSFunction& run_js);
   ~APIBindingHooks();
@@ -56,12 +66,14 @@ class APIBindingHooks {
                            const std::string& api_name);
 
   // Looks for a custom hook to handle the given request and, if one exists,
-  // runs it. Returns true if a hook was found and run.
-  bool HandleRequest(const std::string& api_name,
-                     const std::string& method_name,
-                     v8::Local<v8::Context> context,
-                     const APISignature* signature,
-                     gin::Arguments* arguments);
+  // runs it. Returns the result of trying to run the hook, or NOT_HANDLED if no
+  // hook was found.
+  RequestResult HandleRequest(const std::string& api_name,
+                              const std::string& method_name,
+                              v8::Local<v8::Context> context,
+                              const APISignature* signature,
+                              gin::Arguments* arguments,
+                              const ArgumentSpec::RefMap& type_refs);
 
   // Returns a JS interface that can be used to register hooks.
   v8::Local<v8::Object> GetJSHookInterface(const std::string& api_name,

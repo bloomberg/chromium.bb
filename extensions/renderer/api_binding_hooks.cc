@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
+#include "extensions/renderer/api_signature.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -102,16 +103,22 @@ void APIBindingHooks::RegisterJsSource(v8::Global<v8::String> source,
   js_resource_name_ = std::move(resource_name);
 }
 
-bool APIBindingHooks::HandleRequest(const std::string& api_name,
-                                    const std::string& method_name,
-                                    v8::Local<v8::Context> context,
-                                    const APISignature* signature,
-                                    gin::Arguments* arguments) {
+APIBindingHooks::RequestResult APIBindingHooks::HandleRequest(
+    const std::string& api_name,
+    const std::string& method_name,
+    v8::Local<v8::Context> context,
+    const APISignature* signature,
+    gin::Arguments* arguments,
+    const ArgumentSpec::RefMap& type_refs) {
   // Easy case: a native custom hook.
   auto request_hooks_iter = request_hooks_.find(method_name);
   if (request_hooks_iter != request_hooks_.end()) {
-    request_hooks_iter->second.Run(signature, arguments);
-    return true;
+    RequestResult result =
+        request_hooks_iter->second.Run(signature, arguments, type_refs);
+    // Right now, it doesn't make sense to register a request handler that
+    // doesn't handle the request.
+    DCHECK_NE(RequestResult::NOT_HANDLED, result);
+    return result;
   }
 
   // Harder case: looking up a custom hook registered on the context (since
@@ -121,11 +128,11 @@ bool APIBindingHooks::HandleRequest(const std::string& api_name,
   APIHooksPerContextData* data = static_cast<APIHooksPerContextData*>(
       per_context_data->GetUserData(kExtensionAPIHooksPerContextKey));
   if (!data)
-    return false;
+    return RequestResult::NOT_HANDLED;
 
   auto hook_interface_iter = data->hook_interfaces.find(api_name);
   if (hook_interface_iter == data->hook_interfaces.end())
-    return false;
+    return RequestResult::NOT_HANDLED;
 
   JSHookInterface* hook_interface = nullptr;
   gin::Converter<JSHookInterface*>::FromV8(
@@ -135,19 +142,21 @@ bool APIBindingHooks::HandleRequest(const std::string& api_name,
 
   auto js_hook_iter = hook_interface->js_hooks()->find(method_name);
   if (js_hook_iter == hook_interface->js_hooks()->end())
-    return false;
+    return RequestResult::NOT_HANDLED;
 
   // Found a JS handler.
   std::vector<v8::Local<v8::Value>> v8_args;
+  std::string error;
+  if (!signature->ParseArgumentsToV8(arguments, type_refs, &v8_args, &error))
+    return RequestResult::INVALID_INVOCATION;
+
   // TODO(devlin): Right now, this doesn't support exceptions or return values,
   // which we will need to at some point.
-  if (arguments->Length() == 0 || arguments->GetRemaining(&v8_args)) {
-    v8::Local<v8::Function> handler =
-        js_hook_iter->second.Get(context->GetIsolate());
-    run_js_.Run(handler, context, v8_args.size(), v8_args.data());
-  }
+  v8::Local<v8::Function> handler =
+      js_hook_iter->second.Get(context->GetIsolate());
+  run_js_.Run(handler, context, v8_args.size(), v8_args.data());
 
-  return true;
+  return RequestResult::HANDLED;
 }
 
 void APIBindingHooks::InitializeInContext(

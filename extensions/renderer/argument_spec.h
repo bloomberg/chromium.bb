@@ -48,12 +48,14 @@ class ArgumentSpec {
   explicit ArgumentSpec(const base::Value& value);
   ~ArgumentSpec();
 
-  // Returns the converted base::Value or null if the |value| didn't match.
-  std::unique_ptr<base::Value> ConvertArgument(
-      v8::Local<v8::Context> context,
-      v8::Local<v8::Value> value,
-      const RefMap& refs,
-      std::string* error) const;
+  // Returns true if the passed |value| matches this specification. If
+  // |out_value| is non-null, converts the value to a base::Value and populates
+  // |out_value|. Otherwise, no conversion is performed.
+  bool ParseArgument(v8::Local<v8::Context> context,
+                     v8::Local<v8::Value> value,
+                     const RefMap& refs,
+                     std::unique_ptr<base::Value>* out_value,
+                     std::string* error) const;
 
   const std::string& name() const { return name_; }
   bool optional() const { return optional_; }
@@ -68,24 +70,24 @@ class ArgumentSpec {
 
   // Conversion functions. These should only be used if the spec is of the given
   // type (otherwise, they will DCHECK).
-  std::unique_ptr<base::Value> ConvertArgumentToFundamental(
-      v8::Local<v8::Context> context,
-      v8::Local<v8::Value> value,
-      std::string* error) const;
-  std::unique_ptr<base::Value> ConvertArgumentToObject(
-      v8::Local<v8::Context> context,
-      v8::Local<v8::Object> object,
-      const RefMap& refs,
-      std::string* error) const;
-  std::unique_ptr<base::Value> ConvertArgumentToArray(
-      v8::Local<v8::Context> context,
-      v8::Local<v8::Array> value,
-      const RefMap& refs,
-      std::string* error) const;
-  std::unique_ptr<base::Value> ConvertArgumentToAny(
-      v8::Local<v8::Context> context,
-      v8::Local<v8::Value> value,
-      std::string* error) const;
+  bool ParseArgumentToFundamental(v8::Local<v8::Context> context,
+                                  v8::Local<v8::Value> value,
+                                  std::unique_ptr<base::Value>* out_value,
+                                  std::string* error) const;
+  bool ParseArgumentToObject(v8::Local<v8::Context> context,
+                             v8::Local<v8::Object> object,
+                             const RefMap& refs,
+                             std::unique_ptr<base::Value>* out_value,
+                             std::string* error) const;
+  bool ParseArgumentToArray(v8::Local<v8::Context> context,
+                            v8::Local<v8::Array> value,
+                            const RefMap& refs,
+                            std::unique_ptr<base::Value>* out_value,
+                            std::string* error) const;
+  bool ParseArgumentToAny(v8::Local<v8::Context> context,
+                          v8::Local<v8::Value> value,
+                          std::unique_ptr<base::Value>* out_value,
+                          std::string* error) const;
 
   // The name of the argument.
   std::string name_;

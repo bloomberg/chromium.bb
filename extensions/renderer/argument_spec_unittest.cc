@@ -21,20 +21,32 @@ class ArgumentSpecUnitTest : public gin::V8Test {
   void ExpectSuccess(const ArgumentSpec& spec,
                      const std::string& script_source,
                      const std::string& expected_json_single_quotes) {
-    RunTest(spec, script_source, TestResult::PASS,
+    RunTest(spec, script_source, true, TestResult::PASS,
             ReplaceSingleQuotes(expected_json_single_quotes), std::string());
+  }
+
+  void ExpectSuccessWithNoConversion(const ArgumentSpec& spec,
+                                     const std::string& script_source) {
+    RunTest(spec, script_source, false, TestResult::PASS,
+            std::string(), std::string());
   }
 
   void ExpectFailure(const ArgumentSpec& spec,
                      const std::string& script_source) {
-    RunTest(spec, script_source, TestResult::FAIL, std::string(),
+    RunTest(spec, script_source, true, TestResult::FAIL, std::string(),
+            std::string());
+  }
+
+  void ExpectFailureWithNoConversion(const ArgumentSpec& spec,
+                                     const std::string& script_source) {
+    RunTest(spec, script_source, false, TestResult::FAIL, std::string(),
             std::string());
   }
 
   void ExpectThrow(const ArgumentSpec& spec,
                    const std::string& script_source,
                    const std::string& expected_thrown_message) {
-    RunTest(spec, script_source, TestResult::THROW, std::string(),
+    RunTest(spec, script_source, true, TestResult::THROW, std::string(),
             expected_thrown_message);
   }
 
@@ -47,6 +59,7 @@ class ArgumentSpecUnitTest : public gin::V8Test {
 
   void RunTest(const ArgumentSpec& spec,
                const std::string& script_source,
+               bool should_convert,
                TestResult expected_result,
                const std::string& expected_json,
                const std::string& expected_thrown_message);
@@ -58,6 +71,7 @@ class ArgumentSpecUnitTest : public gin::V8Test {
 
 void ArgumentSpecUnitTest::RunTest(const ArgumentSpec& spec,
                                    const std::string& script_source,
+                                   bool should_convert,
                                    TestResult expected_result,
                                    const std::string& expected_json,
                                    const std::string& expected_thrown_message) {
@@ -71,13 +85,16 @@ void ArgumentSpecUnitTest::RunTest(const ArgumentSpec& spec,
   ASSERT_FALSE(val.IsEmpty()) << script_source;
 
   std::string error;
-  std::unique_ptr<base::Value> out_value =
-      spec.ConvertArgument(context, val, type_refs_, &error);
+  std::unique_ptr<base::Value> out_value;
+  bool did_succeed =
+      spec.ParseArgument(context, val, type_refs_,
+                         should_convert ? &out_value : nullptr, &error);
   bool should_succeed = expected_result == TestResult::PASS;
-  ASSERT_EQ(should_succeed, !!out_value) << script_source << ", " << error;
+  ASSERT_EQ(should_succeed, did_succeed) << script_source << ", " << error;
+  ASSERT_EQ(did_succeed && should_convert, !!out_value);
   bool should_throw = expected_result == TestResult::THROW;
   ASSERT_EQ(should_throw, try_catch.HasCaught()) << script_source;
-  if (should_succeed) {
+  if (should_succeed && should_convert) {
     ASSERT_TRUE(out_value);
     EXPECT_EQ(expected_json, ValueToString(*out_value));
   } else if (should_throw) {
@@ -217,11 +234,13 @@ TEST_F(ArgumentSpecUnitTest, Test) {
 
   {
     const char kFunctionSpec[] = "{ 'type': 'function' }";
-    // We don't allow conversion of functions (converting to a base::Value is
-    // impossible), but we should still be able to parse a function
-    // specification.
     ArgumentSpec spec(*ValueFromString(kFunctionSpec));
-    EXPECT_EQ(ArgumentType::FUNCTION, spec.type());
+    ExpectSuccessWithNoConversion(spec, "(function() {})");
+    ExpectSuccessWithNoConversion(spec, "(function(a, b) { a(); b(); })");
+    ExpectSuccessWithNoConversion(spec, "(function(a, b) { a(); b(); })");
+    ExpectFailureWithNoConversion(spec, "({a: function() {}})");
+    ExpectFailureWithNoConversion(spec, "([function() {}])");
+    ExpectFailureWithNoConversion(spec, "1");
   }
 }
 

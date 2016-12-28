@@ -10,6 +10,197 @@
 
 namespace extensions {
 
+namespace {
+
+// A class to help with argument parsing. Note that this uses v8::Locals and
+// const&s because it's an implementation detail of the APISignature; this
+// should *only* be used directly on the stack!
+class ArgumentParser {
+ public:
+  ArgumentParser(const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
+                 gin::Arguments* arguments,
+                 const ArgumentSpec::RefMap& type_refs,
+                 std::string* error)
+    : context_(arguments->isolate()->GetCurrentContext()),
+      signature_(signature),
+      arguments_(arguments),
+      type_refs_(type_refs),
+      error_(error) {}
+
+  // Tries to parse the arguments against the expected signature.
+  bool ParseArguments();
+
+ protected:
+  v8::Isolate* GetIsolate() { return context_->GetIsolate(); }
+
+ private:
+  // Attempts to match the next argument to the given |spec|.
+  // If the next argument does not match and |spec| is optional, uses a null
+  // value.
+  // Returns true on success.
+  bool ParseArgument(const ArgumentSpec& spec);
+
+  // Attempts to parse the callback from the given |spec|. Returns true on
+  // success.
+  bool ParseCallback(const ArgumentSpec& spec);
+
+  // Adds a null value to the parsed arguments.
+  virtual void AddNull() = 0;
+  // Returns a base::Value to be populated during argument matching.
+  virtual std::unique_ptr<base::Value>* GetBuffer() = 0;
+  // Adds a new parsed argument.
+  virtual void AddParsedArgument(v8::Local<v8::Value> value) = 0;
+  // Adds the parsed callback.
+  virtual void SetCallback(v8::Local<v8::Function> callback) = 0;
+
+  v8::Local<v8::Context> context_;
+  const std::vector<std::unique_ptr<ArgumentSpec>>& signature_;
+  gin::Arguments* arguments_;
+  const ArgumentSpec::RefMap& type_refs_;
+  std::string* error_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArgumentParser);
+};
+
+class V8ArgumentParser : public ArgumentParser {
+ public:
+  V8ArgumentParser(const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
+                   gin::Arguments* arguments,
+                   const ArgumentSpec::RefMap& type_refs,
+                   std::string* error,
+                   std::vector<v8::Local<v8::Value>>* values)
+      : ArgumentParser(signature, arguments, type_refs, error),
+        values_(values) {}
+
+ private:
+  void AddNull() override { values_->push_back(v8::Null(GetIsolate())); }
+  std::unique_ptr<base::Value>* GetBuffer() override { return nullptr; }
+  void AddParsedArgument(v8::Local<v8::Value> value) override {
+    values_->push_back(value);
+  }
+  void SetCallback(v8::Local<v8::Function> callback) override {
+    values_->push_back(callback);
+  }
+
+  std::vector<v8::Local<v8::Value>>* values_;
+
+  DISALLOW_COPY_AND_ASSIGN(V8ArgumentParser);
+};
+
+class BaseValueArgumentParser : public ArgumentParser {
+ public:
+  BaseValueArgumentParser(
+      const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
+      gin::Arguments* arguments,
+      const ArgumentSpec::RefMap& type_refs,
+      std::string* error,
+      base::ListValue* list_value)
+      : ArgumentParser(signature, arguments, type_refs, error),
+        list_value_(list_value) {}
+
+  v8::Local<v8::Function> callback() { return callback_; }
+
+ private:
+  void AddNull() override {
+    list_value_->Append(base::Value::CreateNullValue());
+  }
+  std::unique_ptr<base::Value>* GetBuffer() override { return &last_arg_; }
+  void AddParsedArgument(v8::Local<v8::Value> value) override {
+    // The corresponding base::Value is expected to have been stored in
+    // |last_arg_| already.
+    DCHECK(last_arg_);
+    list_value_->Append(std::move(last_arg_));
+    last_arg_.reset();
+  }
+  void SetCallback(v8::Local<v8::Function> callback) override {
+    callback_ = callback;
+  }
+
+  base::ListValue* list_value_;
+  std::unique_ptr<base::Value> last_arg_;
+  v8::Local<v8::Function> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(BaseValueArgumentParser);
+};
+
+bool ArgumentParser::ParseArguments() {
+  // TODO(devlin): This is how extension APIs have always determined if a
+  // function has a callback, but it seems a little silly. In the long run (once
+  // signatures are generated), it probably makes sense to indicate this
+  // differently.
+  bool signature_has_callback =
+      !signature_.empty() &&
+      signature_.back()->type() == ArgumentType::FUNCTION;
+
+  size_t end_size =
+      signature_has_callback ? signature_.size() - 1 : signature_.size();
+  for (size_t i = 0; i < end_size; ++i) {
+    if (!ParseArgument(*signature_[i]))
+      return false;
+  }
+
+  if (signature_has_callback && !ParseCallback(*signature_.back()))
+    return false;
+
+  if (!arguments_->PeekNext().IsEmpty())
+    return false;  // Extra arguments aren't allowed.
+
+  return true;
+}
+
+bool ArgumentParser::ParseArgument(const ArgumentSpec& spec) {
+  v8::Local<v8::Value> value = arguments_->PeekNext();
+  if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
+    if (!spec.optional()) {
+      *error_ = "Missing required argument: " + spec.name();
+      return false;
+    }
+    // This is safe to call even if |arguments| is at the end (which can happen
+    // if n optional arguments are omitted at the end of the signature).
+    arguments_->Skip();
+
+    AddNull();
+    return true;
+  }
+
+  if (!spec.ParseArgument(context_, value, type_refs_, GetBuffer(), error_)) {
+    if (!spec.optional()) {
+      *error_ = "Missing required argument: " + spec.name();
+      return false;
+    }
+
+    AddNull();
+    return true;
+  }
+
+  arguments_->Skip();
+  AddParsedArgument(value);
+  return true;
+}
+
+bool ArgumentParser::ParseCallback(const ArgumentSpec& spec) {
+  v8::Local<v8::Value> value = arguments_->PeekNext();
+  if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
+    if (!spec.optional()) {
+      *error_ = "Missing required argument: " + spec.name();
+      return false;
+    }
+    arguments_->Skip();
+    return true;
+  }
+
+  if (!value->IsFunction()) {
+    *error_ = "Argument is wrong type: " + spec.name();
+    return false;
+  }
+
+  arguments_->Skip();
+  SetCallback(value.As<v8::Function>());
+  return true;
+}
+
+}  // namespace
+
 APISignature::APISignature(const base::ListValue& specification) {
   signature_.reserve(specification.GetSize());
   for (const auto& value : specification) {
@@ -21,99 +212,34 @@ APISignature::APISignature(const base::ListValue& specification) {
 
 APISignature::~APISignature() {}
 
-std::unique_ptr<base::ListValue> APISignature::ParseArguments(
+bool APISignature::ParseArgumentsToV8(gin::Arguments* arguments,
+                                      const ArgumentSpec::RefMap& type_refs,
+                                      std::vector<v8::Local<v8::Value>>* v8_out,
+                                      std::string* error) const {
+  DCHECK(v8_out);
+  std::vector<v8::Local<v8::Value>> v8_values;
+  V8ArgumentParser parser(signature_, arguments, type_refs, error, &v8_values);
+  if (!parser.ParseArguments())
+    return false;
+  *v8_out = std::move(v8_values);
+  return true;
+}
+
+bool APISignature::ParseArgumentsToJSON(
     gin::Arguments* arguments,
     const ArgumentSpec::RefMap& type_refs,
+    std::unique_ptr<base::ListValue>* json_out,
     v8::Local<v8::Function>* callback_out,
     std::string* error) const {
-  auto results = base::MakeUnique<base::ListValue>();
-
-  // TODO(devlin): This is how extension APIs have always determined if a
-  // function has a callback, but it seems a little silly. In the long run (once
-  // signatures are generated), it probably makes sense to indicate this
-  // differently.
-  bool signature_has_callback =
-      !signature_.empty() &&
-      signature_.back()->type() == ArgumentType::FUNCTION;
-
-  v8::Local<v8::Context> context = arguments->isolate()->GetCurrentContext();
-
-  size_t end_size =
-      signature_has_callback ? signature_.size() - 1 : signature_.size();
-  for (size_t i = 0; i < end_size; ++i) {
-    std::unique_ptr<base::Value> parsed =
-        ParseArgument(*signature_[i], context, arguments, type_refs, error);
-    if (!parsed)
-      return nullptr;
-    results->Append(std::move(parsed));
-  }
-
-  v8::Local<v8::Function> callback_value;
-  if (signature_has_callback &&
-      !ParseCallback(arguments, *signature_.back(), error, &callback_value)) {
-    return nullptr;
-  }
-
-  if (!arguments->PeekNext().IsEmpty())
-    return nullptr;  // Extra arguments aren't allowed.
-
-  *callback_out = callback_value;
-  return results;
-}
-
-std::unique_ptr<base::Value> APISignature::ParseArgument(
-    const ArgumentSpec& spec,
-    v8::Local<v8::Context> context,
-    gin::Arguments* arguments,
-    const ArgumentSpec::RefMap& type_refs,
-    std::string* error) const {
-  v8::Local<v8::Value> value = arguments->PeekNext();
-  if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
-    if (!spec.optional()) {
-      *error = "Missing required argument: " + spec.name();
-      return nullptr;
-    }
-    // This is safe to call even if |arguments| is at the end (which can happen
-    // if n optional arguments are omitted at the end of the signature).
-    arguments->Skip();
-    return base::Value::CreateNullValue();
-  }
-
-  std::unique_ptr<base::Value> result =
-      spec.ConvertArgument(context, value, type_refs, error);
-  if (!result) {
-    if (!spec.optional()) {
-      *error = "Missing required argument: " + spec.name();
-      return nullptr;
-    }
-    return base::Value::CreateNullValue();
-  }
-
-  arguments->Skip();
-  return result;
-}
-
-bool APISignature::ParseCallback(gin::Arguments* arguments,
-                                 const ArgumentSpec& callback_spec,
-                                 std::string* error,
-                                 v8::Local<v8::Function>* callback_out) const {
-  v8::Local<v8::Value> value = arguments->PeekNext();
-  if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
-    if (!callback_spec.optional()) {
-      *error = "Missing required argument: " + callback_spec.name();
-      return false;
-    }
-    arguments->Skip();
-    return true;
-  }
-
-  if (!value->IsFunction()) {
-    *error = "Argument is wrong type: " + callback_spec.name();
+  DCHECK(json_out);
+  DCHECK(callback_out);
+  std::unique_ptr<base::ListValue> json = base::MakeUnique<base::ListValue>();
+  BaseValueArgumentParser parser(
+      signature_, arguments, type_refs, error, json.get());
+  if (!parser.ParseArguments())
     return false;
-  }
-
-  *callback_out = value.As<v8::Function>();
-  arguments->Skip();
+  *json_out = std::move(json);
+  *callback_out = parser.callback();
   return true;
 }
 

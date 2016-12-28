@@ -188,31 +188,43 @@ void APIBinding::HandleCall(const std::string& name,
   // GetCurrentContext() should always be correct.
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-  // Check for a custom hook to handle the method.
-  if (binding_hooks_->HandleRequest(api_name_, name, context,
-                                    signature, arguments)) {
-    return;  // Handled by a custom hook.
+  APIBindingHooks::RequestResult hooks_result =
+      APIBindingHooks::RequestResult::NOT_HANDLED;
+  hooks_result = binding_hooks_->HandleRequest(api_name_, name, context,
+                                               signature, arguments,
+                                               *type_refs_);
+
+  switch (hooks_result) {
+    case APIBindingHooks::RequestResult::INVALID_INVOCATION:
+      arguments->ThrowTypeError("Invalid invocation");
+      return;
+    case APIBindingHooks::RequestResult::HANDLED:
+      return;  // Our work here is done.
+    case APIBindingHooks::RequestResult::NOT_HANDLED:
+      break;  // Handle in the default manner.
   }
 
-  std::unique_ptr<base::ListValue> parsed_arguments;
+  std::unique_ptr<base::ListValue> converted_arguments;
   v8::Local<v8::Function> callback;
+  bool conversion_success = false;
   {
     v8::TryCatch try_catch(isolate);
-    parsed_arguments =
-        signature->ParseArguments(arguments, *type_refs_, &callback, &error);
+    conversion_success = signature->ParseArgumentsToJSON(
+        arguments, *type_refs_, &converted_arguments, &callback, &error);
     if (try_catch.HasCaught()) {
-      DCHECK(!parsed_arguments);
+      DCHECK(!converted_arguments);
       try_catch.ReThrow();
       return;
     }
   }
-  if (!parsed_arguments) {
+  if (!conversion_success) {
     arguments->ThrowTypeError("Invalid invocation");
     return;
   }
 
-  method_callback_.Run(name, std::move(parsed_arguments), isolate,
-                       context, callback);
+  DCHECK(converted_arguments);
+  method_callback_.Run(name, std::move(converted_arguments), isolate, context,
+                       callback);
 }
 
 }  // namespace extensions
