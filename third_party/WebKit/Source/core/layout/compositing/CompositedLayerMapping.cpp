@@ -967,7 +967,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(
 
   // If we have a layer that clips children, position it.
   IntRect clippingBox;
-  if (m_childContainmentLayer)
+  if (m_childContainmentLayer && layoutObject()->isBox())
     clippingBox = clipBox(toLayoutBox(layoutObject()));
 
   updateChildTransformLayerGeometry();
@@ -1043,7 +1043,8 @@ void CompositedLayerMapping::computeGraphicsLayerParentLocation(
     const IntRect& ancestorCompositingBounds,
     IntPoint& graphicsLayerParentLocation) {
   if (compositingContainer &&
-      compositingContainer->compositedLayerMapping()->hasClippingLayer()) {
+      compositingContainer->compositedLayerMapping()->hasClippingLayer() &&
+      compositingContainer->layoutObject()->isBox()) {
     // If the compositing ancestor has a layer to clip children, we parent in
     // that, and therefore position relative to it.
     IntRect clippingBox =
@@ -1360,7 +1361,8 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(
 }
 
 void CompositedLayerMapping::updateChildClippingMaskLayerGeometry() {
-  if (!m_childClippingMaskLayer || !layoutObject()->style()->clipPath())
+  if (!m_childClippingMaskLayer || !layoutObject()->style()->clipPath() ||
+      !layoutObject()->isBox())
     return;
   LayoutBox* layoutBox = toLayoutBox(layoutObject());
   IntRect clientBox = enclosingIntRect(layoutBox->clientBoxRect());
