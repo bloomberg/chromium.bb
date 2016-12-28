@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/renderer/ruleset_dealer.h"
+#include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +46,9 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   MOCK_METHOD0(GetAncestorDocumentURLs, std::vector<GURL>());
   MOCK_METHOD0(OnSetSubresourceFilterForCommittedLoadCalled, void());
   MOCK_METHOD0(SignalFirstSubresourceDisallowedForCommittedLoad, void());
+  MOCK_METHOD2(SendDocumentLoadStatistics,
+               void(base::TimeDelta, base::TimeDelta));
+
   void SetSubresourceFilterForCommittedLoad(
       std::unique_ptr<blink::WebDocumentSubresourceFilter> filter) override {
     last_injected_filter_ = std::move(filter);
@@ -145,15 +149,15 @@ class SubresourceFilterAgentTest : public ::testing::Test {
     EXPECT_CALL(*agent(), OnSetSubresourceFilterForCommittedLoadCalled());
   }
 
-  void ExpectSignalAboutFirstSubresourceDisallowed() {
-    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCommittedLoad());
-  }
-
   void ExpectNoSubresourceFilterGetsInjected() {
     EXPECT_CALL(*agent(), GetAncestorDocumentURLs())
         .Times(::testing::AtLeast(0));
     EXPECT_CALL(*agent(), OnSetSubresourceFilterForCommittedLoadCalled())
         .Times(0);
+  }
+
+  void ExpectSignalAboutFirstSubresourceDisallowed() {
+    EXPECT_CALL(*agent(), SignalFirstSubresourceDisallowedForCommittedLoad());
   }
 
   void ExpectNoSignalAboutFirstSubresourceDisallowed() {
@@ -304,8 +308,13 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
 
     ExpectSignalAboutFirstSubresourceDisallowed();
     ExpectLoadAllowed(kTestFirstURL, false);
+    ExpectNoSignalAboutFirstSubresourceDisallowed();
     ExpectLoadAllowed(kTestFirstURL, false);
+    ExpectNoSignalAboutFirstSubresourceDisallowed();
     ExpectLoadAllowed(kTestSecondURL, true);
+    EXPECT_CALL(*agent(),
+                SendDocumentLoadStatistics(::testing::_, ::testing::_))
+        .Times(measure_performance && ScopedThreadTimers::IsSupported());
     FinishLoad();
 
     ExpectSubresourceFilterGetsInjected();
@@ -313,9 +322,13 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
                                    measure_performance);
     ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
+    ExpectNoSignalAboutFirstSubresourceDisallowed();
+    ExpectLoadAllowed(kTestSecondURL, true);
     ExpectSignalAboutFirstSubresourceDisallowed();
     ExpectLoadAllowed(kTestFirstURL, false);
-    ExpectLoadAllowed(kTestSecondURL, true);
+    EXPECT_CALL(*agent(),
+                SendDocumentLoadStatistics(::testing::_, ::testing::_))
+        .Times(measure_performance && ScopedThreadTimers::IsSupported());
     FinishLoad();
 
     histogram_tester.ExpectUniqueSample(
@@ -332,7 +345,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
     EXPECT_THAT(histogram_tester.GetAllSamples(kSubresourcesDisallowed),
                 ::testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
 
-    const base::HistogramBase::Count expected_total_count =
+    base::HistogramBase::Count expected_total_count =
         measure_performance && base::ThreadTicks::IsSupported() ? 2 : 0;
     histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration,
                                       expected_total_count);

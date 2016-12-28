@@ -7,6 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/test/histogram_tester.h"
@@ -20,6 +21,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
+#include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/core/common/scoped_timers.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -30,6 +33,41 @@
 
 namespace {
 
+// The path to a multi-frame document used for tests.
+static constexpr const char kTestFrameSetPath[] =
+    "subresource_filter/frame_set.html";
+
+// Names of DocumentLoad histograms.
+constexpr const char kDocumentLoadActivationState[] =
+    "SubresourceFilter.DocumentLoad.ActivationState";
+constexpr const char kSubresourceLoadsTotal[] =
+    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total";
+constexpr const char kSubresourceLoadsEvaluated[] =
+    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated";
+constexpr const char kSubresourceLoadsMatchedRules[] =
+    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules";
+constexpr const char kSubresourceLoadsDisallowed[] =
+    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed";
+
+// Names of the performance measurement histograms.
+constexpr const char kActivationWallDuration[] =
+    "SubresourceFilter.DocumentLoad.Activation.WallDuration";
+constexpr const char kActivationCPUDuration[] =
+    "SubresourceFilter.DocumentLoad.Activation.CPUDuration";
+constexpr const char kEvaluationTotalWallDurationForPage[] =
+    "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalWallDuration";
+constexpr const char kEvaluationTotalCPUDurationForPage[] =
+    "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalCPUDuration";
+constexpr const char kEvaluationTotalWallDurationForDocument[] =
+    "SubresourceFilter.DocumentLoad.SubresourceEvaluation.TotalWallDuration";
+constexpr const char kEvaluationTotalCPUDurationForDocument[] =
+    "SubresourceFilter.DocumentLoad.SubresourceEvaluation.TotalCPUDuration";
+constexpr const char kEvaluationWallDuration[] =
+    "SubresourceFilter.SubresourceLoad.Evaluation.WallDuration";
+constexpr const char kEvaluationCPUDuration[] =
+    "SubresourceFilter.SubresourceLoad.Evaluation.CPUDuration";
+
+// Other histograms.
 const char kSubresourceFilterPromptHistogram[] =
     "SubresourceFilter.Prompt.NumVisibility";
 
@@ -57,10 +95,12 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterDisabledBrowserTest,
 
 // SubresourceFilterBrowserTest -----------------------------------------------
 
-class SubresourceFilterBrowserTest : public InProcessBrowserTest {
+class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
  public:
-  SubresourceFilterBrowserTest() {}
-  ~SubresourceFilterBrowserTest() override {}
+  explicit SubresourceFilterBrowserTestImpl(bool measure_performance)
+      : measure_performance_(measure_performance) {}
+
+  ~SubresourceFilterBrowserTestImpl() override {}
 
  protected:
   // It would be too late to enable the feature in SetUpOnMainThread(), as it is
@@ -81,7 +121,9 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     scoped_feature_toggle_.reset(new ScopedSubresourceFilterFeatureToggle(
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
-        kActivationScopeAllSites));
+        kActivationScopeAllSites, std::string(),
+        measure_performance_ ? "1" : "0"));
+
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
@@ -138,9 +180,29 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
  private:
   std::unique_ptr<ScopedSubresourceFilterFeatureToggle> scoped_feature_toggle_;
   TestRulesetPublisher test_ruleset_publisher_;
+  bool measure_performance_;
 
-  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTestImpl);
 };
+
+class SubresourceFilterBrowserTest : public SubresourceFilterBrowserTestImpl {
+ public:
+  SubresourceFilterBrowserTest() : SubresourceFilterBrowserTestImpl(false) {}
+};
+
+// TODO(pkalinnikov): It should be possible to have only one fixture, i.e.,
+// SubresourceFilterBrowserTest, unsetting |measure_performance| by default, and
+// providing a method to switch it on. However, the current implementation of
+// ScopedSubresourceFilterFeatureToggle in use pollutes the global
+// FieldTrialList in such a way that variation parameters can not be reassigned.
+class SubresourceFilterWithPerformanceMeasurementBrowserTest
+    : public SubresourceFilterBrowserTestImpl {
+ public:
+  SubresourceFilterWithPerformanceMeasurementBrowserTest()
+      : SubresourceFilterBrowserTestImpl(true) {}
+};
+
+// Tests -----------------------------------------------------------------------
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, MainFrameActivation) {
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
@@ -181,18 +243,22 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
-  GURL url(GetTestUrl("subresource_filter/frame_set.html"));
+  GURL url(GetTestUrl(kTestFrameSetPath));
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
 
-  const char* kSubframeNames[] = {"one", "two"};
-  for (const char* subframe_name : kSubframeNames) {
-    content::RenderFrameHost* frame = FindFrameByName(subframe_name);
+  const char* kSubframeNames[] = {"one", "two", "three"};
+  const bool kExpectScriptElementToLoad[arraysize(kSubframeNames)] = {
+      false, true, false};
+  for (size_t i = 0; i < arraysize(kSubframeNames); ++i) {
+    content::RenderFrameHost* frame = FindFrameByName(kSubframeNames[i]);
     ASSERT_TRUE(frame);
-    EXPECT_FALSE(WasParsedScriptElementLoaded(frame));
+    EXPECT_EQ(kExpectScriptElementToLoad[i],
+              WasParsedScriptElementLoaded(frame));
   }
+
   tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
 }
 
@@ -201,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
 // inserting a subframe afterwards, and still expecting activation.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        PageLevelActivationOutlivesSamePageNavigation) {
-  GURL url(GetTestUrl("subresource_filter/frame_set.html"));
+  GURL url(GetTestUrl(kTestFrameSetPath));
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -259,16 +325,89 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        PromptShownAgainOnNextNavigation) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
-  GURL url(GetTestUrl("subresource_filter/frame_set.html"));
+  GURL url(GetTestUrl(kTestFrameSetPath));
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
   tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
   // Check that the bubble is not shown again for this navigation.
-  EXPECT_FALSE(IsDynamicScriptElementLoaded(FindFrameByName("three")));
+  EXPECT_FALSE(IsDynamicScriptElementLoaded(FindFrameByName("five")));
   tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
   // Check that bubble is shown for new navigation.
   ui_test_utils::NavigateToURL(browser(), url);
   tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 2);
+}
+
+// Tests checking how histograms are recorded. ---------------------------------
+
+namespace {
+
+void ExpectHistogramsAreRecordedForTestFrameSet(
+    const base::HistogramTester& tester,
+    bool expect_performance_measurements) {
+  const bool time_recorded =
+      expect_performance_measurements && ScopedThreadTimers::IsSupported();
+
+  // The following histograms are generated on the browser side.
+  tester.ExpectTotalCount(kEvaluationTotalWallDurationForPage, time_recorded);
+  tester.ExpectTotalCount(kEvaluationTotalCPUDurationForPage, time_recorded);
+
+  // The rest is produced by renderers, therefore needs to be merged here.
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  tester.ExpectTotalCount(kEvaluationTotalWallDurationForDocument,
+                          time_recorded ? 6 : 0);
+  tester.ExpectTotalCount(kEvaluationTotalCPUDurationForDocument,
+                          time_recorded ? 6 : 0);
+
+  tester.ExpectTotalCount(kEvaluationWallDuration, time_recorded ? 7 : 0);
+  tester.ExpectTotalCount(kEvaluationCPUDuration, time_recorded ? 7 : 0);
+
+  // Activation timing histograms are always recorded.
+  tester.ExpectTotalCount(kActivationWallDuration, 6);
+  tester.ExpectTotalCount(kActivationCPUDuration, 6);
+
+  tester.ExpectUniqueSample(
+      kDocumentLoadActivationState,
+      static_cast<base::Histogram::Sample>(ActivationState::ENABLED), 6);
+
+  EXPECT_THAT(tester.GetAllSamples(kSubresourceLoadsTotal),
+              ::testing::ElementsAre(base::Bucket(0, 3), base::Bucket(2, 3)));
+  EXPECT_THAT(tester.GetAllSamples(kSubresourceLoadsEvaluated),
+              ::testing::ElementsAre(base::Bucket(0, 3), base::Bucket(2, 3)));
+
+  EXPECT_THAT(tester.GetAllSamples(kSubresourceLoadsMatchedRules),
+              ::testing::ElementsAre(base::Bucket(0, 4), base::Bucket(2, 2)));
+  EXPECT_THAT(tester.GetAllSamples(kSubresourceLoadsDisallowed),
+              ::testing::ElementsAre(base::Bucket(0, 4), base::Bucket(2, 2)));
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       ExpectHistogramsAreRecorded) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  const GURL url = GetTestUrl(kTestFrameSetPath);
+
+  base::HistogramTester tester;
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ExpectHistogramsAreRecordedForTestFrameSet(
+      tester, false /* expect_performance_measurements */);
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterWithPerformanceMeasurementBrowserTest,
+                       ExpectHistogramsAreRecorded) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  const GURL url = GetTestUrl(kTestFrameSetPath);
+
+  base::HistogramTester tester;
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ExpectHistogramsAreRecordedForTestFrameSet(
+      tester, true /* expect_performance_measurements */);
 }
 
 }  // namespace subresource_filter

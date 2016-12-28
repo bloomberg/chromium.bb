@@ -16,8 +16,8 @@ namespace subresource_filter {
 namespace testing {
 
 namespace {
-const char kTestFieldTrialName[] = "FieldTrialNameShouldNotMatter";
-const char kTestExperimentGroupName[] = "GroupNameShouldNotMatter";
+constexpr const char kTestFieldTrialName[] = "FieldTrialNameShouldNotMatter";
+constexpr const char kTestExperimentGroupName[] = "GroupNameShouldNotMatter";
 }  // namespace
 
 ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(

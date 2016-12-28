@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "base/time/time.h"
 #include "components/safe_browsing_db/util.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
@@ -91,6 +92,9 @@ class ContentSubresourceFilterDriverFactory
 
   void OnFirstSubresourceLoadDisallowed();
 
+  void OnDocumentLoadStatistics(base::TimeDelta evaluation_total_wall_duration,
+                                base::TimeDelta evaluation_total_cpu_duration);
+
   bool IsWhitelisted(const GURL& url) const;
 
   // content::WebContentsObserver:
@@ -102,6 +106,8 @@ class ContentSubresourceFilterDriverFactory
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
 
@@ -134,6 +140,12 @@ class ContentSubresourceFilterDriverFactory
   std::vector<GURL> navigation_chain_;
 
   URLToActivationListsMap activation_list_matches_;
+
+  // Total time spent in DocumentSubresourceFilter::allowLoad() calls,
+  // aggregated across all frames, evaluating subresource loads for the current
+  // page load.
+  base::TimeDelta evaluation_total_wall_duration_;
+  base::TimeDelta evaluation_total_cpu_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactory);
 };

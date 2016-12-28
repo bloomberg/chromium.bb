@@ -12,6 +12,7 @@
 #include "components/subresource_filter/content/renderer/document_subresource_filter.h"
 #include "components/subresource_filter/content/renderer/ruleset_dealer.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
+#include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/time_measurements.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/renderer/render_frame.h"
@@ -58,6 +59,14 @@ void SubresourceFilterAgent::
     SignalFirstSubresourceDisallowedForCommittedLoad() {
   render_frame()->Send(new SubresourceFilterHostMsg_DidDisallowFirstSubresource(
       render_frame()->GetRoutingID()));
+}
+
+void SubresourceFilterAgent::SendDocumentLoadStatistics(
+    base::TimeDelta evaluation_total_wall_duration,
+    base::TimeDelta evaluation_total_cpu_duration) {
+  render_frame()->Send(new SubresourceFilterHostMsg_DocumentLoadStatistics(
+      render_frame()->GetRoutingID(), evaluation_total_wall_duration,
+      evaluation_total_cpu_duration));
 }
 
 void SubresourceFilterAgent::OnActivateForProvisionalLoad(
@@ -113,6 +122,9 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
         statistics.evaluation_total_cpu_duration,
         base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
         50);
+
+    SendDocumentLoadStatistics(statistics.evaluation_total_wall_duration,
+                               statistics.evaluation_total_cpu_duration);
   }
 }
 

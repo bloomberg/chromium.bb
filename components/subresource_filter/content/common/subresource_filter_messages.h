@@ -4,6 +4,7 @@
 
 // Message definition file, included multiple times, hence no include guard.
 
+#include "base/time/time.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
@@ -42,4 +43,12 @@ IPC_MESSAGE_ROUTED3(SubresourceFilterMsg_ActivateForProvisionalLoad,
 // Sent to the browser the first time a subresource load is disallowed for the
 // most recently commited document load in a frame. It is used to trigger a
 // UI prompt to inform the user and allow them to turn off filtering.
-IPC_MESSAGE_ROUTED0(SubresourceFilterHostMsg_DidDisallowFirstSubresource)
+IPC_MESSAGE_ROUTED0(SubresourceFilterHostMsg_DidDisallowFirstSubresource);
+
+// This is sent to a RenderFrameHost in the browser when a document load is
+// finished, just before the DidFinishLoad message, if performance measurements
+// were enabled for the load. Contains the total time spent on evaluating
+// subresource loads in DocumentSubresourceFilter::allowLoad() for a frame.
+IPC_MESSAGE_ROUTED2(SubresourceFilterHostMsg_DocumentLoadStatistics,
+                    base::TimeDelta /* evaluation_total_wall_duration */,
+                    base::TimeDelta /* evaluation_total_cpu_duration */);

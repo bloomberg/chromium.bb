@@ -56,6 +56,12 @@ class SubresourceFilterAgent
   // the most recently committed load. Not called if all resources are allowed.
   virtual void SignalFirstSubresourceDisallowedForCommittedLoad();
 
+  // Informs the browser about the time spent by DocumentSubresourceFilter in
+  // allowLoad calls while evaluating subresource loads for the current frame.
+  virtual void SendDocumentLoadStatistics(
+      base::TimeDelta evaluation_total_wall_duration,
+      base::TimeDelta evaluation_total_cpu_duration);
+
  private:
   void OnActivateForProvisionalLoad(ActivationState activation_state,
                                     const GURL& url,

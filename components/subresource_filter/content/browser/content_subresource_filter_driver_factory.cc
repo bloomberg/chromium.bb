@@ -6,11 +6,13 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/time/time.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_list.h"
+#include "components/subresource_filter/core/common/time_measurements.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -28,8 +30,15 @@ std::string DistillURLToHostAndPath(const GURL& url) {
   return url.host() + url.path();
 }
 
-bool ShouldMeasurePerformance(double rate) {
-  return base::RandDouble() < rate;
+// Returns true with a probability of GetPerformanceMeasurementRate() if
+// ThreadTicks is supported, otherwise returns false.
+bool ShouldMeasurePerformanceForPageLoad() {
+  if (!base::ThreadTicks::IsSupported())
+    return false;
+  // TODO(pkalinnikov): Cache |rate| and other variation params in
+  // ContentSubresourceFilterDriverFactory.
+  const double rate = GetPerformanceMeasurementRate();
+  return rate == 1 || (rate > 0 && base::RandDouble() < rate);
 }
 
 }  // namespace
@@ -81,6 +90,13 @@ void ContentSubresourceFilterDriverFactory::CreateDriverForFrameHostIfNeeded(
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
   client_->ToggleNotificationVisibility(activation_state_ ==
                                         ActivationState::ENABLED);
+}
+
+void ContentSubresourceFilterDriverFactory::OnDocumentLoadStatistics(
+    base::TimeDelta evaluation_total_wall_duration,
+    base::TimeDelta evaluation_total_cpu_duration) {
+  evaluation_total_wall_duration_ += evaluation_total_wall_duration;
+  evaluation_total_cpu_duration_ += evaluation_total_cpu_duration;
 }
 
 bool ContentSubresourceFilterDriverFactory::IsWhitelisted(
@@ -169,6 +185,8 @@ void ContentSubresourceFilterDriverFactory::DidStartNavigation(
     client_->ToggleNotificationVisibility(false);
     activation_state_ = ActivationState::DISABLED;
     measure_performance_ = false;
+    evaluation_total_wall_duration_ = base::TimeDelta();
+    evaluation_total_cpu_duration_ = base::TimeDelta();
   }
 }
 
@@ -198,6 +216,26 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigation(
   ReadyToCommitNavigationInternal(render_frame_host, url);
 }
 
+void ContentSubresourceFilterDriverFactory::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  if (render_frame_host->GetParent())
+    return;
+
+  if (measure_performance_) {
+    DCHECK(activation_state_ != ActivationState::DISABLED);
+    UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
+        "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalWallDuration",
+        evaluation_total_wall_duration_, base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromSeconds(10), 50);
+
+    UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
+        "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalCPUDuration",
+        evaluation_total_cpu_duration_, base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromSeconds(10), 50);
+  }
+}
+
 bool ContentSubresourceFilterDriverFactory::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
@@ -205,6 +243,8 @@ bool ContentSubresourceFilterDriverFactory::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ContentSubresourceFilterDriverFactory, message)
     IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DidDisallowFirstSubresource,
                         OnFirstSubresourceLoadDisallowed)
+    IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DocumentLoadStatistics,
+                        OnDocumentLoadStatistics)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -217,12 +257,14 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigationInternal(
     RecordRedirectChainMatchPattern();
     if (ShouldActivateForMainFrameURL(url)) {
       activation_state_ = GetMaximumActivationState();
-      measure_performance_ =
-          ShouldMeasurePerformance(GetPerformanceMeasurementRate());
+      measure_performance_ = activation_state_ != ActivationState::DISABLED &&
+                             ShouldMeasurePerformanceForPageLoad();
       ActivateForFrameHostIfNeeded(render_frame_host, url);
     } else {
       activation_state_ = ActivationState::DISABLED;
       measure_performance_ = false;
+      evaluation_total_wall_duration_ = base::TimeDelta();
+      evaluation_total_cpu_duration_ = base::TimeDelta();
     }
   } else {
     ActivateForFrameHostIfNeeded(render_frame_host, url);
