@@ -13,6 +13,7 @@ import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.SystemClock;
 import android.support.test.filters.SmallTest;
@@ -46,6 +47,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchQuickActionControl;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.FakeSlowResolveSearch;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
+import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.Tab;
@@ -120,6 +122,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         // We have to set up the test server before starting the activity.
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
 
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FirstRunStatus.setFirstRunFlowComplete(true);
+            }
+        });
         super.setUp();
 
         mManager = getActivity().getContextualSearchManager();
@@ -151,6 +159,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @Override
     protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FirstRunStatus.setFirstRunFlowComplete(false);
+            }
+        });
         super.tearDown();
     }
 
@@ -971,7 +985,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ContextUtils.getAppSharedPreferences().edit().clear().apply();
+                SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+                boolean freStatus = prefs.getBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, false);
+                prefs.edit()
+                        .clear()
+                        .putBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, freStatus)
+                        .apply();
             }
         });
     }
