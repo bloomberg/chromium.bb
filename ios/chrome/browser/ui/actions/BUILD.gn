@@ -6,6 +6,7 @@ source_set("actions") {
   sources = [
     "settings_actions.h",
     "tab_grid_actions.h",
+    "tab_strip_actions.h",
     "tools_menu_actions.h",
   ]
 

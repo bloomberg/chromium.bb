@@ -1,0 +1,17 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("strip") {
+  sources = [
+    "sc_strip_coordinator.h",
+    "sc_strip_coordinator.mm",
+  ]
+  deps = [
+    "//ios/chrome/browser/ui/actions",
+    "//ios/chrome/browser/ui/strip:strip_ui",
+    "//ios/showcase/common",
+  ]
+  libs = [ "UIKit.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
