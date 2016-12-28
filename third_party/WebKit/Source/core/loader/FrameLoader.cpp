@@ -225,6 +225,10 @@ void FrameLoader::init() {
   m_frame->document()->cancelParsing();
   m_stateMachine.advanceTo(
       FrameLoaderStateMachine::DisplayingInitialEmptyDocument);
+  // Suppress finish notifications for inital empty documents, since they don't
+  // generate start notifications.
+  if (m_documentLoader)
+    m_documentLoader->setSentDidFinishLoad();
   // Self-suspend if created in an already suspended Page. Note that both
   // startLoadingMainResource() and cancelParsing() may have already detached
   // the frame, since they both fire JS events.
@@ -672,11 +676,6 @@ static bool shouldComplete(Document* document) {
 }
 
 static bool shouldSendFinishNotification(LocalFrame* frame) {
-  // Don't send stop notifications for inital empty documents, since they don't
-  // generate start notifications.
-  if (!frame->loader().stateMachine()->committedFirstRealDocumentLoad())
-    return false;
-
   // Don't send didFinishLoad more than once per DocumentLoader.
   if (frame->loader().documentLoader()->sentDidFinishLoad())
     return false;
@@ -1468,19 +1467,18 @@ void FrameLoader::loadFailed(DocumentLoader* loader,
 
   HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType);
   if (loader == m_provisionalDocumentLoader) {
+    m_provisionalDocumentLoader->setSentDidFinishLoad();
     client()->dispatchDidFailProvisionalLoad(error, historyCommitType);
     if (loader != m_provisionalDocumentLoader)
       return;
     detachDocumentLoader(m_provisionalDocumentLoader);
-    m_progressTracker->progressCompleted();
   } else {
     DCHECK_EQ(loader, m_documentLoader);
     if (m_frame->document()->parser())
       m_frame->document()->parser()->stopParsing();
-    m_documentLoader->setSentDidFinishLoad();
-    if (!m_provisionalDocumentLoader && m_frame->isLoading()) {
+    if (!m_documentLoader->sentDidFinishLoad()) {
+      m_documentLoader->setSentDidFinishLoad();
       client()->dispatchDidFailLoad(error, historyCommitType);
-      m_progressTracker->progressCompleted();
     }
   }
   checkCompleted();

@@ -271,7 +271,6 @@ class CORE_EXPORT DocumentLoader
     NotStarted,
     Provisional,
     Committed,
-    MainResourceDone,
     SentDidFinishLoad
   };
   State m_state;

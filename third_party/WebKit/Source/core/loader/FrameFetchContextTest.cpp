@@ -87,25 +87,16 @@ class FrameFetchContextTest : public ::testing::Test {
   void SetUp() override {
     dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
     dummyPageHolder->page().setDeviceScaleFactor(1.0);
-    documentLoader = DocumentLoader::create(
-        &dummyPageHolder->frame(), ResourceRequest("http://www.example.com"),
-        SubstituteData(), ClientRedirectPolicy::NotClientRedirect);
     document = &dummyPageHolder->document();
     fetchContext =
-        static_cast<FrameFetchContext*>(&documentLoader->fetcher()->context());
+        static_cast<FrameFetchContext*>(&document->fetcher()->context());
     owner = DummyFrameOwner::create();
     FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
   }
 
   void TearDown() override {
-    documentLoader->detachFromFrame();
-    documentLoader.clear();
-
-    if (childFrame) {
-      childDocumentLoader->detachFromFrame();
-      childDocumentLoader.clear();
+    if (childFrame)
       childFrame->detach(FrameDetachType::Remove);
-    }
   }
 
   FrameFetchContext* createChildFrame() {
@@ -114,12 +105,9 @@ class FrameFetchContextTest : public ::testing::Test {
                                     document->frame()->host(), owner.get());
     childFrame->setView(FrameView::create(*childFrame, IntSize(500, 500)));
     childFrame->init();
-    childDocumentLoader = DocumentLoader::create(
-        childFrame.get(), ResourceRequest("http://www.example.com"),
-        SubstituteData(), ClientRedirectPolicy::NotClientRedirect);
     childDocument = childFrame->document();
     FrameFetchContext* childFetchContext = static_cast<FrameFetchContext*>(
-        &childDocumentLoader->fetcher()->context());
+        &childFrame->loader().documentLoader()->fetcher()->context());
     FrameFetchContext::provideDocumentToContext(*childFetchContext,
                                                 childDocument.get());
     return childFetchContext;
@@ -129,13 +117,11 @@ class FrameFetchContextTest : public ::testing::Test {
   // We don't use the DocumentLoader directly in any tests, but need to keep it
   // around as long as the ResourceFetcher and Document live due to indirect
   // usage.
-  Persistent<DocumentLoader> documentLoader;
   Persistent<Document> document;
   Persistent<FrameFetchContext> fetchContext;
 
   Persistent<StubFrameLoaderClientWithParent> childClient;
   Persistent<LocalFrame> childFrame;
-  Persistent<DocumentLoader> childDocumentLoader;
   Persistent<Document> childDocument;
   Persistent<DummyFrameOwner> owner;
 };
@@ -151,13 +137,10 @@ class FrameFetchContextMockedFrameLoaderClientTest
     dummyPageHolder =
         DummyPageHolder::create(IntSize(500, 500), nullptr, client);
     dummyPageHolder->page().setDeviceScaleFactor(1.0);
-    documentLoader = DocumentLoader::create(
-        &dummyPageHolder->frame(), ResourceRequest(mainResourceUrl),
-        SubstituteData(), ClientRedirectPolicy::NotClientRedirect);
     document = &dummyPageHolder->document();
     document->setURL(mainResourceUrl);
     fetchContext =
-        static_cast<FrameFetchContext*>(&documentLoader->fetcher()->context());
+        static_cast<FrameFetchContext*>(&document->fetcher()->context());
     owner = DummyFrameOwner::create();
     FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
   }

@@ -132,6 +132,7 @@ DocumentLoader::~DocumentLoader() {
   DCHECK(!m_frame);
   DCHECK(!m_mainResource);
   DCHECK(!m_applicationCacheHost);
+  DCHECK_EQ(m_state, SentDidFinishLoad);
 }
 
 DEFINE_TRACE(DocumentLoader) {
@@ -285,7 +286,6 @@ void DocumentLoader::notifyFinished(Resource* resource) {
 
   if (m_applicationCacheHost)
     m_applicationCacheHost->failedLoadingMainResource();
-  m_state = MainResourceDone;
 
   if (m_mainResource->resourceError().wasBlockedByResponse()) {
     InspectorInstrumentation::canceledAfterReceivedResourceResponse(
@@ -326,8 +326,6 @@ void DocumentLoader::finishedLoading(double finishTime) {
 
   m_applicationCacheHost->finishedLoadingMainResource();
   endWriting();
-  if (m_state < MainResourceDone)
-    m_state = MainResourceDone;
   clearMainResourceHandle();
 
   // Shows the deprecation message and measures the impact of the new security
@@ -551,7 +549,7 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType,
 }
 
 void DocumentLoader::commitData(const char* bytes, size_t length) {
-  DCHECK_LT(m_state, MainResourceDone);
+  DCHECK_EQ(m_state, Committed);
   ensureWriter(m_response.mimeType());
 
   // This can happen if document.close() is called by an event handler while
@@ -632,6 +630,9 @@ void DocumentLoader::detachFromFrame() {
   // It never makes sense to have a document loader that is detached from its
   // frame have any loads active, so go ahead and kill all the loads.
   m_fetcher->stopFetching();
+
+  if (frameLoader() && !sentDidFinishLoad())
+    frameLoader()->loadFailed(this, ResourceError::cancelledError(url()));
 
   // If that load cancellation triggered another detach, leave.
   // (fast/frames/detach-frame-nested-no-crash.html is an example of this.)

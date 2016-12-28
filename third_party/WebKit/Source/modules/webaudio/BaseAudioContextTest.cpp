@@ -87,11 +87,8 @@ class BaseAudioContextTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    if (m_childFrame) {
-      m_childDocumentLoader->detachFromFrame();
-      m_childDocumentLoader.clear();
+    if (m_childFrame)
       m_childFrame->detach(FrameDetachType::Remove);
-    }
   }
 
   void createChildFrame() {
@@ -100,9 +97,6 @@ class BaseAudioContextTest : public ::testing::Test {
         document().frame()->host(), m_dummyFrameOwner.get());
     m_childFrame->setView(FrameView::create(*m_childFrame, IntSize(500, 500)));
     m_childFrame->init();
-    m_childDocumentLoader = DocumentLoader::create(
-        m_childFrame.get(), ResourceRequest("https://www.example.com"),
-        SubstituteData(), ClientRedirectPolicy::NotClientRedirect);
 
     childDocument().updateSecurityOrigin(
         SecurityOrigin::create("https", "cross-origin.com", 80));
@@ -129,7 +123,6 @@ class BaseAudioContextTest : public ::testing::Test {
   Persistent<DummyFrameOwner> m_dummyFrameOwner;
 
   Persistent<LocalFrame> m_childFrame;
-  Persistent<DocumentLoader> m_childDocumentLoader;
 
   BaseAudioContextTestPlatform m_testPlatform;
 };
