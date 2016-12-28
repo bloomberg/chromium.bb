@@ -46,25 +46,6 @@ const double kBackoffMultiplier = 1.1;
 // The maximum backoff multiplier.
 const int kMaxBackoffMultiplier = 10;
 
-enum InitSequence {
-  TIMER_FIRED_FIRST,
-  INIT_TASK_COMPLETED_FIRST,
-  INIT_SEQUENCE_ENUM_SIZE,
-};
-
-void LogMetricsInitSequence(InitSequence sequence) {
-  UMA_HISTOGRAM_ENUMERATION("UMA.InitSequence", sequence,
-                            INIT_SEQUENCE_ENUM_SIZE);
-}
-
-void LogActualUploadInterval(TimeDelta interval) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("UMA.ActualLogUploadInterval",
-                             interval.InMinutes(),
-                             1,
-                             base::TimeDelta::FromHours(12).InMinutes(),
-                             50);
-}
-
 }  // anonymous namespace
 
 MetricsReportingScheduler::MetricsReportingScheduler(
@@ -134,6 +115,19 @@ void MetricsReportingScheduler::UploadCancelled() {
 void MetricsReportingScheduler::SetUploadIntervalForTesting(
     base::TimeDelta interval) {
   upload_interval_ = interval;
+}
+
+void MetricsReportingScheduler::LogMetricsInitSequence(InitSequence sequence) {
+  UMA_HISTOGRAM_ENUMERATION("UMA.InitSequence", sequence,
+                            INIT_SEQUENCE_ENUM_SIZE);
+}
+
+void MetricsReportingScheduler::LogActualUploadInterval(TimeDelta interval) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("UMA.ActualLogUploadInterval",
+                             interval.InMinutes(),
+                             1,
+                             base::TimeDelta::FromHours(12).InMinutes(),
+                             50);
 }
 
 void MetricsReportingScheduler::TriggerUpload() {

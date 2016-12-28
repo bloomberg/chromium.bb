@@ -24,7 +24,7 @@ class MetricsReportingScheduler {
   MetricsReportingScheduler(
       const base::Closure& upload_callback,
       const base::Callback<base::TimeDelta(void)>& upload_interval_callback);
-  ~MetricsReportingScheduler();
+  virtual ~MetricsReportingScheduler();
 
   // Starts scheduling uploads. This in a no-op if the scheduler is already
   // running, so it is safe to call more than once.
@@ -46,7 +46,20 @@ class MetricsReportingScheduler {
   // Sets the upload interval to a specific value, exposed for unit tests.
   void SetUploadIntervalForTesting(base::TimeDelta interval);
 
+ protected:
+  enum InitSequence {
+    TIMER_FIRED_FIRST,
+    INIT_TASK_COMPLETED_FIRST,
+    INIT_SEQUENCE_ENUM_SIZE,
+  };
+
  private:
+  // Record the init sequence order histogram.
+  virtual void LogMetricsInitSequence(InitSequence sequence);
+
+  // Record the upload interval time.
+  virtual void LogActualUploadInterval(base::TimeDelta interval);
+
   // Timer callback indicating it's time for the MetricsService to upload
   // metrics.
   void TriggerUpload();
