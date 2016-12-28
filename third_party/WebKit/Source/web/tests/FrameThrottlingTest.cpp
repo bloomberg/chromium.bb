@@ -13,6 +13,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebDisplayItemList.h"
@@ -928,6 +929,52 @@ TEST_F(FrameThrottlingTest, AllowOneAnimationFrame) {
       localFrame->script().executeScriptInMainWorldAndReturnValue(
           ScriptSourceCode("window.didRaf;"));
   EXPECT_TRUE(result->IsTrue());
+}
+
+TEST_F(FrameThrottlingTest, UpdatePaintPropertiesOnUnthrottling) {
+  if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    return;
+
+  SimRequest mainResource("https://example.com/", "text/html");
+  SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+  loadURL("https://example.com/");
+  mainResource.complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+  frameResource.complete("<div id='div'>Inner</div>");
+  compositeFrame();
+
+  auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+  auto* frameDocument = frameElement->contentDocument();
+  auto* innerDiv = frameDocument->getElementById("div");
+  auto* innerDivObject = innerDiv->layoutObject();
+  EXPECT_FALSE(frameDocument->view()->shouldThrottleRendering());
+
+  frameElement->setAttribute(HTMLNames::styleAttr,
+                             "transform: translateY(1000px)");
+  compositeFrame();
+  EXPECT_TRUE(frameDocument->view()->canThrottleRendering());
+  EXPECT_FALSE(innerDivObject->paintProperties()->transform());
+
+  // Mutating the throttled frame should not cause paint property update.
+  innerDiv->setAttribute(HTMLNames::styleAttr, "transform: translateY(20px)");
+  EXPECT_FALSE(compositor().needsBeginFrame());
+  EXPECT_TRUE(frameDocument->view()->canThrottleRendering());
+  {
+    DocumentLifecycle::AllowThrottlingScope throttlingScope(
+        document().lifecycle());
+    document().view()->updateAllLifecyclePhases();
+  }
+  EXPECT_FALSE(innerDivObject->paintProperties()->transform());
+
+  // Move the frame back on screen to unthrottle it.
+  frameElement->setAttribute(HTMLNames::styleAttr, "");
+  // The first update unthrottles the frame, the second actually update layout
+  // and paint properties etc.
+  compositeFrame();
+  compositeFrame();
+  EXPECT_FALSE(frameDocument->view()->canThrottleRendering());
+  EXPECT_EQ(TransformationMatrix().translate(0, 20),
+            innerDiv->layoutObject()->paintProperties()->transform()->matrix());
 }
 
 }  // namespace blink

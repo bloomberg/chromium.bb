@@ -4622,6 +4622,9 @@ void FrameView::updateRenderThrottlingStatus(bool hidden,
     LayoutViewItem layoutViewItem = this->layoutViewItem();
     if (!layoutViewItem.isNull())
       layoutViewItem.invalidatePaintForViewAndCompositedLayers();
+    // Also need to update all paint properties that might be skipped while
+    // the frame was throttled.
+    setSubtreeNeedsPaintPropertyUpdate();
   }
 
   bool hasHandlers = m_frame->host() &&
