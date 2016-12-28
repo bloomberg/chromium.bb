@@ -276,6 +276,18 @@ TEST_F(DirectoryImplTest, CantWriteFileOnADirectory) {
   }
 }
 
+TEST_F(DirectoryImplTest, Flush) {
+  mojom::DirectoryPtr directory;
+  GetTemporaryRoot(&directory);
+  mojom::FileError error;
+
+  {
+    bool handled = directory->Flush(&error);
+    ASSERT_TRUE(handled);
+    EXPECT_EQ(mojom::FileError::OK, error);
+  }
+}
+
 // TODO(vtl): Test delete flags.
 
 }  // namespace

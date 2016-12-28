@@ -224,7 +224,8 @@ void DirectoryImpl::IsWritable(const std::string& raw_path,
 }
 
 void DirectoryImpl::Flush(const FlushCallback& callback) {
-  base::File file(directory_path_, base::File::FLAG_READ);
+  base::File file(directory_path_,
+                  base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
     callback.Run(GetError(file));
     return;
