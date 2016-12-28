@@ -176,6 +176,11 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // Called if the user could generate a password for this form.
   void MarkGenerationAvailable() { generation_available_ = true; }
 
+  // Returns the provisionally saved form, if it exists, otherwise nullptr.
+  const autofill::PasswordForm* provisionally_saved_form() const {
+    return provisionally_saved_form_.get();
+  }
+
   // Returns the pending credentials.
   const autofill::PasswordForm& pending_credentials() const {
     return pending_credentials_;

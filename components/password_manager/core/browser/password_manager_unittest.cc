@@ -588,16 +588,21 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
 }
 
 // On a successful login with an updated password,
-// CredentialsFilter::ReportFormLoginSuccess should be called.
-TEST_F(PasswordManagerTest, ReportFormLoginSuccessCalled) {
-  PasswordForm form(MakeSimpleForm());
+// CredentialsFilter::ReportFormLoginSuccess and CredentialsFilter::ShouldSave
+// should be called. The argument of ShouldSave shold be the submitted form.
+TEST_F(PasswordManagerTest, ReportFormLoginSuccessAndShouldSaveCalled) {
+  PasswordForm stored_form(MakeSimpleForm());
 
   std::vector<PasswordForm> observed;
-  observed.push_back(form);
+  PasswordForm observed_form = stored_form;
+  // Different values of |username_element| needed to ensure that it is the
+  // |observed_form| and not the |stored_form| what is passed to ShouldSave.
+  observed_form.username_element += ASCIIToUTF16("1");
+  observed.push_back(observed_form);
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
   // Simulate that |form| is already in the store, making this an update.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(stored_form)));
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -605,11 +610,16 @@ TEST_F(PasswordManagerTest, ReportFormLoginSuccessCalled) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
-  manager()->ProvisionallySavePassword(form);
+
+  manager()->ProvisionallySavePassword(observed_form);
 
   // Chrome should recognise the successful login and call
   // ReportFormLoginSuccess.
   EXPECT_CALL(*client_.GetStoreResultFilter(), ReportFormLoginSuccess(_));
+
+  PasswordForm submitted_form = observed_form;
+  submitted_form.preferred = true;
+  EXPECT_CALL(*client_.GetStoreResultFilter(), ShouldSave(submitted_form));
   EXPECT_CALL(*store_, UpdateLogin(_));
   observed.clear();
   manager()->OnPasswordFormsParsed(&driver_, observed);

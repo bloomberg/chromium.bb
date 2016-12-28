@@ -1018,13 +1018,6 @@ void PasswordFormManager::CreatePendingCredentials() {
 
   if (has_generated_password_)
     pending_credentials_.type = PasswordForm::TYPE_GENERATED;
-
-  // In case of change password forms we need to leave
-  // |provisionally_saved_form_| in order to be able to determine which field is
-  // password and which is a new password during sending a vote in other cases
-  // we can reset |provisionally_saved_form_|.
-  if (!provisionally_saved_form_->IsPossibleChangePasswordForm())
-    provisionally_saved_form_.reset();
 }
 
 uint32_t PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {

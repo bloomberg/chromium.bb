@@ -677,15 +677,17 @@ void PasswordManager::OnLoginSuccessful() {
   client_->GetStoreResultFilter()->ReportFormLoginSuccess(
       *provisional_save_manager_);
 
-  if (base::FeatureList::IsEnabled(features::kDropSyncCredential) &&
-      !client_->GetStoreResultFilter()->ShouldSave(
-          provisional_save_manager_->pending_credentials())) {
-    provisional_save_manager_->WipeStoreCopyIfOutdated();
-    RecordFailure(SYNC_CREDENTIAL,
-                  provisional_save_manager_->observed_form().origin,
-                  logger.get());
-    provisional_save_manager_.reset();
-    return;
+  if (base::FeatureList::IsEnabled(features::kDropSyncCredential)) {
+    DCHECK(provisional_save_manager_->provisionally_saved_form());
+    if (!client_->GetStoreResultFilter()->ShouldSave(
+            *provisional_save_manager_->provisionally_saved_form())) {
+      provisional_save_manager_->WipeStoreCopyIfOutdated();
+      RecordFailure(SYNC_CREDENTIAL,
+                    provisional_save_manager_->observed_form().origin,
+                    logger.get());
+      provisional_save_manager_.reset();
+      return;
+    }
   }
 
   provisional_save_manager_->LogSubmitPassed();
