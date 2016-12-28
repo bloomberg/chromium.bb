@@ -192,6 +192,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnClick) {
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/676746): Fix and re-enable this test.
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, DISABLED_SelectionClipboard) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
