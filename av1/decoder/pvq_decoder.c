@@ -354,18 +354,26 @@ void od_pvq_decode(daala_dec_ctx *dec,
       else
         q = OD_MAXI(1, q0);
 
-      pvq_decode_partition(dec->ec, q, size[i],
+#if CONFIG_DAALA_EC
+      pvq_decode_partition(&dec->r->ec, q, size[i],
        model, &dec->state.adapt, exg + i, ext + i, ref + off[i], out + off[i],
        &noref[i], beta[i], robust, is_keyframe, pli,
        (pli != 0)*OD_TXSIZES*PVQ_MAX_PARTITIONS + bs*PVQ_MAX_PARTITIONS + i,
        &cfl, i == 0 && (i < nb_bands - 1), skip_rest, i, &skip[i],
        qm + off[i], qm_inv + off[i]);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
       if (i == 0 && !skip_rest[0] && bs > 0) {
         int skip_dir;
         int j;
-        skip_dir = od_decode_cdf_adapt(dec->ec,
+#if CONFIG_DAALA_EC
+        skip_dir = od_decode_cdf_adapt(&dec->r->ec,
          &dec->state.adapt.pvq.pvq_skip_dir_cdf[(pli != 0) + 2*(bs - 1)][0], 7,
          dec->state.adapt.pvq.pvq_skip_dir_increment, "pvq:skiprest");
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
         for (j = 0; j < 3; j++) skip_rest[j] = !!(skip_dir & (1 << j));
       }
     }

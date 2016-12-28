@@ -66,7 +66,6 @@
 #include "av1/common/pvq.h"
 #include "av1/encoder/encodemb.h"
 
-#include "aom_dsp/entdec.h"
 #include "av1/common/partition.h"
 #include "av1/decoder/decint.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
@@ -373,12 +372,16 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
   for (i = 0; i < blk_size * blk_size; i++) dqcoeff_pvq[i] = out_int32[i];
 
   if (!has_dc_skip || dqcoeff_pvq[0]) {
+#if CONFIG_DAALA_EC
     dqcoeff_pvq[0] =
-        has_dc_skip + generic_decode(dec->ec, &dec->state.adapt.model_dc[pli],
-                                     -1, &dec->state.adapt.ex_dc[pli][bs][0], 2,
-                                     "dc:mag");
+        has_dc_skip +
+        generic_decode(&dec->r->ec, &dec->state.adapt.model_dc[pli], -1,
+                       &dec->state.adapt.ex_dc[pli][bs][0], 2, "dc:mag");
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
     if (dqcoeff_pvq[0])
-      dqcoeff_pvq[0] *= od_ec_dec_bits(dec->ec, 1, "dc:sign") ? -1 : 1;
+      dqcoeff_pvq[0] *= aom_read_bit(dec->r, "dc:sign") ? -1 : 1;
   }
   dqcoeff_pvq[0] = dqcoeff_pvq[0] * pvq_dc_quant + ref_coeff_pvq[0];
 
@@ -407,15 +410,18 @@ static int av1_pvq_decode_helper2(MACROBLOCKD *const xd,
   eob = 0;
   dst = &pd->dst.buf[4 * row * pd->dst.stride + 4 * col];
 
+#if CONFIG_DAALA_EC
   // decode ac/dc coded flag. bit0: DC coded, bit1 : AC coded
   // NOTE : we don't use 5 symbols for luma here in aom codebase,
   // since block partition is taken care of by aom.
   // So, only AC/DC skip info is coded
   ac_dc_coded = od_decode_cdf_adapt(
-      xd->daala_dec.ec,
+      &xd->daala_dec.r->ec,
       xd->daala_dec.state.adapt.skip_cdf[2 * tx_size + (plane != 0)], 4,
       xd->daala_dec.state.adapt.skip_increment, "skip");
-
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   if (ac_dc_coded) {
     int xdec = pd->subsampling_x;
     int seg_id = mbmi->segment_id;
@@ -3086,8 +3092,8 @@ static void get_tile_buffers(
 
 #if CONFIG_PVQ
 static void daala_dec_init(AV1_COMMON *const cm, daala_dec_ctx *daala_dec,
-                           od_ec_dec *ec) {
-  daala_dec->ec = ec;
+                           aom_reader *r) {
+  daala_dec->r = r;
   od_adapt_ctx_reset(&daala_dec->state.adapt, 0);
 
   // TODO(yushin) : activity masking info needs be signaled by a bitstream
@@ -3232,7 +3238,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #endif
                            td->dqcoeff);
 #if CONFIG_PVQ
-      daala_dec_init(cm, &td->xd.daala_dec, &td->bit_reader.ec);
+      daala_dec_init(cm, &td->xd.daala_dec, &td->bit_reader);
 #endif
 #if CONFIG_PALETTE
       td->xd.plane[0].color_index_map = td->color_index_map[0];
@@ -3566,7 +3572,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
 #endif
                              twd->dqcoeff);
 #if CONFIG_PVQ
-        daala_dec_init(cm, &twd->xd.daala_dec, &twd->bit_reader.ec);
+        daala_dec_init(cm, &twd->xd.daala_dec, &twd->bit_reader);
 #endif
 #if CONFIG_PALETTE
         twd->xd.plane[0].color_index_map = twd->color_index_map[0];

@@ -14,6 +14,7 @@
 #if !defined(_decint_H)
 # define _decint_H (1)
 # include "av1/common/pvq_state.h"
+# include "aom_dsp/bitreader.h"
 # include "aom_dsp/entdec.h"
 
 typedef struct daala_dec_ctx daala_dec_ctx;
@@ -24,8 +25,8 @@ typedef struct daala_dec_ctx od_dec_ctx;
 struct daala_dec_ctx {
   /* Stores context-adaptive CDFs for PVQ. */
   od_state state;
-  /* Daala entropy decoder. */
-  od_ec_dec *ec;
+  /* AOM entropy decoder. */
+  aom_reader *r;
   int use_activity_masking;
   /* Mode of quantization matrice : FLAT (0) or HVS (1) */
   int qm;
