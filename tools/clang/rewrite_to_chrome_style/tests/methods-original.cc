@@ -239,6 +239,39 @@ class PaintLayerStackingNode {
 
 }  // namespace get_prefix_vs_inheritance
 
+namespace blacklisting_of_method_and_function_names {
+
+class Foo {
+  // Expecting |swap| method to be renamed to |Swap| - we blacklist renaming of
+  // |swap| *function*, because it needs to have the same casing as std::swap,
+  // so that ADL can kick-in and pull it from another namespace depending on the
+  // bargument.  We have a choice to rename or not rename |swap| *methods* - we
+  // chose to rename to be consistent (i.e. we rename |clear| -> |Clear|) and
+  // because Google C++ Styke Guide uses "Swap" in examples.
+  void swap() {}
+  static void swap(Foo& x, Foo& y) {}
+
+  // We don't rename |begin|, so that <algorithms> and other templates that
+  // expect |begin|, |end|, etc. continue to work.  This is only necessary
+  // for instance methods - renaming static methods and funcitons is okay.
+  void begin() {}
+  static void begin(int x) {}
+
+  // https://crbug.com/677166: We blacklist renaming of |hash|, because it
+  // collides with a struct named Hash.  Blacklisting therefore should be broad
+  // and should cover both instance and static methods as well as functions.
+  int hash() const { return 123; }
+  static int hash(const Foo& x) { return x.hash(); }
+};
+
+void begin(int x) {}
+int hash(int x) {
+  return 123 * x;
+}
+void swap(Foo& x, Foo& y) {}
+
+}  // blacklisting_of_method_and_function_names
+
 }  // namespace blink
 
 namespace WTF {

@@ -207,16 +207,24 @@ bool IsMethodOverrideOf(const clang::CXXMethodDecl& decl,
   return false;
 }
 
-bool IsBlacklistedFunction(const clang::FunctionDecl& decl) {
-  // swap() functions should match the signature of std::swap for ADL tricks.
-  return decl.getName() == "swap";
+bool IsBlacklistedFunctionName(llvm::StringRef name) {
+  // https://crbug.com/677166: Have to avoid renaming |hash| -> |Hash| to avoid
+  // colliding with a struct already named |Hash|.
+  return name == "hash";
 }
 
-bool IsBlacklistedMethodName(llvm::StringRef name) {
+bool IsBlacklistedFreeFunctionName(llvm::StringRef name) {
+  // swap() functions should match the signature of std::swap for ADL tricks.
+  return name == "swap";
+}
+
+bool IsBlacklistedInstanceMethodName(llvm::StringRef name) {
   static const char* kBlacklistedNames[] = {
-      "hash",
-      "lock", "unlock", "try_lock",
-      "begin", "end", "rbegin", "rend",
+      // We should avoid renaming the method names listed below, because
+      // 1. They are used in templated code (e.g. in <algorithms>)
+      // 2. They (begin+end) are used in range-based for syntax sugar
+      //    - for (auto x : foo) { ... }  // <- foo.begin() will be called.
+      "begin", "end", "rbegin", "rend", "lock", "unlock", "try_lock",
   };
   for (const auto& b : kBlacklistedNames) {
     if (name == b)
@@ -225,13 +233,27 @@ bool IsBlacklistedMethodName(llvm::StringRef name) {
   return false;
 }
 
+bool IsBlacklistedMethodName(llvm::StringRef name) {
+  return IsBlacklistedFunctionName(name) ||
+         IsBlacklistedInstanceMethodName(name);
+}
+
+bool IsBlacklistedFunction(const clang::FunctionDecl& decl) {
+  clang::StringRef name = decl.getName();
+  return IsBlacklistedFunctionName(name) || IsBlacklistedFreeFunctionName(name);
+}
+
 bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
+  clang::StringRef name = decl.getName();
+  if (IsBlacklistedFunctionName(name))
+    return true;
+
+  // Remaining cases are only applicable to instance methods.
   if (decl.isStatic())
     return false;
 
-  clang::StringRef name = decl.getName();
-  if (IsBlacklistedMethodName(name))
-      return true;
+  if (IsBlacklistedInstanceMethodName(name))
+    return true;
 
   // Subclasses of InspectorAgent will subclass "disable()" from both blink and
   // from gen/, which is problematic, but DevTools folks don't want to rename
