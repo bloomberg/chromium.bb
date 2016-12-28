@@ -19844,6 +19844,10 @@
         ],
         "master": true,
         "push_overlays": "both",
+        "useflags": [
+            "-transparent_hugepage",
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "samus-release": {

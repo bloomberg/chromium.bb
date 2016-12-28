@@ -3341,6 +3341,7 @@ def SpecialtyBuilders(site_config, ge_build_config):
       afdo_update_ebuild=True,
       vm_tests=[],
       hw_tests=[hw_test_list.AFDORecordTest()],
+      useflags=append_useflags(['-transparent_hugepage']),
   )
 
   # This is an example factory branch configuration.
