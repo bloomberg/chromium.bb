@@ -826,7 +826,7 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] >= TX_32X32)
 #endif
     return DCT_DCT;
-  if (mbmi->sb_type >= BLOCK_8X8) {
+  if (mbmi->sb_type >= BLOCK_8X8 || CONFIG_CB4X4) {
     if (plane_type == PLANE_TYPE_Y) {
 #if !ALLOW_INTRA_EXT_TX
       if (is_inter_block(mbmi))
@@ -839,6 +839,10 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
                  ? DCT_DCT
                  : mbmi->tx_type;
   }
+
+#if CONFIG_CB4X4
+  return DCT_DCT;
+#endif
 
   // Sub8x8-Inter/Intra OR UV-Intra
   if (is_inter_block(mbmi))  // Sub8x8-Inter
