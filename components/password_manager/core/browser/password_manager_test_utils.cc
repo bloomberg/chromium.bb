@@ -104,4 +104,8 @@ MockPasswordStoreObserver::MockPasswordStoreObserver() {}
 
 MockPasswordStoreObserver::~MockPasswordStoreObserver() {}
 
+MockPasswordReuseDetectorConsumer::MockPasswordReuseDetectorConsumer() {}
+
+MockPasswordReuseDetectorConsumer::~MockPasswordReuseDetectorConsumer() {}
+
 }  // namespace password_manager

@@ -99,6 +99,8 @@ static_library("browser") {
     "password_reuse_detection_manager.h",
     "password_reuse_detector.cc",
     "password_reuse_detector.h",
+    "password_reuse_detector_consumer.cc",
+    "password_reuse_detector_consumer.h",
     "password_store.cc",
     "password_store.h",
     "password_store_change.cc",

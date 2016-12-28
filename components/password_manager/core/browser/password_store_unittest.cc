@@ -840,4 +840,56 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
   }
 }
 
+#if !defined(OS_MACOSX)
+// TODO(crbug.com/668155): Enable this test after fixing issues with
+// initialization PasswordStore with MockKeyChain in tests on MacOS.
+TEST_F(PasswordStoreTest, CheckPasswordReuse) {
+  static constexpr PasswordFormData kTestCredentials[] = {
+      {PasswordForm::SCHEME_HTML, "https://www.google.com",
+       "https://www.google.com", "", L"", L"", L"", L"", L"password", true, 1},
+      {PasswordForm::SCHEME_HTML, "https://facebook.com",
+       "https://facebook.com", "", L"", L"", L"", L"", L"topsecret", true, 1}};
+
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
+  store->Init(syncer::SyncableService::StartSyncFlare());
+
+  for (const auto& test_credentials : kTestCredentials) {
+    auto credentials = CreatePasswordFormFromDataForTesting(test_credentials);
+    store->AddLogin(*credentials);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  static constexpr struct {
+    const wchar_t* input;
+    const char* domain;
+    const wchar_t* reused_password;  // Set to nullptr if no reuse is expected.
+    const char* reuse_domain;
+  } kReuseTestData[] = {
+      {L"12345password", "https://evil.com", L"password", "google.com"},
+      {L"1234567890", "https://evil.com", nullptr, nullptr},
+      {L"topsecret", "https://m.facebook.com", nullptr, nullptr},
+  };
+
+  for (const auto& test_data : kReuseTestData) {
+    MockPasswordReuseDetectorConsumer mock_consumer;
+    if (test_data.reused_password) {
+      EXPECT_CALL(mock_consumer,
+                  OnReuseFound(base::WideToUTF16(test_data.reused_password),
+                               std::string(test_data.reuse_domain)));
+    } else {
+      EXPECT_CALL(mock_consumer, OnReuseFound(_, _)).Times(0);
+    }
+
+    store->CheckReuse(base::WideToUTF16(test_data.input), test_data.domain,
+                      &mock_consumer);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  store->ShutdownOnUIThread();
+  base::RunLoop().RunUntilIdle();
+}
+#endif
+
 }  // namespace password_manager

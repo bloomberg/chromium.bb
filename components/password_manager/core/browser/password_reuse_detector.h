@@ -13,18 +13,12 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
 namespace password_manager {
 
-// Callback interface for receiving a password reuse event.
-class PasswordReuseDetectorConsumer {
- public:
-  // Called when a password reuse is found.
-  // |saved_domain| is the domain on which |password| is saved.
-  virtual void OnReuseFound(const base::string16& password,
-                            const std::string& saved_domain) = 0;
-};
+class PasswordReuseDetectorConsumer;
 
 // Per-profile class responsible for detection of password reuse, i.e. that the
 // user input on some site contains the password saved on another site.
@@ -40,6 +34,9 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
+  // Add new or updated passwords from |changes| to internal password index.
+  void OnLoginsChanged(const PasswordStoreChangeList& changes);
+
   // Checks that some suffix of |input| equals to a password saved on another
   // registry controlled domain than |domain|.
   // If such suffix is found, |consumer|->OnReuseFound() is called on the same
@@ -50,6 +47,9 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
                   PasswordReuseDetectorConsumer* consumer);
 
  private:
+  // Add password from |form| to |passwords_|.
+  void AddPassword(const autofill::PasswordForm& form);
+
   // Contains all passwords.
   // A key is a password.
   // A value is a set of registry controlled domains on which the password

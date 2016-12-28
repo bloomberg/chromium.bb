@@ -59,6 +59,21 @@ void PasswordStore::GetLoginsRequest::NotifyWithSiteStatistics(
                             consumer_weak_, base::Passed(&stats)));
 }
 
+PasswordStore::CheckReuseRequest::CheckReuseRequest(
+    PasswordReuseDetectorConsumer* consumer)
+    : origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      consumer_weak_(consumer->AsWeakPtr()) {}
+
+PasswordStore::CheckReuseRequest::~CheckReuseRequest() {}
+
+void PasswordStore::CheckReuseRequest::OnReuseFound(
+    const base::string16& password,
+    const std::string& saved_domain) {
+  origin_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PasswordReuseDetectorConsumer::OnReuseFound,
+                            consumer_weak_, password, saved_domain));
+}
+
 PasswordStore::FormDigest::FormDigest(autofill::PasswordForm::Scheme new_scheme,
                                       const std::string& new_signon_realm,
                                       const GURL& new_origin)
@@ -91,11 +106,10 @@ PasswordStore::PasswordStore(
       db_thread_runner_(db_thread_runner),
       observers_(new base::ObserverListThreadSafe<Observer>()),
       is_propagating_password_changes_to_web_credentials_enabled_(false),
-      shutdown_called_(false) {
-}
+      shutdown_called_(false) {}
 
 bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare) {
-  ScheduleTask(base::Bind(&PasswordStore::InitSyncableService, this, flare));
+  ScheduleTask(base::Bind(&PasswordStore::InitOnBackgroundThread, this, flare));
   return true;
 }
 
@@ -272,7 +286,7 @@ bool PasswordStore::ScheduleTask(const base::Closure& task) {
 }
 
 void PasswordStore::ShutdownOnUIThread() {
-  ScheduleTask(base::Bind(&PasswordStore::DestroySyncableService, this));
+  ScheduleTask(base::Bind(&PasswordStore::DestroyOnBackgroundThread, this));
   // The AffiliationService must be destroyed from the main thread.
   affiliated_match_helper_.reset();
   shutdown_called_ = true;
@@ -283,6 +297,14 @@ PasswordStore::GetPasswordSyncableService() {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   DCHECK(syncable_service_);
   return syncable_service_->AsWeakPtr();
+}
+
+void PasswordStore::CheckReuse(const base::string16& input,
+                               const std::string& domain,
+                               PasswordReuseDetectorConsumer* consumer) {
+  auto check_reuse_request = base::MakeUnique<CheckReuseRequest>(consumer);
+  ScheduleTask(base::Bind(&PasswordStore::CheckReuseImpl, this,
+                          base::Passed(&check_reuse_request), input, domain));
 }
 
 PasswordStore::~PasswordStore() {
@@ -349,7 +371,16 @@ void PasswordStore::NotifyLoginsChanged(
     observers_->Notify(FROM_HERE, &Observer::OnLoginsChanged, changes);
     if (syncable_service_)
       syncable_service_->ActOnPasswordStoreChanges(changes);
+    if (reuse_detector_)
+      reuse_detector_->OnLoginsChanged(changes);
   }
+}
+
+void PasswordStore::CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
+                                   const base::string16& input,
+                                   const std::string& domain) {
+  if (reuse_detector_)
+    reuse_detector_->CheckReuse(input, domain, request.get());
 }
 
 void PasswordStore::Schedule(
@@ -653,17 +684,25 @@ void PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl(
                           updated_android_form, affiliated_web_realms));
 }
 
-void PasswordStore::InitSyncableService(
+void PasswordStore::InitOnBackgroundThread(
     const syncer::SyncableService::StartSyncFlare& flare) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   DCHECK(!syncable_service_);
   syncable_service_.reset(new PasswordSyncableService(this));
   syncable_service_->InjectStartSyncFlare(flare);
+  reuse_detector_.reset(new PasswordReuseDetector);
+#if !defined(OS_MACOSX)
+  // TODO(crbug.com/668155): For non-migrated keychain users it can lead to
+  // hundreds of requests to unlock keychain.
+  GetAutofillableLoginsImpl(
+      base::MakeUnique<GetLoginsRequest>(reuse_detector_.get()));
+#endif
 }
 
-void PasswordStore::DestroySyncableService() {
+void PasswordStore::DestroyOnBackgroundThread() {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   syncable_service_.reset();
+  reuse_detector_.reset();
 }
 
 std::ostream& operator<<(std::ostream& os,

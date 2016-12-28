@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 
 namespace password_manager {
@@ -22,14 +23,16 @@ PasswordReuseDetector::~PasswordReuseDetector() {}
 
 void PasswordReuseDetector::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  passwords_.clear();
-  for (const auto& form : results) {
-    const base::string16& password = form->password_value;
-    if (password.size() < kMinPasswordLengthToCheck)
-      continue;
-    GURL signon_realm(form->signon_realm);
-    const std::string domain = GetRegistryControlledDomain(signon_realm);
-    passwords_[password].insert(domain);
+  for (const auto& form : results)
+    AddPassword(*form);
+}
+
+void PasswordReuseDetector::OnLoginsChanged(
+    const PasswordStoreChangeList& changes) {
+  for (const auto& change : changes) {
+    if (change.type() == PasswordStoreChange::ADD ||
+        change.type() == PasswordStoreChange::UPDATE)
+      AddPassword(change.form());
   }
 }
 
@@ -57,6 +60,15 @@ void PasswordReuseDetector::CheckReuse(
       return;
     }
   }
+}
+
+void PasswordReuseDetector::AddPassword(const autofill::PasswordForm& form) {
+  const base::string16& password = form.password_value;
+  if (password.size() < kMinPasswordLengthToCheck)
+    return;
+  GURL signon_realm(form.signon_realm);
+  const std::string domain = GetRegistryControlledDomain(signon_realm);
+  passwords_[password].insert(domain);
 }
 
 }  // namespace password_manager

@@ -17,6 +17,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
+#include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/model/syncable_service.h"
@@ -221,6 +223,15 @@ class PasswordStore : protected PasswordStoreSync,
 
   base::WeakPtr<syncer::SyncableService> GetPasswordSyncableService();
 
+  // Checks that some suffix of |input| equals to a password saved on another
+  // registry controlled domain than |domain|.
+  // If such suffix is found, |consumer|->OnReuseFound() is called on the same
+  // thread on which this method is called.
+  // |consumer| must not be null.
+  void CheckReuse(const base::string16& input,
+                  const std::string& domain,
+                  PasswordReuseDetectorConsumer* consumer);
+
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
 
@@ -254,6 +265,26 @@ class PasswordStore : protected PasswordStoreSync,
     base::WeakPtr<PasswordStoreConsumer> consumer_weak_;
 
     DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);
+  };
+
+  // Represents a single CheckReuse() request. Implements functionality to
+  // listen to reuse events and propagate them to |consumer| on the thread on
+  // which CheckReuseRequest is created.
+  class CheckReuseRequest : public PasswordReuseDetectorConsumer {
+   public:
+    // |consumer| must not be null.
+    explicit CheckReuseRequest(PasswordReuseDetectorConsumer* consumer);
+    ~CheckReuseRequest() override;
+
+    // PasswordReuseDetectorConsumer
+    void OnReuseFound(const base::string16& password,
+                      const std::string& saved_domain) override;
+
+   private:
+    const scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
+    const base::WeakPtr<PasswordReuseDetectorConsumer> consumer_weak_;
+
+    DISALLOW_COPY_AND_ASSIGN(CheckReuseRequest);
   };
 
   ~PasswordStore() override;
@@ -347,6 +378,11 @@ class PasswordStore : protected PasswordStoreSync,
   // operation has been performed. Notifies observers that password store data
   // may have been changed.
   void NotifyLoginsChanged(const PasswordStoreChangeList& changes) override;
+
+  // Synchronous implementation of CheckReuse().
+  void CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
+                      const base::string16& input,
+                      const std::string& domain);
 
   // TaskRunner for tasks that run on the main thread (usually the UI thread).
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
@@ -482,18 +518,20 @@ class PasswordStore : protected PasswordStoreSync,
       const autofill::PasswordForm& updated_android_form,
       const std::vector<std::string>& affiliated_web_realms);
 
-  // Creates PasswordSyncableService instance on the background thread.
-  void InitSyncableService(
+  // Creates PasswordSyncableService and PasswordReuseDetector instances on the
+  // background thread.
+  void InitOnBackgroundThread(
       const syncer::SyncableService::StartSyncFlare& flare);
 
-  // Deletes PasswordSyncableService instance on the background thread.
-  void DestroySyncableService();
+  // Deletes objest that should be destroyed on the background thread.
+  void DestroyOnBackgroundThread();
 
   // The observers.
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
 
   std::unique_ptr<PasswordSyncableService> syncable_service_;
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
+  std::unique_ptr<PasswordReuseDetector> reuse_detector_;
   bool is_propagating_password_changes_to_web_credentials_enabled_;
 
   bool shutdown_called_;

@@ -10,6 +10,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,11 +21,6 @@ using testing::_;
 namespace password_manager {
 
 namespace {
-
-class MockPasswordReuseDetectorConsumer : public PasswordReuseDetectorConsumer {
- public:
-  MOCK_METHOD2(OnReuseFound, void(const base::string16&, const std::string&));
-};
 
 std::vector<std::unique_ptr<PasswordForm>> GetSavedForms() {
   std::vector<std::unique_ptr<PasswordForm>> result;
@@ -42,6 +38,16 @@ std::vector<std::unique_ptr<PasswordForm>> GetSavedForms() {
     result.push_back(std::move(form));
   }
   return result;
+}
+
+PasswordStoreChangeList GetChangeList(
+    PasswordStoreChange::Type type,
+    const std::vector<std::unique_ptr<PasswordForm>>& forms) {
+  PasswordStoreChangeList changes;
+  for (const auto& form : forms)
+    changes.push_back(PasswordStoreChange(type, *form));
+
+  return changes;
 }
 
 TEST(PasswordReuseDetectorTest, TypingPasswordOnDifferentSite) {
@@ -104,6 +110,26 @@ TEST(PasswordReuseDetectorTest, PasswordNotInputSuffixNoReuseEvent) {
                             &mockConsumer);
   reuse_detector.CheckReuse(ASCIIToUTF16("123password456"), "https://evil.com",
                             &mockConsumer);
+}
+
+TEST(PasswordReuseDetectorTest, OnLoginsChanged) {
+  for (PasswordStoreChange::Type type :
+       {PasswordStoreChange::ADD, PasswordStoreChange::UPDATE,
+        PasswordStoreChange::REMOVE}) {
+    PasswordReuseDetector reuse_detector;
+    PasswordStoreChangeList changes = GetChangeList(type, GetSavedForms());
+    reuse_detector.OnLoginsChanged(changes);
+    MockPasswordReuseDetectorConsumer mockConsumer;
+
+    if (type == PasswordStoreChange::REMOVE) {
+      EXPECT_CALL(mockConsumer, OnReuseFound(_, _)).Times(0);
+    } else {
+      EXPECT_CALL(mockConsumer,
+                  OnReuseFound(ASCIIToUTF16("password"), "google.com"));
+    }
+    reuse_detector.CheckReuse(ASCIIToUTF16("123password"), "https://evil.com",
+                              &mockConsumer);
+  }
 }
 
 }  // namespace
