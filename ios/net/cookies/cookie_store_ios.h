@@ -41,24 +41,16 @@ class CookieNotificationObserver {
 
 // The CookieStoreIOS is an implementation of CookieStore relying on
 // NSHTTPCookieStorage, ensuring that the cookies are consistent between the
-// network stack and the UIWebViews.
-// On iOS, the Chrome CookieMonster is not used in conjunction with UIWebView,
-// because UIWebView expects the cookies to be in the shared
-// NSHTTPCookieStorage. In particular, javascript may read and write cookies
-// there.
+// network stack and NSHTTPCookieStorage.
 // CookieStoreIOS is not thread safe.
 //
-// At any given time, a CookieStoreIOS can either be synchronized with the
-// system cookie store or not. If a CookieStoreIOS is not synchronized with the
-// system store, changes are written back to the backing CookieStore. If a
-// CookieStoreIOS is synchronized with the system store, changes are written
-// directly to the system cookie store, then propagated to the backing store by
-// OnSystemCookiesChanged, which is called by the system store once the change
-// to the system store is written back.
-//
-// To unsynchronize, CookieStoreIOS copies the system cookie store into its
-// backing CookieStore. To synchronize, CookieStoreIOS clears the system cookie
-// store, copies its backing CookieStore into the system cookie store.
+// CookieStoreIOS can be created synchronized with the system cookie store (via
+// CreateCookieStore) or not (other constructors). If a CookieStoreIOS is not
+// synchronized with the system store, changes are written back to the backing
+// CookieStore. If a CookieStoreIOS is synchronized with the system store,
+// changes are written directly to the system cookie store, then propagated to
+// the backing store by OnSystemCookiesChanged, which is called by the system
+// store once the change to the system store is written back.
 class CookieStoreIOS : public net::CookieStore,
                        public CookieNotificationObserver {
  public:
