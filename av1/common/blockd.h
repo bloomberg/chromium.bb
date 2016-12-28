@@ -822,12 +822,8 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
 #endif  // CONFIG_EXT_INTRA || CONFIG_FILTER_INTRA
 
 #if CONFIG_EXT_TX
-#if EXT_TX_SIZES == 4
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32 ||
       (txsize_sqr_map[tx_size] >= TX_32X32 && !is_inter_block(mbmi)))
-#else
-  if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] >= TX_32X32)
-#endif
     return DCT_DCT;
   if (mbmi->sb_type >= BLOCK_8X8 || CONFIG_CB4X4) {
     if (plane_type == PLANE_TYPE_Y) {
