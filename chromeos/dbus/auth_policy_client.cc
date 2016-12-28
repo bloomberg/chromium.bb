@@ -1,10 +1,11 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "chromeos/dbus/auth_policy_client.h"
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -58,12 +59,12 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void RefreshUserPolicy(const std::string& account_id,
+  void RefreshUserPolicy(const AccountId& account_id,
                          const RefreshPolicyCallback& callback) override {
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
                                  authpolicy::kAuthPolicyRefreshUserPolicy);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(account_id);
+    writer.AppendString(account_id.GetObjGuid());
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&AuthPolicyClientImpl::HandleRefreshPolicyCallback,

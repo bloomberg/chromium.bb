@@ -1,4 +1,4 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,8 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+class AccountId;
 
 // TODO(rsorokin): Switch to service constants when it's landed.
 // (see crbug.com/659732)
@@ -71,7 +73,7 @@ class CHROMEOS_EXPORT AuthPolicyClient : public DBusClient {
 
   // Calls RefreshUserPolicy - handle policy for the user specified by
   // |account_id|. Similar to RefreshDevicePolicy.
-  virtual void RefreshUserPolicy(const std::string& account_id,
+  virtual void RefreshUserPolicy(const AccountId& account_id,
                                  const RefreshPolicyCallback& callback) = 0;
 
  protected:

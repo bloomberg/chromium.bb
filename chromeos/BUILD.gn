@@ -33,6 +33,7 @@ component("chromeos") {
     "//chrome/browser/chromeos:device_policy_proto",
     "//components/device_event_log",
     "//components/onc",
+    "//components/policy:cloud_policy_proto_generated_compile",
     "//components/policy/proto",
     "//components/pref_registry",
     "//components/prefs",

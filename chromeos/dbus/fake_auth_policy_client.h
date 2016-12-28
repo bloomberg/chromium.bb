@@ -1,4 +1,4 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,8 @@
 #include "base/macros.h"
 
 #include "chromeos/dbus/auth_policy_client.h"
+
+class AccountId;
 
 namespace chromeos {
 
@@ -29,7 +31,7 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
                         int password_fd,
                         const AuthCallback& callback) override;
   void RefreshDevicePolicy(const RefreshPolicyCallback& calllback) override;
-  void RefreshUserPolicy(const std::string& account_id,
+  void RefreshUserPolicy(const AccountId& account_id,
                          const RefreshPolicyCallback& callback) override;
 
  private:
