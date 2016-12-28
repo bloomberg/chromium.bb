@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "./aom_config.h"
+#include "aom_dsp/bitreader.h"
 #include "aom_dsp/entcode.h"
 #include "aom_dsp/entdec.h"
 #include "av1/common/odintrin.h"
@@ -110,7 +111,7 @@ typedef struct {
  * @param [in]     qm      QM with magnitude compensation
  * @param [in]     qm_inv  Inverse of QM with magnitude compensation
  */
-static void pvq_decode_partition(od_ec_dec *ec,
+static void pvq_decode_partition(aom_reader *r,
                                  int q0,
                                  int n,
                                  generic_encoder model[3],
@@ -168,9 +169,13 @@ static void pvq_decode_partition(od_ec_dec *ec,
     /* Jointly decode gain, itheta and noref for small values. Then we handle
        larger gain. We need to wait for itheta because in the !nodesync case
        it depends on max_theta, which depends on the gain. */
-    id = od_decode_cdf_adapt(ec, &adapt->pvq.pvq_gaintheta_cdf[cdf_ctx][0],
+#if CONFIG_DAALA_EC
+    id = od_decode_cdf_adapt(&r->ec, &adapt->pvq.pvq_gaintheta_cdf[cdf_ctx][0],
      8 + 7*has_skip, adapt->pvq.pvq_gaintheta_increment,
      "pvq:gaintheta");
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
     if (!is_keyframe && id >= 10) id++;
     if (is_keyframe && id >= 8) id++;
     if (id >= 8) {
@@ -184,7 +189,7 @@ static void pvq_decode_partition(od_ec_dec *ec,
   /* The CfL flip bit is only decoded on the first band that has noref=0. */
   if (cfl->allow_flip && !*noref) {
     int flip;
-    flip = od_ec_dec_bits(ec, 1, "cfl:flip");
+    flip = aom_read_bit(r, "cfl:flip");
     if (flip) {
       for (i = 0; i < cfl->nb_coeffs; i++) cfl->ref[i] = -cfl->ref[i];
     }
@@ -193,7 +198,11 @@ static void pvq_decode_partition(od_ec_dec *ec,
   if (qg > 0) {
     int tmp;
     tmp = *exg;
-    qg = 1 + generic_decode(ec, &model[!*noref], -1, &tmp, 2, "pvq:gain");
+#if CONFIG_DAALA_EC
+    qg = 1 + generic_decode(&r->ec, &model[!*noref], -1, &tmp, 2, "pvq:gain");
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
     OD_IIR_DIADIC(*exg, qg << 16, 2);
   }
   *skip = 0;
@@ -239,8 +248,12 @@ static void pvq_decode_partition(od_ec_dec *ec,
     if (itheta > 1 && (nodesync || max_theta > 3)) {
       int tmp;
       tmp = *ext;
-      itheta = 2 + generic_decode(ec, &model[2], nodesync ? -1 : max_theta - 3,
-       &tmp, 2, "pvq:theta");
+#if CONFIG_DAALA_EC
+      itheta = 2 + generic_decode(&r->ec, &model[2],
+       nodesync ? -1 : max_theta - 3, &tmp, 2, "pvq:theta");
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
       OD_IIR_DIADIC(*ext, itheta << 16, 2);
     }
     theta = od_pvq_compute_theta(itheta, max_theta);
@@ -255,8 +268,12 @@ static void pvq_decode_partition(od_ec_dec *ec,
   k = od_pvq_compute_k(qcg, itheta, theta, *noref, n, beta, nodesync);
   if (k != 0) {
     /* when noref==0, y is actually size n-1 */
-    od_decode_pvq_codeword(ec, &adapt->pvq.pvq_codeword_ctx, y, n - !*noref,
-     k);
+#if CONFIG_DAALA_EC
+    od_decode_pvq_codeword(&r->ec, &adapt->pvq.pvq_codeword_ctx, y,
+     n - !*noref, k);
+#else
+# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   }
   else {
     OD_CLEAR(y, n);
@@ -354,16 +371,12 @@ void od_pvq_decode(daala_dec_ctx *dec,
       else
         q = OD_MAXI(1, q0);
 
-#if CONFIG_DAALA_EC
-      pvq_decode_partition(&dec->r->ec, q, size[i],
+      pvq_decode_partition(dec->r, q, size[i],
        model, &dec->state.adapt, exg + i, ext + i, ref + off[i], out + off[i],
        &noref[i], beta[i], robust, is_keyframe, pli,
        (pli != 0)*OD_TXSIZES*PVQ_MAX_PARTITIONS + bs*PVQ_MAX_PARTITIONS + i,
        &cfl, i == 0 && (i < nb_bands - 1), skip_rest, i, &skip[i],
        qm + off[i], qm_inv + off[i]);
-#else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
       if (i == 0 && !skip_rest[0] && bs > 0) {
         int skip_dir;
         int j;
