@@ -127,15 +127,17 @@ ArcAppIcon::Source::~Source() {
 
 gfx::ImageSkiaRep ArcAppIcon::Source::GetImageForScale(float scale) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (host_)
-    host_->LoadForScaleFactor(ui::GetSupportedScaleFactor(scale));
 
   // Host loads icon asynchronously, so use default icon so far.
   int resource_id;
   if (host_ && host_->app_id() == arc::kPlayStoreAppId) {
+    // Don't request icon from Android side. Use overloaded Chrome icon for Play
+    // Store that is adopted according Chrome style.
     resource_id = scale >= 1.5f ?
         IDR_ARC_SUPPORT_ICON_96 : IDR_ARC_SUPPORT_ICON_48;
   } else {
+    if (host_)
+      host_->LoadForScaleFactor(ui::GetSupportedScaleFactor(scale));
     resource_id = IDR_APP_DEFAULT_ICON;
   }
 
