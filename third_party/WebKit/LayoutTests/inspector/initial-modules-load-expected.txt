@@ -12,6 +12,7 @@ Loaded modules:
     main
     persistence
     platform
+    protocol
     sdk
     services
     ui
@@ -29,6 +30,7 @@ Loaded modules:
     main
     persistence
     platform
+    protocol
     sdk
     services
     ui
@@ -50,6 +52,7 @@ Loaded modules:
     network
     persistence
     platform
+    protocol
     sdk
     services
     snippets
@@ -76,6 +79,7 @@ Loaded modules:
     network
     persistence
     platform
+    protocol
     sdk
     services
     snippets
@@ -102,6 +106,7 @@ Loaded modules:
     network
     persistence
     platform
+    protocol
     sdk
     services
     snippets

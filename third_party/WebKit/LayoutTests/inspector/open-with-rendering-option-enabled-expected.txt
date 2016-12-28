@@ -10,6 +10,7 @@ Loaded modules:
     main
     persistence
     platform
+    protocol
     sdk
     services
     ui

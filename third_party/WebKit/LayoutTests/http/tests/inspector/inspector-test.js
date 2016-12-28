@@ -24,8 +24,8 @@ console.assert = function(condition, object)
 
 InspectorTest.startDumpingProtocolMessages = function()
 {
-    InspectorBackendClass.Connection.prototype._dumpProtocolMessage = testRunner.logToStderr.bind(testRunner);
-    InspectorBackendClass.Options.dumpInspectorProtocolMessages = 1;
+    Protocol.InspectorBackend.Connection.prototype._dumpProtocolMessage = testRunner.logToStderr.bind(testRunner);
+    Protocol.InspectorBackend.Options.dumpInspectorProtocolMessages = 1;
 }
 
 InspectorTest.completeTest = function()

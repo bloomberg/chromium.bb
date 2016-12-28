@@ -29,7 +29,7 @@ function test()
 
     var numberOfReports = 0;
 
-    InspectorBackendClass.reportProtocolError = function(error, message)
+    Protocol.InspectorBackend.reportProtocolError = function(error, message)
     {
         if (numberOfReports < messages.length) {
             InspectorTest.addObject(message);

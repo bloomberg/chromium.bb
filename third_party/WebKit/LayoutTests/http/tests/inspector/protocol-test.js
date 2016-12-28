@@ -79,7 +79,7 @@ InspectorTest._runNextTest = function()
         InspectorTest.addResult("===========================================================");
         InspectorTest.addResult("Coverage for " + this._agentName);
         InspectorTest.addObject(this._agentCoverage);
-        InspectorBackend.dispatch = this._originalDispatch;
+        Protocol.inspectorBackend.dispatch = this._originalDispatch;
         InspectorFrontendHost.sendMessageToBackend = this._originalSendMessageToBackend;
         this.completeTest();
     }
@@ -99,7 +99,7 @@ InspectorTest.runProtocolTestSuite = function(agentName, testSuite, nondetermini
         this._agentCoverage[key] = "not checked";
 
     var domain = agentName.replace(/Agent$/,"");
-    var domainMessagesHandler = InspectorBackend._domainDispatchers[domain];
+    var domainMessagesHandler = Protocol.inspectorBackend._domainDispatchers[domain];
     for (var eventName in domainMessagesHandler) {
         if (typeof domainMessagesHandler[eventName] !== "function")
             continue;
@@ -107,11 +107,11 @@ InspectorTest.runProtocolTestSuite = function(agentName, testSuite, nondetermini
         domainMessagesHandler[eventName] = InspectorTest._dumpEvent.bind(domainMessagesHandler, eventName, domainMessagesHandler[eventName]);
     }
 
-    this._originalDispatch = InspectorBackend.dispatch;
-    InspectorBackend.dispatch = function(message)
+    this._originalDispatch = Protocol.inspectorBackend.dispatch;
+    Protocol.inspectorBackend.dispatch = function(message)
     {
         InspectorTest._lastReceivedMessage = (typeof message === "string") ? JSON.parse(message) : message;
-        InspectorTest._originalDispatch.apply(InspectorBackend, [message]);
+        InspectorTest._originalDispatch.apply(Protocol.inspectorBackend, [message]);
     }
 
     this._originalSendMessageToBackend = InspectorFrontendHost.sendMessageToBackend;
