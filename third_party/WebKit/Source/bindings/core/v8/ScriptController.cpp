@@ -468,10 +468,9 @@ void ScriptController::executeScriptInIsolatedWorld(
   RefPtr<DOMWrapperWorld> world =
       DOMWrapperWorld::ensureIsolatedWorld(isolate(), worldID, extensionGroup);
   WindowProxy* isolatedWorldWindowProxy = windowProxy(*world);
-  if (!isolatedWorldWindowProxy->isContextInitialized())
-    return;
-
   ScriptState* scriptState = isolatedWorldWindowProxy->getScriptState();
+  if (!scriptState->contextIsValid())
+    return;
   v8::Context::Scope scope(scriptState->context());
   v8::Local<v8::Array> resultArray = v8::Array::New(isolate(), sources.size());
 
