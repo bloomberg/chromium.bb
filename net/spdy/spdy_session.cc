@@ -69,6 +69,35 @@ const int kHungIntervalSeconds = 10;
 // Minimum seconds that unclaimed pushed streams will be kept in memory.
 const int kMinPushedStreamLifetimeSeconds = 300;
 
+// Default initial value for HTTP/2 SETTINGS.
+const uint32_t kDefaultInitialHeaderTableSize = 4096;
+const uint32_t kDefaultInitialEnablePush = 1;
+const uint32_t kDefaultInitialInitialWindowSize = 65535;
+const uint32_t kDefaultInitialMaxFrameSize = 16384;
+
+bool IsSpdySettingAtDefaultInitialValue(SpdySettingsIds setting_id,
+                                        uint32_t value) {
+  switch (setting_id) {
+    case SETTINGS_HEADER_TABLE_SIZE:
+      return value == kDefaultInitialHeaderTableSize;
+    case SETTINGS_ENABLE_PUSH:
+      return value == kDefaultInitialEnablePush;
+    case SETTINGS_MAX_CONCURRENT_STREAMS:
+      // There is no initial limit on the number of concurrent streams.
+      return false;
+    case SETTINGS_INITIAL_WINDOW_SIZE:
+      return value == kDefaultInitialInitialWindowSize;
+    case SETTINGS_MAX_FRAME_SIZE:
+      return value == kDefaultInitialMaxFrameSize;
+    case SETTINGS_MAX_HEADER_LIST_SIZE:
+      // There is no initial limit on the size of the header list.
+      return false;
+    default:
+      // Undefined parameters have no initial value.
+      return false;
+  }
+}
+
 std::unique_ptr<base::Value> NetLogSpdyHeadersSentCallback(
     const SpdyHeaderBlock* headers,
     bool fin,
@@ -655,7 +684,7 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
                          bool enable_sending_initial_data,
                          bool enable_ping_based_connection_checking,
                          size_t session_max_recv_window_size,
-                         size_t stream_max_recv_window_size,
+                         const SettingsMap& initial_settings,
                          TimeFunc time_func,
                          ServerPushDelegate* push_delegate,
                          ProxyDelegate* proxy_delegate,
@@ -681,8 +710,10 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
       read_state_(READ_STATE_DO_READ),
       write_state_(WRITE_STATE_IDLE),
       error_on_close_(OK),
+      initial_settings_(initial_settings),
       max_concurrent_streams_(kInitialMaxConcurrentStreams),
-      max_concurrent_pushed_streams_(kMaxConcurrentPushedStreams),
+      max_concurrent_pushed_streams_(
+          initial_settings.at(SETTINGS_MAX_CONCURRENT_STREAMS)),
       streams_initiated_count_(0),
       streams_pushed_count_(0),
       streams_pushed_and_claimed_count_(0),
@@ -697,7 +728,9 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
       session_recv_window_size_(0),
       session_unacked_recv_window_bytes_(0),
       stream_initial_send_window_size_(kDefaultInitialWindowSize),
-      stream_max_recv_window_size_(stream_max_recv_window_size),
+      max_header_table_size_(initial_settings.at(SETTINGS_HEADER_TABLE_SIZE)),
+      stream_max_recv_window_size_(
+          initial_settings.at(SETTINGS_INITIAL_WINDOW_SIZE)),
       net_log_(
           NetLogWithSource::Make(net_log, NetLogSourceType::HTTP2_SESSION)),
       enable_sending_initial_data_(enable_sending_initial_data),
@@ -714,6 +747,11 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
       base::Bind(&NetLogSpdySessionCallback, &host_port_proxy_pair()));
   next_unclaimed_push_stream_sweep_time_ = time_func_() +
       base::TimeDelta::FromSeconds(kMinPushedStreamLifetimeSeconds);
+
+  DCHECK(base::ContainsKey(initial_settings_, SETTINGS_HEADER_TABLE_SIZE));
+  DCHECK(base::ContainsKey(initial_settings_, SETTINGS_MAX_CONCURRENT_STREAMS));
+  DCHECK(base::ContainsKey(initial_settings_, SETTINGS_INITIAL_WINDOW_SIZE));
+
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
 }
 
@@ -755,7 +793,7 @@ void SpdySession::InitializeWithSocket(
   buffered_spdy_framer_.reset(new BufferedSpdyFramer());
   buffered_spdy_framer_->set_visitor(this);
   buffered_spdy_framer_->set_debug_visitor(this);
-  buffered_spdy_framer_->UpdateHeaderDecoderTableSize(kMaxHeaderTableSize);
+  buffered_spdy_framer_->UpdateHeaderDecoderTableSize(max_header_table_size_);
 
   net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_INITIALIZED,
                     base::Bind(&NetLogSpdyInitializedCallback,
@@ -2646,12 +2684,13 @@ void SpdySession::SendInitialData() {
                       std::move(connection_header_prefix_frame));
 
   // First, notify the server about the settings they should use when
-  // communicating with us.
+  // communicating with us.  Only send settings that have a value different from
+  // the protocol default value.
   SettingsMap settings_map;
-  settings_map[SETTINGS_HEADER_TABLE_SIZE] = kMaxHeaderTableSize;
-  settings_map[SETTINGS_MAX_CONCURRENT_STREAMS] = kMaxConcurrentPushedStreams;
-  if (stream_max_recv_window_size_ != kDefaultInitialWindowSize) {
-    settings_map[SETTINGS_INITIAL_WINDOW_SIZE] = stream_max_recv_window_size_;
+  for (auto setting : initial_settings_) {
+    if (!IsSpdySettingAtDefaultInitialValue(setting.first, setting.second)) {
+      settings_map.insert(setting);
+    }
   }
   SendSettings(settings_map);
 

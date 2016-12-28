@@ -343,7 +343,6 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_user_alternate_protocol_ports(false),
       enable_quic(false),
       session_max_recv_window_size(kDefaultInitialWindowSize),
-      stream_max_recv_window_size(kDefaultInitialWindowSize),
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service_with_different_host(false),
       net_log(nullptr),
@@ -355,6 +354,7 @@ SpdySessionDependencies::SpdySessionDependencies(
   // lookups allows the test to shutdown cleanly.  Until we have
   // cancellable TCPConnectJobs, use synchronous lookups.
   host_resolver->set_synchronous_mode(true);
+  http2_settings[SETTINGS_INITIAL_WINDOW_SIZE] = kDefaultInitialWindowSize;
 }
 
 SpdySessionDependencies::~SpdySessionDependencies() {}
@@ -394,8 +394,7 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_quic = session_deps->enable_quic;
   params.spdy_session_max_recv_window_size =
       session_deps->session_max_recv_window_size;
-  params.spdy_stream_max_recv_window_size =
-      session_deps->stream_max_recv_window_size;
+  params.http2_settings = session_deps->http2_settings;
   params.time_func = session_deps->time_func;
   params.proxy_delegate = session_deps->proxy_delegate.get();
   params.enable_http2_alternative_service_with_different_host =

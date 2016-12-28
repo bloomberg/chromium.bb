@@ -26,6 +26,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/http/http_auth_scheme.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_network_session_peer.h"
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_server_properties.h"
@@ -5317,9 +5318,9 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateSent) {
       stream_max_recv_window_size / 2 + kChunkSize;
 
   SettingsMap initial_settings;
-  initial_settings[SETTINGS_HEADER_TABLE_SIZE] = kMaxHeaderTableSize;
+  initial_settings[SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
   initial_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
-      kMaxConcurrentPushedStreams;
+      kSpdyMaxConcurrentPushedStreams;
   initial_settings[SETTINGS_INITIAL_WINDOW_SIZE] = stream_max_recv_window_size;
   SpdySerializedFrame initial_settings_frame(
       spdy_util_.ConstructSpdySettings(initial_settings));
@@ -5369,7 +5370,8 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateSent) {
 
   auto session_deps = base::MakeUnique<SpdySessionDependencies>();
   session_deps->session_max_recv_window_size = session_max_recv_window_size;
-  session_deps->stream_max_recv_window_size = stream_max_recv_window_size;
+  session_deps->http2_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
+      stream_max_recv_window_size;
 
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      NetLogWithSource(),

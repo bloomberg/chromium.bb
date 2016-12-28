@@ -13,6 +13,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "net/http/http_stream_factory.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/spdy/spdy_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace test {
@@ -46,6 +47,7 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_EQ(0u, params_.testing_fixed_http_port);
   EXPECT_EQ(0u, params_.testing_fixed_https_port);
   EXPECT_TRUE(params_.enable_http2);
+  EXPECT_TRUE(params_.http2_settings.empty());
   EXPECT_FALSE(params_.enable_tcp_fast_open_for_ssl);
   EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
   EXPECT_FALSE(params_.enable_quic);
@@ -293,6 +295,20 @@ TEST_F(NetworkSessionConfiguratorTest,
   options.push_back(net::kTBBR);
   options.push_back(net::kREJ);
   EXPECT_EQ(options, params_.quic_connection_options);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["http2_settings"] = "7:1234,25:5678";
+  variations::AssociateVariationParams("HTTP2", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("HTTP2", "Enabled");
+
+  ParseFieldTrials();
+
+  net::SettingsMap expected_settings;
+  expected_settings[static_cast<net::SpdySettingsIds>(7)] = 1234;
+  expected_settings[static_cast<net::SpdySettingsIds>(25)] = 5678;
+  EXPECT_EQ(expected_settings, params_.http2_settings);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
