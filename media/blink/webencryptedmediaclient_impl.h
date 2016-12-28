@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/callback.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/weak_ptr.h"
 #include "media/blink/key_system_config_selector.h"
 #include "media/blink/media_blink_export.h"
@@ -73,7 +73,7 @@ class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl
   Reporter* GetReporter(const blink::WebString& key_system);
 
   // Reporter singletons.
-  base::ScopedPtrHashMap<std::string, std::unique_ptr<Reporter>> reporters_;
+  std::unordered_map<std::string, std::unique_ptr<Reporter>> reporters_;
 
   base::Callback<bool(void)> are_secure_codecs_supported_cb_;
   CdmFactory* cdm_factory_;

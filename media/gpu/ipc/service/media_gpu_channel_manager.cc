@@ -29,7 +29,7 @@ void MediaGpuChannelManager::AddChannel(int32_t client_id) {
   std::unique_ptr<MediaGpuChannel> media_gpu_channel(
       new MediaGpuChannel(gpu_channel));
   gpu_channel->SetUnhandledMessageListener(media_gpu_channel.get());
-  media_gpu_channels_.set(client_id, std::move(media_gpu_channel));
+  media_gpu_channels_[client_id] = std::move(media_gpu_channel);
 }
 
 void MediaGpuChannelManager::RemoveChannel(int32_t client_id) {

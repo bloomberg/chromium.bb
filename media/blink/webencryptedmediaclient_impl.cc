@@ -173,12 +173,10 @@ WebEncryptedMediaClientImpl::Reporter* WebEncryptedMediaClientImpl::GetReporter(
 
   // Return a per-frame singleton so that UMA reports will be once-per-frame.
   std::string uma_name = GetKeySystemNameForUMA(key_system_ascii);
-  Reporter* reporter = reporters_.get(uma_name);
-  if (!reporter) {
-    reporter = new Reporter(uma_name);
-    reporters_.add(uma_name, base::WrapUnique(reporter));
-  }
-  return reporter;
+  std::unique_ptr<Reporter>& reporter = reporters_[uma_name];
+  if (!reporter)
+    reporter = base::MakeUnique<Reporter>(uma_name);
+  return reporter.get();
 }
 
 }  // namespace media

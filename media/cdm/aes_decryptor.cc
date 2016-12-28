@@ -561,7 +561,7 @@ bool AesDecryptor::AddDecryptionKey(const std::string& session_id,
   std::unique_ptr<SessionIdDecryptionKeyMap> inner_map(
       new SessionIdDecryptionKeyMap());
   inner_map->Insert(session_id, std::move(decryption_key));
-  key_map_.add(key_id, std::move(inner_map));
+  key_map_[key_id] = std::move(inner_map);
   return true;
 }
 

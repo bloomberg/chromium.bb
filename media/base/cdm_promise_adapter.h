@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/cdm_promise.h"
@@ -44,9 +44,8 @@ class MEDIA_EXPORT CdmPromiseAdapter {
   void Clear();
 
  private:
-  // A map between promise IDs and CdmPromises. It owns the CdmPromises.
-  typedef base::ScopedPtrHashMap<uint32_t, std::unique_ptr<CdmPromise>>
-      PromiseMap;
+  // A map between promise IDs and CdmPromises.
+  using PromiseMap = std::unordered_map<uint32_t, std::unique_ptr<CdmPromise>>;
 
   // Finds, takes the ownership of and returns the promise for |promise_id|.
   // Returns null if no promise can be found.

@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
@@ -36,7 +36,7 @@ class MediaGpuChannelManager
 
  private:
   gpu::GpuChannelManager* const channel_manager_;
-  base::ScopedPtrHashMap<int32_t, std::unique_ptr<MediaGpuChannel>>
+  std::unordered_map<int32_t, std::unique_ptr<MediaGpuChannel>>
       media_gpu_channels_;
   DISALLOW_COPY_AND_ASSIGN(MediaGpuChannelManager);
 };

@@ -10,9 +10,9 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -113,9 +113,9 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   class SessionIdDecryptionKeyMap;
 
   // Key ID <-> SessionIdDecryptionKeyMap map.
-  typedef base::ScopedPtrHashMap<std::string,
-                                 std::unique_ptr<SessionIdDecryptionKeyMap>>
-      KeyIdToSessionKeysMap;
+  using KeyIdToSessionKeysMap =
+      std::unordered_map<std::string,
+                         std::unique_ptr<SessionIdDecryptionKeyMap>>;
 
   ~AesDecryptor() override;
 
