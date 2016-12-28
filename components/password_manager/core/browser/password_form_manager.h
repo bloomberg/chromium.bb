@@ -177,8 +177,8 @@ class PasswordFormManager : public FormFetcher::Consumer {
   void MarkGenerationAvailable() { generation_available_ = true; }
 
   // Returns the provisionally saved form, if it exists, otherwise nullptr.
-  const autofill::PasswordForm* provisionally_saved_form() const {
-    return provisionally_saved_form_.get();
+  const autofill::PasswordForm* submitted_form() const {
+    return submitted_form_.get();
   }
 
   // Returns the pending credentials.
@@ -470,7 +470,7 @@ class PasswordFormManager : public FormFetcher::Consumer {
   const autofill::PasswordForm observed_form_;
 
   // Stores a submitted form.
-  std::unique_ptr<const autofill::PasswordForm> provisionally_saved_form_;
+  std::unique_ptr<const autofill::PasswordForm> submitted_form_;
 
   // Stores if for creating |pending_credentials_| other possible usernames
   // option should apply.
@@ -483,7 +483,7 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // Stores updated credentials when the form was submitted but success is still
   // unknown. This variable contains credentials that are ready to be written
   // (saved or updated) to a password store. It is calculated based on
-  // |provisionally_saved_form_| and |best_matches_|.
+  // |submitted_form_| and |best_matches_|.
   autofill::PasswordForm pending_credentials_;
 
   // Whether pending_credentials_ stores a new login or is an update
@@ -541,7 +541,7 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // |observed_form_| but also on the credentials that the user submitted.
   bool is_possible_change_password_form_without_username_;
 
-  // True if |provisionally_saved_form_| looks like SignUp form according to
+  // True if |submitted_form_| looks like SignUp form according to
   // local heuristics.
   bool does_look_like_signup_form_ = false;
 

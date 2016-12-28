@@ -333,11 +333,11 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   manager.swap(*matched_manager_it);
   pending_login_managers_.erase(matched_manager_it);
 
-  PasswordForm provisionally_saved_form(form);
-  provisionally_saved_form.preferred = true;
+  PasswordForm submitted_form(form);
+  submitted_form.preferred = true;
   if (logger) {
     logger->LogPasswordForm(Logger::STRING_PROVISIONALLY_SAVED_FORM,
-                            provisionally_saved_form);
+                            submitted_form);
   }
   PasswordFormManager::OtherPossibleUsernamesAction action =
       PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES;
@@ -348,7 +348,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
         Logger::STRING_IGNORE_POSSIBLE_USERNAMES,
         action == PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   }
-  manager->ProvisionallySave(provisionally_saved_form, action);
+  manager->ProvisionallySave(submitted_form, action);
   provisional_save_manager_.swap(manager);
 
   // Cache the user-visible URL (i.e., the one seen in the omnibox). Once the
@@ -678,9 +678,9 @@ void PasswordManager::OnLoginSuccessful() {
       *provisional_save_manager_);
 
   if (base::FeatureList::IsEnabled(features::kDropSyncCredential)) {
-    DCHECK(provisional_save_manager_->provisionally_saved_form());
+    DCHECK(provisional_save_manager_->submitted_form());
     if (!client_->GetStoreResultFilter()->ShouldSave(
-            *provisional_save_manager_->provisionally_saved_form())) {
+            *provisional_save_manager_->submitted_form())) {
       provisional_save_manager_->WipeStoreCopyIfOutdated();
       RecordFailure(SYNC_CREDENTIAL,
                     provisional_save_manager_->observed_form().origin,
