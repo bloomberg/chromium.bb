@@ -77,7 +77,7 @@ class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
   }
   bool isGlobalInitialized() { return !m_globalProxy.isEmpty(); }
 
-  bool initializeIfNeeded();
+  void initializeIfNeeded();
   void updateDocumentWrapper(v8::Local<v8::Object> wrapper);
 
   void clearForNavigation();
@@ -91,7 +91,7 @@ class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
 
  private:
   WindowProxy(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
-  bool initialize();
+  void initialize();
 
   enum GlobalDetachmentBehavior { DoNotDetachGlobal, DetachGlobal };
   void disposeContext(GlobalDetachmentBehavior);
@@ -114,7 +114,7 @@ class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
 
   // Associates the window wrapper and its prototype chain with the native
   // DOMWindow object.  Also does some more Window-specific initialization.
-  bool setupWindowPrototypeChain();
+  void setupWindowPrototypeChain();
 
   Member<Frame> m_frame;
   v8::Isolate* m_isolate;

@@ -218,14 +218,13 @@ void WindowProxy::setGlobal(v8::Local<v8::Object> global) {
 // the frame. However, a new inner window is created for the new page.
 // If there are JS code holds a closure to the old inner window,
 // it won't be able to reach the outer window via its global object.
-bool WindowProxy::initializeIfNeeded() {
+void WindowProxy::initializeIfNeeded() {
   if (isContextInitialized())
-    return true;
-
-  return initialize();
+    return;
+  initialize();
 }
 
-bool WindowProxy::initialize() {
+void WindowProxy::initialize() {
   TRACE_EVENT1("v8", "WindowProxy::initialize", "isMainWindow",
                m_frame->isMainFrame());
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
@@ -237,24 +236,16 @@ bool WindowProxy::initialize() {
   v8::HandleScope handleScope(m_isolate);
 
   createContext();
-
-  if (!isContextInitialized())
-    return false;
+  CHECK(isContextInitialized());
 
   ScriptState::Scope scope(m_scriptState.get());
   v8::Local<v8::Context> context = m_scriptState->context();
   if (m_globalProxy.isEmpty()) {
     m_globalProxy.set(m_isolate, context->Global());
-    if (m_globalProxy.isEmpty()) {
-      disposeContext(DoNotDetachGlobal);
-      return false;
-    }
+    CHECK(!m_globalProxy.isEmpty());
   }
 
-  if (!setupWindowPrototypeChain()) {
-    disposeContext(DoNotDetachGlobal);
-    return false;
-  }
+  setupWindowPrototypeChain();
 
   SecurityOrigin* origin = 0;
   if (m_world->isMainWorld()) {
@@ -286,8 +277,6 @@ bool WindowProxy::initialize() {
   if (m_world->isMainWorld()) {
     installPendingConditionalFeaturesOnWindow(m_scriptState.get());
   }
-
-  return true;
 }
 
 void WindowProxy::createContext() {
@@ -335,7 +324,7 @@ void WindowProxy::createContext() {
   m_scriptState = ScriptState::create(context, m_world);
 }
 
-bool WindowProxy::setupWindowPrototypeChain() {
+void WindowProxy::setupWindowPrototypeChain() {
   // Associate the window wrapper object and its prototype chain with the
   // corresponding native DOMWindow object.
   // The full structure of the global object's prototype chain is as follows:
@@ -400,7 +389,6 @@ bool WindowProxy::setupWindowPrototypeChain() {
   // PagePopupController in another way.
   V8PagePopupControllerBinding::installPagePopupController(context,
                                                            windowWrapper);
-  return true;
 }
 
 void WindowProxy::updateDocumentProperty() {

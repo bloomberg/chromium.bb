@@ -221,11 +221,11 @@ WindowProxy* ScriptController::existingWindowProxy(DOMWrapperWorld& world) {
 
 WindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world) {
   WindowProxy* windowProxy = m_windowProxyManager->windowProxy(world);
-  if (!windowProxy->isContextInitialized() &&
-      windowProxy->initializeIfNeeded() && world.isMainWorld())
-    frame()->loader().dispatchDidClearWindowObjectInMainWorld();
-  // FIXME: There are some situations where we can return an uninitialized
-  // context. This is broken.
+  if (!windowProxy->isContextInitialized()) {
+    windowProxy->initializeIfNeeded();
+    if (world.isMainWorld())
+      frame()->loader().dispatchDidClearWindowObjectInMainWorld();
+  }
   return windowProxy;
 }
 
