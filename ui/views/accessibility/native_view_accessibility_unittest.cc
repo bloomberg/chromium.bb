@@ -48,6 +48,7 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
     label_accessibility_ = NativeViewAccessibility::Create(label_);
 
     widget_->GetContentsView()->AddChildView(button_);
+    widget_->Show();
   }
 
   void TearDown() override {
@@ -88,8 +89,21 @@ TEST_F(NativeViewAccessibilityTest, LabelIsChildOfButton) {
             label_accessibility_->GetParent());
 }
 
+// Verify Views with invisible ancestors have AX_STATE_INVISIBLE.
+TEST_F(NativeViewAccessibilityTest, InvisibleViews) {
+  EXPECT_TRUE(widget_->IsVisible());
+  EXPECT_FALSE(
+      button_accessibility_->GetData().HasStateFlag(ui::AX_STATE_INVISIBLE));
+  EXPECT_FALSE(
+      label_accessibility_->GetData().HasStateFlag(ui::AX_STATE_INVISIBLE));
+  button_->SetVisible(false);
+  EXPECT_TRUE(
+      button_accessibility_->GetData().HasStateFlag(ui::AX_STATE_INVISIBLE));
+  EXPECT_TRUE(
+      label_accessibility_->GetData().HasStateFlag(ui::AX_STATE_INVISIBLE));
+}
+
 TEST_F(NativeViewAccessibilityTest, WritableFocus) {
-  widget_->Show();
   // Make |button_| focusable, and focus/unfocus it via NativeViewAccessibility.
   button_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   EXPECT_EQ(nullptr, button_->GetFocusManager()->GetFocusedView());

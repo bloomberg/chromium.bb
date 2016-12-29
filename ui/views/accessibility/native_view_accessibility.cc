@@ -85,7 +85,7 @@ const ui::AXNodeData& NativeViewAccessibility::GetData() {
   if (!view_->enabled())
     data_.state |= (1 << ui::AX_STATE_DISABLED);
 
-  if (!view_->visible())
+  if (!view_->IsDrawn())
     data_.state |= (1 << ui::AX_STATE_INVISIBLE);
 
   return data_;
