@@ -2224,7 +2224,15 @@ void ExtensionService::Observe(int type,
 }
 
 int ExtensionService::GetDisableReasonsOnInstalled(const Extension* extension) {
-  Extension::DisableReason disable_reason;
+  bool is_update_from_same_type = false;
+  {
+    const Extension* existing_extension =
+        GetInstalledExtension(extension->id());
+    is_update_from_same_type =
+        existing_extension &&
+        existing_extension->manifest()->type() == extension->manifest()->type();
+  }
+  Extension::DisableReason disable_reason = Extension::DISABLE_NONE;
   // Extensions disabled by management policy should always be disabled, even
   // if it's force-installed.
   if (system_->management_policy()->MustRemainDisabled(
@@ -2253,10 +2261,15 @@ int ExtensionService::GetDisableReasonsOnInstalled(const Extension* extension) {
   if (FeatureSwitch::prompt_for_external_extensions()->IsEnabled()) {
     // External extensions are initially disabled. We prompt the user before
     // enabling them. Hosted apps are excepted because they are not dangerous
-    // (they need to be launched by the user anyway).
+    // (they need to be launched by the user anyway). We also don't prompt for
+    // extensions updating; this is because the extension will be disabled from
+    // the initial install if it is supposed to be, and this allows us to turn
+    // this on for other platforms without disabling already-installed
+    // extensions.
     if (extension->GetType() != Manifest::TYPE_HOSTED_APP &&
         Manifest::IsExternalLocation(extension->location()) &&
-        !extension_prefs_->IsExternalExtensionAcknowledged(extension->id())) {
+        !extension_prefs_->IsExternalExtensionAcknowledged(extension->id()) &&
+        !is_update_from_same_type) {
       return Extension::DISABLE_EXTERNAL_EXTENSION;
     }
   }

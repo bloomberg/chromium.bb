@@ -594,6 +594,15 @@ class ExtensionServiceTest
     service()->AddProviderForTesting(base::WrapUnique(provider));
   }
 
+  // Checks for external extensions and waits for one to complete installing.
+  void WaitForExternalExtensionInstalled() {
+    content::WindowedNotificationObserver observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    service()->CheckForExternalUpdates();
+    observer.Wait();
+  }
+
  protected:
   // Paths to some of the fake extensions.
   base::FilePath good1_path() {
@@ -4199,6 +4208,91 @@ TEST_F(ExtensionServiceTest, MAYBE_ExternalExtensionAutoAcknowledgement) {
   ASSERT_TRUE(prefs->IsExternalExtensionAcknowledged(page_action));
 }
 
+// Tests that an extension added through an external source is initially
+// disabled with the "prompt for external extensions" feature.
+TEST_F(ExtensionServiceTest, ExternalExtensionDisabledOnInstallation) {
+  FeatureSwitch::ScopedOverride external_prompt_override(
+      FeatureSwitch::prompt_for_external_extensions(), true);
+  InitializeEmptyExtensionService();
+
+  // Register and install an external extension.
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  AddMockExternalProvider(provider);  // Takes ownership.
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
+                                 data_dir().AppendASCII("good.crx"));
+
+  WaitForExternalExtensionInstalled();
+
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(good_crx));
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_FALSE(prefs->IsExternalExtensionAcknowledged(good_crx));
+  EXPECT_EQ(Extension::DISABLE_EXTERNAL_EXTENSION,
+            prefs->GetDisableReasons(good_crx));
+
+  // Updating the extension shouldn't cause it to be enabled.
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.1",
+                                 data_dir().AppendASCII("good2.crx"));
+  WaitForExternalExtensionInstalled();
+
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(good_crx));
+  EXPECT_FALSE(prefs->IsExternalExtensionAcknowledged(good_crx));
+  EXPECT_EQ(Extension::DISABLE_EXTERNAL_EXTENSION,
+            prefs->GetDisableReasons(good_crx));
+  const Extension* extension =
+      registry()->disabled_extensions().GetByID(good_crx);
+  ASSERT_TRUE(extension);
+  // Double check that we did, in fact, update the extension.
+  EXPECT_EQ("1.0.0.1", extension->version()->GetString());
+}
+
+// Test that if an extension is installed before the "prompt for external
+// extensions" feature is enabled, but is updated when the feature is
+// enabled, the extension is not disabled.
+TEST_F(ExtensionServiceTest, ExternalExtensionIsNotDisabledOnUpdate) {
+  auto external_prompt_override =
+      base::MakeUnique<FeatureSwitch::ScopedOverride>(
+          FeatureSwitch::prompt_for_external_extensions(), false);
+  InitializeEmptyExtensionService();
+
+  // Register and install an external extension.
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  AddMockExternalProvider(provider);
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
+                                 data_dir().AppendASCII("good.crx"));
+
+  WaitForExternalExtensionInstalled();
+
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(good_crx));
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_FALSE(prefs->IsExternalExtensionAcknowledged(good_crx));
+  EXPECT_EQ(Extension::DISABLE_NONE, prefs->GetDisableReasons(good_crx));
+
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.1",
+                                 data_dir().AppendASCII("good2.crx"));
+
+  // We explicitly reset the override first. ScopedOverrides reset the value
+  // to the original value on destruction, but if we reset by passing a new
+  // object, the new object is constructed (overriding the current value)
+  // before the old is destructed (which will immediately reset to the
+  // original).
+  external_prompt_override.reset();
+  external_prompt_override = base::MakeUnique<FeatureSwitch::ScopedOverride>(
+      FeatureSwitch::prompt_for_external_extensions(), true);
+  WaitForExternalExtensionInstalled();
+
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(good_crx));
+  {
+    const Extension* extension =
+        registry()->enabled_extensions().GetByID(good_crx);
+    ASSERT_TRUE(extension);
+    EXPECT_EQ("1.0.0.1", extension->version()->GetString());
+  }
+  EXPECT_FALSE(prefs->IsExternalExtensionAcknowledged(good_crx));
+  EXPECT_EQ(Extension::DISABLE_NONE, prefs->GetDisableReasons(good_crx));
+}
+
 #if !defined(OS_CHROMEOS)
 // This tests if default apps are installed correctly.
 TEST_F(ExtensionServiceTest, DefaultAppsInstall) {
@@ -6802,6 +6896,55 @@ TEST_F(ExtensionServiceTest, ExternalInstallClickToKeep) {
 
   // The error should be removed.
   EXPECT_FALSE(HasExternalInstallErrors(service_));
+}
+
+// Test that the external install bubble only takes disabled extensions into
+// account - enabled extensions, even those that weren't acknowledged, should
+// not be warned about. This lets us grandfather extensions in.
+TEST_F(ExtensionServiceTest,
+       ExternalInstallBubbleDoesntShowForEnabledExtensions) {
+  auto external_prompt_override =
+      base::MakeUnique<FeatureSwitch::ScopedOverride>(
+          FeatureSwitch::prompt_for_external_extensions(), false);
+  InitializeEmptyExtensionService();
+
+  // Register and install an external extension.
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  AddMockExternalProvider(provider);
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
+                                 data_dir().AppendASCII("good.crx"));
+
+  WaitForExternalExtensionInstalled();
+
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(good_crx));
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_FALSE(prefs->IsExternalExtensionAcknowledged(good_crx));
+  EXPECT_EQ(Extension::DISABLE_NONE, prefs->GetDisableReasons(good_crx));
+
+  // We explicitly reset the override first. ScopedOverrides reset the value
+  // to the original value on destruction, but if we reset by passing a new
+  // object, the new object is constructed (overriding the current value)
+  // before the old is destructed (which will immediately reset to the
+  // original).
+  external_prompt_override.reset();
+  external_prompt_override = base::MakeUnique<FeatureSwitch::ScopedOverride>(
+      FeatureSwitch::prompt_for_external_extensions(), true);
+
+  extensions::ExternalInstallManager* external_manager =
+      service()->external_install_manager();
+  external_manager->UpdateExternalExtensionAlert();
+  EXPECT_FALSE(external_manager->has_currently_visible_install_alert());
+  EXPECT_TRUE(external_manager->GetErrorsForTesting().empty());
+
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.1",
+                                 data_dir().AppendASCII("good2.crx"));
+
+  WaitForExternalExtensionInstalled();
+
+  external_manager->UpdateExternalExtensionAlert();
+  EXPECT_FALSE(external_manager->has_currently_visible_install_alert());
+  EXPECT_TRUE(external_manager->GetErrorsForTesting().empty());
 }
 
 TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {

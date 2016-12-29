@@ -70,6 +70,15 @@ ExternalInstallManager::ExternalInstallManager(
       this,
       extensions::NOTIFICATION_EXTENSION_REMOVED,
       content::Source<Profile>(Profile::FromBrowserContext(browser_context_)));
+  // Populate the set of unacknowledged external extensions now. We can't just
+  // rely on IsUnacknowledgedExternalExtension() for cases like
+  // OnExtensionLoaded(), since we need to examine the disable reasons, which
+  // can be removed throughout the session.
+  for (const auto& extension :
+       ExtensionRegistry::Get(browser_context)->disabled_extensions()) {
+    if (IsUnacknowledgedExternalExtension(*extension))
+      unacknowledged_ids_.insert(extension->id());
+  }
 }
 
 ExternalInstallManager::~ExternalInstallManager() {
@@ -95,12 +104,12 @@ void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
 
 void ExternalInstallManager::RemoveExternalInstallError(
     const std::string& extension_id) {
-  std::map<std::string, std::unique_ptr<ExternalInstallError>>::iterator iter =
-      errors_.find(extension_id);
+  auto iter = errors_.find(extension_id);
   if (iter != errors_.end()) {
     if (iter->second.get() == currently_visible_install_alert_)
       currently_visible_install_alert_ = nullptr;
     errors_.erase(iter);
+    unacknowledged_ids_.erase(extension_id);
     UpdateExternalExtensionAlert();
   }
 }
@@ -114,31 +123,29 @@ void ExternalInstallManager::UpdateExternalExtensionAlert() {
   // external extensions.
   const ExtensionSet& disabled_extensions =
       ExtensionRegistry::Get(browser_context_)->disabled_extensions();
-  for (const scoped_refptr<const Extension>& extension : disabled_extensions) {
-    if (base::ContainsKey(errors_, extension->id()) ||
-        shown_ids_.count(extension->id()) > 0)
+  for (const auto& id : unacknowledged_ids_) {
+    if (base::ContainsKey(errors_, id) || shown_ids_.count(id) > 0)
       continue;
 
-    if (!IsUnacknowledgedExternalExtension(extension.get()))
-      continue;
+    const Extension* extension = disabled_extensions.GetByID(id);
+    CHECK(extension);
 
     // Warn the user about the suspicious extension.
-    if (extension_prefs_->IncrementAcknowledgePromptCount(extension->id()) >
+    if (extension_prefs_->IncrementAcknowledgePromptCount(id) >
         kMaxExtensionAcknowledgePromptCount) {
       // Stop prompting for this extension and record metrics.
-      extension_prefs_->AcknowledgeExternalExtension(extension->id());
-      LogExternalExtensionEvent(extension.get(), EXTERNAL_EXTENSION_IGNORED);
+      extension_prefs_->AcknowledgeExternalExtension(id);
+      LogExternalExtensionEvent(extension, EXTERNAL_EXTENSION_IGNORED);
       continue;
     }
 
     if (is_first_run_)
-      extension_prefs_->SetExternalInstallFirstRun(extension->id());
+      extension_prefs_->SetExternalInstallFirstRun(id);
 
     // |first_run| is true if the extension was installed during a first run
     // (even if it's post-first run now).
-    AddExternalInstallError(
-        extension.get(),
-        extension_prefs_->IsExternalInstallFirstRun(extension->id()));
+    AddExternalInstallError(extension,
+                            extension_prefs_->IsExternalInstallFirstRun(id));
   }
 }
 
@@ -170,7 +177,7 @@ ExternalInstallManager::GetErrorsForTesting() {
 void ExternalInstallManager::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  if (!IsUnacknowledgedExternalExtension(extension))
+  if (!unacknowledged_ids_.count(extension->id()))
     return;
 
   // We treat loading as acknowledgement (since the user consciously chose to
@@ -194,11 +201,11 @@ void ExternalInstallManager::OnExtensionInstalled(
     return;
   }
 
-  if (!IsUnacknowledgedExternalExtension(extension))
+  if (!IsUnacknowledgedExternalExtension(*extension))
     return;
 
+  unacknowledged_ids_.insert(extension->id());
   LogExternalExtensionEvent(extension, EXTERNAL_EXTENSION_INSTALLED);
-
   UpdateExternalExtensionAlert();
 }
 
@@ -206,19 +213,26 @@ void ExternalInstallManager::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     extensions::UninstallReason reason) {
-  if (IsUnacknowledgedExternalExtension(extension))
+  if (unacknowledged_ids_.erase(extension->id()))
     LogExternalExtensionEvent(extension, EXTERNAL_EXTENSION_UNINSTALLED);
 }
 
 bool ExternalInstallManager::IsUnacknowledgedExternalExtension(
-    const Extension* extension) const {
+    const Extension& extension) const {
   if (!FeatureSwitch::prompt_for_external_extensions()->IsEnabled())
     return false;
 
-  return (Manifest::IsExternalLocation(extension->location()) &&
-          !extension_prefs_->IsExternalExtensionAcknowledged(extension->id()) &&
-          !(extension_prefs_->GetDisableReasons(extension->id()) &
-            Extension::DISABLE_SIDELOAD_WIPEOUT));
+  int disable_reasons = extension_prefs_->GetDisableReasons(extension.id());
+  bool is_from_sideload_wipeout =
+      (disable_reasons & Extension::DISABLE_SIDELOAD_WIPEOUT) != 0;
+  // We don't consider extensions that weren't disabled for being external so
+  // that we grandfather in extensions. External extensions are only disabled on
+  // install with the "prompt for external extensions" feature enabled.
+  bool is_disabled_external =
+      (disable_reasons & Extension::DISABLE_EXTERNAL_EXTENSION) != 0;
+  return is_disabled_external && !is_from_sideload_wipeout &&
+         Manifest::IsExternalLocation(extension.location()) &&
+         !extension_prefs_->IsExternalExtensionAcknowledged(extension.id());
 }
 
 void ExternalInstallManager::Observe(
