@@ -77,6 +77,10 @@ const static float kTestEpsilon = 1e-6;
                        inputRect, localPropertyTreeState,                      \
                        ancestorPropertyTreeState, success));                   \
     EXPECT_TRUE(success);                                                      \
+    FloatRect mappedClip = geometryMapper->localToAncestorClipRect(            \
+        localPropertyTreeState, ancestorPropertyTreeState, success);           \
+    EXPECT_TRUE(success);                                                      \
+    EXPECT_RECT_EQ(expectedClipInAncestorSpace, mappedClip);                   \
     EXPECT_RECT_EQ(expectedVisualRect,                                         \
                    geometryMapper->mapToVisualRectInDestinationSpace(          \
                        inputRect, localPropertyTreeState,                      \

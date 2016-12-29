@@ -125,6 +125,13 @@ class PLATFORM_EXPORT GeometryMapper {
       const PropertyTreeState& ancestorState,
       bool& success);
 
+  // Returns the "clip visual rect" between |localTransformState| and
+  // |ancestorState|. See above for the definition of "clip visual rect".
+  FloatRect localToAncestorClipRect(
+      const PropertyTreeState& localTransformState,
+      const PropertyTreeState& ancestorState,
+      bool& success);
+
  private:
   // Used by mapToVisualRectInDestinationSpace() after fast mapping (assuming
   // destination is an ancestor of source) failed.
@@ -140,13 +147,6 @@ class PLATFORM_EXPORT GeometryMapper {
       const FloatRect&,
       const PropertyTreeState& sourceState,
       const PropertyTreeState& destinationState,
-      bool& success);
-
-  // Returns the "clip visual rect" between |localTransformState| and
-  // |ancestorState|. See above for the definition of "clip visual rect".
-  FloatRect localToAncestorClipRect(
-      const PropertyTreeState& localTransformState,
-      const PropertyTreeState& ancestorState,
       bool& success);
 
   // Returns the precomputed data if already set, or adds and memoizes a new

@@ -297,11 +297,8 @@ static void applyClipsBetweenStates(const PropertyTreeState& localState,
 
   FloatRect combinedClip;
   bool success = false;
-  // TODO(chrishtr) :get rid of infiniteIntRect here.
-  combinedClip = geometryMapper.localToVisualRectInAncestorSpace(
-      FloatRect(LayoutRect::infiniteIntRect()), localState, ancestorState,
-      success);
-
+  combinedClip = geometryMapper.localToAncestorClipRect(localState,
+                                                        ancestorState, success);
   DCHECK(success);
 
   ccList.CreateAndAppendPairedBeginItem<cc::FloatClipDisplayItem>(
