@@ -1819,8 +1819,6 @@ crbug.com/626703 imported/wpt/html/dom/documents/dom-tree-accessors/Document.cur
 
 crbug.com/662264 imported/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout Failure ]
 
-crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseline ]
-
 crbug.com/652187 [ Debug ] http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
 crbug.com/652187 [ Debug ] virtual/mojo-loading/http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
 
