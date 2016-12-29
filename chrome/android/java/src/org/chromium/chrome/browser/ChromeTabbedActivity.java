@@ -839,34 +839,28 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     openNewTab(url, referer, headers, externalAppId, intent, true);
                     break;
                 case OPEN_NEW_INCOGNITO_TAB:
+                    if (!TextUtils.equals(externalAppId, getPackageName())) {
+                        assert false : "Only Chrome is allowed to open incognito tabs";
+                        Log.e(TAG, "Only Chrome is allowed to open incognito tabs");
+                        return;
+                    }
+
                     if (url == null || url.equals(UrlConstants.NTP_URL)) {
-                        TabLaunchType launchType;
                         if (fromLauncherShortcut) {
                             getTabCreator(true).launchUrl(
                                     UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP);
                             recordLauncherShortcutAction(true);
                             reportNewTabShortcutUsed(true);
-                        } else if (TextUtils.equals(externalAppId, getPackageName())) {
+                        } else {
                             // Used by the Account management screen to open a new incognito tab.
                             // Account management screen collects its metrics separately.
                             getTabCreator(true).launchUrl(
                                     UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI,
                                     intent, mIntentHandlingTimeMs);
-                        } else {
-                            getTabCreator(true).launchUrl(
-                                    UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP,
-                                    intent, mIntentHandlingTimeMs);
-                            RecordUserAction.record("MobileReceivedExternalIntent");
                         }
                     } else {
-                        if (TextUtils.equals(externalAppId, getPackageName())) {
-                            getTabCreator(true).launchUrl(
-                                    url, TabLaunchType.FROM_LINK, intent, mIntentHandlingTimeMs);
-                        } else {
-                            getTabCreator(true).launchUrlFromExternalApp(url, referer, headers,
-                                    externalAppId, true, intent, mIntentHandlingTimeMs);
-                            RecordUserAction.record("MobileReceivedExternalIntent");
-                        }
+                        getTabCreator(true).launchUrl(
+                                url, TabLaunchType.FROM_LINK, intent, mIntentHandlingTimeMs);
                     }
                     break;
                 default:

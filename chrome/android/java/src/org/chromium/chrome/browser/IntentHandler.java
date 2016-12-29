@@ -662,9 +662,16 @@ public class IntentHandler {
             // Determine if this intent came from a trustworthy source (either Chrome or Google
             // first party applications).
             boolean isInternal = isIntentChromeOrFirstParty(intent, context);
+            boolean isFromChrome = wasIntentSenderChrome(intent, context);
 
-            // "Open new incognito tab" is currently limited to Chrome or first parties.
-            if (!isInternal
+            // "Open new incognito tab" is currently limited to Chrome.
+            //
+            // The pending incognito URL check is to handle the case where the user is shown an
+            // Android intent picker while in incognito and they select the current Chrome instance
+            // from the list.  In this case, we do not apply our Chrome token as the user has the
+            // option to select apps outside of our control, so we rely on this in memory check
+            // instead.
+            if (!isFromChrome
                     && IntentUtils.safeGetBooleanExtra(
                             intent, EXTRA_OPEN_NEW_INCOGNITO_TAB, false)
                     && (getPendingIncognitoUrl() == null
