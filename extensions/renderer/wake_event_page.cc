@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"
@@ -160,10 +161,9 @@ void WakeEventPage::MakeRequest(const std::string& extension_id,
   static base::AtomicSequenceNumber sequence_number;
   int request_id = sequence_number.GetNext();
   {
-    std::unique_ptr<RequestData> request_data(
-        new RequestData(content::WorkerThread::GetCurrentId(), on_response));
     base::AutoLock lock(requests_lock_);
-    requests_.set(request_id, std::move(request_data));
+    requests_[request_id] = base::MakeUnique<RequestData>(
+        content::WorkerThread::GetCurrentId(), on_response);
   }
   message_filter_->Send(
       new ExtensionHostMsg_WakeEventPage(request_id, extension_id));
@@ -183,9 +183,11 @@ void WakeEventPage::OnWakeEventPageResponse(int request_id, bool success) {
   std::unique_ptr<RequestData> request_data;
   {
     base::AutoLock lock(requests_lock_);
-    request_data = requests_.take(request_id);
+    auto it = requests_.find(request_id);
+    CHECK(it != requests_.end()) << "No request with ID " << request_id;
+    request_data = std::move(it->second);
+    requests_.erase(it);
   }
-  CHECK(request_data) << "No request with ID " << request_id;
   if (request_data->thread_id == 0) {
     // Thread ID of 0 means it wasn't called on a worker thread, so safe to
     // call immediately.
