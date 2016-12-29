@@ -650,11 +650,11 @@ class CRWWebControllerPageScrollStateTest
   }
 };
 
-// TODO(iOS): Flaky on the bots. crbug/493427
+// TODO(crbug/493427): Flaky on the bots.
 TEST_F(CRWWebControllerPageScrollStateTest,
        FLAKY_SetPageDisplayStateWithUserScalableDisabled) {
 #if !TARGET_IPHONE_SIMULATOR
-  // TODO(crbug.com/453530): fails flakily on device, so skip it there.
+  // TODO(crbug.com/493427): fails flakily on device, so skip it there.
   return;
 #endif
   web::PageZoomState zoom_state(1.0, 5.0, 1.0);
@@ -682,9 +682,13 @@ TEST_F(CRWWebControllerPageScrollStateTest,
             web_controller().pageDisplayState.zoom_state());
 };
 
-// TODO(iOS): Flaky on the bots. crbug/493427
+// TODO(crbug/493427): Flaky on the bots.
 TEST_F(CRWWebControllerPageScrollStateTest,
        FLAKY_SetPageDisplayStateWithUserScalableEnabled) {
+#if !TARGET_IPHONE_SIMULATOR
+  // TODO(crbug.com/493427): fails flakily on device, so skip it there.
+  return;
+#endif
   web::PageZoomState zoom_state(1.0, 5.0, 1.0);
 
   LoadHtml(GetHTMLForZoomState(zoom_state, PAGE_SCALABILITY_ENABLED));
@@ -711,7 +715,7 @@ TEST_F(CRWWebControllerPageScrollStateTest,
                         final_zoom_state.minimum_zoom_scale());
 };
 
-// TODO(iOS): Flaky on the bots. crbug/493427
+// TODO(crbug/493427): Flaky on the bots.
 TEST_F(CRWWebControllerPageScrollStateTest, FLAKY_AtTop) {
   // This test fails on iPhone 6/6+; skip until it's fixed. crbug.com/453105
   if (IsIPhone6Or6Plus())
