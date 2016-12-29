@@ -187,10 +187,12 @@ class FindObjectPropertiesNeedingUpdateScope {
                                   originalBorderBox->propertyTreeState.scroll(),
                                   objectBorderBox->propertyTreeState.scroll());
       } else {
-        DCHECK_EQ(!!originalBorderBox, !!objectBorderBox);
+        DCHECK_EQ(!!originalBorderBox, !!objectBorderBox)
+            << " Object: " << m_object.debugName();
       }
     } else {
-      DCHECK_EQ(!!m_originalProperties, !!objectProperties);
+      DCHECK_EQ(!!m_originalProperties, !!objectProperties)
+          << " Object: " << m_object.debugName();
     }
     // Restore original clean bit.
     m_object.getMutableForPainting().clearNeedsPaintPropertyUpdateForTesting();

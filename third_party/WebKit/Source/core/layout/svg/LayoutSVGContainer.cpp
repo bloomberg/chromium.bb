@@ -111,18 +111,23 @@ void LayoutSVGContainer::styleDidChange(StyleDifference diff,
   bool hadIsolation =
       oldStyle && !isSVGHiddenContainer() &&
       SVGLayoutSupport::willIsolateBlendingDescendantsForStyle(*oldStyle);
-  bool isolationChanged =
-      hadIsolation ==
-      !SVGLayoutSupport::willIsolateBlendingDescendantsForObject(this);
+
+  bool willIsolateBlendingDescendants =
+      SVGLayoutSupport::willIsolateBlendingDescendantsForObject(this);
+
+  bool isolationChanged = hadIsolation != willIsolateBlendingDescendants;
+
+  if (isolationChanged)
+    setNeedsPaintPropertyUpdate();
 
   if (!parent() || !isolationChanged)
     return;
 
-  if (hasNonIsolatedBlendingDescendants())
+  if (hasNonIsolatedBlendingDescendants()) {
     parent()->descendantIsolationRequirementsChanged(
-        SVGLayoutSupport::willIsolateBlendingDescendantsForObject(this)
-            ? DescendantIsolationNeedsUpdate
-            : DescendantIsolationRequired);
+        willIsolateBlendingDescendants ? DescendantIsolationNeedsUpdate
+                                       : DescendantIsolationRequired);
+  }
 }
 
 bool LayoutSVGContainer::hasNonIsolatedBlendingDescendants() const {

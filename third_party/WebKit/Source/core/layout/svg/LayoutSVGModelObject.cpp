@@ -125,6 +125,9 @@ void LayoutSVGModelObject::styleDidChange(StyleDifference diff,
       parent()->descendantIsolationRequirementsChanged(
           style()->hasBlendMode() ? DescendantIsolationRequired
                                   : DescendantIsolationNeedsUpdate);
+
+    if (hasBlendModeChanged)
+      setNeedsPaintPropertyUpdate();
   }
 
   LayoutObject::styleDidChange(diff, oldStyle);
