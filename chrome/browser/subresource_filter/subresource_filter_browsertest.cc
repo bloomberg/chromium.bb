@@ -32,10 +32,14 @@
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -158,6 +162,12 @@ GURL GetURLWithFragment(const GURL& url, base::StringPiece fragment) {
   return url.ReplaceComponents(replacements);
 }
 
+GURL GetURLWithQuery(const GURL& url, base::StringPiece query) {
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(query);
+  return url.ReplaceComponents(replacements);
+}
+
 }  // namespace
 
 namespace subresource_filter {
@@ -217,6 +227,7 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+    host_resolver()->AddSimulatedFailure("host-with-dns-lookup-failure");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
@@ -248,6 +259,18 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
         rfh, "domAutomationController.send(!!document.scriptExecuted)",
         &script_resource_was_loaded));
     return script_resource_was_loaded;
+  }
+
+  void ExpectParsedScriptElementLoadedStatusInFrames(
+      const std::vector<const char*>& frame_names,
+      const std::vector<bool>& expect_loaded) {
+    ASSERT_EQ(expect_loaded.size(), frame_names.size());
+    for (size_t i = 0; i < frame_names.size(); ++i) {
+      SCOPED_TRACE(frame_names[i]);
+      content::RenderFrameHost* frame = FindFrameByName(frame_names[i]);
+      ASSERT_TRUE(frame);
+      ASSERT_EQ(expect_loaded[i], WasParsedScriptElementLoaded(frame));
+    }
   }
 
   bool IsDynamicScriptElementLoaded(content::RenderFrameHost* rfh) {
@@ -356,17 +379,79 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
 
-  const char* kSubframeNames[] = {"one", "two", "three"};
-  const bool kExpectScriptElementToLoad[arraysize(kSubframeNames)] = {
-      false, true, false};
-  for (size_t i = 0; i < arraysize(kSubframeNames); ++i) {
-    content::RenderFrameHost* frame = FindFrameByName(kSubframeNames[i]);
-    ASSERT_TRUE(frame);
-    EXPECT_EQ(kExpectScriptElementToLoad[i],
-              WasParsedScriptElementLoaded(frame));
-  }
+  const auto kSubframeNames = {"one", "two", "three"};
+  const auto kExpectScriptInFrameToLoad = {false, true, false};
+  ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
+      kSubframeNames, kExpectScriptInFrameToLoad));
 
   tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       HistoryNavigationActivation) {
+  GURL url_without_activation(GetTestUrl(kTestFrameSetPath));
+  GURL url_with_activation(
+      GetURLWithQuery(url_without_activation, "activation"));
+  ConfigureAsPhishingURL(url_with_activation);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+
+  const auto kSubframeNames = {"one", "two", "three"};
+  const auto kExpectScriptInFrameToLoadWithoutActivation = {true, true, true};
+  const auto kExpectScriptInFrameToLoadWithActivation = {false, true, false};
+
+  ui_test_utils::NavigateToURL(browser(), url_without_activation);
+  ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
+      kSubframeNames, kExpectScriptInFrameToLoadWithoutActivation));
+
+  ui_test_utils::NavigateToURL(browser(), url_with_activation);
+  ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
+      kSubframeNames, kExpectScriptInFrameToLoadWithActivation));
+
+  ASSERT_TRUE(web_contents()->GetController().CanGoBack());
+  content::WindowedNotificationObserver back_navigation_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  web_contents()->GetController().GoBack();
+  back_navigation_stop_observer.Wait();
+  ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
+      kSubframeNames, kExpectScriptInFrameToLoadWithoutActivation));
+
+  ASSERT_TRUE(web_contents()->GetController().CanGoForward());
+  content::WindowedNotificationObserver forward_navigation_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  web_contents()->GetController().GoForward();
+  forward_navigation_stop_observer.Wait();
+  ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
+      kSubframeNames, kExpectScriptInFrameToLoadWithActivation));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       FailedProvisionalLoadInMainframe) {
+  GURL url_with_activation_but_dns_error(
+      "http://host-with-dns-lookup-failure/");
+  GURL url_with_activation_but_not_existent(GetTestUrl("non-existent.html"));
+  GURL url_without_activation(GetTestUrl(kTestFrameSetPath));
+
+  ConfigureAsPhishingURL(url_with_activation_but_dns_error);
+  ConfigureAsPhishingURL(url_with_activation_but_not_existent);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+
+  const auto kSubframeNames = {"one", "two", "three"};
+  const auto kExpectScriptInFrameToLoad = {true, true, true};
+
+  for (const auto& url_with_activation :
+       {url_with_activation_but_dns_error,
+        url_with_activation_but_not_existent}) {
+    SCOPED_TRACE(url_with_activation);
+
+    ui_test_utils::NavigateToURL(browser(), url_with_activation);
+    ui_test_utils::NavigateToURL(browser(), url_without_activation);
+    ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
+        kSubframeNames, kExpectScriptInFrameToLoad));
+  }
 }
 
 // The page-level activation state on the browser-side should not be reset when
