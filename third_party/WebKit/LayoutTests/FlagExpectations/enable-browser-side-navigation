@@ -163,12 +163,6 @@ crbug.com/673748 http/tests/security/cross-frame-access-parent-explicit-domain-i
 crbug.com/673748 virtual/mojo-loading/http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
 crbug.com/673748 virtual/mojo-loading/http/tests/security/cross-frame-access-parent-explicit-domain-isolated-world.html [ Timeout ]
 
-# https://crbug.com/673751 Clicking on an href link with a javascript on click
-# navigation event should follow the href link
-crbug.com/673748 imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/005.html [ Failure ]
-crbug.com/673748 imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/006.html [ Failure ]
-crbug.com/673748 imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/007.html [ Failure ]
-
 # This test seems to be partially failing without PlzNavigate as well.
 Bug(none) imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html [ Failure ]
 

@@ -1633,6 +1633,8 @@ bool FrameLoader::shouldContinueForNavigationPolicy(
     // Mark the frame as loading since the embedder is handling the navigation.
     m_progressTracker->progressStarted();
 
+    m_frame->navigationScheduler().cancel();
+
     // If this is a form submit, dispatch that a form is being submitted
     // since the embedder is handling the navigation.
     if (form)
