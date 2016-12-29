@@ -11,6 +11,7 @@
 #include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
 #endif  // OS_ANDROID
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/amp_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/css_scanning_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer.h"
@@ -62,6 +63,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     page_load_metrics::PageLoadTracker* tracker) {
   // These classes are owned by the metrics.
   tracker->AddObserver(base::MakeUnique<AbortsPageLoadMetricsObserver>());
+  tracker->AddObserver(base::MakeUnique<AMPPageLoadMetricsObserver>());
   tracker->AddObserver(base::MakeUnique<CorePageLoadMetricsObserver>());
   tracker->AddObserver(
       base::MakeUnique<
