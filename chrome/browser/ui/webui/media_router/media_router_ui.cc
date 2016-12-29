@@ -725,6 +725,10 @@ std::string MediaRouterUI::GetTruncatedPresentationRequestSourceName() const {
              : TruncateHost(GetHostFromURL(gurl));
 }
 
+const std::set<MediaCastMode>& MediaRouterUI::cast_modes() const {
+  return cast_modes_;
+}
+
 const std::string& MediaRouterUI::GetRouteProviderExtensionId() const {
   // TODO(crbug.com/597778): remove reference to MediaRouterMojoImpl
   return static_cast<MediaRouterMojoImpl*>(router_)

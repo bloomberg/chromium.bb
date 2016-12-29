@@ -577,6 +577,20 @@ TEST_F(MediaRouterUITest, RecordCastModeSelections) {
   EXPECT_FALSE(media_router_ui_->UserSelectedTabMirroringForCurrentOrigin());
 }
 
+TEST_F(MediaRouterUITest, RecordCastModeSelectionsInIncognito) {
+  const GURL url = GURL("https://www.example.com/watch?v=AAAA");
+
+  CreateMediaRouterUIForURL(profile()->GetOffTheRecordProfile(), url);
+  EXPECT_FALSE(media_router_ui_->UserSelectedTabMirroringForCurrentOrigin());
+  media_router_ui_->RecordCastModeSelection(MediaCastMode::TAB_MIRROR);
+  EXPECT_TRUE(media_router_ui_->UserSelectedTabMirroringForCurrentOrigin());
+
+  // Selections recorded in incognito shouldn't be retrieved in the regular
+  // profile.
+  CreateMediaRouterUIForURL(profile(), url);
+  EXPECT_FALSE(media_router_ui_->UserSelectedTabMirroringForCurrentOrigin());
+}
+
 TEST_F(MediaRouterUITest, RecordDesktopMirroringCastModeSelection) {
   const GURL url = GURL("https://www.example.com/watch?v=AAAA");
   CreateMediaRouterUIForURL(profile(), url);
@@ -592,4 +606,5 @@ TEST_F(MediaRouterUITest, RecordDesktopMirroringCastModeSelection) {
   // Selecting desktop mirroring should not change the recorded preferences.
   EXPECT_TRUE(media_router_ui_->UserSelectedTabMirroringForCurrentOrigin());
 }
+
 }  // namespace media_router

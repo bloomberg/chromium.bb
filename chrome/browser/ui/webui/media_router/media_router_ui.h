@@ -95,8 +95,9 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // Closes the media router UI.
   void Close();
 
-  // Notifies this instance that the UI has been initialized.
-  void UIInitialized();
+  // Notifies this instance that the UI has been initialized. Marked virtual for
+  // tests.
+  virtual void UIInitialized();
 
   // Requests a route be created from the source mapped to
   // |cast_mode|, to the sink given by |sink_id|.
@@ -127,12 +128,12 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
                                  MediaCastMode cast_mode);
 
   // Returns true if the cast mode last chosen for the current origin is tab
-  // mirroring.
-  bool UserSelectedTabMirroringForCurrentOrigin() const;
+  // mirroring. Marked virtual for tests.
+  virtual bool UserSelectedTabMirroringForCurrentOrigin() const;
 
   // Records the cast mode selection for the current origin, unless the cast
-  // mode is MediaCastMode::DESKTOP_MIRROR.
-  void RecordCastModeSelection(MediaCastMode cast_mode);
+  // mode is MediaCastMode::DESKTOP_MIRROR. Marked virtual for tests.
+  virtual void RecordCastModeSelection(MediaCastMode cast_mode);
 
   // Returns the hostname of the default source's parent frame URL.
   std::string GetPresentationRequestSourceName() const;
@@ -145,7 +146,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   const std::vector<MediaRoute::Id>& joinable_route_ids() const {
     return joinable_route_ids_;
   }
-  const std::set<MediaCastMode>& cast_modes() const { return cast_modes_; }
+  // Marked virtual for tests.
+  virtual const std::set<MediaCastMode>& cast_modes() const;
   const std::unordered_map<MediaRoute::Id, MediaCastMode>&
   routes_and_cast_modes() const {
     return routes_and_cast_modes_;

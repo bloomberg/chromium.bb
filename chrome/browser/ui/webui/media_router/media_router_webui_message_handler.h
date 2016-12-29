@@ -59,6 +59,11 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void set_incognito_for_test(bool incognito) { incognito_ = incognito; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterWebUIMessageHandlerTest,
+                           RecordCastModeSelection);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterWebUIMessageHandlerTest,
+                           RetrieveCastModeSelection);
+
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 

@@ -15,6 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::Return;
 using testing::ReturnRef;
 
 namespace media_router {
@@ -30,6 +31,10 @@ class MockMediaRouterUI : public MediaRouterUI {
       : MediaRouterUI(web_ui) {}
   ~MockMediaRouterUI() {}
 
+  MOCK_METHOD0(UIInitialized, void());
+  MOCK_CONST_METHOD0(UserSelectedTabMirroringForCurrentOrigin, bool());
+  MOCK_METHOD1(RecordCastModeSelection, void(MediaCastMode cast_mode));
+  MOCK_CONST_METHOD0(cast_modes, const std::set<MediaCastMode>&());
   MOCK_CONST_METHOD0(GetRouteProviderExtensionId, const std::string&());
 };
 
@@ -581,6 +586,53 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateIssue) {
   bool actual_is_blocking = false;
   EXPECT_TRUE(issue_value->GetBoolean("isBlocking", &actual_is_blocking));
   EXPECT_TRUE(actual_is_blocking);
+}
+
+TEST_F(MediaRouterWebUIMessageHandlerTest, RecordCastModeSelection) {
+  base::ListValue args;
+  args.AppendInteger(MediaCastMode::DEFAULT);
+  EXPECT_CALL(*mock_media_router_ui_.get(),
+              RecordCastModeSelection(MediaCastMode::DEFAULT))
+      .Times(1);
+  handler_->OnReportSelectedCastMode(&args);
+
+  args.Clear();
+  args.AppendInteger(MediaCastMode::TAB_MIRROR);
+  EXPECT_CALL(*mock_media_router_ui_.get(),
+              RecordCastModeSelection(MediaCastMode::TAB_MIRROR))
+      .Times(1);
+  handler_->OnReportSelectedCastMode(&args);
+}
+
+TEST_F(MediaRouterWebUIMessageHandlerTest, RetrieveCastModeSelection) {
+  base::ListValue args;
+  std::set<MediaCastMode> cast_modes = {MediaCastMode::TAB_MIRROR};
+  EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId())
+      .WillRepeatedly(ReturnRef(provider_extension_id()));
+  EXPECT_CALL(*mock_media_router_ui_, cast_modes())
+      .WillRepeatedly(ReturnRef(cast_modes));
+
+  EXPECT_CALL(*mock_media_router_ui_,
+              UserSelectedTabMirroringForCurrentOrigin())
+      .WillOnce(Return(true));
+  handler_->OnRequestInitialData(&args);
+  const content::TestWebUI::CallData& call_data1 = *web_ui_->call_data()[0];
+  ASSERT_EQ("media_router.ui.setInitialData", call_data1.function_name());
+  const base::DictionaryValue* initial_data = nullptr;
+  ASSERT_TRUE(call_data1.arg1()->GetAsDictionary(&initial_data));
+  bool use_tab_mirroring = false;
+  EXPECT_TRUE(initial_data->GetBoolean("useTabMirroring", &use_tab_mirroring));
+  EXPECT_TRUE(use_tab_mirroring);
+
+  EXPECT_CALL(*mock_media_router_ui_,
+              UserSelectedTabMirroringForCurrentOrigin())
+      .WillOnce(Return(false));
+  handler_->OnRequestInitialData(&args);
+  const content::TestWebUI::CallData& call_data2 = *web_ui_->call_data()[1];
+  ASSERT_EQ("media_router.ui.setInitialData", call_data2.function_name());
+  ASSERT_TRUE(call_data2.arg1()->GetAsDictionary(&initial_data));
+  EXPECT_TRUE(initial_data->GetBoolean("useTabMirroring", &use_tab_mirroring));
+  EXPECT_FALSE(use_tab_mirroring);
 }
 
 }  // namespace media_router
