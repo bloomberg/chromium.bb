@@ -118,6 +118,8 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       this.showing_ = true;
       chrome.send('loginUIStateChanged', ['account-picker', true]);
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
+      // Header bar should be always visible on Account Picker screen.
+      Oobe.getInstance().headerHidden = false;
       chrome.send('hideCaptivePortal');
       var podRow = $('pod-row');
       podRow.handleBeforeShow();
