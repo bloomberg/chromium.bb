@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -47,7 +47,7 @@ class FlashFontFileResource : public PluginResource,
   const std::string* AddFontTable(uint32_t table, const std::string& contents);
 
   using FontTableMap =
-      base::ScopedPtrHashMap<uint32_t, std::unique_ptr<std::string>>;
+      std::unordered_map<uint32_t, std::unique_ptr<std::string>>;
   FontTableMap font_tables_;
 
   SerializedFontDescription description_;

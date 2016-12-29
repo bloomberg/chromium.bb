@@ -65,16 +65,17 @@ PP_Bool FlashFontFileResource::GetFontTable(uint32_t table,
 }
 
 const std::string* FlashFontFileResource::GetFontTable(uint32_t table) const {
-  FontTableMap::const_iterator found = font_tables_.find(table);
-  return (found != font_tables_.end()) ? found->second : nullptr;
+  auto found = font_tables_.find(table);
+  return (found != font_tables_.end()) ? found->second.get() : nullptr;
 }
 
 const std::string* FlashFontFileResource::AddFontTable(
     uint32_t table,
     const std::string& contents) {
-  FontTableMap::const_iterator it =
-      font_tables_.set(table, base::MakeUnique<std::string>(contents));
-  return it->second;
+  auto contents_copy = base::MakeUnique<std::string>(contents);
+  std::string* contents_copy_ptr = contents_copy.get();
+  font_tables_[table] = std::move(contents_copy);
+  return contents_copy_ptr;
 }
 
 }  // namespace proxy

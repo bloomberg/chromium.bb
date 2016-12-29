@@ -8,6 +8,7 @@
 
 #include "base/hash.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
@@ -335,17 +336,16 @@ InterfaceProxy::Factory InterfaceList::GetFactoryForID(ApiID id) const {
   int index = static_cast<int>(id);
   static_assert(API_ID_NONE == 0, "none must be zero");
   if (id <= 0 || id >= API_ID_COUNT)
-    return NULL;
+    return nullptr;
   return id_to_factory_[index];
 }
 
 const void* InterfaceList::GetInterfaceForPPB(const std::string& name) {
   // CAUTION: This function is called without the ProxyLock to avoid excessive
   // excessive locking from C++ wrappers. (See also GetBrowserInterface.)
-  NameToInterfaceInfoMap::iterator found =
-      name_to_browser_info_.find(name);
+  auto found = name_to_browser_info_.find(name);
   if (found == name_to_browser_info_.end())
-    return NULL;
+    return nullptr;
 
   if (g_process_global_permissions.Get().HasPermission(
           found->second->required_permission())) {
@@ -354,14 +354,13 @@ const void* InterfaceList::GetInterfaceForPPB(const std::string& name) {
         PluginGlobals::Get()->GetBrowserSender(), name);
     return found->second->iface();
   }
-  return NULL;
+  return nullptr;
 }
 
 const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
-  NameToInterfaceInfoMap::const_iterator found =
-      name_to_plugin_info_.find(name);
+  auto found = name_to_plugin_info_.find(name);
   if (found == name_to_plugin_info_.end())
-    return NULL;
+    return nullptr;
   return found->second->iface();
 }
 
@@ -398,16 +397,14 @@ void InterfaceList::AddPPB(const char* name,
                            const void* iface,
                            Permission perm) {
   DCHECK(name_to_browser_info_.find(name) == name_to_browser_info_.end());
-  name_to_browser_info_.add(
-      name, std::unique_ptr<InterfaceInfo>(new InterfaceInfo(iface, perm)));
+  name_to_browser_info_[name] = base::MakeUnique<InterfaceInfo>(iface, perm);
 }
 
 void InterfaceList::AddPPP(const char* name,
                            const void* iface) {
   DCHECK(name_to_plugin_info_.find(name) == name_to_plugin_info_.end());
-  name_to_plugin_info_.add(name,
-                           std::unique_ptr<InterfaceInfo>(
-                               new InterfaceInfo(iface, PERMISSION_NONE)));
+  name_to_plugin_info_[name] =
+      base::MakeUnique<InterfaceInfo>(iface, PERMISSION_NONE);
 }
 
 int InterfaceList::HashInterfaceName(const std::string& name) {

@@ -9,9 +9,9 @@
 
 #include <set>
 #include <string>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -208,7 +208,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   typedef base::hash_map<std::string, const void*> InterfaceMap;
   InterfaceMap plugin_interfaces_;
 
-  typedef base::ScopedPtrHashMap<PP_Instance, std::unique_ptr<InstanceData>>
+  typedef std::unordered_map<PP_Instance, std::unique_ptr<InstanceData>>
       InstanceDataMap;
   InstanceDataMap instance_map_;
 

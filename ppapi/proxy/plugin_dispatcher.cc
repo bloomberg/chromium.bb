@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
@@ -262,8 +263,7 @@ void PluginDispatcher::DidCreateInstance(PP_Instance instance) {
   if (!g_instance_to_dispatcher)
     g_instance_to_dispatcher = new InstanceToDispatcherMap;
   (*g_instance_to_dispatcher)[instance] = this;
-  instance_map_.set(instance,
-                    std::unique_ptr<InstanceData>(new InstanceData()));
+  instance_map_[instance] = base::MakeUnique<InstanceData>();
 }
 
 void PluginDispatcher::DidDestroyInstance(PP_Instance instance) {
@@ -282,7 +282,10 @@ void PluginDispatcher::DidDestroyInstance(PP_Instance instance) {
 }
 
 InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
-  return instance_map_.get(instance);
+  auto it = instance_map_.find(instance);
+  if (it == instance_map_.end())
+    return nullptr;
+  return it->second.get();
 }
 
 thunk::PPB_Instance_API* PluginDispatcher::GetInstanceAPI() {

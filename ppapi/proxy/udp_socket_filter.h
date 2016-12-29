@@ -11,9 +11,9 @@
 #include <memory>
 #include <queue>
 #include <string>
+#include <unordered_map>
 
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -131,7 +131,7 @@ class PPAPI_PROXY_EXPORT UDPSocketFilter : public ResourceMessageFilter {
   // 1 ppapi::ProxyLock
   // \-->2 Filter lock_
   mutable base::Lock lock_;
-  base::ScopedPtrHashMap<PP_Resource, std::unique_ptr<RecvQueue>> queues_;
+  std::unordered_map<PP_Resource, std::unique_ptr<RecvQueue>> queues_;
 };
 
 }  // namespace proxy

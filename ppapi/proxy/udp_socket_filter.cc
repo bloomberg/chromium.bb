@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/error_conversion.h"
 #include "ppapi/proxy/plugin_globals.h"
@@ -68,16 +69,16 @@ void UDPSocketFilter::AddUDPResource(
     const base::Closure& slot_available_callback) {
   ProxyLock::AssertAcquired();
   base::AutoLock acquire(lock_);
-  DCHECK(!queues_.contains(resource));
-  queues_.add(resource, std::unique_ptr<RecvQueue>(new RecvQueue(
-                            instance, private_api, slot_available_callback)));
+  DCHECK(queues_.find(resource) == queues_.end());
+  queues_[resource] = base::MakeUnique<RecvQueue>(instance, private_api,
+                                                  slot_available_callback);
 }
 
 void UDPSocketFilter::RemoveUDPResource(PP_Resource resource) {
   ProxyLock::AssertAcquired();
   base::AutoLock acquire(lock_);
-  DCHECK(queues_.contains(resource));
-  queues_.erase(resource);
+  auto erase_count = queues_.erase(resource);
+  DCHECK_GT(erase_count, 0u);
 }
 
 int32_t UDPSocketFilter::RequestData(
@@ -88,12 +89,12 @@ int32_t UDPSocketFilter::RequestData(
     const scoped_refptr<TrackedCallback>& callback) {
   ProxyLock::AssertAcquired();
   base::AutoLock acquire(lock_);
-  RecvQueue* queue_ptr = queues_.get(resource);
-  if (!queue_ptr) {
+  auto it = queues_.find(resource);
+  if (it == queues_.end()) {
     NOTREACHED();
     return PP_ERROR_FAILED;
   }
-  return queue_ptr->RequestData(num_bytes, buffer, addr, callback);
+  return it->second->RequestData(num_bytes, buffer, addr, callback);
 }
 
 bool UDPSocketFilter::OnResourceReplyReceived(
@@ -111,7 +112,8 @@ bool UDPSocketFilter::OnResourceReplyReceived(
 PP_NetAddress_Private UDPSocketFilter::GetLastAddrPrivate(
     PP_Resource resource) const {
   base::AutoLock acquire(lock_);
-  return queues_.get(resource)->GetLastAddrPrivate();
+  auto it = queues_.find(resource);
+  return it->second->GetLastAddrPrivate();
 }
 
 void UDPSocketFilter::OnPluginMsgPushRecvResult(
@@ -121,13 +123,13 @@ void UDPSocketFilter::OnPluginMsgPushRecvResult(
     const PP_NetAddress_Private& addr) {
   DCHECK(PluginGlobals::Get()->ipc_task_runner()->RunsTasksOnCurrentThread());
   base::AutoLock acquire(lock_);
-  RecvQueue* queue_ptr = queues_.get(params.pp_resource());
+  auto it = queues_.find(params.pp_resource());
   // The RecvQueue might be gone if there were messages in-flight for a
   // resource that has been destroyed.
-  if (queue_ptr) {
+  if (it != queues_.end()) {
     // TODO(yzshen): Support passing in a non-const string ref, so that we can
     // eliminate one copy when storing the data in the buffer.
-    queue_ptr->DataReceivedOnIOThread(result, data, addr);
+    it->second->DataReceivedOnIOThread(result, data, addr);
   }
 }
 
