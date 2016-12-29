@@ -342,7 +342,8 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
       show_keyboard_(false),
       force_show_keyboard_(false),
       should_block_shelf_auto_hide_(false),
-      keyboard_suppressed_(false) {
+      keyboard_suppressed_(false),
+      show_bubble_after_keyboard_hidden_(false) {
   if (MaterialDesignController::IsShelfMaterial()) {
     SetInkDropMode(InkDropMode::ON);
     SetContentsBackground(false);
@@ -365,6 +366,19 @@ ImeMenuTray::~ImeMenuTray() {
 }
 
 void ImeMenuTray::ShowImeMenuBubble() {
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller && keyboard_controller->keyboard_visible()) {
+    show_bubble_after_keyboard_hidden_ = true;
+    keyboard_controller->AddObserver(this);
+    keyboard_controller->HideKeyboard(
+        keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+  } else {
+    ShowImeMenuBubbleInternal();
+  }
+}
+
+void ImeMenuTray::ShowImeMenuBubbleInternal() {
   int minimum_menu_width = GetMinimumMenuWidth();
   should_block_shelf_auto_hide_ = true;
   views::TrayBubbleView::InitParams init_params(
@@ -554,6 +568,17 @@ void ImeMenuTray::OnKeyboardClosed() {
 }
 
 void ImeMenuTray::OnKeyboardHidden() {
+  if (show_bubble_after_keyboard_hidden_) {
+    show_bubble_after_keyboard_hidden_ = false;
+    keyboard::KeyboardController* keyboard_controller =
+        keyboard::KeyboardController::GetInstance();
+    if (keyboard_controller)
+      keyboard_controller->RemoveObserver(this);
+
+    ShowImeMenuBubbleInternal();
+    return;
+  }
+
   if (!show_keyboard_)
     return;
 

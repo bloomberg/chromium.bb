@@ -92,6 +92,9 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   // To allow the test class to access |label_|.
   friend class ImeMenuTrayTest;
 
+  // Show the IME menu bubble immediately.
+  void ShowImeMenuBubbleInternal();
+
   // Updates the text of the label on the tray.
   void UpdateTrayLabel();
 
@@ -105,6 +108,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   bool force_show_keyboard_;
   bool should_block_shelf_auto_hide_;
   bool keyboard_suppressed_;
+  bool show_bubble_after_keyboard_hidden_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeMenuTray);
 };
