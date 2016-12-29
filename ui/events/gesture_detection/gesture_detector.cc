@@ -311,8 +311,9 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
           if (!IsWithinTouchSlop(ev)) {
             handled = listener_->OnScroll(
                 *current_down_event_, ev,
-                (maximum_pointer_count_ > 1 ? *secondary_pointer_down_event_
-                                            : ev),
+                (maximum_pointer_count_ > 1 && secondary_pointer_down_event_)
+                    ? *secondary_pointer_down_event_
+                    : ev,
                 scroll_x, scroll_y);
             last_focus_x_ = focus_x;
             last_focus_y_ = focus_y;
@@ -329,8 +330,9 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
                    std::abs(scroll_y) > kScrollEpsilon) {
           handled = listener_->OnScroll(
               *current_down_event_, ev,
-              (maximum_pointer_count_ > 1 ? *secondary_pointer_down_event_
-                                          : ev),
+              (maximum_pointer_count_ > 1 && secondary_pointer_down_event_)
+                  ? *secondary_pointer_down_event_
+                  : ev,
               scroll_x, scroll_y);
           last_focus_x_ = focus_x;
           last_focus_y_ = focus_y;
@@ -553,8 +555,9 @@ bool GestureDetector::IsWithinTouchSlop(const MotionEvent& ev) {
     const int pointer_id = ev.GetPointerId(i);
     const MotionEvent* source_pointer_down_event = GetSourcePointerDownEvent(
         *current_down_event_,
-        maximum_pointer_count_ > 1 ? *secondary_pointer_down_event_
-                                   : *current_down_event_,
+        (maximum_pointer_count_ > 1 && secondary_pointer_down_event_)
+            ? *secondary_pointer_down_event_
+            : *current_down_event_,
         pointer_id);
     DCHECK(source_pointer_down_event);
     if (!source_pointer_down_event)
