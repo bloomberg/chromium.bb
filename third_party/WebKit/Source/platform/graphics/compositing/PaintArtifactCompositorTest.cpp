@@ -566,7 +566,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
              EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 100, 100), Color::white);
   testArtifact.chunk(defaultPaintChunkProperties())
-      .foreignLayer(FloatPoint(50, 100), IntSize(400, 300), layer);
+      .foreignLayer(FloatPoint(50, 60), IntSize(400, 300), layer);
   testArtifact
       .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
              EffectPaintPropertyNode::root())
@@ -590,7 +590,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   ASSERT_EQ(3u, contentLayerCount());
   EXPECT_EQ(layer, contentLayerAt(1));
   EXPECT_EQ(gfx::Size(400, 300), layer->bounds());
-  EXPECT_EQ(translation(50, 100), layer->screen_space_transform());
+  EXPECT_EQ(translation(50, 60), layer->screen_space_transform());
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
@@ -1279,6 +1279,82 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TwoClips) {
     const cc::Layer* layer = contentLayerAt(0);
     EXPECT_THAT(layer->GetPicture(), Pointee(drawsRectangles(rectsWithColor)));
   }
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OverlapTransform) {
+  RefPtr<TransformPaintPropertyNode> transform =
+      TransformPaintPropertyNode::create(
+          TransformPaintPropertyNode::root(),
+          TransformationMatrix().translate(50, 50), FloatPoint3D(100, 100, 0),
+          false, 0, CompositingReason3DTransform);
+
+  TestPaintArtifact testArtifact;
+  testArtifact.chunk(defaultPaintChunkProperties())
+      .rectDrawing(FloatRect(0, 0, 100, 100), Color::white);
+  testArtifact
+      .chunk(transform.get(), ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(0, 0, 100, 100), Color::black);
+  testArtifact.chunk(defaultPaintChunkProperties())
+      .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
+
+  const PaintArtifact& artifact = testArtifact.build();
+
+  ASSERT_EQ(3u, artifact.paintChunks().size());
+  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
+  EXPECT_FALSE(PaintArtifactCompositor::canMergeInto(
+      artifact, artifact.paintChunks()[1], pendingLayer));
+
+  PaintArtifactCompositor::PendingLayer pendingLayer2(
+      artifact.paintChunks()[1]);
+  EXPECT_FALSE(PaintArtifactCompositor::canMergeInto(
+      artifact, artifact.paintChunks()[2], pendingLayer2));
+
+  GeometryMapper geometryMapper;
+  EXPECT_TRUE(PaintArtifactCompositor::mightOverlap(
+      artifact.paintChunks()[2], pendingLayer2, geometryMapper));
+
+  update(artifact);
+
+  // The third paint chunk overlaps the second but can't merge due to
+  // incompatible transform. The second paint chunk can't merge into the first
+  // due to a direct compositing reason.
+  ASSERT_EQ(3u, contentLayerCount());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
+  PaintChunk paintChunk;
+  paintChunk.properties = defaultPaintChunkProperties();
+  paintChunk.bounds = FloatRect(0, 0, 100, 100);
+
+  PaintChunk paintChunk2;
+  paintChunk2.properties = defaultPaintChunkProperties();
+  paintChunk2.bounds = FloatRect(0, 0, 100, 100);
+
+  GeometryMapper geometryMapper;
+  PaintArtifactCompositor::PendingLayer pendingLayer(paintChunk);
+  EXPECT_TRUE(PaintArtifactCompositor::mightOverlap(paintChunk2, pendingLayer,
+                                                    geometryMapper));
+
+  RefPtr<TransformPaintPropertyNode> transform =
+      TransformPaintPropertyNode::create(
+          TransformPaintPropertyNode::root(),
+          TransformationMatrix().translate(99, 0), FloatPoint3D(100, 100, 0),
+          false);
+
+  paintChunk2.properties.propertyTreeState.setTransform(transform.get());
+  EXPECT_TRUE(PaintArtifactCompositor::mightOverlap(paintChunk2, pendingLayer,
+                                                    geometryMapper));
+
+  RefPtr<TransformPaintPropertyNode> transform2 =
+      TransformPaintPropertyNode::create(
+          TransformPaintPropertyNode::root(),
+          TransformationMatrix().translate(100, 0), FloatPoint3D(100, 100, 0),
+          false);
+  paintChunk2.properties.propertyTreeState.setTransform(transform2.get());
+
+  EXPECT_FALSE(PaintArtifactCompositor::mightOverlap(paintChunk2, pendingLayer,
+                                                     geometryMapper));
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {

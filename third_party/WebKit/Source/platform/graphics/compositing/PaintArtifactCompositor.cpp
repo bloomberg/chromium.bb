@@ -1038,8 +1038,25 @@ bool PaintArtifactCompositor::mightOverlap(
     const PaintChunk& paintChunk,
     const PendingLayer& candidatePendingLayer,
     GeometryMapper& geometryMapper) {
-  // TODO(chrishtr): implement
-  return true;
+  PropertyTreeState rootPropertyTreeState(
+      TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+
+  bool success = false;
+  FloatRect paintChunkScreenVisualRect =
+      geometryMapper.localToVisualRectInAncestorSpace(
+          paintChunk.bounds, paintChunk.properties.propertyTreeState,
+          rootPropertyTreeState, success);
+  DCHECK(success);
+
+  success = false;
+  FloatRect pendingLayerScreenVisualRect =
+      geometryMapper.localToVisualRectInAncestorSpace(
+          candidatePendingLayer.bounds, candidatePendingLayer.propertyTreeState,
+          rootPropertyTreeState, success);
+  DCHECK(success);
+
+  return paintChunkScreenVisualRect.intersects(pendingLayerScreenVisualRect);
 }
 
 PaintArtifactCompositor::PendingLayer::PendingLayer(

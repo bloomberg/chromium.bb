@@ -187,6 +187,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
                            TwoClips);
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            TwoEffects);
+  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
+                           OverlapTransform);
+  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
+                           MightOverlap);
 
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            PendingLayer);
