@@ -8,47 +8,47 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
-          "rect": [48, 92, 40, 18],
+          "rect": [48, 94, 40, 20],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
-          "rect": [48, -158, 40, 18],
+          "rect": [48, -156, 40, 20],
           "reason": "bounds change"
         },
         {
           "object": "LayoutListMarker (anonymous)",
-          "rect": [71, 92, 7, 18],
+          "rect": [70, 94, 7, 19],
           "reason": "bounds change"
         },
         {
           "object": "LayoutListMarker (anonymous)",
-          "rect": [71, -158, 7, 18],
+          "rect": [70, -156, 7, 19],
           "reason": "bounds change"
         }
       ]
     },
     {
       "name": "LayoutListItem (floating) LI id='watches'",
-      "position": [31, 42],
-      "transformOrigin": [17, 9],
-      "bounds": [24, 18],
+      "position": [30, 44],
+      "transformOrigin": [18, 10],
+      "bounds": [25, 19],
       "drawsContent": true
     },
     {
       "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
-      "position": [17, 0],
+      "position": [18, 0],
       "backfaceVisibility": "hidden"
     },
     {
       "name": "LayoutListItem (relative positioned) (floating) LI id='menu'",
-      "position": [31, 42],
-      "bounds": [17, 18],
+      "position": [30, 44],
+      "bounds": [18, 19],
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutListMarker (anonymous)",
-          "rect": [0, 0, 7, 18],
+          "rect": [0, 0, 7, 19],
           "reason": "forced by layout"
         }
       ]
