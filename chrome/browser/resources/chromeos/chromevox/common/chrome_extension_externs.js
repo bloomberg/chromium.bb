@@ -11,3 +11,11 @@
 
 /** @type {function() : !Object} */
 chrome.app.getDetails;
+
+// Media related automation actions and events.
+chrome.automation.AutomationNode.prototype.resumeMedia = function() {};
+chrome.automation.AutomationNode.prototype.startDuckingMedia = function() {};
+chrome.automation.AutomationNode.prototype.stopDuckingMedia = function() {};
+chrome.automation.AutomationNode.prototype.suspendMedia = function() {};
+chrome.automation.EventType.mediaStartedPlaying;
+chrome.automation.EventType.mediaStoppedPlaying;

@@ -477,6 +477,18 @@
       <message desc="An option to automatically read the page after it loads." name="IDS_CHROMEVOX_OPTIONS_AUTO_READ">
         Automatically read page after it finishes loading.
       </message>
+      <message desc="Describes the multi select option for how to play audio when ChromeVox speaks using text to speech." name="IDS_CHROMEVOX_OPTIONS_AUDIO_DESCRIPTION">
+        When playing audio...
+      </message>
+      <message desc="Sets audio playback to be at normal volume." name="IDS_CHROMEVOX_OPTIONS_AUDIO_NORMAL">
+        Play at normal volume even if ChromeVox is speaking
+      </message>
+      <message desc="An option to use audio ducking." name="IDS_CHROMEVOX_OPTIONS_AUDIO_duck">
+        Play at lower volume when ChromeVox is speaking
+      </message>
+      <message desc="An option to use audio suspension while text to speech is speaking." name="IDS_CHROMEVOX_OPTIONS_AUDIO_suspend">
+        Pause playback when ChromeVox is speaking
+      </message>
       <message desc="An option to show the cursor between characters." name="IDS_CHROMEVOX_OPTIONS_CURSOR_BETWEEN_CHARACTERS">
         Place cursor between characters when editing text (like Mac OS X).
       </message>

@@ -414,6 +414,9 @@ cvox.TtsBackground.prototype.onTtsEvent_ = function(event, utteranceId) {
         this.cancelUtterance_(this.utteranceQueue_[i]);
       }
       this.utteranceQueue_.length = 0;
+      this.capturingTtsEventListeners_.forEach(function(listener) {
+        listener.onTtsInterrupted();
+      });
       break;
     case 'error':
       this.onError_(event['errorMessage']);
@@ -498,6 +501,10 @@ cvox.TtsBackground.prototype.stop = function() {
 
   (new PanelCommand(PanelCommandType.CLEAR_SPEECH)).send();
   chrome.tts.stop();
+
+  this.capturingTtsEventListeners_.forEach(function(listener) {
+    listener.onTtsInterrupted();
+  });
 };
 
 /** @override */

@@ -64,6 +64,10 @@ cvox.TtsCapturingEventListener.prototype.onTtsStart = function() { };
  */
 cvox.TtsCapturingEventListener.prototype.onTtsEnd = function() { };
 
+/**
+ * Called when any utterance gets interrupted.
+ */
+cvox.TtsCapturingEventListener.prototype.onTtsInterrupted = function() { };
 
 /**
  * @interface

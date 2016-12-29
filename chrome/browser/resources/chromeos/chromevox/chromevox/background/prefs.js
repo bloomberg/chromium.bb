@@ -60,6 +60,7 @@ cvox.ChromeVoxPrefs = function() {
  */
 cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'active': true,
+  'audioStrategy': 'audioNormal',
   'autoRead': false,
   'brailleCaptions': false,
   'brailleSideBySide': true,

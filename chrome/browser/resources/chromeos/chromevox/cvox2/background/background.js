@@ -17,6 +17,7 @@ goog.require('ChromeVoxState');
 goog.require('CommandHandler');
 goog.require('FindHandler');
 goog.require('LiveRegions');
+goog.require('MediaAutomationHandler');
 goog.require('NextEarcons');
 goog.require('Notifications');
 goog.require('Output');

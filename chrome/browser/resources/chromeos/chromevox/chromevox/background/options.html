@@ -41,13 +41,31 @@
     </label>
   </div>
 
+  <p class="i18n description" msgid="options_audio_description" id="audioDescription">
+    When playing audio
+  </p>
+
+  <div>
+    <select id="audioStrategy" class="pref" aria-labelledby="audioDescription">
+      <option id="audioNormal" class="i18n" msgid="options_audio_normal">
+        play at normal volume even if ChromeVox is speaking
+      </option>
+      <option id="audioDuck" class="i18n" msgid="options_audio_duck">
+        play at lower volume when ChromeVox is speaking
+      </option>
+      <option id="audioSuspend" class="i18n" msgid="options_audio_suspend">
+        pause playback when ChromeVox is speaking
+      </option>
+    </select>
+  </div>
+
   <h2 class="i18n" msgid="options_voices">Voices</h2>
   <p class="i18n description" msgid="options_voices_description" id="voices_description">
     Change the current voice by selecting an option from the list below.
   </p>
 
   <div>
-    <select class="pref" id="voices" aria-labelledby="voices_description"></select>
+    <select id="voices" aria-labelledby="voices_description"></select>
     <br><br>
   </div>
 
@@ -57,11 +75,11 @@
     <p class="i18n description" msgid="options_braille_description_6" id="braille_description_6">
       Change the current 6 dot braille table by selecting an option from the list below.
     </p>
-    <select class="pref" id="brailleTable6" aria-labelledby="braille_description_6"></select>
+    <select id="brailleTable6" aria-labelledby="braille_description_6"></select>
     <p class="i18n description" msgid="options_braille_description_8" id="braille_description_8">
       Change the current 8 dot braille table by selecting an option from the list below.
     </p>
-    <select class="pref" id="brailleTable8" aria-labelledby="braille_description_8"></select>
+    <select id="brailleTable8" aria-labelledby="braille_description_8"></select>
     <button id="brailleTableType"></button>
     <div class="option">
       <label>

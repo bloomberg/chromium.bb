@@ -74,6 +74,20 @@ cvox.OptionsPage.init = function() {
       localStorage['brailleSideBySide'] === 'true' ?
       currentlyDisplayingSideBySide : currentlyDisplayingInterleave;
 
+  chrome.commandLinePrivate.hasSwitch('enable-default-media-session',
+      function(result) {
+        if (!result) {
+          $('audioStrategy').hidden = true;
+          $('audioDescription').hidden = true;
+        }
+        if (localStorage['audioStrategy']) {
+          for (var i = 0, opt; opt = $('audioStrategy').options[i]; i++) {
+            if (opt.id == localStorage['audioStrategy']) {
+              opt.setAttribute('selected', '');
+            }
+          }
+        }
+      });
 
   Msgs.addTranslatedMessagesToDom(document);
   cvox.OptionsPage.hidePlatformSpecifics();
@@ -340,6 +354,11 @@ cvox.OptionsPage.eventListener = function(event) {
             cvox.OptionsPage.prefs.setPref(target.name, elements[i].value);
           }
         }
+      } else if (target.tagName == 'SELECT') {
+        var selIndex = target.selectedIndex;
+        var sel = target.options[selIndex];
+        var value = sel ? sel.id : 'audioNormal';
+        cvox.OptionsPage.prefs.setPref(target.id, value);
       }
     }
   }, 0);

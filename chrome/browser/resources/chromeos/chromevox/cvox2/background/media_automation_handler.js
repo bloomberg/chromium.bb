@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Handles media events automation.
+ * @fileoverview Handles media automation events.  Note that to perform any of
+ * the actions below such as ducking, and suspension of media sessions, the
+ * --enable-default-media-session flag must be passed at the command line.
  */
 
 goog.provide('MediaAutomationHandler');
 
 goog.require('BaseAutomationHandler');
+goog.require('cvox.TtsCapturingEventListener');
 
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
@@ -17,32 +20,101 @@ var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
 
 /**
- * @param {!AutomationNode} node The root to observe media changes.
  * @constructor
  * @extends {BaseAutomationHandler}
+ * @implements {cvox.TtsCapturingEventListener}
  */
-MediaAutomationHandler = function(node) {
-  BaseAutomationHandler.call(this, node);
+MediaAutomationHandler = function() {
+  /** @type {!Set<AutomationNode>} @private */
+  this.mediaRoots_ = new Set();
 
-  var e = EventType;
-  this.addListener_(e.mediaStartedPlaying, this.onMediaStartedPlaying);
-  this.addListener_(e.mediaStoppedPlaying, this.onMediaStoppedPlaying);
+  /** @type {Date} @private */
+  this.lastTtsEvent_ = new Date();
+
+  cvox.ChromeVox.tts.addCapturingEventListener(this);
+
+  chrome.automation.getDesktop(function(node) {
+    BaseAutomationHandler.call(this, node);
+
+    var e = EventType;
+    this.addListener_(e.mediaStartedPlaying, this.onMediaStartedPlaying);
+    this.addListener_(e.mediaStoppedPlaying, this.onMediaStoppedPlaying);
+  }.bind(this));
 };
+
+/** @type {number} */
+MediaAutomationHandler.MIN_WAITTIME_MS = 1000;
 
 MediaAutomationHandler.prototype = {
   __proto__: BaseAutomationHandler.prototype,
+
+  /** @override */
+  onTtsStart: function() {
+    this.lastTtsEvent_ = new Date();
+    this.update_({start: true});
+  },
+
+  /** @override */
+  onTtsEnd: function() {
+    var now = new Date();
+    setTimeout(function() {
+      var then = this.lastTtsEvent_;
+      if (now < then)
+        return;
+      this.lastTtsEvent_ = now;
+      this.update_({end: true});
+    }.bind(this), MediaAutomationHandler.MIN_WAITTIME_MS);
+  },
+
+  /** @override */
+  onTtsInterrupted: function() {
+    this.onTtsEnd();
+  },
 
   /**
    * @param {!AutomationEvent} evt
    */
   onMediaStartedPlaying: function(evt) {
+    this.mediaRoots_.add(evt.target);
+    if (cvox.ChromeVox.tts.isSpeaking())
+      this.update_({start: true});
   },
 
   /**
    * @param {!AutomationEvent} evt
    */
   onMediaStoppedPlaying: function(evt) {
+    // Intentionally does nothing (to cover resume).
+  },
+
+  /**
+   * Updates the media state for all observed automation roots.
+   * @param {{start: (boolean|undefined),
+   *          end: (boolean|undefined)}} options
+   * @private
+   */
+  update_: function(options) {
+    var it = this.mediaRoots_.values();
+    var item = it.next();
+    var audioStrategy = localStorage['audioStrategy'];
+    while (!item.done) {
+      var root = item.value;
+      if (options.start) {
+        if (audioStrategy == 'audioDuck')
+          root.startDuckingMedia();
+        else if (audioStrategy == 'audioSuspend')
+          root.suspendMedia();
+      } else if (options.end) {
+        if (audioStrategy == 'audioDuck')
+          root.stopDuckingMedia();
+        else if (audioStrategy == 'audioSuspend')
+          root.resumeMedia();
+      }
+      item = it.next();
+    }
   }
 };
 
 });  // goog.scope
+
+new MediaAutomationHandler();

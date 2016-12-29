@@ -248,7 +248,20 @@ class AutomationWebContentsObserver
 
   explicit AutomationWebContentsObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
-        browser_context_(web_contents->GetBrowserContext()) {}
+        browser_context_(web_contents->GetBrowserContext()) {
+    if (web_contents->WasRecentlyAudible()) {
+      std::vector<content::AXEventNotificationDetails> details;
+      content::RenderFrameHost* rfh = web_contents->GetMainFrame();
+      if (!rfh)
+        return;
+
+      content::AXEventNotificationDetails detail;
+      detail.ax_tree_id = rfh->GetAXTreeID();
+      detail.event_type = ui::AX_EVENT_MEDIA_STARTED_PLAYING;
+      details.push_back(detail);
+      AccessibilityEventReceived(details);
+    }
+  }
 
   content::BrowserContext* browser_context_;
 
