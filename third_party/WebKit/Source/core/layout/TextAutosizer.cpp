@@ -1399,7 +1399,7 @@ float TextAutosizer::computeAutosizedFontSize(float specifiedSize,
 }
 
 void TextAutosizer::checkSuperclusterConsistency() {
-  HashSet<Supercluster*> potentiallyInconsistentSuperclusters =
+  HashSet<Supercluster*>& potentiallyInconsistentSuperclusters =
       m_fingerprintMapper.getPotentiallyInconsistentSuperclusters();
   if (potentiallyInconsistentSuperclusters.isEmpty())
     return;
