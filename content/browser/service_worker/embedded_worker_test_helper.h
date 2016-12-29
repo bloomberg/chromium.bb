@@ -25,16 +25,11 @@
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/http/http_response_info.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 class GURL;
 
 namespace service_manager {
-class InterfaceProvider;
 class InterfaceRegistry;
 }
 
@@ -215,10 +210,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   EmbeddedWorkerRegistry* registry();
 
  private:
-  using InterfaceRegistryAndProvider =
-      std::pair<std::unique_ptr<service_manager::InterfaceRegistry>,
-                std::unique_ptr<service_manager::InterfaceProvider>>;
-
   class MockEmbeddedWorkerSetup;
   class MockServiceWorkerEventDispatcher;
 
@@ -271,11 +262,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
   std::map<int /* thread_id */, int /* embedded_worker_id */>
       thread_id_embedded_worker_id_map_;
-
-  // Stores the InterfaceRegistry/InterfaceProviders that are associated with
-  // each individual service worker.
-  base::hash_map<int, InterfaceRegistryAndProvider>
-      thread_id_service_registry_map_;
 
   // Updated each time MessageToWorker message is received.
   int current_embedded_worker_id_;

@@ -22,7 +22,6 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
 #include "content/common/service_worker/embedded_worker_start_params.h"
-#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/push_event_payload.h"
@@ -32,6 +31,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
