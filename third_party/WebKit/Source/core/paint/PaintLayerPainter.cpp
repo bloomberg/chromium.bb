@@ -351,11 +351,6 @@ PaintResult PaintLayerPainter::paintLayerContents(
   if (!paintingInfo.paintDirtyRect.contains(bounds))
     result = MayBeClippedByPaintDirtyRect;
 
-  if (paintingInfo.ancestorHasClipPathClipping &&
-      m_paintLayer.layoutObject()->isPositioned())
-    UseCounter::count(m_paintLayer.layoutObject()->document(),
-                      UseCounter::ClipPathOfPositionedElement);
-
   // These helpers output clip and compositing operations using a RAII pattern.
   // Stack-allocated-varibles are destructed in the reverse order of
   // construction, so they are nested properly.
@@ -720,13 +715,6 @@ PaintResult PaintLayerPainter::paintLayerWithTransform(
       if (clipRectForFragment.isEmpty())
         continue;
       if (needsToClip(paintingInfo, clipRectForFragment)) {
-        if (m_paintLayer.layoutObject()->isPositioned() &&
-            clipRectForFragment.isClippedByClipCss())
-          UseCounter::count(m_paintLayer.layoutObject()->document(),
-                            UseCounter::ClipCssOfPositionedElement);
-        if (m_paintLayer.layoutObject()->isFixedPositioned())
-          UseCounter::count(m_paintLayer.layoutObject()->document(),
-                            UseCounter::ClipCssOfFixedPositionElement);
         clipRecorder.emplace(context, *parentLayer->layoutObject(),
                              DisplayItem::kClipLayerParent, clipRectForFragment,
                              &paintingInfo, fragment.paginationOffset,

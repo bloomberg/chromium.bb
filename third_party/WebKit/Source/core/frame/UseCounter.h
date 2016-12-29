@@ -707,8 +707,6 @@ class CORE_EXPORT UseCounter {
     // The above items are available in M46 branch.
 
     HTMLImportsHasStyleSheets = 940,
-    ClipPathOfPositionedElement = 944,
-    ClipCssOfPositionedElement = 945,
     NetInfoType = 946,
     NetInfoDownlinkMax = 947,
     NetInfoOnChange = 948,
@@ -1230,7 +1228,6 @@ class CORE_EXPORT UseCounter {
     MetaSetCookieWhenCSPBlocksInlineScript = 1549,
     MetaRefreshWhenCSPBlocksInlineScript = 1550,
     MiddleClickAutoscrollStart = 1551,
-    ClipCssOfFixedPositionElement = 1552,
     RTCPeerConnectionCreateOfferOptionsOfferToReceive = 1553,
     DragAndDropScrollStart = 1554,
     PresentationConnectionListConnectionAvailableEventListener = 1555,
