@@ -33,7 +33,7 @@ class VisualRectMappingTest : public RenderingTest {
       PaintLayer::mapRectInPaintInvalidationContainerToBacking(
           paintInvalidationContainer, rect);
     }
-    EXPECT_EQ(rect, object.visualRect());
+    EXPECT_EQ(enclosingIntRect(rect), enclosingIntRect(object.visualRect()));
   }
 };
 
