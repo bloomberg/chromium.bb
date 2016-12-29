@@ -701,7 +701,11 @@ void GpuChannel::OnStreamRescheduled(int32_t stream_id, bool scheduled) {
 }
 
 GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32_t route_id) {
-  return stubs_.get(route_id);
+  auto it = stubs_.find(route_id);
+  if (it == stubs_.end())
+    return nullptr;
+
+  return it->second.get();
 }
 
 void GpuChannel::LoseAllContexts() {
@@ -772,7 +776,7 @@ void GpuChannel::HandleMessage(
 
   const IPC::Message& msg = channel_msg->message;
   int32_t routing_id = msg.routing_id();
-  GpuCommandBufferStub* stub = stubs_.get(routing_id);
+  GpuCommandBufferStub* stub = LookupCommandBuffer(routing_id);
 
   DCHECK(!stub || stub->IsScheduled());
 
@@ -873,7 +877,7 @@ void GpuChannel::RemoveRouteFromStream(int32_t route_id) {
 #if defined(OS_ANDROID)
 const GpuCommandBufferStub* GpuChannel::GetOneStub() const {
   for (const auto& kv : stubs_) {
-    const GpuCommandBufferStub* stub = kv.second;
+    const GpuCommandBufferStub* stub = kv.second.get();
     if (stub->decoder() && !stub->decoder()->WasContextLost())
       return stub;
   }
@@ -896,7 +900,7 @@ void GpuChannel::OnCreateCommandBuffer(
   if (stub) {
     *result = true;
     *capabilities = stub->decoder()->GetCapabilities();
-    stubs_.set(route_id, std::move(stub));
+    stubs_[route_id] = std::move(stub);
   } else {
     *result = false;
     *capabilities = gpu::Capabilities();
@@ -915,7 +919,7 @@ std::unique_ptr<GpuCommandBufferStub> GpuChannel::CreateCommandBuffer(
   }
 
   int32_t share_group_id = init_params.share_group_id;
-  GpuCommandBufferStub* share_group = stubs_.get(share_group_id);
+  GpuCommandBufferStub* share_group = LookupCommandBuffer(share_group_id);
 
   if (!share_group && share_group_id != MSG_ROUTING_NONE) {
     DLOG(ERROR)
@@ -977,7 +981,12 @@ void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
   TRACE_EVENT1("gpu", "GpuChannel::OnDestroyCommandBuffer",
                "route_id", route_id);
 
-  std::unique_ptr<GpuCommandBufferStub> stub = stubs_.take_and_erase(route_id);
+  std::unique_ptr<GpuCommandBufferStub> stub;
+  auto it = stubs_.find(route_id);
+  if (it != stubs_.end()) {
+    stub = std::move(it->second);
+    stubs_.erase(it);
+  }
   // In case the renderer is currently blocked waiting for a sync reply from the
   // stub, we need to make sure to reschedule the correct stream here.
   if (stub && !stub->IsScheduled()) {

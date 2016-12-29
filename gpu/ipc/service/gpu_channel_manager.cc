@@ -120,7 +120,7 @@ void GpuChannelManager::RemoveChannel(int client_id) {
 
 GpuChannel* GpuChannelManager::LookupChannel(int32_t client_id) const {
   const auto& it = gpu_channels_.find(client_id);
-  return it != gpu_channels_.end() ? it->second : nullptr;
+  return it != gpu_channels_.end() ? it->second.get() : nullptr;
 }
 
 std::unique_ptr<GpuChannel> GpuChannelManager::CreateGpuChannel(
@@ -147,7 +147,7 @@ IPC::ChannelHandle GpuChannelManager::EstablishChannel(
       CreateGpuChannel(client_id, client_tracing_id, preempts,
                        allow_view_command_buffers, allow_real_time_streams));
   IPC::ChannelHandle channel_handle = channel->Init(shutdown_event_);
-  gpu_channels_.set(client_id, std::move(channel));
+  gpu_channels_[client_id] = std::move(channel);
   return channel_handle;
 }
 
@@ -275,7 +275,7 @@ void GpuChannelManager::ScheduleWakeUpGpu() {
 void GpuChannelManager::DoWakeUpGpu() {
   const GpuCommandBufferStub* stub = nullptr;
   for (const auto& kv : gpu_channels_) {
-    const GpuChannel* channel = kv.second;
+    const GpuChannel* channel = kv.second.get();
     stub = channel->GetOneStub();
     if (stub) {
       DCHECK(stub->decoder());

@@ -10,9 +10,9 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -177,7 +177,7 @@ class GPU_EXPORT GpuChannel
   scoped_refptr<GpuChannelMessageFilter> filter_;
 
   // Map of routing id to command buffer stub.
-  base::ScopedPtrHashMap<int32_t, std::unique_ptr<GpuCommandBufferStub>> stubs_;
+  std::unordered_map<int32_t, std::unique_ptr<GpuCommandBufferStub>> stubs_;
 
  private:
   friend class TestGpuChannel;
