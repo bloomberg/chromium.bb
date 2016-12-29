@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
@@ -105,16 +106,24 @@ void ExpectEquivalent(const std::map<Key, Value>& left,
 template <typename Key, typename Value>
 void ExpectEquivalent(const base::hash_map<Key, Value>& left,
                       const base::hash_map<Key, Value>& right) {
+  // Convert from a hash container to an ordered container for comparison.
   ExpectEquivalentMaps(std::map<Key, Value>(left.begin(), left.end()),
                        std::map<Key, Value>(right.begin(), right.end()));
 }
 
 template <typename Key, typename Value>
 void ExpectEquivalent(
-    const base::ScopedPtrHashMap<Key, std::unique_ptr<Value>>& left,
-    const base::ScopedPtrHashMap<Key, std::unique_ptr<Value>>& right) {
-  ExpectEquivalentMaps(std::map<Key, Value*>(left.begin(), left.end()),
-                       std::map<Key, Value*>(right.begin(), right.end()));
+    const std::unordered_map<Key, std::unique_ptr<Value>>& left,
+    const std::unordered_map<Key, std::unique_ptr<Value>>& right) {
+  // Convert from a hash container to an ordered container for comparison.
+  std::map<Key, Value*> left_ordered;
+  std::map<Key, Value*> right_ordered;
+  for (const auto& item : left)
+    left_ordered[item.first] = item.second.get();
+  for (const auto& item : right)
+    right_ordered[item.first] = item.second.get();
+
+  ExpectEquivalentMaps(left_ordered, right_ordered);
 }
 
 template <typename Container>
@@ -129,6 +138,7 @@ void ExpectEquivalent(const std::set<Value, Comparator>& left,
 template <typename Value>
 void ExpectEquivalent(const base::hash_set<Value>& left,
                       const base::hash_set<Value>& right) {
+  // Convert from a hash container to an ordered container for comparison.
   return ExpectEquivalentSets(std::set<Value>(left.begin(), left.end()),
                               std::set<Value>(right.begin(), right.end()));
 }

@@ -11,6 +11,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -104,10 +105,9 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   std::vector<std::string> GetAllMetadataIDs() const override;
 
  private:
-  typedef base::ScopedPtrHashMap<std::string, std::unique_ptr<FileMetadata>>
+  typedef std::unordered_map<std::string, std::unique_ptr<FileMetadata>>
       MetadataByID;
-  typedef base::ScopedPtrHashMap<int64_t, std::unique_ptr<FileTracker>>
-      TrackerByID;
+  typedef std::unordered_map<int64_t, std::unique_ptr<FileTracker>> TrackerByID;
   typedef base::hash_map<std::string, TrackerIDSet> TrackerIDsByFileID;
   typedef base::hash_map<std::string, TrackerIDSet> TrackerIDsByTitle;
   typedef std::map<int64_t, TrackerIDsByTitle> TrackerIDsByParentAndTitle;

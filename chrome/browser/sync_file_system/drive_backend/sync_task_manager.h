@@ -10,10 +10,10 @@
 
 #include <memory>
 #include <queue>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -186,7 +186,7 @@ class SyncTaskManager {
 
   // Owns running backgrounded SyncTask to cancel the task on SyncTaskManager
   // deletion.
-  base::ScopedPtrHashMap<int64_t, std::unique_ptr<SyncTask>>
+  std::unordered_map<int64_t, std::unique_ptr<SyncTask>>
       running_background_tasks_;
 
   size_t maximum_background_task_;
