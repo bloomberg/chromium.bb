@@ -38,7 +38,6 @@
     {
       "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
       "position": [18, 0],
-      "bounds": [0, 19],
       "backfaceVisibility": "hidden"
     },
     {

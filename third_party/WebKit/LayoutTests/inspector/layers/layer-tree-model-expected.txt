@@ -26,7 +26,7 @@ Updated layer tree
         div#b2 110x140 (11)
             div#c 90x100 (12)
                 div#b1 100x150
-        div#b4 0x200
+        div#b4 0x0
 Updated layer geometry
 #document (9)
     iframe#frame (10)
@@ -40,5 +40,5 @@ Updated layer geometry
         div#b2 110x140 (11)
             div#c 90x80 (12)
                 div#b1 100x150
-        div#b4 0x200
+        div#b4 0x0
 

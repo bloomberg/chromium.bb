@@ -646,6 +646,10 @@ crbug.com/649558 virtual/mojo-loading/http/tests/serviceworker/navigation-preloa
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
+crbug.com/674098 paint/invalidation/offset-change-wrong-invalidation-with-float.html [ NeedsRebaseline ]
+crbug.com/674098 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reparented-scrollbars-non-sc-anc.html [ NeedsRebaseline ]
+crbug.com/674098 virtual/spinvalidation/paint/invalidation/offset-change-wrong-invalidation-with-float.html [ NeedsRebaseline ]
+
 # TODO(xiaochengh): We should either convert the following tests with
 # spellcheck_test, or remove if they become redundant or inapplicable.
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [ Skip ]

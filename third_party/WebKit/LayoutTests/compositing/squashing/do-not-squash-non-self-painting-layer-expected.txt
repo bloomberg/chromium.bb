@@ -10,7 +10,7 @@ Item 1
     {
       "name": "LayoutBlockFlow DIV id='composited-container'",
       "position": [8, 8],
-      "bounds": [784, 0],
+      "contentsOpaque": true,
       "drawsContent": true,
       "backfaceVisibility": "hidden"
     }

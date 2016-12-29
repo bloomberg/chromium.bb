@@ -12,7 +12,8 @@ Case 1, original layer tree:
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "bounds": [784, 0]
+      "transformOrigin": [392, 0],
+      "contentsOpaque": true
     },
     {
       "name": "Squashing Containment Layer",
@@ -46,7 +47,8 @@ Case 2: hovering over the "middle" element (causes that div to become its own co
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "bounds": [784, 0]
+      "transformOrigin": [392, 0],
+      "contentsOpaque": true
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
@@ -88,7 +90,8 @@ Case 3: hovering over the "middle2" element (causes that div to become its own c
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "bounds": [784, 0]
+      "transformOrigin": [392, 0],
+      "contentsOpaque": true
     },
     {
       "name": "Squashing Containment Layer",
@@ -140,7 +143,8 @@ Case 4: hovering over the "top" element (causes that div to become its own compo
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "bounds": [784, 0]
+      "transformOrigin": [392, 0],
+      "contentsOpaque": true
     },
     {
       "name": "Squashing Containment Layer",
@@ -182,7 +186,8 @@ Case 5: back to situation in case 1
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "bounds": [784, 0]
+      "transformOrigin": [392, 0],
+      "contentsOpaque": true
     },
     {
       "name": "Squashing Containment Layer",

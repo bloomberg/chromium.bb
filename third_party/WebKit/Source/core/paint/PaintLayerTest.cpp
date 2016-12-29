@@ -58,6 +58,26 @@ TEST_P(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
             parentLayer->boundingBoxForCompositing());
 }
 
+TEST_P(PaintLayerTest, CompositedBoundsTransformedChild) {
+  // TODO(chrishtr): fix this test for SPv2
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
+  setBodyInnerHTML(
+      "<div id=parent style='overflow: scroll; will-change: transform'>"
+      "  <div class='target'"
+      "       style='position: relative; transform: skew(-15deg);'>"
+      "  </div>"
+      "  <div style='width: 1000px; height: 500px; background: lightgray'>"
+      "  </div>"
+      "</div>");
+
+  PaintLayer* parentLayer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("parent"))->layer();
+  EXPECT_EQ(LayoutRect(0, 0, 784, 500),
+            parentLayer->boundingBoxForCompositing());
+}
+
 TEST_P(PaintLayerTest, PaintingExtentReflection) {
   setBodyInnerHTML(
       "<div id='target' style='background-color: blue; position: absolute;"

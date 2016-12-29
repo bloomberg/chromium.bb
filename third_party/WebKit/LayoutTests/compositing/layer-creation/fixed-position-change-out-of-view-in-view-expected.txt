@@ -18,7 +18,6 @@ Layer tree when the fixed elements are out-of-view (should have just a root laye
     {
       "name": "LayoutBlockFlow (positioned) DIV id='fixed2'",
       "position": [100, 100],
-      "bounds": [10, 0],
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#C0C0C0"
@@ -72,7 +71,6 @@ Layer tree when the fixed elements are out-of-view again (should have just a roo
     {
       "name": "LayoutBlockFlow (positioned) DIV id='fixed2'",
       "position": [100, 100],
-      "bounds": [10, 0],
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#C0C0C0"

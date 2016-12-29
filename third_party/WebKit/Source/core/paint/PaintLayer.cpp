@@ -2536,13 +2536,10 @@ LayoutRect PaintLayer::boundingBoxForCompositingInternal(
   const_cast<PaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
   // If there is a clip applied by an ancestor to this PaintLayer but below or
-  // equal to |ancestorLayer|, use that clip as the bounds rather than the
-  // recursive bounding boxes, since the latter may be larger than the actual
-  // size. See https://bugs.webkit.org/show_bug.cgi?id=80372 for examples.
+  // equal to |ancestorLayer|, apply that clip.
   LayoutRect result = clipper().localClipRect(compositedLayer);
-  // TODO(chrishtr): avoid converting to IntRect and back.
-  if (result == LayoutRect(LayoutRect::infiniteIntRect()))
-    result = physicalBoundingBox(LayoutPoint());
+
+  result.intersect(physicalBoundingBox(LayoutPoint()));
 
   expandRectForStackingChildren(compositedLayer, result, options);
 
