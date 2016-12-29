@@ -2132,6 +2132,8 @@ Bug(none) fast/overflow/overflow-float-stacking.html [ Failure ]
 Bug(none) fast/overflow/overflow-stacking.html [ Failure ]
 
 Bug(none) css3/blending/background-blend-mode-overlapping-accelerated-elements.html [ Failure ]
+Bug(none) css3/blending/mix-blend-mode-simple-text.html [ Failure ]
+Bug(none) css3/blending/mix-blend-mode-simple.html [ Failure ]
 Bug(none) css3/blending/effect-background-blend-mode-stacking.html [ Failure ]
 Bug(none) css3/blending/mix-blend-mode-with-masking.html [ Failure ]
 Bug(none) css3/blending/svg-blend-layer-mask.html [ Failure ]
