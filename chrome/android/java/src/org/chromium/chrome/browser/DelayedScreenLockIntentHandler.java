@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
-import android.os.SystemClock;
 
 import org.chromium.base.ContextUtils;
 
@@ -26,7 +25,6 @@ public class DelayedScreenLockIntentHandler extends BroadcastReceiver {
     private final Runnable mUnregisterTask;
 
     private Intent mDeferredIntent;
-    private long mDeferredIntentCreatedTime;
     private boolean mReceiverRegistered;
 
     public DelayedScreenLockIntentHandler() {
@@ -64,7 +62,6 @@ public class DelayedScreenLockIntentHandler extends BroadcastReceiver {
         }
 
         mDeferredIntent = intent;
-        mDeferredIntentCreatedTime = SystemClock.elapsedRealtime();
         registerReceiver();
         mTaskHandler.postDelayed(mUnregisterTask, VALID_DEFERRED_PERIOD_MS);
     }
