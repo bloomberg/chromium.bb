@@ -138,7 +138,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
 #if DCHECK_IS_ON()
       m_needsPositionUpdate(true),
 #endif
-      m_is3DTransformedDescendantDirty(true),
       m_has3DTransformedDescendant(false),
       m_containsDirtyOverlayScrollbars(false),
       m_needsAncestorDependentCompositingInputsUpdate(true),
@@ -415,7 +414,7 @@ void PaintLayer::updateTransform(const ComputedStyle* oldStyle,
   updateTransformationMatrix();
 
   if (had3DTransform != has3DTransform())
-    dirty3DTransformedDescendantStatus();
+    markAncestorChainForDescendantDependentFlagsUpdate();
 
   if (FrameView* frameView = layoutObject()->document().view())
     frameView->setNeedsUpdateWidgetGeometries();
@@ -743,49 +742,35 @@ void PaintLayer::updateDescendantDependentFlags() {
     // this LayoutObject during the invalidateTreeIfNeeded walk.
     m_layoutObject->setMayNeedPaintInvalidation();
   }
+
+  update3DTransformedDescendantStatus();
 }
 
-void PaintLayer::dirty3DTransformedDescendantStatus() {
-  PaintLayerStackingNode* stackingNode =
-      m_stackingNode->ancestorStackingContextNode();
-  if (!stackingNode)
-    return;
+void PaintLayer::update3DTransformedDescendantStatus() {
+  m_has3DTransformedDescendant = false;
 
-  stackingNode->layer()->m_is3DTransformedDescendantDirty = true;
+  m_stackingNode->updateZOrderLists();
 
-  // This propagates up through preserve-3d hierarchies to the enclosing
-  // flattening layer.  Note that preserves3D() creates stacking context, so we
-  // can just run up the stacking containers.
-  while (stackingNode && stackingNode->layer()->preserves3D()) {
-    stackingNode->layer()->m_is3DTransformedDescendantDirty = true;
-    stackingNode = stackingNode->ancestorStackingContextNode();
+  // Transformed or preserve-3d descendants can only be in the z-order lists,
+  // not in the normal flow list, so we only need to check those.
+  PaintLayerStackingNodeIterator iterator(
+      *m_stackingNode.get(), PositiveZOrderChildren | NegativeZOrderChildren);
+  while (PaintLayerStackingNode* node = iterator.next()) {
+    const PaintLayer& childLayer = *node->layer();
+    bool childHas3D = false;
+    // If the child lives in a 3d hierarchy, then the layer at the root of
+    // that hierarchy needs the m_has3DTransformedDescendant set.
+    if (childLayer.preserves3D() && (childLayer.has3DTransform() ||
+                                     childLayer.has3DTransformedDescendant()))
+      childHas3D = true;
+    else if (childLayer.has3DTransform())
+      childHas3D = true;
+
+    if (childHas3D) {
+      m_has3DTransformedDescendant = true;
+      break;
+    }
   }
-}
-
-// Return true if this layer or any preserve-3d descendants have 3d.
-bool PaintLayer::update3DTransformedDescendantStatus() {
-  if (m_is3DTransformedDescendantDirty) {
-    m_has3DTransformedDescendant = false;
-
-    m_stackingNode->updateZOrderLists();
-
-    // Transformed or preserve-3d descendants can only be in the z-order lists,
-    // not in the normal flow list, so we only need to check those.
-    PaintLayerStackingNodeIterator iterator(
-        *m_stackingNode.get(), PositiveZOrderChildren | NegativeZOrderChildren);
-    while (PaintLayerStackingNode* node = iterator.next())
-      m_has3DTransformedDescendant |=
-          node->layer()->update3DTransformedDescendantStatus();
-
-    m_is3DTransformedDescendantDirty = false;
-  }
-
-  // If we live in a 3d hierarchy, then the layer at the root of that hierarchy
-  // needs the m_has3DTransformedDescendant set.
-  if (preserves3D())
-    return has3DTransform() || m_has3DTransformedDescendant;
-
-  return has3DTransform();
 }
 
 void PaintLayer::updateLayerPosition() {

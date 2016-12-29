@@ -730,7 +730,6 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
   m_graphicsLayer->setHasWillChangeTransformHint(
       style.hasWillChangeTransformHint());
 
-  m_owningLayer.update3DTransformedDescendantStatus();
   if (style.preserves3D() && style.hasOpacity() &&
       m_owningLayer.has3DTransformedDescendant())
     UseCounter::count(layoutObject->document(),

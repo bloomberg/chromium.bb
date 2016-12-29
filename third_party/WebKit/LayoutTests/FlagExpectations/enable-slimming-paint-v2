@@ -138,6 +138,7 @@ Bug(none) compositing/geometry/fixed-position-transform-composited-page-scale.ht
 Bug(none) compositing/geometry/flipped-writing-mode.html [ Failure ]
 Bug(none) compositing/geometry/foreground-layer.html [ Failure ]
 Bug(none) compositing/geometry/horizontal-scroll-composited.html [ Failure ]
+Bug(none) compositing/geometry/layer-due-to-layer-children-deep.html [ Failure ]
 Bug(none) compositing/geometry/layer-due-to-layer-children-deep-switch.html [ Failure ]
 Bug(none) compositing/geometry/layer-due-to-layer-children-switch.html [ Failure ]
 Bug(none) compositing/geometry/layer-due-to-layer-children.html [ Failure ]

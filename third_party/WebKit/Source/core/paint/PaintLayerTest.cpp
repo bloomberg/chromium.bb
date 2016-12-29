@@ -290,6 +290,84 @@ TEST_P(PaintLayerTest, HasVisibleDescendant) {
   EXPECT_FALSE(invisible->hasDescendantWithClipPath());
 }
 
+TEST_P(PaintLayerTest, Has3DTransformedDescendant) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<div id='parent' style='position:relative; z-index: 0'>"
+      "  <div id='child' style='transform: translateZ(1px)'>"
+      "  </div>"
+      "</div>");
+  PaintLayer* parent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("parent"))->layer();
+  PaintLayer* child =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("child"))->layer();
+
+  EXPECT_TRUE(parent->has3DTransformedDescendant());
+  EXPECT_FALSE(child->has3DTransformedDescendant());
+}
+
+TEST_P(PaintLayerTest, Has3DTransformedDescendantChangeStyle) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<div id='parent' style='position:relative; z-index: 0'>"
+      "  <div id='child' style='position:relative '>"
+      "  </div>"
+      "</div>");
+  PaintLayer* parent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("parent"))->layer();
+  PaintLayer* child =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("child"))->layer();
+
+  EXPECT_FALSE(parent->has3DTransformedDescendant());
+  EXPECT_FALSE(child->has3DTransformedDescendant());
+
+  document().getElementById("child")->setAttribute(
+      HTMLNames::styleAttr, "transform: translateZ(1px)");
+  document().view()->updateAllLifecyclePhases();
+
+  EXPECT_TRUE(parent->has3DTransformedDescendant());
+  EXPECT_FALSE(child->has3DTransformedDescendant());
+}
+
+TEST_P(PaintLayerTest, Has3DTransformedDescendantNotStacking) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<div id='parent' style='position:relative;'>"
+      "  <div id='child' style='transform: translateZ(1px)'>"
+      "  </div>"
+      "</div>");
+  PaintLayer* parent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("parent"))->layer();
+  PaintLayer* child =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("child"))->layer();
+
+  // |child| is not a stacking child of |parent|, so it has no 3D transformed
+  // descendant.
+  EXPECT_FALSE(parent->has3DTransformedDescendant());
+  EXPECT_FALSE(child->has3DTransformedDescendant());
+}
+
+TEST_P(PaintLayerTest, Has3DTransformedGrandchildWithPreserve3d) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<div id='parent' style='position:relative; z-index: 0'>"
+      "  <div id='child' style='transform-style: preserve-3d'>"
+      "    <div id='grandchild' style='transform: translateZ(1px)'>"
+      "    </div>"
+      "  </div>"
+      "</div>");
+  PaintLayer* parent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("parent"))->layer();
+  PaintLayer* child =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("child"))->layer();
+  PaintLayer* grandchild =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("grandchild"))->layer();
+
+  EXPECT_TRUE(parent->has3DTransformedDescendant());
+  EXPECT_TRUE(child->has3DTransformedDescendant());
+  EXPECT_FALSE(grandchild->has3DTransformedDescendant());
+}
+
 TEST_P(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
   enableCompositing();
   setBodyInnerHTML(

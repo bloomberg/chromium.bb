@@ -967,11 +967,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   void clearClipRectsCache() const { m_clipRectsCache.reset(); }
 
-  void dirty3DTransformedDescendantStatus();
-  // Both updates the status, and returns true if descendants of this have 3d.
-  bool update3DTransformedDescendantStatus();
   bool has3DTransformedDescendant() const {
-    DCHECK(!m_is3DTransformedDescendantDirty);
+    DCHECK(!m_needsDescendantDependentFlagsUpdate);
     return m_has3DTransformedDescendant;
   }
 
@@ -981,6 +978,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
  private:
   void setNeedsCompositingInputsUpdateInternal();
+
+  void update3DTransformedDescendantStatus();
 
   // Bounding box in the coordinates of this layer.
   LayoutRect logicalBoundingBox() const;
@@ -1139,7 +1138,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned m_needsPositionUpdate : 1;
 #endif
 
-  unsigned m_is3DTransformedDescendantDirty : 1;
   // Set on a stacking context layer that has 3D descendants anywhere
   // in a preserves3D hierarchy. Hint to do 3D-aware hit testing.
   unsigned m_has3DTransformedDescendant : 1;

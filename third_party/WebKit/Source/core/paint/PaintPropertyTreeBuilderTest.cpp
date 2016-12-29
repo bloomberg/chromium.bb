@@ -347,6 +347,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
   Element* transform = document().getElementById("transform");
   const ObjectPaintProperties* transformProperties =
       transform->layoutObject()->paintProperties();
+
   EXPECT_EQ(TransformationMatrix().translate3d(123, 456, 789),
             transformProperties->transform()->matrix());
   EXPECT_EQ(FloatPoint3D(200, 150, 0),
@@ -379,6 +380,43 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
   EXPECT_EQ(
       TransformationMatrix().translate3d(123, 456, 789),
       transform->layoutObject()->paintProperties()->transform()->matrix());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, Preserve3D3DTransformedDescendant) {
+  setBodyInnerHTML(
+      "<style> body { margin: 0 } </style>"
+      "<div id='preserve' style='transform-style: preserve-3d'>"
+      "<div id='transform' style='margin-left: 50px; margin-top: 100px;"
+      "    width: 400px; height: 300px;"
+      "    transform: translate3d(123px, 456px, 789px)'>"
+      "</div>"
+      "</div>");
+
+  Element* preserve = document().getElementById("preserve");
+  const ObjectPaintProperties* preserveProperties =
+      preserve->layoutObject()->paintProperties();
+
+  EXPECT_TRUE(preserveProperties->transform());
+  EXPECT_TRUE(preserveProperties->transform()->hasDirectCompositingReasons());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, Perspective3DTransformedDescendant) {
+  setBodyInnerHTML(
+      "<style> body { margin: 0 } </style>"
+      "<div id='perspective' style='perspective: 800px;'>"
+      "<div id='transform' style='margin-left: 50px; margin-top: 100px;"
+      "    width: 400px; height: 300px;"
+      "    transform: translate3d(123px, 456px, 789px)'>"
+      "</div>"
+      "</div>");
+
+  Element* perspective = document().getElementById("perspective");
+  const ObjectPaintProperties* perspectiveProperties =
+      perspective->layoutObject()->paintProperties();
+
+  EXPECT_TRUE(perspectiveProperties->transform());
+  EXPECT_TRUE(
+      perspectiveProperties->transform()->hasDirectCompositingReasons());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,

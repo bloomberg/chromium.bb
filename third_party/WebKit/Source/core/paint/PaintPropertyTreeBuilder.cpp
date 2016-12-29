@@ -301,30 +301,24 @@ void PaintPropertyTreeBuilder::updateTransformForNonRootSVG(
   }
 }
 
-static CompositingReasons compositingReasonsForTransform(
-    const LayoutObject& object) {
+static CompositingReasons compositingReasonsForTransform(const LayoutBox& box) {
+  const ComputedStyle& style = box.styleRef();
   CompositingReasons compositingReasons = CompositingReasonNone;
-  if (CompositingReasonFinder::requiresCompositingForTransform(object))
+  if (CompositingReasonFinder::requiresCompositingForTransform(box))
     compositingReasons |= CompositingReason3DTransform;
 
-  if (CompositingReasonFinder::requiresCompositingForTransformAnimation(
-          object.styleRef()))
+  if (CompositingReasonFinder::requiresCompositingForTransformAnimation(style))
     compositingReasons |= CompositingReasonActiveAnimation;
 
-  if (object.styleRef().hasWillChangeCompositingHint() &&
-      !object.styleRef().subtreeWillChangeContents())
+  if (style.hasWillChangeCompositingHint() &&
+      !style.subtreeWillChangeContents())
     compositingReasons |= CompositingReasonWillChangeCompositingHint;
 
-  if (object.isBoxModelObject()) {
-    const LayoutBoxModelObject* box = toLayoutBoxModelObject(&object);
-    if (box->hasLayer()) {
-      // TODO(chrishtr): move this to the descendant-dependent flags recursion
-      // PaintLayer::updateDescendantDependentFlags.
-      box->layer()->update3DTransformedDescendantStatus();
-
-      if (box->layer()->has3DTransformedDescendant())
-        compositingReasons |= CompositingReason3DTransform;
-    }
+  if (box.hasLayer() && box.layer()->has3DTransformedDescendant()) {
+    if (style.hasPerspective())
+      compositingReasons |= CompositingReasonPerspectiveWith3DDescendants;
+    if (style.usedTransformStyle3D() == TransformStyle3DPreserve3D)
+      compositingReasons |= CompositingReasonPreserve3DWith3DDescendants;
   }
 
   return compositingReasons;
@@ -353,36 +347,44 @@ void PaintPropertyTreeBuilder::updateTransform(
   if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
     const ComputedStyle& style = object.styleRef();
 
-    CompositingReasons compositingReasons =
-        compositingReasonsForTransform(object);
-
     // A transform node is allocated for transforms, preserves-3d and any
     // direct compositing reason. The latter is required because this is the
     // only way to represent compositing both an element and its stacking
     // descendants.
-    if (object.isBox() && (style.hasTransform() || style.preserves3D() ||
-                           compositingReasons != CompositingReasonNone)) {
+    bool hasTransform = false;
+    if (object.isBox()) {
       auto& box = toLayoutBox(object);
-      TransformationMatrix matrix;
-      style.applyTransform(
-          matrix, box.size(), ComputedStyle::ExcludeTransformOrigin,
-          ComputedStyle::IncludeMotionPath,
-          ComputedStyle::IncludeIndependentTransformProperties);
 
-      // TODO(trchen): transform-style should only be respected if a PaintLayer
-      // is created.
-      // If a node with transform-style: preserve-3d does not exist in an
-      // existing rendering context, it establishes a new one.
-      unsigned renderingContextID = context.current.renderingContextID;
-      if (style.preserves3D() && !renderingContextID)
-        renderingContextID = PtrHash<const LayoutObject>::hash(&object);
+      CompositingReasons compositingReasons =
+          compositingReasonsForTransform(box);
 
-      auto& properties = object.getMutableForPainting().ensurePaintProperties();
-      context.forceSubtreeUpdate |= properties.updateTransform(
-          context.current.transform, matrix, transformOrigin(box),
-          context.current.shouldFlattenInheritedTransform, renderingContextID,
-          compositingReasons);
-    } else {
+      if (style.hasTransform() || style.preserves3D() ||
+          compositingReasons != CompositingReasonNone) {
+        TransformationMatrix matrix;
+        style.applyTransform(
+            matrix, box.size(), ComputedStyle::ExcludeTransformOrigin,
+            ComputedStyle::IncludeMotionPath,
+            ComputedStyle::IncludeIndependentTransformProperties);
+
+        // TODO(trchen): transform-style should only be respected if a
+        // PaintLayer
+        // is created.
+        // If a node with transform-style: preserve-3d does not exist in an
+        // existing rendering context, it establishes a new one.
+        unsigned renderingContextID = context.current.renderingContextID;
+        if (style.preserves3D() && !renderingContextID)
+          renderingContextID = PtrHash<const LayoutObject>::hash(&object);
+
+        auto& properties =
+            object.getMutableForPainting().ensurePaintProperties();
+        context.forceSubtreeUpdate |= properties.updateTransform(
+            context.current.transform, matrix, transformOrigin(box),
+            context.current.shouldFlattenInheritedTransform, renderingContextID,
+            compositingReasons);
+        hasTransform = true;
+      }
+    }
+    if (!hasTransform) {
       if (auto* properties = object.getMutableForPainting().paintProperties())
         context.forceSubtreeUpdate |= properties->clearTransform();
     }
