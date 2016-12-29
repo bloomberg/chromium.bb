@@ -203,6 +203,7 @@ class MockSession : public Session {
   MOCK_METHOD0(jid, const std::string&());
   MOCK_METHOD0(config, const SessionConfig&());
   MOCK_METHOD1(Close, void(ErrorCode error));
+  MOCK_METHOD1(AddPlugin, void(SessionPlugin* plugin));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSession);

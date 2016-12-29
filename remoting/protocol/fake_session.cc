@@ -5,8 +5,10 @@
 #include "remoting/protocol/fake_session.h"
 
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/protocol/fake_authenticator.h"
+#include "remoting/protocol/session_plugin.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
@@ -100,6 +102,11 @@ void FakeSession::SendTransportInfo(
 void FakeSession::ProcessTransportInfo(
     std::unique_ptr<buzz::XmlElement> transport_info) {
   transport_->ProcessTransportInfo(transport_info.get());
+}
+
+// TODO(zijiehe): Supports SessionPlugin in FakeSession.
+void FakeSession::AddPlugin(SessionPlugin* plugin) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace protocol

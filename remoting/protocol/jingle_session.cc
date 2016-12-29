@@ -7,9 +7,11 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -21,6 +23,7 @@
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/session_config.h"
+#include "remoting/protocol/session_plugin.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/signaling/iq_sender.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -208,14 +211,11 @@ void JingleSession::StartConnection(
   session_id_ = base::Uint64ToString(
       base::RandGenerator(std::numeric_limits<uint64_t>::max()));
 
-  // Send session-initiate message.
-  std::unique_ptr<JingleMessage> message(new JingleMessage(
-      peer_address_, JingleMessage::SESSION_INITIATE, session_id_));
-  message->initiator = session_manager_->signal_strategy_->GetLocalJid();
-  message->description.reset(new ContentDescription(
-      session_manager_->protocol_config_->Clone(),
-      authenticator_->GetNextMessage()));
-  SendMessage(std::move(message));
+  // Delay sending session-initiate message to ensure SessionPlugin can be
+  // attached before the message.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+      base::Bind(&JingleSession::SendSessionInitiateMessage,
+                 weak_factory_.GetWeakPtr()));
 
   SetState(CONNECTING);
 }
@@ -249,6 +249,7 @@ void JingleSession::AcceptIncomingConnection(
     const JingleMessage& initiate_message) {
   DCHECK(config_);
 
+  ProcessIncomingPluginMessage(initiate_message);
   // Process the first authentication message.
   const buzz::XmlElement* first_auth_message =
       initiate_message.description->authenticator_message();
@@ -322,6 +323,7 @@ void JingleSession::SendTransportInfo(
   std::unique_ptr<JingleMessage> message(new JingleMessage(
       peer_address_, JingleMessage::TRANSPORT_INFO, session_id_));
   message->transport_info = std::move(transport_info);
+  AddPluginAttachments(message.get());
 
   std::unique_ptr<buzz::XmlElement> stanza = message->ToXml();
   stanza->AddAttr(buzz::QN_ID, GetNextOutgoingId());
@@ -386,9 +388,23 @@ void JingleSession::Close(protocol::ErrorCode error) {
   }
 }
 
+void JingleSession::AddPlugin(SessionPlugin* plugin) {
+  DCHECK(plugin);
+  plugins_.push_back(plugin);
+}
+
 void JingleSession::SendMessage(std::unique_ptr<JingleMessage> message) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (message->action != JingleMessage::SESSION_TERMINATE) {
+    // When the host accepts session-initiate message from a client JID it
+    // doesn't recognize it sends session-terminate without session-accept.
+    // Attaching plugin information to this session-terminate message may lead
+    // to privacy issues (e.g. leaking Windows version to someone who does not
+    // own the host). So a simply approach is to ignore plugins when sending
+    // SESSION_TERMINATE message.
+    AddPluginAttachments(message.get());
+  }
   std::unique_ptr<buzz::XmlElement> stanza = message->ToXml();
   stanza->AddAttr(buzz::QN_ID, GetNextOutgoingId());
 
@@ -482,6 +498,7 @@ void JingleSession::OnTransportInfoResponse(IqRequest* request,
 void JingleSession::OnIncomingMessage(const std::string& id,
                                       std::unique_ptr<JingleMessage> message,
                                       const ReplyCallback& reply_callback) {
+  ProcessIncomingPluginMessage(*message);
   std::vector<PendingMessage> ordered = message_queue_->OnIncomingMessage(
       id, PendingMessage{std::move(message), reply_callback});
   base::WeakPtr<JingleSession> self = weak_factory_.GetWeakPtr();
@@ -745,6 +762,39 @@ void JingleSession::SetState(State new_state) {
 bool JingleSession::is_session_active() {
   return state_ == CONNECTING || state_ == ACCEPTING || state_ == ACCEPTED ||
         state_ == AUTHENTICATING || state_ == AUTHENTICATED;
+}
+
+void JingleSession::ProcessIncomingPluginMessage(
+    const JingleMessage& message) {
+  if (!message.attachments) {
+    return;
+  }
+  for (const auto& plugin : plugins_) {
+    plugin->OnIncomingMessage(*(message.attachments));
+  }
+}
+
+void JingleSession::AddPluginAttachments(JingleMessage* message) {
+  DCHECK(message);
+  for (const auto& plugin : plugins_) {
+    std::unique_ptr<XmlElement> attachment = plugin->GetNextMessage();
+    if (attachment) {
+      message->AddAttachment(std::move(attachment));
+    }
+  }
+}
+
+void JingleSession::SendSessionInitiateMessage() {
+  if (state_ != CONNECTING) {
+    return;
+  }
+  std::unique_ptr<JingleMessage> message(new JingleMessage(
+      peer_address_, JingleMessage::SESSION_INITIATE, session_id_));
+  message->initiator = session_manager_->signal_strategy_->GetLocalJid();
+  message->description.reset(new ContentDescription(
+      session_manager_->protocol_config_->Clone(),
+      authenticator_->GetNextMessage()));
+  SendMessage(std::move(message));
 }
 
 std::string JingleSession::GetNextOutgoingId() {

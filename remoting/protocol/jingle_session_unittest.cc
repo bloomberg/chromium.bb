@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
@@ -25,6 +26,7 @@
 #include "remoting/protocol/fake_authenticator.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/network_settings.h"
+#include "remoting/protocol/session_plugin.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/fake_signal_strategy.h"
@@ -101,6 +103,43 @@ class FakeTransport : public Transport {
   base::Closure on_message_callback_;
 };
 
+class FakePlugin : public SessionPlugin {
+ public:
+   std::unique_ptr<buzz::XmlElement> GetNextMessage() override {
+     std::string tag_name = "test-tag-";
+     tag_name += base::IntToString(outgoing_messages_.size());
+     std::unique_ptr<buzz::XmlElement> new_message(new buzz::XmlElement(
+         buzz::QName("test-namespace", tag_name)));
+     outgoing_messages_.push_back(*new_message);
+     return new_message;
+  }
+
+  void OnIncomingMessage(const buzz::XmlElement& attachments) override {
+    for (const buzz::XmlElement* it = attachments.FirstElement();
+         it != nullptr;
+         it = it->NextElement()) {
+      incoming_messages_.push_back(*it);
+    }
+  }
+
+  const std::vector<buzz::XmlElement>& outgoing_messages() const {
+    return outgoing_messages_;
+  }
+
+  const std::vector<buzz::XmlElement>& incoming_messages() const {
+    return incoming_messages_;
+  }
+
+  void Clear() {
+    outgoing_messages_.clear();
+    incoming_messages_.clear();
+  }
+
+ private:
+  std::vector<buzz::XmlElement> outgoing_messages_;
+  std::vector<buzz::XmlElement> incoming_messages_;
+};
+
 std::unique_ptr<buzz::XmlElement> CreateTransportInfo(const std::string& id) {
   std::unique_ptr<buzz::XmlElement> result(
       buzz::XmlElement::ForStr("<transport xmlns='google:remoting:ice'/>"));
@@ -124,6 +163,7 @@ class JingleSessionTest : public testing::Test {
     host_session_.reset(session);
     host_session_->SetEventHandler(&host_session_event_handler_);
     host_session_->SetTransport(&host_transport_);
+    host_session_->AddPlugin(&host_plugin_);
   }
 
   void DeleteHostSession() { host_session_.reset(); }
@@ -237,6 +277,7 @@ class JingleSessionTest : public testing::Test {
         client_server_->Connect(host_jid_, std::move(authenticator));
     client_session_->SetEventHandler(&client_session_event_handler_);
     client_session_->SetTransport(&client_transport_);
+    client_session_->AddPlugin(&client_plugin_);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -258,6 +299,22 @@ class JingleSessionTest : public testing::Test {
         .Times(AtLeast(1));
   }
 
+  void ExpectPluginMessagesEqual() const {
+    ASSERT_EQ(client_plugin_.outgoing_messages().size(),
+              host_plugin_.incoming_messages().size());
+    for (size_t i = 0; i < client_plugin_.outgoing_messages().size(); i++) {
+      ASSERT_EQ(client_plugin_.outgoing_messages()[i].Str(),
+                host_plugin_.incoming_messages()[i].Str());
+    }
+
+    ASSERT_EQ(client_plugin_.incoming_messages().size(),
+              host_plugin_.outgoing_messages().size());
+    for (size_t i = 0; i < client_plugin_.incoming_messages().size(); i++) {
+      ASSERT_EQ(client_plugin_.incoming_messages()[i].Str(),
+                host_plugin_.outgoing_messages()[i].Str());
+    }
+  }
+
   std::unique_ptr<base::MessageLoopForIO> message_loop_;
 
   NetworkSettings network_settings_;
@@ -277,6 +334,9 @@ class JingleSessionTest : public testing::Test {
   std::unique_ptr<Session> client_session_;
   MockSessionEventHandler client_session_event_handler_;
   FakeTransport client_transport_;
+
+  FakePlugin host_plugin_;
+  FakePlugin client_plugin_;
 };
 
 
@@ -553,6 +613,39 @@ TEST_F(JingleSessionTest, TransportInfoDuringAuthentication) {
   // received.
   ASSERT_EQ(client_transport_.received_messages().size(), 1U);
   EXPECT_EQ("1", client_transport_.received_messages()[0]->Attr(buzz::QN_ID));
+}
+
+TEST_F(JingleSessionTest, TestSessionPlugin) {
+  host_plugin_.Clear();
+  client_plugin_.Clear();
+  CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
+  ASSERT_NO_FATAL_FAILURE(
+      InitiateConnection(3, FakeAuthenticator::ACCEPT, false));
+  ExpectPluginMessagesEqual();
+}
+
+TEST_F(JingleSessionTest, SessionPluginShouldNotBeInvolvedInSessionTerminate) {
+  host_plugin_.Clear();
+  client_plugin_.Clear();
+  CreateSessionManagers(1, FakeAuthenticator::REJECT);
+  InitiateConnection(1, FakeAuthenticator::ACCEPT, true);
+  // It's expected the client sends one more plugin message than host, the host
+  // won't send plugin message in the SESSION_TERMINATE message.
+  ASSERT_EQ(client_plugin_.outgoing_messages().size() - 1,
+            client_plugin_.incoming_messages().size());
+  ExpectPluginMessagesEqual();
+}
+
+TEST_F(JingleSessionTest, ImmediatelyCloseSessionAfterConnect) {
+  CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
+  client_session_ = client_server_->Connect(host_jid_,
+      base::MakeUnique<FakeAuthenticator>(
+          FakeAuthenticator::CLIENT, 3, FakeAuthenticator::ACCEPT, true));
+  client_session_->Close(HOST_OVERLOAD);
+  base::RunLoop().RunUntilIdle();
+  // We should only send a SESSION_TERMINATE message if the session has been
+  // closed before SESSION_INITIATE message.
+  ASSERT_EQ(1U, host_signal_strategy_->received_messages().size());
 }
 
 }  // namespace protocol

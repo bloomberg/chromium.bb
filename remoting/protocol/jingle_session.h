@@ -43,6 +43,7 @@ class JingleSession : public Session {
   const SessionConfig& config() override;
   void SetTransport(Transport* transport) override;
   void Close(protocol::ErrorCode error) override;
+  void AddPlugin(SessionPlugin* plugin) override;
 
  private:
   friend class JingleSessionManager;
@@ -119,6 +120,15 @@ class JingleSession : public Session {
   // Returns true if the state of the session is not CLOSED or FAILED
   bool is_session_active();
 
+  // Executes all plugins against incoming JingleMessage.
+  void ProcessIncomingPluginMessage(const JingleMessage& message);
+
+  // Executes all plugins against outgoing JingleMessage.
+  void AddPluginAttachments(JingleMessage* message);
+
+  // Sends session-initiate message.
+  void SendSessionInitiateMessage();
+
   // Returns the value of the ID attribute of the next outgoing set IQ with the
   // sequence ID encoded.
   std::string GetNextOutgoingId();
@@ -168,6 +178,9 @@ class JingleSession : public Session {
   // Transport info messages that are received while the session is being
   // authenticated.
   std::vector<PendingMessage> pending_transport_info_;
+
+  // The SessionPlugins attached to this session.
+  std::vector<SessionPlugin*> plugins_;
 
   base::WeakPtrFactory<JingleSession> weak_factory_;
 

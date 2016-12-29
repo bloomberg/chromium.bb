@@ -9,6 +9,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/name_value_map.h"
+#include "remoting/protocol/session_plugin.h"
 #include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/remoting_bot.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -509,6 +510,15 @@ std::unique_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
   }
 
   return root;
+}
+
+void JingleMessage::AddAttachment(std::unique_ptr<XmlElement> attachment) {
+  DCHECK(attachment);
+  if (!attachments) {
+    attachments.reset(new XmlElement(
+        QName(kChromotingXmlNamespace, "attachments")));
+  }
+  attachments->AddElement(attachment.release());
 }
 
 JingleMessageReply::JingleMessageReply()

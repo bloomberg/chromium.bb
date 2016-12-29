@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_SESSION_H_
 #define REMOTING_PROTOCOL_SESSION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -15,6 +16,7 @@
 namespace remoting {
 namespace protocol {
 
+class SessionPlugin;
 class Transport;
 
 // Session is responsible for initializing and authenticating both incoming and
@@ -84,6 +86,12 @@ class Session {
   // method returns. |error| specifies the error code in case when the session
   // is being closed due to an error.
   virtual void Close(ErrorCode error) = 0;
+
+  // Adds a SessionPlugin to handle attachments. To ensure plugin attachments
+  // are processed correctly for session-initiate message, this function must be
+  // called immediately after SessionManager::Connect() for outgoing connections
+  // or in the IncomingSessionCallback handler for incoming connections.
+  virtual void AddPlugin(SessionPlugin* plugin) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Session);

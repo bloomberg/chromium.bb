@@ -47,6 +47,7 @@ class FakeSession : public Session {
   const SessionConfig& config() override;
   void SetTransport(Transport* transport) override;
   void Close(ErrorCode error) override;
+  void AddPlugin(SessionPlugin* plugin) override;
 
  private:
   // Callback provided to the |transport_|.

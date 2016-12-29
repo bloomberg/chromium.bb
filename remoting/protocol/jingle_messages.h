@@ -90,6 +90,11 @@ struct JingleMessage {
   // message when parsing fails.
   bool ParseXml(const buzz::XmlElement* stanza, std::string* error);
 
+  // Adds an XmlElement into |attachments|. This function implicitly creates
+  // |attachments| if it's empty, and |attachment| should not be an empty
+  // unique_ptr.
+  void AddAttachment(std::unique_ptr<buzz::XmlElement> attachment);
+
   std::unique_ptr<buzz::XmlElement> ToXml() const;
 
   SignalingAddress from;

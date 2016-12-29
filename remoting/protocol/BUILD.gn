@@ -146,6 +146,7 @@ static_library("protocol") {
     "session_config.cc",
     "session_config.h",
     "session_manager.h",
+    "session_plugin.h",
     "socket_util.cc",
     "socket_util.h",
     "spake2_authenticator.cc",
