@@ -1,4 +1,4 @@
-TestRunner.addResult('Test ListControl rendering for variable height case.');
+TestRunner.addResult('Test ListControl rendering and selection for grow mode.');
 
 class Delegate {
   constructor() {
@@ -7,13 +7,14 @@ class Delegate {
   createElementForItem(item) {
     TestRunner.addResult('Creating element for ' + item);
     var element = document.createElement('div');
-    element.style.height = this.heightForItem(item) + 'px';
+    element.style.height = (10 + item % 5) + 'px';
     element.textContent = item;
     return element;
   }
 
   heightForItem(item) {
-    return 7 + item % 10;
+    TestRunner.addResult('heightForItem should not be called');
+    return 10 + item % 5;
   }
 
   isItemSelectable(item) {
@@ -30,8 +31,7 @@ class Delegate {
 }
 
 var delegate = new Delegate();
-var list = new UI.ListControl(delegate, UI.ListMode.ViewportVariableItems);
-list.element.style.height = '73px';
+var list = new UI.ListControl(delegate, UI.ListMode.Grow);
 UI.inspectorView.element.appendChild(list.element);
 
 function dumpList()
@@ -47,7 +47,6 @@ function dumpList()
     var text = child === list._topElement ? 'top' : (child === list._bottomElement ? 'bottom' : child.textContent);
     TestRunner.addResult(`${visible}[${offsetTop}] ${text}${selected}`);
   }
-  TestRunner.addResult('offsets: ' + list._variableOffsets.join(' '));
   TestRunner.addResult('');
 }
 
@@ -67,20 +66,8 @@ TestRunner.addResult('Adding 3-20');
 list.replaceItemsInRange(3, 3, [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
 dumpList();
 
-TestRunner.addResult('Scrolling to 11');
-list.scrollItemAtIndexIntoView(11);
-dumpList();
-
 TestRunner.addResult('Scrolling to 19');
 list.scrollItemAtIndexIntoView(19);
-dumpList();
-
-TestRunner.addResult('Scrolling to 16');
-list.scrollItemAtIndexIntoView(16);
-dumpList();
-
-TestRunner.addResult('Scrolling to 3');
-list.scrollItemAtIndexIntoView(3);
 dumpList();
 
 TestRunner.addResult('Replacing 0, 1 with 25-36');
@@ -105,11 +92,6 @@ dumpList();
 
 TestRunner.addResult('Replacing 45 with 16-18');
 list.replaceItemsInRange(16, 17, [16, 17, 18]);
-dumpList();
-
-TestRunner.addResult('Resizing');
-list.element.style.height = '190px';
-list.viewportResized();
 dumpList();
 
 TestRunner.completeTest();

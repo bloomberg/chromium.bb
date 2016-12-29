@@ -312,7 +312,7 @@ Scrolling to 13
  [134] 19
  [144] bottom
 
-Changing the item height, switching to measure
+Changing the item height
 Creating element for 0
 Creating element for 1
 Creating element for 2

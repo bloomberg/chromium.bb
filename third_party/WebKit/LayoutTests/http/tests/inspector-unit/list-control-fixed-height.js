@@ -31,8 +31,7 @@ class Delegate {
 }
 
 var delegate = new Delegate();
-var list = new UI.ListControl(delegate);
-list.setHeightMode(UI.ListHeightMode.Fixed);
+var list = new UI.ListControl(delegate, UI.ListMode.ViewportFixedItems);
 list.element.style.height = '73px';
 UI.inspectorView.element.appendChild(list.element);
 
@@ -137,9 +136,9 @@ TestRunner.addResult('Scrolling to 13');
 list.scrollItemAtIndexIntoView(13);
 dumpList();
 
-TestRunner.addResult('Changing the item height, switching to measure');
+TestRunner.addResult('Changing the item height');
 delegate.height = 15;
-list.setHeightMode(UI.ListHeightMode.Measured);
+list.fixedHeightChanged();
 dumpList();
 
 TestRunner.addResult('Selecting 7');
