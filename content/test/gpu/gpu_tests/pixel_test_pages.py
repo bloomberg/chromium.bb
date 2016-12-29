@@ -7,33 +7,33 @@ class PixelTestPage(object):
   from the old-style GPU tests.
   """
   def __init__(self, url, name, test_rect, revision,
-               expected_colors=None, tolerance=2, browser_args=None):
+               tolerance=2, browser_args=None, expected_colors=None):
     super(PixelTestPage, self).__init__()
     self.url = url
     self.name = name
     self.test_rect = test_rect
     self.revision = revision
+    # The tolerance when comparing against the reference image.
+    self.tolerance = tolerance
+    self.browser_args = browser_args
     # The expected colors can be specified as a list of dictionaries,
     # in which case these specific pixels will be sampled instead of
     # comparing the entire image snapshot. The format is only defined
     # by contract with _CompareScreenshotSamples in
     # cloud_storage_integration_test_base.py.
     self.expected_colors = expected_colors
-    # The tolerance when comparing against the reference image.
-    self.tolerance = tolerance
-    self.browser_args = browser_args
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
     return PixelTestPage(
       self.url, self.name + suffix, self.test_rect, self.revision,
-      self.expected_colors, self.tolerance, browser_args)
+      self.tolerance, browser_args, self.expected_colors)
 
   def CopyWithNewBrowserArgsAndPrefix(self, browser_args, prefix):
     # Assuming the test name is 'Pixel'.
     split = self.name.split('_', 1)
     return PixelTestPage(
       self.url, split[0] + '_' + prefix + split[1], self.test_rect,
-      self.revision, self.expected_colors, self.tolerance, browser_args)
+      self.revision, self.tolerance, browser_args, self.expected_colors)
 
 
 def CopyPagesWithNewBrowserArgsAndSuffix(pages, browser_args, suffix):
@@ -130,6 +130,141 @@ def DefaultPages(base_name):
       base_name + '_SolidColorBackground',
       test_rect=[500, 500, 100, 100],
       revision=1),
+  ]
+
+
+# Pages that should be run with GPU rasterization enabled.
+def GpuRasterizationPages(base_name):
+  browser_args = ['--force-gpu-rasterization']
+  return [
+    PixelTestPage(
+      'pixel_background.html',
+      base_name + '_GpuRasterization_BlueBox',
+      test_rect=[0, 0, 220, 220],
+      revision=0, # This is not used.
+      browser_args=browser_args,
+      expected_colors=[
+        {
+          'comment': 'body-t',
+          'location': [5, 5],
+          'size': [1, 1],
+          'color': [0, 128, 0],
+          'tolerance': 0
+        },
+        {
+          'comment': 'body-r',
+          'location': [215, 5],
+          'size': [1, 1],
+          'color': [0, 128, 0],
+          'tolerance': 0
+        },
+        {
+          'comment': 'body-b',
+          'location': [215, 215],
+          'size': [1, 1],
+          'color': [0, 128, 0],
+          'tolerance': 0
+        },
+        {
+          'comment': 'body-l',
+          'location': [5, 215],
+          'size': [1, 1],
+          'color': [0, 128, 0],
+          'tolerance': 0
+        },
+        {
+          'comment': 'background-t',
+          'location': [30, 30],
+          'size': [1, 1],
+          'color': [0, 0, 0],
+          'tolerance': 0
+        },
+        {
+          'comment': 'background-r',
+          'location': [170, 30],
+          'size': [1, 1],
+          'color': [0, 0, 0],
+          'tolerance': 0
+        },
+        {
+          'comment': 'background-b',
+          'location': [170, 170],
+          'size': [1, 1],
+          'color': [0, 0, 0],
+          'tolerance': 0
+        },
+        {
+          'comment': 'background-l',
+          'location': [30, 170],
+          'size': [1, 1],
+          'color': [0, 0, 0],
+          'tolerance': 0
+        },
+        {
+          'comment': 'box-t',
+          'location': [70, 70],
+          'size': [1, 1],
+          'color': [0, 0, 255],
+          'tolerance': 0
+        },
+        {
+          'comment': 'box-r',
+          'location': [140, 70],
+          'size': [1, 1],
+          'color': [0, 0, 255],
+          'tolerance': 0
+        },
+        {
+          'comment': 'box-b',
+          'location': [140, 140],
+          'size': [1, 1],
+          'color': [0, 0, 255],
+          'tolerance': 0
+        },
+        {
+          'comment': 'box-l',
+          'location': [70, 140],
+          'size': [1, 1],
+          'color': [0, 0, 255],
+          'tolerance': 0
+        }
+      ]),
+    PixelTestPage(
+      'concave_paths.html',
+      base_name + '_GpuRasterization_ConcavePaths',
+      test_rect=[0, 0, 100, 100],
+      revision=0, # This is not used.
+      browser_args=browser_args,
+      expected_colors=[
+        {
+          'comment': 'outside',
+          'location': [80, 60],
+          'size': [1, 1],
+          'color': [255, 255, 255],
+          'tolerance': 0
+        },
+        {
+          'comment': 'outside',
+          'location': [28, 20],
+          'size': [1, 1],
+          'color': [255, 255, 255],
+          'tolerance': 0
+        },
+        {
+          'comment': 'inside',
+          'location': [32, 25],
+          'size': [1, 1],
+          'color': [255, 215, 0],
+          'tolerance': 0
+        },
+        {
+          'comment': 'inside',
+          'location': [80, 80],
+          'size': [1, 1],
+          'color': [255, 215, 0],
+          'tolerance': 0
+        }
+      ])
   ]
 
 

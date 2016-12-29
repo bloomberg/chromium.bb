@@ -1123,13 +1123,6 @@ TELEMETRY_TESTS = {
         }
       ],
   },
-  'gpu_rasterization': {
-    'tester_configs': [
-      {
-        'allow_on_android': True,
-      },
-    ],
-  },
   'hardware_accelerated_feature': {
     'tester_configs': [
       {

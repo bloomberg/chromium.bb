@@ -169,29 +169,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=android-chromium",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=android-chromium",
@@ -592,30 +569,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=android-chromium",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "M",
-              "device_type": "bullhead",
-              "os": "Android"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=android-chromium",
@@ -933,29 +886,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=android-chromium",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -1328,29 +1258,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=android-chromium",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=android-chromium",
@@ -1677,29 +1584,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=android-chromium",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=android-chromium",
@@ -2011,29 +1895,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=android-chromium",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -2383,29 +2244,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Linux"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -2775,29 +2613,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0412",
-              "os": "Linux"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=debug",
@@ -3150,29 +2965,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6779",
-              "os": "Linux"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -3581,29 +3373,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "os": "Linux"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
@@ -3997,29 +3766,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:041a",
-              "os": "Linux"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
@@ -4398,29 +4144,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:0f02",
-              "os": "Linux"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -4889,29 +4612,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Linux"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
@@ -5316,29 +5016,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0412",
-              "os": "Linux"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -5760,29 +5437,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:679e",
-              "os": "Mac-10.10"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=debug",
@@ -6099,29 +5753,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.10"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -6466,29 +6097,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:679e",
-              "os": "Mac-10.10"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -6877,29 +6485,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.10"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
@@ -7266,30 +6851,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=debug",
@@ -7637,30 +7198,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -8047,30 +7584,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -8517,34 +8030,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.10"
-            },
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
@@ -8946,30 +8431,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:0fe9",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=debug",
@@ -9317,30 +8778,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:0fe9",
-              "hidpi": "1",
-              "os": "Mac"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -10439,29 +9876,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Windows-10"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=debug",
@@ -10884,29 +10298,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0412",
-              "os": "Windows-10"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -11360,29 +10751,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Windows-10"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -11874,29 +11242,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0412",
-              "os": "Windows-10"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
@@ -12360,29 +11705,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=debug",
@@ -12782,29 +12104,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -13257,29 +12556,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0412",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=debug",
@@ -13675,29 +12951,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6779",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -14207,29 +13460,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
@@ -14683,29 +13913,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:041a",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
@@ -15144,29 +14351,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:0f02",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -15753,29 +14937,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
@@ -16252,29 +15413,6 @@
       },
       {
         "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0412",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=release",
@@ -16700,29 +15838,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=debug_x64",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -17211,29 +16326,6 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "gpu_rasterization",
-          "--show-stdout",
-          "--browser=release_x64",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "gpu_rasterization_tests",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],

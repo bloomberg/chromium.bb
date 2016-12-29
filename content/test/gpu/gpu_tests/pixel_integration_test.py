@@ -114,6 +114,7 @@ class PixelIntegrationTest(
     cls.SetParsedCommandLineOptions(options)
     name = 'Pixel'
     pages = pixel_test_pages.DefaultPages(name)
+    pages += pixel_test_pages.GpuRasterizationPages(name)
     pages += pixel_test_pages.ExperimentalCanvasFeaturesPages(name)
     if sys.platform.startswith('darwin'):
       pages += pixel_test_pages.MacSpecificPages(name)
