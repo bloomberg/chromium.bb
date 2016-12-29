@@ -45,6 +45,7 @@
 #import "ios/chrome/app/safe_mode_crashing_modules_config.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
 #import "ios/chrome/app/spotlight/spotlight_util.h"
+#include "ios/chrome/app/startup/background_upload_alert.h"
 #include "ios/chrome/app/startup/chrome_main_starter.h"
 #include "ios/chrome/app/startup/client_registration.h"
 #include "ios/chrome/app/startup/ios_chrome_main.h"
@@ -677,18 +678,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
   RegisterComponentsForUpdate();
 
-  if (experimental_flags::IsAlertOnBackgroundUploadEnabled()) {
-    if ([UIApplication instancesRespondToSelector:
-                           @selector(registerUserNotificationSettings:)]) {
-      [[UIApplication sharedApplication]
-          registerUserNotificationSettings:
-              [UIUserNotificationSettings
-                  settingsForTypes:UIUserNotificationTypeAlert |
-                                   UIUserNotificationTypeBadge |
-                                   UIUserNotificationTypeSound
-                        categories:nil]];
-    }
-  }
+  [BackgroundUploadAlert setupBackgroundUploadAlert];
 
   // Remove the extra browser states as Chrome iOS is single profile in M48+.
   ChromeBrowserStateRemovalController::GetInstance()

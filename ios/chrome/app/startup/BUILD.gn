@@ -6,6 +6,8 @@ import("//ios/public/provider/chrome/browser/build_config.gni")
 
 source_set("startup") {
   sources = [
+    "background_upload_alert.h",
+    "background_upload_alert.mm",
     "chrome_main_starter.h",
     "chrome_main_starter.mm",
     "client_registration.h",
