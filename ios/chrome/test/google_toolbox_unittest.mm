@@ -5,7 +5,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/logging.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #import "third_party/google_toolbox_for_mac/src/Foundation/GTMNSDictionary+URLArguments.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

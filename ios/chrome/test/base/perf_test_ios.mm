@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
-#include "ios/chrome/test/base/perf_test_ios.h"
+#import "ios/chrome/test/base/perf_test_ios.h"
 
 PerfTest::PerfTest(std::string testGroup)
     : BlockCleanupTest(),

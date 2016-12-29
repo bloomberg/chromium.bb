@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_TEST_APP_HISTORY_TEST_UTIL_H_
 #define IOS_CHROME_TEST_APP_HISTORY_TEST_UTIL_H_
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 
 namespace chrome_test_util {
 

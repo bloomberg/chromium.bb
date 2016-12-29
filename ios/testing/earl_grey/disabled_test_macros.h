@@ -5,6 +5,8 @@
 #ifndef IOS_TESTING_EARL_GREY_DISABLED_TEST_MACROS_H_
 #define IOS_TESTING_EARL_GREY_DISABLED_TEST_MACROS_H_
 
+#import <Foundation/Foundation.h>
+
 // A macro that forces an Earl Grey test to pass. It should be used to disable
 // tests that fail due to a bug. This macro should be used when the
 // configuration for which the test should be disabled can only be determined

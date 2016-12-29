@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_TEST_OCMOCK_SCOPED_MOCK_OBJECT_H_
 #define IOS_CHROME_TEST_OCMOCK_SCOPED_MOCK_OBJECT_H_
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 // Helper class that constructs an OCMock and manages ownership of it.

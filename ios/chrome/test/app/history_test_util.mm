@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/test/app/history_test_util.h"
+#import "ios/chrome/test/app/history_test_util.h"
 
-#include "base/mac/bind_objc_block.h"
-#include "base/test/ios/wait_util.h"
+#import "base/mac/bind_objc_block.h"
+#import "base/test/ios/wait_util.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/app/main_controller_private.h"

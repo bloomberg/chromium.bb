@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/test/earl_grey/chrome_util.h"
+#include "ios/chrome/test/earl_grey/chrome_util.h"
 
 #import <EarlGrey/EarlGrey.h>
 

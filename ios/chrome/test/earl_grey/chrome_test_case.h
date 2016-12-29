@@ -7,7 +7,7 @@
 
 #import <XCTest/XCTest.h>
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 
 // Base class for all Chrome Earl Grey tests.
 @interface ChromeTestCase : XCTestCase

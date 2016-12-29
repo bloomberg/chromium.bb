@@ -4,10 +4,10 @@
 
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/test/block_cleanup_test.h"
+#import "ios/chrome/test/block_cleanup_test.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 
 void BlockCleanupTest::SetUp() {
   block_cleanup_pool_ = [[NSAutoreleasePool alloc] init];

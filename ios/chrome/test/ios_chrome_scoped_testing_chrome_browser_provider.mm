@@ -5,7 +5,7 @@
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_provider.h"
 
 #include "base/logging.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 IOSChromeScopedTestingChromeBrowserProvider::
     IOSChromeScopedTestingChromeBrowserProvider(

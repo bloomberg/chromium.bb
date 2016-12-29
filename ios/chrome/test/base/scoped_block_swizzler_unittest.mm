@@ -4,9 +4,9 @@
 
 #include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
-#import "ios/chrome/test/base/scoped_block_swizzler.h"
+#include "ios/chrome/test/base/scoped_block_swizzler.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 // Class containing two methods that will be swizzled by the unittests.

@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_TEST_APP_CHROME_TEST_UTIL_H_
 #define IOS_CHROME_TEST_APP_CHROME_TEST_UTIL_H_
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 #import "ios/web/public/web_state/web_state.h"
 
 namespace ios {

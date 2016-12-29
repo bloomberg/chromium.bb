@@ -5,7 +5,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_controller.h"
-#include "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"

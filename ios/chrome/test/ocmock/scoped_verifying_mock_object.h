@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_TEST_OCMOCK_SCOPED_VERIFYING_MOCK_OBJECT_H_
 #define IOS_CHROME_TEST_OCMOCK_SCOPED_VERIFYING_MOCK_OBJECT_H_
 
-#include "ios/chrome/test/ocmock/scoped_mock_object.h"
+#import "ios/chrome/test/ocmock/scoped_mock_object.h"
 #include "third_party/ocmock/gtest_support.h"
 
 // Helper class that constructs an OCMock and automatically verifies the mock

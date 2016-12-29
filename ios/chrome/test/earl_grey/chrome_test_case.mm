@@ -11,7 +11,7 @@
 #include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/settings_test_util.h"
+#include "ios/chrome/test/app/settings_test_util.h"
 #include "ios/chrome/test/app/signin_test_util.h"
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"

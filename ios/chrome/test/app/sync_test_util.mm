@@ -8,11 +8,11 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
+#import "base/mac/bind_objc_block.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"

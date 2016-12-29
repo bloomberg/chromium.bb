@@ -5,7 +5,7 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
-#import "ios/chrome/test/earl_grey/accessibility_util.h"
+#include "ios/chrome/test/earl_grey/accessibility_util.h"
 
 namespace {
 

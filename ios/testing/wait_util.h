@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 
 namespace testing {
 
