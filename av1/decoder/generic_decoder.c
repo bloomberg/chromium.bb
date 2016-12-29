@@ -61,11 +61,11 @@ int aom_decode_cdf_adapt_q15_(aom_reader *r, uint16_t *cdf, int n,
  *
  * @retval decoded variable
  */
-int od_decode_cdf_adapt_(od_ec_dec *ec, uint16_t *cdf, int n,
+int aom_decode_cdf_adapt_(aom_reader *r, uint16_t *cdf, int n,
  int increment OD_ACC_STR) {
   int i;
   int val;
-  val = od_ec_decode_cdf_unscaled(ec, cdf, n);
+  val = aom_read_cdf_unscaled(r, cdf, n, ACCT_STR);
   if (cdf[n-1] + increment > 32767) {
     for (i = 0; i < n; i++) {
       /* Second term ensures that the pdf is non-null */

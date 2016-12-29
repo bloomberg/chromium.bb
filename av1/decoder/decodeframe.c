@@ -406,18 +406,14 @@ static int av1_pvq_decode_helper2(MACROBLOCKD *const xd,
   eob = 0;
   dst = &pd->dst.buf[4 * row * pd->dst.stride + 4 * col];
 
-#if CONFIG_DAALA_EC
   // decode ac/dc coded flag. bit0: DC coded, bit1 : AC coded
   // NOTE : we don't use 5 symbols for luma here in aom codebase,
   // since block partition is taken care of by aom.
   // So, only AC/DC skip info is coded
-  ac_dc_coded = od_decode_cdf_adapt(
-      &xd->daala_dec.r->ec,
+  ac_dc_coded = aom_decode_cdf_adapt(
+      xd->daala_dec.r,
       xd->daala_dec.state.adapt.skip_cdf[2 * tx_size + (plane != 0)], 4,
       xd->daala_dec.state.adapt.skip_increment, "skip");
-#else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
   if (ac_dc_coded) {
     int xdec = pd->subsampling_x;
     int seg_id = mbmi->segment_id;

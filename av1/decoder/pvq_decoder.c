@@ -169,13 +169,9 @@ static void pvq_decode_partition(aom_reader *r,
     /* Jointly decode gain, itheta and noref for small values. Then we handle
        larger gain. We need to wait for itheta because in the !nodesync case
        it depends on max_theta, which depends on the gain. */
-#if CONFIG_DAALA_EC
-    id = od_decode_cdf_adapt(&r->ec, &adapt->pvq.pvq_gaintheta_cdf[cdf_ctx][0],
+    id = aom_decode_cdf_adapt(r, &adapt->pvq.pvq_gaintheta_cdf[cdf_ctx][0],
      8 + 7*has_skip, adapt->pvq.pvq_gaintheta_increment,
      "pvq:gaintheta");
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
     if (!is_keyframe && id >= 10) id++;
     if (is_keyframe && id >= 8) id++;
     if (id >= 8) {
@@ -368,13 +364,9 @@ void od_pvq_decode(daala_dec_ctx *dec,
       if (i == 0 && !skip_rest[0] && bs > 0) {
         int skip_dir;
         int j;
-#if CONFIG_DAALA_EC
-        skip_dir = od_decode_cdf_adapt(&dec->r->ec,
+        skip_dir = aom_decode_cdf_adapt(dec->r,
          &dec->state.adapt.pvq.pvq_skip_dir_cdf[(pli != 0) + 2*(bs - 1)][0], 7,
          dec->state.adapt.pvq.pvq_skip_dir_increment, "pvq:skiprest");
-#else
-#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
         for (j = 0; j < 3; j++) skip_rest[j] = !!(skip_dir & (1 << j));
       }
     }
