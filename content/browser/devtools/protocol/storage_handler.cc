@@ -40,6 +40,10 @@ void StorageHandler::Wire(UberDispatcher* dispatcher) {
   Storage::Dispatcher::wire(dispatcher, this);
 }
 
+void StorageHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
+  host_ = host;
+}
+
 Response StorageHandler::ClearDataForOrigin(
     const std::string& origin,
     const std::string& storage_types) {

@@ -22,6 +22,7 @@ class StorageHandler : public DevToolsDomainHandler,
   ~StorageHandler() override;
 
   void Wire(UberDispatcher* dispatcher) override;
+  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
 
   Response ClearDataForOrigin(
       const std::string& origin,
