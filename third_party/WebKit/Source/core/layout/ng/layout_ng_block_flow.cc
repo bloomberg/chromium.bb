@@ -30,6 +30,21 @@ void LayoutNGBlockFlow::layoutBlock(bool relayoutChildren) {
   while (!m_box->Layout(constraint_space, &fragment))
     ;
 
+  if (isOutOfFlowPositioned()) {
+    // In legacy layout, abspos differs from regular blocks in that abspos
+    // blocks position themselves in their own layout, instead of getting
+    // positioned by their parent. So it we are a positioned block in a legacy-
+    // layout containing block, we have to emulate this positioning.
+    // Additionally, until we natively support abspos in LayoutNG, this code
+    // will also be reached though the layoutPositionedObjects call in
+    // NGBlockNode::CopyFragmentDataToLayoutBox.
+    LogicalExtentComputedValues computedValues;
+    computeLogicalWidth(computedValues);
+    setLogicalLeft(computedValues.m_position);
+    computeLogicalHeight(logicalHeight(), logicalTop(), computedValues);
+    setLogicalTop(computedValues.m_position);
+  }
+
   for (auto& descendant : fragment->PhysicalFragment()->OutOfFlowDescendants())
     descendant->UseOldOutOfFlowPositioning();
   clearNeedsLayout();
