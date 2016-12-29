@@ -53,7 +53,6 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_server_id.h"
-#include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/platform/api/quic_text_utils.h"
@@ -70,13 +69,13 @@ using net::CTVerifier;
 using net::MultiLogCTVerifier;
 using net::ProofVerifier;
 using net::ProofVerifierChromium;
+using net::QuicTextUtils;
 using net::SpdyHeaderBlock;
 using net::TransportSecurityState;
-using net::QuicTextUtils;
 using std::cout;
 using std::cerr;
-using std::string;
 using std::endl;
+using std::string;
 
 // The IP or hostname the quic client will connect to.
 string FLAGS_host = "";
@@ -260,7 +259,6 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<CertVerifier> cert_verifier(CertVerifier::CreateDefault());
   std::unique_ptr<TransportSecurityState> transport_security_state(
       new TransportSecurityState);
-  transport_security_state.reset(new TransportSecurityState);
   std::unique_ptr<CTVerifier> ct_verifier(new MultiLogCTVerifier());
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer(new CTPolicyEnforcer());
   std::unique_ptr<ProofVerifier> proof_verifier;
@@ -321,6 +319,7 @@ int main(int argc, char* argv[]) {
 
   // Make sure to store the response, for later output.
   client.set_store_response(true);
+
   // Send the request.
   client.SendRequestAndWaitForResponse(header_block, body, /*fin=*/true);
 
