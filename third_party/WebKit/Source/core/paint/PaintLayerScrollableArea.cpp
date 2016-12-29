@@ -1762,7 +1762,8 @@ bool PaintLayerScrollableArea::computeNeedsCompositedScrolling(
   // with the results.
   return !(layer->size().isEmpty() || layer->hasDescendantWithClipPath() ||
            layer->hasAncestorWithClipPath() ||
-           layer->layoutObject()->style()->hasBorderRadius());
+           layer->layoutObject()->style()->hasBorderRadius() ||
+           layer->layoutObject()->hasClip());
 }
 
 void PaintLayerScrollableArea::addStyleRelatedMainThreadScrollingReasons(

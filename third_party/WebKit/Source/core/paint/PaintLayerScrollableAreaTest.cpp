@@ -462,4 +462,40 @@ TEST_F(PaintLayerScrollableAreaTest, OverlayScrollbarColorThemeUpdated) {
   ASSERT_EQ(ScrollbarOverlayColorTheme::ScrollbarOverlayColorThemeLight,
             blackLayer->getScrollableArea()->getScrollbarOverlayColorTheme());
 }
+
+// Test that css clip applied to the scroller will cause the
+// scrolling contents layer to not be promoted.
+TEST_F(PaintLayerScrollableAreaTest,
+       OnlyAutoClippedScrollingContentsLayerPromoted) {
+  setBodyInnerHTML(
+      "<style>"
+      ".clip { clip: rect(0px,60px,50px,0px); }"
+      "#scroller { position: absolute; overflow: auto;"
+      "height: 100px; width: 100px; background: grey;"
+      "will-change:transform; }"
+      "#scrolled { height: 300px; }"
+      "</style>"
+      "<div id=\"scroller\"><div id=\"scrolled\"></div></div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* scroller = document().getElementById("scroller");
+  PaintLayer* paintLayer =
+      toLayoutBoxModelObject(scroller->layoutObject())->layer();
+  ASSERT_TRUE(paintLayer);
+  EXPECT_TRUE(paintLayer->needsCompositedScrolling());
+
+  // Add clip to scroller.
+  scroller->setAttribute("class", "clip", ASSERT_NO_EXCEPTION);
+  document().view()->updateAllLifecyclePhases();
+  paintLayer = toLayoutBoxModelObject(scroller->layoutObject())->layer();
+  ASSERT_TRUE(paintLayer);
+  EXPECT_FALSE(paintLayer->needsCompositedScrolling());
+
+  // Change the scroller to be auto clipped again.
+  scroller->removeAttribute("class");
+  document().view()->updateAllLifecyclePhases();
+  paintLayer = toLayoutBoxModelObject(scroller->layoutObject())->layer();
+  ASSERT_TRUE(paintLayer);
+  EXPECT_TRUE(paintLayer->needsCompositedScrolling());
+}
 }
