@@ -1904,6 +1904,7 @@ test("image_decode_bench") {
     ":blink_common",
     ":platform",
     "//third_party/WebKit/Source/wtf",
+    "//ui/gfx:test_support",
   ]
 
   configs += [

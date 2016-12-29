@@ -617,9 +617,10 @@ void RenderViewImpl::Initialize(
 
   if (auto overridden_color_profile =
           GetContentClient()->renderer()->GetImageDecodeColorProfile()) {
-    webview()->setDeviceColorProfile(overridden_color_profile->GetData());
+    webview()->setDeviceColorSpace(overridden_color_profile->GetColorSpace());
   } else {
-    webview()->setDeviceColorProfile(params.image_decode_color_space.GetData());
+    webview()->setDeviceColorSpace(
+        params.image_decode_color_space.GetColorSpace());
   }
 
   ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
@@ -2407,11 +2408,10 @@ void RenderViewImpl::SetFocus(bool enable) {
     BrowserPluginManager::Get()->UpdateFocusState();
 }
 
-void RenderViewImpl::RenderWidgetDidSetColorProfile(
-    const std::vector<char>& profile) {
+void RenderViewImpl::RenderWidgetDidSetColorSpace(
+    const gfx::ColorSpace& color_space) {
   if (webview()) {
-    WebVector<char> colorProfile = profile;
-    webview()->setDeviceColorProfile(colorProfile);
+    webview()->setDeviceColorSpace(color_space);
   }
 }
 

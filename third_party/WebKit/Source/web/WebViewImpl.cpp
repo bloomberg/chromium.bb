@@ -3032,8 +3032,8 @@ void WebViewImpl::setZoomFactorForDeviceScaleFactor(
   setZoomLevel(m_zoomLevel);
 }
 
-void WebViewImpl::setDeviceColorProfile(const WebVector<char>& colorProfile) {
-  ColorBehavior::setGlobalTargetColorProfile(colorProfile);
+void WebViewImpl::setDeviceColorSpace(const gfx::ColorSpace& colorSpace) {
+  ColorBehavior::setGlobalTargetColorSpace(colorSpace.ToSkColorSpace());
 }
 
 void WebViewImpl::enableAutoResizeMode(const WebSize& minSize,
