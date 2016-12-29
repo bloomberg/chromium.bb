@@ -7,10 +7,10 @@
 
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -162,8 +162,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   scoped_refptr<SSLContextHelper> ssl_context_helper_;
 
   // Tracks all PP_Instances in this plugin and associated data.
-  base::ScopedPtrHashMap<PP_Instance, std::unique_ptr<InstanceData>>
-      instance_map_;
+  std::unordered_map<PP_Instance, std::unique_ptr<InstanceData>> instance_map_;
 
   scoped_refptr<HostMessageFilter> message_filter_;
 

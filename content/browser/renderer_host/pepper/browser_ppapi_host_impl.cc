@@ -92,22 +92,22 @@ const base::Process& BrowserPpapiHostImpl::GetPluginProcess() const {
 }
 
 bool BrowserPpapiHostImpl::IsValidInstance(PP_Instance instance) const {
-  return instance_map_.contains(instance);
+  return instance_map_.find(instance) != instance_map_.end();
 }
 
 bool BrowserPpapiHostImpl::GetRenderFrameIDsForInstance(
     PP_Instance instance,
     int* render_process_id,
     int* render_frame_id) const {
-  auto* data = instance_map_.get(instance);
-  if (data == nullptr) {
+  auto it = instance_map_.find(instance);
+  if (it == instance_map_.end()) {
     *render_process_id = 0;
     *render_frame_id = 0;
     return false;
   }
 
-  *render_process_id = data->renderer_data.render_process_id;
-  *render_frame_id = data->renderer_data.render_frame_id;
+  *render_process_id = it->second->renderer_data.render_process_id;
+  *render_frame_id = it->second->renderer_data.render_frame_id;
   return true;
 }
 
@@ -124,17 +124,17 @@ const base::FilePath& BrowserPpapiHostImpl::GetProfileDataDirectory() {
 }
 
 GURL BrowserPpapiHostImpl::GetDocumentURLForInstance(PP_Instance instance) {
-  auto* data = instance_map_.get(instance);
-  if (data == nullptr)
+  auto it = instance_map_.find(instance);
+  if (it == instance_map_.end())
     return GURL();
-  return data->renderer_data.document_url;
+  return it->second->renderer_data.document_url;
 }
 
 GURL BrowserPpapiHostImpl::GetPluginURLForInstance(PP_Instance instance) {
-  auto* data = instance_map_.get(instance);
-  if (data == nullptr)
+  auto it = instance_map_.find(instance);
+  if (it == instance_map_.end())
     return GURL();
-  return data->renderer_data.plugin_url;
+  return it->second->renderer_data.plugin_url;
 }
 
 void BrowserPpapiHostImpl::SetOnKeepaliveCallback(
@@ -144,18 +144,18 @@ void BrowserPpapiHostImpl::SetOnKeepaliveCallback(
 
 bool BrowserPpapiHostImpl::IsPotentiallySecurePluginContext(
     PP_Instance instance) {
-  auto* data = instance_map_.get(instance);
-  if (data == nullptr)
+  auto it = instance_map_.find(instance);
+  if (it == instance_map_.end())
     return false;
-  return data->renderer_data.is_potentially_secure_plugin_context;
+  return it->second->renderer_data.is_potentially_secure_plugin_context;
 }
 
 void BrowserPpapiHostImpl::AddInstance(
     PP_Instance instance,
     const PepperRendererInstanceData& renderer_instance_data) {
-  DCHECK(!instance_map_.contains(instance));
-  instance_map_.add(instance,
-                    base::MakeUnique<InstanceData>(renderer_instance_data));
+  DCHECK(instance_map_.find(instance) == instance_map_.end());
+  instance_map_[instance] =
+      base::MakeUnique<InstanceData>(renderer_instance_data);
 }
 
 void BrowserPpapiHostImpl::DeleteInstance(PP_Instance instance) {
@@ -165,30 +165,30 @@ void BrowserPpapiHostImpl::DeleteInstance(PP_Instance instance) {
 
 void BrowserPpapiHostImpl::AddInstanceObserver(PP_Instance instance,
                                                InstanceObserver* observer) {
-  instance_map_.get(instance)->observer_list.AddObserver(observer);
+  instance_map_[instance]->observer_list.AddObserver(observer);
 }
 
 void BrowserPpapiHostImpl::RemoveInstanceObserver(PP_Instance instance,
                                                   InstanceObserver* observer) {
-  auto* data = instance_map_.get(instance);
-  if (data)
-    data->observer_list.RemoveObserver(observer);
+  auto it = instance_map_.find(instance);
+  if (it != instance_map_.end())
+    it->second->observer_list.RemoveObserver(observer);
 }
 
 void BrowserPpapiHostImpl::OnThrottleStateChanged(PP_Instance instance,
                                                   bool is_throttled) {
-  auto* data = instance_map_.get(instance);
-  if (data) {
-    data->is_throttled = is_throttled;
-    for (auto& observer : data->observer_list)
+  auto it = instance_map_.find(instance);
+  if (it != instance_map_.end()) {
+    it->second->is_throttled = is_throttled;
+    for (auto& observer : it->second->observer_list)
       observer.OnThrottleStateChanged(is_throttled);
   }
 }
 
 bool BrowserPpapiHostImpl::IsThrottled(PP_Instance instance) const {
-  auto* data = instance_map_.get(instance);
-  if (data)
-    return data->is_throttled;
+  auto it = instance_map_.find(instance);
+  if (it != instance_map_.end())
+    return it->second->is_throttled;
 
   return false;
 }
