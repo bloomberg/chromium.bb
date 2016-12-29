@@ -4,13 +4,11 @@
 
 #include "ios/chrome/browser/ui/webui/physical_web_ui.h"
 
-#include "base/bind.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/values.h"
 #include "components/grit/components_resources.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
+#include "components/physical_web/webui/physical_web_base_message_handler.h"
 #include "components/physical_web/webui/physical_web_ui_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
@@ -21,9 +19,6 @@
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
 
 namespace {
-
-// Maximum value for the "selected position" histogram.
-const int kSelectedPositionMaxValue = 50;
 
 web::WebUIIOSDataSource* CreatePhysicalWebUIDataSource() {
   web::WebUIIOSDataSource* html_source =
@@ -42,6 +37,33 @@ web::WebUIIOSDataSource* CreatePhysicalWebUIDataSource() {
   return html_source;
 }
 
+// Implements all MessageHandler core functionality.  This is extends the
+// PhysicalWebBaseMessageHandler and implements functions to manipulate an
+// iOS-specific WebUI object.
+class MessageHandlerImpl
+    : public physical_web_ui::PhysicalWebBaseMessageHandler {
+ public:
+  explicit MessageHandlerImpl(web::WebUIIOS* web_ui) : web_ui_(web_ui) {}
+  ~MessageHandlerImpl() override {}
+
+ private:
+  void RegisterMessageCallback(
+      const std::string& message,
+      const physical_web_ui::MessageCallback& callback) override {
+    web_ui_->RegisterMessageCallback(message, callback);
+  }
+  void CallJavaScriptFunction(const std::string& function,
+                              const base::Value& arg) override {
+    web_ui_->CallJavascriptFunction(function, arg);
+  }
+  physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override {
+    return GetApplicationContext()->GetPhysicalWebDataSource();
+  }
+
+  web::WebUIIOS* web_ui_;
+  DISALLOW_COPY_AND_ASSIGN(MessageHandlerImpl);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // PhysicalWebDOMHandler
@@ -54,68 +76,15 @@ class PhysicalWebDOMHandler : public web::WebUIIOSMessageHandler {
   PhysicalWebDOMHandler() {}
   ~PhysicalWebDOMHandler() override {}
 
-  void RegisterMessages() override;
-
-  void HandleRequestNearbyURLs(const base::ListValue* args);
-  void HandlePhysicalWebItemClicked(const base::ListValue* args);
+  void RegisterMessages() override {
+    impl_.reset(new MessageHandlerImpl(web_ui()));
+    impl_->RegisterMessages();
+  }
 
  private:
+  std::unique_ptr<MessageHandlerImpl> impl_;
   DISALLOW_COPY_AND_ASSIGN(PhysicalWebDOMHandler);
 };
-
-void PhysicalWebDOMHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
-      physical_web_ui::kRequestNearbyUrls,
-      base::Bind(&PhysicalWebDOMHandler::HandleRequestNearbyURLs,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      physical_web_ui::kPhysicalWebItemClicked,
-      base::Bind(&PhysicalWebDOMHandler::HandlePhysicalWebItemClicked,
-                 base::Unretained(this)));
-}
-
-void PhysicalWebDOMHandler::HandleRequestNearbyURLs(
-    const base::ListValue* args) {
-  base::DictionaryValue results;
-
-  std::unique_ptr<base::ListValue> metadata =
-      GetApplicationContext()->GetPhysicalWebDataSource()->GetMetadata();
-
-  // Add item indices. When an item is selected, the index of the selected item
-  // is recorded in a UMA histogram.
-  for (size_t i = 0; i < metadata->GetSize(); i++) {
-    base::DictionaryValue* metadata_item = NULL;
-    metadata->GetDictionary(i, &metadata_item);
-    metadata_item->SetInteger(physical_web_ui::kIndex, i);
-  }
-
-  results.Set(physical_web_ui::kMetadata, metadata.release());
-
-  // Pass the list of Physical Web URL metadata to the WebUI. A jstemplate will
-  // create a list view with an item for each URL.
-  web_ui()->CallJavascriptFunction(physical_web_ui::kReturnNearbyUrls, results);
-}
-
-void PhysicalWebDOMHandler::HandlePhysicalWebItemClicked(
-    const base::ListValue* args) {
-  int index;
-  if (!args->GetInteger(0, &index)) {
-    DLOG(ERROR) << "Invalid selection index";
-    return;
-  }
-
-  // Record the index of the selected item. The index must be strictly less than
-  // the maximum enumeration value.
-  if (index > kSelectedPositionMaxValue) {
-    index = kSelectedPositionMaxValue;
-  }
-  UMA_HISTOGRAM_EXACT_LINEAR("PhysicalWeb.WebUI.ListViewUrlPosition", index,
-                             kSelectedPositionMaxValue);
-
-  // Count the number of selections.
-  base::RecordAction(
-      base::UserMetricsAction("PhysicalWeb.WebUI.ListViewUrlSelected"));
-}
 
 }  // namespace
 
