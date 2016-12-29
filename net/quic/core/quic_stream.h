@@ -179,7 +179,6 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // Get peer IP of the lastest packet which connection is dealing/delt with.
   virtual const QuicSocketAddress& PeerAddressOfLatestPacket() const;
 
- protected:
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.
   // If fin is true: if it is immediately passed on to the session,
@@ -189,6 +188,7 @@ class QUIC_EXPORT_PRIVATE QuicStream {
       bool fin,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
+ protected:
   // Sends as many bytes in the first |count| buffers of |iov| to the connection
   // as the connection will consume.
   // If |ack_listener| is provided, then it will be notified once all

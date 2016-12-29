@@ -178,9 +178,8 @@ void QuicSimpleServerSession::SendPushPromise(QuicStreamId original_stream_id,
                                               QuicStreamId promised_stream_id,
                                               SpdyHeaderBlock headers) {
   DVLOG(1) << "stream " << original_stream_id
-           << " send PUSH_PROMISE for promised stream " << promised_stream_id;
-  headers_stream()->WritePushPromise(original_stream_id, promised_stream_id,
-                                     std::move(headers));
+             << " send PUSH_PROMISE for promised stream " << promised_stream_id;
+  WritePushPromise(original_stream_id, promised_stream_id, std::move(headers));
 }
 
 void QuicSimpleServerSession::HandlePromisedPushRequests() {

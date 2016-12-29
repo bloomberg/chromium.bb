@@ -335,8 +335,8 @@ QuicConsumedData QuicSpdyStream::WritevDataInner(
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   if (spdy_session_->headers_stream() != nullptr &&
       spdy_session_->force_hol_blocking()) {
-    return spdy_session_->headers_stream()->WritevStreamData(
-        id(), iov, offset, fin, std::move(ack_listener));
+    return spdy_session_->WritevStreamData(id(), iov, offset, fin,
+                                           std::move(ack_listener));
   }
   return QuicStream::WritevDataInner(iov, offset, fin, std::move(ack_listener));
 }

@@ -2008,8 +2008,6 @@
       'quic/test_tools/quic_flow_controller_peer.h',
       'quic/test_tools/quic_framer_peer.cc',
       'quic/test_tools/quic_framer_peer.h',
-      'quic/test_tools/quic_headers_stream_peer.cc',
-      'quic/test_tools/quic_headers_stream_peer.h',
       'quic/test_tools/quic_multipath_sent_packet_manager_peer.cc',
       'quic/test_tools/quic_multipath_sent_packet_manager_peer.h',
       'quic/test_tools/quic_packet_creator_peer.cc',

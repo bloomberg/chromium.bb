@@ -16,7 +16,6 @@
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
-#include "net/quic/test_tools/quic_headers_stream_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_stream_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -46,14 +45,14 @@ bool FLAGS_spdy_framer_use_new_methods4;
 namespace net {
 namespace test {
 
-class MockHpackDebugVisitor : public QuicHeadersStream::HpackDebugVisitor {
+class MockQuicHpackDebugVisitor : public QuicHpackDebugVisitor {
  public:
-  MockHpackDebugVisitor() : HpackDebugVisitor() {}
+  MockQuicHpackDebugVisitor() : QuicHpackDebugVisitor() {}
 
   MOCK_METHOD1(OnUseEntry, void(QuicTime::Delta elapsed));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockHpackDebugVisitor);
+  DISALLOW_COPY_AND_ASSIGN(MockQuicHpackDebugVisitor);
 };
 
 namespace {
@@ -228,8 +227,8 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
         session_(connection_),
         headers_stream_(QuicSpdySessionPeer::GetHeadersStream(&session_)),
         body_("hello world"),
-        hpack_encoder_visitor_(new StrictMock<MockHpackDebugVisitor>),
-        hpack_decoder_visitor_(new StrictMock<MockHpackDebugVisitor>),
+        hpack_encoder_visitor_(new StrictMock<MockQuicHpackDebugVisitor>),
+        hpack_decoder_visitor_(new StrictMock<MockQuicHpackDebugVisitor>),
         stream_frame_(kHeadersStreamId, /*fin=*/false, /*offset=*/0, ""),
         next_promised_stream_id_(2) {
     headers_[":version"] = "HTTP/1.1";
@@ -327,8 +326,8 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
     EXPECT_CALL(session_,
                 WritevData(headers_stream_, kHeadersStreamId, _, _, false, _))
         .WillOnce(WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
-    headers_stream_->WriteHeaders(stream_id, headers_.Clone(), fin, priority,
-                                  nullptr);
+    QuicSpdySessionPeer::WriteHeadersImpl(
+        &session_, stream_id, headers_.Clone(), fin, priority, nullptr);
 
     // Parse the outgoing data and check that it matches was was written.
     if (is_request) {
@@ -398,8 +397,8 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
   string saved_payloads_;
   std::unique_ptr<SpdyFramer> framer_;
   StrictMock<MockVisitor> visitor_;
-  std::unique_ptr<StrictMock<MockHpackDebugVisitor>> hpack_encoder_visitor_;
-  std::unique_ptr<StrictMock<MockHpackDebugVisitor>> hpack_decoder_visitor_;
+  std::unique_ptr<StrictMock<MockQuicHpackDebugVisitor>> hpack_encoder_visitor_;
+  std::unique_ptr<StrictMock<MockQuicHpackDebugVisitor>> hpack_decoder_visitor_;
   QuicStreamFrame stream_frame_;
   QuicStreamId next_promised_stream_id_;
 };
@@ -446,8 +445,8 @@ TEST_P(QuicHeadersStreamTest, WritePushPromises) {
       EXPECT_CALL(session_,
                   WritevData(headers_stream_, kHeadersStreamId, _, _, false, _))
           .WillOnce(WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
-      headers_stream_->WritePushPromise(stream_id, promised_stream_id,
-                                        headers_.Clone());
+      session_.WritePushPromise(stream_id, promised_stream_id,
+                                headers_.Clone());
 
       // Parse the outgoing data and check that it matches was was written.
       EXPECT_CALL(visitor_,
@@ -462,8 +461,8 @@ TEST_P(QuicHeadersStreamTest, WritePushPromises) {
       CheckHeaders();
       saved_data_.clear();
     } else {
-      EXPECT_QUIC_BUG(headers_stream_->WritePushPromise(
-                          stream_id, promised_stream_id, headers_.Clone()),
+      EXPECT_QUIC_BUG(session_.WritePushPromise(stream_id, promised_stream_id,
+                                                headers_.Clone()),
                       "Client shouldn't send PUSH_PROMISE");
     }
   }
@@ -629,7 +628,7 @@ TEST_P(QuicHeadersStreamTest, NonEmptyHeaderHOLBlockedTime) {
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {
-  headers_stream_->set_max_uncompressed_header_bytes(256 * 1024);
+  QuicSpdySessionPeer::SetMaxUncompressedHeaderBytes(&session_, 256 * 1024);
   // We want to create a frame that is more than the SPDY Framer's max control
   // frame size, which is 16K, but less than the HPACK decoders max decode
   // buffer size, which is 32K.
@@ -758,7 +757,7 @@ TEST_P(QuicHeadersStreamTest, RespectHttp2SettingsFrameSupportedFields) {
   stream_frame_.data_length = frame.size();
   headers_stream_->OnStreamFrame(stream_frame_);
   EXPECT_EQ(kTestHeaderTableSize,
-            QuicHeadersStreamPeer::GetSpdyFramer(headers_stream_)
+            QuicSpdySessionPeer::GetSpdyFramer(&session_)
                 .header_encoder_table_size());
 }
 
@@ -849,13 +848,10 @@ TEST_P(QuicHeadersStreamTest, NoConnectionLevelFlowControl) {
 }
 
 TEST_P(QuicHeadersStreamTest, HpackDecoderDebugVisitor) {
-  if (FLAGS_use_nested_spdy_framer_decoder)
-    return;
-
-  StrictMock<MockHpackDebugVisitor>* hpack_decoder_visitor =
+  StrictMock<MockQuicHpackDebugVisitor>* hpack_decoder_visitor =
       hpack_decoder_visitor_.get();
-  headers_stream_->SetHpackDecoderDebugVisitor(
-      std::move(hpack_decoder_visitor_));
+  QuicSpdySessionPeer::SetHpackDecoderDebugVisitor(
+      &session_, std::move(hpack_decoder_visitor_));
 
   // Create some headers we expect to generate entries in HPACK's
   // dynamic table, in addition to content-length.
@@ -904,10 +900,10 @@ TEST_P(QuicHeadersStreamTest, HpackDecoderDebugVisitor) {
 }
 
 TEST_P(QuicHeadersStreamTest, HpackEncoderDebugVisitor) {
-  StrictMock<MockHpackDebugVisitor>* hpack_encoder_visitor =
+  StrictMock<MockQuicHpackDebugVisitor>* hpack_encoder_visitor =
       hpack_encoder_visitor_.get();
-  headers_stream_->SetHpackEncoderDebugVisitor(
-      std::move(hpack_encoder_visitor_));
+  QuicSpdySessionPeer::SetHpackEncoderDebugVisitor(
+      &session_, std::move(hpack_encoder_visitor_));
 
   if (perspective() == Perspective::IS_SERVER) {
     InSequence seq;
@@ -964,7 +960,7 @@ TEST_P(QuicHeadersStreamTest, WritevStreamData) {
           .WillRepeatedly(WithArgs<2, 5>(Invoke(
               this, &QuicHeadersStreamTest::SaveIovAndNotifyAckListener)));
 
-      QuicConsumedData consumed_data = headers_stream_->WritevStreamData(
+      QuicConsumedData consumed_data = session_.WritevStreamData(
           id, MakeIOVector(data, &iov), offset, fin, ack_listener);
 
       EXPECT_EQ(consumed_data.bytes_consumed, data_len);
@@ -1002,7 +998,7 @@ TEST_P(QuicHeadersStreamTest, WritevStreamDataFinOnly) {
       .WillOnce(WithArgs<2, 5>(
           Invoke(this, &QuicHeadersStreamTest::SaveIovAndNotifyAckListener)));
 
-  QuicConsumedData consumed_data = headers_stream_->WritevStreamData(
+  QuicConsumedData consumed_data = session_.WritevStreamData(
       kClientDataStreamId1, MakeIOVector(data, &iov), 0, true, nullptr);
 
   EXPECT_EQ(consumed_data.bytes_consumed, 0u);
@@ -1034,7 +1030,7 @@ TEST_P(QuicHeadersStreamTest, WritevStreamDataSendBlocked) {
       .WillOnce(
           WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIovShort)));
 
-  QuicConsumedData consumed_data = headers_stream_->WritevStreamData(
+  QuicConsumedData consumed_data = session_.WritevStreamData(
       id, MakeIOVector(data, &iov), offset, fin, nullptr);
 
   // bytes_consumed is max HTTP/2 data frame size minus the HTTP/2
@@ -1044,8 +1040,8 @@ TEST_P(QuicHeadersStreamTest, WritevStreamDataSendBlocked) {
   EXPECT_EQ(consumed_data.fin_consumed, false);
 
   // If session already blocked, then bytes_consumed should be zero.
-  consumed_data = headers_stream_->WritevStreamData(
-      id, MakeIOVector(data, &iov), offset, fin, nullptr);
+  consumed_data = session_.WritevStreamData(id, MakeIOVector(data, &iov),
+                                            offset, fin, nullptr);
 
   EXPECT_EQ(consumed_data.bytes_consumed, 0u);
   EXPECT_EQ(consumed_data.fin_consumed, false);

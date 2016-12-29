@@ -147,7 +147,7 @@ std::unique_ptr<base::Value> NetLogQuicPushPromiseReceivedCallback(
   return std::move(dict);
 }
 
-class HpackEncoderDebugVisitor : public QuicHeadersStream::HpackDebugVisitor {
+class HpackEncoderDebugVisitor : public QuicHpackDebugVisitor {
   void OnUseEntry(QuicTime::Delta elapsed) override {
     UMA_HISTOGRAM_TIMES(
         "Net.QuicHpackEncoder.IndexedEntryAge",
@@ -155,7 +155,7 @@ class HpackEncoderDebugVisitor : public QuicHeadersStream::HpackDebugVisitor {
   }
 };
 
-class HpackDecoderDebugVisitor : public QuicHeadersStream::HpackDebugVisitor {
+class HpackDecoderDebugVisitor : public QuicHpackDebugVisitor {
   void OnUseEntry(QuicTime::Delta elapsed) override {
     UMA_HISTOGRAM_TIMES(
         "Net.QuicHpackDecoder.IndexedEntryAge",
@@ -429,9 +429,9 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
 
 void QuicChromiumClientSession::Initialize() {
   QuicClientSessionBase::Initialize();
-  headers_stream()->SetHpackEncoderDebugVisitor(
+  SetHpackEncoderDebugVisitor(
       base::MakeUnique<HpackEncoderDebugVisitor>());
-  headers_stream()->SetHpackDecoderDebugVisitor(
+  SetHpackDecoderDebugVisitor(
       base::MakeUnique<HpackDecoderDebugVisitor>());
 }
 

@@ -22,7 +22,6 @@
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_flow_controller_peer.h"
-#include "net/quic/test_tools/quic_headers_stream_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/quic/test_tools/quic_spdy_stream_peer.h"
@@ -923,12 +922,12 @@ TEST_P(QuicSessionTestServer,
     EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
     headers["header"] = QuicStrCat("", base::RandUint64(), base::RandUint64(),
                                    base::RandUint64());
-    headers_stream->WriteHeaders(stream_id, headers.Clone(), true, 0, nullptr);
+    session_.WriteHeaders(stream_id, headers.Clone(), true, 0, nullptr);
     stream_id += 2;
   }
   // Write once more to ensure that the headers stream has buffered data. The
   // random headers may have exactly filled the flow control window.
-  headers_stream->WriteHeaders(stream_id, std::move(headers), true, 0, nullptr);
+  session_.WriteHeaders(stream_id, std::move(headers), true, 0, nullptr);
   EXPECT_TRUE(headers_stream->HasBufferedData());
 
   EXPECT_TRUE(headers_stream->flow_controller()->IsBlocked());
@@ -1303,9 +1302,9 @@ TEST_P(QuicSessionTestClient, EnableDHDTThroughConnectionOption) {
   copt.push_back(kDHDT);
   QuicConfigPeer::SetConnectionOptionsToSend(session_.config(), copt);
   session_.OnConfigNegotiated();
-  EXPECT_EQ(QuicHeadersStreamPeer::GetSpdyFramer(session_.headers_stream())
-                .header_encoder_table_size(),
-            0UL);
+  EXPECT_EQ(
+      QuicSpdySessionPeer::GetSpdyFramer(&session_).header_encoder_table_size(),
+      0UL);
 }
 
 TEST_P(QuicSessionTestClient, EnableFHOLThroughConfigOption) {

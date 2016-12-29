@@ -22,6 +22,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_simple_buffer_allocator.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_reference_counted.h"
 #include "net/quic/platform/api/quic_str_cat.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"

@@ -79,6 +79,8 @@ class QuicSimpleServerStreamPeer : public QuicSimpleServerStream {
   }
 };
 
+namespace {
+
 class MockQuicSimpleServerSession : public QuicSimpleServerSession {
  public:
   const size_t kMaxStreamsForTest = 100;
@@ -171,8 +173,6 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
  private:
   DISALLOW_COPY_AND_ASSIGN(MockQuicSimpleServerSession);
 };
-
-namespace {
 
 class QuicSimpleServerStreamTest
     : public ::testing::TestWithParam<QuicVersion> {
@@ -504,12 +504,14 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
       .Times(1)
       .WillOnce(Return(QuicConsumedData(kBody.size(), true)));
   server_initiated_stream->PushResponse(std::move(headers));
-  EXPECT_EQ(kPath, QuicSimpleServerStreamPeer::headers(
-                       server_initiated_stream)[":path"]
-                       .as_string());
-  EXPECT_EQ("GET", QuicSimpleServerStreamPeer::headers(
-                       server_initiated_stream)[":method"]
-                       .as_string());
+  EXPECT_EQ(
+      kPath,
+      QuicSimpleServerStreamPeer::headers(server_initiated_stream)[":path"]
+          .as_string());
+  EXPECT_EQ(
+      "GET",
+      QuicSimpleServerStreamPeer::headers(server_initiated_stream)[":method"]
+          .as_string());
 }
 
 TEST_P(QuicSimpleServerStreamTest, TestSendErrorResponse) {
