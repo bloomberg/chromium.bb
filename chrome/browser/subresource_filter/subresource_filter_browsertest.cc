@@ -488,8 +488,8 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
   tester.ExpectTotalCount(kEvaluationTotalCPUDurationForDocument,
                           time_recorded ? 6 : 0);
 
-  tester.ExpectTotalCount(kEvaluationWallDuration, time_recorded ? 7 : 0);
-  tester.ExpectTotalCount(kEvaluationCPUDuration, time_recorded ? 7 : 0);
+  tester.ExpectTotalCount(kEvaluationWallDuration, time_recorded ? 6 : 0);
+  tester.ExpectTotalCount(kEvaluationCPUDuration, time_recorded ? 6 : 0);
 
   // Activation timing histograms are always recorded.
   tester.ExpectTotalCount(kActivationWallDuration, 6);
