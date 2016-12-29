@@ -239,9 +239,8 @@ bool BluetoothDeviceWin::IsEqual(
       new_service_records;
   for (auto iter = device_state.service_record_states.begin();
        iter != device_state.service_record_states.end(); ++iter) {
-    std::unique_ptr<BluetoothServiceRecordWin> service_record =
-        base::MakeUnique<BluetoothServiceRecordWin>(
-            address_, (*iter)->name, (*iter)->sdp_bytes, (*iter)->gatt_uuid);
+    auto service_record = base::MakeUnique<BluetoothServiceRecordWin>(
+        address_, (*iter)->name, (*iter)->sdp_bytes, (*iter)->gatt_uuid);
     new_services.insert(service_record->uuid());
     new_service_records[service_record->uuid().canonical_value()] =
         std::move(service_record);

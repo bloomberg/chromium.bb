@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_adapter_android.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_android.h"
@@ -241,7 +242,7 @@ void BluetoothRemoteGattCharacteristicAndroid::CreateGattRemoteDescriptor(
   std::string instanceIdString =
       base::android::ConvertJavaStringToUTF8(env, instanceId);
 
-  DCHECK(descriptors_.find(instanceIdString) == descriptors_.end());
+  DCHECK(!base::ContainsKey(descriptors_, instanceIdString));
 
   descriptors_[instanceIdString] = BluetoothRemoteGattDescriptorAndroid::Create(
       instanceIdString, bluetooth_gatt_descriptor_wrapper,

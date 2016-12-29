@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_adapter_android.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_android.h"
@@ -246,7 +247,7 @@ void BluetoothDeviceAndroid::CreateGattRemoteService(
   std::string instance_id_string =
       base::android::ConvertJavaStringToUTF8(env, instance_id);
 
-  if (gatt_services_.find(instance_id_string) != gatt_services_.end())
+  if (base::ContainsKey(gatt_services_, instance_id_string))
     return;
 
   std::unique_ptr<BluetoothRemoteGattServiceAndroid> service =
