@@ -337,7 +337,7 @@ void LevelDBWrapperImpl::CommitChanges() {
 
   // Commit all our changes in a single batch.
   std::vector<leveldb::mojom::BatchedOperationPtr> operations =
-      prepare_to_commit_callback_.Run();
+      prepare_to_commit_callback_.Run(*this);
   if (commit_batch_->clear_all_first) {
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();

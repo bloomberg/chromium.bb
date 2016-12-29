@@ -33,7 +33,8 @@ namespace content {
 class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
  public:
   using PrepareToCommitCallback =
-      base::Callback<std::vector<leveldb::mojom::BatchedOperationPtr>()>;
+      base::Callback<std::vector<leveldb::mojom::BatchedOperationPtr>(
+          const LevelDBWrapperImpl&)>;
 
   // |no_bindings_callback| will be called when this object has no more
   // bindings and all pending modifications have been processed.
@@ -48,6 +49,8 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   ~LevelDBWrapperImpl() override;
 
   void Bind(mojom::LevelDBWrapperRequest request);
+
+  size_t bytes_used() const { return bytes_used_; }
 
   // Commence aggressive flushing. This should be called early during startup,
   // before any localStorage writing. Currently scheduled writes will not be

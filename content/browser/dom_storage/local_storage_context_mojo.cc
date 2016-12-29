@@ -7,8 +7,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/leveldb/public/cpp/util.h"
+#include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/browser/leveldb_wrapper_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "content/public/browser/local_storage_usage_info.h"
 #include "services/file/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -22,15 +25,29 @@ namespace content {
 //   key: "VERSION"
 //   value: "1"
 //
+//   key: "META:" + <url::Origin 'origin'>
+//   value: <LocalStorageOriginMetaData serialized as a string>
+//
 //   key: "_" + <url::Origin> 'origin'> + '\x00' + <script controlled key>
 //   value: <script controlled value>
 
 namespace {
+
 const char kVersionKey[] = "VERSION";
 const char kOriginSeparator = '\x00';
 const char kDataPrefix[] = "_";
+const uint8_t kMetaPrefix[] = {'M', 'E', 'T', 'A', ':'};
 const int64_t kMinSchemaVersion = 1;
 const int64_t kCurrentSchemaVersion = 1;
+
+std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
+  auto serialized_origin = leveldb::StdStringToUint8Vector(origin.Serialize());
+  std::vector<uint8_t> key;
+  key.reserve(arraysize(kMetaPrefix) + serialized_origin.size());
+  key.insert(key.end(), kMetaPrefix, kMetaPrefix + arraysize(kMetaPrefix));
+  key.insert(key.end(), serialized_origin.begin(), serialized_origin.end());
+  return key;
+}
 }
 
 LocalStorageContextMojo::LocalStorageContextMojo(
@@ -45,6 +62,27 @@ LocalStorageContextMojo::~LocalStorageContextMojo() {}
 void LocalStorageContextMojo::OpenLocalStorage(
     const url::Origin& origin,
     mojom::LevelDBWrapperRequest request) {
+  RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::BindLocalStorage,
+                                  weak_ptr_factory_.GetWeakPtr(), origin,
+                                  std::move(request)));
+}
+
+void LocalStorageContextMojo::GetStorageUsage(
+    GetStorageUsageCallback callback) {
+  RunWhenConnected(
+      base::BindOnce(&LocalStorageContextMojo::RetrieveStorageUsage,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void LocalStorageContextMojo::SetDatabaseForTesting(
+    leveldb::mojom::LevelDBDatabasePtr database) {
+  DCHECK_EQ(connection_state_, NO_CONNECTION);
+  connection_state_ = CONNECTION_IN_PROGRESS;
+  database_ = std::move(database);
+  OnDatabaseOpened(leveldb::mojom::DatabaseError::OK);
+}
+
+void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
   // If we don't have a filesystem_connection_, we'll need to establish one.
   if (connection_state_ == NO_CONNECTION) {
     CHECK(connector_);
@@ -77,21 +115,11 @@ void LocalStorageContextMojo::OpenLocalStorage(
 
   if (connection_state_ == CONNECTION_IN_PROGRESS) {
     // Queue this OpenLocalStorage call for when we have a level db pointer.
-    on_database_opened_callbacks_.push_back(base::BindOnce(
-        &LocalStorageContextMojo::BindLocalStorage,
-        weak_ptr_factory_.GetWeakPtr(), origin, std::move(request)));
+    on_database_opened_callbacks_.push_back(std::move(callback));
     return;
   }
 
-  BindLocalStorage(origin, std::move(request));
-}
-
-void LocalStorageContextMojo::SetDatabaseForTesting(
-    leveldb::mojom::LevelDBDatabasePtr database) {
-  DCHECK_EQ(connection_state_, NO_CONNECTION);
-  connection_state_ = CONNECTION_IN_PROGRESS;
-  database_ = std::move(database);
-  OnDatabaseOpened(leveldb::mojom::DatabaseError::OK);
+  std::move(callback).Run();
 }
 
 void LocalStorageContextMojo::OnLevelDBWrapperHasNoBindings(
@@ -101,19 +129,39 @@ void LocalStorageContextMojo::OnLevelDBWrapperHasNoBindings(
 }
 
 std::vector<leveldb::mojom::BatchedOperationPtr>
-LocalStorageContextMojo::OnLevelDBWrapperPrepareToCommit() {
+LocalStorageContextMojo::OnLevelDBWrapperPrepareToCommit(
+    const url::Origin& origin,
+    const LevelDBWrapperImpl& wrapper) {
+  // |wrapper| might not exist in |level_db_wrappers_| anymore at this point, as
+  // it is possible this commit was triggered by destruction.
+
   std::vector<leveldb::mojom::BatchedOperationPtr> operations;
 
   // Write schema version if not already done so before.
   if (!database_initialized_) {
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();
+    item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
     item->key = leveldb::StdStringToUint8Vector(kVersionKey);
     item->value = leveldb::StdStringToUint8Vector(
         base::Int64ToString(kCurrentSchemaVersion));
     operations.push_back(std::move(item));
     database_initialized_ = true;
   }
+
+  leveldb::mojom::BatchedOperationPtr item =
+      leveldb::mojom::BatchedOperation::New();
+  item->key = CreateMetaDataKey(origin);
+  if (wrapper.bytes_used() == 0) {
+    item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
+  } else {
+    item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
+    LocalStorageOriginMetaData data;
+    data.set_last_modified(base::Time::Now().ToInternalValue());
+    data.set_size_bytes(wrapper.bytes_used());
+    item->value = leveldb::StdStringToUint8Vector(data.SerializeAsString());
+  }
+  operations.push_back(std::move(item));
 
   return operations;
 }
@@ -232,11 +280,46 @@ void LocalStorageContextMojo::BindLocalStorage(
         base::Bind(&LocalStorageContextMojo::OnLevelDBWrapperHasNoBindings,
                    base::Unretained(this), origin),
         base::Bind(&LocalStorageContextMojo::OnLevelDBWrapperPrepareToCommit,
-                   base::Unretained(this)));
+                   base::Unretained(this), origin));
     found = level_db_wrappers_.find(origin);
   }
 
   found->second->Bind(std::move(request));
+}
+
+void LocalStorageContextMojo::RetrieveStorageUsage(
+    GetStorageUsageCallback callback) {
+  database_->GetPrefixed(
+      std::vector<uint8_t>(kMetaPrefix, kMetaPrefix + arraysize(kMetaPrefix)),
+      base::Bind(&LocalStorageContextMojo::OnGotMetaData,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+}
+
+void LocalStorageContextMojo::OnGotMetaData(
+    GetStorageUsageCallback callback,
+    leveldb::mojom::DatabaseError status,
+    std::vector<leveldb::mojom::KeyValuePtr> data) {
+  std::vector<LocalStorageUsageInfo> result;
+  for (const auto& row : data) {
+    DCHECK_GT(row->key.size(), arraysize(kMetaPrefix));
+    LocalStorageUsageInfo info;
+    info.origin = GURL(leveldb::Uint8VectorToStdString(row->key).substr(
+        arraysize(kMetaPrefix)));
+    if (!info.origin.is_valid()) {
+      // TODO(mek): Deal with database corruption.
+      continue;
+    }
+
+    LocalStorageOriginMetaData data;
+    if (!data.ParseFromArray(row->value.data(), row->value.size())) {
+      // TODO(mek): Deal with database corruption.
+      continue;
+    }
+    info.data_size = data.size_bytes();
+    info.last_modified = base::Time::FromInternalValue(data.last_modified());
+    result.push_back(std::move(info));
+  }
+  std::move(callback).Run(std::move(result));
 }
 
 }  // namespace content

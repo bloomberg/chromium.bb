@@ -53,7 +53,8 @@ class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
 };
 
 void NoOp() {}
-std::vector<leveldb::mojom::BatchedOperationPtr> PrepareToCommitNoOp() {
+std::vector<leveldb::mojom::BatchedOperationPtr> PrepareToCommitNoOp(
+    const LevelDBWrapperImpl&) {
   return std::vector<leveldb::mojom::BatchedOperationPtr>();
 }
 

@@ -10,6 +10,7 @@
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "components/leveldb/public/cpp/util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/mock_leveldb_database.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -32,6 +33,13 @@ namespace content {
 namespace {
 
 void NoOpSuccess(bool success) {}
+
+void GetStorageUsageCallback(const base::Closure& callback,
+                             std::vector<LocalStorageUsageInfo>* out_result,
+                             std::vector<LocalStorageUsageInfo> result) {
+  *out_result = std::move(result);
+  callback.Run();
+}
 
 void GetCallback(const base::Closure& callback,
                  bool* success_out,
@@ -65,6 +73,15 @@ class LocalStorageContextMojoTest : public testing::Test {
     mock_data_[StdStringToUint8Vector(key)] = StdStringToUint8Vector(value);
   }
 
+  std::vector<LocalStorageUsageInfo> GetStorageUsageSync() {
+    base::RunLoop run_loop;
+    std::vector<LocalStorageUsageInfo> result;
+    context()->GetStorageUsage(base::BindOnce(&GetStorageUsageCallback,
+                                              run_loop.QuitClosure(), &result));
+    run_loop.Run();
+    return result;
+  }
+
  private:
   TestBrowserThreadBundle thread_bundle_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
@@ -88,8 +105,9 @@ TEST_F(LocalStorageContextMojoTest, Basic) {
 
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(2u, mock_data().size());
-  EXPECT_EQ(value, mock_data().rbegin()->second);
+  // Should have three rows of data, one for the version, one for the actual
+  // data and one for metadata.
+  ASSERT_EQ(3u, mock_data().size());
 }
 
 TEST_F(LocalStorageContextMojoTest, OriginsAreIndependent) {
@@ -109,8 +127,7 @@ TEST_F(LocalStorageContextMojoTest, OriginsAreIndependent) {
   wrapper.reset();
 
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(3u, mock_data().size());
-  EXPECT_EQ(value, mock_data().rbegin()->second);
+  ASSERT_EQ(5u, mock_data().size());
 }
 
 TEST_F(LocalStorageContextMojoTest, ValidVersion) {
@@ -154,6 +171,7 @@ TEST_F(LocalStorageContextMojoTest, VersionOnlyWrittenOnCommit) {
   mojom::LevelDBWrapperPtr wrapper;
   context()->OpenLocalStorage(url::Origin(GURL("http://foobar.com")),
                               MakeRequest(&wrapper));
+
   base::RunLoop run_loop;
   bool success = false;
   std::vector<uint8_t> result;
@@ -166,6 +184,120 @@ TEST_F(LocalStorageContextMojoTest, VersionOnlyWrittenOnCommit) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(mock_data().empty());
+}
+
+TEST_F(LocalStorageContextMojoTest, GetStorageUsage_NoData) {
+  std::vector<LocalStorageUsageInfo> info = GetStorageUsageSync();
+  EXPECT_EQ(0u, info.size());
+}
+
+TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
+  url::Origin origin1(GURL("http://foobar.com"));
+  url::Origin origin2(GURL("http://example.com"));
+  auto key1 = StdStringToUint8Vector("key1");
+  auto key2 = StdStringToUint8Vector("key");
+  auto value = StdStringToUint8Vector("value");
+
+  base::Time before_write = base::Time::Now();
+
+  mojom::LevelDBWrapperPtr wrapper;
+  context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
+  wrapper->Put(key1, value, "source", base::Bind(&NoOpSuccess));
+  wrapper->Put(key2, value, "source", base::Bind(&NoOpSuccess));
+  wrapper.reset();
+
+  context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
+  wrapper->Put(key2, value, "source", base::Bind(&NoOpSuccess));
+  wrapper.reset();
+
+  // GetStorageUsage only include committed data, so nothing at this point.
+  std::vector<LocalStorageUsageInfo> info = GetStorageUsageSync();
+  EXPECT_EQ(0u, info.size());
+
+  // Make sure all data gets committed to disk.
+  base::RunLoop().RunUntilIdle();
+
+  base::Time after_write = base::Time::Now();
+
+  info = GetStorageUsageSync();
+  ASSERT_EQ(2u, info.size());
+  if (url::Origin(info[0].origin) == origin2)
+    std::swap(info[0], info[1]);
+
+  EXPECT_EQ(origin1, url::Origin(info[0].origin));
+  EXPECT_EQ(origin2, url::Origin(info[1].origin));
+  EXPECT_LE(before_write, info[0].last_modified);
+  EXPECT_LE(before_write, info[1].last_modified);
+  EXPECT_GE(after_write, info[0].last_modified);
+  EXPECT_GE(after_write, info[1].last_modified);
+  EXPECT_GT(info[0].data_size, info[1].data_size);
+}
+
+TEST_F(LocalStorageContextMojoTest, MetaDataClearedOnDelete) {
+  url::Origin origin1(GURL("http://foobar.com"));
+  url::Origin origin2(GURL("http://example.com"));
+  auto key = StdStringToUint8Vector("key");
+  auto value = StdStringToUint8Vector("value");
+
+  mojom::LevelDBWrapperPtr wrapper;
+  context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
+  wrapper->Put(key, value, "source", base::Bind(&NoOpSuccess));
+  wrapper.reset();
+  context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
+  wrapper->Put(key, value, "source", base::Bind(&NoOpSuccess));
+  wrapper.reset();
+  context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
+  wrapper->Delete(key, "source", base::Bind(&NoOpSuccess));
+  wrapper.reset();
+
+  // Make sure all data gets committed to disk.
+  base::RunLoop().RunUntilIdle();
+
+  // Data from origin2 should exist, including meta-data, but nothing should
+  // exist for origin1.
+  EXPECT_EQ(3u, mock_data().size());
+  for (const auto& it : mock_data()) {
+    if (Uint8VectorToStdString(it.first) == "VERSION")
+      continue;
+    EXPECT_EQ(std::string::npos,
+              Uint8VectorToStdString(it.first).find(origin1.Serialize()));
+    EXPECT_NE(std::string::npos,
+              Uint8VectorToStdString(it.first).find(origin2.Serialize()));
+  }
+}
+
+TEST_F(LocalStorageContextMojoTest, MetaDataClearedOnDeleteAll) {
+  url::Origin origin1(GURL("http://foobar.com"));
+  url::Origin origin2(GURL("http://example.com"));
+  auto key = StdStringToUint8Vector("key");
+  auto value = StdStringToUint8Vector("value");
+
+  mojom::LevelDBWrapperPtr wrapper;
+  context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
+  wrapper->Put(key, value, "source", base::Bind(&NoOpSuccess));
+  wrapper.reset();
+  context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
+  wrapper->Put(key, value, "source", base::Bind(&NoOpSuccess));
+  wrapper.reset();
+
+  context()->OpenLocalStorage(origin1, MakeRequest(&wrapper));
+  wrapper->DeleteAll("source", base::Bind(&NoOpSuccess));
+  wrapper.reset();
+
+  // Make sure all data gets committed to disk.
+  base::RunLoop().RunUntilIdle();
+
+  // Data from origin2 should exist, including meta-data, but nothing should
+  // exist for origin1.
+  EXPECT_EQ(3u, mock_data().size());
+  for (const auto& it : mock_data()) {
+    if (Uint8VectorToStdString(it.first) == "VERSION")
+      continue;
+    EXPECT_EQ(std::string::npos,
+              Uint8VectorToStdString(it.first).find(origin1.Serialize()));
+    EXPECT_NE(std::string::npos,
+              Uint8VectorToStdString(it.first).find(origin2.Serialize()));
+  }
 }
 
 namespace {

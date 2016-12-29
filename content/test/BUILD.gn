@@ -1403,6 +1403,7 @@ test("content_unittests") {
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/cache_storage:cache_storage_proto",
+    "//content/browser/dom_storage:local_storage_proto",
     "//content/browser/notifications:notification_proto",
     "//content/browser/service_worker:service_worker_proto",
     "//content/browser/speech/proto",

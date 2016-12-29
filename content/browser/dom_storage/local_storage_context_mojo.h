@@ -21,24 +21,35 @@ class Connector;
 namespace content {
 
 class LevelDBWrapperImpl;
+struct LocalStorageUsageInfo;
 
 // Used for mojo-based LocalStorage implementation (behind --mojo-local-storage
 // for now).
 class CONTENT_EXPORT LocalStorageContextMojo {
  public:
+  using GetStorageUsageCallback =
+      base::OnceCallback<void(std::vector<LocalStorageUsageInfo>)>;
+
   LocalStorageContextMojo(service_manager::Connector* connector,
                           const base::FilePath& subdirectory);
   ~LocalStorageContextMojo();
 
   void OpenLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest request);
+  void GetStorageUsage(GetStorageUsageCallback callback);
 
   void SetDatabaseForTesting(leveldb::mojom::LevelDBDatabasePtr database);
 
  private:
+  // Runs |callback| immediately if already connected to a database, otherwise
+  // delays running |callback| untill after a connection has been established.
+  // Initiates connecting to the database if no connection is in progres yet.
+  void RunWhenConnected(base::OnceClosure callback);
+
   void OnLevelDBWrapperHasNoBindings(const url::Origin& origin);
   std::vector<leveldb::mojom::BatchedOperationPtr>
-  OnLevelDBWrapperPrepareToCommit();
+  OnLevelDBWrapperPrepareToCommit(const url::Origin& origin,
+                                  const LevelDBWrapperImpl& wrapper);
   void OnUserServiceConnectionComplete();
   void OnUserServiceConnectionError();
 
@@ -52,6 +63,13 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   // directly from that function, or through |on_database_open_callbacks_|.
   void BindLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest request);
+
+  // The (possibly delayed) implementation of GetStorageUsage(). Can be called
+  // directly from that function, or through |on_database_open_callbacks_|.
+  void RetrieveStorageUsage(GetStorageUsageCallback callback);
+  void OnGotMetaData(GetStorageUsageCallback callback,
+                     leveldb::mojom::DatabaseError status,
+                     std::vector<leveldb::mojom::KeyValuePtr> data);
 
   service_manager::Connector* const connector_;
   const base::FilePath subdirectory_;
