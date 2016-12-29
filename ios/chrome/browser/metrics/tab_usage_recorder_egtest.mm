@@ -124,7 +124,12 @@ void OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
   [[EarlGrey selectElementWithMatcher:new_incognito_tab_button_matcher]
       performAction:grey_tap()];
   chrome_test_util::AssertIncognitoTabCount(nb_incognito_tab + 1);
-
+  ConditionBlock condition = ^bool {
+    return chrome_test_util::IsIncognitoMode();
+  };
+  GREYAssert(
+      testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
+      @"Waiting switch to incognito mode.");
   chrome_test_util::EvictOtherTabModelTabs();
 }
 
@@ -183,13 +188,17 @@ void SwitchToNormalMode() {
     [[EarlGrey selectElementWithMatcher:
                    chrome_test_util::buttonWithAccessibilityLabelId(
                        IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB)]
-        performAction:grey_swipeFastInDirection(kGREYDirectionRight)];
+        performAction:grey_swipeSlowInDirection(kGREYDirectionRight)];
     [[EarlGrey selectElementWithMatcher:
                    chrome_test_util::buttonWithAccessibilityLabelId(
                        IDS_IOS_TOOLBAR_SHOW_TABS)] performAction:grey_tap()];
   }
-  GREYAssertFalse(chrome_test_util::IsIncognitoMode(),
-                  @"Switching to normal mode failed.");
+  ConditionBlock condition = ^bool {
+    return !chrome_test_util::IsIncognitoMode();
+  };
+  GREYAssert(
+      testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
+      @"Waiting switch to normal mode.");
 }
 
 // Check that the error page is visible.
