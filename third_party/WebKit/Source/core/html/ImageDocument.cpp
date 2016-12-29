@@ -403,7 +403,7 @@ void ImageDocument::updateImageStyle() {
           scale = viewportWidth / static_cast<double>(calculateDivWidth());
         }
 
-        newCheckerSize = round(std::max(1.0, newCheckerSize / scale));
+        newCheckerSize = std::round(std::max(1.0, newCheckerSize / scale));
       } else {
         // In desktop mode, the user can click on the image to zoom in or out.
         DCHECK_EQ(m_shrinkToFitMode, Desktop);
