@@ -32,13 +32,17 @@ Polymer({
 
   open: function() {
     this.keyHandler_ = this.handleKeyEvent_.bind(this);
-    this.addEventListener('keydown', this.keyHandler_);
+    // We need to attach the event listener to |window|, not |this| so that
+    // changing focus does not prevent key events from occuring.
+    window.addEventListener('keydown', this.keyHandler_);
     this.comitted_ = false;
     this.$.dialog.showModal();
+    // Don't focus 'reset' by default. 'Tab' will focus 'OK'.
+    this.$$('#reset').blur();
   },
 
   close: function() {
-    this.removeEventListener('keydown', this.keyHandler_);
+    window.removeEventListener('keydown', this.keyHandler_);
 
     this.displayId = '';  // Will trigger displayIdChanged_.
 

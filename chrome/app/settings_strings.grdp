@@ -2658,23 +2658,23 @@
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_TEXT" desc="Text explaining that this setting is used to adjust the boundaries of the selected display.">
       Adjust the boundaries of your desktop within the display
     </message>
-    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_TITLE" desc="Name of the settings subpage which adjusts display overscan.">
+    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_TITLE" desc="Title of the settings subpage which adjusts display overscan.">
       Overscan
     </message>
-    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_INSTRUCTIONS" desc="Instructions for changing the overscan calibration.">
-      Use arrow keys to adjust picture size and alignment.
+    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_SUBTITLE" desc="Subtitle for the display overscan settings subpage.">
+      Adjust the boundaries of your display.
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_INSTRUCTIONS" desc="Instructions for changing the display overscan calibration.">
+      Tap the following keys to adjust or move the cropping area.
     </message>
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_RESIZE" desc="Label for resizing overscan calibration.">
-      Shrink/expand
+      Shrink / Expand
     </message>
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_POSITION" desc="Label for positioning overscan calibration.">
       Move
     </message>
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_RESET" desc="Label for resetting overscan calibration.">
       Reset
-    </message>
-    <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_SAVE" desc="Label for saving overscan calibration.">
-      Save
     </message>
     <message name="IDS_SETTINGS_DISPLAY_MIRRORING_ON" desc="Label indicating that the displays are currently mirrored">
       On

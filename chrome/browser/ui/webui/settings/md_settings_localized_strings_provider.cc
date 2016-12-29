@@ -602,12 +602,12 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"displayOrientationStandard", IDS_SETTINGS_DISPLAY_ORIENTATION_STANDARD},
       {"displayOverscanPageText", IDS_SETTINGS_DISPLAY_OVERSCAN_TEXT},
       {"displayOverscanPageTitle", IDS_SETTINGS_DISPLAY_OVERSCAN_TITLE},
+      {"displayOverscanSubtitle", IDS_SETTINGS_DISPLAY_OVERSCAN_SUBTITLE},
       {"displayOverscanInstructions",
        IDS_SETTINGS_DISPLAY_OVERSCAN_INSTRUCTIONS},
       {"displayOverscanResize", IDS_SETTINGS_DISPLAY_OVERSCAN_RESIZE},
       {"displayOverscanPosition", IDS_SETTINGS_DISPLAY_OVERSCAN_POSITION},
       {"displayOverscanReset", IDS_SETTINGS_DISPLAY_OVERSCAN_RESET},
-      {"displayOverscanSave", IDS_SETTINGS_DISPLAY_OVERSCAN_SAVE},
   };
   AddLocalizedStringsBulk(html_source, display_strings,
                           arraysize(display_strings));

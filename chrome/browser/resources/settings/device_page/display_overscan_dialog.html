@@ -10,21 +10,30 @@
 <dom-module id="settings-display-overscan-dialog">
   <template>
     <style include="settings-shared">
-     .label {
-       margin: 10px 0;
+     .subtitle {
+       margin-top: 10px;
      }
+
+     .instructions {
+       color: var(--paper-grey-600);
+       margin-top: 4px;
+     }
+
      .details {
        margin: 40px;
      }
+
      iron-icon {
        --iron-icon-fill-color: white;
        background: black;
-       margin: 2px;
+       margin: 5px;
      }
+
      #move > div {
        color: grey;
        font-size: 150%;
      }
+
      #move > div.shift {
        background: black;
        color: white;
@@ -36,7 +45,8 @@
     <dialog is="cr-dialog" id="dialog" on-close="close">
       <div class="title">$i18n{displayOverscanPageTitle}</div>
       <div class="body">
-        <div class="label self-start" >$i18n{displayOverscanInstructions}</div>
+        <div class="subtitle" >$i18n{displayOverscanSubtitle}</div>
+        <div class="instructions" >$i18n{displayOverscanInstructions}</div>
         <div class="details layout horizontal around-justified self-stretch">
           <div class="layout vertical center">
             <div class="layout horizontal">
@@ -62,11 +72,11 @@
         </div>
       </div>
       <div class="button-container">
-        <paper-button class="secondary-button" on-tap="onResetTap_">
+        <paper-button id="reset" class="secondary-button" on-tap="onResetTap_">
           $i18n{displayOverscanReset}
         </paper-button>
-        <paper-button class="primary-button"  on-tap="onSaveTap_">
-          $i18n{displayOverscanSave}
+        <paper-button class="primary-button" on-tap="onSaveTap_">
+          $i18n{ok}
         </paper-button>
       </div>
     </dialog>
