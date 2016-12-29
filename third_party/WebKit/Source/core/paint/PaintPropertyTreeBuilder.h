@@ -36,8 +36,8 @@ struct PaintPropertyTreeBuilderContext {
     // to immediate children.
     bool shouldFlattenInheritedTransform = false;
     // Rendering context for 3D sorting. See
-    // TransformPaintPropertyNode::renderingContextID.
-    unsigned renderingContextID = 0;
+    // TransformPaintPropertyNode::renderingContextId.
+    unsigned renderingContextId = 0;
     // The clip node describes the accumulated raster clip for the current
     // subtree.  Note that the computed raster region in canvas space for a clip
     // node is independent from the transform and paint offset above. Also the

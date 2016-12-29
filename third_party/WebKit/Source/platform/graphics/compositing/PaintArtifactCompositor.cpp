@@ -765,7 +765,7 @@ int PropertyTreeManager::compositorIdForTransformNode(
   compositorNode.needs_local_transform_update = true;
   compositorNode.flattens_inherited_transform =
       transformNode->flattensInheritedTransform();
-  compositorNode.sorting_context_id = transformNode->renderingContextID();
+  compositorNode.sorting_context_id = transformNode->renderingContextId();
 
   m_rootLayer->AddChild(dummyLayer);
   dummyLayer->SetTransformTreeIndex(id);

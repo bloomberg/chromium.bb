@@ -19,7 +19,7 @@ String TransformPaintPropertyNode::toString() const {
       "renderContextID=%x directCompositingReasons=%s",
       m_parent.get(), m_matrix.toString().ascii().data(),
       m_origin.toString().ascii().data(),
-      m_flattensInheritedTransform ? "yes" : "no", m_renderingContextID,
+      m_flattensInheritedTransform ? "yes" : "no", m_renderingContextId,
       compositingReasonsAsString(m_directCompositingReasons).ascii().data());
 }
 

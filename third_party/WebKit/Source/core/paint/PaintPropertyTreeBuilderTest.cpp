@@ -2061,8 +2061,8 @@ TEST_P(PaintPropertyTreeBuilderTest, Preserve3DCreatesSharedRenderingContext) {
   EXPECT_NE(aProperties->transform(), bProperties->transform());
   EXPECT_TRUE(aProperties->transform()->hasRenderingContext());
   EXPECT_TRUE(bProperties->transform()->hasRenderingContext());
-  EXPECT_EQ(aProperties->transform()->renderingContextID(),
-            bProperties->transform()->renderingContextID());
+  EXPECT_EQ(aProperties->transform()->renderingContextId(),
+            bProperties->transform()->renderingContextId());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 30, 40), a, frameView->layoutView());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 48, 20, 10), b,
                           frameView->layoutView());
@@ -2132,8 +2132,8 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedRenderingContexts) {
   // context rooted at its parent.
   EXPECT_TRUE(aProperties->transform()->hasRenderingContext());
   EXPECT_TRUE(bProperties->transform()->hasRenderingContext());
-  EXPECT_NE(aProperties->transform()->renderingContextID(),
-            bProperties->transform()->renderingContextID());
+  EXPECT_NE(aProperties->transform()->renderingContextId(),
+            bProperties->transform()->renderingContextId());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 50, 60), a, frameView->layoutView());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 10, 20), b, frameView->layoutView());
 }

@@ -309,7 +309,7 @@ class PaintPropertyTreeGraphBuilder {
 
     os << "flattensInheritedTransform="
        << (node.flattensInheritedTransform() ? "true" : "false") << "\\n";
-    os << "renderingContextID=" << node.renderingContextID() << "\\n";
+    os << "renderingContextId=" << node.renderingContextId() << "\\n";
 
     const TransformationMatrix& matrix = node.matrix();
     os << "[" << std::setw(8) << matrix.m11() << "," << std::setw(8)

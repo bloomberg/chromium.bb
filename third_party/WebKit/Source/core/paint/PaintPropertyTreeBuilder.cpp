@@ -116,7 +116,7 @@ void PaintPropertyTreeBuilder::updateProperties(
     // updatePropertiesAndContextForChildren) instead of needing LayoutView-
     // specific property updates here.
     context.current.paintOffset.moveBy(frameView.location());
-    context.current.renderingContextID = 0;
+    context.current.renderingContextId = 0;
     context.current.shouldFlattenInheritedTransform = true;
     context.absolutePosition = context.current;
     context.containerForAbsolutePosition = nullptr;
@@ -194,7 +194,7 @@ void PaintPropertyTreeBuilder::updateProperties(
   if (const auto* scroll = frameView.scroll())
     context.current.scroll = scroll;
   context.current.paintOffset = LayoutPoint();
-  context.current.renderingContextID = 0;
+  context.current.renderingContextId = 0;
   context.current.shouldFlattenInheritedTransform = true;
   context.absolutePosition = context.current;
   context.containerForAbsolutePosition = nullptr;
@@ -244,7 +244,7 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
           TransformationMatrix().translate(roundedPaintOffset.x(),
                                            roundedPaintOffset.y()),
           FloatPoint3D(), context.current.shouldFlattenInheritedTransform,
-          context.current.renderingContextID);
+          context.current.renderingContextId);
     } else {
       if (auto* properties = object.getMutableForPainting().paintProperties())
         context.forceSubtreeUpdate |= properties->clearPaintOffsetTranslation();
@@ -297,7 +297,7 @@ void PaintPropertyTreeBuilder::updateTransformForNonRootSVG(
   if (object.paintProperties() && object.paintProperties()->transform()) {
     context.current.transform = object.paintProperties()->transform();
     context.current.shouldFlattenInheritedTransform = false;
-    context.current.renderingContextID = 0;
+    context.current.renderingContextId = 0;
   }
 }
 
@@ -371,15 +371,15 @@ void PaintPropertyTreeBuilder::updateTransform(
         // is created.
         // If a node with transform-style: preserve-3d does not exist in an
         // existing rendering context, it establishes a new one.
-        unsigned renderingContextID = context.current.renderingContextID;
-        if (style.preserves3D() && !renderingContextID)
-          renderingContextID = PtrHash<const LayoutObject>::hash(&object);
+        unsigned renderingContextId = context.current.renderingContextId;
+        if (style.preserves3D() && !renderingContextId)
+          renderingContextId = PtrHash<const LayoutObject>::hash(&object);
 
         auto& properties =
             object.getMutableForPainting().ensurePaintProperties();
         context.forceSubtreeUpdate |= properties.updateTransform(
             context.current.transform, matrix, transformOrigin(box),
-            context.current.shouldFlattenInheritedTransform, renderingContextID,
+            context.current.shouldFlattenInheritedTransform, renderingContextId,
             compositingReasons);
         hasTransform = true;
       }
@@ -394,11 +394,11 @@ void PaintPropertyTreeBuilder::updateTransform(
   if (properties && properties->transform()) {
     context.current.transform = properties->transform();
     if (object.styleRef().preserves3D()) {
-      context.current.renderingContextID =
-          properties->transform()->renderingContextID();
+      context.current.renderingContextId =
+          properties->transform()->renderingContextId();
       context.current.shouldFlattenInheritedTransform = false;
     } else {
-      context.current.renderingContextID = 0;
+      context.current.renderingContextId = 0;
       context.current.shouldFlattenInheritedTransform = true;
     }
   }
@@ -664,7 +664,7 @@ void PaintPropertyTreeBuilder::updatePerspective(
       context.forceSubtreeUpdate |= properties.updatePerspective(
           context.current.transform, matrix, origin,
           context.current.shouldFlattenInheritedTransform,
-          context.current.renderingContextID);
+          context.current.renderingContextId);
     } else {
       if (auto* properties = object.getMutableForPainting().paintProperties())
         context.forceSubtreeUpdate |= properties->clearPerspective();
@@ -705,7 +705,7 @@ void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(
   if (properties && properties->svgLocalToBorderBoxTransform()) {
     context.current.transform = properties->svgLocalToBorderBoxTransform();
     context.current.shouldFlattenInheritedTransform = false;
-    context.current.renderingContextID = 0;
+    context.current.renderingContextId = 0;
   }
   // The paint offset is included in |transformToBorderBox| so SVG does not need
   // to handle paint offset internally.
@@ -747,7 +747,7 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
         context.forceSubtreeUpdate |= properties.updateScrollTranslation(
             context.current.transform, matrix, FloatPoint3D(),
             context.current.shouldFlattenInheritedTransform,
-            context.current.renderingContextID);
+            context.current.renderingContextId);
 
         IntSize scrollClip = scrollableArea->visibleContentRect().size();
         IntSize scrollBounds = scrollableArea->contentsSize();
@@ -862,8 +862,8 @@ static void overrideContainingBlockContextFromRealContainingBlock(
   context.paintOffset = properties->paintOffset;
   context.shouldFlattenInheritedTransform =
       context.transform && context.transform->flattensInheritedTransform();
-  context.renderingContextID =
-      context.transform ? context.transform->renderingContextID() : 0;
+  context.renderingContextId =
+      context.transform ? context.transform->renderingContextId() : 0;
   context.clip = properties->propertyTreeState.clip();
   context.scroll = properties->propertyTreeState.scroll();
 }
