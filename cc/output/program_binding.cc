@@ -57,7 +57,7 @@ bool ProgramBindingBase::Link(GLES2Interface* context) {
   int linked = 0;
   context->GetProgramiv(program_, GL_LINK_STATUS, &linked);
   if (!linked) {
-    char buffer[1024];
+    char buffer[1024] = "";
     context->GetProgramInfoLog(program_, sizeof(buffer), nullptr, buffer);
     DLOG(ERROR) << "Error compiling shader: " << buffer;
     return false;
@@ -96,7 +96,7 @@ unsigned ProgramBindingBase::LoadShader(GLES2Interface* context,
   int compiled = 0;
   context->GetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
   if (!compiled) {
-    char buffer[1024];
+    char buffer[1024] = "";
     context->GetShaderInfoLog(shader, sizeof(buffer), nullptr, buffer);
     DLOG(ERROR) << "Error compiling shader: " << buffer
                 << "\n shader program: " << shader_source;
