@@ -683,7 +683,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 #if BUILDFLAG(ENABLE_WEBRTC)
       webrtc_eventlog_host_(id_),
 #endif
-      max_worker_count_(0),
       permission_service_context_(new PermissionServiceContext(this)),
       channel_connected_(false),
       sent_render_process_ready_(false),
@@ -1388,8 +1387,6 @@ void RenderProcessHostImpl::IncrementServiceWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_worker_ref_count_disabled_);
   ++service_worker_ref_count_;
-  if (GetWorkerRefCount() > max_worker_count_)
-    max_worker_count_ = GetWorkerRefCount();
 }
 
 void RenderProcessHostImpl::DecrementServiceWorkerRefCount() {
@@ -1405,8 +1402,6 @@ void RenderProcessHostImpl::IncrementSharedWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_worker_ref_count_disabled_);
   ++shared_worker_ref_count_;
-  if (GetWorkerRefCount() > max_worker_count_)
-    max_worker_count_ = GetWorkerRefCount();
 }
 
 void RenderProcessHostImpl::DecrementSharedWorkerRefCount() {
@@ -2142,13 +2137,6 @@ void RenderProcessHostImpl::Cleanup() {
     UMA_HISTOGRAM_LONG_TIMES(
         "SharedWorker.RendererSurviveForWorkerTime",
         base::TimeTicks::Now() - survive_for_worker_start_time_);
-  }
-
-  if (max_worker_count_ > 0) {
-    // Record the max number of workers (SharedWorker or ServiceWorker)
-    // that are simultaneously hosted in this renderer process.
-    UMA_HISTOGRAM_COUNTS("Render.Workers.MaxWorkerCountInRendererProcess",
-                          max_worker_count_);
   }
 
   // We cannot clean up twice; if this fails, there is an issue with our

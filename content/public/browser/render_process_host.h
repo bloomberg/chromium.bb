@@ -313,19 +313,17 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void IncrementServiceWorkerRefCount() = 0;
   virtual void DecrementServiceWorkerRefCount() = 0;
 
-  // Called when the existence of the other renderer process which is connected
-  // to the Worker in this renderer process has changed.
-
-  // The shared worker ref count is nonzero if any other process is connected to
-  // a shared worker in this process, or a new shared worker is being created in
-  // this process. IncrementSharedWorkerRefCount is called in two cases:
+  // The shared worker ref count is non-zero if any other process is connected
+  // to a shared worker in this process, or a new shared worker is being created
+  // in this process.
+  // IncrementSharedWorkerRefCount is called in two cases:
   // - there was no external renderer connected to a shared worker in this
   //   process, and now there is at least one
   // - a new worker is being created in this process.
   // DecrementSharedWorkerRefCount is called in two cases:
   // - there was an external renderer connected to a shared worker in this
   //    process, and now there is none
-  // - a new worker finished being created in this process
+  // - a new worker finished being created in this process.
   virtual void IncrementSharedWorkerRefCount() = 0;
   virtual void DecrementSharedWorkerRefCount() = 0;
 

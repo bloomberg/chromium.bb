@@ -423,7 +423,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<ConnectionFilterController> connection_filter_controller_;
   service_manager::mojom::ServicePtr test_service_;
 
+  // The number of service workers running in this process.
   size_t service_worker_ref_count_;
+  // See comments for IncrementSharedWorkerRefCount() and
+  // DecrementSharedWorkerRefCount(). This is more like a boolean flag and not
+  // actually the number of shared workers running in this process.
   size_t shared_worker_ref_count_;
 
   // Set in ForceReleaseWorkerRefCounts. When true, worker ref counts must no
@@ -552,10 +556,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Records the time when the process starts surviving for workers for UMA.
   base::TimeTicks survive_for_worker_start_time_;
-
-  // Records the maximum # of workers simultaneously hosted in this process
-  // for UMA.
-  size_t max_worker_count_;
 
   // Context shared for each mojom::PermissionService instance created for this
   // RPH.
