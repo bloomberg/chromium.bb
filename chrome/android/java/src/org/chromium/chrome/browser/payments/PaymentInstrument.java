@@ -72,17 +72,17 @@ public abstract class PaymentInstrument extends PaymentOption {
      *
      * The callback will be invoked with the resulting payment details or error.
      *
-     * @param merchantName The name of the merchant.
-     * @param origin       The origin of this merchant.
-     * @param total        The total amount.
-     * @param items        The shopping cart items.
-     * @param methodData   The payment-method specific data for all applicable payment methods,
-     *                     e.g., whether the app should be invoked in test or production, a
-     *                     merchant identifier, or a public key.
-     * @param callback     The object that will receive the instrument details.
+     * @param merchantName  The name of the merchant.
+     * @param origin        The origin of this merchant.
+     * @param total         The total amount.
+     * @param items         The shopping cart items.
+     * @param methodDataMap The payment-method specific data for all applicable payment methods,
+     *                      e.g., whether the app should be invoked in test or production, a
+     *                      merchant identifier, or a public key.
+     * @param callback      The object that will receive the instrument details.
      */
     public abstract void invokePaymentApp(String merchantName, String origin, PaymentItem total,
-            List<PaymentItem> cart, Map<String, PaymentMethodData> methodData,
+            List<PaymentItem> cart, Map<String, PaymentMethodData> methodDataMap,
             InstrumentDetailsCallback callback);
 
     /**

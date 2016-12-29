@@ -39,8 +39,8 @@ public class AutofillPaymentApp implements PaymentApp {
     }
 
     @Override
-    public void getInstruments(Map<String, PaymentMethodData> unusedMethodData, String unusedOrigin,
-            final InstrumentsCallback callback) {
+    public void getInstruments(Map<String, PaymentMethodData> unusedMethodDataMap,
+            String unusedOrigin, final InstrumentsCallback callback) {
         PersonalDataManager pdm = PersonalDataManager.getInstance();
         List<CreditCard> cards = pdm.getCreditCardsToSuggest();
         final List<PaymentInstrument> instruments = new ArrayList<>(cards.size());
@@ -93,9 +93,9 @@ public class AutofillPaymentApp implements PaymentApp {
     }
 
     @Override
-    public boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodsAndData) {
-        assert methodsAndData != null;
-        Set<String> methodNames = new HashSet<>(methodsAndData.keySet());
+    public boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodDataMap) {
+        assert methodDataMap != null;
+        Set<String> methodNames = new HashSet<>(methodDataMap.keySet());
         methodNames.retainAll(getAppMethodNames());
         return !methodNames.isEmpty();
     }

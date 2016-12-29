@@ -77,7 +77,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     @Override
     public void invokePaymentApp(String unusedMerchantName, String unusedOrigin,
             PaymentItem unusedTotal, List<PaymentItem> unusedCart,
-            Map<String, PaymentMethodData> unusedMethodData,
+            Map<String, PaymentMethodData> unusedMethodDataMap,
             InstrumentDetailsCallback callback) {
         // The billing address should never be null for a credit card at this point.
         assert mBillingAddress != null;

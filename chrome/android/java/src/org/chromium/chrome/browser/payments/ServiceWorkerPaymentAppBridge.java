@@ -67,12 +67,13 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      * @param webContents    The web contents that invoked PaymentRequest.
      * @param registrationId The service worker registration ID of the Payment App.
      * @param optionId       The ID of the PaymentOption that was selected by the user.
-     * @param methodData     The PaymentMethodData objects that are relevant for this payment app.
+     * @param methodDataSet  The PaymentMethodData objects that are relevant for this payment
+     * app.
      */
     public static void invokePaymentApp(WebContents webContents, long registrationId,
-            String optionId, Set<PaymentMethodData> methodData) {
+            String optionId, Set<PaymentMethodData> methodDataSet) {
         nativeInvokePaymentApp(webContents, registrationId, optionId,
-                methodData.toArray(new PaymentMethodData[0]));
+                methodDataSet.toArray(new PaymentMethodData[methodDataSet.size()]));
     }
 
     @CalledByNative
