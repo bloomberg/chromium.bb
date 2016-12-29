@@ -18,7 +18,6 @@ class ToolbarModelImplIOS : public ToolbarModelIOS {
   ~ToolbarModelImplIOS() override;
 
   // ToolbarModelIOS implementation:
-  ToolbarModel* GetToolbarModel() override;
   bool IsLoading() override;
   CGFloat GetLoadProgressFraction() override;
   bool CanGoBack() override;
@@ -27,6 +26,17 @@ class ToolbarModelImplIOS : public ToolbarModelIOS {
   bool IsCurrentTabBookmarked() override;
   bool IsCurrentTabBookmarkedByUser() override;
   bool ShouldDisplayHintText() override;
+
+ private:
+  // ToolbarModel:
+  base::string16 GetFormattedURL(size_t* prefix_end) const override;
+  GURL GetURL() const override;
+  security_state::SecurityLevel GetSecurityLevel(
+      bool ignore_editing) const override;
+  gfx::VectorIconId GetVectorIcon() const override;
+  base::string16 GetSecureVerboseText() const override;
+  base::string16 GetEVCertName() const override;
+  bool ShouldDisplayURL() const override;
 
  private:
   ToolbarModelDelegateIOS* delegate_;

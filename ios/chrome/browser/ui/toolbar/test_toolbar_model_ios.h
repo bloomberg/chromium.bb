@@ -18,8 +18,10 @@ class TestToolbarModelIOS : public ToolbarModelIOS {
   TestToolbarModelIOS();
   ~TestToolbarModelIOS() override;
 
+  // Getter to the TestToolbarModel to set its values in tests.
+  TestToolbarModel* GetToolbarModel();
+
   // ToolbarModelIOS implementation:
-  ToolbarModel* GetToolbarModel() override;
   bool IsLoading() override;
   CGFloat GetLoadProgressFraction() override;
   bool CanGoBack() override;
@@ -28,6 +30,15 @@ class TestToolbarModelIOS : public ToolbarModelIOS {
   bool IsCurrentTabBookmarked() override;
   bool IsCurrentTabBookmarkedByUser() override;
   bool ShouldDisplayHintText() override;
+
+  base::string16 GetFormattedURL(size_t* prefix_end) const override;
+  GURL GetURL() const override;
+  security_state::SecurityLevel GetSecurityLevel(
+      bool ignore_editing) const override;
+  gfx::VectorIconId GetVectorIcon() const override;
+  base::string16 GetSecureVerboseText() const override;
+  base::string16 GetEVCertName() const override;
+  bool ShouldDisplayURL() const override;
 
   void set_is_loading(bool is_loading) { is_loading_ = is_loading; }
   void set_load_progress_fraction(CGFloat load_progress_fraction) {

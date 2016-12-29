@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -14,13 +15,16 @@
 #include "components/toolbar/test_toolbar_model.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_impl_ios.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#include "ios/web/public/test/test_web_state.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/test/test_navigation_manager.h"
+#import "ios/web/public/test/test_web_state.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest_mac.h"
@@ -215,6 +219,60 @@ TEST_F(ToolbarModelImplIOSTest, TestIsCurrentTabBookmarked) {
   // not bookmarked.
   bookmark_model->Remove(node);
   EXPECT_FALSE(toolbarModel_->IsCurrentTabBookmarked());
+}
+
+TEST_F(ToolbarModelImplIOSTest, TestGetFormattedURL) {
+  ToolbarModelImplIOSTestWebState web_state(chrome_browser_state_.get());
+  IOSSecurityStateTabHelper::CreateForWebState(&web_state);
+  auto test_navigation_manager = base::MakeUnique<web::TestNavigationManager>();
+  auto visible_item = web::NavigationItem::Create();
+  test_navigation_manager->SetVisibleItem(visible_item.get());
+  web_state.SetNavigationManager(std::move(test_navigation_manager));
+  id tabMock = [[TMITestTabMock alloc]
+      initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]];
+  OCMockObject* tabModelMock = static_cast<OCMockObject*>(tabModel_.get());
+  [[[tabModelMock stub] andReturn:tabMock] currentTab];
+  [static_cast<TMITestTabMock*>(tabMock) setWebState:&web_state];
+
+  size_t length = 0;
+  const char no_scheme_url[] = "www.chromium.org";
+  const char http_url[] = "http://www.chromium.org";
+  const char https_url[] = "https://www.chromium.org";
+  const char chrome_url[] = "chrome://www.chromium.org";
+  const char offline_url[] = "chrome://offline/testid/page.html";
+  // Test that only http:// scheme is stripped out for online URL.
+  visible_item->SetURL(GURL(http_url));
+  EXPECT_EQ(toolbarModel_->GetFormattedURL(&length),
+            base::UTF8ToUTF16(no_scheme_url));
+  EXPECT_EQ(length, 0u);
+
+  visible_item->SetURL(GURL(https_url));
+  EXPECT_EQ(toolbarModel_->GetFormattedURL(&length),
+            base::UTF8ToUTF16(https_url));
+  EXPECT_EQ(length, 8u);
+
+  visible_item->SetURL(GURL(chrome_url));
+  EXPECT_EQ(toolbarModel_->GetFormattedURL(&length),
+            base::UTF8ToUTF16(chrome_url));
+  EXPECT_EQ(length, 9u);
+
+  // Test that only http:// and https:// scheme are stripped out for offline
+  // URL.
+  visible_item->SetURL(GURL(offline_url));
+  visible_item->SetVirtualURL(GURL(http_url));
+  EXPECT_EQ(toolbarModel_->GetFormattedURL(&length),
+            base::UTF8ToUTF16(no_scheme_url));
+  EXPECT_EQ(length, 0u);
+
+  visible_item->SetVirtualURL(GURL(https_url));
+  EXPECT_EQ(toolbarModel_->GetFormattedURL(&length),
+            base::UTF8ToUTF16(no_scheme_url));
+  EXPECT_EQ(length, 0u);
+
+  visible_item->SetVirtualURL(GURL(chrome_url));
+  EXPECT_EQ(toolbarModel_->GetFormattedURL(&length),
+            base::UTF8ToUTF16(chrome_url));
+  EXPECT_EQ(length, 9u);
 }
 
 }  // namespace

@@ -21,8 +21,11 @@ WebState* TestNavigationManager::GetWebState() const {
 }
 
 NavigationItem* TestNavigationManager::GetVisibleItem() const {
-  NOTREACHED();
-  return nullptr;
+  return visible_item_;
+}
+
+void TestNavigationManager::SetVisibleItem(NavigationItem* item) {
+  visible_item_ = item;
 }
 
 NavigationItem* TestNavigationManager::GetLastCommittedItem() const {

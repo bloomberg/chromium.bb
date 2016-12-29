@@ -1318,8 +1318,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 - (ToolbarModel*)toolbarModel {
-  ToolbarModelIOS* toolbarModelIOS = [self.delegate toolbarModelIOS];
-  return toolbarModelIOS ? toolbarModelIOS->GetToolbarModel() : nullptr;
+  return [self.delegate toolbarModelIOS];
 }
 
 #pragma mark -

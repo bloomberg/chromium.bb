@@ -43,10 +43,12 @@ class TestNavigationManager : public web::NavigationManager {
   // Setters for test data.
   void SetLastCommittedItem(NavigationItem* item);
   void SetPendingItem(NavigationItem* item);
+  void SetVisibleItem(NavigationItem* item);
 
  private:
   NavigationItem* pending_item_;
   NavigationItem* last_committed_item_;
+  NavigationItem* visible_item_;
 };
 
 }  // namespace web

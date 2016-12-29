@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/strings/string16.h"
 #include "url/gurl.h"
 
 namespace reading_list {
@@ -29,6 +30,13 @@ GURL FileURLForDistilledURL(const GURL& distilled_url,
 
 // Returns whether the URL points to a chrome offline URL.
 bool IsOfflineURL(const GURL& url);
+
+// Strips scheme from the original URL of the offline page. This is meant to be
+// used by UI.
+// If |removed_chars| is non-NULL, it is set to the number of chars that have
+// been removed at the begining of |online_url|.
+base::string16 StripSchemeFromOnlineURL(const base::string16& online_url,
+                                        size_t* removed_chars);
 
 }  // namespace reading_list
 
