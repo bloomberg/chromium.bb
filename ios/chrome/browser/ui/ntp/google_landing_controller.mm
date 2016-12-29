@@ -1674,8 +1674,14 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   _most_visited_sites->AddOrRemoveBlacklistedUrl(url, false);
 }
 
+#pragma mark - GoogleLandingController (ExposedForTesting) methods.
+
 - (BOOL)scrolledToTop {
   return _scrolledToTop;
+}
+
+- (BOOL)animateHeader {
+  return _animateHeader;
 }
 
 #pragma mark - OverscrollActionsControllerDelegate

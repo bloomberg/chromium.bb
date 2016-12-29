@@ -28,6 +28,7 @@
 
 @interface GoogleLandingController (ExposedForTesting)
 - (BOOL)scrolledToTop;
+- (BOOL)animateHeader;
 @end
 
 namespace {
@@ -86,6 +87,11 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
       chrome_test_util::GetCurrentNewTabPageController();
   GoogleLandingController* google_landing_controller =
       [ntp_controller googleLandingController];
+  [[GREYCondition
+      conditionWithName:@"Wait for end of animation."
+                  block:^BOOL {
+                    return ![google_landing_controller animateHeader];
+                  }] waitWithTimeout:testing::kWaitForUIElementTimeout];
   GREYAssertTrue([google_landing_controller scrolledToTop] == scrolledToTop,
                  @"scrolledToTop_ does not match expected value");
 }
