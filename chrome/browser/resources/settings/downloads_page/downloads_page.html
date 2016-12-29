@@ -10,7 +10,9 @@
     <div class="settings-box first two-line">
       <div class="start">
         <div>$i18n{downloadLocation}</div>
-        <div class="secondary">[[prefs.download.default_directory.value]]</div>
+        <div class="secondary">
+          [[getDownloadLocation_(prefs.download.default_directory.value)]]
+        </div>
       </div>
       <div class="secondary-action">
         <controlled-button class="secondary-button" id="changeDownloadsPath"
