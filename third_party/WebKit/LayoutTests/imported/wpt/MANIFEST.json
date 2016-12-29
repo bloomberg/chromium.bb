@@ -5593,6 +5593,12 @@
             "url": "/clear-site-data/navigation.html"
           }
         ],
+        "css-values/unset-value-storage.html": [
+          {
+            "path": "css-values/unset-value-storage.html",
+            "url": "/css-values/unset-value-storage.html"
+          }
+        ],
         "custom-elements/CustomElementRegistry.html": [
           {
             "path": "custom-elements/CustomElementRegistry.html",
@@ -12418,6 +12424,12 @@
           {
             "path": "html/semantics/forms/the-select-element/select-remove.html",
             "url": "/html/semantics/forms/the-select-element/select-remove.html"
+          }
+        ],
+        "html/semantics/forms/the-select-element/select-value.html": [
+          {
+            "path": "html/semantics/forms/the-select-element/select-value.html",
+            "url": "/html/semantics/forms/the-select-element/select-value.html"
           }
         ],
         "html/semantics/forms/the-select-element/selected-index.html": [
