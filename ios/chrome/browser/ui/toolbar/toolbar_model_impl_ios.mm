@@ -84,6 +84,11 @@ bool ToolbarModelImplIOS::ShouldDisplayHintText() {
 base::string16 ToolbarModelImplIOS::GetFormattedURL(size_t* prefix_end) const {
   base::string16 formatted_url = toolbar_model_->GetFormattedURL(prefix_end);
   Tab* current_tab = delegate_->GetCurrentTab();
+  if (!current_tab || !current_tab.webState ||
+      !current_tab.webState->GetNavigationManager() ||
+      !current_tab.webState->GetNavigationManager()->GetVisibleItem()) {
+    return formatted_url;
+  }
   GURL url =
       current_tab.webState->GetNavigationManager()->GetVisibleItem()->GetURL();
   if (reading_list::IsOfflineURL(url) &&
