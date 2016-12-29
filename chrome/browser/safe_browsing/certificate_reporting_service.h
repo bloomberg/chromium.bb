@@ -104,7 +104,7 @@ class CertificateReportingService : public KeyedService {
     Reporter(
         std::unique_ptr<certificate_reporting::ErrorReporter> error_reporter_,
         std::unique_ptr<BoundedReportList> retry_list,
-        base::Clock* clock,
+        base::Clock* const clock,
         base::TimeDelta report_ttl,
         bool retries_enabled);
     ~Reporter();
@@ -129,7 +129,7 @@ class CertificateReportingService : public KeyedService {
 
     std::unique_ptr<certificate_reporting::ErrorReporter> error_reporter_;
     std::unique_ptr<BoundedReportList> retry_list_;
-    base::Clock* clock_;
+    base::Clock* const clock_;
     // Maximum age of a queued report. Reports older than this are discarded in
     // the next SendPending() call.
     const base::TimeDelta report_ttl_;
@@ -176,14 +176,12 @@ class CertificateReportingService : public KeyedService {
   static GURL GetReportingURLForTesting();
 
  private:
-  void Reset();
-
   void InitializeOnIOThread(
       bool enabled,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       size_t max_queued_report_count,
       base::TimeDelta max_report_age,
-      base::Clock* clock,
+      base::Clock* const clock,
       uint8_t* server_public_key,
       uint32_t server_public_key_version);
 
@@ -196,18 +194,13 @@ class CertificateReportingService : public KeyedService {
                        net::URLRequestContext* url_request_context,
                        size_t max_queued_report_count,
                        base::TimeDelta max_report_age,
-                       base::Clock* clock,
+                       base::Clock* const clock,
                        uint8_t* server_public_key,
                        uint32_t server_public_key_version);
 
   void OnPreferenceChanged();
 
   const PrefService& pref_service_;
-
-  // If true, reporting is enabled. When SafeBrowsing preferences change, this
-  // might be set to false.
-  bool enabled_;
-
   net::URLRequestContext* url_request_context_;
   std::unique_ptr<Reporter> reporter_;
 
@@ -224,14 +217,14 @@ class CertificateReportingService : public KeyedService {
       safe_browsing_state_subscription_;
 
   // Maximum number of reports to be queued for retry.
-  size_t max_queued_report_count_;
+  const size_t max_queued_report_count_;
 
   // Maximum age of the reports to be queued for retry, from the time the
   // certificate error was first encountered by the user. Any report older than
   // this age is ignored and is not re-uploaded.
-  base::TimeDelta max_report_age_;
+  const base::TimeDelta max_report_age_;
 
-  base::Clock* clock_;
+  base::Clock* const clock_;
 
   // Encryption parameters.
   uint8_t* server_public_key_;
