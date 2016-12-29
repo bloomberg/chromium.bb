@@ -107,6 +107,8 @@ using printing::PrintViewManager;
 
 namespace {
 
+// This enum is used to back an UMA histogram, and should therefore be treated
+// as append only.
 enum UserActionBuckets {
   PRINT_TO_PRINTER,
   PRINT_TO_PDF,
@@ -122,6 +124,8 @@ enum UserActionBuckets {
   USERACTION_BUCKET_BOUNDARY
 };
 
+// This enum is used to back an UMA histogram, and should therefore be treated
+// as append only.
 enum PrintSettingsBuckets {
   LANDSCAPE = 0,
   PORTRAIT,
@@ -146,6 +150,14 @@ enum PrintSettingsBuckets {
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
+// This enum is used to back an UMA histogram, and should therefore be treated
+// as append only.
+enum PrintDocumentTypeBuckets {
+  HTML_DOCUMENT = 0,
+  PDF_DOCUMENT,
+  PRINT_DOCUMENT_TYPE_BUCKET_BOUNDARY
+};
+
 void ReportUserActionHistogram(enum UserActionBuckets event) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.UserAction", event,
                             USERACTION_BUCKET_BOUNDARY);
@@ -154,6 +166,11 @@ void ReportUserActionHistogram(enum UserActionBuckets event) {
 void ReportPrintSettingHistogram(enum PrintSettingsBuckets setting) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.PrintSettings", setting,
                             PRINT_SETTINGS_BUCKET_BOUNDARY);
+}
+
+void ReportPrintDocumentTypeHistogram(enum PrintDocumentTypeBuckets doctype) {
+  UMA_HISTOGRAM_ENUMERATION("PrintPreview.PrintDocumentType", doctype,
+                            PRINT_DOCUMENT_TYPE_BUCKET_BOUNDARY);
 }
 
 // Name of a dictionary field holding cloud print related data;
@@ -810,6 +827,10 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     return;
 
   ReportPrintSettingsStats(*settings);
+
+  // Report whether the user printed a PDF or an HTML document.
+  ReportPrintDocumentTypeHistogram(print_preview_ui()->source_is_modifiable() ?
+                                   HTML_DOCUMENT : PDF_DOCUMENT);
 
   // Never try to add headers/footers here. It's already in the generated PDF.
   settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
