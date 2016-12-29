@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class DevToolsUITest : public testing::Test {
+class DevToolsUIBindingsTest : public testing::Test {
 };
 
-TEST_F(DevToolsUITest, SanitizeFrontendURL) {
+TEST_F(DevToolsUIBindingsTest, SanitizeFrontendURL) {
   std::vector<std::pair<std::string, std::string>> tests = {
     {"random-string",
      "chrome-devtools://devtools/"},
@@ -96,7 +96,7 @@ TEST_F(DevToolsUITest, SanitizeFrontendURL) {
 
   for (const auto& pair : tests) {
     GURL url = GURL(pair.first);
-    url = DevToolsUI::SanitizeFrontendURL(url);
+    url = DevToolsUIBindings::SanitizeFrontendURL(url);
     EXPECT_EQ(pair.second, url.spec());
   }
 }
