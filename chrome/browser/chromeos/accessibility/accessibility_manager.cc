@@ -79,6 +79,7 @@
 #include "extensions/common/host_id.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "media/audio/sounds/sounds_manager.h"
+#include "media/base/media_switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1343,6 +1344,12 @@ void AccessibilityManager::PostLoadChromeVox() {
     chromevox_panel_ = new ChromeVoxPanel(profile_);
     chromevox_panel_widget_observer_.reset(
         new ChromeVoxPanelWidgetObserver(chromevox_panel_->GetWidget(), this));
+  }
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDefaultMediaSession)) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableDefaultMediaSession);
   }
 }
 
