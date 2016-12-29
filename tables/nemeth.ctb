@@ -232,9 +232,13 @@ pass2 $d[]@1456 @456
 pass2 @456-1456!$s3-8[]@3456 @456
 # Put number sign on numbers after spaces
 pass2 @a[]$d @3456
+pass2 [@a-0]$d @a-3456
+pass2 @a-36[]$d @3456
+pass2 [@a-0-36]$d @a-36-3456
 pass2 @0[]$d @3456
 pass2 @1b-12[]$d @3456
 pass2 @a-0 @a
+pass2 @0-a @a
 # fix anomaly with superscripts
 pass2 @45-0-5 @45
 pass2 @45-5 @45
