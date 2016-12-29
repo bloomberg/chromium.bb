@@ -22,7 +22,7 @@ namespace views {
 
 namespace {
 
-class TestDialog : public DialogDelegateView, public ButtonListener {
+class TestDialog : public DialogDelegateView {
  public:
   TestDialog()
       : input_(new views::Textfield()),
@@ -30,7 +30,6 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
         accepted_(false),
         closed_(false),
         closeable_(false),
-        last_pressed_button_(nullptr),
         should_handle_escape_(false) {
     AddChildView(input_);
   }
@@ -72,23 +71,13 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
   View* GetInitiallyFocusedView() override { return input_; }
   bool ShouldUseCustomFrame() const override { return true; }
 
-  // ButtonListener override:
-  void ButtonPressed(Button* sender, const ui::Event& event) override {
-    last_pressed_button_ = sender;
-  }
-
-  Button* last_pressed_button() const { return last_pressed_button_; }
-
   void CheckAndResetStates(bool canceled,
                            bool accepted,
-                           bool closed,
-                           Button* last_pressed) {
+                           bool closed) {
     EXPECT_EQ(canceled, canceled_);
     canceled_ = false;
     EXPECT_EQ(accepted, accepted_);
     accepted_ = false;
-    EXPECT_EQ(last_pressed, last_pressed_button_);
-    last_pressed_button_ = nullptr;
     EXPECT_EQ(closed, closed_);
     closed_ = false;
   }
@@ -112,7 +101,6 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
   bool closed_;
   // Prevent the dialog from closing, for repeated ok and cancel button clicks.
   bool closeable_;
-  Button* last_pressed_button_;
   base::string16 title_;
   bool should_handle_escape_;
 
@@ -162,28 +150,28 @@ TEST_F(DialogTest, AcceptAndCancel) {
   const ui::KeyEvent return_event(
       ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
   SimulateKeyEvent(return_event);
-  dialog()->CheckAndResetStates(false, true, false, nullptr);
+  dialog()->CheckAndResetStates(false, true, false);
   const ui::KeyEvent escape_event(
       ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
   SimulateKeyEvent(escape_event);
-  dialog()->CheckAndResetStates(false, false, true, nullptr);
+  dialog()->CheckAndResetStates(false, false, true);
 
   // Check ok and cancel button behavior on a directed return key events.
   ok_button->OnKeyPressed(return_event);
-  dialog()->CheckAndResetStates(false, true, false, nullptr);
+  dialog()->CheckAndResetStates(false, true, false);
   cancel_button->OnKeyPressed(return_event);
-  dialog()->CheckAndResetStates(true, false, false, nullptr);
+  dialog()->CheckAndResetStates(true, false, false);
 
   // Check that return accelerators cancel dialogs if cancel is focused.
   cancel_button->RequestFocus();
   EXPECT_EQ(cancel_button, dialog()->GetFocusManager()->GetFocusedView());
   SimulateKeyEvent(return_event);
-  dialog()->CheckAndResetStates(true, false, false, nullptr);
+  dialog()->CheckAndResetStates(true, false, false);
 
   // Check that escape can be overridden.
   dialog()->set_should_handle_escape(true);
   SimulateKeyEvent(escape_event);
-  dialog()->CheckAndResetStates(false, false, false, nullptr);
+  dialog()->CheckAndResetStates(false, false, false);
 }
 
 TEST_F(DialogTest, RemoveDefaultButton) {
