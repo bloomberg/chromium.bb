@@ -427,8 +427,10 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void absoluteRects(Vector<IntRect>&,
                      const LayoutPoint& accumulatedOffset) const override;
-  void absoluteQuads(Vector<FloatQuad>&) const override;
-  void absoluteQuadsForSelf(Vector<FloatQuad>& quads) const override;
+  void absoluteQuads(Vector<FloatQuad>&,
+                     MapCoordinatesFlags mode = 0) const override;
+  void absoluteQuadsForSelf(Vector<FloatQuad>& quads,
+                            MapCoordinatesFlags mode = 0) const override;
   LayoutObject* hoverAncestor() const final;
 
   LayoutUnit logicalRightOffsetForLine(

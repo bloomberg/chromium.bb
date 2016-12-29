@@ -83,8 +83,9 @@ void LayoutSVGModelObject::absoluteRects(
   rects.append(rect);
 }
 
-void LayoutSVGModelObject::absoluteQuads(Vector<FloatQuad>& quads) const {
-  quads.append(localToAbsoluteQuad(strokeBoundingBox()));
+void LayoutSVGModelObject::absoluteQuads(Vector<FloatQuad>& quads,
+                                         MapCoordinatesFlags mode) const {
+  quads.append(localToAbsoluteQuad(strokeBoundingBox(), mode));
 }
 
 FloatRect LayoutSVGModelObject::localBoundingBoxRectForAccessibility() const {

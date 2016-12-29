@@ -52,7 +52,8 @@ class LayoutSVGHiddenContainer : public LayoutSVGContainer {
   FloatRect visualRectInLocalSVGCoordinates() const final {
     return FloatRect();
   }
-  void absoluteQuads(Vector<FloatQuad>&) const final {}
+  void absoluteQuads(Vector<FloatQuad>&,
+                     MapCoordinatesFlags mode = 0) const final {}
 
   bool nodeAtFloatPoint(HitTestResult&,
                         const FloatPoint& pointInParent,

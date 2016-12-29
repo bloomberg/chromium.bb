@@ -429,7 +429,8 @@ static IntRect ellipsisRectForBox(InlineTextBox* box,
 
 void LayoutText::quads(Vector<FloatQuad>& quads,
                        ClippingOption option,
-                       LocalOrAbsoluteOption localOrAbsolute) const {
+                       LocalOrAbsoluteOption localOrAbsolute,
+                       MapCoordinatesFlags mode) const {
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
     FloatRect boundaries(box->frameRect());
 
@@ -446,14 +447,15 @@ void LayoutText::quads(Vector<FloatQuad>& quads,
         boundaries.setHeight(ellipsisRect.maxY() - boundaries.y());
     }
     if (localOrAbsolute == AbsoluteQuads)
-      quads.append(localToAbsoluteQuad(boundaries));
+      quads.append(localToAbsoluteQuad(boundaries, mode));
     else
       quads.append(boundaries);
   }
 }
 
-void LayoutText::absoluteQuads(Vector<FloatQuad>& quads) const {
-  this->quads(quads, NoClipping, AbsoluteQuads);
+void LayoutText::absoluteQuads(Vector<FloatQuad>& quads,
+                               MapCoordinatesFlags mode) const {
+  this->quads(quads, NoClipping, AbsoluteQuads, mode);
 }
 
 void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads,

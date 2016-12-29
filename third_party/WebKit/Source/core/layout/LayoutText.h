@@ -102,7 +102,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                              unsigned endOffset = INT_MAX,
                              bool useSelectionHeight = false);
 
-  void absoluteQuads(Vector<FloatQuad>&) const final;
+  void absoluteQuads(Vector<FloatQuad>&,
+                     MapCoordinatesFlags mode = 0) const final;
   void absoluteQuadsForRange(Vector<FloatQuad>&,
                              unsigned startOffset = 0,
                              unsigned endOffset = INT_MAX,
@@ -113,7 +114,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   enum LocalOrAbsoluteOption { LocalQuads, AbsoluteQuads };
   void quads(Vector<FloatQuad>&,
              ClippingOption = NoClipping,
-             LocalOrAbsoluteOption = AbsoluteQuads) const;
+             LocalOrAbsoluteOption = AbsoluteQuads,
+             MapCoordinatesFlags mode = 0) const;
 
   PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 

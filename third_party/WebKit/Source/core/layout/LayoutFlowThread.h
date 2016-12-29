@@ -92,7 +92,8 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
       const ComputedStyle& oldStyle) {}
 
   void absoluteQuadsForDescendant(const LayoutBox& descendant,
-                                  Vector<FloatQuad>&);
+                                  Vector<FloatQuad>&,
+                                  MapCoordinatesFlags mode = 0);
 
   bool nodeAtPoint(HitTestResult&,
                    const HitTestLocation& locationInContainer,

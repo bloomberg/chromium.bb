@@ -611,12 +611,14 @@ bool LayoutBoxModelObject::hasNonEmptyLayoutSize() const {
 }
 
 void LayoutBoxModelObject::absoluteQuadsForSelf(
-    Vector<FloatQuad>& quads) const {
+    Vector<FloatQuad>& quads,
+    MapCoordinatesFlags mode) const {
   NOTREACHED();
 }
 
-void LayoutBoxModelObject::absoluteQuads(Vector<FloatQuad>& quads) const {
-  absoluteQuadsForSelf(quads);
+void LayoutBoxModelObject::absoluteQuads(Vector<FloatQuad>& quads,
+                                         MapCoordinatesFlags mode) const {
+  absoluteQuadsForSelf(quads, mode);
 
   // Iterate over continuations, avoiding recursion in case there are
   // many of them. See crbug.com/653767.
@@ -627,7 +629,7 @@ void LayoutBoxModelObject::absoluteQuads(Vector<FloatQuad>& quads) const {
            (continuationObject->isLayoutBlockFlow() &&
             toLayoutBlockFlow(continuationObject)
                 ->isAnonymousBlockContinuation()));
-    continuationObject->absoluteQuadsForSelf(quads);
+    continuationObject->absoluteQuadsForSelf(quads, mode);
   }
 }
 

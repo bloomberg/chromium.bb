@@ -410,13 +410,15 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   bool backgroundStolenForBeingBody(
       const ComputedStyle* rootElementStyle = nullptr) const;
 
-  void absoluteQuads(Vector<FloatQuad>& quads) const override;
+  void absoluteQuads(Vector<FloatQuad>& quads,
+                     MapCoordinatesFlags mode = 0) const override;
 
  protected:
   // Compute absolute quads for |this|, but not any continuations. May only be
   // called for objects which can be or have continuations, i.e. LayoutInline or
   // LayoutBlockFlow.
-  virtual void absoluteQuadsForSelf(Vector<FloatQuad>& quads) const;
+  virtual void absoluteQuadsForSelf(Vector<FloatQuad>& quads,
+                                    MapCoordinatesFlags mode = 0) const;
 
   void willBeDestroyed() override;
 

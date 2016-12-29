@@ -54,7 +54,8 @@ class LayoutSVGInline : public LayoutInline {
   const LayoutObject* pushMappingToContainer(
       const LayoutBoxModelObject* ancestorToStopAt,
       LayoutGeometryMap&) const final;
-  void absoluteQuads(Vector<FloatQuad>&) const final;
+  void absoluteQuads(Vector<FloatQuad>&,
+                     MapCoordinatesFlags mode = 0) const final;
 
  private:
   InlineFlowBox* createInlineFlowBox() final;

@@ -758,8 +758,9 @@ namespace {
 class AbsoluteQuadsGeneratorContext {
  public:
   AbsoluteQuadsGeneratorContext(const LayoutInline* layoutObject,
-                                Vector<FloatQuad>& quads)
-      : m_quads(quads), m_geometryMap() {
+                                Vector<FloatQuad>& quads,
+                                MapCoordinatesFlags mode)
+      : m_quads(quads), m_geometryMap(mode) {
     m_geometryMap.pushMappingsToAncestor(layoutObject, 0);
   }
 
@@ -775,8 +776,9 @@ class AbsoluteQuadsGeneratorContext {
 
 }  // unnamed namespace
 
-void LayoutInline::absoluteQuadsForSelf(Vector<FloatQuad>& quads) const {
-  AbsoluteQuadsGeneratorContext context(this, quads);
+void LayoutInline::absoluteQuadsForSelf(Vector<FloatQuad>& quads,
+                                        MapCoordinatesFlags mode) const {
+  AbsoluteQuadsGeneratorContext context(this, quads, mode);
   generateLineBoxRects(context);
   if (quads.isEmpty())
     context(FloatRect());

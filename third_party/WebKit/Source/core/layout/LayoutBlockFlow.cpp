@@ -2463,15 +2463,17 @@ void LayoutBlockFlow::absoluteRects(
               inlineElementContinuation()->containingBlock()->location()));
 }
 
-void LayoutBlockFlow::absoluteQuads(Vector<FloatQuad>& quads) const {
+void LayoutBlockFlow::absoluteQuads(Vector<FloatQuad>& quads,
+                                    MapCoordinatesFlags mode) const {
   if (!isAnonymousBlockContinuation()) {
-    LayoutBlock::absoluteQuads(quads);
+    LayoutBlock::absoluteQuads(quads, mode);
     return;
   }
-  LayoutBoxModelObject::absoluteQuads(quads);
+  LayoutBoxModelObject::absoluteQuads(quads, mode);
 }
 
-void LayoutBlockFlow::absoluteQuadsForSelf(Vector<FloatQuad>& quads) const {
+void LayoutBlockFlow::absoluteQuadsForSelf(Vector<FloatQuad>& quads,
+                                           MapCoordinatesFlags mode) const {
   // For blocks inside inlines, we go ahead and include margins so that we run
   // right up to the inline boxes above and below us (thus getting merged with
   // them to form a single irregular shape).
@@ -2479,7 +2481,7 @@ void LayoutBlockFlow::absoluteQuadsForSelf(Vector<FloatQuad>& quads) const {
   // https://bugs.webkit.org/show_bug.cgi?id=46781
   LayoutRect localRect(LayoutPoint(), size());
   localRect.expand(collapsedMarginBoxLogicalOutsets());
-  quads.append(localToAbsoluteQuad(FloatRect(localRect)));
+  quads.append(localToAbsoluteQuad(FloatRect(localRect), mode));
 }
 
 LayoutObject* LayoutBlockFlow::hoverAncestor() const {

@@ -118,7 +118,8 @@ void LayoutFlowThread::computeLogicalHeight(
 }
 
 void LayoutFlowThread::absoluteQuadsForDescendant(const LayoutBox& descendant,
-                                                  Vector<FloatQuad>& quads) {
+                                                  Vector<FloatQuad>& quads,
+                                                  MapCoordinatesFlags mode) {
   LayoutPoint offsetFromFlowThread;
   for (const LayoutObject* object = &descendant; object != this;) {
     const LayoutObject* container = object->container();
@@ -137,7 +138,7 @@ void LayoutFlowThread::absoluteQuadsForDescendant(const LayoutBox& descendant,
     // coordinates for zero-height objects.
     fragment.inclusiveIntersect(iterator.fragmentainerInFlowThread());
     fragment.moveBy(-offsetFromFlowThread);
-    quads.append(descendant.localToAbsoluteQuad(FloatRect(fragment)));
+    quads.append(descendant.localToAbsoluteQuad(FloatRect(fragment), mode));
   }
 }
 

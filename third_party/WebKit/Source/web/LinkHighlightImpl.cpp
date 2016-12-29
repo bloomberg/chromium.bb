@@ -157,56 +157,6 @@ void LinkHighlightImpl::attachLinkHighlightToCompositingLayer(
   }
 }
 
-static void convertTargetSpaceQuadToCompositedLayer(
-    const FloatQuad& targetSpaceQuad,
-    LayoutObject* targetLayoutObject,
-    const LayoutBoxModelObject& paintInvalidationContainer,
-    FloatQuad& compositedSpaceQuad) {
-  DCHECK(targetLayoutObject);
-  for (unsigned i = 0; i < 4; ++i) {
-    IntPoint point;
-    switch (i) {
-      case 0:
-        point = roundedIntPoint(targetSpaceQuad.p1());
-        break;
-      case 1:
-        point = roundedIntPoint(targetSpaceQuad.p2());
-        break;
-      case 2:
-        point = roundedIntPoint(targetSpaceQuad.p3());
-        break;
-      case 3:
-        point = roundedIntPoint(targetSpaceQuad.p4());
-        break;
-    }
-
-    // FIXME: this does not need to be absolute, just in the paint invalidation
-    // container's space.
-    point = targetLayoutObject->frame()->view()->contentsToRootFrame(point);
-    point =
-        paintInvalidationContainer.frame()->view()->rootFrameToContents(point);
-    FloatPoint floatPoint =
-        paintInvalidationContainer.absoluteToLocal(point, UseTransforms);
-    PaintLayer::mapPointInPaintInvalidationContainerToBacking(
-        paintInvalidationContainer, floatPoint);
-
-    switch (i) {
-      case 0:
-        compositedSpaceQuad.setP1(floatPoint);
-        break;
-      case 1:
-        compositedSpaceQuad.setP2(floatPoint);
-        break;
-      case 2:
-        compositedSpaceQuad.setP3(floatPoint);
-        break;
-      case 3:
-        compositedSpaceQuad.setP4(floatPoint);
-        break;
-    }
-  }
-}
-
 static void addQuadToPath(const FloatQuad& quad, Path& path) {
   // FIXME: Make this create rounded quad-paths, just like the axis-aligned
   // case.
@@ -236,7 +186,7 @@ void LinkHighlightImpl::computeQuads(const Node& node,
   } else {
     // FIXME: this does not need to be absolute, just in the paint invalidation
     // container's space.
-    layoutObject->absoluteQuads(outQuads);
+    layoutObject->absoluteQuads(outQuads, TraverseDocumentBoundaries);
   }
 }
 
@@ -270,12 +220,24 @@ bool LinkHighlightImpl::computeHighlightLayerPathAndPosition(
       absoluteQuad.move(toScrollOffset(scrollPosition));
     }
 
-    // Transform node quads in target absolute coords to local coordinates in
-    // the compositor layer.
-    FloatQuad transformedQuad;
-    convertTargetSpaceQuadToCompositedLayer(
-        absoluteQuad, m_node->layoutObject(), paintInvalidationContainer,
-        transformedQuad);
+    absoluteQuad.setP1(roundedIntPoint(absoluteQuad.p1()));
+    absoluteQuad.setP2(roundedIntPoint(absoluteQuad.p2()));
+    absoluteQuad.setP3(roundedIntPoint(absoluteQuad.p3()));
+    absoluteQuad.setP4(roundedIntPoint(absoluteQuad.p4()));
+    FloatQuad transformedQuad = paintInvalidationContainer.absoluteToLocalQuad(
+        absoluteQuad, UseTransforms | TraverseDocumentBoundaries);
+    FloatPoint offsetToBacking;
+
+    // Adjust for squashing.
+    if (paintInvalidationContainer.layer()->groupedMapping()) {
+      PaintLayer::mapPointInPaintInvalidationContainerToBacking(
+          paintInvalidationContainer, offsetToBacking);
+    }
+
+    // Adjust for offset from LayoutObject.
+    offsetToBacking.move(-m_currentGraphicsLayer->offsetFromLayoutObject());
+
+    transformedQuad.move(toFloatSize(offsetToBacking));
 
     // FIXME: for now, we'll only use rounded paths if we have a single node
     // quad. The reason for this is that we may sometimes get a chain of

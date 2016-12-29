@@ -703,13 +703,16 @@ void LayoutBox::absoluteRects(Vector<IntRect>& rects,
   rects.append(pixelSnappedIntRect(accumulatedOffset, size()));
 }
 
-void LayoutBox::absoluteQuads(Vector<FloatQuad>& quads) const {
+void LayoutBox::absoluteQuads(Vector<FloatQuad>& quads,
+                              MapCoordinatesFlags mode) const {
   if (LayoutFlowThread* flowThread = flowThreadContainingBlock()) {
-    flowThread->absoluteQuadsForDescendant(*this, quads);
+    flowThread->absoluteQuadsForDescendant(*this, quads, mode);
     return;
   }
-  quads.append(localToAbsoluteQuad(FloatRect(
-      0, 0, m_frameRect.width().toFloat(), m_frameRect.height().toFloat())));
+  quads.append(
+      localToAbsoluteQuad(FloatRect(0, 0, m_frameRect.width().toFloat(),
+                                    m_frameRect.height().toFloat()),
+                          mode));
 }
 
 FloatRect LayoutBox::localBoundingBoxRectForAccessibility() const {

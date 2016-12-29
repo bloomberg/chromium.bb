@@ -98,20 +98,22 @@ const LayoutObject* LayoutSVGInline::pushMappingToContainer(
                                                   geometryMap);
 }
 
-void LayoutSVGInline::absoluteQuads(Vector<FloatQuad>& quads) const {
+void LayoutSVGInline::absoluteQuads(Vector<FloatQuad>& quads,
+                                    MapCoordinatesFlags mode) const {
   const LayoutSVGText* textRoot =
       LayoutSVGText::locateLayoutSVGTextAncestor(this);
   if (!textRoot)
     return;
 
   FloatRect textBoundingBox = textRoot->strokeBoundingBox();
-  for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox())
+  for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox()) {
     quads.append(
         localToAbsoluteQuad(FloatRect(textBoundingBox.x() + box->x().toFloat(),
                                       textBoundingBox.y() + box->y().toFloat(),
                                       box->logicalWidth().toFloat(),
                                       box->logicalHeight().toFloat()),
-                            false));
+                            mode));
+  }
 }
 
 void LayoutSVGInline::willBeDestroyed() {

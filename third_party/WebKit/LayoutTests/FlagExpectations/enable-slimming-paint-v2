@@ -210,6 +210,7 @@ Bug(none) compositing/gestures/gesture-tapHighlight-simple-scaledX.html [ Failur
 Bug(none) compositing/gestures/gesture-tapHighlight-simple-scaledY.html [ Failure ]
 Bug(none) compositing/gestures/gesture-tapHighlight-simple-window-scroll.html [ Failure ]
 Bug(none) compositing/gestures/gesture-tapHighlight-simple.html [ Failure ]
+Bug(none) compositing/gestures/gesture-tapHighlight-skew-matrix.html [ Failure ]
 Bug(none) compositing/gestures/gesture-tapHighlight-with-box-shadow.html [ Failure ]
 Bug(none) compositing/gestures/gesture-tapHighlight-with-squashing.html [ Failure ]
 Bug(none) compositing/iframes/become-composited-nested-iframes.html [ Failure ]

@@ -531,8 +531,10 @@ void LayoutView::absoluteRects(Vector<IntRect>& rects,
       pixelSnappedIntRect(accumulatedOffset, LayoutSize(layer()->size())));
 }
 
-void LayoutView::absoluteQuads(Vector<FloatQuad>& quads) const {
-  quads.append(FloatRect(FloatPoint(), FloatSize(layer()->size())));
+void LayoutView::absoluteQuads(Vector<FloatQuad>& quads,
+                               MapCoordinatesFlags mode) const {
+  quads.append(localToAbsoluteQuad(
+      FloatRect(FloatPoint(), FloatSize(layer()->size())), mode));
 }
 
 static LayoutObject* layoutObjectAfterPosition(LayoutObject* object,

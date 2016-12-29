@@ -151,7 +151,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   void absoluteRects(Vector<IntRect>&,
                      const LayoutPoint& accumulatedOffset) const override;
-  void absoluteQuads(Vector<FloatQuad>&) const override;
+  void absoluteQuads(Vector<FloatQuad>&,
+                     MapCoordinatesFlags mode = 0) const override;
 
   LayoutRect viewRect() const override;
   LayoutRect overflowClipRect(

@@ -1221,7 +1221,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   IntRect absoluteBoundingBoxRectIgnoringTransforms() const;
 
   // Build an array of quads in absolute coords for line boxes
-  virtual void absoluteQuads(Vector<FloatQuad>&) const {}
+  virtual void absoluteQuads(Vector<FloatQuad>&,
+                             MapCoordinatesFlags mode = 0) const {}
 
   static FloatRect absoluteBoundingBoxRectForRange(const Range*);
 
