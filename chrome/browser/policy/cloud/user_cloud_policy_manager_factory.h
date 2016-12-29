@@ -29,16 +29,16 @@ class UserCloudPolicyManager;
 // instances that initialize per-profile cloud policy settings on the desktop
 // platforms.
 //
-// UserCloudPolicyManager is handled different than other
-// KeyedServices because it is a dependency of PrefService.
-// Therefore, lifetime of instances is managed by Profile, Profile startup code
-// invokes CreateForBrowserContext() explicitly, takes ownership, and the
-// instance is only deleted after PrefService destruction.
+// UserCloudPolicyManager is handled different than other KeyedServices because
+// it is a dependency of PrefService. Therefore, lifetime of instances is
+// managed by Profile, Profile startup code invokes CreateForBrowserContext()
+// explicitly, takes ownership, and the instance is only deleted after
+// PrefService destruction.
 //
 // TODO(mnissler): Remove the special lifetime management in favor of
 // PrefService directly depending on UserCloudPolicyManager once the former has
-// been converted to a KeyedService.
-// See also http://crbug.com/131843 and http://crbug.com/131844.
+// been converted to a KeyedService. See also https://crbug.com/131843 and
+// https://crbug.com/131844.
 class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
  public:
   // Returns an instance of the UserCloudPolicyManagerFactory singleton.
@@ -51,8 +51,8 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   // Creates an instance for |context|. Note that the caller is responsible for
   // managing the lifetime of the instance. Subsequent calls to
   // GetForBrowserContext() will return the created instance as long as it
-  // lives. If RegisterTestingFactory() has been called, then calls to
-  // this method will return null.
+  // lives. If RegisterTestingFactory() has been called, then calls to this
+  // method will return null.
   //
   // If |force_immediate_load| is true, policy is loaded synchronously from
   // UserCloudPolicyStore at startup.

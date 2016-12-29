@@ -64,7 +64,9 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
                                  authpolicy::kAuthPolicyRefreshUserPolicy);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(account_id.GetObjGuid());
+    // TODO(tnagel): Switch to GUID once authpolicyd, session_manager and
+    // cryptohome support it, cf. https://crbug.com/677497.
+    writer.AppendString(account_id.GetUserEmail());
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&AuthPolicyClientImpl::HandleRefreshPolicyCallback,

@@ -133,7 +133,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
@@ -434,11 +434,11 @@ ProfileImpl::ProfileImpl(
       policy::SchemaRegistryServiceFactory::CreateForContext(
           this, connector->GetChromeSchema(), connector->GetSchemaRegistry());
 #if defined(OS_CHROMEOS)
-  cloud_policy_manager_ =
-      policy::UserCloudPolicyManagerFactoryChromeOS::CreateForProfile(
+  configuration_policy_provider_ =
+      policy::UserPolicyManagerFactoryChromeOS::CreateForProfile(
           this, force_immediate_policy_load, sequenced_task_runner);
 #else
-  cloud_policy_manager_ =
+  configuration_policy_provider_ =
       policy::UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
           this, force_immediate_policy_load, sequenced_task_runner,
           BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),

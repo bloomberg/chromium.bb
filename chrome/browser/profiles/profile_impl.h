@@ -47,7 +47,7 @@ class DomainReliabilityMonitor;
 }
 
 namespace policy {
-class CloudPolicyManager;
+class ConfigurationPolicyProvider;
 class ProfilePolicyConnector;
 class SchemaRegistryService;
 }
@@ -203,12 +203,14 @@ class ProfileImpl : public Profile {
   //  happens in reverse order of declaration.
 
   // TODO(mnissler, joaodasilva): The |profile_policy_connector_| provides the
-  // PolicyService that the |prefs_| depend on, and must outlive |prefs_|.
-// This can be removed once |prefs_| becomes a KeyedService too.
-// |profile_policy_connector_| in turn depends on |cloud_policy_manager_|,
-// which depends on |schema_registry_service_|.
+  // PolicyService that the |prefs_| depend on, and must outlive |prefs_|. This
+  // can be removed once |prefs_| becomes a KeyedService too.
+  // |profile_policy_connector_| in turn depends on
+  // |configuration_policy_provider_|, which depends on
+  // |schema_registry_service_|.
   std::unique_ptr<policy::SchemaRegistryService> schema_registry_service_;
-  std::unique_ptr<policy::CloudPolicyManager> cloud_policy_manager_;
+  std::unique_ptr<policy::ConfigurationPolicyProvider>
+      configuration_policy_provider_;
   std::unique_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
 
   // Keep |pref_validation_delegate_| above |prefs_| so that the former outlives

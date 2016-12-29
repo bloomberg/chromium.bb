@@ -60,7 +60,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "components/user_manager/user_manager.h"
 #else
@@ -549,8 +549,8 @@ void PolicyUIHandler::RegisterMessages() {
     }
   } else {
     policy::UserCloudPolicyManagerChromeOS* user_cloud_policy_manager =
-        policy::UserCloudPolicyManagerFactoryChromeOS::GetForProfile(
-            Profile::FromWebUI(web_ui()));
+        policy::UserPolicyManagerFactoryChromeOS::
+            GetCloudPolicyManagerForProfile(Profile::FromWebUI(web_ui()));
     if (user_cloud_policy_manager) {
       user_status_provider_ =
           base::MakeUnique<UserPolicyStatusProvider>(

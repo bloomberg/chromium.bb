@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
@@ -91,7 +91,8 @@ void UserPolicyTestHelper::WaitForInitialPolicy(Profile* profile) {
   connector->ScheduleServiceInitialization(0);
 
   UserCloudPolicyManagerChromeOS* const policy_manager =
-      UserCloudPolicyManagerFactoryChromeOS::GetForProfile(profile);
+      UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
+          profile);
 
   // Give a bogus OAuth token to the |policy_manager|. This should make its
   // CloudPolicyClient fetch the DMToken.

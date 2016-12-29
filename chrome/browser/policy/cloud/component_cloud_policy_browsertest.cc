@@ -39,7 +39,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -170,7 +170,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
 
 #if defined(OS_CHROMEOS)
     UserCloudPolicyManagerChromeOS* policy_manager =
-        UserCloudPolicyManagerFactoryChromeOS::GetForProfile(
+        UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
             browser()->profile());
     ASSERT_TRUE(policy_manager);
 #else

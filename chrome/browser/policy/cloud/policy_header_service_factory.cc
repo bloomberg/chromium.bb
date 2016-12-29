@@ -20,8 +20,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
@@ -58,7 +59,7 @@ PolicyHeaderServiceFactory::PolicyHeaderServiceFactory()
         "PolicyHeaderServiceFactory",
         BrowserContextDependencyManager::GetInstance()) {
 #if defined(OS_CHROMEOS)
-  DependsOn(UserCloudPolicyManagerFactoryChromeOS::GetInstance());
+  DependsOn(UserPolicyManagerFactoryChromeOS::GetInstance());
 #else
   DependsOn(UserCloudPolicyManagerFactory::GetInstance());
 #endif
@@ -89,24 +90,34 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
       g_browser_process->browser_policy_connector();
 #endif
 
-  DeviceManagementService* device_management_service =
-      connector->device_management_service();
+  CloudPolicyStore* user_store;
 #if defined(OS_CHROMEOS)
-  CloudPolicyManager* manager =
-      UserCloudPolicyManagerFactoryChromeOS::GetForProfile(
-           Profile::FromBrowserContext(context));
+  Profile* profile = Profile::FromBrowserContext(context);
+  CloudPolicyManager* cloud_manager =
+      UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
+          profile);
+  if (cloud_manager) {
+    user_store = cloud_manager->core()->store();
+  } else {
+    UserActiveDirectoryPolicyManager* active_directory_manager =
+        UserPolicyManagerFactoryChromeOS::
+            GetActiveDirectoryPolicyManagerForProfile(profile);
+    if (!active_directory_manager)
+      return nullptr;
+    user_store = active_directory_manager->store();
+  }
 #else
   CloudPolicyManager* manager =
       UserCloudPolicyManagerFactory::GetForBrowserContext(context);
-#endif
   if (!manager)
-    return NULL;
-  CloudPolicyStore* user_store = manager->core()->store();
+    return nullptr;
+  user_store = manager->core()->store();
+#endif
 
   std::unique_ptr<PolicyHeaderService> service =
       base::MakeUnique<PolicyHeaderService>(
-          device_management_service->GetServerUrl(), kPolicyVerificationKeyHash,
-          user_store);
+          connector->device_management_service()->GetServerUrl(),
+          kPolicyVerificationKeyHash, user_store);
   return new PolicyHeaderServiceWrapper(std::move(service));
 }
 

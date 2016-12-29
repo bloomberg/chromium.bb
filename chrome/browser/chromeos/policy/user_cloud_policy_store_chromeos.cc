@@ -66,18 +66,22 @@ UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
     chromeos::SessionManagerClient* session_manager_client,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const AccountId& account_id,
-    const base::FilePath& user_policy_key_dir)
+    const base::FilePath& user_policy_key_dir,
+    bool is_active_directory)
     : UserCloudPolicyStoreBase(background_task_runner),
       cryptohome_client_(cryptohome_client),
       session_manager_client_(session_manager_client),
       account_id_(account_id),
       user_policy_key_dir_(user_policy_key_dir),
+      is_active_directory_(is_active_directory),
       weak_factory_(this) {}
 
 UserCloudPolicyStoreChromeOS::~UserCloudPolicyStoreChromeOS() {}
 
 void UserCloudPolicyStoreChromeOS::Store(
     const em::PolicyFetchResponse& policy) {
+  DCHECK(!is_active_directory_);
+
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
   std::unique_ptr<em::PolicyFetchResponse> response(
@@ -98,9 +102,9 @@ void UserCloudPolicyStoreChromeOS::Load() {
 }
 
 void UserCloudPolicyStoreChromeOS::LoadImmediately() {
-  // This blocking DBus call is in the startup path and will block the UI
+  // This blocking D-Bus call is in the startup path and will block the UI
   // thread. This only happens when the Profile is created synchronously, which
-  // on ChromeOS happens whenever the browser is restarted into the same
+  // on Chrome OS happens whenever the browser is restarted into the same
   // session. That happens when the browser crashes, or right after signin if
   // the user has flags configured in about:flags.
   // However, on those paths we must load policy synchronously so that the
@@ -145,6 +149,8 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
 
 void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
     std::unique_ptr<em::PolicyFetchResponse> policy) {
+  DCHECK(!is_active_directory_);
+
   // Create and configure a validator.
   std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
       std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED);
@@ -165,6 +171,8 @@ void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
 
 void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
     UserCloudPolicyValidator* validator) {
+  DCHECK(!is_active_directory_);
+
   validation_status_ = validator->status();
 
   UMA_HISTOGRAM_ENUMERATION(
@@ -192,6 +200,8 @@ void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
 }
 
 void UserCloudPolicyStoreChromeOS::OnPolicyStored(bool success) {
+  DCHECK(!is_active_directory_);
+
   if (!success) {
     status_ = STATUS_STORE_ERROR;
     NotifyStoreError();
@@ -225,10 +235,13 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
   }
 
   // Load |cached_policy_key_| to verify the loaded policy.
-  EnsurePolicyKeyLoaded(
-      base::Bind(&UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&policy)));
+  if (is_active_directory_) {
+    ValidateRetrievedPolicy(std::move(policy));
+  } else {
+    EnsurePolicyKeyLoaded(
+        base::Bind(&UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy,
+                   weak_factory_.GetWeakPtr(), base::Passed(&policy)));
+  }
 }
 
 void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
@@ -267,6 +280,8 @@ void UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated(
 
 void UserCloudPolicyStoreChromeOS::ReloadPolicyKey(
     const base::Closure& callback) {
+  DCHECK(!is_active_directory_);
+
   std::string* key = new std::string();
   background_task_runner()->PostTaskAndReply(
       FROM_HERE, base::Bind(&UserCloudPolicyStoreChromeOS::LoadPolicyKey,
@@ -306,6 +321,8 @@ void UserCloudPolicyStoreChromeOS::LoadPolicyKey(const base::FilePath& path,
 void UserCloudPolicyStoreChromeOS::OnPolicyKeyReloaded(
     std::string* key,
     const base::Closure& callback) {
+  DCHECK(!is_active_directory_);
+
   cached_policy_key_ = *key;
   cached_policy_key_loaded_ = true;
   callback.Run();
@@ -313,6 +330,8 @@ void UserCloudPolicyStoreChromeOS::OnPolicyKeyReloaded(
 
 void UserCloudPolicyStoreChromeOS::EnsurePolicyKeyLoaded(
     const base::Closure& callback) {
+  DCHECK(!is_active_directory_);
+
   if (cached_policy_key_loaded_) {
     callback.Run();
   } else {
@@ -345,11 +364,21 @@ UserCloudPolicyStoreChromeOS::CreateValidatorForLoad(
     std::unique_ptr<em::PolicyFetchResponse> policy) {
   std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
       std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
-  validator->ValidateUsername(account_id_.GetUserEmail(), true);
-  // The policy loaded from session manager need not be validated using the
-  // verification key since it is secure, and since there may be legacy policy
-  // data that was stored without a verification key.
-  validator->ValidateSignature(cached_policy_key_);
+  if (is_active_directory_) {
+    validator->ValidateTimestamp(
+        base::Time(), base::Time(),
+        CloudPolicyValidatorBase::TIMESTAMP_NOT_VALIDATED);
+    validator->ValidateDMToken(std::string(),
+                               CloudPolicyValidatorBase::DM_TOKEN_NOT_REQUIRED);
+    validator->ValidateDeviceId(
+        std::string(), CloudPolicyValidatorBase::DEVICE_ID_NOT_REQUIRED);
+  } else {
+    validator->ValidateUsername(account_id_.GetUserEmail(), true);
+    // The policy loaded from session manager need not be validated using the
+    // verification key since it is secure, and since there may be legacy policy
+    // data that was stored without a verification key.
+    validator->ValidateSignature(cached_policy_key_);
+  }
   return validator;
 }
 

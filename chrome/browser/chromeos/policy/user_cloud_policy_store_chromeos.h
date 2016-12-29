@@ -30,17 +30,25 @@ class SessionManagerClient;
 
 namespace policy {
 
-// Implements a cloud policy store backed by the Chrome OS' session_manager,
-// which takes care of persisting policy to disk and is accessed via DBus calls
+// Implements a policy store backed by the Chrome OS' session_manager, which
+// takes care of persisting policy to disk and is accessed via DBus calls
 // through SessionManagerClient.
+// TODO(tnagel): Rename class to reflect that it can store Active Directory
+// policy as well. Also think about whether it would make more sense to keep
+// cloud and AD policy stores separate and to extract the common functionality
+// somewhere else.
 class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
  public:
+  // Policy validation is relaxed when |is_active_directory| is set, most
+  // notably signature validation is disabled.  It is essential that this flag
+  // is only set when install attributes are locked into Active Directory mode.
   UserCloudPolicyStoreChromeOS(
       chromeos::CryptohomeClient* cryptohome_client,
       chromeos::SessionManagerClient* session_manager_client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const AccountId& account_id,
-      const base::FilePath& user_policy_key_dir);
+      const base::FilePath& user_policy_key_dir,
+      bool is_active_directory);
   ~UserCloudPolicyStoreChromeOS() override;
 
   // CloudPolicyStore:
@@ -100,6 +108,7 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   chromeos::SessionManagerClient* session_manager_client_;
   const AccountId account_id_;
   base::FilePath user_policy_key_dir_;
+  bool is_active_directory_;
 
   // The current key used to verify signatures of policy. This value is loaded
   // from the key cache file (which is owned and kept up to date by the Chrome

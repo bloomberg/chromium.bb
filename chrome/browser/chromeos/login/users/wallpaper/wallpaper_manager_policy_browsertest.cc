@@ -28,7 +28,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/profiles/profile.h"
@@ -75,7 +75,8 @@ policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
     return NULL;
   }
   policy::UserCloudPolicyManagerChromeOS* policy_manager =
-      policy::UserCloudPolicyManagerFactoryChromeOS::GetForProfile(profile);
+      policy::UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
+          profile);
   if (!policy_manager) {
     ADD_FAILURE();
     return NULL;

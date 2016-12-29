@@ -22,7 +22,7 @@ namespace {
 std::string GetManagedBookmarksDomain(Profile* profile) {
   policy::ProfilePolicyConnector* connector =
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
-  if (connector->IsPolicyFromCloudPolicy(policy::key::kManagedBookmarks))
+  if (connector->IsProfilePolicy(policy::key::kManagedBookmarks))
     return connector->GetManagementDomain();
   return std::string();
 }
