@@ -359,8 +359,10 @@ NS_INLINE void AnimateInViews(NSArray* views,
   ToolsMenuButton* button = [[ToolsMenuButton alloc] initWithFrame:CGRectZero];
   [button setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-  [button setImage:NativeReversableImage(imageIds[0][0], reverseForRTL)
-          forState:UIControlStateNormal];
+  if (imageIds[0][0]) {
+    [button setImage:NativeReversableImage(imageIds[0][0], reverseForRTL)
+            forState:UIControlStateNormal];
+  }
   [[button imageView] setContentMode:UIViewContentModeCenter];
   [button setBackgroundColor:[self backgroundColor]];
   [button setTag:commandID];
@@ -368,14 +370,20 @@ NS_INLINE void AnimateInViews(NSArray* views,
 
   SetA11yLabelAndUiAutomationName(button, labelID, name);
 
-  UIImage* pressedImage = NativeReversableImage(imageIds[0][1], reverseForRTL);
-  if (pressedImage) {
-    [button setImage:pressedImage forState:UIControlStateHighlighted];
+  if (imageIds[0][1]) {
+    UIImage* pressedImage =
+        NativeReversableImage(imageIds[0][1], reverseForRTL);
+    if (pressedImage) {
+      [button setImage:pressedImage forState:UIControlStateHighlighted];
+    }
   }
 
-  UIImage* disabledImage = NativeReversableImage(imageIds[0][2], reverseForRTL);
-  if (disabledImage) {
-    [button setImage:disabledImage forState:UIControlStateDisabled];
+  if (imageIds[0][2]) {
+    UIImage* disabledImage =
+        NativeReversableImage(imageIds[0][2], reverseForRTL);
+    if (disabledImage) {
+      [button setImage:disabledImage forState:UIControlStateDisabled];
+    }
   }
 
   return button;
