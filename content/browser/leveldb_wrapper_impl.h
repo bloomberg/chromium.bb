@@ -58,9 +58,30 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   // aggressive flushing will commence.
   static void EnableAggressiveCommitDelay();
 
- private:
-  friend class LevelDBWrapperImplTest;
+  // Commits any uncommitted data to the database as soon as possible. This
+  // usually means data will be committed immediately, but if we're currently
+  // waiting on the result of initializing our map the commit won't happen
+  // until the load has finished.
+  void ScheduleImmediateCommit();
 
+  // LevelDBWrapper:
+  void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;
+  void Put(const std::vector<uint8_t>& key,
+           const std::vector<uint8_t>& value,
+           const std::string& source,
+           const PutCallback& callback) override;
+  void Delete(const std::vector<uint8_t>& key,
+              const std::string& source,
+              const DeleteCallback& callback) override;
+  void DeleteAll(const std::string& source,
+                 const DeleteAllCallback& callback) override;
+  void Get(const std::vector<uint8_t>& key,
+           const GetCallback& callback) override;
+  void GetAll(
+      mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
+      const GetAllCallback& callback) override;
+
+ private:
   using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
 
   // Used to rate limit commits.
@@ -93,23 +114,6 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
     CommitBatch();
     ~CommitBatch();
   };
-
-  // LevelDBWrapperImpl:
-  void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;
-  void Put(const std::vector<uint8_t>& key,
-           const std::vector<uint8_t>& value,
-           const std::string& source,
-           const PutCallback& callback) override;
-  void Delete(const std::vector<uint8_t>& key,
-              const std::string& source,
-              const DeleteCallback& callback) override;
-  void DeleteAll(const std::string& source,
-                 const DeleteAllCallback& callback) override;
-  void Get(const std::vector<uint8_t>& key,
-           const GetCallback& callback) override;
-  void GetAll(
-      mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
-      const GetAllCallback& callback) override;
 
   void OnConnectionError();
   void LoadMap(const base::Closure& completion_callback);

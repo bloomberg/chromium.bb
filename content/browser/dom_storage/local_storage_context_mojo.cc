@@ -48,6 +48,8 @@ std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
   key.insert(key.end(), serialized_origin.begin(), serialized_origin.end());
   return key;
 }
+
+void NoOpSuccess(bool success) {}
 }
 
 LocalStorageContextMojo::LocalStorageContextMojo(
@@ -72,6 +74,27 @@ void LocalStorageContextMojo::GetStorageUsage(
   RunWhenConnected(
       base::BindOnce(&LocalStorageContextMojo::RetrieveStorageUsage,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void LocalStorageContextMojo::DeleteStorage(const url::Origin& origin) {
+  if (connection_state_ != CONNECTION_FINISHED) {
+    RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::DeleteStorage,
+                                    weak_ptr_factory_.GetWeakPtr(), origin));
+    return;
+  }
+
+  LevelDBWrapperImpl* wrapper = GetOrCreateDBWrapper(origin);
+  // Renderer process expects |source| to always be two newline separated
+  // strings.
+  wrapper->DeleteAll("\n", base::Bind(&NoOpSuccess));
+  wrapper->ScheduleImmediateCommit();
+}
+
+void LocalStorageContextMojo::DeleteStorageForPhysicalOrigin(
+    const url::Origin& origin) {
+  GetStorageUsage(base::BindOnce(
+      &LocalStorageContextMojo::OnGotStorageUsageForDeletePhysicalOrigin,
+      weak_ptr_factory_.GetWeakPtr(), origin));
 }
 
 void LocalStorageContextMojo::SetDatabaseForTesting(
@@ -151,6 +174,7 @@ LocalStorageContextMojo::OnLevelDBWrapperPrepareToCommit(
 
   leveldb::mojom::BatchedOperationPtr item =
       leveldb::mojom::BatchedOperation::New();
+  item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
   item->key = CreateMetaDataKey(origin);
   if (wrapper.bytes_used() == 0) {
     item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
@@ -261,6 +285,16 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
 void LocalStorageContextMojo::BindLocalStorage(
     const url::Origin& origin,
     mojom::LevelDBWrapperRequest request) {
+  GetOrCreateDBWrapper(origin)->Bind(std::move(request));
+}
+
+LevelDBWrapperImpl* LocalStorageContextMojo::GetOrCreateDBWrapper(
+    const url::Origin& origin) {
+  DCHECK_EQ(connection_state_, CONNECTION_FINISHED);
+  auto found = level_db_wrappers_.find(origin);
+  if (found != level_db_wrappers_.end())
+    return found->second.get();
+
   // Delay for a moment after a value is set in anticipation
   // of other values being set, so changes are batched.
   const int kCommitDefaultDelaySecs = 5;
@@ -270,21 +304,18 @@ void LocalStorageContextMojo::BindLocalStorage(
   const int kMaxBytesPerHour = kPerStorageAreaQuota;
   const int kMaxCommitsPerHour = 60;
 
-  auto found = level_db_wrappers_.find(origin);
-  if (found == level_db_wrappers_.end()) {
-    level_db_wrappers_[origin] = base::MakeUnique<LevelDBWrapperImpl>(
-        database_.get(), kDataPrefix + origin.Serialize() + kOriginSeparator,
-        kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
-        base::TimeDelta::FromSeconds(kCommitDefaultDelaySecs), kMaxBytesPerHour,
-        kMaxCommitsPerHour,
-        base::Bind(&LocalStorageContextMojo::OnLevelDBWrapperHasNoBindings,
-                   base::Unretained(this), origin),
-        base::Bind(&LocalStorageContextMojo::OnLevelDBWrapperPrepareToCommit,
-                   base::Unretained(this), origin));
-    found = level_db_wrappers_.find(origin);
-  }
-
-  found->second->Bind(std::move(request));
+  auto wrapper = base::MakeUnique<LevelDBWrapperImpl>(
+      database_.get(), kDataPrefix + origin.Serialize() + kOriginSeparator,
+      kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+      base::TimeDelta::FromSeconds(kCommitDefaultDelaySecs), kMaxBytesPerHour,
+      kMaxCommitsPerHour,
+      base::Bind(&LocalStorageContextMojo::OnLevelDBWrapperHasNoBindings,
+                 base::Unretained(this), origin),
+      base::Bind(&LocalStorageContextMojo::OnLevelDBWrapperPrepareToCommit,
+                 base::Unretained(this), origin));
+  LevelDBWrapperImpl* wrapper_ptr = wrapper.get();
+  level_db_wrappers_[origin] = std::move(wrapper);
+  return wrapper_ptr;
 }
 
 void LocalStorageContextMojo::RetrieveStorageUsage(
@@ -320,6 +351,18 @@ void LocalStorageContextMojo::OnGotMetaData(
     result.push_back(std::move(info));
   }
   std::move(callback).Run(std::move(result));
+}
+
+void LocalStorageContextMojo::OnGotStorageUsageForDeletePhysicalOrigin(
+    const url::Origin& origin,
+    std::vector<LocalStorageUsageInfo> usage) {
+  for (const auto& info : usage) {
+    url::Origin origin_candidate(info.origin);
+    if (!origin_candidate.IsSameOriginWith(origin) &&
+        origin_candidate.IsSamePhysicalOriginWith(origin))
+      DeleteStorage(origin_candidate);
+  }
+  DeleteStorage(origin);
 }
 
 }  // namespace content

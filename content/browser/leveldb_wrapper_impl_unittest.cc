@@ -75,6 +75,8 @@ void SuccessCallback(const base::Closure& callback,
   callback.Run();
 }
 
+void NoOpSuccessCallback(bool success) {}
+
 }  // namespace
 
 class LevelDBWrapperImplTest : public testing::Test,
@@ -174,10 +176,7 @@ class LevelDBWrapperImplTest : public testing::Test,
     return success;
   }
 
-  void CommitChanges() {
-    ASSERT_TRUE(level_db_wrapper_.commit_batch_);
-    level_db_wrapper_.CommitChanges();
-  }
+  void CommitChanges() { level_db_wrapper_.ScheduleImmediateCommit(); }
 
   const std::vector<Observation>& observations() { return observations_; }
 
@@ -332,7 +331,7 @@ TEST_F(LevelDBWrapperImplTest, DeleteExistingKey) {
   EXPECT_FALSE(has_mock_data(kTestPrefix + key));
 }
 
-TEST_F(LevelDBWrapperImplTest, DeleteAll) {
+TEST_F(LevelDBWrapperImplTest, DeleteAllWithoutLoadedMap) {
   std::string key = "newkey";
   std::string value = "foo";
   std::string dummy_key = "foobar";
@@ -360,6 +359,48 @@ TEST_F(LevelDBWrapperImplTest, DeleteAll) {
   // And now we've deleted all, writing something the quota size should work.
   EXPECT_TRUE(PutSync(std::vector<uint8_t>(kTestSizeLimit, 'b'),
                       std::vector<uint8_t>()));
+}
+
+TEST_F(LevelDBWrapperImplTest, DeleteAllWithLoadedMap) {
+  std::string key = "newkey";
+  std::string value = "foo";
+  std::string dummy_key = "foobar";
+  set_mock_data(dummy_key, value);
+
+  EXPECT_TRUE(
+      PutSync(StdStringToUint8Vector(key), StdStringToUint8Vector(value)));
+
+  EXPECT_TRUE(DeleteAllSync());
+  ASSERT_EQ(2u, observations().size());
+  EXPECT_EQ(Observation::kDeleteAll, observations()[1].type);
+  EXPECT_EQ(kTestSource, observations()[1].source);
+
+  EXPECT_TRUE(has_mock_data(dummy_key));
+
+  CommitChanges();
+  EXPECT_FALSE(has_mock_data(kTestPrefix + key));
+  EXPECT_TRUE(has_mock_data(dummy_key));
+}
+
+TEST_F(LevelDBWrapperImplTest, DeleteAllWithPendingMapLoad) {
+  std::string key = "newkey";
+  std::string value = "foo";
+  std::string dummy_key = "foobar";
+  set_mock_data(dummy_key, value);
+
+  wrapper()->Put(StdStringToUint8Vector(key), StdStringToUint8Vector(value),
+                 kTestSource, base::Bind(&NoOpSuccessCallback));
+
+  EXPECT_TRUE(DeleteAllSync());
+  ASSERT_EQ(2u, observations().size());
+  EXPECT_EQ(Observation::kDeleteAll, observations()[1].type);
+  EXPECT_EQ(kTestSource, observations()[1].source);
+
+  EXPECT_TRUE(has_mock_data(dummy_key));
+
+  CommitChanges();
+  EXPECT_FALSE(has_mock_data(kTestPrefix + key));
+  EXPECT_TRUE(has_mock_data(dummy_key));
 }
 
 TEST_F(LevelDBWrapperImplTest, PutOverQuotaLargeValue) {

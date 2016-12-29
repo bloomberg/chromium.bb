@@ -37,6 +37,9 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   void OpenLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest request);
   void GetStorageUsage(GetStorageUsageCallback callback);
+  void DeleteStorage(const url::Origin& origin);
+  // Like DeleteStorage(), but also deletes storage for all sub-origins.
+  void DeleteStorageForPhysicalOrigin(const url::Origin& origin);
 
   void SetDatabaseForTesting(leveldb::mojom::LevelDBDatabasePtr database);
 
@@ -63,6 +66,7 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   // directly from that function, or through |on_database_open_callbacks_|.
   void BindLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest request);
+  LevelDBWrapperImpl* GetOrCreateDBWrapper(const url::Origin& origin);
 
   // The (possibly delayed) implementation of GetStorageUsage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
@@ -70,6 +74,10 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   void OnGotMetaData(GetStorageUsageCallback callback,
                      leveldb::mojom::DatabaseError status,
                      std::vector<leveldb::mojom::KeyValuePtr> data);
+
+  void OnGotStorageUsageForDeletePhysicalOrigin(
+      const url::Origin& origin,
+      std::vector<LocalStorageUsageInfo> usage);
 
   service_manager::Connector* const connector_;
   const base::FilePath subdirectory_;

@@ -71,6 +71,18 @@ void LevelDBWrapperImpl::EnableAggressiveCommitDelay() {
   s_aggressive_flushing_enabled_ = true;
 }
 
+void LevelDBWrapperImpl::ScheduleImmediateCommit() {
+  if (!on_load_complete_tasks_.empty()) {
+    LoadMap(base::Bind(&LevelDBWrapperImpl::ScheduleImmediateCommit,
+                       base::Unretained(this)));
+    return;
+  }
+
+  if (!database_ || !commit_batch_)
+    return;
+  CommitChanges();
+}
+
 void LevelDBWrapperImpl::AddObserver(
     mojom::LevelDBObserverAssociatedPtrInfo observer) {
   mojom::LevelDBObserverAssociatedPtr observer_ptr;
@@ -168,18 +180,21 @@ void LevelDBWrapperImpl::Delete(const std::vector<uint8_t>& key,
 
 void LevelDBWrapperImpl::DeleteAll(const std::string& source,
                                    const DeleteAllCallback& callback) {
-  if (!map_) {
+  if (!map_ && !on_load_complete_tasks_.empty()) {
     LoadMap(
         base::Bind(&LevelDBWrapperImpl::DeleteAll, base::Unretained(this),
                     source, callback));
     return;
   }
 
-  if (database_ && !map_->empty()) {
+  if (database_ && (!map_ || !map_->empty())) {
     CreateCommitBatchIfNeeded();
     commit_batch_->clear_all_first = true;
     commit_batch_->changed_keys.clear();
   }
+  if (!map_)
+    map_.reset(new ValueMap);
+
   map_->clear();
   bytes_used_ = 0;
   observers_.ForAllPtrs(
