@@ -243,7 +243,9 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   if (ForcedReEnrollmentEnabled())
     client_to_connect->SetStateKeysToUpload(state_keys_broker_->state_keys());
 
-  if (is_component_policy_enabled_) {
+  // Create the component cloud policy service for fetching, caching and
+  // exposing policy for extensions.
+  if (!component_policy_disabled_for_testing_) {
     base::FilePath component_policy_cache_dir;
     CHECK(PathService::Get(chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY,
                            &component_policy_cache_dir));
