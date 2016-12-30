@@ -268,5 +268,6 @@ pass2 @1b-12[]$d @3456 number sign before digit at beginning
 pass2 @1b-12-36[]$d @3456 number sign before minus before digit at beginning
 pass2 [@12e]$d @3456
 pass2 [@12e-36]$d @36-3456
+pass2 [@12e-46]$d @3456-46
 pass2 @12e ?
 pass2 @15e ?
