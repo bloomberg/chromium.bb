@@ -98,6 +98,10 @@ class TestExporter(object):
 
         _log.info('Create PR response: %s', response_data)
 
+        if response_data:
+            data, status_code = self.wpt_github.add_label(response_data['number'])
+            _log.info('Add label response (status %s): %s', status_code, data)
+
     def exportable_commits_since(self, commit):
         """Returns SHAs of exportable commits since `commit` in chronological order.
 

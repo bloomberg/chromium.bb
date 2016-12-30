@@ -30,6 +30,19 @@ class WPTGitHub(object):
     def auth_token(self):
         return base64.encodestring('{}:{}'.format(self.user, self.token)).strip()
 
+    def request(self, path, method, body=None):
+        assert path.startswith('/')
+        if body:
+            body = json.dumps(body)
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        request = urllib2.Request(url=API_BASE + path, data=body)
+        request.add_header('Accept', 'application/vnd.github.v3+json')
+        request.add_header('Authorization', 'Basic {}'.format(self.auth_token()))
+        request.get_method = lambda: method
+        response = opener.open(request)
+        status_code = response.getcode()
+        return json.load(response), status_code
+
     def create_pr(self, local_branch_name, desc_title, body):
         """Creates a PR on GitHub.
 
@@ -52,41 +65,32 @@ class WPTGitHub(object):
             "body": body,
             "head": pr_branch_name,
             "base": 'master',
-            "labels": [EXPORT_LABEL]
         }
-        data, status_code = self.request(path, body)
+        data, status_code = self.request(path, method='POST', body=body)
 
         if status_code != 201:
             return None
 
         return data
 
+    def add_label(self, number):
+        path = '/repos/w3c/web-platform-tests/issues/%d/labels' % number
+        body = [EXPORT_LABEL]
+        return self.request(path, method='POST', body=body)
+
     def in_flight_pull_requests(self):
         url_encoded_label = EXPORT_LABEL.replace(' ', '%20')
         path = '/search/issues?q=repo:w3c/web-platform-tests%20is:open%20type:pr%20labels:{}'.format(url_encoded_label)
-        data, status_code = self.request(path)
+        data, status_code = self.request(path, method='GET')
         if status_code == 200:
             return data['items']
         else:
             raise Exception('Non-200 status code (%s): %s' % (status_code, data))
 
-    def request(self, path, body=None):
-        assert path.startswith('/')
-
-        if body:
-            body = json.dumps(body)
-
-        req = urllib2.Request(url=API_BASE + path, data=body)
-        req.add_header('Accept', 'application/vnd.github.v3+json')
-        req.add_header('Authorization', 'Basic {}'.format(self.auth_token()))
-        res = urllib2.urlopen(req)
-        status_code = res.getcode()
-        return json.load(res), status_code
-
     def merge_pull_request(self, pull_request_number):
         path = '/repos/w3c/web-platform-tests/pulls/%d/merge' % pull_request_number
         body = {}
-        response, content = self.request(path, body)
+        response, content = self.request(path, method='PUT', body=body)
 
         if response['status'] == '200':
             return json.loads(content)
