@@ -13,6 +13,7 @@
 
 namespace chromeos {
 class OverscanCalibrator;
+class TouchCalibratorController;
 }
 
 namespace extensions {
@@ -39,12 +40,24 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider {
       const api::system_display::Insets& delta) override;
   bool OverscanCalibrationReset(const std::string& id) override;
   bool OverscanCalibrationComplete(const std::string& id) override;
+  bool TouchCalibrationSet(
+      const std::string& id,
+      const api::system_display::TouchCalibrationPairQuad& pairs,
+      const api::system_display::Bounds& bounds,
+      std::string* error) override;
+  bool TouchCalibrationReset(const std::string& id,
+                             std::string* error) override;
+  bool IsTouchCalibrationActive(std::string* error) override;
 
  private:
+  chromeos::TouchCalibratorController* GetTouchCalibrator();
+
+  chromeos::OverscanCalibrator* GetOverscanCalibrator(const std::string& id);
+
   std::map<std::string, std::unique_ptr<chromeos::OverscanCalibrator>>
       overscan_calibrators_;
 
-  chromeos::OverscanCalibrator* GetCalibrator(const std::string& id);
+  std::unique_ptr<chromeos::TouchCalibratorController> touch_calibrator_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderChromeOS);
 };

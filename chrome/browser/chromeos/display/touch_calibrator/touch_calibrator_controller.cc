@@ -20,12 +20,9 @@ const base::TimeDelta TouchCalibratorController::kTouchIntervalThreshold =
     base::TimeDelta::FromMilliseconds(200);
 
 TouchCalibratorController::TouchCalibratorController()
-    : last_touch_timestamp_(base::Time::Now()) {
-  ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
-}
+    : last_touch_timestamp_(base::Time::Now()) {}
 
 TouchCalibratorController::~TouchCalibratorController() {
-  ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
   touch_calibrator_views_.clear();
   StopCalibration();
 }
@@ -38,6 +35,7 @@ void TouchCalibratorController::OnDisplayConfigurationChanged() {
 void TouchCalibratorController::StartCalibration(
     const display::Display& target_display) {
   is_calibrating_ = true;
+  ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
   target_display_ = target_display;
 
   // Clear all touch calibrator views used in any previous calibration.
@@ -65,6 +63,7 @@ void TouchCalibratorController::StopCalibration() {
   if (!is_calibrating_)
     return;
   is_calibrating_ = false;
+  ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
 
   // TODO(malaykeshav): Call TouchTransformerController::SetForCalibration()
 

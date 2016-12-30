@@ -79,9 +79,10 @@ class DisplayInfoProvider {
   virtual bool TouchCalibrationSet(
       const std::string& id,
       const api::system_display::TouchCalibrationPairQuad& pairs,
-      const api::system_display::Bounds& bounds);
-  virtual bool TouchCalibrationReset(const std::string& id);
-  virtual bool IsTouchCalibrationActive(const std::string& id);
+      const api::system_display::Bounds& bounds,
+      std::string* error);
+  virtual bool TouchCalibrationReset(const std::string& id, std::string* error);
+  virtual bool IsTouchCalibrationActive(std::string* error);
 
  protected:
   DisplayInfoProvider();
