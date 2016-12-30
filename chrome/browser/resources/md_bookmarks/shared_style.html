@@ -1,0 +1,32 @@
+<link rel="import" href="chrome://bookmarks/shared_vars.html">
+
+<dom-module id="shared-style">
+  <template>
+    <style>
+      [hidden] {
+        display: none !important;
+      }
+
+      button.more-vert-button {
+        height: 36px;
+        padding: 8px;
+        width: 36px;
+      }
+
+      button.more-vert-button div {
+        border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        margin: 1px 8px;
+        pointer-events: none;
+        transform: scale(0.8);
+      }
+
+      hr {
+        background: rgba(0, 0, 0, 0.11);
+        border-width: 0;
+        height: 1px;
+        margin: 8px 0;
+      }
+    </style>
+  </template>
+</dom-module>

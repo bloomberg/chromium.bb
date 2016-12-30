@@ -995,6 +995,7 @@ if (!is_android) {
       "data/webui/cr_elements/cr_elements_browsertest.js",
       "data/webui/extensions/cr_extensions_browsertest.js",
       "data/webui/history_browsertest.js",
+      "data/webui/md_bookmarks/md_bookmarks_browsertest.js",
       "data/webui/md_downloads/downloads_browsertest.js",
       "data/webui/md_history/md_history_browsertest.js",
       "data/webui/md_user_manager/user_manager_browsertest.js",

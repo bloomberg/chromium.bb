@@ -320,6 +320,36 @@
   </message>
   <!-- End of Bookmarks Manager strings. -->
 
+  <!-- Begin of material design Bookmarks Manager strings. -->
+  <message name="IDS_MD_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
+    Bookmarks
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_CLEAR_SEARCH" desc="Title of the button in the bookmark manager that stops a search.">
+    Clear search
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_ADD_BOOKMARK" desc="Title of the bookmark toolbar dropdown menu item that adds a new bookmark.">
+    Add new bookmark
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_ADD_FOLDER" desc="Title of the bookmark toolbar dropdown menu item that adds a new folder.">
+    Add new folder
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_BULK_EDIT" desc="Title of the bookmark toolbar dropdown menu item that enters bulk edit mode.">
+    Bulk edit
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_COPY_URL" desc="Title of the bookmark dropdown menu item that copies the url of the bookmark.">
+    Copy URL
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_EXPORT" desc="Title of the bookmark toolbar dropdown menu item that exports bookmarks.">
+    Export Bookmarks
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_IMPORT" desc="Title of the bookmark toolbar dropdown menu item that imports bookmarks.">
+    Import Bookmarks
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_MENU_SORT" desc="Title of the bookmark toolbar dropdown menu item that sorts bookmarks by title.">
+    Sort by title
+  </message>
+  <!-- End of material design Bookmarks Manager strings. -->
+
   <!-- Begin of Bookmarks Menu (in the Main Menu) strings. -->
   <message name="IDS_BOOKMARKS_MENU" desc="The title of the Bookmarks menu in the Main menu and in the Mac menu bar.">
     &amp;Bookmarks
