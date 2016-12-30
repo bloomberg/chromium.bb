@@ -170,6 +170,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            Merge2DTransform);
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
+                           MergeTransformOrigin);
+  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            MergeClip);
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            MergeOpacity);
@@ -188,6 +190,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            TwoEffects);
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
+                           TwoTransformsClipBetween);
+  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            OverlapTransform);
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            MightOverlap);
@@ -196,6 +200,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
                            PendingLayer);
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            PendingLayerWithGeometry);
+  FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
+                           PendingLayerKnownOpaque);
 };
 
 }  // namespace blink

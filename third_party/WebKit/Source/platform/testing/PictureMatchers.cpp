@@ -122,18 +122,9 @@ class DrawsRectanglesMatcher
     for (unsigned index = 0; index < quads.size(); index++) {
       const auto& quadWithColor = quads[index];
       const auto& rectWithColor = m_rectsWithColor[index];
-      if (!quadWithColor.quad.isRectilinear()) {
-        if (listener->IsInterested()) {
-          *listener << "at index " << index << " which draws ";
-          PrintTo(quadWithColor.quad, listener->stream());
-          *listener << " with color "
-                    << quadWithColor.color.serialized().ascii().data() << "\n";
-        }
-        return false;
-      }
 
       const FloatRect& rect = quadWithColor.quad.boundingBox();
-      if (rect != rectWithColor.rect ||
+      if (enclosingIntRect(rect) != enclosingIntRect(rectWithColor.rect) ||
           quadWithColor.color != rectWithColor.color) {
         if (listener->IsInterested()) {
           *listener << "at index " << index << " which draws ";
