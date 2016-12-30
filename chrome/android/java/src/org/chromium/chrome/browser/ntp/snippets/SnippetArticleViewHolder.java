@@ -137,6 +137,11 @@ public class SnippetArticleViewHolder
         if (mArticle.isDownload()) {
             if (menuItemId == ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB) return false;
             if (menuItemId == ContextMenuManager.ID_SAVE_FOR_OFFLINE) return false;
+            return true;
+        }
+        if (mArticle.isRecentTab()) {
+            if (menuItemId == ContextMenuManager.ID_REMOVE) return true;
+            return false;
         }
         return true;
     }
