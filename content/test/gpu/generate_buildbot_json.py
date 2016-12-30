@@ -1153,13 +1153,6 @@ TELEMETRY_TESTS = {
       },
     ],
   },
-  'trace_test': {
-    'tester_configs': [
-      {
-        'allow_on_android': True,
-      },
-    ],
-  },
 }
 
 # These tests use Telemetry's new, simpler, browser_test_runner.
@@ -1198,6 +1191,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'precommit_args': [
       '--download-refimg-from-cloud-storage',
     ],
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ],
+  },
+  'trace_test': {
     'tester_configs': [
       {
         'allow_on_android': True,

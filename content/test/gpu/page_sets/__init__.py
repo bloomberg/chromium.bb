@@ -8,4 +8,3 @@ from telemetry.core import discover
 from telemetry.story import story_set
 
 from page_sets.gpu_process_tests import GpuProcessTestsStorySet
-from page_sets.pixel_tests import PixelTestsStorySet
