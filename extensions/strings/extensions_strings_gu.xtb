@@ -21,20 +21,18 @@
 <translation id="388442998277590542">વિકલ્પોનું પૃષ્ઠ '<ph name="OPTIONS_PAGE" />' લોડ કરી શકાયું નથી.</translation>
 <translation id="4115165561519362854">આ મશીનનાં વ્યવસ્થાપકને <ph name="EXTENSION_VERSION" /> ના ન્યૂનતમ સંસ્કરણ માટે <ph name="EXTENSION_NAME" /> ની જરૂર છે. તે જ્યાં સુધી તે સંસ્કરણ (અથવા તે પછીના) પર અપડેટ ન થાય ત્યાં સુધી સક્ષમ થઈ શકતું નથી.</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' વિશે પૃષ્ઠ લોડ કરી શકાયું નથી.</translation>
-<translation id="4434145631756268951">{0,select, single{USB ઉપકરણ પસંદ કરો}multiple{USB ઉપકરણો પસંદ કરો}other{UNUSED}}</translation>
 <translation id="4811956658694082538">એક ઉપયોગિતા પ્રક્રિયા ક્રેશ થઈ હોવાને કારણે પૅકેજ ઇન્સ્ટોલ કરી શકાયું નથી. Chrome પુનઃપ્રારંભ કરી અને ફરીથી પ્રયાસ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="5026754133087629784">વેબવ્યુ: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">આ એક્સટેન્શનમાં '<ph name="KEY_PATH" />' કી ફાઇલ શામેલ છે. તમે કદાચ એ કરવા માંગતા નથી.</translation>
 <translation id="5627523580512561598">એક્સ્ટેંશન <ph name="EXTENSION_NAME" /></translation>
-<translation id="5630931906013276297">{0,select, single{HID ઉપકરણ પસંદ કરો}multiple{HID ઉપકરણો પસંદ કરો}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">આ મશીનના વ્યવસ્થાપક માટે <ph name="EXTENSION_NAME" /> ઇન્સ્ટોલ કરેલું હોવું જરૂરી છે. તે અનઇન્સ્ટોલ કરી શકાતું નથી.</translation>
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" /> વિક્રેતાનું અજાણ્યું ઉત્પાદન <ph name="PRODUCT_ID" /> (શૃંખલા ક્રમાંક <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="VENDOR_ID" /> વિક્રેતા તરફથી <ph name="PRODUCT_NAME" /></translation>
 <translation id="6143635259298204954">એક્સ્ટેંશન અનપૅક કરી શકાતું નથી. એક્સ્ટેંશનને સુરક્ષિત રીતે અનપૅક કરવા માટે, તમારી પ્રોફાઇલ નિર્દેશિકાનો પાથ હોવો જોઈએ જે સિમલિંક ધરાવતો ન હોય. આવો કોઈ પાથ તમારી પ્રોફાઇલ માટે અસ્તિત્વમાં નથી.</translation>
-<translation id="616804573177634438">{0,select, single{ઍપ્લિકેશન "<ph name="APP_NAME" />" તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહી છે.}multiple{ઍપ્લિકેશન "<ph name="APP_NAME" />" તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહી છે.}other{UNUSED}}</translation>
 <translation id="641087317769093025">એક્સ્ટેન્શન અનઝિપ કરી શકાયું નથી</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />", તમારા એક અથવા વધુ ઉપકરણો પરની ઍક્સેસની વિનંતી કરી રહ્યું છે:</translation>
 <translation id="657064425229075395">પૃષ્ઠભૂમિ સ્ક્રિપ્ટ '<ph name="BACKGROUND_SCRIPT" />' લોડ કરી શકાઈ નથી.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> નું <ph name="PRODUCT_NAME" /> (સીરિયલ નંબર <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">આને અનઝિપ કરવા માટે નિર્દેશિકા બનાવી શક્યાં નથી: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">પૅકેજ અમાન્ય છે. વિગતો: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">આ એક્સટેન્શન એક નેટવર્ક વિનંતીને <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> પર રીડાયરેક્ટ કરવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) એ તેને <ph name="ACTUAL_REDIRECT_DESTINATION" /> પર રીડાયરેક્ટ કર્યું છે.</translation>
 <translation id="8712265948125780616">વિસ્તાર અનપેકર</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />", તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહ્યું છે:</translation>
 <translation id="8825366169884721447">આ એક્સટેન્શન એક નેટવર્ક વિનંતીની વિનંતી હેડર "<ph name="HEADER_NAME" />" ને સંશોધિત કરવામાં નિષ્ફળ થયુ કારણ કે સંશોધિકરણ અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) સાથે વિરોધાભાસી છે.</translation>
 <translation id="9111791539553342076">આ એક્સટેન્શન એક નેટવર્ક વિનંતીની પ્રતિભાવ હેડર "<ph name="HEADER_NAME" />" ને સંશોધિત કરવામાં નિષ્ફળ થયું કારણ કે સંશોધિકરણ અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) સાથે વિરોધાભાસી છે.</translation>
 </translationbundle>

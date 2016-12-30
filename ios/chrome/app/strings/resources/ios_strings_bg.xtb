@@ -10,6 +10,7 @@
 <translation id="1104948393051856124">Приемам! Напред</translation>
 <translation id="1112015203684611006">Неуспешно отпечатване.</translation>
 <translation id="1125564390852150847">Създаване на нов раздел.</translation>
+<translation id="1145536944570833626">Изтриване на съществуващите данни.</translation>
 <translation id="1165039591588034296">Грешка</translation>
 <translation id="1172898394251786223">Следващото поле</translation>
 <translation id="1176932207622159128">Изобр. не може да се запази</translation>
@@ -48,6 +49,7 @@
 <translation id="1753905327828125965">Ползвани</translation>
 <translation id="1809939268435598390">Изтриване на папката</translation>
 <translation id="1813414402673211292">Изчистване на данните за сърфирането</translation>
+<translation id="1820259098641718022">Добавихте към списъка за четене</translation>
 <translation id="1842969606798536927">Плащане</translation>
 <translation id="1876721852596493031">Send Usage Data</translation>
 <translation id="1886928167269928266">Самото начало</translation>
@@ -65,6 +67,7 @@
 <translation id="2116625576999540962">Преместихте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> елемента</translation>
 <translation id="2149973817440762519">Редактиране на отметката</translation>
 <translation id="2154710561487035718">Копиране на URL адреса</translation>
+<translation id="2230173723195178503">Уеб страницата се зареди</translation>
 <translation id="2241634353105152135">Само веднъж</translation>
 <translation id="2267753748892043616">Добавяне на профил</translation>
 <translation id="2273327106802955778">Меню „Още“</translation>
@@ -76,6 +79,7 @@
 <translation id="2386793615875593361">1 избрана</translation>
 <translation id="2435457462613246316">Показване на паролата</translation>
 <translation id="2467815441875554965">Контекстно търсене</translation>
+<translation id="2523092375122821828">Озн. на всичко…</translation>
 <translation id="2572712655377361602">Достъпът до снимките ви е блокиран от правило за устройства</translation>
 <translation id="2584132361465095047">Добавяне на профил…</translation>
 <translation id="2593774076813182497">Стр. не може да се отпечата.</translation>
@@ -116,6 +120,7 @@
 <translation id="3324193307694657476">Адрес 2</translation>
 <translation id="3329904751041170572">Не можа да се установи връзка със сървъра.</translation>
 <translation id="3335947283844343239">Повторно отваряне на затворения раздел</translation>
+<translation id="3387752218061326363">Показва се историята от устройствата, на които сте влезли в профила си. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Изск. прозорци са разр.</translation>
 <translation id="3414292259312108062">Chrome ще съхрани тази парола при <ph name="BEGIN_LINK" />останалите, запазени в Google<ph name="END_LINK" />, и автоматично ще я попълва вместо вас, за да не се налага да я помните.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
@@ -123,7 +128,6 @@
 <translation id="3474649192738347024">Формулярите са попълнени.</translation>
 <translation id="3478058380795961209">Месец на валидност</translation>
 <translation id="3482959374254649722">Разделите ви се синхронизират...</translation>
-<translation id="3485544713029068372">Smart Lock за пароли</translation>
 <translation id="3489372701259491571">Изтриване на запазената парола</translation>
 <translation id="3519193562722059437">Отворете раздел, за да сърфирате в мрежата.</translation>
 <translation id="3527085408025491307">Папка</translation>
@@ -145,6 +149,7 @@
 <translation id="3789841737615482174">Инсталиране</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3897092660631435901">Меню</translation>
+<translation id="3928666092801078803">Комбиниране на данните ми</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="3963231839620026525">Нов раздел „инкогнито“</translation>
 <translation id="3967822245660637423">Изтеглянето завърши</translation>
@@ -156,6 +161,7 @@
 <translation id="4121993058175073134">За изпращане на експ. данни от мрежата конфиг. имейла си в Настройки.</translation>
 <translation id="4124987746317609294">Период от време</translation>
 <translation id="4172051516777682613">Показване винаги</translation>
+<translation id="4176234027218720244">Означаване…</translation>
 <translation id="424315890655130736">Въвеждане на пропуск</translation>
 <translation id="4272631900155121838">За да сканирате код за бърза реакция, активирайте камерата от настройките</translation>
 <translation id="4281844954008187215">Условия за ползване</translation>
@@ -167,6 +173,7 @@
 <translation id="4473991315115669931">Влизане в режим „инкогнито“</translation>
 <translation id="4526249700380860531">Преглед и управление на запазените пароли на адрес <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Опитайте да влезете отново.</translation>
+<translation id="4620246317052452550">Страници, които сте прочели</translation>
 <translation id="4636930964841734540">Информация</translation>
 <translation id="4659667755519643272">Влизане в превключвателя на раздели</translation>
 <translation id="4666531726415300315">Влезли сте като <ph name="EMAIL" />.
@@ -179,6 +186,7 @@
 <translation id="4875622588773761625">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата ви за този сайт?</translation>
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="4923459931733593730">Плащане</translation>
+<translation id="4930268273022498155">Изтриване на съществуващите данни. Можете да ги извлечете, като превключите обратно към <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">При споделянето на елемента възникна проблем.</translation>
 <translation id="4979397965658815378">Влезте с профила си в Google, за да получите своите отметки, пароли, история и други настройки на всичките си устройства</translation>
 <translation id="5005498671520578047">Копиране на паролата</translation>
@@ -195,10 +203,12 @@
 <translation id="5197255632782567636">Интернет</translation>
 <translation id="5198972191746488848">Добавяне на карта...</translation>
 <translation id="5228579091201413441">Активиране на синхронизирането</translation>
+<translation id="5230733896359313003">Адрес за доставка</translation>
 <translation id="5244474230056479698">Синхронизира се със: <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Показване</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5327248766486351172">Име</translation>
+<translation id="532992759783668360">Изтр. на прочет.</translation>
 <translation id="5388358297987318779">Отваряне на изображението</translation>
 <translation id="5409365236829784218">Няма инсталирани приложения, които могат да отворят файла.</translation>
 <translation id="54401264925851789">Информация за сигурността на страницата</translation>
@@ -227,6 +237,8 @@
 <translation id="5916664084637901428">Включено</translation>
 <translation id="5953603475187800576">Показване на адресите и кредитните карти от Google Payments</translation>
 <translation id="5964480694698977962">Създаване на нов раздел в режим „инкогнито“.</translation>
+<translation id="5965679971710331625">Влезли сте в профил</translation>
+<translation id="5982717868370722439">Добавяне на съществуващите данни към <ph name="USER_EMAIL" />.</translation>
 <translation id="6012140227487808125">Шифрова се…</translation>
 <translation id="6021332621416007159">Отваряне във...</translation>
 <translation id="6039694632319341016">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата ви за <ph name="USERNAME" /> за този сайт?</translation>
@@ -239,9 +251,13 @@
 <translation id="6136914049981179737">Току-що</translation>
 <translation id="6149061208933997199">Ползване на паролата</translation>
 <translation id="6158823227857319455">Нов раздел</translation>
+<translation id="616831107264507309">Четене по-късно</translation>
 <translation id="6184086493125982861">Показване на разделите</translation>
 <translation id="6187302354554850004">Последно синхр.: <ph name="LAST_USED_TIME" /></translation>
+<translation id="6189413832092199491">Непрочетени</translation>
+<translation id="6194286531716220336">Отказ</translation>
 <translation id="6196207969502475924">Гласово търсене</translation>
+<translation id="6254066287920239840">Отваряне на връзките в приложението вместо в браузъра.</translation>
 <translation id="6255097610484507482">Редактиране на кредитната карта</translation>
 <translation id="6308436439357671616">Това ви позволява да правите и качвате снимки.</translation>
 <translation id="6314335155547195432">Генериране на парола</translation>
@@ -249,11 +265,12 @@
 <translation id="6337234675334993532">Шифроване</translation>
 <translation id="633809752005859102">Нещо сериозно се обърка. Ще работим по него.</translation>
 <translation id="6344783595350022745">Изчистване на текста</translation>
-<translation id="6351971471682124046">Предава се...</translation>
 <translation id="6362362396625799311">Няма раздели в режим „инкогнито“</translation>
 <translation id="6380866119319257197">Ако забравите пропуска си или искате да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" /></translation>
+<translation id="6385146967113720558">Непрочетено</translation>
 <translation id="6389470377220713856">Име върху картата</translation>
 <translation id="6406506848690869874">Синхронизиранe</translation>
+<translation id="6417838470969808600">Имате отметки, история, пароли и други настройки от <ph name="USER_EMAIL1" /></translation>
 <translation id="641799622251403418">Влезли сте като <ph name="EMAIL" />.
 
 На <ph name="TIME" /> данните ви бяха шифровани с пропуска ви за синхронизиране. Въведете го, за да стартирате синхронизирането.</translation>
@@ -288,6 +305,7 @@
 <translation id="7108338896283013870">Скриване</translation>
 <translation id="7131892264600713844">Показва се историята от това устройство. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Име и фамилия</translation>
+<translation id="713434964320012835">Изтриване</translation>
 <translation id="7136892417564438900">Няма достъп до камерата</translation>
 <translation id="7167621057293532233">Типове данни</translation>
 <translation id="7189598951263744875">Споделяне...</translation>
@@ -309,7 +327,6 @@
 <translation id="7514365320538308">Изтегляне</translation>
 <translation id="7537586195939242955">Понастоящем пропускът не може да се инсталира в Passbook.</translation>
 <translation id="7561196759112975576">Винаги</translation>
-<translation id="7572670177380301651">Показва се историята от устройствата, на които сте влезли в профила си. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="7588950540487816470">Физическа мрежа</translation>
 <translation id="7603852183842204213">Блок. изск. прозорци (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Синхронизирането не работи</translation>
@@ -317,9 +334,11 @@
 <translation id="7649070708921625228">Помощ</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7671141431838911305">INSTALL</translation>
+<translation id="7682287625158474539">Адрес за доставка</translation>
 <translation id="7765158879357617694">Преместване</translation>
 <translation id="7769602470925380267">Приемане и излизане от профила</translation>
 <translation id="7772032839648071052">Потвърдете пропуска</translation>
+<translation id="7791543448312431591">Добавяне</translation>
 <translation id="780301667611848630">Не, благодаря</translation>
 <translation id="7851858861565204677">Други устройства</translation>
 <translation id="7859704718976024901">История на сърфирането</translation>
@@ -331,6 +350,7 @@
 <translation id="8019783059653722575">Това ви позволява да запазвате и качвате снимки.</translation>
 <translation id="8023878949384262191">Разгъва секцията.</translation>
 <translation id="8059533439631660104">Свива секцията.</translation>
+<translation id="806745655614357130">Оставяне на данните отделно</translation>
 <translation id="8076014560081431679">Запазените настройки за сайтове няма да бъдат изтрити и може да отразяват навиците ви при сърфиране. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Затваряне на разделите</translation>
 <translation id="8108697784695284144">Паролата ви бе копирана.</translation>
@@ -338,12 +358,14 @@
 <translation id="8205564605687841303">Отказ</translation>
 <translation id="8225985093977202398">Кеширани изображения и файлове</translation>
 <translation id="8261506727792406068">Изтриване</translation>
+<translation id="8272194309885535896">Изтегляне на изображението</translation>
 <translation id="8272426682713568063">Кредитни карти</translation>
 <translation id="8281781826761538115">Стандартно – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Контролирайте начина, по който използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google</translation>
 <translation id="8428045167754449968">Град/селище</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433678324664858900">Предложения</translation>
+<translation id="8458197615157477273">Прочетено</translation>
 <translation id="8458397775385147834">Изтрихте 1 елемент</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="8517375800490286174">Лицензи за отворен код</translation>
@@ -355,6 +377,7 @@
 <translation id="8620640915598389714">Редактиране</translation>
 <translation id="8636825310635137004">Включете синхронизирането, за да получите разделите си от другите си устройства.</translation>
 <translation id="8680787084697685621">Данните за вход в профила ви не са актуални.</translation>
+<translation id="8699098509676302392">Добавяне на адрес...</translation>
 <translation id="8721297211384281569">Меню „Инструменти“</translation>
 <translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="8730621377337864115">Готово</translation>
@@ -375,6 +398,7 @@
 <translation id="9055772144595778347">Не може да се влезе</translation>
 <translation id="9065203028668620118">Редактиране</translation>
 <translation id="9079935439869366234">Означаване на всичко като непрочетено</translation>
+<translation id="9080712759204168376">Обобщена информация за поръчката</translation>
 <translation id="9083392325882095631">1 елемент</translation>
 <translation id="9100610230175265781">Изисква се пропуск</translation>
 <translation id="9148126808321036104">Влезте отново</translation>

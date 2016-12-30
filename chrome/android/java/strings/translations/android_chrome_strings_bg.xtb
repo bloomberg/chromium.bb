@@ -9,6 +9,7 @@
 <translation id="1111673857033749125">Тук ще се показват отметките, които сте запазили на другите си устройства.</translation>
 <translation id="1121094540300013208">Отчети за употребата и сигнали за сривове</translation>
 <translation id="1137305377394488060">последния час</translation>
+<translation id="1145536944570833626">Изтриване на съществуващите данни.</translation>
 <translation id="1146678959555564648">Вход във Виртуална реалност</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Премахване</translation>
@@ -19,9 +20,11 @@
 <translation id="1206892813135768548">Копиране на текста на връзката</translation>
 <translation id="1209206284964581585">Скриване засега</translation>
 <translation id="1211530540767271776">Тук няма USB устройства</translation>
+<translation id="123724288017357924">Презареждане на страницата (кешът се пренебрегва)</translation>
 <translation id="1240668123557180468">Откривайте уеб страници, изпращани от обекти в близост. Chrome събира съответните уеб страници, изпраща ги анонимно до услуга на Google, за да намери най-полезните за вас, и след това ви ги показва.
 
 Функциите за Bluetooth и местоположението трябва да са включени, за да използвате Физическата мрежа.</translation>
+<translation id="124678866338384709">Затваряне на текущия раздел</translation>
 <translation id="1254090737195733114">Ще импорт. ли данните?</translation>
 <translation id="1258753120186372309">Драскулка на Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Стоп</translation>
@@ -30,6 +33,7 @@
 <translation id="129553762522093515">Наскоро затворени</translation>
 <translation id="1303671224831497365">Няма намерени устройства с Bluetooth</translation>
 <translation id="1326317727527857210">Влезте в Chrome, за да получите разделите си от другите си устройства.</translation>
+<translation id="1332501820983677155">Комбинации за функции на Google Chrome</translation>
 <translation id="1340482604681802745">Адрес за вземане</translation>
 <translation id="13410144310025252">Прегледайте ги в Chrome</translation>
 <translation id="1369915414381695676">Сайтът <ph name="SITE_NAME" /> е добавен</translation>
@@ -70,6 +74,7 @@
 <translation id="1647391597548383849">Достъп до камерата</translation>
 <translation id="1656489000284462475">Вземане</translation>
 <translation id="1661474178782861119">Скоро ще се покажат още статии. Приятна вечер.</translation>
+<translation id="1671236975893690980">Предстои изтегляне…</translation>
 <translation id="169033420419426091">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради липсваща SD карта.</translation>
 <translation id="1709438864123551175">Икономия на данни</translation>
 <translation id="1742134235943978220">Преведено на <ph name="TARGET_LANGUAGE" />.</translation>
@@ -95,6 +100,7 @@
 <translation id="1966710179511230534">Моля, актуализирайте данните си за вход.</translation>
 <translation id="1974060860693918893">Разширени</translation>
 <translation id="1984937141057606926">Разрешено, но не и за трети страни</translation>
+<translation id="1993768208584545658"><ph name="SITE" /> иска да се сдвои</translation>
 <translation id="1994173015038366702">URL адрес на сайт</translation>
 <translation id="200815880754187296">Други приложения: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="2020194265157481222">Името на картодържателя е задължително</translation>
@@ -121,6 +127,7 @@
 <translation id="2268044343513325586">Прецизиране</translation>
 <translation id="2279474006916349339">Всички данни на приложението Chrome ще се изтрият за постоянно. Това включва файловете, настройките, профилите, базите от данни и др.</translation>
 <translation id="2286841657746966508">Адрес за фактуриране</translation>
+<translation id="230697611605700222">Опциите за карти и адреси са от профила ви в Google (<ph name="ACCOUNT_EMAIL" />) и Chrome. Можете да ги управлявате от <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" />.</translation>
 <translation id="2315043854645842844">Избраният сертификат от страната на клиента не се поддържа от операционната система.</translation>
 <translation id="2321958826496381788">Преместете плъзгача, докато можете да четете удобно това. Текстът трябва да изглежда поне толкова голям след двукратно докосване на абзац.</translation>
 <translation id="2323763861024343754">Данни от сайтове</translation>
@@ -184,6 +191,7 @@
 <translation id="2962095958535813455">Превключихте към разделите в режим „инкогнито“</translation>
 <translation id="2968755619301702150">Визуализатор на сертификатите</translation>
 <translation id="2979025552038692506">Избран раздел в режим „инкогнито“</translation>
+<translation id="2989523299700148168">Наскоро посетени</translation>
 <translation id="2996291259634659425">Създаване на пропуск</translation>
 <translation id="2996809686854298943">Изисква се URL адрес</translation>
 <translation id="300526633675317032">Така ще се изчистят всички съхранявани данни от уебсайтове (<ph name="SIZE_IN_KB" />).</translation>
@@ -194,6 +202,7 @@
 <translation id="3137521801621304719">Напускане на режима „инкогнито“</translation>
 <translation id="3148434565183091099">Влезте в Chrome, за да получите отметките си на всичките си устройства.</translation>
 <translation id="3149891296864842641">Опция за доставка</translation>
+<translation id="3166827708714933426">Комбинации за раздели и прозорци</translation>
 <translation id="3177909033752230686">Език на страницата:</translation>
 <translation id="3190152372525844641">Включете разрешенията за Chrome от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Съхранявани данни: <ph name="STORAGE_AMOUNT" /></translation>
@@ -204,9 +213,9 @@
 <translation id="3236059992281584593">Остава 1 мин</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3254409185687681395">Запазване на отметка към тази страница</translation>
+<translation id="3259831549858767975">Смаляване на всички елементи на страницата</translation>
 <translation id="3269093882174072735">Зареждане на изображението</translation>
 <translation id="3269956123044984603">Включете „Авт. синхронизиране на данните“ от „Профили“ в настройките на Android, за да получите разделите си от другите си устройства.</translation>
-<translation id="3278850099957560514">Намалете разходите за данни, като използвате Google за оптимизиране на посещаваните от вас страници. Няма да оптимизираме, нито ще виждаме страниците, отваряни през частни връзки (HTTPS) или в раздели в режим „инкогнито“.</translation>
 <translation id="3282497668470633863">Добавяне на името на картодържателя</translation>
 <translation id="3282568296779691940">Вход в Chrome</translation>
 <translation id="3303414029551471755">Искате ли да продължите с изтеглянето на съдържанието?</translation>
@@ -219,11 +228,12 @@
 <translation id="3386292677130313581">Извеждане на запитване, преди на сайтовете да се разреши достъп до местоположението ви (препоръчително)</translation>
 <translation id="3387650086002190359">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради грешки във файловата система.</translation>
 <translation id="3391030046425686457">Адрес за бърза доставка</translation>
+<translation id="3398320232533725830">Отваряне на диспечера на отметките</translation>
 <translation id="3414952576877147120">Размер:</translation>
 <translation id="3431636764301398940">Запазване на картата на това устройство</translation>
 <translation id="3435896845095436175">Активиране</translation>
+<translation id="3443221991560634068">Презареждане на текущата страница</translation>
 <translation id="3452612588551937789">Влезте с профила си в Google, за да получите своите отметки, история, пароли и други настройки на всичките си устройства.</translation>
-<translation id="3485544713029068372">Smart Lock за пароли</translation>
 <translation id="3492207499832628349">Нов раздел „инкогнито“</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /> за предложеното съдържание</translation>
 <translation id="3518985090088779359">Приемам! Напред</translation>
@@ -231,6 +241,8 @@
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3542235761944717775">Свободно място: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="3549644494707163724">Всички синхронизирани данни да се шифроват със собствения ви пропуск за синхронизиране</translation>
+<translation id="3549657413697417275">Търсене в историята ви</translation>
+<translation id="3582930987043644930">Добавете име</translation>
 <translation id="3590487821116122040">Съхранявани данни от сайтове, които Chrome не счита за важни (напр. рядко посещавани или сайтове без запазени настройки)</translation>
 <translation id="360480449234699036">Научавайте за темите в уебсайтовете, без да напускате страницата. Функцията за търсене с докосване изпраща до Google Търсене определени думи и заобикалящия ги текст и така извежда определения, снимки, резултати и други подробности.
 
@@ -240,8 +252,10 @@
 <translation id="363596933471559332">Автоматично влизане в уебсайтове посредством съхранявани идентификационни данни. Когато функцията е изключена, ще трябва да потвърждавате всяко влизане в профил в уебсайт.</translation>
 <translation id="3656115297268584622">Включете местоположението от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Уебсайтовете на трети страни могат да запазват „бисквитки“ и да четат данни от такива</translation>
+<translation id="3662546969139119822">Тук няма история</translation>
 <translation id="3672452749423051839">Предложения в случай на грешки при сърфиране</translation>
 <translation id="3706658020782046159">Изберете адрес за доставка, за да проверите начините и изискванията за доставяне.</translation>
+<translation id="3714981814255182093">Отваряне на лентата за търсене</translation>
 <translation id="3716158070938632480">В близост има уеб страници</translation>
 <translation id="3738139272394829648">Търсене чрез докосване</translation>
 <translation id="3744111309925758534">Други приложения: <ph name="MEGABYTES" /> МБ</translation>
@@ -253,16 +267,20 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> изтегляния бяха изтрити</translation>
 <translation id="3822502789641063741">Изчистване на данните?</translation>
 <translation id="3828029223314399057">Търсене в отметките</translation>
+<translation id="3845539888601087042">Показва се историята от устройствата, на които сте влезли в профила си. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
+<translation id="3859306556332390985">Придвижване напред</translation>
 <translation id="3894427358181296146">Добавяне на папка</translation>
 <translation id="3895926599014793903">Принудително активиране на промяната на мащаба</translation>
 <translation id="3917783807003067648">Местоположението е блокирано</translation>
 <translation id="3927692899758076493">Безсерифен</translation>
+<translation id="3928666092801078803">Комбиниране на данните ми</translation>
 <translation id="3931947361983910192">последните 4 седмици</translation>
 <translation id="393697183122708255">Не е налице активирано гласово търсене</translation>
 <translation id="3946611741043634542">С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome.</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="3967822245660637423">Изтеглянето завърши</translation>
 <translation id="397583555483684758">Синхронизирането спря да работи</translation>
+<translation id="3985215325736559418">Искате ли отново да изтеглите „<ph name="FILE_NAME" />“?</translation>
 <translation id="3988213473815854515">Местоположението е разрешено</translation>
 <translation id="3997476611815694295">Маловажни данни в хранилището</translation>
 <translation id="4002066346123236978">Заглавие</translation>
@@ -299,11 +317,9 @@
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4384468725000734951">За търсене ще се използва Sogou</translation>
 <translation id="4412992751769744546">Разрешаване на „бисквитките“ на трети страни</translation>
-<translation id="4440256989292146959">Сърфирайте повече за по-малко</translation>
 <translation id="4452548195519783679">Отметката бе запазена в/ъв „<ph name="FOLDER_NAME" />“</translation>
 <translation id="4457399174246232812">В бъдеще намиращите се в близост страници във Физическата мрежа ще се показват в списъка с известията ви</translation>
 <translation id="4479647676395637221">Извеждане на запитване, преди да се разреши на сайтовете да използват камерата (препоръчително)</translation>
-<translation id="4498934959426056365">Генериране на ключ</translation>
 <translation id="4508440807153586353">Само някой с пропуска ви може да прочете шифрованите ви данни – той не се изпраща до Google, нито се съхранява от нас. Ако го забравите или искате да промените тази настройка, ще се наложи да нулирате синхронизирането. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{преди # ден}other{преди # дни}}</translation>
 <translation id="4522570452068850558">Подробности</translation>
@@ -311,6 +327,7 @@
 <translation id="4532845899244822526">Избиране на папка</translation>
 <translation id="4535858793016067060">Включете „Неизвестни източници“ в настройките за сигурност на Android, за да изпробвате експеримента за подобрено добавяне към началния екран. Непременно деактивирайте тази настройка, когато приключите с тестването.</translation>
 <translation id="4543661749405994812">Копиране на имейл адреса</translation>
+<translation id="4558311620361989323">Комбинации за уеб страници</translation>
 <translation id="4572422548854449519">Вход в управляван профил</translation>
 <translation id="457875822857220463">Бърза доставка</translation>
 <translation id="4581964774250883625">Преминахте в режим „инкогнито“.</translation>
@@ -329,6 +346,7 @@
 <translation id="4730876730346568982">Превключвате профилите за синхронизиране от <ph name="ACCOUNT_EMAIL_OLD" /> към <ph name="ACCOUNT_EMAIL_NEW" />. Данните ви в Chrome се управляват от <ph name="MANAGED_DOMAIN" />. Така данните ви ще бъдат изтрити от това устройство, но ще останат в/ъв <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Актуализиране</translation>
 <translation id="4738836084190194332">Последно синхронизиране: <ph name="WHEN" /></translation>
+<translation id="4749960740855309258">Отваряне на нов раздел</translation>
 <translation id="4758311279753947758">Добавяне на информация за връзка</translation>
 <translation id="4759238208242260848">Изтегляния</translation>
 <translation id="4766369052440583386">Функцията Икономия на данни е включена</translation>
@@ -337,6 +355,8 @@
 <translation id="4807963036345170158">Функцията Икономия на данни е изключена</translation>
 <translation id="4816465935029283692">Типове данни</translation>
 <translation id="4827948050554950725">Добавяне на кредитна карта</translation>
+<translation id="4835385943915508971">Chrome няма достъп до заявения ресурс.</translation>
+<translation id="4837753911714442426">Отваряне на опциите за отпечатване на страницата</translation>
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="4860895144060829044">Обаждане</translation>
 <translation id="4881695831933465202">Отваряне</translation>
@@ -352,6 +372,7 @@
 <translation id="4996978546172906250">Споделяне чрез</translation>
 <translation id="5000922062037820727">Блокирано (препоръчително)</translation>
 <translation id="5005498671520578047">Копиране на паролата</translation>
+<translation id="5011311129201317034"><ph name="SITE" /> иска да се свърже</translation>
 <translation id="5016205925109358554">Серифен</translation>
 <translation id="5039804452771397117">Разрешаване</translation>
 <translation id="5040262127954254034">Поверителност</translation>
@@ -373,6 +394,7 @@
 <translation id="5184329579814168207">Отваряне в Chrome</translation>
 <translation id="5199929503336119739">Служебен потребителски профил</translation>
 <translation id="5209320130288484488">Няма намерени устройства</translation>
+<translation id="5210286577605176222">Преминаване към предишния раздел</translation>
 <translation id="5210365745912300556">Затваряне на раздела</translation>
 <translation id="5222676887888702881">Изход</translation>
 <translation id="5233638681132016545">Нов раздел</translation>
@@ -398,6 +420,8 @@
 <translation id="5414836363063783498">Потвърждава се…</translation>
 <translation id="5423934151118863508">Най-посещаваните от вас страници ще се показват тук</translation>
 <translation id="5424588387303617268">Налични: <ph name="GIGABYTES" /> ГБ</translation>
+<translation id="5435775191620395718">Показва се историята от това устройство. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
+<translation id="5441522332038954058">Преминаване към адресната лента</translation>
 <translation id="544291274896356069">Ще напуснете режим „инкогнито“, ако тази връзка се отвори във външно приложение. Искате ли да продължите?</translation>
 <translation id="5447201525962359567">Всички данни от сайтове, включително „бисквитки“ и друга локално съхранявана информация</translation>
 <translation id="5456381639095306749">Изтегляне на страницата</translation>
@@ -406,6 +430,7 @@
 <translation id="5487521232677179737">Изчиств. на данните</translation>
 <translation id="5487729733663684359">Актуализациите на Chrome вече не се поддържат за тази версия на Android.</translation>
 <translation id="5512137114520586844">Този профил се управлява от <ph name="PARENT_NAME" />.</translation>
+<translation id="5517095782334947753">Имате отметки, история, пароли и други настройки от <ph name="FROM_ACCOUNT" /></translation>
 <translation id="5527082711130173040">Chrome се нуждае от достъп до местоположението, за да сканира за устройства. <ph name="BEGIN_LINK1" />Актуализирайте разрешенията<ph name="END_LINK1" />. Също така услугите за местоположение са <ph name="BEGIN_LINK2" />изключени за това устройство<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Раздели „инкогнито“: Затв.</translation>
 <translation id="554327794654007401">Физическата мрежа</translation>
@@ -415,6 +440,7 @@
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="5596627076506792578">Още опции</translation>
+<translation id="5610807607761827392">Можете да управлявате картите и адресите от <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" />.</translation>
 <translation id="5626134646977739690">Име:</translation>
 <translation id="5646376287012673985">Местоположение</translation>
 <translation id="5659593005791499971">Имейл</translation>
@@ -428,6 +454,7 @@
 Сърфирането ви обаче не е невидимо. При преминаване в режим „инкогнито“ то не се скрива от работодателя ви и от доставчика ви на интернет услуги, нито от уебсайтовете, които посещавате.</translation>
 <translation id="572328651809341494">Скорошни раздели</translation>
 <translation id="572392919096807438">Запомняне на решението ми</translation>
+<translation id="5726692708398506830">Уголемяване на всички елементи на страницата</translation>
 <translation id="5748802427693696783">Превключихте към стандартните раздели</translation>
 <translation id="5749068826913805084">Chrome се нуждае от достъп до хранилището, за да изтегля файлове.</translation>
 <translation id="57586589942790530">Невалиден номер на карта</translation>
@@ -450,10 +477,13 @@
 <translation id="5919204609460789179">Актуализирайте <ph name="PRODUCT_NAME" />, за да стартира синхронизирането</translation>
 <translation id="5939518447894949180">Нулиране</translation>
 <translation id="5942872142862698679">За търсене ще се използва Google</translation>
+<translation id="5956665950594638604">Отваряне на Помощния център на Chrome в нов раздел</translation>
 <translation id="6000066717592683814">Запазване на Google</translation>
 <translation id="6010869025736512584">Осъществява се достъп до видеовхода</translation>
+<translation id="6011754012569870220">Опциите за карти и адреси са от Chrome. Можете да ги управлявате от <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" />.</translation>
 <translation id="6012342843556706400">Chrome се нуждае от достъп до местоположението, за да го сподели с този сайт.</translation>
 <translation id="6031101910111098835">Свито – Кликнете за разгъване</translation>
+<translation id="6039379616847168523">Преминаване към следващия раздел</translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6042308850641462728">Още</translation>
 <translation id="604996488070107836">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради неизвестна грешка.</translation>
@@ -508,6 +538,7 @@
 <translation id="6571070086367343653">Редактиране на кредитната карта</translation>
 <translation id="6573431926118603307">Тук ще се показват разделите, които сте отворили в Chrome на другите си устройства.</translation>
 <translation id="6575643671698722332">Нулирането не бе успешно. Уверете се, че устройството е онлайн, и опитайте пак.</translation>
+<translation id="6583199322650523874">Запазване на отметка към текущата страница</translation>
 <translation id="6600954340915313787">Копирано в Chrome</translation>
 <translation id="6612358246767739896">Защитено съдържание</translation>
 <translation id="6626291197371920147">Добавяне на валиден номер на карта</translation>
@@ -520,6 +551,7 @@
 <translation id="666731172850799929">Отваряне в <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Съобщение за поверителност на Chrome</translation>
 <translation id="6698801883190606802">Управление на синхронизираните данни</translation>
+<translation id="6701279291835318271">Отчети за сигурността</translation>
 <translation id="6710213216561001401">Предишна</translation>
 <translation id="6738867403308150051">Изтегля се…</translation>
 <translation id="6743044928064272573">Опция за вземане</translation>
@@ -536,6 +568,7 @@
 <translation id="6864459304226931083">Изтегляне на изображението</translation>
 <translation id="6865313869410766144">Данни за автоматично попълване на формуляри</translation>
 <translation id="6868088497967843822">Влезте в профила си, за да получите своите отметки, история, пароли и други настройки на всичките си устройства</translation>
+<translation id="688738109438487280">Добавяне на съществуващите данни към <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d отворен раздел}other{%1$d отворени раздела}}</translation>
 <translation id="6937422995269576720">Номерът на картата е невалиден</translation>
 <translation id="6945221475159498467">Изберете</translation>
@@ -553,7 +586,6 @@
 <translation id="7022756207310403729">Отваряне в браузъра</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7031882061095297553">Синхронизиране със</translation>
-<translation id="7040138676081995583">Отваряне със...</translation>
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7057058088140140610">Кредитни карти и адреси посредством Google Payments</translation>
 <translation id="7062545763355031412">Приемане и превключване на профилите</translation>
@@ -598,6 +630,7 @@
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Получете помощ<ph name="END_LINK1" /> или <ph name="BEGIN_LINK2" />сканирайте отново<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Добре дошли в Chrome</translation>
 <translation id="7638584964844754484">Неправилен пропуск</translation>
+<translation id="7641339528570811325">Изчистване на данните за сърфирането…</translation>
 <translation id="7648422057306047504">Шифроване на паролите с идентификационните данни за Google</translation>
 <translation id="7649070708921625228">Помощ</translation>
 <translation id="7658239707568436148">Отказ</translation>
@@ -613,6 +646,7 @@
 <translation id="7788788617745289808">Chrome се нуждае от достъп до камерата, за да я сподели с този сайт.</translation>
 <translation id="7791543448312431591">Добавяне</translation>
 <translation id="780301667611848630">Не, благодаря</translation>
+<translation id="7810647596859435254">Отваряне със…</translation>
 <translation id="7829298379596169484">Осъществява се достъп до аудиовхода</translation>
 <translation id="7837582000577464779">При обработването на поръчката ви възникна грешка. Моля, проверете профила си и опитайте отново.</translation>
 <translation id="7837721118676387834">Разрешаване на автоматичното възпроизвеждане на видеоклипове със заглушен звук за конкретен сайт.</translation>
@@ -620,6 +654,7 @@
 <translation id="7851858861565204677">Други устройства</translation>
 <translation id="7875915731392087153">Създайте имейл</translation>
 <translation id="7876243839304621966">Премахване на всички</translation>
+<translation id="7929962904089429003">Отваряне на менюто</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> не е актуален.</translation>
 <translation id="7947953824732555851">Приемам и влизам</translation>
 <translation id="7949961459945740081">Получете най-новите функции</translation>
@@ -628,6 +663,8 @@
 <translation id="7998918019931843664">Повторно отваряне на затворения раздел</translation>
 <translation id="7999064672810608036">Наистина ли искате да изчистите всички локални данни, включително „бисквитките“, и да нулирате всички разрешения за този уебсайт?</translation>
 <translation id="8007176423574883786">Изключено за това устройство</translation>
+<translation id="8008818777654712271">Автоматично изпращане до Google на системна информация и част от съдържанието на страниците с цел по-лесно откриване на опасни приложения и сайтове</translation>
+<translation id="8015452622527143194">Стандартен размер на всички елементи на страницата</translation>
 <translation id="802154636333426148">Изтеглянето не бе успешно</translation>
 <translation id="8026334261755873520">Изчистване на данните за сърфирането</translation>
 <translation id="8033827949643255796">откроени</translation>
@@ -635,6 +672,7 @@
 <translation id="8037750541064988519">Остават <ph name="DAYS" /> дни</translation>
 <translation id="8051695050440594747">Налице: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8063895661287329888">Добавянето на отметката не бе успешно.</translation>
+<translation id="806745655614357130">Оставяне на данните отделно</translation>
 <translation id="8068648041423924542">Сертификатът не може да бъде избран.</translation>
 <translation id="8069239273282989646">След компресиране</translation>
 <translation id="8073388330009372546">Отваряне в нов раздел</translation>
@@ -667,8 +705,10 @@
 <translation id="8413126021676339697">Показване на пълната история</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
+<translation id="8441146129660941386">Придвижване назад</translation>
 <translation id="8447861592752582886">Отмяна на разрешението за достъп до устройството</translation>
 <translation id="8487700953926739672">Налице офлайн</translation>
+<translation id="8489271220582375723">Отваряне на страницата „История“</translation>
 <translation id="8493948351860045254">Освобождаване на място</translation>
 <translation id="8497726226069778601">Тук няма нищо… засега</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
@@ -693,7 +733,9 @@
 <translation id="8719023831149562936">Текущият раздел не може да се излъчи</translation>
 <translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="8741995161408053644">Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8748850008226585750">Съдържанието е скрито</translation>
+<translation id="8788968922598763114">Повторно отваряне на последно затворения раздел</translation>
 <translation id="8812942424849541387">Контролирайте това поведение от <ph name="BEGIN_LINK1" />Настройки<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Отметки</translation>
 <translation id="883635517171802338">Блокиране на показването на изскачащи прозорци от сайтовете (препоръчително)</translation>
@@ -713,6 +755,7 @@
 <translation id="8979340629087822094">последния ден</translation>
 <translation id="8981454092730389528">Контроли за активността в Google</translation>
 <translation id="8986494364107987395">Автоматично изпращане до Google на статистически данни за използването на Chrome и сигнали за сривове</translation>
+<translation id="8993760627012879038">Отваряне на нов раздел в режим „инкогнито“</translation>
 <translation id="8998729206196772491">Влизате с профил, управляван от <ph name="MANAGED_DOMAIN" />, и предоставяте на администратора му контрол върху данните си в Chrome. Те ще се свържат за постоянно с този профил. При излизане от профила в браузъра информацията ви ще се изтрие от устройството, но ще продължи да се съхранява в профила ви в Google.</translation>
 <translation id="9019902583201351841">Управлява се от родителите ви</translation>
 <translation id="9038649477754266430">Използване на услуга за предвиждане с цел по-бързо зареждане на страниците</translation>
@@ -739,6 +782,7 @@
 <translation id="932327136139879170">Начална страница</translation>
 <translation id="938850635132480979">Грешка: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Достъп до микрофона</translation>
+<translation id="951339005376969845">Изтриване на съществуващите данни. Можете да ги извлечете, като превключите обратно към <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome може да използва <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> за търсене в Китай. Можете да промените това от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="969096075394517431">Промяна на езиците</translation>
 <translation id="970715775301869095">Остават <ph name="MINUTES" /> мин</translation>

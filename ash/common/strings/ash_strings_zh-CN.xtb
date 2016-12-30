@@ -54,10 +54,8 @@
 <translation id="2429753432712299108">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。在接受之前，请确保该设备上显示以下配对密钥：<ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">出现错误</translation>
 <translation id="2509468283778169019">CAPS LOCK 已打开</translation>
-<translation id="252373100621549798">未知展示广告</translation>
 <translation id="2532589005999780174">高反差模式</translation>
 <translation id="2562916301614567480">专用网</translation>
-<translation id="2661637000095600270">找不到系统支持的分辨率，因此无法镜像显示屏。已改为进入扩展桌面。点击可发送反馈报告。</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />：正在连接...</translation>
 <translation id="2700058918926273959">会话将在<ph name="SESSION_TIME_REMAINING" />后结束，到时您将自动退出。</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
@@ -114,7 +112,6 @@
 <translation id="3846575436967432996">没有可用的网络信息</translation>
 <translation id="3866182280516392520">IPv6 地址</translation>
 <translation id="3891340733213178823">连按两次Ctrl+Shift+Q即可退出。</translation>
-<translation id="3892641579809465218">内部显示屏</translation>
 <translation id="3893630138897523026">ChromeVox（语音反馈）</translation>
 <translation id="3899995891769452915">语音输入</translation>
 <translation id="3901991538546252627">正在连接：<ph name="NAME" /></translation>
@@ -177,6 +174,8 @@
 <translation id="5977415296283489383">耳机</translation>
 <translation id="5978382165065462689">正在通过远程协助共享您屏幕的控制权限。</translation>
 <translation id="5980301590375426705">退出访客模式</translation>
+<translation id="6041154455840261787">已启用高反差模式。再按一次 Search+Shift+H 组合键即可关闭此模式。</translation>
+<translation id="6043212731627905357">该显示器与您的<ph name="DEVICE_TYPE" />不兼容（系统不支持该显示器）。</translation>
 <translation id="6043994281159824495">立即退出</translation>
 <translation id="6047696787498798094">切换到其他用户后将停止屏幕共享。要继续吗？</translation>
 <translation id="6062360702481658777">您将在<ph name="LOGOUT_TIME_LEFT" />后自动退出。</translation>
@@ -185,7 +184,6 @@
 <translation id="6144938890088808325">帮助我们改进 Chromebook</translation>
 <translation id="615957422585914272">显示屏幕键盘</translation>
 <translation id="6165508094623778733">了解详情</translation>
-<translation id="6203030746557259519">虚拟显示器</translation>
 <translation id="6248847161401822652">连按两次 Control+Shift+Q 即可退出。</translation>
 <translation id="6267036997247669271"><ph name="NAME" />：正在激活…</translation>
 <translation id="6297287540776456956">使用触控笔选择一个区域</translation>
@@ -208,6 +206,7 @@
 <translation id="6700713906295497288">IME 菜单按钮</translation>
 <translation id="6713285437468012787">蓝牙设备“<ph name="DEVICE_NAME" />”已配对，现可供所有用户使用。您可以通过“设置”取消此配对。</translation>
 <translation id="6785414152754474415">电池电量为<ph name="PERCENTAGE" />%（正在充电）。</translation>
+<translation id="6803622936009808957">找不到系统支持的分辨率，因此无法镜像显示屏。已改为进入扩展桌面。</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">激活 <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">连接其他网络...</translation>
@@ -275,7 +274,6 @@
 <translation id="8878886163241303700">正在扩展屏幕</translation>
 <translation id="8938800817013097409">USB-C 设备（背面右侧端口）</translation>
 <translation id="8940956008527784070">电池电量不足 (<ph name="PERCENTAGE" />%)</translation>
-<translation id="9008540565042607572">嗨！显示器，咱们合不来（系统不支持该显示器，点击可发送反馈报告。）</translation>
 <translation id="9074739597929991885">蓝牙</translation>
 <translation id="9080206825613744995">麦克风目前处于使用状态。</translation>
 <translation id="9089416786594320554">输入法</translation>
@@ -285,5 +283,6 @@
 <translation id="923686485342484400">连按两次Ctrl+Shift+Q即可退出。</translation>
 <translation id="938582441709398163">Overlay 键盘</translation>
 <translation id="939252827960237676">无法保存屏幕截图</translation>
+<translation id="945522503751344254">发送反馈</translation>
 <translation id="952992212772159698">未激活</translation>
 </translationbundle>

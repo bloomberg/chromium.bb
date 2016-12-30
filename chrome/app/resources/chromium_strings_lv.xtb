@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">Lai uzlabotu Chromium drošību, mēs atspējojām dažus paplašinājumus, kas nav norādīti vietnē <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> un, iespējams, tika pievienoti, jums nezinot.</translation>
 <translation id="1808667845054772817">Pārinstalēt Chromium</translation>
 <translation id="1816404578968201294">Chromium sistēmām ir nepieciešama piekļuve atrašanās vietas informācijai, lai kopīgotu to ar šo vietni.</translation>
+<translation id="1838412507805038478">Chromium apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>
 <translation id="1869480248812203386">Varat palīdzēt uzlabot Chromium drošību un lietošanas ērtumu, automātiski nosūtot Google serveriem informāciju par iespējamām drošības problēmām.</translation>
 <translation id="1881322772814446296">Jūs pierakstāties ar pārvaldītu kontu, kura administrators var kontrolēt jūsu profilu. Jūsu Chromium dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi, tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME" />. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet šos datus saistīt ar citu kontu. Ja vēlaties, varat izveidot jaunu profilu, lai atsevišķi glabātu Chromium datus. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium nereaģē. Vai restartēt to tūlīt?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">Par &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS atklātā pirmkoda licences</translation>
 <translation id="2241627712206172106">Ja jūsu datoru izmanto arī jūsu draugi un ģimenes locekļi, viņi var iestatīt pārlūku Chromium atbilstoši savām vēlmēm un pārlūkot saturu atsevišķos kontos.</translation>
-<translation id="225614027745146050">Laipni lūdzam!</translation>
 <translation id="2316129865977710310">Nē, paldies</translation>
 <translation id="2347108572062610441">Šis paplašinājums mainīja iestatījumu, kura lapa tiek parādīta, palaižot pārlūku Chromium.</translation>
 <translation id="2372704305038231957">Iespējams, Chromium 32 bitu versija nedarbosies pareizi, jo tā vairs netiek atbalstīta šajā Linux sistēmā. Lūdzu, jauniniet uz Chromium 64 bitu versiju.</translation>
@@ -153,7 +153,6 @@
 <translation id="5877064549588274448">Kanāls tika mainīts. Lai lietotu izmaiņas, restartējiet ierīci.</translation>
 <translation id="5895138241574237353">Restartēt</translation>
 <translation id="5906655207909574370">Atjaunināšana ir gandrīz pabeigta. Restartējiet ierīci, lai pabeigtu atjaunināšanu.</translation>
-<translation id="5942225298871134766">Chromium saglabās šo paroli, izmantojot sistēmu <ph name="SAVED_PASSWORD_LINK" />, un atcerēsies to nākamajā reizē, kad jums tā būs nepieciešama.</translation>
 <translation id="5942520288919337908">Paplašinājums <ph name="EXTENSION_NAME" /> ir pievienots pārlūkam Chromium.</translation>
 <translation id="59625444380784159">Izmantojot datus no savas kontaktinformācijas, pakalpojumā Chromium varat ērtāk aizpildīt veidlapas.</translation>
 <translation id="5987687638152509985">Lai sāktu sinhronizēšanu, atjauniniet Chromium.</translation>
@@ -240,6 +239,7 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="81770708095080097">Šis fails ir bīstams, tāpēc Chromium to bloķēja.</translation>
 <translation id="8269379391216269538">Palīdziet uzlabot Chromium</translation>
 <translation id="8290862415967981663">Šis fails var būt bīstams, tāpēc Chromium to bloķēja.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> iepriekš izmantoja Chromium</translation>
 <translation id="8453117565092476964">Instalēšanas programmas arhīvs ir bojāts vai nav derīgs. Lejupielādējiet Chromium vēlreiz.</translation>
 <translation id="8493179195440786826">Chromium versija ir novecojusi</translation>
 <translation id="85843667276690461">Saņemt palīdzību par Chromium izmantošanu</translation>

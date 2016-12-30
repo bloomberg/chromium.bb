@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">zh-CN</translation>
 <translation id="2091933974477985526">上一个可编辑的文本区域</translation>
 <translation id="2100350898815792233">读出所有标点符号</translation>
+<translation id="2110480898214777136">在网页、对话框或其他容器中从开头跳至末尾或者从末尾跳至开头</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">快捷键：<ph name="KEY" /></translation>
 <translation id="2155457205053847599">从以下列表中选择某个选项，即可更改当前的6点式盲文表。</translation>
 <translation id="2169714232367507776">点击当前项</translation>
+<translation id="2179452035581866348">ChromeVox 会使用提示音为您提供基本信息和其他信息。您只需先了解一下每种提示音有何含义，即可使用这些提示音更快速地进行浏览。待熟练掌握这些提示音之后，您便可关闭语音提示中的详细说明，改为依靠这些提示音获取有关相应网页的基本信息。下面是各种提示音及其含义的完整列表。</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{1个右圆括号}other{#个右圆括号}}</translation>
 <translation id="2199994615414171367">上一个数学元素</translation>
 <translation id="2220529011494928058">报告问题</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">主体内容</translation>
 <translation id="2329324941084714723">标签面板</translation>
 <translation id="2344193891939537199">日期时间控件</translation>
+<translation id="2347456970887948350">链接</translation>
 <translation id="2359897517538099099">当前不是表格模式。</translation>
 <translation id="241124561063364910">然后按</translation>
+<translation id="2416512023405990736">未选中的复选框</translation>
 <translation id="2417569100218200841">内容信息</translation>
 <translation id="2422937916923936891">菜单项复选框</translation>
 <translation id="2428534162001909979">命令菜单</translation>
@@ -213,6 +217,7 @@
 <translation id="3223701887221307104"><ph name="NAME" />，标签页</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">访问过的链接</translation>
+<translation id="3232388865800379423">弹出式按钮</translation>
 <translation id="323731244387692321">打开ChromeVox键盘帮助</translation>
 <translation id="3241052487511142956">上一个访问过的链接</translation>
 <translation id="3286390186030710347">滑块</translation>
@@ -221,6 +226,7 @@
 <translation id="3311969765485641742">按Alt+Shift+A即可查看所有提醒</translation>
 <translation id="3312997241656799641">下一个访问过的链接</translation>
 <translation id="3313245066383501820">ChromeVox 辅助键</translation>
+<translation id="3317212938060708859">滑块</translation>
 <translation id="3321460131042519426">启用自动换行</translation>
 <translation id="3322936298410871309">上一个1级标题</translation>
 <translation id="3323447499041942178">文本框</translation>
@@ -279,6 +285,7 @@
 <translation id="3457000393508828486">部分已按下</translation>
 <translation id="3458865416877308321">“<ph name="NAME" />”已关闭</translation>
 <translation id="3462439746547587373"><ph name="NAME" />，按钮</translation>
+<translation id="3466530247399808663">无效的按键操作</translation>
 <translation id="3473644018603298796">已选择<ph name="COUNT" />项</translation>
 <translation id="3486232535569802404"><ph name="V1" />到<ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{1个右方括号}other{#个右方括号}}</translation>
@@ -286,6 +293,7 @@
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{1个问号}other{#个问号}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{1个插入符号}other{#个插入符号}}</translation>
+<translation id="352577523970648069">可编辑的文本字段</translation>
 <translation id="3568702578574425662"><ph name="NAME" />，未选中的复选框</translation>
 <translation id="3599054940393788245">非数学范畴</translation>
 <translation id="3616113530831147358">音频</translation>
@@ -325,10 +333,12 @@
 <translation id="4047216625641135770">标记</translation>
 <translation id="404803211695627272"><ph name="V1" />到<ph name="V2" /></translation>
 <translation id="4054936709456751127">状态</translation>
+<translation id="4058278702844053247">正在加载网页</translation>
 <translation id="4065205963140826639">现在请尝试使用搜索键 + 向右箭头找到“下一个”按钮，然后按搜索键 + 空格键点击该按钮。</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{1个波浪号}other{#个波浪号}}</translation>
 <translation id="409334809956508737">上一个对象</translation>
 <translation id="4099274309791143834">包含子菜单</translation>
+<translation id="4101527861445851766">已选中的复选框</translation>
 <translation id="4107807507418787238">下方不存在单元格。</translation>
 <translation id="4116415223832267137">提醒</translation>
 <translation id="4147126331795725888">不存在下一个控件。</translation>
@@ -338,6 +348,7 @@
 <translation id="4173994908659439270">不存在下一个可编辑的文本字段。</translation>
 <translation id="4176463684765177261">已停用</translation>
 <translation id="4188530942454211480">上一个句子</translation>
+<translation id="4191918948604314587">按钮</translation>
 <translation id="4202186506458631436">右移</translation>
 <translation id="4206289001967551965">在表格内</translation>
 <translation id="4215733775853809057">下一个滑块</translation>
@@ -461,6 +472,7 @@
 <translation id="5374320867641260420">不存在下一个按钮。</translation>
 <translation id="5382299583965267720">不存在下一个1级标题。</translation>
 <translation id="5402367795255837559">盲文</translation>
+<translation id="5402791055281059602">模态提醒</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{1个分号}other{#个分号}}</translation>
 <translation id="5411891038905756502">不存在上一个跳转点。</translation>
 <translation id="5417034931411865818">点击路由键 $1 下的项</translation>
@@ -554,6 +566,7 @@
 <translation id="6119955456199054975">单元格结束。</translation>
 <translation id="6122013438240733403">按钮</translation>
 <translation id="6129953537138746214">空格</translation>
+<translation id="6132506484792346370">列表框或组合框</translation>
 <translation id="6138576064440631958">$1 和弦</translation>
 <translation id="6142308968191113180">4级标题标记</translation>
 <translation id="6169420925157477918">图片含有详细说明</translation>
@@ -567,6 +580,7 @@
 <translation id="6282062888058716985">导航</translation>
 <translation id="6290434000785343030">不存在下一个组合框。</translation>
 <translation id="6307969636681130414">已按下</translation>
+<translation id="6322856989298155004">提示音</translation>
 <translation id="6324551002951139333">检测到语法错误</translation>
 <translation id="6348657800373377022">组合框</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{1 个项目符号}other{# 个项目符号}}</translation>
@@ -597,6 +611,7 @@
 <translation id="6657128831881431364">进度条</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">文档</translation>
+<translation id="6688209025607531203">非模态提醒</translation>
 <translation id="6697092096875747123">上一个组合框</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{1 个感叹号}other{# 个感叹号}}</translation>
 <translation id="6710213216561001401">上一个</translation>

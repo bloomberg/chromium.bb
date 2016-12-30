@@ -27,6 +27,7 @@
 <translation id="1779356040007214683">Да бисмо учинили Chromium безбеднијим, онемогућили смо неке додатке које не наводи <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и који су можда додати без вашег знања.</translation>
 <translation id="1808667845054772817">Поново инсталирај Chromium</translation>
 <translation id="1816404578968201294">Chromium захтева приступ локацији да би је делио са овим сајтом.</translation>
+<translation id="1838412507805038478">Chromium је потврдио да је <ph name="ISSUER" /> издао сертификат овог веб-сајта.</translation>
 <translation id="1869480248812203386">Можете да помогнете да Chromium буде безбеднији и једноставнији за коришћење ако аутоматски пријављујете Google-у детаље могућих безбедносних инцидената.</translation>
 <translation id="1881322772814446296">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Chromium профилом. Chromium подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. Можете опционално да направите нови профил да би постојећи Chromium подаци остали одвојени. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium не реагује. Желите ли да га одмах поново покренете?</translation>
@@ -36,7 +37,6 @@
 <translation id="2119636228670142020">О &amp;Chromium ОС-у</translation>
 <translation id="2158734852934720349">Лиценце отвореног кода за Chromium ОС</translation>
 <translation id="2241627712206172106">Ако делите рачунар, пријатељи и породица могу засебно да прегледају и да подесе Chromium баш онако како желе.</translation>
-<translation id="225614027745146050">Добро дошли</translation>
 <translation id="2316129865977710310">Не, хвала</translation>
 <translation id="2347108572062610441">Овај додатак је променио страницу која се приказује када покренете Chromium.</translation>
 <translation id="2372704305038231957">32-битни Chromium неће исправно функционисати зато што више није подржан на овом Linux систему. Надоградите Chromium на 64-битну верзију.</translation>
@@ -155,7 +155,6 @@
 <translation id="5877064549588274448">Канал је промењен. Покрените поново уређај да бисте применили промене.</translation>
 <translation id="5895138241574237353">Покрени поново</translation>
 <translation id="5906655207909574370">Ажурирање је скоро готово! Поново покрените уређај да бисте довршили ажурирање.</translation>
-<translation id="5942225298871134766">Chromium ће сачувати ове податке у услузи <ph name="SAVED_PASSWORD_LINK" /> и сетиће их се када вам следећи пут буду потребни.</translation>
 <translation id="5942520288919337908">Додатак <ph name="EXTENSION_NAME" /> је додат у Chromium.</translation>
 <translation id="59625444380784159">Детаљи из контаката могу да вам помогну да брже попуњавате обрасце у Chromium-у.</translation>
 <translation id="5987687638152509985">Ажурирајте Chromium да бисте започели синхронизацију</translation>
@@ -244,6 +243,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="81770708095080097">Ова датотека је опасна, па ју је Chromium блокирао.</translation>
 <translation id="8269379391216269538">Помозите нам да побољшамо Chromium</translation>
 <translation id="8290862415967981663">Ова датотека је можда опасна, па ју је Chromium блокирао.</translation>
+<translation id="8340674089072921962">Корисник <ph name="USER_EMAIL_ADDRESS" /> је претходно користио Chromium</translation>
 <translation id="8453117565092476964">Архива програма за инсталацију је оштећена или неважећа. Преузмите Chromium поново.</translation>
 <translation id="8493179195440786826">Chromium је застарео</translation>
 <translation id="85843667276690461">Пронађи помоћ за коришћење Chromium-а</translation>

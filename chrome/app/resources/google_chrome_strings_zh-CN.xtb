@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">登录 Chrome</translation>
 <translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> 之前使用的是 Chrome</translation>
 <translation id="1104959162601287462">关于 Chrome 操作系统(&amp;C)</translation>
 <translation id="110877069173485804">这是您的专属Chrome</translation>
 <translation id="123620459398936149">Chrome操作系统无法同步您的数据。请更新您的同步密码。</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Chrome Canary 应用</translation>
 <translation id="1457721931618994305">正在更新 Google Chrome...</translation>
 <translation id="1469002951682717133">Chrome 应用启动器</translation>
-<translation id="1475773083554142432">Chrome 将通过<ph name="SAVED_PASSWORD_LINK" />存储此密码，并会在您下次需要时自动填充此密码。</translation>
 <translation id="1480489203462860648">它已经安装完毕了，试试看吧。</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1587223624401073077">Google Chrome 正在使用您的摄像头。</translation>
@@ -41,7 +41,6 @@
 <translation id="2147651015520127414">Chrome 已证实此网站的证书是由 <ph name="ISSUER" /> 签发的。</translation>
 <translation id="2246246234298806438">在缺少内置 PDF 查看器的情况下，Google Chrome 浏览器无法显示打印预览。</translation>
 <translation id="2252923619938421629">报告当前设置，帮助我们改进 Google Chrome</translation>
-<translation id="225614027745146050">欢迎</translation>
 <translation id="2286950485307333924">现在您已登录到Chrome</translation>
 <translation id="2290014774651636340">缺少 Google API 密钥，因此 Google Chrome 的部分功能将无法使用。</translation>
 <translation id="2290095356545025170">确定要卸载 Google Chrome 浏览器吗？</translation>

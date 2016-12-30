@@ -110,7 +110,7 @@
 <translation id="2121067395472282800">kitufe cha ufikiaji: <ph name="KEY" /></translation>
 <translation id="2155457205053847599">Badilisha jedwali la sasa la breli ya vitone 6 kwa kuteua chaguo kutoka kwenye orodha iliyo hapa chini.</translation>
 <translation id="2169714232367507776">Bofya kipengee cha sasa</translation>
-<translation id="2179452035581866348">ChromeVox hutumia sauti kukupa maelezo ya msingi na ya ziada. Unaweza kutumia sauti hii kusogeza kwa haraka kwa kujifunza maana ya kila sauti. Baada ya kutulia, unaweza kuzima kipengele cha maelezo ya maneno mengi katika matamshi na kuyategemea kupata maelezo muhimu kuhusu ukurasa. Ifuatayo ni orodha kamili ya sauti na maana zake.</translation>
+<translation id="2179452035581866348">ChromeVox hutumia sauti kukupa maelezo ya msingi na ya ziada. Unaweza kutumia sauti hizi kusogeza kwa haraka kwa kujifunza maana ya kila sauti. Baada ya kuzifahamu vyema sauti hizi, unaweza kuzima kipengele cha maelezo ya maneno mengi kwa matamshi na kutegemea sauti kupata maelezo muhimu kuhusu ukurasa. Ifuatayo ni orodha kamili ya sauti na maana ya kila moja.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{alama ya kufunga mabano}other{alama # za kufunga mabano}}</translation>
 <translation id="2199994615414171367">Hisabati iliyotangulia</translation>
 <translation id="2220529011494928058">Ripoti tatizo</translation>
@@ -124,7 +124,7 @@
 <translation id="2347456970887948350">Kiungo</translation>
 <translation id="2359897517538099099">Haiko katika hali ya jedwali.</translation>
 <translation id="241124561063364910">inafuatwa na</translation>
-<translation id="2416512023405990736">Kisanduku ambacho hakijabatilishwa uteuzi</translation>
+<translation id="2416512023405990736">Kisanduku cha kuteua ambacho hakijateuliwa</translation>
 <translation id="2417569100218200841">Maelezo ya maudhui</translation>
 <translation id="2422937916923936891">Kisanduku cha kuteua cha kipengee cha menyu</translation>
 <translation id="2428534162001909979">Menyu za Amri</translation>
@@ -292,7 +292,7 @@
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{alama ya kuuliza}other{alama # za kuuliza}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{kareti}other{alama # za kareti}}</translation>
-<translation id="352577523970648069">Sehemu ya maandishi inayoweza kubadilishwa</translation>
+<translation id="352577523970648069">Sehemu ya maandishi yanayoweza kubadilishwa</translation>
 <translation id="3568702578574425662">Kisanduku cha kuteua <ph name="NAME" /> hakijateuliwa</translation>
 <translation id="3599054940393788245">Siyo ndani ya hisabati</translation>
 <translation id="3616113530831147358">Sauti</translation>
@@ -471,7 +471,7 @@
 <translation id="5374320867641260420">Hakuna kitufe kinachofuata.</translation>
 <translation id="5382299583965267720">Hakuna kichwa cha ngazi ya 1 kinachofuata.</translation>
 <translation id="5402367795255837559">Breli</translation>
-<translation id="5402791055281059602">Arifa ya hali</translation>
+<translation id="5402791055281059602">Arifa ya hali inayogeuzika</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{nuktamkato}other{nuktamikato #}}</translation>
 <translation id="5411891038905756502">Hakuna mahali pa kuruka palipotangulia.</translation>
 <translation id="5417034931411865818">Bofya kipengee kilicho chini ya ufunguo wa ruta cha $1</translation>
@@ -610,7 +610,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="6657128831881431364">Upau wa maendeleo</translation>
 <translation id="6659594942844771486">Kichupo</translation>
 <translation id="667999046851023355">Hati</translation>
-<translation id="6688209025607531203">Arifa isiyo ya hali</translation>
+<translation id="6688209025607531203">Arifa ya hali isiyogeuzika</translation>
 <translation id="6697092096875747123">Kikasha mseto kilichotangulia</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{alama hisi}other{alama hisi #}}</translation>
 <translation id="6710213216561001401">Iliyotangulia</translation>

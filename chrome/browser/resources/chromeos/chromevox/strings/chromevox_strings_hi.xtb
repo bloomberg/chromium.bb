@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">hi</translation>
 <translation id="2091933974477985526">पिछला संपादन-योग्‍य लेख क्षेत्र</translation>
 <translation id="2100350898815792233">सभी विराम चिह्न</translation>
+<translation id="2110480898214777136">किसी पृष्ठ, संवाद या अन्य कंटेनर के भीतर शुरुआत से अंत तक ले जाएं या अंत से शुरुआत तक ले जाएं</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">एक्सेस कुंजी:<ph name="KEY" /></translation>
 <translation id="2155457205053847599">नीचे दी गई सूची से कोई विकल्प चुनकर वर्तमान 6 बिंदु ब्रेल तालिका को बदलें.</translation>
 <translation id="2169714232367507776">वर्तमान आइटम पर क्लिक करें</translation>
+<translation id="2179452035581866348">ChromeVox आपको आवश्यक और अतिरिक्त जानकारी देने के लिए ध्वनियों का उपयोग करता है. हर ध्वनि का क्या अर्थ है, इसे सीखकर आप अधिक तेज़ी से नेविगेट करने के लिए इन ध्वनियों का उपयोग कर सकते हैं. अपने आपको सहज महसूस करने पर आप बोली में विस्तृत विवरणों को बंद कर सकते हैं और पृष्ठ के बारे में आवश्‍यक जानकारी के लिए उन पर विश्वास कर सकते हैं. यहां ध्वनियों की पूरी सूची और उनके अर्थ दिए गए हैं.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{बंद कोष्ठक}one{# बंद कोष्ठक}other{# बंद कोष्ठक}}</translation>
 <translation id="2199994615414171367">पिछला गणित</translation>
 <translation id="2220529011494928058">किसी समस्या की रिपोर्ट करें</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">मुख्य</translation>
 <translation id="2329324941084714723">टैब फलक</translation>
 <translation id="2344193891939537199">दिनांक समय नियंत्रण</translation>
+<translation id="2347456970887948350">लिंक</translation>
 <translation id="2359897517538099099">तालिका मोड में नहीं है.</translation>
 <translation id="241124561063364910">इसके बाद</translation>
+<translation id="2416512023405990736">अनचेक किया गया चेकबॉक्स</translation>
 <translation id="2417569100218200841">सामग्री की जानकारी</translation>
 <translation id="2422937916923936891">मेनू आइटम चेक बॉक्स</translation>
 <translation id="2428534162001909979">आदेश मेनू</translation>
@@ -213,6 +217,7 @@
 <translation id="3223701887221307104"><ph name="NAME" />, टैब</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">देखा गया लिंक</translation>
+<translation id="3232388865800379423">पॉप-अप बटन</translation>
 <translation id="323731244387692321">ChromeVox कीबोर्ड सहायता खोलें</translation>
 <translation id="3241052487511142956">पहले देखा गया लिंक</translation>
 <translation id="3286390186030710347">स्लाइडर</translation>
@@ -221,6 +226,7 @@
 <translation id="3311969765485641742">नोटिफिकेशन की समीक्षा करने के लिए Alt+Shift+A दबाएं</translation>
 <translation id="3312997241656799641">बाद में देखा गया लिंक</translation>
 <translation id="3313245066383501820">ChromeVox बदलने वाली की</translation>
+<translation id="3317212938060708859">स्लाइडर</translation>
 <translation id="3321460131042519426">शब्द लपेटना सक्षम करें</translation>
 <translation id="3322936298410871309">पिछले स्‍तर 1 का शीर्षक</translation>
 <translation id="3323447499041942178">टेक्स्ट बॉक्‍स</translation>
@@ -279,6 +285,7 @@
 <translation id="3457000393508828486">आंशिक रूप से दबाया गया</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, बंद करें</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, बटन</translation>
+<translation id="3466530247399808663">अमान्य कुंजी दबाया जाना</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> से <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{दायां कोष्ठक}one{# दाएं कोष्ठक}other{# दाएं कोष्ठक}}</translation>
@@ -286,6 +293,7 @@
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{प्रश्न चिह्न}one{# प्रश्न चिह्न}other{# प्रश्न चिह्न}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{कैरेट}one{# कैरेट}other{# कैरेट}}</translation>
+<translation id="352577523970648069">संपादन-योग्य लेख फ़ील्ड</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, चेकबॉक्‍स चेक न‍हीं किया गया</translation>
 <translation id="3599054940393788245">गणना में नहीं</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
@@ -325,10 +333,12 @@
 <translation id="4047216625641135770">मार्क</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
+<translation id="4058278702844053247">पृष्ठ लोड जारी है</translation>
 <translation id="4065205963140826639">Next बटन ढूंढने के लिए अब Search + दाएं तीर का उपयोग करके देखें, फिर उसे क्लिक करने के लिए Search + Space का उपयोग करें.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{टिल्ड}one{# टिल्ड}other{# टिल्ड}}</translation>
 <translation id="409334809956508737">पिछला ऑब्जेक्ट</translation>
 <translation id="4099274309791143834">सबमेनू के साथ</translation>
+<translation id="4101527861445851766">सही का निशान लगाकर चुना गया चेकबॉक्स</translation>
 <translation id="4107807507418787238">नीचे कोई सेल नहीं.</translation>
 <translation id="4116415223832267137">सूचना</translation>
 <translation id="4147126331795725888">कोई अगला नियंत्रण नहीं.</translation>
@@ -338,6 +348,7 @@
 <translation id="4173994908659439270">कोई अगला संपादन-योग्य लेख फ़ील्ड नहीं.</translation>
 <translation id="4176463684765177261">अक्षम</translation>
 <translation id="4188530942454211480">पिछला वाक्य</translation>
+<translation id="4191918948604314587">बटन</translation>
 <translation id="4202186506458631436">दाएं ले जाएं</translation>
 <translation id="4206289001967551965">तालिका के अंदर</translation>
 <translation id="4215733775853809057">अगला स्लाइडर</translation>
@@ -461,6 +472,7 @@
 <translation id="5374320867641260420">कोई अगला बटन नहीं.</translation>
 <translation id="5382299583965267720">कोई अगला स्तर 1 शीर्षक नहीं.</translation>
 <translation id="5402367795255837559">ब्रेल</translation>
+<translation id="5402791055281059602">मॉडल सूचना</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{अर्धविराम}one{# अर्धविराम}other{# अर्धविराम}}</translation>
 <translation id="5411891038905756502">कोई पिछला जंप बिंदु नहीं.</translation>
 <translation id="5417034931411865818">रूटिंग कुंजी $1 के अंतर्गत आइटम क्लिक करें</translation>
@@ -554,6 +566,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6119955456199054975">सेल के अंत में.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Space</translation>
+<translation id="6132506484792346370">सूची बॉक्स या कॉम्‍बो बॉक्‍स</translation>
 <translation id="6138576064440631958">$1 कॉर्ड</translation>
 <translation id="6142308968191113180">शीर्षक 4</translation>
 <translation id="6169420925157477918">बड़े विवरण वाला चित्र</translation>
@@ -567,6 +580,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">कोई अगला कॉम्‍बो बॉक्‍स नहीं.</translation>
 <translation id="6307969636681130414">दबाया गया</translation>
+<translation id="6322856989298155004">ध्वनियां</translation>
 <translation id="6324551002951139333">व्याकरण की गलती का पता चला</translation>
 <translation id="6348657800373377022">कॉम्बो बॉक्स</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{बुलेट}one{# बुलेट}other{# बुलेट}}</translation>
@@ -597,6 +611,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6657128831881431364">प्रगति बार</translation>
 <translation id="6659594942844771486">टैब</translation>
 <translation id="667999046851023355">दस्तावेज़</translation>
+<translation id="6688209025607531203">गैर मॉडल सूचना</translation>
 <translation id="6697092096875747123">पिछला कॉम्बो बॉक्स</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{विस्मयादिबोधक}one{# विस्मयादिबोधक}other{# विस्मयादिबोधक}}</translation>
 <translation id="6710213216561001401">पिछला</translation>

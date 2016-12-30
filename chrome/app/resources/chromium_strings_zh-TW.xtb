@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">為了讓 Chromium 的安全性更有保障，我們已將部分未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中的擴充功能停用，它們可能在您不知情的情況下加入瀏覽器。</translation>
 <translation id="1808667845054772817">重新安裝 Chromium</translation>
 <translation id="1816404578968201294">Chromium 需要位置資訊存取權，才能與這個網站分享。</translation>
+<translation id="1838412507805038478">Chromium 已驗證這個網站的憑證是由「<ph name="ISSUER" />」所核發。</translation>
 <translation id="1869480248812203386">您可以自動將疑似安全性事件的詳細資料傳送給 Google，協助我們讓 Chromium 變得更安全、更好用。</translation>
 <translation id="1881322772814446296">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chromium 設定檔。您的 Chromium 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。如要另行保留現有的 Chromium 資料，您可以選擇建立新的設定檔。<ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium 沒有回應，要立即重新啟動嗎？</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">關於 Chromium 作業系統(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium 作業系統開放原始碼授權</translation>
 <translation id="2241627712206172106">如果您與親朋好友共用電腦，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chromium。</translation>
-<translation id="225614027745146050">歡迎使用</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
 <translation id="2347108572062610441">這個擴充功能已變更 Chromium 啟動時所顯示的網頁。</translation>
 <translation id="2372704305038231957">32 位元的 Chromium 已不適用於這種 Linux 系統，因此可能無法正常運作。請升級至 64 位元的 Chromium。</translation>
@@ -153,7 +153,6 @@
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5895138241574237353">重新啟動</translation>
 <translation id="5906655207909574370">即將更新為最新版本！重新啟動您的裝置即可完成更新程序。</translation>
-<translation id="5942225298871134766">Chromium 會使用「<ph name="SAVED_PASSWORD_LINK" />」儲存此密碼，讓您在下次需要使用時套用。</translation>
 <translation id="5942520288919337908">已將「<ph name="EXTENSION_NAME" />」加到 Chromium。</translation>
 <translation id="59625444380784159">利用您的通訊錄詳細資料，快速在 Chromium 中填寫表單。</translation>
 <translation id="5987687638152509985">如要開始同步處理，請更新 Chromium</translation>
@@ -242,6 +241,7 @@ Chromium 無法復原您的設定。</translation>
 <translation id="81770708095080097">這個檔案並不安全，因此遭到 Chromium 封鎖。</translation>
 <translation id="8269379391216269538">協助改善 Chromium</translation>
 <translation id="8290862415967981663">這個檔案可能不安全，因此遭到 Chromium 封鎖。</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> 先前使用的是 Chromium</translation>
 <translation id="8453117565092476964">安裝程式封存檔案已毀損或無效，請重新下載 Chromium。</translation>
 <translation id="8493179195440786826">Chromium 版本過舊</translation>
 <translation id="85843667276690461">前往 Chromium 說明頁面</translation>

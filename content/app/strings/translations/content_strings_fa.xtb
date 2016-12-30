@@ -24,7 +24,6 @@
 <translation id="1821985195704844674">شبکه درختی</translation>
 <translation id="1822429046913737220">ق.ظ/ب.ظ</translation>
 <translation id="1832974991323546415">پخش در دستگاه راه دور</translation>
-<translation id="1842960171412779397">انتخاب</translation>
 <translation id="1854180393107901205">توقف فرستادن</translation>
 <translation id="1880518467580572141">طرح کلی</translation>
 <translation id="1921819250265091946">dd</translation>
@@ -50,11 +49,9 @@
 <translation id="2746543609216772311">مقدار باید <ph name="MINIMUM_DATE_OR_TIME" /> یا بعد از آن باشد.</translation>
 <translation id="2759744352195237655">دکمه بازشو</translation>
 <translation id="2761667185364618470">درصورتی‌که می‌خواهید ادامه دهید، این کادر را انتخاب کنید.</translation>
-<translation id="2846343701378493991">1024 (درجه متوسط)</translation>
 <translation id="2896972712917208084">گروه رادیویی</translation>
 <translation id="2901282870647571346">وضعیت کنونی فیلم</translation>
 <translation id="2908441821576996758">لطفاً لیستی از آدرس‌های رایانامه که با کاما از هم جدا شده‌اند را وارد کنید.</translation>
-<translation id="2931838996092594335">کلیک کنید</translation>
 <translation id="2940813599313844715">شیء</translation>
 <translation id="2942448076852699108">محتوای برجسته شده</translation>
 <translation id="3040011195152428237">پیوند</translation>
@@ -80,7 +77,6 @@
 <translation id="4103419683916926126">میلی‌ ثانیه</translation>
 <translation id="4151657705144244502">گرافیک</translation>
 <translation id="4201051445878709314">نمایش ماه قبلی</translation>
-<translation id="4202807286478387388">پرش</translation>
 <translation id="421884353938374759">انتخابگر رنگ</translation>
 <translation id="4248100235867064564">نوار منو</translation>
 <translation id="4254339807215791271">اطلاعات محتوا</translation>
@@ -108,7 +104,6 @@
 <translation id="5453733299334684579">مورد درختی</translation>
 <translation id="5466621249238537318">لطفاً یک یا چند فایل را انتخاب کنید.</translation>
 <translation id="5468998798572797635">خروج از حالت تمام صفحه</translation>
-<translation id="5476505524087279545">برداشتن علامت</translation>
 <translation id="5516424706154626233">انتخابگر تاریخ</translation>
 <translation id="5537725057119320332">فرستادن</translation>
 <translation id="5546461542133609677">صدادارکردن</translation>
@@ -121,13 +116,11 @@
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="588258955323874662">تمام صفحه</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
-<translation id="5944544982112848342">2048 (درجه بالا)</translation>
 <translation id="5966707198760109579">هفته</translation>
 <translation id="5987525920412732405">دکمه چرخش</translation>
 <translation id="6015796118275082299">سال</translation>
 <translation id="6023896073578205740">کادر فهرست</translation>
 <translation id="6101327004457443354">صدادارکردن تراک صوتی</translation>
-<translation id="6119846243427417423">فعالسازی</translation>
 <translation id="6164829606128959761">متر</translation>
 <translation id="6270583010843788609">نشانگر خط زمان فیلم</translation>
 <translation id="6359256949422175976">نشانگر حذف‌کننده زمان فیلم</translation>
@@ -145,7 +138,6 @@
 <translation id="6790428901817661496">پخش</translation>
 <translation id="6820355525329141109">افزایه بارگیری نشد.</translation>
 <translation id="6843725295806269523">بیصداکردن</translation>
-<translation id="6845533974506654842">فشار دادن</translation>
 <translation id="6853785296079745596">پنهان کردن زیرنویس ناشنوایان</translation>
 <translation id="6885760532393684712">فهرست راهنما</translation>
 <translation id="6934078000481955284">نقل‌قول</translation>
@@ -177,7 +169,6 @@
 <translation id="8244226242650769279">نقشه تصویر</translation>
 <translation id="8284326494547611709">زیرنویس‌ها</translation>
 <translation id="835897206747267392">مقدار نامعتبر.</translation>
-<translation id="838869780401515933">علامت‌گذاری</translation>
 <translation id="8433900881053900389">نوار ابزار</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> فایل</translation>
 <translation id="8451268428117625855">لطفاً یک فایل انتخاب کنید.</translation>
@@ -192,7 +183,6 @@
 <translation id="8785498733064193001">شروع بازپخش</translation>
 <translation id="8851136666856101339">اصلی</translation>
 <translation id="8987927404178983737">ماه</translation>
-<translation id="9002566407876343676">باز کنید</translation>
 <translation id="901493112792887934">زمان کنونی به ثانیه</translation>
 <translation id="9048119486235211610">پیمایش</translation>
 <translation id="9050748414552849310">نمایش زیرنویس ناشنوایان</translation>

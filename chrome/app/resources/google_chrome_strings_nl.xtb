@@ -8,6 +8,7 @@
 <translation id="1065672644894730302">Je voorkeuren kunnen niet worden gelezen.
 
 Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren worden niet opgeslagen.</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> maakte eerder gebruik van Chrome</translation>
 <translation id="1104959162601287462">Over &amp;Chrome OS</translation>
 <translation id="110877069173485804">Personaliseer jouw Chrome</translation>
 <translation id="123620459398936149">Chrome OS kan je gegevens niet synchroniseren. Update je wachtwoordzin voor synchronisatie.</translation>
@@ -19,7 +20,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1434626383986940139">Chrome Canary-apps</translation>
 <translation id="1457721931618994305">Google Chrome wordt bijgewerkt</translation>
 <translation id="1469002951682717133">App-opstartprogramma van Chrome</translation>
-<translation id="1475773083554142432">Chrome slaat dit op met <ph name="SAVED_PASSWORD_LINK" /> en onthoudt dit voor de volgende keer dat je het nodig hebt.</translation>
 <translation id="1480489203462860648">Probeer het eens, het is al geïnstalleerd</translation>
 <translation id="1553358976309200471">Chrome updaten</translation>
 <translation id="1587223624401073077">Google Chrome gebruikt je camera.</translation>
@@ -45,7 +45,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2147651015520127414">Chrome heeft geverifieerd dat <ph name="ISSUER" /> het certificaat voor deze website heeft verstrekt.</translation>
 <translation id="2246246234298806438">Google Chrome kan het afdrukvoorbeeld niet weergeven wanneer de ingebouwde pdf-viewer ontbreekt.</translation>
 <translation id="2252923619938421629">Help Google Chrome beter te maken door de huidige instellingen te melden</translation>
-<translation id="225614027745146050">Welkom</translation>
 <translation id="2286950485307333924">Je bent nu ingelogd bij Chrome</translation>
 <translation id="2290014774651636340">Google API-sleutels ontbreken. Sommige functies van Google Chrome worden uitgeschakeld.</translation>
 <translation id="2290095356545025170">Weet je zeker dat je Google Chrome wilt verwijderen?</translation>
@@ -277,7 +276,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="870251953148363156">&amp;Google Chrome updaten</translation>
 <translation id="8796108026289707191">Je moet Google Chrome nu opnieuw starten.</translation>
 <translation id="8823341990149967727">Chrome is verouderd</translation>
-<translation id="884296878221830158">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chrome start of op de knop 'Startpagina' klikt.</translation>
+<translation id="884296878221830158">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chrome start of op de knop 'Homepage' klikt.</translation>
 <translation id="8851136666856101339">hoofd</translation>
 <translation id="8862326446509486874">Je hebt geen rechten om op systeemniveau te installeren. Meld je aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
 <translation id="8914504000324227558">Chrome opnieuw starten</translation>

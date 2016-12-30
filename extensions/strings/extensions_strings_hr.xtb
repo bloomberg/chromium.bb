@@ -21,20 +21,18 @@
 <translation id="388442998277590542">Nije uspjelo učitavanje stranice opcija "<ph name="OPTIONS_PAGE" />".</translation>
 <translation id="4115165561519362854">Administrator ovog uređaja zahtijeva da <ph name="EXTENSION_NAME" /> ima minimalnu verziju <ph name="EXTENSION_VERSION" />. Ne može se omogućiti dok se ne ažurira na tu ili višu verziju.</translation>
 <translation id="4233778200880751280">Nije uspjelo učitavanje stranice s informacijama "<ph name="ABOUT_PAGE" />".</translation>
-<translation id="4434145631756268951">{0,select, single{Odabir USB uređaja}multiple{Odabir USB uređaja}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Nije bilo moguće instalirati paket jer se uslužni proces srušio. Ponovo pokrenite Chrome i pokušajte opet.</translation>
 <translation id="5026754133087629784">Prikaz web-lokacije: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">To proširenje uključuje ključnu datoteku "<ph name="KEY_PATH" />". Vjerojatno ne želite to učiniti.</translation>
 <translation id="5627523580512561598">proširenje <ph name="EXTENSION_NAME" /></translation>
-<translation id="5630931906013276297">{0,select, single{Odabir HID uređaja}multiple{Odabir HID uređaja}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Administrator ovog računala zahtijeva instaliranje proširenja <ph name="EXTENSION_NAME" /> i ono se ne može deinstalirati.</translation>
 <translation id="6027032947578871493">Nepoznati proizvod <ph name="PRODUCT_ID" />, <ph name="VENDOR_NAME" /> (serijski broj <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> dobavljača <ph name="VENDOR_ID" /></translation>
 <translation id="6143635259298204954">Ne mogu otpakirati proširenje. Kako biste sigurno otpakirali proširenje, mora postojati putanja do direktorija vašeg profila koja ne sadrži simboličku vezu. Za vaš profil ne postoji takva putanja.</translation>
-<translation id="616804573177634438">{0,select, single{Aplikacija "<ph name="APP_NAME" />" zahtijeva pristup nekom od vaših uređaja.}multiple{Aplikacija "<ph name="APP_NAME" />" zahtijeva pristup nekom od vaših uređaja}other{NE UPOTREBLJAVA SE}}</translation>
 <translation id="641087317769093025">Nije uspjelo raspakiravanje proširenja</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" zahtijeva pristup nekim od vaših uređaja:</translation>
 <translation id="657064425229075395">Nije bilo moguće učitati pozadinsku skriptu "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167">pristupiti uređaju <ph name="PRODUCT_NAME" /> dobavljača <ph name="VENDOR_NAME" /> (serijski broj <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nije uspjelo stvaranje direktorija za raspakiravanje: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">Paket je nevažeći. Pojedinosti "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Ovo proširenje nije uspjelo preusmjeriti mrežni zahtjev na odredište <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> jer ga je drugo proširenje (<ph name="EXTENSION_NAME" />) preusmjerilo na odredište <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Otpakiravanje proširenja</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" zahtijeva pristup jednom od vaših uređaja:</translation>
 <translation id="8825366169884721447">Ovo proširenje nije uspjelo izmijeniti zaglavlje zahtjeva "<ph name="HEADER_NAME" />" mrežnog zahtjeva jer je izmjena sukobljena s drugim proširenjem (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="9111791539553342076">Ovo proširenje nije uspjelo izmijeniti zaglavlje odgovora "<ph name="HEADER_NAME" />" mrežnog zahtjeva jer je izmjena sukobljena s drugim proširenjem (<ph name="EXTENSION_NAME" />).</translation>
 </translationbundle>

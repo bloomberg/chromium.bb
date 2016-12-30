@@ -19,9 +19,6 @@
       Dacă această politică este dezactivată sau nu este configurată, cookie-urile setate de furnizorul de identitate sunt transferate în profilul utilizatorului doar la prima sa conectare pe un dispozitiv.
 
       Această politică afectează doar utilizatorii ale căror domenii corespund cu domeniul de înregistrare al dispozitivului. Pentru ceilalți utilizatori, cookie-urile setate de furnizorul de identitate sunt transferate în profilurile acestora doar la prima conectare pe un dispozitiv.</translation>
-<translation id="1029536946382325801">Dacă este activată, utilizatorul poate folosi hardware-ul de pe dispozitivele Chrome pentru a-și atesta la distanță identitatea către autoritatea de certificare pentru confidențialitate prin API-ul Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey().
-
-          Dacă este dezactivată sau dacă nu este configurată, apelurile către API nu vor reuși și vor genera un cod de eroare.</translation>
 <translation id="1040446814317236570">Activează eliminarea unor părți din adresele URL pentru PAC (pentru https://)</translation>
 <translation id="1044878202534415707">Raportează statisticile privind hardware-ul cum ar fi utilizarea CPU/RAM.
 
@@ -94,6 +91,9 @@
       Dacă această politică nu este configurată sau dacă este dezactivată, suitele de codificare RC4 din TLS nu vor fi activate. În caz contrar, politica poate fi activată pentru a se menține compatibilitatea cu un server învechit. Aceasta este o măsură temporară, iar serverul trebuie să fie reconfigurat.</translation>
 <translation id="1297182715641689552">Utilizează un script .pac pentru proxy</translation>
 <translation id="1304973015437969093">ID-uri pentru extensii/aplicații și adrese URL pentru actualizări de instalat în fundal</translation>
+<translation id="1310333396104446007">Dacă setarea este dezactivată, utilizatorii nu vor putea să configureze coduri PIN care sunt considerate slabe. Exemple: coduri PIN formate din aceeași cifră, ale căror cifre sunt în ordine crescătoare/descrescătoare sau care sunt prea frecvente.
+
+          Dacă setarea este activată sau nu este configurată, utilizatorii pot introduce aceste coduri PIN și li se va afișa doar un avertisment.</translation>
 <translation id="1313457536529613143">Specifică procentul de ajustare a intervalului până la reducerea luminozității ecranului atunci când se înregistrează activități ale utilizatorului în timp ce luminozitatea ecranului este redusă sau la scurt timp după ce ecranul a fost oprit.
 
           Dacă această politică este configurată, ea specifică procentul cu care este ajustat intervalul până la reducerea luminozității ecranului când se înregistrează activități ale utilizatorului în timp ce luminozitatea ecranului este redusă sau la scurt timp după ce ecranul a fost oprit. Dacă intervalul până la reducerea luminozității este ajustat, intervalele până la oprirea ecranului, blocarea ecranului sau trecerea la modul inactiv sunt modificate pentru a se păstra aceleași distanțe configurate inițial față de intervalul până la reducerea luminozității ecranului.
@@ -168,6 +168,7 @@
 <translation id="1522425503138261032">Permite site-urilor să urmărească locația fizică a utilizatorilor</translation>
 <translation id="152657506688053119">Lista adreselor URL alternative pentru furnizorul de căutare prestabilit</translation>
 <translation id="1530812829012954197">Redă întotdeauna următoarele șabloane de adrese URL în browserul gazdă</translation>
+<translation id="1547635088210394207">Stabilește lungimea maximă a codului PIN pentru ecranul de blocare.</translation>
 <translation id="1553684822621013552">Dacă această politică este activată, funcția ARC va fi activată pentru utilizator
       (în funcție de verificările suplimentare ale setărilor politicii – funcția ARC va fi în continuare
       indisponibilă dacă este activat modul efemer sau conectarea multiplă
@@ -187,6 +188,15 @@
       permise.</translation>
 <translation id="1655229863189977773">Setați dimensiunea în octeți a memoriei cache pe disc</translation>
 <translation id="166427968280387991">Server proxy</translation>
+<translation id="1668836044817793277">Dacă aplicația chioșc lansată automat fără nicio întârziere poate să controleze versiunea <ph name="PRODUCT_OS_NAME" />.
+
+      Această politică stabilește dacă aplicația chioșc lansată automat fără nicio întârziere poate să controleze versiunea <ph name="PRODUCT_OS_NAME" /> declarând o valoare pentru required_platform_version în manifestul său și să o folosească drept prefixul versiunii țintă de actualizare automată.
+
+      Dacă politica este activată, valoarea cheii din manifest required_platform_version a aplicației chioșc lansate automat fără nicio întârziere este folosită drept prefixul versiunii țintă de actualizare automată.
+
+      Dacă politica nu este configurată sau este dezactivată, cheia din manifest required_platform_version este ignorată, iar actualizarea automată se face ca de obicei.
+
+      Avertisment: nu se recomandă să delegi controlul asupra versiunii <ph name="PRODUCT_OS_NAME" /> unei aplicații chioșc, deoarece dispozitivul poate fi împiedicat să primească actualizări de software și remedieri importante de securitate. Dacă delegi controlul asupra versiunii <ph name="PRODUCT_OS_NAME" />, este posibil să pui în pericol utilizatorii.</translation>
 <translation id="1675002386741412210">Acceptat de:</translation>
 <translation id="1679420586049708690">Sesiune publică pentru conectare automată</translation>
 <translation id="1680029600835707254">Această politică controlează cine poate începe o sesiune <ph name="PRODUCT_OS_NAME" />. Aceasta nu împiedică utilizatorii să se conecteze la alte conturi Google din Android. Dacă vrei să împiedici acest lucru, configurează politica <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" /> specifică dispozitivelor Android ca parte a politicii <ph name="ARC_POLICY" />.</translation>
@@ -222,6 +232,7 @@
 <translation id="1808715480127969042">Blochează cookie-urile de pe aceste site-uri</translation>
 <translation id="1827523283178827583">Utilizează servere proxy fixe</translation>
 <translation id="1843117931376765605">Rata de actualizare pentru politica privind utilizatorii</translation>
+<translation id="1844620919405873871">Configurează politicile privind deblocarea rapidă.</translation>
 <translation id="1847960418907100918">Specifică parametrii utilizați la căutarea instant cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {searchTerms} din exemplul de mai sus, acesta va fi înlocuit cu datele termenilor de căutare reali.
 
           Această politică este opțională. Dacă nu este setată, solicitarea de căutare instant va fi trimisă prin metoda GET.
@@ -321,6 +332,11 @@
 <translation id="2168397434410358693">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="2170233653554726857">Activați optimizarea pentru WPAD</translation>
 <translation id="2178899310296064282">Impune cel puțin Modul restricționat moderat pe YouTube</translation>
+<translation id="2183294522275408937">Această setare controlează frecvența cu care ecranul de blocare solicită introducerea parolei pentru a se folosi în continuare deblocarea rapidă. Dacă ultima introducere a parolei a fost în urmă cu mai mult decât prevede această setare, deblocarea rapidă nu va mai fi disponibilă la accesarea ecranului de blocare. Dacă utilizatorul menține pornit ecranul de blocare mai mult decât acest interval de timp, se va solicita o parolă data viitoare când acesta introduce codul greșit sau când accesează din nou ecranul de blocare, în funcție de care dintre acestea se realizează prima.
+
+          Dacă setarea este configurată, utilizatorilor care folosesc deblocarea rapidă li se va solicita să își introducă parola pe ecranul de blocare, în funcție de această setare.
+
+          Dacă setarea nu este configurată, utilizatorilor care folosesc deblocarea rapidă li se va solicita să își introducă parola pe ecranul de blocare în fiecare zi.</translation>
 <translation id="2188979373208322108">Activează bara de marcaje în <ph name="PRODUCT_NAME" />. Dacă activați această setare, <ph name="PRODUCT_NAME" /> va afișa o bară de marcaje. Dacă dezactivați această setare, utilizatorii nu vor vedea niciodată bara de marcaje. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />. Dacă această setare este lăsată nesetată, utilizatorul poate decide să folosească sau nu această funcție.</translation>
 <translation id="2201555246697292490">Configurați lista albă a mesageriei native</translation>
 <translation id="2204753382813641270">Controlați ascunderea automată a raftului</translation>
@@ -524,6 +540,13 @@
 <translation id="2587719089023392205">Setează <ph name="PRODUCT_NAME" /> ca browser prestabilit</translation>
 <translation id="2592091433672667839">Durata de inactivitate înainte ca screen saverul să fie afișat pe ecranul de conectare în modul Vânzare</translation>
 <translation id="2623014935069176671">Se așteaptă prima activitate a utilizatorului</translation>
+<translation id="2625512435194873786">Această setare stabilește lungimea maximă a codului PIN.
+
+          Dacă setarea este configurată să aibă valoarea 0 sau mai puțin, nu există o lungime maximă, iar utilizatorul poate seta un cod PIN, oricât de lung dorește.
+
+          Dacă setarea este configurată la o valoare mai mică decât PinUnlockMinimumLength, dar mai mare decât 0, lungimea maximă este aceeași cu cea minimă.
+
+          Dacă setarea nu este configurată, nu există o lungime maximă, iar utilizatorul poate seta un cod PIN, oricât de lung dorește.</translation>
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activați feedbackul vocal</translation>
 <translation id="2646290749315461919">Vă permite să setați dacă site-urile web au permisiunea să urmărească locația fizică a utilizatorilor. Urmărirea locației fizice a utilizatorilor poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web solicită locația fizică. Dacă politica este lăsată nesetată, va fi utilizată politica „AskGeolocation”, dar utilizatorul va putea să o schimbe.</translation>
@@ -817,6 +840,7 @@
           Dacă politica este dezactivată sau este lăsată nesetată, întârzierile din managementul alimentării cu energie și limita de durată a sesiunii încep să ruleze imediat după începutul sesiunii.</translation>
 <translation id="3478024346823118645">Ștergeți datele utilizatorului la deconectare</translation>
 <translation id="348495353354674884">Activați tastatura virtuală</translation>
+<translation id="3495440981030194931">Stabilește lungimea minimă a codului PIN pentru ecranul de blocare.</translation>
 <translation id="3496296378755072552">Manager de parole</translation>
 <translation id="349667858031092827">Fusul orar nu se detectează niciodată automat.</translation>
 <translation id="350443680860256679">Configurează ARC</translation>
@@ -963,6 +987,7 @@
       Dezactivarea acestei politici va permite utilizarea protocolului SPDY.
 
       Dacă această politică nu este configurată, SPDY va fi disponibil.</translation>
+<translation id="3890999316834333174">Politicile privind deblocarea rapidă</translation>
 <translation id="3891357445869647828">Activează JavaScript</translation>
 <translation id="3891953007921334498">Dezactivează Instrumentele pentru dezvoltatori și consola JavaScript.
 
@@ -1016,6 +1041,11 @@
 
       Dacă politica nu este activată, utilizatorii nu vor putea valorifica oferte.</translation>
 <translation id="4010738624545340900">Permiteți invocarea casetelor de dialog pentru selectarea fișierelor</translation>
+<translation id="4012737788880122133">Când politica este activată, se dezactivează actualizările automate.
+
+      Dispozitivele cu <ph name="PRODUCT_OS_NAME" /> caută automat actualizări atunci când această setare nu este configurată sau nu este activată.
+
+      Avertisment: se recomandă să se mențină activate actualizările automate, ca utilizatorii să primească actualizări de software și remedieri importante de securitate. Dacă dezactivezi actualizările automate, este posibil să pui în pericol utilizatorii.</translation>
 <translation id="4020682745012723568">Aplicațiile Android nu au acces la cookie-urile transferate în profilul utilizatorului.</translation>
 <translation id="4025586928523884733">Blochează cookie-urile terță parte. Activarea acestei setări împiedică setarea cookie-urilor de către elemente ale paginii web care nu aparțin domeniului din bara de adrese a browserului. Dezactivarea acestei setări permite setarea cookie-urilor de elemente ale paginii web care nu aparțin domeniului din bara de adrese a browserului și îi împiedică pe utilizatori să schimbe această setare. Dacă această politică nu este setată, cookie-urile terță parte vor fi activate, dar utilizatorul va putea să schimbe acest lucru.</translation>
 <translation id="402759845255257575">Nu permite niciunui site să ruleze JavaScript</translation>
@@ -1087,6 +1117,16 @@
           Această politică este opțională. Dacă nu este setată, solicitarea de căutare a imaginilor va fi trimisă prin metoda GET.
 
           Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
+<translation id="4294280661005713627">Setează o versiune țintă pentru actualizările automate.
+
+      Specifică prefixul unei versiuni țintă la care <ph name="PRODUCT_OS_NAME" /> trebuie să se actualizeze. Dacă dispozitivul rulează o versiune care este inferioară prefixului specificat, actualizarea se va face la cea mai recentă versiune care are prefixul dat. Dacă pe dispozitiv este instalată deja o versiune superioară, nu se întâmplă nimic (adică nu se face downgrade), iar dispozitivul va rămâne la versiunea curentă. Formatul prefixului reflectă structura componentelor, ca în următorul exemplu:
+
+      "" (sau neconfigurat): se actualizează la cea mai recentă versiune disponibilă;
+      "1412.": se actualizează la orice versiune subordonată pentru 1412 (de ex., 1412.24.34 sau 1412.60.2);
+      "1412.2.": se actualizează la orice versiune subordonată pentru 1412.2 (de ex., 1412.2.34 sau 1412.2.2);
+      "1412.24.34": se actualizează numai la această versiune.
+
+      Avertisment: nu se recomandă să se configureze restricții ale versiunilor, deoarece utilizatorii pot fi împiedicați să primească actualizări de software și remedieri importante de securitate. Dacă restricționezi actualizările pentru un anumit prefix de versiune, este posibil să pui în pericol utilizatorii.</translation>
 <translation id="4309640770189628899">Specifică dacă suitele de codificare DHE din TLS sunt activate</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 sau o versiune ulterioară</translation>
 <translation id="4322842393287974810">Permite aplicației chioșc lansate automat fără nicio întârziere să controleze versiunea <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1302,6 +1342,9 @@
           O valoare * în lista neagră înseamnă că toate gazdele de mesagerie nativă sunt trecute în lista neagră, cu excepția cazului în care sunt trecute explicit în lista albă.
 
           Dacă politica nu este setată, <ph name="PRODUCT_NAME" /> va încărca toate gazdele de mesagerie nativă instalate.</translation>
+<translation id="5272684451155669299">Dacă este activată, utilizatorul poate folosi hardware-ul de pe dispozitivele Chrome pentru a-și atesta la distanță identitatea către autoritatea de certificare pentru confidențialitate prin <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> folosind <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
+
+          Dacă este dezactivată sau dacă nu este configurată, apelurile către API nu vor reuși și vor genera un cod de eroare.</translation>
 <translation id="5288772341821359899">Dacă politica este configurată, intervalul de porturi UDP folosit de WebRTC este limitat la intervalul de porturi specificat (porturile limită ale intervalului sunt incluse).
 
       Dacă politica nu este configurată sau dacă este setată la un șir gol ori la un interval de porturi nevalid, WebRTC poate să folosească orice port UDP local disponibil.</translation>
@@ -1423,6 +1466,11 @@
           Dacă această setare este activată, gazda de acces la distanță compară numele utilizatorului local (cu care este asociată gazda) și numele contului Google înregistrat ca proprietar al gazdei (adică „johndoe” dacă proprietarul gazdei este Contul Google „johndoe@example.com”). Gazda de acces la distanță nu va porni dacă numele proprietarului gazdei este diferit de numele utilizatorului local cu care este asociată gazda. Politica RemoteAccessHostMatchUsername trebuie să fie folosită împreună cu politica RemoteAccessHostDomain pentru a impune și asocierea Contului Google cu un anumit domeniu (adică „example.com”).
 
           Dacă această setare este dezactivată sau nu este configurată, gazda de acces poate fi asociată oricărui utilizator local.</translation>
+<translation id="5694594914843889579">Dacă această politică este activată, stocarea externă nu va fi disponibilă în browserul de fișiere.
+
+      Această politică afectează toate tipurile de suporturi de stocare. De exemplu: unități flash USB, hard diskuri externe, carduri SD și alte carduri de memorie, stocarea optică etc. Stocarea internă nu este afectată. Prin urmare, fișierele salvate în dosarul Descărcări pot fi în continuare accesate. Nici Google Drive nu este afectat de această politică.
+
+      Dacă această setare este dezactivată sau nu este configurată, utilizatorii pot folosi pe dispozitivele lor toate tipurile de dispozitive de stocare externe acceptate.</translation>
 <translation id="5697306356229823047">Raportează utilizatorii dispozitivului</translation>
 <translation id="570062449808736508">Când această politică este setată la un șir completat, WebView va citi restricțiile privind adresele URL de la furnizorul de conținut cu numele de autoritate indicat.</translation>
 <translation id="5703863730741917647">Specificați acțiunea de urmat după trecerea intervalului de inactivitate.
@@ -1540,6 +1588,7 @@
       Dacă această politică nu este configurată sau este dezactivată, comenzile de printare declanșează ecranul de previzualizare înainte de printare.</translation>
 <translation id="6022948604095165524">Acțiune la pornire</translation>
 <translation id="602728333950205286">Adresa URL instant a furnizorului de căutare prestabilit</translation>
+<translation id="6029664378608427609">Permite utilizatorilor să seteze coduri PIN slabe pentru ecranul de blocare.</translation>
 <translation id="603410445099326293">Parametrii pentru adresa URL a sugestiei care utilizează POST</translation>
 <translation id="6036523166753287175">Activați trecerea prin firewall de la gazda de acces la distanță</translation>
 <translation id="6059543311891422586">Folosește accelerarea hardware când este disponibilă.
@@ -1593,12 +1642,6 @@
 <translation id="6155936611791017817">Setați cursorul mare pe ecranul de conectare ca stare prestabilită</translation>
 <translation id="6157537876488211233">Lista de valori separate prin virgulă a regulilor de ocolire a proxy-ului</translation>
 <translation id="6158324314836466367">Numele magazinului web pentru întreprinderi (politică învechită)</translation>
-<translation id="6166832345529129545">Controlează ce moduri pentru deblocare rapidă pot fi configurate și folosite.
-      Această setare adaugă pe lista albă modurile pentru deblocare rapidă permise care pot fi configurate și folosite pentru a debloca ecranul. Valoarea este o listă de șiruri, iar fiecare dintre acestea trebuie să fie unul dintre următoarele: „toate”, „PIN”. Dacă opțiunea „toate” este selectată, vor fi disponibile toate modurile rapide acceptate. În caz contrar, vor fi disponibile doar modurile din listă.
-
-      Dacă setarea este configurată, modurile pentru deblocare rapidă de tipuri neincluse în listă nu pot fi configurate sau folosite.
-
-      Dacă setarea nu este configurată, modul „PIN” va fi activat, iar toate celelalte moduri vor fi dezactivate.</translation>
 <translation id="6167074305866468481">Avertisment: compatibilitatea cu SSLv3 va fi eliminată complet pentru <ph name="PRODUCT_NAME" /> după versiunea 43 (în jurul lunii iulie 2015), iar această politică va fi eliminată concomitent.
 
       Dacă această politică nu este configurată, <ph name="PRODUCT_NAME" /> va folosi o versiune minimă prestabilită, care pentru <ph name="PRODUCT_NAME" /> 39 este SSLv3, iar pentru versiunile ulterioare este TLS 1.0.
@@ -1652,6 +1695,15 @@
 <translation id="6401669939808766804">Deconectați utilizatorul</translation>
 <translation id="6413263121045928260">Introducerea parolei este necesară în fiecare zi (24 de ore).</translation>
 <translation id="6417861582779909667">Vă permite să setați o listă cu modele pentru adresele URL ce specifică site-urile care nu sunt autorizate să seteze cookie-uri. Dacă această politică este lăsată nesetată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, din politica „DefaultCookiesSetting” în cazul în care este setată sau din configurația personală a utilizatorului, în caz contrar.</translation>
+<translation id="6426205278746959912">Nu poți forța aplicațiile Android să folosească un proxy. Un subset al setărilor de proxy este pus la dispoziția aplicațiilor Android, pe care acestea pot alege în mod voluntar să îl respecte:
+
+          Dacă alegi opțiunea „nu folosi niciodată un server proxy”, aplicațiile Android sunt informate că nu este configurat niciun proxy.
+
+          Dacă alegi opțiunea „folosește setările de proxy ale sistemului” sau „server proxy fix”, adresa și portul serverului proxy http sunt oferite aplicațiilor Android.
+
+          Dacă alegi opțiunea „detectează automat serverul proxy”, adresa URL pentru scripturi „http://wpad/wpad.dat” este oferită aplicațiilor Android. Nu este folosită nicio altă parte a protocolului pentru detectarea automată a proxy-ului.
+
+          Dacă alegi opțiunea „script .pac pentru proxy”, adresa URL pentru scripturi este oferită aplicațiilor Android.</translation>
 <translation id="6467433935902485842">Vă permite să setați o listă cu modele pentru adresele URL ce specifică site-urile care nu au permisiunea de a rula pluginuri. Dacă această politică este lăsată nesetată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultPluginsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="6473334971332473690">Permite ca funcția Smart Lock să fie folosită pe dispozitivele <ph name="PRODUCT_OS_NAME" />.
 
@@ -1976,7 +2028,18 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica nu este setată, curățarea automată utilizează strategia încorporată în mod prestabilit. În prezent, aceasta este strategia „RemoveLRUIfDormant”.</translation>
 <translation id="7336878834592315572">Păstrați cookie-urile pe durata sesiunii</translation>
 <translation id="7340034977315324840">Raportați perioadele de activitate ale dispozitivului</translation>
+<translation id="7340934985429121460">Această setare stabilește lungimea minimă a codului PIN.
+
+          Dacă setarea este configurată să aibă o valoare mai mică de 1, lungimea minimă a codului PIN este de 1 caracter.
+
+          Dacă setarea nu este configurată, lungimea minimă a codului PIN este de 4 caractere.</translation>
 <translation id="7384999953864505698">Permite protocolul QUIC</translation>
+<translation id="7406716912696538245">Controlează ce moduri pentru deblocare rapidă pot fi configurate și folosite.
+          Această setare adaugă pe lista albă modurile pentru deblocare rapidă permise care pot fi configurate și folosite pentru a debloca ecranul. Valoarea este o listă de șiruri, iar fiecare dintre acestea trebuie să fie unul dintre următoarele: „toate”, „PIN”. Dacă opțiunea „toate” este selectată, vor fi disponibile toate modurile rapide acceptate. În caz contrar, vor fi disponibile doar modurile din listă.
+
+          Dacă setarea este configurată, modurile pentru deblocare rapidă de tipuri neincluse în listă nu pot fi configurate sau folosite.
+
+          Dacă setarea nu este configurată, modul „PIN” va fi activat, iar toate celelalte moduri vor fi dezactivate.</translation>
 <translation id="7417972229667085380">Procentul cu care se ajustează intervalul de inactivitate în modul de prezentare (politică învechită)</translation>
 <translation id="7421483919690710988">Setați dimensiunea în octeți a memoriei cache pe disc pentru conținut media</translation>
 <translation id="7424751532654212117">Lista de excepții de la lista cu pluginuri dezactivate</translation>
@@ -2020,6 +2083,9 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7611372873040492235">Introducerea parolei este necesară o dată la 12 ore.</translation>
 <translation id="7612157962821894603">Marcaje la nivel de sistem de aplicat când pornește <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Lista schemelor de protocol dezactivate</translation>
+<translation id="7617319494457709698">Această politică specifică extensiile cărora li se permite să folosească funcția <ph name="CHALLENGE_USER_KEY_FUNCTION" /> din <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> pentru atestarea la distanță. Extensiile trebuie să fie adăugate în această listă pentru a folosi API-ul.
+
+          Dacă o extensie nu este în listă sau dacă lista nu este configurată, apelul către API nu va reuși și va genera un cod de eroare.</translation>
 <translation id="7625444193696794922">Specifică un canal de lansare la care ar trebui să fie blocat acest dispozitiv.</translation>
 <translation id="7632724434767231364">Nume bibliotecă GSSAPI</translation>
 <translation id="7635471475589566552">Configurează limba aplicației din <ph name="PRODUCT_NAME" /> și împiedică modificarea limbii de către utilizatori. Dacă activați această setare, <ph name="PRODUCT_NAME" /> utilizează limba indicată. Dacă limba configurată nu este acceptată, este utilizată „en-US”. Dacă această setare este dezactivată sau nu este configurată, <ph name="PRODUCT_NAME" /> utilizează limba preferată specificată de utilizator (dacă este configurată), limba sistemului sau limba „en-US” alternativă.</translation>
@@ -2112,6 +2178,13 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă această setare nu este configurată, utilizatorii pot activa și dezactiva Android Backup Service în aplicația Setări Android.</translation>
 <translation id="7818131573217430250">Setați modul de contrast ridicat pe ecranul de conectare ca stare prestabilită</translation>
+<translation id="7822837118545582721">Când această politică este activată, utilizatorii nu pot scrie nimic pe dispozitivele de stocare externe.
+
+      Dacă setarea este dezactivată sau nu este configurată, utilizatorii pot crea și modifica fișierele dispozitivelor de stocare externe pe care se poate scrie.
+
+      Politica ExternalStorageDisabled are prioritate față de această politică – dacă ExternalStorageDisabled este activată, este dezactivat întregul acces la stocarea externă și, prin urmare, această politică este ignorată.
+
+      Actualizarea dinamică a acestei politici este acceptată în M56 sau versiunile ulterioare.</translation>
 <translation id="7831595031698917016">Specifică întârzierea maximă în milisecunde de la primirea unei invalidări a politicii și până la preluarea politicii noi de la serviciul de gestionare a dispozitivului.
 
       Setarea acestei politici înlocuiește valoarea prestabilită de 5000 de milisecunde. Valorile valide pentru această politică sunt cuprinse între 1000 (1 secundă) și 300000 (5 minute). Toate valorile care nu se află în acest interval vor fi fixate în limitele respective.
@@ -2172,9 +2245,6 @@ nu poate fi stabilit de utilizator din setările browserului.
           asociate unui domeniu Active Directory.</translation>
 <translation id="7937766917976512374">Permiteți sau refuzați preluarea conținutului video</translation>
 <translation id="7941975817681987555">Nu anticipa acțiunile în rețea pentru nicio conexiune la rețea</translation>
-<translation id="7942429005743031780">Această politică specifică extensiile cărora li se permite să folosească API-ul Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey() pentru atestarea la distanță. Extensiile trebuie să fie adăugate în această listă pentru a folosi API-ul.
-
-          Dacă o extensie nu este în listă sau dacă lista nu este configurată, apelul către API nu va reuși și va genera un cod de eroare.</translation>
 <translation id="7953256619080733119">Gazde pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Această politică nu mai este acceptată. Permite utilizarea de servere STUN și de retransmisie în cazul conectării la un client la distanță. Dacă această setare este activată, atunci acest computer poate să descopere computere gazdă la distanță și să se conecteze la acestea, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, atunci acest computer se poate conecta numai la computerele gazdă aflate în rețeaua locală.</translation>
@@ -2318,6 +2388,9 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă această politică este dezactivată, browserul nu va afișa din nou pagina de întâmpinare la prima lansare după upgrade-ul sistemului de operare.</translation>
 <translation id="8369602308428138533">Interval până la oprirea ecranului la funcționarea pe c.a.</translation>
+<translation id="8370471134641900314">Dacă această politică este activată, utilizatorul trebuie să se conecteze la <ph name="PRODUCT_NAME" /> cu profilul său înainte de a folosi browserul. Iar politica BrowserGuestModeEnabled va fi în mod prestabilit dezactivată.
+
+      Dacă această politică este dezactivată sau nu este configurată, utilizatorul poate folosi browserul fără să se conecteze la <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Permiteți utilizarea atestării la distanță pentru protejarea conținutului pe dispozitiv</translation>
 <translation id="838870586332499308">Activează roamingul de date</translation>
 <translation id="8390049129576938611">Dezactivează vizualizatorul PDF intern în <ph name="PRODUCT_NAME" />. Îl tratează ca pe o descărcare și permite utilizatorului să deschidă fișierele PDF folosind aplicația prestabilită.
@@ -2442,15 +2515,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8833109046074170275">Autentificare prin fluxul GAIA prestabilit</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> salvează în memoria cache aplicațiile și extensiile pentru instalare atunci când mai mulți utilizatori folosesc același dispozitiv, pentru a evita ca fiecare utilizator să le descarce din nou.
       Dacă această politică nu este configurată sau valoarea este mai mică de 1 MB, <ph name="PRODUCT_OS_NAME" /> va folosi dimensiunea prestabilită a memoriei cache.</translation>
-<translation id="8858120573534680488">Nu poți forța aplicațiile Android să folosească un proxy. Un subset al setărilor de proxy este pus la dispoziția aplicațiilor Android, pe care acestea pot alege în mod voluntar să îl respecte:
-
-          Dacă alegi opțiunea „nu folosi niciodată un server proxy”, aplicațiile Android sunt informate că nu este configurat niciun proxy.
-
-          Dacă alegi opțiunea „folosește setările de proxy ale sistemului” sau „server proxy fix”, adresa și portul serverului proxy http sunt oferite aplicațiilor Android.
-
-          Dacă alegi opțiunea „detectează automat serverul proxy”, adresa URL pentru scripturi „http://wpad/wpad.dat” este oferită aplicațiilor Android. Nu este folosită nicio altă parte a protocolului pentru detectarea automată a proxy-ului.
-
-          Dacă alegi opțiunea „script .pac pentru proxy”, adresa URL pentru scripturi este oferită aplicațiilor Android.</translation>
 <translation id="8858642179038618439">Forțează Modul sigur pe YouTube</translation>
 <translation id="8864975621965365890">Elimină solicitarea de refuzare care apare atunci când un site web este redat de <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Pagina de pornire</translation>
@@ -2551,9 +2615,4 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="930930237275114205">Setați directorul <ph name="PRODUCT_FRAME_NAME" /> pentru datele utilizatorului</translation>
 <translation id="944607242500063080">Configurează modurile permise pentru deblocare rapidă.</translation>
 <translation id="944817693306670849">Setați dimensiunea pentru memorare în cache pe disc</translation>
-<translation id="969164417253718105">Această setare controlează frecvența cu care ecranul de blocare solicită introducerea parolei pentru a se folosi în continuare deblocarea rapidă. Dacă ultima introducere a parolei a fost în urmă cu mai mult decât prevede această setare, deblocarea rapidă nu va mai fi disponibilă la accesarea ecranului de blocare. Dacă utilizatorul menține pornit ecranul de blocare mai mult decât acest interval de timp, se va solicita o parolă data viitoare când acesta introduce codul greșit sau când accesează din nou ecranul de pornire, în funcție de care dintre acestea se realizează prima.
-
-      Dacă setarea este configurată, utilizatorilor care folosesc deblocarea rapidă li se va solicita să își introducă parola pe ecranul de blocare, în funcție de această setare.
-
-      Dacă setarea nu este configurată, utilizatorilor care folosesc deblocarea rapidă li se va solicita să își introducă parola pe ecranul de blocare în fiecare zi.</translation>
 </translationbundle>

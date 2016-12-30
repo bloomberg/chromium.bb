@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">se</translation>
 <translation id="2091933974477985526">Föregående redigerbara textområde</translation>
 <translation id="2100350898815792233">Alla skiljetecken</translation>
+<translation id="2110480898214777136">Radbryt från början till slut eller från slut till början på en sida, i en dialogruta eller i en annan behållare</translation>
 <translation id="2119965627982867824">snurrknapp</translation>
 <translation id="2121067395472282800">snabbtangent:<ph name="KEY" /></translation>
 <translation id="2155457205053847599">Ändra den aktuella tabellen för punktskrift med sex punkter genom att välja ett alternativ i listan nedan.</translation>
 <translation id="2169714232367507776">Klicka på det aktuella objektet</translation>
+<translation id="2179452035581866348">ChromeVox använder ljud för att ge dig mer och viktig information. Genom att lära dig vad de olika ljuden innebär kan du navigera snabbare. När du har vant dig vid ljuden kan du inaktivera upplästa utförliga beskrivningar och förlita dig på dem när det gäller viktig information om sidan. Här är en fullständig lista över ljuden och vad de innebär.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{högerparentes}other{# högerparenteser}}</translation>
 <translation id="2199994615414171367">Föregående matematiska uttryck</translation>
 <translation id="2220529011494928058">Rapportera ett problem</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">Huvud</translation>
 <translation id="2329324941084714723">Flikpanel</translation>
 <translation id="2344193891939537199">Inmatning av datum och tid</translation>
+<translation id="2347456970887948350">En länk</translation>
 <translation id="2359897517538099099">Inte i tabelläge.</translation>
 <translation id="241124561063364910">följt av</translation>
+<translation id="2416512023405990736">En omarkerad kryssruta</translation>
 <translation id="2417569100218200841">Innehållsinformation</translation>
 <translation id="2422937916923936891">Kryssruta för menyalternativ</translation>
 <translation id="2428534162001909979">Kommandomenyer</translation>
@@ -213,6 +217,7 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="3223701887221307104"><ph name="NAME" />, flik</translation>
 <translation id="3226035351387556942">kryssruta</translation>
 <translation id="3229375994964697375">Besökt länk</translation>
+<translation id="3232388865800379423">En popup-knapp</translation>
 <translation id="323731244387692321">Öppna tangentbordshjälpen för ChromeVox</translation>
 <translation id="3241052487511142956">Föregående länk som har besökts</translation>
 <translation id="3286390186030710347">Skjutreglage</translation>
@@ -221,6 +226,7 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="3311969765485641742">Tryck på Alt+Skift+A om du vill granska varningar</translation>
 <translation id="3312997241656799641">Nästa länk som har besökts</translation>
 <translation id="3313245066383501820">ChromeVox-specialtangenten</translation>
+<translation id="3317212938060708859">Ett skjutreglage</translation>
 <translation id="3321460131042519426">Aktivera radbrytning</translation>
 <translation id="3322936298410871309">Föregående rubrik på nivå 1</translation>
 <translation id="3323447499041942178">Textruta</translation>
@@ -279,6 +285,7 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="3457000393508828486">Delvis nedtryckt</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, inaktivera</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, knapp</translation>
+<translation id="3466530247399808663">En ogiltig tangenttryckning</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> markerade</translation>
 <translation id="3486232535569802404"><ph name="V1" /> till <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{höger hakparentes}other{# höger-hakparenteser}}</translation>
@@ -286,6 +293,7 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="3494946239022273294">menyalt</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{frågetecken}other{# frågetecken}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{cirkumflex}other{# cirkumflextecken}}</translation>
+<translation id="352577523970648069">Ett redigerbart textfält</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, omarkerad kryssruta</translation>
 <translation id="3599054940393788245">Inte i ett matematiskt uttryck</translation>
 <translation id="3616113530831147358">Ljud</translation>
@@ -325,10 +333,12 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="4047216625641135770">Markering</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4054936709456751127">status</translation>
+<translation id="4058278702844053247">En sida som håller på att läsas in</translation>
 <translation id="4065205963140826639">Testa att använda söktangenten + högerpil för att hitta knappen Nästa och tryck sedan på söktangenten + mellanslag för att klicka på den.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{tilde}other{# tildetecken}}</translation>
 <translation id="409334809956508737">Föregående objekt</translation>
 <translation id="4099274309791143834">med undermeny</translation>
+<translation id="4101527861445851766">En markerad kryssruta</translation>
 <translation id="4107807507418787238">Det finns inga celler nedanför den här.</translation>
 <translation id="4116415223832267137">Varning</translation>
 <translation id="4147126331795725888">Det finns inga fler kontroller.</translation>
@@ -338,6 +348,7 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="4173994908659439270">Det finns inga fler redigerbara textfält.</translation>
 <translation id="4176463684765177261">Inaktiverad</translation>
 <translation id="4188530942454211480">Föregående mening</translation>
+<translation id="4191918948604314587">En knapp</translation>
 <translation id="4202186506458631436">Flytta åt höger</translation>
 <translation id="4206289001967551965">I tabellen</translation>
 <translation id="4215733775853809057">Nästa skjutreglage</translation>
@@ -461,6 +472,7 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="5374320867641260420">Det finns inga fler knappar.</translation>
 <translation id="5382299583965267720">Det finns inga fler rubriker på nivå 1.</translation>
 <translation id="5402367795255837559">Punktskrift</translation>
+<translation id="5402791055281059602">En modal avisering</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{semikolon}other{# semikolon}}</translation>
 <translation id="5411891038905756502">Det finns inga tidigare punkter att hoppa till.</translation>
 <translation id="5417034931411865818">Klicka på objektet under markörhämtaren $1</translation>
@@ -554,6 +566,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="6119955456199054975">Slutet av cellen.</translation>
 <translation id="6122013438240733403">knapp</translation>
 <translation id="6129953537138746214">Blanksteg</translation>
+<translation id="6132506484792346370">En listruta eller kombinationsruta</translation>
 <translation id="6138576064440631958">Ackordet $1</translation>
 <translation id="6142308968191113180">Rubrik 4</translation>
 <translation id="6169420925157477918">Bild med lång beskrivning</translation>
@@ -567,6 +580,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="6282062888058716985">navig</translation>
 <translation id="6290434000785343030">Det finns inga fler kombinationsrutor.</translation>
 <translation id="6307969636681130414">Nedtryckt</translation>
+<translation id="6322856989298155004">Ljud</translation>
 <translation id="6324551002951139333">Ett grammatiskt fel har upptäckts</translation>
 <translation id="6348657800373377022">Kombinationsruta</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{punkt}other{# punkter}}</translation>
@@ -597,6 +611,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="6657128831881431364">Förloppsindikator</translation>
 <translation id="6659594942844771486">Flik</translation>
 <translation id="667999046851023355">Dokument</translation>
+<translation id="6688209025607531203">En icke-modal avisering</translation>
 <translation id="6697092096875747123">Föregående kombinationsruta</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{utropstecken}other{# utropstecken}}</translation>
 <translation id="6710213216561001401">Föregående</translation>

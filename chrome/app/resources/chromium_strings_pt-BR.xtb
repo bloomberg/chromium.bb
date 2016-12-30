@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">Para tornar o Chromium mais seguro, desativamos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e podem ser sido adicionadas sem seu conhecimento.</translation>
 <translation id="1808667845054772817">Reinstalar o Chromium</translation>
 <translation id="1816404578968201294">O Chromium precisa de acesso ao local para compartilhá-lo com este site.</translation>
+<translation id="1838412507805038478">O Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste website.</translation>
 <translation id="1869480248812203386">Você pode ajudar a tornar o Chromium mais seguro e mais fácil de usar ao informar automaticamente ao Google detalhes sobre possíveis incidentes de segurança.</translation>
 <translation id="1881322772814446296">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. Você tem a opção de criar um novo perfil para manter seus dados existentes do Chromium separados. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">O Chromium não está respondendo. Reiniciar agora?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">Sobre o &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licenças de código aberto do Chromium OS</translation>
 <translation id="2241627712206172106">Se você usa um computador compartilhado, seus amigos e familiares podem navegar separadamente e configurar o Chromium da maneira que desejarem.</translation>
-<translation id="225614027745146050">Bem-vindo</translation>
 <translation id="2316129865977710310">Não.</translation>
 <translation id="2347108572062610441">Esta extensão alterou a página que é exibida quando você inicia o Chromium.</translation>
 <translation id="2372704305038231957">É possível que o Chromium de 32 bits não funcione corretamente, porque ele não é mais compatível com esse sistema Linux. Faça upgrade para o Chromium de 64 bits.</translation>
@@ -151,7 +151,6 @@
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5906655207909574370">Atualização quase concluída. Reinicie o dispositivo para concluí-la.</translation>
-<translation id="5942225298871134766">O Chromium armazenará essa senha com <ph name="SAVED_PASSWORD_LINK" /> e lembrará dela na próxima vez que você precisar.</translation>
 <translation id="5942520288919337908">A extensão <ph name="EXTENSION_NAME" /> foi adicionada ao Chromium.</translation>
 <translation id="59625444380784159">Detalhes dos seus contatos podem ajudar a preencher formulários de forma mais rápida no Chromium.</translation>
 <translation id="5987687638152509985">Atualize o Chromium para começar a sincronizar</translation>
@@ -237,6 +236,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="81770708095080097">Esse arquivo é perigoso, por isso ele foi bloqueado pelo Chromium.</translation>
 <translation id="8269379391216269538">Ajudar a melhorar o Chromium</translation>
 <translation id="8290862415967981663">Esse arquivo pode ser perigoso, por isso ele foi bloqueado pelo Chromium.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> estava usando o Chromium anteriormente</translation>
 <translation id="8453117565092476964">O arquivo de instalação está corrompido ou não é válido. Faça o download do Chromium novamente.</translation>
 <translation id="8493179195440786826">O Chromium está desatualizado</translation>
 <translation id="85843667276690461">Obter ajuda para usar o Chromium</translation>

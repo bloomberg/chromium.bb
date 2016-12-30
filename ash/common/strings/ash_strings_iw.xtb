@@ -21,7 +21,7 @@
 <translation id="1467432559032391204">שמאלה</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">מפעיל</translation>
-<translation id="1525508553941733066">דחה</translation>
+<translation id="1525508553941733066">סגור</translation>
 <translation id="153454903766751181">מאתחל מודם סלולרי...</translation>
 <translation id="15373452373711364">סמן עכבר גדול</translation>
 <translation id="1550523713251050646">לחץ לקבלת אפשרויות נוספות</translation>
@@ -54,10 +54,8 @@
 <translation id="2429753432712299108">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה. לפני שתאשר, ודא שמפתח הסיסמה הבא מוצג במכשיר הזה: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">אירעה שגיאה</translation>
 <translation id="2509468283778169019">‏CAPS LOCK מופעל</translation>
-<translation id="252373100621549798">תצוגה לא ידועה</translation>
 <translation id="2532589005999780174">מצב ניגודיות גבוהה</translation>
 <translation id="2562916301614567480">רשת פרטית</translation>
-<translation id="2661637000095600270">לא ניתן היה לשקף תצוגה מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב. לחץ כדי לשלוח דוח משוב.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: מתחבר...</translation>
 <translation id="2700058918926273959">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />. תנותק מהחשבון.</translation>
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
@@ -114,7 +112,6 @@
 <translation id="3846575436967432996">אין מידע רשת זמין</translation>
 <translation id="3866182280516392520">‏כתובת IPv6</translation>
 <translation id="3891340733213178823">‏הקש פעמיים על Ctrl+Shift+Q כדי לצאת.</translation>
-<translation id="3892641579809465218">תצוגה פנימית</translation>
 <translation id="3893630138897523026">‏ChromeVox (משוב קולי)</translation>
 <translation id="3899995891769452915">קלט קולי</translation>
 <translation id="3901991538546252627">מתחבר אל: <ph name="NAME" /></translation>
@@ -177,6 +174,8 @@
 <translation id="5977415296283489383">אוזניות</translation>
 <translation id="5978382165065462689">שיתוף שליטה במסך דרך סיוע מרחוק.</translation>
 <translation id="5980301590375426705">צא מהפעלת אורח</translation>
+<translation id="6041154455840261787">‏הופעל מצב ניגודיות גבוהה. כדי להשבית, הקש שוב על Search+Shift+H.</translation>
+<translation id="6043212731627905357">אין כימיה בין הצג הזה למכשיר ה-<ph name="DEVICE_TYPE" /> שלך (המכשיר לא תומך בצג).</translation>
 <translation id="6043994281159824495">צא עכשיו</translation>
 <translation id="6047696787498798094">שיתוף המסך יפסיק ברגע שתעבור למשתמש אחר. האם ברצונך להמשיך?</translation>
 <translation id="6062360702481658777">תצא באופן אוטומטי בעוד <ph name="LOGOUT_TIME_LEFT" />.</translation>
@@ -185,7 +184,6 @@
 <translation id="6144938890088808325">‏עזור לנו לשפר את מחשבי Chromebook</translation>
 <translation id="615957422585914272">הצג מקלדת במסך</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
-<translation id="6203030746557259519">תצוגה וירטואלית</translation>
 <translation id="6248847161401822652">‏לחץ פעמיים על Control Shift Q כדי לצאת.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: מפעיל...</translation>
 <translation id="6297287540776456956">בחר אזור באמצעות הסטיילוס</translation>
@@ -208,6 +206,7 @@
 <translation id="6700713906295497288">‏לחצן תפריט IME</translation>
 <translation id="6713285437468012787">‏מכשיר ה-Bluetooth‏ "<ph name="DEVICE_NAME" />" הותאם והוא זמין כעת לכל המשתמשים. אתה יכול להסיר את ההתאמה הזו ב'הגדרות'.</translation>
 <translation id="6785414152754474415">‏הסוללה טעונה ברמה של ‎<ph name="PERCENTAGE" />%‎ ומתבצעת טעינה.</translation>
+<translation id="6803622936009808957">לא ניתן היה לשקף מסכים מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב.</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">הפעל את <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">הצטרף לרשת אחרת...</translation>
@@ -274,7 +273,6 @@
 <translation id="8878886163241303700">מסך מתרחב</translation>
 <translation id="8938800817013097409">‏מכשיר עם יציאת USB-C (יציאה ימנית מאחור)</translation>
 <translation id="8940956008527784070">‏סוללה חלשה (‎<ph name="PERCENTAGE" />%‎)</translation>
-<translation id="9008540565042607572">צג יקר, זה לא עובד בינינו. (הצג אינו נתמך. לחץ כדי לשלוח דוח משוב).</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">המיקרופון נמצא בשימוש.</translation>
 <translation id="9089416786594320554">שיטות קלט</translation>
@@ -284,5 +282,6 @@
 <translation id="923686485342484400">‏הקש פעמיים על Control Shift Q כדי לצאת.</translation>
 <translation id="938582441709398163">שכבת-על של מקלדת</translation>
 <translation id="939252827960237676">שמירת צילום המסך נכשלה</translation>
+<translation id="945522503751344254">שלח משוב</translation>
 <translation id="952992212772159698">לא פעיל</translation>
 </translationbundle>

@@ -21,20 +21,18 @@
 <translation id="388442998277590542">Hindi ma-load ang pahina ng mga pagpipilian na '<ph name="OPTIONS_PAGE" />'.</translation>
 <translation id="4115165561519362854">Iniaatas ng administrator ng computer na ito sa <ph name="EXTENSION_NAME" /> na magkaroon ng minimum na bersyon na <ph name="EXTENSION_VERSION" />. Hindi ito mae-enable hanggang sa ma-update ito sa bersyong iyon (o mas bago).</translation>
 <translation id="4233778200880751280">Hindi ma-load ang page na tungkol dito na '<ph name="ABOUT_PAGE" />'.</translation>
-<translation id="4434145631756268951">{0,select, single{Pumili ng USB device}multiple{Pumili ng mga USB device}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Hindi na-install ang package dahil nag-crash ang isang proseso ng utility. Subukang i-restart ang Chrome at subukang muli.</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Kasama sa extension na ito ang key file na '<ph name="KEY_PATH" />'. Malamang na hindi mo iyon gustong gawin.</translation>
 <translation id="5627523580512561598">extension na <ph name="EXTENSION_NAME" /></translation>
-<translation id="5630931906013276297">{0,select, single{Pumili ng HID device}multiple{Pumili ng mga HID device}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Kinakailangan ng administrator ng machine na ito na naka-install ang <ph name="EXTENSION_NAME" />. Hindi ito maaaring i-uninstall.</translation>
 <translation id="6027032947578871493">Hindi kilalang produkto na <ph name="PRODUCT_ID" /> mula sa <ph name="VENDOR_NAME" /> (serial number na <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> mula sa vendor na <ph name="VENDOR_ID" /></translation>
 <translation id="6143635259298204954">Hindi ma-unpack ang extension.  Upang ligtas na ma-unpack ang isang extension, dapat na mayroong daanan patungo sa iyong direktoryo ng profile na walang nilalamang symlink.  Walang naturang daanan ang umiiral para sa iyong profile.</translation>
-<translation id="616804573177634438">{0,select, single{Humihiling ang application na "<ph name="APP_NAME" />" ng access sa isa sa iyong mga device.}multiple{Humihiling ang application na "<ph name="APP_NAME" />" ng access sa isa o higit pa sa iyong mga device.}other{HINDI NAGAMIT}}</translation>
 <translation id="641087317769093025">Hindi ma-unzip ang extension</translation>
+<translation id="6542618148162044354">Humihiling ang "<ph name="APP_NAME" />" ng access sa isa o higit pa sa iyong mga device:</translation>
 <translation id="657064425229075395">Hindi ma-load ang script ng background na '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> mula sa <ph name="VENDOR_NAME" /> (serial number <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Hindi malikha ang direktoryo para sa pag-unzip: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">Di-wasto ang package. Mga Detalye: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Nabigo ang extension na ito na mag-redirect ng kahilingan sa network sa <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> dahil may isa pang extension (<ph name="EXTENSION_NAME" />) na nag-redirect nito sa <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Pang-unpack ng Extension</translation>
+<translation id="8761756413268424715">Humihiling ang "<ph name="APP_NAME" />" ng access sa isa sa iyong mga device:</translation>
 <translation id="8825366169884721447">Nabigo ang extension na ito na baguhin ang header ng kahilingan na "<ph name="HEADER_NAME" />" ng isang kahilingan sa network dahil sumalungat ang pagbabago sa isa pang extension (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="9111791539553342076">Nabigo ang extension na ito na baguhin ang header ng tugon na "<ph name="HEADER_NAME" />" ng isang kahilingan sa network dahil sumalungat ang pagbabago sa isa pang extension (<ph name="EXTENSION_NAME" />).</translation>
 </translationbundle>

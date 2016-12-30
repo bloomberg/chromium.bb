@@ -21,20 +21,18 @@
 <translation id="388442998277590542">Δεν ήταν δυνατή η φόρτωση της σελίδας επιλογών "<ph name="OPTIONS_PAGE" />".</translation>
 <translation id="4115165561519362854">Ο διαχειριστής αυτού του μηχανήματος απαιτεί από το <ph name="EXTENSION_NAME" /> να διαθέτει τουλάχιστον την έκδοση <ph name="EXTENSION_VERSION" />. Δεν μπορεί να ενεργοποιηθεί έως ότου ενημερωθεί σε αυτήν την έκδοση (ή σε μεταγενέστερη).</translation>
 <translation id="4233778200880751280">Δεν ήταν δυνατή η φόρτωση της σελίδας πληροφοριών "<ph name="ABOUT_PAGE" />".</translation>
-<translation id="4434145631756268951">{0,select, single{Επιλέξτε μια συσκευή USB}multiple{Επιλέξτε συσκευές USB}other{ΔΕΝ ΧΡΗΣΙΜΟΠΟΙΕΙΤΑΙ}}</translation>
 <translation id="4811956658694082538">Δεν ήταν δυνατή η εγκατάσταση του πακέτου, επειδή μια διεργασία βοηθητικού προγράμματος παρουσίασε σφάλμα. Επανεκκινήστε το Chrome και προσπαθήστε ξανά.</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Αυτή η επέκταση περιλαμβάνει το αρχείο κλειδιού "<ph name="KEY_PATH" />". Πιθανότατα δεν θέλετε να προβείτε σε αυτήν την ενέργεια.</translation>
 <translation id="5627523580512561598">επέκταση <ph name="EXTENSION_NAME" /></translation>
-<translation id="5630931906013276297">{0,select, single{Επιλέξτε μια συσκευή HID}multiple{Επιλέξτε συσκευές HID}other{ΔΕΝ ΧΡΗΣΙΜΟΠΟΙΕΙΤΑΙ}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME" />. Η εγκατάσταση δεν μπορεί να καταργηθεί.</translation>
 <translation id="6027032947578871493">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από <ph name="VENDOR_NAME" /> (σειριακός αριθμός <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> από τον προμηθευτή <ph name="VENDOR_ID" /></translation>
 <translation id="6143635259298204954">Δεν είναι δυνατή η αποσυσκευασία της επέκτασης.  Για την ασφαλή αποσυσκευασία μιας επέκτασης πρέπει να υπάρχει στον κατάλογο προφίλ σας μια διαδρομή που δεν περιέχει κάποιο symlink.  Στο προφίλ σας δεν υπάρχει κάποια τέτοια διαδρομή.</translation>
-<translation id="616804573177634438">{0,select, single{Η εφαρμογή "<ph name="APP_NAME" />" ζητάει πρόσβαση σε μία από τις συσκευές σας.}multiple{Η εφαρμογή "<ph name="APP_NAME" />" ζητάει πρόσβαση σε μία ή περισσότερες συσκευές σας.}other{ΔΕΝ ΧΡΗΣΙΜΟΠΟΙΕΙΤΑΙ}}</translation>
 <translation id="641087317769093025">Δεν ήταν δυνατή η αποσυμπίεση της επέκτασης</translation>
+<translation id="6542618148162044354">Η εφαρμογή "<ph name="APP_NAME" />" ζητά πρόσβαση σε μία ή περισσότερες συσκευές σας:</translation>
 <translation id="657064425229075395">Δεν ήταν δυνατή η φόρτωση του σεναρίου παρασκηνίου '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> από <ph name="VENDOR_NAME" /> (σειριακός αριθμός <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Δεν ήταν δυνατή η δημιουργία καταλόγου για την αποσυμπίεση: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">Μη έγκυρο πακέτο. Λεπτομέρειες: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Αυτή η επέκταση απέτυχε να ανακατευθύνει κάποιο αίτημα δικτύου στο <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> επειδή κάποια άλλη επέκταση (<ph name="EXTENSION_NAME" />) το ανακατεύθυνε στο <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Εργαλείο αποσυσκευασίας επεκτάσεων</translation>
+<translation id="8761756413268424715">Η εφαρμογή "<ph name="APP_NAME" />" ζητά πρόσβαση σε μία από τις συσκευές σας.</translation>
 <translation id="8825366169884721447">Αυτή η επέκταση απέτυχε να τροποποιήσει την κεφαλίδα αιτήματος "<ph name="HEADER_NAME" />" κάποιου αιτήματος δικτύου επειδή η τροποποίηση ήρθε σε σύγκρουση με κάποια άλλη επέκταση (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="9111791539553342076">Αυτή η επέκταση απέτυχε να τροποποιήσει την κεφαλίδα απόκρισης "<ph name="HEADER_NAME" />" κάποιου αιτήματος δικτύου επειδή η τροποποίηση ήρθε σε σύγκρουση με κάποια άλλη επέκταση (<ph name="EXTENSION_NAME" />).</translation>
 </translationbundle>

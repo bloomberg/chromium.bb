@@ -54,10 +54,8 @@
 <translation id="2429753432712299108">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। স্বীকার করার আগে, দয়া করে এই পাস কীটি যে ডিভাইসে প্রদর্শিত হয়েছে তা নিশ্চিত করুন: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">একটি ত্রুটি ঘটেছে</translation>
 <translation id="2509468283778169019">CAPS LOCK চালু</translation>
-<translation id="252373100621549798">অজানা প্রদর্শন</translation>
 <translation id="2532589005999780174">উচ্চ কনট্রাস্ট মোড</translation>
 <translation id="2562916301614567480">ব্যক্তিগত নেটওয়ার্ক</translation>
-<translation id="2661637000095600270">সমর্থিত রেসুলিউশানগুলি খুঁজে না পাওয়ায় প্রদর্শনগুলি মিরর  মানে প্রতিবিম্বিত করতে পারেনি। এর পরিবর্তে প্রসারিত ডেস্কটপে প্রবেশ করেছে। একটি প্রতিক্রিয়া প্রতিবেদন পাঠাতে ক্লিক করুন।</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: সংযুক্ত হচ্ছে...</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷ আপনাকে প্রস্থান করুন করা হবে৷</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
@@ -114,7 +112,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3846575436967432996">কোনো নেটওয়ার্ক সংক্রান্ত তথ্য উপলব্ধ নেই</translation>
 <translation id="3866182280516392520">IPv6 ঠিকানা</translation>
 <translation id="3891340733213178823">প্রস্থান করুন করার জন্য দুবার Ctrl+Shift+Q টিপুন৷</translation>
-<translation id="3892641579809465218">অভ্যন্তরীণ প্রদর্শন</translation>
 <translation id="3893630138897523026">ChromeVox (কথ্য প্রতিক্রিয়া)</translation>
 <translation id="3899995891769452915">ভয়েস ইনপুট</translation>
 <translation id="3901991538546252627"><ph name="NAME" />-এ সংযোগ করা হচ্ছে</translation>
@@ -177,6 +174,8 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="5977415296283489383">হেডফোন</translation>
 <translation id="5978382165065462689">রিমোট সহায়কের মাধ্যমে আপনার স্ক্রীন নিয়ন্ত্রণ ভাগ করুন৷</translation>
 <translation id="5980301590375426705">অতিথি থেকে প্রস্থান</translation>
+<translation id="6041154455840261787">উচ্চ কনট্রাস্ট মোড সক্ষম করা হয়েছে। এটি টগল করে বন্ধ করতে চাইলে আবার Search+Shift+H টিপু্ন।</translation>
+<translation id="6043212731627905357">এই মনিটরটি আপনার <ph name="DEVICE_TYPE" /> এর সাথে তাল মেলাতে পারছে না (মনিটরটি সমর্থিত নয়)।</translation>
 <translation id="6043994281159824495">এখনই প্রস্থান করুন করুন</translation>
 <translation id="6047696787498798094">যখন আপনি অন্য ব্যবহারকারীতে পাল্টাবেন তখন স্ক্রীন শেয়ার করা বন্ধ হবে৷ আপনি কি চালিয়ে যেতে চান?</translation>
 <translation id="6062360702481658777">আপনি <ph name="LOGOUT_TIME_LEFT" /> এর মধ্যে স্বয়ংক্রিয়ভাবে প্রস্থান করুন হবেন৷</translation>
@@ -185,7 +184,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6144938890088808325">আমাদের Chromebooks উন্নত করতে সাহায্য করুন</translation>
 <translation id="615957422585914272">অন-স্ক্রীন কীবোর্ড প্রদর্শন করুন</translation>
 <translation id="6165508094623778733">আরো জানুন</translation>
-<translation id="6203030746557259519">ভার্চুয়াল প্রদর্শন</translation>
 <translation id="6248847161401822652">প্রস্থান করার জন্য দুবার Control Shift Q টিপুন৷</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: সক্রিয় করা হচ্ছে...</translation>
 <translation id="6297287540776456956">একটি অঞ্চল নির্বাচন করতে লেখনী ব্যবহার করুন</translation>
@@ -208,6 +206,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6700713906295497288">IME মেনু বোতাম</translation>
 <translation id="6713285437468012787">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করা হয়েছে এবং এখন সমস্ত ব্যবহারকারীর কাছে উপলব্ধ। আপনি সেটিংস ব্যবহার করে এই সংযুক্তি সরিয়ে দিতে পারেন।</translation>
 <translation id="6785414152754474415">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ এবং চার্জ হচ্ছে৷</translation>
+<translation id="6803622936009808957">সমর্থিত রেসুলিউশানগুলি খুঁজে না পাওয়ায় প্রদর্শনগুলি মিরর মানে প্রতিবিম্বিত করতে পারেনি। এর পরিবর্তে প্রসারিত ডেস্কটপে প্রবেশ করেছে।</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">সক্রিয় করুন <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">অন্যতে যোগদান করুন ...</translation>
@@ -274,7 +273,6 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="8878886163241303700">স্ক্রীন সম্প্রসারণ করা হচ্ছে</translation>
 <translation id="8938800817013097409">USB-C ডিভাইস (পিছনের ডান পোর্ট)</translation>
 <translation id="8940956008527784070">(<ph name="PERCENTAGE" />%) কম ব্যাটারি</translation>
-<translation id="9008540565042607572">প্রিয় মনিটর, আমাদের মধ্যে কাজের যোগ ঘটছে না। (এই মনিটরটি সমর্থিত নয়। একটি প্রতিক্রিয়া প্রতিবেদন পাঠাতে ক্লিক করুন।)</translation>
 <translation id="9074739597929991885">ব্লুটুথ</translation>
 <translation id="9080206825613744995">মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
 <translation id="9089416786594320554">ইনপুট পদ্ধতিসমূহ</translation>
@@ -284,5 +282,6 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="923686485342484400">প্রস্থান করুন করার জন্য দুবার Control Shift Q টিপুন৷</translation>
 <translation id="938582441709398163">কীবোর্ড ওভারলে</translation>
 <translation id="939252827960237676">স্ক্রীনশট সংরক্ষণ করতে ব্যর্থ হয়েছে</translation>
+<translation id="945522503751344254">প্রতিক্রিয়া পাঠান</translation>
 <translation id="952992212772159698">সক্রিয় নেই</translation>
 </translationbundle>

@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">Chrome এ প্রবেশ করুন</translation>
 <translation id="1061441684050139317">এই সাইটের সাথে এটি শেয়ার করতে Chrome এর মাইক্রোফোন অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="1065672644894730302">আপনার অভিরুচিগুলি পড়া যাবে না৷ কিছু বৈশিষ্ট্য অনুপলব্ধ থাকতে পারে ও অভিরুচিগুলিতে করা পরিবর্তনগুলি সংরক্ষিত হবে না৷</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> পূর্বে Chrome ব্যবহার করছিলেন</translation>
 <translation id="1104959162601287462">&amp;Chrome OS সম্বন্ধে</translation>
 <translation id="110877069173485804">এটি হল আপনার Chrome</translation>
 <translation id="123620459398936149">Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Chrome Canary অ্যাপ্লিকেশানগুলি</translation>
 <translation id="1457721931618994305">Google Chrome আপডেট হচ্ছে...</translation>
 <translation id="1469002951682717133">Chrome অ্যাপ্লিকেশান লঞ্চার</translation>
-<translation id="1475773083554142432">Chrome <ph name="SAVED_PASSWORD_LINK" /> এর মাধ্যমে এটি সংরক্ষণ করবে এবং পরবর্তী বার আপনার প্রয়োজনের সময় এটি মনে রাখবে।</translation>
 <translation id="1480489203462860648">এটি ব্যবহার করে দেখুন, ইতিমধ্যেই এটি ইনস্টল করা হয়েছে</translation>
 <translation id="1553358976309200471">Chrome আপডেট করুন</translation>
 <translation id="1587223624401073077">Google Chrome আপনার ক্যামেরা ব্যবহার করছে৷</translation>
@@ -43,7 +43,6 @@
 <translation id="2147651015520127414"><ph name="ISSUER" /> যে এই ওয়েবসাইটের শংসাপত্র প্রকাশ করেছে Chrome তা যাচাই করেছে।</translation>
 <translation id="2246246234298806438">বিল্ট-ইন PDF viewer অনুপস্থিত থাকার সময়ে Google Chrome মুদ্রণের পূর্বরুপ দেখাতে পারে না৷</translation>
 <translation id="2252923619938421629">বর্তমান সেটিংস প্রতিবেদন করে Google Chrome আরো উত্তম করে তুলতে সাহায্য করুন</translation>
-<translation id="225614027745146050">স্বাগতম</translation>
 <translation id="2286950485307333924">আপনি এখন Chrome এ প্রবেশ করুন করেছেন</translation>
 <translation id="2290014774651636340">Google API কীগুলি অনুপস্থিত৷ Google Chrome এর কিছু বৈশিষ্ট্য নিষ্ক্রিয় হয়ে যাবে৷</translation>
 <translation id="2290095356545025170">আপনি কি Google Chrome আনইনস্টল করার ব্যাপারে নিষ্চিত ?</translation>

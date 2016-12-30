@@ -21,20 +21,18 @@
 <translation id="388442998277590542">Impossibile caricare la pagina delle opzioni "<ph name="OPTIONS_PAGE" />".</translation>
 <translation id="4115165561519362854">L'amministratore di questo computer richiede che <ph name="EXTENSION_NAME" /> abbia almeno la versione <ph name="EXTENSION_VERSION" />. L'attivazione potrà essere completata solo dopo che è stato eseguito l'aggiornamento a questa versione o a una versione successiva.</translation>
 <translation id="4233778200880751280">Impossibile caricare la pagina di informazioni "<ph name="ABOUT_PAGE" />".</translation>
-<translation id="4434145631756268951">{0,select, single{Seleziona un dispositivo USB}multiple{Seleziona dispositivi USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Impossibile installare il pacchetto perché un processo dell'utility si è arrestato in modo anomalo. Riavvia Chrome e riprova.</translation>
 <translation id="5026754133087629784">Visualizzazione web: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Questa estensione include il file di chiave "<ph name="KEY_PATH" />". Probabilmente preferiresti che non l'includesse.</translation>
 <translation id="5627523580512561598">estensione <ph name="EXTENSION_NAME" /></translation>
-<translation id="5630931906013276297">{0,select, single{Seleziona un dispositivo HID}multiple{Seleziona dispositivi HID}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">L'amministratore di questo computer richiede che l'estensione <ph name="EXTENSION_NAME" /> sia installata. Non è possibile disinstallarla.</translation>
 <translation id="6027032947578871493">Prodotto sconosciuto <ph name="PRODUCT_ID" /> di <ph name="VENDOR_NAME" /> (numero di serie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> del fornitore <ph name="VENDOR_ID" /></translation>
 <translation id="6143635259298204954">Impossibile decomprimere l'estensione. Per decomprimere in modo sicuro un'estensione, deve essere fornito un percorso alla directory del profilo che non contenga un link simbolico. Non esiste un simile percorso per il tuo profilo.</translation>
-<translation id="616804573177634438">{0,select, single{L'applicazione "<ph name="APP_NAME" />" richiede l'accesso a uno dei tuoi dispositivi.}multiple{L'applicazione "<ph name="APP_NAME" />" richiede l'accesso a uno o più dei tuoi dispositivi.}other{UNUSED}}</translation>
 <translation id="641087317769093025">Impossibile decomprimere l'estensione</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" richiede l'accesso a uno o più dispositivi:</translation>
 <translation id="657064425229075395">Impossibile caricare lo script in background "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> di <ph name="VENDOR_NAME" /> (numero di serie: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Impossibile creare la directory per la decompressione: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">Il pacchetto non è valido. Dettagli: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Questa estensione non è riuscita a reindirizzare una richiesta di rete a <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> perché un'altra estensione (<ph name="EXTENSION_NAME" />) l'ha reindirizzata a <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Extension Unpacker</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" richiede l'accesso a un dispositivo:</translation>
 <translation id="8825366169884721447">Questa estensione non è riuscita a modificare l'intestazione della richiesta "<ph name="HEADER_NAME" />" di una richiesta di rete perché la modifica era in conflitto con un'altra estensione (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="9111791539553342076">Questa estensione non è riuscita a modificare l'intestazione della risposta "<ph name="HEADER_NAME" />" di una richiesta di rete perché la modifica era in conflitto con un'altra estensione (<ph name="EXTENSION_NAME" />).</translation>
 </translationbundle>

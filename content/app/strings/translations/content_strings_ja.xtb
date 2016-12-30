@@ -24,7 +24,6 @@
 <translation id="1821985195704844674">ツリーグリッド</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">リモート デバイスで再生</translation>
-<translation id="1842960171412779397">選択</translation>
 <translation id="1854180393107901205">キャストを停止</translation>
 <translation id="1880518467580572141">アウトライン</translation>
 <translation id="1921819250265091946">日</translation>
@@ -50,11 +49,9 @@
 <translation id="2746543609216772311"><ph name="MINIMUM_DATE_OR_TIME" /> 以降の値を指定する必要があります。</translation>
 <translation id="2759744352195237655">ポップアップ ボタン</translation>
 <translation id="2761667185364618470">次に進むにはこのチェックボックスをオンにしてください。</translation>
-<translation id="2846343701378493991">1024 (中)</translation>
 <translation id="2896972712917208084">ラジオボタン グループ</translation>
 <translation id="2901282870647571346">現在の映画のステータス</translation>
 <translation id="2908441821576996758">メール アドレスのカンマ区切りリストを入力してください。</translation>
-<translation id="2931838996092594335">クリック</translation>
 <translation id="2940813599313844715">オブジェクト</translation>
 <translation id="2942448076852699108">ハイライト表示されたコンテンツ</translation>
 <translation id="3040011195152428237">リンク</translation>
@@ -80,7 +77,6 @@
 <translation id="4103419683916926126">ミリ秒</translation>
 <translation id="4151657705144244502">グラフィック</translation>
 <translation id="4201051445878709314">前の月を表示</translation>
-<translation id="4202807286478387388">ジャンプ</translation>
 <translation id="421884353938374759">色の選択</translation>
 <translation id="4248100235867064564">メニューバー</translation>
 <translation id="4254339807215791271">コンテンツ情報</translation>
@@ -108,7 +104,6 @@
 <translation id="5453733299334684579">ツリー項目</translation>
 <translation id="5466621249238537318">1 つ以上のファイルを選択してください。</translation>
 <translation id="5468998798572797635">全画面表示を終了</translation>
-<translation id="5476505524087279545">チェックを外す</translation>
 <translation id="5516424706154626233">日付選択ツール</translation>
 <translation id="5537725057119320332">キャスト</translation>
 <translation id="5546461542133609677">ミュートを解除</translation>
@@ -121,13 +116,11 @@
 <translation id="5860033963881614850">オフ</translation>
 <translation id="588258955323874662">全画面表示</translation>
 <translation id="5939518447894949180">リセット</translation>
-<translation id="5944544982112848342">2048 (高)</translation>
 <translation id="5966707198760109579">週</translation>
 <translation id="5987525920412732405">スピンボタン</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="6023896073578205740">リストボックス</translation>
 <translation id="6101327004457443354">音声トラックのミュートを解除</translation>
-<translation id="6119846243427417423">アクティブにする</translation>
 <translation id="6164829606128959761">メーター</translation>
 <translation id="6270583010843788609">タイムラインのサムネイル</translation>
 <translation id="6359256949422175976">シークバーのサムネイル</translation>
@@ -145,7 +138,6 @@
 <translation id="6790428901817661496">再生</translation>
 <translation id="6820355525329141109">プラグインを読み込むことができませんでした。</translation>
 <translation id="6843725295806269523">ミュート</translation>
-<translation id="6845533974506654842">押す</translation>
 <translation id="6853785296079745596">クローズド キャプションを非表示</translation>
 <translation id="6885760532393684712">ディレクトリ</translation>
 <translation id="6934078000481955284">引用</translation>
@@ -177,7 +169,6 @@
 <translation id="8244226242650769279">イメージ マップ</translation>
 <translation id="8284326494547611709">字幕</translation>
 <translation id="835897206747267392">値が無効です。</translation>
-<translation id="838869780401515933">チェックを付ける</translation>
 <translation id="8433900881053900389">ツールバー</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> ファイル</translation>
 <translation id="8451268428117625855">ファイルを選択してください。</translation>
@@ -192,7 +183,6 @@
 <translation id="8785498733064193001">再生を開始</translation>
 <translation id="8851136666856101339">本文</translation>
 <translation id="8987927404178983737">月</translation>
-<translation id="9002566407876343676">開く</translation>
 <translation id="901493112792887934">現在の時間（秒単位）</translation>
 <translation id="9048119486235211610">ナビゲーション</translation>
 <translation id="9050748414552849310">クローズド キャプションを表示</translation>

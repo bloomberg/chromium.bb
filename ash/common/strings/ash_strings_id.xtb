@@ -54,10 +54,8 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="2429753432712299108">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Sebelum menerima, konfirmasikan bahwa kunci sandi ini ditampilkan pada perangkat tersebut: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Terjadi kesalahan</translation>
 <translation id="2509468283778169019">CAPS LOCK aktif</translation>
-<translation id="252373100621549798">Tampilan yang Tidak Diketahui</translation>
 <translation id="2532589005999780174">Mode kontras tinggi</translation>
 <translation id="2562916301614567480">Jaringan Pribadi</translation>
-<translation id="2661637000095600270">Tidak dapat mencerminkan tampilan karena tidak ada resolusi yang didukung. Memasuki mode desktop yang diperluas sebagai gantinya. Klik untuk mengirimkan laporan masukan.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: Menyambung...</translation>
 <translation id="2700058918926273959">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />. Anda akan keluar.</translation>
 <translation id="2727977024730340865">Dipasang ke pengisi daya rendah. Pengisian daya baterai mungkin tidak dapat diandalkan.</translation>
@@ -114,7 +112,6 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="3846575436967432996">Tidak tersedia informasi jaringan</translation>
 <translation id="3866182280516392520">Alamat IPv6</translation>
 <translation id="3891340733213178823">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
-<translation id="3892641579809465218">Tampilan Internal</translation>
 <translation id="3893630138897523026">ChromeVox (masukan lisan)</translation>
 <translation id="3899995891769452915">Masukan suara</translation>
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
@@ -177,6 +174,8 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="5977415296283489383">Headphone</translation>
 <translation id="5978382165065462689">Berbagi kontrol layar via Remote Assistance.</translation>
 <translation id="5980301590375426705">Keluar dari sesi tamu</translation>
+<translation id="6041154455840261787">Mode Kontras Tinggi diaktifkan. Tekan Penelusuran+Shift+H lagi untuk menonaktifkannya.</translation>
+<translation id="6043212731627905357">Monitor ini tidak dapat berfungsi dengan <ph name="DEVICE_TYPE" /> Anda (monitor tidak didukung).</translation>
 <translation id="6043994281159824495">Keluar sekarang</translation>
 <translation id="6047696787498798094">Berbagi layar akan berhenti saat Anda beralih ke pengguna lain. Ingin melanjutkan?</translation>
 <translation id="6062360702481658777">Anda akan dikeluarkan secara otomatis dalam <ph name="LOGOUT_TIME_LEFT" />.</translation>
@@ -185,7 +184,6 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="6144938890088808325">Bantu kami meningkatkan Chromebook</translation>
 <translation id="615957422585914272">Tampilkan keyboard di layar</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
-<translation id="6203030746557259519">Tampilan Virtual</translation>
 <translation id="6248847161401822652">Tekan Control Shift Q dua kali untuk keluar.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Mengaktifkan...</translation>
 <translation id="6297287540776456956">Gunakan stilus untuk memilih wilayah</translation>
@@ -208,6 +206,7 @@ Tekan Shift + Alt untuk beralih.</translation>
 <translation id="6700713906295497288">Tombol menu IME</translation>
 <translation id="6713285437468012787">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" telah disandingkan dan kini tersedia bagi semua pengguna. Anda dapat menghapus penyandingan ini menggunakan Setelan.</translation>
 <translation id="6785414152754474415">Baterai sudah terisi <ph name="PERCENTAGE" />% dan masih mengisi.</translation>
+<translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Bergabung dengan lainnya...</translation>
@@ -275,7 +274,6 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="8878886163241303700">Memperluas layar</translation>
 <translation id="8938800817013097409">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="8940956008527784070">Baterai lemah (<ph name="PERCENTAGE" />%)</translation>
-<translation id="9008540565042607572">Sayang sekali kita tidak bisa bekerja sama, wahai Monitor. (Monitor tersebut tidak didukung. Klik untuk mengirimkan laporan masukan.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon sedang digunakan.</translation>
 <translation id="9089416786594320554">Metode masukan</translation>
@@ -285,5 +283,6 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="923686485342484400">Tekan Control Shift Q dua kali untuk keluar.</translation>
 <translation id="938582441709398163">Hamparan Keyboard</translation>
 <translation id="939252827960237676">Gagal menyimpan tangkapan layar</translation>
+<translation id="945522503751344254">Kirim masukan</translation>
 <translation id="952992212772159698">Tidak diaktifkan</translation>
 </translationbundle>

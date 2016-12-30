@@ -13,6 +13,7 @@
 <translation id="2195025571279539885">Czy następnym razem Chromium ma zaproponować Ci tłumaczenie stron tej witryny, których język to <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2647554856022461007">Aby zwiększyć wygodę przeglądania, Chromium może korzystać z usług internetowych. Możesz je opcjonalnie wyłączyć. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium nie może użyć aparatu, bo używa go już inna aplikacja</translation>
+<translation id="3256316712990552818">Skopiowana do Chromium</translation>
 <translation id="3413120535237193088">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, zaloguj się w Chromium.</translation>
 <translation id="3473048256428424907">Włączanie skanera QR w Chromium</translation>
 <translation id="3805899903892079518">Chromium nie ma dostępu do Twoich zdjęć ani filmów. Aby włączyć dostęp w iOS, wybierz Ustawienia &gt; Prywatność &gt; Zdjęcia.</translation>
@@ -29,12 +30,12 @@
 <translation id="6068866989048414399">Warunki korzystania z Chromium</translation>
 <translation id="6268381023930128611">Wylogować z Chromium?</translation>
 <translation id="6424492062988593837">Chromium jest teraz jeszcze lepsze! Dostępna jest nowa wersja.</translation>
-<translation id="6600954340915313787">Skopiowana do Chrome</translation>
 <translation id="6604711459180487467">Dzięki dostępowi do Twojej lokalizacji Chromium będzie działać lepiej.</translation>
 <translation id="6989306073720242915">Podoba Ci się Chromium? <ph name="BEGIN_LINK" />Przenieś go do Docka<ph name="END_LINK" /></translation>
 <translation id="7022368070219581493">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />.</translation>
 <translation id="7099326575020694068">Chromium nie może używać aparatu w trybie widoku dzielonego</translation>
 <translation id="7144758435978427212">Odkrywaj strony internetowe wysyłane przez obiekty w pobliżu. Gdy włączysz Bluetooth, Chromium może gromadzić strony internetowe powiązane z obiektami wokół Ciebie i wysyłać je anonimowo do Google, by wybrać te najbardziej przydatne. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
+<translation id="7208566199746267865">Chromium oszczędza Twój czas, zapisując konta w internecie. Konta możesz dodawać i usuwać w Ustawieniach.</translation>
 <translation id="7269362888766543920">Niektóre dodatki mogą powodować awarie Chromium. Spróbuj je odinstalować.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Wybrane dane zostały usunięte z Chromium i synchronizowanych urządzeń. Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w innych usługach Google, mogą być nadal dostępne na Twoim koncie Google na history.google.com</translation>

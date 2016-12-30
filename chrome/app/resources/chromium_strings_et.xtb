@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">Chromiumi turvalisemaks muutmiseks keelasime mõned laiendused, mida ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja mille lisamisest te ei pruugi teadlik olla.</translation>
 <translation id="1808667845054772817">Installi Chromium uuesti</translation>
 <translation id="1816404578968201294">Chromiumil on vaja asukohale juurdepääsu selle jagamiseks saidiga.</translation>
+<translation id="1838412507805038478">Chromium kinnitas, et veebisaidi sertifikaadi väljastas <ph name="ISSUER" />.</translation>
 <translation id="1869480248812203386">Saate aidata muuta Chromiumi turvalisemaks ja lihtsamalt kasutatavaks, kui teavitate Google'it automaatselt võimalike turvaintsidentide üksikasjadest.</translation>
 <translation id="1881322772814446296">Logite sisse hallatud kontoga ja annate selle administraatorile üle Chromiumi profiili juhtimise. Teie Chromiumi andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid seostada teise kontoga. Võite olemasolevate Chrome'i andmete eraldi hoidmiseks luua aga uue profiili. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium ei reageeri. Kas soovite kohe taaskäivitada?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">Teave &amp;Chromium OS-i kohta</translation>
 <translation id="2158734852934720349">Chromium OS-i avatud lähtekoodi litsentsid</translation>
 <translation id="2241627712206172106">Kui jagate arvutit, saavad sõbrad ja pereliikmed eraldi sirvida ning seadistada Chromiumi just nii, nagu neile meeldib.</translation>
-<translation id="225614027745146050">Tere tulemast</translation>
 <translation id="2316129865977710310">Ei, aitäh</translation>
 <translation id="2347108572062610441">See laiendus muutis seda, milline leht kuvatakse Chromiumi käivitamisel.</translation>
 <translation id="2372704305038231957">32-bitine Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam selles Linuxi süsteemis. Viige Chromium üle 64-bitisele versioonile.</translation>
@@ -153,7 +153,6 @@
 <translation id="5877064549588274448">Kanal on muutunud. Muudatuste rakendamiseks taaskäivitage oma seade.</translation>
 <translation id="5895138241574237353">Taaskäivitamine</translation>
 <translation id="5906655207909574370">Seade on peaaegu ajakohane. Värskenduse lõpuleviimiseks taaskäivitage seade.</translation>
-<translation id="5942225298871134766">Chromium salvestab selle funktsiooniga <ph name="SAVED_PASSWORD_LINK" /> ja peab seda meeles, kui seda järgmine kord vajate.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> on Chromiumi lisatud.</translation>
 <translation id="59625444380784159">Kontaktide üksikasjad aitavad Chromiumis kiiremini vorme täita.</translation>
 <translation id="5987687638152509985">Sünkroonimise alustamiseks värskendage Chromiumi</translation>
@@ -242,6 +241,7 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="81770708095080097">Chromium blokeeris faili, kuna see on ohtlik.</translation>
 <translation id="8269379391216269538">Aidake muuta Chromiumi paremaks</translation>
 <translation id="8290862415967981663">Chromium blokeeris faili, kuna see võib olla ohtlik.</translation>
+<translation id="8340674089072921962">Kasutaja <ph name="USER_EMAIL_ADDRESS" /> kasutas varem Chromiumi</translation>
 <translation id="8453117565092476964">Installeri arhiiv on rikutud või kehtetu. Laadige Chromium uuesti alla.</translation>
 <translation id="8493179195440786826">Chromium on aegunud</translation>
 <translation id="85843667276690461">Hangi abi Chromiumi kasutamise kohta</translation>

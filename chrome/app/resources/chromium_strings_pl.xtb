@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">Aby poprawić bezpieczeństwo Chromium, wyłączyliśmy niektóre rozszerzenia niedostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, które mogły zostać dodane bez Twojej wiedzy.</translation>
 <translation id="1808667845054772817">Ponownie zainstaluj Chromium</translation>
 <translation id="1816404578968201294">Chromium potrzebuje dostępu do lokalizacji, by móc ją udostępnić tej stronie.</translation>
+<translation id="1838412507805038478">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />.</translation>
 <translation id="1869480248812203386">Możesz pomóc zwiększyć bezpieczeństwo i komfort korzystania z Chromium, automatycznie przesyłając do Google szczegółowe informacje o możliwych zagrożeniach.</translation>
 <translation id="1881322772814446296">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Chromium. Twoje dane Chromium, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME" />. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. Możesz też utworzyć nowy profil, by przechowywać swoje dotychczasowe dane Chromium osobno. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium nie odpowiada. Uruchomić go teraz ponownie?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">System operacyjny &amp;Chromium – informacje</translation>
 <translation id="2158734852934720349">Licencje oprogramowania typu open source w Chromium OS</translation>
 <translation id="2241627712206172106">Jeśli dzielisz się komputerem ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chromium.</translation>
-<translation id="225614027745146050">Witamy</translation>
 <translation id="2316129865977710310">Nie, dziękuję</translation>
 <translation id="2347108572062610441">To rozszerzenie ustawiło inną stronę wyświetlaną po uruchomieniu Chromium.</translation>
 <translation id="2372704305038231957">32-bitowy Chromium może działać nieprawidłowo, bo nie jest już obsługiwany w tym systemie Linux. Uaktualnij Chromium do wersji 64-bitowej.</translation>
@@ -151,7 +151,6 @@
 <translation id="5877064549588274448">Kanał został zmieniony. Aby zastosować zmiany, uruchom ponownie urządzenie.</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5906655207909574370">Już prawie gotowe. Uruchom ponownie urządzenie, by zakończyć aktualizację.</translation>
-<translation id="5942225298871134766">Chromium zapisze to hasło w funkcji <ph name="SAVED_PASSWORD_LINK" /> i zapamięta je do użycia w przyszłości.</translation>
 <translation id="5942520288919337908">Rozszerzenie <ph name="EXTENSION_NAME" /> zostało dodane do Chromium.</translation>
 <translation id="59625444380784159">Informacje z Twoich kontaktów pomogą Ci szybciej wypełniać formularze w Chromium.</translation>
 <translation id="5987687638152509985">Zaktualizuj Chromium, by rozpocząć synchronizację</translation>
@@ -240,6 +239,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="81770708095080097">Ten plik jest niebezpieczny, dlatego został zablokowany przez Chromium.</translation>
 <translation id="8269379391216269538">Pomóż ulepszyć Chromium</translation>
 <translation id="8290862415967981663">Ten plik może być niebezpieczny, dlatego został zablokowany przez Chromium.</translation>
+<translation id="8340674089072921962">Użytkownik <ph name="USER_EMAIL_ADDRESS" /> wcześniej używał Chromium</translation>
 <translation id="8453117565092476964">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Chromium ponownie.</translation>
 <translation id="8493179195440786826">Chromium jest nieaktualny</translation>
 <translation id="85843667276690461">Pomoc do Chromium</translation>

@@ -13,6 +13,7 @@
 <translation id="2195025571279539885">下次访问这个网站时，您希望 Chromium 翻译其中的<ph name="LANGUAGE_NAME" />网页吗？</translation>
 <translation id="2647554856022461007">Chromium 可能会使用网络服务来改善您的浏览体验。不过，您可以选择停用这些服务。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">由于另一个应用正在使用您的相机，因此 Chromium 无法使用。</translation>
+<translation id="3256316712990552818">已复制到 Chromium</translation>
 <translation id="3413120535237193088">要将您的书签同步到您所有的设备上，请登录 Chromium。</translation>
 <translation id="3473048256428424907">开启 Chromium QR 码扫描器</translation>
 <translation id="3805899903892079518">Chromium 无权访问您的照片或视频。请依次点按 iOS 中的“设置”&gt;“隐私”&gt;“照片”，授予其访问权限。</translation>
@@ -29,12 +30,12 @@
 <translation id="6068866989048414399">Chromium 服务条款</translation>
 <translation id="6268381023930128611">退出 Chromium？</translation>
 <translation id="6424492062988593837">Chromium 刚刚经过了改进！新版本已推出。</translation>
-<translation id="6600954340915313787">已复制到 Chrome</translation>
 <translation id="6604711459180487467">要在 Chromium 中获得更好的使用体验，需要用到您的位置信息。</translation>
 <translation id="6989306073720242915">喜欢使用 Chromium？建议<ph name="BEGIN_LINK" />将它移到 Dock 中<ph name="END_LINK" /></translation>
 <translation id="7022368070219581493">Chromium 已证实此网站的证书是由 <ph name="ISSUER" /> 签发的。</translation>
 <translation id="7099326575020694068">Chromium 无法在分割视图模式下使用您的相机</translation>
 <translation id="7144758435978427212">发现附近物体播报的网页。蓝牙功能处于开启状态时，Chromium 可以收集与您周围的物体关联的网页，并将这些网页以匿名方式发送给 Google，以便找到最实用的网页。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
+<translation id="7208566199746267865">为节省您的时间，Chromium 已将您的 Google 帐号同步到网络上。您可在“设置”中添加或移除帐号。</translation>
 <translation id="7269362888766543920">部分插件会导致 Chromium 崩溃，请尝试卸载这些插件。</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">所选数据已从 Chromium 和同步的设备中移除。不过，您的 Google 帐号在 history.google.com 上可能有其他形式的浏览记录（例如，在其他 Google 服务中的搜索记录和活动记录）。</translation>

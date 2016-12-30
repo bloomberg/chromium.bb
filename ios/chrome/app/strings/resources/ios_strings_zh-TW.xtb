@@ -10,6 +10,7 @@
 <translation id="1104948393051856124">接受並繼續</translation>
 <translation id="1112015203684611006">列印失敗。</translation>
 <translation id="1125564390852150847">新增分頁。</translation>
+<translation id="1145536944570833626">刪除現有資料。</translation>
 <translation id="1165039591588034296">錯誤</translation>
 <translation id="1172898394251786223">下一個欄位</translation>
 <translation id="1176932207622159128">無法儲存圖片</translation>
@@ -48,6 +49,7 @@
 <translation id="1753905327828125965">最常造訪</translation>
 <translation id="1809939268435598390">刪除資料夾</translation>
 <translation id="1813414402673211292">清除瀏覽資料</translation>
+<translation id="1820259098641718022">已加入閱讀清單</translation>
 <translation id="1842969606798536927">支付</translation>
 <translation id="1876721852596493031">傳送使用情況資料</translation>
 <translation id="1886928167269928266">不限時間</translation>
@@ -65,6 +67,7 @@
 <translation id="2116625576999540962">已移動 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="2149973817440762519">編輯書籤</translation>
 <translation id="2154710561487035718">複製網址</translation>
+<translation id="2230173723195178503">已載入網頁</translation>
 <translation id="2241634353105152135">只有這一次</translation>
 <translation id="2267753748892043616">新增帳戶</translation>
 <translation id="2273327106802955778">[更多] 選單</translation>
@@ -76,6 +79,7 @@
 <translation id="2386793615875593361">已選取 1 張</translation>
 <translation id="2435457462613246316">顯示密碼</translation>
 <translation id="2467815441875554965">內容比對搜尋</translation>
+<translation id="2523092375122821828">全部標示…</translation>
 <translation id="2572712655377361602">裝置政策禁止您存取相片</translation>
 <translation id="2584132361465095047">新增帳戶…</translation>
 <translation id="2593774076813182497">這個頁面無法列印。</translation>
@@ -116,6 +120,7 @@
 <translation id="3324193307694657476">地址 2</translation>
 <translation id="3329904751041170572">無法連上伺服器。</translation>
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
+<translation id="3387752218061326363">目前顯示的歷史紀錄來源包括你已登入帳戶的所有裝置。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">已允許的彈出式視窗</translation>
 <translation id="3414292259312108062">Chrome 會將這組密碼儲存在您的 <ph name="BEGIN_LINK" />Google 儲存的密碼<ph name="END_LINK" />中，並為您自動填入這組密碼，即使您記不住也沒關係。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> 分鐘</translation>
@@ -123,7 +128,6 @@
 <translation id="3474649192738347024">表單填寫完成。</translation>
 <translation id="3478058380795961209">到期月份</translation>
 <translation id="3482959374254649722">正在同步處理您的分頁...</translation>
-<translation id="3485544713029068372">密碼專用 Smart Lock</translation>
 <translation id="3489372701259491571">刪除已儲存的密碼</translation>
 <translation id="3519193562722059437">透過新開啟的分頁瀏覽網頁。</translation>
 <translation id="3527085408025491307">資料夾</translation>
@@ -145,6 +149,7 @@
 <translation id="3789841737615482174">安裝</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3897092660631435901">選單</translation>
+<translation id="3928666092801078803">合併我的資料</translation>
 <translation id="3950820424414687140">登入</translation>
 <translation id="3963231839620026525">新無痕式分頁</translation>
 <translation id="3967822245660637423">下載完成</translation>
@@ -156,6 +161,7 @@
 <translation id="4121993058175073134">如要傳送淨匯出資料，請在「設定」應用程式中設定您的電子郵件帳戶。</translation>
 <translation id="4124987746317609294">時間範圍</translation>
 <translation id="4172051516777682613">一律顯示</translation>
+<translation id="4176234027218720244">標示</translation>
 <translation id="424315890655130736">輸入通關密語</translation>
 <translation id="4272631900155121838">如要掃描 QR 圖碼，請在設定中啟用相機</translation>
 <translation id="4281844954008187215">服務條款</translation>
@@ -167,6 +173,7 @@
 <translation id="4473991315115669931">進入無痕模式</translation>
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
 <translation id="4536418791685807335">請嘗試重新登入。</translation>
+<translation id="4620246317052452550">你看過的網頁</translation>
 <translation id="4636930964841734540">資訊</translation>
 <translation id="4659667755519643272">進入分頁切換選項</translation>
 <translation id="4666531726415300315">目前登入的帳戶是 <ph name="EMAIL" />。
@@ -179,6 +186,7 @@
 <translation id="4875622588773761625">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新您在這個網站設定的密碼嗎？</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4923459931733593730">付款</translation>
+<translation id="4930268273022498155">刪除現有資料。你可以切換回 <ph name="USER_EMAIL1" />，重新取得現有資料。</translation>
 <translation id="4941089862236492464">很抱歉，分享您的項目時發生問題。</translation>
 <translation id="4979397965658815378">只要使用 Google 帳戶登入，您就可以在所有裝置上存取自己的書籤、密碼、歷史紀錄和其他設定。</translation>
 <translation id="5005498671520578047">複製密碼</translation>
@@ -195,10 +203,12 @@
 <translation id="5197255632782567636">網際網路</translation>
 <translation id="5198972191746488848">新增信用卡...</translation>
 <translation id="5228579091201413441">啟用同步功能</translation>
+<translation id="5230733896359313003">運送地址</translation>
 <translation id="5244474230056479698">同步到 <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5327248766486351172">名稱</translation>
+<translation id="532992759783668360">刪除已讀取的項目</translation>
 <translation id="5388358297987318779">開啟圖片</translation>
 <translation id="5409365236829784218">未安裝可開啟這個檔案的應用程式。</translation>
 <translation id="54401264925851789">網頁安全性資訊</translation>
@@ -227,6 +237,8 @@
 <translation id="5916664084637901428">開啟</translation>
 <translation id="5953603475187800576">顯示 Google Payments 中儲存的地址和信用卡資料</translation>
 <translation id="5964480694698977962">新增無痕式分頁。</translation>
+<translation id="5965679971710331625">你已登入帳戶</translation>
+<translation id="5982717868370722439">將現有資料新增至 <ph name="USER_EMAIL" />。</translation>
 <translation id="6012140227487808125">加密中…</translation>
 <translation id="6021332621416007159">在其他應用程式中開啟...</translation>
 <translation id="6039694632319341016">要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新你在這個網站為 <ph name="USERNAME" /> 設定的密碼嗎？</translation>
@@ -239,9 +251,13 @@
 <translation id="6136914049981179737">幾秒前</translation>
 <translation id="6149061208933997199">使用密碼</translation>
 <translation id="6158823227857319455">新分頁</translation>
+<translation id="616831107264507309">稍後閱讀</translation>
 <translation id="6184086493125982861">顯示分頁</translation>
 <translation id="6187302354554850004">上次同步處理時間：<ph name="LAST_USED_TIME" /></translation>
+<translation id="6189413832092199491">未讀取</translation>
+<translation id="6194286531716220336">取消</translation>
 <translation id="6196207969502475924">語音搜尋</translation>
+<translation id="6254066287920239840">使用應用程式開啟連結，而不要在瀏覽器中開啟。</translation>
 <translation id="6255097610484507482">編輯信用卡</translation>
 <translation id="6308436439357671616">可讓你拍照並上傳相片。</translation>
 <translation id="6314335155547195432">產生密碼</translation>
@@ -249,11 +265,12 @@
 <translation id="6337234675334993532">加密</translation>
 <translation id="633809752005859102">發生重大錯誤，我們將設法解決。</translation>
 <translation id="6344783595350022745">清除文字</translation>
-<translation id="6351971471682124046">正在投放至...</translation>
 <translation id="6362362396625799311">沒有已開啟的無痕式分頁</translation>
 <translation id="6380866119319257197">如果您忘記通關密語，或是想變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
+<translation id="6385146967113720558">標示為未讀取</translation>
 <translation id="6389470377220713856">持卡人姓名</translation>
 <translation id="6406506848690869874">同步</translation>
+<translation id="6417838470969808600">你有來自 <ph name="USER_EMAIL1" /> 的書籤、歷史紀錄、密碼和其他設定。</translation>
 <translation id="641799622251403418">目前登入的帳戶是 <ph name="EMAIL" />。
 
 您已在 <ph name="TIME" />使用同步通關密語對資料進行加密，請輸入通關密語開始進行同步。</translation>
@@ -288,6 +305,7 @@
 <translation id="7108338896283013870">隱藏</translation>
 <translation id="7131892264600713844">目前顯示這個裝置的歷史紀錄。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">完整名稱</translation>
+<translation id="713434964320012835">刪除</translation>
 <translation id="7136892417564438900">無法使用相機</translation>
 <translation id="7167621057293532233">資料類型</translation>
 <translation id="7189598951263744875">分享...</translation>
@@ -309,7 +327,6 @@
 <translation id="7514365320538308">下載</translation>
 <translation id="7537586195939242955">很抱歉，目前無法將您的通行票證加到 Passbook。</translation>
 <translation id="7561196759112975576">一律使用</translation>
-<translation id="7572670177380301651">目前顯示的歷史紀錄來源包括您已登入帳戶的所有裝置。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="7588950540487816470">實體化網路</translation>
 <translation id="7603852183842204213">已封鎖彈出式視窗 (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">同步處理功能無法正常運作</translation>
@@ -317,9 +334,11 @@
 <translation id="7649070708921625228">說明</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7671141431838911305">安裝</translation>
+<translation id="7682287625158474539">寄送地址</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7769602470925380267">接受並登出</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
+<translation id="7791543448312431591">新增</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7851858861565204677">其他裝置</translation>
 <translation id="7859704718976024901">瀏覽紀錄</translation>
@@ -331,6 +350,7 @@
 <translation id="8019783059653722575">可讓你儲存並上傳相片。</translation>
 <translation id="8023878949384262191">展開這個專區。</translation>
 <translation id="8059533439631660104">收合這個專區。</translation>
+<translation id="806745655614357130">分開保留我的資料</translation>
 <translation id="8076014560081431679">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">關閉所有分頁</translation>
 <translation id="8108697784695284144">系統已複製您的密碼。</translation>
@@ -338,12 +358,14 @@
 <translation id="8205564605687841303">取消</translation>
 <translation id="8225985093977202398">快取圖片和檔案</translation>
 <translation id="8261506727792406068">刪除</translation>
+<translation id="8272194309885535896">下載圖片</translation>
 <translation id="8272426682713568063">信用卡</translation>
 <translation id="8281781826761538115">預設 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">控管 Google 使用您瀏覽紀錄的方式，針對 Google 所提供的個人化搜尋服務、廣告內容和其他各項 Google 服務調整相關設定</translation>
 <translation id="8428045167754449968">鄉/鎮/市/區</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433678324664858900">顯示建議</translation>
+<translation id="8458197615157477273">標示為已讀取</translation>
 <translation id="8458397775385147834">已刪除 1 個項目</translation>
 <translation id="8503813439785031346">使用者名稱</translation>
 <translation id="8517375800490286174">開放原始碼授權</translation>
@@ -355,6 +377,7 @@
 <translation id="8620640915598389714">編輯</translation>
 <translation id="8636825310635137004">如要存取您在其他裝置上開啟的分頁，請開啟同步處理功能。</translation>
 <translation id="8680787084697685621">帳戶登入詳細資料已過期。</translation>
+<translation id="8699098509676302392">新增地址...</translation>
 <translation id="8721297211384281569">工具選單</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8730621377337864115">完成</translation>
@@ -375,6 +398,7 @@
 <translation id="9055772144595778347">無法登入</translation>
 <translation id="9065203028668620118">編輯</translation>
 <translation id="9079935439869366234">全部標示為未讀取</translation>
+<translation id="9080712759204168376">訂單摘要</translation>
 <translation id="9083392325882095631">1 個項目</translation>
 <translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9148126808321036104">重新登入</translation>

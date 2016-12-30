@@ -8,6 +8,7 @@
 <translation id="1065672644894730302">Vaše predvoľby sa nedajú načítať.
 
 Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách sa neuložia.</translation>
+<translation id="1088300314857992706">Účet <ph name="USER_EMAIL_ADDRESS" /> predtým používal Chrome</translation>
 <translation id="1104959162601287462">Informácie o systéme &amp;Chrome OS</translation>
 <translation id="110877069173485804">Toto je váš prehliadač Chrome</translation>
 <translation id="123620459398936149">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
@@ -19,7 +20,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1434626383986940139">Aplikácie Chrome Canary</translation>
 <translation id="1457721931618994305">Prebieha aktualizácia prehliadača Google Chrome...</translation>
 <translation id="1469002951682717133">Spúšťač aplikácií Chrome</translation>
-<translation id="1475773083554142432">Chrome uloží toto heslo pomocou funkcie <ph name="SAVED_PASSWORD_LINK" /> a ponúkne vám ho, keď ho budete najbližšie potrebovať.</translation>
 <translation id="1480489203462860648">Vyskúšať, prehliadač je už nainštalovaný</translation>
 <translation id="1553358976309200471">Aktualizovať Chrome</translation>
 <translation id="1587223624401073077">Google Chrome používa vašu kameru.</translation>
@@ -43,7 +43,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2147651015520127414">Chrome overil, že certifikát tohto webu vydal vydavateľ <ph name="ISSUER" />.</translation>
 <translation id="2246246234298806438">Ak vstavaný zobrazovač súborov PDF chýba, prehliadač Google Chrome nemôže zobraziť ukážku pred tlačou.</translation>
 <translation id="2252923619938421629">Nahláste aktuálne nastavenia a pomôžte tak zlepšiť prehliadač Google Chrome</translation>
-<translation id="225614027745146050">Vitajte</translation>
 <translation id="2286950485307333924">Ste prihlásený/-á do prehliadača Chrome</translation>
 <translation id="2290014774651636340">Chýbajú kľúče rozhrania Google API. Niektoré funkcie prehliadača Google Chrome budú zakázané.</translation>
 <translation id="2290095356545025170">Naozaj chcete odinštalovať aplikáciu Google Chrome?</translation>

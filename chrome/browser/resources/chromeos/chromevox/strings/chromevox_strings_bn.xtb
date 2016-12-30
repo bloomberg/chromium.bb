@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">bn</translation>
 <translation id="2091933974477985526">পূর্ববর্তী সম্পাদনার যোগ্য পাঠ্য অঞ্চল</translation>
 <translation id="2100350898815792233">সমস্ত যতিচিহ্ন</translation>
+<translation id="2110480898214777136">কোনো পৃষ্ঠা, ডায়ালগ, বা অন্যান্য কন্টেনারে শুরু থেকে শেষ বা শেষ থেকে শুরু মোড়ান।</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">অ্যাক্সেস কী:<ph name="KEY" /></translation>
 <translation id="2155457205053847599">নীচের তালিকা থেকে একটি বিকল্প নির্বাচন করে বর্তমান ৬ ডট ব্রেইল সারণিটি পরিবর্তন করুন।</translation>
 <translation id="2169714232367507776">বর্তমান আইটেমে ক্লিক করুন</translation>
+<translation id="2179452035581866348">আপনাকে অপরিহার্য ও অতিরিক্ত তথ্য দিতে ChromeVox সাউন্ড ব্যবহার করে। প্রতিটি সাউন্ড কি বোঝায় তা শিখে নিলে আপনি আরো দ্রুত নেভিগেট করতে পারবেন। আপনি এতে স্বাচ্ছন্দ বোধ করলে, স্পিচে ভারবোস বর্ণনা বন্ধ করে দিতে পারেন এবং কোনো পৃষ্ঠার অপরিহার্য তথ্যের জন্য এই সাউন্ডগুলির উপর নির্ভর করতে পারেন। এখানে সাউন্ডগুলির পুরো তালিকা এবং সেগুলির কোনটির কি কাজ তা দেখতে পাচ্ছেন।</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{ডান বন্ধনী}one{#টি ডান বন্ধনী}other{#টি ডান বন্ধনী}}</translation>
 <translation id="2199994615414171367">পূর্ববর্তী গাণিতিক</translation>
 <translation id="2220529011494928058">কোনো সমস্যার অভিযোগ করুন</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">প্রধান</translation>
 <translation id="2329324941084714723">ট্যাব প্যানেল</translation>
 <translation id="2344193891939537199">তারিখ সময় নিয়ন্ত্রণ</translation>
+<translation id="2347456970887948350">একটি লিঙ্ক</translation>
 <translation id="2359897517538099099">টেবিল মোডে নয়।</translation>
 <translation id="241124561063364910">এর দ্বারা অনুসরণ করা হয়</translation>
+<translation id="2416512023405990736">একটি টিকচিহ্ন উঠানো চেকবাক্স</translation>
 <translation id="2417569100218200841">সামগ্রীর তথ্য</translation>
 <translation id="2422937916923936891">মেনু আইটেম চেক বাক্স</translation>
 <translation id="2428534162001909979">কমান্ড মেনুগুলি</translation>
@@ -213,6 +217,7 @@
 <translation id="3223701887221307104"><ph name="NAME" />, ট্যাব</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">ঘুরে দেখা লিঙ্ক</translation>
+<translation id="3232388865800379423">একটি পপ আপ বোতাম</translation>
 <translation id="323731244387692321">ChromeVox সহায়তা খুলুন</translation>
 <translation id="3241052487511142956">পূর্ববর্তী ঘুরে দেখা লিঙ্ক</translation>
 <translation id="3286390186030710347">স্লাইডার</translation>
@@ -221,6 +226,7 @@
 <translation id="3311969765485641742">এই সতর্কতা পর্যালোচনা করতে Alt+Shift+A টিপুন</translation>
 <translation id="3312997241656799641">পরবর্তী ঘুরে দেখা লিঙ্ক</translation>
 <translation id="3313245066383501820">ChromeVox সংশোধক কী</translation>
+<translation id="3317212938060708859">একটি স্লাইডার</translation>
 <translation id="3321460131042519426">শব্দ মোড়ানো সক্ষম করুন</translation>
 <translation id="3322936298410871309">পূর্ববর্তী স্তর ১ শিরোনাম</translation>
 <translation id="3323447499041942178">পাঠ্য  বাক্স</translation>
@@ -279,6 +285,7 @@
 <translation id="3457000393508828486">আংশিক টেপা</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, বন্ধ করুন</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, বোতাম</translation>
+<translation id="3466530247399808663">একটি অবৈধ কী টেপা</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" />টি</translation>
 <translation id="3486232535569802404"><ph name="V1" /> থেকে <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{ডান বন্ধনী}one{#টি বাম বন্ধনী}other{#টি বাম বন্ধনী}}</translation>
@@ -286,6 +293,7 @@
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{প্রশ্নবোধক চিহ্ন}one{#টি প্রশ্নবোধক চিহ্ন}other{#টি প্রশ্নবোধক চিহ্ন}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{ক্যারেট}one{# ক্যারেট}other{# ক্যারেট}}</translation>
+<translation id="352577523970648069">একটি সম্পাদনাযোগ্য পাঠ্য ফিল্ড</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, চেকবাক্স চেকযুক্ত করা হয়নি</translation>
 <translation id="3599054940393788245">গণিত বর্হিভূত</translation>
 <translation id="3616113530831147358">অডিও</translation>
@@ -325,10 +333,12 @@
 <translation id="4047216625641135770">চিহ্নিত</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
+<translation id="4058278702844053247">একটি পৃষ্ঠা লোড হচ্ছে</translation>
 <translation id="4065205963140826639">‘পরবর্তী’ বোতাম খুঁজতে অনুসন্ধান + ডান তীরচিহ্ন ব্যবহার করে দেখুন, এটা ক্লিক করার জন্য অনুসন্ধান + স্পেস টিপুন।</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{টিলড চিহ্ন}one{#টি টিলড চিহ্ন}other{#টি টিলড চিহ্ন}}</translation>
 <translation id="409334809956508737">পূর্ববর্তী বস্তু</translation>
 <translation id="4099274309791143834">উপমেনুর সাথে</translation>
+<translation id="4101527861445851766">একটি টিকচিহ্ন দেওয়া চেকবাক্স</translation>
 <translation id="4107807507418787238">নিচে কোনো কক্ষ নেই৷</translation>
 <translation id="4116415223832267137">সতর্কতা</translation>
 <translation id="4147126331795725888">এরপরে কোনো নিয়ন্ত্রণ নেই৷</translation>
@@ -338,6 +348,7 @@
 <translation id="4173994908659439270">কোনো পরবর্তী সম্পাদনযোগ্য পাঠ্য ক্ষেত্র নেই৷</translation>
 <translation id="4176463684765177261">অক্ষম</translation>
 <translation id="4188530942454211480">পূর্ববর্তী বাক্য</translation>
+<translation id="4191918948604314587">একটি বোতাম</translation>
 <translation id="4202186506458631436">ডানদিকে সরান</translation>
 <translation id="4206289001967551965">সারণীর অভ্যন্তরে</translation>
 <translation id="4215733775853809057">পরবর্তী স্লাইডার</translation>
@@ -461,6 +472,7 @@
 <translation id="5374320867641260420">কোনো পরবর্তী বোতাম নেই৷</translation>
 <translation id="5382299583965267720">কোনো পূর্ববর্তী স্তর ১ শিরোলেখ নেই৷</translation>
 <translation id="5402367795255837559">ব্রেইল</translation>
+<translation id="5402791055281059602">একটি মোডাল সতর্কতা</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{সেমিকোলন}one{#টি সেমিকোলন}other{#টি সেমিকোলন}}</translation>
 <translation id="5411891038905756502">কোনো পূর্ববর্তী জাম্প বিন্দু নেই৷</translation>
 <translation id="5417034931411865818">রাউটিং কী $1 এর নিচের আইটেমটি ক্লিক করুন</translation>
@@ -554,6 +566,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6119955456199054975">কক্ষের সমাপ্তি৷</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">ব্যবধান</translation>
+<translation id="6132506484792346370">একটি তালিকা বাক্স বা কম্বো বাক্স</translation>
 <translation id="6138576064440631958">$1 কর্ড</translation>
 <translation id="6142308968191113180">শিরোলেখ ৪</translation>
 <translation id="6169420925157477918">দীর্ঘ বিবরণ সহ চিত্র</translation>
@@ -567,6 +580,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">কোনো পরবর্তী কম্বোবক্স ল্যান্ডমার্ক নেই৷</translation>
 <translation id="6307969636681130414">টেপা হয়েছে</translation>
+<translation id="6322856989298155004">সাউন্ডগুলি</translation>
 <translation id="6324551002951139333">ব্যকরণগত ত্রুটি সনাক্ত হয়েছে</translation>
 <translation id="6348657800373377022">কম্বো বাক্স</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{টি বুলেট চিহ্ন}one{#টি বুলেট চিহ্ন}other{#টি বুলেট চিহ্ন}}</translation>
@@ -597,6 +611,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6657128831881431364">প্রগতি দণ্ড</translation>
 <translation id="6659594942844771486">ট্যাব</translation>
 <translation id="667999046851023355">দস্তাবেজ</translation>
+<translation id="6688209025607531203">একটি অ-মোডাল সতর্কতা</translation>
 <translation id="6697092096875747123">পূর্ববর্তী কম্বো বাক্স</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{টি বিস্ময়সূচক চিহ্ন}one{#টি বিস্ময়সূচক চিহ্ন}other{#টি বিস্ময়সূচক চিহ্ন}}</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>

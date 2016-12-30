@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">en</translation>
 <translation id="2091933974477985526">मागील संपादन करता येणारे मजकूर क्षेत्र</translation>
 <translation id="2100350898815792233">सर्व विरामचिन्‍ह</translation>
+<translation id="2110480898214777136">पृष्‍ठ, संवाद किंवा अन्य कंटेनरमध्ये प्रारंभापासून समाप्तीपर्यंत किंवा समाप्तीपासून प्रारंभापर्यंत पूर्ण करा</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">प्रवेश की:<ph name="KEY" /></translation>
 <translation id="2155457205053847599">खालील सूचीमधून एखादा पर्याय निवडून वर्तमान 6 बिंदू ब्रेल सारणी बदला.</translation>
 <translation id="2169714232367507776">वर्तमान आयटमवर क्लिक करा</translation>
+<translation id="2179452035581866348">आपल्याला आवश्यक आणि अतिरिक्त माहिती देण्यासाठी ChromeVox ध्वनींचा वापर करते. प्रत्येक ध्वनीचा अर्थ काय आहे ते जाणून घेऊन अधिक जलद नेव्हिगेट करण्यासाठी आपण या ध्वनींचा वापर करू शकता. आपल्याला सोयीस्कर असल्यास, आपण उच्चारामधील अनावश्यक शाब्दिक वर्णने बंद करू शकता आणि पृष्‍ठाविषयी अतिरिक्त माहितीसाठी त्यांच्यावर अवलंबून राहू शकता. येथे संपूर्ण ध्वनींची आणि त्यांच्या अर्थाची सूची आहे.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{बंद कंस}one{# बंद कंस}other{# बंद कंस}}</translation>
 <translation id="2199994615414171367">मागील गणित</translation>
 <translation id="2220529011494928058">समस्येचा अहवाल द्या</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">मुख्य</translation>
 <translation id="2329324941084714723">टॅब पॅनेल</translation>
 <translation id="2344193891939537199">तारीख वेळ नियंत्रण</translation>
+<translation id="2347456970887948350">एक दुवा</translation>
 <translation id="2359897517538099099">सारणी मोडमध्ये नाही.</translation>
 <translation id="241124561063364910">च्या मागून येणारे</translation>
+<translation id="2416512023405990736">अनचेक केलेला चेकबॉक्स</translation>
 <translation id="2417569100218200841">सामग्री माहिती</translation>
 <translation id="2422937916923936891">मेनू आयटम चेक बॉक्‍स</translation>
 <translation id="2428534162001909979">आदेश मेनू</translation>
@@ -212,6 +216,7 @@
 <translation id="3223701887221307104"><ph name="NAME" />, टॅब</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">भेट दिलेला दुवा</translation>
+<translation id="3232388865800379423">एक पॉप अप बटण</translation>
 <translation id="323731244387692321">ChromeVox कीबोर्ड मदत उघडा</translation>
 <translation id="3241052487511142956">मागील भेट दिलेला दुवा</translation>
 <translation id="3286390186030710347">स्‍लायडर</translation>
@@ -220,6 +225,7 @@
 <translation id="3311969765485641742">सूचनांचे पुनरावलोकन करण्यासाठी Alt+Shift+A दाबा</translation>
 <translation id="3312997241656799641">पुढील भेट दिलेला दुवा</translation>
 <translation id="3313245066383501820">ChromeVox सुधारणा की</translation>
+<translation id="3317212938060708859">एक स्लायडर</translation>
 <translation id="3321460131042519426">शब्द ओघ वळविणे सक्षम करा</translation>
 <translation id="3322936298410871309">मागील स्तर 1 मथळा</translation>
 <translation id="3323447499041942178">मजकूर बॉक्स</translation>
@@ -278,6 +284,7 @@
 <translation id="3457000393508828486">अंशत: दाबलेले</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, बंद करा</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, बटण</translation>
+<translation id="3466530247399808663">एक अवैध की दाबली</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> ते <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{उजवा चौकोनी कंस}one{# उजवे चौकोनी कंस}other{# उजवे चौकोनी कंस}}</translation>
@@ -285,6 +292,7 @@
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{प्रश्नचिन्ह}one{# प्रश्नचिन्हे}other{# प्रश्नचिन्हे}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{कॅरेट}one{# कॅरेट}other{# कॅरेट}}</translation>
+<translation id="352577523970648069">एक संपादन करण्यायोग्य मजकूर फील्ड</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, चेकबॉक्स चेक केलेला नाही</translation>
 <translation id="3599054940393788245">गणितात नाही</translation>
 <translation id="3616113530831147358">ऑडिओ</translation>
@@ -324,10 +332,12 @@
 <translation id="4047216625641135770">चिन्ह</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
+<translation id="4058278702844053247">पृष्‍ठ लोड होणे प्रगतीपथावर आहे</translation>
 <translation id="4065205963140826639">पुढील बटण शोधण्यासाठी आता शोध + उजबा बाण वापरून पहा, नंतर ते क्लिक करण्यासाठी शोध + Space दाबा.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{टिल्डि}one{# टिल्डि}other{# टिल्डि}}</translation>
 <translation id="409334809956508737">मागील ऑब्जेक्ट</translation>
 <translation id="4099274309791143834">उपमेनू सह</translation>
+<translation id="4101527861445851766">एक चेक केलेला चेकबॉक्स</translation>
 <translation id="4107807507418787238">खाली सेल नाही.</translation>
 <translation id="4116415223832267137">सूचना</translation>
 <translation id="4147126331795725888">पुढील नियंत्रण नाही.</translation>
@@ -337,6 +347,7 @@
 <translation id="4173994908659439270">पुढील संपादन करण्‍यायोग्‍य मजकूर फील्‍ड नाही.</translation>
 <translation id="4176463684765177261">अक्षम</translation>
 <translation id="4188530942454211480">मागील वाक्य</translation>
+<translation id="4191918948604314587">एक बटण</translation>
 <translation id="4202186506458631436">उजवीकडे हलवा</translation>
 <translation id="4206289001967551965">सारणीमध्‍ये</translation>
 <translation id="4215733775853809057">पुढील स्‍लायडर</translation>
@@ -460,6 +471,7 @@
 <translation id="5374320867641260420">पुढील बटण नाही.</translation>
 <translation id="5382299583965267720">कोणताही पुढील स्‍तर 1 मथळा नाही.</translation>
 <translation id="5402367795255837559">ब्रेल</translation>
+<translation id="5402791055281059602">एक मॉडेल सूचना</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{अर्धविराम}one{# अर्धविराम}other{# अर्धविराम}}</translation>
 <translation id="5411891038905756502">मागील जंप बिंदू नाही.</translation>
 <translation id="5417034931411865818">$1 रूटिंग की अंतर्गत आयटम क्लिक करा</translation>
@@ -554,6 +566,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="6119955456199054975">सेल समाप्त.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">जागा</translation>
+<translation id="6132506484792346370">एक सूचीबॉक्स किंवा काँबो बॉक्स</translation>
 <translation id="6138576064440631958">$1 कॉर्ड</translation>
 <translation id="6142308968191113180">मथळा 4</translation>
 <translation id="6169420925157477918">मोठ्या वर्णनासह प्रतिमा</translation>
@@ -567,6 +580,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">पुढील कॉम्‍बो बॉक्‍स नाही.</translation>
 <translation id="6307969636681130414">दाबलेले</translation>
+<translation id="6322856989298155004">ध्वनी</translation>
 <translation id="6324551002951139333">व्‍याकरण चूक आढळली</translation>
 <translation id="6348657800373377022">काँबो बॉक्स</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{बुलेट}one{# बुलेट}other{# बुलेट}}</translation>
@@ -597,6 +611,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="6657128831881431364">प्रगती बार</translation>
 <translation id="6659594942844771486">टॅब</translation>
 <translation id="667999046851023355">दस्तऐवज</translation>
+<translation id="6688209025607531203">एक मॉडेल नसलेली सूचना</translation>
 <translation id="6697092096875747123">मागील कॉम्बो बॉक्स</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{उद्गार चिन्ह}one{# उद्गार चिन्ह}other{# उद्गार चिन्हेे}}</translation>
 <translation id="6710213216561001401">मागील</translation>

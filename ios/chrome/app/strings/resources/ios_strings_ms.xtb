@@ -10,6 +10,7 @@
 <translation id="1104948393051856124">Terima &amp; Teruskan</translation>
 <translation id="1112015203684611006">Pencetakan gagal.</translation>
 <translation id="1125564390852150847">Buat tab baharu.</translation>
+<translation id="1145536944570833626">Padam data sedia ada.</translation>
 <translation id="1165039591588034296">Ralat</translation>
 <translation id="1172898394251786223">Medan seterusnya</translation>
 <translation id="1176932207622159128">Gagal Simpan Imej</translation>
@@ -48,6 +49,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="1753905327828125965">Paling Kerap Dilawati</translation>
 <translation id="1809939268435598390">Padam Folder</translation>
 <translation id="1813414402673211292">Kosongkan Data Semakan Imbas</translation>
+<translation id="1820259098641718022">Ditambahkan pada Senarai Bacaan</translation>
 <translation id="1842969606798536927">Bayar</translation>
 <translation id="1876721852596493031">Hantar Data Penggunaan</translation>
 <translation id="1886928167269928266">Permulaan Masa</translation>
@@ -65,6 +67,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dialihkan</translation>
 <translation id="2149973817440762519">Edit Penanda Halaman</translation>
 <translation id="2154710561487035718">Salin URL</translation>
+<translation id="2230173723195178503">Halaman web dimuatkan</translation>
 <translation id="2241634353105152135">Hanya sekali</translation>
 <translation id="2267753748892043616">Tambahkan Akaun</translation>
 <translation id="2273327106802955778">Lagi menu</translation>
@@ -76,6 +79,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2386793615875593361">1 dipilih</translation>
 <translation id="2435457462613246316">Paparkan kata laluan</translation>
 <translation id="2467815441875554965">Carian Kontekstual</translation>
+<translation id="2523092375122821828">Tandakan Semua...</translation>
 <translation id="2572712655377361602">Dasar peranti menyekat akses ke foto anda</translation>
 <translation id="2584132361465095047">Tambahkan Akaun...</translation>
 <translation id="2593774076813182497">Halaman ini tidak boleh dicetak.</translation>
@@ -116,6 +120,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="3324193307694657476">Alamat 2</translation>
 <translation id="3329904751041170572">Tidak dapat menyambung ke pelayan.</translation>
 <translation id="3335947283844343239">Buka Semula Tab Yang Ditutup</translation>
+<translation id="3387752218061326363">Menunjukkan sejarah daripada peranti anda yang dilog masuk. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Pop Timbul Dibenarkn</translation>
 <translation id="3414292259312108062">Chrome akan menyimpan ini dalam <ph name="BEGIN_LINK" />Kata laluan Google yang disimpan<ph name="END_LINK" /> anda dan auto isi untuk anda agar anda tidak perlu mengingati kata laluan itu sendiri.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
@@ -123,7 +128,6 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="3474649192738347024">Borang diisi.</translation>
 <translation id="3478058380795961209">Bulan Tamat Tempoh</translation>
 <translation id="3482959374254649722">Menyegerakkan tab anda...</translation>
-<translation id="3485544713029068372">Smart Lock untuk Kata Laluan</translation>
 <translation id="3489372701259491571">Padamkan Kata Laluan Yang Disimpan</translation>
 <translation id="3519193562722059437">Buka tab untuk menyemak imbas web.</translation>
 <translation id="3527085408025491307">Folder</translation>
@@ -145,6 +149,7 @@ Untuk membetulkan istilah carian anda, tekan lama untuk memilih. Untuk memperhal
 <translation id="3789841737615482174">Pasang</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3897092660631435901">Menu</translation>
+<translation id="3928666092801078803">Gabungkan data saya</translation>
 <translation id="3950820424414687140">Log masuk</translation>
 <translation id="3963231839620026525">Tab Inkognito Baharu</translation>
 <translation id="3967822245660637423">Muat turun selesai</translation>
@@ -156,6 +161,7 @@ Untuk membetulkan istilah carian anda, tekan lama untuk memilih. Untuk memperhal
 <translation id="4121993058175073134">Tetapkn akaun e-mel anda dahulu dlm apl Tetapan utk mhantar data net-eksport.</translation>
 <translation id="4124987746317609294">Julat Masa</translation>
 <translation id="4172051516777682613">Sentiasa paparkan</translation>
+<translation id="4176234027218720244">Tandakan...</translation>
 <translation id="424315890655130736">Masukkan Ungkapan Laluan</translation>
 <translation id="4272631900155121838">Untuk mengimbas kod QR, dayakan kamera daripada tetapan</translation>
 <translation id="4281844954008187215">Syarat Perkhidmatan</translation>
@@ -167,6 +173,7 @@ Untuk membetulkan istilah carian anda, tekan lama untuk memilih. Untuk memperhal
 <translation id="4473991315115669931">Masuk ke Mod Inkognito</translation>
 <translation id="4526249700380860531">Lihat dan urus kata laluan yang disimpan di <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Cuba log masuk semula.</translation>
+<translation id="4620246317052452550">Halaman yang Anda Baca</translation>
 <translation id="4636930964841734540">Maklumat</translation>
 <translation id="4659667755519643272">Masuk ke Penukar Tab</translation>
 <translation id="4666531726415300315">Dilog masuk sebagai <ph name="EMAIL" />.
@@ -179,6 +186,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 <translation id="4875622588773761625">Adakah anda ingin <ph name="PASSWORD_MANAGER_BRAND" /> mengemaskinikan kata laluan anda untuk tapak ini?</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4923459931733593730">Pembayaran</translation>
+<translation id="4930268273022498155">Padam data sedia ada. Anda boleh mendapatkannya semula dengan beralih semula kepada <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Maaf, terdapat masalah mengongsi item anda.</translation>
 <translation id="4979397965658815378">Log masuk dengan Akaun Google anda untuk mendapatkan penanda halaman, kata laluan, sejarah dan tetapan anda yang lain pada semua peranti anda</translation>
 <translation id="5005498671520578047">Salin kata laluan</translation>
@@ -195,10 +203,12 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Tambah Kad...</translation>
 <translation id="5228579091201413441">Dayakan penyegerakan</translation>
+<translation id="5230733896359313003">Alamat Penghantaran</translation>
 <translation id="5244474230056479698">Menyegerak ke <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Paparkan</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5327248766486351172">Nama</translation>
+<translation id="532992759783668360">Padamkan Dibaca</translation>
 <translation id="5388358297987318779">Buka Imej</translation>
 <translation id="5409365236829784218">Tiada aplikasi dipasang yang boleh membuka fail ini.</translation>
 <translation id="54401264925851789">Maklumat Halaman Keselamatan</translation>
@@ -227,6 +237,8 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="5916664084637901428">Hidupkan</translation>
 <translation id="5953603475187800576">Tunjukkan alamat dan kad kredit daripada Google Payments</translation>
 <translation id="5964480694698977962">Buat tab inkognito baharu.</translation>
+<translation id="5965679971710331625">Anda sudah log masuk</translation>
+<translation id="5982717868370722439">Tambahkan data sedia ada pada <ph name="USER_EMAIL" />.</translation>
 <translation id="6012140227487808125">Menyulitkan...</translation>
 <translation id="6021332621416007159">Buka dalam...</translation>
 <translation id="6039694632319341016">Adakah anda ingin <ph name="PASSWORD_MANAGER_BRAND" /> mengemas kini kata laluan anda untuk <ph name="USERNAME" /> bagi tapak ini?</translation>
@@ -239,9 +251,13 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="6136914049981179737">Bbrp saat lalu</translation>
 <translation id="6149061208933997199">Gunakan Kata Laluan</translation>
 <translation id="6158823227857319455">Tab Baharu</translation>
+<translation id="616831107264507309">Baca Kemudian</translation>
 <translation id="6184086493125982861">Paparkan Tab</translation>
 <translation id="6187302354554850004">Terakhir disgrkkan: <ph name="LAST_USED_TIME" /></translation>
+<translation id="6189413832092199491">Belum dibaca</translation>
+<translation id="6194286531716220336">Batal</translation>
 <translation id="6196207969502475924">Carian Suara</translation>
+<translation id="6254066287920239840">Buka pautan dalam Apl dan bukannya penyemak imbas.</translation>
 <translation id="6255097610484507482">Edit Kad Kredit</translation>
 <translation id="6308436439357671616">Langkah ini membolehkan anda mengambil dan memuat naik foto.</translation>
 <translation id="6314335155547195432">Jana Kata Laluan</translation>
@@ -249,11 +265,12 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="6337234675334993532">Penyulitan</translation>
 <translation id="633809752005859102">Ada sesuatu yang tidak kena. Kami akan membetulkannya.</translation>
 <translation id="6344783595350022745">Padamkan Teks</translation>
-<translation id="6351971471682124046">Memancarkan ke...</translation>
 <translation id="6362362396625799311">Tiada Tab Inkognito</translation>
 <translation id="6380866119319257197">Jika anda terlupa ungkapan laluan atau ingin menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" /></translation>
+<translation id="6385146967113720558">Tandakan Belum Dibaca</translation>
 <translation id="6389470377220713856">Nama pada Kad</translation>
 <translation id="6406506848690869874">Segerak</translation>
+<translation id="6417838470969808600">Anda mempunyai penanda halaman, sejarah, kata laluan dan tetapan lain daripada <ph name="USER_EMAIL1" />.</translation>
 <translation id="641799622251403418">Dilog masuk sebagai <ph name="EMAIL" />.
 
 Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />. Masukkannya untuk memulakan penyegerakan.</translation>
@@ -288,6 +305,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7108338896283013870">Sembunyikan</translation>
 <translation id="7131892264600713844">Menunjukkan sejarah daripada peranti ini. <ph name="BEGIN_LINK" />Ketahui lebih lanjut.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nama Penuh</translation>
+<translation id="713434964320012835">Padam</translation>
 <translation id="7136892417564438900">Kamera tidak tersedia</translation>
 <translation id="7167621057293532233">Jenis Data</translation>
 <translation id="7189598951263744875">Kongsi...</translation>
@@ -309,7 +327,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7514365320538308">Muat Turun</translation>
 <translation id="7537586195939242955">Maaf, Pas anda tidak boleh dipasang pd Passbook pd masa ini.</translation>
 <translation id="7561196759112975576">Sentiasa</translation>
-<translation id="7572670177380301651">Memaparkan sejarah daripada peranti anda yang dilog masuk. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="7588950540487816470">Web Fizikal</translation>
 <translation id="7603852183842204213">Pop timbul disekat (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Penyegerakan tidak berfungsi</translation>
@@ -317,9 +334,11 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7671141431838911305">PASANG</translation>
+<translation id="7682287625158474539">Penghantaran</translation>
 <translation id="7765158879357617694">Alih</translation>
 <translation id="7769602470925380267">Terima dan log keluar</translation>
 <translation id="7772032839648071052">Sahkan frasa laluan</translation>
+<translation id="7791543448312431591">Tambah</translation>
 <translation id="780301667611848630">Tidak, terima kasih</translation>
 <translation id="7851858861565204677">Peranti lain</translation>
 <translation id="7859704718976024901">Sejarah Penyemakan Imbas</translation>
@@ -331,6 +350,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8019783059653722575">Langkah ini membolehkan anda menyimpan dan memuat naik foto.</translation>
 <translation id="8023878949384262191">Mengembangkan bahagian.</translation>
 <translation id="8059533439631660104">Meruntuhkan bahagian.</translation>
+<translation id="806745655614357130">Biarkan data saya diasingkan</translation>
 <translation id="8076014560081431679">Tetapan tapak yang disimpan tidak akan dipadamkan dan mungkin mencerminkan tabiat semak imbas anda. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Tutup Semua Tab</translation>
 <translation id="8108697784695284144">Kata laluan anda telah disalin.</translation>
@@ -338,12 +358,14 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8205564605687841303">Batal</translation>
 <translation id="8225985093977202398">Imej dan Fail Dicache</translation>
 <translation id="8261506727792406068">Padam</translation>
+<translation id="8272194309885535896">Muat Turun Imej</translation>
 <translation id="8272426682713568063">Kad Kredit</translation>
 <translation id="8281781826761538115">Lalai - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Kawal cara Google menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain</translation>
 <translation id="8428045167754449968">Bandar / Pekan</translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8433678324664858900">Paparkan Cadangan</translation>
+<translation id="8458197615157477273">Tandakan Dibaca</translation>
 <translation id="8458397775385147834">1 item dipadamkan</translation>
 <translation id="8503813439785031346">Nama pengguna</translation>
 <translation id="8517375800490286174">Lesen Sumber Terbuka</translation>
@@ -355,6 +377,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">Hidupkan penyegerakan untuk mendapatkan tab daripada peranti anda yang lain.</translation>
 <translation id="8680787084697685621">Butiran log masuk akaun sudah lapuk.</translation>
+<translation id="8699098509676302392">Tambahkan Alamat...</translation>
 <translation id="8721297211384281569">Menu Alat</translation>
 <translation id="8725066075913043281">Cuba lagi</translation>
 <translation id="8730621377337864115">Selesai</translation>
@@ -375,6 +398,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="9055772144595778347">Tidak Boleh Log Masuk</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9079935439869366234">Tandakan Semua Sebagai Belum Dibaca</translation>
+<translation id="9080712759204168376">Ringkasan Pesanan</translation>
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Frasa laluan diperlukan</translation>
 <translation id="9148126808321036104">Log masuk semula</translation>

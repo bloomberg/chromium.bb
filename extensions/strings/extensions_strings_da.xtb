@@ -21,20 +21,18 @@
 <translation id="388442998277590542">Siden med valgmuligheder '<ph name="OPTIONS_PAGE" />' kunne ikke indlæses.</translation>
 <translation id="4115165561519362854">Administratoren af denne computer kræver, at <ph name="EXTENSION_NAME" /> har en minimumsversion af <ph name="EXTENSION_VERSION" />. Den kan ikke aktiveres, før den er blevet opdateret til den pågældende version (eller nyere).</translation>
 <translation id="4233778200880751280">Siden "<ph name="ABOUT_PAGE" />" kunne ikke indlæses.</translation>
-<translation id="4434145631756268951">{0,select, single{Vælg en USB-enhed}multiple{Vælg USB-enheder}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Pakken kunne ikke installeres, da et hjælpeprogram gik ned. Prøv at genstarte Chrome, og prøv igen.</translation>
 <translation id="5026754133087629784">Webvisning: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appvisning: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Denne udvidelse inkluderer nøglefilen "<ph name="KEY_PATH" />". Det ønsker du sandsynligvis ikke at gøre.</translation>
 <translation id="5627523580512561598">udvidelse <ph name="EXTENSION_NAME" /></translation>
-<translation id="5630931906013276297">{0,select, single{Vælg en HID-enhed}multiple{Vælg HID-enheder}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Administratoren af denne maskine kræver, at <ph name="EXTENSION_NAME" /> er installeret. Denne kan ikke afinstalleres.</translation>
 <translation id="6027032947578871493">Ukendt produkt, <ph name="PRODUCT_ID" />, fra <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> fra leverandøren <ph name="VENDOR_ID" /></translation>
 <translation id="6143635259298204954">Udvidelsen kunne ikke pakkes ud. Hvis du vil udpakke en udvidelse korrekt, skal der angives en sti til din profilmappe, som ikke indeholder et symlink. Der findes ingen sådan sti for din profil.</translation>
-<translation id="616804573177634438">{0,select, single{Applikationen "<ph name="APP_NAME" />" anmoder om adgang til en af dine enheder.}multiple{Applikationen "<ph name="APP_NAME" />" anmoder om adgang til en eller flere af dine enheder.}other{UNUSED}}</translation>
 <translation id="641087317769093025">Udvidelsen kunne ikke udpakkes</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" anmoder om adgang til en eller flere af dine enheder:</translation>
 <translation id="657064425229075395">Baggrundsscriptet  "<ph name="BACKGROUND_SCRIPT" />" kunne ikke indlæses.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> fra <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Mappen til udpakning kunne ikke oprettet: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">Pakken er ugyldig. Oplysninger: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Denne udvidelse kunne ikke omdirigere en netværksanmodning til <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, fordi en anden udvidelse (<ph name="EXTENSION_NAME" />) omdirigerede den til <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Værktøj til udpakning af udvidelser</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" anmoder om adgang til en af dine enheder:</translation>
 <translation id="8825366169884721447">Denne udvidelse kunne ikke ændre anmodningsheaderen "<ph name="HEADER_NAME" />" for en netværksanmodning, fordi ændringen var i strid med en anden udvidelse. (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="9111791539553342076">Denne udvidelse kunne ikke ændre anmodningsheaderen "<ph name="HEADER_NAME" />" for en netværksanmodning, fordi ændringen var i strid med en anden udvidelse. (<ph name="EXTENSION_NAME" />).</translation>
 </translationbundle>

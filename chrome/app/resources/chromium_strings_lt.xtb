@@ -27,6 +27,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1779356040007214683">Kad „Chromium“ padarytume saugesnę, išjungėme kai kuriuos plėtinius, kurių nėra „<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />“ sąraše ir kurie galėjo būti pridėti be jūsų žinios.</translation>
 <translation id="1808667845054772817">Iš naujo įdiegti „Chromium“</translation>
 <translation id="1816404578968201294">„Chromium“ reikia pasiekti vietovės informaciją, kad galėtų bendrinti ją su šia svetaine.</translation>
+<translation id="1838412507805038478">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šios svetainės sertifikatą.</translation>
 <translation id="1869480248812203386">Galite padėti sustiprinti „Chromium“ saugą ir palengvinti jos naudojimą automatiškai „Google“ pateikdami išsamią informaciją apie galimas saugos problemas.</translation>
 <translation id="1881322772814446296">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Chromium“ profilį. „Chromium“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. Galite pasirinktinai sukurti naują profilį, kad esami „Chromium“ duomenys būtų saugomi atskirai. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">„Chromium“ neatsako. Paleisti iš naujo dabar?</translation>
@@ -36,7 +37,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2119636228670142020">Apie &amp;„Chromium“ OS</translation>
 <translation id="2158734852934720349">„Chromium“ OS atvirojo šaltinio licencijos</translation>
 <translation id="2241627712206172106">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chromium“ pagal savo poreikius.</translation>
-<translation id="225614027745146050">Sveiki</translation>
 <translation id="2316129865977710310">Ačiū, ne</translation>
 <translation id="2347108572062610441">Šis plėtinys pakeitė, kuris puslapis rodomas paleidus „Chromium“.</translation>
 <translation id="2372704305038231957">32 bitų „Chromium“ gali tinkamai neveikti, nes ji nebepalaikoma naudojant šią „Linux“ sistemą. Naujovinkite į 64 bitų „Chromium“.</translation>
@@ -155,7 +155,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="5877064549588274448">Kanalas pakeistas. Kad pritaikytumėte pakeitimus, iš naujo paleiskite įrenginį.</translation>
 <translation id="5895138241574237353">Paleisti iš naujo</translation>
 <translation id="5906655207909574370">Beveik įdiegta naujausia versija! Paleiskite įrenginį iš naujo, kad būtų užbaigtas naujinimas.</translation>
-<translation id="5942225298871134766">„Chromium“ jį išsaugos naudodama <ph name="SAVED_PASSWORD_LINK" /> ir prisimins, kai jo prireiks kitą kartą.</translation>
 <translation id="5942520288919337908">„<ph name="EXTENSION_NAME" />“ pridėtas prie „Chromium“.</translation>
 <translation id="59625444380784159">Turėdami išsamią kontaktų informaciją galite greičiau užpildyti formas „Chromium“.</translation>
 <translation id="5987687638152509985">Atnaujinkite „Chromium“, kad galėtumėte pradėti sinchronizuoti</translation>
@@ -244,6 +243,7 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="81770708095080097">Šis failas pavojingas, todėl „Chromium“ jį užblokavo.</translation>
 <translation id="8269379391216269538">Padėkite tobulinti „Chromium“</translation>
 <translation id="8290862415967981663">Šis failas gali būti pavojingas, todėl „Chromium“ jį užblokavo.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> anksčiau naudojo „Chromium“</translation>
 <translation id="8453117565092476964">Diegimo programos archyvas sugadintas arba negalioja. Atsisiųskite „Chromium“ dar kartą.</translation>
 <translation id="8493179195440786826">„Chromium“ versija yra pasenusi</translation>
 <translation id="85843667276690461">Gauti su „Chromium“ naudojimu susijusios pagalbos</translation>

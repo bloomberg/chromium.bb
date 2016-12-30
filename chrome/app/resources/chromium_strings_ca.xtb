@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">Perquè Chromium sigui més segur, hem desactivat algunes de les extensions que no apareixen a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="1808667845054772817">Torna a instal·lar Chromium</translation>
 <translation id="1816404578968201294">Chromium necessita accedir a la ubicació per compartir-la amb aquest lloc.</translation>
+<translation id="1838412507805038478">Chromium ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web.</translation>
 <translation id="1869480248812203386">Si voleu col·laborar perquè Chromium sigui més segur i més fàcil d'utilitzar, informeu automàticament Google dels detalls sobre possibles incidències de seguretat.</translation>
 <translation id="1881322772814446296">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Chromium a l'administrador corresponent. Les dades de Chromium, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chromium a part. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium no respon. Voleu tornar-lo a iniciar ara?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">Quant a &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Llicències de programari lliure de Chromium OS</translation>
 <translation id="2241627712206172106">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chromium com vulguin.</translation>
-<translation id="225614027745146050">Benvingut</translation>
 <translation id="2316129865977710310">No, gràcies</translation>
 <translation id="2347108572062610441">Aquesta extensió ha canviat la pàgina que es mostra quan inicieu Chromium.</translation>
 <translation id="2372704305038231957">Pot ser que Chromium de 32 bits no funcioni correctament perquè ja no és compatible amb aquest sistema Linux. Feu l'actualització a Chromium de 64 bits.</translation>
@@ -153,7 +153,6 @@
 <translation id="5877064549588274448">El canal ha canviat. Reinicieu el dispositiu perquè s'apliquin els canvis.</translation>
 <translation id="5895138241574237353">Reinicia</translation>
 <translation id="5906655207909574370">Gairebé heu acabat. Reinicieu el dispositiu per completar l'actualització.</translation>
-<translation id="5942225298871134766">Chromium desarà la contrasenya amb <ph name="SAVED_PASSWORD_LINK" /> i la recordarà la propera vegada que la necessiteu.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> s'ha afegit a Chromium.</translation>
 <translation id="59625444380784159">Disposar de detalls dels vostres contactes us pot ajudar a emplenar formularis amb més rapidesa a Chromium.</translation>
 <translation id="5987687638152509985">Actualitza Chromium per iniciar la sincronització</translation>
@@ -242,6 +241,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="81770708095080097">Chromium ha bloquejat aquest fitxer perquè és perillós.</translation>
 <translation id="8269379391216269538">Ajudeu a millorar Chromium</translation>
 <translation id="8290862415967981663">Chromium ha bloquejat aquest fitxer perquè pot ser perillós.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> abans utilitzava Chromium</translation>
 <translation id="8453117565092476964">L'arxiu d'instal·lació està malmès o no és vàlid. Torneu a baixar Chromium.</translation>
 <translation id="8493179195440786826">Chromium no està actualitzat</translation>
 <translation id="85843667276690461">Obtén ajuda per a l'ús de Chromium</translation>

@@ -27,6 +27,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1779356040007214683">Z dôvodu vyššej bezpečnosti prehliadača Chromium sme zakázali niektoré rozšírenia, ktoré nedodáva <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohli byť pridané bez vášho vedomia.</translation>
 <translation id="1808667845054772817">Preinštalovať prehliadač Chromium</translation>
 <translation id="1816404578968201294">Chromium musí mať najprv prístup k polohe, aby ju mohol s týmito webovými stránkami zdieľať.</translation>
+<translation id="1838412507805038478">Prehliadač Chromium overil, že certifikát tohto webu bol vydaný vydavateľom <ph name="ISSUER" />.</translation>
 <translation id="1869480248812203386">Automatickým nahlasovaním podrobností o možných bezpečnostných problémoch môžete prispieť k zvýšeniu zabezpečenia prehliadača Chromium a k zjednodušeniu jeho používania.</translation>
 <translation id="1881322772814446296">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom Chromium. Vaše údaje prehliadača Chromium, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. Ak chcete, aby boli existujúce údaje prehliadača Chromium oddelené, môžete vytvoriť nový profil. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium nereaguje. Chcete ho spustiť znova?</translation>
@@ -36,7 +37,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2119636228670142020">Informácie o systéme &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licencie open source systému OS Chromium</translation>
 <translation id="2241627712206172106">Ak počítač zdieľate s rodinou a priateľmi, môžu v prehliadači Chromium prehliadať oddelene a tiež si ho nastaviť podľa vlastných požiadaviek.</translation>
-<translation id="225614027745146050">Vitajte</translation>
 <translation id="2316129865977710310">Nie, ďakujem</translation>
 <translation id="2347108572062610441">Toto rozšírenie zmenilo stránku, ktorá sa zobrazí pri spustení prehliadača Chromium.</translation>
 <translation id="2372704305038231957">32-bitová verzia prehliadača Chromium nemusí fungovať správne, pretože v tejto verzii systému Linux už nie je podporovaná. Inovujte Chromium na 64-bitovú verziu.</translation>
@@ -155,7 +155,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5877064549588274448">Kanál sa zmenil. Ak chcete zmeny použiť, reštartujte zariadenie.</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
 <translation id="5906655207909574370">Aktualizácia je takmer hotová! Dokončite ju reštartovaním zariadenia.</translation>
-<translation id="5942225298871134766">Chromium uloží toto heslo pomocou funkcie <ph name="SAVED_PASSWORD_LINK" /> a ponúkne vám ho, keď ho budete najbližšie potrebovať.</translation>
 <translation id="5942520288919337908">Rozšírenie <ph name="EXTENSION_NAME" /> bolo pridané do prehliadača Chromium.</translation>
 <translation id="59625444380784159">Podrobnosti z vašich kontaktov vám môžu pomôcť rýchlejšie vypĺňať formuláre v prehliadači Chromium.</translation>
 <translation id="5987687638152509985">Ak chcete spustiť synchronizáciu, aktualizujte Chromium</translation>
@@ -244,6 +243,7 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="81770708095080097">Tento súbor je nebezpečný, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="8269379391216269538">Pomôže zlepšiť Chromium</translation>
 <translation id="8290862415967981663">Tento súbor môže byť nebezpečný, a preto ho prehliadač Chromium zablokoval.</translation>
+<translation id="8340674089072921962">Účet <ph name="USER_EMAIL_ADDRESS" /> predtým používal Chromium</translation>
 <translation id="8453117565092476964">Archív inštalácie je poškodený alebo neplatný. Stiahnite prehliadač Chromium znova.</translation>
 <translation id="8493179195440786826">Prehliadač Chromium je zastaraný</translation>
 <translation id="85843667276690461">Získajte pomoc pri používaní prehliadača Chromium</translation>

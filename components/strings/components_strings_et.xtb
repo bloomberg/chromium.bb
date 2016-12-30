@@ -9,6 +9,7 @@
 <translation id="1055184225775184556">&amp;Võta lisamine tagasi</translation>
 <translation id="10614374240317010">Ei ole kunagi salvestatud</translation>
 <translation id="106701514854093668">Töölaua järjehoidjad</translation>
+<translation id="1074497978438210769">Pole turvaline</translation>
 <translation id="1080116354587839789">Sobita laiusesse</translation>
 <translation id="1103523840287552314">Tõlgi alati: <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Kui see on märgitud, salvestab Chrome teie kaardi koopia sellesse seadmesse, et vormi kiiremini täita.</translation>
@@ -23,6 +24,7 @@
 <translation id="1161325031994447685">Ühendage uuesti WiFi-ga</translation>
 <translation id="1175364870820465910">&amp;Prindi...</translation>
 <translation id="1181037720776840403">Eemalda</translation>
+<translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />Teavita Google'it automaatselt<ph name="END_WHITEPAPER_LINK" /> võimalikest turvaintsidentidest. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">Edasi</translation>
 <translation id="1201895884277373915">Veel sellelt saidilt</translation>
 <translation id="1206967143813997005">Sobimatu algne allkiri</translation>
@@ -38,6 +40,7 @@
 <translation id="129553762522093515">Viimati suletud</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Kustutage küpsisefailid<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Registreerimisdomeen:</translation>
+<translation id="1344211575059133124">Näib, et vajate saidi külastamiseks luba</translation>
 <translation id="1344588688991793829">Chromiumi automaattäite seaded ...</translation>
 <translation id="1374468813861204354">soovitused</translation>
 <translation id="1375198122581997741">Teave versiooni kohta</translation>
@@ -62,13 +65,16 @@
 <translation id="161042844686301425">Tsüaan</translation>
 <translation id="1629803312968146339">Kas soovite, et Chrome salvestaks selle kaardi?</translation>
 <translation id="1640180200866533862">Kasutajareeglid</translation>
+<translation id="1640244768702815859">Proovige <ph name="BEGIN_LINK" />külastada saidi avalehte<ph name="END_LINK" />.</translation>
 <translation id="1644184664548287040">Võrgu seadistus on sobimatu ja seda ei saa importida.</translation>
 <translation id="1644574205037202324">Ajalugu</translation>
 <translation id="1645368109819982629">Toetuseta protokoll</translation>
 <translation id="1676269943528358898">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Google Chrome püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Google Chrome peatas ühenduse enne andmevahetust.</translation>
+<translation id="168328519870909584">Saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> olevad ründajad võivad proovida installida teie seadmesse ohtlikke rakendusi, mis varastavad teie teavet või kustutavad selle (nt fotod, paroolid, sõnumid ja krediitkaardiandmed).</translation>
 <translation id="168841957122794586">Serveri sertifikaat sisaldab nõrka krüptograafilist võtit.</translation>
 <translation id="1701955595840307032">Soovitatud sisu hankimine</translation>
 <translation id="1710259589646384581">OS</translation>
+<translation id="1721312023322545264">Vajate saidi külastamiseks halduri <ph name="NAME" /> luba</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Proovige ühendust võtta süsteemiadministraatoriga.</translation>
 <translation id="1745358365027406341">Laadi leht hiljem alla</translation>
@@ -77,6 +83,7 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Proovige käitada Windowsi võrgudiagnostika tööriista<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Värskendage sünkroonimise parooli.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
+<translation id="1803678881841855883">Google'i ohutu sirvimine avastas saidilt <ph name="SITE" /> hiljuti <ph name="BEGIN_LINK" />pahavara<ph name="END_LINK" />. Tavaliselt ohutud veebisaidid nakatuvad mõnikord pahavaraga. Pahatahtliku sisu allikas on tuntud pahavaralevitaja <ph name="SUBRESOURCE_HOST" />. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1821930232296380041">Taotlus või selle parameetrid on kehtetud</translation>
 <translation id="1838667051080421715">Vaatate veebilehe lähtekoodi.</translation>
 <translation id="1871208020102129563">Puhverserver on seatud kasutama fikseeritud puhverservereid, mitte pac-skripti URL-i.</translation>
@@ -135,6 +142,7 @@
 <translation id="2392959068659972793">Kuva reeglid, mille väärtusi pole määratud</translation>
 <translation id="2396249848217231973">&amp;Võta kustutamine tagasi</translation>
 <translation id="2455981314101692989">See veebileht on keelanud automaatse täitmise selle vormi puhul.</translation>
+<translation id="2460160116472764928">Google'i ohutu sirvimine avastas saidilt <ph name="SITE" /> hiljuti <ph name="BEGIN_LINK" />pahavara<ph name="END_LINK" />. Tavaliselt ohutud veebisaidid nakatuvad mõnikord pahavaraga. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2463739503403862330">Täida</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Võrgudiagnostika käitamine<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Kehtetu otsingu URL.</translation>
@@ -158,6 +166,7 @@
 <translation id="2674170444375937751">Olete kindel, et soovite need leheküljed oma ajaloost kustutada?</translation>
 <translation id="2677748264148917807">Lahku</translation>
 <translation id="269990154133806163">Server esitas sertifikaadi, mida ei ole sertifikaadi läbipaistvuse reegli kohaselt avalikustatud. See on teatud sertifikaatide puhul nõutav, et need oleksid usaldusväärsed ja kaitseksid ründajate eest. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="2702801445560668637">Lugemisloend</translation>
 <translation id="2704283930420550640">Väärtus ei vasta vormingule.</translation>
 <translation id="2704951214193499422">Chromium ei saanud praegu teie kaarti kinnitada. Proovige hiljem uuesti.</translation>
 <translation id="2705137772291741111">Selle saidi (vahemällu) salvestatud koopia oli loetamatu.</translation>
@@ -171,6 +180,7 @@
 <translation id="2742870351467570537">Eemalda valitud üksused</translation>
 <translation id="277499241957683684">Seadme kirje puudub</translation>
 <translation id="2784949926578158345">Ühendus lähtestati.</translation>
+<translation id="2794233252405721443">Sait on blokeeritud</translation>
 <translation id="2824775600643448204">Aadressi- ja otsinguriba</translation>
 <translation id="2826760142808435982">Ühendus on krüptitud ja autenditud üksusega <ph name="CIPHER" /> ning kasutab peamise vahetusmehhanismina üksust <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Tühjenda vorm</translation>
@@ -182,6 +192,7 @@
 <translation id="2948083400971632585">Seadete lehel saate keelata kõik ühenduse jaoks konfigureeritud puhverserverid.</translation>
 <translation id="2955913368246107853">Sule leiuriba</translation>
 <translation id="2958431318199492670">Võrgu seadistus ei vasta ONC standardile. On võimalik, et seadistuse mõnd osa ei saa importida.</translation>
+<translation id="29611076221683977">Saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> olevad ründajad võivad proovida installida teie Maci ohtlikke programme, mis varastavad teie teavet või kustutavad selle (nt fotod, paroolid, sõnumid ja krediitkaardiandmed).</translation>
 <translation id="2969319727213777354">Turvalise ühenduse loomiseks peab kell olema õigesti seadistatud, kuna sertifikaadid, mida veebisaidid kasutavad enda tuvastamiseks, kehtivad ainult teatud perioodi jooksul. Kuna teie seadme kell on vale, ei saa Chrome neid sertifikaate kinnitada.</translation>
 <translation id="2972581237482394796">&amp;Tee uuesti</translation>
 <translation id="2985306909656435243">Kui see on lubatud, salvestab Chromium teie kaardi koopia vormide kiiremaks täitmiseks sellesse seadmesse.</translation>
@@ -249,6 +260,7 @@
 <translation id="3549644494707163724">Krüpteerige kõik sünkroonitud andmed oma sünkroonimise parooliga</translation>
 <translation id="3549761410225185768">Veel <ph name="NUM_TABS_MORE" /> ...</translation>
 <translation id="3555561725129903880">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />. Selle turvasertifikaat pärineb domeenilt <ph name="DOMAIN2" />. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="3556433843310711081">Haldur saab blokeeringu teie eest tühistada</translation>
 <translation id="3566021033012934673">Teie ühendus ei ole privaatne</translation>
 <translation id="3583757800736429874">&amp;Teisalda uuesti</translation>
 <translation id="3586931643579894722">Peida üksikasjad</translation>
@@ -275,6 +287,7 @@
 <translation id="3712624925041724820">Litsentsid on ammendunud</translation>
 <translation id="3714780639079136834">Lülitage sisse mobiilne andmeside või WiFi</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Kontrollige puhverserveri, tulemüüri ja DNS-i seadistust<ph name="END_LINK" /></translation>
+<translation id="3736520371357197498">Kui mõistate, kuidas teie turvalisust ohustatakse, siis võite <ph name="BEGIN_LINK" />seda ebaturvalist saiti külastada<ph name="END_LINK" /> enne, kui ohtlikud programmid on eemaldatud.</translation>
 <translation id="3739623965217189342">Teie kopeeritud link</translation>
 <translation id="375403751935624634">Tõlkimine ebaõnnestus serverivea tõttu.</translation>
 <translation id="3759461132968374835">Hiljuti teatatud krahhe ei ole. Siin ei ilmu krahhid, mis toimusid siis, kui krahhide aruandlus oli keelatud.</translation>
@@ -286,6 +299,7 @@
 <translation id="3858027520442213535">Värskenda kuupäeva ja kellaaega</translation>
 <translation id="3884278016824448484">Seadme identifikaator on konfliktne</translation>
 <translation id="3885155851504623709">Vald</translation>
+<translation id="3886446263141354045">Teie juurdepääsutaotlus sellele saidile saadeti kasutajale <ph name="NAME" /></translation>
 <translation id="3901925938762663762">Kaart on aegunud</translation>
 <translation id="3933571093587347751">{1,plural, =1{Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Selle turvasertifikaat hakkab väidetavalt kehtima homme. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.}other{Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Selle turvasertifikaat hakkab väidetavalt kehtima # päeva pärast. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.}}</translation>
 <translation id="3934680773876859118">PDF-dokumendi laadimine nurjus</translation>
@@ -299,6 +313,7 @@
 <translation id="4058922952496707368">Võti „<ph name="SUBKEY" />”: <ph name="ERROR" /></translation>
 <translation id="4075732493274867456">Klient ja server ei toeta tavapärast SSL-protokolli versiooni ega šifreerimiskomplekti.</translation>
 <translation id="4079302484614802869">Puhverserveri konfigureerimine on määratud kasutama pac-skripti URL-i, mitte fikseeritud puhverservereid.</translation>
+<translation id="4098354747657067197">Avatav sait on petturlik</translation>
 <translation id="4103249731201008433">Seadme seerianumber on kehtetu</translation>
 <translation id="4103763322291513355">Külastage saiti &lt;strong&gt;chrome://policy&lt;/strong&gt;, et näha mustas nimekirjas olevate URL-ide loendit ja teisi reegleid, mille on jõustanud teie süsteemiadministraator.</translation>
 <translation id="4110615724604346410">Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Selle turvasertifikaat sisaldab vigu. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -320,10 +335,13 @@
 <translation id="425582637250725228">Tehtud muudatusi ei pruugita salvestada.</translation>
 <translation id="4258748452823770588">Sobimatu allkiri</translation>
 <translation id="4269787794583293679">(Kasutajanimi puudub)</translation>
+<translation id="4280429058323657511">, aegub <ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="4295944351946828969">Google'i ohutu sirvimine leidis saidilt <ph name="SITE" /> hiljuti <ph name="BEGIN_LINK" />kahjulikke programme<ph name="END_LINK" />. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4300246636397505754">Vanema soovitused</translation>
 <translation id="4304224509867189079">Logi sisse</translation>
 <translation id="432290197980158659">Server esitas sertifikaadi, mis ei kattu sisseehitatud ootustega. Ootusi rakendatakse teatud väga turvaliste veebisaitide puhul teie kaitsmiseks. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4325863107915753736">Artiklit ei leitud</translation>
+<translation id="4326324639298822553">Kontrollige aegumiskuupäeva ja proovige uuesti</translation>
 <translation id="4331708818696583467">Pole turvaline</translation>
 <translation id="4372948949327679948">Oodatud väärtus: <ph name="VALUE_TYPE" />.</translation>
 <translation id="4381091992796011497">Kasutajanimi:</translation>
@@ -357,6 +375,7 @@
 <translation id="4813512666221746211">Võrgu viga</translation>
 <translation id="4816492930507672669">Sobita lehele</translation>
 <translation id="4850886885716139402">Kuva</translation>
+<translation id="4858792381671956233">Küsisite oma vanematelt, kas võite seda lehte külastada</translation>
 <translation id="4880827082731008257">Otsi ajaloost</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ja veel 1 veebileht}other{ja veel # veebilehte}}</translation>
@@ -396,6 +415,7 @@
 <translation id="5308689395849655368">Krahhide aruandlus on keelatud.</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5327248766486351172">Nimi</translation>
+<translation id="5337705430875057403">Ründajad saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> võivad teid meelitada ohtlikele tegevustele, nagu tarkvara installimine või isiklike andmete avaldamine (nt paroolid, telefoninumbrid või krediitkaardid).</translation>
 <translation id="5359637492792381994">Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Selle turvasertifikaat on praegu kehtetu. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="536296301121032821">Reegli seadete talletamine ebaõnnestus</translation>
 <translation id="5421136146218899937">Sirvimisandmete kustutamine ...</translation>
@@ -418,16 +438,20 @@
 <translation id="5544037170328430102">Manustatud leht saidil <ph name="SITE" /> ütleb:</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
 <translation id="5565735124758917034">Aktiivne</translation>
+<translation id="5580958916614886209">Kontrollige aegumiskuud ja proovige uuesti</translation>
 <translation id="560412284261940334">Haldust ei toetata</translation>
 <translation id="5610142619324316209">Kontrollige ühendust</translation>
 <translation id="5617949217645503996">Host <ph name="HOST_NAME" /> suunas teid liiga mitu korda ümber.</translation>
 <translation id="5622887735448669177">Kas soovite sellelt saidilt lahkuda?</translation>
 <translation id="5629630648637658800">Reegli seadete laadimine ebaõnnestus</translation>
 <translation id="5631439013527180824">Seadme halduse luba on kehtetu</translation>
+<translation id="5675650730144413517">See leht ei tööta</translation>
 <translation id="5677928146339483299">Blokeeritud</translation>
+<translation id="5694783966845939798">Püüdsite jõuda domeenile <ph name="DOMAIN" />, kuid server esitas sertifikaadi, mis on allkirjastatud nõrga allkirjaalgoritmiga (nt SHA-1). See tähendab, et serveri esitatud turvamandaadid võivad olla võltsitud ja tegemist ei pruugi olla õige serveriga (võimalik, et suhtlete ründajaga). <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
 <translation id="572328651809341494">Hiljutised vahelehed</translation>
+<translation id="5732392974455271431">Vanemad saavad blokeeringu teie eest tühistada</translation>
 <translation id="5784606427469807560">Kaardi kinnitamisel tekkis probleem. Kontrollige Interneti-ühendust ja proovige uuesti.</translation>
 <translation id="5785756445106461925">Lisaks sisaldab see leht teisi ressursse, mis pole turvalised. Edastamise ajal võivad ressursse vaadata ka teised ja ründajad saavad lehe välimuse muutmiseks ressursse muuta.</translation>
 <translation id="5786044859038896871">Kas soovite sisestada oma kaarditeabe?</translation>
@@ -444,6 +468,7 @@
 <translation id="59107663811261420">Google Payments ei toeta selle kaupmehe puhul seda tüüpi kaarti. Valige teine kaart.</translation>
 <translation id="59174027418879706">Lubatud</translation>
 <translation id="5926846154125914413">Võite kaotada juurdepääsu mõnede saitide tasulisele sisule.</translation>
+<translation id="5959728338436674663">Saatke Google'ile automaatselt <ph name="BEGIN_WHITEPAPER_LINK" />süsteemiteavet ja lehe sisu<ph name="END_WHITEPAPER_LINK" />, et aidata tuvastada ohtlikke rakendusi ja saite. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Nädal</translation>
 <translation id="5967867314010545767">Eemalda ajaloost</translation>
 <translation id="5975083100439434680">Suumib välja</translation>
@@ -464,6 +489,7 @@
 <translation id="6165508094623778733">Lisateave</translation>
 <translation id="6203231073485539293">Kontrollige Interneti-ühendust</translation>
 <translation id="6218753634732582820">Kas eemaldada Chromiumist aadress?</translation>
+<translation id="6251924700383757765">Privaatsuseeskirjad</translation>
 <translation id="6259156558325130047">&amp;Korrasta uuesti</translation>
 <translation id="6263376278284652872">Domeeni <ph name="DOMAIN" /> järjehoidjad</translation>
 <translation id="6264485186158353794">Tagasi turvalisusse</translation>
@@ -480,6 +506,8 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{veel 1 soovitus}other{veel # soovitust}}</translation>
 <translation id="6387478394221739770">Kas olete huvitatud Chrome'i uutest lahedatest funktsioonidest? Proovige meie beetakanalit aadressil chrome.com/beta.</translation>
 <translation id="6389758589412724634">Chromiumil pole selle veebilehe kuvamiseks piisavalt mälu.</translation>
+<translation id="6410264514553301377">Sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC</translation>
+<translation id="6414888972213066896">Küsisite vanemalt, kas võite seda saiti külastada</translation>
 <translation id="6416403317709441254">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest veebisait saatis šifreeritud mandaadi, mida Chromium ei saa töödelda. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht on tõenäoliselt hiljem töökorras. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6417515091412812850">Ei saa kontrollida sertifikaadi võimalikku tühistamist.</translation>
 <translation id="6433595998831338502">Host <ph name="HOST_NAME" /> keeldus ühendamast.</translation>
@@ -488,10 +516,12 @@
 <translation id="6458467102616083041">Seda eiratakse, kuna vaikeotsing on reegliga keelatud.</translation>
 <translation id="6462969404041126431">Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Selle turvasertifikaat on võib-olla tühistatud. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">Seadme reeglid</translation>
+<translation id="6477321094435799029">Chrome tuvastas sellel lehel ebatavalise koodi ja blokeeris selle, et teie isiklikke andmeid (nt paroolid, telefoninumbrid ja krediitkaardiandmed) kaitsta.</translation>
 <translation id="6489534406876378309">Krahhide üleslaadimise alustamine</translation>
 <translation id="6529602333819889595">&amp;Kustuta uuesti</translation>
 <translation id="6534179046333460208">Füüsilise veebi soovitused</translation>
 <translation id="6550675742724504774">Valikud</translation>
+<translation id="6563469144985748109">Haldur ei ole seda veel kinnitanud</translation>
 <translation id="6593753688552673085">vähem kui <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Krüpteerimise valikud</translation>
 <translation id="662080504995468778">Jää siia</translation>
@@ -510,6 +540,7 @@
 <translation id="674375294223700098">Serveri sertifikaadi tundmatu viga.</translation>
 <translation id="6753269504797312559">Reegli väärtus</translation>
 <translation id="6757797048963528358">Teie seade lülitus unerežiimile.</translation>
+<translation id="6778737459546443941">Vanem ei ole seda veel kinnitanud</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Veebileht pole aadressil <ph name="URL" /> praegu saadaval. See võib olla üle koormatud või hooldamiseks seisatud.</translation>
 <translation id="6831043979455480757">Tõlgi</translation>
@@ -544,6 +575,7 @@
 <translation id="7210863904660874423">Host <ph name="HOST_NAME" /> ei pea turvastandarditest kinni.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /> selle probleemi kohta.</translation>
 <translation id="7219179957768738017">Ühendus kasutab protokolli <ph name="SSL_VERSION" />.</translation>
+<translation id="724691107663265825">Avatav veebisait sisaldab pahavara</translation>
 <translation id="724975217298816891">Kaardi üksikasjade värskendamiseks sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC. Kui selle kinnitate, jagatakse teie kaardi üksikasju selle saidiga.</translation>
 <translation id="725866823122871198">Privaatset ühendust ei saa domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> luua, kuna arvuti kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />) on valed.</translation>
 <translation id="7269802741830436641">Sellel veebilehel on ümbersuunamissilmus</translation>
@@ -566,8 +598,10 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7419106976560586862">Profiili tee</translation>
 <translation id="7424977062513257142">Selle veebilehe manustatud leht ütleb:</translation>
 <translation id="7441627299479586546">Reegli objekt on vale</translation>
+<translation id="7444046173054089907">See sait on blokeeritud</translation>
 <translation id="7445762425076701745">Serveri identiteeti, millega olete ühenduses, ei saa täielikult valideerida. Olete ühenduses serveriga nime abil, mis kehtib ainult teie võrgus, mistõttu ei saa väline sertifitseerimisorgan selle omandiõigust valideerida. Kuna mõni sertifitseerimisorgan väljastab sertifikaate hoolimata nende nimedest, puudub igasugune võimalus tagada, et olete ühenduses soovitud veebisaidi, mitte ründajaga.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Vaadake lisateavet<ph name="END_LINK" /> probleemi kohta.</translation>
+<translation id="7460163899615895653">Siin kuvatakse teie hiljutised vahelehed teistest seadmetest</translation>
 <translation id="7469372306589899959">Kaarti kinnitatakse</translation>
 <translation id="7481312909269577407">Edasta</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
@@ -577,6 +611,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7535087603100972091">Väärtus</translation>
 <translation id="7537536606612762813">Kohustuslik</translation>
 <translation id="7542995811387359312">Automaatne krediitkaardi täide on keelatud, sest see vorm ei kasuta turvalist ühendust.</translation>
+<translation id="7543525346216957623">Küsige vanematelt abi</translation>
 <translation id="7549584377607005141">See veebileht vajab korralikult kuvamiseks varem sisestatud andmeid. Võite need andmed uuesti saata, kuid seda tehes kordate lehe iga eelnevat toimingut.</translation>
 <translation id="7554791636758816595">Uus vaheleht</translation>
 <translation id="7568593326407688803">See leht on keeles<ph name="ORIGINAL_LANGUAGE" />Kas soovite seda tõlkida?</translation>
@@ -601,6 +636,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7716424297397655342">Seda saiti ei saa vahemälust laadida</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Haldamata</translation>
+<translation id="7755287808199759310">Vanem saab blokeeringu teie eest tühistada</translation>
 <translation id="7758069387465995638">Tulemüür või viirusetõrjetarkvara võis ühenduse blokeerida.</translation>
 <translation id="7761701407923456692">Serveri sertifikaat ei vasta URL-ile.</translation>
 <translation id="777702478322588152">Prefektuur</translation>
@@ -610,6 +646,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7800304661137206267">Ühenduse krüptimise moodus on <ph name="CIPHER" />, <ph name="MAC" /> sõnumite autentimiseks ja võtme vahetusmehhanism on <ph name="KX" />.</translation>
 <translation id="780301667611848630">Ei, aitäh</translation>
 <translation id="7805768142964895445">Olek</translation>
+<translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Kas eemaldada Chrome'ist vormi soovitus?</translation>
 <translation id="7815407501681723534">Otsingule „<ph name="SEARCH_STRING" />” leiti <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" />.</translation>
 <translation id="785549533363645510">Te pole siiski nähtamatu. Inkognito režiimi kasutamine ei varja teie sirvimist tööandja, Interneti-teenuse pakkuja ega külastatavate veebisaitide eest.</translation>
@@ -618,6 +655,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Serveri sertifikaat ei kehti veel.</translation>
 <translation id="7942349550061667556">Punane</translation>
+<translation id="7947285636476623132">Kontrollige aegumisaastat ja proovige uuesti</translation>
 <translation id="7951415247503192394">(32-bitine)</translation>
 <translation id="7956713633345437162">Mobiili järjehoidjad</translation>
 <translation id="7961015016161918242">Mitte kunagi</translation>
@@ -625,7 +663,9 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7983301409776629893">Tõlgi alati keelest <ph name="ORIGINAL_LANGUAGE" /> keelde <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Ei ole määratud</translation>
 <translation id="8012647001091218357">Teie vanematega ei õnnestunud praegu ühendust võtta. Proovige hiljem uuesti.</translation>
+<translation id="803030522067524905">Google'i ohutu sirvimise teenus tuvastas hiljuti andmepüügi saidil <ph name="SITE" />. Andmepüügisaidid esitavad end teiste saitidena, et teid petta. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8034522405403831421">Leht on <ph name="SOURCE_LANGUAGE" /> keeles. Kas tõlkida <ph name="TARGET_LANGUAGE" /> keelde?</translation>
+<translation id="8041089156583427627">Saada tagasiside</translation>
 <translation id="8088680233425245692">Artikli kuvamine ebaõnnestus.</translation>
 <translation id="8089520772729574115">vähem kui 1 MB</translation>
 <translation id="8091372947890762290">Aktiveerimine on serveris ootel</translation>
@@ -639,6 +679,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8218327578424803826">Määratud asukoht:</translation>
 <translation id="8225771182978767009">Arvuti seadistanud inimene blokeeris selle saidi.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
+<translation id="8230421197304563332">Saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> olevad ründajad võivad proovida installida teie arvutisse ohtlikke programme, mis varastavad teie teavet või kustutavad selle (nt fotod, paroolid, sõnumid ja krediitkaardiandmed).</translation>
 <translation id="8241707690549784388">Teie poolt otsitav lehekülg kasutas teie sisestatud andmeid. Sellele leheküljele naasmine võib kaasa tuua kõikide sooritatud tegevuste kordamise. Soovite jätkata?</translation>
 <translation id="8249320324621329438">Viimati toodud:</translation>
 <translation id="8261506727792406068">Kustuta</translation>
@@ -647,6 +688,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8294431847097064396">Allikas</translation>
 <translation id="8308427013383895095">Tõlkimine ebaõnnestus võrguühenduse probleemi tõttu.</translation>
 <translation id="8332188693563227489">Juurdepääs hostile <ph name="HOST_NAME" /> blokeeriti</translation>
+<translation id="834457929814110454">Kui mõistate, kuidas teie turvalisust ohustatakse, siis võite <ph name="BEGIN_LINK" />seda saiti külastada<ph name="END_LINK" /> enne, kui kahjulikud programmid on eemaldatud.</translation>
 <translation id="8349305172487531364">Järjehoidjariba</translation>
 <translation id="8363502534493474904">Lülitage lennukirežiim välja</translation>
 <translation id="8364627913115013041">Määramata.</translation>
@@ -663,11 +705,13 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8498891568109133222">Hostil <ph name="HOST_NAME" /> kulus vastamiseks liiga kaua aega.</translation>
 <translation id="852346902619691059">Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Teie seadme operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8530504477309582336">Google Payments ei toeta seda tüüpi kaarti. Valige teine kaart.</translation>
+<translation id="8543181531796978784">Võite <ph name="BEGIN_ERROR_LINK" />teavitada tuvastusprobleemist<ph name="END_ERROR_LINK" />. Kui mõistate ohtusid oma turvalisusele, võite <ph name="BEGIN_LINK" />seda ebaturvalist saiti külastada<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Tõlkimine nurjus, kuna lehe keelt ei õnnestunud määrata.</translation>
 <translation id="8559762987265718583">Privaatset ühendust ei saa domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> luua, kuna seadme kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />) on valed.</translation>
 <translation id="856992080682148">Selle saidi sertifikaat aegub 2017. aastal või hiljem ja sertifikaadiahel sisaldab sertifikaati, mis on allkirjastatud SHA-1-ga.</translation>
 <translation id="8571890674111243710">Lehe tõlkimine <ph name="LANGUAGE" /> keelde...</translation>
 <translation id="859285277496340001">Sertifikaat ei määratle mehhanismi enda võimaliku tühistamise kontrollimiseks.</translation>
+<translation id="8620436878122366504">Vanemad ei ole seda veel kinnitanud</translation>
 <translation id="8647750283161643317">Lähtesta kõik vaikeolekusse</translation>
 <translation id="8703575177326907206">Teie ühendus <ph name="DOMAIN" />'ga pole krüptitud.</translation>
 <translation id="8725066075913043281">Proovi uuesti</translation>
@@ -698,14 +742,18 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8971063699422889582">Serveri sertifikaat on aegunud.</translation>
 <translation id="8987927404178983737">kuu</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
+<translation id="8996941253935762404">Sait, mille soovite avada, sisaldab kahjulikke programme</translation>
 <translation id="9001074447101275817">Puhverserver <ph name="DOMAIN" /> nõuab kasutajanime ja parooli.</translation>
 <translation id="901974403500617787">Kogu süsteemis kehtivaid märgiseid saab määrata ainult omanik: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">See leht on tõlgitud <ph name="TARGET_LANGUAGE" /> keelde</translation>
+<translation id="9035022520814077154">Turvaviga</translation>
 <translation id="9038649477754266430">Kasuta lehtede kiiremaks laadimiseks ennustusteenust</translation>
 <translation id="9039213469156557790">Lisaks sisaldab see leht teisi ressursse, mis pole turvalised. Edastamise ajal võivad ressursse vaadata ka teised ja ründajad saavad lehe käitumise muutmiseks ressursse muuta.</translation>
+<translation id="9040185888511745258">Saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> asuvad ründajad võivad proovida meelitada teid installima programme, mis kahjustavad sirvimiskogemust (nt muudavad avalehte või kuvavad külastatavatel saitidel lisareklaame).</translation>
 <translation id="9050666287014529139">Parool</translation>
 <translation id="9065203028668620118">Muuda</translation>
 <translation id="9068849894565669697">Värvi valimine</translation>
+<translation id="9076283476770535406">See võib sisaldada täiskasvanutele mõeldud sisu</translation>
 <translation id="9103872766612412690">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Chromium püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chromium peatas ühenduse enne andmevahetust.</translation>
 <translation id="9137013805542155359">Kuva originaal</translation>
 <translation id="9148507642005240123">&amp;Võta muudatus tagasi</translation>
@@ -719,7 +767,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">TÜHJENDA VORM</translation>
 <translation id="939736085109172342">Uus kaust</translation>
-<translation id="962701380617707048">Kaardi üksikasjade värskendamiseks sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC</translation>
+<translation id="941721044073577244">Näib, et teil pole luba selle saidi külastamiseks</translation>
 <translation id="969892804517981540">Ametlik järk</translation>
 <translation id="988159990683914416">Arendaja järk</translation>
 </translationbundle>

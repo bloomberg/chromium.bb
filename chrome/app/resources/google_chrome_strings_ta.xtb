@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">Chrome இல் உள்நுழைக</translation>
 <translation id="1061441684050139317">இந்தத் தளத்துடன் அதைப் பகிர Chromeக்கு மைக்ரோஃபோன் அணுகல் தேவை.</translation>
 <translation id="1065672644894730302">உங்கள் விருப்பதேர்வுகள் படிக்கும்படி இல்லை. சில அம்சங்கள் கிடைக்காமல் இருக்கலாம் மேலும் விருப்பதேர்வுகளின் மாற்றங்களைச் சேமிக்க முடியாது.</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> ஏற்கனவே Chromeஐப் பயன்படுத்திக் கொண்டிருந்தது</translation>
 <translation id="1104959162601287462">&amp;Chrome OS அறிமுகம்</translation>
 <translation id="110877069173485804">இது உங்கள் Chrome ஆகும்</translation>
 <translation id="123620459398936149">உங்கள் தரவை Chrome OS ஆல் ஒத்திசைக்க முடியவில்லை. உங்கள் கடவுச்சொற்றொடரைப் புதுப்பிக்கவும்.</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Chrome Canary பயன்பாடுகள்</translation>
 <translation id="1457721931618994305">Google Chrome ஐப் புதுப்பிக்கிறது...</translation>
 <translation id="1469002951682717133">Chrome பயன்பாட்டுத் துவக்கி</translation>
-<translation id="1475773083554142432">Chrome இதனை <ph name="SAVED_PASSWORD_LINK" /> இல் சேமித்து, அடுத்த முறை நீங்கள் பயன்படுத்துவதற்காக அதை நினைவில் கொள்ளும்.</translation>
 <translation id="1480489203462860648">முயற்சி செய்யுங்கள், இது ஏற்கனவே நிறுவப்பட்டது</translation>
 <translation id="1553358976309200471">Chromeஐப் புதுப்பி</translation>
 <translation id="1587223624401073077">Google Chrome உங்கள் கேமராவைப் பயன்படுத்துகிறது.</translation>
@@ -41,7 +41,6 @@
 <translation id="2147651015520127414">இந்த இணையதளச் சான்றிதழ் <ph name="ISSUER" /> ஆல் வழங்கப்பட்டதா என Chrome சரிபார்த்தது.</translation>
 <translation id="2246246234298806438">உள்ளமைக்கப்பட்ட PDF வியூவர் இல்லையென்றால், Google Chrome அச்சிடல் மாதிரிக்காட்சியைக் காண்பிக்காது.</translation>
 <translation id="2252923619938421629">நடப்பு அமைப்புகள் குறித்து தெரிவிப்பதன் மூலம் Google Chrome ஐச் சிறந்ததாக்க உதவவும்</translation>
-<translation id="225614027745146050">நல்வரவு</translation>
 <translation id="2286950485307333924">இப்போது Chrome இல் உள்நுழைந்துள்ளீர்கள்</translation>
 <translation id="2290014774651636340">Google API விசைகள் காணப்படவில்லை. Google Chrome இன் சில செயல்பாடுகள் முடக்கப்படும்.</translation>
 <translation id="2290095356545025170">Google Chrome நிறுவல் நீக்கம் செய்வதில் உறுதியாக உள்ளீர்களா?</translation>

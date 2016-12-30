@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">Chrome में प्रवेश करें</translation>
 <translation id="1061441684050139317">Chrome को माइक्रोफ़ोन ऐक्सेस की आवश्यकता है ताक‍ि माइक्रोफ़ोन को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="1065672644894730302">आपकी प्राथमिकताओं को पढ़ा नहीं जा सकता| \\n\\nकुछ विशेषताएं अनुपलब्ध हो सकती हैं और प्राथमिकताओं में किए गए परिवर्तनों को सहेजा नहीं जाएगा.</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> पहले Chrome का उपयोग कर रहा था</translation>
 <translation id="1104959162601287462">&amp;Chrome OS के बारे में</translation>
 <translation id="110877069173485804">यह आपका Chrome है</translation>
 <translation id="123620459398936149">Chrome OS आपका डेटा समन्वयित नहीं कर सका. कृपया अपना समन्वयन पासफ़्रेज़ अपडेट करें.</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Chrome Canary ऐप्स </translation>
 <translation id="1457721931618994305">Google Chrome अपडेट हो रहा है...</translation>
 <translation id="1469002951682717133">Chrome में ऐप चलाने का साधन</translation>
-<translation id="1475773083554142432">Chrome इसे <ph name="SAVED_PASSWORD_LINK" /> के साथ संग्रहीत कर लेगा और आपको अगली बार आवश्‍यकता होने पर इसे याद रखेगा.</translation>
 <translation id="1480489203462860648">इसे आज़माएं, यह पहले से इंस्टॉल है</translation>
 <translation id="1553358976309200471">Chrome अपडेट करें</translation>
 <translation id="1587223624401073077">Google Chrome आपके कैमरे का उपयोग कर रहा है.</translation>
@@ -41,7 +41,6 @@
 <translation id="2147651015520127414">Chrome ने सत्‍यापित किया है कि वेबसाइट का यह प्रमाणपत्र <ph name="ISSUER" /> ने जारी किया है.</translation>
 <translation id="2246246234298806438">अंतर्निहित PDF दिखाने का साधन गुम होने पर Google Chrome प्रिंट पूर्वावलोकन नहीं दिखा सकता.</translation>
 <translation id="2252923619938421629">वर्तमान सेटिंग की रिपोर्ट करके Google Chrome को बेहतर बनाने में सहायता करें</translation>
-<translation id="225614027745146050">आपका स्वागत है</translation>
 <translation id="2286950485307333924">अब आपने Chrome में प्रवेश कर लिया है</translation>
 <translation id="2290014774651636340">Google API कुंजियां अनुपलब्ध हैं. Google Chrome की कुछ कार्यक्षमता अक्षम कर दी जाएगी.</translation>
 <translation id="2290095356545025170">क्या आप वाकई Google Chrome को विस्थापित करना चाहते हैं?</translation>

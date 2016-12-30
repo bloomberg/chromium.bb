@@ -54,10 +54,8 @@
 <translation id="2429753432712299108">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ต้องการสิทธิ์ในการจับคู่ ก่อนที่จะยอมรับ โปรดยืนยันว่ารหัสผ่านนี้ปรากฏบนอุปกรณ์นั้น: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">มีข้อผิดพลาดเกิดขึ้น</translation>
 <translation id="2509468283778169019">Caps Lock เปิดอยู่</translation>
-<translation id="252373100621549798">หน้าจอที่ไม่รู้จัก</translation>
 <translation id="2532589005999780174">โหมดคอนทราสต์สูง</translation>
 <translation id="2562916301614567480">เครือข่ายส่วนบุคคล</translation>
-<translation id="2661637000095600270">ไม่สามารถมิเรอร์การแสดงผลเนื่องจากไม่พบความละเอียดที่สนับสนุน ได้เข้าสู่โหมดเดสก์ท็อปแบบขยายแทนแล้ว คลิกเพื่อส่งรายงานความคิดเห็น</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: กำลังเชื่อมต่อ...</translation>
 <translation id="2700058918926273959">เซสชันจะสิ้นสุดใน <ph name="SESSION_TIME_REMAINING" /> ระบบจะให้คุณออกจากระบบ</translation>
 <translation id="2727977024730340865">เสียบอยู่กับที่ชาร์จพลังงานต่ำ การชาร์จแบตเตอรี่อาจไม่น่าเชื่อถือ</translation>
@@ -114,7 +112,6 @@
 <translation id="3846575436967432996">ไม่มีข้อมูลเครือข่ายที่สามารถใช้งานได้</translation>
 <translation id="3866182280516392520">ที่อยู่ IPv6</translation>
 <translation id="3891340733213178823">กด Ctrl+Shift+Q 2 ครั้งเพื่อออกจากระบบ</translation>
-<translation id="3892641579809465218">จอแสดงผลภายใน</translation>
 <translation id="3893630138897523026">ChromeVox (การตอบสนองด้วยเสียง)</translation>
 <translation id="3899995891769452915">ป้อนข้อมูลด้วยเสียง</translation>
 <translation id="3901991538546252627">กำลังเชื่อมต่อกับ <ph name="NAME" /></translation>
@@ -177,6 +174,8 @@
 <translation id="5977415296283489383">ชุดหูฟัง</translation>
 <translation id="5978382165065462689">กำลังแชร์การควบคุมหน้าจอผ่านความช่วยเหลือระยะไกล</translation>
 <translation id="5980301590375426705">ออกจากเซสชันผู้มาเยือน</translation>
+<translation id="6041154455840261787">เปิดใช้โหมดคอนทราสต์สูงอยู่ กด Search+Shift+H อีกครั้งเพื่อสลับเป็นปิด</translation>
+<translation id="6043212731627905357">จอภาพนี้ใช้งานไม่ได้กับ <ph name="DEVICE_TYPE" /> ของคุณ (ไม่รองรับจอภาพนี้)</translation>
 <translation id="6043994281159824495">ออกจากระบบเลย</translation>
 <translation id="6047696787498798094">การแชร์หน้าจอจะหยุดเมื่อคุณสลับไปเป็นผู้ใช้อีกรายหนึ่ง ต้องการดำเนินการต่อไหม</translation>
 <translation id="6062360702481658777">คุณจะออกจากระบบโดยอัตโนมัติใน <ph name="LOGOUT_TIME_LEFT" /></translation>
@@ -185,7 +184,6 @@
 <translation id="6144938890088808325">ช่วยเราปรับปรุง Chromebook</translation>
 <translation id="615957422585914272">แสดงแป้นพิมพ์บนหน้าจอ</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
-<translation id="6203030746557259519">หน้าจอเสมือน</translation>
 <translation id="6248847161401822652">กด Control Shift Q สองครั้งเพื่อออก</translation>
 <translation id="6267036997247669271"><ph name="NAME" /> กำลังเปิดใช้งาน...</translation>
 <translation id="6297287540776456956">ใช้สไตลัสเพื่อเลือกพื้นที่</translation>
@@ -208,6 +206,7 @@
 <translation id="6700713906295497288">ปุ่มเมนู IME</translation>
 <translation id="6713285437468012787">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ได้รับการจับคู่และขณะนี้พร้อมให้บริการแก่ผู้ใช้ทุกคนแล้ว คุณสามารถลบการจับคู่นี้โดยใช้การตั้งค่า</translation>
 <translation id="6785414152754474415">มีแบตเตอรี่ <ph name="PERCENTAGE" />% และกำลังชาร์จ</translation>
+<translation id="6803622936009808957">ไม่สามารถแสดงผลคู่ขนานได้เนื่องจากไม่พบความละเอียดที่สนับสนุน เข้าสู่เดสก์ท็อปแบบขยายแทน</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">เปิดใช้งาน <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">เชื่อมต่อเครือข่ายอื่น...</translation>
@@ -275,7 +274,6 @@
 <translation id="8878886163241303700">กำลังขยายหน้าจอ</translation>
 <translation id="8938800817013097409">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="8940956008527784070">แบตเตอรี่ต่ำ (<ph name="PERCENTAGE" />%)</translation>
-<translation id="9008540565042607572">จอภาพเอ๋ย เราร่วมงานกันไม่ได้ (ระบบไม่สนับสนุนจอภาพนั้น คลิกเพื่อส่งรายงานความคิดเห็น)</translation>
 <translation id="9074739597929991885">บลูทูธ</translation>
 <translation id="9080206825613744995">ใช้ไมโครโฟนอยู่</translation>
 <translation id="9089416786594320554">วิธีการป้อนข้อมูล</translation>
@@ -285,5 +283,6 @@
 <translation id="923686485342484400">กด Control Shift Q 2 ครั้งเพื่อออกจากระบบ</translation>
 <translation id="938582441709398163">การวางซ้อนแป้นพิมพ์</translation>
 <translation id="939252827960237676">ไม่สามารถบันทึกภาพหน้าจอ</translation>
+<translation id="945522503751344254">ส่งความคิดเห็น</translation>
 <translation id="952992212772159698">ไม่ได้เปิดการใช้งาน</translation>
 </translationbundle>

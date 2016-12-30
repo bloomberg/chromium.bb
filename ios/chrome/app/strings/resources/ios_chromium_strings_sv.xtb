@@ -13,6 +13,7 @@
 <translation id="2195025571279539885">Vill du att Chromium ska översätta sidor skrivna på <ph name="LANGUAGE_NAME" /> på den här webbplatsen nästa gång?</translation>
 <translation id="2647554856022461007">Chromium kan använda webbtjänster för att förbättra din upplevelse på webben. Du kan inaktivera dessa tjänster om du vill. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium kan inte använda kameran eftersom den används av en annan app</translation>
+<translation id="3256316712990552818">Kopierat till Chromium</translation>
 <translation id="3413120535237193088">Logga in i Chromium om du vill få tillgång till samma bokmärken på alla enheter.</translation>
 <translation id="3473048256428424907">Aktivera Chromium som QR-skanner</translation>
 <translation id="3805899903892079518">Chromium har inte åtkomst till dina foton eller videor. Aktivera åtkomst i iOS-inställningar &gt; Sekretess &gt; Foton.</translation>
@@ -29,12 +30,12 @@
 <translation id="6068866989048414399">Användarvillkor för Chromium</translation>
 <translation id="6268381023930128611">Vill du logga ut från Chromium?</translation>
 <translation id="6424492062988593837">Chrome har blivit ännu bättre! En ny version finns tillgänglig.</translation>
-<translation id="6600954340915313787">Kopierat till Chrome</translation>
 <translation id="6604711459180487467">Ange din plats och få en bättre upplevelse när du använder Chromium.</translation>
 <translation id="6989306073720242915">Gillar du Chromium? <ph name="BEGIN_LINK" />Flytta Chromium till Dock.<ph name="END_LINK" /></translation>
 <translation id="7022368070219581493">Chromium har verifierat att <ph name="ISSUER" /> har utfärdat webbplatsens certifikat.</translation>
 <translation id="7099326575020694068">Chromium kan inte använda kameran i delad vy</translation>
 <translation id="7144758435978427212">Upptäck webbsidor som skickats av enheter i närheten. När Bluetooth är aktiverat kan Chromium samla webbsidor som är kopplade till enheter i din omgivning, skicka dem anonymt till Google och sedan välja ut dem som är mest användbara för dig. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
+<translation id="7208566199746267865">Med Chromium sparar du tid genom att dina konton blir tillgängliga på nätet. Du kan lägga till och ta bort konton i inställningarna.</translation>
 <translation id="7269362888766543920">Några tillägg har fått Chromium att krascha. Testa att avinstallera dem.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Den data som markerades har tagits bort från Chromium och från synkroniserade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på history.google.com, t.ex. sökningar och aktivitet på andra tjänster från Google.</translation>

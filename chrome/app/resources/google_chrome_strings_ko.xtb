@@ -8,6 +8,7 @@
 <translation id="1065672644894730302">환경설정을 읽을 수 없습니다.
 
 일부 기능을 사용할 수 없으며 환경설정의 변경사항이 저장되지 않습니다.</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" />에서 이전에 Chrome을 사용한 적이 있음</translation>
 <translation id="1104959162601287462">Chrome OS 정보(&amp;C)</translation>
 <translation id="110877069173485804">나만의 Chrome</translation>
 <translation id="123620459398936149">Chrome OS에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하세요.</translation>
@@ -19,7 +20,6 @@
 <translation id="1434626383986940139">Chrome 카나리아 앱</translation>
 <translation id="1457721931618994305">Chrome 업데이트 중...</translation>
 <translation id="1469002951682717133">Chrome 앱 실행기</translation>
-<translation id="1475773083554142432">Chrome은 <ph name="SAVED_PASSWORD_LINK" />을(를) 사용하여 비밀번호를 저장한 후 다음에 필요할 때 제공합니다.</translation>
 <translation id="1480489203462860648">사용해 보세요. 이미 설치되었습니다.</translation>
 <translation id="1553358976309200471">Chrome 업데이트</translation>
 <translation id="1587223624401073077">Chrome에서 카메라를 사용 중입니다.</translation>
@@ -45,7 +45,6 @@
 <translation id="2147651015520127414">Chrome이 <ph name="ISSUER" />에서 이 웹사이트의 인증서를 발행했음을 확인했습니다.</translation>
 <translation id="2246246234298806438">기본 제공되는 PDF 뷰어가 없는 경우 Chrome에서 인쇄 미리보기를 표시할 수 없습니다.</translation>
 <translation id="2252923619938421629">현재 설정을 보고하여 더 나은 Chrome을 만드는 데 도움 주기</translation>
-<translation id="225614027745146050">환영합니다.</translation>
 <translation id="2286950485307333924">이제 Chrome에 로그인되었습니다.</translation>
 <translation id="2290014774651636340">Google API 키가 누락되었습니다. Chrome의 일부 기능이 사용 중지됩니다.</translation>
 <translation id="2290095356545025170">Chrome을 제거하시겠습니까?</translation>

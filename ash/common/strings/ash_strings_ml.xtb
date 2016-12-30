@@ -54,10 +54,8 @@
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. അനുമതി നൽകുന്നതിനുമുമ്പ്, ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ കാണിച്ചിരിക്കുന്നുവെന്ന് സ്ഥിരീകരിക്കുക: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">ഒരു പിശക് സംഭവിച്ചു</translation>
 <translation id="2509468283778169019">CAPS LOCK ഓൺ ആണ്</translation>
-<translation id="252373100621549798">അജ്ഞാത പ്രദർശനം</translation>
 <translation id="2532589005999780174">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ്</translation>
 <translation id="2562916301614567480">സ്വകാര്യ നെറ്റ്‌വർക്ക്</translation>
-<translation id="2661637000095600270">പിന്തുണയ്‌ക്കുന്ന റെസല്യൂഷൻ കണ്ടെത്താത്തതിനാൽ പ്രദർശനങ്ങൾ മിറർ ചെയ്യാനായില്ല. പകരം വിപുലീകൃത ഡെസ്‌ക്‌ടോപ്പ് നൽകി. ഫീഡ്‌ബാക്ക് റിപ്പോർട്ട് അയയ്‌ക്കാൻ ക്ലിക്കുചെയ്യുക.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: കണക്റ്റുചെയ്യുന്നു...</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു. നിങ്ങൾ സൈൻ ഔട്ടാകും.</translation>
 <translation id="2727977024730340865">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജ്ജറിലേക്ക് പ്ലഗ് ചെയ്‌തിരിക്കുന്നു. ബാറ്ററി ചാർജുചെയ്യൽ വിശ്വസനീയമാകണമെന്നില്ല.</translation>
@@ -114,7 +112,6 @@
 <translation id="3846575436967432996">നെറ്റ്‌വർക്ക് വിവരങ്ങളൊന്നും ലഭ്യമല്ല</translation>
 <translation id="3866182280516392520">IPv6 വിലാസം</translation>
 <translation id="3891340733213178823">സൈൻ ഔട്ട് ചെയ്യുന്നതിന് രണ്ടു‌തവണ Ctrl+Shift+Q അമർത്തുക.</translation>
-<translation id="3892641579809465218">ആന്തരിക പ്രദർശനം</translation>
 <translation id="3893630138897523026">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്)</translation>
 <translation id="3899995891769452915">വോയ്‌സ് ഇൻപുട്ട്</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> എന്നതിലേക്ക് കണക്റ്റുചെയ്യുന്നു</translation>
@@ -176,6 +173,8 @@
 <translation id="5977415296283489383">ഹെഡ്‌ഫോൺ</translation>
 <translation id="5978382165065462689">നിങ്ങളുടെ വിദൂര സഹായി മുഖേന സ്‌ക്രീനിന്റെ നിയന്ത്രണം പങ്കിടുക.</translation>
 <translation id="5980301590375426705">അതിഥി സെഷനിൽ നിന്നും പുറത്തുകടക്കുക</translation>
+<translation id="6041154455840261787">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ് പ്രവർത്തനക്ഷമമാക്കി. ഇത് ഓഫാക്കാൻ, തിരയൽ+Shift+H വീണ്ടും അമർത്തുക.</translation>
+<translation id="6043212731627905357">ഈ മോണിറ്റർ നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഉപകരണത്തിൽ പ്രവർത്തിക്കുന്നില്ല (മോണിറ്റർ ഇതിൽ പ്രവർത്തിക്കില്ല).</translation>
 <translation id="6043994281159824495">ഇപ്പോൾ സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="6047696787498798094">മറ്റൊരു ഉപയോക്താവിലേക്ക് മാറുമ്പോൾ സ്ക്രീൻ പങ്കിടൽ നിർത്തും. നിങ്ങൾക്ക് തുടരണോ?</translation>
 <translation id="6062360702481658777">നിങ്ങൾ <ph name="LOGOUT_TIME_LEFT" />-നുള്ളിൽ സ്വയമേവ സൈൻ ഔട്ട് ചെയ്യും.</translation>
@@ -184,7 +183,6 @@
 <translation id="6144938890088808325">Chromebooks മെച്ചപ്പെടുത്താൻ ഞങ്ങളെ സഹായിക്കൂ</translation>
 <translation id="615957422585914272">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് ദൃശ്യമാക്കുക</translation>
 <translation id="6165508094623778733">കൂടുതൽ‍ മനസിലാക്കുക</translation>
-<translation id="6203030746557259519">വെർച്വൽ ഡിസ്‌പ്ലേ</translation>
 <translation id="6248847161401822652">പുറത്തുപോകുന്നതിന് രണ്ടുതവണ Control Shift Q അമർത്തുക.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: സജീവമാക്കുന്നു...</translation>
 <translation id="6297287540776456956">ആവശ്യമുള്ള ഏരിയ തിരഞ്ഞെടുക്കാൻ സ്റ്റൈലസ് ഉപയോഗിക്കുക</translation>
@@ -207,6 +205,7 @@
 <translation id="6700713906295497288">IME മെനു ബട്ടൺ</translation>
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കി, അത് ഇപ്പോൾ എല്ലാ ഉപയോക്താക്കൾക്കും ലഭ്യമാണ്. ക്രമീകരണങ്ങൾ ഉപയോഗിച്ച് നിങ്ങൾക്ക് ഈ ജോടിയാക്കൽ നീക്കംചെയ്യാം.</translation>
 <translation id="6785414152754474415">ബാറ്ററി <ph name="PERCENTAGE" />% നിറഞ്ഞിരിക്കുന്നു, ചാർജുചെയ്യൽ തുടരുന്നു.</translation>
+<translation id="6803622936009808957">പിന്തുണയ്‌ക്കുന്ന മിഴിവുകൾ കണ്ടെത്താത്തതിനാൽ പ്രദർശനങ്ങൾ പ്രതിഫലിപ്പിക്കാനായില്ല. പകരം വിപുലീകൃത ഡെസ്‌ക്‌ടോപ്പ് നൽകി.</translation>
 <translation id="683971173229319003">തിരയൽ+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> സജീവമാക്കുക</translation>
 <translation id="6911468394164995108">മറ്റുള്ളവ ചേർക്കുക...</translation>
@@ -273,7 +272,6 @@
 <translation id="8878886163241303700">സ്‌ക്രീൻ വിപുലീകരിക്കുന്നു</translation>
 <translation id="8938800817013097409">USB-C ഉപകരണം (പുറകിൽ വലതുവശത്തെ പോർട്ട്)</translation>
 <translation id="8940956008527784070">ബാറ്ററി കുറവാണ് (<ph name="PERCENTAGE" />%)</translation>
-<translation id="9008540565042607572">പ്രിയ മോണിറ്റർ, ഇത് നമുക്കിടയിൽ പ്രവർത്തിക്കുന്നില്ല. (ആ മോണിറ്റർ പിന്തുണയ്‌ക്കുന്നില്ല. ഫീഡ്‌ബാക്ക് റിപ്പോർട്ട് അയയ്‌ക്കാൻ ക്ലിക്കുചെയ്യുക.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">മൈക്രോഫോൺ ഉപയോഗത്തിലാണ്.</translation>
 <translation id="9089416786594320554">ഇൻപുട്ട്  രീതികൾ</translation>
@@ -283,5 +281,6 @@
 <translation id="923686485342484400">സൈൻ ഔട്ട് ചെയ്യുന്നതിന് രണ്ടു‌തവണ Control Shift Q അമർത്തുക.</translation>
 <translation id="938582441709398163">കീബോര്‍ഡ് ഓവര്‍ലേ</translation>
 <translation id="939252827960237676">സ്‌ക്രീൻഷോട്ട് സംരക്ഷിക്കുന്നതിൽ പരാജയപ്പെട്ടു</translation>
+<translation id="945522503751344254">ഫീഡ്ബാക്ക് അയയ്ക്കുക</translation>
 <translation id="952992212772159698">സജീവമാക്കിയില്ല</translation>
 </translationbundle>

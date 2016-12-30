@@ -19,9 +19,6 @@
       Quan aquesta política s'estableix en "false" o no s'estableix, les galetes establertes per l'IdP només es transfereixen al perfil de l'usuari durant el seu primer inici de sessió en un dispositiu.
 
       Aquesta política només afecta els usuaris amb dominis que coincideixen amb el domini de registre del dispositiu. Per a la resta d'usuaris, les galetes establertes per l'IdP només es transfereixen al perfil de l'usuari durant el seu primer inici de sessió al dispositiu.</translation>
-<translation id="1029536946382325801">Si s'estableix en "true", l'usuari pot fer servir el maquinari dels dispositius Chrome per confirmar la seva identitat de manera remota de cara a l'entitat emissora de certificats de privadesa a través de l'API d'Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey().
-
-          Si s'estableix en "false" o no s'estableix, les crides a l'API tornaran un codi d'error.</translation>
 <translation id="1040446814317236570">Activeu la retirada de l'URL de PAC (per a https://)</translation>
 <translation id="1044878202534415707">Informa d'estadístiques del maquinari com ara l'ús de CPU o de RAM.
 
@@ -85,6 +82,9 @@
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge RC4 de TLS no s'activaran. En cas contrari, es pot establir en "true" per conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.</translation>
 <translation id="1297182715641689552">Fes servir un script de servidor intermediari .pac</translation>
 <translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran en silenci</translation>
+<translation id="1310333396104446007">Si aquesta opció de configuració s'estableix en "false", s'impedirà que els usuaris defineixin codis PIN que no es consideren segurs, com ara els mateixos PIN per a tots els accessos, PIN consecutius que augmentin o disminueixin d'un en un i PIN massa habituals.
+
+          Si aquesta opció de configuració s'estableix en "true" o no s'estableix, els usuaris podran introduir aquests codis PIN i només veuran un advertiment.</translation>
 <translation id="1313457536529613143">Especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la.
 
          Si s'estableix aquesta política, s'especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la. Quan s'ajusta el temps d'espera d'inactivitat de la pantalla, s'ajusten els retards de desconnexió, bloqueig i desactivació de la pantalla per mantenir les mateixes distàncies del temps d'espera d'inactivitat de la pantalla que la configuració original.
@@ -127,15 +127,15 @@
 
       Si la política no es defineix, el valor predeterminat MultiProfileUserBehaviorMustBePrimary s'aplica a usuaris gestionats per l'empresa i MultiProfileUserBehaviorUnrestricted s'utilitzarà per a usuaris no gestionats.</translation>
 <translation id="1465619815762735808">Clic per executar</translation>
-<translation id="1468307069016535757">Estableix l'estat predeterminat de la funció d'accessibilitat de contrast elevat a la pantalla d'inici de sessió.
+<translation id="1468307069016535757">Estableix l'estat predeterminat de la funció d'accessibilitat d'alt contrast a la pantalla d'inici de sessió.
 
-          Si el valor d'aquesta política s'estableix a vertader, el mode de contrast elevat s'activarà quan es mostri la pantalla d'inici de sessió.
+          Si el valor d'aquesta política s'estableix a vertader, el mode d'alt contrast s'activarà quan es mostri la pantalla d'inici de sessió.
 
-          Si el valor d'aquesta política s'estableix a fals, el mode de contrast elevat es desactivarà quan es mostri la pantalla d'inici de sessió. 
+          Si el valor d'aquesta política s'estableix a fals, el mode d'alt contrast es desactivarà quan es mostri la pantalla d'inici de sessió. 
 
-          Si s'estableix aquesta política, els usuaris la podran ignorar temporalment si activen o desactiven el mode de contrast elevat. No obstant això, l'elecció de l'usuari no es constant i l'estat predeterminat es restablirà quan la pantalla es torni a mostrar o si l'usuari es manté inactiu a la pantalla d'inici de sessió durant un minut.
+          Si s'estableix aquesta política, els usuaris la podran ignorar temporalment si activen o desactiven el mode d'alt contrast. No obstant això, l'elecció de l'usuari no es constant i l'estat predeterminat es restablirà quan la pantalla es torni a mostrar o si l'usuari es manté inactiu a la pantalla d'inici de sessió durant un minut.
 
-          Si no s'estableix aquesta política, el mode de contrast elevat es desactivarà quan la pantalla d'inici de sessió es mostri per primera vegada. Els usuaris poden activar o desactivar el mode de contrast elevat en qualsevol moment i el seu estat a la pantalla d'inici de sessió es mantindrà entre els usuaris.</translation>
+          Si no s'estableix aquesta política, el mode d'alt contrast es desactivarà quan la pantalla d'inici de sessió es mostri per primera vegada. Els usuaris poden activar o desactivar el mode d'alt contrast en qualsevol moment i el seu estat a la pantalla d'inici de sessió es mantindrà entre els usuaris.</translation>
 <translation id="1468707346106619889">Si aquesta política s'estableix com a verdadera, es permet utilitzar l'escriptori unificat
       i està activat de manera predeterminada. Així, les aplicacions poden ocupar diverses pantalles.
       Per desactivar l'escriptori unificat en pantalles concretes, l'usuari pot
@@ -158,6 +158,7 @@
 <translation id="1522425503138261032">Permet que els llocs facin un seguiment de la ubicació física dels usuaris</translation>
 <translation id="152657506688053119">Llista d'URL alternatius per al proveïdor de cerca predeterminat</translation>
 <translation id="1530812829012954197">Renderitza sempre els patrons d'URL següents al navegador de l'amfitrió</translation>
+<translation id="1547635088210394207">Defineix la longitud màxima del PIN per a la pantalla de bloqueig.</translation>
 <translation id="1553684822621013552">Quan aquesta política s'estableix en "true", s'activa ARC per a l'usuari
       (depenent de les comprovacions addicionals de la configuració de la política;
       però ARC no estarà disponible si el mode efímer
@@ -173,6 +174,15 @@
 <translation id="163200210584085447">Els patrons d'aquesta llista es compararan amb l'origen de la seguretat de l'URL sol·licitant. Si es troba alguna coincidència, l'URL obtindrà permís per accedir a dispositius de captura de vídeo en pàgines d'inici de sessió amb SAML. Si no es troba cap coincidència, l'accés es denegarà automàticament. Els patrons comodí no es permeten.</translation>
 <translation id="1655229863189977773">Defineix la mida de la memòria cau del disc en bytes</translation>
 <translation id="166427968280387991">Servidor intermediari</translation>
+<translation id="1668836044817793277">Permetre que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" />.
+
+      Aquesta política defineix si es permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" />. Per fer-ho, la política inclou una required_platform_version (versió obligatòria de la plataforma) al fitxer de manifest i la utilitza com a prefix per a la versió de destinació a la qual cal actualitzar automàticament.
+
+      Si la política s'estableix en "true", el valor de la clau de manifest de required_platform_version atorgat a l'aplicació de quiosc d'inici automàtic sense retards s'utilitza com a prefix per a la versió de destinació a la qual cal actualitzar automàticament.
+
+      Si la política no es configura o s'estableix en "false", la clau de manifest de required_platform_version s'ignora i l'actualització automàtica continua com de costum.
+
+      Advertiment: no et recomanem delegar el control de la versió de <ph name="PRODUCT_OS_NAME" /> a una aplicació de quiosc, ja que podria impedir que el dispositiu rebi actualitzacions de programari i correccions crítiques de seguretat. En definitiva, si es delega el control de la versió de <ph name="PRODUCT_OS_NAME" />, es pot posar els usuaris en perill.</translation>
 <translation id="1675002386741412210">Compatible amb:</translation>
 <translation id="1679420586049708690">Sessió pública per a inici de sessió automàtic</translation>
 <translation id="1680029600835707254">Aquesta política controla qui pot iniciar una sessió a <ph name="PRODUCT_OS_NAME" />. No impedeix que els usuaris iniciïn la sessió amb comptes de Google addicionals dins d'Android. Si ho vols impedir, configura la política <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" /> específica d'Android com a part de la política <ph name="ARC_POLICY" />.</translation>
@@ -204,6 +214,7 @@
 <translation id="1808715480127969042">Bloqueja les galetes en aquests llocs</translation>
 <translation id="1827523283178827583">Fes servir servidors intermediaris fixos</translation>
 <translation id="1843117931376765605">Freqüència d'actualització de la política d'usuari</translation>
+<translation id="1844620919405873871">Configura polítiques relacionades amb el desbloqueig ràpid.</translation>
 <translation id="1847960418907100918">Especifica els paràmetres utilitzats en fer una cerca instantània amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {searchTerms} a l'exemple anterior, se substituirà per dades de termes de cerca reals.
 
           Aquesta política és opcional. Si no es defineix, la sol·licitud de cerca instantània s'enviarà mitjançant el mètode GET.
@@ -304,6 +315,11 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2168397434410358693">Retard d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2170233653554726857">Activa l'optimització WPAD</translation>
 <translation id="2178899310296064282">Aplica almenys el mode restringit moderat a YouTube</translation>
+<translation id="2183294522275408937">Aquesta opció de configuració controla amb quina freqüència es demanarà introduir la contrasenya a la pantalla de bloqueig per continuar utilitzant el desbloqueig ràpid. El desbloqueig ràpid no estarà disponible si, en entrar a la pantalla de bloqueig, la darrera vegada que s'ha introduït la contrasenya és un temps superior a aquesta opció. Si l'usuari supera aquest període de temps a la pantalla de bloqueig, se li sol·licitarà una contrasenya la propera vegada que introdueixi un codi erroni o que torni a entrar a la pantalla de bloqueig, el que passi abans.
+
+      Si aquesta opció es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig en funció d'aquesta opció.
+
+      Si aquesta opció no es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig cada dia.</translation>
 <translation id="2188979373208322108">Activa la barra d'adreces d'interès a <ph name="PRODUCT_NAME" />. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> mostrarà una barra d'adreces d'interès. Si el desactiveu, els usuaris no veuran mai la barra d'adreces d'interès. Si l'activeu o el desactiveu, els usuaris no podran canviar-lo ni substituir-lo a <ph name="PRODUCT_NAME" />. Si no es defineix aquest paràmetre, l'usuari podrà decidir si vol utilitzar aquesta funció o no.</translation>
 <translation id="2201555246697292490">Configura la llista blanca de missatgeria nativa</translation>
 <translation id="2204753382813641270">Controla l'opció d'amagar el prestatge automàticament</translation>
@@ -505,6 +521,13 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2587719089023392205">Estableix <ph name="PRODUCT_NAME" /> com a navegador predeterminat</translation>
 <translation id="2592091433672667839">La durada de la inactivitat abans no es mostri l'estalvi de pantalla es mostra a la pantalla d'inici de sessió en mode de venta</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
+<translation id="2625512435194873786">Aquesta opció de configuració controla la longitud màxima que pot tenir un PIN.
+
+          Si es configura que sigui 0 o inferior, no hi ha cap longitud màxima i l'usuari pot definir un PIN tan llarg com vulgui.
+
+          Si es configura en un valor inferior a PinUnlockMinimumLength però superior a 0, la longitud màxima és igual que la mínima.
+
+          Si no es configura, no hi ha cap longitud màxima i l'usuari pot definir un PIN tan llarg com vulgui.</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activa els comentaris per veu</translation>
 <translation id="2646290749315461919">Us permet definir si els llocs web poden rastrejar la ubicació física dels usuaris. El seguiment de la ubicació física dels usuaris es pot autoritzar o denegar de manera predeterminada o bé es pot preguntar a l'usuari cada vegada que un lloc web demani la ubicació física. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AskGeolocation" i l'usuari podrà canviar-lo.</translation>
@@ -606,7 +629,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
       No establir aquesta política és igual que activar l'opció de configuració, amb el funcionament descrit abans.</translation>
 <translation id="2850122204195089673">Establiu que l'escriptori unificat estigui disponible i activat de manera predeterminada.</translation>
-<translation id="285480231336205327">Activa el mode de contrast elevat</translation>
+<translation id="285480231336205327">Activa el mode d'alt contrast</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2874209944580848064">Nota per als dispositius <ph name="PRODUCT_OS_NAME" /> que admeten aplicacions per a Android:</translation>
 <translation id="2877225735001246144">Desactiva la cerca de CNAME en negociar l'autenticació de Kerberos</translation>
@@ -797,6 +820,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Si la política s'estableix com a False o no s'estableix, els retards de la gestió de l'energia i el límit de la durada de la sessió s'executen tan bon punt s'inicia la sessió.</translation>
 <translation id="3478024346823118645">Esborra les dades de l'usuari en tancar la sessió</translation>
 <translation id="348495353354674884">Activa el teclat virtual</translation>
+<translation id="3495440981030194931">Defineix la longitud mínima del PIN per a la pantalla de bloqueig.</translation>
 <translation id="3496296378755072552">Gestor de contrasenyes</translation>
 <translation id="349667858031092827">No detectis mai la zona horària automàticament.</translation>
 <translation id="350443680860256679">Configura ARC</translation>
@@ -935,6 +959,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
       Si desactives aquesta política, es permetrà l'ús d'SPDY.
 
       Si no hi dus a terme cap acció, SPDY estarà disponible.</translation>
+<translation id="3890999316834333174">Polítiques del desbloqueig ràpid</translation>
 <translation id="3891357445869647828">Activa JavaScript</translation>
 <translation id="3891953007921334498">Desactiva les Eines per a desenvolupadors i la Consola de JavaScript.
 
@@ -987,6 +1012,11 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
       Si aquesta política es configura com a "false", l'usuari no podrà bescanviar ofertes.</translation>
 <translation id="4010738624545340900">Permet la invocació de diàlegs de selecció de fitxers</translation>
+<translation id="4012737788880122133">Quan s'estableix en "true", desactiva les actualitzacions automàtiques.
+
+      Quan aquesta opció de configuració no es configura o s'estableix en "false", els dispositius <ph name="PRODUCT_OS_NAME" /> cerquen actualitzacions automàticament.
+
+      Advertiment: et recomanem mantenir activades les actualitzacions automàtiques perquè els usuaris rebin actualitzacions de programari i correccions crítiques de seguretat. En definitiva, si es desactiven les actualitzacions automàtiques, es pot posar els usuaris en perill.</translation>
 <translation id="4020682745012723568">Les aplicacions per a Android no poden accedir a les galetes transferides al perfil de l'usuari.</translation>
 <translation id="4025586928523884733">Bloqueja les galetes de tercers. Si s'activa aquesta opció, no es podran emmagatzemar galetes mitjançant elements de pàgina web que no pertanyin al domini que es mostra a la barra d'adreces del navegador. Si es desactiva aquesta opció, es podran emmagatzemar galetes mitjançant elements de pàgina web que no pertanyin al domini que es mostra a la barra d'adreces del navegador i els usuaris no podran canviar aquesta configuració. Si no es defineix aquesta política, s'activaran les galetes de tercers, però l'usuari podrà modificar aquesta opció.</translation>
 <translation id="402759845255257575">No permetis que cap lloc web executi JavaScript</translation>
@@ -1059,6 +1089,16 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Aquesta política és opcional. Si no es defineix, la sol·licitud de cerca d'imatges s'enviarà mitjançant el mètode GET.
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
+<translation id="4294280661005713627">Defineix una versió de destinació per a les actualitzacions automàtiques.
+
+     Especifica el prefix de la versió de destinació a la qual <ph name="PRODUCT_OS_NAME" /> s'ha d'actualitzar. Si el dispositiu té una versió anterior al prefix especificat, s'actualitzarà a la darrera versió que tingui el prefix en qüestió. Si el dispositiu ja té una versió posterior, no tindrà cap efecte (és a dir, no es canviarà a una versió inferior) i el dispositiu continuarà tenint la versió actual. El format del prefix depèn del component, tal com es mostra a l'exemple següent:
+
+      "" (o sense configurar): s'actualitza a la darrera versió disponible.
+      "1412.": s'actualitza a qualsevol versió secundària de 1412 (per exemple, 1412.24.34 o 1412.60.2)
+      "1412.2.": s'actualitza a qualsevol versió secundària de 1412.2 (per exemple, 1412.2.34 o 1412.2.2)
+      "1412.24.34":  només s'actualitza a aquesta versió específica
+
+      Advertiment: no et recomanem configurar restriccions de versions, ja que podrien impedir que els usuaris rebin actualitzacions de programari i correccions crítiques de seguretat. En definitiva, restringir les actualitzacions al prefix d'una versió específica pot posar els usuaris en perill.</translation>
 <translation id="4309640770189628899">Si els sistemes de xifratge DHE de TLS estan activats</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o una versió posterior</translation>
 <translation id="4322842393287974810">Permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1266,6 +1306,9 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Un valor de llista negra de "*" significa que tots els amfitrions de missatgeria s'inclouran a la llista negra llevat que s'indiquin explícitament a la llista blanca.
 
           Si aquesta política no es defineix, <ph name="PRODUCT_NAME" /> carregarà tots els amfitrions de missatgeria nativa instal·lats.</translation>
+<translation id="5272684451155669299">Si s'estableix en "true", l'usuari pot utilitzar el maquinari dels dispositius Chrome per confirmar la seva identitat de manera remota de cara a l'entitat emissora de certificats de privadesa a través de l'<ph name="ENTERPRISE_PLATFORM_KEYS_API" /> mitjançant <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
+
+          Si s'estableix en "false" o no s'estableix, les crides a l'API tornaran un codi d'error.</translation>
 <translation id="5288772341821359899">Si es defineix la política, l'interval de ports UDP que utilitza WebRTC estarà restringit a un interval de ports específic (extrems inclosos).
 
       Si la política no es defineix o es defineix a la cadena buida o en un interval de ports no vàlid, WebRTC pot fer servir qualsevol port UDP local disponible.</translation>
@@ -1384,6 +1427,11 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
           Si aquesta opció de configuració s'activa, l'amfitrió d'accés remot compara el nom de l'usuari local (amb el qual està associat l'amfitrió) i el nom del compte de Google registrat com a propietari de l'amfitrió (és a dir, "jordiferrer" si l'amfitrió és propietat del compte de Google "jordiferrer@example.com"). L'amfitrió d'accés remot no s'iniciarà si el nom del propietari de l'amfitrió no és el mateix que el nom de l'usuari local amb el qual està associat l'amfitrió. La política RemoteAccessHostMatchUsername s'ha d'utilitzar juntament amb RemoteAccessHostDomain per garantir que el compte de Google del propietari de l'amfitrió estigui associat amb un domini específic (és a dir, "example.com").
 
           Si aquesta opció de configuració es desactiva o no s'estableix, l'amfitrió d'accés remot es pot associar amb qualsevol usuari local.</translation>
+<translation id="5694594914843889579">Quan aquesta política s'estableixi en "true", l'emmagatzematge extern no estarà disponible al navegador de fitxers.
+
+      Aquesta política afecta tots els tipus de mitjans d'emmagatzematge. Per exemple: unitats flaix USB, unitats de disc dur externes, SD i altres targetes de memòria, emmagatzematge òptic, etc. Aquesta política no afecta l'emmagatzematge intern, de manera que podràs continuar accedint als fitxers desats a la carpeta Baixades. Aquesta política tampoc no afecta Google Drive.
+
+      Si aquesta opció de configuració està desactivada o no està configurada, els usuaris podran utilitzar tots els tipus d'emmagatzematge extern compatibles al seu dispositiu.</translation>
 <translation id="5697306356229823047">Informa dels usuaris de dispositius</translation>
 <translation id="570062449808736508">Si aquesta política es defineix en una cadena que no sigui buida, WebView llegirà les restriccions d'URL del proveïdor de contingut amb el nom d'autoritat indicat.</translation>
 <translation id="5703863730741917647">Especifica l'acció que s'ha d'emprendre quan s'està inactiu.
@@ -1501,6 +1549,7 @@ Si s'activa aquest paràmetre, <ph name="PRODUCT_NAME" /> obrirà el diàleg d'i
 Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran que aparegui la pantalla de previsualització d'impressió.</translation>
 <translation id="6022948604095165524">Acció en iniciar</translation>
 <translation id="602728333950205286">URL instantani del proveïdor de cerca predeterminat</translation>
+<translation id="6029664378608427609">Permet que els usuaris defineixin PIN pocs segurs per a la pantalla de bloqueig.</translation>
 <translation id="603410445099326293">Paràmetres per a l'URL suggerit que utilitza POST</translation>
 <translation id="6036523166753287175">Activa que es pugui travessar el tallafoc des d'un amfitrió d'accés remot</translation>
 <translation id="6059543311891422586">Utilitza l'acceleració per maquinari quan està disponible.
@@ -1554,12 +1603,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6155936611791017817">Defineix l'estat predeterminat del cursor gran a la pàgina d'inici de sessió</translation>
 <translation id="6157537876488211233">Llista de regles d'evitació de servidors intermediaris separada per comes</translation>
 <translation id="6158324314836466367">Nom de la botiga web de l'empresa (obsolet)</translation>
-<translation id="6166832345529129545">Controla quins modes de desbloqueig ràpid es poden configurar i utilitzar.
-      Aquesta opció de configuració afegeix a una llista blanca els modes de desbloqueig ràpid que es poden configurar i utilitzar per desbloquejar la pantalla de bloqueig. El valor és una llista de cadenes cadascuna de les quals ha de tenir el valor "all" o "PIN". Si se selecciona "all", estan disponibles tots els modes ràpids admesos. En cas contrari, estan disponibles els modes de la llista.
-
-      Si aquesta opció es configura, no es poden configurar ni utilitzar els modes de desbloqueig ràpid que siguin d'un tipus no inclòs a la llista.
-
-      Si aquesta opció es deixa sense configurar, s'activa el mode "PIN" i es desactiva la resta.</translation>
 <translation id="6167074305866468481">Advertiment: un cop publicada la versió 43 (cap a juliol de 2015), <ph name="PRODUCT_NAME" /> ja no admetrà SSLv3 i aquesta política se suprimirà simultàniament.
 
       Si aquesta política no es configura, en versions posteriors <ph name="PRODUCT_NAME" /> utilitza una versió mínima predeterminada (SSLv3) a <ph name="PRODUCT_NAME" /> 39 i a TLS 1.0.
@@ -1613,6 +1656,15 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6401669939808766804">Tanca la sessió de l'usuari</translation>
 <translation id="6413263121045928260">Cal introduir la contrasenya cada dia (cada 24 hores).</translation>
 <translation id="6417861582779909667">Permet definir una llista de patrons d'URL per especificar els llocs que no poden emmagatzemar galetes. Si no es defineix aquesta política, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "'DefaultCookiesSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
+<translation id="6426205278746959912">No pots forçar que les aplicacions d'Android utilitzin un servidor intermediari. Les aplicacions per a Android tenen disponible un subconjunt d'opcions de configuració per al servidor intermediari, que poden decidir si respectar-les:
+
+          Si decideixes no utilitzar mai un servidor intermediari, s'informarà les aplicacions per a Android que no hi ha cap servidor intermediari configurat.
+
+          Si decideixes fer servir la configuració del servidor intermediari del sistema o un servidor intermediari fix, les aplicacions per a Android inclouran l'adreça i el port del servidor intermediari http.
+
+          Si decideixes detectar automàticament el servidor intermediari, es proporcionarà l'URL de script "http://wpad/wpad.dat" a les aplicacions per a Android. No s'utilitzarà cap altra part del protocol de detecció automàtica del servidor intermediari.
+
+          Si decideixes fer servir un script de servidor intermediari .pac, es proporcionarà l'URL de script a les aplicacions per a Android.</translation>
 <translation id="6467433935902485842">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès executar els connectors. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPluginsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="6473334971332473690">Permet que s'utilitzi Smart Lock en dispositius <ph name="PRODUCT_OS_NAME" />.
 
@@ -1932,7 +1984,21 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política no es defineix, la neteja automàtica utilitza l'estratègia integrada predeterminada. Actualment, és l'estratègia RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Conserva les galetes mentre duri la sessió</translation>
 <translation id="7340034977315324840">Informa del temps d'activitat dels dispositius</translation>
+<translation id="7340934985429121460">Aquesta opció de configuració controla la longitud mínima que pot tenir un PIN.
+
+          Si es configura que sigui inferior a 1, la longitud mínima del PIN és 1.
+
+          Si no es configura, la longitud mínima del PIN és 4.</translation>
 <translation id="7384999953864505698">Permet el protocol QUIC</translation>
+<translation id="7406716912696538245">Controla quins modes de desbloqueig ràpid es poden configurar i utilitzar.
+
+          Aquesta opció de configuració afegeix a una llista blanca els modes de desbloqueig ràpid que es poden configurar i utilitzar per desbloquejar la pantalla de bloqueig. El valor és una llista de cadenes cadascuna de les quals ha de tenir el valor "all" o "PIN". Si se selecciona "all", estaran disponibles tots els modes ràpids admesos. En cas contrari, estaran disponibles els modes de la llista.
+
+
+          Si aquesta opció es configura, no es podran configurar ni utilitzar els modes de desbloqueig ràpid que siguin d'un tipus no inclòs a la llista.
+
+
+          Si aquesta opció es deixa sense configurar, s'activarà el mode "PIN" i es desactivarà la resta.</translation>
 <translation id="7417972229667085380">Percentatge que permet ajustar el retard d'inactivitat en mode de presentació (desactivat)</translation>
 <translation id="7421483919690710988">Defineix la mida de la memòria cau del disc multimèdia en bytes</translation>
 <translation id="7424751532654212117">Llista d'excepcions de la llista de connectors desactivats</translation>
@@ -1976,6 +2042,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7611372873040492235">Cal introduir la contrasenya cada 12 hores.</translation>
 <translation id="7612157962821894603">Opcions del sistema que s'han d'aplicar en iniciar <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Llista dels esquemes de protocol desactivats</translation>
+<translation id="7617319494457709698">Aquesta política especifica les extensions que tenen permís per utilitzar la funció <ph name="CHALLENGE_USER_KEY_FUNCTION" /> de l'<ph name="ENTERPRISE_PLATFORM_KEYS_API" /> per a la confirmació remota. Les extensions s'han d'afegir a aquesta llista per poder utilitzar l'API.
+
+          Si no s'estableix la llista o no s'hi inclou alguna extensió, les crides a l'API tornaran un codi d'error.</translation>
 <translation id="7625444193696794922">Especifica el canal de llançament al qual aquest dispositiu s'hauria de bloquejar.</translation>
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir "en-US" en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME" /> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa "en-US".</translation>
@@ -2067,7 +2136,14 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta opció de configuració està definida, els usuaris no poden canviar-la.
 
       Si no està definida, els usuaris poden activar i desactivar Android Backup Service a l'aplicació Configuració d'Android.</translation>
-<translation id="7818131573217430250">Estableix l'estat predeterminat del mode de contrast elevat a la pantalla d'inici de sessió</translation>
+<translation id="7818131573217430250">Estableix l'estat predeterminat del mode d'alt contrast a la pantalla d'inici de sessió</translation>
+<translation id="7822837118545582721">Quan aquesta política s'estableix en "true", els usuaris no poden escriure res als dispositius d'emmagatzematge extern.
+
+      Si aquesta opció de configuració s'estableix en "false" o no es configura, els usuaris poden crear fitxers als dispositius d'emmagatzematge extern i modificar-los, sempre que permetin l'escriptura física.
+
+      La política ExternalStorageDisabled té prioritat sobre aquesta. Si ExternalStorageDisabled s'estableix en "true", es desactiva tot l'accés a emmagatzematges externs i, per tant, aquesta política s'ignora.
+
+      Aquesta política es pot actualitzar dinàmicament a M56 i versions posteriors.</translation>
 <translation id="7831595031698917016">Especifica el retard màxim en mil·lisegons entre la recepció de la invalidació d'una política i l'obtenció de la política nova del servei de gestió del dispositiu.
 
       En configurar aquesta política se substitueix el valor predeterminat de 5.000 mil·lisegons. Els valors vàlids per a aquesta política se situen en un interval de 1.000 (1 segon) a 300.000 (5 minuts). Tots els valors que no es trobin dins d'aquest interval estaran subjectes al límit respectiu.
@@ -2126,9 +2202,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           no formin part d'un domini d'Active Directory.</translation>
 <translation id="7937766917976512374">Permet o bloqueja la captura de vídeo</translation>
 <translation id="7941975817681987555">No prediguis accions de xarxa en cap connexió de xarxa</translation>
-<translation id="7942429005743031780">Aquesta política especifica les extensions que tenen permís per utilitzar l'API d'Enterprise Platform Keys chrome.enterprise.platformKeys.challengeUserKey() per a la confirmació remota. Les extensions s'han d'afegir a aquesta llista per poder utilitzar l'API.
-
-          Si no s'estableix la llista o no s'hi inclou alguna extensió, les crides a l'API tornaran un codi d'error.</translation>
 <translation id="7953256619080733119">Amfitrions d'excepcions manuals d'usuari gestionat</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Aquesta política ja no és compatible. Activa l'ús de servidors STUN i de relé quan us connecteu a un client remot. Si s'activa aquest paràmetre, aquest equip pot descobrir i connectar-se a equips amfitrions remots, fins i tot si estan separats per un tallafoc. Si es desactiva aquest paràmetre i el tallafoc filtra les connexions UDP de sortida, aquest equip només es podrà connectar als equips amfitrions de la xarxa local.</translation>
@@ -2173,15 +2246,15 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="8141795997560411818">Aquesta política no impedeix que l'usuari utilitzi l'aplicació Google Drive per a Android. Si vols impedir l'accés a Google Drive, has de denegar la instal·lació d'aquesta aplicació.</translation>
 <translation id="8146727383888924340">Permet que els usuaris bescanviïn ofertes a través del registre de Chrome OS.</translation>
 <translation id="8148785525797916822">Suprimeix l'advertiment que es mostra quan <ph name="PRODUCT_NAME" /> s'executa en un ordinador o un sistema operatiu que ja no s'admet.</translation>
-<translation id="8148901634826284024">Activeu la funció d'accessibilitat del mode de contrast elevat.
+<translation id="8148901634826284024">Activeu la funció d'accessibilitat del mode d'alt contrast.
 
-          Si el valor d'aquesta política s'estableix a vertader, el mode de contrast elevat sempre estarà activat.
+          Si el valor d'aquesta política s'estableix a vertader, el mode d'alt contrast sempre estarà activat.
 
-           Si el valor d'aquesta política s'estableix a fals, el mode de contrast elevat sempre estarà desactivat.
+           Si el valor d'aquesta política s'estableix a fals, el mode d'alt contrast sempre estarà desactivat.
 
           Si s'estableix aquesta política, els usuaris no podran canviar-la ni ignorar-la.
 
-          Si no s'estableix aquesta política, el mode de contrast elevat es desactivarà inicialment, però l'usuari el podrà activar en qualsevol moment.</translation>
+          Si no s'estableix aquesta política, el mode d'alt contrast es desactivarà inicialment, però l'usuari el podrà activar en qualsevol moment.</translation>
 <translation id="815061180603915310">Si s'estableix com a activada, aquesta política obliga a canviar el perfil al mode efímer. Si aquesta política s'estableix com una política de sistema operatiu (per exemple, GPO a Windows), s'aplicarà a tots els perfils del sistema; si s'estableix com una política en núvol, s'aplicarà només a un perfil amb la sessió iniciada com un compte gestionat.
 
       En aquest mode, les dades del perfil només són presents al disc durant el temps que dura la sessió. Un cop tancat el navegador, no es conserven característiques com l'historial de navegació, les extensions i les seves dades, ni les dades web com ara galetes o bases de dades web. Tanmateix, això no impedeix que l'usuari baixi manualment qualsevol dada al disc, desi pàgines o n'imprimeixi.
@@ -2274,6 +2347,9 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 
       Si aquesta política s'estableix en "false", el navegador no tornarà a mostrar la pàgina de benvinguda la primera vegada que s'iniciï després d'actualitzar el sistema operatiu.</translation>
 <translation id="8369602308428138533">Retard de la desactivació de pantalla quan s'utilitza alimentació</translation>
+<translation id="8370471134641900314">Si aquesta política s'estableix en "true", l'usuari ha d'iniciar la sessió a <ph name="PRODUCT_NAME" /> amb el seu perfil abans d'utilitzar el navegador. El valor predeterminat de BrowserGuestModeEnabled és "false".
+
+      Si aquesta política s'estableix en "false" o no es configura, l'usuari pot utilitzar el navegador sense iniciar la sessió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Activa l'ús del testimoni remot del contingut protegit al dispositiu.</translation>
 <translation id="838870586332499308">Activa la itinerància de dades</translation>
 <translation id="8390049129576938611">Desactiva el lector de PDF intern a <ph name="PRODUCT_NAME" />. En el seu lloc, tracta els fitxers PDF com una baixada i permet que l'usuari els obri amb l'aplicació predeterminada.
@@ -2393,15 +2469,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8833109046074170275">Autenticació mitjançant el flux predeterminat de GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> desa les aplicacions i les extensions a la memòria cau perquè diversos usuaris d'un mateix dispositiu les puguin instal·lar. Així, s'evita haver-les de baixar per a cada usuari.
       Si la política no està configurada o el valor és inferior a 1 MB, <ph name="PRODUCT_OS_NAME" /> utilitzarà la mida predeterminada de la memòria cau.</translation>
-<translation id="8858120573534680488">No pots forçar que les aplicacions d'Android utilitzin un servidor intermediari. Les aplicacions per a Android tenen disponible un subconjunt d'opcions de configuració per al servidor intermediari, que poden decidir si respectar-les:
-
-          Si decideixes no utilitzar mai un servidor intermediari, s'informa les aplicacions per a Android que no hi ha cap servidor intermediari configurat.
-
-          Si decideixes fer servir la configuració del servidor intermediari del sistema o el servidor intermediari fix, es proporcionen les aplicacions per a Android junt amb l'adreça http i el port del servidor intermediari.
-
-          Si decideixes detectar automàticament el servidor intermediari, es proporciona l'URL de script "http://wpad/wpad.dat" a les aplicacions per a Android. No s'utilitza cap altra part del protocol de detecció automàtica del servidor intermediari.
-
-          Si decideixes fer servir un script de servidor intermediari .pac, es proporciona l'URL de script a les aplicacions per a Android.</translation>
 <translation id="8858642179038618439">Força el mode de seguretat de YouTube</translation>
 <translation id="8864975621965365890">Suprimeix l'avís de desactivació que apareix quan un lloc <ph name="PRODUCT_FRAME_NAME" /> renderitza un lloc.</translation>
 <translation id="8870318296973696995">Pàgina d'inici</translation>
@@ -2482,9 +2549,4 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="930930237275114205">Defineix el directori de dades de l'usuari del producte <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="944607242500063080">Configura els modes de desbloqueig ràpid permesos.</translation>
 <translation id="944817693306670849">Defineix la mida de la memòria cau del disc</translation>
-<translation id="969164417253718105">Aquesta opció de configuració controla amb quina freqüència es demanarà introduir la contrasenya a la pantalla de bloqueig per continuar utilitzant el desbloqueig ràpid. El desbloqueig ràpid no estarà disponible si, en entrar a la pantalla de bloqueig, la darrera vegada que s'ha introduït la contrasenya és un temps superior a aquesta opció. Si l'usuari supera aquest període de temps a la pantalla de bloqueig, se li sol·licitarà una contrasenya la propera vegada que introdueixi un codi erroni o que torni a entrar a la pantalla de bloqueig, el que passi abans.
-
-      Si aquesta opció es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig en funció d'aquesta opció.
-
-      Si aquesta opció no es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig cada dia.</translation>
 </translationbundle>

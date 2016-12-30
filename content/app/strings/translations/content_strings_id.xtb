@@ -24,7 +24,6 @@
 <translation id="1821985195704844674">kisi pohon</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">putar di perangkat jarak jauh</translation>
-<translation id="1842960171412779397">pilih</translation>
 <translation id="1854180393107901205">Hentikan transmisi</translation>
 <translation id="1880518467580572141">garis batas</translation>
 <translation id="1921819250265091946">hh</translation>
@@ -50,11 +49,9 @@
 <translation id="2746543609216772311">Tanggal harus <ph name="MINIMUM_DATE_OR_TIME" /> atau setelahnya.</translation>
 <translation id="2759744352195237655">tombol munculan</translation>
 <translation id="2761667185364618470">Centang kotak ini jika Anda ingin melanjutkan.</translation>
-<translation id="2846343701378493991">1024 (Tingkat Menengah)</translation>
 <translation id="2896972712917208084">grup radio</translation>
 <translation id="2901282870647571346">status film saat ini</translation>
 <translation id="2908441821576996758">Masukkan daftar alamat email yang dipisahkan dengan koma.</translation>
-<translation id="2931838996092594335">klik</translation>
 <translation id="2940813599313844715">objek</translation>
 <translation id="2942448076852699108">konten yang disorot</translation>
 <translation id="3040011195152428237">tautan</translation>
@@ -80,7 +77,6 @@
 <translation id="4103419683916926126">Milidetik</translation>
 <translation id="4151657705144244502">grafis</translation>
 <translation id="4201051445878709314">Tampilkan bulan sebelumnya</translation>
-<translation id="4202807286478387388">lompati</translation>
 <translation id="421884353938374759">pemilih warna</translation>
 <translation id="4248100235867064564">bilah menu</translation>
 <translation id="4254339807215791271">info konten</translation>
@@ -108,7 +104,6 @@
 <translation id="5453733299334684579">item pohon</translation>
 <translation id="5466621249238537318">Pilih salah satu atau beberapa file.</translation>
 <translation id="5468998798572797635">keluar dari tampilan layar penuh</translation>
-<translation id="5476505524087279545">batalkan centang</translation>
 <translation id="5516424706154626233">pemilih tanggal</translation>
 <translation id="5537725057119320332">Cast</translation>
 <translation id="5546461542133609677">suarakan</translation>
@@ -121,13 +116,11 @@
 <translation id="5860033963881614850">Nonaktif</translation>
 <translation id="588258955323874662">Layar Penuh</translation>
 <translation id="5939518447894949180">Setel ulang</translation>
-<translation id="5944544982112848342">2048 (Tingkat Tinggi)</translation>
 <translation id="5966707198760109579">Minggu</translation>
 <translation id="5987525920412732405">tombol putar</translation>
 <translation id="6015796118275082299">Tahun</translation>
 <translation id="6023896073578205740">kotak daftar</translation>
 <translation id="6101327004457443354">suarakan trek audio</translation>
-<translation id="6119846243427417423">aktifkan</translation>
 <translation id="6164829606128959761">pengukur</translation>
 <translation id="6270583010843788609">jempol garis waktu film</translation>
 <translation id="6359256949422175976">jempol scrubber waktu film</translation>
@@ -145,7 +138,6 @@
 <translation id="6790428901817661496">Putar</translation>
 <translation id="6820355525329141109">Tidak dapat memuat plugin.</translation>
 <translation id="6843725295806269523">bisukan</translation>
-<translation id="6845533974506654842">tekan</translation>
 <translation id="6853785296079745596">sembunyikan teks</translation>
 <translation id="6885760532393684712">direktori</translation>
 <translation id="6934078000481955284">blockquote</translation>
@@ -158,7 +150,7 @@
 <translation id="7364796246159120393">Pilih File</translation>
 <translation id="739024184232394898">Lainnya...</translation>
 <translation id="7491962110804786152">tab</translation>
-<translation id="7514365320538308">Unduh</translation>
+<translation id="7514365320538308">Download</translation>
 <translation id="7673697353781729403">Jam</translation>
 <translation id="7720026100085573005">sisa waktu</translation>
 <translation id="7740016676195725605">berhenti menampilkan teks</translation>
@@ -177,7 +169,6 @@
 <translation id="8244226242650769279">gambar peta</translation>
 <translation id="8284326494547611709">Teks</translation>
 <translation id="835897206747267392">Nilai tidak valid.</translation>
-<translation id="838869780401515933">centangi</translation>
 <translation id="8433900881053900389">bilah alat</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> file</translation>
 <translation id="8451268428117625855">Pilih file.</translation>
@@ -192,7 +183,6 @@
 <translation id="8785498733064193001">mulai pemutaran</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8987927404178983737">Bulan</translation>
-<translation id="9002566407876343676">buka</translation>
 <translation id="901493112792887934">waktu saat ini dalam detik</translation>
 <translation id="9048119486235211610">navigasi</translation>
 <translation id="9050748414552849310">tampilkan teks</translation>

@@ -54,10 +54,8 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="2429753432712299108">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Avant d'accepter, veuillez confirmer que le code d'authentification suivant s'affiche sur l'appareil : <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">Une erreur s'est produite.</translation>
 <translation id="2509468283778169019">Touche VERR MAJ activée</translation>
-<translation id="252373100621549798">Écran inconnu</translation>
 <translation id="2532589005999780174">Mode Contraste élevé</translation>
 <translation id="2562916301614567480">Réseau privé</translation>
-<translation id="2661637000095600270">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé. Cliquez ici pour envoyer un rapport d'erreur.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" /> : Connexion en cours…</translation>
 <translation id="2700058918926273959">Fin de la session dans <ph name="SESSION_TIME_REMAINING" />. Vous allez être déconnecté.</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
@@ -114,7 +112,6 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="3846575436967432996">Aucune information disponible concernant le réseau</translation>
 <translation id="3866182280516392520">Adresse IPv6</translation>
 <translation id="3891340733213178823">Appuyez deux fois sur Ctrl + Maj + Q pour vous déconnecter.</translation>
-<translation id="3892641579809465218">Affichage interne</translation>
 <translation id="3893630138897523026">ChromeVox (commentaires audio)</translation>
 <translation id="3899995891769452915">Saisie vocale</translation>
 <translation id="3901991538546252627">Connexion à <ph name="NAME" /> en cours…</translation>
@@ -177,6 +174,8 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="5977415296283489383">Casque</translation>
 <translation id="5978382165065462689">Partager le contrôle de votre écran via l'assistance à distance</translation>
 <translation id="5980301590375426705">Fermer la session Invité</translation>
+<translation id="6041154455840261787">Le mode Contraste élevé est activé. Appuyez de nouveau sur la touche de recherche+Maj+H pour le désactiver.</translation>
+<translation id="6043212731627905357">Ce moniteur ne fonctionne pas avec votre <ph name="DEVICE_TYPE" /> (il n'est pas compatible).</translation>
 <translation id="6043994281159824495">Se déconnecter maintenant</translation>
 <translation id="6047696787498798094">Le partage d'écran s'arrête lorsque vous passez à un autre utilisateur. Voulez-vous continuer ?</translation>
 <translation id="6062360702481658777">Vous allez être déconnecté automatiquement dans <ph name="LOGOUT_TIME_LEFT" />.</translation>
@@ -185,7 +184,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6144938890088808325">Aidez-nous à améliorer les Chromebooks</translation>
 <translation id="615957422585914272">Afficher le clavier à l'écran</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
-<translation id="6203030746557259519">Affichage virtuel</translation>
 <translation id="6248847161401822652">Pour quitter, appuyez deux fois sur Ctrl+Maj+Q.</translation>
 <translation id="6267036997247669271"><ph name="NAME" /> : activation en cours…</translation>
 <translation id="6297287540776456956">Utiliser le stylet pour sélectionner une zone</translation>
@@ -208,6 +206,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6700713906295497288">Bouton de menu IME</translation>
 <translation id="6713285437468012787">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" a été associé et tous les utilisateurs peuvent désormais y accéder. Vous pouvez supprimer cette association dans les paramètres.</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
+<translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
 <translation id="683971173229319003">Recherche+L</translation>
 <translation id="6857811139397017780">Activer <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
@@ -275,7 +274,6 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="8878886163241303700">Extension de l'écran</translation>
 <translation id="8938800817013097409">Appareil USB de type C (port situé sur l'arrière de l'appareil, à droite)</translation>
 <translation id="8940956008527784070">Batterie faible (<ph name="PERCENTAGE" /> %)</translation>
-<translation id="9008540565042607572">Moniteur non compatible. Cliquez ici pour envoyer un rapport d'erreur.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Le micro est en cours d'utilisation.</translation>
 <translation id="9089416786594320554">Modes de saisie</translation>
@@ -285,5 +283,6 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="923686485342484400">Appuyez deux fois sur Contrôle + Maj + Q pour vous déconnecter.</translation>
 <translation id="938582441709398163">Clavier en superposition</translation>
 <translation id="939252827960237676">Échec d'enregistrement de la capture d'écran.</translation>
+<translation id="945522503751344254">Envoyer le commentaire</translation>
 <translation id="952992212772159698">Désactivé</translation>
 </translationbundle>

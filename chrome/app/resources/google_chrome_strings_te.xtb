@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">Chromeకు సైన్ ఇన్ చేయండి</translation>
 <translation id="1061441684050139317">ఈ సైట్‌కు మైక్రోఫోన్ సామర్థ్యం భాగస్వామ్యం చేయడానికి Chromeకి మైక్రోఫోన్ ప్రాప్యత అనుమతించడం అవసరం.</translation>
 <translation id="1065672644894730302">మీ ప్రాధాన్యతలు చదవబడలేవు. కొన్ని లక్షణాలు అందుబాటులో ఉండకపోవచ్చు మరియు ప్రాధాన్యతలకు మార్పులు సేవ్ చేయబడకపోవచ్చు.</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> మునుపు Chromeని ఉపయోగించింది</translation>
 <translation id="1104959162601287462">&amp;Chrome OS గురించి</translation>
 <translation id="110877069173485804">ఇది మీ Chrome</translation>
 <translation id="123620459398936149">Chrome OS మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని నవీకరించండి.</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Chrome కెనరీ అనువర్తనాలు</translation>
 <translation id="1457721931618994305">Google Chromeని నవీకరిస్తోంది...</translation>
 <translation id="1469002951682717133">Chrome అనువర్తన లాంచర్</translation>
-<translation id="1475773083554142432">Chrome దీన్ని <ph name="SAVED_PASSWORD_LINK" />తో నిల్వ చేస్తుంది మరియు మీకు అవసరమయ్యే తదుపరి సారి దీన్ని గుర్తు పెట్టుకుంటుంది.</translation>
 <translation id="1480489203462860648">దీన్ని ప్రయత్నించండి, ఇది ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="1553358976309200471">Chromeని నవీకరించు</translation>
 <translation id="1587223624401073077">Google Chrome మీ కెమెరాను ఉపయోగిస్తోంది.</translation>
@@ -41,7 +41,6 @@
 <translation id="2147651015520127414">Chrome ఈ వెబ్‌సైట్ ప్రమాణపత్రాన్ని <ph name="ISSUER" /> జారీ చేసినట్లు ధృవీకరించింది.</translation>
 <translation id="2246246234298806438">అంతర్నిర్మిత PDF వ్యూవర్ లేనప్పుడు Google Chrome ముద్రణ పరిదృశ్యాన్ని చూపించదు.</translation>
 <translation id="2252923619938421629">ప్రస్తుత సెట్టింగ్‌లను నివేదించడం ద్వారా Google Chromeను మెరుగుపరచడంలో సహాయపడండి</translation>
-<translation id="225614027745146050">స్వాగతం</translation>
 <translation id="2286950485307333924">మీరు ఇప్పుడు Chromeకి సైన్ ఇన్ చేసారు</translation>
 <translation id="2290014774651636340">Google API కీలు లేవు. Google Chrome కార్యాచరణలో కొంత భాగం నిలిపివేయబడుతుంది.</translation>
 <translation id="2290095356545025170">మీరు Google Chrome ని ఖచ్చితంగా అన్ ఇన్‌స్టాల్ చెయ్యాలని అనుకుంటున్నారా?</translation>

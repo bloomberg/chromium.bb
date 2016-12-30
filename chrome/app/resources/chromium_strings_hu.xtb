@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">A Chromium biztonságosabbá tétele érdekében kikapcsoltunk néhány bővítményt, amelyek nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származnak, és előfordulhat, hogy az Ön tudta nélkül lettek telepítve.</translation>
 <translation id="1808667845054772817">A Chromium újratelepítése</translation>
 <translation id="1816404578968201294">A Chromiumnak hozzáférésre van szüksége a helyadatokhoz, hogy megoszthassa azokat a webhellyel.</translation>
+<translation id="1838412507805038478">A Chromium ellenőrizte, hogy a(z) <ph name="ISSUER" /> adta ki ezt a webhelytanúsítványt.</translation>
 <translation id="1869480248812203386">Az esetleges biztonsági események adatainak automatikus jelentésével segítséget nyújthat a Google-nak a Chromium használatának biztonságosabbá és egyszerűbbé tételéhez.</translation>
 <translation id="1881322772814446296">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. Létrehozhat egy új profilt is meglévő Chromium-adatainak elkülönített tárolásához. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">A Chromium nem válaszol. Újraindítja most?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">A &amp;Chromium OS névjegye</translation>
 <translation id="2158734852934720349">Chromium OS nyílt forráskódú licencek</translation>
 <translation id="2241627712206172106">Ha megoszt egy számítógépet, ismerősei és családtagjai külön fiókokban internetezve a saját kívánságaik szerint állíthatják be a Chromiumot.</translation>
-<translation id="225614027745146050">Üdvözöljük</translation>
 <translation id="2316129865977710310">Köszönöm, nem</translation>
 <translation id="2347108572062610441">Ez a bővítmény módosította, hogy melyik oldal jelenjen meg a Chromium indításakor.</translation>
 <translation id="2372704305038231957">Előfordulhat, hogy a 32 bites Chromium nem fog megfelelően működni, mert a továbbiakban már nem támogatja ezt a Linux rendszert. Kérjük, frissítsen a Chromium 64 bites változatára.</translation>
@@ -153,7 +153,6 @@
 <translation id="5877064549588274448">Módosult a csatorna. Indítsa újra az eszközt a módosítások alkalmazásához.</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
 <translation id="5906655207909574370">Már majdnem naprakész! Indítsa újra az eszközt a frissítés befejezéséhez.</translation>
-<translation id="5942225298871134766">A Chromium tárolja ezt a(z) <ph name="SAVED_PASSWORD_LINK" /> segítségével, és emlékezni fog, amikor legközelebb szükség lesz rá.</translation>
 <translation id="5942520288919337908">A(z) <ph name="EXTENSION_NAME" /> hozzá lett adva a Chromiumhoz.</translation>
 <translation id="59625444380784159">A névjegyek részletei révén gyorsabban kitöltheti az űrlapokat a Chromiumban.</translation>
 <translation id="5987687638152509985">Frissítse a Chromiumot a szinkronizálás megkezdéséhez</translation>
@@ -240,6 +239,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="81770708095080097">Ez a fájl veszélyes, ezért a Chromium letiltotta.</translation>
 <translation id="8269379391216269538">Segítsen a Chromium továbbfejlesztésében</translation>
 <translation id="8290862415967981663">Ez a fájl veszélyes lehet, ezért a Chromium letiltotta.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> előzőleg Chromiumot használt</translation>
 <translation id="8453117565092476964">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Chromium böngészőt.</translation>
 <translation id="8493179195440786826">A Chromium elavult</translation>
 <translation id="85843667276690461">Segítséget kaphat a Chromium használatával kapcsolatban</translation>

@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">ms</translation>
 <translation id="2091933974477985526">Kawasan teks boleh edit sebelumnya</translation>
 <translation id="2100350898815792233">Semua tanda baca</translation>
+<translation id="2110480898214777136">Mulakan daripada permulaan kepada penghujung atau daripada penghujung kepada permulaan dalam halaman, dialog atau bekas lain</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">kekunci akses:<ph name="KEY" /></translation>
 <translation id="2155457205053847599">Tukar jadual semasa braille 6 titik dengan membuat pilihan daripada senarai di bawah.</translation>
 <translation id="2169714232367507776">Klik pada item semasa</translation>
+<translation id="2179452035581866348">ChromeVox menggunakan bunyi untuk memberi anda maklumat penting dan tambahan. Anda boleh menggunakan bunyi ini untuk menavigasi dengan lebih cepat dengan mempelajari maksud setiap bunyi. Apabila anda berasa lebih selesa, anda boleh mematikan huraian yang berjela-jela dalam pertuturan dan menggunakannya untuk maklumat penting tentang halaman. Berikut ialah senarai lengkap bunyi dan maksudnya.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{tanda kurung tutup}other{# tanda kurung tutup}}</translation>
 <translation id="2199994615414171367">Matematik sebelumnya</translation>
 <translation id="2220529011494928058">Laporkan isu</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">Utama</translation>
 <translation id="2329324941084714723">Panel tab</translation>
 <translation id="2344193891939537199">Kawalan tarikh masa</translation>
+<translation id="2347456970887948350">Pautan</translation>
 <translation id="2359897517538099099">Bukan dalam mod jadual.</translation>
 <translation id="241124561063364910">diikuti oleh</translation>
+<translation id="2416512023405990736">Kotak pilihan tidak ditandai</translation>
 <translation id="2417569100218200841">Maklumat kandungan</translation>
 <translation id="2422937916923936891">Kotak pilihan item menu</translation>
 <translation id="2428534162001909979">Menu Perintah</translation>
@@ -213,6 +217,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="3223701887221307104">Tab, <ph name="NAME" /></translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Pautan yang dilawati</translation>
+<translation id="3232388865800379423">Butang timbul</translation>
 <translation id="323731244387692321">Buka bantuan papan kekunci ChromeVox</translation>
 <translation id="3241052487511142956">Pautan yang dilawati sebelumnya</translation>
 <translation id="3286390186030710347">Peluncur</translation>
@@ -221,6 +226,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="3311969765485641742">Tekan Alt+Shift+A untuk menyemak makluman</translation>
 <translation id="3312997241656799641">Pautan yang dilawati seterusnya</translation>
 <translation id="3313245066383501820">Kekunci pengubah suai ChromeVox</translation>
+<translation id="3317212938060708859">Peluncur</translation>
 <translation id="3321460131042519426">Dayakan balut kata</translation>
 <translation id="3322936298410871309">Tajuk tahap 1 sebelumnya</translation>
 <translation id="3323447499041942178">Kotak teks</translation>
@@ -279,6 +285,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="3457000393508828486">Separuh ditekan</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, dimatikan</translation>
 <translation id="3462439746547587373">Butang, <ph name="NAME" /></translation>
+<translation id="3466530247399808663">Tekanan kekunci tidak sah</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> hingga <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{tanda kurung kanan}other{# tanda kurung kanan}}</translation>
@@ -286,6 +293,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{tanda soal}other{# tanda soal}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{karet}other{# karet}}</translation>
+<translation id="352577523970648069">Medan teks boleh edit</translation>
 <translation id="3568702578574425662">Kotak pilihan, <ph name="NAME" /> tidak ditandai</translation>
 <translation id="3599054940393788245">Bukan dalam matematik</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -325,10 +333,12 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="4047216625641135770">Tanda</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
+<translation id="4058278702844053247">Halaman sedang dimuatkan</translation>
 <translation id="4065205963140826639">Cuba gunakan Carian + Anak Panah Kanan sekarang untuk mencari butang Seterusnya, kemudian tekan Carian + Ruang untuk mengkliknya.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}other{# tilde}}</translation>
 <translation id="409334809956508737">Objek Sebelumnya</translation>
 <translation id="4099274309791143834">dengan submenu</translation>
+<translation id="4101527861445851766">Kotak pilihan ditandai</translation>
 <translation id="4107807507418787238">Tiada sel di bawah.</translation>
 <translation id="4116415223832267137">Makluman</translation>
 <translation id="4147126331795725888">Tiada kawalan seterusnya.</translation>
@@ -338,6 +348,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="4173994908659439270">Tiada medan teks boleh edit seterusnya.</translation>
 <translation id="4176463684765177261">Dilumpuhkan</translation>
 <translation id="4188530942454211480">Ayat Sebelumnya</translation>
+<translation id="4191918948604314587">Butang</translation>
 <translation id="4202186506458631436">Alih ke kanan</translation>
 <translation id="4206289001967551965">Dalam jadual</translation>
 <translation id="4215733775853809057">Peluncur seterusnya</translation>
@@ -461,6 +472,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="5374320867641260420">Tiada butang seterusnya.</translation>
 <translation id="5382299583965267720">Tiada tajuk tahap 1 seterusnya.</translation>
 <translation id="5402367795255837559">Braille</translation>
+<translation id="5402791055281059602">Makluman mod</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{koma bertitik}other{# koma bertitik}}</translation>
 <translation id="5411891038905756502">Tiada titik langkau terdahulu.</translation>
 <translation id="5417034931411865818">Klik item di bawah kekunci penghalaan $1</translation>
@@ -554,6 +566,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="6119955456199054975">Sel akhir.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Ruang</translation>
+<translation id="6132506484792346370">Kotak senarai atau kotak kombo</translation>
 <translation id="6138576064440631958">$1 kord</translation>
 <translation id="6142308968191113180">Tajuk 4</translation>
 <translation id="6169420925157477918">Imej dengan huraian panjang</translation>
@@ -567,6 +580,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Tiada kotak kombo seterusnya.</translation>
 <translation id="6307969636681130414">Ditekan</translation>
+<translation id="6322856989298155004">Bunyi</translation>
 <translation id="6324551002951139333">Kesilapan tatabahasa dikesan</translation>
 <translation id="6348657800373377022">Kotak kombo</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{peluru}other{# peluru}}</translation>
@@ -597,6 +611,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="6657128831881431364">Bar kemajuan</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">Dokumen</translation>
+<translation id="6688209025607531203">Bukan makluman mod</translation>
 <translation id="6697092096875747123">Kotak kombo sebelumnya</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{tanda seru}other{# tanda seru}}</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>

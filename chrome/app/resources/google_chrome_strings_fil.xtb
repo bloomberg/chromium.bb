@@ -8,6 +8,7 @@
 <translation id="1065672644894730302">Hindi mabasa ang iyong mga kagustuhan.
 
 Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago sa mga kagustuhan.</translation>
+<translation id="1088300314857992706">Chrome ang dating ginagamit ng <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1104959162601287462">Tungkol sa &amp;Chrome OS</translation>
 <translation id="110877069173485804">Ito ang iyong Chrome</translation>
 <translation id="123620459398936149">Hindi ma-sync ng Chrome OS ang iyong data. Paki-update ang iyong Passphrase sa pag-sync.</translation>
@@ -19,7 +20,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1434626383986940139">Chrome Canary Apps</translation>
 <translation id="1457721931618994305">Ina-update ang Google Chrome...</translation>
 <translation id="1469002951682717133">App Launcher ng Chrome</translation>
-<translation id="1475773083554142432">Iiimbak ito ng Chrome gamit ang <ph name="SAVED_PASSWORD_LINK" /> at tatandaan ito sa susunod na pagkakataong kailanganin mo ito.</translation>
 <translation id="1480489203462860648">Subukan mo ito, naka-install na ito</translation>
 <translation id="1553358976309200471">I-update ang Chrome</translation>
 <translation id="1587223624401073077">Ginagamit ng Google Chrome ang iyong camera.</translation>
@@ -45,7 +45,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2147651015520127414">Na-verify ng Chrome na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito.</translation>
 <translation id="2246246234298806438">Hindi maipapakita ng Google Chrome ang preview sa pag-print kapag nawawala ang built-in na PDF viewer.</translation>
 <translation id="2252923619938421629">Tumulong na mapahusay ang Google Chrome sa pamamagitan ng pag-uulat ng mga kasalukuyang setting</translation>
-<translation id="225614027745146050">Maligayang pagdating</translation>
 <translation id="2286950485307333924">Naka-sign in ka ngayon sa Chrome</translation>
 <translation id="2290014774651636340">Nawawala ang mga Google API key. Madi-disable ang ilang pagpapagana ng Google Chrome.</translation>
 <translation id="2290095356545025170">Sigurado ka bang nais mong i-uninstall ang Google Chrome?</translation>

@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">Để làm cho Chromium an toàn hơn, chúng tôi đã vô hiệu hóa một số tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> và có thể đã được thêm mà bạn không biết.</translation>
 <translation id="1808667845054772817">Cài đặt lại Chromium</translation>
 <translation id="1816404578968201294">Chromium cần quyền truy cập vào vị trí để chia sẻ vị trí với trang web này.</translation>
+<translation id="1838412507805038478">Chromium xác minh rằng <ph name="ISSUER" /> đã cấp chứng chỉ của trang web này.</translation>
 <translation id="1869480248812203386">Bạn có thể giúp Chromium an toàn và dễ sử dụng hơn bằng cách tự động báo cáo với Google chi tiết về sự cố bảo mật có thể xảy ra.</translation>
 <translation id="1881322772814446296">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình Chromium của bạn. Dữ liệu Chromium của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. Bạn có thể tùy chọn tạo cấu hình mới để giữ cho dữ liệu Chromium hiện có của bạn riêng biệt. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium không phản hồi. Chạy lại ngay bây giờ?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">Giới thiệu về &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Giấy phép nguồn mở Chromium OS</translation>
 <translation id="2241627712206172106">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chromium theo ý của họ.</translation>
-<translation id="225614027745146050">Chào mừng</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
 <translation id="2347108572062610441">Tiện ích này đã thay đổi trang nào được hiển thị khi bạn khởi động Chromium.</translation>
 <translation id="2372704305038231957">Chromium 32 bit có thể không hoạt động đúng do không được hỗ trợ trên hệ thống Linux này nữa. Vui lòng nâng cấp lên Chromium 64 bit.</translation>
@@ -153,7 +153,6 @@
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5906655207909574370">Gần được cập nhật! Hãy khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
-<translation id="5942225298871134766">Chromium sẽ lưu trữ mật khẩu này với <ph name="SAVED_PASSWORD_LINK" /> và ghi nhớ mật khẩu này vào lần sau bạn cần đến.</translation>
 <translation id="5942520288919337908">Đã thêm <ph name="EXTENSION_NAME" /> vào  Chromium.</translation>
 <translation id="59625444380784159">Chi tiết từ danh bạ của bạn có thể giúp bạn điền vào biểu mẫu trong Chromium nhanh hơn.</translation>
 <translation id="5987687638152509985">Cập nhật Chromium để bắt đầu đồng bộ hóa</translation>
@@ -242,6 +241,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="81770708095080097">Tệp này nguy hiểm, do đó Chromium đã chặn tệp.</translation>
 <translation id="8269379391216269538">Giúp cải thiện Chromium</translation>
 <translation id="8290862415967981663">Tệp này nguy hiểm, do đó Chromium đã chặn tệp.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> trước đó đã sử dụng Chromium</translation>
 <translation id="8453117565092476964">Tệp lưu trữ trình cài đặt bị hỏng hoặc không hợp lệ. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="8493179195440786826">Chromium đã lỗi thời</translation>
 <translation id="85843667276690461">Nhận trợ giúp về cách sử dụng Chromium</translation>

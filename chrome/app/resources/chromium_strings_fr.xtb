@@ -26,6 +26,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1779356040007214683">Afin de rendre Chrome plus sûr, nous avons désactivé certaines extensions qui ne sont pas répertoriées sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et qui ont pu être ajoutées à votre insu.</translation>
 <translation id="1808667845054772817">Réinstaller Chromium</translation>
 <translation id="1816404578968201294">Chromium doit accéder aux données de localisation pour les partager avec ce site.</translation>
+<translation id="1838412507805038478">Chromium a confirmé que le certificat de ce site Web a bien été émis par <ph name="ISSUER" />.</translation>
 <translation id="1869480248812203386">Vous pouvez nous aider à rendre Chromium plus sûr et plus facile à utiliser en nous signalant automatiquement les incidents de sécurité potentiels.</translation>
 <translation id="1881322772814446296">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Chromium à son administrateur. Vos données Chromium, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chromium séparées. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium ne répond pas. Voulez-vous le relancer maintenant ?</translation>
@@ -35,7 +36,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2119636228670142020">À propos de &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licences Chromium OS Open Source</translation>
 <translation id="2241627712206172106">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chromium comme bon leur semble et naviguer sur le Web à leur manière.</translation>
-<translation id="225614027745146050">Bienvenue</translation>
 <translation id="2316129865977710310">Non merci</translation>
 <translation id="2347108572062610441">Cette extension a modifié la page qui s'affiche lorsque vous démarrez Chromium.</translation>
 <translation id="2372704305038231957">Chromium 32 bits risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur ce système Linux. Veuillez passer à Chromium 64 bits.</translation>
@@ -154,7 +154,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5906655207909574370">Mise à jour presque terminée. Pour la finaliser, veuillez redémarrer votre appareil.</translation>
-<translation id="5942225298871134766">Chromium stockera ce mot de passe avec <ph name="SAVED_PASSWORD_LINK" /> et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
 <translation id="5942520288919337908">L'extension "<ph name="EXTENSION_NAME" />" a été ajoutée à Chromium.</translation>
 <translation id="59625444380784159">Les coordonnées de vos contacts peuvent vous aider à remplir les formulaires plus rapidement dans Chromium.</translation>
 <translation id="5987687638152509985">Mettre à jour Chromium pour lancer la synchronisation</translation>
@@ -243,6 +242,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="81770708095080097">Chromium a bloqué ce fichier, car ce dernier est dangereux.</translation>
 <translation id="8269379391216269538">Aidez-nous à améliorer Chromium</translation>
 <translation id="8290862415967981663">Chromium a bloqué ce fichier, car ce dernier peut être dangereux.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> utilisait Chromium précédemment</translation>
 <translation id="8453117565092476964">L'archive du programme d'installation est corrompue ou n'est pas valide. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="8493179195440786826">Version de Chromium obsolète</translation>
 <translation id="85843667276690461">Obtenir de l'aide sur l'utilisation de Chromium</translation>

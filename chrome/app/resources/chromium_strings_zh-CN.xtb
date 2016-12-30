@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">为了提高 Chromium 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中、可能是在您不知情的情况下添加的扩展程序。</translation>
 <translation id="1808667845054772817">重新安装Chromium</translation>
 <translation id="1816404578968201294">Chromium 需要具有位置信息访问权限，才能批准此网站的分享请求。</translation>
+<translation id="1838412507805038478">Chromium 已证实：此网站的证书是由 <ph name="ISSUER" /> 签发的。</translation>
 <translation id="1869480248812203386">您可以选择自动向 Google 报告可能出现的安全事件详情，以帮助我们提高 Chromium 的安全性和易用性。</translation>
 <translation id="1881322772814446296">您目前登录的帐号是一个托管帐号，该帐号的管理员将能够控制您的 Chromium 个人资料。您的 Chromium 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐号信息中心删除这些数据，但无法将这些数据与其他帐号相关联。您可以选择创建新的个人资料来单独存储您现有的 Chromium 数据。<ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium 未响应。要立即重新启动吗？</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">关于 Chromium 操作系统(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium操作系统开放源代码许可</translation>
 <translation id="2241627712206172106">如果您与亲朋好友共用计算机，他们将能够使用单独的帐号进行浏览，并可随心所欲地设置Chromium。</translation>
-<translation id="225614027745146050">欢迎</translation>
 <translation id="2316129865977710310">不用了，谢谢</translation>
 <translation id="2347108572062610441">此扩展程序更改了 Chromium 启动后系统显示的页面。</translation>
 <translation id="2372704305038231957">32 位 Chromium 已不再适用于此 Linux 系统，因此可能无法正常运行。请升级到 64 位 Chromium。</translation>
@@ -153,7 +153,6 @@
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5895138241574237353">重新启动</translation>
 <translation id="5906655207909574370">即将更新到最新版本！重新启动您的设备即可完成更新。</translation>
-<translation id="5942225298871134766">Chromium 将通过<ph name="SAVED_PASSWORD_LINK" />存储此密码，并会在您下次需要时自动填充此密码。</translation>
 <translation id="5942520288919337908">“<ph name="EXTENSION_NAME" />”已添加到 Chromium。</translation>
 <translation id="59625444380784159">通讯录中的详细信息有助于您在Chromium中更快速地填写表单。</translation>
 <translation id="5987687638152509985">更新 Chromium 以开始同步</translation>
@@ -242,6 +241,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="81770708095080097">此文件存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="8269379391216269538">帮助我们改进Chromium</translation>
 <translation id="8290862415967981663">此文件可能存在危险，因此 Chromium 已将其拦截。</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> 之前使用的是 Chromium</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>
 <translation id="8493179195440786826">Chromium版本太旧</translation>
 <translation id="85843667276690461">获取 Chromium 使用帮助</translation>

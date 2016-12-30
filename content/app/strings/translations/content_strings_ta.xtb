@@ -24,7 +24,6 @@
 <translation id="1821985195704844674">ட்ரீ கிரிட்</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">தொலைநிலைச் சாதனத்தில் இயக்கு</translation>
-<translation id="1842960171412779397">தேர்ந்தெடு</translation>
 <translation id="1854180393107901205">அனுப்புவதை நிறுத்து</translation>
 <translation id="1880518467580572141">சுற்றுவரி</translation>
 <translation id="1921819250265091946">dd</translation>
@@ -50,11 +49,9 @@
 <translation id="2746543609216772311">மதிப்பானது <ph name="MINIMUM_DATE_OR_TIME" /> அல்லது அதற்குப் பின்பு இருக்க வேண்டும்.</translation>
 <translation id="2759744352195237655">பாப்-அப் பொத்தான்</translation>
 <translation id="2761667185364618470">தொடர விரும்பினால், இந்தப் பெட்டியைத் தேர்ந்தெடுங்கள்.</translation>
-<translation id="2846343701378493991">1024 (இடைநிலைத் தரம்)</translation>
 <translation id="2896972712917208084">ரேடியோ குழு</translation>
 <translation id="2901282870647571346">மூவியின் நடப்பு நிலை</translation>
 <translation id="2908441821576996758">காற்புள்ளியால் பிரிக்கப்பட்ட மின்னஞ்சல் முகவரிகளின் பட்டியலை உள்ளிடுக.</translation>
-<translation id="2931838996092594335">கிளிக் செய்க</translation>
 <translation id="2940813599313844715">பொருள்</translation>
 <translation id="2942448076852699108">தனிப்படுத்தப்பட்ட உள்ளடக்கம்</translation>
 <translation id="3040011195152428237">இணைப்பு</translation>
@@ -80,7 +77,6 @@
 <translation id="4103419683916926126">மில்லிவினாடிகள்</translation>
 <translation id="4151657705144244502">கிராஃபிக்</translation>
 <translation id="4201051445878709314">முந்தைய மாதத்தைக் காட்டு</translation>
-<translation id="4202807286478387388">தாவு</translation>
 <translation id="421884353938374759">வண்ணத் தேர்வி</translation>
 <translation id="4248100235867064564">மெனுப் பட்டி</translation>
 <translation id="4254339807215791271">உள்ளடக்கத் தகவல்</translation>
@@ -108,7 +104,6 @@
 <translation id="5453733299334684579">ட்ரீ உருப்படி</translation>
 <translation id="5466621249238537318">ஒன்று அல்லது அதற்குமேற்பட்ட கோப்புகளைத் தேர்ந்தெடுங்கள்.</translation>
 <translation id="5468998798572797635">முழுத்திரையிலிருந்து வெளியேறு</translation>
-<translation id="5476505524087279545">தேர்வு நீக்கு</translation>
 <translation id="5516424706154626233">தேதி தேர்ந்தெடுப்பான்</translation>
 <translation id="5537725057119320332">அனுப்பு</translation>
 <translation id="5546461542133609677">ஒலி இயக்கு</translation>
@@ -121,13 +116,11 @@
 <translation id="5860033963881614850">ஆஃப்</translation>
 <translation id="588258955323874662">முழுத்திரை</translation>
 <translation id="5939518447894949180">மீட்டமை</translation>
-<translation id="5944544982112848342">2048 (உயர் தரம்)</translation>
 <translation id="5966707198760109579">வாரம்</translation>
 <translation id="5987525920412732405">சுழல் பொத்தான்</translation>
 <translation id="6015796118275082299">ஆண்டு</translation>
 <translation id="6023896073578205740">பட்டியல் பெட்டி</translation>
 <translation id="6101327004457443354">ஆடியோ டிராக்கை இயக்கு</translation>
-<translation id="6119846243427417423">செயல்படுத்து</translation>
 <translation id="6164829606128959761">மீட்டர்</translation>
 <translation id="6270583010843788609">மூவி டைம்லைன் சிறுபடம்</translation>
 <translation id="6359256949422175976">மூவி நேர ஸ்க்ரப்பர் சிறுபடம்</translation>
@@ -145,7 +138,6 @@
 <translation id="6790428901817661496">இயக்கு</translation>
 <translation id="6820355525329141109">செருகுநிரல் ஏற்றப்படவில்லை.</translation>
 <translation id="6843725295806269523">ஒலியடக்கு</translation>
-<translation id="6845533974506654842">அழுத்துக</translation>
 <translation id="6853785296079745596">மூடப்பட்ட தலைப்புகளை மறை</translation>
 <translation id="6885760532393684712">கோப்பகம்</translation>
 <translation id="6934078000481955284">பிளாக்கோட்</translation>
@@ -177,7 +169,6 @@
 <translation id="8244226242650769279">பட மேப்</translation>
 <translation id="8284326494547611709">வசனங்கள்</translation>
 <translation id="835897206747267392">செல்லாத மதிப்பு.</translation>
-<translation id="838869780401515933">சரிபார்</translation>
 <translation id="8433900881053900389">கருவிப்பட்டி</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> கோப்புகள்</translation>
 <translation id="8451268428117625855">ஒரு கோப்பை தேர்ந்தெடுக்கவும்.</translation>
@@ -192,7 +183,6 @@
 <translation id="8785498733064193001">மறுஇயக்கத்தைத் தொடங்கு</translation>
 <translation id="8851136666856101339">முதன்மை</translation>
 <translation id="8987927404178983737">மாதம்</translation>
-<translation id="9002566407876343676">திற</translation>
 <translation id="901493112792887934">நடப்பு நேரம் வினாடிகளில்</translation>
 <translation id="9048119486235211610">வழிசெலுத்தல்</translation>
 <translation id="9050748414552849310">மூடப்பட்ட தலைப்புகளைக் காட்டு</translation>

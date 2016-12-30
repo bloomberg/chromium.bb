@@ -15,6 +15,7 @@
 <translation id="1801827354178857021">Panahon</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> (na) MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 oras at }one{# oras at }other{# na oras at }}</translation>
+<translation id="1842960171412779397">piliin</translation>
 <translation id="1860796786778352021">Isara ang notification</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1901303067676059328">Piliin ang &amp;lahat</translation>
@@ -26,9 +27,11 @@
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="2497284189126895209">Lahat ng Mga File</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="252373100621549798">Hindi Kilalang Display</translation>
 <translation id="2666092431469916601">Tuktok</translation>
 <translation id="2743387203779672305">Kopyahin sa clipboard</translation>
 <translation id="2803313416453193357">Buksan ang folder</translation>
+<translation id="2931838996092594335">i-click</translation>
 <translation id="2983818520079887040">Mga Setting...</translation>
 <translation id="3036649622769666520">Buksan ang Mga File</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> (na) MB</translation>
@@ -44,11 +47,12 @@
 <translation id="3757388668994797779"><ph name="QUANTITY" /> (na) GB</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
+<translation id="3892641579809465218">Panloob na Display</translation>
 <translation id="3909791450649380159">Al&amp;isin</translation>
 <translation id="3990502903496589789">Tamang Lamang</translation>
+<translation id="4202807286478387388">tumalon</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4320177379694898372">Walang koneksyon sa internet</translation>
-<translation id="436869212180315161">Pindutin</translation>
 <translation id="4588090240171750605">Mag-scroll Pakanan</translation>
 <translation id="459417155289402299">Feature na Quick Unlock</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
@@ -60,6 +64,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> (na) PB</translation>
 <translation id="528468243742722775">Wakas na</translation>
 <translation id="5329858601952122676">&amp;Tanggalin</translation>
+<translation id="5476505524087279545">i-uncheck</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">KAliwang  Arrow</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 minuto}one{# minuto}other{# na minuto}}</translation>
@@ -70,9 +75,11 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Lahat ng App</translation>
 <translation id="6040143037577758943">Isara</translation>
+<translation id="6119846243427417423">isaaktibo</translation>
 <translation id="6129953537138746214">Puwang</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> (na) B/s</translation>
+<translation id="6203030746557259519">Virtual na Display</translation>
 <translation id="6364916375976753737">Mag-scroll Pakaliwa</translation>
 <translation id="6394627529324717982">Kuwit</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
@@ -83,6 +90,7 @@
 <translation id="6808150112686056157">Media Ihinto</translation>
 <translation id="6829324100069873704">Bumalik sa mga notification</translation>
 <translation id="6845383723252244143">Piliin ang Folder</translation>
+<translation id="6845533974506654842">pindutin</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 oras na lang ang natitira}one{# oras na lang ang natitira}other{# na oras na lang ang natitira}}</translation>
 <translation id="688711909580084195">Walang Pamagat na Webpage</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> (na) PB/s</translation>
@@ -113,6 +121,7 @@
 <translation id="8328145009876646418">Kalwang Edge</translation>
 <translation id="8331626408530291785">Mag-scroll Pataas</translation>
 <translation id="8371695176452482769">Magsalita ngayon</translation>
+<translation id="838869780401515933">I-tsek</translation>
 <translation id="8392688371657486010">Wala kang mga notification</translation>
 <translation id="8394908167088220973">I-Play/I-Pause ang Media</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
@@ -121,6 +130,7 @@
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8806053966018712535">Folder <ph name="FOLDER_NAME" /></translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="9002566407876343676">buksan</translation>
 <translation id="9038489124413477075">Walang Pangalan na Folder</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 segundo}one{# segundo}other{# na segundo}}</translation>
 <translation id="9170848237812810038">&amp;I-undo</translation>

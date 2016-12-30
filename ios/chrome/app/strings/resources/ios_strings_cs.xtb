@@ -10,6 +10,7 @@
 <translation id="1104948393051856124">Přijmout a pokračovat</translation>
 <translation id="1112015203684611006">Tisk se nezdařil.</translation>
 <translation id="1125564390852150847">Vytvořit novou kartu</translation>
+<translation id="1145536944570833626">Smazat existující data.</translation>
 <translation id="1165039591588034296">Chyba</translation>
 <translation id="1172898394251786223">Další pole</translation>
 <translation id="1176932207622159128">Obrázek nelze uložit</translation>
@@ -48,6 +49,7 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="1753905327828125965">Nejnavštěvovanější</translation>
 <translation id="1809939268435598390">Smazat složku</translation>
 <translation id="1813414402673211292">Smazat údaje o prohlížení</translation>
+<translation id="1820259098641718022">Přidáno do seznamu četby</translation>
 <translation id="1842969606798536927">Zaplatit</translation>
 <translation id="1876721852596493031">Odesílat data o využití</translation>
 <translation id="1886928167269928266">Od počátku věků</translation>
@@ -65,6 +67,7 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="2116625576999540962">Počet přesunutých položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Upravit záložku</translation>
 <translation id="2154710561487035718">Kopírovat adresu URL</translation>
+<translation id="2230173723195178503">Webová stránka byla načtena</translation>
 <translation id="2241634353105152135">Pouze jednou</translation>
 <translation id="2267753748892043616">Přidat účet</translation>
 <translation id="2273327106802955778">Nabídka Další</translation>
@@ -76,6 +79,7 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="2386793615875593361">Vybrána 1 fotka</translation>
 <translation id="2435457462613246316">Zobrazit heslo</translation>
 <translation id="2467815441875554965">Kontextové vyhledávání</translation>
+<translation id="2523092375122821828">Označit vše…</translation>
 <translation id="2572712655377361602">Přístup k vašim fotkám blokují zásady zařízení.</translation>
 <translation id="2584132361465095047">Přidat účet...</translation>
 <translation id="2593774076813182497">Stránku nelze vytisknout.</translation>
@@ -116,6 +120,7 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="3324193307694657476">Druhý řádek adresy</translation>
 <translation id="3329904751041170572">Nelze se připojit k serveru.</translation>
 <translation id="3335947283844343239">Znovu otevřít zavřenou kartu</translation>
+<translation id="3387752218061326363">Zobrazuje se historie ze zařízení, na kterých jste přihlášeni. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">Vyskakovací okna povolena</translation>
 <translation id="3414292259312108062">Chrome toto heslo uloží ve vašich <ph name="BEGIN_LINK" />uložených heslech Google<ph name="END_LINK" /> a automaticky vám jej vyplní, abyste si jej nemuseli pamatovat.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
@@ -123,7 +128,6 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="3474649192738347024">Formuláře byly vyplněny.</translation>
 <translation id="3478058380795961209">Měsíc vypršení platnosti</translation>
 <translation id="3482959374254649722">Probíhá synchronizace karet…</translation>
-<translation id="3485544713029068372">Smart Lock na hesla</translation>
 <translation id="3489372701259491571">Smazat uložené heslo</translation>
 <translation id="3519193562722059437">Chcete-li prohlížet internet, otevřete novou kartu.</translation>
 <translation id="3527085408025491307">Složka</translation>
@@ -145,6 +149,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="3789841737615482174">Instalovat</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3897092660631435901">Nabídka</translation>
+<translation id="3928666092801078803">Sloučit má data</translation>
 <translation id="3950820424414687140">Přihlaste se</translation>
 <translation id="3963231839620026525">Nová anonymní karta</translation>
 <translation id="3967822245660637423">Stahování bylo dokončeno</translation>
@@ -156,6 +161,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4121993058175073134">Chcete-li odesílat data nástroje net-export, nakonfigurujte e-mailový účet v aplikaci Nastavení.</translation>
 <translation id="4124987746317609294">Časové období</translation>
 <translation id="4172051516777682613">Vždy zobrazovat</translation>
+<translation id="4176234027218720244">Označit…</translation>
 <translation id="424315890655130736">Zadání heslové fráze</translation>
 <translation id="4272631900155121838">Chcete-li naskenovat QR kód, povolte v nastavení fotoaparát</translation>
 <translation id="4281844954008187215">Smluvní podmínky</translation>
@@ -167,6 +173,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4473991315115669931">Přejít do anonymního režimu</translation>
 <translation id="4526249700380860531">Uložená hesla můžete zobrazit a upravit na adrese <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Zkuste se přihlásit znovu.</translation>
+<translation id="4620246317052452550">Stránky, které jste si přečetli</translation>
 <translation id="4636930964841734540">Informace</translation>
 <translation id="4659667755519643272">Přejít do přepínače karet</translation>
 <translation id="4666531726415300315">Jste přihlášeni jako <ph name="EMAIL" />.
@@ -179,6 +186,7 @@ Vaše data jsou šifrována pomocí heslové fráze pro synchronizaci. Chcete-li
 <translation id="4875622588773761625">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala vaše heslo pro tento web?</translation>
 <translation id="4881695831933465202">Otevřít</translation>
 <translation id="4923459931733593730">Platba</translation>
+<translation id="4930268273022498155">Smazat existující data. Můžete je znovu načíst tím, že přepnete zpět na účet <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Litujeme, ale při sdílení položky došlo k potížím.</translation>
 <translation id="4979397965658815378">Přihlaste se pomocí účtu Google a získejte záložky, hesla, historii a další nastavení do všech svých zařízení.</translation>
 <translation id="5005498671520578047">Kopírování hesla</translation>
@@ -195,10 +203,12 @@ Vaše data jsou šifrována pomocí heslové fráze pro synchronizaci. Chcete-li
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Přidat kartu...</translation>
 <translation id="5228579091201413441">Aktivace synchronizace</translation>
+<translation id="5230733896359313003">Dodací adresa</translation>
 <translation id="5244474230056479698">Údaje se synchronizují do účtu <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5327248766486351172">Název</translation>
+<translation id="532992759783668360">Smazat přečtené</translation>
 <translation id="5388358297987318779">Otevřít obrázek</translation>
 <translation id="5409365236829784218">Nemáte nainstalovanou žádnou aplikaci, která by tento soubor uměla otevřít.</translation>
 <translation id="54401264925851789">Informace o zabezpečení stránky</translation>
@@ -227,6 +237,8 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="5916664084637901428">Zapnuto</translation>
 <translation id="5953603475187800576">Zobrazit adresy a platební karty ze služby Google Payments</translation>
 <translation id="5964480694698977962">Vytvořit novou anonymní kartu</translation>
+<translation id="5965679971710331625">Jste přihlášeni</translation>
+<translation id="5982717868370722439">Přidat existující data do účtu <ph name="USER_EMAIL" />.</translation>
 <translation id="6012140227487808125">Šifrování...</translation>
 <translation id="6021332621416007159">Otevřít v ...</translation>
 <translation id="6039694632319341016">Chcete, aby aplikace <ph name="PASSWORD_MANAGER_BRAND" /> aktualizovala heslo uživatele <ph name="USERNAME" /> pro tento web?</translation>
@@ -239,9 +251,13 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="6136914049981179737">před chvílí</translation>
 <translation id="6149061208933997199">Použít heslo</translation>
 <translation id="6158823227857319455">Nová karta</translation>
+<translation id="616831107264507309">Přečíst později</translation>
 <translation id="6184086493125982861">Zobrazit karty</translation>
 <translation id="6187302354554850004">Synchronizace: <ph name="LAST_USED_TIME" /></translation>
+<translation id="6189413832092199491">Nepřečtené</translation>
+<translation id="6194286531716220336">Zrušit</translation>
 <translation id="6196207969502475924">Hlasové vyhledávání</translation>
+<translation id="6254066287920239840">Namísto prohlížeče otevírat odkazy v aplikaci.</translation>
 <translation id="6255097610484507482">Upravit platební kartu</translation>
 <translation id="6308436439357671616">Toto umožňuje pořizovat a nahrávat fotky.</translation>
 <translation id="6314335155547195432">Vygenerovat heslo</translation>
@@ -249,11 +265,12 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="6337234675334993532">Šifrování</translation>
 <translation id="633809752005859102">Něco se hodně pokazilo. Na řešení pracujeme.</translation>
 <translation id="6344783595350022745">Smazat text</translation>
-<translation id="6351971471682124046">Odesílání do...</translation>
 <translation id="6362362396625799311">Žádné anonymní karty</translation>
 <translation id="6380866119319257197">Pokud heslovou frázi zapomenete nebo toto nastavení budete chtít změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<ph name="END_LINK" />.</translation>
+<translation id="6385146967113720558">Označit jako nepřečtené</translation>
 <translation id="6389470377220713856">Jméno na kartě</translation>
 <translation id="6406506848690869874">Synchronizace</translation>
+<translation id="6417838470969808600">Máte záložky, historii, hesla a další nastavení z účtu <ph name="USER_EMAIL1" />.</translation>
 <translation id="641799622251403418">Jste přihlášeni jako <ph name="EMAIL" />.
 
 Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro synchronizaci. Chcete-li zahájit synchronizaci, zadejte ji.</translation>
@@ -288,6 +305,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7108338896283013870">Skrýt</translation>
 <translation id="7131892264600713844">Zobrazuje se historie z tohoto zařízení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Celé jméno</translation>
+<translation id="713434964320012835">Smazat</translation>
 <translation id="7136892417564438900">Kamera je nedostupná</translation>
 <translation id="7167621057293532233">Typy dat</translation>
 <translation id="7189598951263744875">Sdílet...</translation>
@@ -309,7 +327,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7514365320538308">Stáhnout</translation>
 <translation id="7537586195939242955">Pass v této chvíli do aplikace Passbook nelze nainstalovat.</translation>
 <translation id="7561196759112975576">Vždy</translation>
-<translation id="7572670177380301651">Zobrazuje se historie ze všech přihlášených zařízení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="7588950540487816470">Fyzický web</translation>
 <translation id="7603852183842204213">Blokována vyskakovací okna (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Synchronizace nefunguje</translation>
@@ -317,9 +334,11 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7671141431838911305">INSTALOVAT</translation>
+<translation id="7682287625158474539">Doprava</translation>
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="7769602470925380267">Přijmout a odhlásit se</translation>
 <translation id="7772032839648071052">Potvrďte heslovou frázi</translation>
+<translation id="7791543448312431591">Přidat</translation>
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7851858861565204677">Jiná zařízení</translation>
 <translation id="7859704718976024901">Historie procházení</translation>
@@ -331,6 +350,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="8019783059653722575">Toto umožňuje ukládat a nahrávat fotky.</translation>
 <translation id="8023878949384262191">Rozbalí sekci.</translation>
 <translation id="8059533439631660104">Sbalí sekci.</translation>
+<translation id="806745655614357130">Uchovat má data samostatně.</translation>
 <translation id="8076014560081431679">Uložená nastavení webů nebudou smazána a mohou vypovídat o vašich zvycích při prohlížení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Zavřít všechny karty</translation>
 <translation id="8108697784695284144">Heslo bylo zkopírováno.</translation>
@@ -338,12 +358,14 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="8205564605687841303">Zrušit</translation>
 <translation id="8225985093977202398">Obrázky a soubory v mezipaměti</translation>
 <translation id="8261506727792406068">Vymazat</translation>
+<translation id="8272194309885535896">Stáhnout obrázek</translation>
 <translation id="8272426682713568063">Platební karty</translation>
 <translation id="8281781826761538115">Výchozí – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Nastavte, jak má Google využívat vaši historii procházení k personalizaci Vyhledávání, reklam a dalších služeb Google</translation>
 <translation id="8428045167754449968">Město nebo obec</translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8433678324664858900">Zobrazovat návrhy</translation>
+<translation id="8458197615157477273">Označit jako přečtené</translation>
 <translation id="8458397775385147834">Smazána 1 položka</translation>
 <translation id="8503813439785031346">Uživatelské jméno</translation>
 <translation id="8517375800490286174">Licence open source</translation>
@@ -355,6 +377,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="8620640915598389714">Upravit</translation>
 <translation id="8636825310635137004">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, zapněte synchronizaci.</translation>
 <translation id="8680787084697685621">Přihlašovací údaje k účtu jsou zastaralé.</translation>
+<translation id="8699098509676302392">Přidat adresu...</translation>
 <translation id="8721297211384281569">Nabídka Nástroje</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="8730621377337864115">Hotovo</translation>
@@ -375,6 +398,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="9055772144595778347">Přihlášení se nezdařilo</translation>
 <translation id="9065203028668620118">Upravit</translation>
 <translation id="9079935439869366234">Označit vše jako nepřečtené</translation>
+<translation id="9080712759204168376">Přehled objednávky</translation>
 <translation id="9083392325882095631">1 položka</translation>
 <translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
 <translation id="9148126808321036104">Znovu přihlásit</translation>

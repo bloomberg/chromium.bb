@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">pierakstieties pārlūkā Chrome</translation>
 <translation id="1061441684050139317">Pārlūkam Chrome ir nepieciešama piekļuve mikrofonam, lai kopīgotu to ar šo vietni.</translation>
 <translation id="1065672644894730302">Jūsu preferences nevar nolasīt. Dažas funkcijas var nebūt pieejamas, un preferenču izmaiņas netiks saglabātas</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> iepriekš izmantoja Chrome</translation>
 <translation id="1104959162601287462">Par &amp;Chrome OS</translation>
 <translation id="110877069173485804">Šis ir jūsu pārlūks Chrome</translation>
 <translation id="123620459398936149">Chrome OS nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Chrome Canary lietotnes</translation>
 <translation id="1457721931618994305">Notiek Google Chrome atjaunināšana...</translation>
 <translation id="1469002951682717133">Chrome lietotņu palaišanas programma</translation>
-<translation id="1475773083554142432">Chrome saglabās šo paroli, izmantojot sistēmu <ph name="SAVED_PASSWORD_LINK" />, un atcerēsies to nākamajā reizē, kad jums tā būs nepieciešama.</translation>
 <translation id="1480489203462860648">Izmēģināt, tas jau ir instalēts</translation>
 <translation id="1553358976309200471">Atjaunināt Chrome</translation>
 <translation id="1587223624401073077">Pārlūkā Google Chrome tiek izmantota kamera.</translation>
@@ -43,7 +43,6 @@
 <translation id="2147651015520127414">Chrome apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>
 <translation id="2246246234298806438">Pārlūks Google Chrome nevar parādīt drukas priekšskatījumu, ja nav pieejams iebūvētais PDF skatītājs.</translation>
 <translation id="2252923619938421629">Palīdziet uzlabot pārlūku Google Chrome, ziņojot par pašreizējiem iestatījumiem.</translation>
-<translation id="225614027745146050">Laipni lūdzam!</translation>
 <translation id="2286950485307333924">Jūs esat pierakstījies pārlūkā Chrome</translation>
 <translation id="2290014774651636340">Trūkst Google API atslēgu. Tiks atspējotas dažas Google Chrome funkcijas.</translation>
 <translation id="2290095356545025170">Vai tiešām vēlaties atinstalēt Google Chrome?</translation>

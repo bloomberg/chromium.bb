@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">‏כדי לשפר את האבטחה של Chromium, השבתנו חלק מהתוספים שלא רשומים ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוספו ללא ידיעתך.</translation>
 <translation id="1808667845054772817">‏התקן מחדש את Chromium</translation>
 <translation id="1816404578968201294">‏Chromium זקוק לגישה אל המיקום כדי לשתף אותו עם האתר הזה.</translation>
+<translation id="1838412507805038478">‏Chromium אימת ש-<ph name="ISSUER" /> הנפיק את האישור של האתר הזה.</translation>
 <translation id="1869480248812203386">‏אתה יכול לעזור לשפר את הבטיחות של Chromium ולהקל את השימוש בו על ידי דיווח ל-Google על פרטים של בעיות אבטחה אפשריות.</translation>
 <translation id="1881322772814446296">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chromium. הנתונים שלך ב-Chromium, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. לחלופין, תוכל ליצור פרופיל חדש כדי לשמור את הנתונים הקיימים שלך ב-Chromium בנפרד.<ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">‏Chromium אינו מגיב. להפעיל מחדש עכשיו?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">‏מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="2158734852934720349">‏רישיונות קוד פתוח של מערכת ההפעלה של Chromium</translation>
 <translation id="2241627712206172106">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chromium בדיוק כפי שהם רוצים.</translation>
-<translation id="225614027745146050">ברוכים הבאים</translation>
 <translation id="2316129865977710310">לא, תודה</translation>
 <translation id="2347108572062610441">‏התוסף שינה את הדף שמוצג כשאתה מפעיל את Chromium.</translation>
 <translation id="2372704305038231957">‏ייתכן ש-Chromium ב-32 סיביות לא יפעל כראוי כי אינו נתמך יותר במערכת Linux זו. שדרג ל-Chromium ב-64 סיביות.</translation>
@@ -151,7 +151,6 @@
 <translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5906655207909574370">העדכון כמעט הושלם! הפעל מחדש את המכשיר כדי לסיים את העדכון.</translation>
-<translation id="5942225298871134766">‏Chromium ישמור את הסיסמה הזו ב-<ph name="SAVED_PASSWORD_LINK" /> ויזכור אותה בפעם הבאה שתזדקק לה.</translation>
 <translation id="5942520288919337908">‏<ph name="EXTENSION_NAME" /> נוסף ל-‏Chromium‏.</translation>
 <translation id="59625444380784159">‏פרטים מאנשי הקשר שלך יכולים לעזור לך למלא טפסים במהירות רבה יותר ב-Chromium.</translation>
 <translation id="5987687638152509985">‏עדכן את Chromium כדי להתחיל את הסנכרון</translation>
@@ -240,6 +239,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="81770708095080097">‏Chromium‏ חסם את הקובץ הזה כי הוא מסוכן.</translation>
 <translation id="8269379391216269538">‏עזור לנו לשפר את Chromium</translation>
 <translation id="8290862415967981663">‏Chromium‏ חסם את הקובץ הזה כי הוא עלול להיות מסוכן.</translation>
+<translation id="8340674089072921962">‏בכתובת <ph name="USER_EMAIL_ADDRESS" /> השתמשו בעבר ב-Chromium</translation>
 <translation id="8453117565092476964">‏הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Chromium.</translation>
 <translation id="8493179195440786826">‏Chromium אינו מעודכן</translation>
 <translation id="85843667276690461">‏עזרה באמצעות Chromium</translation>

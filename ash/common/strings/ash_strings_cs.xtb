@@ -53,10 +53,8 @@
 <translation id="2429753432712299108">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. Než toto povolení schválíte, zkontrolujte si, zda je na zařízení zobrazen následující přístupový klíč: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Došlo k chybě</translation>
 <translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
-<translation id="252373100621549798">Neznámý displej</translation>
 <translation id="2532589005999780174">Režim vysokého kontrastu</translation>
 <translation id="2562916301614567480">Soukromá síť</translation>
-<translation id="2661637000095600270">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy. Kliknutím odešlete zpětnou vazbu.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: Připojování...</translation>
 <translation id="2700058918926273959">Relace skončí za <ph name="SESSION_TIME_REMAINING" />. Poté budete odhlášeni.</translation>
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
@@ -112,7 +110,6 @@
 <translation id="3846575436967432996">Informace o síti nejsou k dispozici</translation>
 <translation id="3866182280516392520">Adresa IPv6</translation>
 <translation id="3891340733213178823">Odhlaste se dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
-<translation id="3892641579809465218">Interní displej</translation>
 <translation id="3893630138897523026">ChromeVox (hlasová odezva)</translation>
 <translation id="3899995891769452915">Hlasový vstup</translation>
 <translation id="3901991538546252627">Připojování k síti <ph name="NAME" /></translation>
@@ -174,6 +171,8 @@
 <translation id="5977415296283489383">Sluchátka</translation>
 <translation id="5978382165065462689">Ovládání obrazovky je sdíleno prostřednictvím Vzdálené pomoci.</translation>
 <translation id="5980301590375426705">Odhlásit hosta</translation>
+<translation id="6041154455840261787">Je aktivován režim vysokého kontrastu. Vypnete jej opětovným stisknutím kombinace kláves Hledat+Shift+H.</translation>
+<translation id="6043212731627905357">Tento monitor si se zařízením <ph name="DEVICE_TYPE" /> nerozumí (monitor není podporován).</translation>
 <translation id="6043994281159824495">Odhlásit se</translation>
 <translation id="6047696787498798094">Pokud přepnete na jiného uživatele, sdílení obrazovky bude ukončeno. Chcete pokračovat?</translation>
 <translation id="6062360702481658777">Za <ph name="LOGOUT_TIME_LEFT" /> budete automaticky odhlášeni.</translation>
@@ -182,7 +181,6 @@
 <translation id="6144938890088808325">Pomozte nám Chromebooky zlepšit</translation>
 <translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
 <translation id="6165508094623778733">Další informace</translation>
-<translation id="6203030746557259519">Virtuální displej</translation>
 <translation id="6248847161401822652">Práci ukončíte dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Probíhá aktivace...</translation>
 <translation id="6297287540776456956">Vyberte pomocí dotykového pera oblast.</translation>
@@ -205,6 +203,7 @@
 <translation id="6700713906295497288">Tlačítko nabídky IME</translation>
 <translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ bylo spárováno a je nyní k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
 <translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE" /> % a nabíjí se.</translation>
+<translation id="6803622936009808957">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy.</translation>
 <translation id="683971173229319003">Hledat+L</translation>
 <translation id="6857811139397017780">Aktivovat: <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Připojit k jiné...</translation>
@@ -272,7 +271,6 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="8878886163241303700">Rozšíření obrazovky</translation>
 <translation id="8938800817013097409">Zařízení USB Type-C (pravý zadní port)</translation>
 <translation id="8940956008527784070">Slabá baterie (<ph name="PERCENTAGE" /> %)</translation>
-<translation id="9008540565042607572">Milý monitore, nějak nám to spolu neklape. (Tento Mmonitor není podporován. Kliknutím odešlete zpětnou vazbu.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Mikrofon je používán.</translation>
 <translation id="9089416786594320554">Metody zadávání dat</translation>
@@ -282,5 +280,6 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="923686485342484400">Odhlásíte se dvojitým stisknutím kombinace kláves Control Shift Q.</translation>
 <translation id="938582441709398163">Překryvná klávesnice</translation>
 <translation id="939252827960237676">Uložení snímku obrazovky se nezdařilo</translation>
+<translation id="945522503751344254">Odeslat zpětnou vazbu</translation>
 <translation id="952992212772159698">Není aktivováno</translation>
 </translationbundle>

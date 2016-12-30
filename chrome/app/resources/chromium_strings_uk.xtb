@@ -35,7 +35,6 @@
 <translation id="2119636228670142020">Про &amp;ОС Chromium</translation>
 <translation id="2158734852934720349">Ліцензії ОС Chromium із відкритим кодом</translation>
 <translation id="2241627712206172106">Якщо вашим комп’ютером користуєтесь не лише ви, а й ваші друзі чи сім’я, вони можуть налаштувати Chromium на свій смак.</translation>
-<translation id="225614027745146050">Вітаємо!</translation>
 <translation id="2316129865977710310">Ні, дякую</translation>
 <translation id="2347108572062610441">Це розширення змінило сторінку, яка відкривається під час запуску Chromium.</translation>
 <translation id="2372704305038231957">32-розрядна версія Chromium може працювати неналежним чином, оскільки ця система Linux більше не підтримується. Установіть 64-розрядну версію Chromium.</translation>
@@ -154,7 +153,6 @@
 <translation id="5877064549588274448">Канал змінено. Перезапустіть пристрій, щоб застосувати зміни.</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
 <translation id="5906655207909574370">Майже оновлено. Перезапустіть пристрій, щоб завершити оновлення.</translation>
-<translation id="5942225298871134766">Chromium додасть його в <ph name="SAVED_PASSWORD_LINK" /> і запам’ятає для наступного разу.</translation>
 <translation id="5942520288919337908">Розширення <ph name="EXTENSION_NAME" /> додано в Chromium.</translation>
 <translation id="59625444380784159">Дані ваших контактів допоможуть швидше заповнювати форми в Chromium.</translation>
 <translation id="5987687638152509985">Щоб почати синхронізацію, оновіть Chromium</translation>

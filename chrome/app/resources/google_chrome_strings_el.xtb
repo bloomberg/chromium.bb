@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">σύνδεση στο Chrome</translation>
 <translation id="1061441684050139317">Το Chrome χρειάζεται πρόσβαση στο μικρόφωνο προκειμένου να το μοιραστεί με αυτόν τον ιστότοπο.</translation>
 <translation id="1065672644894730302">Δεν είναι δυνατή η ανάγνωση των προτιμήσεών σας. Ορισμένες λειτουργίες ενδέχεται να μην είναι διαθέσιμες και οι αλλαγές στις προτιμήσεις δεν θα αποθηκευτούν.</translation>
+<translation id="1088300314857992706">Η διεύθυνση <ph name="USER_EMAIL_ADDRESS" /> χρησιμοποιούσε το Chrome στο παρελθόν</translation>
 <translation id="1104959162601287462">Σχ&amp;ετικά με το Chrome OS</translation>
 <translation id="110877069173485804">Ορίστε το δικό σας Chrome</translation>
 <translation id="123620459398936149">Το Chrome OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας. Ενημερώστε τη φράση πρόσβασης συγχρονισμού.</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Εφαρμογές Chrome Canary</translation>
 <translation id="1457721931618994305">Ενημέρωση του Google Chrome…</translation>
 <translation id="1469002951682717133">Λειτουργία εκκίνησης εφαρμογών Chrome</translation>
-<translation id="1475773083554142432">Το Chrome θα αποθηκεύσει αυτές τις πληροφορίες με <ph name="SAVED_PASSWORD_LINK" /> και θα τις απομνημονεύσει για την επόμενη φορά που θα τις χρειαστείτε.</translation>
 <translation id="1480489203462860648">Δοκιμάστε το! Εγκαταστάθηκε.</translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
 <translation id="1587223624401073077">Το Google Chrome χρησιμοποιεί την κάμερά σας.</translation>
@@ -43,7 +43,6 @@
 <translation id="2147651015520127414">Το Chrome επαλήθευσε ότι το πιστοποιητικό αυτού του ιστότοπου εκδόθηκε από τον/την <ph name="ISSUER" />.</translation>
 <translation id="2246246234298806438">Το Google Chrome δεν είναι δυνατό να εμφανίσει την προεπισκόπηση εκτύπωσης όταν λείπει το ενσωματωμένο πρόγραμμα προβολής PDF.</translation>
 <translation id="2252923619938421629">Συμβάλετε στη βελτίωση του Google Chrome αναφέροντας τις τρέχουσες ρυθμίσεις</translation>
-<translation id="225614027745146050">Καλώς ορίσατε</translation>
 <translation id="2286950485307333924">Έχετε συνδεθεί στο Chrome</translation>
 <translation id="2290014774651636340">Λείπουν κλειδιά του Google API. Ορισμένες λειτουργίες του Google Chrome θα απενεργοποιηθούν.</translation>
 <translation id="2290095356545025170">Είστε βέβαιοι ότι θέλετε να καταργήσετε την εγκατάσταση του Google Chrome;</translation>

@@ -8,6 +8,7 @@
 <translation id="1065672644894730302">Jūsų nuostatų negalima nuskaityti.
 
 Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išsaugoti.</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> anksčiau naudojo „Chrome“</translation>
 <translation id="1104959162601287462">Apie „&amp;Chrome“ OS</translation>
 <translation id="110877069173485804">Tai jūsų „Chrome“</translation>
 <translation id="123620459398936149">„Chrome“ OS negali sinchronizuoti duomenų. Atnaujinkite sinchronizavimo slaptafrazę.</translation>
@@ -19,7 +20,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1434626383986940139">„Chrome“ programos („Canary“)</translation>
 <translation id="1457721931618994305">Atnaujinama „Google Chrome“...</translation>
 <translation id="1469002951682717133">„Chrome“ programų paleidimo priemonė</translation>
-<translation id="1475773083554142432">„Chrome“ jį išsaugos naudodama <ph name="SAVED_PASSWORD_LINK" /> ir prisimins, kai jo prireiks kitą kartą.</translation>
 <translation id="1480489203462860648">Išbandykite, jau įdiegta</translation>
 <translation id="1553358976309200471">Atnaujinkite „Chrome“</translation>
 <translation id="1587223624401073077">„Google Chrome“ naudoja jūsų fotoaparatą.</translation>
@@ -45,7 +45,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2147651015520127414">„Chrome“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą.</translation>
 <translation id="2246246234298806438">„Google Chrome“ negali rodyti spaudinio peržiūros, kai nėra integruotos PDF žiūryklės.</translation>
 <translation id="2252923619938421629">Padėkite pagerinti „Google Chrome“ pateikę ataskaitą apie dabartinius nustatymus</translation>
-<translation id="225614027745146050">Sveiki</translation>
 <translation id="2286950485307333924">Esate prisijungę prie „Chrome“</translation>
 <translation id="2290014774651636340">Trūksta „Google“ API raktų. Bus išjungtos kai kurios „Google Chrome“ funkcijos.</translation>
 <translation id="2290095356545025170">Ar tikrai norite pašalinti „Google Chrome“?</translation>

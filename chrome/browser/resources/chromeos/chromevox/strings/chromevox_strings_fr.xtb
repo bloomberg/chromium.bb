@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">fr</translation>
 <translation id="2091933974477985526">Zone de texte modifiable précédente</translation>
 <translation id="2100350898815792233">Tous les signes de ponctuation</translation>
+<translation id="2110480898214777136">Déplace du début à la fin ou de la fin au début au sein d'une page, d'une boîte de dialogue ou d'un autre conteneur</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">touche d'accès : <ph name="KEY" /></translation>
 <translation id="2155457205053847599">Modifiez la table braille actuelle à six points en sélectionnant une option dans la liste ci-dessous.</translation>
 <translation id="2169714232367507776">Cliquer sur l'élément actuel</translation>
+<translation id="2179452035581866348">ChromeVox utilise des sons pour vous fournir des informations essentielles et des données complémentaires. Découvrez la signification de chaque son afin d'optimiser votre navigation. Lorsque ces sons vous sont devenus familiers, vous pouvez désactiver les descriptions vocales détaillées et ne vous fier qu'à eux pour obtenir les informations essentielles présentes sur la page. Voici la liste complète des sons, avec la signification de chacun.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{parenthèse fermée}one{# parenthèse fermée}other{# parenthèses fermées}}</translation>
 <translation id="2199994615414171367">Objet Math précédent</translation>
 <translation id="2220529011494928058">Signaler un problème</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">Principal</translation>
 <translation id="2329324941084714723">Panneau tab</translation>
 <translation id="2344193891939537199">Commande relative à la date et à l'heure</translation>
+<translation id="2347456970887948350">Un lien</translation>
 <translation id="2359897517538099099">Vous n'utilisez pas le mode Tableau.</translation>
 <translation id="241124561063364910">suivi de</translation>
+<translation id="2416512023405990736">Une case décochée</translation>
 <translation id="2417569100218200841">Infos sur le contenu</translation>
 <translation id="2422937916923936891">Case à cocher d'élément de menu</translation>
 <translation id="2428534162001909979">Menus de commandes</translation>
@@ -213,6 +217,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3223701887221307104"><ph name="NAME" />, onglet</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Lien consulté</translation>
+<translation id="3232388865800379423">Un bouton de fenêtre pop-up</translation>
 <translation id="323731244387692321">Ouvrir l'aide du clavier ChromeVox</translation>
 <translation id="3241052487511142956">Lien consulté précédent</translation>
 <translation id="3286390186030710347">Curseur</translation>
@@ -221,6 +226,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3311969765485641742">Appuyez sur Alt + Maj + A pour examiner les alertes.</translation>
 <translation id="3312997241656799641">Lien consulté suivant</translation>
 <translation id="3313245066383501820">Touche de modification ChromeVox</translation>
+<translation id="3317212938060708859">Un curseur</translation>
 <translation id="3321460131042519426">Enable word wrap</translation>
 <translation id="3322936298410871309">En-tête précédent de niveau 1</translation>
 <translation id="3323447499041942178">Zone de saisie</translation>
@@ -279,6 +285,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3457000393508828486">Partiellement sélectionné</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, interrupteur désactivé</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, bouton</translation>
+<translation id="3466530247399808663">Une touche actionnée incorrecte</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> slct</translation>
 <translation id="3486232535569802404"><ph name="V1" /> à <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{crochet droit}one{# crochet droit}other{# crochets droits}}</translation>
@@ -286,6 +293,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{point d'interrogation}one{# point d'interrogation}other{# points d'interrogation}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{caret}one{# caret}other{# carets}}</translation>
+<translation id="352577523970648069">Un champ de texte modifiable</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, case non cochée</translation>
 <translation id="3599054940393788245">En dehors de l'expression mathématique</translation>
 <translation id="3616113530831147358">Audio</translation>
@@ -325,10 +333,12 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4047216625641135770">Surlignage</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4054936709456751127">statut</translation>
+<translation id="4058278702844053247">Un chargement de page en cours</translation>
 <translation id="4065205963140826639">Pour accéder au bouton Suivant, appuyez sur la touche de recherche + la flèche vers la droite, puis pour cliquer dessus, appuyez sur la touche de recherche + la barre d'espace.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}one{# tilde}other{# tildes}}</translation>
 <translation id="409334809956508737">Objet précédent</translation>
 <translation id="4099274309791143834">avec sous-menu</translation>
+<translation id="4101527861445851766">Une case cochée</translation>
 <translation id="4107807507418787238">Aucune cellule au-dessous</translation>
 <translation id="4116415223832267137">Alerte</translation>
 <translation id="4147126331795725888">Aucune commande suivante.</translation>
@@ -338,6 +348,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4173994908659439270">Aucun champ de texte modifiable suivant</translation>
 <translation id="4176463684765177261">Désactivé</translation>
 <translation id="4188530942454211480">Phrase précédente</translation>
+<translation id="4191918948604314587">Un bouton</translation>
 <translation id="4202186506458631436">Déplacer vers la droite</translation>
 <translation id="4206289001967551965">Dans le tableau</translation>
 <translation id="4215733775853809057">Curseur suivant</translation>
@@ -461,6 +472,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5374320867641260420">Aucun bouton suivant</translation>
 <translation id="5382299583965267720">Aucun titre de niveau 1 suivant</translation>
 <translation id="5402367795255837559">Braille</translation>
+<translation id="5402791055281059602">Une alerte modale</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{point-virgule}one{# point-virgule}other{# points-virgules}}</translation>
 <translation id="5411891038905756502">Aucun renvoi précédent</translation>
 <translation id="5417034931411865818">Cliquez sur l'élément sous la clé de routage $1</translation>
@@ -554,6 +566,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="6119955456199054975">Fin de la cellule</translation>
 <translation id="6122013438240733403">bouton</translation>
 <translation id="6129953537138746214">Espace</translation>
+<translation id="6132506484792346370">Une zone de liste ou une liste déroulante</translation>
 <translation id="6138576064440631958">Accord $1</translation>
 <translation id="6142308968191113180">Titre 4</translation>
 <translation id="6169420925157477918">Image avec une description longue</translation>
@@ -567,6 +580,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="6282062888058716985">nav.</translation>
 <translation id="6290434000785343030">Aucune liste déroulante suivante</translation>
 <translation id="6307969636681130414">Élément sur lequel vous avez appuyé</translation>
+<translation id="6322856989298155004">Sons</translation>
 <translation id="6324551002951139333">erreur grammaticale détectée</translation>
 <translation id="6348657800373377022">Liste déroulante</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{puce}one{# puce}other{# puces}}</translation>
@@ -597,6 +611,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="6657128831881431364">Barre de progression</translation>
 <translation id="6659594942844771486">Onglet</translation>
 <translation id="667999046851023355">Document</translation>
+<translation id="6688209025607531203">Une alerte non modale</translation>
 <translation id="6697092096875747123">Liste déroulante précédente</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{point d'exclamation}one{# point d'exclamation}other{# points d'exclamation}}</translation>
 <translation id="6710213216561001401">Précédent</translation>

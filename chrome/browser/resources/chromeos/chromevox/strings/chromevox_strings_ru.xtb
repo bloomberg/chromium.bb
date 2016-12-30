@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">ru</translation>
 <translation id="2091933974477985526">Перейти к предыдущей редактируемой области текста</translation>
 <translation id="2100350898815792233">Со всеми знаками препинания.</translation>
+<translation id="2110480898214777136">Перенос из начала в конец и наоборот внутри страницы, диалога или другого контейнера</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">access key:<ph name="KEY" /></translation>
 <translation id="2155457205053847599">Чтобы сменить 6-точечный шрифт Брайля, выберите вариант из списка ниже</translation>
 <translation id="2169714232367507776">Нажать на текущий элемент</translation>
+<translation id="2179452035581866348">ChromeVox использует звуки, чтобы передавать важную и дополнительную информацию. Когда вы будете знать, что означает каждый звук, то сможете перемещаться по странице с их помощью и при необходимости даже отключить подробное озвучивание. Ниже представлен полный список звуков и их значений.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{закрывающая круглая скобка}one{# закрывающая круглая скобка}few{# закрывающие круглые скобки}many{# закрывающих круглых скобок}other{# close parens}}</translation>
 <translation id="2199994615414171367">Перейти к предыдущему математическому выражению</translation>
 <translation id="2220529011494928058">Сообщить о проблеме</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">Основное</translation>
 <translation id="2329324941084714723">Панель вкладок</translation>
 <translation id="2344193891939537199">Выбор даты и времени</translation>
+<translation id="2347456970887948350">Ссылка</translation>
 <translation id="2359897517538099099">Режим таблицы выключен.</translation>
 <translation id="241124561063364910">а затем</translation>
+<translation id="2416512023405990736">Снятый флажок</translation>
 <translation id="2417569100218200841">Сведения о контенте</translation>
 <translation id="2422937916923936891">Элемент меню: флажок</translation>
 <translation id="2428534162001909979">Меню</translation>
@@ -213,6 +217,7 @@
 <translation id="3223701887221307104">Вкладка "<ph name="NAME" />"</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Посещенная ссылка</translation>
+<translation id="3232388865800379423">Всплывающая кнопка</translation>
 <translation id="323731244387692321">Открыть справку о горячих клавишах ChromeVox</translation>
 <translation id="3241052487511142956">Перейти к предыдущей открытой ссылке</translation>
 <translation id="3286390186030710347">Ползунок</translation>
@@ -221,6 +226,7 @@
 <translation id="3311969765485641742">Нажмите ALT + SHIFT + A, чтобы посмотреть оповещения</translation>
 <translation id="3312997241656799641">Перейти к следующей открытой ссылке</translation>
 <translation id="3313245066383501820">Клавиша-модификатор ChromeVox</translation>
+<translation id="3317212938060708859">Ползунок</translation>
 <translation id="3321460131042519426">Переносить по словам</translation>
 <translation id="3322936298410871309">Перейти к предыдущему заголовку первого уровня</translation>
 <translation id="3323447499041942178">Текстовое поле</translation>
@@ -279,6 +285,7 @@
 <translation id="3457000393508828486">Частично нажато</translation>
 <translation id="3458865416877308321"><ph name="NAME" />: отключено</translation>
 <translation id="3462439746547587373">Кнопка "<ph name="NAME" />"</translation>
+<translation id="3466530247399808663">Нажатие недопустимой клавиши</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{закрывающая квадратная скобка}one{# закрывающая квадратная скобка}few{# закрывающие квадратные скобки}many{# закрывающих квадратных скобок}other{# right brackets}}</translation>
@@ -286,6 +293,7 @@
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{вопросительный знак}one{# вопросительный знак}few{# вопросительных знака}many{# вопросительных знаков}other{# question marks}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{циркумфлекс}one{# циркумфлекс}few{# циркумфлекса}many{# циркумфлексов}other{# carets}}</translation>
+<translation id="352577523970648069">Редактируемое текстовое поле</translation>
 <translation id="3568702578574425662">Флажок "<ph name="NAME" />", не установлен</translation>
 <translation id="3599054940393788245">Не математический символ</translation>
 <translation id="3616113530831147358">Аудио</translation>
@@ -325,10 +333,12 @@
 <translation id="4047216625641135770">Пометка.</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
+<translation id="4058278702844053247">Загрузка страницы</translation>
 <translation id="4065205963140826639">Попробуйте найти кнопку "Далее" с помощью клавиш SEARCH + СТРЕЛКА ВПРАВО и нажать ее, используя клавиши SEARCH + ПРОБЕЛ.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{тильда}one{# тильда}few{# тильды}many{# тильд}other{# tildes}}</translation>
 <translation id="409334809956508737">К предыдущему элементу</translation>
 <translation id="4099274309791143834">есть подменю</translation>
+<translation id="4101527861445851766">Установленный флажок</translation>
 <translation id="4107807507418787238">Ячейки ниже нет.</translation>
 <translation id="4116415223832267137">Оповещение</translation>
 <translation id="4147126331795725888">Следующего элемента управления нет.</translation>
@@ -338,6 +348,7 @@
 <translation id="4173994908659439270">Следующего редактируемого текстового поля нет.</translation>
 <translation id="4176463684765177261">Отключено</translation>
 <translation id="4188530942454211480">Перейти к предыдущему предложению</translation>
+<translation id="4191918948604314587">Кнопка</translation>
 <translation id="4202186506458631436">Переместить вправо</translation>
 <translation id="4206289001967551965">Открыта таблица.</translation>
 <translation id="4215733775853809057">Перейти к следующему ползунку</translation>
@@ -461,6 +472,7 @@
 <translation id="5374320867641260420">Следующей кнопки нет.</translation>
 <translation id="5382299583965267720">Следующего заголовка первого уровня нет.</translation>
 <translation id="5402367795255837559">Шрифт Брайля</translation>
+<translation id="5402791055281059602">Модальное оповещение</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{точка с запятой}one{# точка с запятой}few{# точки с запятой}many{# точек с запятой}other{# semicolons}}</translation>
 <translation id="5411891038905756502">Предыдущей точки перехода нет.</translation>
 <translation id="5417034931411865818">Нажать на элемент под ключом маршрутизации $1</translation>
@@ -554,6 +566,7 @@
 <translation id="6119955456199054975">Конец ячейки.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Пробел</translation>
+<translation id="6132506484792346370">Обычный или комбинированный список</translation>
 <translation id="6138576064440631958">комбинация: $1</translation>
 <translation id="6142308968191113180">Заголовок четвертого уровня</translation>
 <translation id="6169420925157477918">Изображение с подробным описанием</translation>
@@ -567,6 +580,7 @@
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Следующего поля со списком нет.</translation>
 <translation id="6307969636681130414">Нажато</translation>
+<translation id="6322856989298155004">Звук</translation>
 <translation id="6324551002951139333">Найдена грамматическая ошибка</translation>
 <translation id="6348657800373377022">Поле со списком</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{маркер списка}one{# маркер списка}few{# маркера списка}many{# маркеров списка}other{# маркера списка}}</translation>
@@ -597,6 +611,7 @@
 <translation id="6657128831881431364">Строка состояния</translation>
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="667999046851023355">Документ</translation>
+<translation id="6688209025607531203">Немодальное оповещение</translation>
 <translation id="6697092096875747123">Перейти к предыдущему полю со списком</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{восклицательный знак}one{# восклицательный знак}few{# восклицательных знака}many{# восклицательных знаков}other{# восклицательного знака}}</translation>
 <translation id="6710213216561001401">Назад</translation>

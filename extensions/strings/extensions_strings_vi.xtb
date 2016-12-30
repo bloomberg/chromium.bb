@@ -21,20 +21,18 @@
 <translation id="388442998277590542">Không thể tải trang tùy chọn '<ph name="OPTIONS_PAGE" />'.</translation>
 <translation id="4115165561519362854">Quản trị viên của máy này yêu cầu <ph name="EXTENSION_NAME" /> có phiên bản tối thiểu của <ph name="EXTENSION_VERSION" />. Không thể kích hoạt phiên bản cho đến khi máy cập nhật lên phiên bản đó (hoặc phiên bản cao hơn).</translation>
 <translation id="4233778200880751280">Không thể tải trang giới thiệu '<ph name="ABOUT_PAGE" />'.</translation>
-<translation id="4434145631756268951">{0,select, single{Chọn thiết bị USB}multiple{Chọn thiết bị USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Không thể cài đặt gói vì một quá trình tiện ích bị lỗi. Thử khởi động lại Chrome rồi thử lại.</translation>
 <translation id="5026754133087629784">Chế độ xem web: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Tiện ích này bao gồm tệp khóa '<ph name="KEY_PATH" />'. Bạn có thể không muốn thực hiện việc đó.</translation>
 <translation id="5627523580512561598">tiện ích <ph name="EXTENSION_NAME" /></translation>
-<translation id="5630931906013276297">{0,select, single{Chọn thiết bị HID}multiple{Chọn thiết bị HID}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Quản trị viên của máy này yêu cầu cài đặt <ph name="EXTENSION_NAME" />. Không thể gỡ cài đặt tiện ích này.</translation>
 <translation id="6027032947578871493">Sản phẩm không xác định <ph name="PRODUCT_ID" /> từ <ph name="VENDOR_NAME" /> (số sê-ri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> từ nhà cung cấp <ph name="VENDOR_ID" /></translation>
 <translation id="6143635259298204954">Không thể giải nén tiện ích.  Để giải nén tiện ích một cách an toàn, phải có đường dẫn đến thư mục hồ sơ không chứa liên kết dạng biểu tượng của bạn.  Không có đường dẫn như vậy tồn tại cho hồ sơ của bạn.</translation>
-<translation id="616804573177634438">{0,select, single{Ứng dụng "<ph name="APP_NAME" />" đang yêu cầu quyền truy cập vào một trong các thiết bị của bạn.}multiple{Ứng dụng "<ph name="APP_NAME" />" đang yêu cầu quyền truy cập vào một hoặc nhiều thiết bị của bạn.}other{UNUSED}}</translation>
 <translation id="641087317769093025">Không thể giải nén tiện ích</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" đang yêu cầu quyền truy cập vào một hoặc nhiều thiết bị của bạn:</translation>
 <translation id="657064425229075395">Không thể tải tập lệnh nền '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> của <ph name="VENDOR_NAME" /> (số sê-ri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Không thể tạo thư mục để giải nén: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">Gói không hợp lệ. Chi tiết: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Tiện ích này không thể chuyển hướng yêu cầu mạng đến <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> do tiện ích khác (<ph name="EXTENSION_NAME" />) đã chuyển hướng yêu cầu mạng này đến <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Trình giải nén tiện ích</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" đang yêu cầu quyền truy cập vào một trong các thiết bị của bạn:</translation>
 <translation id="8825366169884721447">Tiện ích này không thể sửa đổi tiêu đề yêu cầu "<ph name="HEADER_NAME" />" của một yêu cầu mạng do sửa đổi đã xung đột với một tiện ích khác (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="9111791539553342076">Tiện ích này không thể sửa đổi tiêu đề phản hồi "<ph name="HEADER_NAME" />" của một yêu cầu mạng do sửa đổi đã xung đột với một tiện ích khác (<ph name="EXTENSION_NAME" />).</translation>
 </translationbundle>

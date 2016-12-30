@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">Um Chromium sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt sind und möglicherweise ohne Ihr Wissen hinzugefügt wurden.</translation>
 <translation id="1808667845054772817">Chromium neu installieren</translation>
 <translation id="1816404578968201294">Chromium benötigt Zugriff auf diesen Standort, um ihn mit dieser Website teilen zu können.</translation>
+<translation id="1838412507805038478">Chromium hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat.</translation>
 <translation id="1869480248812203386">Helfen Sie mit, Chromium sicherer und nutzerfreundlicher zu machen, indem Sie Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden.</translation>
 <translation id="1881322772814446296">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Chromium-Profil. Ihre Chromium-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. Wenn Sie Ihre bestehenden Chromium-Daten getrennt verwenden möchten, können Sie ein neues Profil erstellen. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium reagiert nicht. Jetzt neu starten?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">Über &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Open-Source-Lizenzen für Chromium OS</translation>
 <translation id="2241627712206172106">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chromium jeweils nach ihren Wünschen einrichten.</translation>
-<translation id="225614027745146050">Willkommen</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="2347108572062610441">Die beim Start von Chromium angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
 <translation id="2372704305038231957">Die 32-Bit-Version von Chromium funktioniert unter Umständen nicht ordnungsgemäß, da sie unter diesem Linux-System nicht mehr unterstützt wird. Aktualisieren Sie bitte auf die 64-Bit-Version von Chromium.</translation>
@@ -153,7 +153,6 @@
 <translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="5895138241574237353">Neu starten</translation>
 <translation id="5906655207909574370">Fast fertig! Starten Sie Ihr Gerät neu, um die Aktualisierung abzuschließen.</translation>
-<translation id="5942225298871134766">Chromium speichert dies in <ph name="SAVED_PASSWORD_LINK" />, damit es bei Bedarf verfügbar ist.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> wurde zu Chromium hinzugefügt.</translation>
 <translation id="59625444380784159">Mithilfe von Angaben aus Ihren Kontakten können Sie Formulare in Chromium schneller ausfüllen.</translation>
 <translation id="5987687638152509985">Aktualisieren Sie Chromium, um die Synchronisierung zu starten</translation>
@@ -242,6 +241,7 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="81770708095080097">Diese Datei ist schädlich und wurde von Chromium blockiert.</translation>
 <translation id="8269379391216269538">Chromium mit Ihrer Hilfe verbessern</translation>
 <translation id="8290862415967981663">Diese Datei ist eventuell schädlich und wurde von Chromium blockiert.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> hat zuvor Chromium verwendet</translation>
 <translation id="8453117565092476964">Das Installationsarchiv ist beschädigt oder ungültig. Bitte laden Sie Chromium erneut herunter.</translation>
 <translation id="8493179195440786826">Chromium ist veraltet.</translation>
 <translation id="85843667276690461">Hilfe für Chromium aufrufen</translation>

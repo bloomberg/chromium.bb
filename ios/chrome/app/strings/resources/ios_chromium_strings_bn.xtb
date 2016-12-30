@@ -13,6 +13,7 @@
 <translation id="2195025571279539885">আপনি কি পরবর্তী বারে এই সাইটটির <ph name="LANGUAGE_NAME" /> পৃষ্ঠাগুলিকে অনুবাদ করে দেওয়ার জন্য Chromium কে বলতে চান?</translation>
 <translation id="2647554856022461007">Chromium আপনার ব্রাউজিংয়ের অভিজ্ঞতাকে উন্নত করতে ওয়েব পরিষেবাগুলি ব্যবহার করতে পারে৷ আপনি আপনার ইচ্ছা অনুযায়ী এই পরিষেবাগুলিকে অক্ষম করতে পারেন৷ <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium আপনার ক্যামেরা ব্যবহার করতে পারছে না কারণ এটি অন্য একটি অ্যাপ্লিকেশান দ্বারা ব্যবহার করা হচ্ছে</translation>
+<translation id="3256316712990552818">Chromium-এ প্রতিলিপি করা হয়েছে</translation>
 <translation id="3413120535237193088">সব ডিভাইসে আপনার বুকমার্কগুলি পেতে, Chromium এ প্রবেশ করুন।</translation>
 <translation id="3473048256428424907">Chromium QR স্ক্যানার চালু করুন</translation>
 <translation id="3805899903892079518">আপনার ফটো এবং ভিডিওগুলিতে Chromium এর অ্যাক্সেস নেই৷ iOS সেটিংস &gt; গোপনীয়তা &gt; ফটোগুলিতে অ্যাক্সেস সক্ষম করুন৷</translation>
@@ -29,12 +30,12 @@
 <translation id="6068866989048414399">Chromium পরিষেবার শর্তাদি</translation>
 <translation id="6268381023930128611">Chromium থেকে প্রস্থান করুন করবেন?</translation>
 <translation id="6424492062988593837">Chrome আরো ভাল হয়েছে! একটি নতুন সংস্করণ উপলব্ধ আছে৷</translation>
-<translation id="6600954340915313787">Chrome-এ প্রতিলিপি করা হয়েছে</translation>
 <translation id="6604711459180487467">আপনার অবস্থানের উপর ভিত্তি করে Chromium এ আরো ভাল অভিজ্ঞতা লাভ করুন৷</translation>
 <translation id="6989306073720242915">Chromium পছন্দ করেন? <ph name="BEGIN_LINK" />তাহলে আপনার ডকে নিয়ে যান<ph name="END_LINK" /></translation>
 <translation id="7022368070219581493"><ph name="ISSUER" /> যে এই ওয়েবসাইটের শংসাপত্র প্রকাশ করেছে Chromium তা যাচাই করেছে।</translation>
 <translation id="7099326575020694068">Chromium আপনার ক্যামেরা বিভক্ত দৃশ্য মোডে ব্যবহার করতে পারবে না</translation>
 <translation id="7144758435978427212">আশেপাশের ডিভাইসগুলি দ্বারা পাঠানো ওয়েব পৃষ্ঠাগুলি খুঁজুন। Bluetooth চালু থাকলে, Chromium আপনার চারপাশের বস্তুর সঙ্গে যুক্ত ওয়েব পৃষ্ঠাগুলি জড়ো করে এবং সবচেয়ে দরকারী পৃষ্টাগুলি খুঁজে সেগুলি বেনামে Google কে পাঠায়। <ph name="BEGIN_LINK" /> আরো জানুন <ph name="END_LINK" /></translation>
+<translation id="7208566199746267865">Chromium আপনার অ্যাকাউন্টগুলিকে ওয়েবে নিয়ে এসে আপনার সময় বাঁচায়। আপনি সেটিংস থেকে অ্যাকাউন্ট জুড়তে বা সরাতে পারবেন।</translation>
 <translation id="7269362888766543920">কিছু অ্যাড-অনের কারণে Chromium ক্র্যাশ করতে পারে৷ অনুগ্রহ করে সেগুলিকে আনইনস্টল করে দেখুন৷</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Chromium এবং সিঙ্ক করা ডিভাইসগুলি থেকে নির্বাচিত ডেটা সরিয়ে ফেলা হয়েছে। আপনার Google অ্যাকাউন্টের অনুসন্ধান এবং অন্যান্য Google পরিষেবাগুলি থেকে কার্যকলাপের মত অন্যান্য ধরনের ব্রাউজিং ইতিহাস history.google.com এ থাকতে পারে।</translation>

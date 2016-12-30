@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">en</translation>
 <translation id="2091933974477985526">మునుపటి సవరించగల వచన ప్రదేశం</translation>
 <translation id="2100350898815792233">అన్ని విరామచిహ్నాలు</translation>
+<translation id="2110480898214777136">పేజీ, డైలాగ్ లేదా ఇతర కంటైనర్‌లో ప్రారంభం నుండి ముగింపు వరకు లేదా ముగింపు నుండి ప్రారంభం వరకు సర్దుబాటు చేయండి</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">ప్రాప్యత కీ:<ph name="KEY" /></translation>
 <translation id="2155457205053847599">దిగువ జాబితా నుండి ఎంపికను ఎంచుకోవడం ద్వారా ప్రస్తుత 6 చుక్కల బ్రెయిలీ పట్టికను మార్చండి.</translation>
 <translation id="2169714232367507776">ప్రస్తుత అంశంపై క్లిక్ చేయండి</translation>
+<translation id="2179452035581866348">ChromeVox మీకు ఆవశ్యకమైన మరియు అదనపు సమాచారాన్ని అందించడానికి ధ్వనులను ఉపయోగిస్తుంది. మీరు ప్రతి ధ్వనికి అర్థాన్ని తెలుసుకోవడం ద్వారా మరింత శీఘ్రంగా నావిగేట్ చేయడానికి ఈ ధ్వనులను ఉపయోగించవచ్చు. మీకు వీటి గురించి బాగా తెలిసిన తర్వాత, మీరు ప్రసంగంలో విశదీకృత వివరణలను ఆఫ్ చేయవచ్చు మరియు పేజీ గురించి ఆవశ్యకమైన సమాచారం కోసం వాటిపై ఆధారపడవచ్చు. ధ్వనులు మరియు వాటి అర్థాలతో పూర్తి జాబితా ఇక్కడ అందించబడింది.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{మూసిన కుండలీకరణ గుర్తు}other{# మూసిన కుండలీకరణ గుర్తులు}}</translation>
 <translation id="2199994615414171367">మునుపటి గణితం</translation>
 <translation id="2220529011494928058">సమస్యను నివేదించు</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">ప్రధానం</translation>
 <translation id="2329324941084714723">ట్యాబ్ ప్యానెల్</translation>
 <translation id="2344193891939537199">తేదీ సమయ నియంత్రణ</translation>
+<translation id="2347456970887948350">లింక్</translation>
 <translation id="2359897517538099099">పట్టిక మోడ్‌లో లేదు.</translation>
 <translation id="241124561063364910">దీని తర్వాత</translation>
+<translation id="2416512023405990736">ఎంచుకున్నట్లు గుర్తు పెట్టని ఎంపిక పెట్టె</translation>
 <translation id="2417569100218200841">కంటెంట్ సమాచారం</translation>
 <translation id="2422937916923936891">మెను అంశం తనిఖీపెట్టె</translation>
 <translation id="2428534162001909979">ఆదేశ మెనులు</translation>
@@ -213,6 +217,7 @@
 <translation id="3223701887221307104"><ph name="NAME" />, ట్యాబ్</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">సందర్శించిన లింక్</translation>
+<translation id="3232388865800379423">పాప్ అప్ బటన్</translation>
 <translation id="323731244387692321">ChromeVox కీబోర్డ్ సహాయాన్ని తెరవండి</translation>
 <translation id="3241052487511142956">మునుపు సందర్శించిన లింక్</translation>
 <translation id="3286390186030710347">స్లయిడర్</translation>
@@ -221,6 +226,7 @@
 <translation id="3311969765485641742">హెచ్చరికలను సమీక్షించడానికి Alt+Shift+A నొక్కండి</translation>
 <translation id="3312997241656799641">తదుపరి సందర్శించిన లింక్</translation>
 <translation id="3313245066383501820">ChromeVox మాడిఫైయర్ కీ</translation>
+<translation id="3317212938060708859">స్లైడర్</translation>
 <translation id="3321460131042519426">పదాల సర్దుబాటుని ప్రారంభించు</translation>
 <translation id="3322936298410871309">మునుపటి స్థాయి 1 శీర్షిక</translation>
 <translation id="3323447499041942178">టెక్స్ట్ బాక్స్</translation>
@@ -279,6 +285,7 @@
 <translation id="3457000393508828486">పాక్షికంగా నొక్కబడింది</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, ఆఫ్‌లో ఉంది</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, బటన్</translation>
+<translation id="3466530247399808663">చెల్లని కీ నొక్కారు</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> నుండి <ph name="V2" /> వరకు</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{కుడి కుండలీకరణ గుర్తు}other{# కుడి కుండలీకరణ గుర్తులు}}</translation>
@@ -286,6 +293,7 @@
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{ప్రశ్నార్థక గుర్తు}other{# ప్రశ్నార్థక గుర్తులు}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{హంసపాదు గుర్తు}other{# హంసపాదు గుర్తులు}}</translation>
+<translation id="352577523970648069">సవరించగల వచన ఫీల్డ్</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, తనిఖీపెట్టె ఎంచుకోబడలేదు</translation>
 <translation id="3599054940393788245">లోపల గణితం కాదు</translation>
 <translation id="3616113530831147358">ఆడియో</translation>
@@ -325,10 +333,12 @@
 <translation id="4047216625641135770">గుర్తు పెట్టండి</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
+<translation id="4058278702844053247">పేజీ లోడ్ కావడం ప్రోగ్రెస్‌లో ఉంది</translation>
 <translation id="4065205963140826639">ఇప్పుడు తదుపరి బటన్‌ను కనుగొనడానికి శోధన + కుడివైపు బాణాన్ని ఉపయోగించి, ఆపై దాన్ని క్లిక్ చేయడానికి శోధన + Space నొక్కడం ప్రయత్నించండి.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{టిల్డ్ గుర్తు}other{# టిల్డ్ గుర్తులు}}</translation>
 <translation id="409334809956508737">మునుపటి ఆబ్జెక్ట్</translation>
 <translation id="4099274309791143834">ఉపమెనును కలిగి ఉంది</translation>
+<translation id="4101527861445851766">ఎంచుకున్న ఎంపిక పెట్టె</translation>
 <translation id="4107807507418787238">దిగువ సెల్ లేదు.</translation>
 <translation id="4116415223832267137">హెచ్చరిక</translation>
 <translation id="4147126331795725888">తదుపరి నియంత్రణ లేదు.</translation>
@@ -338,6 +348,7 @@
 <translation id="4173994908659439270">తదుపరి సవరించగల వచనం ఫీల్డ్ లేదు.</translation>
 <translation id="4176463684765177261">ఆపివేయబడింది</translation>
 <translation id="4188530942454211480">మునుపటి వాక్యం</translation>
+<translation id="4191918948604314587">బటన్</translation>
 <translation id="4202186506458631436">కుడివైపు తరలించండి</translation>
 <translation id="4206289001967551965">పట్టిక లోపల ఉన్నారు</translation>
 <translation id="4215733775853809057">తదుపరి స్లయిడర్</translation>
@@ -461,6 +472,7 @@
 <translation id="5374320867641260420">తదుపరి బటన్ లేదు.</translation>
 <translation id="5382299583965267720">తదుపరి స్థాయి 1 శీర్షిక లేదు.</translation>
 <translation id="5402367795255837559">బ్రెయిలీ</translation>
+<translation id="5402791055281059602">నమూనా హెచ్చరిక</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{సెమీకోలన్ గుర్తు}other{# సెమీకోలన్ గుర్తులు}}</translation>
 <translation id="5411891038905756502">మునుపటి జంప్ పాయింట్ లేదు.</translation>
 <translation id="5417034931411865818">రూటింగ్ కీ $1 క్రింద ఉన్న అంశాన్ని క్లిక్ చేయండి</translation>
@@ -554,6 +566,7 @@ Chrome బ్రౌజర్ మెనును తెరవడానికి, 
 <translation id="6119955456199054975">సెల్ ముగింపు.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">ఖాళీ</translation>
+<translation id="6132506484792346370">జాబితాపెట్టె లేదా కాంబో పెట్టె</translation>
 <translation id="6138576064440631958">$1 చాపకర్ణం</translation>
 <translation id="6142308968191113180">శీర్షిక 4</translation>
 <translation id="6169420925157477918">పెద్ద వివరణ గల చిత్రం</translation>
@@ -567,6 +580,7 @@ Chrome బ్రౌజర్ మెనును తెరవడానికి, 
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">తదుపరి కాంబో పెట్టె లేదు.</translation>
 <translation id="6307969636681130414">నొక్కబడింది</translation>
+<translation id="6322856989298155004">ధ్వనులు</translation>
 <translation id="6324551002951139333">వ్యాకరణ తప్పు కనుగొనబడింది</translation>
 <translation id="6348657800373377022">కోంబో బాక్స్</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{బుల్లెట్}other{# బుల్లెట్‌లు}}</translation>
@@ -597,6 +611,7 @@ Chrome బ్రౌజర్ మెనును తెరవడానికి, 
 <translation id="6657128831881431364">ప్రోగ్రెస్ పట్టీ</translation>
 <translation id="6659594942844771486">టాబ్</translation>
 <translation id="667999046851023355">పత్రం</translation>
+<translation id="6688209025607531203">నమూనా యేతర హెచ్చరిక</translation>
 <translation id="6697092096875747123">మునుపటి కాంబో పెట్టె</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{ఆశ్చర్యార్థక గుర్తు}other{# ఆశ్చర్యార్థక గుర్తులు}}</translation>
 <translation id="6710213216561001401">మునుపటి</translation>

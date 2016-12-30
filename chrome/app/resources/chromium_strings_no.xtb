@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">For å gjøre Chromium tryggere, har vi deaktivert noen utvidelser som ikke er oppført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og som kan ha blitt lagt uten at du har vært klar over det.</translation>
 <translation id="1808667845054772817">Installer Chromium på nytt</translation>
 <translation id="1816404578968201294">Chromium må ha tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>
+<translation id="1838412507805038478">Chromium har bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />.</translation>
 <translation id="1869480248812203386">Du kan bidra til å gjøre Chromium tryggere og enklere å bruke ved å rapportere detaljer om mulige sikkerhetsbrudd til Google automatisk.</translation>
 <translation id="1881322772814446296">Du logger deg på med en administrert konto og gir tilhørende administratorer kontroll over Chromium-profilen din. Chromium-dataene dine, slik som apper, bokmerker, loggen, passord og andre innstillinger knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse dataene via oversikten for Google-kontoer, men du kan ikke knytte disse dataene til en annen konto. Du kan velge om du vil opprette en ny profil for å holde de eksisterende Chromium-dataene atskilte. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du starte den på nytt nå?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Åpen kildekode-lisenser for Chromium OS</translation>
 <translation id="2241627712206172106">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chromium akkurat slik de vil.</translation>
-<translation id="225614027745146050">Velkommen</translation>
 <translation id="2316129865977710310">Nei takk</translation>
 <translation id="2347108572062610441">Denne utvidelsen har endret hvilken side som vises når du starter Chromium.</translation>
 <translation id="2372704305038231957">Det kan hende 32-bit-versjonen av Chromium ikke fungerer skikkelig, fordi den ikke støttes på dette Linux-systemet lenger. Oppgrader til 64-bit-versjonen av Chromium.</translation>
@@ -153,7 +153,6 @@
 <translation id="5877064549588274448">Kanalen ble endret. Start enheten på nytt for å aktivere endringene.</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5906655207909574370">Nå er oppdateringen snart ferdig! Start enheten på nytt for å fullføre oppdateringen.</translation>
-<translation id="5942225298871134766">Chromium lagrer dette med <ph name="SAVED_PASSWORD_LINK" /> og husker det neste gang du trenger det.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> har blitt lagt til i Chromium.</translation>
 <translation id="59625444380784159">Informasjon fra kontaktene dine kan hjelpe deg med å fylle ut skjemaer raskere i Chromium.</translation>
 <translation id="5987687638152509985">Oppdater Chromium for å starte synkroniseringen</translation>
@@ -242,6 +241,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="81770708095080097">Denne filen er farlig, så Chromium har blokkert den.</translation>
 <translation id="8269379391216269538">Bidra til å gjøre Chromium bedre</translation>
 <translation id="8290862415967981663">Denne filen kan være farlig, så Chromium har blokkert den.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> brukte Chromium tidligere</translation>
 <translation id="8453117565092476964">Installasjonsarkivet er skadet eller ugyldig. Last ned Chromium på nytt.</translation>
 <translation id="8493179195440786826">Chromium er utdatert</translation>
 <translation id="85843667276690461">Få hjelp med å bruke Chromium</translation>

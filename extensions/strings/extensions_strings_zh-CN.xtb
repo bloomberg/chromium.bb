@@ -21,20 +21,18 @@
 <translation id="388442998277590542">无法加载选项页“<ph name="OPTIONS_PAGE" />”。</translation>
 <translation id="4115165561519362854">此设备的管理员要求“<ph name="EXTENSION_NAME" />”的最低版本为 <ph name="EXTENSION_VERSION" />。此扩展程序必须更新到该版本（或更高版本）后才能启用。</translation>
 <translation id="4233778200880751280">无法加载简介页面“<ph name="ABOUT_PAGE" />”。</translation>
-<translation id="4434145631756268951">{0,select, single{选择 1 部 USB 设备}multiple{选择多部 USB 设备}other{UNUSED}}</translation>
 <translation id="4811956658694082538">某个实用程序进程崩溃了，因此软件包无法安装。请重新启动 Chrome，然后重试。</translation>
 <translation id="5026754133087629784">网页视图：<ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">应用视图：<ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">此扩展程序包含密钥文件“<ph name="KEY_PATH" />”，您最好不要执行此操作。</translation>
 <translation id="5627523580512561598">扩展程序“<ph name="EXTENSION_NAME" />”</translation>
-<translation id="5630931906013276297">{0,select, single{选择 1 部 HID 设备}multiple{选择多部 HID 设备}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView：<ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">此设备的管理员要求安装“<ph name="EXTENSION_NAME" />”，因此不能卸载该扩展程序。</translation>
 <translation id="6027032947578871493">来自<ph name="VENDOR_NAME" />的未知产品 <ph name="PRODUCT_ID" />（序列号为 <ph name="SERIAL_NUMBER" />）</translation>
 <translation id="6068932090455285721">来自供应商 <ph name="VENDOR_ID" /> 的<ph name="PRODUCT_NAME" /></translation>
 <translation id="6143635259298204954">无法将扩展程序解包。要安全地将扩展程序解包，您的个人资料目录中的解包路径不得包含符号链接。您的个人资料中不存在这样的路径。</translation>
-<translation id="616804573177634438">{0,select, single{“<ph name="APP_NAME" />”应用请求访问您的某台设备。}multiple{“<ph name="APP_NAME" />”应用请求访问您的一台或多台设备。}other{UNUSED}}</translation>
 <translation id="641087317769093025">无法解压缩扩展程序</translation>
+<translation id="6542618148162044354">“<ph name="APP_NAME" />”请求访问您的一台或多台设备：</translation>
 <translation id="657064425229075395">无法加载背景脚本“<ph name="BACKGROUND_SCRIPT" />”。</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" />提供的<ph name="PRODUCT_NAME" />（序列号：<ph name="SERIAL_NUMBER" />）</translation>
 <translation id="6731255991101203740">无法创建解压缩目录：“<ph name="DIRECTORY_PATH" />”</translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">程序包无效。详细信息：“<ph name="ERROR_MESSAGE" />”。</translation>
 <translation id="8670869118777164560">此扩展程序无法将该网络请求重新定向到 <ph name="ATTEMPTED_REDIRECT_DESTINATION" />，因为其他扩展程序（<ph name="EXTENSION_NAME" />）已将其重新定向到 <ph name="ACTUAL_REDIRECT_DESTINATION" />。</translation>
 <translation id="8712265948125780616">扩展程序解压缩程序</translation>
+<translation id="8761756413268424715">“<ph name="APP_NAME" />”请求访问您的其中一台设备：</translation>
 <translation id="8825366169884721447">此扩展程序无法修改网络请求的请求标头“<ph name="HEADER_NAME" />”，因为这一修改与另一个扩展程序（<ph name="EXTENSION_NAME" />）产生了冲突。</translation>
 <translation id="9111791539553342076">此扩展程序无法修改网络请求的响应标头“<ph name="HEADER_NAME" />”，因为这一修改与另一个扩展程序（<ph name="EXTENSION_NAME" />）产生了冲突。</translation>
 </translationbundle>

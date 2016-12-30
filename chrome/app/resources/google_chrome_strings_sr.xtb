@@ -8,6 +8,7 @@
 <translation id="1065672644894730302">Подешавања не могу да се прочитају.
 
 Неке функције су можда недоступне и промене подешавања неће бити сачуване.</translation>
+<translation id="1088300314857992706">Корисник <ph name="USER_EMAIL_ADDRESS" /> је претходно користио Chrome</translation>
 <translation id="1104959162601287462">О &amp;Chrome ОС-у</translation>
 <translation id="110877069173485804">Ово је ваш Chrome</translation>
 <translation id="123620459398936149">Chrome ОС не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
@@ -19,7 +20,6 @@
 <translation id="1434626383986940139">Chrome Canary апликације</translation>
 <translation id="1457721931618994305">Ажурирање Google Chrome-а...</translation>
 <translation id="1469002951682717133">Покретач Chrome апликација</translation>
-<translation id="1475773083554142432">Chrome ће сачувати ове податке у услузи <ph name="SAVED_PASSWORD_LINK" /> и сетиће их се када вам следећи пут буду потребни.</translation>
 <translation id="1480489203462860648">Испробајте га, већ је инсталиран</translation>
 <translation id="1553358976309200471">Ажурирај Chrome</translation>
 <translation id="1587223624401073077">Google Chrome користи камеру.</translation>
@@ -45,7 +45,6 @@
 <translation id="2147651015520127414">Chrome је потврдио да је <ph name="ISSUER" /> издао сертификат овог веб-сајта.</translation>
 <translation id="2246246234298806438">Google Chrome не може да покаже приказ пре штампања када недостаје уграђени PDF приказивач.</translation>
 <translation id="2252923619938421629">Помозите да побољшамо Google Chrome тако што ћете послати извештај о актуелним подешавањима</translation>
-<translation id="225614027745146050">Добро дошли</translation>
 <translation id="2286950485307333924">Сада сте пријављени у Chrome</translation>
 <translation id="2290014774651636340">Недостају шифре за Google API. Неке функције Google Chrome-а ће бити онемогућене.</translation>
 <translation id="2290095356545025170">Да ли стварно желите да деинсталирате Google Chrome?</translation>

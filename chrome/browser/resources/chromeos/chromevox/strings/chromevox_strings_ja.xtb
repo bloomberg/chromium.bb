@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">ja</translation>
 <translation id="2091933974477985526">前の編集可能テキスト領域</translation>
 <translation id="2100350898815792233">すべての句読点を読み上げます</translation>
+<translation id="2110480898214777136">ページ、ダイアログ、またはその他のコンテナの内部での、行頭から行末、または行末から行頭への折り返し</translation>
 <translation id="2119965627982867824">スピンボタン</translation>
 <translation id="2121067395472282800">アクセス キー: <ph name="KEY" /></translation>
 <translation id="2155457205053847599">現在の 6 点点字表を変更するには、下のリストからオプションを選択します。</translation>
 <translation id="2169714232367507776">現在の項目をクリック</translation>
+<translation id="2179452035581866348">ChromeVox を使用すると、基本情報や追加情報を通知音で知ることができます。それぞれの通知音の意味を把握しておくと、すばやく操作するのに便利です。慣れてきたら、詳しい音声説明を無効にして、通知音だけでページの情報を把握できます。通知音の一覧とその意味については、以下をご覧ください。</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{右丸かっこ}other{# 個の右丸かっこ}}</translation>
 <translation id="2199994615414171367">前の数式</translation>
 <translation id="2220529011494928058">問題を報告</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">本文</translation>
 <translation id="2329324941084714723">タブ パネル</translation>
 <translation id="2344193891939537199">日時の設定</translation>
+<translation id="2347456970887948350">リンク</translation>
 <translation id="2359897517538099099">表モードではありません。</translation>
 <translation id="241124561063364910">を押して、次のキーを押します:</translation>
+<translation id="2416512023405990736">チェックボックスがオフ</translation>
 <translation id="2417569100218200841">コンテンツ情報</translation>
 <translation id="2422937916923936891">メニュー項目のチェックボックス</translation>
 <translation id="2428534162001909979">コマンド メニュー</translation>
@@ -213,6 +217,7 @@
 <translation id="3223701887221307104"><ph name="NAME" />、タブ</translation>
 <translation id="3226035351387556942">チェックボックス</translation>
 <translation id="3229375994964697375">アクセス済みのリンク</translation>
+<translation id="3232388865800379423">ポップアップ ボタン</translation>
 <translation id="323731244387692321">ChromeVox キーボード ヘルプを開く</translation>
 <translation id="3241052487511142956">前にアクセスしたリンク</translation>
 <translation id="3286390186030710347">スライダ</translation>
@@ -221,6 +226,7 @@
 <translation id="3311969765485641742">アラートを確認するには Alt+Shift+A を押してください</translation>
 <translation id="3312997241656799641">次にアクセスしたリンク</translation>
 <translation id="3313245066383501820">ChromeVox の修飾キー</translation>
+<translation id="3317212938060708859">スライダー</translation>
 <translation id="3321460131042519426">ワードラップを有効にする</translation>
 <translation id="3322936298410871309">前のレベル 1 見出し</translation>
 <translation id="3323447499041942178">テキスト ボックス</translation>
@@ -279,6 +285,7 @@
 <translation id="3457000393508828486">一部オン</translation>
 <translation id="3458865416877308321"><ph name="NAME" />、オフ</translation>
 <translation id="3462439746547587373"><ph name="NAME" />、ボタン</translation>
+<translation id="3466530247399808663">キーの押下が無効</translation>
 <translation id="3473644018603298796"><ph name="COUNT" /> 件選択</translation>
 <translation id="3486232535569802404"><ph name="V1" />～<ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{右角かっこ}other{# 個の右角かっこ}}</translation>
@@ -286,6 +293,7 @@
 <translation id="3494946239022273294">メニュー項目</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{疑問符}other{# 個の疑問符}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{キャレット}other{# 個のキャレット}}</translation>
+<translation id="352577523970648069">編集可能なテキスト欄</translation>
 <translation id="3568702578574425662"><ph name="NAME" />、オフのチェックボックス</translation>
 <translation id="3599054940393788245">数式の外部</translation>
 <translation id="3616113530831147358">音声</translation>
@@ -325,10 +333,12 @@
 <translation id="4047216625641135770">マーク</translation>
 <translation id="404803211695627272"><ph name="V1" />～<ph name="V2" /></translation>
 <translation id="4054936709456751127">ステータス</translation>
+<translation id="4058278702844053247">ページの読み込み中</translation>
 <translation id="4065205963140826639">検索+右矢印キーを押して [次へ] ボタンまで移動し、検索+スペースキーを押してボタンをクリックしてみましょう。</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{チルダ}other{# 個のチルダ}}</translation>
 <translation id="409334809956508737">前のオブジェクト</translation>
 <translation id="4099274309791143834">サブメニューあり</translation>
+<translation id="4101527861445851766">チェックボックスがオン</translation>
 <translation id="4107807507418787238">下にセルはありません。</translation>
 <translation id="4116415223832267137">アラート</translation>
 <translation id="4147126331795725888">次のコントロールはありません。</translation>
@@ -338,6 +348,7 @@
 <translation id="4173994908659439270">次の編集可能テキスト フィールドはありません。</translation>
 <translation id="4176463684765177261">無効</translation>
 <translation id="4188530942454211480">前の文</translation>
+<translation id="4191918948604314587">ボタン</translation>
 <translation id="4202186506458631436">右へ移動</translation>
 <translation id="4206289001967551965">表の中です</translation>
 <translation id="4215733775853809057">次のスライダ</translation>
@@ -461,6 +472,7 @@
 <translation id="5374320867641260420">次のボタンはありません。</translation>
 <translation id="5382299583965267720">次のレベル 1 見出しはありません。</translation>
 <translation id="5402367795255837559">点字</translation>
+<translation id="5402791055281059602">モーダル アラート</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{セミコロン}other{# 個のセミコロン}}</translation>
 <translation id="5411891038905756502">前のジャンプ ポイントはありません。</translation>
 <translation id="5417034931411865818">ルーティング キー $1 の下のアイテムをクリックします</translation>
@@ -554,6 +566,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="6119955456199054975">ここでセルは終わりです。</translation>
 <translation id="6122013438240733403">ボタン</translation>
 <translation id="6129953537138746214">スペース</translation>
+<translation id="6132506484792346370">リストボックスまたはコンボボックス</translation>
 <translation id="6138576064440631958">$1 コード</translation>
 <translation id="6142308968191113180">見出し 4</translation>
 <translation id="6169420925157477918">長い説明付きの画像です</translation>
@@ -567,6 +580,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="6282062888058716985">ナビ</translation>
 <translation id="6290434000785343030">次のコンボ ボックスはありません。</translation>
 <translation id="6307969636681130414">オン</translation>
+<translation id="6322856989298155004">通知音</translation>
 <translation id="6324551002951139333">文法の誤りが見つかりました</translation>
 <translation id="6348657800373377022">コンボ ボックス</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{箇条書き}other{# 件の箇条書き}}</translation>
@@ -597,6 +611,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="6657128831881431364">プログレスバー</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">ドキュメント</translation>
+<translation id="6688209025607531203">非モーダル アラート</translation>
 <translation id="6697092096875747123">前のコンボ ボックス</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{感嘆符}other{# 個の感嘆符}}</translation>
 <translation id="6710213216561001401">前へ</translation>

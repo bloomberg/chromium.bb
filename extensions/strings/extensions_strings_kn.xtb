@@ -21,20 +21,18 @@
 <translation id="388442998277590542">ಆಯ್ಕೆಗಳ ಪುಟ '<ph name="OPTIONS_PAGE" />' ವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="4115165561519362854">ಈ ಮೆಷಿನ್‌ನ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_VERSION" /> ನ ಕನಿಷ್ಠ ಆವೃತಿಯನ್ನು <ph name="EXTENSION_NAME" /> ಹೊಂದಬೇಕಾದ ಅಗತ್ಯವಿದೆ. ಅದು ಹೊಸ ಆವೃತ್ತಿಗೆ (ಅಥವಾ ಹೆಚ್ಚಿನ) ನವೀಕರಣಗೊಳ್ಳುವವರೆಗೂ ಇದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' ಪುಟದ ಕುರಿತು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
-<translation id="4434145631756268951">{0,select, single{USB ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ}multiple{USB ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ}other{UNUSED}}</translation>
 <translation id="4811956658694082538">ಉಪಯುಕ್ತತೆಯ ಪ್ರಕ್ರಿಯೆಯು ಹಾಳಾಗಿರುವ ಕಾರಣ ಪ್ಯಾಕೇಜ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ. Chrome ಮರುಪ್ರಾರಂಭಿಸಲು ಪ್ರಯತ್ನಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="5026754133087629784">ವೆಬ್‌ವೀಕ್ಷಣೆ: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">ಅಪ್ಲಿಕೇಶನ್ ವೀಕ್ಷಣೆ: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">ಈ ವಿಸ್ತರಣೆಯು ಕೀ ಫೈಲ್ '<ph name="KEY_PATH" />' ಅನ್ನು ಒಳಗೊಂಡಿದೆ. ನೀವು ಸಾಮಾನ್ಯವಾಗಿ ಹಾಗೆ ಮಾಡಲು ಬಯಸುವುದಿಲ್ಲ.</translation>
 <translation id="5627523580512561598">ವಿಸ್ತರಣೆ<ph name="EXTENSION_NAME" /></translation>
-<translation id="5630931906013276297">{0,select, single{HID ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ}multiple{HID ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ವಿಸ್ತರಣೆವೀಕ್ಷಣೆ: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">ಈ ಯಂತ್ರದ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_NAME" /> ಸ್ಥಾಪಿಸಲು ಅಗತ್ಯವಿದೆ. ಇದನ್ನು ಅಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="6027032947578871493"><ph name="VENDOR_NAME" /> ಅವರಿಂದ <ph name="PRODUCT_ID" /> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ (ಕ್ರಮ ಸಂಖ್ಯೆ <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="VENDOR_ID" /> ಮಾರಾಟಗಾರರಿಂದ <ph name="PRODUCT_NAME" /></translation>
 <translation id="6143635259298204954">ವಿಸ್ತರಣೆಯನ್ನು ಅನ್‌ಪ್ಯಾಕ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ. ಸುರಕ್ಷಿತವಾಗಿ ವಿಸ್ತರಣೆಯನ್ನು ಅನ್‌ಪ್ಯಾಕ್ ಮಾಡಲು, ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಡೈರೆಕ್ಟರಿಗೆ ಪಾಥ್ ಇರಬೇಕು ಅದು ಡ್ರೈವ್ ಅಕ್ಷರಗಳೊಂದಿಗೆ ಮತ್ತು ಜಂಕ್ಷನ್, ಮೌಂಟ್ ಪಾಯಿಂಟ್, ಅಥವಾ ಸಿಮ್‌ಲಿಂಕ್ ಅನ್ನು ಹೊಂದಿರುವುದಿಲ್ಲ. ನಿಮ್ಮ ಪ್ರೊಫೈಲ್‌ಗಾಗಿ ಯಾವುದೇ ಪಾಥ್ ಅಸ್ತಿತ್ವದಲ್ಲಿಲ್ಲ.</translation>
-<translation id="616804573177634438">{0,select, single{"<ph name="APP_NAME" />" ಅಪ್ಲಿಕೇಶನ್ ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ ಒಂದಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ.}multiple{"<ph name="APP_NAME" />" ಅಪ್ಲಿಕೇಶನ್ ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ ಒಂದು ಅಥವಾ ಹೆಚ್ಚಿನ ಸಾಧನಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ.}other{ಬಳಕೆಯಾಗದಿರುವ}}</translation>
 <translation id="641087317769093025">ವಿಸ್ತರಣೆಯನ್ನು ಅನ್ ಜಿಪ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ ಒಂದು ಅಥವಾ ಹೆಚ್ಚಿನ ಸಾಧನಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ:</translation>
 <translation id="657064425229075395">'<ph name="BACKGROUND_SCRIPT" />' ಹಿನ್ನೆಲೆ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> ದಿಂದ <ph name="VENDOR_NAME" /> (ಕ್ರಮಸಂಖ್ಯೆ <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">ಅನ್ ಜಿಪ್ ಮಾಡುವುದಕ್ಕಾಗಿ ಡೈರೆಕ್ಟರಿ ರಚಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">ಪ್ಯಾಕೇಜ್ ಅಮಾನ್ಯವಾಗಿದೆ. ವಿವರಗಳು: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">ಬೇರೊಂದು ವಿಸ್ತರಣೆಯು (<ph name="EXTENSION_NAME" />) ಇದನ್ನು <ph name="ACTUAL_REDIRECT_DESTINATION" /> ಗೆ ಮರುನಿರ್ದೇಶಿಸಿರುವ ಕಾರಣ ಈ ವಿಸ್ತರಣೆಯು ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯನ್ನು <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> ಗೆ ಮರುನಿರ್ದೇಶಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="8712265948125780616">ವಿಸ್ತರಣೆ ಅನ್‌ಪ್ಯಾಕರ್‌‌</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ ಒಂದಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ:</translation>
 <translation id="8825366169884721447">ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME" />) ಯೊಂದಿಗೆ ಮಾರ್ಪಡಿಸುವಿಕೆಯು ಸಂಘರ್ಷಗೊಂಡಿರುವ ಕಾರಣ ಈ ವಿಸ್ತರಣೆಯು ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯ  ವಿನಂತಿಯ ಶಿರೋನಾಮೆ "<ph name="HEADER_NAME" />" ಯನ್ನು ಮಾರ್ಪಡಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="9111791539553342076">ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME" />) ಯೊಂದಿಗೆ ಮಾರ್ಪಡಿಸುವಿಕೆಯು ಸಂಘರ್ಷಗೊಂಡಿರುವ ಕಾರಣ ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯ ಪ್ರತಿಕ್ರಿಯೆ ಶಿರೋನಾಮೆ "<ph name="HEADER_NAME" />" ಯನ್ನು ಮಾರ್ಪಡಿಸಲು ಈ ವಿಸ್ತರಣೆಯು ವಿಫಲವಾಗಿದೆ.</translation>
 </translationbundle>

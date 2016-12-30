@@ -21,20 +21,18 @@
 <translation id="388442998277590542">Asetussivun <ph name="OPTIONS_PAGE" /> lataaminen epäonnistui.</translation>
 <translation id="4115165561519362854">Tämän laitteen järjestelmänvalvoja edellyttää laajennuksen <ph name="EXTENSION_NAME" /> version olevan vähintään <ph name="EXTENSION_VERSION" />. Laajennusta ei voida ottaa käyttöön ennen kuin se on päivitetty kyseiseen tai sitä uudempaan versioon.</translation>
 <translation id="4233778200880751280">Tietosivun <ph name="ABOUT_PAGE" /> lataus epäonnistui.</translation>
-<translation id="4434145631756268951">{0,select, single{Valitse USB-laite}multiple{Valitse USB-laitteet}other{EI KÄYTÖSSÄ}}</translation>
 <translation id="4811956658694082538">Pakettia ei voi asentaa, koska apuohjelmaprosessi kaatui. Käynnistä Chrome uudelleen ja yritä uudelleen.</translation>
 <translation id="5026754133087629784">Verkkonäkymä: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Tämä laajennus sisältää avaintiedoston <ph name="KEY_PATH" />. Et todennäköisesti halua sitä.</translation>
 <translation id="5627523580512561598">laajennus <ph name="EXTENSION_NAME" /></translation>
-<translation id="5630931906013276297">{0,select, single{Valitse HID-laite}multiple{Valitse HID-laitteet}other{EI KÄYTÖSSÄ}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Tämän laitteen järjestelmänvalvoja on määrittänyt, että laitteessa täytyy olla <ph name="EXTENSION_NAME" />. Laajennusta ei voi poistaa.</translation>
 <translation id="6027032947578871493">Tuntematon laite <ph name="PRODUCT_ID" /> toimittajalta <ph name="VENDOR_NAME" /> (sarjanumero <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> toimittajalta <ph name="VENDOR_ID" /></translation>
 <translation id="6143635259298204954">Laajennuksen purkaminen epäonnistui. Voit purkaa laajennuksen määrittämällä polun profiilihakemistoon, joka ei sisällä symlink-määritettä. Profiilissasi ei ole kyseistä polkua.</translation>
-<translation id="616804573177634438">{0,select, single{Sovellus <ph name="APP_NAME" /> pyytää laitteesi käyttöoikeutta.}multiple{Sovellus <ph name="APP_NAME" /> pyytää yhden tai useamman laitteesi käyttöoikeutta.}other{EI KÄYTÖSSÄ}}</translation>
 <translation id="641087317769093025">Laajennuksen purkaminen epäonnistui</translation>
+<translation id="6542618148162044354"><ph name="APP_NAME" /> pyytää oikeutta käyttää yhtä tai useampaa laitettasi:</translation>
 <translation id="657064425229075395">Taustakoodin <ph name="BACKGROUND_SCRIPT" /> lataaminen epäonnistui.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> myyjältä <ph name="VENDOR_NAME" /> (sarjanumero <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Ei voitu luoda hakemistoa <ph name="DIRECTORY_PATH" /> laajennuksen purkamista varten:</translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">Paketti on virheellinen. Tietoja: <ph name="ERROR_MESSAGE" />.</translation>
 <translation id="8670869118777164560">Tämä laajennus ei uudelleenohjannut verkkopyyntöä kohteeseen <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, koska toinen laajennus (<ph name="EXTENSION_NAME" />) uudelleenohjasi sen kohteeseen <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Laajennuksien purkaja</translation>
+<translation id="8761756413268424715"><ph name="APP_NAME" /> pyytää oikeutta käyttää yhtä laitteistasi:</translation>
 <translation id="8825366169884721447">Tämä laajennus ei muokannut verkkopyynnön otsikkoa <ph name="HEADER_NAME" />, koska muokkaus oli ristiriidassa toisen laajennuksen (<ph name="EXTENSION_NAME" />) kanssa.</translation>
 <translation id="9111791539553342076">Tämä laajennus ei muokannut verkkopyynnön vastauksen otsikkoa <ph name="HEADER_NAME" />, koska muokkaus oli ristiriidassa toisen laajennuksen (<ph name="EXTENSION_NAME" />) kanssa.</translation>
 </translationbundle>

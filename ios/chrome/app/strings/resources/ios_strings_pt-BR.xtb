@@ -10,6 +10,7 @@
 <translation id="1104948393051856124">Aceitar e continuar</translation>
 <translation id="1112015203684611006">Falha na impressão.</translation>
 <translation id="1125564390852150847">Criar nova guia</translation>
+<translation id="1145536944570833626">Excluir dados já existentes.</translation>
 <translation id="1165039591588034296">Erro</translation>
 <translation id="1172898394251786223">Próximo campo</translation>
 <translation id="1176932207622159128">Impossível salvar imagem</translation>
@@ -49,6 +50,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="1753905327828125965">Mais visitados</translation>
 <translation id="1809939268435598390">Excluir pasta</translation>
 <translation id="1813414402673211292">Limpar dados de navegação</translation>
+<translation id="1820259098641718022">Adicionada à lista de leitura</translation>
 <translation id="1842969606798536927">Pagar</translation>
 <translation id="1876721852596493031">Enviar dados de uso</translation>
 <translation id="1886928167269928266">Desde o começo</translation>
@@ -66,6 +68,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
 <translation id="2149973817440762519">Editar favoritos</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
+<translation id="2230173723195178503">Página da Web carregada</translation>
 <translation id="2241634353105152135">Apenas uma vez</translation>
 <translation id="2267753748892043616">Adicionar conta</translation>
 <translation id="2273327106802955778">Menu "Mais"</translation>
@@ -77,6 +80,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2386793615875593361">Uma selecionada</translation>
 <translation id="2435457462613246316">Mostrar senha</translation>
 <translation id="2467815441875554965">Pesquisa contextual</translation>
+<translation id="2523092375122821828">Marcar tudo...</translation>
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
 <translation id="2584132361465095047">Adicionar conta…</translation>
 <translation id="2593774076813182497">Não é possível imprimir esta página.</translation>
@@ -117,6 +121,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="3324193307694657476">Endereço 2</translation>
 <translation id="3329904751041170572">Não foi possível se conectar ao servidor.</translation>
 <translation id="3335947283844343239">Reabrir guia fechada</translation>
+<translation id="3387752218061326363">Mostrando o histórico dos seus dispositivos conectados. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Pop-ups permitidos</translation>
 <translation id="3414292259312108062">O Chrome armazenará esta senha nas suas <ph name="BEGIN_LINK" />senhas salvas do Google<ph name="END_LINK" /> e a preencherá automaticamente para você, para que não precise se lembrar dela.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> minutos</translation>
@@ -124,7 +129,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="3474649192738347024">Formulários preenchidos.</translation>
 <translation id="3478058380795961209">Mês de vencimento</translation>
 <translation id="3482959374254649722">Sincronizando suas guias...</translation>
-<translation id="3485544713029068372">Smart Lock para senhas</translation>
 <translation id="3489372701259491571">Excluir senha salva</translation>
 <translation id="3519193562722059437">Abra uma guia para navegar na Web.</translation>
 <translation id="3527085408025491307">Pasta</translation>
@@ -145,6 +149,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3897092660631435901">Menu</translation>
+<translation id="3928666092801078803">Combinar meus dados</translation>
 <translation id="3950820424414687140">Fazer login</translation>
 <translation id="3963231839620026525">Nova guia anônima</translation>
 <translation id="3967822245660637423">Download concluído</translation>
@@ -156,6 +161,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4121993058175073134">Para enviar dados de exportação líquida, configure sua conta de e-mail no aplicativo "Configurações".</translation>
 <translation id="4124987746317609294">Intervalo de tempo</translation>
 <translation id="4172051516777682613">Sempre mostrar</translation>
+<translation id="4176234027218720244">Marcar...</translation>
 <translation id="424315890655130736">Informar senha longa</translation>
 <translation id="4272631900155121838">Para ler um código QR, ative a câmera nas configurações</translation>
 <translation id="4281844954008187215">Termos de Serviço</translation>
@@ -167,6 +173,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4473991315115669931">Entrar no modo de navegação anônima</translation>
 <translation id="4526249700380860531">Ver e gerenciar as senhas salvas em <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Tente fazer login novamente.</translation>
+<translation id="4620246317052452550">Páginas lidas</translation>
 <translation id="4636930964841734540">Informações</translation>
 <translation id="4659667755519643272">Entrar no alternador de guias</translation>
 <translation id="4666531726415300315">Conectado como <ph name="EMAIL" />.
@@ -179,6 +186,7 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 <translation id="4875622588773761625">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha para este site?</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4923459931733593730">Pagamento</translation>
+<translation id="4930268273022498155">Excluir dados já existentes. É possível recuperá-los voltando para a conta <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Ocorreu um problema ao compartilhar seu item.</translation>
 <translation id="4979397965658815378">Faça login com sua Conta do Google para ter seus favoritos, senhas, histórico e outras configurações em todos os seus dispositivos</translation>
 <translation id="5005498671520578047">Copiar senha</translation>
@@ -195,10 +203,12 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Adicionar cartão…</translation>
 <translation id="5228579091201413441">Ativar sincronização</translation>
+<translation id="5230733896359313003">Endereço para envio</translation>
 <translation id="5244474230056479698">Sincronizado com <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5327248766486351172">Nome</translation>
+<translation id="532992759783668360">Excluir lidas</translation>
 <translation id="5388358297987318779">Abrir imagem</translation>
 <translation id="5409365236829784218">Nenhum aplicativo instalado pode abrir este arquivo.</translation>
 <translation id="54401264925851789">Informações de segurança</translation>
@@ -227,6 +237,8 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5953603475187800576">Mostrar informações de cartões de crédito e endereço armazenadas no Google Payments</translation>
 <translation id="5964480694698977962">Criar nova guia anônima.</translation>
+<translation id="5965679971710331625">Você está conectado</translation>
+<translation id="5982717868370722439">Adicionar dados já existentes à conta <ph name="USER_EMAIL" />.</translation>
 <translation id="6012140227487808125">Criptografando…</translation>
 <translation id="6021332621416007159">Abrir no...</translation>
 <translation id="6039694632319341016">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha de <ph name="USERNAME" /> para este site?</translation>
@@ -239,9 +251,13 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6136914049981179737">Segundos atrás</translation>
 <translation id="6149061208933997199">Usar senha</translation>
 <translation id="6158823227857319455">Nova guia</translation>
+<translation id="616831107264507309">Ler mais tarde</translation>
 <translation id="6184086493125982861">Exibir abas</translation>
 <translation id="6187302354554850004">Última sincronização: <ph name="LAST_USED_TIME" /></translation>
+<translation id="6189413832092199491">Não lidas</translation>
+<translation id="6194286531716220336">Cancelar</translation>
 <translation id="6196207969502475924">Pesquisa por voz</translation>
+<translation id="6254066287920239840">Abrir links no app em vez de abrir no navegador.</translation>
 <translation id="6255097610484507482">Editar cartão de crédito</translation>
 <translation id="6308436439357671616">Isso permite que você tire fotos e faça upload delas.</translation>
 <translation id="6314335155547195432">Gerar senha</translation>
@@ -249,11 +265,12 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6337234675334993532">Criptografia</translation>
 <translation id="633809752005859102">Algo deu errado. Estamos trabalhando para resolver isso.</translation>
 <translation id="6344783595350022745">Limpar texto</translation>
-<translation id="6351971471682124046">Transmitindo para...</translation>
 <translation id="6362362396625799311">Não há guias anônimas</translation>
 <translation id="6380866119319257197">Se você esquecer a senha longa ou desejar alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
+<translation id="6385146967113720558">Marcar como não lidas</translation>
 <translation id="6389470377220713856">Nome no cartão</translation>
 <translation id="6406506848690869874">Sincronizar</translation>
+<translation id="6417838470969808600">Você tem favoritos, histórico, senhas e outras configurações da conta <ph name="USER_EMAIL1" />.</translation>
 <translation id="641799622251403418">Conectado como <ph name="EMAIL" />.
 
 Seus dados foram criptografados com sua senha longa de sincronização no dia <ph name="TIME" />. Informe-a para começar a sincronização.</translation>
@@ -288,6 +305,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7131892264600713844">Exibindo o histórico deste dispositivo. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Nome completo</translation>
+<translation id="713434964320012835">Excluir</translation>
 <translation id="7136892417564438900">A câmera não está disponível</translation>
 <translation id="7167621057293532233">Tipos de dados</translation>
 <translation id="7189598951263744875">Compartilhar...</translation>
@@ -309,7 +327,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7514365320538308">Fazer o download</translation>
 <translation id="7537586195939242955">Impossível instalar senha no livro de senhas no momento.</translation>
 <translation id="7561196759112975576">Sempre</translation>
-<translation id="7572670177380301651">Mostrando o histórico dos seus dispositivos conectados. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7588950540487816470">Web física</translation>
 <translation id="7603852183842204213">Pop-ups bloqueados (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">A sincronização não está funcionando</translation>
@@ -317,9 +334,11 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7671141431838911305">INSTALAR</translation>
+<translation id="7682287625158474539">Entrega</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7769602470925380267">Aceitar e sair</translation>
 <translation id="7772032839648071052">Confirmar senha</translation>
+<translation id="7791543448312431591">Adicionar</translation>
 <translation id="780301667611848630">Não</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>
@@ -331,6 +350,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8019783059653722575">Isso permite que você salve fotos e faça upload delas.</translation>
 <translation id="8023878949384262191">Expande a seção.</translation>
 <translation id="8059533439631660104">Recolhe a seção.</translation>
+<translation id="806745655614357130">Manter meus dados separados</translation>
 <translation id="8076014560081431679">As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Fechar todas as guias</translation>
 <translation id="8108697784695284144">Sua senha foi copiada.</translation>
@@ -338,12 +358,14 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8205564605687841303">Cancelar</translation>
 <translation id="8225985093977202398">Imagens e arquivos armazenados em cache</translation>
 <translation id="8261506727792406068">Excluir</translation>
+<translation id="8272194309885535896">Fazer o download da imagem</translation>
 <translation id="8272426682713568063">Cartões de crédito</translation>
 <translation id="8281781826761538115">Padrão: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Controlar a maneira como o Google usa seu histórico de navegação para personalizar a Pesquisa do Google, anúncios e outros serviços nossos</translation>
 <translation id="8428045167754449968">Cidade</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433678324664858900">Mostrar sugestões</translation>
+<translation id="8458197615157477273">Marcar como lidas</translation>
 <translation id="8458397775385147834">1 item excluído</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="8517375800490286174">Licenças de código aberto</translation>
@@ -355,6 +377,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8636825310635137004">Para ver as guias dos seus outros dispositivos, ative a sincronização.</translation>
 <translation id="8680787084697685621">Os detalhes de login da conta estão desatualizados.</translation>
+<translation id="8699098509676302392">Adicionar endereço…</translation>
 <translation id="8721297211384281569">Menu Ferramentas</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8730621377337864115">Concluído</translation>
@@ -375,6 +398,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="9055772144595778347">Não é possível fazer login</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9079935439869366234">Marcar todas as entradas como não lidas</translation>
+<translation id="9080712759204168376">Resumo do pedido</translation>
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Senha necessária</translation>
 <translation id="9148126808321036104">Faça login novamente</translation>

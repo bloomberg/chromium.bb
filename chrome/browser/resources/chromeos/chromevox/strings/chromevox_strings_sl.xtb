@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">sl</translation>
 <translation id="2091933974477985526">Prejšnje besedilno polje, ki ga je mogoče urejati</translation>
 <translation id="2100350898815792233">Vsa ločila</translation>
+<translation id="2110480898214777136">Prelom vrstice od začetka do konca ali od konca do začetka znotraj strani, pogovornega okna ali drugega vsebnika</translation>
 <translation id="2119965627982867824">pomik</translation>
 <translation id="2121067395472282800">tipka za dostop: <ph name="KEY" /></translation>
 <translation id="2155457205053847599">Spremenite trenutno tabelo braillove pisave s 6 pikami z izbiro možnosti s spodnjega seznama.</translation>
 <translation id="2169714232367507776">Klik trenutnega elementa</translation>
+<translation id="2179452035581866348">ChromeVox z zvoki podaja pomembne in dodatne informacije. Če se naučite, kaj posamezni zvok pomeni, lahko z njimi hitreje krmarite. Ko vam to postane domače, lahko izklopite podrobne opise pri govoru in jih upoštevate glede pomembnih informacij o strani. Tu je celoten seznam zvokov in kaj pomenijo.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{zaklepaj}one{# zaklepaj}two{# zaklepaja}few{# zaklepaji}other{# zaklepajev}}</translation>
 <translation id="2199994615414171367">Prejšnji matematični izraz</translation>
 <translation id="2220529011494928058">Prijavite težavo</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">Glavni</translation>
 <translation id="2329324941084714723">Podokno z zavihki</translation>
 <translation id="2344193891939537199">Kontrolnik za datum in čas</translation>
+<translation id="2347456970887948350">Povezava</translation>
 <translation id="2359897517538099099">Ni v tabelarnem načinu.</translation>
 <translation id="241124561063364910">in še</translation>
+<translation id="2416512023405990736">Neizbrano potrditveno polje</translation>
 <translation id="2417569100218200841">Informacije o vsebini</translation>
 <translation id="2422937916923936891">Potrditveno polje menijskega elementa</translation>
 <translation id="2428534162001909979">Meniji z ukazi</translation>
@@ -213,6 +217,7 @@
 <translation id="3223701887221307104">Zavihek <ph name="NAME" /></translation>
 <translation id="3226035351387556942">ptp</translation>
 <translation id="3229375994964697375">Obiskana povezava</translation>
+<translation id="3232388865800379423">Pojavni gumb</translation>
 <translation id="323731244387692321">Odpiranje pomoči za tipkovnico ChromeVox</translation>
 <translation id="3241052487511142956">Prejšnja obiskana povezava</translation>
 <translation id="3286390186030710347">Drsnik</translation>
@@ -221,6 +226,7 @@
 <translation id="3311969765485641742">Pritisnite Alt + Shift + A, če želite pregledati opozorila</translation>
 <translation id="3312997241656799641">Naslednja obiskana povezava</translation>
 <translation id="3313245066383501820">Modifikatorska tipka ChromeVoxa</translation>
+<translation id="3317212938060708859">Drsnik</translation>
 <translation id="3321460131042519426">Omogočanje združevanja besed</translation>
 <translation id="3322936298410871309">Prejšnji naslov na ravni 1</translation>
 <translation id="3323447499041942178">Besedilno polje</translation>
@@ -279,6 +285,7 @@
 <translation id="3457000393508828486">Delno pritisnjeno</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, izklopljeno</translation>
 <translation id="3462439746547587373">Gumb <ph name="NAME" /></translation>
+<translation id="3466530247399808663">Neveljavni pritisk tipke</translation>
 <translation id="3473644018603298796">izb <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{oglati zaklepaj}one{# oglati zaklepaj}two{# oglata zaklepaja}few{# oglati zaklepaji}other{# oglatih zaklepajev}}</translation>
@@ -286,6 +293,7 @@
 <translation id="3494946239022273294">elmen</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{vprašaj}one{# vprašaj}two{# vprašaja}few{# vprašaji}other{# vprašajev}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{strešica}one{# strešica}two{# strešici}few{# strešice}other{# strešic}}</translation>
+<translation id="352577523970648069">Besedilno polje, ki ga je mogoče urejati</translation>
 <translation id="3568702578574425662">Potrditveno polje <ph name="NAME" /> ni označeno</translation>
 <translation id="3599054940393788245">Ni znotraj matematičnih enačb</translation>
 <translation id="3616113530831147358">Zvok</translation>
@@ -325,10 +333,12 @@
 <translation id="4047216625641135770">Oznaka</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4054936709456751127">stn</translation>
+<translation id="4058278702844053247">Poteka nalaganje strani</translation>
 <translation id="4065205963140826639">Pritisnite tipko za iskanje in puščico desno, da poiščete gumb za naprej, nato pritisnite tipko za iskanje in preslednico, da ga kliknete.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDA}one{# tilda}two{# tildi}few{# tilde}other{# tild}}</translation>
 <translation id="409334809956508737">Prejšnji predmet</translation>
 <translation id="4099274309791143834">ima podmeni</translation>
+<translation id="4101527861445851766">Izbrano potrditveno polje</translation>
 <translation id="4107807507418787238">Ni celice spodaj.</translation>
 <translation id="4116415223832267137">Opozorilo</translation>
 <translation id="4147126331795725888">Ni naslednjega kontrolnika.</translation>
@@ -338,6 +348,7 @@
 <translation id="4173994908659439270">Ni naslednjega besedilnega polja, ki ga je mogoče urejati.</translation>
 <translation id="4176463684765177261">Onemogočeno</translation>
 <translation id="4188530942454211480">Prejšnji stavek</translation>
+<translation id="4191918948604314587">Gumb</translation>
 <translation id="4202186506458631436">Pomik v desno</translation>
 <translation id="4206289001967551965">V tabeli</translation>
 <translation id="4215733775853809057">Naslednji drsnik</translation>
@@ -461,6 +472,7 @@
 <translation id="5374320867641260420">Ni naslednjega gumba.</translation>
 <translation id="5382299583965267720">Ni naslednjega naslova na ravni 1.</translation>
 <translation id="5402367795255837559">Braillova pisava</translation>
+<translation id="5402791055281059602">Modalno opozorilo</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{podpičje}one{# podpičje}two{# podpičji}few{# podpičja}other{# podpičij}}</translation>
 <translation id="5411891038905756502">Ni prejšnje točke skoka.</translation>
 <translation id="5417034931411865818">Kliknite element pod tipko za usmerjanje $1</translation>
@@ -554,6 +566,7 @@
 <translation id="6119955456199054975">Konec celice.</translation>
 <translation id="6122013438240733403">bgmb</translation>
 <translation id="6129953537138746214">Presledek</translation>
+<translation id="6132506484792346370">Polje s seznamom ali kombinirano polje</translation>
 <translation id="6138576064440631958">Akord $1</translation>
 <translation id="6142308968191113180">Naslov 4</translation>
 <translation id="6169420925157477918">Slika z dolgim opisom</translation>
@@ -567,6 +580,7 @@
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Ni naslednjega kombiniranega polja.</translation>
 <translation id="6307969636681130414">Pritisnjeno</translation>
+<translation id="6322856989298155004">Zvoki</translation>
 <translation id="6324551002951139333">Zaznana je bila slovnična napaka</translation>
 <translation id="6348657800373377022">Kombinirano polje</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{točka}one{# točka}two{# točki}few{# točke}other{# točk}}</translation>
@@ -597,6 +611,7 @@
 <translation id="6657128831881431364">Vrstica za potek</translation>
 <translation id="6659594942844771486">Tabulator</translation>
 <translation id="667999046851023355">Dokument</translation>
+<translation id="6688209025607531203">Nemodalno opozorilo</translation>
 <translation id="6697092096875747123">Prejšnje kombinirano polje</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{klicaj}one{# klicaj}two{# klicaja}few{# klicaji}other{# klicajev}}</translation>
 <translation id="6710213216561001401">Nazaj</translation>

@@ -27,6 +27,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1779356040007214683">Vi har gjort Chromium säkrare genom att inaktivera vissa tillägg som inte finns i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
 <translation id="1808667845054772817">Installera om Chromium</translation>
 <translation id="1816404578968201294">Chromium behöver tillgång till platsinformation för att kunna dela den på den här webbplatsen.</translation>
+<translation id="1838412507805038478">Chromium har verifierat att <ph name="ISSUER" /> har utfärdat webbplatsens certifikat.</translation>
 <translation id="1869480248812203386">Du kan bidra till att göra Chromium säkrare och enklare att använda genom att rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt.</translation>
 <translation id="1881322772814446296">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Chromium-profil. Dina uppgifter i Chromium, t.ex. dina appar, bokmärken, din historik, ditt lösenord och andra inställningar, kopplas då permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dem till något annat konto. Du kan skapa en ny profil om du vill hålla dina befintliga Chromium-uppgifter separata. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium svarar inte. Vill du starta om?</translation>
@@ -36,7 +37,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licenser för öppen källkod för Chromium OS</translation>
 <translation id="2241627712206172106">Om du delar en dator med vänner och familj kan de konfigurera Chromium precis som de vill och surfa separat.</translation>
-<translation id="225614027745146050">Välkommen</translation>
 <translation id="2316129865977710310">Nej tack</translation>
 <translation id="2347108572062610441">Det här tillägget har ändrat vilken sida som visas när du startar Chromium.</translation>
 <translation id="2372704305038231957">32-bitarsversionen av Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på det här Linux-systemet. Uppgradera till 64-bitarsversionen av Chromium.</translation>
@@ -155,7 +155,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5877064549588274448">Kanalen har ändrats. Starta om enheten om du vill tillämpa ändringarna.</translation>
 <translation id="5895138241574237353">Starta om</translation>
 <translation id="5906655207909574370">Uppdateringen är nästan klar! Slutför den genom att starta om enheten.</translation>
-<translation id="5942225298871134766">Chromium sparar detta i <ph name="SAVED_PASSWORD_LINK" /> och kommer ihåg det nästa gång du behöver det.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> har lagts till i Chromium.</translation>
 <translation id="59625444380784159">Du kan fylla i formulär snabbare i Chromium med hjälp av uppgifter från dina kontakter.</translation>
 <translation id="5987687638152509985">Du måste uppdatera Chromium innan synkroniseringen kan starta</translation>
@@ -244,6 +243,7 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="81770708095080097">Filen är farlig och har blockerats av Chromium.</translation>
 <translation id="8269379391216269538">Bidra till att förbättra Chromium</translation>
 <translation id="8290862415967981663">Filen kan vara farlig och har blockerats av Chromium.</translation>
+<translation id="8340674089072921962">Chromium användes tidigare av <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8453117565092476964">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Chromium igen.</translation>
 <translation id="8493179195440786826">Den här versionen av Chromium är inaktuell</translation>
 <translation id="85843667276690461">Få hjälp med att använda Chromium</translation>

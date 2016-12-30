@@ -15,6 +15,7 @@
 <translation id="1801827354178857021">Laikotarpis</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 valanda ir }one{# valanda ir }few{# valandos ir }many{# valandos ir }other{# valandų ir }}</translation>
+<translation id="1842960171412779397">pasirinkti</translation>
 <translation id="1860796786778352021">Uždaryti pranešimus</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1901303067676059328">Pasirinkti &amp;viską</translation>
@@ -26,9 +27,11 @@
 <translation id="2482878487686419369">Pranešimai</translation>
 <translation id="2497284189126895209">Visi failai</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="252373100621549798">Nežinoma pateiktis</translation>
 <translation id="2666092431469916601">Į viršų</translation>
 <translation id="2743387203779672305">Kopijuoti į iškarpinę</translation>
 <translation id="2803313416453193357">Atidaryti aplanką</translation>
+<translation id="2931838996092594335">spustelėti</translation>
 <translation id="2983818520079887040">Nustatymai...</translation>
 <translation id="3036649622769666520">Atidaryti failus</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -44,11 +47,12 @@
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="385051799172605136">Grįžti</translation>
 <translation id="3889424535448813030">Rodyklė į dešinę</translation>
+<translation id="3892641579809465218">Vidinė pateiktis</translation>
 <translation id="3909791450649380159">Iškir&amp;pti</translation>
 <translation id="3990502903496589789">Dešinysis kraštas</translation>
+<translation id="4202807286478387388">peršokti</translation>
 <translation id="4250229828105606438">Ekrano kopija</translation>
 <translation id="4320177379694898372">Nėra interneto ryšio</translation>
-<translation id="436869212180315161">Spustelėti</translation>
 <translation id="4588090240171750605">Slinkti į dešinę</translation>
 <translation id="459417155289402299">Sparčiojo atrakinimo funkcija</translation>
 <translation id="4820616160060340806">„Command“ + „<ph name="KEY_COMBO_NAME" />“</translation>
@@ -60,6 +64,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">Pabaiga</translation>
 <translation id="5329858601952122676">&amp;Pašalinti</translation>
+<translation id="5476505524087279545">Nuimti žymėjimą</translation>
 <translation id="5583640892426849032">Grįžties klavišas</translation>
 <translation id="5613020302032141669">Rodyklė į kairę</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min.}one{# min.}few{# min.}many{# min.}other{# min.}}</translation>
@@ -70,9 +75,11 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Visos programos</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
+<translation id="6119846243427417423">suaktyvinti</translation>
 <translation id="6129953537138746214">Tarpas</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
+<translation id="6203030746557259519">Virtualusis ekranas</translation>
 <translation id="6364916375976753737">Slinkti į kairę</translation>
 <translation id="6394627529324717982">Kablelis</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Prieš 1 sek.}one{Prieš # sek.}few{Prieš # sek.}many{Prieš # sek.}other{Prieš # sek.}}</translation>
@@ -83,6 +90,7 @@
 <translation id="6808150112686056157">Sustabdyti mediją</translation>
 <translation id="6829324100069873704">Atgal į pranešimus</translation>
 <translation id="6845383723252244143">Pasirinkti aplanką</translation>
+<translation id="6845533974506654842">paspausti</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{LIko 1 valanda}one{Liko # valanda}few{Liko # valandos}many{Liko # valandos}other{Liko # valandų}}</translation>
 <translation id="688711909580084195">Tinklalapis be pavadinimo</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -113,6 +121,7 @@
 <translation id="8328145009876646418">Kairysis kraštas</translation>
 <translation id="8331626408530291785">Slinkti į viršų</translation>
 <translation id="8371695176452482769">Kalbėti dabar</translation>
+<translation id="838869780401515933">tikrinti</translation>
 <translation id="8392688371657486010">Neturite jokių pranešimų</translation>
 <translation id="8394908167088220973">Leisti / pristabdyti mediją</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
@@ -121,6 +130,7 @@
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB per sek.</translation>
 <translation id="8806053966018712535">Aplankas „<ph name="FOLDER_NAME" />“</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="9002566407876343676">atidaryti</translation>
 <translation id="9038489124413477075">Aplankas be pavadinimo</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sek.}one{# sek.}few{# sek.}many{# sek.}other{# sek.}}</translation>
 <translation id="9170848237812810038">&amp;Atšaukti</translation>

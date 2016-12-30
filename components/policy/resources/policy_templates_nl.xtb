@@ -19,9 +19,6 @@
       Wanneer dit beleid is ingesteld op 'onwaar' of wanneer er geen waarde voor dit beleid is opgegeven, worden cookies die door de IdP zijn ingesteld, alleen de eerste keer dat de gebruiker inlogt op een apparaat, overgedragen naar het profiel van de gebruiker.
 
       Dit beleid is alleen van invloed op gebruikers waarvan het domein overeenkomt met het inschrijvingsdomein van het apparaat. Voor alle overige gebruikers worden cookies die zijn ingesteld door de IdP, alleen de eerste keer dat de gebruiker inlogt op een apparaat, overgedragen naar het profiel van de gebruiker.</translation>
-<translation id="1029536946382325801">Als dit beleid is ingesteld op 'waar', kan de gebruiker met de hardware van Chrome-apparaten de identiteit ervan extern bevestigen aan de privacy-CA via de Enterprise Platform Keys-API chrome.enterprise.platformKeys.challengeUserKey().
-
-          Als dit beleid is ingesteld op 'onwaar' of niet is ingesteld, mislukt het aanroepen van de API en wordt een foutcode weergegeven.</translation>
 <translation id="1040446814317236570">Verwijderen van gegevens uit PAC-URL's toestaan (voor https://)</translation>
 <translation id="1044878202534415707">Hardwarestatistieken melden, zoals CPU-/RAM-gebruik.
 
@@ -94,6 +91,9 @@
       Als het beleid niet is ingesteld of is ingesteld op 'onwaar', worden de RC4-coderingssuites in TLS niet ingeschakeld. Anders kan het worden ingesteld op 'waar' om compatibiliteit met een verouderde server te behouden. Dit is een tijdelijke oplossing en de server moet opnieuw worden geconfigureerd.</translation>
 <translation id="1297182715641689552">Een PAC-script voor de proxy gebruiken</translation>
 <translation id="1304973015437969093">ID's voor extensies/apps en URL's voor updates die op de achtergrond moeten worden geïnstalleerd</translation>
+<translation id="1310333396104446007">Als deze instelling is ingesteld op 'false', kunnen gebruikers geen pincodes instellen die als zwak worden beschouwd. Dergelijke pincodes omvatten pincodes waarin hetzelfde cijfer steeds wordt herhaald, pincodes met een oplopende cijferreeks, pincodes met een aflopende cijferreeks en pincodes die te algemeen zijn.
+
+          Als deze instelling is ingesteld op 'true' of niet is geconfigureerd, kunnen gebruikers deze zwakke pincodes wel gebruiken en krijgen ze alleen een waarschuwing te zien.</translation>
 <translation id="1313457536529613143">Bepaalt het percentage waarmee de dimvertraging van het scherm wordt geschaald wanneer er activiteit van de gebruiker wordt waargenomen terwijl het scherm is gedimd of kort nadat het scherm is uitgeschakeld.
 
           Als dit beleid is ingeschakeld, bepaalt het het percentage waarmee de dimvertraging van het scherm wordt geschaald wanneer er activiteit van de gebruiker wordt waargenomen terwijl het scherm is gedimd of kort nadat het scherm is uitgeschakeld. Wanneer de dimvertraging is geschaald, worden de vertragingen 'Scherm uit', 'Schermvergrendeling' en 'Inactief' aangepast om dezelfde afstand van de dimvertraging van het scherm te behouden zoals oorspronkelijk was geconfigureerd.
@@ -106,7 +106,7 @@
 <translation id="1330145147221172764">Schermtoetsenbord inschakelen</translation>
 <translation id="1330985749576490863">Schakelt Google Drive uit via mobiele verbindingen in de app Bestanden van <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Naam van beleid</translation>
-<translation id="1353966721814789986">Startpagina's</translation>
+<translation id="1353966721814789986">Homepage's</translation>
 <translation id="1359553908012294236">Als dit beleid is ingesteld op 'waar' of niet is geconfigureerd, schakelt <ph name="PRODUCT_NAME" /> gast-logins in. Gast-logins zijn profielen van <ph name="PRODUCT_NAME" /> waarbij alle vensters in de incognitomodus worden geopend.
 
       Als dit beleid is ingesteld op 'onwaar', staat <ph name="PRODUCT_NAME" /> niet toe dat er gastprofielen worden gestart.</translation>
@@ -169,6 +169,7 @@
 <translation id="1522425503138261032">Sites toestaan de fysieke locatie van gebruikers bij te houden</translation>
 <translation id="152657506688053119">Lijst met alternatieve URL's voor de standaardzoekprovider</translation>
 <translation id="1530812829012954197">De volgende URL-patronen altijd verwerken in de hostbrowser</translation>
+<translation id="1547635088210394207">Hiermee stel je de maximumlengte van de pincode voor het vergrendelingsscherm in.</translation>
 <translation id="1553684822621013552">Als dit beleid is ingesteld op waar, wordt ARC ingeschakeld voor de gebruiker (onderhevig aan extra controles van de beleidsinstellingen; ARC is nog steeds niet beschikbaar als de kortstondige modus of toegang tot meerdere accounts is ingeschakeld in de huidige gebruikerssessie).
 
      Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen zakelijke gebruikers ARC niet gebruiken.</translation>
@@ -185,6 +186,15 @@
       zijn niet toegestaan</translation>
 <translation id="1655229863189977773">Grootte van schijfcache in bytes instellen</translation>
 <translation id="166427968280387991">Proxyserver</translation>
+<translation id="1668836044817793277">De kiosk-app die automatisch zonder vertraging is gestart, wel of niet toestaan de <ph name="PRODUCT_OS_NAME" />-versie te beheren.
+
+      Met dit beleid wordt bepaald of de kiosk-app die automatisch zonder vertraging is gestart, de <ph name="PRODUCT_OS_NAME" />-versie mag beheren door een required_platform_version te declareren in het bijbehorende manifest en deze te gebruiken als voorvoegsel voor de doelversie van de automatische update.
+
+      Als het beleid is ingesteld op 'true' (waar), wordt de waarde van de manifestsleutel required_platform_version van de kiosk-app die automatisch zonder vertraging is gestart, gebruikt als voorvoegsel voor de doelversie van de automatische update.
+
+      Als het beleid niet is geconfigureerd of is ingesteld op 'false' (onwaar), wordt de manifestsleutel required_platform_version genegeerd en wordt de automatische update zoals gebruikelijk uitgevoerd.
+
+      Waarschuwing: Het wordt niet aanbevolen het beheer van de <ph name="PRODUCT_OS_NAME" />-versie te delegeren aan een kiosk-app, omdat het apparaat hierdoor mogelijk geen software-updates en essentiële beveiligingsoplossingen ontvangt. Als je het beheer van de <ph name="PRODUCT_OS_NAME" />-versie delegeert, kunnen gebruikers gevaar lopen.</translation>
 <translation id="1675002386741412210">Ondersteund op:</translation>
 <translation id="1679420586049708690">Openbare sessie voor automatisch inloggen</translation>
 <translation id="1680029600835707254">Met dit beleid wordt bepaald wie een <ph name="PRODUCT_OS_NAME" />-sessie mag starten. Hiermee wordt niet voorkomen dat gebruikers binnen Android inloggen op extra Google-accounts. Als je dit wilt voorkomen, kun je het Android-specifieke beleid <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" /> configureren als onderdeel van <ph name="ARC_POLICY" />.</translation>
@@ -216,6 +226,7 @@
 <translation id="1808715480127969042">Cookies blokkeren op deze sites</translation>
 <translation id="1827523283178827583">Vaste proxyservers gebruiken</translation>
 <translation id="1843117931376765605">Vernieuwingsfrequentie voor gebruikersbeleid</translation>
+<translation id="1844620919405873871">Hiermee configureer je het beleid ten aanzien van snel ontgrendelen.</translation>
 <translation id="1847960418907100918">Specificeert de parameters die worden gebruikt voor het uitvoeren van een instantzoekopdracht met POST. Het bestaat uit door komma's gescheiden naam/waarde-paren. Als een waarde een sjabloonparameter, zoals {searchTerms} in het bovenstaande voorbeeld, is, wordt de waarde vervangen door echte zoektermgegevens.
 
           Dit beleid is optioneel. Als het beleid niet is ingesteld, wordt de instantzoekopdracht verzonden met de GET-methode.
@@ -323,6 +334,11 @@
 <translation id="2168397434410358693">Inactieve vertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2170233653554726857">WPAD-optimalisatie inschakelen</translation>
 <translation id="2178899310296064282">Minimaal de gemiddelde 'Beperkte modus' op YouTube afdwingen</translation>
+<translation id="2183294522275408937">Met deze instelling wordt bepaald hoe vaak het wachtwoord voor het vergrendelingsscherm moet worden opgegeven om de functie voor snel ontgrendelen te kunnen blijven gebruiken. Telkens wanneer het vergrendelingsscherm wordt weergegeven en het wachtwoord nog niet is opgegeven gedurende de ingestelde periode, is de functie voor snel ontgrendelen niet beschikbaar om het vergrendelingsscherm te ontgrendelen. Wanneer het vergrendelingsscherm niet wordt ontgrendeld gedurende de ingestelde periode, moet de volgende keer dat de gebruiker een verkeerde code invoert of het vergrendelingsscherm opnieuw opent een wachtwoord worden opgegeven.
+
+          Als deze instelling is ingeschakeld, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, op basis van deze instelling gevraagd hun wachtwoord op te geven voor het vergrendelingsscherm.
+
+          Als deze instelling niet is geconfigureerd, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, elke dag gevraagd hun wachtwoord voor het vergrendelingsscherm op te geven.</translation>
 <translation id="2188979373208322108">Hiermee wordt de bladwijzerbalk ingeschakeld in <ph name="PRODUCT_NAME" />.
 
       Als je deze instelling inschakelt, geeft <ph name="PRODUCT_NAME" /> een bladwijzerbalk weer.
@@ -541,6 +557,13 @@
 <translation id="2587719089023392205"><ph name="PRODUCT_NAME" /> instellen als standaardbrowser</translation>
 <translation id="2592091433672667839">Duur van inactiviteit voordat de schermbeveiliging wordt weergegeven in het inlogvenster in de winkelmodus</translation>
 <translation id="2623014935069176671">Wachten op initiële gebruikersactiviteit</translation>
+<translation id="2625512435194873786">Met deze instelling wordt de maximumlengte van pincodes bepaald.
+
+          Als deze instelling is ingesteld op 0 of lager, is er geen maximumlengte en kan de gebruiker een pincode met elke gewenste lengte instellen.
+
+          Als deze instelling lager is dan PinUnlockMinimumLength maar hoger dan 0, is de maximumlengte gelijk aan de minimumlengte.
+
+          Als deze instelling niet is geconfigureerd, is er geen maximumlengte en kan een gebruiker een pincode met elke gewenste lengte instellen.</translation>
 <translation id="262740370354162807">Verzenden van documenten naar <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
 <translation id="2633084400146331575">Gesproken feedback inschakelen</translation>
 <translation id="2646290749315461919">Hiermee kun je instellen of websites de fysieke locatie van gebruikers mogen bijhouden. Het bijhouden van de fysieke locatie van gebruikers kan standaard worden toegestaan, standaard worden geweigerd of het kan de gebruiker telkens worden gevraagd wanneer een website zijn fysieke locatie opvraagt.
@@ -782,9 +805,9 @@
       Als dit beleid is ingesteld op 'onwaar', wordt de ingebouwde DNS-client nooit gebruikt.
 
       Als dit beleid niet wordt ingesteld, kunnen de gebruikers wijzigen of de ingebouwde DNS-client wordt gebruikt door chrome://flags te bewerken of een opdrachtregelmarkering op te geven.</translation>
-<translation id="3214164532079860003">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de startpagina wordt geïmporteerd uit de huidige standaardbrowser.
+<translation id="3214164532079860003">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de homepage wordt geïmporteerd uit de huidige standaardbrowser.
 
-      Als dit beleid is uitgeschakeld, wordt de startpagina niet geïmporteerd.
+      Als dit beleid is uitgeschakeld, wordt de homepage niet geïmporteerd.
 
       Als dit beleid niet is ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
 <translation id="3219421230122020860">Incognitomodus beschikbaar</translation>
@@ -850,6 +873,7 @@
           Als dit beleid is ingesteld op 'False', worden vertragingen in energiebeheer en de limiet voor sessielengte gestart bij het starten van de sessie.</translation>
 <translation id="3478024346823118645">Gebruikersgegevens wissen bij uitloggen</translation>
 <translation id="348495353354674884">Virtueel toetsenbord inschakelen</translation>
+<translation id="3495440981030194931">Hiermee stel je de minimumlengte van de pincode voor het vergrendelingsscherm in.</translation>
 <translation id="3496296378755072552">Wachtwoordbeheer</translation>
 <translation id="349667858031092827">Tijdzone nooit automatisch detecteren.</translation>
 <translation id="350443680860256679">ARC configureren</translation>
@@ -998,6 +1022,7 @@
       Als je dit beleid uitschakelt, kan het SPDY-protocol worden gebruikt.
 
       Als dit beleid niet wordt ingesteld, is het SPDY-protocol beschikbaar.</translation>
+<translation id="3890999316834333174">Beleid ten aanzien van snel ontgrendelen</translation>
 <translation id="3891357445869647828">JavaScript inschakelen</translation>
 <translation id="3891953007921334498">Hiermee worden de ontwikkelaarstools en de JavaScript-console uitgeschakeld.
 
@@ -1049,6 +1074,11 @@
 
       Als dit beleid is ingesteld op 'false' (onwaar), kunnen gebruikers geen aanbiedingen inwisselen.</translation>
 <translation id="4010738624545340900">Activering van dialoogvensters voor het selecteren van bestanden toestaan</translation>
+<translation id="4012737788880122133">Als dit is ingesteld op 'true' (waar), schakel je hiermee automatische updates uit.
+
+      <ph name="PRODUCT_OS_NAME" />-apparaten zoeken automatisch naar updates wanneer deze instelling niet is geconfigureerd of is ingesteld op 'false' (onwaar).
+
+      Waarschuwing: Het wordt aanbevolen automatische updates ingeschakeld te laten, zodat gebruikers software-updates en essentiële beveiligingsoplossingen ontvangen. Als je automatische updates uitschakelt, kunnen gebruikers gevaar lopen.</translation>
 <translation id="4020682745012723568">Cookies die worden overgedragen naar het profiel van de gebruiker, zijn niet toegankelijk voor Android-apps.</translation>
 <translation id="4025586928523884733">Hiermee worden indirecte cookies geblokkeerd.
 
@@ -1128,6 +1158,16 @@
           Dit beleid is optioneel. Als het beleid niet is ingesteld, wordt de voorgestelde zoekopdracht verzonden met de GET-methode.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
+<translation id="4294280661005713627">Hiermee stel je een doelversie voor automatische updates in.
+
+      Hiermee geef je het voorvoegsel van een doelversie op waarnaar <ph name="PRODUCT_OS_NAME" /> moet worden geüpdatet. Als op het apparaat een versie wordt uitgevoerd die lager is dan het opgegeven voorvoegsel, wordt het apparaat geüpdatet naar de nieuwste versie met het opgegeven voorvoegsel. Als op het apparaat al een hogere versie is geïnstalleerd, gebeurt er niets (dat wil zeggen, er worden geen downgrades uitgevoerd) en blijft het apparaat de huidige versie gebruiken. De notatie van het voorvoegsel werkt op basis van componenten, zoals het volgende voorbeeld laat zien:
+
+      "" (of niet geconfigureerd): updaten naar de nieuwste versie die beschikbaar is.
+      "1412.": updaten naar een secundaire versie van 1412 (bijvoorbeeld 1412.24.34 of 1412.60.2).
+      "1412.2.": updaten naar een secundaire versie van 1412.2 (bijvoorbeeld 1412.2.34 of 1412.2.2).
+      "1412.24.34": alleen updaten naar deze specifieke versie.
+
+      Waarschuwing: Het wordt niet aanbevolen versiebeperkingen te configureren, omdat gebruikers hierdoor mogelijk geen software-updates en essentiële beveiligingsoplossingen ontvangen. Als je updates beperkt tot een specifiek versievoorvoegsel, kunnen gebruikers gevaar lopen.</translation>
 <translation id="4309640770189628899">Of DHE-coderingssuites in TLS zijn ingeschakeld</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 of hoger</translation>
 <translation id="4322842393287974810">Toestaan dat de kiosk-app die automatisch zonder vertraging is gestart, de <ph name="PRODUCT_OS_NAME" />-versie beheert</translation>
@@ -1162,15 +1202,15 @@
 <translation id="4476769083125004742">Als dit beleid wordt ingesteld op <ph name="BLOCK_GEOLOCATION_SETTING" />, hebben de Android-apps geen toegang tot locatiegegevens. Als je een andere waarde voor dit beleid instelt of het beleid niet instelt, wordt de gebruiker om toestemming gevraagd wanneer een Android-app toegang tot locatiegegevens probeert te krijgen.</translation>
 <translation id="447686899376429408">Als dit is ingesteld op 'true' (waar) of niet is ingesteld, kunnen gebruikers tabbladen, sites of het bureaublad vanuit de browser casten. Als dit is ingesteld op 'false' (onwaar), is deze optie uitgeschakeld.</translation>
 <translation id="4480694116501920047">SafeSearch afdwingen</translation>
-<translation id="4482640907922304445">Hiermee wordt de knop 'Startpagina' weergegeven in de werkbalk van <ph name="PRODUCT_NAME" />.
+<translation id="4482640907922304445">Hiermee wordt de knop 'Homepage' weergegeven in de werkbalk van <ph name="PRODUCT_NAME" />.
 
-      Als je deze instelling inschakelt, wordt de knop 'Startpagina' altijd weergegeven.
+      Als je deze instelling inschakelt, wordt de knop 'Homepage' altijd weergegeven.
 
-      Als je deze instelling uitschakelt, wordt de knop 'Startpagina' nooit weergegeven.
+      Als je deze instelling uitschakelt, wordt de knop 'Homepage' nooit weergegeven.
 
       Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME" />.
 
-      Als dit beleid niet wordt ingesteld, kan de gebruiker kiezen of de knop 'Startpagina' wel of niet wordt weergegeven.</translation>
+      Als dit beleid niet wordt ingesteld, kan de gebruiker kiezen of de knop 'Homepage' wel of niet wordt weergegeven.</translation>
 <translation id="4492287494009043413">Het maken van screenshots uitschakelen</translation>
 <translation id="450537894712826981">Configureert de cachegrootte die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gecachte bestanden op de schijf.
 
@@ -1367,6 +1407,9 @@
           Een waarde van * voor de zwarte lijst betekent dat alle hosts voor systeemeigen berichten op de zwarte lijst staan, tenzij ze expliciet op de witte lijst worden vermeld.
 
           Als dit beleid niet wordt ingesteld, laadt <ph name="PRODUCT_NAME" /> alle geïnstalleerde hosts voor systeemeigen berichten.</translation>
+<translation id="5272684451155669299">Als dit beleid is ingesteld op 'true', kan de gebruiker met de hardware van Chrome-apparaten de identiteit ervan extern bevestigen aan de privacy-CA via de <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> met <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
+
+          Als dit beleid is ingesteld op 'false' of niet is ingesteld, mislukt het aanroepen van de API en wordt er een foutcode weergegeven.</translation>
 <translation id="5288772341821359899">Als het beleid is ingesteld, wordt het door WebRTC gebruikte UDP-poortbereik beperkt tot het opgegeven poortinterval (inclusief eindpunten).
 
       Als het beleid niet wordt ingesteld, of als dit wordt ingesteld voor een lege tekenreeks of een ongeldig poortbereik, kan WebRTC gebruikmaken van elke lokale UDP-poort.</translation>
@@ -1386,7 +1429,7 @@
 <translation id="5307432759655324440">Beschikbaarheid van incognitomodus</translation>
 <translation id="5318185076587284965">Het gebruik van relayservers door de host voor externe toegang inschakelen</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME" /> toestaan de volgende soorten content te verwerken.</translation>
-<translation id="5365946944967967336">Knop 'Startpagina' in de werkbalk weergeven</translation>
+<translation id="5365946944967967336">Knop 'Homepage' in de werkbalk weergeven</translation>
 <translation id="5366977351895725771">Als dit is ingesteld op 'false' (niet waar) wordt het maken van gebruikers met beperkte rechten uitgeschakeld voor deze gebruiker. Bestaande gebruikers met beperkte rechten blijven beschikbaar.
 
           Als dit is ingesteld op 'true' (waar) of niet is geconfigureerd, kunnen gebruikers met beperkte rechten worden gemaakt en beheerd door deze gebruiker.</translation>
@@ -1447,7 +1490,7 @@
 
       Dit beleid is alleen van toepassing als Android-apps zijn ingeschakeld.</translation>
 <translation id="5511702823008968136">Bladwijzerbalk inschakelen</translation>
-<translation id="5512418063782665071">URL van startpagina</translation>
+<translation id="5512418063782665071">URL van homepage</translation>
 <translation id="5523812257194833591">Een openbare sessie om automatisch in te loggen na een vertraging.
 
       Als dit beleid is ingesteld, wordt de opgegeven sessie automatisch ingelogd na een tijdsperiode zonder gebruikersinteractie op het inlogscherm is verstreken. De openbare sessie moet al zijn geconfigureerd (zie |DeviceLocalAccounts|).
@@ -1495,6 +1538,11 @@
           Als deze instelling is ingeschakeld, vergelijkt de host voor externe toegang de naam van de lokale gebruiker (waaraan de host is gekoppeld) met de naam van het Google-account dat is geregistreerd als eigenaar van de host (bijvoorbeeld 'jansmits' als de host eigendom is van het Google-account jansmits@voorbeeld.nl). De host voor externe toegang wordt niet gestart als de naam van de hosteigenaar anders is dan de naam van de lokale gebruiker waaraan de host is gekoppeld. Het beleid 'RemoteAccessHostMatchUsername' moet samen met 'RemoteAccessHostDomain' worden gebruikt om ook te zorgen dat het Google-account van de hosteigenaar aan een specifiek domein wordt gekoppeld (zoals 'voorbeeld.nl').
 
           Als deze instelling is uitgeschakeld of niet ingesteld, kan de host voor externe toegang aan elke lokale gebruiker worden gekoppeld.</translation>
+<translation id="5694594914843889579">Wanneer de instelling is ingesteld op 'waar', is externe opslag niet beschikbaar in de bestandsbrowser.
+
+      Deze instelling is van toepassing op alle typen opslagmedia. Bijvoorbeeld: USB-flashdrives, externe harde schijven, SD-kaarten en andere geheugenkaarten, optische opslag, enzovoort. Deze is niet van toepassing op interne opslag, dus bestanden die zijn opgeslagen in de downloadmap, zijn nog steeds toegankelijk. De instelling is ook niet van toepassing op Google Drive.
+
+      Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers alle ondersteunde typen externe opslag gebruiken op hun apparaat.</translation>
 <translation id="5697306356229823047">Apparaatgebruikers melden</translation>
 <translation id="570062449808736508">Wanneer dit beleid is ingesteld op een niet-lege tekenreeks, leest de WebView de URL-beperkingen van de contentprovider met de opgegeven autoriteitsnaam.</translation>
 <translation id="5703863730741917647">Specificeer de actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt.
@@ -1621,6 +1669,7 @@
       Als dit beleid niet is ingesteld of is ingesteld op 'onwaar', activeren afdrukopdrachten het afdrukvoorbeeldscherm.</translation>
 <translation id="6022948604095165524">Actie bij starten</translation>
 <translation id="602728333950205286">Instant-URL voor standaardzoekprovider</translation>
+<translation id="6029664378608427609">Hiermee kunnen gebruikers zwakke pincodes instellen als pincode voor het vergrendelingsscherm.</translation>
 <translation id="603410445099326293">Parameters voor suggestie-URL die POST gebruikt</translation>
 <translation id="6036523166753287175">Firewallpassage vanaf host voor externe toegang inschakelen</translation>
 <translation id="6059543311891422586">Gebruik hardwareversnelling indien beschikbaar.
@@ -1671,12 +1720,6 @@
 <translation id="6155936611791017817">De standaardstatus van de grote muisaanwijzer op het inlogscherm instellen</translation>
 <translation id="6157537876488211233">Door komma's gescheiden lijst van regels voor proxyomzeiling</translation>
 <translation id="6158324314836466367">Naam van zakelijke webwinkel (verouderd)</translation>
-<translation id="6166832345529129545">Hiermee wordt bepaald welke modi voor snel ontgrendelen mogen worden ingesteld en gebruikt.
-      Met deze instelling worden de toegestane modi voor snel ontgrendelen die kunnen worden ingesteld en gebruikt om het vergrendelingsscherm te ontgrendelen, op de witte lijst gezet. De waarde is een lijst met tekenreeksen waarbij elke tekenreeks een van de volgende zou moeten zijn: 'alle', 'Pincode'. Als 'alle' is geselecteerd, zijn alle ondersteunde snelle modi beschikbaar. In andere gevallen zijn alleen de modi in de lijst beschikbaar.
-
-      Als deze instelling is geconfigureerd, kunnen de typen modi voor snel ontgrendelen die niet op de witte lijst zijn gezet, niet worden gebruikt of ingesteld.
-
-      Als deze instelling niet is geconfigureerd, wordt de modus Pincode ingeschakeld en worden alle andere modi uitgeschakeld.</translation>
 <translation id="6167074305866468481">Waarschuwing: De ondersteuning voor SSLv3 wordt volledig uit <ph name="PRODUCT_NAME" /> verwijderd na versie 43 (rond juli 2015) en dit beleid wordt op hetzelfde moment verwijderd.
 
       Als dit beleid niet is geconfigureerd, gebruikt <ph name="PRODUCT_NAME" /> een standaard minimumversie. In <ph name="PRODUCT_NAME" /> 39 is dit SSLv3. In latere versies is dit TLS 1.0.
@@ -1721,7 +1764,7 @@
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="6367755442345892511">Of de gebruiker het releasekanaal moet configureren</translation>
-<translation id="6368011194414932347">De startpagina-URL configureren</translation>
+<translation id="6368011194414932347">De homepage-URL configureren</translation>
 <translation id="6368403635025849609">JavaScript toestaan op deze sites</translation>
 <translation id="6376659517206731212">Kan verplicht zijn</translation>
 <translation id="6378076389057087301">Specificeer of audioactiviteit invloed heeft op stroombeheer</translation>
@@ -1740,6 +1783,15 @@
 <translation id="6417861582779909667">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die geen cookies mogen instellen.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultCookiesSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
+<translation id="6426205278746959912">Je kunt Android-apps niet dwingen een proxy te gebruiken. Er is een subset met proxyinstellingen beschikbaar voor Android-apps. Deze kunnen ze op vrijwillige basis respecteren:
+
+          Als je ervoor kiest nooit een proxyserver te gebruiken, wordt aan de Android-apps gemeld dat er geen proxy is geconfigureerd.
+
+          Als je ervoor kiest de proxyinstellingen van het systeem of een vaste serverproxy te gebruiken, ontvangen de Android-apps het adres en de poort van de HTTP-proxyserver.
+
+          Als je ervoor kiest de proxyserver automatisch te detecteren, ontvangen de Android-apps de script-URL http://wpad/wpad.dat. Er wordt geen enkel ander onderdeel van het protocol voor de automatische detectie van de proxy gebruikt.
+
+          Als je het PAC-script voor de proxy kiest, ontvangen de Android-apps de script-URL.</translation>
 <translation id="6467433935902485842">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop plug-ins niet mogen worden uitgevoerd.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites, op basis van het beleid 'DefaultPluginsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
@@ -1939,15 +1991,15 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid is uitgeschakeld, worden er geen bladwijzers geïmporteerd.
 
       Als dit beleid niet wordt ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
-<translation id="7055358889740598917">Hiermee wordt de standaardstartpagina-URL in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze wijzigen.
+<translation id="7055358889740598917">Hiermee wordt de standaardhomepage-URL in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze wijzigen.
 
-          De startpagina is de pagina die wordt geopend met de startpaginaknop. De pagina's die worden geopend bij het opstarten, worden beheerd door het RestoreOnStartup-beleid.
+          De homepage is de pagina die wordt geopend met de homepageknop. De pagina's die worden geopend bij het opstarten, worden beheerd door het RestoreOnStartup-beleid.
 
-          Het type startpagina kan worden ingesteld op een URL die je hier opgeeft of op de nieuwe tabbladpagina. Als je de nieuwe tabbladpagina selecteert, is dit beleid niet van kracht.
+          Het type homepage kan worden ingesteld op een URL die je hier opgeeft of op de nieuwe tabbladpagina. Als je de nieuwe tabbladpagina selecteert, is dit beleid niet van kracht.
 
-          Als je deze instelling inschakelt, kunnen gebruikers hun startpagina-URL in <ph name="PRODUCT_NAME" /> niet wijzigen, maar kunnen ze de nieuwe tabbladpagina nog steeds kiezen als startpagina.
+          Als je deze instelling inschakelt, kunnen gebruikers hun homepage-URL in <ph name="PRODUCT_NAME" /> niet wijzigen, maar kunnen ze de nieuwe tabbladpagina nog steeds kiezen als homepage.
 
-          Als dit beleid niet wordt ingesteld, kan de gebruiker zijn eigen startpagina kiezen als HomepageIsNewTabPage ook niet is ingesteld.
+          Als dit beleid niet wordt ingesteld, kan de gebruiker zijn eigen homepage kiezen als HomepageIsNewTabPage ook niet is ingesteld.
 
           Dit beleid is niet beschikbaar op Windows-instanties die niet zijn gekoppeld aan een Active Directory-domein.</translation>
 <translation id="7063895219334505671">Pop-ups toestaan ​​op deze sites</translation>
@@ -2037,7 +2089,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7258823566580374486">Afschermen van hosts voor externe toegang inschakelen</translation>
 <translation id="7260277299188117560">Automatisch updaten van p2p ingeschakeld</translation>
 <translation id="7267809745244694722">Mediatoetsen worden standaard ingesteld op functietoetsen</translation>
-<translation id="7271085005502526897">Startpagina importeren uit standaardbrowser bij eerste uitvoering</translation>
+<translation id="7271085005502526897">Homepage importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="7273823081800296768">Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers clients en hosts aanmelden op het moment dat verbinding wordt gemaakt, zodat er niet elke keer een pincode hoeft te worden opgegeven.
 
           Als deze instelling is uitgeschakeld, is deze functie niet beschikbaar.</translation>
@@ -2079,7 +2131,18 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid niet wordt ingesteld, gebruikt de automatische opschoonfunctie de standaard ingebouwde strategie. Momenteel is dit de strategie'RemoveLRUIfDormant'.</translation>
 <translation id="7336878834592315572">Cookies bewaren voor de duur van de sessie</translation>
 <translation id="7340034977315324840">Tijdsduur van apparaatgebruik melden</translation>
+<translation id="7340934985429121460">Met deze instelling wordt de minimumlengte van pincodes bepaald.
+
+          Als deze instelling is ingesteld op lager dan 1, moet een pincode minimaal één cijfer lang zijn.
+
+          Als deze instelling niet is geconfigureerd, moet een pincode minimaal vier cijfers lang zijn.</translation>
 <translation id="7384999953864505698">QUIC-protocol toestaan</translation>
+<translation id="7406716912696538245">Hiermee wordt bepaald welke modi voor snel ontgrendelen mogen worden ingesteld en gebruikt.
+          Met deze instelling worden de toegestane modi voor snel ontgrendelen die kunnen worden ingesteld en gebruikt om het vergrendelingsscherm te ontgrendelen, op de witte lijst gezet. De waarde is een lijst met tekenreeksen waarbij elke tekenreeks een van de volgende zou moeten zijn: 'alle' of 'Pincode'. Als 'alle' is geselecteerd, zijn alle ondersteunde snelle modi beschikbaar. In andere gevallen zijn alleen de modi in de lijst beschikbaar.
+
+          Als deze instelling is geconfigureerd, kunnen de typen modi voor snel ontgrendelen die niet op de witte lijst zijn gezet, niet worden gebruikt of ingesteld.
+
+          Als deze instelling niet is geconfigureerd, wordt de modus Pincode ingeschakeld en worden alle andere modi uitgeschakeld.</translation>
 <translation id="7417972229667085380">Het percentage waarmee je de inactieve vertraging in presentatiemodus kunt schalen (verouderd)</translation>
 <translation id="7421483919690710988">Grootte van mediaschijfcache in bytes instellen</translation>
 <translation id="7424751532654212117">Lijst van uitzonderingen op de lijst met uitgeschakelde plug-ins</translation>
@@ -2125,6 +2188,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7611372873040492235">Het wachtwoord moet elke twaalf uur worden opgegeven.</translation>
 <translation id="7612157962821894603">Markeringen voor het hele systeem die worden toegepast bij het starten van <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Lijst met uitgeschakelde protocolschema's</translation>
+<translation id="7617319494457709698">Dit beleid geeft aan welke extensies de <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-functie <ph name="CHALLENGE_USER_KEY_FUNCTION" /> mogen gebruiken voor externe bevestiging. Je moet extensies aan deze lijst toevoegen om de API te kunnen gebruiken.
+
+          Als een extensie niet in de lijst voorkomt of als de lijst niet is ingesteld, mislukt het aanroepen van de API en wordt er een foutcode weergegeven.</translation>
 <translation id="7625444193696794922">Hiermee wordt het releasekanaal gespecificeerd waarmee dit apparaat moet worden vergrendeld.</translation>
 <translation id="7632724434767231364">Naam van GSSAPI-bibliotheek</translation>
 <translation id="7635471475589566552">Hiermee wordt de landinstelling voor de applicatie geconfigureerd in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers de landinstelling kunnen wijzigen.
@@ -2225,6 +2291,13 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als deze instelling niet is geconfigureerd, kunnen gebruikers Android Backup Service in- en uitschakelen in de app Android-instellingen.</translation>
 <translation id="7818131573217430250">De standaardstatus van de modus voor hoog contrast op het inlogscherm instellen</translation>
+<translation id="7822837118545582721">Wanneer dit beleid is ingesteld op 'true' (waar), kunnen gebruikers niets schrijven naar externe opslagapparaten.
+
+      Als deze instelling is ingesteld op 'false' (onwaar) of niet is geconfigureerd, kunnen gebruikers bestanden maken en aanpassen op externe opslagapparaten waarop kan worden geschreven.
+
+      Het beleid ExternalStorageDisabled krijgt voorrang op dit beleid. Als ExternalStorageDisabled is ingesteld op 'true' (waar), wordt de toegang tot alle externe opslag uitgeschakeld en wordt dit beleid daarom genegeerd.
+
+      Dynamische vernieuwing van dit beleid wordt ondersteund in M56 en hoger.</translation>
 <translation id="7831595031698917016">Specificeert de maximum vertraging in milliseconden tussen het ontvangen van een ongeldigverklaring van een beleid en het ophalen van het nieuwe beleid uit de apparaatbeheerservice.
 
       Als je dit beleid instelt, wordt de standaardwaarde van 5000 milliseconden genegeerd. Geldige waarden voor dit beleid vallen binnen het bereik van 1000 (1 seconde) tot 300.000 (5 minuten). Waarden buiten dit bereik worden vast ingesteld op de respectieve grenswaarde.
@@ -2285,9 +2358,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           een Active Directory-domein zijn gekoppeld.</translation>
 <translation id="7937766917976512374">Het opnemen van video's toestaan of weigeren</translation>
 <translation id="7941975817681987555">Geen netwerkacties voorspellen voor een netwerkverbinding</translation>
-<translation id="7942429005743031780">Dit beleid geeft aan welke extensies gebruik mogen maken van de Enterprise Platform Keys-API chrome.enterprise.platformKeys.challengeUserKey() voor externe bevestiging. Je moet extensies aan deze lijst toevoegen om de API te kunnen gebruiken.
-
-          Als een extensie niet in de lijst voorkomt of als de lijst niet is ingesteld, mislukt het aanroepen van de API en wordt er een foutcode weergegeven.</translation>
 <translation id="7953256619080733119">Hosts van handmatige uitzonderingen voor beheerde gebruikers</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Dit beleid wordt niet meer ondersteund.
@@ -2420,15 +2490,15 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8312129124898414409">Hiermee kun je instellen of websites sleutels mogen genereren. Het genereren van sleutels kan ofwel worden toegestaan voor alle websites ofwel worden geweigerd voor alle websites.
 
           Als dit beleid niet wordt ingesteld, wordt 'BlockKeygen' gebruikt en kan de gebruiker dit wijzigen.</translation>
-<translation id="8316806736175990584">Hiermee wordt het type standaardstartpagina in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen. De startpagina kan worden ingesteld op een door jou gespecificeerde URL of op de nieuwe tabbladpagina.
+<translation id="8316806736175990584">Hiermee wordt het type standaardhomepage in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen. De homepage kan worden ingesteld op een door jou gespecificeerde URL of op de nieuwe tabbladpagina.
 
-          Als je deze instelling inschakelt, wordt de nieuwe tabbladpagina altijd gebruikt voor de startpagina en wordt de URL voor de startpagina genegeerd.
+          Als je deze instelling inschakelt, wordt de nieuwe tabbladpagina altijd gebruikt voor de homepage en wordt de URL voor de homepage genegeerd.
 
-          Als je deze instelling uitschakelt, wordt de nieuwe tabbladpagina nooit weergegeven als de startpagina, tenzij de URL is ingesteld op 'chrome://newtab'.
+          Als je deze instelling uitschakelt, wordt de nieuwe tabbladpagina nooit weergegeven als de homepage, tenzij de URL is ingesteld op 'chrome://newtab'.
 
-          Als je deze instelling in- of uitschakelt, kunnen gebruikers het type startpagina niet aanpassen in <ph name="PRODUCT_NAME" />.
+          Als je deze instelling in- of uitschakelt, kunnen gebruikers het type homepage niet aanpassen in <ph name="PRODUCT_NAME" />.
 
-          Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de nieuwe tabbladpagina als startpagina te gebruiken of een eigen pagina als startpagina te gebruiken.
+          Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de nieuwe tabbladpagina als homepage te gebruiken of een eigen pagina als homepage te gebruiken.
 
           Dit beleid is niet beschikbaar op Windows-instanties die niet zijn gekoppeld aan een Active Directory-domein.</translation>
 <translation id="8329984337216493753">Dit beleid is alleen ingeschakeld in de winkelmodus.
@@ -2444,6 +2514,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit beleid wordt ingesteld op 'onwaar', geeft de browser de welkomstpagina niet weer bij de eerste keer opstarten na een upgrade van het besturingssysteem.</translation>
 <translation id="8369602308428138533">Vertraging van scherm uitschakelen wanneer op netstroom wordt gewerkt</translation>
+<translation id="8370471134641900314">Als dit beleid is ingesteld op 'true' (waar), moet de gebruiker inloggen bij <ph name="PRODUCT_NAME" /> met zijn profiel voordat hij de browser gebruikt. De standaardwaarde van BrowserGuestModeEnabled wordt ingesteld op 'false' (onwaar).
+
+      Als dit beleid is ingesteld op 'false' (onwaar) of niet is geconfigureerd, kan de gebruiker de browser gebruiken zonder in te loggen bij <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Het gebruik van externe verificatie inschakelen voor het beveiligen van content voor het apparaat</translation>
 <translation id="838870586332499308">Gegevensroaming inschakelen</translation>
 <translation id="8390049129576938611">Hiermee wordt de interne pdf-viewer in <ph name="PRODUCT_NAME" /> uitgeschakeld. In plaats daarvan wordt dit beschouwd als download. De gebruiker kan pdf-bestanden openen met de standaard-app.
@@ -2458,7 +2531,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als deze optie is ingesteld op 'waar' (true) of niet is geconfigureerd, kan de gebruiker processen in Taakbeheer beëindigen.</translation>
 <translation id="8424255554404582727">Standaard displayrotatie instellen, wordt telkens toegepast na opnieuw opstarten</translation>
 <translation id="8426231401662877819">Scherm 90 graden met de klok mee draaien</translation>
-<translation id="8451988835943702790">De pagina 'Nieuw tabblad' als startpagina gebruiken</translation>
+<translation id="8451988835943702790">De pagina 'Nieuw tabblad' als homepage gebruiken</translation>
 <translation id="8458790683633857482">Hiermee wordt een reeks beleidsregels gespecificeerd om door te geven aan de ARC-runtime. De waarde moet geldige JSON zijn.</translation>
 <translation id="8465065632133292531">Parameters voor instant-URL die POST gebruikt</translation>
 <translation id="847472800012384958">Niet toestaan dat sites pop-ups weergeven</translation>
@@ -2571,24 +2644,15 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid niet is ingesteld of is ingesteld op 'False', wordt de locatie niet gerapporteerd.</translation>
 <translation id="8818768076343557335">Netwerkacties voorspellen op elk netwerk dat niet mobiel is.
           (Beëindigd in 50, verwijderd in 52. Als na 52 waarde 1 is ingesteld, wordt deze waarde verwerkt als 0 - netwerkacties voorspellen voor elke netwerkverbinding.)</translation>
-<translation id="8828766846428537606">Hiermee wordt de standaard startpagina in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
+<translation id="8828766846428537606">Hiermee wordt de standaard homepage in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
-      De instellingen voor de startpagina worden alleen volledig voor de gebruiker vergrendeld als je de pagina 'Nieuw tabblad' als de startpagina selecteert of als je zelf een URL voor de startpagina specificeert. Als je geen URL voor de startpagina opgeeft, kan de gebruiker nog steeds de pagina 'Nieuw tabblad' als startpagina instellen door 'chrome://newtab' op te geven.</translation>
+      De instellingen voor de homepage worden alleen volledig voor de gebruiker vergrendeld als je de pagina 'Nieuw tabblad' als de homepage selecteert of als je zelf een URL voor de homepage specificeert. Als je geen URL voor de homepage opgeeft, kan de gebruiker nog steeds de pagina 'Nieuw tabblad' als homepage instellen door 'chrome://newtab' op te geven.</translation>
 <translation id="8833109046074170275">Verificatie via GAIA (standaard)</translation>
 <translation id="8838303810937202360">Met <ph name="PRODUCT_OS_NAME" /> worden apps en extensies in het cachegeheugen geplaatst voor de installatie door meerdere gebruikers van een enkel apparaat om te voorkomen dat ze opnieuw worden gedownload voor iedere gebruiker.
       Als dit beleid niet is geconfigureerd of de waarde lager is dan 1 MB, gebruikt <ph name="PRODUCT_OS_NAME" /> het standaardformaat van de cache.</translation>
-<translation id="8858120573534680488">Je kunt Android-apps niet dwingen een proxy te gebruiken. Er is een subset met proxyinstellingen beschikbaar voor Android-apps. Deze kunnen ze op vrijwillige basis respecteren:
-
-          Als je ervoor kiest nooit een proxyserver te gebruiken, wordt aan de Android-apps gemeld dat er geen proxy is geconfigureerd.
-
-          Als je ervoor kiest de proxyinstellingen van het systeem of een vaste proxyserver te gebruiken, ontvangen de Android-apps het adres en de poort van de HTTP-proxyserver.
-
-          Als je ervoor kiest de proxyserver automatisch te detecteren, ontvangen de Android-apps de script-URL http://wpad/wpad.dat. Er wordt geen enkel ander onderdeel van het protocol voor de automatische detectie van de proxy gebruikt.
-
-          Als je het PAC-script voor de proxy kiest, ontvangen de Android-apps de script-URL.</translation>
 <translation id="8858642179038618439">Beperkte modus van YouTube afdwingen</translation>
 <translation id="8864975621965365890">Hiermee onderdruk je de prompt die wordt weergegeven wanneer een site wordt weergegeven door <ph name="PRODUCT_FRAME_NAME" />.</translation>
-<translation id="8870318296973696995">Startpagina</translation>
+<translation id="8870318296973696995">Homepage</translation>
 <translation id="88890388118515381">
       Specificeert een lijst met apps die zonder gebruikersinteractie op de achtergrond op het inlogscherm worden geïnstalleerd en die niet kunnen worden verwijderd. Alle rechten die worden aangevraagd door de apps, worden impliciet zonder gebruikersinteractie verleend, inclusief aanvullende rechten die worden aangevraagd door toekomstige versies van de app.
 
@@ -2671,9 +2735,4 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="930930237275114205">Directory met gebruikersgegevens voor <ph name="PRODUCT_FRAME_NAME" /> instellen</translation>
 <translation id="944607242500063080">Toegestane modi voor snel ontgrendelen configureren.</translation>
 <translation id="944817693306670849">Grootte voor schijfcache instellen</translation>
-<translation id="969164417253718105">Met deze instelling wordt bepaald hoe vaak het wachtwoord voor het vergrendelingsscherm moet worden opgegeven om de functie voor snel ontgrendelen te kunnen blijven gebruiken. Telkens wanneer het vergrendelingsscherm wordt weergegeven en het wachtwoord nog niet is opgegeven gedurende de ingestelde periode, is de functie voor snel ontgrendelen niet beschikbaar om het vergrendelingsscherm te ontgrendelen. Wanneer het vergrendelingsscherm niet wordt ontgrendeld gedurende de ingestelde periode, moet de volgende keer dat de gebruiker een verkeerde code invoert of het vergrendelingsscherm opnieuw opent een wachtwoord worden opgegeven.
-
-      Als deze instelling is ingeschakeld, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, op basis van deze instelling gevraagd hun wachtwoord op te geven voor het vergrendelingsscherm.
-
-      Als deze instelling niet is geconfigureerd, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, elke dag gevraagd hun wachtwoord voor het vergrendelingsscherm op te geven.</translation>
 </translationbundle>

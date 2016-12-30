@@ -8,6 +8,7 @@
 <translation id="1065672644894730302">നിങ്ങളുടെ മുൻഗണനകൾ വായിക്കാൻ കഴിയില്ല.
 
 ചില സവിശേഷതകൾ ലഭ്യമല്ലായിരിക്കാം ഒപ്പം മുൻഗണനകളിലേക്കുള്ള മാറ്റങ്ങൾ സംരക്ഷിക്കപ്പെടുന്നതുമല്ല.</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> മുമ്പ് Chrome ഉപയോഗിച്ചിട്ടുണ്ട്</translation>
 <translation id="1104959162601287462">&amp;Chrome OS-നെക്കുറിച്ച്</translation>
 <translation id="110877069173485804">ഇതാണ് നിങ്ങളുടെ Chrome</translation>
 <translation id="123620459398936149">Chrome OS-ന് നിങ്ങളുടെ ഡാറ്റ സമന്വയിപ്പിക്കാനായില്ല. നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്സ് അപ്‌ഡേറ്റുചെയ്യുക.</translation>
@@ -19,7 +20,6 @@
 <translation id="1434626383986940139">Chrome കാനറി അപ്ലിക്കേഷനുകൾ</translation>
 <translation id="1457721931618994305">Google Chrome അപ്‌ഡേറ്റുചെയ്യുന്നു...</translation>
 <translation id="1469002951682717133">Chrome അപ്ലിക്കേഷൻ ലോഞ്ചർ</translation>
-<translation id="1475773083554142432">Chrome <ph name="SAVED_PASSWORD_LINK" /> എന്നതിൽ ഇത് സംഭരിക്കുകയും നിങ്ങൾക്ക് ആവശ്യമുള്ളപ്പോൾ അത് ഓർക്കുകയും ചെയ്യും.</translation>
 <translation id="1480489203462860648">ഇത് പരീക്ഷിക്കുക, ഇത് ഇതിനകം ഇൻസ്റ്റാളുചെയ്‌തതാണ്</translation>
 <translation id="1553358976309200471">Chrome അപ്‌ഡേറ്റുചെയ്യുക</translation>
 <translation id="1587223624401073077">Google Chrome നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കുന്നു.</translation>
@@ -45,7 +45,6 @@
 <translation id="2147651015520127414">ഈ വെബ്‌സൈറ്റിന്റെ സർട്ടിഫിക്കറ്റ് <ph name="ISSUER" /> നൽകിയതാണെന്ന് Chrome പരിശോധിച്ചുറപ്പിച്ചു.</translation>
 <translation id="2246246234298806438">ബിൽറ്റ്-ഇൻ PDF വ്യൂവർ കാണുന്നില്ലെങ്കിൽ Google Chrome-ന് പ്രിന്റ് പ്രിവ്യു കാണിക്കാൻ കഴിയില്ല.</translation>
 <translation id="2252923619938421629">നിലവിലെ ക്രമീകരണങ്ങൾ റിപ്പോർട്ട് ചെയ്യുന്നതിലൂടെ Google Chrome-നെ മികച്ചതാക്കാൻ സഹായിക്കുക</translation>
-<translation id="225614027745146050">സ്വാഗതം</translation>
 <translation id="2286950485307333924">നിങ്ങൾ ഇപ്പോൾ Chrome-ൽ സൈൻ ഇൻ ചെയ്‌തു</translation>
 <translation id="2290014774651636340">Google API കീകൾ നഷ്‌ടമായി. Google Chrome-ന്റെ ചില പ്രവർത്തനങ്ങൾ പ്രവർത്തനരഹിതമാകും.</translation>
 <translation id="2290095356545025170">Google Chrome അണിന്‍സ്റ്റാള്‍ ചെയ്യണമെന്ന് നിങ്ങള്‍ക്കുറപ്പാണോ?</translation>

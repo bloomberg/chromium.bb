@@ -13,6 +13,7 @@
 <translation id="2195025571279539885">Souhaitez-vous que Chromium vous propose de traduire les pages de ce site rédigées en <ph name="LANGUAGE_NAME" /> lors de votre prochaine visite ?</translation>
 <translation id="2647554856022461007">Chromium peut utiliser des services Web pour améliorer votre confort de navigation. Vous pouvez choisir de désactiver ces services. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium ne peut pas utiliser l'appareil photo, car celui-ci est utilisé par une autre application</translation>
+<translation id="3256316712990552818">Copié dans Chromium</translation>
 <translation id="3413120535237193088">Connectez-vous à Chromium pour synchroniser vos favoris sur tous vos appareils.</translation>
 <translation id="3473048256428424907">Activer le lecteur de code QR Chromium</translation>
 <translation id="3805899903892079518">Chromium n'a pas accès à vos photos ni à vos vidéos. Activez l'accès dans iOS via Réglages &gt; Confidentialité &gt; Photos.</translation>
@@ -29,12 +30,12 @@
 <translation id="6068866989048414399">Conditions d'utilisation Chromium</translation>
 <translation id="6268381023930128611">Se déconnecter de Chromium ?</translation>
 <translation id="6424492062988593837">Chromium a été amélioré ! Une nouvelle version est désormais disponible.</translation>
-<translation id="6600954340915313787">Copiée dans Chrome</translation>
 <translation id="6604711459180487467">Améliorez votre expérience dans Chromium grâce à votre position.</translation>
 <translation id="6989306073720242915">Vous aimez Chromium ? <ph name="BEGIN_LINK" />Placez-le dans le dock.<ph name="END_LINK" /></translation>
 <translation id="7022368070219581493">Chromium a confirmé que le certificat de ce site Web a bien été émis par <ph name="ISSUER" />.</translation>
 <translation id="7099326575020694068">Chromium ne peut pas utiliser votre appareil photo en mode Vue fractionnée.</translation>
 <translation id="7144758435978427212">Découvrez des pages Web envoyées par des objets à proximité. Lorsque le Bluetooth est activé, Chromium peut réunir les pages Web associées aux objets qui vous entourent et les envoyer de manière anonyme à Google pour déterminer celles qui vous sont les plus utiles. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
+<translation id="7208566199746267865">Chromium vous permet de gagner du temps en connectant vos comptes au Web. Vous pouvez ajouter ou supprimer des comptes dans la section "Paramètres".</translation>
 <translation id="7269362888766543920">Certains modules complémentaires entraînent le plantage de Chromium. Veuillez essayer de les désinstaller.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Les données sélectionnées ont été supprimées de Chromium et des appareils synchronisés. Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page history.google.com concernant, par exemple, vos recherches ou vos activités via d'autres services Google.</translation>

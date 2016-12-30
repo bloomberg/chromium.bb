@@ -15,6 +15,7 @@
 <translation id="1801827354178857021">Tečka</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 hodina a  }few{# hodiny a  }many{# hodiny a  }other{# hodin a  }}</translation>
+<translation id="1842960171412779397">zvolit</translation>
 <translation id="1860796786778352021">Zavřít oznámení</translation>
 <translation id="1871244248791675517">Klávesa Ins</translation>
 <translation id="1901303067676059328">&amp;Vybrat vše</translation>
@@ -26,9 +27,11 @@
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="2497284189126895209">Všechny soubory</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="252373100621549798">Neznámý displej</translation>
 <translation id="2666092431469916601">Nahoru</translation>
 <translation id="2743387203779672305">Zkopírovat do schránky</translation>
 <translation id="2803313416453193357">Otevřít složku</translation>
+<translation id="2931838996092594335">kliknout</translation>
 <translation id="2983818520079887040">Nastavení...</translation>
 <translation id="3036649622769666520">Otevřít soubory</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -44,11 +47,12 @@
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3889424535448813030">Klávesa šipka vpravo</translation>
+<translation id="3892641579809465218">Interní displej</translation>
 <translation id="3909791450649380159">Vyjmou&amp;t</translation>
 <translation id="3990502903496589789">Pravý okraj</translation>
+<translation id="4202807286478387388">přejít</translation>
 <translation id="4250229828105606438">Snímek obrazovky</translation>
 <translation id="4320177379694898372">Žádné připojení k internetu</translation>
-<translation id="436869212180315161">Tisk</translation>
 <translation id="4588090240171750605">Posuv doprava</translation>
 <translation id="459417155289402299">Funkce rychlého odemknutí</translation>
 <translation id="4820616160060340806">Příkaz + <ph name="KEY_COMBO_NAME" /></translation>
@@ -60,6 +64,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">Klávesa End</translation>
 <translation id="5329858601952122676">&amp;Smazat</translation>
+<translation id="5476505524087279545">odstranit zaškrtnutí</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Klávesa šipka vlevo</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
@@ -70,9 +75,11 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Všechny aplikace</translation>
 <translation id="6040143037577758943">Zavřít</translation>
+<translation id="6119846243427417423">aktivovat</translation>
 <translation id="6129953537138746214">Mezera</translation>
 <translation id="6135826906199951471">Klávesa Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
+<translation id="6203030746557259519">Virtuální displej</translation>
 <translation id="6364916375976753737">Posuv doleva</translation>
 <translation id="6394627529324717982">Čárka</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Před 1 s}few{Před # s}many{Před # s}other{Před # s}}</translation>
@@ -83,6 +90,7 @@
 <translation id="6808150112686056157">Média – zastavit</translation>
 <translation id="6829324100069873704">Přejít zpět k oznámením</translation>
 <translation id="6845383723252244143">Vybrat složku</translation>
+<translation id="6845533974506654842">zmáčknout</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Zbývá 1 hodina}few{Zbývají # hodiny}many{Zbývá # hodiny}other{Zbývá # hodiny}}</translation>
 <translation id="688711909580084195">Nepojmenovaná webová stránka</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -113,6 +121,7 @@
 <translation id="8328145009876646418">Levý okraj</translation>
 <translation id="8331626408530291785">Posuv nahoru</translation>
 <translation id="8371695176452482769">Mluvte</translation>
+<translation id="838869780401515933">zaškrtnout</translation>
 <translation id="8392688371657486010">Nemáte žádná oznámení.</translation>
 <translation id="8394908167088220973">Média – přehrát/pozastavit</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
@@ -121,6 +130,7 @@
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>
 <translation id="8806053966018712535">Složka <ph name="FOLDER_NAME" /></translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
+<translation id="9002566407876343676">otevřít</translation>
 <translation id="9038489124413477075">Nepojmenovaná složka</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}few{# s}many{# s}other{# s}}</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>

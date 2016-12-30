@@ -13,6 +13,7 @@
 <translation id="2195025571279539885">Deseja que na próxima vez o Chromium ofereça a tradução de páginas em <ph name="LANGUAGE_NAME" /> deste site?</translation>
 <translation id="2647554856022461007">O Chromium pode usar serviços da Web para melhorar sua experiência de navegação. Se desejar, você pode desativar esses serviços. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">O Chromium não pode usar a câmera porque ela está sendo usada por outro app</translation>
+<translation id="3256316712990552818">Copiado no Chromium</translation>
 <translation id="3413120535237193088">Para ter seus favoritos em todos os seus dispositivos, faça login no Chromium.</translation>
 <translation id="3473048256428424907">Ativar o leitor de QR do Chromium</translation>
 <translation id="3805899903892079518">O Chromium não têm acesso às suas fotos ou seus vídeos. Permita o acesso em "Configurações do iOS" &gt; "Privacidade" &gt; "Fotos".</translation>
@@ -29,12 +30,12 @@
 <translation id="6068866989048414399">Termos de Serviço do Chromium</translation>
 <translation id="6268381023930128611">Sair do Chromium?</translation>
 <translation id="6424492062988593837">O Chromium ficou ainda melhor! Uma nova versão está disponível.</translation>
-<translation id="6600954340915313787">Copiado no Chrome</translation>
 <translation id="6604711459180487467">Tenha uma experiência melhor no Chromium com base na sua localização.</translation>
 <translation id="6989306073720242915">Você adora o Chromium? <ph name="BEGIN_LINK" />Mova-o para a dock<ph name="END_LINK" /></translation>
 <translation id="7022368070219581493">O Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste website.</translation>
 <translation id="7099326575020694068">O Chromium não pode usar a câmera no modo Visualização dividida</translation>
 <translation id="7144758435978427212">Descubra páginas da Web enviadas por objetos nas proximidades. Quando o Bluetooth está ativado, o Chromium pode reunir páginas da Web associadas a objetos ao seu redor e enviá-las anonimamente ao Google para encontrar as mais úteis. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
+<translation id="7208566199746267865">O Chromium permite que você otimize seu tempo trazendo suas contas para a Web. É possível adicionar ou remover contas nas configurações.</translation>
 <translation id="7269362888766543920">Alguns complementos causam falhas do Chromium. Tente desinstalá-los.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Os dados selecionados foram removidos do Chromium e dos dispositivos sincronizados. É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em history.google.com.</translation>

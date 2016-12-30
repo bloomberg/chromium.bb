@@ -10,6 +10,7 @@
 <translation id="1104948393051856124">स्वीकारा आणि सुरू ठेवा</translation>
 <translation id="1112015203684611006">मुद्रण अयशस्वी झाले.</translation>
 <translation id="1125564390852150847">नवीन टॅब तयार करा.</translation>
+<translation id="1145536944570833626">विद्यमान डेटा हटवा.</translation>
 <translation id="1165039591588034296">त्रुटी</translation>
 <translation id="1172898394251786223">पुढील फील्ड</translation>
 <translation id="1176932207622159128">प्रतिमा जतन करू शकत नाही</translation>
@@ -48,6 +49,7 @@
 <translation id="1753905327828125965">सर्वाधिक भेट दिलेले</translation>
 <translation id="1809939268435598390">फोल्डर हटवा</translation>
 <translation id="1813414402673211292">ब्राउझिंग डेटा साफ करा</translation>
+<translation id="1820259098641718022">वाचन सूचीमध्ये जोडले</translation>
 <translation id="1842969606798536927">देय द्या</translation>
 <translation id="1876721852596493031">वापरलेला डेटा पाठवा</translation>
 <translation id="1886928167269928266">सुरूवातीपासून</translation>
@@ -65,6 +67,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> आयटम हलविले</translation>
 <translation id="2149973817440762519">बुकमार्क संपादित करा</translation>
 <translation id="2154710561487035718">URL कॉपी करा</translation>
+<translation id="2230173723195178503">वेबपृष्ठ लोड केले</translation>
 <translation id="2241634353105152135">फक्त एकदाच</translation>
 <translation id="2267753748892043616">खाते जोडा</translation>
 <translation id="2273327106802955778">अधिक मेनू</translation>
@@ -76,6 +79,7 @@
 <translation id="2386793615875593361">1 निवडले</translation>
 <translation id="2435457462613246316">संकेतशब्द दर्शवा</translation>
 <translation id="2467815441875554965">संदर्भीय शोध</translation>
+<translation id="2523092375122821828">सर्व चिन्हांकित करा…</translation>
 <translation id="2572712655377361602">डिव्हाइस धोरणाने आपल्या फोटोंंमधील प्रवेश अवरोधित केला</translation>
 <translation id="2584132361465095047">खाते जोडा...</translation>
 <translation id="2593774076813182497">या पृष्ठाचे मुद्रण केले जाऊ शकत नाही.</translation>
@@ -116,6 +120,7 @@
 <translation id="3324193307694657476">पत्ता 2</translation>
 <translation id="3329904751041170572">सर्व्हरशी कनेक्ट करू शकलो नाही.</translation>
 <translation id="3335947283844343239">बंद केलेले टॅब पुन्हा उघडा</translation>
+<translation id="3387752218061326363">आपल्या साइन-इन केलेल्या डिव्हाइस मधील इतिहास दर्शवित आहे.<ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">पॉप-अपला अनुमती</translation>
 <translation id="3414292259312108062">Chrome हे आपल्या <ph name="BEGIN_LINK" />Google ने जतन केलेले संकेतशब्द<ph name="END_LINK" /> मध्ये जतन करेल आणि आपल्यासाठी हे स्वयं-भरण करेल जेणेकरून आपल्याला हे लक्षात ठेवावे लागत नाही.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> मिनिटे</translation>
@@ -123,7 +128,6 @@
 <translation id="3474649192738347024">फॉर्म भरले.</translation>
 <translation id="3478058380795961209">कालबाह्यता महिना:</translation>
 <translation id="3482959374254649722">आपले टॅब संकालित करीत आहे...</translation>
-<translation id="3485544713029068372">संकेतशब्दांसाठी Smart Lock</translation>
 <translation id="3489372701259491571">जतन केलेला संकेतशब्द हटवा</translation>
 <translation id="3519193562722059437">वेब ब्राउझ करण्‍यासाठी एक टॅब उघडा.</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
@@ -145,6 +149,7 @@
 <translation id="3789841737615482174">स्थापना करा</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3897092660631435901">मेनू</translation>
+<translation id="3928666092801078803">माझा डेटा एकत्र करा</translation>
 <translation id="3950820424414687140">साइन इन करा</translation>
 <translation id="3963231839620026525">नवीन गुप्त टॅब</translation>
 <translation id="3967822245660637423">पूर्ण डाउनलोड करा</translation>
@@ -156,6 +161,7 @@
 <translation id="4121993058175073134">निव्वळ-निर्यात डेटा पाठविण्यासाठी, कृपया सेटिंग्ज अॅप मध्ये आपले ईमेल खाते कॉन्फिगर करा.</translation>
 <translation id="4124987746317609294">वेळ श्रेणी</translation>
 <translation id="4172051516777682613">नेहमी दर्शवा</translation>
+<translation id="4176234027218720244">चिन्हांकित करा…</translation>
 <translation id="424315890655130736">सांकेतिक वाक्यांश प्रविष्ट करा</translation>
 <translation id="4272631900155121838">QR कोड स्कॅन करण्‍यासाठी, सेटिंग्ज मधून कॅमेरा सक्षम करा</translation>
 <translation id="4281844954008187215">सेवा अटी</translation>
@@ -168,6 +174,7 @@
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />
 वर जतन केलेले संकेतशब्द पहा आणि व्यवस्थापित करा</translation>
 <translation id="4536418791685807335">पुन्हा साइन इन करण्याचा प्रयत्न करा.</translation>
+<translation id="4620246317052452550">आपण वाचलेली पृष्‍ठे</translation>
 <translation id="4636930964841734540">माहिती</translation>
 <translation id="4659667755519643272">टॅब स्विचर प्रविष्‍ट करा</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> म्हणून साइन इन केले.
@@ -180,6 +187,7 @@
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> नी या साइटसाठी आपला संकेतशब्द अद्यतनित करावा असे आपण इच्छिता?</translation>
 <translation id="4881695831933465202">उघडा</translation>
 <translation id="4923459931733593730">देयक</translation>
+<translation id="4930268273022498155">विद्यमान डेटा हटवा. <ph name="USER_EMAIL1" /> वर परत स्विच करून आपण तो पुनर्प्राप्त करू शकता.</translation>
 <translation id="4941089862236492464">क्षमस्व, आपला आयटम सामायिक करताना समस्या आली.</translation>
 <translation id="4979397965658815378">आपल्या सर्व डिव्हाइसेसवर आपले बुकमार्क, संकेतशब्द, इतिहास आणि अन्य सेटिंग्ज प्राप्त करण्यासाठी आपल्या Google खात्यासह साइन इन करा</translation>
 <translation id="5005498671520578047">संकेतशब्द कॉपी करा</translation>
@@ -196,10 +204,12 @@
 <translation id="5197255632782567636">इंटरनेट</translation>
 <translation id="5198972191746488848">कार्ड जोडा...</translation>
 <translation id="5228579091201413441">संकालन सक्षम करा</translation>
+<translation id="5230733896359313003">पाठविण्याचा पत्ता</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> वर संकालित करीत आहे</translation>
 <translation id="5300589172476337783">दर्शवा</translation>
 <translation id="5317780077021120954">जतन करा</translation>
 <translation id="5327248766486351172">नाव</translation>
+<translation id="532992759783668360">वाचलेले हटवा</translation>
 <translation id="5388358297987318779">प्रतिमा उघडा</translation>
 <translation id="5409365236829784218">ही फाईल उघडू शकणारे कोणतेही अनुप्रयोग स्थापित केलेले नाहीत.</translation>
 <translation id="54401264925851789">पृष्‍ठ सुरक्षितता माहिती</translation>
@@ -228,6 +238,8 @@
 <translation id="5916664084637901428">चालू</translation>
 <translation id="5953603475187800576">Google Payments वरील पत्ते आणि क्रेडिट कार्ड दर्शवा</translation>
 <translation id="5964480694698977962">नवीन गुप्त टॅब तयार करा.</translation>
+<translation id="5965679971710331625">आपण साइन इन केले आहे</translation>
+<translation id="5982717868370722439">विद्यमान डेटा <ph name="USER_EMAIL" /> मध्ये जोडा.</translation>
 <translation id="6012140227487808125">कूटबद्ध करीत आहे...</translation>
 <translation id="6021332621416007159">यामध्ये उघडा...</translation>
 <translation id="6039694632319341016">या साइटसाठी <ph name="PASSWORD_MANAGER_BRAND" /> नी <ph name="USERNAME" /> करिता आपला संकेतशब्द अद्यतनित करावा असे आपण इच्छिता?</translation>
@@ -240,9 +252,13 @@
 <translation id="6136914049981179737">सेकंदांपूर्वी</translation>
 <translation id="6149061208933997199">संकेतशब्द वापरा</translation>
 <translation id="6158823227857319455">नवीन टॅब</translation>
+<translation id="616831107264507309">नंतर वाचा</translation>
 <translation id="6184086493125982861">टॅब दर्शवा</translation>
 <translation id="6187302354554850004">अखेरचे संंकालित: <ph name="LAST_USED_TIME" /></translation>
+<translation id="6189413832092199491">न वाचलेले</translation>
+<translation id="6194286531716220336">रद्द करा</translation>
 <translation id="6196207969502475924">व्हॉइस शोध</translation>
+<translation id="6254066287920239840">ब्राउझर ऐवजी अॅपमध्ये दुवे उघडा.</translation>
 <translation id="6255097610484507482">क्रेडिट कार्ड संपादित करा</translation>
 <translation id="6308436439357671616">हे आपल्याला फोटो घेऊ आणि अपलोड करू देते.</translation>
 <translation id="6314335155547195432">संकेतशब्द व्युत्पन्न करा</translation>
@@ -250,11 +266,12 @@
 <translation id="6337234675334993532">कूटबद्धीकरण</translation>
 <translation id="633809752005859102">खरोखर काहीतरी चूक झाली. आम्ही त्यावर कार्य करू.</translation>
 <translation id="6344783595350022745">मजकूर साफ करा</translation>
-<translation id="6351971471682124046">यावर कास्ट करत आहे...</translation>
 <translation id="6362362396625799311">कोणतेही गुप्त टॅब नाहीत</translation>
 <translation id="6380866119319257197">आपण आपला सांकेतिक वाक्यांश विसरल्यास किंवा हे सेटिंग बदलू इच्छित असल्यास, <ph name="BEGIN_LINK" />संकालन रीसेट करा<ph name="END_LINK" /></translation>
+<translation id="6385146967113720558">न वाचलेले चिन्हांकित करा</translation>
 <translation id="6389470377220713856">कार्डवरील नाव</translation>
 <translation id="6406506848690869874">Sync</translation>
+<translation id="6417838470969808600">आपल्याकडे <ph name="USER_EMAIL1" /> मधील बुकमार्क, इतिहास, संकेतशब्द आणि अन्य सेटिंग्ज आहेत.</translation>
 <translation id="641799622251403418"><ph name="EMAIL" /> म्हणून साइन इन केले.
 
 आपला डेटा आपल्या संकालन सांकेतिक वाक्यांशासह <ph name="TIME" /> वाजता कूटबद्ध केला होता. संकालन सुरु करण्यासाठी तो प्रविष्ट करा.</translation>
@@ -289,6 +306,7 @@
 <translation id="7108338896283013870">लपवा</translation>
 <translation id="7131892264600713844">या डिव्हाइस वरील इतिहास दर्शवित आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">पूर्ण नाव</translation>
+<translation id="713434964320012835">हटवा</translation>
 <translation id="7136892417564438900">कॅमेरा अनुपलब्ध आहे</translation>
 <translation id="7167621057293532233">डेटा प्रकार</translation>
 <translation id="7189598951263744875">सामयिक करा...</translation>
@@ -310,7 +328,6 @@
 <translation id="7514365320538308">डाउनलोड करा</translation>
 <translation id="7537586195939242955">क्षमस्व, यावेळी आपला पास पासबुकमध्ये स्थापित केला जाऊ शकत नाही.</translation>
 <translation id="7561196759112975576">नेहमी</translation>
-<translation id="7572670177380301651">आपल्या साइन-इन केलेल्या डिव्हाइसेस वरील इतिहास दर्शवित आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="7588950540487816470">भौतिक वेब</translation>
 <translation id="7603852183842204213">पॉप-अप अवरोधित (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">संकालन कार्य करत नाही</translation>
@@ -318,9 +335,11 @@
 <translation id="7649070708921625228">मदत</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7671141431838911305">स्‍थापित करा</translation>
+<translation id="7682287625158474539">शिपिंग</translation>
 <translation id="7765158879357617694">हलवा</translation>
 <translation id="7769602470925380267">स्वीकार करा आणि साइन आउट करा</translation>
 <translation id="7772032839648071052">सांकेतिक वाक्यांशाची पुष्टी करा</translation>
+<translation id="7791543448312431591">जोडा</translation>
 <translation id="780301667611848630">नाही, धन्यवाद</translation>
 <translation id="7851858861565204677">इतर डिव्हाइसेस</translation>
 <translation id="7859704718976024901">ब्राउझिंग इतिहास</translation>
@@ -332,6 +351,7 @@
 <translation id="8019783059653722575">हे आपल्याला फोटो जतन आणि अपलोड करू देते.</translation>
 <translation id="8023878949384262191">विभाग विस्तृत करते.</translation>
 <translation id="8059533439631660104">विभाग संकुचित करा.</translation>
+<translation id="806745655614357130">माझा डेटा स्वतंत्र ठेवा</translation>
 <translation id="8076014560081431679">जतन केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">सर्व टॅब बंद करा</translation>
 <translation id="8108697784695284144">आपला संकेतशब्द कॉपी केला होता.</translation>
@@ -339,12 +359,14 @@
 <translation id="8205564605687841303">रद्द करा</translation>
 <translation id="8225985093977202398">कॅशे प्रतिमा आणि फायली</translation>
 <translation id="8261506727792406068">हटवा</translation>
+<translation id="8272194309885535896">प्रतिमा डाउनलोड करा</translation>
 <translation id="8272426682713568063">क्रेडिट कार्ड</translation>
 <translation id="8281781826761538115">डीफॉल्ट - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">शोध, जाहिरात आणि इतर Google सेवा वैयक्तीकृत करण्यास Google आपल्या ब्राउझिंग इतिहासाचा कसा वापर करते ते नियंत्रित करा</translation>
 <translation id="8428045167754449968">शहर / नगर</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8433678324664858900">सूचना दर्शवा</translation>
+<translation id="8458197615157477273">वाचले चिन्हांकित करा</translation>
 <translation id="8458397775385147834">1 आयटम हटविला</translation>
 <translation id="8503813439785031346">वापरकर्तानाव</translation>
 <translation id="8517375800490286174">मुक्त स्त्रोत परवाने</translation>
@@ -356,6 +378,7 @@
 <translation id="8620640915598389714">संपादित करा</translation>
 <translation id="8636825310635137004">आपल्या इतर डिव्हाइसेस मधून आपले टॅब प्राप्त करण्यासाठी, संकालन चालू करा</translation>
 <translation id="8680787084697685621">खाते साइन-इन तपशील कालबाह्य झाला.</translation>
+<translation id="8699098509676302392">पत्ता जोडा...</translation>
 <translation id="8721297211384281569">साधने मेनू</translation>
 <translation id="8725066075913043281">पुन्हा प्रयत्न करा</translation>
 <translation id="8730621377337864115">पूर्ण झाले</translation>
@@ -376,6 +399,7 @@
 <translation id="9055772144595778347">साइन इन करणे शक्य नाही</translation>
 <translation id="9065203028668620118">संपादन</translation>
 <translation id="9079935439869366234">सर्व न वाचलेले चिन्हांकित करा</translation>
+<translation id="9080712759204168376">मागणी सारांश</translation>
 <translation id="9083392325882095631">1 आयटम</translation>
 <translation id="9100610230175265781">सांकेतिक वाक्यांश आवश्यक</translation>
 <translation id="9148126808321036104">पुन्हा साइन इन करा </translation>

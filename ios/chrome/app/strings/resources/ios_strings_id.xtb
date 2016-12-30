@@ -10,6 +10,7 @@
 <translation id="1104948393051856124">Terima &amp; Lanjutkan</translation>
 <translation id="1112015203684611006">Gagal mencetak.</translation>
 <translation id="1125564390852150847">Buat tab baru.</translation>
+<translation id="1145536944570833626">Hapus data yang sudah ada.</translation>
 <translation id="1165039591588034296">Kesalahan</translation>
 <translation id="1172898394251786223">Bidang berikutnya</translation>
 <translation id="1176932207622159128">Gambar Tak Disimpan</translation>
@@ -48,6 +49,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="1753905327828125965">Sering Dibuka</translation>
 <translation id="1809939268435598390">Hapus Folder</translation>
 <translation id="1813414402673211292">Hapus Data Perambanan</translation>
+<translation id="1820259098641718022">Ditambahkan ke Daftar Baca</translation>
 <translation id="1842969606798536927">Bayar</translation>
 <translation id="1876721852596493031">Krm Data Penggunaan</translation>
 <translation id="1886928167269928266">Awal Waktu</translation>
@@ -65,6 +67,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dipindah</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
 <translation id="2154710561487035718">Salin URL</translation>
+<translation id="2230173723195178503">Halaman web dimuat</translation>
 <translation id="2241634353105152135">Hanya sekali</translation>
 <translation id="2267753748892043616">Tambahkan Akun</translation>
 <translation id="2273327106802955778">Menu lainnya</translation>
@@ -76,6 +79,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="2386793615875593361">1 dipilih</translation>
 <translation id="2435457462613246316">Tampilkan sandi</translation>
 <translation id="2467815441875554965">Penelusuran Kontekstual</translation>
+<translation id="2523092375122821828">Tandai Semua...</translation>
 <translation id="2572712655377361602">Kebijakan perangkat memblokir akses ke foto Anda</translation>
 <translation id="2584132361465095047">Tambahkan Akun…</translation>
 <translation id="2593774076813182497">Laman ini tidak dapat dicetak.</translation>
@@ -116,6 +120,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="3324193307694657476">Alamat 2</translation>
 <translation id="3329904751041170572">Tidak dapat tersambung ke server.</translation>
 <translation id="3335947283844343239">Buka Kembali Tab yang Tertutup</translation>
+<translation id="3387752218061326363">Menampilkan riwayat dari perangkat yang Anda gunakan untuk login. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Munculan Diizinkan</translation>
 <translation id="3414292259312108062">Chrome akan menyimpan sandi ini pada <ph name="BEGIN_LINK" />sandi tersimpan Google<ph name="END_LINK" /> dan melengkapinya secara otomatis sehingga Anda tidak perlu mengingatnya.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> mnt</translation>
@@ -123,7 +128,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="3474649192738347024">Formulir terisi.</translation>
 <translation id="3478058380795961209">Bulan Masa Berlaku Habis</translation>
 <translation id="3482959374254649722">Menyinkronkan tab Anda...</translation>
-<translation id="3485544713029068372">Smart Lock untuk Sandi</translation>
 <translation id="3489372701259491571">Hapus Sandi yang Tersimpan</translation>
 <translation id="3519193562722059437">Buka tab untuk menjelajahi web.</translation>
 <translation id="3527085408025491307">Folder</translation>
@@ -145,6 +149,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3789841737615482174">Pasang</translation>
 <translation id="385051799172605136">Mundur</translation>
 <translation id="3897092660631435901">Menu</translation>
+<translation id="3928666092801078803">Gabungkan data saya</translation>
 <translation id="3950820424414687140">Masuk</translation>
 <translation id="3963231839620026525">Tab Penyamaran Baru</translation>
 <translation id="3967822245660637423">Unduhan selesai</translation>
@@ -156,6 +161,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4121993058175073134">Konfigurasi akun email Anda di aplikasi Setelan untuk mengirim data net-ekspor.</translation>
 <translation id="4124987746317609294">Rentang Waktu</translation>
 <translation id="4172051516777682613">Selalu tampilkan</translation>
+<translation id="4176234027218720244">Tandai…</translation>
 <translation id="424315890655130736">Masukkan Frasa Sandi</translation>
 <translation id="4272631900155121838">Untuk memindai kode QR, aktifkan kamera dari setelan</translation>
 <translation id="4281844954008187215">Persyaratan Layanan</translation>
@@ -167,6 +173,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4473991315115669931">Masuk Mode Penyamaran</translation>
 <translation id="4526249700380860531">Melihat dan mengelola sandi yang tersimpan di <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Coba masuk lagi.</translation>
+<translation id="4620246317052452550">Halaman yang Telah Anda Baca</translation>
 <translation id="4636930964841734540">Info</translation>
 <translation id="4659667755519643272">Masuk Pengalih Tab</translation>
 <translation id="4666531726415300315">Masuk sebagai <ph name="EMAIL" />.
@@ -179,6 +186,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi. Masukkan frasa sandi untuk
 <translation id="4875622588773761625">Apakah Anda ingin <ph name="PASSWORD_MANAGER_BRAND" /> memperbarui sandi untuk situs ini?</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4923459931733593730">Pembayaran</translation>
+<translation id="4930268273022498155">Hapus data yang sudah ada. Anda dapat mengambilnya dengan beralih lagi ke <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Maaf, terjadi masalah saat berbagi item Anda.</translation>
 <translation id="4979397965658815378">Masuk dengan Akun Google untuk mendapatkan bookmark, sandi, riwayat, dan setelan lainnya di semua perangkat Anda.</translation>
 <translation id="5005498671520578047">Salin sandi</translation>
@@ -189,16 +197,18 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi. Masukkan frasa sandi untuk
 <translation id="5083464117946352670">Tidak dapat menentukan ukuran file.</translation>
 <translation id="5094827893301452931">Tweet selesai.</translation>
 <translation id="5173593619615111996">Tutup Semua Tab Penyamaran</translation>
-<translation id="5181140330217080051">Mengunduh</translation>
+<translation id="5181140330217080051">Mendownload</translation>
 <translation id="5186185447130319458">Pribadi</translation>
 <translation id="5190835502935405962">Bilah Bookmark</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Tambahkan Kartu...</translation>
 <translation id="5228579091201413441">Aktifkan sinkronisasi</translation>
+<translation id="5230733896359313003">Alamat Pengiriman</translation>
 <translation id="5244474230056479698">Menyinkronkan dengan <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Tampilkan</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5327248766486351172">Nama</translation>
+<translation id="532992759783668360">Hapus yang Sudah Dibaca</translation>
 <translation id="5388358297987318779">Buka Gambar</translation>
 <translation id="5409365236829784218">Tidak ada aplikasi terpasang yang dapat membuka file ini.</translation>
 <translation id="54401264925851789">Informasi Keamanan Laman</translation>
@@ -208,7 +218,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi. Masukkan frasa sandi untuk
 
 Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat Anda harus menggunakan akun iCloud yang sama.</translation>
 <translation id="5556459405103347317">Muat ulang</translation>
-<translation id="5626245204502895507">File tidak dapat diunduh saat ini.</translation>
+<translation id="5626245204502895507">File tidak dapat didownload saat ini.</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versi <ph name="PRODUCT_VERSION" /></translation>
@@ -227,6 +237,8 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="5916664084637901428">Aktif</translation>
 <translation id="5953603475187800576">Tampilkan alamat dan kartu kredit di Google Payments</translation>
 <translation id="5964480694698977962">Buat tab penyamaran baru</translation>
+<translation id="5965679971710331625">Anda sudah masuk</translation>
+<translation id="5982717868370722439">Menambahkan data yang sudah ada ke <ph name="USER_EMAIL" />.</translation>
 <translation id="6012140227487808125">Mengenkripsi…</translation>
 <translation id="6021332621416007159">Buka di...</translation>
 <translation id="6039694632319341016">Ingin <ph name="PASSWORD_MANAGER_BRAND" /> memperbarui sandi <ph name="USERNAME" /> untuk situs ini?</translation>
@@ -239,9 +251,13 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="6136914049981179737">Detik lalu</translation>
 <translation id="6149061208933997199">Gunakan Sandi</translation>
 <translation id="6158823227857319455">Tab Baru</translation>
+<translation id="616831107264507309">Baca Nanti</translation>
 <translation id="6184086493125982861">Tampilkan Tab</translation>
 <translation id="6187302354554850004">Sinkron terakhir: <ph name="LAST_USED_TIME" /></translation>
+<translation id="6189413832092199491">Belum dibaca</translation>
+<translation id="6194286531716220336">Batal</translation>
 <translation id="6196207969502475924">Penelusuran Suara</translation>
+<translation id="6254066287920239840">Buka tautan di aplikasi, bukan di browser.</translation>
 <translation id="6255097610484507482">Edit Kartu Kredit</translation>
 <translation id="6308436439357671616">Hal ini memungkinkan Anda mengambil dan mengunggah foto.</translation>
 <translation id="6314335155547195432">Buat Sandi</translation>
@@ -249,11 +265,12 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="6337234675334993532">Enkripsi</translation>
 <translation id="633809752005859102">Ada yang tidak beres. Kami akan mengatasinya.</translation>
 <translation id="6344783595350022745">Hapus Teks</translation>
-<translation id="6351971471682124046">Mentransmisikan ke...</translation>
 <translation id="6362362396625799311">Tidak Ada Tab Penyamaran</translation>
 <translation id="6380866119319257197">Jika lupa dengan frasa sandi atau ingin mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
+<translation id="6385146967113720558">Tandai Belum Dibaca</translation>
 <translation id="6389470377220713856">Nama di Kartu</translation>
 <translation id="6406506848690869874">Sinkronisasi</translation>
+<translation id="6417838470969808600">Anda memiliki bookmark, riwayat, sandi, dan setelan lain dari <ph name="USER_EMAIL1" />.</translation>
 <translation id="641799622251403418">Masuk sebagai <ph name="EMAIL" />.
 
 Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME" />. Masukkan frasa sandi untuk memulai sinkronisasi.</translation>
@@ -288,13 +305,14 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="7108338896283013870">Sembunyikan</translation>
 <translation id="7131892264600713844">Menampilkan riwayat dari perangkat ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nama Lengkap</translation>
+<translation id="713434964320012835">Hapus</translation>
 <translation id="7136892417564438900">Kamera tidak tersedia</translation>
 <translation id="7167621057293532233">Jenis Data</translation>
 <translation id="7189598951263744875">Bagikan...</translation>
 <translation id="7203585745079012652">Ucapkan Jawabannya</translation>
 <translation id="722055596168483966">Personalisasi layanan Google</translation>
 <translation id="7222245588540287464">Baik Penelusuran Kontekstual diaktifkan atau tidak.</translation>
-<translation id="7336264872878993241"><ph name="PERCENT" /> persen berhasil diunduh</translation>
+<translation id="7336264872878993241"><ph name="PERCENT" /> persen berhasil didownload</translation>
 <translation id="7346909386216857016">Oke, paham</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419187830569376338">Telusuri Gambar Ini di <ph name="SEARCH_ENGINE" /></translation>
@@ -306,10 +324,9 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="7481312909269577407">Maju</translation>
 <translation id="750493650310597496">Tak ada yang dipilih</translation>
-<translation id="7514365320538308">Unduh</translation>
+<translation id="7514365320538308">Download</translation>
 <translation id="7537586195939242955">Maaf, Pass Anda tidak dapat dipasang ke Passbook saat ini.</translation>
 <translation id="7561196759112975576">Selalu</translation>
-<translation id="7572670177380301651">Menampilkan riwayat dari perangkat yang Anda gunakan untuk masuk. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="7588950540487816470">Web Fisik</translation>
 <translation id="7603852183842204213">Pop-up diblokir (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Sinkronisasi tidak berfungsi</translation>
@@ -317,9 +334,11 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7671141431838911305">PASANG</translation>
+<translation id="7682287625158474539">Pengiriman</translation>
 <translation id="7765158879357617694">Pindahkan</translation>
 <translation id="7769602470925380267">Terima dan keluar</translation>
 <translation id="7772032839648071052">Konfirmasi frasa sandi</translation>
+<translation id="7791543448312431591">Tambahkan</translation>
 <translation id="780301667611848630">Lain kali</translation>
 <translation id="7851858861565204677">Perangkat lain</translation>
 <translation id="7859704718976024901">Riwayat Penjelajahan</translation>
@@ -331,6 +350,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="8019783059653722575">Hal ini memungkinkan Anda menyimpan dan mengunggah foto.</translation>
 <translation id="8023878949384262191">Luaskan bagian.</translation>
 <translation id="8059533439631660104">Ciutkan bagian.</translation>
+<translation id="806745655614357130">Tetap pisahkan data saya</translation>
 <translation id="8076014560081431679">Setelan situs yang disimpan tidak akan dihapus dan dapat mencerminkan kebiasaan penjelajahan Anda. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Tutup Semua Tab</translation>
 <translation id="8108697784695284144">Sandi Anda telah disalin.</translation>
@@ -338,12 +358,14 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="8205564605687841303">Batal</translation>
 <translation id="8225985093977202398">Gambar &amp; File dalam Cache</translation>
 <translation id="8261506727792406068">Hapus</translation>
+<translation id="8272194309885535896">Download Gambar</translation>
 <translation id="8272426682713568063">Kartu Kredit</translation>
 <translation id="8281781826761538115">Default - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Kontrol cara Google menggunakan riwayat penjelajahan Anda untuk mempersonalisasi Penelusuran, iklan, dan layanan Google lainnya</translation>
 <translation id="8428045167754449968">Kota</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8433678324664858900">Tampilkan Saran</translation>
+<translation id="8458197615157477273">Tandai Sudah Dibaca</translation>
 <translation id="8458397775385147834">1 item dihapus</translation>
 <translation id="8503813439785031346">Nama Pengguna</translation>
 <translation id="8517375800490286174">Lisensi Sumber Terbuka</translation>
@@ -355,6 +377,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">Untuk mendapatkan tab dari perangkat lainnya, aktifkan sinkronisasi.</translation>
 <translation id="8680787084697685621">Detail proses masuk akun sudah usang.</translation>
+<translation id="8699098509676302392">Tambahkan Alamat...</translation>
 <translation id="8721297211384281569">Menu Alat</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
 <translation id="8730621377337864115">Selesai</translation>
@@ -375,6 +398,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="9055772144595778347">Tidak Dapat Masuk</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9079935439869366234">Tandai Semua Belum Dibaca</translation>
+<translation id="9080712759204168376">Ringkasan Pesanan</translation>
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Frasa sandi diwajibkan</translation>
 <translation id="9148126808321036104">Masuk sekali lagi</translation>

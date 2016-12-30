@@ -18,7 +18,6 @@
 <translation id="1434626383986940139">‏تطبيقات Chrome Canary</translation>
 <translation id="1457721931618994305">‏جارٍ تحديث Google Chrome...</translation>
 <translation id="1469002951682717133">‏مشغل تطبيقات Chrome</translation>
-<translation id="1475773083554142432">‏سيُخزن Chrome هذا مع <ph name="SAVED_PASSWORD_LINK" /> وسيتذكره عندما تحتاج إليه في المرة القادمة.</translation>
 <translation id="1480489203462860648">يمكنك تجريبه، إنه مثبت من قبل</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
 <translation id="1587223624401073077">‏يستخدم Google Chrome الكاميرا.</translation>
@@ -44,10 +43,9 @@
 <translation id="2147651015520127414">‏لقد تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة الموقع الإلكتروني.</translation>
 <translation id="2246246234298806438">‏لا يمكن لـ Google Chrome عرض معاينة الطباعة عندما يكون عارض PDF المضمّن مفقودًا.</translation>
 <translation id="2252923619938421629">‏ساعد في تحسين Google Chrome بالإبلاغ عن الإعدادات الحالية</translation>
-<translation id="225614027745146050">مرحبًا</translation>
 <translation id="2286950485307333924">‏تم تسجيل دخولك الآن إلى Chrome</translation>
 <translation id="2290014774651636340">‏مفاتيح واجهة برمجة تطبيقات Google مفقودة. وسيترتب على ذلك توقف بعض وظائف Google Chrome عن العمل.</translation>
-<translation id="2290095356545025170">‏هل تريد بالتأكيد إزالة Google Chrome؟</translation>
+<translation id="2290095356545025170">‏هل تريد فعلًا إزالة Google Chrome؟</translation>
 <translation id="2309047409763057870">‏هذا تثبيت ثانوي من Google Chrome، ولا يمكن جعله متصفحك الافتراضي.</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="2334084861041072223">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح شركة .Google Inc. جميع الحقوق محفوظة.</translation>
@@ -164,7 +162,7 @@
 <translation id="556024056938947818">‏يحاول Google Chrome إظهار كلمات المرور.</translation>
 <translation id="5563479599352954471">للبحث بلمسة واحدة</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5620765574781326016">تعرّف على موضوعات على مواقع الويب دون مغادرة الصفحة.</translation>
+<translation id="5620765574781326016">تعرّف على مواضيع على مواقع الويب دون مغادرة الصفحة.</translation>
 <translation id="565744775970812598">‏قد يكون ملف <ph name="FILE_NAME" /> ضارًا، لذلك فقد حظره Chrome.</translation>
 <translation id="568643307450491754">‏ابحث عن الإشارات المرجعية في قائمة Chrome أو على شريط الإشارات المرجعية.</translation>
 <translation id="573759479754913123">‏حول نظام التشغيل Chrome</translation>

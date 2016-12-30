@@ -27,6 +27,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1779356040007214683">Aby bylo Chromium bezpečnější, deaktivovali jsme některá rozšíření, která nejsou uvedena na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohla být přidána bez vašeho vědomí.</translation>
 <translation id="1808667845054772817">Přeinstalovat Chromium</translation>
 <translation id="1816404578968201294">Prohlížeč Chromium potřebuje přístup k poloze, aby ji mohl sdílet s těmito stránkami.</translation>
+<translation id="1838412507805038478">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />.</translation>
 <translation id="1869480248812203386">Automatickým hlášením podrobností o možných bezpečnostních incidentech do Googlu můžete pomoci zrychlit projekt Chromium a usnadnit jeho používání.</translation>
 <translation id="1881322772814446296">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem prohlížeče Chromium. Vaše údaje prohlížeče Chromium, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME" />. Tyto údaje budete moci smazat pomocí stránky Dashboard služby Účty Google, ale nebudete je moci přidružit k jinému účtu. Pokud chcete uchovat existující údaje prohlížeče Chromium odděleně, můžete vytvořit nový profil. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Prohlížeč Chromium neodpovídá. Chcete jej znovu načíst?</translation>
@@ -36,7 +37,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2119636228670142020">O systému &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS – licence open source</translation>
 <translation id="2241627712206172106">Pokud počítač sdílíte s kamarády a členy rodiny, každý může web procházet samostatně a nastavit si Chromium podle svých požadavků.</translation>
-<translation id="225614027745146050">Vítejte</translation>
 <translation id="2316129865977710310">Ne, děkuji</translation>
 <translation id="2347108572062610441">Toto rozšíření změnilo stránku, která se zobrazí při spuštění prohlížeče Chromium.</translation>
 <translation id="2372704305038231957">32bitová verze prohlížeče Chromium nemusí fungovat správně, protože v tomto systému Linux již není podporována. Nainstalujte prosím 64bitovou verzi prohlížeče Chromium.</translation>
@@ -155,7 +155,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="5877064549588274448">Verze byla změněna. Změny se projeví po restartování zařízení.</translation>
 <translation id="5895138241574237353">Restartovat</translation>
 <translation id="5906655207909574370">Aktualizace je téměř hotova! Dokončíte ji restartováním zařízení.</translation>
-<translation id="5942225298871134766">Prohlížeč Chromium toto heslo uloží mezi <ph name="SAVED_PASSWORD_LINK" /> a zapamatuje si jej pro příští použití.</translation>
 <translation id="5942520288919337908">Do prohlížeče Chromium bylo přidáno rozšíření <ph name="EXTENSION_NAME" />.</translation>
 <translation id="59625444380784159">Podrobnosti vašich kontaktů vám mohou pomoci vyplňovat formuláře v prohlížeči Chromium rychleji.</translation>
 <translation id="5987687638152509985">Chcete-li zahájit synchronizaci, aktualizujte Chromium</translation>
@@ -244,6 +243,7 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="81770708095080097">Tento soubor je nebezpečný, proto jej prohlížeč Chromium zablokoval.</translation>
 <translation id="8269379391216269538">Pomozte projekt Chromium vylepšit</translation>
 <translation id="8290862415967981663">Tento soubor může být nebezpečný, proto jej prohlížeč Chromium zablokoval.</translation>
+<translation id="8340674089072921962">Před vámi prohlížeč Chromium používal uživatel <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8453117565092476964">Archiv instalačního programu je poškozený nebo neplatný. Stáhněte prosím Chromium znovu.</translation>
 <translation id="8493179195440786826">Prohlížeč Chromium je zastaralý</translation>
 <translation id="85843667276690461">Pomoc s používáním prohlížeče Chromium</translation>

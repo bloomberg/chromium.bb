@@ -13,6 +13,7 @@
 <translation id="2195025571279539885">શું તમે Chromium ને આ સાઇટથી આગલી વખતે <ph name="LANGUAGE_NAME" /> પૃષ્ઠોને અનુવાદ કરવાની ઓફર કરવા માગો છો?</translation>
 <translation id="2647554856022461007">Chromium, તમારા બ્રાઉઝિંગ અનુભવને બહેતર બનાવવા માટે વેબ સેવાઓનો ઉપયોગ કરી શકે છે. તમે વૈકલ્પિકરૂપે આ સેવાઓને અક્ષમ કરી શકો છો. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium, તમારા કૅમેરાનો ઉપયોગ કરી શકતું નથી કારણ કે તે બીજી ઍપ્લિકેશન દ્વારા ઉપયોગમાં છે</translation>
+<translation id="3256316712990552818">Chromium પર કૉપી કરી</translation>
 <translation id="3413120535237193088">તમારા તમામ ઉપકરણો પર તમારા બુકમાર્ક્સ મેળવવા માટે, Chromium માં સાઇન ઇન કરો.</translation>
 <translation id="3473048256428424907">Chromium QR સ્કેનર ચાલુ કરો</translation>
 <translation id="3805899903892079518">Chromium ને તમારા ફોટા અથવા વિડિઓઝની ઍક્સેસ નથી. iOS સેટિંગ્સ &gt; ગોપનીયતા &gt; ફોટામાં ઍક્સેસને સક્ષમ કરો.</translation>
@@ -29,12 +30,12 @@
 <translation id="6068866989048414399">Chromium સેવાની શરતો</translation>
 <translation id="6268381023930128611">Chromium માંથી સાઇન આઉટ કરીએ?</translation>
 <translation id="6424492062988593837">Chrome હમણાં જ વધુ સારું થયું છે! નવું સંસ્કરણ ઉપલબ્ધ છે.</translation>
-<translation id="6600954340915313787">Chrome માં કોપી કરાયું</translation>
 <translation id="6604711459180487467">તમારા સ્થાનના આધારે Chromium માં બહેતર અનુભવ મેળવો.</translation>
 <translation id="6989306073720242915">શું Chromiums પસંદ છે? <ph name="BEGIN_LINK" />તેને તમારા ડૉક પર ખસેડો<ph name="END_LINK" /></translation>
 <translation id="7022368070219581493">Chromiums એ ચકાસણી કરી છે કે <ph name="ISSUER" /> એ આ વેબસાઇટનું પ્રમાણપત્ર જારી કર્યું છે.</translation>
 <translation id="7099326575020694068">Chromium, વિભાજિત દૃશ્ય મોડમાં તમારા કૅમેરાનો ઉપયોગ કરી શકતું નથી</translation>
 <translation id="7144758435978427212">નજીકના ઑબ્જેક્ટ્સ દ્વારા મોકલાયેલ વેબ પૃષ્ઠોની શોધ કરો. જ્યારે Bluetooth ચાલુ કરેલ હોય, ત્યારે Chromium, તમારી આસપાસના ઑબ્જેક્ટ્સ સાથે સંકળાયેલા વેબ પૃષ્ઠોને એકત્રિત કરી અને તેમને સૌથી વધુ ઉપયોગી વેબ પૃષ્ઠને શોધવા માટે Google ને અનામ રૂપે મોકલી શકે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
+<translation id="7208566199746267865">વેબ પર તમારા એકાઉન્ટ્સ લાવીને Chromium તમારો સમય બચાવે છે. તમે સેટિંગ્સમાં એકાઉન્ટ્સ ઉમેરી અથવા દૂર કરી શકો છો.</translation>
 <translation id="7269362888766543920">કેટલાક એડ-ઓન્સને કારણે Chromium ક્રેશ થાય છે. કૃપા કરીને તેમને અનઇન્સ્ટૉલ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">પસંદ કરેલ ડેટા Chromium અને સમન્વયિત કરેલ ઉપકરણોમાંથી દૂર કરવામાં આવ્યો છે. તમારા Google એકાઉન્ટમાં બ્રાઉઝિંગ ઇતિહાસના અન્ય સ્વરૂપો જેમ કે શોધ અને history.google.com પરની અન્ય Google સેવાઓમાંની પ્રવૃત્તિ હોઈ શકે છે.</translation>

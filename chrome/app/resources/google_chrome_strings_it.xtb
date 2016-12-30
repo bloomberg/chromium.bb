@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">accedi a Chrome</translation>
 <translation id="1061441684050139317">Chrome deve avere accesso al microfono per condividerla con questo sito.</translation>
 <translation id="1065672644894730302">Impossibile leggere le preferenze. Alcune funzioni potrebbero non essere disponibili e le modifiche alle preferenze non verranno salvate.</translation>
+<translation id="1088300314857992706">L'indirizzo <ph name="USER_EMAIL_ADDRESS" /> utilizzava in precedenza Chrome</translation>
 <translation id="1104959162601287462">Informazioni su &amp;Chrome OS</translation>
 <translation id="110877069173485804">Questo è il tuo Chrome</translation>
 <translation id="123620459398936149">Impossibile sincronizzare i tuoi dati in Chrome OS. Aggiorna la passphrase di sincronizzazione.</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Applicazioni Chrome Canary</translation>
 <translation id="1457721931618994305">Aggiornamento di Google Chrome in corso...</translation>
 <translation id="1469002951682717133">Avvio applicazioni di Chrome</translation>
-<translation id="1475773083554142432">Chrome memorizzerà questa password con <ph name="SAVED_PASSWORD_LINK" /> e la ricorderà la prossima volta che ti servirà.</translation>
 <translation id="1480489203462860648">Provalo, è già installato</translation>
 <translation id="1553358976309200471">Aggiorna Chrome</translation>
 <translation id="1587223624401073077">Google Chrome sta utilizzando la videocamera.</translation>
@@ -41,7 +41,6 @@
 <translation id="2147651015520127414">Chrome ha verificato che <ph name="ISSUER" /> ha emesso il certificato del sito web.</translation>
 <translation id="2246246234298806438">Impossibile visualizzare l'anteprima di stampa in Google Chrome senza il visualizzatore PDF integrato.</translation>
 <translation id="2252923619938421629">Contribuisci a migliorare Google Chrome indicando le impostazioni attuali</translation>
-<translation id="225614027745146050">Benvenuto</translation>
 <translation id="2286950485307333924">Hai eseguito l'accesso a Chrome</translation>
 <translation id="2290014774651636340">Mancano le chiavi dell'API di Google. Alcune funzionalità di Google Chrome verranno disattivate.</translation>
 <translation id="2290095356545025170">Sei sicuro di voler disinstallare Google Chrome?</translation>

@@ -12,6 +12,7 @@
 <translation id="2195025571279539885">Chromium በሚቀጥለው ጊዜ ከዚህ ጣቢያ የመጡ የ<ph name="LANGUAGE_NAME" /> ገጾችን እንዲተረጎምልዎ ይፈልጋሉ?</translation>
 <translation id="2647554856022461007">Chromium የአሰሳ ተሞክሮዎን ለማሻሻል የድር አገልግሎቶችን ሊጠቀም ይችላል። እነዚህን አገልግሎቶች በአማራጭነት ሊያሰናክሏቸው ይችላሉ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">ሌላ መተግበሪያ ካሜራዎን እየተጠቀመበት ስለሆነ Chromium ካሜራዎን መጠቀም አይችልም</translation>
+<translation id="3256316712990552818">ወደ Chromium ተቀድቷል</translation>
 <translation id="3413120535237193088">የእርስዎን ዕልባቶች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ Chromium ይግቡ።</translation>
 <translation id="3473048256428424907">የChromium ኪውአር መቃኛን ያብሩ</translation>
 <translation id="3805899903892079518">Chromium የእርስዎ ፎቶዎች ወይም ቪዲዮዎች መዳረሻ የለውም። በiOS ቅንብሮች &gt; ግላዊነት &gt; ፎቶዎች ውስጥ መዳረሻን ያንቁ።</translation>
@@ -28,12 +29,12 @@
 <translation id="6068866989048414399">የChromium አገልግሎት ውል</translation>
 <translation id="6268381023930128611">ከChromium ተዘግቶ ይውጣ?</translation>
 <translation id="6424492062988593837">Chromium አሁን ተሻሽሏል! አዲስ ስሪት አለ።</translation>
-<translation id="6600954340915313787">ወደ Chrome ተቀድቷል</translation>
 <translation id="6604711459180487467">Chromium ውስጥ በአካባቢዎ ላይ የተመሠረተ የተሻለ ተሞክሮ ያግኙ።</translation>
 <translation id="6989306073720242915">Chromiumን ይወዱታል? <ph name="BEGIN_LINK" />ወደ የእርስዎ መትከያ ይውሰዱት<ph name="END_LINK" /></translation>
 <translation id="7022368070219581493">Chromium የዚህ ድር ጣቢያ እውቅና ማረጋገጫ ያወጣው <ph name="ISSUER" /> መሆኑን አረጋግጧል።</translation>
 <translation id="7099326575020694068">Chromium ካሜራዎን በተከፈለ እይታ ሁነታ ላይ መጠቀም አይችልም</translation>
 <translation id="7144758435978427212">በአቅራቢያ ካሉ ነገሮች የተላኩ ድረ-ገጾችን ያግኙ። ብሉቱዝ በሚበራበት ጊዜ Chromium በእርስዎ ዙሪያ ካሉ ነገሮች ጋር የተጎዳኙ ድረ-ገጾችን ሊሰበስብ እና ይበልጥ ጠቃሚ የሆኑትን ለማግኘት ወደ Google ማንነት ሳያሳውቅ ሊልካቸው ይችላል። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
+<translation id="7208566199746267865">Chromium የእርስዎን መለያዎች ወደ ድር በማምጣት ጊዜ ይቆጥብልዎታል። ቅንብሮች ውስጥ መለያዎችን ማከል ወይም ማስወገድ ይችላሉ።</translation>
 <translation id="7269362888766543920">አንዳንድ ተጨማሪዎች Chromium እንዲበላሽ ያደርጋሉ። እባክዎ እነሱን ለማራገፍ ይሞክሩ።</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">የተመረጠው ውሂብ ከChromium እና የሰመሩ መሣሪያዎች ተወግዷል። የGoogle መለያዎ history.google.com ላይ እንደ የሌሎች Google አገልግሎቶች ፍለጋዎች እና እንቅስቃሴ ያለ ሌሎች የአሰሳ ታሪክ ዓይነት ሊኖረው ይችላል።</translation>

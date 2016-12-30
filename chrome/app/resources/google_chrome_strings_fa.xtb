@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">‏ورود به سیستم Chrome</translation>
 <translation id="1061441684050139317">‏Chrome باید به میکروفون دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="1065672644894730302">تنظیمات برگزیده شما را نمی‌توان خواند. بعضی ویژگی‌ها ممکن است در دسترس نباشند و تغییرات تنظیمات برگزیده ذخیره نخواهد شد.</translation>
+<translation id="1088300314857992706">‏<ph name="USER_EMAIL_ADDRESS" /> قبلاً از Chrome استفاده می‌کرد</translation>
 <translation id="1104959162601287462">‏درباره سیستم عامل &amp;Chrome</translation>
 <translation id="110877069173485804">‏این Chrome شماست</translation>
 <translation id="123620459398936149">‏سیستم‌عامل Chrome قادر به همگام‌سازی داده‌های شما نبود. لطفاً رمز عبارتی همگام‌سازی خود را به‌روز کنید.</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">‏برنامه‌های Chrome Canary</translation>
 <translation id="1457721931618994305">‏به‌روزرسانی Google Chrome…</translation>
 <translation id="1469002951682717133">‏را‌ه‌انداز برنامه Chrome</translation>
-<translation id="1475773083554142432">‏Chrome این مورد را با <ph name="SAVED_PASSWORD_LINK" /> ذخیره می‌کند و دفعه بعد که به آن نیاز داشتید، آن را به خاطر دارد.</translation>
 <translation id="1480489203462860648">آن را امتحان کنید، از قبل نصب شده است</translation>
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
 <translation id="1587223624401073077">‏Google Chrome درحال استفاده از دوربین شما است.</translation>
@@ -41,7 +41,6 @@
 <translation id="2147651015520127414">‏Chrome تأیید می‌کند که <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است.</translation>
 <translation id="2246246234298806438">‏زمانی که نمایش دهنده داخلی PDF وجود نداشته باشد، Google Chrome نمی‌تواند پیش‌نمایش چاپ را نشان دهد.</translation>
 <translation id="2252923619938421629">‏با گزارش تنظیمات کنونی، به بهتر شدن Google Chrome کمک کنید.</translation>
-<translation id="225614027745146050">خوش آمدید</translation>
 <translation id="2286950485307333924">‏اکنون در سیستم Chrome هستید</translation>
 <translation id="2290014774651636340">‏کلیدهای Google API وجود ندارد. برخی از عملکردهای Google Chrome از کار خواهد افتاد.</translation>
 <translation id="2290095356545025170">‏آیا می‌خواهید Google Chrome را غیر فعال کنید؟</translation>

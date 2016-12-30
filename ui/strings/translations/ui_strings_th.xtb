@@ -15,6 +15,7 @@
 <translation id="1801827354178857021">ระยะเวลา</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/วินาที</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ชั่วโมงกับอีก }other{# ชั่วโมงกับอีก }}</translation>
+<translation id="1842960171412779397">เลือก</translation>
 <translation id="1860796786778352021">ปิดการแจ้งเตือน</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1901303067676059328">เลือก&amp;ทั้งหมด</translation>
@@ -26,9 +27,11 @@
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="2497284189126895209">ไฟล์ทั้งหมด</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="252373100621549798">หน้าจอที่ไม่รู้จัก</translation>
 <translation id="2666092431469916601">ด้านบน</translation>
 <translation id="2743387203779672305">คัดลอกไว้ที่คลิปบอร์ด</translation>
 <translation id="2803313416453193357">เปิดโฟลเดอร์</translation>
+<translation id="2931838996092594335">คลิก</translation>
 <translation id="2983818520079887040">การตั้งค่า...</translation>
 <translation id="3036649622769666520">เปิดไฟล์</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -44,11 +47,12 @@
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3889424535448813030">ลูกศรขวา</translation>
+<translation id="3892641579809465218">จอแสดงผลภายใน</translation>
 <translation id="3909791450649380159">&amp;ตัด</translation>
 <translation id="3990502903496589789">ขอบขวา</translation>
+<translation id="4202807286478387388">ข้าม</translation>
 <translation id="4250229828105606438">ภาพหน้าจอ</translation>
 <translation id="4320177379694898372">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
-<translation id="436869212180315161">กด</translation>
 <translation id="4588090240171750605">เลื่อนทางขวา</translation>
 <translation id="459417155289402299">คุณลักษณะปลดล็อคด่วน</translation>
 <translation id="4820616160060340806">คำสั่ง+<ph name="KEY_COMBO_NAME" /></translation>
@@ -60,6 +64,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;ลบ</translation>
+<translation id="5476505524087279545">ยกเลิกการทำเครื่องหมาย</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">ลูกศรซ้าย</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 นาที}other{# นาที}}</translation>
@@ -70,9 +75,11 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">แอปทั้งหมด</translation>
 <translation id="6040143037577758943">ปิด</translation>
+<translation id="6119846243427417423">เปิดใช้งาน</translation>
 <translation id="6129953537138746214">ช่องว่าง</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/วินาที</translation>
+<translation id="6203030746557259519">หน้าจอเสมือน</translation>
 <translation id="6364916375976753737">เลื่อนทางซ้าย</translation>
 <translation id="6394627529324717982">จุลภาค</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 วินาทีที่ผ่านมา}other{# วินาทีที่ผ่านมา}}</translation>
@@ -83,6 +90,7 @@
 <translation id="6808150112686056157">หยุดสื่อ</translation>
 <translation id="6829324100069873704">กลับไปที่การแจ้งเตือน</translation>
 <translation id="6845383723252244143">เลือกโฟลเดอร์</translation>
+<translation id="6845533974506654842">กด</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{เหลือ 1 ชั่วโมง}other{เหลือ # ชั่วโมง}}</translation>
 <translation id="688711909580084195">หน้าเว็บที่ไม่มีชื่อ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/วินาที</translation>
@@ -113,6 +121,7 @@
 <translation id="8328145009876646418">ขอบซ้าย</translation>
 <translation id="8331626408530291785">เลื่อนขึ้น</translation>
 <translation id="8371695176452482769">เชิญพูดเลย</translation>
+<translation id="838869780401515933">ทำเครื่องหมาย</translation>
 <translation id="8392688371657486010">คุณไม่มีการแจ้งเตือน</translation>
 <translation id="8394908167088220973">เล่น/หยุดสื่อชั่วคราว</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
@@ -121,6 +130,7 @@
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/วินาที</translation>
 <translation id="8806053966018712535">โฟลเดอร์ <ph name="FOLDER_NAME" /></translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="9002566407876343676">เปิด</translation>
 <translation id="9038489124413477075">โฟลเดอร์ที่ไม่มีชื่อ</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 วินาที}other{# วินาที}}</translation>
 <translation id="9170848237812810038">เ&amp;ลิกทำ</translation>

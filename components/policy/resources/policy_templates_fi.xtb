@@ -19,9 +19,6 @@
       Jos käytännön arvo on Epätosi tai sitä ei aseteta, tunnistuspalvelun asettamat evästeet siirretään käyttäjän profiiliin vain hänen kirjautuessaan laitteelle ensimmäisen kerran.
 
       Tämä käytäntö vaikuttaa vain käyttäjiin, joiden verkkotunnus vastaa verkkotunnusta, johon laite on rekisteröity. Muiden käyttäjien osalta tunnistuspalvelun asettamat evästeet siirretään käyttäjän profiiliin vain käyttäjän kirjautuessa laitteelle ensimmäisen kerran.</translation>
-<translation id="1029536946382325801">Jos tämän käytännön arvo on tosi, käyttäjä voi etätodentaa henkilöllisyytensä tietosuojavarmenteen myöntäjälle käyttämällä Chrome-laitteistoa ja Enterprise Platform Keys ‑sovellusliittymää chrome.enterprise.platformKeys.challengeUserKey().
-
-          Jos tämän käytännön arvo on epätosi tai sitä ei ole määritetty, kutsujen lähettäminen sovellusliittymälle epäonnistuu ja palauttaa virhekoodin.</translation>
 <translation id="1040446814317236570">Ota PAC-URL-osoitteiden karsinta käyttöön (https://)</translation>
 <translation id="1044878202534415707">Raportoi laitteistotietoja, kuten suorittimen ja RAM-muistin käyttötietoja.
 
@@ -95,6 +92,9 @@
       Jos tätä käytäntöä ei aseteta tai jos sen arvo on epätosi, TLS:n RC4-salaustekniikoita ei oteta käyttöön. Jos yhteensopivuus vanhentuneen palvelimen kanssa täytyy varmistaa, arvoksi voidaan asettaa tosi. Tämä on kuitenkin tilapäinen toimenpide, ja palvelimen määritykset tulee tehdä uudelleen.</translation>
 <translation id="1297182715641689552">Käytä .pac-välityspalvelinkoodia</translation>
 <translation id="1304973015437969093">Laajennuksien ja sovellusten tunnukset ja päivitys-URL-osoitteet asennetaan taustalla</translation>
+<translation id="1310333396104446007">Jos tämän asetuksen arvoksi määritetään epätosi, käyttäjä ei voi asettaa PIN-koodia, jota pidetään heikkona. Heikkoja ovat esimerkiksi PIN-koodit, joissa käytetään vain yhtä numeroa, joissa numerot ovat peräkkäisiä tai jotka ovat liian yleisiä.
+
+          Jos tämän asetuksen arvo on tosi tai sitä ei ole määritetty, käyttäjälle näytetään varoitus liian heikosta PIN-koodista, mutta häntä ei estetä asettamasta sitä.</translation>
 <translation id="1313457536529613143">Määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun käyttäjän toimia huomataan näytön ollessa himmennettynä tai pian näytön sammuttamisen jälkeen.
 
           Jos tämä käytäntö on asetettu, se määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun käyttäjän toimia huomataan näytön ollessa himmennettynä tai pian näytön sammuttamisen jälkeen. Kun himmennyksen viive on skaalattu, näytön sammutus-, lukitus- ja käyttämättömyysviiveet säädetään ylläpitämään samoja etäisyyksiä näytön himmennyksen viiveestä kuin alunperin määritettiin.
@@ -168,6 +168,7 @@
 <translation id="1522425503138261032">Anna sivustojen seurata käyttäjien fyysistä sijaintia</translation>
 <translation id="152657506688053119">Oletushakupalvelun vaihtoehtoiset URL-osoitteet</translation>
 <translation id="1530812829012954197">Hahmonna aina seuraavat URL-mallit isäntäselaimessa</translation>
+<translation id="1547635088210394207">Määrittää näytön lukituksen PIN-koodin enimmäispituuden</translation>
 <translation id="1553684822621013552">Kun tämän käytännön arvo on tosi, ARC on käytössä
       (tähän vaikuttavat muut käytäntöasetukset – ARC ei ole käytettävissä,
       jos käyttäjän nykyisessä istunnossa käytetään lyhytkestoista tilaa tai
@@ -187,6 +188,15 @@
       sallittua.</translation>
 <translation id="1655229863189977773">Aseta levyn välimuistin koko tavuina</translation>
 <translation id="166427968280387991">Välityspalvelin</translation>
+<translation id="1668836044817793277">Tämä määrittää, sallitaanko automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota.
+
+      Tämä käytäntö määrittää, sallitaanko automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota määrittämällä required_platform_version-luetteloavaimen, jota käytetään automaattisesti päivitettävän kohdeversion etuliitteenä.
+
+      Jos käytännön arvo on tosi, automaattisesti ilman viivettä käynnistettävän kioskisovelluksen required_platform_version-luetteloavaimen arvoa käytetään automaattisesti päivitettävän kohdeversion etuliitteenä.
+
+      Jos käytäntöä ei ole määritetty tai sen arvo on epätosi, required_platform_version-luetteloavainta ei oteta huomioon ja automaattinen päivitys suoritetaan tavallisesti.
+
+      Varoitus: emme suosittele <ph name="PRODUCT_OS_NAME" /> ‑version hallinnan antamista kioskisovellukselle, sillä tämä voi estää laitetta saamasta ohjelmistopäivityksiä ja kriittisiä tietoturvapäivityksiä. Jos <ph name="PRODUCT_OS_NAME" /> ‑version hallinta annetaan sovellukselle, käyttäjät voivat vaarantua.</translation>
 <translation id="1675002386741412210">Tuettu kohteissa:</translation>
 <translation id="1679420586049708690">Automaattisen kirjautumisen julkinen istunto</translation>
 <translation id="1680029600835707254">Tämä käytäntö hallinnoi, kuka voi aloittaa tuotteen <ph name="PRODUCT_OS_NAME" /> käyttökerran. Se ei estä käyttäjiä kirjautumasta muille Google-tileille Android-laitteella. Jos haluat estää tämän, määritä Android-kohtainen käytäntö <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" /> osana käytäntöä <ph name="ARC_POLICY" />.</translation>
@@ -214,6 +224,7 @@
 <translation id="1808715480127969042">Estä evästeet näissä sivustoissa</translation>
 <translation id="1827523283178827583">Käytä kiinteitä välityspalvelimia</translation>
 <translation id="1843117931376765605">Käyttäjäkäytännön päivitystiheys</translation>
+<translation id="1844620919405873871">Määrittää lukituksen pika-avaamiseen liittyviä käytäntöjä</translation>
 <translation id="1847960418907100918">Määrittää parametrit, joita käytetään tehtäessä pikahakuja POST-metodin avulla. Se koostuu pilkuilla erotetuista nimi/arvo-pareista. Jos arvo on malliparametri kuten yllä olevan esimerkin {searchTerms}, se korvataan oikeilla hakusanatiedoilla.
 
           Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, pikahakupyyntö lähetetään GET-metodin avulla.
@@ -313,6 +324,11 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 <translation id="2168397434410358693">Käyttämättömyysaika käytettäessä laitetta verkkovirralla</translation>
 <translation id="2170233653554726857">Ota WPAD-optimointi käyttöön</translation>
 <translation id="2178899310296064282">Pakota vähintään keskitason rajoitettu tila YouTubessa</translation>
+<translation id="2183294522275408937">Tämä asetus määrittää, kuinka usein lukitusnäyttö pyytää salasanaa, ennen kuin lukituksen pika-avaamisen käyttöä voi jatkaa. Kun käyttäjä siirtyy lukitusnäytölle, lukituksen pika-avaaminen ei ole käytettävissä, jos salasanan edellisestä antamiskerrasta kulunut aika ylittää tässä asetuksessa määritetyn ajan. Jos käyttäjä pysyy määritetyn ajan yli lukitusnäytöllä, häneltä pyydetään salasanaa, kun hän seuraavan kerran antaa virheellisen PIN-koodin tai siirtyy lukitusnäytölle uudelleen (riippuen siitä, kumpi tapahtuu ensin).
+
+          Jos tämä asetus on määritetty, pika-avaamista käyttäviä käyttäjiä pyydetään antamaan salasana lukitusnäytöllä tämän asetuksen mukaisesti.
+
+          Jos tätä asetusta ei ole määritetty, pika-avaamista käyttäviä käyttäjiä pyydetään antamaan salasana lukitusnäytöllä päivittäin.</translation>
 <translation id="2188979373208322108">Ottaa käyttöön kirjanmerkkipalkin tuotteessa <ph name="PRODUCT_NAME" />. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> näyttää kirjanmerkkipalkin. Jos poistat asetuksen käytöstä, kirjanmerkkipalkkia ei näytetä. Valittuasi asetuksen käyttäjät eivät voi muuttaa tai ohittaa sitä tuotteessa <ph name="PRODUCT_NAME" />. Jos asetusta ei ole määritetty, käyttäjä voi käyttää toimintoa halutessaan.</translation>
 <translation id="2201555246697292490">Määritä sallittujen luettelo laitteen omalle viestijärjestelmälle</translation>
 <translation id="2204753382813641270">Hallinnoi hyllyn automaattista piilottamista</translation>
@@ -514,6 +530,13 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="2587719089023392205">Aseta <ph name="PRODUCT_NAME" /> oletusselaimeksi</translation>
 <translation id="2592091433672667839">Käyttämättömyysaika, jonka kuluttua näytönsäästäjä näytetään kirjautumisruudulla jälleenmyyntitilassa</translation>
 <translation id="2623014935069176671">Odota alkuperäisen käyttäjän toimintaa</translation>
+<translation id="2625512435194873786">Tämä asetus määrittää PIN-koodin enimmäispituuden.
+
+          Jos tämän asetuksen arvo on 0 tai sitä pienempi, PIN-koodilla ei ole enimmäispituutta ja käyttäjä voi asettaa haluamansa pituisen PIN-koodin.
+
+          Jos asetuksen arvo on pienempi kuin PinUnlockMinimumLength-arvo mutta suurempi kuin 0, enimmäis- ja vähimmäispituudet ovat yhtä suuret.
+
+          Jos asetusta ei ole määritetty, enimmäispituutta ei rajoiteta ja käyttäjä voi asettaa haluamansa pituisen PIN-koodin.</translation>
 <translation id="262740370354162807">Salli asiakirjojen lähettäminen palveluun <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Ota äänipalaute käyttöön</translation>
 <translation id="2646290749315461919">Voit määrittää, voivatko sivustot seurata käyttäjän fyysistä sijaintia. Voit sallia tai kieltää käyttäjien sijainnin seuraamisen oletuksena, tai kysyä käyttäjältä aina sivuston pyytäessä sijaintitietoja. Jos tätä käytäntöä ei ole määritetty, AskGeolocation-käytäntöä käytetään ja käyttäjä voi muuttaa asetusta.</translation>
@@ -807,6 +830,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Jos tämän käytännön arvoksi on määritetty epätosi tai jos sitä ei ole määritetty ollenkaan, virranhallinnan viiveet ja istuntojen pituusrajoitukset alkavat heti istunnon alusta.</translation>
 <translation id="3478024346823118645">Käyttäjätietojen tyhjennys uloskirjautumisen yhteydessä</translation>
 <translation id="348495353354674884">Ota virtuaalinen näppäimistö käyttöön</translation>
+<translation id="3495440981030194931">Määrittää lukitusnäytön PIN-koodin vähimmäispituuden</translation>
 <translation id="3496296378755072552">Salasanan hallinta</translation>
 <translation id="349667858031092827">Älä koskaan havaitse aikavyöhykettä automaattisesti.</translation>
 <translation id="350443680860256679">Määritä ARC.</translation>
@@ -947,6 +971,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       Jos tämä käytäntö ei ole käytössä, SDPY-protokollaa voi käyttää.
 
       Jos käytäntöä ei ole määritetty, SDPY on käytettävissä.</translation>
+<translation id="3890999316834333174">Lukituksen pika-avaamisen käytännöt</translation>
 <translation id="3891357445869647828">Ota JavaScript käyttöön</translation>
 <translation id="3891953007921334498">Poistaa käytöstä kehittäjän työkalut sekä JavaScript-konsolin.
 
@@ -1000,6 +1025,11 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
       Jos käytännön arvoksi on asetettu epätosi, käyttäjät eivät voi lunastaa tarjouksia.</translation>
 <translation id="4010738624545340900">Salli tiedostonvalintaikkunoiden käyttö</translation>
+<translation id="4012737788880122133">Kun arvo on tosi, automaattiset päivitykset poistetaan käytöstä.
+
+      Tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävät laitteet hakevat päivityksiä automaattisesti, jos tätä asetusta ei ole määritetty tai sen arvo on epätosi.
+
+      Varoitus: suosittelemme pitämään automaattiset päivitykset käytössä, jotta käyttäjät saavat ohjelmistopäivitykset ja kriittiset suojauspäivitykset. Automaattisten päivitysten poistaminen käytöstä voi vaarantaa käyttäjiä.</translation>
 <translation id="4020682745012723568">Android-sovellukset eivät voi käyttää käyttäjän profiiliin siirrettyjä evästeitä.</translation>
 <translation id="4025586928523884733">Estää kolmannen osapuolen evästeet. Jos otat tämän asetuksen käyttöön, sellaiset verkkosivun elementit, joiden alkuperä on osoitepalkissa näkyvän verkkotunnuksen ulkopuolella, eivät saa asettaa evästeitä. Jos poistat asetuksen käytöstä, kaikki verkkosivun elementit saavat käyttää evästeitä, eivätkä käyttäjät voi muuttaa asetusta. Jos tätä käytäntöä ei ole määritetty, kolmannen osapuolen evästeet sallitaan, mutta käyttäjät voivat muuttaa asetusta.</translation>
 <translation id="402759845255257575">Älä salli sivustojen käyttää JavaScriptiä</translation>
@@ -1072,6 +1102,16 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, kuvahakupyyntö lähetetään GET-metodin avulla.
 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
+<translation id="4294280661005713627">Asettaa automaattisille päivityksille halutun version.
+
+      Määrittää etuliitteen versiolle, johon <ph name="PRODUCT_OS_NAME" /> tulee päivittää. Jos laite käyttää versiota, jonka numero on määritettyä etuliitettä vanhempi, versioksi päivitetään uusin, annettua etuliitettä käyttävä versio. Jos laite käyttää jo uudempaa versiota, päivitystä ei suoriteta eikä versiota vaihdeta vanhemmaksi. Etuliitteen muoto toimii seuraavan esimerkin mukaisesti:
+
+      "" (tai ei määritetty): päivitetään uusimpaan saatavilla olevaan versioon.
+      "1412.": päivitetään mihin tahansa 1412:n alaversioon (esim. 1412.24.34 tai 1412.60.2)
+      "1412.2.": päivitetään mihin tahansa 1412.2:n alaversioon (esim. 1412.2.34 tai 1412.2.2)
+      "1412.24.34": päivitetään vain tähän versioon
+
+      Varoitus: emme suosittele määrittämään versiorajoituksia, sillä tämä voi estää laitetta saamasta ohjelmistopäivityksiä ja kriittisiä tietoturvapäivityksiä. Päivitysten rajoittaminen tiettyyn etuliiteversioon voi vaarantaa käyttäjät.</translation>
 <translation id="4309640770189628899">TLS:n DHE-salaustekniikoiden käyttöönotto</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 tai uudempi</translation>
 <translation id="4322842393287974810">Salli automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota</translation>
@@ -1283,6 +1323,9 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Kiellettyjen luettelon arvo * tarkoittaa, että kaikki laitteen omaa viestijärjestelmää käyttävät isännät on kielletty, ellei niitä ole lisätty sallittujen luetteloon.
 
           Jos käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> lataa kaikki asennetut laitteen omaa viestijärjestelmää käyttävät isännät.</translation>
+<translation id="5272684451155669299">Jos tämän käytännön arvo on tosi, käyttäjä voi etätodentaa henkilöllisyytensä tietosuojavarmenteen myöntäjälle Chrome-laitteiston avulla, mihin käytetään <ph name="ENTERPRISE_PLATFORM_KEYS_API" />a ja funktiota <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
+
+          Jos käytännön arvo on epätosi tai sitä ei ole määritetty, kutsujen lähettäminen sovellusliittymälle epäonnistuu ja palauttaa virhekoodin.</translation>
 <translation id="5288772341821359899">Jos tämä käytäntö on määritetty, WebRTC voi käyttää vain määritetyllä välillä olevia UDP-portteja (välin päätepisteet ovat käytettävissä).
 
       Jos käytäntöä ei määritetä tai sen arvo on tyhjä merkkijono tai virheellinen porttiväli, WebRTC voi käyttää kaikkia käytettävissä olevia paikallisia UDP-portteja.</translation>
@@ -1404,6 +1447,11 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
           Jos tämä asetus on käytössä, etäkäytön isäntä vertaa paikallisen käyttäjän nimeä (johon isäntä on liitetty) Google-tiliin, joka on rekisteröity isännän omistajaksi (esim. ”mattimeikalainen”, jos isännän omistava Google-tili on mattimeikalainen@example.com). Etäkäytön isäntä ei käynnisty, jos isännän omistajan nimi ei vastaa paikallista käyttäjää, johon isäntä on liitetty. Käytännön RemoteAccessHostMatchUsername kanssa täytyy määrittää RemoteAccessHostDomain, jos halutaan edellyttää myös, että isännän omistajan Google-tili on liitetty tiettyyn verkkotunnukseen (kuten example.comiin).
 
           Jos tämä asetus on pois käytöstä tai sitä ei aseteta, etäkäytön isäntä voidaan liittää mihin tahansa paikalliseen käyttäjään.</translation>
+<translation id="5694594914843889579">Jos tämän käytännön arvoksi on määritetty tosi, ulkoista tallennustilaa ei voi käyttää tiedostoselaimessa.
+
+      Käytäntö koskee kaikentyyppistä tallennustilaa, esimerkiksi USB-muistitikkuja, ulkoisia kiintolevyjä, SD- ja muita muistikortteja, optisia levyjä jne. Käytäntö ei vaikuta sisäiseen tallennustilaan, joten latauskansioon tallennettuja tiedostoja voi käyttää. Käytäntö ei myöskään koske Google Drivea.
+
+      Jos asetus on poistettu käytöstä tai sitä ei ole määritetty, käyttäjät voivat käyttää laitteellaan kaikkia tuettuja ulkoisia tallennustilatyyppejä.</translation>
 <translation id="5697306356229823047">Raportoi laitteen käyttäjistä</translation>
 <translation id="570062449808736508">Kun tämän käytännön arvoksi asetetaan muu kuin tyhjä merkkijono, WebView lukee URL-osoiterajoitukset sisällöntarjoajalta, joka vastaa annettua merkkijonoa.</translation>
 <translation id="5703863730741917647">Määritä toiminto, joka suoritetaan, jos käyttäjä ei tee mitään määritetyn ajan kuluessa.
@@ -1521,6 +1569,7 @@ Jos tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> avaa järjestelmän
 Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento avaa tulostuksen esikatseluruudun.</translation>
 <translation id="6022948604095165524">Toiminto käynnistettäessä</translation>
 <translation id="602728333950205286">Oletushakupalvelun Instant-URL-osoite</translation>
+<translation id="6029664378608427609">Antaa käyttäjien asettaa heikon lukitusnäytön PIN-koodin</translation>
 <translation id="603410445099326293">POST-metodia käyttävän ehdotushaun URL-osoitteen parametrit</translation>
 <translation id="6036523166753287175">Ota käyttöön palomuurin siirto etäisännästä</translation>
 <translation id="6059543311891422586">Käyttää laitteistokiihdytystä, kun se on saatavilla.
@@ -1574,12 +1623,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6155936611791017817">Aseta suuren osoittimen oletustila kirjautumisnäytössä</translation>
 <translation id="6157537876488211233">Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo</translation>
 <translation id="6158324314836466367">Enterprise-verkkomyymälän nimi (ei enää käytössä)</translation>
-<translation id="6166832345529129545">Hallinnoi, mitä lukituksen pika-avaustiloja on sallittua määrittää ja käyttää.
-      Tämä asetus lisää sallittujen luetteloon ne pika-avaustilat, jotka voidaan määrittää ja joita saa käyttää lukitusnäytön avaamiseen. Arvo on merkkijonojen luettelo. Kunkin merkkijonon on oltava joko ”all” tai ”PIN” Jos ”all” on valittu, kaikki tuetut pika-avaustilat ovat käytettävissä, muuten vain luettelossa olevat tilat ovat käytettävissä.
-
-      Jos tämä asetus on määritetty, sellaisia lukituksen pika-avaustiloja, joiden tyyppi ei ole tässä luettelossa, ei voi määrittää tai käyttää.
-
-      Jos tätä asetusta ei ole määritetty, PIN-tila otetaan käyttöön ja kaikki muut tilat poistetaan käytöstä.</translation>
 <translation id="6167074305866468481">Varoitus: <ph name="PRODUCT_NAME" /> ei tue SSLv3:a versiosta 43 (noin heinäkuusta 2015) lähtien, ja samassa yhteydessä myös tämä käytäntö poistetaan.
 
       Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena vähintään SSLv3:a versiossa <ph name="PRODUCT_NAME" /> 39 ja TLS 1.0:aa uudemmissa versioissa.
@@ -1633,6 +1676,15 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6401669939808766804">Kirjaa käyttäjä ulos</translation>
 <translation id="6413263121045928260">Salasana vaaditaan joka päivä (24 tunnin välein).</translation>
 <translation id="6417861582779909667">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa asettaa evästeitä. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultCookiesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
+<translation id="6426205278746959912">Et voi pakottaa Android-sovelluksia käyttämään välityspalvelinta. Android-sovellusten käytettävissä on joukko välityspalvelinasetuksia, joiden noudattaminen on vapaaehtoista:
+
+          Jos välityspalvelinta ei käytetä koskaan, Android-sovelluksille ilmoitetaan, että välityspalvelinta ei ole määritetty.
+
+          Jos otat käyttöön järjestelmän välityspalvelinasetukset tai kiinteän välityspalvelimen, Android-sovelluksille ilmoitetaan HTTP-välityspalvelimen osoite ja portti.
+
+          Jos välityspalvelin tunnistetaan automaattisesti, Android-sovelluksille toimitetaan http://wpad/wpad.dat-skriptin URL-osoite. Muita välityspalvelimien automaattisen tunnistusprotokollan osia ei käytetä.
+
+          Jos otat käyttöön .pac-välityspalvelinskriptin, sen URL-osoite toimitetaan Android-sovelluksille.</translation>
 <translation id="6467433935902485842">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa suorittaa laajennuksia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPluginsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="6473334971332473690">Sallii Smart Lockin käytön laitteilla, joissa on <ph name="PRODUCT_OS_NAME" />.
 
@@ -1954,7 +2006,18 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytäntöä ei määritetä, automaattinen puhdistus käyttää sisäänrakennettua oletustapaa, joka on tällä hetkellä RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Säilytä evästeet käyttökerran ajan</translation>
 <translation id="7340034977315324840">Ilmoita laitteen käyttöajat</translation>
+<translation id="7340934985429121460">Tämä asetus määrittää PIN-koodin vähimmäispituuden.
+
+          Jos tämän asetuksen arvo on pienempi kuin 1, PIN-koodin vähimmäispituus on yksi numero.
+
+          Jos tätä asetusta ei ole määritetty, PIN-koodissa täytyy olla vähintään neljä numeroa.</translation>
 <translation id="7384999953864505698">Sallii QUIC-protokollan käytön</translation>
+<translation id="7406716912696538245">Hallinnoi, mitä lukituksen pika-avaamisen tiloja on sallittua määrittää ja käyttää.
+          Tämä asetus lisää sallittujen luetteloon pika-avaamistilat, joiden määrittäminen ja käyttö näytön lukituksen avaamiseen on sallittua. Arvo on merkkijonojen luettelo, ja kunkin merkkijonon on oltava "all" tai "PIN". Jos valittuna on "all", kaikki tuetut pika-avaamistilat ovat käytettävissä. Muussa tapauksessa käytettävissä ovat luettelossa olevat tilat.
+
+          Jos tämä asetus on määritetty, sellaisia lukituksen pika-avaamistiloja, joiden tyyppiä ei mainita tässä luettelossa, ei voi määrittää tai käyttää.
+
+          Jos tätä asetusta ei ole määritetty, PIN-tila otetaan käyttöön ja kaikki muut tilat poistetaan käytöstä.</translation>
 <translation id="7417972229667085380">Prosenttiosuus, jolla käyttämättömyyden viive skaalataan esitystilassa (ei enää käytössä)</translation>
 <translation id="7421483919690710988">Aseta levyn mediavälimuistin koko tavuina</translation>
 <translation id="7424751532654212117">Käytöstä poistettujen laajennuksien poikkeukset</translation>
@@ -1998,6 +2061,9 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7611372873040492235">Salasana vaaditaan kahdentoista tunnin välein.</translation>
 <translation id="7612157962821894603">Tuotteen <ph name="PRODUCT_NAME" /> käynnistyksen yhteydessä sovellettavat järjestelmäkäytännöt</translation>
 <translation id="7614663184588396421">Käytöstä poistettujen protokollajärjestelmien luettelo</translation>
+<translation id="7617319494457709698">Tämä käytäntö määrittää laajennukset, joilla on oikeus käyttää <ph name="ENTERPRISE_PLATFORM_KEYS_API" />n funktiota <ph name="CHALLENGE_USER_KEY_FUNCTION" /> etätodennukseen. Vain tässä luettelossa olevat laajennukset voivat käyttää sovellusliittymää.
+
+          Jos laajennus ei ole luettelossa tai luetteloa ei ole määritetty, kutsujen lähettäminen sovellusliittymälle epäonnistuu ja palauttaa virhekoodin.</translation>
 <translation id="7625444193696794922">Määrittää julkaisuversion, jota tämän laitteen tulee käyttää.</translation>
 <translation id="7632724434767231364">GSSAPI-kirjaston nimi</translation>
 <translation id="7635471475589566552">Määrittää tuotteen <ph name="PRODUCT_NAME" /> sovelluksen kielen ja estää käyttäjiä muuttamasta sitä. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> käyttää määritettyä kieltä. Jos tätä kieltä ei tueta, käytetään kieltä en-US. Jos asetus poistetaan käytöstä tai valintaa ei tehdä, <ph name="PRODUCT_NAME" /> käyttää joko käyttäjän määrittämää kieltä (jos valittu), järjestelmän kieltä tai kieltä en-US, jos näitä kieliä ei tueta.</translation>
@@ -2090,6 +2156,13 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos käytännölle ei ole määritetty arvoa, käyttäjät voivat ottaa Android Backup Servicen käyttöön ja poistaa sen käytöstä Android-asetuksissa.</translation>
 <translation id="7818131573217430250">Aseta suuri kontrasti -tilan oletustila kirjautumisnäytössä</translation>
+<translation id="7822837118545582721">Kun tämän käytännön arvo on tosi, käyttäjät eivät voi kirjoittaa mitään tietoja ulkoisille tallennustilalaitteille.
+
+      Jos tämän käytönnön arvo on epätosi tai sitä ei ole määritetty, käyttäjät voivat luoda ja muokata sellaisten ulkoisten tallennustilojen tiedostoja, joihin voi kirjoittaa.
+
+      ExternalStorageDisabled-käytäntö ohittaa tämän käytännön. Jos ExternalStorageDisabled-arvo on tosi, ulkoinen tallennustila on aina pois käytöstä, eikä tätä käytäntöä oteta huomioon.
+
+      Tämän käytännön dynaamista päivittämistä tuetaan M56:ssa ja sitä uudemmissa versioissa.</translation>
 <translation id="7831595031698917016">Määrittää millisekunneissa enimmäisviiveen käytännön kumoamisen ja uuden käytännön noutamisen välillä. Uusi käytäntö noudetaan laitteen hallintapalvelusta.
 
       Tämä käytäntö korvaa oletusarvon (5 000 millisekuntia). Käytännölle voidaan määrittää arvot 1 000 (1 sekunti) – 300 000 (5 minuuttia). Jos valittu arvo on näiden rajojen ulkopuolella, käytetään lähintä kelvollista arvoa.
@@ -2148,9 +2221,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           Active Directory -toimialueeseen.</translation>
 <translation id="7937766917976512374">Salli tai estä videon kaappaaminen</translation>
 <translation id="7941975817681987555">Älä ennakoi verkon toimia millään verkkoyhteydellä</translation>
-<translation id="7942429005743031780">Tämä käytäntö määrittää laajennukset, joilla on oikeus käyttää etätodennukseen Enterprise Platform Keys ‑sovellusliittymää chrome.enterprise.platformKeys.challengeUserKey(). Vain tässä luettelossa olevat laajennukset voivat käyttää sovellusliittymää.
-
-          Jos laajennus ei ole luettelossa tai luetteloa ei ole määritetty, kutsujen lähettäminen sovellusliittymälle epäonnistuu ja palauttaa virhekoodin.</translation>
 <translation id="7953256619080733119">Hallinnoidun käyttäjän manuaalisten poikkeuksien isännät</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tätä käytäntöä ei enää tueta. Ottaa käyttöön STUN- ja relay-palvelimet, kun muodostetaan yhteyttä etäasiakkaaseen. Jos tämä asetus on käytössä, tämä kone voi löytää etäasiakkaan ja muodostaa yhteyden, vaikka asiakkaat olisivat palomuurin takana. Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien isäntäkoneiden yhteydet.</translation>
@@ -2295,6 +2365,9 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 
       Jos tämän käytännön arvo on Epätosi, tervetulosivua ei näytetä, kun selain käynnistetään ensimmäisen kerran käyttöjärjestelmän päivityksen jälkeen.</translation>
 <translation id="8369602308428138533">Ruudun sammutuksen viive käytettäessä laitetta verkkovirralla</translation>
+<translation id="8370471134641900314">Jos tämän käytännön arvoksi on määritetty tosi, käyttäjän on kirjauduttava kohteeseen <ph name="PRODUCT_NAME" /> omalla profiilillaan ennen selaimen käyttämistä ja BrowserGuestModeEnabled-arvon oletukseksi määritetään epätosi.
+
+      Jos tämän käytännön arvoksi on määritetty epätosi tai sitä ei ole määritetty, selainta voi käyttää kirjautumatta kohteeseen <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Poista käytöstä etävahvistuksen käyttö laitteen sisällön suojauksen vuoksi</translation>
 <translation id="838870586332499308">Ota mobiilitiedonsiirto käyttöön roaming-tilassa</translation>
 <translation id="8390049129576938611">Poista käytöstä tuotteen <ph name="PRODUCT_NAME" /> sisäinen PDF-katseluohjelma. Tuote kohtelee PDF-tiedostoja latauksina ja sallii niiden avaamisen käyttäjän valitsemalla oletussovelluksella.
@@ -2414,15 +2487,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8833109046074170275">Todennus oletusarvoisen GAIA-työnkulun kautta</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> tallentaa sovelluksia ja laajennuksia välimuistiin, jolloin niitä voidaan asentaa saman laitteen eri käyttäjille lataamatta niitä uudelleen käyttäjäkohtaisesti.
       Jos tätä käytäntöä ei määritetä tai jos sen arvo on pienempi kuin 1 Mt, <ph name="PRODUCT_OS_NAME" /> käyttää välimuistin oletuskokoa.</translation>
-<translation id="8858120573534680488">Et voi pakottaa Android-sovelluksia käyttämään välityspalvelinta. Osa välityspalvelinasetuksista on Android-sovellusten käytettävissä, ja ne voivat halutessaan noudattaa niitä:
-
-          Jos valitset ”älä koskaan käytä välityspalvelinta”, Android-sovelluksille ilmoitetaan, että välityspalvelinta ei ole määritetty.
-
-          Jos valitset ”käytä järjestelmän välityspalvelinasetuksia” tai ”kiinteä välityspalvelin”, Android-sovelluksille tarjotaan http-välityspalvelimen osoite ja portti.
-
-          Jos valitset ”havaitse välityspalvelin automaattisesti”, koodin URL-osoite http://wpad/wpad.dat annetaan Android-sovelluksille. Välityspalvelimen automaattisen tunnistuksen protokollan muita osia ei käytetä.
-
-          Jos valitset ”.pac proxy script”, koodin URL-osoite annetaan Android-sovelluksille.</translation>
 <translation id="8858642179038618439">Pakota YouTuben rajoitettu tila käyttöön</translation>
 <translation id="8864975621965365890">Torjuu hylkäyskehotuksen, joka tulee näkyviin, kun sivu on hahmonnettu tuotteella <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Etusivu</translation>
@@ -2523,9 +2587,4 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="930930237275114205">Määritä tuotteen <ph name="PRODUCT_FRAME_NAME" /> käyttäjätietohakemisto</translation>
 <translation id="944607242500063080">Määritä sallitut lukituksen pika-avaustilat.</translation>
 <translation id="944817693306670849">Aseta levyn välimuistin koko</translation>
-<translation id="969164417253718105">Tämä asetus hallinnoi, kuinka usein lukitusnäyttö pyytää salasanaa, ennen kuin lukituksen pika-avauksen käyttöä voi jatkaa. Kun lukitusnäyttö avataan, ja edellisestä salasanan antamisesta on pidempi aika kuin tämän asetuksen määrittämä aika, lukitusnäyttöä ei voi avata lukituksen pika-avauksella. Jos käyttäjä pysyy lukitusnäytöllä määritetyn ajan yli, salasana pyydetään seuraavan kerran kun käyttäjä antaa väärän koodin tai avaa lukitusnäytön uudelleen, riippuen siitä, kumpi tapahtuu ensin.
-
-      Jos tämä asetus on määritetty, lukituksen pika-avausta käyttäviä käyttäjiä pyydetään antamaan salasana lukitusnäytöllä tästä asetuksesta riippuen.
-
-      Jos tätä asetusta ei ole määritetty, lukituksen pika-avausta käyttäviä käyttäjiä pyydetään antamaan salasana lukitusnäytöllä joka päivä.</translation>
 </translationbundle>

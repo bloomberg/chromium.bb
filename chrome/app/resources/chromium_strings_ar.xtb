@@ -35,7 +35,6 @@
 <translation id="2119636228670142020">‏حول ن&amp;ظام التشغيل Chromium</translation>
 <translation id="2158734852934720349">‏تراخيص مفتوحة المصدر لنظام التشغيل Chromium</translation>
 <translation id="2241627712206172106">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chromium على النحو الذي يريدونه.</translation>
-<translation id="225614027745146050">مرحبًا</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="2347108572062610441">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء Chromium.</translation>
 <translation id="2372704305038231957">‏قد لا يعمل Chromium إصدار 32 بت على نحو صحيح لأنه لم يعد مدعومًا على نظام Linux هذا. الرجاء الترقية إلى Chromium إصدار 64 بت.</translation>
@@ -139,7 +138,7 @@
 <translation id="549669000822060376">‏الرجاء الانتظار أثناء تثبيت Chromium لآخر تحديثات النظام.</translation>
 <translation id="556167189552180495">‏يتم عرض Chromium بهذه اللغة.</translation>
 <translation id="5563479599352954471">للبحث بلمسة واحدة</translation>
-<translation id="5620765574781326016">تعرّف على موضوعات على مواقع الويب دون مغادرة الصفحة.</translation>
+<translation id="5620765574781326016">تعرّف على مواضيع على مواقع الويب دون مغادرة الصفحة.</translation>
 <translation id="5634636535844844681">‏يتطلب Chromium نظام التشغيل Windows 7 أو إصدارًا أحدث.</translation>
 <translation id="5680901439334282664">‏تسجيل الدخول إلى Chromium</translation>
 <translation id="5698481217667032250">‏عرض Chromium بهذه اللغة</translation>
@@ -154,7 +153,6 @@
 <translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5906655207909574370">أوشك التحديث على الانتهاء! أعِد تشغيل الجهاز لإنهاء التحديث.</translation>
-<translation id="5942225298871134766">‏سيُخزن Chromium هذا مع <ph name="SAVED_PASSWORD_LINK" /> وسيتذكره عندما تحتاج إليه في المرة القادمة.</translation>
 <translation id="5942520288919337908">‏تمت إضافة <ph name="EXTENSION_NAME" /> إلى Chromium.</translation>
 <translation id="59625444380784159">‏يمكن أن تساعد التفاصيل الواردة من جهات اتصالك في ملء النماذج بسرعة في Chromium.</translation>
 <translation id="5987687638152509985">‏تحديث Chromium لبدء المزامنة</translation>
@@ -168,7 +166,7 @@
 <translation id="6309712487085796862">‏يستخدم Chromium الكاميرا.</translation>
 <translation id="6333502561965082103">‏عملية أخرى على Chromium قيد التقدم. الرجاء إعادة المحاولة لاحقًا.</translation>
 <translation id="6334986366598267305">‏الآن أصبح استخدام Chromium مع حسابك في Google وفي أجهزة الكمبيوتر المشتركة أكثر سهولة.</translation>
-<translation id="6373523479360886564">‏هل تريد بالتأكيد إزالة Chromium؟</translation>
+<translation id="6373523479360886564">‏هل تريد فعلًا إزالة Chromium؟</translation>
 <translation id="6394232988457703198">‏يجب إعادة تشغيل Chromium الآن.</translation>
 <translation id="6403826409255603130">‏ إن Chromium هو متصفح ويب يشغّل صفحات الويب والتطبيقات بسرعة مذهلة. إنه سريع وثابت وسهل الاستخدام. يمكنك تصفح الويب بشكل أكثر أمانًا من خلال ميزات الحماية من البرامج الضارة والتصيّد الاحتيالي المدمجة في Chromium.</translation>
 <translation id="6475912303565314141">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium.</translation>

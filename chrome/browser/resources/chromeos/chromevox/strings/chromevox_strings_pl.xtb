@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">pl</translation>
 <translation id="2091933974477985526">Poprzedni obszar tekstowy do edytowania</translation>
 <translation id="2100350898815792233">Pełna interpunkcja</translation>
+<translation id="2110480898214777136">Zawijaj od początku do końca lub od końca do początku w obrębie strony, w oknie dialogowym lub innym kontenerze</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">klawisz dostępu:<ph name="KEY" /></translation>
 <translation id="2155457205053847599">Zmień bieżącą tabelę 6-punktowego pisma Braille'a, wybierając opcję z listy poniżej.</translation>
 <translation id="2169714232367507776">Kliknij bieżący element</translation>
+<translation id="2179452035581866348">ChromeVox przekazuje ważne informacje dodatkowe za pomocą dźwięków. Gdy poznasz ich znaczenie, możesz przy ich użyciu szybciej się poruszać. Gdy już zyskasz więcej pewności, możesz wyłączyć wyczerpujące opisy głosowe i uzyskiwać ważne informacje o stronie na podstawie samych dźwięków. Oto kompletna lista dźwięków i ich znaczeń.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{nawias okrągły zamykający}few{# nawiasy okrągłe zamykające}many{# nawiasów okrągłych zamykających}other{# close parens}}</translation>
 <translation id="2199994615414171367">Poprzednie wyrażenie matematyczne</translation>
 <translation id="2220529011494928058">Zgłoś problem</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">Główny</translation>
 <translation id="2329324941084714723">Panel karty</translation>
 <translation id="2344193891939537199">Element wyboru daty i godziny</translation>
+<translation id="2347456970887948350">Link</translation>
 <translation id="2359897517538099099">Nie jesteś w trybie tabeli.</translation>
 <translation id="241124561063364910">, a następnie naciśnij</translation>
+<translation id="2416512023405990736">Niezaznaczone pole</translation>
 <translation id="2417569100218200841">Informacje o zawartości</translation>
 <translation id="2422937916923936891">Pole wyboru elementu menu</translation>
 <translation id="2428534162001909979">Menu poleceń</translation>
@@ -213,6 +217,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3223701887221307104"><ph name="NAME" />, karta</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Kliknięty link</translation>
+<translation id="3232388865800379423">Przycisk wyskakującego okienka</translation>
 <translation id="323731244387692321">Otwórz pomoc do klawiatury ChromeVox</translation>
 <translation id="3241052487511142956">Poprzedni kliknięty link</translation>
 <translation id="3286390186030710347">Suwak</translation>
@@ -221,6 +226,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3311969765485641742">Naciśnij Alt+Shift+A, by zobaczyć alerty</translation>
 <translation id="3312997241656799641">Następny kliknięty link</translation>
 <translation id="3313245066383501820">Klawisz modyfikujący czytnika ChromeVox</translation>
+<translation id="3317212938060708859">Suwak</translation>
 <translation id="3321460131042519426">Włącz zawijanie wyrazów</translation>
 <translation id="3322936298410871309">Poprzedni nagłówek poziomu 1</translation>
 <translation id="3323447499041942178">Pole tekstowe</translation>
@@ -279,6 +285,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3457000393508828486">Częściowo naciśnięte</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, przełącznik wyłączony</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, przycisk</translation>
+<translation id="3466530247399808663">Naciśnięcie niewłaściwego klawisza</translation>
 <translation id="3473644018603298796">zaznaczono <ph name="COUNT" /></translation>
 <translation id="3486232535569802404">Od <ph name="V1" /> do <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{prawy nawias kwadratowy}few{# prawe nawiasy kwadratowe}many{# prawych nawiasów kwadratowych}other{# right brackets}}</translation>
@@ -286,6 +293,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{pytajnik}few{# pytajniki}many{# pytajników}other{# question marks}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{kareta}few{# znaki karety}many{# znaków karety}other{# carets}}</translation>
+<translation id="352577523970648069">Pole tekstowe z możliwością edytowania</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, niezaznaczone pole wyboru</translation>
 <translation id="3599054940393788245">Nie w środku wyrażenia matematycznego</translation>
 <translation id="3616113530831147358">Dźwięk</translation>
@@ -325,10 +333,12 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4047216625641135770">Zaznaczenie</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
+<translation id="4058278702844053247">Trwa ładowanie strony</translation>
 <translation id="4065205963140826639">Naciśnij Wyszukaj + strzałkę w prawo, by znaleźć przycisk Dalej, a następnie naciśnij Wyszukaj + spację, by go kliknąć.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{tylda}few{# tylda}many{# tyld}other{# tildes}}</translation>
 <translation id="409334809956508737">Poprzedni obiekt</translation>
 <translation id="4099274309791143834">z menu podrzędnym</translation>
+<translation id="4101527861445851766">Zaznaczone pole</translation>
 <translation id="4107807507418787238">Brak komórki poniżej.</translation>
 <translation id="4116415223832267137">Alert</translation>
 <translation id="4147126331795725888">Brak następnego elementu sterującego.</translation>
@@ -338,6 +348,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4173994908659439270">Brak następnego pola tekstowego do edytowania.</translation>
 <translation id="4176463684765177261">Wyłączone</translation>
 <translation id="4188530942454211480">Poprzednie zdanie</translation>
+<translation id="4191918948604314587">Przycisk</translation>
 <translation id="4202186506458631436">Przejdź w prawo</translation>
 <translation id="4206289001967551965">Wewnątrz tabeli</translation>
 <translation id="4215733775853809057">Następny suwak</translation>
@@ -461,6 +472,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="5374320867641260420">Brak przycisku Dalej.</translation>
 <translation id="5382299583965267720">Brak następnego nagłówka poziomu 1.</translation>
 <translation id="5402367795255837559">Pismo Braille'a</translation>
+<translation id="5402791055281059602">Alert w oknie modalnym</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{średnik}few{# średniki}many{# średników}other{# semicolons}}</translation>
 <translation id="5411891038905756502">Brak poprzedniego punktu przejścia.</translation>
 <translation id="5417034931411865818">Kliknij element pod klawiszem sterującym $1</translation>
@@ -554,6 +566,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="6119955456199054975">Koniec komórki.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Spacja</translation>
+<translation id="6132506484792346370">Pole listy lub pole złożone</translation>
 <translation id="6138576064440631958">Akord: $1</translation>
 <translation id="6142308968191113180">Nagłówek 4</translation>
 <translation id="6169420925157477918">Obraz z długim opisem</translation>
@@ -567,6 +580,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Brak następnego pola złożonego.</translation>
 <translation id="6307969636681130414">Naciśnięty</translation>
+<translation id="6322856989298155004">Dźwięki</translation>
 <translation id="6324551002951139333">Wykryto błąd gramatyczny</translation>
 <translation id="6348657800373377022">Pole złożone</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{punktor}few{# punktory}many{# punktorów}other{# punktora}}</translation>
@@ -597,6 +611,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="6657128831881431364">Pasek postępu</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">Dokument</translation>
+<translation id="6688209025607531203">Alert nie w oknie modalnym</translation>
 <translation id="6697092096875747123">Poprzednie pole złożone</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{wykrzyknik}few{# wykrzykniki}many{# wykrzykników}other{# wykrzyknika}}</translation>
 <translation id="6710213216561001401">Wstecz</translation>

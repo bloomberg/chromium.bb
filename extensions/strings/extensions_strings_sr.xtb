@@ -21,20 +21,18 @@
 <translation id="388442998277590542">Није могуће учитати страницу опција „<ph name="OPTIONS_PAGE" />“.</translation>
 <translation id="4115165561519362854">Администратор овог рачунара захтева да <ph name="EXTENSION_NAME" /> има минималну верзију <ph name="EXTENSION_VERSION" />. Не можете да га омогућите док га не ажурирате на ту верзију (или новију).</translation>
 <translation id="4233778200880751280">Није могуће учитати страницу са основним подацима „<ph name="ABOUT_PAGE" />“.</translation>
-<translation id="4434145631756268951">{0,select, single{Изаберите USB уређ}multiple{Изаберите USB уређаје}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Инсталирање пакета није успело зато што је услужни процес отказао. Пробајте да поново покренете Chrome и покушајте поново.</translation>
 <translation id="5026754133087629784">Веб-приказ: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Приказ апликације: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Овај додатак садржи датотеку кључа „<ph name="KEY_PATH" />“. Вероватно то не желите.</translation>
 <translation id="5627523580512561598">додатак <ph name="EXTENSION_NAME" /></translation>
-<translation id="5630931906013276297">{0,select, single{Изаберите уређај са интерфејсом}multiple{Изаберите уређај са интерфејсом}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Администратор овог рачунара захтева да додатак <ph name="EXTENSION_NAME" /> буде инсталиран. Не можете да га деинсталирате.</translation>
 <translation id="6027032947578871493">Непознати производ <ph name="PRODUCT_ID" /> продавца <ph name="VENDOR_NAME" /> (серијски број <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> продавца <ph name="VENDOR_ID" /></translation>
 <translation id="6143635259298204954">Није могуће отпаковати додатак. Да бисте безбедно отпаковали додатак, мора да постоји путања до директоријума профила која не садржи симболичку везу. За ваш профил не постоји таква путања.</translation>
-<translation id="616804573177634438">{0,select, single{Апликација „<ph name="APP_NAME" />“ захтева приступ неком од уређаја.}multiple{Апликација „<ph name="APP_NAME" />“ захтева приступ за један уређај или више њих.}other{UNUSED}}</translation>
 <translation id="641087317769093025">Није могуће распаковати додатак</translation>
+<translation id="6542618148162044354">„<ph name="APP_NAME" />“ захтева приступ једном или више уређаја:</translation>
 <translation id="657064425229075395">Није могуће учитати скрипту у позадини „<ph name="BACKGROUND_SCRIPT" />“.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> продавца <ph name="VENDOR_NAME" /> (серијски број <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Није могуће направити директоријум за распакивање: „<ph name="DIRECTORY_PATH" />“</translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">Пакет је неважећи. Детаљи: „<ph name="ERROR_MESSAGE" />“.</translation>
 <translation id="8670869118777164560">Овај додатак није успео да преусмери захтев мреже на <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> пошто га је други додатак (<ph name="EXTENSION_NAME" />) преусмерио на <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Распакивање додатака</translation>
+<translation id="8761756413268424715">„<ph name="APP_NAME" />“ захтева приступ неком од уређаја:</translation>
 <translation id="8825366169884721447">Овај додатак није успео да измени заглавље захтева „<ph name="HEADER_NAME" />“ за захтев мреже јер измена није била у складу са другим додатком (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="9111791539553342076">Овај додатак није успео да измени заглавље одговора „<ph name="HEADER_NAME" />“ за захтев мреже јер измена није била у складу са другим додатком (<ph name="EXTENSION_NAME" />).</translation>
 </translationbundle>

@@ -19,9 +19,6 @@
       När den här policyn är inställd på falskt eller inte har ställts in överförs cookies som ställts in av IdP:n bara till användarens profil under den första inloggningen på en enhet.
 
       Den här policyn gäller bara användare vars domän matchar enhetens registreringsdomän. För alla andra användare överförs cookies som anges av IdP:n bara till användarens profil under den första inloggningen på enheten.</translation>
-<translation id="1029536946382325801">Om den är inställd på sant kan användaren, genom att använda maskinvaran i Chrome-enheten, fjärrattestera sin identitet i sekretessinställningarna CA via API:et Enterprise Platform Keys – chrome.enterprise.platformKeys.challengeUserKey().
-
-          Om den är inställd på falskt, eller om den saknar inställning, fungerar inte anslutningen till API:et och en felkod kommer att visas.</translation>
 <translation id="1040446814317236570">Aktivera filtrering av webbadresser för PAC (för https://)</translation>
 <translation id="1044878202534415707">Rapportera maskinvarustatistik som exempelvis användning av processor eller RAM-minne.
 
@@ -95,6 +92,9 @@
       Om principen inte har ställts in eller är inställd på falskt kommer RC4-krypteringssviter inte att aktiveras. Principen kan ställas in som sant om kompatibilitet med en föråldrad server önskas bibehållas. Detta är en nödlösning, och servern bör omkonfigureras.</translation>
 <translation id="1297182715641689552">Använd en PAC-proxyskript</translation>
 <translation id="1304973015437969093">Tilläggs-/app-id:n och uppdateringsadresser som ska installeras obemärkt</translation>
+<translation id="1310333396104446007">Om den här inställningen konfigureras som falsk kan användare inte ange pinkoder som anses vara osäkra. Sådana pinkoder är till exempel pinkoder som genomgående innehåller samma siffra, pinkoder med sifferföljder i stigande eller fallande ordning och pinkoder som är för vanliga.
+
+          Om den här inställningen konfigureras som sann, eller inte konfigureras alls, kan användare ange dessa pinkoder och får bara ett varningsmeddelande.</translation>
 <translation id="1313457536529613143">Anger den procentsats med vilken fördröjningen av skärmdämpningen skalanpassas när användaren gör något då skärmen är dämpad eller strax efter det att skärmen har stängts av.
 
           Om den här principen är inställd anges den procentsats med vilken fördröjningen av skärmdämpningen skalanpassas när användaren gör något eller strax efter det att skärmen har stängts av. När dämpningsfördröjningen skalanpassas anpassas fördröjningen av avstängningen av skärmen, skärmlåset och dödtiden så att samma avstånd från den ursprungligen angivna fördröjningen av skärmdämpningen bibehålls.
@@ -171,6 +171,7 @@
 <translation id="1522425503138261032">Tillåt alla webbplatser att spåra användarnas fysiska plats</translation>
 <translation id="152657506688053119">Lista över alternativa webbadresser för standardsökleverantören.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
+<translation id="1547635088210394207">Anger maxlängd för pinkod till låsskärm.</translation>
 <translation id="1553684822621013552">När den här principen är inställd på sant aktiveras ARC för användaren
       (givet att övriga principinställningar tillåter det – ACR är fortfarande
       otillgängligt om antingen tillfälligt läge eller multiinloggning är aktiverat
@@ -190,6 +191,15 @@
       med jokertecken får inte användas.</translation>
 <translation id="1655229863189977773">Ange enhetens cachestorlek i byte</translation>
 <translation id="166427968280387991">Proxyserver</translation>
+<translation id="1668836044817793277">Anger om kioskappen som startas automatiskt utan fördröjning får styra vilken version av <ph name="PRODUCT_OS_NAME" /> som används.
+
+      Den här principen anger om kioskappen som startas automatiskt utan fördröjning får styra <ph name="PRODUCT_OS_NAME" />-versionen genom att en obligatorisk plattformsversion anges i manifestfilen med required_platform_version och används som målversionsprefix vid automatisk uppdatering.
+
+      Om principen är inställd på sant används värdet på nyckeln required_platform_version i manifestfilen för den kioskapp som startas automatiskt utan fördröjning som målversionsprefix vid automatisk uppdatering.
+
+      Om principen inte har konfigurerats eller om den har ställts in på falskt ignoreras nyckeln required_platform_version i manifestfilen och den automatiska uppdateringen fungerar som vanligt.
+
+      Obs! Att delegera kontrollen över vilken version av <ph name="PRODUCT_OS_NAME" /> som används till en kioskapp rekommenderas inte, eftersom det kan leda till att uppdateringar av programvaran och viktiga säkerhetskorrigeringar inte längre görs på enheten. Om du delegerar valet av <ph name="PRODUCT_OS_NAME" />-version kan användarnas säkerhet äventyras.</translation>
 <translation id="1675002386741412210">Stöds av:</translation>
 <translation id="1679420586049708690">Offentlig session för automatisk inloggning</translation>
 <translation id="1680029600835707254">Den här principen styr vem som får starta en session i <ph name="PRODUCT_OS_NAME" />. Den hindrar inte användarna från att logga in med andra Google-konton i Android. Om du vill förhindra detta konfigurerar du den Android-specifika principen <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" /> som en del av <ph name="ARC_POLICY" />.</translation>
@@ -225,6 +235,7 @@
 <translation id="1808715480127969042">Blockera cookies på dessa webbplatser</translation>
 <translation id="1827523283178827583">Använd fasta proxyservrar</translation>
 <translation id="1843117931376765605">Uppdateringsfrekvens för användarpolicy</translation>
+<translation id="1844620919405873871">Konfigurerar principer som är relaterade till snabb upplåsning.</translation>
 <translation id="1847960418907100918">Anger parametrarna som används vid sökningar på Instant med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {searchTerms} i ovanstående exempel, kommer det att ersättas med riktiga söktermer.
 
           Den här policyn är valfri. Om den inte anges kommer begäran om sökningar på Instant att använda GET-metoden.
@@ -330,6 +341,11 @@
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="2170233653554726857">Aktivera WPAD-optimering</translation>
 <translation id="2178899310296064282">Tillämpa minst medelbegränsat läge på YouTube</translation>
+<translation id="2183294522275408937">Inställningen styr hur ofta låsskärmen ska begära att lösenordet anges för att snabb upplåsning ska användas. Snabb upplåsning blir inte tillgänglig när låsskärmen visas om du översteg inställningen senaste gången du angav lösenordet. Om användaren har låsskärmen öppen längre än den här tidsperioden krävs ett lösenord nästa gång användaren anger fel kod eller när låsskärmen visas på nytt.
+
+          Om inställningen konfigureras uppmanas användaren att ange lösenord på låsskärmen beroende på inställningen.
+
+          Om inställningen inte konfigureras uppmanas användaren att ange lösenord på låsskärmen varje dag.</translation>
 <translation id="2188979373208322108">Policyn aktiverar bokmärkesfältet i <ph name="PRODUCT_NAME" />.
 
       Om du aktiverar inställningen visas ett bokmärkesfält i <ph name="PRODUCT_NAME" />.
@@ -551,6 +567,13 @@
 <translation id="2587719089023392205">Gör <ph name="PRODUCT_NAME" /> till min standardwebbläsare</translation>
 <translation id="2592091433672667839">Inaktivitetstid innan skärmsläckaren visas på inloggningsskärmen i återförsäljarläge</translation>
 <translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
+<translation id="2625512435194873786">Denna inställning styr hur lång en pinkod får vara.
+
+          Om noll eller lägre konfigureras för den här inställningen finns det ingen maxlängd och användare kan ange hur långa pinkoder som helst.
+
+          Om lägre än PinUnlockMinimumLength men högre än noll anges för inställningen är maxlängden samma som minimilängden.
+
+          Om inställningen inte konfigureras finns det ingen maxlängd och användaren kan ange hur långa pinkoder som helst.</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivera talad feedback.</translation>
 <translation id="2646290749315461919">Policyn gör att du kan ställa in om webbplatser får spåra användarnas fysiska plats. Att spåra användarnas fysiska plats kan vara tillåtet som standard, inte tillåtet som standard eller användaren kan bli tillfrågad varje gång en webbplats efterfrågar den fysiska platsen.
@@ -860,6 +883,7 @@
           Om Falskt har angetts för den här policyn, eller om ingenting har angetts, påbörjas fördröjningar i energisparfunktionen och begränsningar i sessionslängden så fort sessionen har påbörjats.</translation>
 <translation id="3478024346823118645">Ta bort användardata vid utloggning</translation>
 <translation id="348495353354674884">Aktivera virtuellt tangentbord</translation>
+<translation id="3495440981030194931">Anger minimilängd för pinkod till låsskärm.</translation>
 <translation id="3496296378755072552">Lösenordshanteraren</translation>
 <translation id="349667858031092827">Identifiera aldrig tidszon automatiskt.</translation>
 <translation id="350443680860256679">Konfigurera ARC</translation>
@@ -1008,6 +1032,7 @@
       Om den här principen inaktiveras kan SPDY användas.
 
       Om den här principen inte anges kommer SPDY att bli tillgängligt.</translation>
+<translation id="3890999316834333174">Principer för snabb upplåsning</translation>
 <translation id="3891357445869647828">Aktivera JavaScript</translation>
 <translation id="3891953007921334498">Principen inaktiverar utvecklarverktygen och JavaScript-konsolen.
 
@@ -1061,6 +1086,11 @@
 
       Om policyn är inställd på falskt kan användarna inte utnyttja erbjudanden.</translation>
 <translation id="4010738624545340900">Tillåt anrop till dialogrutor för filval</translation>
+<translation id="4012737788880122133">Inaktiverar automatiska uppdateringar när principen är inställd på sant.
+
+      <ph name="PRODUCT_OS_NAME" />-enheter söker automatiskt efter uppdateringar när inställningen inte är konfigurerad eller när den är inställd på falskt.
+
+      Obs! Vi rekommenderar att du låter den automatiska uppdateringen vara aktiv så att användarna får uppdateringar av programvaran och viktiga säkerhetskorrigeringar. Om du inaktiverar automatiska uppdateringar kan användarnas säkerhet äventyras.</translation>
 <translation id="4020682745012723568">Cookies som överförs till användarprofilen är inte tillgängliga för Android-appar.</translation>
 <translation id="4025586928523884733">Policyn Blockerar cookies från tredje part.
 
@@ -1140,6 +1170,16 @@
           Den här policyn är valfri. Om den inte anges kommer begäran om bildsökning att skickas via GET-metoden.
 
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
+<translation id="4294280661005713627">Ställer in en målversion för automatiska uppdateringar.
+
+      Anger med hjälp av ett prefix vilken målversion som <ph name="PRODUCT_OS_NAME" /> ska uppdateras till. Om en version som är äldre än det angivna prefixet körs på enheten uppdateras den till den senaste versionen som har prefixet i fråga. Om en senare version redan körs på enheten händer ingenting (versionen nedgraderas med andra ord inte) och den aktuella versionen blir kvar på enheten. Prefixets format anger komponent som exemplet nedan visar:
+
+      "" (eller har inte konfigurerats): uppdateras till den senaste versionen.
+      "1412.": uppdateras till en underversion av 1412 (t.ex. 1412.24.34 eller 1412.60.2)
+      "1412.2.": uppdateras till en underversion av 1412.2 (t.ex. 1412.2.34 eller 1412.2.2)
+      "1412.24.34": uppdateras endast till just denna version
+
+      Obs! Versionsbegränsningar rekommenderas inte eftersom de kan leda till att uppdateringar av programvaran eller viktiga säkerhetskorrigeringar inte görs. Om uppdateringarna begränsas till ett visst versionsprefix kan användarnas säkerhet äventyras.</translation>
 <translation id="4309640770189628899">Om DHE-krypteringssviter i TLS är aktiverade eller inte</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller senare</translation>
 <translation id="4322842393287974810">Tillåt att kioskappen som startas automatiskt utan fördröjning styr <ph name="PRODUCT_OS_NAME" />-versionen</translation>
@@ -1384,6 +1424,9 @@
            Om svarta listan har värdet * betyder det att alla värdar för Native Messaging är otillåtna, såvida de inte har angetts explicit i vitlistan.
 
           Om principen inte har getts något värde läser <ph name="PRODUCT_NAME" /> in alla installerade värdar för Native Messaging.</translation>
+<translation id="5272684451155669299">Om den är inställd på sant kan användaren använda maskinvaran i Chrome-enheten för att fjärrattestera sin identitet i sekretessinställningarna CA via <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> med hjälp av <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
+
+          Om den är inställd på falskt, eller om den saknar inställning, fungerar inte anslutningen till API:et och en felkod visas.</translation>
 <translation id="5288772341821359899">Om den här principen har angetts används bara UDP-portarna inom det angivna intervallet (ändvärdena inräknade) för WebRTC.
 
       Om principen inte anges eller om den har ställts in på den tomma strängen eller ett ogiltigt portintervall får vilken tillgänglig lokal UDP-port som helst användas för WebRTC.</translation>
@@ -1513,6 +1556,11 @@
           Om den här inställningen är aktiverad jämför fjärråtkomstvärden namnet på den lokala användaren (som värden är kopplad till) med namnet på det Google-konto som registrerats som ägare till värden (dvs. ”andersandersson” om värden ägs av Google-kontot ”andersandersson@example.com”).  Fjärråtkomstvärden kommer inte att starta om namnet på ägaren till värden skiljer sig från namnet på den lokala användaren som värden är kopplad till.  Policyn RemoteAccessHostMatchUsername ska användas tillsammans med RemoteAccessHostDomain så att Google-kontot som tillhör ägaren till värden kopplas till en viss domän (dvs. ”example.com”).
 
           Om den här inställningen är inaktiverad eller inte har angetts kan fjärråtkomstvärden kopplas till vilken lokal användare som helst.</translation>
+<translation id="5694594914843889579">När den här principen är inställd på sant är inte extern lagring tillgängligt i filsökaren.
+
+      Principen gäller för alla typer av lagringsmedia, till exempel USB-minnen, externa hårddiskar, SD-kort och andra minneskort och optisk lagring. Den interna lagringen påverkas inte och du kan därmed komma åt filer som har sparats i mappen Hämtade filer. Google Drive påverkas inte heller av den här principen.
+
+      Om inställningen har inaktiverats eller inte har konfigurerats kan användare använda alla typer av extern lagring som stöds av deras enhet.</translation>
 <translation id="5697306356229823047">Rapportera enhetsanvändare</translation>
 <translation id="570062449808736508">När man ställt in ett annat värde för principen än en tom sträng läser WebView webbadressbegränsningar från innehållsutgivaren med utfärdarnamnet.</translation>
 <translation id="5703863730741917647">Ange vilken åtgärd som ska vidtas när fördröjningen på grund av inaktivitet har uppnåtts.
@@ -1638,6 +1686,7 @@
       Om policyn inte tillämpas eller tillämpas felaktigt visas skärmen med förhandsgranskning av utskriften vid utskrifter.</translation>
 <translation id="6022948604095165524">Åtgärd vid start</translation>
 <translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
+<translation id="6029664378608427609">Tillåter att användare anger en osäker pinkod till låsskärmen.</translation>
 <translation id="603410445099326293">Parametrar för föreslagen webbadress som använder POST</translation>
 <translation id="6036523166753287175">Aktivera brandväggspassage från fjärråtkomstsvärd</translation>
 <translation id="6059543311891422586">Använd maskinvaruacceleration när det är tillgängligt.
@@ -1693,12 +1742,6 @@
 <translation id="6155936611791017817">Ange standardläget för den stora markören på inloggningsskärmen</translation>
 <translation id="6157537876488211233">Kommaavgränsad lista med regler för proxybypass</translation>
 <translation id="6158324314836466367">Namn på företagets webbutik (föråldrat)</translation>
-<translation id="6166832345529129545">Kontrollerar vilka snabbupplåsningslägen som får konfigureras och användas.
-      Med den här inställningen tillåts de snabbupplåsningslägen som kan konfigureras och användas för att låsa upp låsskärmen. Värdet är en lista över strängar som ska vara antingen Alla eller Pinkod. Om Alla väljs blir snabbupplåsningslägen som stöds tillgängliga, annars blir lägena i listan tillgängliga.
-
-      Om inställningen konfigureras kan inte snabbupplåsningslägen med typer som saknas i listan konfigureras eller användas.
-
-      Om inställningen inte konfigureras aktiveras läget Pinkod och övriga lägen inaktiveras.</translation>
 <translation id="6167074305866468481">Varning! Stöd för SSLv3 kommer helt att tas bort från <ph name="PRODUCT_NAME" /> efter version 43 (kring juli 2015) och denna princip tas bort samtidigt med detta.
 
       Om principen inte konfigureras använder <ph name="PRODUCT_NAME" /> en standardminimiversion som är SSLv3 i <ph name="PRODUCT_NAME" /> 39 and TLS 1.0 i senare versioner.
@@ -1762,6 +1805,15 @@
 <translation id="6417861582779909667">Policyn gör att du kan ställa in en lista med webbadressmönster som inte får spara cookies.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultCookiesSetting om den används eller användarens personliga konfiguration.</translation>
+<translation id="6426205278746959912">Det går inte att göra det obligatoriskt för Android-appar att ansluta via en proxyserver. Android-appar har tillgång till ett urval av proxyinställningarna enligt nedan och kan, men måste inte, följa dem.
+
+          Med alternativet Använd aldrig proxyserver får Android-apparna informationen att ingen proxyserver har konfigurerats.
+
+          Med alternativen Använd systemets proxyinställningar eller Fast serverproxy får Android-apparna tillgång till http-proxyserverns adress och port.
+
+          Med alternativet Identifiera proxyserver automatiskt får Android-apparna tillgång till skriptadressen http://wpad/wpad.dat. Ingen annan del av protokollet för automatisk proxyidentifiering används. 
+
+          Med alternativet PAC-proxyskript får Android-apparna tillgång till skriptadressen.</translation>
 <translation id="6467433935902485842">Policyn gör att du kan ange en lista med webbadressmönster som definierar webbplatser som inte får köra plugin-program.
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser från policyn DefaultPluginsSetting om den har ställts in, eller användarens personliga konfiguration om den inte har det.</translation>
@@ -2104,7 +2156,18 @@
       Om policyn inte har angetts används den inbyggda strategin av den automatiska rensningen. För närvarande är det strategin RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Behåll cookies under hela sessionen</translation>
 <translation id="7340034977315324840">Rapportera aktivitetstider för enhet</translation>
+<translation id="7340934985429121460">Denna inställning styr minimilängden för pinkoder.
+
+          Om lägre än ett anges för den här inställningen måste pinkoder vara minst en siffra.
+
+          Om inställningen inte konfigureras måste pinkoder vara minst fyra siffror.</translation>
 <translation id="7384999953864505698">Tillåter QUIC-protokoll</translation>
+<translation id="7406716912696538245">Styr vilka snabbupplåsningslägen som får konfigureras och användas.
+          Med den här inställningen anges vilka snabbupplåsningslägen som får konfigureras och användas för att låsa upp låsskärmen. Värdet är en lista över strängar som ska vara antingen Alla eller Pinkod. Om Alla väljs blir alla snabbupplåsningslägen som stöds tillgängliga, annars blir lägena i listan tillgängliga.
+
+          Om inställningen konfigureras kan inte snabbupplåsningslägen med typer som inte finns i listan konfigureras eller användas.
+
+          Om inställningen inte konfigureras aktiveras läget Pinkod och övriga lägen inaktiveras.</translation>
 <translation id="7417972229667085380">Procentsatsen med vilken fördröjningen vid dödtid skalanpassas i presentationsläge (föråldrad)</translation>
 <translation id="7421483919690710988">Ange medieenhetens cachestorlek i byte</translation>
 <translation id="7424751532654212117">Lista med undantag till listan med inaktiverade plugin-program</translation>
@@ -2150,6 +2213,9 @@
 <translation id="7611372873040492235">Lösenord krävs var tolfte timme.</translation>
 <translation id="7612157962821894603">Flaggor som gäller hela systemet och som ska tillämpas vid start av <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Lista över inaktiverade protokollscheman</translation>
+<translation id="7617319494457709698">Principen specificerar vilka tillägg som får använda <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funktionen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
+
+          Om ett tillägg inte finns med på listan, eller om listan inte har fastställts misslyckas anslutningen till API:et och en felkod visas.</translation>
 <translation id="7625444193696794922">Policyn anger vilken versionskanal som enheten ska låsas till.</translation>
 <translation id="7632724434767231364">GSSAPI-biblioteksnamn</translation>
 <translation id="7635471475589566552">Policyn konfigurerar appens språkversion i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar språk.
@@ -2250,6 +2316,13 @@
 
       Om inställningen inte konfigureras kan användare aktivera och inaktivera säkerhetskopieringstjänsten i appen Inställningar på Android.</translation>
 <translation id="7818131573217430250">Ange standardtillståndet för högkontrastläget på inloggningsskärmen</translation>
+<translation id="7822837118545582721">När principen är inställd på sant kan användarna inte spara något på externa lagringsenheter.
+
+      Om principen är inställd på falskt eller inte har konfigurerats kan användarna skapa och redigera filer på externa lagringsenheter som är fysiskt skrivbara.
+
+      Principen ExternalStorageDisabled har företräde framför den här principen. Om ExternalStorageDisabled har ställts in på sant inaktiveras all åtkomst till extern lagring och den här principen ignoreras.
+
+      Dynamisk uppdatering av den här principen stöds i M56 och senare.</translation>
 <translation id="7831595031698917016">Anger den längsta fördröjningen i millisekunder mellan att en ogiltigförklaring av policyn tas emot och att den nya policyn hämtas från tjänsten för enhetshantering.
 
       Om den här policyn anges åsidosätts standardvärdet 5 000 millisekunder. Giltiga värden för den här policyn ligger i intervallet från 1 000 (1 sekund) till 300 000 (5 minuter). Värden utanför detta intervall kommer att fästas vid respektive gräns.
@@ -2310,9 +2383,6 @@
           till en Active Directory-domän.</translation>
 <translation id="7937766917976512374">Tillåta eller neka videoinspelning</translation>
 <translation id="7941975817681987555">Förutsäg inte nätverksåtgärder för någon nätverksanslutning</translation>
-<translation id="7942429005743031780">Policyn specificerar vilka tillägg som får använda API:et för Enterprise Platform Keys – chrome.enterprise.platformKeys.challengeUserKey() – för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
-
-          Om ett tillägg inte finns med på listan, eller om listan inte har fastställts, kommer anslutningen till API:et att misslyckas och en felkod att visas.</translation>
 <translation id="7953256619080733119">Värdar för hanterade användares manuella undantag</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Policyn stöds inte längre.
@@ -2470,6 +2540,9 @@
 
       Om policyn är inställd på falskt visas inte välkomstsidan på nytt i webbläsaren när den startas för första gången efter en uppgradering av operativsystemet.</translation>
 <translation id="8369602308428138533">Skärmavstängningstid när enheten är ansluten till elnätet</translation>
+<translation id="8370471134641900314">Om principen är inställd på sant måste användaren logga in i <ph name="PRODUCT_NAME" /> med sin profil för att kunna använda webbläsaren. Dessutom anges falskt som standardvärde för BrowserGuestModeEnabled.
+
+      Om principen är inställd på falskt eller om den inte har konfigurerats kan användaren använda webbläsaren utan att logga in i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Aktivera användning av fjärrattestering för innehållsskydd för enheten</translation>
 <translation id="838870586332499308">Aktivera dataroaming</translation>
 <translation id="8390049129576938611">Inaktiverar den interna PDF-läsaren i <ph name="PRODUCT_NAME" />. PDF-filer behandlas i stället som nedladdningar så att användaren kan öppna dem med standardappen.
@@ -2606,15 +2679,6 @@
 <translation id="8833109046074170275">Autentisering via standardflödet för GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> sparar appar och tillägg i cacheminnet vid installation av flera användare som delar enhet. På detta sätt laddas de inte ned för varje användare enskilt.
       Om policyn inte konfigureras eller om värdet är lägre än 1 MB används den cachestorlek som är standard i <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="8858120573534680488">Det går inte att göra det obligatoriskt för Android-appar att ansluta via en proxyserver. Android-appar har tillgång till ett urval av proxyinställningarna enligt nedan och kan men måste inte följa dem.
-
-          Med alternativet Använd aldrig proxyserver får Android-apparna informationen att ingen proxyserver har konfigurerats.
-
-          Med alternativen Använd systemets proxyinställningar eller Fast serverproxy får Android-apparna tillgång till http-proxyserverns adress och port.
-
-          Med alternativet Identifiera proxyserver automatiskt får Android-apparna tillgång till skriptadressen http://wpad/wpad.dat. Ingen annan del av protokollet för automatisk proxyidentifiering används.
-
-          Med alternativet PAC-proxyskript får Android-apparna tillgång till skriptadressen.</translation>
 <translation id="8858642179038618439">Tvinga fram Säkert läge på YouTube</translation>
 <translation id="8864975621965365890">Ser till att avvisningsmeddelandet som visas när en webbplats renderas av <ph name="PRODUCT_FRAME_NAME" /> inte visas.</translation>
 <translation id="8870318296973696995">Startsida</translation>
@@ -2722,9 +2786,4 @@
 <translation id="930930237275114205">Ange katalog för användardata i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="944607242500063080">Konfigurera tillåtna snabbupplåsningslägen.</translation>
 <translation id="944817693306670849">Ange storlek för diskcache</translation>
-<translation id="969164417253718105">Inställningen styr hur ofta låsskärmen ska begära att lösenordet anges för att snabb upplåsning ska användas. Snabb upplåsning blir inte tillgänglig när låsskärmen visas om du översteg inställningen senaste gången du angav lösenordet. Om användaren stannar längre än den här tidsperioden på låsskärmen krävs ett lösenord nästa gång användaren anger fel kod eller när låsskärmen visas på nytt.
-
-      Om inställningen konfigureras uppmanas användaren att ange sina lösenord på låsskärmen beroende på inställningen.
-
-      Om inställningen inte konfigureras uppmanas användaren att ange sina lösenord på låsskärmen varje dag.</translation>
 </translationbundle>

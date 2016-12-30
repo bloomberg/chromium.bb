@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">войдите в Chrome</translation>
 <translation id="1061441684050139317">Предоставьте браузеру Chrome доступ к микрофону, чтобы пользоваться им на этом сайте.</translation>
 <translation id="1065672644894730302">Не удается получить настройки. Некоторые функции могут быть недоступны, а изменения настроек не будут сохраняться.</translation>
+<translation id="1088300314857992706">Адрес <ph name="USER_EMAIL_ADDRESS" /> уже использовался в Chrome</translation>
 <translation id="1104959162601287462">О &amp;Chrome OS</translation>
 <translation id="110877069173485804">Ваш персональный Chrome</translation>
 <translation id="123620459398936149">Не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Приложения Chrome Canary</translation>
 <translation id="1457721931618994305">Выполняется обновление Google Chrome...</translation>
 <translation id="1469002951682717133">Панель запуска приложений Chrome</translation>
-<translation id="1475773083554142432">Chrome добавит его к другим сохраненным паролям (<ph name="SAVED_PASSWORD_LINK" />) и запомнит для следующих визитов.</translation>
 <translation id="1480489203462860648">Запустить Chrome (уже установлен)</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
 <translation id="1587223624401073077">Google Chrome использует камеру.</translation>
@@ -41,7 +41,6 @@
 <translation id="2147651015520127414">Chrome определил, что сертификат сайта выпущен компанией <ph name="ISSUER" />.</translation>
 <translation id="2246246234298806438">Если отсутствует встроенный просмотрщик PDF, предварительный просмотр в Google Chrome невозможен.</translation>
 <translation id="2252923619938421629">Отправьте отчет о текущих настройках Google Chrome и помогите усовершенствовать работу браузера</translation>
-<translation id="225614027745146050">Добро пожаловать!</translation>
 <translation id="2286950485307333924">Вы вошли в Chrome</translation>
 <translation id="2290014774651636340">Отсутствуют ключи API Google. Некоторые функции Google Chrome могут не работать.</translation>
 <translation id="2290095356545025170">Вы действительно хотите удалить Google Chrome?</translation>

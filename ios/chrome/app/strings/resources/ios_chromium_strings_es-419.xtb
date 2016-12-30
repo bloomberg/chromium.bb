@@ -13,7 +13,8 @@
 <translation id="2195025571279539885">¿Quieres que Google Chrome te ofrezca traducir las páginas de este sitio que estén en <ph name="LANGUAGE_NAME" /> la próxima vez?</translation>
 <translation id="2647554856022461007">Es posible que Chromium use servicios web para mejorar tu experiencia de navegación (tienes la opción de inhabilitar estos servicios). <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium no puede utilizar tu cámara porque la está usando otra aplicación</translation>
-<translation id="3413120535237193088">Para obtener tus marcadores en todos tus dispositivos, accede a Chromium.</translation>
+<translation id="3256316712990552818">Se copió en Chromium.</translation>
+<translation id="3413120535237193088">Para obtener tus favoritos en todos tus dispositivos, accede a Chromium.</translation>
 <translation id="3473048256428424907">Activar el escáner QR en Chromium</translation>
 <translation id="3805899903892079518">Chromium no tiene acceso a tus fotos o videos. Habilita el acceso en Configuración de iOS &gt; Privacidad &gt; Fotos.</translation>
 <translation id="40863189315891987"><ph name="BEGIN_LINK" />Lleva Chromium a tu Dock<ph name="END_LINK" /> para acceder de forma más rápida</translation>
@@ -29,12 +30,12 @@
 <translation id="6068866989048414399">Condiciones del servicio de Chromium</translation>
 <translation id="6268381023930128611">¿Salir de Chromium?</translation>
 <translation id="6424492062988593837">¡Chromium mejoró! Hay una nueva versión disponible.</translation>
-<translation id="6600954340915313787">Se copió en Chrome.</translation>
 <translation id="6604711459180487467">Disfruta de una mejor experiencia en Chromium según tu ubicación.</translation>
 <translation id="6989306073720242915">¿Te gusta Chromium? <ph name="BEGIN_LINK" />Llévalo a tu Dock<ph name="END_LINK" /></translation>
 <translation id="7022368070219581493">Chromium verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web.</translation>
 <translation id="7099326575020694068">Chromium no puede usar tu cámara en el modo de vista dividida</translation>
 <translation id="7144758435978427212">Descubre las páginas web que envían los objetos cercanos. Cuando Bluetooth está activado, Chromium puede identificar las páginas web asociadas con los objetos cercanos y enviarlas de forma anónima a Google para determinar cuáles son las más útiles. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
+<translation id="7208566199746267865">Chromium lleva tus cuentas a la Web para ahorrarte tiempo. Puedes agregar o quitar cuentas en la configuración.</translation>
 <translation id="7269362888766543920">Algunos complementos causan fallos en Chromium. Intenta desinstalarlos.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Los datos seleccionados se quitaron de Chromium y los dispositivos sincronizados. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación, como las búsquedas y la actividad de otros servicios de Google en history.google.com.</translation>

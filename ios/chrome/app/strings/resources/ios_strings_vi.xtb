@@ -10,6 +10,7 @@
 <translation id="1104948393051856124">Chấp nhận và tiếp tục</translation>
 <translation id="1112015203684611006">In không thành công.</translation>
 <translation id="1125564390852150847">Tạo tab mới.</translation>
+<translation id="1145536944570833626">Xóa dữ liệu hiện có.</translation>
 <translation id="1165039591588034296">Lỗi</translation>
 <translation id="1172898394251786223">Trường tiếp theo</translation>
 <translation id="1176932207622159128">Không thể lưu ảnh</translation>
@@ -48,6 +49,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="1753905327828125965">Truy cập nhiều nhất</translation>
 <translation id="1809939268435598390">Xóa thư mục</translation>
 <translation id="1813414402673211292">Xóa Dữ liệu Duyệt</translation>
+<translation id="1820259098641718022">Đã thêm vào Danh sách đọc</translation>
 <translation id="1842969606798536927">Thanh toán</translation>
 <translation id="1876721852596493031">Gửi dữ liệu sử dụng</translation>
 <translation id="1886928167269928266">Mọi thứ</translation>
@@ -65,6 +67,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang đã được di chuyển</translation>
 <translation id="2149973817440762519">Chỉnh sửa dấu trang</translation>
 <translation id="2154710561487035718">Sao chép URL</translation>
+<translation id="2230173723195178503">Đã tải trang web</translation>
 <translation id="2241634353105152135">Chỉ một lần</translation>
 <translation id="2267753748892043616">Thêm tài khoản</translation>
 <translation id="2273327106802955778">Menu khác</translation>
@@ -76,6 +79,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2386793615875593361">Đã chọn 1 ảnh</translation>
 <translation id="2435457462613246316">Hiển thị mật khẩu</translation>
 <translation id="2467815441875554965">Tìm kiếm theo ngữ cảnh</translation>
+<translation id="2523092375122821828">Đánh dấu tất cả...</translation>
 <translation id="2572712655377361602">Chính sách thiết bị đã chặn quyền truy cập vào ảnh của bạn</translation>
 <translation id="2584132361465095047">Thêm tài khoản...</translation>
 <translation id="2593774076813182497">Không thể in trang này.</translation>
@@ -116,6 +120,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3324193307694657476">Địa chỉ 2</translation>
 <translation id="3329904751041170572">Không thể kết nối với máy chủ.</translation>
 <translation id="3335947283844343239">Mở lại Tab đã Đóng</translation>
+<translation id="3387752218061326363">Hiển thị lịch sử từ thiết bị mà bạn đã đăng nhập. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Cửa sổ bật lên được cho phép</translation>
 <translation id="3414292259312108062">Chrome sẽ lưu mật khẩu này vào <ph name="BEGIN_LINK" />Mật khẩu đã lưu của Google<ph name="END_LINK" /> và tự động điền mật khẩu cho bạn để bạn không phải tự ghi nhớ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> phút</translation>
@@ -123,7 +128,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3474649192738347024">Đã điền biểu mẫu.</translation>
 <translation id="3478058380795961209">Tháng hết hạn</translation>
 <translation id="3482959374254649722">Đang đồng bộ hóa tab của bạn...</translation>
-<translation id="3485544713029068372">Smart Lock cho Mật khẩu</translation>
 <translation id="3489372701259491571">Xóa mật khẩu đã lưu</translation>
 <translation id="3519193562722059437">Mở tab để duyệt web.</translation>
 <translation id="3527085408025491307">Thư mục</translation>
@@ -145,6 +149,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3789841737615482174">Cài đặt</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3897092660631435901">Menu</translation>
+<translation id="3928666092801078803">Kết hợp dữ liệu của tôi</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
 <translation id="3963231839620026525">Tab ẩn danh mới</translation>
 <translation id="3967822245660637423">Tải xuống hoàn tất</translation>
@@ -156,6 +161,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="4121993058175073134">Để gửi dữ liệu đã xuất, hãy định cấu hình tài khoản email trong ứng dụng Cài đặt.</translation>
 <translation id="4124987746317609294">Phạm vi thời gian</translation>
 <translation id="4172051516777682613">Luôn hiển thị</translation>
+<translation id="4176234027218720244">Đánh dấu...</translation>
 <translation id="424315890655130736">Nhập cụm mật khẩu</translation>
 <translation id="4272631900155121838">Để quét mã QR, hãy bật máy ảnh từ cài đặt</translation>
 <translation id="4281844954008187215">Điều khoản dịch vụ</translation>
@@ -167,6 +173,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="4473991315115669931">Vào chế độ ẩn danh</translation>
 <translation id="4526249700380860531">Xem và quản lý mật khẩu đã lưu tại <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Thử đăng nhập lại.</translation>
+<translation id="4620246317052452550">Các trang bạn đã đọc</translation>
 <translation id="4636930964841734540">Thông tin</translation>
 <translation id="4659667755519643272">Vào Trình chuyển đổi tab</translation>
 <translation id="4666531726415300315">Đã đăng nhập bằng <ph name="EMAIL" />.
@@ -179,6 +186,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="4875622588773761625">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu của mình cho trang web này không?</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4923459931733593730">Thanh toán</translation>
+<translation id="4930268273022498155">Xóa dữ liệu hiện có. Bạn có thể truy xuất dữ liệu bằng cách chuyển về <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Rất tiếc, đã xảy ra sự cố khi chia sẻ mục của bạn.</translation>
 <translation id="4979397965658815378">Đăng nhập bằng Tài khoản Google để nhận dấu trang, mật khẩu, lịch sử và các cài đặt khác trên tất cả thiết bị của bạn</translation>
 <translation id="5005498671520578047">Sao chép mật khẩu</translation>
@@ -195,10 +203,12 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Thêm thẻ...</translation>
 <translation id="5228579091201413441">Bật đồng bộ hóa</translation>
+<translation id="5230733896359313003">Địa chỉ giao hàng</translation>
 <translation id="5244474230056479698">Đồng bộ hóa với <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Hiển thị</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5327248766486351172">Tên</translation>
+<translation id="532992759783668360">Xóa mục đã đọc</translation>
 <translation id="5388358297987318779">Mở hình ảnh</translation>
 <translation id="5409365236829784218">Không có ứng dụng nào được cài đặt có thể mở tệp này.</translation>
 <translation id="54401264925851789">Thông tin bảo mật trang</translation>
@@ -227,6 +237,8 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5916664084637901428">Bật</translation>
 <translation id="5953603475187800576">Hiển thị địa chỉ và thẻ tín dụng từ Google Payments</translation>
 <translation id="5964480694698977962">Tạo tab ẩn danh mới.</translation>
+<translation id="5965679971710331625">Bạn đã đăng nhập</translation>
+<translation id="5982717868370722439">Thêm dữ liệu hiện có vào <ph name="USER_EMAIL" />.</translation>
 <translation id="6012140227487808125">Đang mã hóa...</translation>
 <translation id="6021332621416007159">Mở trong...</translation>
 <translation id="6039694632319341016">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu cho <ph name="USERNAME" /> cho trang web này không?</translation>
@@ -239,9 +251,13 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6136914049981179737">Giây trước</translation>
 <translation id="6149061208933997199">Sử dụng mật khẩu</translation>
 <translation id="6158823227857319455">Tab mới</translation>
+<translation id="616831107264507309">Đọc sau</translation>
 <translation id="6184086493125982861">Hiển thị tab</translation>
 <translation id="6187302354554850004">Đồng bộ hóa lần cuối: <ph name="LAST_USED_TIME" /></translation>
+<translation id="6189413832092199491">Chưa đọc</translation>
+<translation id="6194286531716220336">Hủy</translation>
 <translation id="6196207969502475924">Tìm kiếm bằng giọng nói</translation>
+<translation id="6254066287920239840">Mở liên kết trong ứng dụng thay vì trình duyệt.</translation>
 <translation id="6255097610484507482">Chỉnh sửa thẻ tín dụng</translation>
 <translation id="6308436439357671616">Điều này cho phép bạn chụp và tải ảnh lên.</translation>
 <translation id="6314335155547195432">Tạo mật khẩu</translation>
@@ -249,11 +265,12 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6337234675334993532">Mã hóa</translation>
 <translation id="633809752005859102">Đã xảy ra sự cố nào đó. Chúng tôi sẽ xem xét vấn đề đó.</translation>
 <translation id="6344783595350022745">Xóa văn bản</translation>
-<translation id="6351971471682124046">Đang truyền tới...</translation>
 <translation id="6362362396625799311">Không có tab ẩn danh nào</translation>
 <translation id="6380866119319257197">Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
+<translation id="6385146967113720558">Đánh dấu là chưa đọc</translation>
 <translation id="6389470377220713856">Tên trên thẻ</translation>
 <translation id="6406506848690869874">Đồng bộ hóa</translation>
+<translation id="6417838470969808600">Bạn có dấu trang, lịch sử, mật khẩu và các cài đặt khác từ <ph name="USER_EMAIL1" />.</translation>
 <translation id="641799622251403418">Đã đăng nhập bằng <ph name="EMAIL" />.
 
 Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng bộ hóa của bạn vào <ph name="TIME" />. Nhập cụm mật khẩu đó để bắt đầu đồng bộ hóa.</translation>
@@ -288,6 +305,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7108338896283013870">Ẩn</translation>
 <translation id="7131892264600713844">Hiển thị lịch sử từ thiết bị này. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Tên đầy đủ</translation>
+<translation id="713434964320012835">Xóa</translation>
 <translation id="7136892417564438900">Máy ảnh không khả dụng</translation>
 <translation id="7167621057293532233">Loại dữ liệu</translation>
 <translation id="7189598951263744875">Chia sẻ...</translation>
@@ -309,7 +327,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7514365320538308">Tải xuống</translation>
 <translation id="7537586195939242955">Rất tiếc, không thể cài đặt Pass (Vé xem) của bạn vào Passbook (Ví điện tử) lúc này.</translation>
 <translation id="7561196759112975576">Luôn luôn</translation>
-<translation id="7572670177380301651">Hiển thị lịch sử từ các thiết bị mà bạn đã đăng nhập. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="7588950540487816470">Web trong cuộc sống</translation>
 <translation id="7603852183842204213">Cửa sổ bật lên đã bị chặn (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">Đồng bộ hóa không hoạt động</translation>
@@ -317,9 +334,11 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7671141431838911305">CÀI ĐẶT</translation>
+<translation id="7682287625158474539">Địa chỉ gửi hàng</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7769602470925380267">Chấp nhận và đăng xuất</translation>
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>
+<translation id="7791543448312431591">Thêm</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7851858861565204677">Thiết bị khác</translation>
 <translation id="7859704718976024901">Lịch sử duyệt web</translation>
@@ -331,6 +350,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8019783059653722575">Điều này cho phép bạn lưu và tải ảnh lên.</translation>
 <translation id="8023878949384262191">Mở rộng phần.</translation>
 <translation id="8059533439631660104">Thu gọn phần.</translation>
+<translation id="806745655614357130">Giữ dữ liệu của tôi riêng biệt</translation>
 <translation id="8076014560081431679">Cài đặt trang web đã lưu sẽ không bị xóa và có thể phản ánh thói quen duyệt web của bạn. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Đóng tất cả các tab</translation>
 <translation id="8108697784695284144">Mật khẩu của bạn đã được sao chép.</translation>
@@ -338,12 +358,14 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8205564605687841303">Hủy</translation>
 <translation id="8225985093977202398">Tệp và hình ảnh được lưu vào bộ nhớ cache</translation>
 <translation id="8261506727792406068">Xóa</translation>
+<translation id="8272194309885535896">Tải hình ảnh xuống</translation>
 <translation id="8272426682713568063">Thẻ Tín dụng</translation>
 <translation id="8281781826761538115">Mặc định - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Kiểm soát cách Google sử dụng lịch sử duyệt web của bạn để cá nhân hóa Tìm kiếm, quảng cáo và các dịch vụ khác của Google</translation>
 <translation id="8428045167754449968">Thành phố/thị trấn</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433678324664858900">Hiển thị đề xuất</translation>
+<translation id="8458197615157477273">Đánh dấu là đã đọc</translation>
 <translation id="8458397775385147834">1 dấu trang đã bị xóa</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="8517375800490286174">Giấy phép nguồn mở</translation>
@@ -355,6 +377,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8620640915598389714">Chỉnh sửa</translation>
 <translation id="8636825310635137004">Để có các tab từ các thiết bị khác của bạn, hãy bật đồng bộ hóa.</translation>
 <translation id="8680787084697685621">Chi tiết đăng nhập tài khoản đã lỗi thời.</translation>
+<translation id="8699098509676302392">Thêm địa chỉ...</translation>
 <translation id="8721297211384281569">Menu công cụ</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>
@@ -375,6 +398,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="9055772144595778347">Không thể đăng nhập</translation>
 <translation id="9065203028668620118">Chỉnh sửa</translation>
 <translation id="9079935439869366234">Đánh dấu tất cả là chưa đọc</translation>
+<translation id="9080712759204168376">Tóm tắt đơn hàng</translation>
 <translation id="9083392325882095631">1 mục</translation>
 <translation id="9100610230175265781">Yêu cầu cụm mật khẩu</translation>
 <translation id="9148126808321036104">Đăng nhập lại</translation>

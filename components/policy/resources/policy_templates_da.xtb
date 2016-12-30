@@ -19,9 +19,6 @@
       Når denne politik er angivet som falsk eller ikke er indstillet, overføres cookies, der er angivet af IdP'en, kun til brugerens profil, første gang vedkommende logger ind på en enhed.
 
       Denne politik berører kun brugere, hvis domæne svarer til enhedens registreringsdomæne. For alle andre brugere overføres cookies, der er angivet af IdP'en, kun til brugerens profil, første gang vedkommende logger ind på enheden.</translation>
-<translation id="1029536946382325801">Hvis denne er angivet som sand, kan brugeren benytte hardwaren på Chrome-enheder til at fjernbekræfte sin identitet over for privacy CA via Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey().
-
-          Hvis den er angivet som falsk eller slet ikke er angivet, vil kald til API'en mislykkes eller returnere en fejlkode.</translation>
 <translation id="1040446814317236570">Aktivér PAC til fjernelse af webadresser (for https://)</translation>
 <translation id="1044878202534415707">Rapportér hardwarestatistik, f.eks. CPU/RAM-forbrug.
 
@@ -95,6 +92,9 @@
       Hvis politikken ikke er angivet eller er angivet til Falsk, aktiveres RC4-krypteringsprogrammer i TLS ikke. Alternativt kan den angives til Sandt for at bevare kompatibiliteten med en forældet server. Dette er en midlertidig løsning, og serveren bør rekonfigureres.</translation>
 <translation id="1297182715641689552">Brug et .pac-proxyscript</translation>
 <translation id="1304973015437969093">Udvidelses-/app-id'er og opdateringswebadresser skal installeres ubemærket</translation>
+<translation id="1310333396104446007">Hvis denne indstilling er konfigureret til falsk, kan brugerne ikke indstille en svag pinkode. Svage pinkoder omfatter pinkoder, der kun indeholder det samme tal, pinkoder, der stiger med 1 ad gangen, pinkoder, der falder med 1 ad gangen og pinkoder, der hyppigt bruges.
+
+          Hvis denne indstilling er konfigureret til sand eller ikke er konfigureret, kan brugerne indtaste denne type pinkoder og vil kun få vist en advarsel.</translation>
 <translation id="1313457536529613143">Angiver den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når der observeres brugeraktivitet, mens skærmen er nedtonet, eller umiddelbart efter skærmen slukkes.
 
           Hvis denne politik indstilles, angiver den den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når der observeres brugeraktivitet, mens skærmen er nedtonet, eller umiddelbart efter skærmen slukkes. Når nedtoningsforsinkelsen skaleres, tilpasses forsinkelsen for skærmsluk, skærmlås og inaktivitet for at bibeholde samme afstande fra nedtoningsforsinkelsen på skærmen som i den oprindelige konfiguration.
@@ -168,6 +168,7 @@
 <translation id="1522425503138261032">Tillad, at websites registrerer brugernes fysiske placering</translation>
 <translation id="152657506688053119">Liste over alternative webadresser for standardsøgemaskinen</translation>
 <translation id="1530812829012954197">Gengiv altid følgende webadressemønstre i værtsbrowseren</translation>
+<translation id="1547635088210394207">Indstiller den maksimale længde for pinkoden til låseskærmen.</translation>
 <translation id="1553684822621013552">Når denne politik er angivet til sand, aktiveres ARC for brugeren
       (undelagt de øvrige indstillinger for politik. ARC er stadig
       utilgængelig, hvis engangsbruger eller samlet login fra flere konti
@@ -187,6 +188,15 @@
       tillades ikke.</translation>
 <translation id="1655229863189977773">Angiv diskcache i bytes</translation>
 <translation id="166427968280387991">Proxyserver</translation>
+<translation id="1668836044817793277">Om den automatisk startede terminalapp uden forsinkelse skal kunne kontrollere <ph name="PRODUCT_OS_NAME" />-versionen.
+
+      Denne politik bestemmer, om den automatisk startede terminalapp uden forsinkelse skal kunne styre <ph name="PRODUCT_OS_NAME" />-versionen ved at angive en required_platform_version i sit manifest og bruge den som præfiks for en automatisk opdateret målversion.
+
+      Hvis politikken er angivet til sand, bruges værdien i manifestnøglen required_platform_version fra den automatisk startede terminalapp uden forsinkelse til automatisk at opdatere præfikset for målversionen.
+
+      Hvis politikken ikke konfigureres, eller den indstilles til falsk, ignoreres manifestnøglen required_platform_version, og den automatiske opdatering fortsætter som normalt.
+
+      Advarsel! Det frarådes at delegere kontrol over <ph name="PRODUCT_OS_NAME" />-versionen til en terminalapp, da det kan forhindre enheden i at modtage softwareopdateringer og kritiske sikkerhedsrettelser. Delegering af kontrol over <ph name="PRODUCT_OS_NAME" />-versionen kan udgøre en sikkerhedsrisiko for brugerne.</translation>
 <translation id="1675002386741412210">Understøttes på:</translation>
 <translation id="1679420586049708690">Offentlig session til automatisk login</translation>
 <translation id="1680029600835707254">Denne politik styrer, hvem der kan starte en <ph name="PRODUCT_OS_NAME" />-session. Den forhindrer ikke brugerne i at logge ind på yderligere Google-konti i Android. Hvis du vil forhindre dette, skal du som en del af <ph name="ARC_POLICY" /> konfigurere politikken <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" />, der gælder for Android.</translation>
@@ -214,10 +224,11 @@
       Chrome Fjernskrivebord installeres.</translation>
 <translation id="1757688868319862958">Tillader, at <ph name="PRODUCT_NAME" /> kører plugins, der kræver godkendelse. Hvis du aktiverer denne indstilling, kører plugins, der ikke er forældede, altid. Hvis denne indstilling er deaktiveret eller ikke er angivet, vil brugerne blive bedt om tilladelse til at køre plugins, der kræver tilladelse. Disse er plugins, der kan kompromittere sikkerheden.</translation>
 <translation id="1781356041596378058">Denne politik styrer også adgangen til Indstillinger for udviklere i Android. Hvis du angiver denne politik til Sand, kan brugerne ikke få adgang til Indstillinger for udviklere. Hvis du angiver denne politik til Falsk eller ikke angiver den, kan brugerne få adgang til Indstillinger for udviklere ved at trykke syv gange på build-nummeret i Android-appen Indstillinger.</translation>
-<translation id="1803646570632580723">Liste over fastgjorte apps, der skal vises på applikationslisten</translation>
+<translation id="1803646570632580723">Liste over fastgjorte apps, der skal vises på applisten</translation>
 <translation id="1808715480127969042">Bloker cookies på disse websites</translation>
 <translation id="1827523283178827583">Brug faste proxyservere</translation>
 <translation id="1843117931376765605">Opdateringsfrekvens for brugerpolitik</translation>
+<translation id="1844620919405873871">Konfigurerer politikker for hurtig oplåsning.</translation>
 <translation id="1847960418907100918">Angiver de parametre, der anvendes ved direkte søgning med POST. Det består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes den med rigtige søgetermdata.
 
           Denne politik er valgfri. Hvis den ikke er angivet, sendes anmodninger om direkte søgning ved hjælp af GET-metoden.
@@ -317,6 +328,11 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2168397434410358693">Inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2170233653554726857">Aktivér WPAD-optimering</translation>
 <translation id="2178899310296064282">Gennemtving som minimum Moderat begrænset tilstand på YouTube</translation>
+<translation id="2183294522275408937">Denne indstilling styrer, hvor ofte låseskærmen kræver, at adgangskoden indtastes for at fortsætte med at bruge hurtig oplåsning. Når du går ind på låseskærmen, vil hurtig oplåsning ikke være tilgængelig, hvis den seneste adgang med adgangskode overskrider denne indstilling. Hvis brugeren bliver på låseskærmen ud over det angivne tidsrum, anmodes der om en adgangskode, næste gang brugeren indtaster den forkerte kode eller går ind på låseskærmen, alt efter hvad der kommer først.
+
+      Hvis denne indstilling er konfigureret, bliver brugere, der anvender hurtig oplåsning, anmodet om at indtaste deres adgangskode på låseskærmen afhængigt af denne indstilling.
+
+      Hvis denne indstilling ikke er konfigureret, bliver brugere, der anvender hurtig oplåsning, anmodet om at indtaste deres adgangskode på låseskærmen hver dag.</translation>
 <translation id="2188979373208322108">Aktiverer bogmærkelinjen i <ph name="PRODUCT_NAME" />. Hvis du aktiverer denne indstilling, viser <ph name="PRODUCT_NAME" /> en bogmærkelinje. Hvis du deaktiverer denne indstilling, vil brugerne aldrig se bogmærkelinjen. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte det i <ph name="PRODUCT_NAME" />. Hvis denne indstilling ikke angives, kan brugeren vælge at bruge denne funktion eller ej.</translation>
 <translation id="2201555246697292490">Konfigurer hvidlisten for indbyggede beskedhosts</translation>
 <translation id="2204753382813641270">Administrer, hvornår hylden skjules automatisk</translation>
@@ -518,6 +534,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2587719089023392205">Angiv <ph name="PRODUCT_NAME" /> som standardbrowser</translation>
 <translation id="2592091433672667839">Varighed af inaktivitet, før pauseskærmen vises på loginskærmen i detailtilstand</translation>
 <translation id="2623014935069176671">Vent på første aktivitet fra brugeren</translation>
+<translation id="2625512435194873786">Denne indstilling styrer, hvor lang en pinkode kan være.
+
+          Hvis indstillingen er konfigureret til 0 eller derunder, er der ingen maksimal længde, og brugeren kan indstille en pinkode, der er så lang som ønsket.
+
+          Hvis indstillingen er mindre end værdien af PinUnlockMinimumLength, men større end 0, er den maksimale længde den samme som minimumslængden.
+
+          Hvis indstillingen ikke er konfigureret, er der ikke nogen maksimal længde, og brugeren kan indstille en pinkode, der er så lang som ønsket.</translation>
 <translation id="262740370354162807">Aktiver indsendelse af dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivér talefeedback</translation>
 <translation id="2646290749315461919">Giver dig mulighed for at angive, om websites skal have tilladelse til at spore brugernes fysiske placering. Sporing af brugernes fysiske placering kan tillades som standard, nægtes som standard, eller brugeren kan blive spurgt, hver gang et website anmoder om den fysiske placering. Hvis denne politik ikke angives, anvendes "AskGeolocation", og brugeren vil kunne ændre den.</translation>
@@ -815,6 +838,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis denne politik er indstillet til Falsk eller ikke er indstillet, begynder strømstyringsforsinkelser og begræsning af sessionslængden straks at køre ved sessionstart.</translation>
 <translation id="3478024346823118645">Slet alle brugerdata, når der logges ud</translation>
 <translation id="348495353354674884">Aktivér virtuelt tastatur</translation>
+<translation id="3495440981030194931">Indstiller minimumslængden for pinkoden til låseskærmen.</translation>
 <translation id="3496296378755072552">Adgangskodemanager</translation>
 <translation id="349667858031092827">Registrer aldrig tidszone automatisk.</translation>
 <translation id="350443680860256679">Konfigurer ARC</translation>
@@ -961,6 +985,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Hvis denne politik deaktiveres, tillades brug af SPDY.
 
       Hvis denne politik ikke angives, vil SPDY være tilgængelig.</translation>
+<translation id="3890999316834333174">Politikker for hurtig oplåsning</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
 <translation id="3891953007921334498">Deaktiverer udviklerværktøjerne og JavaScript-konsollen.
 
@@ -1014,6 +1039,11 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
       Hvis denne politik er angivet til Falsk, kan brugerne ikke indløse kampagnetilbud.</translation>
 <translation id="4010738624545340900">Tillad aktivering af dialogbokse for filvalg</translation>
+<translation id="4012737788880122133">Deaktiverer automatiske opdateringer, når indstillingen angives til sand.
+
+      <ph name="PRODUCT_OS_NAME" />-enheder søger automatisk efter opdateringer, når denne indstilling ikke er konfigureret eller er angivet til falsk.
+
+      Advarsel! Det anbefales at holde automatiske opdateringer aktiveret, så brugerne modtager softwareopdateringer og kritiske sikkerhedsrettelser. Deaktivering af automatiske opdateringer kan udgøre en risiko for brugerne.</translation>
 <translation id="4020682745012723568">Cookies, der overføres til brugerens profil, er ikke tilgængelige i Android-apps.</translation>
 <translation id="4025586928523884733">Blokerer tredjepartscookies. Hvis du aktiverer denne indstilling, kan cookies ikke angives af websideelementer, der ikke kommer fra det domæne, der er angivet i browserens adresselinje. Hvis du deaktiverer denne indstilling, tillades det, at cookies angives af websideelementer, der ikke kommer fra det domæne, der er angivet i browserens adresselinje, og det forhindrer brugerne i at ændre denne indstilling. Hvis denne politik ikke angives, aktiveres tredjepartscookies, men brugeren vil kunne ændre det.</translation>
 <translation id="402759845255257575">Tillad ikke, at websites kører JavaScript</translation>
@@ -1085,6 +1115,16 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
           Denne politik er valgfri. Hvis den ikke er angivet, sendes anmodninger om billedsøgninger ved hjælp af GET-metoden.
 
           Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
+<translation id="4294280661005713627">Angiver en målversion for automatiske opdateringer.
+
+      Angiver præfikset for en målversion, som <ph name="PRODUCT_OS_NAME" /> skal opdateres til. Hvis enheden kører en version, som er ældre end det angivne præfiks, opdateres den til den seneste udgave med det givne præfiks. Hvis enheden allerede kører en nyere udgave, har dette ingen konsekvenser (dvs. der foretages ingen nedgraderinger), og enheden beholder den aktuelle version. Præfiksformatet fungerer som en komponent, som det fremgår af følgende eksempel:
+
+      "" (eller ikke konfigureret): Opdater til den nyeste tilgængelige version.
+      "1412.": Opdater til en underversion af 1412 (f.eks. 1412.24.34 eller 1412.60.2)
+      "1412.2.": Opdater til en underversion af 1412.2 (f.eks. 1412.2.34 eller 1412.2.2)
+      "1412.24.34": Opdater kun til denne specifikke version
+
+      Advarsel! Det frarådes at konfigurere versionsbegrænsninger, da det kan forhindre brugerne i at modtage softwareopdateringer og kritiske sikkerhedsrettelser. Begrænsning af opdateringer til et bestemt præfiks for versionen kan udgøre en risiko for brugerne.</translation>
 <translation id="4309640770189628899">Afgør, om DHE-krypteringsprogrammerne i TLS aktiveres</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
 <translation id="4322842393287974810">Tillad, at den automatisk startede terminalapp uden forsinkelse kontrollerer <ph name="PRODUCT_OS_NAME" />-versionen</translation>
@@ -1301,6 +1341,9 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           En spærrelisteværdi på "*" betyder, at alle indbyggede beskedhosts er på spærrelisten, medmindre de udtrykkeligt opføres på hvidlisten.
 
           Hvis ikke denne politik angives, vil <ph name="PRODUCT_NAME" /> indlæse alle installerede indbyggede beskedhosts.</translation>
+<translation id="5272684451155669299">Hvis denne er angivet som sand, kan brugeren benytte hardwaren på Chrome-enheder til at fjernbekræfte sin identitet over for privatlivs-CA'en via <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> med <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
+
+          Hvis denne er angivet som falsk eller ikke er angivet, vil kald til API'en mislykkes og returnere en fejlkode.</translation>
 <translation id="5288772341821359899">Hvis politikken er angivet, er UDP-portintervallet, som anvendes af WebRTC, begrænset til det specifikke portinterval (inklusive slutpunkter).
 
       Hvis politikken ikke er angivet, eller hvis den ikke er angivet til en tom streng eller et ugyldigt portinterval, har WebRTC tilladelse til at anvende enhver tilgængelig lokal UDP-port.</translation>
@@ -1420,6 +1463,11 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
           Hvis denne indstilling er aktiveret, sammenligner hosten for fjernadgang navnet på den lokale bruger (som hosten er tilknyttet) med navnet på den Google-konto, der er registreret som ejer af hosten (dvs. "jenshansen", hvis hosten ejes af Google-kontoen "jenshansen@example.com"). Hosten til fjernadgang starter ikke, hvis navnet på ejeren af hosten er et andet end navnet på den lokale bruger, som hosten er tilknyttet. Politikken RemoteAccessHostMatchUsername skal bruges sammen med RemoteAccessHostDomain for også at gennemtvinge, at hostejerens Google-konto tilknyttes et specifikt domæne (dvs. "example.com").
 
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, kan hosten for fjernadgang tilknyttes enhver lokal bruger.</translation>
+<translation id="5694594914843889579">Hvis denne politik er indstillet til Sand, vil eksternt lager ikke være tilgængelig i filbrowseren.
+
+      Denne politik omfatter alle typer lagermedier, f.eks. USB-nøgler, eksterne harddiske, SD- og andre hukommelseskort, optisk lagring m.v. Det interne lager påvirkes ikke, derfor er der stadig adgang til filer, der er gemt i mappen Download. Google Drev er heller ikke omfattet af denne politik.
+
+      Hvis denne indstilling er deaktiveret eller ikke er konfigureret, kan brugerne benytte alle understøttede eksterne lagertyper på deres enhed.</translation>
 <translation id="5697306356229823047">Rapportér enhedsbrugere</translation>
 <translation id="570062449808736508">Når denne politik er angivet til en udfyldt streng, læser WebView webadressebegrænsninger fra indholdsudbyderen med det angivne myndighedsnavn.</translation>
 <translation id="5703863730741917647">Angiv handling, der igangsættes ved inaktiv forsinkelse.
@@ -1524,9 +1572,9 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
       Hvis du deaktiverer denne indstilling eller ikke konfigurerer en værdi, håndhæves Beskyttet søgning i Google Søgning ikke.</translation>
 <translation id="5937539742111853215">Denne politik styrer kun udviklertilstanden for <ph name="PRODUCT_OS_NAME" />. Hvis du vil forhindre adgang til Indstillinger for udviklere i Android, skal du angive politikken <ph name="DEVELOPER_TOOLS_POLICY" />.</translation>
 <translation id="5946082169633555022">Betakanal</translation>
-<translation id="5950205771952201658">Set i lyset af, at ikke-omfattende tilbagekaldskontroller på nettet ikke giver nogen effektiv form for sikkerhed, er disse deaktiveret som standard i <ph name="PRODUCT_NAME" /> version 19 og nyere. Ved at angive denne politik til Sand gendannes de tidligere indstillinger, så der udføres OCSP/CRL-kontroller på nettet.
+<translation id="5950205771952201658">Set i lyset af, at ikke-omfattende tilbagekaldskontrollér på nettet ikke giver nogen effektiv form for sikkerhed, er disse deaktiveret som standard i <ph name="PRODUCT_NAME" /> version 19 og nyere. Ved at angive denne politik til Sand gendannes de tidligere indstillinger, så der udføres OCSP/CRL-kontrollér på nettet.
 
-      Hvis politikken ikke er angivet eller er angivet til Falsk, udfører <ph name="PRODUCT_NAME" /> ikke tilbagekaldskontroller på nettet i <ph name="PRODUCT_NAME" /> 19 og nyere.</translation>
+      Hvis politikken ikke er angivet eller er angivet til Falsk, udfører <ph name="PRODUCT_NAME" /> ikke tilbagekaldskontrollér på nettet i <ph name="PRODUCT_NAME" /> 19 og nyere.</translation>
 <translation id="5966615072639944554">Udvidelser har tilladelse til at bruge Remote Attestation API.</translation>
 <translation id="5983708779415553259">Standardadfærd for websites, der ikke findes i en indholdspakke</translation>
 <translation id="5997543603646547632">Brug 24-timers ur som standard</translation>
@@ -1538,6 +1586,7 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
       Hvis denne politik ikke er indstillet eller er indstillet til falsk, udløser udskriftskommandoer skærmen Vis udskrift.</translation>
 <translation id="6022948604095165524">Handling ved opstart</translation>
 <translation id="602728333950205286">Direkte webadresse til standardsøgemaskinen</translation>
+<translation id="6029664378608427609">Giver brugerne mulighed for at indstille svage pinkoder som pinkoder til låseskærmen.</translation>
 <translation id="603410445099326293">Parametre for forslagswebadresser, som anvender POST</translation>
 <translation id="6036523166753287175">Aktiver gennemgang af firewall fra vært for fjernadgang</translation>
 <translation id="6059543311891422586">Brug hardwareacceleration, hvor det er muligt.
@@ -1586,12 +1635,6 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 <translation id="6155936611791017817">Indstil standardtilstand for den store markør på loginskærmen</translation>
 <translation id="6157537876488211233">Kommasepareret liste over regler for omgåelse af proxy</translation>
 <translation id="6158324314836466367">Navn på virksomhedens webshop (udfaset)</translation>
-<translation id="6166832345529129545">Styrer, hvilke indstillinger af hurtig oplåsning der kan konfigureres og benyttes.
-      Denne indstilling hvidlister de tilladte indstillinger for hurtig oplåsning, der kan konfigureres og bruges til at oplåse låseskærmen. Værdien er en liste med strenge, som hver især skal være en af følgende: "all", "PIN". Hvis "all" vælges, er alle understøttede hurtigindstillinger tilgængelige, og ellers vil de tilgængelige indstillinger være dem, der vises på listen.
-
-      Hvis denne indstilling konfigureres, kan tilstandene for hurtig oplåsning af en type, som ikke findes på listen, ikke konfigureres eller benyttes.
-
-      Hvis denne indstilling ikke konfigureres, aktiveres tilstanden "PIN", og alle andre tilstande deaktiveres.</translation>
 <translation id="6167074305866468481">Advarsel! Understøttelse af SSLv3 forsvinder helt fra <ph name="PRODUCT_NAME" /> efter version 43 (cirka juli 2015), og denne politik fjernes på samme tidspunkt.
 
       Hvis denne politik ikke konfigureres, benytter <ph name="PRODUCT_NAME" /> en standard minimumversion, som er SSLv3 i <ph name="PRODUCT_NAME" /> 39 og TLS 1.0 i senere versioner.
@@ -1645,6 +1688,15 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6401669939808766804">Log brugeren ud</translation>
 <translation id="6413263121045928260">Adgangskoden skal indtastes én gang om dagen (efter 24 timer).</translation>
 <translation id="6417861582779909667">Giver dig mulighed for at oprette en liste over webadressemønstre, der angiver websites, som ikke har tilladelse til at anvende cookies. Hvis denne politik ikke angives, vil den globale standardværdi blive anvendt for alle websites, enten fra politikken "DefaultCookiesSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
+<translation id="6426205278746959912">Du kan ikke tvinge Android-apps til at bruge en proxy. En undergruppe af proxyindstillinger er tilgængelige for Android-apps, hvilket de frivilligt kan vælge at overholde:
+
+          Hvis du vælger aldrig at bruge en proxyserver, oplyses Android-apps om, at der ikke er konfigureret en proxy.
+
+          Hvis du vælger at bruge systemets proxyindstillinger eller en fast proxyserver, oplyses Android-apps om http-proxyserverens adresse og port.
+
+          Hvis du vælger at registrere proxyserveren automatisk, oplyses scriptwebadressen "http://wpad/wpad.dat" til Android-apps. Ingen andre dele af protokollen for automatisk registrering af proxy anvendes.
+
+          Hvis du vælger at bruge et .pac-proxyscript, oplyses scriptwebadressen til Android-apps.</translation>
 <translation id="6467433935902485842">Giver dig mulighed for at oprette en liste over webstedsmønstre, der angiver websites, som ikke har tilladelse til at køre plugins. Hvis denne politik ikke angives, anvendes den globale standardværdi for alle websites, enten fra politikken "DefaultPluginsSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
 <translation id="6473334971332473690">Tillader, at Smart Lock kan bruges på <ph name="PRODUCT_OS_NAME" />-enheder.
 
@@ -1887,11 +1939,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Denne politik er ikke tilgængelig på Windows-forekomster, der ikke er knyttet
           til et Active Directory-domæne.</translation>
-<translation id="7128918109610518786">Angiver applikationsid'er på en liste, som <ph name="PRODUCT_OS_NAME" /> viser som fastgjorte apps på applikationslisten.
+<translation id="7128918109610518786">Angiver applikationsid'er på en liste, som <ph name="PRODUCT_OS_NAME" /> viser som fastgjorte apps på applisten.
 
       Hvis denne politik er konfigureret, er applikationssættet fast og kan ikke ændres af brugeren.
 
-      Hvis politikken ikke er angivet, kan brugeren ændre listen over fastgjorte apps på applikationslisten.</translation>
+      Hvis politikken ikke er angivet, kan brugeren ændre listen over fastgjorte apps på applisten.</translation>
 <translation id="7132877481099023201">Webadresser, der får adgang til videooptagelsesenheder, uden at du skal give tilladelse hertil.</translation>
 <translation id="7167436895080860385">Tillad, at brugerne kan se adgangskoder i adgangskodeadministratoren</translation>
 <translation id="7173856672248996428">Efemerisk profil</translation>
@@ -1970,7 +2022,18 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne politik ikke er indstillet, anvender den automatiske oprydningsfunktion standardstrategien. Denne strategi er i øjeblikket "RemoveLRUIfDormant".</translation>
 <translation id="7336878834592315572">Behold cookies under sessionen</translation>
 <translation id="7340034977315324840">Rapportér tidspunkter for aktiviteter på enheden</translation>
+<translation id="7340934985429121460">Denne indstilling styrer minimumslængden for pinkoder.
+
+          Hvis indstillingen er konfigureret til mindre end 1, er minimumslængden for pinkoder 1.
+
+          Hvis indstillingen ikke er konfigureret, er minimumslængden for pinkoder 4.</translation>
 <translation id="7384999953864505698">Tillader QUIC-protokol</translation>
+<translation id="7406716912696538245">Styrer, hvilke indstillinger for hurtig oplåsning der kan konfigureres og benyttes.
+      Denne indstilling hvidlister de tilladte indstillinger for hurtig oplåsning, der kan konfigureres og bruges til at låse låseskærmen op. Værdien er en liste med strenge, som hver især skal være en af følgende: "all", "PIN". Hvis "all" vælges, er alle understøttede hurtigindstillinger tilgængelige, og ellers vil de tilgængelige indstillinger være dem, der vises på listen.
+
+      Hvis denne indstilling konfigureres, kan tilstandene for hurtig oplåsning af en type, som ikke findes på listen, ikke konfigureres eller benyttes.
+
+      Hvis denne indstilling ikke konfigureres, aktiveres tilstanden "PIN", og alle andre tilstande deaktiveres.</translation>
 <translation id="7417972229667085380">Den procentdel, som inaktivitetsforsinkelsen i præsentationstilstand skaleres efter (udfases)</translation>
 <translation id="7421483919690710988">Angiv størrelsen på mediediskcache i bytes</translation>
 <translation id="7424751532654212117">Liste over undtagelser for listen over ​​deaktiverede plugins</translation>
@@ -2014,6 +2077,9 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7611372873040492235">Adgangskoden skal indtastes hver 12. time.</translation>
 <translation id="7612157962821894603">Markeringer for hele systemet kan angives ved opstart af <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Liste over deaktiverede protokolskemaer</translation>
+<translation id="7617319494457709698">Denne politik angiver de udvidelser, der har tilladelse til at bruge <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funktionen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> til fjernbekræftelse. Udvidelser skal føjes til denne liste for at kunne anvende API'en.
+
+          Hvis en udvidelse ikke findes på listen, eller listen ikke er angivet, vil kaldet til API'en mislykkes og returnere en fejlkode.</translation>
 <translation id="7625444193696794922">Angiver den udgivelseskanal, som denne enhed skal være låst til.</translation>
 <translation id="7632724434767231364">Navn på GSSAPI-samling</translation>
 <translation id="7635471475589566552">Konfigurerer applikationens landestandard i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre landestandarden. Hvis du aktiverer denne indstilling, anvender <ph name="PRODUCT_NAME" /> den angivne landestandard. Hvis den konfigurerede landestandard ikke understøttes, bruges "en-US" i stedet. Hvis denne indstilling er deaktiveret eller ikke konfigureret, bruger <ph name="PRODUCT_NAME" /> enten den brugerdefinerede landestandard (hvis denne er konfigureret), systemets landestandard eller reservelandestandarden "en-US".</translation>
@@ -2108,6 +2174,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne indstilling ikke konfigureres, kan brugerne selv slå Android Backup Service til eller fra i appen Android Indstillinger.</translation>
 <translation id="7818131573217430250">Indstil standardtilstanden for høj kontrast på loginskærmen</translation>
+<translation id="7822837118545582721">Når denne politik er angivet som sand, kan brugerne ikke skrive noget til eksterne lagerenheder.
+
+      Hvis denne indstilling er angivet til falsk eller ikke er konfigureret, kan brugere oprette og ændre filer på eksterne lagerenheder, der er fysisk skrivbare.
+
+      Politikken ExternalStorageDisabled har forrang over denne politik. Hvis ExternalStorageDisabled er angivet til sand, er al adgang til eksternt lager deaktiveret, og dermed ignoreres denne politik.
+
+Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</translation>
 <translation id="7831595031698917016">Specificerer den maksimale forsinkelse i millisekunder mellem modtagelse af en ugyldiggørelse af en politik og hentningen af den nye politik fra tjenesten til enhedshåndtering.
 
       Når denne politik angives, tilsidesættes standardværdien på 5000 millisekunder. Gyldige værdier for denne politik går fra 1000 (1 sekund) til 300000 (5 minutter). Værdier uden for intervallet rundes af til den nærmeste grænse.
@@ -2166,9 +2239,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           til et Active Directory-domæne.</translation>
 <translation id="7937766917976512374">Tillad eller afvis videooptagelse</translation>
 <translation id="7941975817681987555">Forudse ikke netværkshandlinger på nogen netværksforbindelse</translation>
-<translation id="7942429005743031780">Denne politik angiver de udvidelser, der har tilladelse til at bruge Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() til fjernbekræftelse. Udvidelser skal føjes til denne liste for at kunne anvende API'en.
-
-          Hvis en udvidelse ikke findes på listen, eller listen ikke er angivet, mislykkes kaldet til API'en med en fejlkode.</translation>
 <translation id="7953256619080733119">Manuel undtagelse for host for administreret bruger</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne politik understøttes ikke længere. Muliggør brug af STUN- og relæservere ved oprettelse af forbindelse til en ekstern klient. Hvis denne indstilling er aktiveret, kan denne maskine finde og oprette forbindelse til eksterne værtsmaskiner, selvom de er adskilt af en firewall. Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, kan denne maskine kun oprette forbindelse til værtsmaskiner inden for det lokale netværk.</translation>
@@ -2308,6 +2378,9 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne politik angives som Falsk, viser browseren ikke velkomstsiden, når browseren genstartes efter opgradering af operativsystemet.</translation>
 <translation id="8369602308428138533">Skærmslukforsinkelse, når strømforsyning er tilsluttet</translation>
+<translation id="8370471134641900314">Hvis denne politik er angivet som sand, skal brugeren logge ind på <ph name="PRODUCT_NAME" /> med sin profil, inden browseren anvendes. Standardværdien for BrowserGuestModeEnabled angives dermed til falsk.
+
+      Hvis denne politik er angivet som falsk eller ikke er konfigureret, kan brugeren benytte browseren uden at logge ind på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8382184662529825177">Aktivér brug af fjernattestering til indholdsbeskyttelse for enheden.</translation>
 <translation id="838870586332499308">Aktivér dataroaming</translation>
 <translation id="8390049129576938611">Deaktiverer den interne PDF-fremviser i <ph name="PRODUCT_NAME" />. Behandler den i stedet som download og gør det muligt for brugeren at åbne PDF-filer via standardapplikationen.
@@ -2427,15 +2500,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8833109046074170275">Godkendelse via standardprocessen for GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> cachelagrer apps og udvidelser til installation af flere brugere på den samme enhed for at undgå at downloade dem for hver bruger én gang til.
       Hvis denne politik ikke er konfigureret, eller hvis værdien er lavere end 1 MB, anvender <ph name="PRODUCT_OS_NAME" /> standardstørrelsen for cachen.</translation>
-<translation id="8858120573534680488">Du kan ikke tvinge Android-apps til at anvende en proxy. Bestemte proxyindstillinger er tilgængelige for Android-apps, som de kan vælge at imødekomme:
-
-          Hvis du vælger "anvend aldrig en proxyserver", oplyses Android-apps om, at der ikke er konfigureret nogen proxy.
-
-          Hvis du vælger "anvend systemets proxyindstillinger" eller "fast proxyserver", oplyses Android-apps om proxyserverens http-adresse og -port.
-
-          Hvis du vælger "registrer proxyserver automatisk", oplyses Android-apps om scriptwebadressen "http://wpad/wpad.dat". Der anvendes ikke andre dele af protokollen for automatisk registrering af proxy.
-
-          Hvis du vælger "et proxyscript af typen .pac", oplyses scriptwebadressen til Android-apps.</translation>
 <translation id="8858642179038618439">Gennemtving Beskyttet tilstand på YouTube</translation>
 <translation id="8864975621965365890">Undertrykker opfordringen til afvisning, som vises, når et website gengives af <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Startside</translation>
@@ -2534,9 +2598,4 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="930930237275114205">Angiv brugerdatamappe for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="944607242500063080">Konfigurer tilladte tilstande for hurtig oplåsning.</translation>
 <translation id="944817693306670849">Angiv diskcachens størrelse</translation>
-<translation id="969164417253718105">Denne indstilling styrer, hvor ofte låseskærmen kræver, at adgangskoden indtastes for at fortsætte med at bruge hurtig oplåsning. Når du går ind på låseskærmen, vil hurtig oplåsning ikke være tilgængelig, hvis den seneste adgang med adgangskode overskrider denne indstilling. Hvis brugeren bliver på låseskærmen ud over det angivne tidsrum, anmodes der om en adgangskode, næste gang brugeren indtaster den forkerte kode eller går ind på låseskærmen, alt efter hvad der kommer først.
-
-      Hvis denne indstilling er konfigureret, vil brugere, der anvender hurtig oplåsning, blive anmodet om at indtaste deres adgangskode på låseskærmen afhængigt af denne indstilling.
-
-      Hvis denne indstilling ikke er konfigureret, bliver brugere, der anvender hurtig oplåsning, anmodet om at indtaste deres adgangskode på låseskærmen hver dag.</translation>
 </translationbundle>

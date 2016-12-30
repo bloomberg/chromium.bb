@@ -13,6 +13,7 @@
 <translation id="2195025571279539885">Želite li da Chromium sljedeći put ponudi prijevod stranica s te web-lokacije za <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2647554856022461007">Chromium može upotrebljavati web-usluge za poboljšanje vašeg doživljaja pregledavanja. Ako želite, možete onemogućiti te usluge. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">Chromium ne može upotrebljavati vaš fotoaparat jer ga upotrebljava neka druga aplikacija</translation>
+<translation id="3256316712990552818">Kopirano na Chromium</translation>
 <translation id="3413120535237193088">Da biste imali svoje oznake na svim svojim uređajima, prijavite se na Chromium.</translation>
 <translation id="3473048256428424907">Uključite Chromiumov QR skener</translation>
 <translation id="3805899903892079518">Chromium nema pristup fotografijama ni videozapisima. Omogućite pristup u Postavkama iOS-a &gt; Privatnost &gt; Fotografije.</translation>
@@ -29,12 +30,12 @@
 <translation id="6068866989048414399">Uvjeti pružanja Chromiuma</translation>
 <translation id="6268381023930128611">Želite li se odjaviti iz Chromiuma?</translation>
 <translation id="6424492062988593837">Chromium je postao još bolji! Dostupna je nova verzija.</translation>
-<translation id="6600954340915313787">Kopirano u Chrome</translation>
 <translation id="6604711459180487467">Chromium će vam pružiti više ako mu omogućite pristup lokaciji.</translation>
 <translation id="6989306073720242915">Sviđa vam se Chromium? <ph name="BEGIN_LINK" />Premjestite ga na priključnu stanicu<ph name="END_LINK" /></translation>
 <translation id="7022368070219581493">Chromiums je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
 <translation id="7099326575020694068">Chromium ne može upotrebljavati vaš fotoaparat u načinu podijeljenog prikaza</translation>
 <translation id="7144758435978427212">Otkrijte web-stranice koje šalju objekti u blizini. Kada je Bluetooth uključen, Chromium može prikupljati web-stranice koje su povezane s objektima oko vas i anonimno ih slati Googleu kako bi pronašao najkorisnije. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
+<translation id="7208566199746267865">Chromium vam štedi vrijeme sinkronizacijom vaših računa na webu. Račune možete dodavati i uklanjati u postavkama.</translation>
 <translation id="7269362888766543920">Neki programski dodaci uzrokuju rušenje Chromiuma. Pokušajte ih deinstalirati.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Odabrani podaci uklonjeni su iz Chromiuma i sa sinkroniziranih uređaja. Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjerice pretraživanja i aktivnosti s drugih Googleovih usluga, na stranici history.google.com.</translation>

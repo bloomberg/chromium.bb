@@ -8,6 +8,7 @@
 <translation id="1065672644894730302">አማራጮችዎ ሊነበቡ አልቻሉም።
 
 አንዳንድ ባህሪያት ላይገኙ ይችላሉ፣ እና በአማራጮች ላይ የተደረጉ ለውጦች አይቀመጡም።</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> ከዚህ ቀደም Chromeን እየተጠቀመ ነበር</translation>
 <translation id="1104959162601287462">ስለ &amp;Chrome ስርዓተ ክወና</translation>
 <translation id="110877069173485804">ይሄ የእርስዎ Chrome ነው</translation>
 <translation id="123620459398936149">Chrome OS ውሂብዎን ሊያመሳስል አልቻለም። እባክዎ የማመሳሰያ ይለፍ ሐረግዎን ያዘምኑት።</translation>
@@ -19,7 +20,6 @@
 <translation id="1434626383986940139">የChrome Canary መተግበሪያዎች</translation>
 <translation id="1457721931618994305">Google Chromeን በማዘመን ላይ...</translation>
 <translation id="1469002951682717133">Chrome የመተግበሪያ አስጀማሪ</translation>
-<translation id="1475773083554142432">Chrome ይህን ከ<ph name="SAVED_PASSWORD_LINK" /> ጋር ያከማቸው እና በሚቀጥለው ጊዜ ስፈልጉት ያስታውሰዋል።</translation>
 <translation id="1480489203462860648">ይሞክሩት፣ አስቀድሞ ተጭኗል</translation>
 <translation id="1553358976309200471">Chromeን አዘምን</translation>
 <translation id="1587223624401073077">Google Chrome ካሜራዎን እየተጠቀመ ነው።</translation>
@@ -45,7 +45,6 @@
 <translation id="2147651015520127414">Chrome የዚህ ድር ጣቢያ እውቅና ማረጋገጫ ያወጣው <ph name="ISSUER" /> መሆኑን አረጋግጧል።</translation>
 <translation id="2246246234298806438">አብሮት የተሰራው የፒ ዲ ኤፍ መመልከቻ ሲጎድል Google Chrome የህትመት ቅድመ-እይታውን ሊያሳይ አይችልም።</translation>
 <translation id="2252923619938421629">የአሁኖቹ ቅንብሮችን ሪፖርት በማድረግ Google Chrome የተሻለ እንዲሆን ያግዙ</translation>
-<translation id="225614027745146050">እንኳን ደህና መጡ</translation>
 <translation id="2286950485307333924">አሁን በመለያ ወደ Chrome ገብተዋል</translation>
 <translation id="2290014774651636340">የGoogle ኤ ፒ አይ ቁልፎች ይጎድላሉ። አንዳንድ የGoogle Chrome ተግባራት ይሰናከላሉ።</translation>
 <translation id="2290095356545025170">እርግጠኛ ነዎት Google Chromeን ማራገፍ ይፈልጋሉ?</translation>

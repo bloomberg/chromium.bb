@@ -10,6 +10,7 @@
 <translation id="1104948393051856124">Accepta i continua</translation>
 <translation id="1112015203684611006">Error en imprimir</translation>
 <translation id="1125564390852150847">Crea una pestanya nova.</translation>
+<translation id="1145536944570833626">Suprimeix les dades existents.</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1172898394251786223">Camp següent</translation>
 <translation id="1176932207622159128">No es pot desar.</translation>
@@ -48,6 +49,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="1753905327828125965">Els més visitats</translation>
 <translation id="1809939268435598390">Suprimeix la carpeta</translation>
 <translation id="1813414402673211292">Esborra dades navegació</translation>
+<translation id="1820259098641718022">S'ha afegit a la llista de lectura</translation>
 <translation id="1842969606798536927">Pagament</translation>
 <translation id="1876721852596493031">Envia les dades d'ús</translation>
 <translation id="1886928167269928266">Des de l'inici</translation>
@@ -65,6 +67,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elements desplaçats</translation>
 <translation id="2149973817440762519">Edició de l'adreça d'interès</translation>
 <translation id="2154710561487035718">Copia l'URL</translation>
+<translation id="2230173723195178503">La pàgina web s'ha carregat</translation>
 <translation id="2241634353105152135">Només una vegada</translation>
 <translation id="2267753748892043616">Afegeix un compte</translation>
 <translation id="2273327106802955778">Més opcions del menú</translation>
@@ -76,6 +79,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2386793615875593361">1 seleccionada</translation>
 <translation id="2435457462613246316">Mostra la contrasenya</translation>
 <translation id="2467815441875554965">Cerca contextual</translation>
+<translation id="2523092375122821828">Marca-ho tot com a…</translation>
 <translation id="2572712655377361602">Una política del dispositiu ha bloquejat l'accés a les vostres fotos</translation>
 <translation id="2584132361465095047">Afegiu un compte…</translation>
 <translation id="2593774076813182497">Aquesta pàgina no es pot imprimir.</translation>
@@ -116,6 +120,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="3324193307694657476">Adreça 2</translation>
 <translation id="3329904751041170572">No s'ha pogut connectar amb el servidor.</translation>
 <translation id="3335947283844343239">Torna a obrir la pestanya tancada</translation>
+<translation id="3387752218061326363">Es mostra l'historial dels dispositius en què has iniciat la sessió. <ph name="BEGIN_LINK" />Obtén més informació<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Finestres emergents permeses</translation>
 <translation id="3414292259312108062">Chrome l'emmagatzemarà a les <ph name="BEGIN_LINK" />contrasenyes desades a Google<ph name="END_LINK" /> i l'emplenarà automàticament perquè no us calgui recordar-la.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
@@ -123,7 +128,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="3474649192738347024">S'han emplenat els formularis.</translation>
 <translation id="3478058380795961209">Mes de caducitat</translation>
 <translation id="3482959374254649722">S'estan sincronitzant les pestanyes...</translation>
-<translation id="3485544713029068372">Smart Lock per a contrasenyes</translation>
 <translation id="3489372701259491571">Suprim. contrasenya desada</translation>
 <translation id="3519193562722059437">Obriu una pestanya per navegar pel web.</translation>
 <translation id="3527085408025491307">Carpeta</translation>
@@ -145,6 +149,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="3789841737615482174">Instal·la</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3897092660631435901">Menú</translation>
+<translation id="3928666092801078803">Combina les meves dades</translation>
 <translation id="3950820424414687140">Inicia la sessió</translation>
 <translation id="3963231839620026525">Pestanya d'incògnit nova</translation>
 <translation id="3967822245660637423">S'ha completat la baixada</translation>
@@ -156,6 +161,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4121993058175073134">Definiu el vostre compte de correu electrònic a l'aplicació Configuració per enviar dades d'exportació de xarxa.</translation>
 <translation id="4124987746317609294">Interval de temps</translation>
 <translation id="4172051516777682613">Mostra sempre</translation>
+<translation id="4176234027218720244">Marca com a…</translation>
 <translation id="424315890655130736">Introduïu la frase de contrasenya</translation>
 <translation id="4272631900155121838">Per poder escanejar un codi QR, activa la càmera a la configuració</translation>
 <translation id="4281844954008187215">Termes i condicions</translation>
@@ -167,6 +173,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4473991315115669931">Entra al mode d'incògnit</translation>
 <translation id="4526249700380860531">Consulta i gestiona les contrasenyes desades a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Torna a iniciar la sessió.</translation>
+<translation id="4620246317052452550">Pàgines que has llegit</translation>
 <translation id="4636930964841734540">Informació</translation>
 <translation id="4659667755519643272">Entra al selector de pestanyes</translation>
 <translation id="4666531726415300315">Heu iniciat la sessió com a <ph name="EMAIL" />.
@@ -179,6 +186,7 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="4875622588773761625">Voleu que <ph name="PASSWORD_MANAGER_BRAND" /> actualitzi la vostra contrasenya per a aquest lloc?</translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4923459931733593730">Pagament</translation>
+<translation id="4930268273022498155">Suprimeix les dades existents. Per recuperar-les, torna a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">S'ha produït un problema en compartir el vostre element.</translation>
 <translation id="4979397965658815378">Inicieu la sessió amb el compte de Google per tenir les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius.</translation>
 <translation id="5005498671520578047">Copia la contrasenya</translation>
@@ -195,10 +203,12 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198972191746488848">Afegeix una targeta…</translation>
 <translation id="5228579091201413441">Activa la sincronització</translation>
+<translation id="5230733896359313003">Adreça d'enviament</translation>
 <translation id="5244474230056479698">S'està sincronitzant amb <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5327248766486351172">Nom</translation>
+<translation id="532992759783668360">Suprimeix els elements llegits</translation>
 <translation id="5388358297987318779">Obre una imatge</translation>
 <translation id="5409365236829784218">Cap aplicació instal·lada no pot obrir el fitxer.</translation>
 <translation id="54401264925851789">Informació de seguretat de la pàgina</translation>
@@ -227,6 +237,8 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="5916664084637901428">Activat</translation>
 <translation id="5953603475187800576">Mostra les adreces i les targetes de crèdit de Google Payments</translation>
 <translation id="5964480694698977962">Crea una pestanya d'incògnit nova.</translation>
+<translation id="5965679971710331625">Tens la sessió iniciada</translation>
+<translation id="5982717868370722439">Afegeix les dades existents a <ph name="USER_EMAIL" />.</translation>
 <translation id="6012140227487808125">S'està encriptant…</translation>
 <translation id="6021332621416007159">Obre a...</translation>
 <translation id="6039694632319341016">Vols que <ph name="PASSWORD_MANAGER_BRAND" /> actualitzi la contrasenya de l'usuari <ph name="USERNAME" /> per a aquest lloc?</translation>
@@ -239,9 +251,13 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="6136914049981179737">Fa segons</translation>
 <translation id="6149061208933997199">Fes servir la contrasenya</translation>
 <translation id="6158823227857319455">Pestanya nova</translation>
+<translation id="616831107264507309">Ho vull llegir més tard</translation>
 <translation id="6184086493125982861">Mostra les pestanyes</translation>
 <translation id="6187302354554850004">Última sincronització: <ph name="LAST_USED_TIME" /></translation>
+<translation id="6189413832092199491">No llegits</translation>
+<translation id="6194286531716220336">Cancel·la</translation>
 <translation id="6196207969502475924">Cerca per veu</translation>
+<translation id="6254066287920239840">Obre els enllaços a l'aplicació en comptes del navegador.</translation>
 <translation id="6255097610484507482">Edita la targeta de crèdit</translation>
 <translation id="6308436439357671616">Això et permet fer i penjar fotos.</translation>
 <translation id="6314335155547195432">Genera una contrasenya</translation>
@@ -249,11 +265,12 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="6337234675334993532">Encriptació</translation>
 <translation id="633809752005859102">S'ha produït un error. Estem treballant per solucionar-lo.</translation>
 <translation id="6344783595350022745">Esborra el text</translation>
-<translation id="6351971471682124046">S'està emetent a...</translation>
 <translation id="6362362396625799311">No hi ha cap pestanya d'incògnit</translation>
 <translation id="6380866119319257197">Si oblideu la frase de contrasenya o voleu canviar aquesta configuració, <ph name="BEGIN_LINK" />restabliu la sincronització<ph name="END_LINK" /></translation>
+<translation id="6385146967113720558">Marca com a no llegits</translation>
 <translation id="6389470377220713856">Titular de la targeta</translation>
 <translation id="6406506848690869874">Sincronització</translation>
+<translation id="6417838470969808600">Tens les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració de l'adreça <ph name="USER_EMAIL1" />.</translation>
 <translation id="641799622251403418">Heu iniciat la sessió com a <ph name="EMAIL" />.
 
 Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase de contrasenya de sincronització. Introduïu-la per començar la sincronització.</translation>
@@ -288,6 +305,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7108338896283013870">Amaga</translation>
 <translation id="7131892264600713844">Es mostra l'historial d'aquest dispositiu. <ph name="BEGIN_LINK" />Obteniu més informació<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Nom complet</translation>
+<translation id="713434964320012835">Suprimeix</translation>
 <translation id="7136892417564438900">La càmera no està disponible</translation>
 <translation id="7167621057293532233">Tipus de dades</translation>
 <translation id="7189598951263744875">Comparteix...</translation>
@@ -309,7 +327,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7514365320538308">Baixa</translation>
 <translation id="7537586195939242955">No es pot instal·lar el passi a Passbook en aquest moment.</translation>
 <translation id="7561196759112975576">Sempre</translation>
-<translation id="7572670177380301651">Es mostra l'historial dels dispositius en què heu iniciat la sessió. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="7588950540487816470">El Web físic</translation>
 <translation id="7603852183842204213">Finestres emergents bloquejades (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">La sincronització no funciona</translation>
@@ -317,9 +334,11 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7671141431838911305">INSTAL·LA</translation>
+<translation id="7682287625158474539">Enviament</translation>
 <translation id="7765158879357617694">Desplaça</translation>
 <translation id="7769602470925380267">Accepta i tanca la sessió</translation>
 <translation id="7772032839648071052">Confirmeu la frase de contrasenya</translation>
+<translation id="7791543448312431591">Afegeix</translation>
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7851858861565204677">Altres dispositius</translation>
 <translation id="7859704718976024901">Historial de navegació</translation>
@@ -331,6 +350,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8019783059653722575">Això et permet desar i penjar fotos.</translation>
 <translation id="8023878949384262191">Desplega la secció.</translation>
 <translation id="8059533439631660104">Replega la secció.</translation>
+<translation id="806745655614357130">Mantén les meves dades separades</translation>
 <translation id="8076014560081431679">La configuració desada del lloc no se suprimirà i és possible que reflecteixi els vostres hàbits de navegació. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Tanca totes les pestanyes</translation>
 <translation id="8108697784695284144">La contrasenya s'ha copiat.</translation>
@@ -338,12 +358,14 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8205564605687841303">Cancel·la</translation>
 <translation id="8225985093977202398">Fitxers i imatges a memòria cau</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
+<translation id="8272194309885535896">Baixa la imatge</translation>
 <translation id="8272426682713568063">Targetes de crèdit</translation>
 <translation id="8281781826761538115">Idioma predeterminat: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Controleu com utilitza Google el vostre historial de navegació per personalitzar la Cerca, els anuncis i altres serveis de Google</translation>
 <translation id="8428045167754449968">Ciutat/població</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8433678324664858900">Mostra suggeriments</translation>
+<translation id="8458197615157477273">Marca com a llegits</translation>
 <translation id="8458397775385147834">1 element suprimit</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>
 <translation id="8517375800490286174">Llicències de codi obert</translation>
@@ -355,6 +377,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8620640915598389714">Edita</translation>
 <translation id="8636825310635137004">Activeu la sincronització per accedir a les vostres pestanyes des dels altres dispositius que tingueu.</translation>
 <translation id="8680787084697685621">Les dades d'inici de sessió del compte no estan actualitzades.</translation>
+<translation id="8699098509676302392">Afegeix una adreça…</translation>
 <translation id="8721297211384281569">Menú Eines</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8730621377337864115">Fet</translation>
@@ -375,6 +398,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="9055772144595778347">No es pot iniciar la sessió</translation>
 <translation id="9065203028668620118">Edita</translation>
 <translation id="9079935439869366234">Marca-ho tot com a no llegit</translation>
+<translation id="9080712759204168376">Resum de la comanda</translation>
 <translation id="9083392325882095631">1 element</translation>
 <translation id="9100610230175265781">S'ha d'introduir una frase de contrasenya </translation>
 <translation id="9148126808321036104">Torneu a iniciar la sessió</translation>

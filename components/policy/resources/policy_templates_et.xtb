@@ -19,9 +19,6 @@
       Kui reegel on määramata või määratud olekule Väär, kantakse IdP määratud küpsisefailid kasutajaprofiilile üle ainult tema esimesel sisselogimisel seadmesse.
 
       Reegel mõjutab ainult kasutajaid, kelle domeen kattub seadme registreerimisel kasutatava domeeniga. Kõigi muude kasutajate puhul kantakse IdP määratud küpsisefailid kasutajaprofiilile üle ainult tema esimesel sisselogimisel seadmesse.</translation>
-<translation id="1029536946382325801">Kui selle väärtuseks on määratud Tõene, saab kasutaja kasutada Chrome'i seadmete riistvara, et tõendada enda isikut distantsilt privaatsuse CA abil Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() kaudu.
-
-          Kui selle väärtuseks on määratud Väär või kui väärtus on määramata, siis kutse esitamine API-le ebaõnnestub ja saate vastuseks veakoodi.</translation>
 <translation id="1040446814317236570">Luba PAC URL-i eemaldamine (https:// puhul)</translation>
 <translation id="1044878202534415707">Saatke aruandeid riistvara statistika kohta (nt protsessori/RAM-i kasutus).
 
@@ -96,6 +93,9 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
       Kui reegel on määramata või selle väärtuseks on määratud Väär, siis ei ole RC4 šifreerimiskomplektid TLS-is lubatud. Selle väärtuseks võib olla määratud ka Tõene, et säilitada ühilduvus aegunud serveriga. See on ajutine meede ja server tuleks ümber seadistada.</translation>
 <translation id="1297182715641689552">Kasuta puhverserveri pac-skripti</translation>
 <translation id="1304973015437969093">Taustal installitavate laienduste/rakenduste ID-d ja värskenduste URL-id</translation>
+<translation id="1310333396104446007">Kui selle seade väärtuseks on määratud Väär, ei saa kasutajad määrata nõrku PIN-koode. Nõrgad PIN-koodid on näiteks sellised, mis sisaldavad ainult ühte arvu, milles olevad numbrid suurenevad järjest ühe võrra, milles olevad arvud vähenevad järjest ühe võrra, ja PIN-koodid, mis on liiga tavalised.
+
+          Kui selle seade väärtuseks on määratud Tõene või seda pole seadistatud, saavad kasutajad selliseid PIN-koode sisestada ja selle kohta kuvatakse ainult hoiatus.</translation>
 <translation id="1313457536529613143">Määratleb ekraani tumenduse viivituse skaleerimismäära protsentides, kui täheldatakse kasutaja tegevust ekraani tumendamise ajal või peagi pärast ekraani väljalülitumist.
 
           Reegel määratleb ekraani tumenduse viivituse skaleerimismäära protsentides, kui täheldatakse kasutaja tegevust ekraani tumendamise ajal või peagi pärast ekraani väljalülitumist. Tumenduse viivituse skaleerimisel reguleeritakse ekraani väljalülitumise, ekraaniluku ja tegevusetu oleku viivitusi, et säilitada ekraanitumenduse viivitusest samu kaugusi mis algselt seadistatud.
@@ -171,6 +171,7 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="1522425503138261032">Luba saitidel kasutaja füüsilist asukohta jälgida</translation>
 <translation id="152657506688053119">Asendus-URL-ide loend vaikeotsingupakkujale</translation>
 <translation id="1530812829012954197">Renderda hostbrauseris alati järgmiste URL-ide mustrid</translation>
+<translation id="1547635088210394207">Määrab lukustuskuva PIN-koodi maksimumpikkuse.</translation>
 <translation id="1553684822621013552">Kui see reegel on tõene, lubatakse ARC kasutaja jaoks
       (oleneb reegli seadete lisakontrollidest – ARC pole endiselt
       saadaval, kui efemeerne režiim või mitu sisselogimist on
@@ -190,6 +191,15 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
       ei lubata.</translation>
 <translation id="1655229863189977773">Määrake ketta vahemälu suurus baitides</translation>
 <translation id="166427968280387991">Puhverserver</translation>
+<translation id="1668836044817793277">Kas lubada automaatselt käivitatud viivituseta kioskirakendusel juhtida operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni?
+
+      See reegel juhib seda, kas lubada automaatselt käivitatud viivituseta kioskirakendusel juhtida operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni, määrates manifesti võtme required_platform_version ja kasutades seda automaatvärskenduse sihtversiooni eesliitena.
+
+      Kui reegel on määratud väärtusele Tõene, siis kasutatakse automaatselt käivitatud viivituseta kioskirakenduse manifesti võtme required_platform_version väärtust automaatvärskenduse sihtversiooni eesliitena.
+
+      Kui reeglit pole seadistatud või see on määratud väärtusele Väär, eiratakse manifesti võtit required_platform_version ja automaatvärskendus toimub tavapäraselt.
+
+      Hoiatus. Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni juhtimist ei ole soovitatav üle anda kioskirakendusele, kuna see võib takistada seadmel tarkvaravärskendusi ja kriitilisi turvapaikasid vastu võtmast. Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni juhtimise üleandmine võib kasutajad ohtu seada.</translation>
 <translation id="1675002386741412210">Toetatud:</translation>
 <translation id="1679420586049708690">Avalik seanss automaatseks sisselogimiseks</translation>
 <translation id="1680029600835707254">See reegel juhib, kes tohib operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> seanssi alustada. See ei keela kasutajatel Androidis teistele Google'i kontodele sisse logida. Kui soovite selle keelata, seadistage reegli <ph name="ARC_POLICY" /> osana Androidi-põhine reegel <ph name="CLOUDDPC_ACCOUNT_MANAGEMENT_POLICY" />.</translation>
@@ -221,6 +231,7 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="1808715480127969042">Blokeeri nende saitide küpsised</translation>
 <translation id="1827523283178827583">Kasuta fikseeritud puhverservereid</translation>
 <translation id="1843117931376765605">Kasutajareegli värskendussagedus</translation>
+<translation id="1844620919405873871">Seadistab kiiravamisega seotud reeglid.</translation>
 <translation id="1847960418907100918">Täpsustab parameetri, mida kasutatakse POST-meetodiga Instant-otsingu tegemisel. See koosneb komaga eraldatud nime/väärtuse paaridest. Kui väärtus on malliparameeter, nt {searchTerms} ülalolevas näites, siis asendatakse see otsingutermini andmetega.
 
           See reegel on valikuline. Kui see pole määratud, siis saadetakse soovituse otsingu taotlus GET-meetodiga.
@@ -326,6 +337,11 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="2168397434410358693">Jõudeoleku viiteaeg võrgutoite kasutamisel</translation>
 <translation id="2170233653554726857">WPAD-optimeerimise lubamine</translation>
 <translation id="2178899310296064282">Jõusta YouTube'is vähemalt keskmiselt piiratud režiim</translation>
+<translation id="2183294522275408937">See seade juhib, kui sageli nõuab lukustuskuva parooli sisestamist, et kiiravamise kasutamist jätkata. Iga kord kui kuva lukustatakse ja parooli sisestamisest on möödunud kauem, kui on selle seade väärtus, pole kiiravamine lukustuskuval saadaval. Kui kasutaja on lukustuskuval sellest perioodist kauem, nõutakse parooli järgmisel korral, kui kasutaja sisestab vale koodi või aktiveerib uuesti lukustuskuva (olenevalt sellest, kumb enne juhtub).
+
+          Kui see seade on seadistatud, peavad kasutajad, kes kasutavad kiiravamist, sisestama lukustuskuval parooli sellest seadest olenevalt.
+
+          Kui see seade on seadistamata, peavad kasutajad, kes kasutavad kiiravamist, sisestama lukustuskuval parooli iga päev.</translation>
 <translation id="2188979373208322108">Lubab järjehoidjariba rakenduses <ph name="PRODUCT_NAME" />.
 
       Seade lubamisel kuvab <ph name="PRODUCT_NAME" /> järjehoidjariba.
@@ -546,6 +562,13 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="2587719089023392205">Brauseri <ph name="PRODUCT_NAME" /> määramine vaikebrauseriks</translation>
 <translation id="2592091433672667839">Inaktiivsuse periood, mille möödudes kuvatakse jaemüügirežiimis sisselogimiskuval ekraanisäästja</translation>
 <translation id="2623014935069176671">Kasutaja esmase tegevuse ootamine</translation>
+<translation id="2625512435194873786">See seade määrab PIN-koodi maksimumpikkuse.
+
+          Kui selle seade väärtuseks on määratud null või vähem, siis maksimumpikkust ei ole ja kasutaja saab sisestada soovitud pikkusega PIN-koodi.
+
+          Kui selle seade väärtus on väiksem kui PinUnlockMinimumLength, kuid suurem kui null, siis on maksimumpikkus võrdne miinimumpikkusega.
+
+          Kui see seade on määramata, siis maksimumpikkust ei ole ja kasutaja saab sisestada soovitud pikkusega PIN-koodi.</translation>
 <translation id="262740370354162807">Luba dokumentide saatmine teenusesse <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Luba suuline tagasiside</translation>
 <translation id="2646290749315461919">Võimaldab määrata, kas veebisaitidel on lubatud jälgida kasutajate füüsilist asukohta. Kasutajate füüsilise asukoha jälgimine võib olla vaikimisi lubatud või keelatud või kasutajalt võidakse luba küsida iga kord, kui veebisait taotleb füüsilise asukoha jälgimist.
@@ -847,6 +870,7 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
           Kui see reegel on määratud olekule Väär või seda pole määratud, siis toimub toitehalduse viivituste ja seansi pikkuse limiidi aktiveerimine kohe, kui seanss algab.</translation>
 <translation id="3478024346823118645">Kustuta kasutaja andmed väljalogimisel</translation>
 <translation id="348495353354674884">Luba virtuaalne klaviatuur</translation>
+<translation id="3495440981030194931">Määrab lukustuskuva PIN-koodi miinimumpikkuse.</translation>
 <translation id="3496296378755072552">Paroolihaldur</translation>
 <translation id="349667858031092827">Ajavööndit ei tuvastata kunagi automaatselt.</translation>
 <translation id="350443680860256679">ARC reegli seadistamine</translation>
@@ -989,6 +1013,7 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
       Reegli keelamisel on SPDY kasutamine lubatud.
 
       Kui jätate selle reegli määramata, on SPDY saadaval.</translation>
+<translation id="3890999316834333174">Kiiravamise reeglid</translation>
 <translation id="3891357445869647828">Luba JavaScript</translation>
 <translation id="3891953007921334498">Keelab arendaja tööriistad ja JavaScripti konsooli.
 
@@ -1042,6 +1067,11 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 
       Kui see reegel määratakse valeks, ei saa kasutajad pakkumisi lunastada.</translation>
 <translation id="4010738624545340900">Failivalimisdialoogide avamise lubamine</translation>
+<translation id="4012737788880122133">Kui seade on määratud väärtusele Tõene, on automaatsed värskendused keelatud.
+
+      Kui seade pole seadistatud või see on määratud väärtusele Väär, siis otsivad teenuse <ph name="PRODUCT_OS_NAME" /> seadmed värskendusi automaatselt.
+
+      Hoiatus. Soovitame automaatsed värskendused lubada, et kasutajad saaksid tarkvaravärskendusi ja kriitilisi turvapaikasid. Automaatsete värskenduste väljalülitamine võib kasutajad ohtu seada.</translation>
 <translation id="4020682745012723568">Androidi rakendused ei pääse juurde kasutajaprofiilile ülekantud küpsisefailidele.</translation>
 <translation id="4025586928523884733">Blokeerib kolmanda osapoole küpsised.
 
@@ -1121,6 +1151,16 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
           See reegel on valikuline. Kui see pole määratud, siis saadetakse soovituse otsingu taotlus GET-meetodiga.
 
           Reeglit järgitakse ainult siis, kui lubatud on reegel „DefaultSearchProviderEnabled”.</translation>
+<translation id="4294280661005713627">Määrab sihtversiooni automaatsete värskenduste jaoks.
+
+      Määrab eesliite sihtversioonile, millele <ph name="PRODUCT_OS_NAME" /> peab värskendama. Kui seade käitab versiooni, mis eelneb määratud eesliitele, värskendatakse see antud eesliite uusimale versioonile. Kui seade kasutab juba uuemat versiooni, siis sellel mõju pole (st ei toimu üleminekut vanemale versioonile) ja seade jääb praegusele versioonile. Eesliite vorming töötab komponendipõhiselt (nagu näha järgmises näites).
+
+      "" (või seadistamata): saadaval värskendus uusimale versioonile.
+      "1412.": värskendus mis tahes 1412 uuemale versioonile (nt 1412.24.34 või 1412.60.2)
+      "1412.2.": värskendus mis tahes 1412.2 uuemale versioonile (nt 1412.2.34 või 1412.2.2)
+      "1412.24.34": värskendus ainult sellele konkreetsele versioonile
+
+      Hoiatus. Me ei soovita versioonide piiranguid seadistada, kuna need võivad takistada kasutajatel tarkvaravärskendusi ja kriitilisi turvapaikasid vastu võtmast. Kui lubate kasutajatel kasutada vaid teatud versiooni eesliidet, võib see kasutajad ohtu seada.</translation>
 <translation id="4309640770189628899">Näitab, kas DHE šifreerimiskomplektid on TLS-is lubatud</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 või uuem</translation>
 <translation id="4322842393287974810">Luba automaatselt käivitatud viivituseta kioskirakendusel juhtida operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni</translation>
@@ -1360,6 +1400,9 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
           Musta nimekirja väärtus '*' tähendab, et kõik omasõnumside hostid on mustas nimekirjas, kui nad pole lisatud konkreetselt lubatud üksuste loendisse.
 
           Kui seda reeglit ei määrata, laadib <ph name="PRODUCT_NAME" /> kõik installitud omasõnumside hostid.</translation>
+<translation id="5272684451155669299">Kui selle väärtuseks on määratud Tõene, saab kasutaja kasutada Chrome'i seadmete riistvara, et tõendada enda isikut distantsilt privaatsuse CA abil API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> kaudu, kasutades funktsiooni <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
+
+          Kui selle väärtuseks on määratud Väär või väärtus on määramata, siis kõned API-le ebaõnnestuvad ja saate vastuseks veakoodi.</translation>
 <translation id="5288772341821359899">Kui reegel on määratud, piiratakse WebRTC kasutatava UDP-pordi vahemikku määratud pordi intervalliga (sh lõpp-punktid).
 
       Kui reeglit ei ole määratud või kui see on määratud tühjale stringile või kehtetule pordivahemikule, on WebRTC-l lubatud kasutada mis tahes saadaolevat kohalikku UDP-porti.</translation>
@@ -1490,6 +1533,11 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
           Kui seade on lubatud, võrdleb kaugjuurdepääsu host kohaliku kasutaja (kellega host on seotud) nime ja hosti omanikuna registreeritud Google’i konto nime (st „johndoe”, kui host kuulub Google’i kontole „johndoe@example.com”). Kaugjuurdepääsu host ei käivitu, kui hosti omaniku nimi erineb kohaliku kasutaja nimest, kellega host on seotud. Reeglit RemoteAccessHostMatchUsername tuleb kasutada koos reegliga RemoteAccessHostDomain, kui hosti omaniku Google’i konto peab olema seotud konkreetse domeeniga (nt „example.com”).
 
           Kui seade on keelatud või määramata, võib kaugjuurdepääsu host olla seotud mis tahes kohaliku kasutajaga.</translation>
+<translation id="5694594914843889579">Kui reegli väärtuseks on määratud Tõene, siis ei ole väline salvestusseade failibrauseris saadaval.
+
+      Reegel kehtib kõigile salvestusseadmete tüüpidele, näiteks USB-välkmäludraivid, välised kõvakettad, SD-kaardid jm mälukaardid, optilised salvestusseadmed jne. See ei kehti sisemälu kohta, mistõttu kausta Allalaadimised salvestatud failidele on juurdepääs olemas. Reegel ei kehti ka Google Drive'ile.
+
+      Kui seade on keelatud või seadistamata, siis saab seadmes kasutada kõiki toetatud väliste salvestusseadmete tüüpe.</translation>
 <translation id="5697306356229823047">Seadme kasutajatest teavitamine</translation>
 <translation id="570062449808736508">Kui see reegel on määratud mittetühjale stringile, loeb WebView URL-i piiranguid antud volituse nimega sisupakkujalt.</translation>
 <translation id="5703863730741917647">Määrab toimingu, mis rakendub tegevusetuse viivitusaja täitumisel.
@@ -1615,6 +1663,7 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
       Kui reegel on määramata või keelatud, ilmub printimiskäsu sisestamisel printimise eelvaate kuva.</translation>
 <translation id="6022948604095165524">Toiming käivitamisel</translation>
 <translation id="602728333950205286">Vaikeotsingupakkuja Instant-URL</translation>
+<translation id="6029664378608427609">Võimaldab kasutajatel määrata nõrgad lukustuskuva PIN-koodid.</translation>
 <translation id="603410445099326293">Parameetrid POST-meetodit kasutava soovituse URL-i jaoks</translation>
 <translation id="6036523166753287175">Luba tulemüüri läbimine kaugjuurdepääsu hostist</translation>
 <translation id="6059543311891422586">Kasutatakse riistvaralist kiirendust, kui see on saadaval.
@@ -1670,12 +1719,6 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="6155936611791017817">Sisselogimisekraanil suure kursori vaikeoleku määramine</translation>
 <translation id="6157537876488211233">Puhverserveri möödumisreeglite komadega eraldatud loend</translation>
 <translation id="6158324314836466367">Ettevõtte veebipoe nimi (tugi on katkestatud)</translation>
-<translation id="6166832345529129545">Juhtnupud, mille kiiravamisrežiime saab seadistada ja kasutada.
-      See seade loob lubatute loendi kiiravamisrežiimidest, mille saab seadistada ja mida saab lukustuskuva avamiseks kasutada. Väärtus on loend stringidest, mis peavad olema järgmisel kujul: „kõik”, „PIN-kood”. Kui valitud on string „kõik”, siis on saadaval kõik toetatud kiirrežiimid. Muul juhul on saadaval ainult selles loendis olevad režiimid.
-
-      Kui see seade on seadistatud, ei saa seadistada ega kasutada kiiravamisrežiime, mille tüüpi selles loendis ei ole.
-
-      Kui see seade jäetakse seadistamata, on režiim „PIN-kood” lubatud ja kõik muud režiimid on keelatud.</translation>
 <translation id="6167074305866468481">Hoiatus. SSLv3 tugi eemaldatakse teenusest <ph name="PRODUCT_NAME" /> täielikult pärast versiooni 43 (umbes juulis 2015) ja see reegel eemaldatakse samal ajal.
 
       Kui seda reeglit pole seadistatud, siis kasutab teenus <ph name="PRODUCT_NAME" /> vaikimisi minimaalset versiooni, mis on teenuse <ph name="PRODUCT_NAME" /> versioonis 39 SSLv3 ja hilisemates versioonides TLS 1.0.
@@ -1739,6 +1782,15 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="6417861582779909667">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud küpsiseid määrata.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultCookiesSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
+<translation id="6426205278746959912">Te ei saa Androidi rakenduste puhul jõustada puhverserveri kasutamist. Androidi rakendustele on muudetud kättesaadavaks puhverserveri seadete alamkomplekt, mille kasutamine on vabatahtlik.
+
+          Kui otsustate puhverserverit mitte kasutada, antakse Androidi rakendustele teada, et puhverserverit pole seadistatud.
+
+          Kui otsustate kasutada süsteemi puhverserveri seadeid või fikseeritud puhverserverit, esitatakse Androidi rakendustele HTTP-protokolliga puhverserveri aadress ja port.
+
+          Kui otsustate puhverserveri automaatselt tuvastada, esitatakse Androidi rakendustele URL „http://wpad/wpad.dat”. Ühtegi teist puhverserveri automaatse tuvastamise protokolli osa ei kasutata.
+
+          Kui otsustate kasutada puhverserveri skripti .pac, esitatakse Androidi rakendustele skripti URL.</translation>
 <translation id="6467433935902485842">Võimaldab teil määrata URL-i mustrite loendi, mis määravad saidid, millel ei ole lubatud pistikprogramme käitada.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust reeglist „DefaultPluginsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
@@ -2084,7 +2136,18 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
       Kui reegel on määramata, kasutab automaatne puhastamine sisseehitatud vaikestrateegiat. Praegu on selleks strateegia „RemoveLRUIfDormant”.</translation>
 <translation id="7336878834592315572">Säilita küpsised seansi kestuse jooksul</translation>
 <translation id="7340034977315324840">Saada teavet seadme aktiivsuse aja kohta</translation>
+<translation id="7340934985429121460">See seade määrab PIN-koodi miinimumpikkuse.
+
+          Kui selle seade väärtuseks on määratud vähem kui üks, on PIN-koodi miinimumpikkus üks.
+
+          Kui see seade on määramata, siis on PIN-koodi miinimumpikkus neli.</translation>
 <translation id="7384999953864505698">Lubab QUIC-protokolli</translation>
+<translation id="7406716912696538245">Juhtnupud, mille kiiravamisrežiime saab seadistada ja kasutada.
+          See seade loob lubatute loendi kiiravamisrežiimidest, mille saab seadistada ja mida saab lukustuskuva avamiseks kasutada. Väärtus on loend stringidest, mis peavad olema kujul „kõik” või „PIN-kood”. Kui valitud on string „kõik”, siis on saadaval kõik toetatud kiirrežiimid. Muul juhul on saadaval ainult selles loendis olevad režiimid.
+
+          Kui see seade on seadistatud, ei saa seadistada ega kasutada kiiravamisrežiime, mille tüüpi selles loendis ei ole.
+
+          Kui see seade jäetakse seadistamata, on režiim „PIN-kood” lubatud ja kõik muud režiimid on keelatud.</translation>
 <translation id="7417972229667085380">Esitlusrežiimis tegevusetu oleku viivituse skaleerimise määr protsentides (tugi on katkestatud)</translation>
 <translation id="7421483919690710988">Määrake meediumiketta vahemälu suurus baitides</translation>
 <translation id="7424751532654212117">Keelatud pistikprogrammide loendi erandite loend</translation>
@@ -2130,6 +2193,9 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="7611372873040492235">Parool tuleb sisestada iga 12 tunni järel.</translation>
 <translation id="7612157962821894603">Süsteemiülesed märgistused, mis rakendatakse toote <ph name="PRODUCT_NAME" /> käivitamisel</translation>
 <translation id="7614663184588396421">Keelatud protokolliskeemide loend</translation>
+<translation id="7617319494457709698">Reegel määrab lubatud laiendused, mis kasutavad kaugatesteerimisel API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> funktsiooni <ph name="CHALLENGE_USER_KEY_FUNCTION" />. API kasutamiseks tuleb laiendused sellesse loendisse lisada.
+
+          Kui laiendust loendis pole või loendit pole koostatud, siis kõne API-le ebaõnnestub ja saate vastuseks veakoodi.</translation>
 <translation id="7625444193696794922">Määrab väljalaskekanali, millele seade tuleks lukustada.</translation>
 <translation id="7632724434767231364">GSSAPI-teegi nimi</translation>
 <translation id="7635471475589566552">Seadistab rakenduse lokaadi rakenduses <ph name="PRODUCT_NAME" /> ja takistab kasutajatel lokaadi muutmist.
@@ -2229,6 +2295,13 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 
       Kui see seade on seadistamata, siis saavad kasutajad Androidi varundusteenuse rakenduses Androidi seaded sisse või välja lülitada.</translation>
 <translation id="7818131573217430250">Määrab sisselogimisekraanil kõrge kontrastsusega režiimi vaikeoleku</translation>
+<translation id="7822837118545582721">Kui reegel seatakse väärtusele Tõene, ei saa kasutajad välistele salvestusseadmetele kirjutada.
+
+      Kui seade on määratud väärtusele Väär või pole seadistatud, siis saavad kasutajad luua ja muuta faile välistes salvestusseadmetes, mis on füüsiliselt kirjutatavad.
+
+      Reeglil ExternalStorageDisabled on selle reegli suhtes eesõigus – kui reegli ExternalStorageDisabled väärtuseks on määratud Tõene, siis on keelatud kogu juurdepääs välisele salvestusruumile ja reeglit eiratakse.
+
+      Selle reegli dünaamilist värskendamist toetatakse versioonis M56 ja uuemates versioonides.</translation>
 <translation id="7831595031698917016">Määrab millisekundites kindlaks maksimaalse viivituse, mis jääb reegli kehtetuks tunnistamise ja seadme haldusteenusest uue reegli toomise vahele.
 
       Selle reegli määramine tühistab vaikeväärtuse 5000 millisekundit. Reegli sobivad väärtused jäävad vahemikku 1000 (1 sekund) kuni 300 000 (5 minutit). Vahemikust väljapoole jäävad väärtused viiakse vastavusse vastava piirväärtusega.
@@ -2287,9 +2360,6 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
           Active Directory domeeniga.</translation>
 <translation id="7937766917976512374">Video jäädvustamise lubamine või keelamine</translation>
 <translation id="7941975817681987555">Ära ennusta võrgutoiminguid ühegi võrguühenduse puhul</translation>
-<translation id="7942429005743031780">Reegel määrab lubatud laiendused, mida kasutada kaugatesteerimisel Enterprise Platform Keys API chrome.enterprise.platformKeys.challengeUserKey() jaoks. API kasutamiseks tuleb laiendused loendisse lisada.
-
-          Kui laiendust loendis pole või kui loendit pole koostatud, siis kõne API-le ebaõnnestub ja saate vastuseks veakoodi.</translation>
 <translation id="7953256619080733119">Kasutaja käsitsi sisestatavate hostide erandite haldamine</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Seda reeglit ei toetata enam.
@@ -2450,6 +2520,9 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 
       Kui reegli väärtuseks määratakse Väär, ei kuva brauser esmakordsel käivitamisel pärast operatsioonisüsteemi täiendamist uuesti tervituslehte.</translation>
 <translation id="8369602308428138533">Ekraani väljalülitamise viiteaeg võrgutoite kasutamisel</translation>
+<translation id="8370471134641900314">Kui reegel määratakse väärtusele Tõene, peab kasutaja enne brauseri kasutamist rakendusse <ph name="PRODUCT_NAME" /> oma profiiliga sisse logima. Samuti määratakse reegli BrowserGuestModeEnabled vaikeväärtuseks Väär.
+
+      Kui reegel määratakse väärtusele Väär või jäetakse seadistamata, saab kasutaja brauserit rakendusse <ph name="PRODUCT_NAME" /> sisse logimata kasutada.</translation>
 <translation id="8382184662529825177">Kaugatesteerimise lubamine seadme sisu kaitsmiseks</translation>
 <translation id="838870586332499308">Luba andmeside rändlusteenus</translation>
 <translation id="8390049129576938611">Keelab sisemise PDF-vaaturi rakenduses <ph name="PRODUCT_NAME" />. Selle asemel koheldakse seda allalaadimisena ja kasutaja saab PDF-faile vaikerakendusega avada.
@@ -2576,15 +2649,6 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="8833109046074170275">GAIA vaikevoo kaudu autentimine</translation>
 <translation id="8838303810937202360">Operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> lisab rakendused ja laiendused mitme kasutaja jaoks installimiseks seadme vahemällu, et vältida iga kasutaja puhul uuesti allalaadimist.
       Kui see reegel on seadistamata või väärtus on väiksem kui 1 MB, kasutab operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> vaikimisi vahemälu mahtu.</translation>
-<translation id="8858120573534680488">Te ei saa sundida Androidi rakendusi puhverserverit kasutama. Androidi rakendustele on muudetud kättesaadavaks puhverserveri seadete alamkomplekt, mille kasutamine on vabatahtlik.
-
-          Kui teete valiku „Ära kasuta mitte kunagi puhverserverit”, saadetakse Androidi rakendustele teade, et puhverserverit pole seadistatud.
-
-          Kui teete valiku „Kasuta süsteemi puhverserveri seadeid” või „Fikseeritud puhverserver”, saadetakse Androidi rakendustele http-puhverserveri aadress ja port.
-
-          Kui teete valiku „Tuvasta puhverserver automaatselt”, saadetakse Androidi rakendustele skripti URL „http://wpad/wpad.dat”. Puhverserveri automaatse tuvastamise protokolli teisi osi ei kasutata.
-
-          Kui teete valiku „PAC-puhverserveri skript”, saadetakse Androidi rakendustele skripti URL.</translation>
 <translation id="8858642179038618439">YouTube’i ohutu režiimi jõustamine</translation>
 <translation id="8864975621965365890">Keelab tagasilükkamisviiba, mis kuvatakse, kui saiti renderdab <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Avaleht</translation>
@@ -2692,9 +2756,4 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="930930237275114205">Määra rakenduse <ph name="PRODUCT_FRAME_NAME" /> kasutaja andmekataloog</translation>
 <translation id="944607242500063080">Seadistatakse lubatud kiiravamisrežiimid.</translation>
 <translation id="944817693306670849">Ketta vahemälu mahu määramine</translation>
-<translation id="969164417253718105">See seade juhib, kui sageli nõuab ekraan parooli sisestamist, et kiiravamise kasutamist jätkata. Iga kord kui ekraan lukustatakse ja parooli sisestamisest on möödunud kauem, kui on selle seade väärtus, pole kiiravamine lukustuskuval saadaval. Kui kasutaja on lukustuskuval sellest perioodist kauem, nõutakse parooli järgmisel korral, kui kasutaja sisestab vale koodi või aktiveerib uuesti lukustuskuva (kumb enne juhtub).
-
-      Kui see seade on seadistatud, peavad kasutajad, kes kasutavad kiiravamist, sisestama lukustuskuval parooli sellest seadest olenevalt.
-
-      Kui see seade on seadistamata, peavad kasutajad, kes kasutavad kiiravamist, sisestama lukustuskuval parooli iga päev.</translation>
 </translationbundle>

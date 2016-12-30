@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">log ind på Chrome</translation>
 <translation id="1061441684050139317">Chrome skal have adgang til mikrofonen for at kunne dele den med dette website.</translation>
 <translation id="1065672644894730302">Dine præferencer kan ikke læses. Visse funktioner er muligvis ikke tilgængelige, og ændringer af præferencer gemmes ikke.</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> brugte tidligere Chrome</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="110877069173485804">Dette er din Chrome-browser</translation>
 <translation id="123620459398936149">Chrome OS kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Chrome Canary-apps</translation>
 <translation id="1457721931618994305">Opdaterer Google Chrome...</translation>
 <translation id="1469002951682717133">Chrome-applisten</translation>
-<translation id="1475773083554142432">Chrome gemmer denne med <ph name="SAVED_PASSWORD_LINK" /> og husker den, næste gang du skal bruge den.</translation>
 <translation id="1480489203462860648">Prøv det, det er allerede installeret</translation>
 <translation id="1553358976309200471">Opdater Chrome</translation>
 <translation id="1587223624401073077">Google Chrome bruger dit kamera.</translation>
@@ -41,7 +41,6 @@
 <translation id="2147651015520127414">Chrome bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website.</translation>
 <translation id="2246246234298806438">Google Chrome kan ikke vise udskrifter, når den indbyggede PDF-fremviser mangler.</translation>
 <translation id="2252923619938421629">Hjælp med at gøre Google Chrome bedre ved at rapportere de aktuelle indstillinger</translation>
-<translation id="225614027745146050">Velkommen</translation>
 <translation id="2286950485307333924">Du er nu logget ind i Chrome</translation>
 <translation id="2290014774651636340">Google API-nøgler mangler. Nogle funktioner i Google Chrome deaktiveres.</translation>
 <translation id="2290095356545025170">Er du sikker på, at du vil afinstallere Google Chrome?</translation>
@@ -232,7 +231,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="7552219221109926349">Vis Chrome OS på dette sprog</translation>
 <translation id="7592736734348559088">Google Chrome kunne ikke synkronisere dine data, fordi loginoplysningerne til din konto er forældede.</translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>
-<translation id="7747138024166251722">Installationsprogrammet kunne ikke oprette en midlertidig mappe. Kontroller, om der er tilstrækkelig diskplads, og om der er tilladelse til at installere software.</translation>
+<translation id="7747138024166251722">Installationsprogrammet kunne ikke oprette en midlertidig mappe. Kontrollér, om der er tilstrækkelig diskplads, og om der er tilladelse til at installere software.</translation>
 <translation id="7761834446675418963">Klik på dit navn for at åbne Chrome og gå i gang med at browse.</translation>
 <translation id="7781002470561365167">Der er en ny version af Google Chrome til rådighed.</translation>
 <translation id="7787950393032327779">Profilen ser ud til at være i brug i en anden Google Chrome-proces (<ph name="PROCESS_ID" />) på en anden computer (<ph name="HOST_NAME" />). Chrome har låst profilen, så den ikke bliver beskadiget. Hvis du er sikker på, at ingen andre processer anvender denne profil, kan du låse profilen op og genstarte Chrome.</translation>

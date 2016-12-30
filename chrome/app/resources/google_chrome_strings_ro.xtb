@@ -6,6 +6,7 @@
 <translation id="1035334672863811645">conectează-te la Chrome</translation>
 <translation id="1061441684050139317">Chrome are nevoie de acces la microfon pentru a-l acorda acestui site.</translation>
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> a folosit Chrome anterior</translation>
 <translation id="1104959162601287462">Despre sistemul de operare &amp;Chrome</translation>
 <translation id="110877069173485804">Acesta este browserul dvs. Chrome</translation>
 <translation id="123620459398936149">Sistemul de operare Chrome nu a putut sincroniza datele. Actualizați parola de acces pentru sincronizare.</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Aplicații Chrome Canary</translation>
 <translation id="1457721931618994305">Se actualizează Google Chrome...</translation>
 <translation id="1469002951682717133">Lansatorul de aplicații Chrome</translation>
-<translation id="1475773083554142432">Chrome o va stoca folosind <ph name="SAVED_PASSWORD_LINK" /> și o va reține pentru data următoare când ai nevoie.</translation>
 <translation id="1480489203462860648">Încercați-l, este deja instalat</translation>
 <translation id="1553358976309200471">Actualizează Chrome</translation>
 <translation id="1587223624401073077">Google Chrome utilizează camera foto.</translation>
@@ -41,7 +41,6 @@
 <translation id="2147651015520127414">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />.</translation>
 <translation id="2246246234298806438">Google Chrome nu poate afișa previzualizarea înainte de printare când vizualizatorul PDF încorporat lipsește.</translation>
 <translation id="2252923619938421629">Contribuie la îmbunătățirea browserului Google Chrome raportând setările actuale</translation>
-<translation id="225614027745146050">Bun venit</translation>
 <translation id="2286950485307333924">Acum te-ai conectat la Chrome</translation>
 <translation id="2290014774651636340">Lipsesc chei pentru API-ul Google. Unele funcționalități Google Chrome vor fi dezactivate.</translation>
 <translation id="2290095356545025170">Sigur vrei să dezinstalezi Google Chrome?</translation>

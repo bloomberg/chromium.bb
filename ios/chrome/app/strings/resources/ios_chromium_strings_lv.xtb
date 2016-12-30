@@ -13,6 +13,7 @@
 <translation id="2195025571279539885">Vai vēlaties, lai Chromium nākamreiz piedāvātu šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2647554856022461007">Chromium var izmantot tīmekļa pakalpojumus, lai uzlabotu jūsu pārlūkošanas pieredzi. Varat arī atspējot šos pakalpojumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="2730884209570016437">Chromium nevar izmantot kameru, jo to izmanto cita lietojumprogramma.</translation>
+<translation id="3256316712990552818">Nokopēta pārlūkā Chromium</translation>
 <translation id="3413120535237193088">Pierakstieties pārlūkā Chromium, lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs.</translation>
 <translation id="3473048256428424907">Chromium QR skenera ieslēgšana</translation>
 <translation id="3805899903892079518">Chromium nevar piekļūt jūsu fotoattēliem un videoklipiem. Iespējojiet piekļuvi: iOS Settings &gt; Privacy &gt; Photos.</translation>
@@ -29,12 +30,12 @@
 <translation id="6068866989048414399">Chromium pakalpojumu sniegšanas noteikumi</translation>
 <translation id="6268381023930128611">Vai izrakstīties no Chromium?</translation>
 <translation id="6424492062988593837">Lietojumprogramma Chromium ir uzlabota! Ir pieejama jauna versija.</translation>
-<translation id="6600954340915313787">Nokopēta pārlūkā Chrome.</translation>
 <translation id="6604711459180487467">Uzlabojiet savu pieredzi pārlūkā Chromium, sūtot informāciju par savu atrašanās vietu.</translation>
 <translation id="6989306073720242915">Vai jums patīk pārlūks Chromium? <ph name="BEGIN_LINK" />Pārvietojiet to uz savu doku<ph name="END_LINK" />!</translation>
 <translation id="7022368070219581493">Chromium apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>
 <translation id="7099326575020694068">Chromium nevar izmantot kameru dalītā skata režīmā.</translation>
 <translation id="7144758435978427212">Atklājiet tīmekļa lapas, ko nosūtījuši tuvumā esoši objekti. Ja ir ieslēgts Bluetooth savienojums, Chromium var apkopot tīmekļa lapas, kas ir saistītas ar jums apkārt esošajiem objektiem, un anonīmi nosūtīt tās Google serveriem, lai atrastu visnoderīgākās lapas. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
+<translation id="7208566199746267865">Chromium ietaupa jūsu laiku, pievienojot jūsu kontus tīmeklim. Kontus varat pievienot vai noņemt sadaļā Iestatījumi.</translation>
 <translation id="7269362888766543920">Daži papildinājumi var izraisīt pārlūka Chromium avarēšanu. Lūdzu, atinstalējiet tos.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Atlasītie dati ir noņemti no pārlūka Chromium un sinhronizētajām ierīcēm. Jūsu Google kontam vietnē history.google.com var būt citu veidu pārlūkošanas vēstures dati, piemēram, meklēšanas vaicājumi un darbības citos Google pakalpojumos.</translation>

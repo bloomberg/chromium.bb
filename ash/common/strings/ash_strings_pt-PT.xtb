@@ -54,10 +54,8 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Antes de aceitar, confirme que esta chave está indicada nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
-<translation id="252373100621549798">Apresentação Desconhecida</translation>
 <translation id="2532589005999780174">Modo de alto contraste</translation>
 <translation id="2562916301614567480">Rede Privada</translation>
-<translation id="2661637000095600270">Não foi possível espelhar os ecrãs porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido. Clique para enviar um relatório de comentários.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: A ligar...</translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING" />. A sua sessão será terminada.</translation>
 <translation id="2727977024730340865">Ligado a um carregador de baixo consumo. O carregamento da bateria pode não ser fiável.</translation>
@@ -114,7 +112,6 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="3846575436967432996">Não existem informações de rede disponíveis</translation>
 <translation id="3866182280516392520">Endereço IPv6</translation>
 <translation id="3891340733213178823">Prima Ctrl+Shift+Q duas vezes para terminar sessão.</translation>
-<translation id="3892641579809465218">Ecrã interno</translation>
 <translation id="3893630138897523026">ChromeVox (respostas faladas)</translation>
 <translation id="3899995891769452915">Entrada de texto por voz</translation>
 <translation id="3901991538546252627">A ligar a <ph name="NAME" /></translation>
@@ -177,6 +174,8 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="5977415296283489383">Auscultador</translation>
 <translation id="5978382165065462689">A partilhar o controlo do seu ecrã através da Assistência remota.</translation>
 <translation id="5980301590375426705">Sair da sessão de convidado</translation>
+<translation id="6041154455840261787">Modo de alto contraste ativado. Prima Pesquisar + Shift + H novamente para o desativar.</translation>
+<translation id="6043212731627905357">Este monitor está em conflito com o seu <ph name="DEVICE_TYPE" /> (o monitor não é compatível).</translation>
 <translation id="6043994281159824495">Terminar sessão agora</translation>
 <translation id="6047696787498798094">A partilha do ecrã será interrompida quando mudar para outro utilizador. Pretende continuar?</translation>
 <translation id="6062360702481658777">A sessão será terminada automaticamente dentro de <ph name="LOGOUT_TIME_LEFT" />.</translation>
@@ -185,7 +184,6 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="6144938890088808325">Ajude-nos a melhorar os Chromebooks</translation>
 <translation id="615957422585914272">Mostrar teclado no ecrã</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
-<translation id="6203030746557259519">Ecrã virtual</translation>
 <translation id="6248847161401822652">Prima Ctrl+Shift+Q duas vezes para sair.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: a ativar...</translation>
 <translation id="6297287540776456956">Utilizar a canela stylus para selecionar uma área</translation>
@@ -208,6 +206,7 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="6700713906295497288">Botão de menu IME</translation>
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" foi sincronizado e está agora disponível para todos os utilizadores. Pode remover esta sincronização através das Definições.</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e a carregar.</translation>
+<translation id="6803622936009808957">Não foi possível espelhar os ecrãs, porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido.</translation>
 <translation id="683971173229319003">Pesquisa+L</translation>
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Ligar-se a outra...</translation>
@@ -275,7 +274,6 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="8878886163241303700">Ecrã alargado</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira direita)</translation>
 <translation id="8940956008527784070">Bateria fraca (<ph name="PERCENTAGE" />%)</translation>
-<translation id="9008540565042607572">Caro Monitor, não está a resultar entre nós. (Esse monitor não é suportado. Clique para enviar um relatório de comentários.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">O microfone está a ser utilizado.</translation>
 <translation id="9089416786594320554">Métodos de introdução</translation>
@@ -285,5 +283,6 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="923686485342484400">Prima Control Shift Q duas vezes para terminar sessão.</translation>
 <translation id="938582441709398163">Sobreposição do teclado</translation>
 <translation id="939252827960237676">Não foi possível guardar a captura de ecrã</translation>
+<translation id="945522503751344254">Enviar comentários</translation>
 <translation id="952992212772159698">Não activado</translation>
 </translationbundle>

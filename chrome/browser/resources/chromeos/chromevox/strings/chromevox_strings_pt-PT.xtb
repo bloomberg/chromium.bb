@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">pt-PT</translation>
 <translation id="2091933974477985526">Área de texto editável anterior</translation>
 <translation id="2100350898815792233">Pontuação total</translation>
+<translation id="2110480898214777136">Moldar do início ao fim ou do fim ao início dentro de uma página, caixa de diálogo ou outro contentor</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">access key:<ph name="KEY" /></translation>
 <translation id="2155457205053847599">Alterar a tabela atual de braille de 6 pontos ao selecionar uma opção na lista abaixo.</translation>
 <translation id="2169714232367507776">Clicar no item atual</translation>
+<translation id="2179452035581866348">O ChromeVox utiliza sons para lhe dar informações essenciais e adicionais. Pode utilizar estes sons para navegar mais rapidamente ao aprender o que significa cada som. Quando se sentir mais à vontade, pode desativar as descrições detalhadas na fala e contar com elas para obter informações essenciais acerca da página. Segue-se uma lista completa de sons e do respetivo significado.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{parêntese direito}other{# parênteses direitos}}</translation>
 <translation id="2199994615414171367">Matemática anterior</translation>
 <translation id="2220529011494928058">Comunicar um problema</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">Principal</translation>
 <translation id="2329324941084714723">Painel de separadores</translation>
 <translation id="2344193891939537199">Controlo de hora e data</translation>
+<translation id="2347456970887948350">Um link</translation>
 <translation id="2359897517538099099">Não está no modo de tabela.</translation>
 <translation id="241124561063364910">seguido de</translation>
+<translation id="2416512023405990736">Uma caixa de verificação desselecionada</translation>
 <translation id="2417569100218200841">Informações do conteúdo</translation>
 <translation id="2422937916923936891">Caixa de verificação do item de menu</translation>
 <translation id="2428534162001909979">Menus de comandos</translation>
@@ -213,6 +217,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="3223701887221307104"><ph name="NAME" />, separador</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Link visitado</translation>
+<translation id="3232388865800379423">Um botão pop-up</translation>
 <translation id="323731244387692321">Abrir ajuda do teclado do ChromeVox</translation>
 <translation id="3241052487511142956">Link visitado anterior</translation>
 <translation id="3286390186030710347">Controlo de deslize</translation>
@@ -221,6 +226,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="3311969765485641742">Prima Alt+Shift+A para consultar os alertas</translation>
 <translation id="3312997241656799641">Link visitado seguinte</translation>
 <translation id="3313245066383501820">Tecla de modificação do ChromeVox</translation>
+<translation id="3317212938060708859">Um controlo de deslize</translation>
 <translation id="3321460131042519426">Ativar mudança de linha</translation>
 <translation id="3322936298410871309">Título de nível 1 anterior</translation>
 <translation id="3323447499041942178">Caixa de texto</translation>
@@ -279,6 +285,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="3457000393508828486">Parcialmente premido</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, desligar</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, botão</translation>
+<translation id="3466530247399808663">Uma tecla premida inválida</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> a <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{parêntese reto direito}other{# parênteses retos direitos}}</translation>
@@ -286,6 +293,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{ponto de interrogação}other{# pontos de interrogação}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{acento circunflexo}other{# acentos circunflexos}}</translation>
+<translation id="352577523970648069">Um campo de texto editável</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, caixa de verificação não marcada</translation>
 <translation id="3599054940393788245">Não em matemática</translation>
 <translation id="3616113530831147358">Áudio</translation>
@@ -325,10 +333,12 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4047216625641135770">Mark</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
+<translation id="4058278702844053247">Um carregamento de página em curso</translation>
 <translation id="4065205963140826639">Experimente utilizar Pesquisar + Seta para a direita agora para encontrar o botão Seguinte e, em seguida, prima Pesquisar + Espaço para clicar no mesmo.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TIL}other{# sinais de til}}</translation>
 <translation id="409334809956508737">Objeto anterior</translation>
 <translation id="4099274309791143834">com submenu</translation>
+<translation id="4101527861445851766">Uma caixa de verificação selecionada</translation>
 <translation id="4107807507418787238">Não existe nenhuma célula abaixo.</translation>
 <translation id="4116415223832267137">Alerta</translation>
 <translation id="4147126331795725888">Não existe nenhum controlo seguinte.</translation>
@@ -338,6 +348,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4173994908659439270">Não existe nenhum campo de texto editável seguinte.</translation>
 <translation id="4176463684765177261">Desativado</translation>
 <translation id="4188530942454211480">Frase anterior</translation>
+<translation id="4191918948604314587">Um botão</translation>
 <translation id="4202186506458631436">Mover para a direita</translation>
 <translation id="4206289001967551965">Dentro da tabela</translation>
 <translation id="4215733775853809057">Controlo de deslize seguinte</translation>
@@ -461,6 +472,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="5374320867641260420">Não existe nenhum botão seguinte.</translation>
 <translation id="5382299583965267720">Não existe nenhum título de nível 1 seguinte.</translation>
 <translation id="5402367795255837559">Braille</translation>
+<translation id="5402791055281059602">Um alerta modal</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{ponto e vírgula}other{# pontos e vírgulas}}</translation>
 <translation id="5411891038905756502">Não existe nenhum ponto de avanço anterior.</translation>
 <translation id="5417034931411865818">Clique no item sob a chave de encaminhamento $1</translation>
@@ -554,6 +566,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="6119955456199054975">Fim da célula.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Espaço</translation>
+<translation id="6132506484792346370">Uma caixa de lista ou uma caixa de combinação</translation>
 <translation id="6138576064440631958">Corda $1</translation>
 <translation id="6142308968191113180">Titulo 4</translation>
 <translation id="6169420925157477918">Imagem com descrição longa</translation>
@@ -567,6 +580,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">Não existe nenhuma caixa de combinação seguinte.</translation>
 <translation id="6307969636681130414">Premido</translation>
+<translation id="6322856989298155004">Sons</translation>
 <translation id="6324551002951139333">Erro gramatical detetado</translation>
 <translation id="6348657800373377022">Caixa de combinação</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{marca}other{# marcas}}</translation>
@@ -597,6 +611,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="6657128831881431364">Barra de progresso</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">Documento</translation>
+<translation id="6688209025607531203">Um alerta não modal</translation>
 <translation id="6697092096875747123">Caixa de combinação anterior</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{exclamação}other{# exclamações}}</translation>
 <translation id="6710213216561001401">Anterior</translation>

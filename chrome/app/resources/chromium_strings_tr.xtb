@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">Chromium'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek bazı uzantıları devre dışı bıraktık.</translation>
 <translation id="1808667845054772817">Chromium'u yeniden yükle</translation>
 <translation id="1816404578968201294">Chromium'un, bu siteyle paylaşmak için konum bilgilerine erişmesi gerekiyor.</translation>
+<translation id="1838412507805038478">Chromium, bu web sitesi sertifikasının <ph name="ISSUER" /> tarafından yayınlandığını doğruladı.</translation>
 <translation id="1869480248812203386">Olası güvenlik olaylarının ayrıntılarını Google'a otomatik olarak bildirerek Chromium'un daha güvenli ve kullanımı kolay bir hale gelmesine yardımcı olabilirsiniz.</translation>
 <translation id="1881322772814446296">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chromium verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium yanıt vermiyor. Şimdi yeniden başlatılsın mı?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">&amp;Chromium OS hakkında</translation>
 <translation id="2158734852934720349">Chromium OS açık kaynak lisansları</translation>
 <translation id="2241627712206172106">Bir bilgisayarı paylaşıyorsanız arkadaşlarınız ve aileniz ayrı olarak göz atabilir ve Chromium'u tam olarak istedikleri şekilde ayarlayabilir.</translation>
-<translation id="225614027745146050">Hoş Geldiniz</translation>
 <translation id="2316129865977710310">Hayır, teşekkürler</translation>
 <translation id="2347108572062610441">Bu uzantı, Chromium'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="2372704305038231957">32 bit Chromium artık bu Linux sisteminde desteklenmediği için doğru şekilde çalışmayabilir. Lütfen Chromium'un 64 bit sürümüne geçin.</translation>
@@ -151,7 +151,6 @@
 <translation id="5877064549588274448">Kanal değişti. Değişikliklerin uygulanması için cihazınızı yeniden başlatın.</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5906655207909574370">Az kaldı! Güncellemeyi tamamlamak için cihazınızı yeniden başlatın.</translation>
-<translation id="5942225298871134766">Chromium bunu <ph name="SAVED_PASSWORD_LINK" /> bölümüne kaydeder ve tekrar ihtiyacınız olduğunda hatırlar.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> Chromium'a eklendi.</translation>
 <translation id="59625444380784159">Kişilerinizde kayıtlı bilgiler, Chromium'da formları daha hızlı bir şekilde doldurmanıza yardımcı olabilir.</translation>
 <translation id="5987687638152509985">Senkronizasyonu başlatmak için Chromium'u güncelleyin</translation>
@@ -240,6 +239,7 @@ Daha fazla talimat için lütfen e-postanızı (<ph name="ACCOUNT_EMAIL" />) kon
 <translation id="81770708095080097">Bu dosya tehlikeli olduğu için Chromium tarafından engellendi.</translation>
 <translation id="8269379391216269538">Chromium'u daha iyi hale getirmeye yardımcı olun</translation>
 <translation id="8290862415967981663">Bu dosya tehlikeli olabileceği için Chromium tarafından engellendi.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> önceden Chromium kullanıyordu</translation>
 <translation id="8453117565092476964">Yükleyici arşivi bozuk veya geçersiz. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="8493179195440786826">Chromium Sürümü Eski</translation>
 <translation id="85843667276690461">Chromium'u kullanma konusunda yardım alın</translation>

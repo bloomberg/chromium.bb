@@ -13,6 +13,7 @@
 <translation id="2195025571279539885">Ar norėtumėte, kad kitą kartą „Chromium“ būtų siūloma išversti šios svetainės puslapius <ph name="LANGUAGE_NAME" /> k.?</translation>
 <translation id="2647554856022461007">„Chromium“ gali naudoti žiniatinklio paslaugas naršymo funkcijoms pagerinti. Galite pasirinktinai išjungti šias paslaugas. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">„Chromium“ negali naudoti fotoaparato, nes jį naudoja kita programa</translation>
+<translation id="3256316712990552818">Nukopijuota į „Chromium“</translation>
 <translation id="3413120535237193088">Prisijunkite prie „Chromium“, kad pasiektumėte žymes visuose įrenginiuose.</translation>
 <translation id="3473048256428424907">Įjunkite „Chromium“ QR skaitytuvą</translation>
 <translation id="3805899903892079518">„Chromium“ nepasiekia nuotraukų ar vaizdo įr. Įgalinkite prieigą apsil. „iOS“ nustatymai“ &gt; „Privatumas“ &gt; „Nuotraukos“.</translation>
@@ -29,12 +30,12 @@
 <translation id="6068866989048414399">„Chromium“ pasl. teikimo sąl.</translation>
 <translation id="6268381023930128611">Atsijungti nuo „Chromium“?</translation>
 <translation id="6424492062988593837">„Chromium“ patobulėjo! Galima nauja versija.</translation>
-<translation id="6600954340915313787">Nukopijuota į „Chrome“</translation>
 <translation id="6604711459180487467">Gaukite geresnių funkcijų naudodami vietove pagrįstą „Chromium“.</translation>
 <translation id="6989306073720242915">Patinka naudoti „Chromium“? <ph name="BEGIN_LINK" />Perkelkite ją į doką<ph name="END_LINK" /></translation>
 <translation id="7022368070219581493">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šios svetainės sertifikatą.</translation>
 <translation id="7099326575020694068">„Chromium“ negali naudoti fotoaparato padalyto rodinio režimu</translation>
 <translation id="7144758435978427212">Atraskite netoliese esančių objektų siunčiamus tinklalapius. Kai „Bluetooth“ įjungta, „Chromium“ gali rinkti tinklalapius, susijusius su netoli jūsų esančiais objektais, ir anonimiškai siųsti juos „Google“, kad būtų rasti naudingiausi tinklalapiai. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
+<translation id="7208566199746267865">„Chromium“ taupo laiką naudodama paskyras žiniatinklyje. Paskyras galite pridėti arba pašalinti nustatymuose.</translation>
 <translation id="7269362888766543920">Naudojant kai kuriuos priedus „Chromium“ užstringa. Pabandykite juos pašalinti.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">Pasirinkti duomenys pašalinti iš „Chromium“ ir sinchronizuojamų įrenginių. Adresu history.google.com gali būti pateikta kitų formų jūsų „Google“ paskyros istorija, pvz., paieškos ir veikla kitose „Google“ paslaugose.</translation>

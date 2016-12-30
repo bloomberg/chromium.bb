@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">For at gøre Chromium sikrere har vi slået nogle udvidelser fra, som ikke er anført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> og muligvis er blevet tilføjet, uden at du vidste det.</translation>
 <translation id="1808667845054772817">Geninstaller Chromium</translation>
 <translation id="1816404578968201294">Chromium skal have adgang til din placering, før den kan deles med dette website.</translation>
+<translation id="1838412507805038478">Chromium har bekræftet, at <ph name="ISSUER" /> har udstedt certifikatet for dette website.</translation>
 <translation id="1869480248812203386">Du kan hjælpe med at gøre Chromium sikrere og nemmere at bruge ved automatisk at rapportere oplysninger om mulige sikkerhedshændelser til Google.</translation>
 <translation id="1881322772814446296">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din profil i Chromium. Dine Chromium-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. Du kan eventuelt oprette en ny profil for at holde dine Chromium-data adskilt. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du genstarte nu?</translation>
@@ -34,7 +35,6 @@
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS open source-licenser</translation>
 <translation id="2241627712206172106">Hvis du deler en computer, kan venner og familie browse individuelt og konfigurere Chromium, som de ønsker hver især.</translation>
-<translation id="225614027745146050">Velkommen</translation>
 <translation id="2316129865977710310">Nej tak</translation>
 <translation id="2347108572062610441">Denne udvidelse har ændret din startside i Chromium.</translation>
 <translation id="2372704305038231957">32-bit Chromium fungerer muligvis ikke korrekt på grund af manglende understøttelse i dette Linux-system. Opgrader til 64-bit Chromium.</translation>
@@ -153,7 +153,6 @@
 <translation id="5877064549588274448">Kanalen er ændret. Genstart din enhed for at anvende ændringerne.</translation>
 <translation id="5895138241574237353">Genstart</translation>
 <translation id="5906655207909574370">Næsten opdateret. Genstart din enhed for at afslutte opdateringen.</translation>
-<translation id="5942225298871134766">Chromium gemmer denne med <ph name="SAVED_PASSWORD_LINK" /> og husker den, næste gang du skal bruge den.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> er føjet til Chromium.</translation>
 <translation id="59625444380784159">Oplysninger om dine kontaktpersoner kan hjælpe dig med at udfylde formularer hurtigere i Chromium.</translation>
 <translation id="5987687638152509985">Opdater Chromium for at starte synkronisering</translation>
@@ -230,7 +229,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="7617377681829253106">Chromium er blevet bedre</translation>
 <translation id="7641113255207688324">Chromium er ikke din standardbrowser.</translation>
 <translation id="7729447699958282447">Chromium kunne ikke synkronisere dine data, fordi synkronisering ikke er tilgængelig for dit domæne.</translation>
-<translation id="7747138024166251722">Installationsprogrammet kunne ikke oprette en midlertidig mappe. Kontroller, om der er tilstrækkelig diskplads, og om der er tilladelse til at installere software.</translation>
+<translation id="7747138024166251722">Installationsprogrammet kunne ikke oprette en midlertidig mappe. Kontrollér, om der er tilstrækkelig diskplads, og om der er tilladelse til at installere software.</translation>
 <translation id="7937630085815544518">Du loggede ind på Chromium som <ph name="USER_EMAIL_ADDRESS" />. Brug den samme konto til at logge ind igen.</translation>
 <translation id="795025003224538582">Genstart ikke</translation>
 <translation id="7962572577636132072">Chromium opdateres automatisk, så du altid har den nyeste version.</translation>
@@ -242,6 +241,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="81770708095080097">Denne fil er farlig, så Chromium har blokeret den.</translation>
 <translation id="8269379391216269538">Hjælp med at gøre Chromium bedre</translation>
 <translation id="8290862415967981663">Denne fil kan være farlig, så Chromium har blokeret den.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> brugte tidligere Chromium</translation>
 <translation id="8453117565092476964">Installationsarkivet er beskadiget eller ugyldigt. Download Chromium igen.</translation>
 <translation id="8493179195440786826">Chromium er forældet</translation>
 <translation id="85843667276690461">Få hjælp til at bruge Chromium</translation>

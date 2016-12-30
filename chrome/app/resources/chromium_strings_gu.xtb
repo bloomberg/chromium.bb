@@ -27,6 +27,7 @@
 <translation id="1779356040007214683">Chromium ને સુરક્ષિત બનાવવા માટે, અમે <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> માં સૂચિબદ્ધ નથી અને તમારી જાણ વિના ઉમેરવામાં આવ્યાં હોઈ શકે છે તેવા કેટલાક એક્સ્ટેન્શન્સને અક્ષમ કર્યા છે.</translation>
 <translation id="1808667845054772817">Chromium ફરીથી ઇન્સ્ટોલ કરો</translation>
 <translation id="1816404578968201294">Chromium ને આ સાઇટ સાથે સ્થાન શેર કરવા માટે તેની ઍક્સેસની જરૂર છે.</translation>
+<translation id="1838412507805038478">Chromium એ ચકાસણી કરી છે કે <ph name="ISSUER" /> એ આ વેબસાઇટનું પ્રમાણપત્ર જારી કર્યું છે.</translation>
 <translation id="1869480248812203386">તમે Google ને સંભવિત સુરક્ષા ઘટનાઓની વિગતોની જાણ આપમેળે કરીને Chromium ને વધુ સલામત અને ઉપયોગમાં વધુ સરળ બનાવવામાં સહાય કરી શકો છો.</translation>
 <translation id="1881322772814446296">તમે સંચાલિત કરેલ એકાઉન્ટ સાથે સાઇન ઇન કરી રહ્યાં છો અને તમારી Chromium પ્રોફાઇલ પર તેનું વ્યવસ્થાપક નિયંત્રણ આપી રહ્યાં છો. તમારો Chromium ડેટા, જેમ કે ઍપ્લિકેશનો, બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ, કાયમ માટે <ph name="USER_NAME" /> થી બંધાયેલ રહેશે. તમે Google એકાઉન્ટ્સ ડેશબોર્ડથી આ ડેટાને કાઢી શકશો, પરંતુ તમે આ ડેટાને અન્ય એકાઉન્ટ સાથે સાંકળી શકશો નહીં. તમે અસ્તિત્વમાં છે તે Chromium ડેટાને અલગ રાખવા માટે વૈકલ્પિક રૂપે એક નવી પ્રોફાઇલ બનાવી શકો છો. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium પ્રતિસાદ આપતું નથી. હવે ફરીથી લોંચ કરીએ?</translation>
@@ -36,7 +37,6 @@
 <translation id="2119636228670142020">&amp;Chromium OS વિશે</translation>
 <translation id="2158734852934720349">Chromium OS ખુલ્લા સ્ત્રોત લાઇસેંસેસ</translation>
 <translation id="2241627712206172106">જો તમે કમ્પ્યુટરને શેર કરો છો, તો મિત્રો અને કુટુંબીજનો અલગ-અલગ બ્રાઉઝ કરી અને તેમને જોઇએ તેમ Chromium ને સેટ કરી શકે છે.</translation>
-<translation id="225614027745146050">સ્વાગત છે</translation>
 <translation id="2316129865977710310">નહીં, આભાર</translation>
 <translation id="2347108572062610441">જ્યારે તમે Chromium શરૂ કરો છો ત્યારે જે પૃષ્ઠ દર્શાવવામાં આવે છે તે આ એક્સટેન્શને બદલ્યું છે.</translation>
 <translation id="2372704305038231957">32-બિટ Chromium યોગ્ય રીતે કાર્ય ન કરે તેવું બની શકે કારણ કે તે હવે આ Linux સિસ્ટમ પર સમર્થિત નથી. કૃપા કરીને 64-બિટ Chromium પર અપગ્રેડ કરો.</translation>
@@ -156,7 +156,6 @@
 <translation id="5877064549588274448">ચેનલ બદલી. ફેરફારો લાગુ કરવા માટે તમારા ઉપકરણને પુનઃપ્રારંભ કરો.</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5906655207909574370">અપ ટૂ ડેટ થવામાં છે! અપડેટ કરવાનું સમાપ્ત કરવા માટે તમારા ઉપકરણને પુનઃપ્રારંભ કરો.</translation>
-<translation id="5942225298871134766">Chromium આને તમારા <ph name="SAVED_PASSWORD_LINK" /> માં સાચવશે અને આગલી વખતે તમને તેની જરૂર પડે ત્યારે યાદ રાખશે.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> ને Chromium માં ઉમેરવામાં આવ્યું.</translation>
 <translation id="59625444380784159">તમારા સંપર્કોની વિગતો Chromium માં વધુ ઝડપથી ફોર્મ્સ ભરવામાં તમારી સહાય કરી શકે છે.</translation>
 <translation id="5987687638152509985">સમન્વયનને પ્રારંભ કરવા માટે Chromium ને અપડેટ કરો</translation>
@@ -245,6 +244,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="81770708095080097">આ ફાઇલ જોખમી છે, તેથી Chromium એ તેને અવરોધિત કરેલ છે.</translation>
 <translation id="8269379391216269538">Chromium ને બહેતર બનાવવામાં સહાય કરો</translation>
 <translation id="8290862415967981663">આ ફાઇલ જોખમી હોઈ શકે છે, તેથી Chromium એ તેને અવરોધિત કરેલ છે.</translation>
+<translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" />, પહેલાં Chromium નો ઉપયોગ કરી રહ્યાં હતાં</translation>
 <translation id="8453117565092476964">ઇન્સ્ટોલર આર્કાઇવ દૂષિત અથવા અમાન્ય છે. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="8493179195440786826">Chromium જૂનું થઈ ગયું છે</translation>
 <translation id="85843667276690461">Chromium નો ઉપયોગ કરવા સહાય મેળવો</translation>

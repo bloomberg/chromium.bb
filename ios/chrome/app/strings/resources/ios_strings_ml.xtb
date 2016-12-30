@@ -10,6 +10,7 @@
 <translation id="1104948393051856124">അംഗീകരിച്ച് തുടരുക</translation>
 <translation id="1112015203684611006">പ്രിന്റിംഗ് പരാജയപ്പെട്ടു.</translation>
 <translation id="1125564390852150847">പുതിയ ടാബ് സൃഷ്‌ടിക്കുക.</translation>
+<translation id="1145536944570833626">നിലവിലുള്ള വിവരങ്ങൾ ഇല്ലാതാക്കുക.</translation>
 <translation id="1165039591588034296">പിശക്</translation>
 <translation id="1172898394251786223">അടുത്ത ഫീൽഡ്</translation>
 <translation id="1176932207622159128">ചിത്രം സംരക്ഷിക്കാൻ കഴിയില്ല.</translation>
@@ -48,6 +49,7 @@
 <translation id="1753905327828125965">കൂടുതൽ‍ സന്ദര്‍ശിച്ചത്</translation>
 <translation id="1809939268435598390">ഫോൾഡർ ഇല്ലാതാക്കുക</translation>
 <translation id="1813414402673211292">ബ്രൌസിംഗ് ഡാറ്റാ മായ്ക്കുക...</translation>
+<translation id="1820259098641718022">വായനാ ലിസ്റ്റിൽ ചേർത്തു</translation>
 <translation id="1842969606798536927">പണമടയ്‌ക്കുക</translation>
 <translation id="1876721852596493031">ഉപയോഗ ഡാറ്റ അയയ്ക്കൂ</translation>
 <translation id="1886928167269928266">തുടക്കം മുതൽ</translation>
@@ -65,6 +67,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ഇനങ്ങൾ നീക്കി</translation>
 <translation id="2149973817440762519">ബുക്മാര്‍ക്ക് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="2154710561487035718">URL പകര്‍ത്തുക</translation>
+<translation id="2230173723195178503">വെബ്‌പേജ് ലോഡുചെയ്‌തു</translation>
 <translation id="2241634353105152135">ഒരിക്കൽ മാത്രം</translation>
 <translation id="2267753748892043616">അക്കൗണ്ട് ചേർക്കുക</translation>
 <translation id="2273327106802955778">കൂടുതൽ ഓപ്ഷൻ മെനു</translation>
@@ -76,6 +79,7 @@
 <translation id="2386793615875593361">1 തിരഞ്ഞെടുത്തു</translation>
 <translation id="2435457462613246316">പാസ്‌വേഡ് കാണിക്കുക</translation>
 <translation id="2467815441875554965">സാന്ദർഭിക തിരയൽ</translation>
+<translation id="2523092375122821828">എല്ലാം അടയാളപ്പെടുത്തുക…</translation>
 <translation id="2572712655377361602">ഒരു ഉപകരണ നയം, നിങ്ങളുടെ ഫോട്ടോകളിലേക്കുള്ള ആക്‌സസ്സ് ബ്ലോക്കുചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="2584132361465095047">അക്കൗണ്ട് ചേർക്കുക...</translation>
 <translation id="2593774076813182497">ഈ പേജ് പ്രിന്റുചെയ്യാനാവില്ല.</translation>
@@ -116,6 +120,7 @@
 <translation id="3324193307694657476">വിലാസം 2</translation>
 <translation id="3329904751041170572">സെര്‍വറിലേക്ക് കണക്റ്റുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="3335947283844343239">അടച്ച ടാബ് വീണ്ടും തുറക്കുക</translation>
+<translation id="3387752218061326363">നിങ്ങളുടെ സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്ന ഉപകരണങ്ങളിൽ നിന്നുള്ള ചരിത്രം കാണിക്കുന്നു. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">പോപ്പ്-അപ്പുകൾ അനുവദിച്ചു</translation>
 <translation id="3414292259312108062">ഇത് നിങ്ങളുടെ <ph name="BEGIN_LINK" />Google സംരക്ഷിത പാസ്‌വേഡുകളിൽ<ph name="END_LINK" /> Chrome സംരക്ഷിക്കുകയും നിങ്ങൾക്കായി ഓട്ടോഫിൽ ചെയ്യുകയും ചെയ്യുന്നതിനാൽ ഓർക്കേണ്ടതില്ല.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> മി.</translation>
@@ -123,7 +128,6 @@
 <translation id="3474649192738347024">ഫോമുകൾ പൂരിപ്പിച്ചു.</translation>
 <translation id="3478058380795961209">കാലഹരണപ്പെടുന്ന മാസം</translation>
 <translation id="3482959374254649722">നിങ്ങളുടെ ടാബുകൾ സമന്വയിപ്പിക്കുന്നു...</translation>
-<translation id="3485544713029068372">പാസ്‌വേഡുകൾക്കുള്ള Smart Lock</translation>
 <translation id="3489372701259491571">സംരക്ഷിച്ച പാസ്‌വേഡ് ഇല്ലാതാക്കുക</translation>
 <translation id="3519193562722059437">വെബ് ബ്രൗസുചെയ്യാൻ ഒരു ടാബ് തുറക്കുക.</translation>
 <translation id="3527085408025491307">ഫോൾഡർ</translation>
@@ -145,6 +149,7 @@
 <translation id="3789841737615482174">ഇന്‍സ്റ്റാളുചെയ്യുക</translation>
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
 <translation id="3897092660631435901">മെനു</translation>
+<translation id="3928666092801078803">എന്റെ വിവരങ്ങൾ സംയോജിപ്പിക്കുക</translation>
 <translation id="3950820424414687140">സൈൻ ഇൻ</translation>
 <translation id="3963231839620026525">പുതിയ ആൾമാറാട്ട ടാബ്</translation>
 <translation id="3967822245660637423">ഡൗൺലോഡ് പൂർത്തിയായി</translation>
@@ -156,6 +161,7 @@
 <translation id="4121993058175073134">നെറ്റ്-എക്‌സ്‌പോർട്ട് ഡാറ്റ അയയ്‌ക്കുന്നതിന്, ക്രമീകരണങ്ങളുടെ അപ്ലിക്കേഷനിൽ നിങ്ങളുടെ ഇമെയിൽ അക്കൗൺറ്റ് കോൺഫിഗർ ചെയ്യുക.</translation>
 <translation id="4124987746317609294">സമയ ശ്രേണി</translation>
 <translation id="4172051516777682613">എല്ലായ്പ്പോഴും ദൃശ്യമാക്കുക</translation>
+<translation id="4176234027218720244">അടയാളപ്പെടുത്തുക…</translation>
 <translation id="424315890655130736">പാസ്‌ഫ്രെയ്‌സ് നൽകുക</translation>
 <translation id="4272631900155121838">QR കോഡ് സ്‌കാൻ ചെയ്യാൻ, ക്രമീകരണത്തിൽ നിന്ന് ക്യാമറ പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="4281844954008187215">സേവന നിബന്ധനകൾ</translation>
@@ -167,6 +173,7 @@
 <translation id="4473991315115669931">ആൾമാറാട്ട മോഡ് നൽകുക</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> എന്നതിൽ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, നിയന്ത്രിക്കുക</translation>
 <translation id="4536418791685807335">വീണ്ടും സൈൻ ഇൻ ചെയ്യാൻ ശ്രമിക്കുക.</translation>
+<translation id="4620246317052452550">നിങ്ങൾ വായിച്ചു കഴിഞ്ഞ പേജുകൾ</translation>
 <translation id="4636930964841734540">വിവരം</translation>
 <translation id="4659667755519643272">ടാബ് സ്വിച്ചർ നൽകുക</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> എന്ന പേരിലാണ് സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്നത്.
@@ -179,6 +186,7 @@
 <translation id="4875622588773761625">ഈ സൈറ്റിനായി നിങ്ങളുടെ പാസ്‌വേഡ് <ph name="PASSWORD_MANAGER_BRAND" /> അപ്‌ഡേറ്റുചെയ്യണോ?</translation>
 <translation id="4881695831933465202">തുറക്കുക</translation>
 <translation id="4923459931733593730">പേയ്‌മെന്റ് രീതി</translation>
+<translation id="4930268273022498155">നിലവിലുള്ള വിവരങ്ങൾ ഇല്ലാതാക്കുക. <ph name="USER_EMAIL1" /> എന്നതിലേക്ക് വീണ്ടും മാറുന്നതിലൂടെ നിങ്ങൾക്ക് ഇത് വീണ്ടെടുക്കാം.</translation>
 <translation id="4941089862236492464">ക്ഷമിക്കണം, നിങ്ങളുടെ ഇനം പങ്കിടുന്നതിൽ ഒരു പ്രശ്‌നമുണ്ടായിരുന്നു.</translation>
 <translation id="4979397965658815378">എല്ലാ ഉപകരണങ്ങളിലും നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകൾ, പാസ്‌വേഡുകൾ, ചരിത്രം, മറ്റ് ക്രമീകരണം എന്നിവ ലഭിക്കാൻ Google അക്കൗണ്ട് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="5005498671520578047">പാസ്‌വേഡ് പകർത്തുക</translation>
@@ -195,10 +203,12 @@
 <translation id="5197255632782567636">ഇന്‍റര്‍നെറ്റ്</translation>
 <translation id="5198972191746488848">കാർഡ് ചേർക്കുക...</translation>
 <translation id="5228579091201413441">സമന്വയം പ്രവർത്തനക്ഷമമാക്കുക</translation>
+<translation id="5230733896359313003">ഷിപ്പിംഗ് വിലാസം</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> ഇമെയിലിലേക്ക് സമന്വയിപ്പിക്കുന്നു</translation>
 <translation id="5300589172476337783">കാണിക്കുക</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
 <translation id="5327248766486351172">പേര്</translation>
+<translation id="532992759783668360">വായിച്ചവ ഇല്ലാതാക്കുക</translation>
 <translation id="5388358297987318779">ഇമേജ് തുറക്കുക</translation>
 <translation id="5409365236829784218">ഈ ഫയലിൽ തുറക്കാൻ കഴിയുന്ന അപ്ലിക്കേഷനുകളൊന്നും ഇൻസ്റ്റാൾ ചെയ്‌തില്ല.</translation>
 <translation id="54401264925851789">പേജ് സുരക്ഷാ വിവരങ്ങൾ</translation>
@@ -227,6 +237,8 @@
 <translation id="5916664084637901428">ഓൺ ചെയ്യുക</translation>
 <translation id="5953603475187800576">Google പേയ്‌മെന്റ് എന്നതിൽ നിന്ന് വിലാസങ്ങളും ക്രെഡിറ്റ് കാർഡുകളും കാണിക്കുക</translation>
 <translation id="5964480694698977962">പുതിയ ആൾമാറാട്ട ടാബ് സൃഷ്‌ടിക്കുക.</translation>
+<translation id="5965679971710331625">നിങ്ങൾ സൈൻ ഇൻ ചെയ്‌തു</translation>
+<translation id="5982717868370722439">നിലവിലുള്ള വിവരങ്ങളെ <ph name="USER_EMAIL" /> എന്നതിലേക്ക് അയയ്‌ക്കുക.</translation>
 <translation id="6012140227487808125">എൻക്രിപ്റ്റുചെയ്യുന്നു...</translation>
 <translation id="6021332621416007159">ഇതിൽ തുറക്കുക...</translation>
 <translation id="6039694632319341016"><ph name="USERNAME" /> എന്നയാളുടെ ഈ സൈറ്റിന്റെ പാസ്‌വേഡ് <ph name="PASSWORD_MANAGER_BRAND" /> അപ്‌ഡേറ്റുചെയ്യണോ?</translation>
@@ -239,9 +251,13 @@
 <translation id="6136914049981179737">സെക്കൻഡ് മുമ്പ്</translation>
 <translation id="6149061208933997199">പാസ്‌വേഡ് ഉപയോഗിക്കുക</translation>
 <translation id="6158823227857319455">പുതിയ ടാബ്</translation>
+<translation id="616831107264507309">പിന്നീട് വായിക്കുക</translation>
 <translation id="6184086493125982861">ടാബുകൾ കാണിക്കുക</translation>
 <translation id="6187302354554850004">അവസാനം സമന്വയിപ്പിച്ചത്: <ph name="LAST_USED_TIME" /></translation>
+<translation id="6189413832092199491">വായിക്കാത്തവ</translation>
+<translation id="6194286531716220336">റദ്ദാക്കുക</translation>
 <translation id="6196207969502475924">ശബ്ദ തിരയൽ</translation>
+<translation id="6254066287920239840">ബ്രൗസറിന് പകരം ആപ്പിൽ ലിങ്കുകൾ തുറക്കുക.</translation>
 <translation id="6255097610484507482">ക്രെഡിറ്റ് കാര്‍ഡ് എഡിറ്റുചെയ്യുക</translation>
 <translation id="6308436439357671616">ഫോട്ടോകളെടുത്ത് അപ്‌ലോഡുചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു.</translation>
 <translation id="6314335155547195432">പാസ്‌വേഡ് സൃഷ്‌ടിക്കുക</translation>
@@ -249,11 +265,12 @@
 <translation id="6337234675334993532">എന്‍ക്രിപ്ഷന്‍</translation>
 <translation id="633809752005859102">ശരിക്കും എന്തോ കുഴപ്പം സംഭവിച്ചു. ഞങ്ങൾ അത് പരിഹരിക്കും.</translation>
 <translation id="6344783595350022745">വാചകം മായ്‌ക്കുക</translation>
-<translation id="6351971471682124046">ഇതിലേക്ക് കാസ്‌റ്റുചെയ്യുന്നു...</translation>
 <translation id="6362362396625799311">ആൾമാറാട്ട ടാബുകളൊന്നുമില്ല</translation>
 <translation id="6380866119319257197">നിങ്ങൾ പാസ്‌ഫ്രെയ്‌സ് മറന്നുപോയെങ്കിലോ ഈ ക്രമീകരണം മാറ്റണമെങ്കിലോ, <ph name="BEGIN_LINK" />സമന്വയം റീസെറ്റുചെയ്യുക<ph name="END_LINK" /></translation>
+<translation id="6385146967113720558">വായിക്കാത്തതായി അടയാളപ്പെടുത്തുക</translation>
 <translation id="6389470377220713856">കാര്‍‌ഡിലെ പേര്</translation>
 <translation id="6406506848690869874">Sync</translation>
+<translation id="6417838470969808600">നിങ്ങൾക്ക് <ph name="USER_EMAIL1" /> എന്നയാളിൽ നിന്നുള്ള ബുക്ക്‌മാർക്കുകളും ചരിത്രവും പാസ്‌വേഡുകളും മറ്റ് ക്രമീകരണവുമുണ്ട്.</translation>
 <translation id="641799622251403418"><ph name="EMAIL" /> എന്ന പേരിലാണ് സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്നത്.
 
 <ph name="TIME" />-ന് നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച് ഡാറ്റ എൻക്രിപ്‌റ്റുചെയ്‌തു. സമന്വയം ആരംഭിക്കുന്നതിന് ഇത് നൽകുക.</translation>
@@ -288,6 +305,7 @@
 <translation id="7108338896283013870">മറയ്ക്കുക</translation>
 <translation id="7131892264600713844">ഈ ഉപകരണത്തിൽ നിന്നുള്ള ചരിത്രം കാണിക്കുന്നു. <ph name="BEGIN_LINK" />കൂടുതലറിയുക.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">പൂർണ്ണമായ പേര്</translation>
+<translation id="713434964320012835">ഇല്ലാതാക്കുക</translation>
 <translation id="7136892417564438900">ക്യാമറ ലഭ്യമല്ല</translation>
 <translation id="7167621057293532233">ഡാറ്റ തരങ്ങള്‍</translation>
 <translation id="7189598951263744875">പങ്കിടുക...</translation>
@@ -309,7 +327,6 @@
 <translation id="7514365320538308">ഡൗൺലോഡുചെയ്യുക</translation>
 <translation id="7537586195939242955">ക്ഷമിക്കണം, നിങ്ങളുടെ പാസ് ഈ സമയം പാസ്‌ബുക്കിൽ ഇൻസ്റ്റാൾ ചെയ്യാൻ കഴിയില്ല.</translation>
 <translation id="7561196759112975576">എല്ലായ്പ്പോഴും</translation>
-<translation id="7572670177380301651">നിങ്ങളുടെ സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്ന ഉപകരണങ്ങളിൽ നിന്നുള്ള ചരിത്രം കാണിക്കുന്നു. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="7588950540487816470">ഫിസിക്കൽ വെബ്</translation>
 <translation id="7603852183842204213">പോപ്പ്-അപ്പുകൾ തടഞ്ഞു (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7605594153474022051">സമന്വയിപ്പിക്കൽ പ്രവർത്തിക്കുന്നില്ല</translation>
@@ -317,9 +334,11 @@
 <translation id="7649070708921625228">സഹായം</translation>
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="7671141431838911305">ഇൻസ്റ്റാളുചെയ്യുക</translation>
+<translation id="7682287625158474539">ഷിപ്പിംഗ്</translation>
 <translation id="7765158879357617694">നീക്കുക</translation>
 <translation id="7769602470925380267">അംഗീകരിച്ചശേഷം, സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="7772032839648071052">പാസ്ഫ്രേസ് സ്ഥിരീകരിക്കുക</translation>
+<translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
 <translation id="7851858861565204677">മറ്റ് ഉപകരണങ്ങൾ</translation>
 <translation id="7859704718976024901">ബ്രൗസിംഗ് ചരിത്രം</translation>
@@ -331,6 +350,7 @@
 <translation id="8019783059653722575">ഇത് ഫോട്ടോകൾ സംരക്ഷിച്ച്, അപ്‌ലോഡുചെയ്യാൻ നിങ്ങളെ അനുവദിക്കുന്നു.</translation>
 <translation id="8023878949384262191">വിഭാഗത്തെ വിപുലീകരിക്കുന്നു.</translation>
 <translation id="8059533439631660104">വിഭാഗത്തെ ചുരുക്കുന്നു.</translation>
+<translation id="806745655614357130">എന്റെ വിവരങ്ങൾ പ്രത്യേകം വേർതിരിച്ച് സൂക്ഷിക്കുക</translation>
 <translation id="8076014560081431679">സംരക്ഷിച്ച സൈറ്റ് ക്രമീകരണം ഇല്ലാതാക്കപ്പെടില്ല, ഇത് നിങ്ങളുടെ ബ്രൗസിംഗ് രീതികളെ പ്രതിഫലിപ്പിക്കാനുമിടയുണ്ട്. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">എല്ലാ ടാബുകളും അടയ്‌ക്കുക</translation>
 <translation id="8108697784695284144">നിങ്ങളുടെ പാസ്‌വേഡ് പകർത്തി.</translation>
@@ -338,12 +358,14 @@
 <translation id="8205564605687841303">റദ്ദാക്കുക</translation>
 <translation id="8225985093977202398">കാഷെ ചെയ്‌ത ചിത്രങ്ങളും ഫയലുകളും</translation>
 <translation id="8261506727792406068">ഇല്ലാതാക്കൂ</translation>
+<translation id="8272194309885535896">ചിത്രം ഡൗൺലോഡുചെയ്യുക</translation>
 <translation id="8272426682713568063">ക്രെഡിറ്റ് കാര്‍‌ഡുകള്‍‌</translation>
 <translation id="8281781826761538115">ഡിഫോൾട്ട് - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">തിരയലും പരസ്യങ്ങളും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ, Google നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഉപയോഗിക്കുന്ന രീതി നിയന്ത്രിക്കുക</translation>
 <translation id="8428045167754449968">നഗരം / പട്ടണം</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8433678324664858900">നിർദ്ദേശങ്ങൾ കാണിക്കുക</translation>
+<translation id="8458197615157477273">വായിച്ചതായി അടയാളപ്പെടുത്തുക</translation>
 <translation id="8458397775385147834">ഒരു ഇനം ഇല്ലാതാക്കി</translation>
 <translation id="8503813439785031346">ഉപയോക്തൃനാമം</translation>
 <translation id="8517375800490286174">ഓപ്പൺ സോഴ്‌സ് ലൈസൻസുകൾ</translation>
@@ -355,6 +377,7 @@
 <translation id="8620640915598389714">എഡിറ്റുചെയ്യുക</translation>
 <translation id="8636825310635137004">നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിൽ നിന്നുള്ള ടാബുകൾ ലഭിക്കാൻ, സമന്വയിപ്പിക്കൽ ഓണാക്കുക.</translation>
 <translation id="8680787084697685621">അക്കൗണ്ട് പ്രവേശന വിവരങ്ങള്‍ കാലഹരണപ്പെട്ടതാണ്.</translation>
+<translation id="8699098509676302392">വിലാസം ചേർക്കുക...</translation>
 <translation id="8721297211384281569">ഉപകരണ മെനു</translation>
 <translation id="8725066075913043281">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="8730621377337864115">പൂർത്തിയാക്കി</translation>
@@ -375,6 +398,7 @@
 <translation id="9055772144595778347">സൈൻ ഇൻ ചെയ്യാൻ കഴിയില്ല</translation>
 <translation id="9065203028668620118">എഡിറ്റുചെയ്യുക</translation>
 <translation id="9079935439869366234">എല്ലാം വായിക്കാത്തതായി അടയാളപ്പെടുത്തുക</translation>
+<translation id="9080712759204168376">ഓർഡർ സംഗ്രഹം</translation>
 <translation id="9083392325882095631">ഒരു ഇനം</translation>
 <translation id="9100610230175265781">പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്</translation>
 <translation id="9148126808321036104">വീണ്ടും പ്രവേശിക്കുക</translation>

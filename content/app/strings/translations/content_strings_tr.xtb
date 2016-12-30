@@ -24,7 +24,6 @@
 <translation id="1821985195704844674">ağaç tablo</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">uzaktan cihazda oynat</translation>
-<translation id="1842960171412779397">seç</translation>
 <translation id="1854180393107901205">Yayını durdur</translation>
 <translation id="1880518467580572141">özet</translation>
 <translation id="1921819250265091946">gg</translation>
@@ -50,11 +49,9 @@
 <translation id="2746543609216772311">Değer <ph name="MINIMUM_DATE_OR_TIME" /> veya daha ileri olmalıdır.</translation>
 <translation id="2759744352195237655">pop-up düğmesi</translation>
 <translation id="2761667185364618470">İlerlemek istiyorsanız lütfen bu kutuyu işaretleyin.</translation>
-<translation id="2846343701378493991">1024 (Orta Düzey)</translation>
 <translation id="2896972712917208084">radyo düğmesi grubu</translation>
 <translation id="2901282870647571346">filmin geçerli durumu</translation>
 <translation id="2908441821576996758">Lütfen e-posta adreslerinin virgülle ayrılmış listesini girin.</translation>
-<translation id="2931838996092594335">tıklama</translation>
 <translation id="2940813599313844715">nesne</translation>
 <translation id="2942448076852699108">vurgulanan içerik</translation>
 <translation id="3040011195152428237">bağlantı</translation>
@@ -80,7 +77,6 @@
 <translation id="4103419683916926126">Milisaniye</translation>
 <translation id="4151657705144244502">grafik</translation>
 <translation id="4201051445878709314">Önceki ayı göster</translation>
-<translation id="4202807286478387388">git</translation>
 <translation id="421884353938374759">renk seçici</translation>
 <translation id="4248100235867064564">menü çubuğu</translation>
 <translation id="4254339807215791271">içerik bilgileri</translation>
@@ -108,7 +104,6 @@
 <translation id="5453733299334684579">ağaç öğesi</translation>
 <translation id="5466621249238537318">Lütfen bir veya daha fazla dosya seçin.</translation>
 <translation id="5468998798572797635">tam ekrandan çık</translation>
-<translation id="5476505524087279545">işareti kaldır</translation>
 <translation id="5516424706154626233">tarih seçici</translation>
 <translation id="5537725057119320332">Yayınla</translation>
 <translation id="5546461542133609677">sesi aç</translation>
@@ -121,13 +116,11 @@
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="588258955323874662">Tam ekran</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
-<translation id="5944544982112848342">2048 (Yüksek Düzey)</translation>
 <translation id="5966707198760109579">Hafta</translation>
 <translation id="5987525920412732405">dönme düğmesi</translation>
 <translation id="6015796118275082299">Yıl</translation>
 <translation id="6023896073578205740">liste kutusu</translation>
 <translation id="6101327004457443354">ses kanalını aç</translation>
-<translation id="6119846243427417423">etkinleştir</translation>
 <translation id="6164829606128959761">ölçüm aracı</translation>
 <translation id="6270583010843788609">film zaman çizelgesi küçük resmi</translation>
 <translation id="6359256949422175976">film süresi göstergesinin küçük resmi</translation>
@@ -145,7 +138,6 @@
 <translation id="6790428901817661496">Oynat</translation>
 <translation id="6820355525329141109">Eklenti yüklenemedi.</translation>
 <translation id="6843725295806269523">sesi kapat</translation>
-<translation id="6845533974506654842">bas</translation>
 <translation id="6853785296079745596">alt yazıları gizle</translation>
 <translation id="6885760532393684712">dizin</translation>
 <translation id="6934078000481955284">blok alıntı</translation>
@@ -177,7 +169,6 @@
 <translation id="8244226242650769279">resim haritası</translation>
 <translation id="8284326494547611709">Altyazılar</translation>
 <translation id="835897206747267392">Geçersiz değer.</translation>
-<translation id="838869780401515933">işaretle</translation>
 <translation id="8433900881053900389">araç çubuğu</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> dosya</translation>
 <translation id="8451268428117625855">Lütfen bir dosya seçin.</translation>
@@ -192,7 +183,6 @@
 <translation id="8785498733064193001">oynatmayı başlat</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8987927404178983737">Ay</translation>
-<translation id="9002566407876343676">açma</translation>
 <translation id="901493112792887934">saniye olarak geçerli süre</translation>
 <translation id="9048119486235211610">gezinme</translation>
 <translation id="9050748414552849310">alt yazıları göster</translation>

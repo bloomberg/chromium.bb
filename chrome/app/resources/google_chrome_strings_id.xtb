@@ -6,10 +6,11 @@
 <translation id="1035334672863811645">masuk ke Chrome</translation>
 <translation id="1061441684050139317">Chrome memerlukan akses mikrofon untuk berbagi dengan situs ini.</translation>
 <translation id="1065672644894730302">Preferensi Anda tidak dapat dibaca. Beberapa fitur mungkin tidak tersedia dan perubahan pada preferensi tidak akan disimpan.</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> sebelumnya menggunakan Chrome</translation>
 <translation id="1104959162601287462">Tentang OS &amp;Chrome</translation>
 <translation id="110877069173485804">Ini Chrome Anda</translation>
 <translation id="123620459398936149">Chrome OS tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
-<translation id="127345590676626841">Chrome diperbarui secara otomatis sehingga Anda selalu memiliki versi terbaru. Saat unduhan ini selesai, Chrome akan dimulai ulang dan segera siap digunakan.</translation>
+<translation id="127345590676626841">Chrome diperbarui secara otomatis sehingga Anda selalu memiliki versi terbaru. Saat download ini selesai, Chrome akan dimulai ulang dan segera siap digunakan.</translation>
 <translation id="1302523850133262269">Harap tunggu selagi Chrome memasang pembaruan sistem terkini.</translation>
 <translation id="1350930993895295930">Chrome telah mendeteksi perilaku yang tidak biasa</translation>
 <translation id="1393853151966637042">Dapatkan bantuan tentang penggunaan Chrome</translation>
@@ -17,7 +18,6 @@
 <translation id="1434626383986940139">Aplikasi Chrome Canary</translation>
 <translation id="1457721931618994305">Memperbarui Google Chrome...</translation>
 <translation id="1469002951682717133">Peluncur Aplikasi Chrome</translation>
-<translation id="1475773083554142432">Chrome akan menyimpan ini dengan <ph name="SAVED_PASSWORD_LINK" /> dan mengingatnya saat Anda membutuhkannya lagi.</translation>
 <translation id="1480489203462860648">Cobalah, ini sudah dipasang</translation>
 <translation id="1553358976309200471">Perbarui browser Chrome</translation>
 <translation id="1587223624401073077">Google Chrome menggunakan kamera Anda.</translation>
@@ -41,7 +41,6 @@
 <translation id="2147651015520127414">Chrome memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini.</translation>
 <translation id="2246246234298806438">Google Chrome tidak dapat menampilkan pratinjau cetak jika penampil PDF default hilang.</translation>
 <translation id="2252923619938421629">Bantu menjadikan Google Chrome lebih baik dengan melaporkan setelan saat ini</translation>
-<translation id="225614027745146050">Selamat Datang</translation>
 <translation id="2286950485307333924">Anda sudah masuk ke Chrome</translation>
 <translation id="2290014774651636340">Kunci API Google tidak ada. Beberapa fungsi Google Chrome tidak akan berfungsi.</translation>
 <translation id="2290095356545025170">Apakah Anda yakin ingin mencopot penginstalan Google Chrome?</translation>
@@ -163,7 +162,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="565744775970812598"><ph name="FILE_NAME" /> mungkin berbahaya, sehingga Chrome memblokirnya.</translation>
 <translation id="568643307450491754">Cari bookmark Anda dalam menu Chrome atau di bilah bookmark.</translation>
 <translation id="573759479754913123">Tentang Chrome OS</translation>
-<translation id="5749068826913805084">Chrome memerlukan akses penyimpanan untuk mengunduh file.</translation>
+<translation id="5749068826913805084">Chrome memerlukan akses penyimpanan untuk mendownload file.</translation>
 <translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Tindakan ini akan menghapus $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chrome sebagai $2.}other{Tindakan ini akan menghapus $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chrome sebagai $2.}}</translation>
 <translation id="5855036575689098185">Perangkat lunak yang berjalan di komputer Anda tidak kompatibel dengan Google Chrome.</translation>
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
@@ -188,7 +187,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="6400076122676892962">Komputer ini akan segera berhenti menerima pembaruan Google Chrome karena Mac OS X 10.6, 10.7, dan 10.8 sudah tidak didukung.</translation>
 <translation id="6410540444482791104">Anda dapat membantu menjadikan Chrome lebih aman dan lebih mudah digunakan dengan mengirim sebagian informasi sistem dan konten halaman secara otomatis ke Google untuk membantu mendeteksi aplikasi dan situs berbahaya.</translation>
 <translation id="6470176598693778404">Komputer ini tidak akan menerima pembaruan Google Chrome lagi karena Mac OS X 10.6, 10.7, dan 10.8 sudah tidak didukung.</translation>
-<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Unduhan sedang berlangsung. Ingin membatalkan unduhan dan keluar dari Google Chrome?}other{# unduhan sedang berlangsung. Ingin membatalkan unduhan dan keluar dari Google Chrome?}}</translation>
+<translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Unduhan sedang berlangsung. Ingin membatalkan download dan keluar dari Google Chrome?}other{# download sedang berlangsung. Ingin membatalkan download dan keluar dari Google Chrome?}}</translation>
 <translation id="6566149418543181476">Memperbarui Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyinkronkan barang-barang Chrome. Untuk memperbarui preferensi sinkronisasi atau untuk menggunakan Chrome tanpa akun Google, kunjungi <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Disalin ke Chrome</translation>

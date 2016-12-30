@@ -21,20 +21,18 @@
 <translation id="388442998277590542">Не удалось загрузить страницу параметров <ph name="OPTIONS_PAGE" />.</translation>
 <translation id="4115165561519362854">Администратор установил, что для запуска приложения "<ph name="EXTENSION_NAME" />" необходима версия <ph name="EXTENSION_VERSION" /> или выше. Обновите приложение.</translation>
 <translation id="4233778200880751280">Не удалось загрузить страницу <ph name="ABOUT_PAGE" />.</translation>
-<translation id="4434145631756268951">{0,select, single{Выберите USB-устройство}multiple{Выберите USB-устройства}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Не удалось установить пакет из-за сбоя. Перезагрузите браузер и повторите попытку.</translation>
 <translation id="5026754133087629784">WebView: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Это расширение содержит файл ключа <ph name="KEY_PATH" />. Вероятно, это неприемлемо.</translation>
 <translation id="5627523580512561598">расширение <ph name="EXTENSION_NAME" /></translation>
-<translation id="5630931906013276297">{0,select, single{Выберите HID-устройство}multiple{Выберите HID-устройства}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Удаление расширения "<ph name="EXTENSION_NAME" />" на этом компьютере запрещено администратором</translation>
 <translation id="6027032947578871493">Неизвестный продукт <ph name="PRODUCT_ID" /> от <ph name="VENDOR_NAME" /> (серийный номер <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME" /> от поставщика <ph name="VENDOR_ID" /></translation>
 <translation id="6143635259298204954">Не удается распаковать расширение. Для безопасной распаковки расширения необходим путь к каталогу вашего профиля, не содержащий символьную ссылку. Такого пути для вашего профиля не существует.</translation>
-<translation id="616804573177634438">{0,select, single{Приложение "<ph name="APP_NAME" />" запрашивает доступ к устройству.}multiple{Приложение "<ph name="APP_NAME" />" запрашивает доступ к одному или нескольким устройствам.}other{UNUSED}}</translation>
 <translation id="641087317769093025">Не удалось распаковать расширение</translation>
+<translation id="6542618148162044354">Приложение "<ph name="APP_NAME" />" запрашивает доступ к нескольким устройствам.</translation>
 <translation id="657064425229075395">Не удалось загрузить фоновый скрипт <ph name="BACKGROUND_SCRIPT" />.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" />, поставщик: <ph name="VENDOR_NAME" /> (серийный номер: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Не удалось создать каталог для распаковки: <ph name="DIRECTORY_PATH" /></translation>
@@ -51,6 +49,7 @@
 <translation id="8636666366616799973">Недопустимый пакет. Подробные сведения: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">Расширение не может перенаправить сетевой запрос на <ph name="ATTEMPTED_REDIRECT_DESTINATION" />, поскольку другое расширение (<ph name="EXTENSION_NAME" />) перенаправило его на <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Распаковщик расширений</translation>
+<translation id="8761756413268424715">Приложение "<ph name="APP_NAME" />" запрашивает доступ к устройству.</translation>
 <translation id="8825366169884721447">Это расширение не может изменить заголовок запроса (<ph name="HEADER_NAME" />) из-за конфликта с другим расширением (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="9111791539553342076">Это расширение не может изменить заголовок ответа (<ph name="HEADER_NAME" />) из-за конфликта с другим расширением (<ph name="EXTENSION_NAME" />).</translation>
 </translationbundle>

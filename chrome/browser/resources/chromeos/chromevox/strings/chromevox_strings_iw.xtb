@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">en</translation>
 <translation id="2091933974477985526">אזור טקסט קודם הניתן לעריכה</translation>
 <translation id="2100350898815792233">כל סימני הפיסוק</translation>
+<translation id="2110480898214777136">הגדר גלישת טקסט מההתחלה לסוף או מהסוף להתחלה בתוך דף, תיבת דו-שיח או גורם מכיל אחר</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">מקש גישה:<ph name="KEY" /></translation>
 <translation id="2155457205053847599">שנה את הטבלה הנוכחית בברייל 6 נקודות על ידי בחירה באפשרות מתוך הרשימה בהמשך.</translation>
 <translation id="2169714232367507776">לחץ על הפריט הנוכחי</translation>
+<translation id="2179452035581866348">‏ChromeVox משתמש בצליל כדי לספק לך מידע נוסף וחשוב. למד מה המשמעות של כל צליל כדי להשתמש בצלילים האלו לניווט מהיר יותר. אחרי שתתרגל לצלילים, תוכל להשבית תיאורים מילוליים בדיבור ולהפעיל אותם רק כדי לקבל מידע חשוב על הדף. הנה רשימה של כל הצלילים והמשמעות שלהם.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{סגור סוגריים}two{# סימני סגור סוגריים}many{# סימני סגור סוגריים}other{# סימני סגור סוגריים}}</translation>
 <translation id="2199994615414171367">הביטוי המתמטי הקודם</translation>
 <translation id="2220529011494928058">דווח על בעיה</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">ראשי</translation>
 <translation id="2329324941084714723">חלונית כרטיסיות</translation>
 <translation id="2344193891939537199">בקרת תאריך ושעה</translation>
+<translation id="2347456970887948350">קישור</translation>
 <translation id="2359897517538099099">לא במצב טבלה.</translation>
 <translation id="241124561063364910">לאחר מכן</translation>
+<translation id="2416512023405990736">תיבת סימון שלא סומנה</translation>
 <translation id="2417569100218200841">פרטי תוכן</translation>
 <translation id="2422937916923936891">תיבת סימון של פריט תפריט</translation>
 <translation id="2428534162001909979">תפריטי פקודות</translation>
@@ -213,6 +217,7 @@
 <translation id="3223701887221307104"><ph name="NAME" />, כרטיסייה</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">קישור שהפעלת</translation>
+<translation id="3232388865800379423">לחצן קופץ</translation>
 <translation id="323731244387692321">‏פתח את העזרה של מקלדת ChromeVox</translation>
 <translation id="3241052487511142956">הקישור הקודם שבו ביקרת</translation>
 <translation id="3286390186030710347">מחוון</translation>
@@ -221,6 +226,7 @@
 <translation id="3311969765485641742">‏הקש על Alt+Shift+A כדי לעיין בהתראות</translation>
 <translation id="3312997241656799641">הקישור הבא שבו ביקרת</translation>
 <translation id="3313245066383501820">‏מקש הצירוף של ChromeVox</translation>
+<translation id="3317212938060708859">מחוון</translation>
 <translation id="3321460131042519426">הפעל גלישת שורות</translation>
 <translation id="3322936298410871309">הכותרת הקודמת של רמה 1</translation>
 <translation id="3323447499041942178">תיבת טקסט</translation>
@@ -279,6 +285,7 @@
 <translation id="3457000393508828486">לחוץ חלקית</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, כבה</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, לחצן</translation>
+<translation id="3466530247399808663">הקשה על מקש שלא מוגדרת לו פעולה</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> עד <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{סוגר מרובע ימני}two{# סימני סוגר מרובע ימני}many{# סימני סוגר מרובע ימני}other{# סימני סוגר מרובע ימני}}</translation>
@@ -286,6 +293,7 @@
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{סימן שאלה}two{# סימני שאלה}many{# סימני שאלה}other{# סימני שאלה}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{סימן קארה (^)}two{# סימני קארה (^)}many{# סימני קארה (^)}other{# סימני קארה (^)}}</translation>
+<translation id="352577523970648069">שדה טקסט שניתן לעריכה</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, תיבת הסימון לא מסומנת</translation>
 <translation id="3599054940393788245">לא בתוך ביטוי מתמטי</translation>
 <translation id="3616113530831147358">אודיו</translation>
@@ -325,10 +333,12 @@
 <translation id="4047216625641135770">סימון</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
+<translation id="4058278702844053247">מתבצעת טעינת דף</translation>
 <translation id="4065205963140826639">נסה להקיש על מקש החיפוש ועל החץ ימינה כדי למצוא את לחצן 'הבא'. לאחר מכן הקש על מקש החיפוש ומקש הרווח כדי ללחוץ עליו.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{טילדה (~)}two{# סימני טילדה (~)}many{# סימני טילדה (~)}other{# סימני טילדה (~)}}</translation>
 <translation id="409334809956508737">האובייקט הקודם</translation>
 <translation id="4099274309791143834">כולל תפריט משנה</translation>
+<translation id="4101527861445851766">תיבת סימון שסומנה</translation>
 <translation id="4107807507418787238">אין תא למטה.</translation>
 <translation id="4116415223832267137">התראה</translation>
 <translation id="4147126331795725888">אין עוד פקד.</translation>
@@ -338,6 +348,7 @@
 <translation id="4173994908659439270">אין עוד שדה טקסט הניתן לעריכה.</translation>
 <translation id="4176463684765177261">מושבת</translation>
 <translation id="4188530942454211480">המשפט הקודם</translation>
+<translation id="4191918948604314587">לחצן</translation>
 <translation id="4202186506458631436">העבר ימינה</translation>
 <translation id="4206289001967551965">בתוך טבלה</translation>
 <translation id="4215733775853809057">המחוון הבא</translation>
@@ -461,6 +472,7 @@
 <translation id="5374320867641260420">אין עוד לחצן.</translation>
 <translation id="5382299583965267720">אין עוד כותרת ברמה 1.</translation>
 <translation id="5402367795255837559">ברייל</translation>
+<translation id="5402791055281059602">התראה שמוצגת בחלון קופץ</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{נקודה ופסיק}two{# סימני נקודה ופסיק}many{# סימני נקודה ופסיק}other{# סימני נקודה ופסיק}}</translation>
 <translation id="5411891038905756502">אין נקודת דילוג קודמת.</translation>
 <translation id="5417034931411865818">לחץ על הפריט שמתחת למפתח הניתוב $1</translation>
@@ -554,6 +566,7 @@
 <translation id="6119955456199054975">סוף התא.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">רווח</translation>
+<translation id="6132506484792346370">תיבת רשימה או תיבה משולבת</translation>
 <translation id="6138576064440631958">אקורד $1</translation>
 <translation id="6142308968191113180">כותרת 4</translation>
 <translation id="6169420925157477918">תמונה עם תיאור ארוך</translation>
@@ -567,6 +580,7 @@
 <translation id="6282062888058716985">nav</translation>
 <translation id="6290434000785343030">אין עוד תיבה משולבת.</translation>
 <translation id="6307969636681130414">לחוץ</translation>
+<translation id="6322856989298155004">צלילים</translation>
 <translation id="6324551002951139333">Grammatical mistake detected</translation>
 <translation id="6348657800373377022">תיבה משולבת</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{תבליט}two{# תבליטים}many{# תבליטים}other{# תבליטים}}</translation>
@@ -597,6 +611,7 @@
 <translation id="6657128831881431364">סרגל התקדמות</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">מסמך</translation>
+<translation id="6688209025607531203">התראה שלא מוצגת בחלון קופץ</translation>
 <translation id="6697092096875747123">התיבה המשולבת הקודמת</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{סימן קריאה}two{# סימני קריאה}many{# סימני קריאה}other{# סימני קריאה}}</translation>
 <translation id="6710213216561001401">הקודם</translation>

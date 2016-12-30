@@ -54,10 +54,8 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="2429753432712299108">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Kabla hujakubali, tafadhali thibitisha kwamba nenosiri hili linaonyeshwa kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Hitilafu fulani imetokea</translation>
 <translation id="2509468283778169019">Caps Lock imewashwa.</translation>
-<translation id="252373100621549798">Onyesho Lisilojulikana</translation>
 <translation id="2532589005999780174">Hali ya juu ya utofautishaji</translation>
 <translation id="2562916301614567480">Mtandao Binafsi</translation>
-<translation id="2661637000095600270">Haikuweza kuakisi maonyesho kwa kuwa hakuna ubora unaoweza kutumika. Badala yake imefungua eneo-kazi lililopanuliwa. Bofya ili utume ripoti.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH" />: Inaunganisha...</translation>
 <translation id="2700058918926273959">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />. Utaondolewa katika akaunti.</translation>
 <translation id="2727977024730340865">Imechomekwa katika chaja ya kawi ya chini. Huenda kuchaji kwa betri hakutakuwa kuzuri.</translation>
@@ -114,7 +112,6 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="3846575436967432996">Hakuna maelezo ya mtandao yanayopatikana</translation>
 <translation id="3866182280516392520">Anwani ya IPv6</translation>
 <translation id="3891340733213178823">Bonyeza Ctrl+Shift+Q mara mbili ili kuondoka katika akaunti.</translation>
-<translation id="3892641579809465218">Onyesho la Ndani</translation>
 <translation id="3893630138897523026">ChromeVox (maoni yaliyotamkwa)</translation>
 <translation id="3899995891769452915">Kuweka data kwa kutamka</translation>
 <translation id="3901991538546252627">Inaunganisha kwenye <ph name="NAME" /></translation>
@@ -177,7 +174,8 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="5977415296283489383">Vipokea sauti</translation>
 <translation id="5978382165065462689">Kushiriki udhibiti wa skrini yako kupitia Usaidizi wa Mbali.</translation>
 <translation id="5980301590375426705">Maliza Ugeni</translation>
-<translation id="6041154455840261787">Hali ya Utofautishaji imewashwa. Bonyeza Search+Shift+H tena ili uigeuze na kuizima.</translation>
+<translation id="6041154455840261787">Utofautishaji wa Hali ya Juu umewashwa. Bonyeza Search+Shift+H tena ili ugeuze na kuuzima.</translation>
+<translation id="6043212731627905357">Skrini hii haiingiliani na kifaa chako cha <ph name="DEVICE_TYPE" /> (Skrini haitumiki).</translation>
 <translation id="6043994281159824495">Ondoka kwenye akaunti sasa hivi</translation>
 <translation id="6047696787498798094">Itaacha kushiriki skrini unapobadilisha hadi kwa mtumiaji mwingine. Je, unataka kuendelea?</translation>
 <translation id="6062360702481658777">Utaondolewa kwenye akaunti kiotomatiki baada ya <ph name="LOGOUT_TIME_LEFT" />.</translation>
@@ -186,7 +184,6 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6144938890088808325">Tusaidie kuboresha Chromebook</translation>
 <translation id="615957422585914272">Onyesha kibodi ya skrini</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
-<translation id="6203030746557259519">Onyesho Pepe</translation>
 <translation id="6248847161401822652">Bofya "Control" na "Shift" na Q kwa pamoja mara mbili ili kuacha.</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Inaanza kutumia...</translation>
 <translation id="6297287540776456956">Tumia stylus kuchagua eneo</translation>
@@ -209,6 +206,7 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6700713906295497288">Kitufe cha menyu ya IME</translation>
 <translation id="6713285437468012787">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kimeoanishwa na sasa kinapatikana kwa watumiaji wote. Unaweza kuondoa uoanishaji huu kwa kutumia Mipangilio.</translation>
 <translation id="6785414152754474415">Betri imejaa <ph name="PERCENTAGE" />% na inachaji.</translation>
+<translation id="6803622936009808957">Haikuweza kuakisi maonyesho kwa kuwa hakuna misongo inayoweza kutumiwa iliyopatikana. Badala yake imeingia eneo-kazi lililopanuliwa.</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Amilisha <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Jiunge na mwingine...</translation>
@@ -275,7 +273,6 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="8878886163241303700">Kuongeza skrini</translation>
 <translation id="8938800817013097409">Kifaa cha USB-C (mlango wa kulia nyuma)</translation>
 <translation id="8940956008527784070">Betri inaisha (<ph name="PERCENTAGE" />%)</translation>
-<translation id="9008540565042607572">Dear Monitor, it's not working out between us. (Kompyuta hiyo haitumiki. Bofya ili utume ripoti.)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9080206825613744995">Maikrofoni inatumika</translation>
 <translation id="9089416786594320554">Mbinu Ingizo</translation>
@@ -285,5 +282,6 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="923686485342484400">Bonyeza Control Shift Q mara mbili ili kuondoka katika akaunti.</translation>
 <translation id="938582441709398163">Mtandazo wa Kibodi</translation>
 <translation id="939252827960237676">Imeshindwa kuhifadhi picha ya skrini</translation>
+<translation id="945522503751344254">Tuma maoni</translation>
 <translation id="952992212772159698">Haijaamilishwa</translation>
 </translationbundle>

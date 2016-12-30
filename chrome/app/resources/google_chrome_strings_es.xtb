@@ -8,6 +8,7 @@
 <translation id="1065672644894730302">No se pueden leer tus preferencias.
 
 Es posible que algunas funciones no estén disponibles y que no se guarden los cambios que hagas en las preferencias.</translation>
+<translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> usaba Chrome anteriormente</translation>
 <translation id="1104959162601287462">Información de &amp;Chrome OS</translation>
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
 <translation id="123620459398936149">Chrome OS no ha podido sincronizar tus datos. Actualiza tu frase de contraseña de sincronización.</translation>
@@ -19,7 +20,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1434626383986940139">Aplicaciones de Chrome Canary</translation>
 <translation id="1457721931618994305">Actualizando Google Chrome...</translation>
 <translation id="1469002951682717133">Menú de aplicaciones de Chrome</translation>
-<translation id="1475773083554142432">Chrome almacenará esta contraseña en <ph name="SAVED_PASSWORD_LINK" /> y la recordará la próxima vez que la necesites.</translation>
 <translation id="1480489203462860648">Probarlo (ya instalado)</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
 <translation id="1587223624401073077">Google Chrome está utilizando la cámara.</translation>
@@ -45,7 +45,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2147651015520127414">Chrome ha verificado que <ph name="ISSUER" /> emitió el certificado de este sitio web.</translation>
 <translation id="2246246234298806438">Google Chrome no puede mostrar la vista previa de impresión si falta el visor de PDFs integrado.</translation>
 <translation id="2252923619938421629">Ayuda a mejorar Google Chrome notificando la configuración actual</translation>
-<translation id="225614027745146050">Te damos la bienvenida</translation>
 <translation id="2286950485307333924">Has iniciado sesión en Chrome</translation>
 <translation id="2290014774651636340">Faltan las claves de la API de Google. Se inhabilitarán algunas funciones de Google Chrome.</translation>
 <translation id="2290095356545025170">¿Seguro que quieres desinstalar Google Chrome?</translation>
