@@ -354,8 +354,11 @@ class VertexShaderVideoTransform {
   DISALLOW_COPY_AND_ASSIGN(VertexShaderVideoTransform);
 };
 
-class FragmentTexBlendMode {
+class FragmentShaderBase {
  public:
+  std::string GetShaderString(TexCoordPrecision precision,
+                              SamplerType sampler) const;
+
   int backdrop_location() const { return backdrop_location_; }
   int original_backdrop_location() const { return original_backdrop_location_; }
   int backdrop_rect_location() const { return backdrop_rect_location_; }
@@ -369,7 +372,8 @@ class FragmentTexBlendMode {
   bool mask_for_background() const { return mask_for_background_; }
 
  protected:
-  FragmentTexBlendMode();
+  FragmentShaderBase();
+  virtual std::string GetShaderSource() const = 0;
 
   std::string SetBlendModeFunctions(const std::string& shader_string) const;
 
@@ -386,7 +390,7 @@ class FragmentTexBlendMode {
   std::string GetBlendFunctionBodyForRGB() const;
 };
 
-class FragmentTexAlphaBinding : public FragmentTexBlendMode {
+class FragmentTexAlphaBinding : public FragmentShaderBase {
  public:
   FragmentTexAlphaBinding();
 
@@ -404,7 +408,7 @@ class FragmentTexAlphaBinding : public FragmentTexBlendMode {
   DISALLOW_COPY_AND_ASSIGN(FragmentTexAlphaBinding);
 };
 
-class FragmentTexColorMatrixAlphaBinding : public FragmentTexBlendMode {
+class FragmentTexColorMatrixAlphaBinding : public FragmentShaderBase {
  public:
     FragmentTexColorMatrixAlphaBinding();
 
@@ -424,7 +428,7 @@ class FragmentTexColorMatrixAlphaBinding : public FragmentTexBlendMode {
     int color_offset_location_;
 };
 
-class FragmentTexOpaqueBinding : public FragmentTexBlendMode {
+class FragmentTexOpaqueBinding : public FragmentShaderBase {
  public:
   FragmentTexOpaqueBinding();
 
@@ -442,7 +446,7 @@ class FragmentTexOpaqueBinding : public FragmentTexBlendMode {
   DISALLOW_COPY_AND_ASSIGN(FragmentTexOpaqueBinding);
 };
 
-class FragmentTexBackgroundBinding : public FragmentTexBlendMode {
+class FragmentTexBackgroundBinding : public FragmentShaderBase {
  public:
   FragmentTexBackgroundBinding();
 
@@ -460,116 +464,87 @@ class FragmentTexBackgroundBinding : public FragmentTexBlendMode {
 };
 
 class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
- public:
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+ private:
+  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderRGBATexPremultiplyAlpha : public FragmentTexOpaqueBinding {
- public:
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+ private:
+  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderTexBackgroundVaryingAlpha
     : public FragmentTexBackgroundBinding {
- public:
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+ private:
+  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderTexBackgroundPremultiplyAlpha
     : public FragmentTexBackgroundBinding {
- public:
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+ private:
+  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderRGBATexAlpha : public FragmentTexAlphaBinding {
  public:
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
   void FillLocations(ShaderLocations* locations) const;
+
+ private:
+  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderRGBATexColorMatrixAlpha
     : public FragmentTexColorMatrixAlphaBinding {
  public:
-  std::string GetShaderString(TexCoordPrecision precision,
-                              SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
   void FillLocations(ShaderLocations* locations) const;
+
+ private:
+  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderRGBATexOpaque : public FragmentTexOpaqueBinding {
- public:
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+ private:
+  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderRGBATex : public FragmentTexOpaqueBinding {
- public:
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+ private:
+  std::string GetShaderSource() const override;
 };
 
 // Swizzles the red and blue component of sampled texel with alpha.
 class FragmentShaderRGBATexSwizzleAlpha : public FragmentTexAlphaBinding {
- public:
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+ private:
+  std::string GetShaderSource() const override;
 };
 
 // Swizzles the red and blue component of sampled texel without alpha.
 class FragmentShaderRGBATexSwizzleOpaque : public FragmentTexOpaqueBinding {
- public:
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+ private:
+  std::string GetShaderSource() const override;
 };
 
-class FragmentShaderRGBATexAlphaAA : public FragmentTexBlendMode {
+class FragmentShaderRGBATexAlphaAA : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaAA();
 
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
             int* base_uniform_index);
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
   void FillLocations(ShaderLocations* locations) const;
 
   int alpha_location() const { return alpha_location_; }
   int sampler_location() const { return sampler_location_; }
 
  private:
+  std::string GetShaderSource() const override;
   int sampler_location_;
   int alpha_location_;
 
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaAA);
 };
 
-class FragmentTexClampAlphaAABinding : public FragmentTexBlendMode {
+class FragmentTexClampAlphaAABinding : public FragmentShaderBase {
  public:
   FragmentTexClampAlphaAABinding();
 
@@ -592,30 +567,20 @@ class FragmentTexClampAlphaAABinding : public FragmentTexBlendMode {
 
 class FragmentShaderRGBATexClampAlphaAA
     : public FragmentTexClampAlphaAABinding {
- public:
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+ private:
+  std::string GetShaderSource() const override;
 };
 
 // Swizzles the red and blue component of sampled texel.
 class FragmentShaderRGBATexClampSwizzleAlphaAA
     : public FragmentTexClampAlphaAABinding {
- public:
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+ private:
+  std::string GetShaderSource() const override;
 };
 
-class FragmentShaderRGBATexAlphaMask : public FragmentTexBlendMode {
+class FragmentShaderRGBATexAlphaMask : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaMask();
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
   void FillLocations(ShaderLocations* locations) const;
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
@@ -631,6 +596,7 @@ class FragmentShaderRGBATexAlphaMask : public FragmentTexBlendMode {
   }
 
  private:
+  std::string GetShaderSource() const override;
   int sampler_location_;
   int mask_sampler_location_;
   int alpha_location_;
@@ -640,13 +606,9 @@ class FragmentShaderRGBATexAlphaMask : public FragmentTexBlendMode {
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaMask);
 };
 
-class FragmentShaderRGBATexAlphaMaskAA : public FragmentTexBlendMode {
+class FragmentShaderRGBATexAlphaMaskAA : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaMaskAA();
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
   void FillLocations(ShaderLocations* locations) const;
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
@@ -662,6 +624,7 @@ class FragmentShaderRGBATexAlphaMaskAA : public FragmentTexBlendMode {
   }
 
  private:
+  std::string GetShaderSource() const override;
   int sampler_location_;
   int mask_sampler_location_;
   int alpha_location_;
@@ -671,14 +634,9 @@ class FragmentShaderRGBATexAlphaMaskAA : public FragmentTexBlendMode {
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaMaskAA);
 };
 
-class FragmentShaderRGBATexAlphaMaskColorMatrixAA
-    : public FragmentTexBlendMode {
+class FragmentShaderRGBATexAlphaMaskColorMatrixAA : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaMaskColorMatrixAA();
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
   void FillLocations(ShaderLocations* locations) const;
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
@@ -696,6 +654,7 @@ class FragmentShaderRGBATexAlphaMaskColorMatrixAA
   int color_offset_location() const { return color_offset_location_; }
 
  private:
+  std::string GetShaderSource() const override;
   int sampler_location_;
   int mask_sampler_location_;
   int alpha_location_;
@@ -705,13 +664,9 @@ class FragmentShaderRGBATexAlphaMaskColorMatrixAA
   int color_offset_location_;
 };
 
-class FragmentShaderRGBATexAlphaColorMatrixAA : public FragmentTexBlendMode {
+class FragmentShaderRGBATexAlphaColorMatrixAA : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaColorMatrixAA();
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
   void FillLocations(ShaderLocations* locations) const;
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
@@ -722,19 +677,16 @@ class FragmentShaderRGBATexAlphaColorMatrixAA : public FragmentTexBlendMode {
   int color_offset_location() const { return color_offset_location_; }
 
  private:
+  std::string GetShaderSource() const override;
   int sampler_location_;
   int alpha_location_;
   int color_matrix_location_;
   int color_offset_location_;
 };
 
-class FragmentShaderRGBATexAlphaMaskColorMatrix : public FragmentTexBlendMode {
+class FragmentShaderRGBATexAlphaMaskColorMatrix : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaMaskColorMatrix();
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
   void FillLocations(ShaderLocations* locations) const;
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
@@ -752,6 +704,7 @@ class FragmentShaderRGBATexAlphaMaskColorMatrix : public FragmentTexBlendMode {
   int color_offset_location() const { return color_offset_location_; }
 
  private:
+  std::string GetShaderSource() const override;
   int sampler_location_;
   int mask_sampler_location_;
   int alpha_location_;
@@ -761,12 +714,9 @@ class FragmentShaderRGBATexAlphaMaskColorMatrix : public FragmentTexBlendMode {
   int color_offset_location_;
 };
 
-class FragmentShaderYUVVideo : public FragmentTexBlendMode {
+class FragmentShaderYUVVideo : public FragmentShaderBase {
  public:
   FragmentShaderYUVVideo();
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-
   void SetFeatures(bool use_alpha_texture, bool use_nv12, bool use_color_lut);
 
   void Init(gpu::gles2::GLES2Interface* context,
@@ -789,6 +739,8 @@ class FragmentShaderYUVVideo : public FragmentTexBlendMode {
   int resource_offset_location() const { return resource_offset_location_; }
 
  private:
+  std::string GetShaderSource() const override;
+
   bool use_alpha_texture_;
   bool use_nv12_;
   bool use_color_lut_;
@@ -810,13 +762,9 @@ class FragmentShaderYUVVideo : public FragmentTexBlendMode {
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderYUVVideo);
 };
 
-class FragmentShaderColor : public FragmentTexBlendMode {
+class FragmentShaderColor : public FragmentShaderBase {
  public:
   FragmentShaderColor();
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
 
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
@@ -824,18 +772,15 @@ class FragmentShaderColor : public FragmentTexBlendMode {
   int color_location() const { return color_location_; }
 
  private:
+  std::string GetShaderSource() const override;
   int color_location_;
 
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderColor);
 };
 
-class FragmentShaderColorAA : public FragmentTexBlendMode {
+class FragmentShaderColorAA : public FragmentShaderBase {
  public:
   FragmentShaderColorAA();
-  std::string GetShaderString(
-      TexCoordPrecision precision, SamplerType sampler) const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
 
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
@@ -843,6 +788,7 @@ class FragmentShaderColorAA : public FragmentTexBlendMode {
   int color_location() const { return color_location_; }
 
  private:
+  std::string GetShaderSource() const override;
   int color_location_;
 
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderColorAA);

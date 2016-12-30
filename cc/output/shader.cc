@@ -29,10 +29,6 @@ std::string StripLambda(const char(&shader)[size]) {
 // handling them correctly. StipLambda removes this.
 #define SHADER0(Src) StripLambda(#Src)
 #define VERTEX_SHADER(Head, Body) SetVertexShaderDefines(Head + Body)
-#define FRAGMENT_SHADER(Head, Body) \
-  SetFragmentTexCoordPrecision(     \
-      precision,                    \
-      SetFragmentSamplerType(sampler, SetBlendModeFunctions(Head + Body)))
 
 using gpu::gles2::GLES2Interface;
 
@@ -769,15 +765,21 @@ std::string VertexShaderVideoTransform::GetShaderBody() {
     backdrop_rect_location_ = locations[POS + 2];          \
   }
 
-FragmentTexBlendMode::FragmentTexBlendMode()
+FragmentShaderBase::FragmentShaderBase()
     : backdrop_location_(-1),
       original_backdrop_location_(-1),
       backdrop_rect_location_(-1),
       blend_mode_(BLEND_MODE_NONE),
-      mask_for_background_(false) {
+      mask_for_background_(false) {}
+
+std::string FragmentShaderBase::GetShaderString(TexCoordPrecision precision,
+                                                SamplerType sampler) const {
+  return SetFragmentTexCoordPrecision(
+      precision, SetFragmentSamplerType(
+                     sampler, SetBlendModeFunctions(GetShaderSource())));
 }
 
-std::string FragmentTexBlendMode::SetBlendModeFunctions(
+std::string FragmentShaderBase::SetBlendModeFunctions(
     const std::string& shader_string) const {
   if (shader_string.find("ApplyBlendMode") == std::string::npos)
     return shader_string;
@@ -829,7 +831,7 @@ std::string FragmentTexBlendMode::SetBlendModeFunctions(
          kFunctionApplyBlendMode + shader_string;
 }
 
-std::string FragmentTexBlendMode::GetHelperFunctions() const {
+std::string FragmentShaderBase::GetHelperFunctions() const {
   static const std::string kFunctionHardLight = SHADER0([]() {
     vec3 hardLight(vec4 src, vec4 dst) {
       vec3 result;
@@ -990,7 +992,7 @@ std::string FragmentTexBlendMode::GetHelperFunctions() const {
   }
 }
 
-std::string FragmentTexBlendMode::GetBlendFunction() const {
+std::string FragmentShaderBase::GetBlendFunction() const {
   return "vec4 Blend(vec4 src, vec4 dst) {"
          "    vec4 result;"
          "    result.a = src.a + (1.0 - src.a) * dst.a;" +
@@ -999,7 +1001,7 @@ std::string FragmentTexBlendMode::GetBlendFunction() const {
          "}";
 }
 
-std::string FragmentTexBlendMode::GetBlendFunctionBodyForRGB() const {
+std::string FragmentShaderBase::GetBlendFunctionBodyForRGB() const {
   switch (blend_mode_) {
     case BLEND_MODE_NORMAL:
       return "result.rgb = src.rgb + dst.rgb * (1.0 - src.a);";
@@ -1143,23 +1145,12 @@ void FragmentTexOpaqueBinding::Init(GLES2Interface* context,
   sampler_location_ = locations[0];
 }
 
-std::string FragmentShaderRGBATexAlpha::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexAlpha::GetShaderHead() {
+std::string FragmentShaderRGBATexAlpha::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
     uniform SamplerType s_texture;
     uniform float alpha;
-  });
-}
-
-std::string FragmentShaderRGBATexAlpha::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       gl_FragColor = ApplyBlendMode(texColor * alpha, 0.0);
@@ -1175,13 +1166,7 @@ void FragmentShaderRGBATexAlpha::FillLocations(
   locations->backdrop_rect = backdrop_rect_location();
 }
 
-std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderHead() {
+std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
@@ -1189,11 +1174,6 @@ std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderHead() {
     uniform float alpha;
     uniform mat4 colorMatrix;
     uniform vec4 colorOffset;
-  });
-}
-
-std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       float nonZeroAlpha = max(texColor.a, 0.00001);
@@ -1216,23 +1196,12 @@ void FragmentShaderRGBATexColorMatrixAlpha::FillLocations(
   locations->backdrop_rect = backdrop_rect_location();
 }
 
-std::string FragmentShaderRGBATexVaryingAlpha::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexVaryingAlpha::GetShaderHead() {
+std::string FragmentShaderRGBATexVaryingAlpha::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
     varying float v_alpha;
     uniform SamplerType s_texture;
-  });
-}
-
-std::string FragmentShaderRGBATexVaryingAlpha::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       gl_FragColor = texColor * v_alpha;
@@ -1240,23 +1209,12 @@ std::string FragmentShaderRGBATexVaryingAlpha::GetShaderBody() {
   });
 }
 
-std::string FragmentShaderRGBATexPremultiplyAlpha::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexPremultiplyAlpha::GetShaderHead() {
+std::string FragmentShaderRGBATexPremultiplyAlpha::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
     varying float v_alpha;
     uniform SamplerType s_texture;
-  });
-}
-
-std::string FragmentShaderRGBATexPremultiplyAlpha::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       texColor.rgb *= texColor.a;
@@ -1291,24 +1249,13 @@ void FragmentTexBackgroundBinding::Init(GLES2Interface* context,
   DCHECK_NE(background_color_location_, -1);
 }
 
-std::string FragmentShaderTexBackgroundVaryingAlpha::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderTexBackgroundVaryingAlpha::GetShaderHead() {
+std::string FragmentShaderTexBackgroundVaryingAlpha::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
     varying float v_alpha;
     uniform vec4 background_color;
     uniform SamplerType s_texture;
-  });
-}
-
-std::string FragmentShaderTexBackgroundVaryingAlpha::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       texColor += background_color * (1.0 - texColor.a);
@@ -1317,24 +1264,14 @@ std::string FragmentShaderTexBackgroundVaryingAlpha::GetShaderBody() {
   });
 }
 
-std::string FragmentShaderTexBackgroundPremultiplyAlpha::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderTexBackgroundPremultiplyAlpha::GetShaderHead() {
+std::string FragmentShaderTexBackgroundPremultiplyAlpha::GetShaderSource()
+    const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
     varying float v_alpha;
     uniform vec4 background_color;
     uniform SamplerType s_texture;
-  });
-}
-
-std::string FragmentShaderTexBackgroundPremultiplyAlpha::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       texColor.rgb *= texColor.a;
@@ -1344,22 +1281,11 @@ std::string FragmentShaderTexBackgroundPremultiplyAlpha::GetShaderBody() {
   });
 }
 
-std::string FragmentShaderRGBATexOpaque::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexOpaque::GetShaderHead() {
+std::string FragmentShaderRGBATexOpaque::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
     uniform SamplerType s_texture;
-  });
-}
-
-std::string FragmentShaderRGBATexOpaque::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       gl_FragColor = vec4(texColor.rgb, 1.0);
@@ -1367,42 +1293,21 @@ std::string FragmentShaderRGBATexOpaque::GetShaderBody() {
   });
 }
 
-std::string FragmentShaderRGBATex::GetShaderString(TexCoordPrecision precision,
-                                                   SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATex::GetShaderHead() {
+std::string FragmentShaderRGBATex::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
     uniform SamplerType s_texture;
-  });
-}
-
-std::string FragmentShaderRGBATex::GetShaderBody() {
-  return SHADER0([]() {
     void main() { gl_FragColor = TextureLookup(s_texture, v_texCoord); }
   });
 }
 
-std::string FragmentShaderRGBATexSwizzleAlpha::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexSwizzleAlpha::GetShaderHead() {
+std::string FragmentShaderRGBATexSwizzleAlpha::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
     uniform SamplerType s_texture;
     uniform float alpha;
-  });
-}
-
-std::string FragmentShaderRGBATexSwizzleAlpha::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       gl_FragColor =
@@ -1411,22 +1316,11 @@ std::string FragmentShaderRGBATexSwizzleAlpha::GetShaderBody() {
   });
 }
 
-std::string FragmentShaderRGBATexSwizzleOpaque::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexSwizzleOpaque::GetShaderHead() {
+std::string FragmentShaderRGBATexSwizzleOpaque::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
     uniform SamplerType s_texture;
-  });
-}
-
-std::string FragmentShaderRGBATexSwizzleOpaque::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       gl_FragColor = vec4(texColor.z, texColor.y, texColor.x, 1.0);
@@ -1457,24 +1351,13 @@ void FragmentShaderRGBATexAlphaAA::Init(GLES2Interface* context,
   BLEND_MODE_SET_LOCATIONS(locations, 2);
 }
 
-std::string FragmentShaderRGBATexAlphaAA::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexAlphaAA::GetShaderHead() {
+std::string FragmentShaderRGBATexAlphaAA::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     uniform SamplerType s_texture;
     uniform float alpha;
     varying TexCoordPrecision vec2 v_texCoord;
     varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-  });
-}
-
-std::string FragmentShaderRGBATexAlphaAA::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       vec4 d4 = min(edge_dist[0], edge_dist[1]);
@@ -1518,13 +1401,7 @@ void FragmentTexClampAlphaAABinding::Init(GLES2Interface* context,
   fragment_tex_transform_location_ = locations[2];
 }
 
-std::string FragmentShaderRGBATexClampAlphaAA::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexClampAlphaAA::GetShaderHead() {
+std::string FragmentShaderRGBATexClampAlphaAA::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     uniform SamplerType s_texture;
@@ -1532,11 +1409,6 @@ std::string FragmentShaderRGBATexClampAlphaAA::GetShaderHead() {
     uniform TexCoordPrecision vec4 fragmentTexTransform;
     varying TexCoordPrecision vec2 v_texCoord;
     varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-  });
-}
-
-std::string FragmentShaderRGBATexClampAlphaAA::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       TexCoordPrecision vec2 texCoord =
           clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw +
@@ -1550,13 +1422,7 @@ std::string FragmentShaderRGBATexClampAlphaAA::GetShaderBody() {
   });
 }
 
-std::string FragmentShaderRGBATexClampSwizzleAlphaAA::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexClampSwizzleAlphaAA::GetShaderHead() {
+std::string FragmentShaderRGBATexClampSwizzleAlphaAA::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     uniform SamplerType s_texture;
@@ -1564,11 +1430,6 @@ std::string FragmentShaderRGBATexClampSwizzleAlphaAA::GetShaderHead() {
     uniform TexCoordPrecision vec4 fragmentTexTransform;
     varying TexCoordPrecision vec2 v_texCoord;
     varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-  });
-}
-
-std::string FragmentShaderRGBATexClampSwizzleAlphaAA::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       TexCoordPrecision vec2 texCoord =
           clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw +
@@ -1617,13 +1478,7 @@ void FragmentShaderRGBATexAlphaMask::Init(GLES2Interface* context,
   BLEND_MODE_SET_LOCATIONS(locations, 5);
 }
 
-std::string FragmentShaderRGBATexAlphaMask::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexAlphaMask::GetShaderHead() {
+std::string FragmentShaderRGBATexAlphaMask::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
@@ -1632,11 +1487,6 @@ std::string FragmentShaderRGBATexAlphaMask::GetShaderHead() {
     uniform TexCoordPrecision vec2 maskTexCoordScale;
     uniform TexCoordPrecision vec2 maskTexCoordOffset;
     uniform float alpha;
-  });
-}
-
-std::string FragmentShaderRGBATexAlphaMask::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = texture2D(s_texture, v_texCoord);
       TexCoordPrecision vec2 maskTexCoord =
@@ -1697,13 +1547,7 @@ void FragmentShaderRGBATexAlphaMaskAA::Init(GLES2Interface* context,
   BLEND_MODE_SET_LOCATIONS(locations, 5);
 }
 
-std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderHead() {
+std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     uniform sampler2D s_texture;
@@ -1713,11 +1557,6 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderHead() {
     uniform float alpha;
     varying TexCoordPrecision vec2 v_texCoord;
     varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-  });
-}
-
-std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = texture2D(s_texture, v_texCoord);
       TexCoordPrecision vec2 maskTexCoord =
@@ -1788,13 +1627,8 @@ void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
   BLEND_MODE_SET_LOCATIONS(locations, 7);
 }
 
-std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderHead() {
+std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderSource()
+    const {
   return SHADER0([]() {
     precision mediump float;
     uniform sampler2D s_texture;
@@ -1806,11 +1640,6 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderHead() {
     uniform float alpha;
     varying TexCoordPrecision vec2 v_texCoord;
     varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-  });
-}
-
-std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = texture2D(s_texture, v_texCoord);
       float nonZeroAlpha = max(texColor.a, 0.00001);
@@ -1875,13 +1704,7 @@ void FragmentShaderRGBATexAlphaColorMatrixAA::Init(GLES2Interface* context,
   BLEND_MODE_SET_LOCATIONS(locations, 4);
 }
 
-std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderHead() {
+std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     uniform SamplerType s_texture;
@@ -1890,11 +1713,6 @@ std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderHead() {
     uniform vec4 colorOffset;
     varying TexCoordPrecision vec2 v_texCoord;
     varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-  });
-}
-
-std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       float nonZeroAlpha = max(texColor.a, 0.00001);
@@ -1959,13 +1777,7 @@ void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(GLES2Interface* context,
   BLEND_MODE_SET_LOCATIONS(locations, 7);
 }
 
-std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderHead() {
+std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
@@ -1976,11 +1788,6 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderHead() {
     uniform mat4 colorMatrix;
     uniform vec4 colorOffset;
     uniform float alpha;
-  });
-}
-
-std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 texColor = texture2D(s_texture, v_texCoord);
       float nonZeroAlpha = max(texColor.a, 0.00001);
@@ -2085,8 +1892,7 @@ void FragmentShaderYUVVideo::Init(GLES2Interface* context,
   uv_clamp_rect_location_ = locations[12];
 }
 
-std::string FragmentShaderYUVVideo::GetShaderString(TexCoordPrecision precision,
-                                                    SamplerType sampler) const {
+std::string FragmentShaderYUVVideo::GetShaderSource() const {
   std::string head = SHADER0([]() {
     precision mediump float;
     precision mediump int;
@@ -2173,7 +1979,7 @@ std::string FragmentShaderYUVVideo::GetShaderString(TexCoordPrecision precision,
     }
   });
 
-  return FRAGMENT_SHADER(head, functions);
+  return head + functions;
 }
 
 FragmentShaderColor::FragmentShaderColor() : color_location_(-1) {
@@ -2196,20 +2002,10 @@ void FragmentShaderColor::Init(GLES2Interface* context,
   color_location_ = locations[0];
 }
 
-std::string FragmentShaderColor::GetShaderString(TexCoordPrecision precision,
-                                                 SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderColor::GetShaderHead() {
+std::string FragmentShaderColor::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     uniform vec4 color;
-  });
-}
-
-std::string FragmentShaderColor::GetShaderBody() {
-  return SHADER0([]() {
     void main() { gl_FragColor = color; }
   });
 }
@@ -2234,21 +2030,11 @@ void FragmentShaderColorAA::Init(GLES2Interface* context,
   color_location_ = locations[0];
 }
 
-std::string FragmentShaderColorAA::GetShaderString(TexCoordPrecision precision,
-                                                   SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderColorAA::GetShaderHead() {
+std::string FragmentShaderColorAA::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     uniform vec4 color;
     varying vec4 edge_dist[2];  // 8 edge distances.
-  });
-}
-
-std::string FragmentShaderColorAA::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec4 d4 = min(edge_dist[0], edge_dist[1]);
       vec2 d2 = min(d4.xz, d4.yw);
