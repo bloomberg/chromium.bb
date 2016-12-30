@@ -23,10 +23,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace certificate_reporting {
-class ErrorReporter;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }  // namespace net
@@ -55,14 +51,6 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   // Users can opt-in on the SafeBrowsing interstitial to send detailed
   // threat reports. |report| is the serialized report.
   void ReportThreatDetails(const std::string& report);
-
-  // Users can opt-in on the SSL interstitial to send reports of invalid
-  // certificate chains.
-  void ReportInvalidCertificateChain(const std::string& serialized_report);
-
-  void SetCertificateErrorReporterForTesting(
-      std::unique_ptr<certificate_reporting::ErrorReporter>
-          certificate_error_reporter);
 
   // Report permission action to SafeBrowsing servers.
   void ReportPermissionAction(const PermissionReportInfo& report_info);
@@ -110,10 +98,6 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   // Track outstanding SafeBrowsing report fetchers for clean up.
   // We add both "hit" and "detail" fetchers in this set.
   Reports safebrowsing_reports_;
-
-  // Sends reports of invalid SSL certificate chains.
-  std::unique_ptr<certificate_reporting::ErrorReporter>
-      certificate_error_reporter_;
 
   // Sends reports of permission actions.
   std::unique_ptr<PermissionReporter> permission_reporter_;

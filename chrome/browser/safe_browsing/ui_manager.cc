@@ -200,18 +200,6 @@ void SafeBrowsingUIManager::ReportSafeBrowsingHitOnIOThread(
   sb_service_->ping_manager()->ReportSafeBrowsingHit(hit_report);
 }
 
-void SafeBrowsingUIManager::ReportInvalidCertificateChain(
-    const std::string& serialized_report,
-    const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &SafeBrowsingUIManager::ReportInvalidCertificateChainOnIOThread, this,
-          serialized_report),
-      callback);
-}
-
 void SafeBrowsingUIManager::ReportPermissionAction(
     const PermissionReportInfo& report_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -225,18 +213,6 @@ void SafeBrowsingUIManager::ReportPermissionAction(
 void SafeBrowsingUIManager::CreateWhitelistForTesting(
     content::WebContents* web_contents) {
   EnsureWhitelistCreated(web_contents);
-}
-
-void SafeBrowsingUIManager::ReportInvalidCertificateChainOnIOThread(
-    const std::string& serialized_report) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // The service may delete the ping manager (i.e. when user disabling service,
-  // etc). This happens on the IO thread.
-  if (!sb_service_ || !sb_service_->ping_manager())
-    return;
-
-  sb_service_->ping_manager()->ReportInvalidCertificateChain(serialized_report);
 }
 
 void SafeBrowsingUIManager::ReportPermissionActionOnIOThread(

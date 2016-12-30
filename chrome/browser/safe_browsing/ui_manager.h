@@ -64,11 +64,6 @@ class SafeBrowsingUIManager : public BaseSafeBrowsingUIManager {
   void MaybeReportSafeBrowsingHit(
       const safe_browsing::HitReport& hit_report) override;
 
-  // Report an invalid TLS/SSL certificate chain to the server. Can only
-  // be called on UI thread.
-  void ReportInvalidCertificateChain(const std::string& serialized_report,
-                                     const base::Closure& callback);
-
   // Report permission action to SafeBrowsing servers. Can only be called on UI
   // thread.
   void ReportPermissionAction(const PermissionReportInfo& report_info);
@@ -89,10 +84,6 @@ class SafeBrowsingUIManager : public BaseSafeBrowsingUIManager {
  private:
   friend class SafeBrowsingUIManagerTest;
   friend class TestSafeBrowsingUIManager;
-
-  // Sends an invalid certificate chain report over the network.
-  void ReportInvalidCertificateChainOnIOThread(
-      const std::string& serialized_report);
 
   // Report permission action to SafeBrowsing servers.
   void ReportPermissionActionOnIOThread(

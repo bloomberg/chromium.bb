@@ -12,13 +12,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/ping_manager.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
-#include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/certificate_reporting/error_report.h"
 #include "components/prefs/pref_service.h"
@@ -27,99 +22,59 @@
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
-using safe_browsing::SafeBrowsingService;
-using safe_browsing::SafeBrowsingUIManager;
+namespace certificate_reporting_test_utils {
 
-namespace {
-
-void SetMockReporter(
-    SafeBrowsingService* safe_browsing_service,
-    std::unique_ptr<certificate_reporting::ErrorReporter> reporter) {
-  safe_browsing_service->ping_manager()->SetCertificateErrorReporterForTesting(
-      std::move(reporter));
-}
-
-// This is a test implementation of the interface that blocking pages
-// use to send certificate reports. It checks that the blocking page
-// calls or does not call the report method when a report should or
-// should not be sent, respectively.
+// This is a test implementation of the interface that blocking pages use to
+// send certificate reports. It checks that the blocking page calls or does not
+// call the report method when a report should or should not be sent,
+// respectively.
 class MockSSLCertReporter : public SSLCertReporter {
  public:
   MockSSLCertReporter(
-      const scoped_refptr<SafeBrowsingUIManager>& safe_browsing_ui_manager,
-      const base::Closure& report_sent_callback)
-      : safe_browsing_ui_manager_(safe_browsing_ui_manager),
-        reported_(false),
-        expect_report_(false),
-        report_sent_callback_(report_sent_callback) {}
+      const base::Callback<void(const std::string&)>& report_sent_callback,
+      ExpectReport expect_report)
+      : report_sent_callback_(report_sent_callback),
+        expect_report_(expect_report),
+        reported_(false) {}
 
-  ~MockSSLCertReporter() override { EXPECT_EQ(expect_report_, reported_); }
+  ~MockSSLCertReporter() override {
+    if (expect_report_ == CERT_REPORT_EXPECTED) {
+      EXPECT_TRUE(reported_);
+    } else {
+      EXPECT_FALSE(reported_);
+    }
+  }
 
   // SSLCertReporter implementation.
   void ReportInvalidCertificateChain(
       const std::string& serialized_report) override {
     reported_ = true;
-    if (expect_report_) {
-      safe_browsing_ui_manager_->ReportInvalidCertificateChain(
-          serialized_report, report_sent_callback_);
-    }
+    certificate_reporting::ErrorReport report;
+    EXPECT_TRUE(report.InitializeFromString(serialized_report));
+    report_sent_callback_.Run(report.hostname());
   }
 
-  void set_expect_report(bool expect_report) { expect_report_ = expect_report; }
-
  private:
-  const scoped_refptr<SafeBrowsingUIManager> safe_browsing_ui_manager_;
+  const base::Callback<void(const std::string&)> report_sent_callback_;
+  const ExpectReport expect_report_;
   bool reported_;
-  bool expect_report_;
-  base::Closure report_sent_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockSSLCertReporter);
 };
 
-}  // namespace
+SSLCertReporterCallback::SSLCertReporterCallback(base::RunLoop* run_loop)
+    : run_loop_(run_loop) {}
 
-namespace certificate_reporting_test_utils {
+SSLCertReporterCallback::~SSLCertReporterCallback() {}
 
-MockErrorReporter::MockErrorReporter(
-    net::URLRequestContext* request_context,
-    const GURL& upload_url,
-    net::ReportSender::CookiesPreference cookies_preference)
-    : certificate_reporting::ErrorReporter(request_context,
-                                           upload_url,
-                                           cookies_preference) {}
-
-void MockErrorReporter::SendExtendedReportingReport(
-    const std::string& serialized_report,
-    const base::Callback<void()>& success_callback,
-    const base::Callback<void(const GURL&, int)>& error_callback) {
-  certificate_reporting::ErrorReport report;
-  ASSERT_TRUE(report.InitializeFromString(serialized_report));
-  latest_hostname_reported_ = report.hostname();
+void SSLCertReporterCallback::ReportSent(const std::string& hostname) {
+  latest_hostname_reported_ = hostname;
+  run_loop_->Quit();
 }
 
-void CertificateReportingTest::SetUpMockReporter() {
-  // Set up the mock reporter to track the hostnames that reports get
-  // sent for. The request_context argument is null here
-  // because the MockErrorReporter doesn't actually use a
-  // request_context. (In order to pass a real request_context, the
-  // reporter would have to be constructed on the IO thread.)
-  reporter_ = new MockErrorReporter(nullptr, GURL("http://example.test"),
-                                    net::ReportSender::DO_NOT_SEND_COOKIES);
-
-  scoped_refptr<SafeBrowsingService> safe_browsing_service =
-      g_browser_process->safe_browsing_service();
-  ASSERT_TRUE(safe_browsing_service);
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          SetMockReporter, base::RetainedRef(safe_browsing_service),
-          base::Passed(std::unique_ptr<certificate_reporting::ErrorReporter>(
-              reporter_))));
-}
-
-const std::string& CertificateReportingTest::GetLatestHostnameReported() const {
-  return reporter_->latest_hostname_reported();
+const std::string& SSLCertReporterCallback::GetLatestHostnameReported() const {
+  return latest_hostname_reported_;
 }
 
 void SetCertReportingOptIn(Browser* browser, OptIn opt_in) {
@@ -127,23 +82,11 @@ void SetCertReportingOptIn(Browser* browser, OptIn opt_in) {
                                           opt_in == EXTENDED_REPORTING_OPT_IN);
 }
 
-std::unique_ptr<SSLCertReporter> SetUpMockSSLCertReporter(
-    base::RunLoop* run_loop,
+std::unique_ptr<SSLCertReporter> CreateMockSSLCertReporter(
+    const base::Callback<void(const std::string&)>& report_sent_callback,
     ExpectReport expect_report) {
-  // Set up a MockSSLCertReporter to keep track of when the blocking
-  // page invokes the cert reporter.
-  SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
-  EXPECT_TRUE(sb_service);
-  if (!sb_service)
-    return nullptr;
-
-  std::unique_ptr<MockSSLCertReporter> ssl_cert_reporter(
-      new MockSSLCertReporter(sb_service->ui_manager(),
-                              expect_report == CERT_REPORT_EXPECTED
-                                  ? run_loop->QuitClosure()
-                                  : base::Bind(&base::DoNothing)));
-  ssl_cert_reporter->set_expect_report(expect_report == CERT_REPORT_EXPECTED);
-  return std::move(ssl_cert_reporter);
+  return std::unique_ptr<SSLCertReporter>(
+      new MockSSLCertReporter(report_sent_callback, expect_report));
 }
 
 ExpectReport GetReportExpectedFromFinch() {

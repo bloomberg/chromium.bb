@@ -273,9 +273,7 @@ std::string EncodeQuery(const std::string& query) {
 
 }  // namespace
 
-class SSLUITest
-    : public certificate_reporting_test_utils::CertificateReportingTest,
-      public InProcessBrowserTest {
+class SSLUITest : public InProcessBrowserTest {
  public:
   SSLUITest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
@@ -465,10 +463,11 @@ class SSLUITest
       ProceedDecision proceed,
       certificate_reporting_test_utils::ExpectReport expect_report,
       Browser* browser) {
-    base::RunLoop run_loop;
     ASSERT_TRUE(https_server_expired_.Start());
 
-    ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());
+    base::RunLoop run_loop;
+    certificate_reporting_test_utils::SSLCertReporterCallback reporter_callback(
+        &run_loop);
 
     // Opt in to sending reports for invalid certificate chains.
     certificate_reporting_test_utils::SetCertReportingOptIn(browser, opt_in);
@@ -482,8 +481,11 @@ class SSLUITest
                                    AuthState::SHOWING_INTERSTITIAL);
 
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter =
-        certificate_reporting_test_utils::SetUpMockSSLCertReporter(
-            &run_loop, expect_report);
+        certificate_reporting_test_utils::CreateMockSSLCertReporter(
+            base::Bind(&certificate_reporting_test_utils::
+                           SSLCertReporterCallback::ReportSent,
+                       base::Unretained(&reporter_callback)),
+            expect_report);
 
     ASSERT_TRUE(tab->GetInterstitialPage() != nullptr);
     SSLBlockingPage* interstitial_page = static_cast<SSLBlockingPage*>(
@@ -492,7 +494,7 @@ class SSLUITest
     interstitial_page->SetSSLCertReporterForTesting(
         std::move(ssl_cert_reporter));
 
-    EXPECT_EQ(std::string(), GetLatestHostnameReported());
+    EXPECT_EQ(std::string(), reporter_callback.GetLatestHostnameReported());
 
     // Leave the interstitial (either by proceeding or going back)
     if (proceed == SSL_INTERSTITIAL_PROCEED) {
@@ -509,10 +511,10 @@ class SSLUITest
       // Check that the mock reporter received a request to send a report.
       run_loop.Run();
       EXPECT_EQ(https_server_expired_.GetURL("/title1.html").host(),
-                GetLatestHostnameReported());
+                reporter_callback.GetLatestHostnameReported());
     } else {
       base::RunLoop().RunUntilIdle();
-      EXPECT_EQ(std::string(), GetLatestHostnameReported());
+      EXPECT_EQ(std::string(), reporter_callback.GetLatestHostnameReported());
     }
   }
 
@@ -522,9 +524,11 @@ class SSLUITest
       certificate_reporting_test_utils::OptIn opt_in,
       certificate_reporting_test_utils::ExpectReport expect_report,
       Browser* browser) {
-    base::RunLoop run_loop;
     ASSERT_TRUE(https_server_expired_.Start());
-    ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());
+
+    base::RunLoop run_loop;
+    certificate_reporting_test_utils::SSLCertReporterCallback reporter_callback(
+        &run_loop);
 
     // Set network time back ten minutes, which is sufficient to
     // trigger the reporting.
@@ -545,8 +549,11 @@ class SSLUITest
                                    AuthState::SHOWING_INTERSTITIAL);
 
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter =
-        certificate_reporting_test_utils::SetUpMockSSLCertReporter(
-            &run_loop, expect_report);
+        certificate_reporting_test_utils::CreateMockSSLCertReporter(
+            base::Bind(&certificate_reporting_test_utils::
+                           SSLCertReporterCallback::ReportSent,
+                       base::Unretained(&reporter_callback)),
+            expect_report);
 
     InterstitialPage* interstitial_page = tab->GetInterstitialPage();
     ASSERT_EQ(BadClockBlockingPage::kTypeForTesting,
@@ -555,8 +562,7 @@ class SSLUITest
         tab->GetInterstitialPage()->GetDelegateForTesting());
     clock_page->SetSSLCertReporterForTesting(std::move(ssl_cert_reporter));
 
-    EXPECT_EQ(std::string(), GetLatestHostnameReported());
-
+    EXPECT_EQ(std::string(), reporter_callback.GetLatestHostnameReported());
     interstitial_page->DontProceed();
 
     if (expect_report ==
@@ -564,10 +570,10 @@ class SSLUITest
       // Check that the mock reporter received a request to send a report.
       run_loop.Run();
       EXPECT_EQ(https_server_expired_.GetURL("/title1.html").host(),
-                GetLatestHostnameReported());
+                reporter_callback.GetLatestHostnameReported());
     } else {
       base::RunLoop().RunUntilIdle();
-      EXPECT_EQ(std::string(), GetLatestHostnameReported());
+      EXPECT_EQ(std::string(), reporter_callback.GetLatestHostnameReported());
     }
   }
 
@@ -760,7 +766,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
 
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_Proceed) {
   ASSERT_TRUE(https_server_expired_.Start());
-  ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());
   base::HistogramTester histograms;
   const std::string decision_histogram =
       "interstitial.ssl_overridable.decision";
@@ -798,7 +803,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_Proceed) {
 
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSMetricsReporting_DontProceed) {
   ASSERT_TRUE(https_server_expired_.Start());
-  ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());
   base::HistogramTester histograms;
   const std::string decision_histogram =
       "interstitial.ssl_overridable.decision";
