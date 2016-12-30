@@ -19,10 +19,10 @@ using base::win::ScopedVariant;
 namespace views {
 namespace test {
 
-class NativeViewAcccessibilityWinTest : public ViewsTestBase {
+class NativeViewAccessibilityWinTest : public ViewsTestBase {
  public:
-  NativeViewAcccessibilityWinTest() {}
-  ~NativeViewAcccessibilityWinTest() override {}
+  NativeViewAccessibilityWinTest() {}
+  ~NativeViewAccessibilityWinTest() override {}
 
  protected:
   void GetIAccessible2InterfaceForView(View* view, IAccessible2_2** result) {
@@ -35,7 +35,7 @@ class NativeViewAcccessibilityWinTest : public ViewsTestBase {
   }
 };
 
-TEST_F(NativeViewAcccessibilityWinTest, TextfieldAccessibility) {
+TEST_F(NativeViewAccessibilityWinTest, TextfieldAccessibility) {
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -81,7 +81,7 @@ TEST_F(NativeViewAcccessibilityWinTest, TextfieldAccessibility) {
   ASSERT_STREQ(L"New value", textfield->text().c_str());
 }
 
-TEST_F(NativeViewAcccessibilityWinTest, AuraOwnedWidgets) {
+TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -144,7 +144,7 @@ TEST_F(NativeViewAcccessibilityWinTest, AuraOwnedWidgets) {
 }
 
 // Flaky on Windows: https://crbug.com/461837.
-TEST_F(NativeViewAcccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
+TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
