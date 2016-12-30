@@ -210,13 +210,26 @@ void IgnoreString(const std::string& ignored) {
 
 }  // namespace
 
-class CookieStoreIOSWithBackend : public testing::Test {
+// Sets a cookie.
+void SetCookie(const std::string& cookie_line,
+               const GURL& url,
+               net::CookieStore* store) {
+  net::CookieOptions options;
+  options.set_include_httponly();
+  store->SetCookieWithOptionsAsync(url, cookie_line, options,
+                                   base::Bind(&IgnoreBoolean));
+  net::CookieStoreIOS::NotifySystemCookiesChanged();
+  // Wait until the flush is posted.
+  base::RunLoop().RunUntilIdle();
+}
+
+// Test fixture to exersize net::CookieStoreIOS created with
+// TestPersistentCookieStore backend and not synchronized with
+// NSHTTPCookieStorage.
+class NotSynchronizedCookieStoreIOSWithBackend : public testing::Test {
  public:
-  CookieStoreIOSWithBackend()
+  NotSynchronizedCookieStoreIOSWithBackend()
       : kTestCookieURL("http://foo.google.com/bar"),
-        kTestCookieURL2("http://foo.google.com/baz"),
-        kTestCookieURL3("http://foo.google.com"),
-        kTestCookieURL4("http://bar.google.com/bar"),
         backend_(new TestPersistentCookieStore),
         store_(new net::CookieStoreIOS(backend_.get())) {
     cookie_changed_callback_ = store_->AddCallbackForCookie(
@@ -224,7 +237,7 @@ class CookieStoreIOSWithBackend : public testing::Test {
         base::Bind(&RecordCookieChanges, &cookies_changed_, &cookies_removed_));
   }
 
-  ~CookieStoreIOSWithBackend() override {}
+  ~NotSynchronizedCookieStoreIOSWithBackend() override {}
 
   // Gets the cookies. |callback| will be called on completion.
   void GetCookies(const net::CookieStore::GetCookiesCallback& callback) {
@@ -235,13 +248,51 @@ class CookieStoreIOSWithBackend : public testing::Test {
 
   // Sets a cookie.
   void SetCookie(const std::string& cookie_line) {
+    ::SetCookie(cookie_line, kTestCookieURL, store_.get());
+  }
+
+ private:
+  const GURL kTestCookieURL;
+
+ protected:
+  base::MessageLoop loop_;
+  scoped_refptr<TestPersistentCookieStore> backend_;
+  std::unique_ptr<net::CookieStoreIOS> store_;
+  std::unique_ptr<net::CookieStore::CookieChangedSubscription>
+      cookie_changed_callback_;
+  std::vector<net::CanonicalCookie> cookies_changed_;
+  std::vector<bool> cookies_removed_;
+};
+
+// Test fixture to exersize net::CookieStoreIOS created without backend and
+// synchronized with |[NSHTTPCookieStorage sharedHTTPCookieStorage]|.
+class SynchronizedCookieStoreIOS : public testing::Test {
+ public:
+  SynchronizedCookieStoreIOS()
+      : kTestCookieURL("http://foo.google.com/bar"),
+        kTestCookieURL2("http://foo.google.com/baz"),
+        kTestCookieURL3("http://foo.google.com"),
+        kTestCookieURL4("http://bar.google.com/bar"),
+        backend_(new TestPersistentCookieStore),
+        store_(net::CookieStoreIOS::CreateCookieStore(
+            [NSHTTPCookieStorage sharedHTTPCookieStorage])) {
+    cookie_changed_callback_ = store_->AddCallbackForCookie(
+        kTestCookieURL, "abc",
+        base::Bind(&RecordCookieChanges, &cookies_changed_, &cookies_removed_));
+  }
+
+  ~SynchronizedCookieStoreIOS() override {}
+
+  // Gets the cookies. |callback| will be called on completion.
+  void GetCookies(const net::CookieStore::GetCookiesCallback& callback) {
     net::CookieOptions options;
     options.set_include_httponly();
-    store_->SetCookieWithOptionsAsync(kTestCookieURL, cookie_line, options,
-                                      base::Bind(&IgnoreBoolean));
-    net::CookieStoreIOS::NotifySystemCookiesChanged();
-    // Wait until the flush is posted.
-    base::RunLoop().RunUntilIdle();
+    store_->GetCookiesWithOptionsAsync(kTestCookieURL, options, callback);
+  }
+
+  // Sets a cookie.
+  void SetCookie(const std::string& cookie_line) {
+    ::SetCookie(cookie_line, kTestCookieURL, store_.get());
   }
 
   void SetSystemCookie(const GURL& url,
@@ -293,7 +344,7 @@ class CookieStoreIOSWithBackend : public testing::Test {
 
 namespace net {
 
-TEST_F(CookieStoreIOSWithBackend, SetCookieCallsHookWhenNotSynchronized) {
+TEST_F(NotSynchronizedCookieStoreIOSWithBackend, SetCookieCallsHook) {
   ClearCookies();
   SetCookie("abc=def");
   EXPECT_EQ(0U, cookies_changed_.size());
@@ -317,15 +368,10 @@ TEST_F(CookieStoreIOSWithBackend, SetCookieCallsHookWhenNotSynchronized) {
   EXPECT_EQ("abc", cookies_changed_[2].Name());
   EXPECT_EQ("ghi", cookies_changed_[2].Value());
   EXPECT_FALSE(cookies_removed_[2]);
-
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, SetCookieCallsHookWhenSynchronized) {
-  store_->SetSynchronizedWithSystemStore(true);
+TEST_F(SynchronizedCookieStoreIOS, SetCookieCallsHookWhenSynchronized) {
   GetCookies(base::Bind(&IgnoreString));
-  backend_->RunLoadedCallback();
-  base::RunLoop().RunUntilIdle();
   ClearCookies();
   SetCookie("abc=def");
   EXPECT_EQ(1U, cookies_changed_.size());
@@ -344,15 +390,10 @@ TEST_F(CookieStoreIOSWithBackend, SetCookieCallsHookWhenSynchronized) {
   EXPECT_EQ("ghi", cookies_changed_[2].Value());
   EXPECT_FALSE(cookies_removed_[2]);
   DeleteSystemCookie(kTestCookieURL, "abc");
-
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, DeleteCallsHook) {
-  store_->SetSynchronizedWithSystemStore(true);
+TEST_F(SynchronizedCookieStoreIOS, DeleteCallsHook) {
   GetCookies(base::Bind(&IgnoreString));
-  backend_->RunLoadedCallback();
-  base::RunLoop().RunUntilIdle();
   ClearCookies();
   SetCookie("abc=def");
   EXPECT_EQ(1U, cookies_changed_.size());
@@ -361,29 +402,25 @@ TEST_F(CookieStoreIOSWithBackend, DeleteCallsHook) {
                             base::Bind(&IgnoreBoolean, false));
   CookieStoreIOS::NotifySystemCookiesChanged();
   base::RunLoop().RunUntilIdle();
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, SameValueDoesNotCallHook) {
-  store_->SetSynchronizedWithSystemStore(true);
+TEST_F(SynchronizedCookieStoreIOS, SameValueDoesNotCallHook) {
   GetCookieCallback callback;
   GetCookies(base::Bind(&IgnoreString));
-  backend_->RunLoadedCallback();
-  base::RunLoop().RunUntilIdle();
   ClearCookies();
   SetCookie("abc=def");
   EXPECT_EQ(1U, cookies_changed_.size());
   SetCookie("abc=def");
   EXPECT_EQ(1U, cookies_changed_.size());
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
 TEST(CookieStoreIOS, GetAllCookiesForURLAsync) {
   base::MessageLoop loop;
   const GURL kTestCookieURL("http://foo.google.com/bar");
   ClearCookies();
-  std::unique_ptr<CookieStoreIOS> cookie_store(new CookieStoreIOS(nullptr));
-  cookie_store->SetSynchronizedWithSystemStore(true);
+  std::unique_ptr<CookieStoreIOS> cookie_store(
+      CookieStoreIOS::CreateCookieStore(
+          [NSHTTPCookieStorage sharedHTTPCookieStorage]));
   // Add a cookie.
   net::CookieOptions options;
   options.set_include_httponly();
@@ -402,7 +439,7 @@ TEST(CookieStoreIOS, GetAllCookiesForURLAsync) {
 }
 
 // Tests that cookies can be read before the backend is loaded.
-TEST_F(CookieStoreIOSWithBackend, NotSynchronized) {
+TEST_F(NotSynchronizedCookieStoreIOSWithBackend, NotSynchronized) {
   // Start fetching the cookie.
   GetCookieCallback callback;
   GetCookies(base::Bind(&GetCookieCallback::Run, base::Unretained(&callback)));
@@ -412,56 +449,15 @@ TEST_F(CookieStoreIOSWithBackend, NotSynchronized) {
   EXPECT_EQ("a=b", callback.cookie_line());
 }
 
-// Tests that cookies can be read before synchronization is complete.
-TEST_F(CookieStoreIOSWithBackend, Synchronizing) {
-  // Start synchronization.
-  store_->SetSynchronizedWithSystemStore(true);
-  GetCookieCallback callback;
-  GetCookies(base::Bind(&GetCookieCallback::Run, base::Unretained(&callback)));
-  // Backend loading completes (end of synchronization).
-  backend_->RunLoadedCallback();
-  EXPECT_TRUE(callback.did_run());
-  EXPECT_EQ("a=b", callback.cookie_line());
-  store_->SetSynchronizedWithSystemStore(false);
-}
-
-TEST_F(CookieStoreIOSWithBackend, FlushOnCookieChanged) {
-  store_->SetSynchronizedWithSystemStore(true);
-  store_->set_flush_delay_for_testing(base::TimeDelta());
-  backend_->RunLoadedCallback();
-  EXPECT_FALSE(backend_->flushed());
-
-  // Set a cookie an check that it triggers a flush.
-  SetCookie("x=y");
-  EXPECT_TRUE(backend_->flushed());
-
-  store_->SetSynchronizedWithSystemStore(false);
-}
-
-TEST_F(CookieStoreIOSWithBackend, ManualFlush) {
-  store_->SetSynchronizedWithSystemStore(true);
-  backend_->RunLoadedCallback();
-  EXPECT_FALSE(backend_->flushed());
-
-  // The store should be flushed even if it is not dirty.
-  store_->FlushStore(base::Closure());
-  EXPECT_TRUE(backend_->flushed());
-
-  store_->SetSynchronizedWithSystemStore(false);
-}
-
-TEST_F(CookieStoreIOSWithBackend, NoInitialNotifyWithNoCookie) {
-  store_->SetSynchronizedWithSystemStore(true);
+TEST_F(SynchronizedCookieStoreIOS, NoInitialNotifyWithNoCookie) {
   std::vector<net::CanonicalCookie> cookies;
   store_->AddCallbackForCookie(
       kTestCookieURL, "abc",
       base::Bind(&RecordCookieChanges, &cookies, nullptr));
   EXPECT_EQ(0U, cookies.size());
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, NoInitialNotifyWithSystemCookie) {
-  store_->SetSynchronizedWithSystemStore(true);
+TEST_F(SynchronizedCookieStoreIOS, NoInitialNotifyWithSystemCookie) {
   SetSystemCookie(kTestCookieURL, "abc", "def");
   std::vector<net::CanonicalCookie> cookies;
   store_->AddCallbackForCookie(
@@ -469,12 +465,9 @@ TEST_F(CookieStoreIOSWithBackend, NoInitialNotifyWithSystemCookie) {
       base::Bind(&RecordCookieChanges, &cookies, nullptr));
   EXPECT_EQ(0U, cookies.size());
   DeleteSystemCookie(kTestCookieURL, "abc");
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, NotifyOnAdd) {
-  store_->SetSynchronizedWithSystemStore(true);
-  backend_->RunLoadedCallback();
+TEST_F(SynchronizedCookieStoreIOS, NotifyOnAdd) {
   std::vector<net::CanonicalCookie> cookies;
   std::vector<bool> removes;
   std::unique_ptr<net::CookieStore::CookieChangedSubscription> handle =
@@ -496,12 +489,9 @@ TEST_F(CookieStoreIOSWithBackend, NotifyOnAdd) {
 
   DeleteSystemCookie(kTestCookieURL, "abc");
   DeleteSystemCookie(kTestCookieURL, "ghi");
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, NotifyOnChange) {
-  store_->SetSynchronizedWithSystemStore(true);
-  backend_->RunLoadedCallback();
+TEST_F(SynchronizedCookieStoreIOS, NotifyOnChange) {
   std::vector<net::CanonicalCookie> cookies;
   std::vector<bool> removes;
   std::unique_ptr<net::CookieStore::CookieChangedSubscription> handle =
@@ -522,12 +512,9 @@ TEST_F(CookieStoreIOSWithBackend, NotifyOnChange) {
   EXPECT_FALSE(removes[2]);
 
   DeleteSystemCookie(kTestCookieURL, "abc");
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, NotifyOnDelete) {
-  store_->SetSynchronizedWithSystemStore(true);
-  backend_->RunLoadedCallback();
+TEST_F(SynchronizedCookieStoreIOS, NotifyOnDelete) {
   std::vector<net::CanonicalCookie> cookies;
   std::vector<bool> removes;
   SetSystemCookie(kTestCookieURL, "abc", "def");
@@ -545,12 +532,9 @@ TEST_F(CookieStoreIOSWithBackend, NotifyOnDelete) {
   EXPECT_EQ(2U, removes.size());
   EXPECT_FALSE(removes[1]);
   DeleteSystemCookie(kTestCookieURL, "abc");
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, NoNotifyOnNoChange) {
-  store_->SetSynchronizedWithSystemStore(true);
-  backend_->RunLoadedCallback();
+TEST_F(SynchronizedCookieStoreIOS, NoNotifyOnNoChange) {
   std::vector<net::CanonicalCookie> cookies;
   std::unique_ptr<net::CookieStore::CookieChangedSubscription> handle =
       store_->AddCallbackForCookie(
@@ -562,12 +546,9 @@ TEST_F(CookieStoreIOSWithBackend, NoNotifyOnNoChange) {
   SetSystemCookie(kTestCookieURL, "abc", "def");
   EXPECT_EQ(1U, cookies.size());
   DeleteSystemCookie(kTestCookieURL, "abc");
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, MultipleNotifies) {
-  store_->SetSynchronizedWithSystemStore(true);
-  backend_->RunLoadedCallback();
+TEST_F(SynchronizedCookieStoreIOS, MultipleNotifies) {
   std::vector<net::CanonicalCookie> cookies;
   std::vector<net::CanonicalCookie> cookies2;
   std::vector<net::CanonicalCookie> cookies3;
@@ -592,20 +573,17 @@ TEST_F(CookieStoreIOSWithBackend, MultipleNotifies) {
   SetSystemCookie(kTestCookieURL2, "abc", "def");
   SetSystemCookie(kTestCookieURL3, "abc", "def");
   SetSystemCookie(kTestCookieURL4, "abc", "def");
-  EXPECT_EQ(2U, cookies.size());
-  EXPECT_EQ(2U, cookies2.size());
-  EXPECT_EQ(1U, cookies3.size());
+  EXPECT_EQ(1U, cookies.size());
+  EXPECT_EQ(1U, cookies2.size());
+  EXPECT_EQ(0U, cookies3.size());
   EXPECT_EQ(1U, cookies4.size());
   DeleteSystemCookie(kTestCookieURL, "abc");
   DeleteSystemCookie(kTestCookieURL2, "abc");
   DeleteSystemCookie(kTestCookieURL3, "abc");
   DeleteSystemCookie(kTestCookieURL4, "abc");
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, LessSpecificNestedCookie) {
-  store_->SetSynchronizedWithSystemStore(true);
-  backend_->RunLoadedCallback();
+TEST_F(SynchronizedCookieStoreIOS, LessSpecificNestedCookie) {
   std::vector<net::CanonicalCookie> cookies;
   SetSystemCookie(kTestCookieURL2, "abc", "def");
   std::unique_ptr<net::CookieStore::CookieChangedSubscription> handle =
@@ -616,12 +594,9 @@ TEST_F(CookieStoreIOSWithBackend, LessSpecificNestedCookie) {
   SetSystemCookie(kTestCookieURL3, "abc", "ghi");
   EXPECT_EQ(1U, cookies.size());
   DeleteSystemCookie(kTestCookieURL, "abc");
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, MoreSpecificNestedCookie) {
-  store_->SetSynchronizedWithSystemStore(true);
-  backend_->RunLoadedCallback();
+TEST_F(SynchronizedCookieStoreIOS, MoreSpecificNestedCookie) {
   std::vector<net::CanonicalCookie> cookies;
   SetSystemCookie(kTestCookieURL3, "abc", "def");
   std::unique_ptr<net::CookieStore::CookieChangedSubscription> handle =
@@ -630,14 +605,11 @@ TEST_F(CookieStoreIOSWithBackend, MoreSpecificNestedCookie) {
           base::Bind(&RecordCookieChanges, &cookies, nullptr));
   EXPECT_EQ(0U, cookies.size());
   SetSystemCookie(kTestCookieURL2, "abc", "ghi");
-  EXPECT_EQ(1U, cookies.size());
+  EXPECT_EQ(2U, cookies.size());
   DeleteSystemCookie(kTestCookieURL, "abc");
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, MoreSpecificNestedCookieWithSameValue) {
-  store_->SetSynchronizedWithSystemStore(true);
-  backend_->RunLoadedCallback();
+TEST_F(SynchronizedCookieStoreIOS, MoreSpecificNestedCookieWithSameValue) {
   std::vector<net::CanonicalCookie> cookies;
   SetSystemCookie(kTestCookieURL3, "abc", "def");
   std::unique_ptr<net::CookieStore::CookieChangedSubscription> handle =
@@ -646,14 +618,11 @@ TEST_F(CookieStoreIOSWithBackend, MoreSpecificNestedCookieWithSameValue) {
           base::Bind(&RecordCookieChanges, &cookies, nullptr));
   EXPECT_EQ(0U, cookies.size());
   SetSystemCookie(kTestCookieURL2, "abc", "def");
-  EXPECT_EQ(1U, cookies.size());
+  EXPECT_EQ(2U, cookies.size());
   DeleteSystemCookie(kTestCookieURL, "abc");
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
-TEST_F(CookieStoreIOSWithBackend, RemoveCallback) {
-  store_->SetSynchronizedWithSystemStore(true);
-  backend_->RunLoadedCallback();
+TEST_F(SynchronizedCookieStoreIOS, RemoveCallback) {
   std::vector<net::CanonicalCookie> cookies;
   SetSystemCookie(kTestCookieURL, "abc", "def");
   std::unique_ptr<net::CookieStore::CookieChangedSubscription> handle =
@@ -668,7 +637,6 @@ TEST_F(CookieStoreIOSWithBackend, RemoveCallback) {
   SetSystemCookie(kTestCookieURL, "abc", "jkl");
   EXPECT_EQ(2U, cookies.size());
   DeleteSystemCookie(kTestCookieURL, "abc");
-  store_->SetSynchronizedWithSystemStore(false);
 }
 
 }  // namespace net
