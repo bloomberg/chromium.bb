@@ -287,25 +287,6 @@ CookieStoreIOS::CookieStoreIOS(
                      [NSHTTPCookieStorage sharedHTTPCookieStorage]) {
 }
 
-CookieStoreIOS::CookieStoreIOS(
-    net::CookieMonster::PersistentCookieStore* persistent_store,
-    NSHTTPCookieStorage* system_store)
-    : cookie_monster_(new net::CookieMonster(persistent_store, nullptr)),
-      system_store_(system_store),
-      creation_time_manager_(new CookieCreationTimeManager),
-      metrics_enabled_(false),
-      flush_delay_(base::TimeDelta::FromSeconds(10)),
-      synchronization_state_(NOT_SYNCHRONIZED),
-      cookie_cache_(new CookieCache()),
-      weak_factory_(this) {
-  DCHECK(system_store);
-
-  NotificationTrampoline::GetInstance()->AddObserver(this);
-
-  cookie_monster_->SetPersistSessionCookies(true);
-  cookie_monster_->SetForceKeepSessionState();
-}
-
 CookieStoreIOS::~CookieStoreIOS() {
   NotificationTrampoline::GetInstance()->RemoveObserver(this);
 }
@@ -723,6 +704,25 @@ void CookieStoreIOS::FlushStore(const base::Closure& closure) {
 
 #pragma mark -
 #pragma mark Private methods
+
+CookieStoreIOS::CookieStoreIOS(
+    net::CookieMonster::PersistentCookieStore* persistent_store,
+    NSHTTPCookieStorage* system_store)
+    : cookie_monster_(new net::CookieMonster(persistent_store, nullptr)),
+      system_store_(system_store),
+      creation_time_manager_(new CookieCreationTimeManager),
+      metrics_enabled_(false),
+      flush_delay_(base::TimeDelta::FromSeconds(10)),
+      synchronization_state_(NOT_SYNCHRONIZED),
+      cookie_cache_(new CookieCache()),
+      weak_factory_(this) {
+  DCHECK(system_store);
+
+  NotificationTrampoline::GetInstance()->AddObserver(this);
+
+  cookie_monster_->SetPersistSessionCookies(true);
+  cookie_monster_->SetForceKeepSessionState();
+}
 
 void CookieStoreIOS::ClearSystemStore() {
   DCHECK(thread_checker_.CalledOnValidThread());

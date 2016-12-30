@@ -59,10 +59,6 @@ class CookieStoreIOS : public net::CookieStore,
   explicit CookieStoreIOS(
       net::CookieMonster::PersistentCookieStore* persistent_store);
 
-  explicit CookieStoreIOS(
-      net::CookieMonster::PersistentCookieStore* persistent_store,
-      NSHTTPCookieStorage* system_store);
-
   ~CookieStoreIOS() override;
 
   enum CookiePolicy { ALLOW, BLOCK };
@@ -148,6 +144,10 @@ class CookieStoreIOS : public net::CookieStore,
   void SetSynchronizedWithSystemStore(bool synchronized);
 
  private:
+  CookieStoreIOS(
+      net::CookieMonster::PersistentCookieStore* persistent_store,
+      NSHTTPCookieStorage* system_store);
+
   // For tests.
   friend struct CookieStoreIOSTestTraits;
 
