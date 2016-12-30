@@ -179,7 +179,8 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   DOMWindow* pagePopupWindowForTesting() const override;
 
   bool shouldOpenModalDialogDuringPageDismissal(
-      const DialogType&,
+      LocalFrame&,
+      DialogType,
       const String& dialogMessage,
       Document::PageDismissalType) const override;
 

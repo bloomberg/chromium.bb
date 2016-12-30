@@ -239,7 +239,7 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Notifies the embedder that the given frame is requesting the resource at
   // |url|.  If the function returns true, the url is changed to |new_url|.
-  virtual bool WillSendRequest(blink::WebFrame* frame,
+  virtual bool WillSendRequest(blink::WebLocalFrame* frame,
                                ui::PageTransition transition_type,
                                const blink::WebURL& url,
                                GURL* new_url);

@@ -11,7 +11,7 @@
 class GURL;
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace extensions {
@@ -28,7 +28,7 @@ class ResourceRequestPolicy {
   // this request was generated. Web triggered transitions are more restrictive
   // than those triggered through UI.
   bool CanRequestResource(const GURL& resource_url,
-                          blink::WebFrame* frame,
+                          blink::WebLocalFrame* frame,
                           ui::PageTransition transition_type);
 
  private:

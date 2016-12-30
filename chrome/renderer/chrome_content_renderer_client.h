@@ -131,7 +131,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                   bool is_initial_navigation,
                   bool is_server_redirect,
                   bool* send_referrer) override;
-  bool WillSendRequest(blink::WebFrame* frame,
+  bool WillSendRequest(blink::WebLocalFrame* frame,
                        ui::PageTransition transition_type,
                        const blink::WebURL& url,
                        GURL* new_url) override;

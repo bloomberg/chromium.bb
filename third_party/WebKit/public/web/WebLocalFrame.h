@@ -31,6 +31,7 @@ class WebScriptExecutionCallback;
 enum class WebCachePolicy;
 enum class WebSandboxFlags;
 enum class WebTreeScopeType;
+struct WebConsoleMessage;
 struct WebFindOptions;
 struct WebFloatRect;
 struct WebPrintPresetOptions;
@@ -225,6 +226,9 @@ class WebLocalFrame : public WebFrame {
   // extension debugging.
   virtual void setIsolatedWorldHumanReadableName(int worldID,
                                                  const WebString&) = 0;
+
+  // Logs to the console associated with this frame.
+  virtual void addMessageToConsole(const WebConsoleMessage&) = 0;
 
   // Editing -------------------------------------------------------------
 

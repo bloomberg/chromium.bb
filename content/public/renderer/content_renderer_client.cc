@@ -127,11 +127,10 @@ bool ContentRendererClient::ShouldFork(blink::WebLocalFrame* frame,
   return false;
 }
 
-bool ContentRendererClient::WillSendRequest(
-    blink::WebFrame* frame,
-    ui::PageTransition transition_type,
-    const blink::WebURL& url,
-    GURL* new_url) {
+bool ContentRendererClient::WillSendRequest(blink::WebLocalFrame* frame,
+                                            ui::PageTransition transition_type,
+                                            const blink::WebURL& url,
+                                            GURL* new_url) {
   return false;
 }
 

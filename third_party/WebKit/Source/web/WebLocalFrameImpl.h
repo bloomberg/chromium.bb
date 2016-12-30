@@ -82,6 +82,8 @@ class WEB_EXPORT WebLocalFrameImpl final
       NON_EXPORTED_BASE(public WebLocalFrame) {
  public:
   // WebFrame methods:
+  // TODO(dcheng): Fix sorting here; a number of method have been moved to
+  // WebLocalFrame but not correctly updated here.
   void close() override;
   WebString uniqueName() const override;
   WebString assignedName() const override;

@@ -920,8 +920,9 @@ void PrintWebViewHelper::DisablePreview() {
   g_is_preview_enabled = false;
 }
 
-bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(blink::WebFrame* frame,
-                                                       bool user_initiated) {
+bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(
+    blink::WebLocalFrame* frame,
+    bool user_initiated) {
   if (!is_printing_enabled_ || !delegate_->IsScriptedPrintEnabled())
     return false;
 
@@ -2308,7 +2309,8 @@ void PrintWebViewHelper::SetPrintPagesParams(
 PrintWebViewHelper::ScriptingThrottler::ScriptingThrottler() : count_(0) {
 }
 
-bool PrintWebViewHelper::ScriptingThrottler::IsAllowed(blink::WebFrame* frame) {
+bool PrintWebViewHelper::ScriptingThrottler::IsAllowed(
+    blink::WebLocalFrame* frame) {
   const int kMinSecondsToIgnoreJavascriptInitiatedPrint = 2;
   const int kMaxSecondsToIgnoreJavascriptInitiatedPrint = 32;
   bool too_frequent = false;

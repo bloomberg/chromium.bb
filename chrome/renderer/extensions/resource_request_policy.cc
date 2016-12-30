@@ -21,7 +21,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -38,7 +38,7 @@ ResourceRequestPolicy::ResourceRequestPolicy(Dispatcher* dispatcher)
 // extension_protocols.cc's AllowExtensionResourceLoad.
 bool ResourceRequestPolicy::CanRequestResource(
     const GURL& resource_url,
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     ui::PageTransition transition_type) {
   CHECK(resource_url.SchemeIs(kExtensionScheme));
 

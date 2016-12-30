@@ -352,7 +352,7 @@ class PrintWebViewHelper
   // Return true if script initiated printing is currently
   // allowed. |user_initiated| should be true when a user event triggered the
   // script, most likely by pressing a print button on the page.
-  bool IsScriptInitiatedPrintAllowed(blink::WebFrame* frame,
+  bool IsScriptInitiatedPrintAllowed(blink::WebLocalFrame* frame,
                                      bool user_initiated);
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -510,7 +510,7 @@ class PrintWebViewHelper
     ScriptingThrottler();
 
     // Returns false if script initiated printing occurs too often.
-    bool IsAllowed(blink::WebFrame* frame);
+    bool IsAllowed(blink::WebLocalFrame* frame);
 
     // Reset the counter for script initiated printing.
     // Scripted printing will be allowed to continue.

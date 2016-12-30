@@ -181,10 +181,6 @@ void WebRemoteFrameImpl::setIsolatedWorldContentSecurityPolicy(
   NOTREACHED();
 }
 
-void WebRemoteFrameImpl::addMessageToConsole(const WebConsoleMessage&) {
-  NOTREACHED();
-}
-
 void WebRemoteFrameImpl::collectGarbage() {
   NOTREACHED();
 }

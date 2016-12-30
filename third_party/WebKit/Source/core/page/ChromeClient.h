@@ -279,7 +279,8 @@ class CORE_EXPORT ChromeClient : public HostWindow {
     HTMLDialog = 3
   };
   virtual bool shouldOpenModalDialogDuringPageDismissal(
-      const DialogType&,
+      LocalFrame&,
+      DialogType,
       const String&,
       Document::PageDismissalType) const {
     return true;

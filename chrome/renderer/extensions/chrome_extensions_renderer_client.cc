@@ -208,7 +208,7 @@ bool ChromeExtensionsRendererClient::AllowPopup() {
 }
 
 bool ChromeExtensionsRendererClient::WillSendRequest(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
     GURL* new_url) {

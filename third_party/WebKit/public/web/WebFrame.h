@@ -70,7 +70,6 @@ class WebURL;
 class WebURLRequest;
 class WebView;
 enum class WebSandboxFlags;
-struct WebConsoleMessage;
 struct WebFrameOwnerProperties;
 struct WebPrintParams;
 struct WebRect;
@@ -271,9 +270,6 @@ class WebFrame {
   //     doesn't yet restrict the isolated world to the provided policy.
   virtual void setIsolatedWorldContentSecurityPolicy(int worldID,
                                                      const WebString&) = 0;
-
-  // Logs to the console associated with this frame.
-  virtual void addMessageToConsole(const WebConsoleMessage&) = 0;
 
   // Calls window.gc() if it is defined.
   virtual void collectGarbage() = 0;

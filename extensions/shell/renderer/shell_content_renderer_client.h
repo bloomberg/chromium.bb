@@ -40,7 +40,7 @@ class ShellContentRendererClient : public content::ContentRendererClient {
   blink::WebPlugin* CreatePluginReplacement(
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path) override;
-  bool WillSendRequest(blink::WebFrame* frame,
+  bool WillSendRequest(blink::WebLocalFrame* frame,
                        ui::PageTransition transition_type,
                        const blink::WebURL& url,
                        GURL* new_url) override;

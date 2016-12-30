@@ -911,13 +911,14 @@ DOMWindow* ChromeClientImpl::pagePopupWindowForTesting() const {
 }
 
 bool ChromeClientImpl::shouldOpenModalDialogDuringPageDismissal(
-    const DialogType& dialogType,
+    LocalFrame& frame,
+    DialogType dialogType,
     const String& dialogMessage,
     Document::PageDismissalType dismissalType) const {
   String message = String("Blocked ") + dialogTypeToString(dialogType) + "('" +
                    dialogMessage + "') during " +
                    dismissalTypeToString(dismissalType) + ".";
-  m_webView->mainFrame()->addMessageToConsole(
+  WebLocalFrameImpl::fromFrame(frame)->addMessageToConsole(
       WebConsoleMessage(WebConsoleMessage::LevelError, message));
 
   return false;

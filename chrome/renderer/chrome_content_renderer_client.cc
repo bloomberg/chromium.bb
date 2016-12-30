@@ -1104,7 +1104,7 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
 }
 
 bool ChromeContentRendererClient::WillSendRequest(
-    WebFrame* frame,
+    WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
     GURL* new_url) {

@@ -68,11 +68,13 @@ bool ChromeClient::canOpenModalIfDuringPageDismissal(
   for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
     if (!frame->isLocalFrame())
       continue;
+    LocalFrame& localFrame = toLocalFrame(*frame);
     Document::PageDismissalType dismissal =
-        toLocalFrame(frame)->document()->pageDismissalEventBeingDispatched();
-    if (dismissal != Document::NoDismissal)
-      return shouldOpenModalDialogDuringPageDismissal(dialog, message,
-                                                      dismissal);
+        localFrame.document()->pageDismissalEventBeingDispatched();
+    if (dismissal != Document::NoDismissal) {
+      return shouldOpenModalDialogDuringPageDismissal(localFrame, dialog,
+                                                      message, dismissal);
+    }
   }
   return true;
 }

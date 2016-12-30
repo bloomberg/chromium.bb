@@ -62,7 +62,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
                                       const WebSecurityOrigin&) override;
   void setIsolatedWorldContentSecurityPolicy(int worldID,
                                              const WebString&) override;
-  void addMessageToConsole(const WebConsoleMessage&) override;
   void collectGarbage() override;
   v8::Local<v8::Value> executeScriptAndReturnValue(
       const WebScriptSource&) override;
