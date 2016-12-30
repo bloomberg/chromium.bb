@@ -5179,6 +5179,10 @@ def CMDformat(parser, args):
                     help='Print diff to stdout rather than modifying files.')
   opts, args = parser.parse_args(args)
 
+  # Normalize any remaining args against the current path, so paths relative to
+  # the current directory are still resolved as expected.
+  args = [os.path.join(os.getcwd(), arg) for arg in args]
+
   # git diff generates paths against the root of the repository.  Change
   # to that directory so clang-format can find files even within subdirs.
   rel_base_path = settings.GetRelativeRoot()
