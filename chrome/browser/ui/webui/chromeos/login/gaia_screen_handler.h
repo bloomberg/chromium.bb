@@ -135,7 +135,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Callback for AuthPolicyClient.
   void DoAdAuth(const std::string& username,
                 const Key& key,
-                authpolicy::AuthUserErrorType error,
+                authpolicy::ErrorType error,
                 const std::string& uid);
 
   // Callback for writing password into pipe.

@@ -564,13 +564,37 @@ void EnrollmentScreenHandler::OnPasswordPipeReady(
 void EnrollmentScreenHandler::HandleAdDomainJoin(
     const std::string& machine_name,
     const std::string& user_name,
-    int code) {
-  if (code == 0) {
-    controller_->OnAdJoined(gaia::ExtractDomainName(user_name));
-    return;
+    authpolicy::ErrorType code) {
+  switch (code) {
+    case authpolicy::ERROR_NONE:
+      controller_->OnAdJoined(gaia::ExtractDomainName(user_name));
+      return;
+    case authpolicy::ERROR_UNKNOWN:
+    case authpolicy::ERROR_DBUS_FAILURE:
+    case authpolicy::ERROR_PARSE_UPN_FAILED:
+    case authpolicy::ERROR_BAD_USER_NAME:
+    case authpolicy::ERROR_BAD_PASSWORD:
+    case authpolicy::ERROR_PASSWORD_EXPIRED:
+    case authpolicy::ERROR_CANNOT_RESOLVE_KDC:
+    case authpolicy::ERROR_KINIT_FAILED:
+    case authpolicy::ERROR_NET_FAILED:
+    case authpolicy::ERROR_SMBCLIENT_FAILED:
+    case authpolicy::ERROR_PARSE_FAILED:
+    case authpolicy::ERROR_PARSE_PREG_FAILED:
+    case authpolicy::ERROR_BAD_GPOS:
+    case authpolicy::ERROR_LOCAL_IO:
+    case authpolicy::ERROR_NOT_JOINED:
+    case authpolicy::ERROR_NOT_LOGGED_IN:
+    case authpolicy::ERROR_STORE_POLICY_FAILED:
+      // TODO(rsorokin): Add passing/displaying error codes. (see
+      // crbug.com/659984)
+      CallJS("invalidateAd", machine_name, user_name);
+      return;
+    default:
+      LOG(WARNING) << "Unhandled error code: " << code;
+      CallJS("invalidateAd", machine_name, user_name);
+      return;
   }
-  // TODO(rsorokin): Add passing/displaying error codes. (see crbug.com/659984)
-  CallJS("invalidateAd", machine_name, user_name);
 }
 
 void EnrollmentScreenHandler::HandleRetry() {

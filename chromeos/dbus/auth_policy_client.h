@@ -14,18 +14,6 @@
 
 class AccountId;
 
-// TODO(rsorokin): Switch to service constants when it's landed.
-// (see crbug.com/659732)
-namespace authpolicy {
-namespace types {
-enum ADJoinErrorType {
-  AD_JOIN_ERROR_NONE = 0,
-  AD_JOIN_ERROR_UNKNOWN = 1,
-  AD_JOIN_ERROR_DBUS_FAIL = 2,
-};
-}  // namespace types
-}  // namespace authpolicy
-
 namespace chromeos {
 
 // AuthPolicyClient is used to communicate with the org.chromium.AuthPolicy
@@ -35,9 +23,9 @@ class CHROMEOS_EXPORT AuthPolicyClient : public DBusClient {
  public:
   // |user_id| is a unique id for the users. Using objectGUID from Active
   // Directory server.
-  using AuthCallback = base::Callback<void(authpolicy::AuthUserErrorType error,
+  using AuthCallback = base::Callback<void(authpolicy::ErrorType error,
                                            const std::string& user_id)>;
-  using JoinCallback = base::Callback<void(int error_code)>;
+  using JoinCallback = base::Callback<void(authpolicy::ErrorType error)>;
   using RefreshPolicyCallback = base::Callback<void(bool success)>;
 
   ~AuthPolicyClient() override;

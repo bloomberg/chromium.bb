@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "net/base/net_errors.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -116,7 +117,7 @@ class EnrollmentScreenHandler
   // Handler callback from AuthPolicyClient.
   void HandleAdDomainJoin(const std::string& machine_name,
                           const std::string& user_name,
-                          int code);
+                          authpolicy::ErrorType code);
 
   // Keeps the controller for this actor.
   Controller* controller_;

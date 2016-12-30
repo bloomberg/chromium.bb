@@ -501,9 +501,9 @@ AccountId GaiaScreenHandler::GetAccountId(
 
 void GaiaScreenHandler::DoAdAuth(const std::string& username,
                                  const Key& key,
-                                 authpolicy::AuthUserErrorType error,
+                                 authpolicy::ErrorType error,
                                  const std::string& uid) {
-  if (error == authpolicy::AUTH_USER_ERROR_NONE && !uid.empty()) {
+  if (error == authpolicy::ERROR_NONE && !uid.empty()) {
     const AccountId account_id(
         GetAccountId(username, uid, AccountType::ACTIVE_DIRECTORY));
     UserContext user_context(account_id);

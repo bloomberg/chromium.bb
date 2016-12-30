@@ -19,6 +19,7 @@
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace em = enterprise_management;
 
@@ -65,15 +66,14 @@ void FakeAuthPolicyClient::JoinAdDomain(const std::string& machine_name,
                                         const std::string& user_principal_name,
                                         int password_fd,
                                         const JoinCallback& callback) {
-  callback.Run(authpolicy::types::AD_JOIN_ERROR_NONE);
+  callback.Run(authpolicy::ERROR_NONE);
 }
 
 void FakeAuthPolicyClient::AuthenticateUser(
     const std::string& user_principal_name,
     int password_fd,
     const AuthCallback& callback) {
-  callback.Run(authpolicy::AUTH_USER_ERROR_NONE,
-               base::MD5String(user_principal_name));
+  callback.Run(authpolicy::ERROR_NONE, base::MD5String(user_principal_name));
 }
 
 void FakeAuthPolicyClient::RefreshDevicePolicy(

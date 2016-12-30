@@ -9,11 +9,21 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
 namespace {
+
+authpolicy::ErrorType GetErrorFromReader(dbus::MessageReader* reader) {
+  int32_t int_error;
+  if (!reader->PopInt32(&int_error)) {
+    DLOG(ERROR) << "AuthPolicyClient: Failed to get an error from the response";
+    return authpolicy::ERROR_DBUS_FAILURE;
+  }
+  if (int_error < 0 || int_error >= authpolicy::ERROR_COUNT)
+    return authpolicy::ERROR_UNKNOWN;
+  return static_cast<authpolicy::ErrorType>(int_error);
+}
 
 class AuthPolicyClientImpl : public AuthPolicyClient {
  public:
@@ -96,45 +106,27 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
                           dbus::Response* response) {
     if (!response) {
       DLOG(ERROR) << "Join: Couldn't call to authpolicy";
-      // TODO(rsorokin): make proper call, after defining possible errors codes.
-      callback.Run(authpolicy::types::AD_JOIN_ERROR_UNKNOWN);
+      callback.Run(authpolicy::ERROR_DBUS_FAILURE);
       return;
     }
 
     dbus::MessageReader reader(response);
-    int res = authpolicy::types::AD_JOIN_ERROR_UNKNOWN;
-    if (!reader.PopInt32(&res)) {
-      DLOG(ERROR) << "Join: Couldn't get an error from the response";
-      // TODO(rsorokin): make proper call, after defining possible errors codes.
-      callback.Run(authpolicy::types::AD_JOIN_ERROR_DBUS_FAIL);
-      return;
-    }
-
-    callback.Run(res);
+    callback.Run(GetErrorFromReader(&reader));
   }
 
   void HandleAuthCallback(const AuthCallback& callback,
                           dbus::Response* response) {
-    std::string user_id;
-    int32_t res = static_cast<int32_t>(authpolicy::AUTH_USER_ERROR_UNKNOWN);
     if (!response) {
       DLOG(ERROR) << "Auth: Failed to  call to authpolicy";
-      // TODO(rsorokin): make proper call, after defining possible errors codes.
-      callback.Run(authpolicy::AUTH_USER_ERROR_DBUS_FAILURE, user_id);
+      callback.Run(authpolicy::ERROR_DBUS_FAILURE, std::string());
       return;
     }
     dbus::MessageReader reader(response);
-    if (!reader.PopInt32(&res)) {
-      DLOG(ERROR) << "Auth: Failed to get an error from the response";
-      // TODO(rsorokin): make proper call, after defining possible errors codes.
-      callback.Run(static_cast<authpolicy::AuthUserErrorType>(res), user_id);
-      return;
-    }
-    if (res < 0 || res >= authpolicy::AUTH_USER_ERROR_COUNT)
-      res = static_cast<int32_t>(authpolicy::AUTH_USER_ERROR_UNKNOWN);
+    const authpolicy::ErrorType error(GetErrorFromReader(&reader));
+    std::string user_id;
     if (!reader.PopString(&user_id))
       DLOG(ERROR) << "Auth: Failed to get user_id from the response";
-    callback.Run(static_cast<authpolicy::AuthUserErrorType>(res), user_id);
+    callback.Run(error, user_id);
   }
 
   dbus::Bus* bus_ = nullptr;
