@@ -2154,7 +2154,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                            &adapt->ex_dc[plane][pvq->bs][0], 2);
           }
           if ((pvq->ac_dc_coded & 1)) {  // DC coded?
-            od_ec_enc_bits(&w->ec, pvq->dq_dc_residue < 0, 1);
+            aom_write_bit(w, pvq->dq_dc_residue < 0);
           }
           block += step_xy;
         }
