@@ -412,8 +412,6 @@ public class NewTabPage
             int tabIndex = TabModelUtils.getTabIndexById(tabModel, tabId);
             if (tabIndex == TabModel.INVALID_TAB_INDEX) return false;
             TabModelUtils.setIndex(tabModel, tabIndex);
-            OfflinePageUtils.openInExistingTab(recentTabArticle.mUrl,
-                    recentTabArticle.getOfflinePageOfflineId(), tabModel.getTabAt(tabIndex));
             return true;
         }
 
