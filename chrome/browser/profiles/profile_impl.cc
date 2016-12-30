@@ -860,6 +860,15 @@ void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
     return;
   }
 
+  // Fail fast if the browser is shutting down. We want to avoid launching new
+  // UI, finalising profile creation, etc. which would trigger a crash down the
+  // the line. See crbug.com/625646
+  if (g_browser_process->IsShuttingDown()) {
+    if (delegate_)
+      delegate_->OnProfileCreated(this, false, false);
+    return;
+  }
+
 #if defined(OS_CHROMEOS)
   if (create_mode == CREATE_MODE_SYNCHRONOUS) {
     // Synchronous create mode implies that either it is restart after crash,

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/lazy_instance.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -66,6 +67,12 @@ void ChromeExtensionHostDelegate::CreateTab(content::WebContents* web_contents,
                                             WindowOpenDisposition disposition,
                                             const gfx::Rect& initial_rect,
                                             bool user_gesture) {
+  // Verify that the browser is not shutting down. It can be the case if the
+  // call is propagated through a posted task that was already in the queue when
+  // shutdown started. See crbug.com/625646
+  if (g_browser_process->IsShuttingDown())
+    return;
+
   ExtensionTabUtil::CreateTab(
       web_contents, extension_id, disposition, initial_rect, user_gesture);
 }
