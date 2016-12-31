@@ -541,8 +541,6 @@ class PLATFORM_EXPORT ThreadState {
   void decreaseAllocatedObjectSize(size_t);
   void increaseMarkedObjectSize(size_t);
 
-  void callThreadShutdownHooks();
-
   v8::Isolate* isolate() const { return m_isolate; }
 
   BlinkGC::StackState stackState() const { return m_stackState; }

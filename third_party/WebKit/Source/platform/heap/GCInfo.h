@@ -186,7 +186,7 @@ class GCInfoTable {
   static size_t s_gcInfoTableSize;
 };
 
-// GCInfotAtBaseType should be used when returning a unique 14 bit integer
+// GCInfoAtBaseType should be used when returning a unique 14 bit integer
 // for a given gcInfo.
 template <typename T>
 struct GCInfoAtBaseType {
