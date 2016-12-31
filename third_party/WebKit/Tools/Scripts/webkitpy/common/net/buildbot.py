@@ -86,7 +86,7 @@ class BuildBot(object):
         both with and without ("ignored").
         """
         url_base = "%s/%s" % (self.builder_results_url_base(build.builder_name), build.build_number)
-        return NetworkTransaction(convert_404_to_None=True).run(
+        return NetworkTransaction(return_none_on_404=True).run(
             lambda: self._fetch_file(url_base, "retry_summary.json"))
 
     def accumulated_results_url_base(self, builder_name):
@@ -103,9 +103,9 @@ class BuildBot(object):
     @memoized
     def fetch_layout_test_results(self, results_url):
         """Returns a LayoutTestResults object for results fetched from a given URL."""
-        results_file = NetworkTransaction(convert_404_to_None=True).run(
+        results_file = NetworkTransaction(return_none_on_404=True).run(
             lambda: self._fetch_file(results_url, "failing_results.json"))
-        revision = NetworkTransaction(convert_404_to_None=True).run(
+        revision = NetworkTransaction(return_none_on_404=True).run(
             lambda: self._fetch_file(results_url, "LAST_CHANGE"))
         if not revision:
             results_file = None

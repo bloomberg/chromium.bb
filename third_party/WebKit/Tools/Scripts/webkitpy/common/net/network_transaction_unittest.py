@@ -78,7 +78,7 @@ class NetworkTransactionTest(LoggingTestCase):
                         'Retrying in 0.0 seconds...\n'])
 
     def test_convert_404_to_none(self):
-        transaction = NetworkTransaction(convert_404_to_None=True)
+        transaction = NetworkTransaction(return_none_on_404=True)
         self.assertIsNone(transaction.run(self._raise_404_error))
 
     def test_timeout(self):

@@ -41,14 +41,14 @@ class NetworkTimeout(Exception):
 
 class NetworkTransaction(object):
 
-    # TODO(qyearsley): Rename convert_404_to_None
+    # TODO(qyearsley): Rename return_none_on_404
     # pylint: disable=invalid-name
 
-    def __init__(self, initial_backoff_seconds=10, grown_factor=1.5, timeout_seconds=(10 * 60), convert_404_to_None=False):
+    def __init__(self, initial_backoff_seconds=10, grown_factor=1.5, timeout_seconds=(10 * 60), return_none_on_404=False):
         self._initial_backoff_seconds = initial_backoff_seconds
         self._grown_factor = grown_factor
         self._timeout_seconds = timeout_seconds
-        self._convert_404_to_None = convert_404_to_None
+        self._return_none_on_404 = return_none_on_404
         self._total_sleep = 0
         self._backoff_seconds = 0
 
@@ -59,7 +59,7 @@ class NetworkTransaction(object):
             try:
                 return request()
             except urllib2.HTTPError as error:
-                if self._convert_404_to_None and error.code == 404:
+                if self._return_none_on_404 and error.code == 404:
                     return None
                 self._check_for_timeout()
                 _log.warning("Received HTTP status %s loading \"%s\".  Retrying in %s seconds...",

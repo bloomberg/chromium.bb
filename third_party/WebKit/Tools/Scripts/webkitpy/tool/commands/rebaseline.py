@@ -249,7 +249,7 @@ class RebaselineTest(AbstractRebaseliningCommand):
         target_baseline = self._tool.filesystem.join(baseline_directory, self._file_name_for_expected_result(test_name, suffix))
 
         _log.debug("Retrieving source %s for target %s.", source_baseline, target_baseline)
-        self._save_baseline(self._tool.web.get_binary(source_baseline, convert_404_to_None=True),
+        self._save_baseline(self._tool.web.get_binary(source_baseline, return_none_on_404=True),
                             target_baseline)
 
     def _rebaseline_test_and_update_expectations(self, options):
