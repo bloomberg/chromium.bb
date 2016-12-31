@@ -21,7 +21,7 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 # Covered directories are:
 #  compositing except compositing/animations
 #  hittesting
-#  fast/images, css3/images,
+#  images, css3/images,
 #  paint
 #  svg
 #  canvas, fast/canvas
@@ -112,6 +112,9 @@ crbug.com/646176 virtual/spinvalidation/printing/overflow-auto.html [ Pass ]
 crbug.com/646176 virtual/spinvalidation/css3/filters/effect-reference-rename.html [ Pass ]
 crbug.com/646176 virtual/spinvalidation/css3/filters/effect-reference-rename-2.html [ Pass ]
 
+crbug.com/673003 virtual/spinvalidation/paint/invalidation/svg/marker-viewBox-changes.svg [ Pass Failure ]
+crbug.com/673003 virtual/spinvalidation/paint/invalidation/outline-clip-change.html [ Pass Failure ]
+
 # --- End SlimmingPaintInvalidation Tests ---
 
 # Very slight rendering changes caused by Skia rect clipping change.
@@ -140,6 +143,32 @@ crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646015 virtual/spinvalidation/paint/invalidation/hover-invalidation-table.html [ Skip ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 crbug.com/646016 virtual/spinvalidation/paint/invalidation/selected-replaced.html [ Skip ]
+
+crbug.com/659192 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsManualRebaseline ]
+
+crbug.com/663838 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure ]
+
+crbug.com/664846 paint/invalidation/background-resize-height.html [ Pass Failure ]
+
+crbug.com/664849 svg/dom/transform-parser.html [ Pass Failure ]
+
+crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
+crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure ]
+crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
+crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-commit-invalid-call.html [ Pass Failure ]
+crbug.com/664852 virtual/gpu/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
+crbug.com/664852 virtual/gpu/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure ]
+crbug.com/664852 virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Pass Failure ]
+crbug.com/664852 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure ]
+crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
+
+crbug.com/669693 svg/text/combining-character-queries.html [ Pass Failure ]
+
+# Added 2016-12-14
+crbug.com/674396 [ Win ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
+
+# Added 2016-12-15
+crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -1401,8 +1430,6 @@ crbug.com/660185 [ Mac ] fast/forms/datalist/input-appearance-range-with-transfo
 
 crbug.com/658304 [ Win Linux ] fast/forms/select/input-select-after-resize.html [ Crash Timeout Pass ]
 
-crbug.com/659192 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsManualRebaseline ]
-
 # We render the expectation incorrectly for these five tests
 crbug.com/310004 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-canvas-vert-001.xhtml [ Failure ]
 crbug.com/310004 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-iframe-vert-001.xhtml [ Failure ]
@@ -2181,11 +2208,9 @@ crbug.com/673539 [ Linux Win ] css3/filters/effect-contrast-hw.html [ Pass Failu
 
 # Added 2016-12-14
 crbug.com/674048 [ Linux ] virtual/mojo-loading/http/tests/navigation/image-load-in-unload-handler.html [ Pass Timeout ]
-crbug.com/674396 [ Win ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 
 # Added 2016-12-15
 crbug.com/674466 [ Win10 ] fast/forms/select/menulist-appearance-rtl.html [ Pass Failure ]
-crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 crbug.com/674720 [ Debug Trusty ] http/tests/loading/preload-img-test.html [ Pass Failure ]
 
 # Added 2016-12-16
@@ -2201,12 +2226,7 @@ crbug.com/676537 fast/css/imageTileOpacity.html [ Pass Failure ]
 # ====== Random order flaky tests from here ======
 # These tests are flaky when run in random order, which is the default on Linux & Mac since since 2016-12-16.
 
-# Possible duplicate of above 'for Skia DEPS roll'
-# crbug.com/653722 compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
-# crbug.com/653722 compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
-
 crbug.com/663585 editing/pasteboard/data-transfer-items-image-png.html [ Pass Failure ]
-crbug.com/663838 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure ]
 crbug.com/663840 fast/events/click-anchor-blur-refocus-window.html [ Pass Failure ]
 crbug.com/663840 fast/events/click-anchor-refocus-window.html [ Pass Failure ]
 crbug.com/663840 fast/events/click-checkbox-refocus-window.html [ Pass Failure ]
@@ -2315,8 +2335,6 @@ crbug.com/664839 virtual/mojo-loading/http/tests/security/webgl-remote-read-remo
 crbug.com/664840 virtual/mojo-loading/http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_script_types.html [ Pass Failure ]
 crbug.com/664841 virtual/mojo-loading/http/tests/workers/worker-document-domain-security.html [ Pass Failure ]
 crbug.com/664841 virtual/mojo-loading/http/tests/workers/worker-performance-timeline.html [ Pass Failure ]
-crbug.com/673003 virtual/spinvalidation/paint/invalidation/svg/marker-viewBox-changes.svg [ Pass Failure ]
-crbug.com/673003 virtual/spinvalidation/paint/invalidation/outline-clip-change.html [ Pass Failure ]
 
 # Possible duplicate of crbug.com/498539
 # crbug.com/664843 inspector/elements/styles-4/styles-update-from-js.html [ Pass Failure ]
@@ -2326,18 +2344,6 @@ crbug.com/672204 media/avtrack/video-track-selected.html [ Pass Failure ]
 crbug.com/664844 media/track/track-cue-rendering-tree-is-removed-properly.html [ Pass Failure ]
 crbug.com/664844 media/track/track-default-attribute.html [ Pass Failure ]
 crbug.com/664844 media/track/track-kind-user-preference.html [ Pass Failure ]
-crbug.com/664846 paint/invalidation/background-resize-height.html [ Pass Failure ]
-crbug.com/664849 svg/dom/transform-parser.html [ Pass Failure ]
-crbug.com/669693 svg/text/combining-character-queries.html [ Pass Failure ]
-crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
-crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure ]
-crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
-crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-commit-invalid-call.html [ Pass Failure ]
-crbug.com/664852 virtual/gpu/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
-crbug.com/664852 virtual/gpu/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure ]
-crbug.com/664852 virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Pass Failure ]
-crbug.com/664852 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure ]
-crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 crbug.com/664853 virtual/mojo-loading/webexposed/css-properties-as-js-properties.html [ Pass Failure ]
 crbug.com/664853 virtual/mojo-loading/webexposed/web-animations-api.html [ Pass Failure ]
 crbug.com/664855 virtual/scroll_customization/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Pass Failure ]
