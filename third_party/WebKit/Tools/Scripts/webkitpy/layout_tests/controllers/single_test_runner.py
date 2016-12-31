@@ -66,7 +66,7 @@ class SingleTestRunner(object):
         self._results_directory = results_directory
         self._driver = primary_driver
         self._reference_driver = primary_driver
-        self._timeout = test_input.timeout
+        self._timeout_ms = test_input.timeout_ms
         self._worker_name = worker_name
         self._test_name = test_input.test_name
         self._should_run_pixel_test = test_input.should_run_pixel_test
@@ -126,7 +126,7 @@ class SingleTestRunner(object):
         else:
             test_name = self._test_name
             args = self._port.lookup_physical_test_args(self._test_name)
-        return DriverInput(test_name, self._timeout, image_hash, self._should_run_pixel_test, args)
+        return DriverInput(test_name, self._timeout_ms, image_hash, self._should_run_pixel_test, args)
 
     def run(self):
         if self._options.enable_sanitizer:
@@ -400,7 +400,7 @@ class SingleTestRunner(object):
                 args = self._port.lookup_physical_reference_args(self._test_name)
             reference_test_name = self._port.relative_test_filename(reference_filename)
             reference_test_names.append(reference_test_name)
-            driver_input = DriverInput(reference_test_name, self._timeout,
+            driver_input = DriverInput(reference_test_name, self._timeout_ms,
                                        image_hash=test_output.image_hash, should_run_pixel_test=True, args=args)
             expected_output = self._reference_driver.run_test(driver_input, self._stop_when_done)
             total_test_time += expected_output.test_time

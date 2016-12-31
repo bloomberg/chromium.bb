@@ -31,14 +31,14 @@
 class TestInput(object):
     """Groups information about a test for easy passing of data."""
 
-    def __init__(self, test_name, timeout=None, requires_lock=None, reference_files=None,
+    def __init__(self, test_name, timeout_ms=None, requires_lock=None, reference_files=None,
                  should_run_pixel_test=None, should_add_missing_baselines=True):
         # TestInput objects are normally constructed by the manager and passed
         # to the workers, but these some fields are set lazily in the workers
         # where possible, because they require us to look at the filesystem,
         # and we want to be able to do that in parallel.
         self.test_name = test_name
-        self.timeout = timeout  # in msecs; FIXME: should rename this for consistency
+        self.timeout_ms = timeout_ms
         self.requires_lock = requires_lock
         self.reference_files = reference_files
         self.should_run_pixel_test = should_run_pixel_test
@@ -46,11 +46,11 @@ class TestInput(object):
 
     def __repr__(self):
         return (
-            "TestInput('%s', timeout=%s, requires_lock=%s, "
+            "TestInput('%s', timeout_ms=%s, requires_lock=%s, "
             "reference_files=%s, should_run_pixel_test=%s, "
             "should_add_missing_baselines=%s)" % (
                 self.test_name,
-                self.timeout,
+                self.timeout_ms,
                 self.requires_lock,
                 self.reference_files,
                 self.should_run_pixel_test,
