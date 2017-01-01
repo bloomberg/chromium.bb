@@ -61,7 +61,7 @@ clients):
 
 - "window managers"
 	The X Window Managers correspond to different wl_shell
-	implementations, not different shells, since they pratically
+	implementations, not different shells, since they practically
 	all deal with a desktop environment. You also want all desktop
 	applications to work with all window managers, so you need to
 	implement wl_shell anyway.
