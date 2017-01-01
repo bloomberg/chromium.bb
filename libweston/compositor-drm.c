@@ -2844,7 +2844,7 @@ session_notify(struct wl_listener *listener, void *data)
 		 * pending pageflip or the idle handler), make sure we
 		 * cancel that so we don't try to pageflip when we're
 		 * vt switched away.  The OFFSCREEN state will prevent
-		 * further attemps at repainting.  When we switch
+		 * further attempts at repainting.  When we switch
 		 * back, we schedule a repaint, which will process
 		 * pending frame callbacks. */
 
@@ -3225,7 +3225,7 @@ drm_backend_create(struct weston_compositor *compositor,
 
 	b->udev_monitor = udev_monitor_new_from_netlink(b->udev, "udev");
 	if (b->udev_monitor == NULL) {
-		weston_log("failed to intialize udev monitor\n");
+		weston_log("failed to initialize udev monitor\n");
 		goto err_drm_source;
 	}
 	udev_monitor_filter_add_match_subsystem_devtype(b->udev_monitor,
