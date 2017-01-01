@@ -30,7 +30,7 @@ struct zuc_event_listener;
 struct zuc_test;
 
 /**
- * Creates a new instance of an even collector that will attatch events
+ * Creates a new instance of an event collector that will attach events
  * to the current test directly or via connection from child to parent.
  *
  * @param pipe_fd pointer to the file descriptor to use for communication if
