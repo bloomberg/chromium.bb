@@ -50,7 +50,7 @@ into something more usable:
 WCAP File format
 
 The file format has a small header and then just consists of the
-indivial frames.  The header is
+individual frames.  The header is
 
 	uint32_t	magic
 	uint32_t	format
