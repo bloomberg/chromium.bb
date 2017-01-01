@@ -64,7 +64,7 @@ extern "C" {
 #endif
 
 /**
- * Returns a pointer the the containing struct of a given member item.
+ * Returns a pointer to the containing struct of a given member item.
  *
  * To demonstrate, the following example retrieves a pointer to
  * `example_container` given only its `destroy_listener` member:
