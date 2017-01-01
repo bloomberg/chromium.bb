@@ -1911,7 +1911,7 @@ shell_surface_set_output(struct shell_surface *shsurf,
 		weston_desktop_surface_get_surface(shsurf->desktop_surface);
 
 	/* get the default output, if the client set it as NULL
-	   check whether the ouput is available */
+	   check whether the output is available */
 	if (output)
 		shsurf->output = output;
 	else if (es->output)
