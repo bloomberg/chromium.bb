@@ -2781,7 +2781,7 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 	input->sx = sx;
 	input->sy = sy;
 
-	/* when making the window smaller - e.g. after a unmaximise we might
+	/* when making the window smaller - e.g. after an unmaximise we might
 	 * still have a pending motion event that the compositor has picked
 	 * based on the old surface dimensions. However, if we have an active
 	 * grab, we expect to see input from outside the window anyway.
@@ -5332,7 +5332,7 @@ menu_button_handler(struct widget *widget,
 
 	if (state == WL_POINTER_BUTTON_STATE_RELEASED &&
 	    (menu->release_count > 0 || time - menu->time > 500)) {
-		/* Either relase after press-drag-release or
+		/* Either release after press-drag-release or
 		 * click-motion-click. */
 		menu->func(menu->user_data, input, menu->current);
 		input_ungrab(menu->input);
