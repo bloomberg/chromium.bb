@@ -140,8 +140,8 @@ AC_ARG_ENABLE(xkbcommon,
 			      support: This is only useful in environments
 			      where you do not have a hardware keyboard. If
 			      libxkbcommon support is disabled clients will not
-			      be sent a keymap and and must know how to
-			      interpret the keycode sent for any key event.]),,
+			      be sent a keymap and must know how to interpret
+			      the keycode sent for any key event.]),,
 	      enable_xkbcommon=yes)
 if test x$enable_xkbcommon = xyes; then
 	AC_DEFINE(ENABLE_XKBCOMMON, [1], [Build Weston with libxkbcommon support])
