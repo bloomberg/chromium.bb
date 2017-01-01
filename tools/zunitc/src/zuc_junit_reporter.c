@@ -235,7 +235,7 @@ as_duration(long ms)
 	} else {
 		/*
 		 * Special case to match behavior of standard JUnit output
-		 * writers. Asumption is certain readers might have
+		 * writers. Assumption is certain readers might have
 		 * limitations, etc. so it is best to keep 100% identical
 		 * output.
 		 */
