@@ -4326,7 +4326,7 @@ weston_output_enable_undo(struct weston_output *output)
  * applies the necessary changes.
  * All views assigned to the weston_output object are
  * moved to a new output.
- * Signal is emited to notify all users of the weston_output
+ * Signal is emitted to notify all users of the weston_output
  * object that the output is being destroyed.
  * wl_output protocol objects referencing this weston_output
  * are made inert.
