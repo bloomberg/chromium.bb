@@ -73,7 +73,7 @@ To make a release of Weston and/or Wayland, follow these steps.
       listing of the most notable changes.  For x.y.0 releases, indicate
       the schedule for the x.y+1.0 release.
 
-  6.  pgp sign the the release announcements and send them to
+  6.  pgp sign the release announcements and send them to
       wayland-devel@lists.freedesktop.org
 
   7.  Update releases.html in wayland-web with links to tarballs and
