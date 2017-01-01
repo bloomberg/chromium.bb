@@ -25,9 +25,9 @@
 
 /**
  * The ivi-layout library supports API set of controlling properties of
- * surface and layer which groups surfaces. An unique ID whose type is integer
- * is required to create surface and layer. With the unique ID, surface and
- * layer are identified to control them. The API set consists of APIs to control
+ * surface and layer which groups surfaces. A unique ID whose type is integer is
+ * required to create surface and layer. With the unique ID, surface and layer
+ * are identified to control them. The API set consists of APIs to control
  * properties of surface and layers about followings,
  * - visibility.
  * - opacity.

@@ -38,7 +38,7 @@
  * consists of
  * - In the bottom, a base ivi_layer to group ivi_surfaces of background,
  *   panel, and buttons
- * - Next, a application ivi_layer to show application ivi_surfaces.
+ * - Next, an application ivi_layer to show application ivi_surfaces.
  * - Workspace background ivi_layer to show a ivi_surface of background image.
  * - Workspace ivi_layer to show launcher to launch application with icons.
  *   Paths to binary and icon are defined in weston.ini. The width of this
@@ -1293,7 +1293,7 @@ ivi_hmi_controller_UI_ready(struct wl_client *client,
  * ivi_hmi_controller_workspace_control shall be invoked and to start
  * controlling of workspace. The workspace has several pages to show several
  * groups of applications.
- * The workspace is slid by using ivi-layout to select a a page in layer_set_pos
+ * The workspace is slid by using ivi-layout to select a page in layer_set_pos
  * according to motion. When motion finished, e.g. touch up detected, control is
  * terminated and event:ivi_hmi_controller_workspace_control is notified.
  */
