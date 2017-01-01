@@ -2196,7 +2196,7 @@ weston_wm_create_wm_window(struct weston_wm *wm)
 			    32, /* format */
 			    1, &wm->wm_window);
 
-	/* Claim the WM_S0 selection even though we don't suport
+	/* Claim the WM_S0 selection even though we don't support
 	 * the --replace functionality. */
 	xcb_set_selection_owner(wm->conn,
 				wm->wm_window,

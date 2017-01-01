@@ -406,7 +406,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 			wm->property_source = NULL;
 		} else {
 			weston_log("got %zu bytes, "
-				"property deleted, seting new property\n",
+				"property deleted, setting new property\n",
 				wm->source_data.size);
 			weston_wm_flush_source_data(wm);
 		}
@@ -430,7 +430,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 				"property delete\n", wm->source_data.size);
 		} else {
 			weston_log("got %zu bytes, "
-				"property deleted, seting new property\n",
+				"property deleted, setting new property\n",
 				wm->source_data.size);
 			weston_wm_flush_source_data(wm);
 		}
