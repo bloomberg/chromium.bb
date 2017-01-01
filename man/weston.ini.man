@@ -360,7 +360,7 @@ The DRM backend accepts different modes:
 .RE
 .RS
 .PP
-Optionally, an user may specify a modeline, such as:
+Optionally, a user may specify a modeline, such as:
 .PP
 .nf
 .in +4n
