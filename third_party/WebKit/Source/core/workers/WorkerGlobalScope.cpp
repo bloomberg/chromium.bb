@@ -130,14 +130,16 @@ void WorkerGlobalScope::exceptionUnhandled(int exceptionId) {
 
 void WorkerGlobalScope::registerEventListener(
     V8AbstractEventListener* eventListener) {
+  // TODO(sof): remove once crbug.com/677654 has been diagnosed.
+  CHECK(&ThreadState::fromObject(this)->heap() == &ThreadState::fromObject(eventListener)->heap());
   bool newEntry = m_eventListeners.add(eventListener).isNewEntry;
-  RELEASE_ASSERT(newEntry);
+  CHECK(newEntry);
 }
 
 void WorkerGlobalScope::deregisterEventListener(
     V8AbstractEventListener* eventListener) {
   auto it = m_eventListeners.find(eventListener);
-  RELEASE_ASSERT(it != m_eventListeners.end());
+  CHECK(it != m_eventListeners.end());
   m_eventListeners.remove(it);
 }
 
