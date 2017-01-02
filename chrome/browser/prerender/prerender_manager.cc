@@ -157,6 +157,8 @@ class PrerenderManager::OnCloseWebContentsDeleter
   DISALLOW_COPY_AND_ASSIGN(OnCloseWebContentsDeleter);
 };
 
+PrerenderManagerObserver::~PrerenderManagerObserver() {}
+
 // static
 int PrerenderManager::prerenders_per_session_count_ = 0;
 
@@ -182,6 +184,7 @@ PrerenderManager::PrerenderManager(Profile* profile)
       last_recorded_profile_network_bytes_(0),
       clock_(new base::DefaultClock()),
       tick_clock_(new base::DefaultTickClock()),
+      page_load_metric_observer_disabled_(false),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -565,31 +568,54 @@ void PrerenderManager::RecordPrefetchRedirectCount(Origin origin,
                                            redirect_count);
 }
 
-void PrerenderManager::RecordFirstContentfulPaint(const GURL& url,
-                                                  bool is_no_store,
-                                                  base::TimeDelta time) {
-  CleanUpOldNavigations(&prefetches_, base::TimeDelta::FromMinutes(30));
-
-  // Compute the prefetch age.
+void PrerenderManager::RecordNoStateFirstContentfulPaint(const GURL& url,
+                                                         bool is_no_store,
+                                                         bool was_hidden,
+                                                         base::TimeDelta time) {
   base::TimeDelta prefetch_age;
-  Origin origin = ORIGIN_NONE;
-  for (auto it = prefetches_.crbegin(); it != prefetches_.crend(); ++it) {
-    if (it->url == url) {
-      prefetch_age = GetCurrentTimeTicks() - it->time;
-      origin = it->origin;
-      break;
-    }
+  Origin origin;
+  GetPrefetchInformation(url, &prefetch_age, &origin);
+
+  histograms_->RecordPrefetchFirstContentfulPaintTime(
+      origin, is_no_store, was_hidden, time, prefetch_age);
+
+  for (auto& observer : observers_) {
+    observer->OnFirstContentfulPaint();
   }
+}
 
-  histograms_->RecordFirstContentfulPaint(origin, is_no_store, time,
-                                          prefetch_age);
+void PrerenderManager::RecordPrerenderFirstContentfulPaint(
+    const GURL& url,
+    content::WebContents* web_contents,
+    bool is_no_store,
+    bool was_hidden,
+    base::TimeTicks first_contentful_paint) {
+  DCHECK(!first_contentful_paint.is_null());
 
-  // Loading a prefetched URL resets the revalidation bypass. Remove the url
-  // from the prefetch list for more accurate metrics.
-  prefetches_.erase(
-      std::remove_if(prefetches_.begin(), prefetches_.end(),
-                     [url](const NavigationRecord& r) { return r.url == url; }),
-      prefetches_.end());
+  PrerenderTabHelper* tab_helper =
+      PrerenderTabHelper::FromWebContents(web_contents);
+  DCHECK(tab_helper);
+
+  base::TimeDelta prefetch_age;
+  // The origin at prefetch is superceeded by the tab_helper origin for the
+  // histogram recording, below.
+  Origin unused_origin;
+  GetPrefetchInformation(url, &prefetch_age, &unused_origin);
+
+  base::TimeTicks swap_ticks = tab_helper->swap_ticks();
+  bool fcp_recorded = false;
+  if (!swap_ticks.is_null() && !first_contentful_paint.is_null()) {
+    histograms_->RecordPrefetchFirstContentfulPaintTime(
+        tab_helper->origin(), is_no_store, was_hidden,
+        first_contentful_paint - swap_ticks, prefetch_age);
+    fcp_recorded = true;
+  }
+  histograms_->RecordPerceivedFirstContentfulPaintStatus(
+      tab_helper->origin(), fcp_recorded, was_hidden);
+
+  for (auto& observer : observers_) {
+    observer->OnFirstContentfulPaint();
+  }
 }
 
 // static
@@ -1040,6 +1066,8 @@ void PrerenderManager::PeriodicCleanup() {
 
   to_delete_prerenders_.clear();
 
+  CleanUpOldNavigations(&prefetches_, base::TimeDelta::FromMinutes(30));
+
   // Measure how long a the various cleanup tasks took. http://crbug.com/305419.
   UMA_HISTOGRAM_TIMES("Prerender.PeriodicCleanupDeleteContentsTime",
                       cleanup_timer.Elapsed());
@@ -1091,6 +1119,11 @@ void PrerenderManager::SetClockForTesting(
 void PrerenderManager::SetTickClockForTesting(
     std::unique_ptr<base::SimpleTestTickClock> tick_clock) {
   tick_clock_ = std::move(tick_clock);
+}
+
+void PrerenderManager::AddObserver(
+    std::unique_ptr<PrerenderManagerObserver> observer) {
+  observers_.push_back(std::move(observer));
 }
 
 std::unique_ptr<PrerenderContents> PrerenderManager::CreatePrerenderContents(
@@ -1153,6 +1186,31 @@ void PrerenderManager::DeleteOldWebContents() {
     delete web_contents;
   }
   old_web_contents_list_.clear();
+}
+
+void PrerenderManager::GetPrefetchInformation(const GURL& url,
+                                              base::TimeDelta* prefetch_age,
+                                              Origin* origin) {
+  DCHECK(prefetch_age);
+  DCHECK(origin);
+  CleanUpOldNavigations(&prefetches_, base::TimeDelta::FromMinutes(30));
+
+  *prefetch_age = base::TimeDelta();
+  *origin = ORIGIN_NONE;
+  for (auto it = prefetches_.crbegin(); it != prefetches_.crend(); ++it) {
+    if (it->url == url) {
+      *prefetch_age = GetCurrentTimeTicks() - it->time;
+      *origin = it->origin;
+      break;
+    }
+  }
+
+  // Loading a prefetched URL resets the revalidation bypass. Remove all
+  // matching urls from the prefetch list for more accurate metrics.
+  prefetches_.erase(
+      std::remove_if(prefetches_.begin(), prefetches_.end(),
+                     [url](const NavigationRecord& r) { return r.url == url; }),
+      prefetches_.end());
 }
 
 void PrerenderManager::CleanUpOldNavigations(

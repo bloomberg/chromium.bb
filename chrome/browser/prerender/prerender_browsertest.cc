@@ -26,6 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -40,6 +41,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/net/prediction_options.h"
+#include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
+#include "chrome/browser/page_load_metrics/observers/prerender_page_load_metrics_observer.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -50,6 +53,7 @@
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -533,6 +537,16 @@ base::FilePath GetTestPath(const std::string& file_name) {
       base::FilePath().AppendASCII(file_name));
 }
 
+page_load_metrics::PageLoadExtraInfo GenericPageLoadExtraInfo(
+    const GURL& dest_url) {
+  return page_load_metrics::PageLoadExtraInfo(
+      base::TimeDelta(), base::TimeDelta(), false,
+      page_load_metrics::UserInitiatedInfo::BrowserInitiated(), dest_url,
+      dest_url, page_load_metrics::ABORT_NONE,
+      page_load_metrics::UserInitiatedInfo::NotUserInitiated(),
+      base::TimeDelta(), 0, 0, page_load_metrics::PageLoadMetadata());
+}
+
 }  // namespace
 
 class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
@@ -720,6 +734,8 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     call_javascript_ = false;
   }
 
+  void EnableJavascriptCalls() { call_javascript_ = true; }
+
   void DisableLoadEventCheck() {
     check_load_events_ = false;
   }
@@ -874,6 +890,26 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
         base::ASCIIToUTF16(javascript));
   }
 
+  base::SimpleTestTickClock* OverridePrerenderManagerTimeTicks() {
+    auto clock = base::MakeUnique<base::SimpleTestTickClock>();
+    auto clock_ptr = clock.get();
+    // The default zero time causes the prerender manager to do strange things.
+    clock->Advance(base::TimeDelta::FromSeconds(1));
+    GetPrerenderManager()->SetTickClockForTesting(std::move(clock));
+    return clock_ptr;
+  }
+
+  void SetMidLoadClockAdvance(base::SimpleTestTickClock* clock,
+                              base::TimeDelta delta) {
+    mid_load_clock_ = clock;
+    mid_load_clock_tick_advance_ = delta;
+  }
+
+  void ClearMidLoadClock() {
+    mid_load_clock_tick_advance_ = base::TimeDelta();
+    mid_load_clock_ = nullptr;
+  }
+
  private:
   // TODO(davidben): Remove this altogether so the tests don't globally assume
   // only one prerender.
@@ -897,6 +933,11 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     std::vector<std::unique_ptr<TestPrerender>> prerenders =
         NavigateWithPrerenders(loader_url, expected_final_status_queue);
     prerenders[0]->WaitForLoads(expected_number_of_loads);
+
+    if (!mid_load_clock_tick_advance_.is_zero()) {
+      EXPECT_TRUE(mid_load_clock_);
+      mid_load_clock_->Advance(mid_load_clock_tick_advance_);
+    }
 
     FinalStatus expected_final_status = expected_final_status_queue.front();
     if (ShouldAbortPrerenderBeforeSwap(expected_final_status)) {
@@ -990,12 +1031,17 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   std::string loader_path_;
   std::string loader_query_;
   base::test::ScopedFeatureList feature_list_;
+  base::TimeDelta mid_load_clock_tick_advance_;
+  base::SimpleTestTickClock* mid_load_clock_;
 };
 
 // Checks that a page is correctly prerendered in the case of a
 // <link rel=prerender> tag and then loaded into a tab in response to a
 // navigation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
+  test_utils::FirstContentfulPaintManagerWaiter* fcp_waiter =
+      test_utils::FirstContentfulPaintManagerWaiter::Create(
+          GetPrerenderManager());
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   EXPECT_EQ(1, GetPrerenderDomContentLoadedEventCountForLinkNumber(0));
   histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
@@ -1007,14 +1053,72 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
       GetActiveWebContents()->GetRenderProcessHost());
   NavigateToDestURL();
   channel_close_watcher.WaitForChannelClose();
+  fcp_waiter->Wait();
 
   histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLT", 1);
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PerceivedTTFCPRecorded.Visible", 1);
 
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
+// Checks that the correct page load metrics observers are produced without a
+// prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PageLoadMetricsSimple) {
+  // The prefetch page is used as a simple page with a nonempty layout; no
+  // prefetching is performed.
+  test_utils::FirstContentfulPaintManagerWaiter* simple_fcp_waiter =
+      test_utils::FirstContentfulPaintManagerWaiter::Create(
+          GetPrerenderManager());
+  ui_test_utils::NavigateToURL(
+      current_browser(), src_server()->GetURL("/prerender/prefetch_page.html"));
+  simple_fcp_waiter->Wait();
+
+  histogram_tester().ExpectTotalCount(
+      "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.DocumentTiming.NavigationToFirstLayout", 1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.PaintTiming.NavigationToFirstContentfulPaint", 1);
+
+  // Histogram only emitted during a prerender, which should not happen here.
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 0);
+}
+
+// Checks that the correct page load metrics observers are produced with a
+// prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PageLoadMetricsPrerender) {
+  test_utils::FirstContentfulPaintManagerWaiter* prerender_fcp_waiter =
+      test_utils::FirstContentfulPaintManagerWaiter::Create(
+          GetPrerenderManager());
+  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+  prerender_fcp_waiter->Wait();
+
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
+
+  // Histogram logged during the prefetch_loader.html load, but not during the
+  // prerender.
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.DocumentTiming.NavigationToFirstLayout", 1);
+
+  // Histograms only emitted during the simple load which does not happen here
+  // (as prefetch_loader.html has an empty body, it does not generate a FCP).
+  histogram_tester().ExpectTotalCount(
+      "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.PaintTiming.NavigationToFirstContentfulPaint", 0);
+}
+
 // Checks that cross-domain prerenders emit the correct histograms.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageCrossDomain) {
+  test_utils::FirstContentfulPaintManagerWaiter* fcp_waiter =
+      test_utils::FirstContentfulPaintManagerWaiter::Create(
+          GetPrerenderManager());
   PrerenderTestURL(GetCrossDomainTestUrl("prerender/prerender_page.html"),
                    FINAL_STATUS_USED, 1);
   histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
@@ -1022,7 +1126,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageCrossDomain) {
       "Prerender.webcross_PrerenderNotSwappedInPLT", 1);
 
   NavigateToDestURL();
+  fcp_waiter->Wait();
+
   histogram_tester().ExpectTotalCount("Prerender.webcross_PerceivedPLT", 1);
+  histogram_tester().ExpectTotalCount(
+      "Prerender.webcross_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
 }
 
 // Checks that pending prerenders launch and receive proper event treatment.
@@ -3151,6 +3259,285 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AutosigninInPrerenderer) {
   PrerenderTestURL("/password/autosignin.html",
                    FINAL_STATUS_CREDENTIAL_MANAGER_API, 0);
   EXPECT_EQ(0, done_counter.count());
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintTimingSimple) {
+  GetPrerenderManager()->DisablePageLoadMetricsObserverForTesting();
+  base::SimpleTestTickClock* clock = OverridePrerenderManagerTimeTicks();
+  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+
+  base::TimeTicks load_start = clock->NowTicks();
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+  NavigateToDestURL();
+
+  PrerenderPageLoadMetricsObserver observer(GetPrerenderManager(),
+                                            GetActiveWebContents());
+  observer.SetNavigationStartTicksForTesting(load_start);
+
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
+  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2654);
+  page_load_metrics::PageLoadMetricsObserverTestHarness::
+      PopulateRequiredTimingFields(&timing);
+  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1654, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintTimingReuse) {
+  GetPrerenderManager()->DisablePageLoadMetricsObserverForTesting();
+  base::SimpleTestTickClock* clock = OverridePrerenderManagerTimeTicks();
+
+  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
+  // As this load will be canceled, it is not waited for, and hence no
+  // javascript is executed.
+  DisableJavascriptCalls();
+  PrerenderTestURL(url, FINAL_STATUS_CANCELLED, 0);
+
+  // This prerender cancels and reuses the first.
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+  base::TimeTicks load_start = clock->NowTicks();
+  EnableJavascriptCalls();
+  PrerenderTestURL(url, FINAL_STATUS_USED, 1);
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+
+  NavigateToDestURL();
+  PrerenderPageLoadMetricsObserver observer(GetPrerenderManager(),
+                                            GetActiveWebContents());
+  observer.SetNavigationStartTicksForTesting(load_start);
+
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
+  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2361);
+  page_load_metrics::PageLoadMetricsObserverTestHarness::
+      PopulateRequiredTimingFields(&timing);
+  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
+  // If the first prerender had been used, the perceived TTFCP would have been
+  // under a second: 2362ms - 2 sec worth of Advance().
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1361, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       FirstContentfulPaintTimingTimeout) {
+  GetPrerenderManager()->DisablePageLoadMetricsObserverForTesting();
+  base::SimpleTestTickClock* clock = OverridePrerenderManagerTimeTicks();
+
+  // Make the first prerender time out.
+  base::TimeDelta time_out_delta =
+      GetPrerenderManager()->config().time_to_live +
+      base::TimeDelta::FromSeconds(10);
+  SetMidLoadClockAdvance(clock, time_out_delta);
+
+  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
+  PrerenderTestURL(url, FINAL_STATUS_TIMED_OUT, 1);
+
+  ClearMidLoadClock();
+  base::TimeTicks load_start = clock->NowTicks();
+  PrerenderTestURL(url, FINAL_STATUS_USED, 1);
+
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+  NavigateToDestURL();
+
+  PrerenderPageLoadMetricsObserver observer(GetPrerenderManager(),
+                                            GetActiveWebContents());
+  observer.SetNavigationStartTicksForTesting(load_start);
+
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
+  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2361);
+  page_load_metrics::PageLoadMetricsObserverTestHarness::
+      PopulateRequiredTimingFields(&timing);
+  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
+  // If the timed out had been used, the perceived TTFCP would have been
+  // negative.
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1361, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       FirstContentfulPaintTimingNoCommit) {
+  GetPrerenderManager()->DisablePageLoadMetricsObserverForTesting();
+  base::SimpleTestTickClock* clock = OverridePrerenderManagerTimeTicks();
+
+  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
+  base::FilePath url_file = ui_test_utils::GetTestFilePath(
+      base::FilePath(),
+      base::FilePath(FILE_PATH_LITERAL("prerender/prerender_page.html")));
+
+  base::RunLoop prerender_start_loop;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateHangingFirstRequestInterceptorOnIO, url, url_file,
+                 prerender_start_loop.QuitClosure()));
+  // As this load is uncommitted, it is not waited for, and hence no
+  // javascript is executed.
+  DisableJavascriptCalls();
+  PrerenderTestURL(url, FINAL_STATUS_NAVIGATION_UNCOMMITTED, 0);
+  prerender_start_loop.Run();
+
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+  NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, false);
+
+  PrerenderPageLoadMetricsObserver observer(GetPrerenderManager(),
+                                            GetActiveWebContents());
+  observer.SetNavigationStartTicksForTesting(clock->NowTicks());
+
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
+  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2362);
+  page_load_metrics::PageLoadMetricsObserverTestHarness::
+      PopulateRequiredTimingFields(&timing);
+  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+
+  histogram_tester().ExpectTotalCount(
+      "Prerender.none_PrefetchTTFCP.Warm.Cacheable.Visible", 0);
+  histogram_tester().ExpectTotalCount(
+      "Prerender.none_PerceivedTTFCPRecorded.Visible", 1);
+
+  // Check that the prerender didn't happen with a defined origin.
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 0);
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PerceivedTTFCPRecorded.Visible", 0);
+
+  // A FCP is fired by the observer, but as a swap did not occur the perceived
+  // time cannot be calculated, and an unrecorded perceived FCP time histogram
+  // entry is made.
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.none_PerceivedTTFCPRecorded.Visible", 0, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       FirstContentfulPaintTimingTwoPages) {
+  GetPrerenderManager()->DisablePageLoadMetricsObserverForTesting();
+  base::SimpleTestTickClock* clock = OverridePrerenderManagerTimeTicks();
+
+  // As this load will be canceled, it is not waited for, and hence no
+  // javascript is executed.
+  DisableJavascriptCalls();
+  // First prerender a different page from the usual target.
+  PrerenderTestURL("/prerender/prefetch_page.html", FINAL_STATUS_CANCELLED, 0);
+
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+  base::TimeTicks load_start = clock->NowTicks();
+  EnableJavascriptCalls();
+  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+  NavigateToDestURL();
+
+  PrerenderPageLoadMetricsObserver observer(GetPrerenderManager(),
+                                            GetActiveWebContents());
+  observer.SetNavigationStartTicksForTesting(load_start);
+
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
+  // The FCP time should end up on the edge of the bucket.
+  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2654);
+  page_load_metrics::PageLoadMetricsObserverTestHarness::
+      PopulateRequiredTimingFields(&timing);
+  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1654, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintHidden) {
+  GetPrerenderManager()->DisablePageLoadMetricsObserverForTesting();
+  base::SimpleTestTickClock* clock = OverridePrerenderManagerTimeTicks();
+  base::TimeTicks load_start = clock->NowTicks();
+  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+  NavigateToDestURL();
+
+  PrerenderPageLoadMetricsObserver observer(GetPrerenderManager(),
+                                            GetActiveWebContents());
+  observer.SetNavigationStartTicksForTesting(load_start);
+
+  EXPECT_EQ(page_load_metrics::PageLoadMetricsObserver::CONTINUE_OBSERVING,
+            observer.OnHidden(page_load_metrics::PageLoadTiming(),
+                              GenericPageLoadExtraInfo(dest_url())));
+
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
+  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2654);
+  page_load_metrics::PageLoadMetricsObserverTestHarness::
+      PopulateRequiredTimingFields(&timing);
+  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Hidden", 1);
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Hidden", 1654, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       FirstContentfulPaintHiddenNoCommit) {
+  GetPrerenderManager()->DisablePageLoadMetricsObserverForTesting();
+  base::SimpleTestTickClock* clock = OverridePrerenderManagerTimeTicks();
+
+  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
+  base::FilePath url_file = ui_test_utils::GetTestFilePath(
+      base::FilePath(),
+      base::FilePath(FILE_PATH_LITERAL("prerender/prerender_page.html")));
+
+  base::RunLoop prerender_start_loop;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateHangingFirstRequestInterceptorOnIO, url, url_file,
+                 prerender_start_loop.QuitClosure()));
+  // As this load is uncommitted, it is not waited for, and hence no
+  // javascript is executed.
+  DisableJavascriptCalls();
+  PrerenderTestURL(url, FINAL_STATUS_NAVIGATION_UNCOMMITTED, 0);
+  prerender_start_loop.Run();
+
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+  NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, false);
+
+  PrerenderPageLoadMetricsObserver observer(GetPrerenderManager(),
+                                            GetActiveWebContents());
+  observer.SetNavigationStartTicksForTesting(clock->NowTicks());
+
+  EXPECT_EQ(page_load_metrics::PageLoadMetricsObserver::CONTINUE_OBSERVING,
+            observer.OnHidden(page_load_metrics::PageLoadTiming(),
+                              GenericPageLoadExtraInfo(dest_url())));
+
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
+  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2362);
+  page_load_metrics::PageLoadMetricsObserverTestHarness::
+      PopulateRequiredTimingFields(&timing);
+  observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
+
+  histogram_tester().ExpectTotalCount(
+      "Prerender.none_PrefetchTTFCP.Warm.Cacheable.Hidden", 0);
+  histogram_tester().ExpectTotalCount(
+      "Prerender.none_PerceivedTTFCPRecorded.Hidden", 1);
+
+  // Check that the prerender didn't happen with a defined origin.
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Hidden", 0);
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PerceivedTTFCPRecorded.Hidden", 0);
+
+  // A FCP is fired by the observer, but the manager should detect that the
+  // perceived time is not set and so update the following histogram.
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.none_PerceivedTTFCPRecorded.Hidden", 0, 1);
 }
 
 class PrerenderIncognitoBrowserTest : public PrerenderBrowserTest {

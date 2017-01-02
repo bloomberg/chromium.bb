@@ -48,6 +48,10 @@ class PrerenderTabHelper
   // Called when this prerendered WebContents has just been swapped in.
   void PrerenderSwappedIn();
 
+  base::TimeTicks swap_ticks() const { return swap_ticks_; }
+
+  Origin origin() const { return origin_; }
+
  private:
   explicit PrerenderTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PrerenderTabHelper>;
@@ -85,6 +89,10 @@ class PrerenderTabHelper
   // a applicable (in cases when a prerender that was still loading was
   // swapped in).
   base::TimeTicks actual_load_start_;
+
+  // Record the most recent swap time. This differs from |pplt_load_start_| in
+  // that it is not reset in various circumstances, like a load being stopped.
+  base::TimeTicks swap_ticks_;
 
   // Current URL being loaded.
   GURL url_;

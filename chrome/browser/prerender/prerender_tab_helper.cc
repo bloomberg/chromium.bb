@@ -24,16 +24,7 @@ namespace prerender {
 PrerenderTabHelper::PrerenderTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       origin_(ORIGIN_NONE),
-      weak_factory_(this) {
-  // Determine if this is a prerender.
-  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (prerender_manager &&
-      prerender_manager->IsWebContentsPrerendering(web_contents, &origin_)) {
-    navigation_type_ = NAVIGATION_TYPE_PRERENDERED;
-  } else {
-    navigation_type_ = NAVIGATION_TYPE_NORMAL;
-  }
-}
+      weak_factory_(this) {}
 
 PrerenderTabHelper::~PrerenderTabHelper() {
 }
@@ -103,6 +94,15 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     bool is_error_page) {
+  // Determine the navigation type.
+  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
+  if (prerender_manager &&
+      prerender_manager->IsWebContentsPrerendering(web_contents(), &origin_)) {
+    navigation_type_ = NAVIGATION_TYPE_PRERENDERED;
+  } else {
+    navigation_type_ = NAVIGATION_TYPE_NORMAL;
+  }
+
   if (render_frame_host->GetParent())
     return;
 
@@ -145,10 +145,10 @@ void PrerenderTabHelper::PrerenderSwappedIn() {
   // Ensure we are not prerendering any more.
   DCHECK_EQ(NAVIGATION_TYPE_PRERENDERED, navigation_type_);
   DCHECK(!IsPrerendering());
+  swap_ticks_ = GetTimeTicksFromPrerenderManager();
   if (pplt_load_start_.is_null()) {
     // If we have already finished loading, report a 0 PPLT.
     RecordPerceivedPageLoadTime(base::TimeDelta(), 1.0);
-    DCHECK_EQ(NAVIGATION_TYPE_NORMAL, navigation_type_);
   } else {
     // If we have not finished loading yet, record the actual load start, and
     // rebase the start time to now.
@@ -168,10 +168,6 @@ void PrerenderTabHelper::RecordPerceivedPageLoadTime(
   prerender_manager->RecordPerceivedPageLoadTime(
       origin_, navigation_type_, perceived_page_load_time,
       fraction_plt_elapsed_at_swap_in, url_);
-
-  // Reset state for the next navigation.
-  navigation_type_ = NAVIGATION_TYPE_NORMAL;
-  origin_ = ORIGIN_NONE;
 }
 
 }  // namespace prerender

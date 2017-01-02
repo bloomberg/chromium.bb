@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_split.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -534,6 +534,34 @@ void TestPrerender::OnPrerenderStop(PrerenderContents* contents) {
   // of loads, stop the loop so the test fails instead of timing out.
   if (load_waiter_)
     load_waiter_->Quit();
+}
+
+// static
+FirstContentfulPaintManagerWaiter* FirstContentfulPaintManagerWaiter::Create(
+    PrerenderManager* manager) {
+  auto fcp_waiter = base::WrapUnique(new FirstContentfulPaintManagerWaiter());
+  auto fcp_waiter_ptr = fcp_waiter.get();
+  manager->AddObserver(std::move(fcp_waiter));
+  return fcp_waiter_ptr;
+}
+
+FirstContentfulPaintManagerWaiter::FirstContentfulPaintManagerWaiter()
+    : saw_fcp_(false) {}
+
+FirstContentfulPaintManagerWaiter::~FirstContentfulPaintManagerWaiter() {}
+
+void FirstContentfulPaintManagerWaiter::OnFirstContentfulPaint() {
+  saw_fcp_ = true;
+  if (waiter_)
+    waiter_->Quit();
+}
+
+void FirstContentfulPaintManagerWaiter::Wait() {
+  if (saw_fcp_)
+    return;
+  waiter_ = base::MakeUnique<base::RunLoop>();
+  waiter_->Run();
+  waiter_.reset();
 }
 
 TestPrerenderContentsFactory::TestPrerenderContentsFactory() {}

@@ -9,6 +9,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -111,6 +112,10 @@ std::string GetHistogramName(Origin origin, bool is_wash,
 
 bool OriginIsOmnibox(Origin origin) {
   return origin == ORIGIN_OMNIBOX;
+}
+
+const char* FirstContentfulPaintHiddenName(bool was_hidden) {
+  return was_hidden ? ".Hidden" : ".Visible";
 }
 
 }  // namespace
@@ -301,6 +306,16 @@ void PrerenderHistograms::RecordPerceivedPageLoadTime(
   }
 }
 
+void PrerenderHistograms::RecordPerceivedFirstContentfulPaintStatus(
+    Origin origin,
+    bool successful,
+    bool was_hidden) {
+  base::UmaHistogramBoolean(
+      GetHistogramName(origin, IsOriginWash(), "PerceivedTTFCPRecorded") +
+          FirstContentfulPaintHiddenName(was_hidden),
+      successful);
+}
+
 void PrerenderHistograms::RecordPageLoadTimeNotSwappedIn(
     Origin origin,
     base::TimeDelta page_load_time,
@@ -443,24 +458,38 @@ void PrerenderHistograms::RecordPrefetchRedirectCount(
   RecordHistogramEnum(histogram_name, redirect_count, kMaxRedirectCount);
 }
 
-void PrerenderHistograms::RecordFirstContentfulPaint(
+void PrerenderHistograms::RecordPrefetchFirstContentfulPaintTime(
     Origin origin,
     bool is_no_store,
+    bool was_hidden,
     base::TimeDelta time,
     base::TimeDelta prefetch_age) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!prefetch_age.is_zero()) {
     DCHECK_NE(origin, ORIGIN_NONE);
-    RecordHistogramTime(GetHistogramName(origin, IsOriginWash(),
-                                         "Prerender.NoStatePrefetchAge"),
-                        base::TimeDelta::FromMilliseconds(10),
-                        base::TimeDelta::FromMinutes(30), prefetch_age, 50);
+    RecordHistogramTime(
+        GetHistogramName(origin, IsOriginWash(), "Prerender.PrefetchAge"),
+        base::TimeDelta::FromMilliseconds(10), base::TimeDelta::FromMinutes(30),
+        prefetch_age, 50);
   }
 
-  RecordHistogramTime(GetFirstContentfulPaintHistogramName(
-                          origin, IsOriginWash(), is_no_store, prefetch_age),
-                      base::TimeDelta::FromMilliseconds(10),
+  std::string histogram_base_name;
+  if (prefetch_age.is_zero()) {
+    histogram_base_name = "PrefetchTTFCP.Reference";
+  } else {
+    histogram_base_name = prefetch_age < base::TimeDelta::FromMinutes(
+                                             net::HttpCache::kPrefetchReuseMins)
+                              ? "PrefetchTTFCP.Warm"
+                              : "PrefetchTTFCP.Cold";
+  }
+
+  histogram_base_name += is_no_store ? ".NoStore" : ".Cacheable";
+  histogram_base_name += FirstContentfulPaintHiddenName(was_hidden);
+  std::string histogram_name =
+      GetHistogramName(origin, IsOriginWash(), histogram_base_name);
+
+  RecordHistogramTime(histogram_name, base::TimeDelta::FromMilliseconds(10),
                       base::TimeDelta::FromMinutes(2), time, 50);
 }
 
@@ -468,26 +497,6 @@ bool PrerenderHistograms::IsOriginWash() const {
   if (!WithinWindow())
     return false;
   return origin_wash_;
-}
-
-// static
-std::string PrerenderHistograms::GetFirstContentfulPaintHistogramName(
-    Origin origin,
-    bool is_wash,
-    bool is_no_store,
-    base::TimeDelta prefetch_age) {
-  std::string histogram_base_name;
-  if (prefetch_age.is_zero()) {
-    histogram_base_name = "NoStatePrefetchTTFCP.Reference";
-  } else {
-    histogram_base_name = prefetch_age < base::TimeDelta::FromMinutes(
-                                             net::HttpCache::kPrefetchReuseMins)
-                              ? "NoStatePrefetchTTFCP.Warm"
-                              : "NoStatePrefetchTTFCP.Cold";
-  }
-
-  histogram_base_name += is_no_store ? ".NoStore" : ".Cacheable";
-  return GetHistogramName(origin, is_wash, histogram_base_name);
 }
 
 }  // namespace prerender

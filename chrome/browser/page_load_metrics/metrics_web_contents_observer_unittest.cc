@@ -109,16 +109,9 @@ class FilteringPageLoadMetricsObserver : public PageLoadMetricsObserver {
 class TestPageLoadMetricsEmbedderInterface
     : public PageLoadMetricsEmbedderInterface {
  public:
-  TestPageLoadMetricsEmbedderInterface()
-      : is_prerendering_(false), is_ntp_(false) {}
+  TestPageLoadMetricsEmbedderInterface() : is_ntp_(false) {}
 
-  bool IsPrerendering(content::WebContents* web_contents) override {
-    return is_prerendering_;
-  }
   bool IsNewTabPageUrl(const GURL& url) override { return is_ntp_; }
-  void set_is_prerendering(bool is_prerendering) {
-    is_prerendering_ = is_prerendering;
-  }
   void set_is_ntp(bool is_ntp) { is_ntp_ = is_ntp; }
   void RegisterObservers(PageLoadTracker* tracker) override {
     tracker->AddObserver(base::MakeUnique<TestPageLoadMetricsObserver>(
@@ -148,7 +141,6 @@ class TestPageLoadMetricsEmbedderInterface
   std::vector<PageLoadTiming> complete_timings_;
   std::vector<GURL> observed_committed_urls_;
   std::vector<GURL> completed_filtered_urls_;
-  bool is_prerendering_;
   bool is_ntp_;
 };
 
@@ -319,23 +311,6 @@ TEST_F(MetricsWebContentsObserverTest, SamePageNoTrigger) {
   ASSERT_EQ(1, CountUpdatedTimingReported());
   ASSERT_EQ(1, CountCompleteTimingReported());
   ASSERT_EQ(0, CountEmptyCompleteTimingReported());
-  CheckNoErrorEvents();
-}
-
-TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
-  PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  embedder_interface_->set_is_prerendering(true);
-  observer_->WasHidden();
-
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing);
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-  ASSERT_EQ(0, CountUpdatedTimingReported());
-  ASSERT_EQ(0, CountCompleteTimingReported());
   CheckNoErrorEvents();
 }
 

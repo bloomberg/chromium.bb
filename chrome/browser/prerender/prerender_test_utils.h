@@ -237,6 +237,29 @@ class DestructionWaiter {
   DISALLOW_COPY_AND_ASSIGN(DestructionWaiter);
 };
 
+// Wait until a PrerenderManager has seen a first contentful paint.
+class FirstContentfulPaintManagerWaiter : public PrerenderManagerObserver {
+ public:
+  // Create and return a pointer to a |FirstContentfulPaintManagerWaiter|. The
+  // instance is owned by the |PrerenderManager|.
+  static FirstContentfulPaintManagerWaiter* Create(PrerenderManager* manager);
+
+  ~FirstContentfulPaintManagerWaiter() override;
+
+  void OnFirstContentfulPaint() override;
+
+  // Wait for a first contentful paint to be seen by our PrerenderManager.
+  void Wait();
+
+ private:
+  FirstContentfulPaintManagerWaiter();
+
+  std::unique_ptr<base::RunLoop> waiter_;
+  bool saw_fcp_;
+
+  DISALLOW_COPY_AND_ASSIGN(FirstContentfulPaintManagerWaiter);
+};
+
 // PrerenderContentsFactory that uses TestPrerenderContents.
 class TestPrerenderContentsFactory : public PrerenderContents::Factory {
  public:

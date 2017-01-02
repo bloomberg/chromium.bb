@@ -510,13 +510,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   histogram_tester_.ExpectTotalCount(
-      prerender::PrerenderHistograms::GetFirstContentfulPaintHistogramName(
-          prerender::ORIGIN_NONE, false, true, base::TimeDelta()),
-      0);
+      "Prerender.none_PrefetchTTFCP.Reference.NoStore.Visible", 0);
   histogram_tester_.ExpectTotalCount(
-      prerender::PrerenderHistograms::GetFirstContentfulPaintHistogramName(
-          prerender::ORIGIN_NONE, false, false, base::TimeDelta()),
-      1);
+      "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
@@ -528,13 +524,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   NavigateToUntrackedUrl();
 
   histogram_tester_.ExpectTotalCount(
-      prerender::PrerenderHistograms::GetFirstContentfulPaintHistogramName(
-          prerender::ORIGIN_NONE, false, true, base::TimeDelta()),
-      1);
+      "Prerender.none_PrefetchTTFCP.Reference.NoStore.Visible", 1);
   histogram_tester_.ExpectTotalCount(
-      prerender::PrerenderHistograms::GetFirstContentfulPaintHistogramName(
-          prerender::ORIGIN_NONE, false, false, base::TimeDelta()),
-      0);
+      "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CSSTiming) {

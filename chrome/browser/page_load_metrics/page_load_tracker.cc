@@ -305,15 +305,6 @@ PageLoadTracker::PageLoadTracker(
       aborted_chain_size_same_url_(aborted_chain_size_same_url),
       embedder_interface_(embedder_interface) {
   DCHECK(!navigation_handle->HasCommitted());
-  if (embedder_interface_->IsPrerendering(
-          navigation_handle->GetWebContents())) {
-    DCHECK(!started_in_foreground_);
-    // For the time being, we do not track prerenders. See crbug.com/648338 for
-    // details.
-    StopTracking();
-    return;
-  }
-
   embedder_interface_->RegisterObservers(this);
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnStart, navigation_handle,
                              currently_committed_url, started_in_foreground_);

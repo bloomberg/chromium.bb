@@ -65,6 +65,15 @@ class PrerenderInProcessBrowserTest;
 class PrerenderHandle;
 class PrerenderHistory;
 
+// Observer interface for PrerenderManager events.
+class PrerenderManagerObserver {
+ public:
+  virtual ~PrerenderManagerObserver();
+
+  // Called from the UI thread.
+  virtual void OnFirstContentfulPaint() = 0;
+};
+
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of web pages. All methods must be called on the UI thread unless
 // indicated otherwise.
@@ -206,13 +215,31 @@ class PrerenderManager : public content::NotificationObserver,
                                    bool is_main_resource,
                                    int redirect_count);
 
-  // Records the time to first contentful paint.
-  // Must not be called for prefetch loads (which are never rendered anyway).
-  // |is_no_store| must be true if the main resource has a "no-store" cache
-  // control HTTP header.
-  void RecordFirstContentfulPaint(const GURL& url,
-                                  bool is_no_store,
-                                  base::TimeDelta time);
+  // Called when a NoStatePrefetch first contentful paint has fired.
+  void RecordPrefetchFirstContentfulPaint(Origin origin,
+                                          bool is_no_store,
+                                          bool was_hidden,
+                                          base::TimeDelta time,
+                                          base::TimeDelta prefetch_age);
+
+  // Records the time to first contentful paint for loads that previously had a
+  // no state prefetch load.  Must not be called for prefetch loads themselves
+  // (which are never rendered anyway).  |is_no_store| must be true if the main
+  // resource has a "no-store" cache control HTTP header.
+  void RecordNoStateFirstContentfulPaint(const GURL& url,
+                                         bool is_no_store,
+                                         bool was_hidden,
+                                         base::TimeDelta time);
+
+  // Records the perceived first contentful paint time for a prerendered page,
+  // analogous to |RecordPerceivedPageLoadTime|. The FCP ticks is in absolute
+  // time; this has the disadvantage that the histogram will mix browser and
+  // renderer ticks, but there seems to be no way around that.
+  void RecordPrerenderFirstContentfulPaint(const GURL& url,
+                                           content::WebContents* web_contents,
+                                           bool is_no_store,
+                                           bool was_hidden,
+                                           base::TimeTicks ticks);
 
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
@@ -313,6 +340,16 @@ class PrerenderManager : public content::NotificationObserver,
   void SetClockForTesting(std::unique_ptr<base::SimpleTestClock> clock);
   void SetTickClockForTesting(
       std::unique_ptr<base::SimpleTestTickClock> tick_clock);
+
+  void DisablePageLoadMetricsObserverForTesting() {
+    page_load_metric_observer_disabled_ = true;
+  }
+
+  bool PageLoadMetricsObserverDisabledForTesting() const {
+    return page_load_metric_observer_disabled_;
+  }
+
+  void AddObserver(std::unique_ptr<PrerenderManagerObserver> observer);
 
   // Notification that a prerender has completed and its bytes should be
   // recorded.
@@ -502,6 +539,11 @@ class PrerenderManager : public content::NotificationObserver,
   // so cannot immediately be deleted.
   void DeleteOldWebContents();
 
+  // Get information associated with a possible prefetch of |url|.
+  void GetPrefetchInformation(const GURL& url,
+                              base::TimeDelta* prefetch_age,
+                              Origin* origin);
+
   // Cleans up old NavigationRecord's.
   void CleanUpOldNavigations(std::vector<NavigationRecord>* navigations,
                              base::TimeDelta max_age);
@@ -596,6 +638,10 @@ class PrerenderManager : public content::NotificationObserver,
 
   std::unique_ptr<base::Clock> clock_;
   std::unique_ptr<base::TickClock> tick_clock_;
+
+  bool page_load_metric_observer_disabled_;
+
+  std::vector<std::unique_ptr<PrerenderManagerObserver>> observers_;
 
   base::WeakPtrFactory<PrerenderManager> weak_factory_;
 

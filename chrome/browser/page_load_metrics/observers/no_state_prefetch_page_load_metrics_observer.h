@@ -36,8 +36,12 @@ class NoStatePrefetchPageLoadMetricsObserver
   void OnFirstContentfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  ObservePolicy OnHidden(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
   bool is_no_store_;  // True if the main resource has a "no-store" HTTP header.
+  bool was_hidden_;   // The page went to background while rendering.
   prerender::PrerenderManager* const prerender_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NoStatePrefetchPageLoadMetricsObserver);

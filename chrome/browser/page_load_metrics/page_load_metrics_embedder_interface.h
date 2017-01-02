@@ -7,10 +7,6 @@
 
 class GURL;
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace page_load_metrics {
 
 class PageLoadTracker;
@@ -20,7 +16,6 @@ class PageLoadTracker;
 class PageLoadMetricsEmbedderInterface {
  public:
   virtual ~PageLoadMetricsEmbedderInterface() {}
-  virtual bool IsPrerendering(content::WebContents* web_contents) = 0;
   virtual bool IsNewTabPageUrl(const GURL& url) = 0;
   virtual void RegisterObservers(PageLoadTracker* metrics) = 0;
 };

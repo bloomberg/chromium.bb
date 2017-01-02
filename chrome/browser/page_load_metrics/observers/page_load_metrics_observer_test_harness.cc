@@ -26,10 +26,6 @@ class TestPageLoadMetricsEmbedderInterface
       PageLoadMetricsObserverTestHarness* test)
       : test_(test) {}
 
-  bool IsPrerendering(content::WebContents* web_contents) override {
-    return false;
-  }
-
   bool IsNewTabPageUrl(const GURL& url) override { return false; }
 
   // Forward the registration logic to the test class so that derived classes
