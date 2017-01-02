@@ -331,26 +331,7 @@ void ThreadState::runTerminationGC() {
 void ThreadState::cleanupMainThread() {
   ASSERT(isMainThread());
 
-#if defined(LEAK_SANITIZER)
-  // See comment below, clear out most garbage before releasing static
-  // persistents should some of the finalizers depend on touching
-  // these persistents.
-  collectAllGarbage();
-#endif
-
   releaseStaticPersistentNodes();
-
-#if defined(LEAK_SANITIZER)
-  // If LSan is about to perform leak detection, after having released all
-  // the registered static Persistent<> root references to global caches
-  // that Blink keeps, follow up with a round of GCs to clear out all
-  // what they referred to.
-  //
-  // This is not needed for caches over non-Oilpan objects, as they're
-  // not scanned by LSan due to being held in non-global storage
-  // ("static" references inside functions/methods.)
-  collectAllGarbage();
-#endif
 
   // Finish sweeping before shutting down V8. Otherwise, some destructor
   // may access V8 and cause crashes.
