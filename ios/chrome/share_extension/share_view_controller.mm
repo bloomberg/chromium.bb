@@ -34,12 +34,14 @@ const CGFloat kMediumAlpha = 0.5;
 }  // namespace
 
 @interface ShareViewController ()<ShareExtensionViewActionTarget> {
-  // This constraint the center of the widget to be vertically in the center
-  // of the the screen. It has to be modified for the dismissal animation.
-  NSLayoutConstraint* _centerYConstraint;
+  // This constrains the center of the widget to be vertically in the center
+  // of the the screen. It has to be modified for the appearance and dismissal
+  // animation.
+  NSLayoutConstraint* _widgetVerticalPlacementConstraint;
 
   NSURL* _shareURL;
   NSString* _shareTitle;
+  UIImage* _image;
   NSExtensionItem* _shareItem;
 }
 
@@ -63,6 +65,12 @@ const CGFloat kMediumAlpha = 0.5;
 // kShareExtensionMargin points and widget width is closest up to
 // kShareExtensionMaxWidth points.
 - (void)constrainWidgetWidth;
+
+// Displays the normal share view.
+- (void)displayShareView;
+
+// Displays an alert to report an error to the user.
+- (void)displayErrorView;
 
 @end
 
@@ -95,13 +103,10 @@ const CGFloat kMediumAlpha = 0.5;
 
   // Position the widget below the screen. It will be slided up with an
   // animation.
-  _centerYConstraint = [[shareView centerYAnchor]
-      constraintEqualToAnchor:[self.view centerYAnchor]];
-  [_centerYConstraint setConstant:(self.view.frame.size.height +
-                                   self.shareView.frame.size.height) /
-                                  2];
-  [_centerYConstraint setActive:YES];
-  [[[shareView centerXAnchor] constraintEqualToAnchor:[self.view centerXAnchor]]
+  _widgetVerticalPlacementConstraint =
+      [shareView.topAnchor constraintEqualToAnchor:self.view.bottomAnchor];
+  [_widgetVerticalPlacementConstraint setActive:YES];
+  [[shareView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor]
       setActive:YES];
 
   [self.maskView setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -110,20 +115,54 @@ const CGFloat kMediumAlpha = 0.5;
   [self loadElementsFromContext];
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-  [super viewWillAppear:animated];
+#pragma mark - Private methods
 
-  // Center the widget.
-  [_centerYConstraint setConstant:0];
-  [self.maskView setAlpha:0];
-  [UIView animateWithDuration:kAnimationDuration
-                   animations:^{
-                     [self.maskView setAlpha:1];
-                     [self.view layoutIfNeeded];
-                   }];
+- (void)displayShareView {
+  [self.shareView setTitle:_shareTitle];
+  [self.shareView setURL:_shareURL];
+  if (_image) {
+    [self.shareView setScreenshot:_image];
+  }
+  dispatch_async(dispatch_get_main_queue(), ^{
+    // Center the widget.
+    [_widgetVerticalPlacementConstraint setActive:NO];
+    _widgetVerticalPlacementConstraint = [_shareView.centerYAnchor
+        constraintEqualToAnchor:self.view.centerYAnchor];
+    [_widgetVerticalPlacementConstraint setActive:YES];
+    [self.maskView setAlpha:0];
+    [UIView animateWithDuration:kAnimationDuration
+                     animations:^{
+                       [self.maskView setAlpha:1];
+                       [self.view layoutIfNeeded];
+                     }];
+  });
 }
 
-#pragma mark - Private methods
+- (void)displayErrorView {
+  NSString* errorMessage =
+      NSLocalizedString(@"IDS_IOS_ERROR_MESSAGE_SHARE_EXTENSION",
+                        @"The error message to display to the user.");
+  NSString* okButton =
+      NSLocalizedString(@"IDS_IOS_OK_BUTTON_SHARE_EXTENSION",
+                        @"The label of the OK button in share extension.");
+  NSString* applicationName = [[[NSBundle mainBundle] infoDictionary]
+      valueForKey:@"CFBundleDisplayName"];
+  errorMessage =
+      [errorMessage stringByReplacingOccurrencesOfString:@"APPLICATION_NAME"
+                                              withString:applicationName];
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:errorMessage
+                                          message:[_shareURL absoluteString]
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction* defaultAction =
+      [UIAlertAction actionWithTitle:okButton
+                               style:UIAlertActionStyleDefault
+                             handler:^(UIAlertAction* action) {
+                               [self dismissAndReturnItem:nil];
+                             }];
+  [alert addAction:defaultAction];
+  [self presentViewController:alert animated:YES completion:nil];
+}
 
 - (void)constrainWidgetWidth {
   // Setting the constraints.
@@ -171,8 +210,12 @@ const CGFloat kMediumAlpha = 0.5;
             if ([_shareTitle length] == 0) {
               _shareTitle = [URL host];
             }
-            [self.shareView setURL:URL];
-            [self.shareView setTitle:_shareTitle];
+            if ([[_shareURL scheme] isEqualToString:@"http"] ||
+                [[_shareURL scheme] isEqualToString:@"https"]) {
+              [self displayShareView];
+            } else {
+              [self displayErrorView];
+            }
           });
 
         };
@@ -183,32 +226,34 @@ const CGFloat kMediumAlpha = 0.5;
           NSItemProviderPreferredImageSizeKey : [NSValue
               valueWithCGSize:CGSizeMake(kScreenShotWidth, kScreenShotHeight)]
         };
-        ItemBlock ImageCompletion = ^(id item, NSError* error) {
-
-          UIImage* image = static_cast<UIImage*>(item);
-          if (image) {
+        ItemBlock imageCompletion = ^(id item, NSError* error) {
+          _image = static_cast<UIImage*>(item);
+          if (_image && self.shareView) {
             dispatch_async(dispatch_get_main_queue(), ^{
-              [self.shareView setScreenshot:image];
+              [self.shareView setScreenshot:_image];
             });
           }
-
         };
         [itemProvider loadPreviewImageWithOptions:imageOptions
-                                completionHandler:ImageCompletion];
+                                completionHandler:imageCompletion];
       }
     }
   }
 }
 
 - (void)dismissAndReturnItem:(NSExtensionItem*)item {
-  // Set the Y center constraints so the whole extension slides out of the
-  // screen. Constant is relative to the center of the screen.
+  // Set the Y placement constraints so the whole extension slides out of the
+  // screen.
   // The direction (up or down) is relative to the output (cancel or submit).
-  NSInteger direction = item ? -1 : 1;
-  [_centerYConstraint setConstant:direction *
-                                  (self.view.frame.size.height +
-                                   self.shareView.frame.size.height) /
-                                  2];
+  [_widgetVerticalPlacementConstraint setActive:NO];
+  if (item) {
+    _widgetVerticalPlacementConstraint =
+        [_shareView.bottomAnchor constraintEqualToAnchor:self.view.topAnchor];
+  } else {
+    _widgetVerticalPlacementConstraint =
+        [_shareView.topAnchor constraintEqualToAnchor:self.view.bottomAnchor];
+  }
+  [_widgetVerticalPlacementConstraint setActive:YES];
   [UIView animateWithDuration:kAnimationDuration
       animations:^{
         [self.maskView setAlpha:0];

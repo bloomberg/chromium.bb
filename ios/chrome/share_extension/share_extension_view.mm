@@ -57,6 +57,7 @@ const CGFloat kButtonFontSize = 17;
 @property(nonatomic, strong) UILabel* titleLabel;
 @property(nonatomic, strong) UILabel* URLLabel;
 @property(nonatomic, strong) UIImageView* screenshotView;
+@property(nonatomic, strong) UIStackView* itemStack;
 
 // View creation helpers.
 // Returns a view containing the shared items (title, URL, screenshot). This
@@ -80,6 +81,7 @@ const CGFloat kButtonFontSize = 17;
 @synthesize titleLabel = _titleLabel;
 @synthesize URLLabel = _URLLabel;
 @synthesize screenshotView = _screenshotView;
+@synthesize itemStack = _itemStack;
 
 #pragma mark - Lifecycle
 
@@ -161,9 +163,10 @@ const CGFloat kButtonFontSize = 17;
       constraintLessThanOrEqualToConstant:kScreenshotSize]
       .active = YES;
   [_screenshotView.heightAnchor
-      constraintLessThanOrEqualToConstant:kScreenshotSize]
+      constraintEqualToAnchor:_screenshotView.widthAnchor]
       .active = YES;
   [_screenshotView setContentMode:UIViewContentModeScaleAspectFill];
+  [_screenshotView setClipsToBounds:YES];
   [_screenshotView setHidden:YES];
 
   // |_screenshotView| should take as much space as needed. Lower compression
@@ -205,24 +208,27 @@ const CGFloat kButtonFontSize = 17;
   [titleURLStack.widthAnchor
       constraintEqualToAnchor:titleURLContainer.widthAnchor]
       .active = YES;
+  [titleURLStack
+      setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh
+                                      forAxis:UILayoutConstraintAxisVertical];
 
-  UIStackView* itemStack = [[UIStackView alloc]
-      initWithArrangedSubviews:@[ titleURLContainer, _screenshotView ]];
-  [itemStack setAxis:UILayoutConstraintAxisHorizontal];
-  [itemStack setLayoutMargins:UIEdgeInsetsMake(kShareExtensionPadding,
-                                               kShareExtensionPadding,
-                                               kShareExtensionPadding,
-                                               kShareExtensionPadding)];
-  [itemStack setLayoutMarginsRelativeArrangement:YES];
-  [itemStack setSpacing:kShareExtensionPadding];
+  _itemStack =
+      [[UIStackView alloc] initWithArrangedSubviews:@[ titleURLContainer ]];
+  [_itemStack setAxis:UILayoutConstraintAxisHorizontal];
+  [_itemStack setLayoutMargins:UIEdgeInsetsMake(kShareExtensionPadding,
+                                                kShareExtensionPadding,
+                                                kShareExtensionPadding,
+                                                kShareExtensionPadding)];
+  [_itemStack setLayoutMarginsRelativeArrangement:YES];
+  [_itemStack setSpacing:kShareExtensionPadding];
 
   [_titleLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
   [_URLLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
   [_screenshotView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [titleURLStack setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [itemStack setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [_itemStack setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-  return itemStack;
+  return _itemStack;
 }
 
 - (UIView*)dividerViewWithVibrancy:(UIVisualEffect*)vibrancyEffect {
@@ -302,6 +308,7 @@ const CGFloat kButtonFontSize = 17;
 - (void)setScreenshot:(UIImage*)screenshot {
   [[self screenshotView] setHidden:NO];
   [[self screenshotView] setImage:screenshot];
+  [[self itemStack] addArrangedSubview:[self screenshotView]];
 }
 
 @end

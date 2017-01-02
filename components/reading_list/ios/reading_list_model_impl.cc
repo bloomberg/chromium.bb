@@ -292,6 +292,7 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
     const std::string& title) {
   DCHECK(CalledOnValidThread());
   DCHECK(loaded());
+  DCHECK(url.SchemeIsHTTPOrHTTPS());
   RemoveEntryByURL(url);
 
   std::string trimmedTitle(title);

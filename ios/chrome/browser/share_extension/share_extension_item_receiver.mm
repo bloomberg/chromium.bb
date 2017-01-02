@@ -189,7 +189,8 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   NSNumber* entryType = base::mac::ObjCCast<NSNumber>(
       [entry objectForKey:app_group::kShareItemType]);
 
-  if (!entryURL.is_valid() || !entryDate || !entryType) {
+  if (!entryURL.is_valid() || !entryDate || !entryType ||
+      !entryURL.SchemeIsHTTPOrHTTPS()) {
     if (completion) {
       completion();
     }

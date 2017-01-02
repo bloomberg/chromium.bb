@@ -136,6 +136,12 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_ADD_BOOKMARKS_SHARE_EXTENSION" desc="Share extension button to add to bookmarks [Length: 30em]" meaning="Button title [Length: 30em]">
         Add to Bookmarks 
       </message>
+      <message name="IDS_IOS_ERROR_MESSAGE_SHARE_EXTENSION" desc="Share extension message to tell the user the URL cannot be processed. The name of the application will be put in place of APPLICATION_NAME">
+        APPLICATION_NAME cannot handle this link.
+      </message>
+      <message name="IDS_IOS_OK_BUTTON_SHARE_EXTENSION" desc="Label for the OK button in the share extension.">
+        OK
+      </message>
     </messages>
   </release>
 </grit>
