@@ -180,7 +180,6 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   if (self) {
     DCHECK(model);
     _toolbar = toolbar;
-    _toolbar.delegate = self;
 
     _readingListModel = model;
     _tabModel = tabModel;

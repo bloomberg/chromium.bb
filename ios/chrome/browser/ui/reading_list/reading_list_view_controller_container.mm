@@ -16,11 +16,15 @@ namespace {
 const int kToolbarHeight = 48;
 }
 
-@implementation ReadingListViewControllerContainer {
+@interface ReadingListViewControllerContainer ()<ReadingListToolbarActions> {
   // Toolbar with the actions.
   ReadingListToolbar* _toolbar;
   ReadingListViewController* _collectionController;
 }
+
+@end
+
+@implementation ReadingListViewControllerContainer
 
 - (instancetype)initWithModel:(ReadingListModel*)model
                       tabModel:(TabModel*)tabModel
@@ -85,6 +89,24 @@ const int kToolbarHeight = 48;
     // the collection takes the whole view.
     [_toolbar removeFromSuperview];
   }
+}
+
+#pragma mark - ReadingListToolbarActionTarget
+
+- (void)markPressed {
+  [_collectionController markPressed];
+}
+
+- (void)deletePressed {
+  [_collectionController deletePressed];
+}
+
+- (void)enterEditingModePressed {
+  [_collectionController enterEditingModePressed];
+}
+
+- (void)exitEditingModePressed {
+  [_collectionController exitEditingModePressed];
 }
 
 @end

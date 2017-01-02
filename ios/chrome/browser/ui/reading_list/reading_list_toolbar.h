@@ -16,7 +16,7 @@ typedef NS_ENUM(NSInteger, ReadingListToolbarState) {
   MixedItemsSelected
 };
 
-@protocol ReadingListToolbarDelegate<NSObject>
+@protocol ReadingListToolbarActions<NSObject>
 
 // Callback for the toolbar mark button.
 - (void)markPressed;
@@ -36,8 +36,6 @@ typedef NS_ENUM(NSInteger, ReadingListToolbarState) {
 
 // The toolbar state. The text of the buttons change to reflect the state.
 @property(nonatomic, assign) ReadingListToolbarState state;
-// Delegate handling the button callbacks.
-@property(nonatomic, weak) id<ReadingListToolbarDelegate> delegate;
 
 // Informs the toolbar whether there are read items. The "Delete All Read"
 // button will be enabled accordingly.

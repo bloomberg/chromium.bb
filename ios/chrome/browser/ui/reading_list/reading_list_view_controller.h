@@ -29,7 +29,7 @@ class ReadingListModel;
 @end
 
 @interface ReadingListViewController
-    : CollectionViewController<ReadingListToolbarDelegate>
+    : CollectionViewController<ReadingListToolbarActions>
 
 @property(nonatomic, readonly) ReadingListModel* readingListModel;
 @property(weak, nonatomic, readonly) TabModel* tabModel;

@@ -54,14 +54,6 @@ const CGFloat kHorizontalMargin = 8.0f;
 // Updates the button labels to match a selection containing unread and read
 // items.
 - (void)updateButtonsForOnlyMixedSelection;
-// Action for the Edit button.
-- (void)enterEdit;
-// Action for the Cancel button.
-- (void)exitEdit;
-// Action for the Mark button.
-- (void)markAction;
-// Action for the Delete button.
-- (void)deleteAction;
 
 @end
 
@@ -74,7 +66,6 @@ const CGFloat kHorizontalMargin = 8.0f;
 @synthesize stackView = _stackView;
 @synthesize markButton = _markButton;
 @synthesize state = _state;
-@synthesize delegate = _delegate;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -100,24 +91,24 @@ const CGFloat kHorizontalMargin = 8.0f;
                                              IDS_IOS_READING_LIST_CANCEL_BUTTON)
                              destructive:NO];
 
-    [editButton addTarget:self
-                   action:@selector(enterEdit)
+    [editButton addTarget:nil
+                   action:@selector(enterEditingModePressed)
          forControlEvents:UIControlEventTouchUpInside];
 
-    [_deleteButton addTarget:self
-                      action:@selector(deleteAction)
+    [_deleteButton addTarget:nil
+                      action:@selector(deletePressed)
             forControlEvents:UIControlEventTouchUpInside];
 
-    [_deleteAllButton addTarget:self
-                         action:@selector(deleteAction)
+    [_deleteAllButton addTarget:nil
+                         action:@selector(deletePressed)
                forControlEvents:UIControlEventTouchUpInside];
 
-    [_markButton addTarget:self
-                    action:@selector(markAction)
+    [_markButton addTarget:nil
+                    action:@selector(markPressed)
           forControlEvents:UIControlEventTouchUpInside];
 
-    [_cancelButton addTarget:self
-                      action:@selector(exitEdit)
+    [_cancelButton addTarget:nil
+                      action:@selector(exitEditingModePressed)
             forControlEvents:UIControlEventTouchUpInside];
 
     _editButtonContainer = [[UIView alloc] initWithFrame:CGRectZero];
@@ -192,22 +183,6 @@ const CGFloat kHorizontalMargin = 8.0f;
 }
 
 #pragma mark Private Methods
-
-- (void)enterEdit {
-  [_delegate enterEditingModePressed];
-}
-
-- (void)exitEdit {
-  [_delegate exitEditingModePressed];
-}
-
-- (void)markAction {
-  [_delegate markPressed];
-}
-
-- (void)deleteAction {
-  [_delegate deletePressed];
-}
 
 - (void)updateButtonsForEmptySelection {
   self.deleteAllButton.hidden = NO;
