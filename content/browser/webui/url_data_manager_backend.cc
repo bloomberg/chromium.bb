@@ -23,8 +23,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/histogram_internals_request_job.h"
@@ -478,9 +478,11 @@ int URLRequestChromeJob::PostReadTask(scoped_refptr<net::IOBuffer> buf,
   if (buf_size == 0)
     return 0;
 
-  base::WorkerPool::GetTaskRunner(false)->PostTaskAndReply(
-      FROM_HERE, base::Bind(&CopyData, base::RetainedRef(buf), buf_size, data_,
-                            data_offset_),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits().WithShutdownBehavior(
+                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::Bind(&CopyData, base::RetainedRef(buf), buf_size, data_,
+                 data_offset_),
       base::Bind(&URLRequestChromeJob::ReadRawDataComplete, AsWeakPtr(),
                  buf_size));
   data_offset_ += buf_size;
