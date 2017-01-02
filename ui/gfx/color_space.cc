@@ -154,6 +154,10 @@ bool ColorSpace::operator<(const ColorSpace& other) const {
   return false;
 }
 
+sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
+  return sk_color_space_;
+}
+
 ColorSpace ColorSpace::FromSkColorSpace(
     const sk_sp<SkColorSpace>& sk_color_space) {
   if (!sk_color_space)

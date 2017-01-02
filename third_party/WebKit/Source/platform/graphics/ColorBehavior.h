@@ -48,8 +48,7 @@ class PLATFORM_EXPORT ColorBehavior {
   // Set the target color profile into which all images with embedded color
   // profiles should be converted. Note that only the first call to this
   // function in this process has any effect.
-  static void setGlobalTargetColorSpace(const sk_sp<SkColorSpace>&);
-  // This is the same as the above function, but will always take effect.
+  static void setGlobalTargetColorProfile(const WebVector<char>&);
   static void setGlobalTargetColorSpaceForTesting(const sk_sp<SkColorSpace>&);
   static sk_sp<SkColorSpace> globalTargetColorSpace();
 

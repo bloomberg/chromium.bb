@@ -388,6 +388,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
+  device_color_profile_.push_back('0');
 
   // In tests there may not be a RenderThreadImpl.
   if (RenderThreadImpl::current()) {
@@ -1810,6 +1811,19 @@ void RenderWidget::OnSetDeviceScaleFactor(float device_scale_factor) {
   physical_backing_size_ = gfx::ScaleToCeiledSize(size_, device_scale_factor_);
 }
 
+bool RenderWidget::SetDeviceColorProfile(
+    const std::vector<char>& color_profile) {
+  if (device_color_profile_ == color_profile)
+    return false;
+
+  device_color_profile_ = color_profile;
+
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetDidSetColorProfile(color_profile);
+
+  return true;
+}
+
 void RenderWidget::OnOrientationChange() {
 }
 
@@ -1944,10 +1958,9 @@ void RenderWidget::UpdateSelectionBounds() {
   UpdateCompositionInfo(false /* not an immediate request */);
 }
 
-void RenderWidget::SetDeviceColorSpaceForTesting(
-    const gfx::ColorSpace& color_space) {
-  if (owner_delegate_)
-    owner_delegate_->RenderWidgetDidSetColorSpace(color_space);
+void RenderWidget::SetDeviceColorProfileForTesting(
+    const std::vector<char>& color_profile) {
+  SetDeviceColorProfile(color_profile);
 }
 
 void RenderWidget::DidAutoResize(const gfx::Size& new_size) {

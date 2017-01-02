@@ -7,7 +7,7 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/icc_profile.h"
-#include "ui/gfx/test/icc_profiles.h"
+#include "ui/gfx/icc_profile_unittest.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {

@@ -18,9 +18,9 @@ SkColorSpace* gTargetColorSpace = nullptr;
 }  // namespace
 
 // static
-void ColorBehavior::setGlobalTargetColorSpace(
-    const sk_sp<SkColorSpace>& colorSpace) {
-  if (!colorSpace)
+void ColorBehavior::setGlobalTargetColorProfile(
+    const WebVector<char>& profile) {
+  if (profile.isEmpty())
     return;
 
   // Take a lock around initializing and accessing the global device color
@@ -31,9 +31,8 @@ void ColorBehavior::setGlobalTargetColorSpace(
   if (gTargetColorSpace)
     return;
 
-  // Ensure that the color space object be leaked.
-  gTargetColorSpace = colorSpace.get();
-  SkSafeRef(gTargetColorSpace);
+  gTargetColorSpace =
+      SkColorSpace::MakeICC(profile.data(), profile.size()).release();
 
   // UMA statistics.
   BitmapImageMetrics::countOutputGammaAndGamut(gTargetColorSpace);

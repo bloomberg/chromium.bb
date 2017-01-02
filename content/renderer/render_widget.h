@@ -384,8 +384,8 @@ class CONTENT_EXPORT RenderWidget
   // the browser even if the composition info is not changed.
   void UpdateCompositionInfo(bool immediate_request);
 
-  // Change the device color space while running a layout test.
-  void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
+  // Change the device ICC color profile while running a layout test.
+  void SetDeviceColorProfileForTesting(const std::vector<char>& color_profile);
 
   // Called when the Widget has changed size as a result of an auto-resize.
   void DidAutoResize(const gfx::Size& new_size);
@@ -544,6 +544,7 @@ class CONTENT_EXPORT RenderWidget
   void AutoResizeCompositor();
 
   virtual void OnSetDeviceScaleFactor(float device_scale_factor);
+  bool SetDeviceColorProfile(const std::vector<char>& color_profile);
 
   virtual void OnOrientationChange();
 
@@ -740,6 +741,9 @@ class CONTENT_EXPORT RenderWidget
   // The device scale factor. This value is computed from the DPI entries in
   // |screen_info_| on some platforms, and defaults to 1 on other platforms.
   float device_scale_factor_;
+
+  // The device color profile on supported platforms.
+  std::vector<char> device_color_profile_;
 
   // State associated with synthetic gestures. Synthetic gestures are processed
   // in-order, so a queue is sufficient to identify the correct state for a

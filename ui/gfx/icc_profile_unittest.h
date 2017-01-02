@@ -2,13 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/icc_profile.h"
-
 namespace gfx {
 
-ICCProfile ICCProfileForTestingAdobeRGB();
-ICCProfile ICCProfileForTestingColorSpin();
-ICCProfile ICCProfileForTestingGenericRGB();
 ICCProfile ICCProfileForTestingSRGB();
+ICCProfile ICCProfileForTestingColorSpin();
 
 }  // namespace gfx
