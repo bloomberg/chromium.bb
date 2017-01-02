@@ -1053,13 +1053,13 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_READING_LIST_ENTRY_ACCESSIBILITY_LABEL" desc="Accessibility label for a reading list entry. Summarizes fields in the reading list entry (title and url). Read by Text To Speech.">
         <ph name="TITLE"><ex>Chromium - The Chromium Projects</ex>$1</ph>, <ph name="URL"><ex>http://www.chromium.org/Home</ex>$2</ph>
       </message>
-      <message name="IDS_IOS_READING_LIST_CANCEL_BUTTON" desc="Label of the button to stop editing the reading list entries (delete, mark as read/unread) [Length: 15em]" meaning="Stop editing. [Length: 15em]">
+      <message name="IDS_IOS_READING_LIST_CANCEL_BUTTON" desc="Label of the button to stop editing the reading list entries (delete, mark as read/unread) [Length: 25em]" meaning="Stop editing. [Length: 25em]">
         Cancel
       </message>
-      <message name="IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON" desc="Label of the button to delete all the reading list entries read [Length: 15em]" meaning="Delete all the read entries. [Length: 15em]">
+      <message name="IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON" desc="Label of the button to delete all the reading list entries read [Length: 25em]" meaning="Delete all the read entries. [Length: 25em]">
         Delete Read
       </message>
-      <message name="IDS_IOS_READING_LIST_DELETE_BUTTON" desc="Label of the button to delete the reading list entries [Length: 15em]" meaning="Delete the selected entries. [Length: 15em]">
+      <message name="IDS_IOS_READING_LIST_DELETE_BUTTON" desc="Label of the button to delete the reading list entries [Length: 25em]" meaning="Delete the selected entries. [Length: 25em]">
         Delete
       </message>
       <message name="IDS_IOS_READING_LIST_DONE_BUTTON" desc="Label of the button to dismiss reading list dialog">
@@ -1077,7 +1077,7 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_READING_LIST_EMPTY_OFFLINE" desc="Message to explain to the user that the pages added to the reading list can we read offline." meaning="[Length:unlimited]">
         Your reading list is available offline.
       </message>
-      <message name="IDS_IOS_READING_LIST_MARK_ALL_BUTTON" desc="Label of the button to suggest options to mark all reading list entries read or unread [Length: 15em]" meaning="Display options letting the user mark all the entries as read or as unread. [Length: 15em]">
+      <message name="IDS_IOS_READING_LIST_MARK_ALL_BUTTON" desc="Label of the button to suggest options to mark all reading list entries read or unread [Length: 25em]" meaning="Display options letting the user mark all the entries as read or as unread. [Length: 25em]">
         Mark All…
       </message>
       <message name="IDS_IOS_READING_LIST_MARK_ALL_READ_ACTION" desc="Label of the action button to mark all reading list entries as read. [Length: 25em]" meaning="Mark all entries as read. [Length: 25em]">
@@ -1086,13 +1086,13 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_READING_LIST_MARK_ALL_UNREAD_ACTION" desc="Label of the action button to mark all reading list entries as unread. [Length: 25em]" meaning="Mark all entries as unread. [Length: 25em]">
         Mark All Unread
       </message>
-      <message name="IDS_IOS_READING_LIST_MARK_BUTTON" desc="Label of the button to mark the selected reading list as either read or unread [Length: 15em]" meaning="Display options letting the user mark all the selected entries as read or as unread. [Length: 15em]">
+      <message name="IDS_IOS_READING_LIST_MARK_BUTTON" desc="Label of the button to mark the selected reading list as either read or unread [Length: 25em]" meaning="Display options letting the user mark all the selected entries as read or as unread. [Length: 25em]">
         Mark…
       </message>
-      <message name="IDS_IOS_READING_LIST_MARK_READ_BUTTON" desc="Label of the button to mark selected reading list entries as 'Read' [Length: 15em]" meaning="Mark selected entries as read. [Length: 15em]">
+      <message name="IDS_IOS_READING_LIST_MARK_READ_BUTTON" desc="Label of the button to mark selected reading list entries as 'Read' [Length: 25em]" meaning="Mark selected entries as read. [Length: 25em]">
         Mark Read
       </message>
-      <message name="IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON" desc="Label of the button to mark selected reading list entries as 'Unread' [Length: 15em]" meaning="Mark selected entries as unread. [Length: 15em]">
+      <message name="IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON" desc="Label of the button to mark selected reading list entries as 'Unread' [Length: 25em]" meaning="Mark selected entries as unread. [Length: 25em]">
         Mark Unread
       </message>
       <message name="IDS_IOS_READING_LIST_READ_HEADER" desc="Heading. Appears above a list of articles the user has already read, in their Reading List. Appears on the same page as an 'Unread' heading, which contains articles the user hasn't read yet. In English, 'Read' can be both verb and adjective so we needed to be more explicit. Does not need to be translated literally. [Length: 40em]" meaning="The entries below this header are read. [Length: 40em]">

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_view_controller_container.h"
 
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -12,14 +13,25 @@
 #endif
 
 namespace {
-// Height of the toolbar.
-const int kToolbarHeight = 48;
+// Height of the toolbar in normal state.
+const int kToolbarNormalHeight = 48;
+// Height of the expanded toolbar (buttons on multiple lines).
+const int kToolbarExpandedHeight = 58;
+
+typedef NS_ENUM(NSInteger, LayoutPriority) {
+  LayoutPriorityLow = 750,
+  LayoutPriorityHigh = 751
+};
 }
 
-@interface ReadingListViewControllerContainer ()<ReadingListToolbarActions> {
+@interface ReadingListViewControllerContainer ()<
+    ReadingListToolbarActions,
+    ReadingListToolbarHeightDelegate> {
   // Toolbar with the actions.
   ReadingListToolbar* _toolbar;
   ReadingListViewController* _collectionController;
+  // This constraint control the expanded mode of the toolbar.
+  NSLayoutConstraint* _expandedToolbarConstraint;
 }
 
 @end
@@ -34,6 +46,7 @@ const int kToolbarHeight = 48;
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _toolbar = [[ReadingListToolbar alloc] initWithFrame:CGRectZero];
+    _toolbar.heightDelegate = self;
     _collectionController = [[ReadingListViewController alloc]
                      initWithModel:model
                           tabModel:tabModel
@@ -66,7 +79,7 @@ const int kToolbarHeight = 48;
   // toolbar is not present, allowing the collection to take the whole page.
   NSLayoutConstraint* constraint = [[_collectionController view].bottomAnchor
       constraintEqualToAnchor:[self view].bottomAnchor];
-  constraint.priority = UILayoutPriorityDefaultHigh;
+  constraint.priority = LayoutPriorityLow;
   constraint.active = YES;
 }
 
@@ -80,10 +93,16 @@ const int kToolbarHeight = 48;
       @"toolbar" : _toolbar,
       @"collection" : [_collectionController view]
     };
-    NSDictionary* metrics = @{ @"toolbarHeight" : @(kToolbarHeight) };
-    NSArray* constraints =
-        @[ @"V:[collection][toolbar(==toolbarHeight)]|", @"H:|[toolbar]|" ];
-    ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
+    NSArray* constraints = @[ @"V:[collection][toolbar]|", @"H:|[toolbar]|" ];
+    ApplyVisualConstraints(constraints, views);
+    NSLayoutConstraint* height =
+        [_toolbar.heightAnchor constraintEqualToConstant:kToolbarNormalHeight];
+    height.priority = LayoutPriorityHigh;
+    height.active = YES;
+    // When the toolbar is added, the only button is the "edit" button. No need
+    // to go in expanded mode.
+    _expandedToolbarConstraint = [_toolbar.heightAnchor
+        constraintEqualToConstant:kToolbarExpandedHeight];
   } else {
     // If there is no item, remove the toolbar. The constraints will make sure
     // the collection takes the whole view.
@@ -107,6 +126,22 @@ const int kToolbarHeight = 48;
 
 - (void)exitEditingModePressed {
   [_collectionController exitEditingModePressed];
+}
+
+#pragma mark - ReadingListToolbarHeightDelegate
+
+- (void)toolbar:(id)toolbar onHeightChanged:(ReadingListToolbarHeight)height {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    switch (height) {
+      case NormalHeight:
+        _expandedToolbarConstraint.active = NO;
+        break;
+
+      case ExpandedHeight:
+        _expandedToolbarConstraint.active = YES;
+        break;
+    }
+  });
 }
 
 @end

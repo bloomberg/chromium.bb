@@ -7,10 +7,12 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/gfx/ios/NSString+CrStringDrawing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,8 +22,12 @@ namespace {
 
 // Shadow opacity.
 const CGFloat kShadowOpacity = 0.2f;
-// Horizontal margin for the content.
+// Horizontal margin for the stack view content.
 const CGFloat kHorizontalMargin = 8.0f;
+// Horizontal spacing between the elements of the stack view.
+const CGFloat kHorizontalSpacing = 8.0f;
+
+typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
 
 }  // namespace
 
@@ -42,7 +48,9 @@ const CGFloat kHorizontalMargin = 8.0f;
 @property(nonatomic, strong) UIStackView* stackView;
 
 // Creates a button with a |title| and a style according to |destructive|.
-- (UIButton*)buttonWithText:(NSString*)title destructive:(BOOL)isDestructive;
+- (UIButton*)buttonWithText:(NSString*)title
+                destructive:(BOOL)isDestructive
+                positioning:(ButtonPositioning)position;
 // Set the mark button label to |text|.
 - (void)setMarkButtonText:(NSString*)text;
 // Updates the button labels to match an empty selection.
@@ -66,30 +74,36 @@ const CGFloat kHorizontalMargin = 8.0f;
 @synthesize stackView = _stackView;
 @synthesize markButton = _markButton;
 @synthesize state = _state;
+@synthesize heightDelegate = _heightDelegate;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
     UIButton* editButton = [self
         buttonWithText:l10n_util::GetNSString(IDS_IOS_READING_LIST_EDIT_BUTTON)
-           destructive:NO];
+           destructive:NO
+           positioning:Trailing];
 
     _deleteButton = [self buttonWithText:l10n_util::GetNSString(
                                              IDS_IOS_READING_LIST_DELETE_BUTTON)
-                             destructive:YES];
+                             destructive:YES
+                             positioning:Leading];
 
     _deleteAllButton =
         [self buttonWithText:l10n_util::GetNSString(
                                  IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON)
-                 destructive:YES];
+                 destructive:YES
+                 positioning:Leading];
 
     _markButton = [self buttonWithText:l10n_util::GetNSString(
                                            IDS_IOS_READING_LIST_MARK_ALL_BUTTON)
-                           destructive:NO];
+                           destructive:NO
+                           positioning:Centered];
 
     _cancelButton = [self buttonWithText:l10n_util::GetNSString(
                                              IDS_IOS_READING_LIST_CANCEL_BUTTON)
-                             destructive:NO];
+                             destructive:NO
+                             positioning:Trailing];
 
     [editButton addTarget:nil
                    action:@selector(enterEditingModePressed)
@@ -124,7 +138,8 @@ const CGFloat kHorizontalMargin = 8.0f;
     ]];
     _stackView.axis = UILayoutConstraintAxisHorizontal;
     _stackView.alignment = UIStackViewAlignmentFill;
-    _stackView.distribution = UIStackViewDistributionEqualCentering;
+    _stackView.distribution = UIStackViewDistributionFillEqually;
+    _stackView.spacing = kHorizontalSpacing;
 
     [self addSubview:_stackView];
     _stackView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -148,6 +163,8 @@ const CGFloat kHorizontalMargin = 8.0f;
   self.deleteAllButton.hidden = !editing;
   self.cancelButton.hidden = !editing;
   self.markButton.hidden = !editing;
+
+  [self updateHeight];
 }
 
 - (void)setState:(ReadingListToolbarState)state {
@@ -166,6 +183,8 @@ const CGFloat kHorizontalMargin = 8.0f;
       break;
   }
   _state = state;
+
+  [self updateHeight];
 }
 
 - (void)setHasReadItem:(BOOL)hasRead {
@@ -212,10 +231,13 @@ const CGFloat kHorizontalMargin = 8.0f;
                               IDS_IOS_READING_LIST_MARK_BUTTON)];
 }
 
-- (UIButton*)buttonWithText:(NSString*)title destructive:(BOOL)isDestructive {
+- (UIButton*)buttonWithText:(NSString*)title
+                destructive:(BOOL)isDestructive
+                positioning:(ButtonPositioning)position {
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
   button.contentEdgeInsets = UIEdgeInsetsMake(0, 8, 0, 8);
   [button setTitle:title forState:UIControlStateNormal];
+  button.titleLabel.numberOfLines = 0;
 
   button.backgroundColor = [UIColor whiteColor];
   UIColor* textColor = isDestructive ? [[MDCPalette cr_redPalette] tint500]
@@ -223,14 +245,68 @@ const CGFloat kHorizontalMargin = 8.0f;
   [button setTitleColor:textColor forState:UIControlStateNormal];
   [button setTitleColor:[UIColor lightGrayColor]
                forState:UIControlStateDisabled];
+  [button setTitleColor:[textColor colorWithAlphaComponent:0.3]
+               forState:UIControlStateHighlighted];
   [[button titleLabel]
       setFont:[[MDCTypography fontLoader] regularFontOfSize:14]];
+
+  NSTextAlignment textAlignement;
+  UIControlContentHorizontalAlignment horizontalAlignement;
+
+  switch (position) {
+    case Leading:
+      if (UseRTLLayout()) {
+        horizontalAlignement = UIControlContentHorizontalAlignmentRight;
+        textAlignement = NSTextAlignmentRight;
+      } else {
+        horizontalAlignement = UIControlContentHorizontalAlignmentLeft;
+        textAlignement = NSTextAlignmentLeft;
+      }
+      break;
+
+    case Centered:
+      horizontalAlignement = UIControlContentHorizontalAlignmentCenter;
+      textAlignement = NSTextAlignmentCenter;
+      break;
+
+    case Trailing:
+      if (UseRTLLayout()) {
+        horizontalAlignement = UIControlContentHorizontalAlignmentLeft;
+        textAlignement = NSTextAlignmentLeft;
+      } else {
+        horizontalAlignement = UIControlContentHorizontalAlignmentRight;
+        textAlignement = NSTextAlignmentRight;
+      }
+      break;
+  }
+
+  button.contentHorizontalAlignment = horizontalAlignement;
+  button.titleLabel.textAlignment = textAlignement;
 
   return button;
 }
 
 - (void)setMarkButtonText:(NSString*)text {
   [self.markButton setTitle:text forState:UIControlStateNormal];
+}
+
+- (void)updateHeight {
+  for (UIButton* button in
+       @[ _deleteButton, _deleteAllButton, _markButton, _cancelButton ]) {
+    if (!button.hidden) {
+      CGFloat rect = [button.titleLabel.text
+                         cr_pixelAlignedSizeWithFont:button.titleLabel.font]
+                         .width;
+      if (rect > (self.frame.size.width - 2 * kHorizontalMargin -
+                  2 * kHorizontalSpacing) /
+                         3 -
+                     16) {
+        [self.heightDelegate toolbar:self onHeightChanged:ExpandedHeight];
+        return;
+      }
+    }
+  }
+  [self.heightDelegate toolbar:self onHeightChanged:NormalHeight];
 }
 
 @end

@@ -8,12 +8,18 @@
 #import <UIKit/UIKit.h>
 
 @class ActionSheetCoordinator;
+@class ReadingListToolbar;
 
 typedef NS_ENUM(NSInteger, ReadingListToolbarState) {
   NoneSelected,
   OnlyReadSelected,
   OnlyUnreadSelected,
   MixedItemsSelected
+};
+
+typedef NS_ENUM(NSInteger, ReadingListToolbarHeight) {
+  NormalHeight,
+  ExpandedHeight
 };
 
 @protocol ReadingListToolbarActions<NSObject>
@@ -29,11 +35,21 @@ typedef NS_ENUM(NSInteger, ReadingListToolbarState) {
 
 @end
 
+@protocol ReadingListToolbarHeightDelegate
+
+- (void)toolbar:(ReadingListToolbar*)toolbar
+    onHeightChanged:(ReadingListToolbarHeight)height;
+
+@end
+
 // View at the bottom of the reading list panel that presents options to edit
 // the entries. When editing, the interface changes, allowing the user to delete
 // them and mark them read/unread.
 @interface ReadingListToolbar : UIView
 
+// Delegate handling the changes of the toolbar height.
+@property(nonatomic, assign) id<ReadingListToolbarHeightDelegate>
+    heightDelegate;
 // The toolbar state. The text of the buttons change to reflect the state.
 @property(nonatomic, assign) ReadingListToolbarState state;
 
