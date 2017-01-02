@@ -438,6 +438,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 - (void)donePressed {
+  if ([self.editor isEditing]) {
+    [self exitEditingModeAnimated:NO];
+  }
   [self dismiss];
 }
 
@@ -539,6 +542,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 #pragma mark - ReadingListToolbarDelegate
 
 - (void)markPressed {
+  if (![self.editor isEditing]) {
+    return;
+  }
   switch ([_toolbar state]) {
     case NoneSelected:
       [self markAllItemsAs];
@@ -556,6 +562,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 - (void)deletePressed {
+  if (![self.editor isEditing]) {
+    return;
+  }
   if ([_toolbar state] == NoneSelected) {
     [self deleteAllReadItems];
   } else {
@@ -563,12 +572,18 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   }
 }
 - (void)enterEditingModePressed {
+  if ([self.editor isEditing]) {
+    return;
+  }
   self.toolbarState = NoneSelected;
   [self.editor setEditing:YES animated:YES];
   [_toolbar setEditing:YES];
 }
 
 - (void)exitEditingModePressed {
+  if (![self.editor isEditing]) {
+    return;
+  }
   [self exitEditingModeAnimated:YES];
 }
 
@@ -667,6 +682,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 - (void)markAllRead {
+  if (![self.editor isEditing]) {
+    return;
+  }
   if (![self hasItemInSection:SectionIdentifierUnread]) {
     [self exitEditingModeAnimated:YES];
     return;
