@@ -41,13 +41,6 @@ void OpenOptionsWindow(Profile* profile) {
   browser->window()->Show();
 }
 
-void OpenSyncSetupWindow(Profile* profile,
-                         signin_metrics::AccessPoint access_point) {
-  Browser* browser = new Browser(Browser::CreateParams(profile));
-  ShowBrowserSigninOrSettings(browser, access_point);
-  browser->window()->Show();
-}
-
 void OpenClearBrowsingDataDialogWindow(Profile* profile) {
   Browser* browser = new Browser(Browser::CreateParams(profile));
   ShowClearBrowsingDataDialog(browser);
