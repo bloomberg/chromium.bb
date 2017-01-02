@@ -8,7 +8,6 @@ source_set("ios") {
     "distiller_page_factory_ios.mm",
     "distiller_page_ios.h",
     "distiller_page_ios.mm",
-    "favicon_web_state_dispatcher.h",
   ]
 
   deps = [

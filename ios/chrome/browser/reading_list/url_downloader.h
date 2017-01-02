@@ -21,6 +21,10 @@ namespace dom_distiller {
 class DomDistillerService;
 }
 
+namespace reading_list {
+class ReadingListDistillerPageFactory;
+}
+
 // This class downloads and deletes offline versions of URLs using DOM distiller
 // to fetch the page and simplify it. Only one item is downloaded or deleted at
 // a time using a queue of tasks that are handled sequentially. Items (page +
@@ -58,11 +62,13 @@ class URLDownloader {
   // deletions. The completion callbacks will be called with the original url
   // and a boolean indicating success. For downloads, if distillation was
   // successful, it will also include the distilled url and extracted title.
-  URLDownloader(dom_distiller::DomDistillerService* distiller_service,
-                PrefService* prefs,
-                base::FilePath chrome_profile_path,
-                const DownloadCompletion& download_completion,
-                const SuccessCompletion& delete_completion);
+  URLDownloader(
+      dom_distiller::DomDistillerService* distiller_service,
+      reading_list::ReadingListDistillerPageFactory* distiller_page_factory,
+      PrefService* prefs,
+      base::FilePath chrome_profile_path,
+      const DownloadCompletion& download_completion,
+      const SuccessCompletion& delete_completion);
   virtual ~URLDownloader();
 
   // Asynchronously download an offline version of the URL.
@@ -126,6 +132,7 @@ class URLDownloader {
       const std::string& title);
 
   dom_distiller::DomDistillerService* distiller_service_;
+  reading_list::ReadingListDistillerPageFactory* distiller_page_factory_;
   PrefService* pref_service_;
   const DownloadCompletion download_completion_;
   const SuccessCompletion delete_completion_;

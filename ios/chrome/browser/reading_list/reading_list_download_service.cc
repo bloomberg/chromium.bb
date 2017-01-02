@@ -13,6 +13,7 @@
 #include "components/reading_list/ios/offline_url_utils.h"
 #include "components/reading_list/ios/reading_list_entry.h"
 #include "components/reading_list/ios/reading_list_model.h"
+#include "ios/chrome/browser/reading_list/reading_list_distiller_page_factory.h"
 #include "ios/web/public/web_thread.h"
 
 namespace {
@@ -41,14 +42,19 @@ ReadingListDownloadService::ReadingListDownloadService(
     ReadingListModel* reading_list_model,
     dom_distiller::DomDistillerService* distiller_service,
     PrefService* prefs,
-    base::FilePath chrome_profile_path)
+    base::FilePath chrome_profile_path,
+    std::unique_ptr<reading_list::ReadingListDistillerPageFactory>
+        distiller_page_factory)
     : reading_list_model_(reading_list_model),
       chrome_profile_path_(chrome_profile_path),
       had_connection_(!net::NetworkChangeNotifier::IsOffline()),
+      distiller_page_factory_(std::move(distiller_page_factory)),
       weak_ptr_factory_(this) {
   DCHECK(reading_list_model);
+
   url_downloader_ = base::MakeUnique<URLDownloader>(
-      distiller_service, prefs, chrome_profile_path,
+      distiller_service, distiller_page_factory_.get(), prefs,
+      chrome_profile_path,
       base::Bind(&ReadingListDownloadService::OnDownloadEnd,
                  base::Unretained(this)),
       base::Bind(&ReadingListDownloadService::OnDeleteEnd,

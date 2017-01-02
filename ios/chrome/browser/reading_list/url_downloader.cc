@@ -14,6 +14,7 @@
 #include "components/reading_list/ios/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
+#include "ios/chrome/browser/reading_list/reading_list_distiller_page_factory.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
@@ -22,11 +23,13 @@
 
 URLDownloader::URLDownloader(
     dom_distiller::DomDistillerService* distiller_service,
+    reading_list::ReadingListDistillerPageFactory* distiller_page_factory,
     PrefService* prefs,
     base::FilePath chrome_profile_path,
     const DownloadCompletion& download_completion,
     const SuccessCompletion& delete_completion)
     : distiller_service_(distiller_service),
+      distiller_page_factory_(distiller_page_factory),
       pref_service_(prefs),
       download_completion_(download_completion),
       delete_completion_(delete_completion),
@@ -142,7 +145,8 @@ void URLDownloader::DownloadURL(GURL url, bool offline_url_exists) {
 
   distiller_.reset(new dom_distiller::DistillerViewer(
       distiller_service_, pref_service_, url,
-      base::Bind(&URLDownloader::DistillerCallback, base::Unretained(this))));
+      base::Bind(&URLDownloader::DistillerCallback, base::Unretained(this)),
+      distiller_page_factory_));
 }
 
 void URLDownloader::DistillerCallback(

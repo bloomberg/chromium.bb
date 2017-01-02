@@ -20,12 +20,8 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/proto_database_impl.h"
-#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/dom_distiller/favicon_web_state_dispatcher_impl.h"
-#include "ios/chrome/browser/favicon/favicon_service_factory.h"
-#include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
 
@@ -71,9 +67,6 @@ DomDistillerServiceFactory::DomDistillerServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "DomDistillerService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(ios::FaviconServiceFactory::GetInstance());
-  DependsOn(ios::HistoryServiceFactory::GetInstance());
-  DependsOn(ios::BookmarkModelFactory::GetInstance());
 }
 
 DomDistillerServiceFactory::~DomDistillerServiceFactory() {}
@@ -95,11 +88,8 @@ DomDistillerServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<DomDistillerStore> dom_distiller_store =
       base::MakeUnique<DomDistillerStore>(std::move(db), database_dir);
 
-  std::unique_ptr<FaviconWebStateDispatcher> web_state_dispatcher =
-      base::MakeUnique<FaviconWebStateDispatcherImpl>(context, -1);
   std::unique_ptr<DistillerPageFactory> distiller_page_factory =
-      base::MakeUnique<DistillerPageFactoryIOS>(
-          std::move(web_state_dispatcher));
+      base::MakeUnique<DistillerPageFactoryIOS>(context);
 
   std::unique_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory =
       base::MakeUnique<DistillerURLFetcherFactory>(

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_DOM_DISTILLER_FAVICON_WEB_STATE_DISPATCHER_IMPL_H_
-#define IOS_CHROME_BROWSER_DOM_DISTILLER_FAVICON_WEB_STATE_DISPATCHER_IMPL_H_
+#ifndef IOS_CHROME_BROWSER_READING_LIST_FAVICON_WEB_STATE_DISPATCHER_IMPL_H_
+#define IOS_CHROME_BROWSER_READING_LIST_FAVICON_WEB_STATE_DISPATCHER_IMPL_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "components/dom_distiller/ios/favicon_web_state_dispatcher.h"
+#include "components/reading_list/ios/favicon_web_state_dispatcher.h"
 
 namespace web {
 class BrowserState;
 }
 
-namespace dom_distiller {
+namespace reading_list {
 
 // Implementation of the FaviconWebStateDispatcher.
 class FaviconWebStateDispatcherImpl : public FaviconWebStateDispatcher {
@@ -27,8 +27,8 @@ class FaviconWebStateDispatcherImpl : public FaviconWebStateDispatcher {
   ~FaviconWebStateDispatcherImpl() override;
 
   // FaviconWebStateDispatcher implementation.
-  web::WebState* RequestWebState() override;
-  void ReturnWebState(web::WebState* web_state) override;
+  std::unique_ptr<web::WebState> RequestWebState() override;
+  void ReturnWebState(std::unique_ptr<web::WebState> web_state) override;
 
  private:
   web::BrowserState* browser_state_;
@@ -39,6 +39,6 @@ class FaviconWebStateDispatcherImpl : public FaviconWebStateDispatcher {
   base::WeakPtrFactory<FaviconWebStateDispatcherImpl> weak_ptr_factory_;
 };
 
-}  // namespace dom_distiller
+}  // namespace reading_list
 
-#endif  // IOS_CHROME_BROWSER_DOM_DISTILLER_FAVICON_WEB_STATE_DISPATCHER_IMPL_H_
+#endif  // IOS_CHROME_BROWSER_READING_LIST_FAVICON_WEB_STATE_DISPATCHER_IMPL_H_

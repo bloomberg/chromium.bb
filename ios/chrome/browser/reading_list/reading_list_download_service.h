@@ -22,6 +22,10 @@ namespace dom_distiller {
 class DomDistillerService;
 }
 
+namespace reading_list {
+class ReadingListDistillerPageFactory;
+}
+
 // Observes the reading list and downloads offline versions of its articles.
 // Any calls made to DownloadAllEntries/DownloadEntry before the model is
 // loaded will be ignored. When the model is loaded, DownloadAllEntries will be
@@ -35,7 +39,9 @@ class ReadingListDownloadService
       ReadingListModel* reading_list_model,
       dom_distiller::DomDistillerService* distiller_service,
       PrefService* prefs,
-      base::FilePath chrome_profile_path);
+      base::FilePath chrome_profile_path,
+      std::unique_ptr<reading_list::ReadingListDistillerPageFactory>
+          distiller_page_factory);
   ~ReadingListDownloadService() override;
 
   // Initializes the reading list download service.
@@ -91,6 +97,8 @@ class ReadingListDownloadService
   std::vector<GURL> url_to_download_cellular_;
   std::vector<GURL> url_to_download_wifi_;
   bool had_connection_;
+  std::unique_ptr<reading_list::ReadingListDistillerPageFactory>
+      distiller_page_factory_;
 
   base::WeakPtrFactory<ReadingListDownloadService> weak_ptr_factory_;
 

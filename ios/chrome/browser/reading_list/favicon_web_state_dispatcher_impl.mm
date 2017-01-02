@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/dom_distiller/favicon_web_state_dispatcher_impl.h"
+#include "ios/chrome/browser/reading_list/favicon_web_state_dispatcher_impl.h"
 
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -17,7 +17,7 @@ namespace {
 const int64_t kDefaultDelayFaviconSecond = 10;
 }
 
-namespace dom_distiller {
+namespace reading_list {
 
 FaviconWebStateDispatcherImpl::FaviconWebStateDispatcherImpl(
     web::BrowserState* browser_state,
@@ -32,19 +32,17 @@ FaviconWebStateDispatcherImpl::FaviconWebStateDispatcherImpl(
 
 FaviconWebStateDispatcherImpl::~FaviconWebStateDispatcherImpl() {}
 
-web::WebState* FaviconWebStateDispatcherImpl::RequestWebState() {
+std::unique_ptr<web::WebState>
+FaviconWebStateDispatcherImpl::RequestWebState() {
   const web::WebState::CreateParams web_state_create_params(browser_state_);
-  std::unique_ptr<web::WebState> web_state_unique =
+  std::unique_ptr<web::WebState> web_state =
       web::WebState::Create(web_state_create_params);
-  web::WebState* web_state = web_state_unique.get();
-
-  web_states_.push_back(std::move(web_state_unique));
 
   ios::ChromeBrowserState* original_browser_state =
       ios::ChromeBrowserState::FromBrowserState(browser_state_);
 
   favicon::WebFaviconDriver::CreateForWebState(
-      web_state,
+      web_state.get(),
       ios::FaviconServiceFactory::GetForBrowserState(
           original_browser_state, ServiceAccessType::EXPLICIT_ACCESS),
       ios::HistoryServiceFactory::GetForBrowserState(
@@ -54,7 +52,10 @@ web::WebState* FaviconWebStateDispatcherImpl::RequestWebState() {
   return web_state;
 }
 
-void FaviconWebStateDispatcherImpl::ReturnWebState(web::WebState* web_state) {
+void FaviconWebStateDispatcherImpl::ReturnWebState(
+    std::unique_ptr<web::WebState> web_state_unique) {
+  web::WebState* web_state = web_state_unique.get();
+  web_states_.push_back(std::move(std::move(web_state_unique)));
   base::WeakPtr<FaviconWebStateDispatcherImpl> weak_this =
       weak_ptr_factory_.GetWeakPtr();
   dispatch_after(
@@ -74,4 +75,4 @@ void FaviconWebStateDispatcherImpl::ReturnWebState(web::WebState* web_state) {
       });
 }
 
-}  // namespace dom_distiller
+}  // namespace reading_list

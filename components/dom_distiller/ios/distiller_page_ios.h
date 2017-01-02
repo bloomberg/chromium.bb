@@ -10,9 +10,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/distiller_page.h"
-#include "components/dom_distiller/ios/favicon_web_state_dispatcher.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "url/gurl.h"
+
+namespace web {
+class BrowserState;
+class WebState;
+}
 
 namespace dom_distiller {
 
@@ -22,19 +26,27 @@ class DistillerWebStateObserver;
 // content.
 class DistillerPageIOS : public DistillerPage {
  public:
-  explicit DistillerPageIOS(FaviconWebStateDispatcher* web_state_dispatcher);
+  explicit DistillerPageIOS(web::BrowserState* browser_state);
   ~DistillerPageIOS() override;
 
  protected:
   bool StringifyOutput() override;
   void DistillPageImpl(const GURL& url, const std::string& script) override;
 
- private:
-  friend class DistillerWebStateObserver;
+  // Sets the WebState that will be used for the distillation. Do not call
+  // between |DistillPageImpl| and |OnDistillationDone|.
+  virtual void AttachWebState(std::unique_ptr<web::WebState> web_state);
+
+  // Release the WebState used for distillation. Do not call between
+  // |DistillPageImpl| and |OnDistillationDone|.
+  virtual std::unique_ptr<web::WebState> DetachWebState();
 
   // Called by |web_state_observer_| once the page has finished loading.
-  void OnLoadURLDone(web::PageLoadCompletionStatus load_completion_status);
+  virtual void OnLoadURLDone(
+      web::PageLoadCompletionStatus load_completion_status);
 
+ private:
+  friend class DistillerWebStateObserver;
   // Called once the |script_| has been evaluated on the page.
   void HandleJavaScriptResult(id result);
 
@@ -43,8 +55,8 @@ class DistillerPageIOS : public DistillerPage {
 
   GURL url_;
   std::string script_;
-  web::WebState* web_state_;
-  FaviconWebStateDispatcher* web_state_dispatcher_;
+  web::BrowserState* browser_state_;
+  std::unique_ptr<web::WebState> web_state_;
   std::unique_ptr<DistillerWebStateObserver> web_state_observer_;
   base::WeakPtrFactory<DistillerPageIOS> weak_ptr_factory_;
 };

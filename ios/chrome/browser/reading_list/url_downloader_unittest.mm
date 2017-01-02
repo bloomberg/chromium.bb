@@ -40,8 +40,9 @@ class DistillerViewerTest : public dom_distiller::DistillerViewerInterface {
 class MockURLDownloader : public URLDownloader {
  public:
   MockURLDownloader(base::FilePath path)
-      : URLDownloader(nil,
-                      nil,
+      : URLDownloader(nullptr,
+                      nullptr,
+                      nullptr,
                       path,
                       base::Bind(&MockURLDownloader::OnEndDownload,
                                  base::Unretained(this)),

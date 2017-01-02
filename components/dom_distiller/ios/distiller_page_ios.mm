@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -15,12 +16,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_state/web_state_observer.h"
 
 namespace {
 
@@ -129,20 +130,37 @@ void DistillerWebStateObserver::PageLoaded(
 }
 
 void DistillerWebStateObserver::WebStateDestroyed() {
-  distiller_page_->web_state_ = nullptr;
+  distiller_page_->DetachWebState();
 }
 
 #pragma mark -
 
-DistillerPageIOS::DistillerPageIOS(
-    FaviconWebStateDispatcher* web_state_dispatcher)
-    : web_state_dispatcher_(web_state_dispatcher), weak_ptr_factory_(this) {}
-
-DistillerPageIOS::~DistillerPageIOS() {
-}
+DistillerPageIOS::DistillerPageIOS(web::BrowserState* browser_state)
+    : browser_state_(browser_state), weak_ptr_factory_(this) {}
 
 bool DistillerPageIOS::StringifyOutput() {
   return false;
+}
+
+DistillerPageIOS::~DistillerPageIOS() {}
+
+void DistillerPageIOS::AttachWebState(
+    std::unique_ptr<web::WebState> web_state) {
+  if (web_state_) {
+    DetachWebState();
+  }
+  web_state_ = std::move(web_state);
+  if (web_state_) {
+    web_state_observer_ =
+        base::MakeUnique<DistillerWebStateObserver>(web_state_.get(), this);
+  }
+}
+
+std::unique_ptr<web::WebState> DistillerPageIOS::DetachWebState() {
+  std::unique_ptr<web::WebState> old_web_state = std::move(web_state_);
+  web_state_observer_.reset();
+  web_state_.reset();
+  return old_web_state;
 }
 
 void DistillerPageIOS::DistillPageImpl(const GURL& url,
@@ -152,21 +170,12 @@ void DistillerPageIOS::DistillPageImpl(const GURL& url,
   url_ = url;
   script_ = script;
 
-  web_state_ = web_state_dispatcher_->RequestWebState();
-
   if (!web_state_) {
-    OnLoadURLDone(web::PageLoadCompletionStatus::FAILURE);
-    return;
+    const web::WebState::CreateParams web_state_create_params(browser_state_);
+    std::unique_ptr<web::WebState> web_state_unique =
+        web::WebState::Create(web_state_create_params);
+    AttachWebState(std::move(web_state_unique));
   }
-
-  web_state_observer_ =
-      base::MakeUnique<DistillerWebStateObserver>(web_state_, this);
-
-  // The favicon driver needs to know which URL is currently fetched.
-  favicon::WebFaviconDriver* favicon_driver =
-      favicon::WebFaviconDriver::FromWebState(web_state_);
-  favicon_driver->FetchFavicon(url_);
-
   // Load page using WebState.
   web::NavigationManager::WebLoadParams params(url_);
   web_state_->SetWebUsageEnabled(true);
@@ -185,10 +194,8 @@ void DistillerPageIOS::OnLoadURLDone(
     HandleJavaScriptResult(nil);
     return;
   }
-
   // Inject the script.
   base::WeakPtr<DistillerPageIOS> weak_this = weak_ptr_factory_.GetWeakPtr();
-
   [[web_state_->GetJSInjectionReceiver()
       instanceOfClass:[CRWJSInjectionManager class]]
       executeJavaScript:base::SysUTF8ToNSString(script_)
@@ -200,8 +207,6 @@ void DistillerPageIOS::OnLoadURLDone(
 }
 
 void DistillerPageIOS::HandleJavaScriptResult(id result) {
-  web_state_dispatcher_->ReturnWebState(web_state_);
-  web_state_ = nullptr;
   std::unique_ptr<base::Value> resultValue = base::Value::CreateNullValue();
   if (result) {
     resultValue = ValueResultFromScriptResult(result);

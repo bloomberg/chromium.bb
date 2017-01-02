@@ -5,8 +5,14 @@
 source_set("reading_list") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "favicon_web_state_dispatcher_impl.h",
+    "favicon_web_state_dispatcher_impl.mm",
     "offline_url_utils.cc",
     "offline_url_utils.h",
+    "reading_list_distiller_page.h",
+    "reading_list_distiller_page.mm",
+    "reading_list_distiller_page_factory.h",
+    "reading_list_distiller_page_factory.mm",
     "reading_list_download_service.cc",
     "reading_list_download_service.h",
     "reading_list_download_service_factory.cc",
@@ -20,6 +26,9 @@ source_set("reading_list") {
   ]
   deps = [
     "//base",
+    "//components/dom_distiller/ios",
+    "//components/favicon/core",
+    "//components/favicon/ios",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/pref_registry",
@@ -27,7 +36,11 @@ source_set("reading_list") {
     "//components/reading_list/core",
     "//components/reading_list/ios",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/history",
+    "//ios/public/provider/web",
     "//ios/web",
     "//net",
     "//url",
@@ -41,6 +54,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "favicon_web_state_dispatcher_impl_unittest.mm",
     "offline_url_utils_unittest.cc",
     "reading_list_web_state_observer_unittest.mm",
     "url_downloader_unittest.mm",
@@ -49,9 +63,12 @@ source_set("unit_tests") {
     ":reading_list",
     "//base",
     "//base/test:test_support",
+    "//components/favicon/ios",
     "//components/reading_list/ios",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/dom_distiller",
+    "//ios/testing:ios_test_support",
     "//ios/web",
     "//ios/web:test_support",
     "//net",

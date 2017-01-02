@@ -8,44 +8,19 @@ source_set("dom_distiller") {
     "distiller_viewer.h",
     "dom_distiller_service_factory.cc",
     "dom_distiller_service_factory.h",
-    "favicon_web_state_dispatcher_impl.h",
-    "favicon_web_state_dispatcher_impl.mm",
   ]
   deps = [
     "//base",
     "//components/dom_distiller/ios",
-    "//components/favicon/core",
-    "//components/favicon/ios",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/leveldb_proto",
-    "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/favicon",
-    "//ios/chrome/browser/history",
-    "//ios/public/provider/web",
     "//ios/web",
     "//ui/gfx",
     "//url",
   ]
   public_deps = [
     "//components/dom_distiller/core",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "favicon_web_state_dispatcher_impl_unittest.mm",
-  ]
-  deps = [
-    ":dom_distiller",
-    "//base",
-    "//components/favicon/ios",
-    "//ios/chrome/browser/browser_state:test_support",
-    "//ios/testing:ios_test_support",
-    "//ios/web",
-    "//ios/web:test_support",
-    "//testing/gtest",
   ]
 }

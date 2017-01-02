@@ -173,7 +173,8 @@ class InfoBarManagerObserverBridge : infobars::InfoBarManager::Observer {
           const std::vector<dom_distiller::DistillerViewer::ImageInfo>& images,
           const std::string& title) {
         [weakSelf distillationFinished:html forURL:pageURL];
-      }));
+      }),
+      nullptr);
 }
 
 - (void)distillationFinished:(const std::string&)html forURL:(const GURL&)url {

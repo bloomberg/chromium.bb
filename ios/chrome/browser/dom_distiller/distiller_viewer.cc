@@ -21,15 +21,18 @@ DistillerViewer::DistillerViewer(
     dom_distiller::DomDistillerService* distillerService,
     PrefService* prefs,
     const GURL& url,
-    const DistillationFinishedCallback& callback)
+    const DistillationFinishedCallback& callback,
+    const DistillerPageFactory* factory)
     : DistillerViewerInterface(distillerService, prefs),
       url_(url),
       callback_(callback) {
   DCHECK(distillerService);
   DCHECK(url.is_valid());
-
-  std::unique_ptr<ViewerHandle> viewer_handle = distillerService->ViewUrl(
-      this, distillerService->CreateDefaultDistillerPage(gfx::Size()), url);
+  std::unique_ptr<DistillerPage> page =
+      factory ? factory->CreateDistillerPage(gfx::Size())
+              : distillerService->CreateDefaultDistillerPage(gfx::Size());
+  std::unique_ptr<ViewerHandle> viewer_handle =
+      distillerService->ViewUrl(this, std::move(page), url);
 
   TakeViewerHandle(std::move(viewer_handle));
 }

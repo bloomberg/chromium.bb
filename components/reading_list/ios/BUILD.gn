@@ -4,6 +4,7 @@
 
 source_set("ios") {
   sources = [
+    "favicon_web_state_dispatcher.h",
     "offline_url_utils.cc",
     "offline_url_utils.h",
     "reading_list_entry.cc",
