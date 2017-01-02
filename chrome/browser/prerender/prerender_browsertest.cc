@@ -57,6 +57,8 @@
 #include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/speech/tts_controller.h"
+#include "chrome/browser/speech/tts_platform.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
@@ -3538,6 +3540,68 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // perceived time is not set and so update the following histogram.
   histogram_tester().ExpectUniqueSample(
       "Prerender.none_PerceivedTTFCPRecorded.Hidden", 0, 1);
+}
+
+// When instantiated, mocks out the global text-to-speech engine with something
+// that emulates speaking any phrase for the duration of 0ms.
+class TtsPlatformMock : public TtsPlatformImpl {
+ public:
+  TtsPlatformMock() : speaking_requested_(false) {
+    TtsController::GetInstance()->SetPlatformImpl(this);
+  }
+
+  ~TtsPlatformMock() override {
+    TtsController::GetInstance()->SetPlatformImpl(
+        TtsPlatformImpl::GetInstance());
+  }
+
+  bool speaking_requested() { return speaking_requested_; }
+
+  // TtsPlatformImpl:
+
+  bool PlatformImplAvailable() override { return true; }
+
+  bool Speak(int utterance_id,
+             const std::string& utterance,
+             const std::string& lang,
+             const VoiceData& voice,
+             const UtteranceContinuousParameters& params) override {
+    speaking_requested_ = true;
+    // Dispatch the end of speaking back to the page.
+    TtsController::GetInstance()->OnTtsEvent(utterance_id, TTS_EVENT_END,
+                                             static_cast<int>(utterance.size()),
+                                             std::string());
+    return true;
+  }
+
+  bool StopSpeaking() override { return true; }
+
+  bool IsSpeaking() override { return false; }
+
+  void GetVoices(std::vector<VoiceData>* out_voices) override {
+    out_voices->push_back(VoiceData());
+    VoiceData& voice = out_voices->back();
+    voice.native = true;
+    voice.name = "TtsPlatformMock";
+    voice.events.insert(TTS_EVENT_END);
+  }
+
+  void Pause() override {}
+
+  void Resume() override {}
+
+ private:
+  bool speaking_requested_;
+};
+
+// Checks that text-to-speech is not called from prerenders that did not reach
+// the visible state. Disabled until the http://crbug.com/520275 is fixed.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderSpeechSynthesis) {
+  TtsPlatformMock tts_platform_mock;
+  PrerenderTestURL("/prerender/prerender_speech_synthesis.html",
+                   FINAL_STATUS_JAVASCRIPT_ALERT, 1);
+  EXPECT_FALSE(tts_platform_mock.speaking_requested());
 }
 
 class PrerenderIncognitoBrowserTest : public PrerenderBrowserTest {
