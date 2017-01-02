@@ -20,7 +20,7 @@ function shouldBe(a, b)
     } catch (e) {
         evalA = e;
     }
-    
+
     if (evalA == b) {
         color = "green";
         message = "PASS: " + a + " should be " + b + " and is.";
@@ -28,7 +28,7 @@ function shouldBe(a, b)
         color = "red";
         message = "FAIL: " + a + " should be " + b + " but instead is " + evalA + ".";
     }
-    
+
     print(message, color);
 }
 
@@ -37,7 +37,7 @@ var cssRule, nodeFilter, event;
 function test() {
     if (window.testRunner)
         testRunner.dumpAsText();
-        
+
     cssRule = document.styleSheets[0].cssRules[0];
     shouldBe("cssRule.STYLE_RULE", 1);
     shouldBe("cssRule.CHARSET_RULE", 2);
@@ -55,14 +55,14 @@ function test() {
 
     var nodeIterator;
     try {
-        nodeIterator = document.createNodeIterator(document, 
-                                                   NodeFilter.SHOW_ELEMENT, 
-                                                   function () { return NodeFilter.FILTER_ACCEPT; }, 
+        nodeIterator = document.createNodeIterator(document,
+                                                   NodeFilter.SHOW_ELEMENT,
+                                                   function () { return NodeFilter.FILTER_ACCEPT; },
                                                    false);
     } catch(e) {
         nodeIterator = new Object();
     }
-    
+
     nodeFilter = nodeIterator.filter;
     shouldBe("nodeFilter.FILTER_ACCEPT", 1);
     shouldBe("nodeFilter.FILTER_REJECT", 2);
@@ -103,43 +103,11 @@ function test() {
     shouldBe("event.CAPTURING_PHASE", 1);
     shouldBe("event.AT_TARGET", 2);
     shouldBe("event.BUBBLING_PHASE", 3);
-    shouldBe("event.MOUSEDOWN", 1);    
-    shouldBe("event.MOUSEUP", 2);    
-    shouldBe("event.MOUSEOVER", 4);    
-    shouldBe("event.MOUSEOUT", 8);    
-    shouldBe("event.MOUSEMOVE", 16);   
-    shouldBe("event.MOUSEDRAG", 32);   
-    shouldBe("event.CLICK", 64);   
-    shouldBe("event.DBLCLICK", 128);  
-    shouldBe("event.KEYDOWN", 256);  
-    shouldBe("event.KEYUP", 512);  
-    shouldBe("event.KEYPRESS", 1024); 
-    shouldBe("event.DRAGDROP", 2048); 
-    shouldBe("event.FOCUS", 4096); 
-    shouldBe("event.BLUR", 8192); 
-    shouldBe("event.SELECT", 16384);
-    shouldBe("event.CHANGE", 32768);
 
     shouldBe("window.Event.NONE", 0);
     shouldBe("window.Event.CAPTURING_PHASE", 1);
     shouldBe("window.Event.AT_TARGET", 2);
     shouldBe("window.Event.BUBBLING_PHASE", 3);
-    shouldBe("window.Event.MOUSEDOWN", 1);    
-    shouldBe("window.Event.MOUSEUP", 2);    
-    shouldBe("window.Event.MOUSEOVER", 4);    
-    shouldBe("window.Event.MOUSEOUT", 8);    
-    shouldBe("window.Event.MOUSEMOVE", 16);   
-    shouldBe("window.Event.MOUSEDRAG", 32);   
-    shouldBe("window.Event.CLICK", 64);   
-    shouldBe("window.Event.DBLCLICK", 128);  
-    shouldBe("window.Event.KEYDOWN", 256);  
-    shouldBe("window.Event.KEYUP", 512);  
-    shouldBe("window.Event.KEYPRESS", 1024); 
-    shouldBe("window.Event.DRAGDROP", 2048); 
-    shouldBe("window.Event.FOCUS", 4096); 
-    shouldBe("window.Event.BLUR", 8192); 
-    shouldBe("window.Event.SELECT", 16384);
-    shouldBe("window.Event.CHANGE", 32768);
 }
 </script>
 </head>

@@ -1259,25 +1259,9 @@ interface ErrorEvent : Event
 interface Event
     attribute @@toStringTag
     attribute AT_TARGET
-    attribute BLUR
     attribute BUBBLING_PHASE
     attribute CAPTURING_PHASE
-    attribute CHANGE
-    attribute CLICK
-    attribute DBLCLICK
-    attribute DRAGDROP
-    attribute FOCUS
-    attribute KEYDOWN
-    attribute KEYPRESS
-    attribute KEYUP
-    attribute MOUSEDOWN
-    attribute MOUSEDRAG
-    attribute MOUSEMOVE
-    attribute MOUSEOUT
-    attribute MOUSEOVER
-    attribute MOUSEUP
     attribute NONE
-    attribute SELECT
     getter bubbles
     getter cancelBubble
     getter cancelable

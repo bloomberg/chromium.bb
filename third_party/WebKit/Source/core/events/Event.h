@@ -54,25 +54,6 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
     kBubblingPhase = 3
   };
 
-  enum EventType {
-    kMousedown = 1,
-    kMouseup = 2,
-    kMouseover = 4,
-    kMouseout = 8,
-    kMousemove = 16,
-    kMousedrag = 32,
-    kClick = 64,
-    kDblclick = 128,
-    kKeydown = 256,
-    kKeyup = 512,
-    kKeypress = 1024,
-    kDragdrop = 2048,
-    kFocus = 4096,
-    kBlur = 8192,
-    kSelect = 16384,
-    kChange = 32768
-  };
-
   enum RailsMode {
     RailsModeFree = 0,
     RailsModeHorizontal = 1,
