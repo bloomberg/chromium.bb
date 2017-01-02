@@ -154,6 +154,28 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
   test_prerender->WaitForLoads(0);
 }
 
+// Check that a prefetch followed by a load produces the approriate
+// histograms. Note that other histogram testing is done in
+// browser/page_load_metrics, in particular, testing the combinations of
+// Warm/Cold and Cacheable/NoCacheable.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchHistograms) {
+  PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_NoStatePrefetchTTFCP.Warm", 0);
+
+  test_utils::FirstContentfulPaintManagerWaiter* fcp_waiter =
+      test_utils::FirstContentfulPaintManagerWaiter::Create(
+          GetPrerenderManager());
+  ui_test_utils::NavigateToURL(
+      current_browser(), src_server()->GetURL(MakeAbsolute(kPrefetchPage)));
+  fcp_waiter->Wait();
+
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
+  histogram_tester().ExpectTotalCount(
+      "Prerender.websame_NoStatePrefetchResponseTypes", 2);
+}
+
 // Checks the prefetch of an img tag.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchImage) {
   RequestCounter image_counter;
