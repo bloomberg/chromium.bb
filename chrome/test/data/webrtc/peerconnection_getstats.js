@@ -28,6 +28,7 @@ var kRTCRTPStreamStats = new RTCStats_(null, {
   pliCount: 'number',
   nackCount: 'number',
   sliCount: 'number',
+  qpSum: 'number',
 });
 
 /*
@@ -66,6 +67,7 @@ var kRTCInboundRTPStreamStats = new RTCStats_(kRTCRTPStreamStats, {
   burstDiscardRate: 'number',
   gapLossRate: 'number',
   gapDiscardRate: 'number',
+  framesDecoded: 'number',
 });
 gStatsWhitelist.set('inbound-rtp', kRTCInboundRTPStreamStats);
 
@@ -79,6 +81,7 @@ var kRTCOutboundRTPStreamStats = new RTCStats_(kRTCRTPStreamStats, {
   bytesSent: 'number',
   targetBitrate: 'number',
   roundTripTime: 'number',
+  framesEncoded: 'number',
 });
 gStatsWhitelist.set('outbound-rtp', kRTCOutboundRTPStreamStats);
 
@@ -170,12 +173,15 @@ gStatsWhitelist.set('transport', kRTCTransportStats);
  * @private
  */
 var kRTCIceCandidateStats = new RTCStats_(null, {
+  transportId: 'string',
+  isRemote: 'boolean',
   ip: 'string',
   port: 'number',
   protocol: 'string',
   candidateType: 'string',
   priority: 'number',
   url: 'string',
+  deleted: 'boolean',
 });
 gStatsWhitelist.set('local-candidate', kRTCIceCandidateStats);
 gStatsWhitelist.set('remote-candidate', kRTCIceCandidateStats);
@@ -198,11 +204,6 @@ var kRTCIceCandidatePairStats = new RTCStats_(null, {
   bytesReceived: 'number',
   totalRoundTripTime: 'number',
   currentRoundTripTime: 'number',
-  // TODO(hbos): *Rtt have been renamed to *RoundTripTime, both listed at the
-  // moment. As soon as https://codereview.webrtc.org/2576383002/ has rolled in,
-  // remove the *Rtt ones. crbug.com/627816
-  totalRtt: 'number',
-  currentRtt: 'number',
   availableOutgoingBitrate: 'number',
   availableIncomingBitrate: 'number',
   requestsReceived: 'number',
