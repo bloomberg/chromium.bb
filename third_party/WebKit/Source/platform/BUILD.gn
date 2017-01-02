@@ -1815,6 +1815,7 @@ test("blink_platform_unittests") {
     "text/CharacterTest.cpp",
     "text/DateTimeFormatTest.cpp",
     "text/HyphenationTest.cpp",
+    "text/ICUErrorTest.cpp",
     "text/SegmentedStringTest.cpp",
     "text/TextBreakIteratorTest.cpp",
     "text/TextEncodingDetectorTest.cpp",

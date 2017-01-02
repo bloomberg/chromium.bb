@@ -233,7 +233,7 @@ bool Character::isEmojiEmojiDefault(UChar32 ch) {
 bool Character::isEmojiModifierBase(UChar32 ch) {
   return u_hasBinaryProperty(ch, UCHAR_EMOJI_MODIFIER_BASE);
 }
-#endif  // defined(USING_SYSTEM_ICU) && (U_ICU_VERSION_MAJOR_NUM <= 56)
+#endif  // defined(USING_SYSTEM_ICU) && (U_ICU_VERSION_MAJOR_NUM <= 57)
 
 bool Character::isEmojiKeycapBase(UChar32 ch) {
   return (ch >= '0' && ch <= '9') || ch == '#' || ch == '*';

@@ -21,6 +21,7 @@ class PLATFORM_EXPORT ICUError {
 
   UErrorCode* operator&() { return &m_error; }
   operator UErrorCode() const { return m_error; }
+  operator UErrorCode&() { return m_error; }
 
   void operator=(UErrorCode error) { m_error = error; }
 
