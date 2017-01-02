@@ -58,6 +58,7 @@
 #include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
@@ -67,6 +68,7 @@
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebMixedContent.h"
@@ -287,6 +289,37 @@ WebConnectionType toWebConnectionType(const String& connectionType) {
   return WebConnectionTypeUnknown;
 }
 
+String referrerPolicy(ReferrerPolicy policy) {
+  switch (policy) {
+    case ReferrerPolicyAlways:
+      return protocol::Network::Request::ReferrerPolicyEnum::UnsafeUrl;
+    case ReferrerPolicyDefault:
+      if (RuntimeEnabledFeatures::reducedReferrerGranularityEnabled()) {
+        return protocol::Network::Request::ReferrerPolicyEnum::
+            NoReferrerWhenDowngradeOriginWhenCrossOrigin;
+      } else {
+        return protocol::Network::Request::ReferrerPolicyEnum::
+            NoReferrerWhenDowngrade;
+      }
+    case ReferrerPolicyNoReferrerWhenDowngrade:
+      return protocol::Network::Request::ReferrerPolicyEnum::
+          NoReferrerWhenDowngrade;
+    case ReferrerPolicyNever:
+      return protocol::Network::Request::ReferrerPolicyEnum::NoReferrer;
+    case ReferrerPolicyOrigin:
+      return protocol::Network::Request::ReferrerPolicyEnum::Origin;
+    case ReferrerPolicyOriginWhenCrossOrigin:
+      return protocol::Network::Request::ReferrerPolicyEnum::
+          OriginWhenCrossOrigin;
+    case ReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+      return protocol::Network::Request::ReferrerPolicyEnum::
+          NoReferrerWhenDowngradeOriginWhenCrossOrigin;
+  }
+
+  return protocol::Network::Request::ReferrerPolicyEnum::
+      NoReferrerWhenDowngrade;
+}
+
 }  // namespace
 
 void InspectorNetworkAgent::restore() {
@@ -329,6 +362,7 @@ buildObjectForResourceRequest(const ResourceRequest& request) {
           .setMethod(request.httpMethod())
           .setHeaders(buildObjectForHeaders(request.httpHeaderFields()))
           .setInitialPriority(resourcePriorityJSON(request.priority()))
+          .setReferrerPolicy(referrerPolicy(request.getReferrerPolicy()))
           .build();
   if (request.httpBody() && !request.httpBody()->isEmpty()) {
     Vector<char> bytes;
@@ -600,6 +634,8 @@ void InspectorNetworkAgent::willSendRequestInternal(
 
   requestInfo->setMixedContentType(mixedContentTypeForContextType(
       MixedContentChecker::contextTypeForInspector(frame, request)));
+
+  requestInfo->setReferrerPolicy(referrerPolicy(request.getReferrerPolicy()));
 
   String resourceType = InspectorPageAgent::resourceTypeJson(type);
   frontend()->requestWillBeSent(

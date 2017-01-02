@@ -989,7 +989,8 @@
                     { "name": "headers", "$ref": "Headers", "description": "HTTP request headers." },
                     { "name": "postData", "type": "string", "optional": true, "description": "HTTP POST request data." },
                     { "name": "mixedContentType", "optional": true, "type": "string", "enum": ["blockable", "optionally-blockable", "none"], "description": "The mixed content status of the request, as defined in http://www.w3.org/TR/mixed-content/" },
-                    { "name": "initialPriority", "$ref": "ResourcePriority", "description": "Priority of the resource request at the time request is sent."}
+                    { "name": "initialPriority", "$ref": "ResourcePriority", "description": "Priority of the resource request at the time request is sent."},
+                    { "name": "referrerPolicy", "type": "string", "enum": [ "unsafe-url", "no-referrer-when-downgrade", "no-referrer", "origin", "origin-when-cross-origin", "no-referrer-when-downgrade-origin-when-cross-origin" ], "description": "The referrer policy of the request, as defined in https://www.w3.org/TR/referrer-policy/" }
                 ]
             },
             {
