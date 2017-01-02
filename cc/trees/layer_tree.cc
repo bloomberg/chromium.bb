@@ -241,6 +241,10 @@ Layer* LayerTree::LayerById(int id) const {
   return iter != layer_id_map_.end() ? iter->second : nullptr;
 }
 
+size_t LayerTree::NumLayers() const {
+  return layer_id_map_.size();
+}
+
 bool LayerTree::UpdateLayers(const LayerList& update_layer_list,
                              bool* content_is_suitable_for_gpu) {
   base::AutoReset<bool> painting(&in_paint_layer_contents_, true);

@@ -23,9 +23,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/blimp/client_picture_cache.h"
 #include "cc/blimp/engine_picture_cache.h"
@@ -582,12 +585,38 @@ void LayerTreeHostInProcess::Composite(base::TimeTicks frame_begin_time) {
   proxy->CompositeImmediately(frame_begin_time);
 }
 
+static int GetLayersUpdateTimeHistogramBucket(size_t numLayers) {
+  // We uses the following exponential (ratio 2) bucketization:
+  // [0, 10), [10, 30), [30, 70), [70, 150), [150, infinity)
+  if (numLayers < 10)
+    return 0;
+  if (numLayers < 30)
+    return 1;
+  if (numLayers < 70)
+    return 2;
+  if (numLayers < 150)
+    return 3;
+  return 4;
+}
+
 bool LayerTreeHostInProcess::UpdateLayers() {
   if (!layer_tree_->root_layer())
     return false;
   DCHECK(!layer_tree_->root_layer()->parent());
+  base::ElapsedTimer timer;
+
   bool result = DoUpdateLayers(layer_tree_->root_layer());
   micro_benchmark_controller_.DidUpdateLayers();
+
+  if (const char* client_name = GetClientNameForMetrics()) {
+    std::string histogram_name = base::StringPrintf(
+        "Compositing.%s.LayersUpdateTime.%d", client_name,
+        GetLayersUpdateTimeHistogramBucket(layer_tree_->NumLayers()));
+    base::Histogram::FactoryGet(histogram_name, 0, 10000000, 50,
+                                base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(timer.Elapsed().InMicroseconds());
+  }
+
   return result || next_commit_forces_redraw_;
 }
 

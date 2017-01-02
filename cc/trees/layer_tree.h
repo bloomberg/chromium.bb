@@ -145,6 +145,8 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   void UnregisterLayer(Layer* layer);
   Layer* LayerById(int id) const;
 
+  size_t NumLayers() const;
+
   bool UpdateLayers(const LayerList& update_layer_list,
                     bool* content_is_suitable_for_gpu);
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
