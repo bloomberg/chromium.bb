@@ -87,7 +87,7 @@ class HeapCompact::MovableObjectFixups final {
     if (LIKELY(!m_relocatablePages.contains(slotPage)))
       return;
 #if ENABLE(ASSERT)
-    slotPage->contains(slotAddress);
+    DCHECK(slotPage->contains(slotAddress));
 #endif
     // Unlikely case, the slot resides on a compacting arena's page.
     //  => It is an 'interior slot' (interior to a movable backing store.)
