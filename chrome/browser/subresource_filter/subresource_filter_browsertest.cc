@@ -427,8 +427,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       kSubframeNames, kExpectScriptInFrameToLoadWithActivation));
 }
 
+// Flaky on all platforms. See: https://crbug.com/677819.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       FailedProvisionalLoadInMainframe) {
+                       DISABLED_FailedProvisionalLoadInMainframe) {
   GURL url_with_activation_but_dns_error(
       "http://host-with-dns-lookup-failure/");
   GURL url_with_activation_but_not_existent(GetTestUrl("non-existent.html"));
