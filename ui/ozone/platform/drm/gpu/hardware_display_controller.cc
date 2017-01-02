@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -114,17 +115,18 @@ bool HardwareDisplayController::ActualSchedulePageFlip(
   }
 
   for (const auto& planes : owned_hardware_planes_)
-    planes.first->plane_manager()->BeginFrame(planes.second);
+    planes.first->plane_manager()->BeginFrame(planes.second.get());
 
   bool status = true;
   for (const auto& controller : crtc_controllers_) {
     status &= controller->SchedulePageFlip(
-        owned_hardware_planes_.get(controller->drm().get()), pending_planes,
+        owned_hardware_planes_[controller->drm().get()].get(), pending_planes,
         test_only, page_flip_request);
   }
 
   for (const auto& planes : owned_hardware_planes_) {
-    if (!planes.first->plane_manager()->Commit(planes.second, test_only)) {
+    if (!planes.first->plane_manager()->Commit(planes.second.get(),
+                                               test_only)) {
       status = false;
     }
   }
@@ -178,15 +180,14 @@ bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
 void HardwareDisplayController::AddCrtc(
     std::unique_ptr<CrtcController> controller) {
   scoped_refptr<DrmDevice> drm = controller->drm();
-  owned_hardware_planes_.add(drm.get(),
-                             std::unique_ptr<HardwareDisplayPlaneList>(
-                                 new HardwareDisplayPlaneList()));
+  owned_hardware_planes_[drm.get()] =
+      base::MakeUnique<HardwareDisplayPlaneList>();
 
   // Check if this controller owns any planes and ensure we keep track of them.
   const std::vector<std::unique_ptr<HardwareDisplayPlane>>& all_planes =
       drm->plane_manager()->planes();
   HardwareDisplayPlaneList* crtc_plane_list =
-      owned_hardware_planes_.get(drm.get());
+      owned_hardware_planes_[drm.get()].get();
   uint32_t crtc = controller->crtc();
   for (const auto& plane : all_planes) {
     if (plane->in_use() && (plane->owning_crtc() == crtc))
@@ -217,7 +218,7 @@ std::unique_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
       if (found) {
         std::vector<HardwareDisplayPlane*> all_planes;
         HardwareDisplayPlaneList* plane_list =
-            owned_hardware_planes_.get(drm.get());
+            owned_hardware_planes_[drm.get()].get();
         all_planes.swap(plane_list->old_plane_list);
         for (auto* plane : all_planes) {
           if (plane->owning_crtc() != crtc)

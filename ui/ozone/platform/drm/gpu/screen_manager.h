@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/containers/scoped_ptr_hash_map.h"
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
@@ -80,11 +81,10 @@ class ScreenManager {
   void UpdateControllerToWindowMapping();
 
  private:
-  typedef std::vector<std::unique_ptr<HardwareDisplayController>>
-      HardwareDisplayControllers;
-  typedef base::ScopedPtrHashMap<gfx::AcceleratedWidget,
-                                 std::unique_ptr<DrmWindow>>
-      WidgetToWindowMap;
+  using HardwareDisplayControllers =
+      std::vector<std::unique_ptr<HardwareDisplayController>>;
+  using WidgetToWindowMap =
+      std::unordered_map<gfx::AcceleratedWidget, std::unique_ptr<DrmWindow>>;
 
   // Returns an iterator into |controllers_| for the controller identified by
   // (|crtc|, |connector|).

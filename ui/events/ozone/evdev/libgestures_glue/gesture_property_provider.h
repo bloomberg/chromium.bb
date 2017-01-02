@@ -14,9 +14,9 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
@@ -112,14 +112,6 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
   // Mapping table from a device id to its device pointer.
   typedef std::map<DeviceId, DevicePtr> DeviceMap;
 
-  // Mapping table from a device id to its property data.
-  // GestureDevicePropertyData contains both properties in use and default
-  // properties whose values will be applied upon the device attachment.
-  typedef base::ScopedPtrHashMap<
-      DeviceId,
-      std::unique_ptr<internal::GestureDevicePropertyData>>
-      ScopedDeviceDataMap;
-
   // Register a device. Setup data-structures and the device's default
   // properties.
   void RegisterDevice(const DeviceId id, const DevicePtr device);
@@ -166,9 +158,12 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
   // Map from device ids to device pointers.
   DeviceMap device_map_;
 
-  // GestureDevicePropertyData indexed by their respective device ids. Owns the
-  // objects.
-  ScopedDeviceDataMap device_data_map_;
+  // Mapping table from a device id to its property data.
+  // GestureDevicePropertyData contains both properties in use and default
+  // properties whose values will be applied upon the device attachment.
+  std::unordered_map<DeviceId,
+                     std::unique_ptr<internal::GestureDevicePropertyData>>
+      device_data_map_;
 
   // A vector of parsed sections in configuration files. Owns MatchCriterias,
   // GesturesProps and ConfigurationSections in it.

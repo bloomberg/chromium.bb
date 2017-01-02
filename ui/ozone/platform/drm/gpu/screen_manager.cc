@@ -219,14 +219,15 @@ HardwareDisplayController* ScreenManager::GetDisplayController(
 void ScreenManager::AddWindow(gfx::AcceleratedWidget widget,
                               std::unique_ptr<DrmWindow> window) {
   std::pair<WidgetToWindowMap::iterator, bool> result =
-      window_map_.add(widget, std::move(window));
+      window_map_.insert(std::make_pair(widget, std::move(window)));
   DCHECK(result.second) << "Window already added.";
   UpdateControllerToWindowMapping();
 }
 
 std::unique_ptr<DrmWindow> ScreenManager::RemoveWindow(
     gfx::AcceleratedWidget widget) {
-  std::unique_ptr<DrmWindow> window = window_map_.take_and_erase(widget);
+  std::unique_ptr<DrmWindow> window = std::move(window_map_[widget]);
+  window_map_.erase(widget);
   DCHECK(window) << "Attempting to remove non-existing window for " << widget;
   UpdateControllerToWindowMapping();
   return window;
@@ -235,7 +236,7 @@ std::unique_ptr<DrmWindow> ScreenManager::RemoveWindow(
 DrmWindow* ScreenManager::GetWindow(gfx::AcceleratedWidget widget) {
   WidgetToWindowMap::iterator it = window_map_.find(widget);
   if (it != window_map_.end())
-    return it->second;
+    return it->second.get();
 
   return nullptr;
 }
@@ -311,8 +312,8 @@ void ScreenManager::UpdateControllerToWindowMapping() {
   }
 
   // Apply the new mapping to all windows.
-  for (auto pair : window_map_) {
-    auto it = window_to_controller_map.find(pair.second);
+  for (auto& pair : window_map_) {
+    auto it = window_to_controller_map.find(pair.second.get());
     HardwareDisplayController* controller = nullptr;
     if (it != window_to_controller_map.end())
       controller = it->second;
@@ -386,9 +387,9 @@ bool ScreenManager::ModesetController(HardwareDisplayController* controller,
 }
 
 DrmWindow* ScreenManager::FindWindowAt(const gfx::Rect& bounds) const {
-  for (auto pair : window_map_) {
+  for (auto& pair : window_map_) {
     if (pair.second->bounds() == bounds)
-      return pair.second;
+      return pair.second.get();
   }
 
   return nullptr;
