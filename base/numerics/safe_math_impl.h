@@ -442,54 +442,6 @@ struct CheckedMinOp<
   }
 };
 
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value &&
-                                  std::is_signed<T>::value>::type* = nullptr>
-bool CheckedNeg(T value, T* result) {
-  // The negation of signed min is min, so catch that one.
-  if (value != std::numeric_limits<T>::lowest()) {
-    *result = static_cast<T>(-value);
-    return true;
-  }
-  return false;
-}
-
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value &&
-                                  !std::is_signed<T>::value>::type* = nullptr>
-bool CheckedNeg(T value, T* result) {
-  if (!value) {
-    *result = static_cast<T>(0);
-    return true;
-  }
-  return false;
-}
-
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value &&
-                                  !std::is_signed<T>::value>::type* = nullptr>
-bool CheckedInv(T value, T* result) {
-  *result = ~value;
-  return true;
-}
-
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value &&
-                                  std::is_signed<T>::value>::type* = nullptr>
-bool CheckedAbs(T value, T* result) {
-  *result = static_cast<T>(SafeUnsignedAbs(value));
-  return *result != std::numeric_limits<T>::lowest();
-}
-
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value &&
-                                  !std::is_signed<T>::value>::type* = nullptr>
-bool CheckedAbs(T value, T* result) {
-  // T is unsigned, so |value| must already be positive.
-  *result = value;
-  return true;
-}
-
 // This is just boilerplate that wraps the standard floating point arithmetic.
 // A macro isn't the nicest solution, but it beats rewriting these repeatedly.
 #define BASE_FLOAT_ARITHMETIC_OPS(NAME, OP)                                    \
@@ -514,20 +466,43 @@ BASE_FLOAT_ARITHMETIC_OPS(Div, /)
 
 #undef BASE_FLOAT_ARITHMETIC_OPS
 
-template <
-    typename T,
-    typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
-bool CheckedNeg(T value, T* result) {
-  *result = static_cast<T>(-value);
-  return true;
+// Wrap the unary operations to allow SFINAE when instantiating integrals versus
+// floating points. These don't perform any overflow checking. Rather, they
+// exhibit well-defined overflow semantics and rely on the caller to detect
+// if an overflow occured.
+
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+constexpr T NegateWrapper(T value) {
+  using UnsignedT = typename std::make_unsigned<T>::type;
+  // This will compile to a NEG on Intel, and is normal negation on ARM.
+  return static_cast<T>(UnsignedT(0) - static_cast<UnsignedT>(value));
 }
 
 template <
     typename T,
     typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
-bool CheckedAbs(T value, T* result) {
-  *result = static_cast<T>(std::abs(value));
-  return true;
+constexpr T NegateWrapper(T value) {
+  return -value;
+}
+
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+constexpr typename std::make_unsigned<T>::type InvertWrapper(T value) {
+  return ~value;
+}
+
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+constexpr T AbsWrapper(T value) {
+  return static_cast<T>(SafeUnsignedAbs(value));
+}
+
+template <
+    typename T,
+    typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
+constexpr T AbsWrapper(T value) {
+  return value < 0 ? -value : value;
 }
 
 // Floats carry around their validity state with them, but integers do not. So,
