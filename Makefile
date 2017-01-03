@@ -21,6 +21,7 @@ ifdef DRV_EXYNOS
 endif
 ifdef DRV_I915
 	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_intel)
+	LDLIBS += $(shell $(PKG_CONFIG) --libs libdrm_intel)
 endif
 ifdef DRV_ROCKCHIP
 	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_rockchip)
