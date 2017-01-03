@@ -65,12 +65,10 @@ bool check_uabs(const PvVec &pv_vec, uint8_t *buf) {
   aom_buf_ans_free(&a);
   bool okay = true;
   AnsDecoder d;
-  if (ans_read_init(&d,
 #if ANS_MAX_SYMBOLS
-                    kBufAnsSize,
+  d.window_size = kBufAnsSize;
 #endif
-                    buf, offset))
-    return false;
+  if (ans_read_init(&d, buf, offset)) return false;
   start = std::clock();
   for (PvVec::const_iterator it = pv_vec.begin(); it != pv_vec.end(); ++it) {
     okay = okay && (uabs_read(&d, 256 - it->first) != 0) == it->second;
@@ -139,12 +137,10 @@ bool check_rans(const std::vector<int> &sym_vec, const rans_sym *const tab,
   aom_buf_ans_free(&a);
   bool okay = true;
   AnsDecoder d;
-  if (ans_read_init(&d,
 #if ANS_MAX_SYMBOLS
-                    kBufAnsSize,
+  d.window_size = kBufAnsSize;
 #endif
-                    buf, offset))
-    return false;
+  if (ans_read_init(&d, buf, offset)) return false;
   start = std::clock();
   for (std::vector<int>::const_iterator it = sym_vec.begin();
        it != sym_vec.end(); ++it) {

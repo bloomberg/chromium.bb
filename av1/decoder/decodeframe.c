@@ -2202,11 +2202,10 @@ static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
     aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                        "Truncated packet or corrupt tile length");
 
-  if (aom_reader_init(r, data, read_size,
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
-                      ANS_MAX_SYMBOLS,
+  r->window_size = ANS_MAX_SYMBOLS;
 #endif
-                      decrypt_cb, decrypt_state))
+  if (aom_reader_init(r, data, read_size, decrypt_cb, decrypt_state))
     aom_internal_error(error_info, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder %d", 1);
 }
@@ -4212,11 +4211,11 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   int j;
 #endif
 
-  if (aom_reader_init(&r, data, partition_size,
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
-                      ANS_MAX_SYMBOLS,
+  r.window_size = ANS_MAX_SYMBOLS;
 #endif
-                      pbi->decrypt_cb, pbi->decrypt_state))
+  if (aom_reader_init(&r, data, partition_size, pbi->decrypt_cb,
+                      pbi->decrypt_state))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder 0");
 

@@ -135,9 +135,6 @@ static INLINE int rans_read(struct AnsDecoder *ans, const aom_cdf_prob *tab) {
 }
 
 static INLINE int ans_read_init(struct AnsDecoder *const ans,
-#if ANS_MAX_SYMBOLS
-                                int window_size,
-#endif
                                 const uint8_t *const buf, int offset) {
   unsigned x;
   if (offset < 1) return 1;
@@ -180,19 +177,14 @@ static INLINE int ans_read_init(struct AnsDecoder *const ans,
   ans->state += L_BASE;
   if (ans->state >= L_BASE * IO_BASE) return 1;
 #if ANS_MAX_SYMBOLS
-  ans->window_size = window_size;
-  ans->symbols_left = window_size;
+  ans->symbols_left = ans->window_size;
 #endif
   return 0;
 }
 
 #if ANS_REVERSE
 static INLINE int ans_read_reinit(struct AnsDecoder *const ans) {
-  return ans_read_init(ans,
-#if ANS_MAX_SYMBOLS
-                       ans->window_size,
-#endif
-                       ans->buf + ans->buf_offset, -ans->buf_offset);
+  return ans_read_init(ans, ans->buf + ans->buf_offset, -ans->buf_offset);
 }
 #endif
 
