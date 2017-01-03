@@ -17,7 +17,8 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
 
-const CGFloat kTearDistance = 36.0;
+const CGFloat kHorizTearDistance = 10.0;  // Using the same value as Views.
+const CGFloat kVertTearDistance = 36.0;
 const NSTimeInterval kTearDuration = 0.333;
 
 // Returns whether |screenPoint| is inside the bounds of |view|.
@@ -164,24 +165,34 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
     return;
   }
 
-  // First, go through the magnetic drag cycle. We break out of this if
-  // "stretchiness" ever exceeds a set amount.
-  tabWasDragged_ = YES;
-
   if (draggingWithinTabStrip_) {
     NSPoint thisPoint = [NSEvent mouseLocation];
-    CGFloat offset = thisPoint.x - dragOrigin_.x;
-    [sourceController_ insertPlaceholderForTab:[draggedTab_ tabView]
-                                         frame:NSOffsetRect(sourceTabFrame_,
-                                                            offset, 0)];
-    // Check that we haven't pulled the tab too far to start a drag. This
-    // can include either pulling it too far down, or off the side of the tab
-    // strip that would cause it to no longer be fully visible.
-    BOOL stillVisible =
-        [sourceController_ isTabFullyVisible:[draggedTab_ tabView]];
-    CGFloat tearForce = fabs(thisPoint.y - dragOrigin_.y);
+    CGFloat horizOffset = thisPoint.x - dragOrigin_.x;
+    CGFloat vertOffset = thisPoint.y - dragOrigin_.y;
+    BOOL stillVisible = YES;
+
+    // If the tab hasn't been torn out of the vertical dead zone, and has never
+    // been torn out of the horizontal dead zone, return. This prevents the tab
+    // from sticking if it's dragged back near its original position.
+    if (fabs(horizOffset) <= kHorizTearDistance && !outOfTabHorizDeadZone_ &&
+        fabs(vertOffset) <= kVertTearDistance)
+      return;
+    if (fabs(horizOffset) > kHorizTearDistance)
+      outOfTabHorizDeadZone_ = YES;
+
+    // If the tab is pulled out of either dead zone, set tabWasDragged_ to YES
+    // and call insertPlaceholderForTab:frame:.
+    if (outOfTabHorizDeadZone_ || fabs(vertOffset) > kVertTearDistance) {
+      tabWasDragged_ = YES;
+      [sourceController_ insertPlaceholderForTab:[draggedTab_ tabView]
+                                           frame:NSOffsetRect(sourceTabFrame_,
+                                                              horizOffset, 0)];
+    }
+
+    // Check if the tab has been pulled out of the tab strip.
+    stillVisible = [sourceController_ isTabFullyVisible:[draggedTab_ tabView]];
     if ([sourceController_ tabTearingAllowed] &&
-        (tearForce > kTearDistance || !stillVisible)) {
+        (fabs(vertOffset) > kVertTearDistance || !stillVisible)) {
       draggingWithinTabStrip_ = NO;
       // When you finally leave the strip, we treat that as the origin.
       dragOrigin_.x = thisPoint.x;
@@ -198,7 +209,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
       // window. To fix, explicitly set the tab's new location so that it's
       // correct at tearoff time. See http://crbug.com/541674 .
       NSRect newTabFrame = [[draggedTab_ tabView] frame];
-      newTabFrame.origin.x = trunc(sourceTabFrame_.origin.x + offset);
+      newTabFrame.origin.x = trunc(sourceTabFrame_.origin.x + horizOffset);
 
       // Ensure that the tab won't extend beyond the right edge of the tab area
       // in the tab strip.
@@ -217,10 +228,11 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
       }
 
       [[draggedTab_ tabView] setFrameOrigin:newTabFrame.origin];
-  } else {
-      // Still dragging within the tab strip, wait for the next drag event.
-      return;
     }
+
+    // Else, still dragging within the tab strip, wait for the next drag
+    // event.
+    return;
   }
 
   NSPoint thisPoint = [NSEvent mouseLocation];
@@ -403,6 +415,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
 - (void)endDrag:(NSEvent*)event {
   // Cancel any delayed -continueDrag: requests that may still be pending.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
+  outOfTabHorizDeadZone_ = NO;
 
   // Special-case this to keep the logic below simpler.
   if (moveWindowOnDrag_) {

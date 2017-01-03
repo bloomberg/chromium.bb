@@ -35,6 +35,7 @@
   // These are released on mouseUp:
   BOOL moveWindowOnDrag_;  // Set if the only tab of a window is dragged.
   BOOL tabWasDragged_;  // Has the tab been dragged?
+  BOOL outOfTabHorizDeadZone_;   // Moved out of its horizontal dead zone?
   BOOL draggingWithinTabStrip_;  // Did drag stay in the current tab strip?
   BOOL chromeIsVisible_;
 
