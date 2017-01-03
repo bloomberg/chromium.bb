@@ -92,7 +92,12 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                             'actual': 'MISSING',
                             'is_unexpected': True,
                             'is_missing_text': True,
-                        }
+                        },
+                        'prototype-slowtest.html': {
+                            'expected': 'SLOW',
+                            'actual': 'TEXT',
+                            'is_unexpected': True,
+                        },
                     }
                 },
                 'svg': {
@@ -112,9 +117,10 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
         self.tool.buildbot.set_retry_sumary_json(Build('MOCK Try Win', 5000), json.dumps({
             'failures': [
-                'fast/dom/prototype-newtest.html',
-                'fast/dom/prototype-taco.html',
                 'fast/dom/prototype-inheritance.html',
+                'fast/dom/prototype-newtest.html',
+                'fast/dom/prototype-slowtest.html',
+                'fast/dom/prototype-taco.html',
                 'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html',
             ],
             'ignored': [],
@@ -154,6 +160,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.assertLog([
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
             'INFO: Rebaselining fast/dom/prototype-newtest.html\n',
+            'INFO: Rebaselining fast/dom/prototype-slowtest.html\n',
             'INFO: Rebaselining fast/dom/prototype-taco.html\n',
             'INFO: Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n',
         ])
@@ -172,6 +179,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.assertLog([
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
             'INFO: Rebaselining fast/dom/prototype-newtest.html\n',
+            'INFO: Rebaselining fast/dom/prototype-slowtest.html\n',
             'INFO: Rebaselining fast/dom/prototype-taco.html\n',
             'INFO: Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n',
         ])
@@ -216,6 +224,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'WARNING: No retry summary available for build Build(builder_name=u\'MOCK Try Win\', build_number=5000).\n',
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
             'INFO: Rebaselining fast/dom/prototype-newtest.html\n',
+            'INFO: Rebaselining fast/dom/prototype-slowtest.html\n',
             'INFO: Rebaselining fast/dom/prototype-taco.html\n',
             'INFO: Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n',
         ])

@@ -287,6 +287,30 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
         # The original dict isn't modified.
         self.assertEqual(test_results_dict, test_results_dict_copy)
 
+    def test_get_tests_to_rebaseline_also_returns_slow_tests(self):
+        test_results_dict = {
+            'imported/fake/test/path.html': {
+                'one': {'expected': 'SLOW', 'actual': 'TEXT', 'bug': 'crbug.com/626703'},
+                'two': {'expected': 'SLOW', 'actual': 'TIMEOUT', 'bug': 'crbug.com/626703'},
+            },
+        }
+        test_results_dict_copy = copy.deepcopy(test_results_dict)
+        self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/imported/fake/test/path.html'] = (
+            '<script src="/resources/testharness.js"></script>')
+        line_adder = W3CExpectationsLineAdder(self.host)
+        tests_to_rebaseline, modified_test_results = line_adder.get_tests_to_rebaseline(
+            ['imported/fake/test/path.html'], test_results_dict)
+        self.assertEqual(tests_to_rebaseline, ['imported/fake/test/path.html'])
+        # The record for the builder with a timeout is kept, but not with a text mismatch,
+        # since that should be covered by downloading a new baseline.
+        self.assertEqual(modified_test_results, {
+            'imported/fake/test/path.html': {
+                'two': {'expected': 'SLOW', 'actual': 'TIMEOUT', 'bug': 'crbug.com/626703'},
+            },
+        })
+        # The original dict isn't modified.
+        self.assertEqual(test_results_dict, test_results_dict_copy)
+
     def test_run_no_issue_number(self):
         line_adder = W3CExpectationsLineAdder(self.host)
         line_adder.get_issue_number = lambda: 'None'

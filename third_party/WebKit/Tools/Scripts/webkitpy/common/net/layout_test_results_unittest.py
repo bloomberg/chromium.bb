@@ -130,3 +130,29 @@ class LayoutTestResultsTest(unittest.TestCase):
                 'fast/dom/prototype-taco.html',
                 'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html',
             ])
+
+    def test_didnt_run_as_expected_slow_test(self):
+        results = LayoutTestResults({
+            "tests": {
+                "fast": {
+                    "dom": {
+                        "prototype-fast.html": {
+                            "expected": "PASS",
+                            "actual": "TEXT",
+                            "is_unexpected": True,
+                        },
+                        "prototype-slow.html": {
+                            "expected": "SLOW",
+                            "actual": "TEXT",
+                            "is_unexpected": True,
+                        }
+                    }
+                }
+            }
+        })
+        self.assertEqual(
+            [r.test_name() for r in results.didnt_run_as_expected_results()],
+            [
+                'fast/dom/prototype-fast.html',
+                'fast/dom/prototype-slow.html',
+            ])
