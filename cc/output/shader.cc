@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -765,18 +766,98 @@ std::string VertexShaderVideoTransform::GetShaderBody() {
     backdrop_rect_location_ = locations[POS + 2];          \
   }
 
-FragmentShaderBase::FragmentShaderBase()
-    : backdrop_location_(-1),
-      original_backdrop_location_(-1),
-      backdrop_rect_location_(-1),
-      blend_mode_(BLEND_MODE_NONE),
-      mask_for_background_(false) {}
+FragmentShaderBase::FragmentShaderBase() {}
 
 std::string FragmentShaderBase::GetShaderString(TexCoordPrecision precision,
                                                 SamplerType sampler) const {
   return SetFragmentTexCoordPrecision(
       precision, SetFragmentSamplerType(
                      sampler, SetBlendModeFunctions(GetShaderSource())));
+}
+
+void FragmentShaderBase::Init(GLES2Interface* context,
+                              unsigned program,
+                              int* base_uniform_index) {
+  std::vector<const char*> uniforms;
+  std::vector<int> locations;
+  if (has_blend_mode()) {
+    uniforms.push_back("s_backdropTexture");
+    uniforms.push_back("s_originalBackdropTexture");
+    uniforms.push_back("backdropRect");
+  }
+  if (has_mask_sampler_) {
+    uniforms.push_back("s_mask");
+    uniforms.push_back("maskTexCoordScale");
+    uniforms.push_back("maskTexCoordOffset");
+  }
+  if (has_color_matrix_) {
+    uniforms.push_back("colorMatrix");
+    uniforms.push_back("colorOffset");
+  }
+  if (has_sampler_)
+    uniforms.push_back("s_texture");
+  if (has_uniform_alpha_)
+    uniforms.push_back("alpha");
+  if (has_background_color_)
+    uniforms.push_back("background_color");
+  if (has_fragment_tex_transform_)
+    uniforms.push_back("fragmentTexTransform");
+  if (has_uniform_color_)
+    uniforms.push_back("color");
+
+  locations.resize(uniforms.size());
+
+  GetProgramUniformLocations(context, program, uniforms.size(), uniforms.data(),
+                             locations.data(), base_uniform_index);
+
+  size_t index = 0;
+  if (has_blend_mode()) {
+    backdrop_location_ = locations[index++];
+    original_backdrop_location_ = locations[index++];
+    backdrop_rect_location_ = locations[index++];
+  }
+  if (has_mask_sampler_) {
+    mask_sampler_location_ = locations[index++];
+    mask_tex_coord_scale_location_ = locations[index++];
+    mask_tex_coord_offset_location_ = locations[index++];
+  }
+  if (has_color_matrix_) {
+    color_matrix_location_ = locations[index++];
+    color_offset_location_ = locations[index++];
+  }
+  if (has_sampler_)
+    sampler_location_ = locations[index++];
+  if (has_uniform_alpha_)
+    alpha_location_ = locations[index++];
+  if (has_background_color_)
+    background_color_location_ = locations[index++];
+  if (has_fragment_tex_transform_)
+    fragment_tex_transform_location_ = locations[index++];
+  if (has_uniform_color_)
+    color_location_ = locations[index++];
+  DCHECK_EQ(index, locations.size());
+}
+
+void FragmentShaderBase::FillLocations(ShaderLocations* locations) const {
+  if (has_blend_mode()) {
+    locations->backdrop = backdrop_location_;
+    locations->backdrop_rect = backdrop_rect_location_;
+  }
+  if (mask_for_background())
+    locations->original_backdrop = original_backdrop_location_;
+  if (has_mask_sampler_) {
+    locations->mask_sampler = mask_sampler_location_;
+    locations->mask_tex_coord_scale = mask_tex_coord_scale_location_;
+    locations->mask_tex_coord_offset = mask_tex_coord_offset_location_;
+  }
+  if (has_color_matrix_) {
+    locations->color_matrix = color_matrix_location_;
+    locations->color_offset = color_offset_location_;
+  }
+  if (has_sampler_)
+    locations->sampler = sampler_location_;
+  if (has_uniform_alpha_)
+    locations->alpha = alpha_location_;
 }
 
 std::string FragmentShaderBase::SetBlendModeFunctions(
@@ -1074,77 +1155,6 @@ std::string FragmentShaderBase::GetBlendFunctionBodyForRGB() const {
   return "result = vec4(1.0, 0.0, 0.0, 1.0);";
 }
 
-FragmentTexAlphaBinding::FragmentTexAlphaBinding()
-    : sampler_location_(-1), alpha_location_(-1) {
-}
-
-void FragmentTexAlphaBinding::Init(GLES2Interface* context,
-                                   unsigned program,
-                                   int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture", "alpha", BLEND_MODE_UNIFORMS,
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  sampler_location_ = locations[0];
-  alpha_location_ = locations[1];
-  BLEND_MODE_SET_LOCATIONS(locations, 2);
-}
-
-FragmentTexColorMatrixAlphaBinding::FragmentTexColorMatrixAlphaBinding()
-    : sampler_location_(-1),
-      alpha_location_(-1),
-      color_matrix_location_(-1),
-      color_offset_location_(-1) {
-}
-
-void FragmentTexColorMatrixAlphaBinding::Init(GLES2Interface* context,
-                                              unsigned program,
-                                              int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture", "alpha", "colorMatrix", "colorOffset", BLEND_MODE_UNIFORMS,
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  sampler_location_ = locations[0];
-  alpha_location_ = locations[1];
-  color_matrix_location_ = locations[2];
-  color_offset_location_ = locations[3];
-  BLEND_MODE_SET_LOCATIONS(locations, 4);
-}
-
-FragmentTexOpaqueBinding::FragmentTexOpaqueBinding() : sampler_location_(-1) {
-}
-
-void FragmentTexOpaqueBinding::Init(GLES2Interface* context,
-                                    unsigned program,
-                                    int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  sampler_location_ = locations[0];
-}
-
 std::string FragmentShaderRGBATexAlpha::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
@@ -1156,14 +1166,6 @@ std::string FragmentShaderRGBATexAlpha::GetShaderSource() const {
       gl_FragColor = ApplyBlendMode(texColor * alpha, 0.0);
     }
   });
-}
-
-void FragmentShaderRGBATexAlpha::FillLocations(
-    ShaderLocations* locations) const {
-  locations->sampler = sampler_location();
-  locations->alpha = alpha_location();
-  locations->backdrop = backdrop_location();
-  locations->backdrop_rect = backdrop_rect_location();
 }
 
 std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderSource() const {
@@ -1184,16 +1186,6 @@ std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderSource() const {
       gl_FragColor = ApplyBlendMode(texColor * alpha, 0.0);
     }
   });
-}
-
-void FragmentShaderRGBATexColorMatrixAlpha::FillLocations(
-    ShaderLocations* locations) const {
-  locations->sampler = sampler_location();
-  locations->alpha = alpha_location();
-  locations->color_matrix = color_matrix_location();
-  locations->color_offset = color_offset_location();
-  locations->backdrop = backdrop_location();
-  locations->backdrop_rect = backdrop_rect_location();
 }
 
 std::string FragmentShaderRGBATexVaryingAlpha::GetShaderSource() const {
@@ -1221,32 +1213,6 @@ std::string FragmentShaderRGBATexPremultiplyAlpha::GetShaderSource() const {
       gl_FragColor = texColor * v_alpha;
     }
   });
-}
-
-FragmentTexBackgroundBinding::FragmentTexBackgroundBinding()
-    : background_color_location_(-1), sampler_location_(-1) {
-}
-
-void FragmentTexBackgroundBinding::Init(GLES2Interface* context,
-                                        unsigned program,
-                                        int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture", "background_color",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-
-  sampler_location_ = locations[0];
-  DCHECK_NE(sampler_location_, -1);
-
-  background_color_location_ = locations[1];
-  DCHECK_NE(background_color_location_, -1);
 }
 
 std::string FragmentShaderTexBackgroundVaryingAlpha::GetShaderSource() const {
@@ -1328,29 +1294,6 @@ std::string FragmentShaderRGBATexSwizzleOpaque::GetShaderSource() const {
   });
 }
 
-FragmentShaderRGBATexAlphaAA::FragmentShaderRGBATexAlphaAA()
-    : sampler_location_(-1), alpha_location_(-1) {
-}
-
-void FragmentShaderRGBATexAlphaAA::Init(GLES2Interface* context,
-                                        unsigned program,
-                                        int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture", "alpha", BLEND_MODE_UNIFORMS,
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  sampler_location_ = locations[0];
-  alpha_location_ = locations[1];
-  BLEND_MODE_SET_LOCATIONS(locations, 2);
-}
-
 std::string FragmentShaderRGBATexAlphaAA::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
@@ -1366,39 +1309,6 @@ std::string FragmentShaderRGBATexAlphaAA::GetShaderSource() const {
       gl_FragColor = ApplyBlendMode(texColor * alpha * aa, 0.0);
     }
   });
-}
-
-void FragmentShaderRGBATexAlphaAA::FillLocations(
-    ShaderLocations* locations) const {
-  locations->sampler = sampler_location();
-  locations->alpha = alpha_location();
-  locations->backdrop = backdrop_location();
-  locations->backdrop_rect = backdrop_rect_location();
-}
-
-FragmentTexClampAlphaAABinding::FragmentTexClampAlphaAABinding()
-    : sampler_location_(-1),
-      alpha_location_(-1),
-      fragment_tex_transform_location_(-1) {
-}
-
-void FragmentTexClampAlphaAABinding::Init(GLES2Interface* context,
-                                          unsigned program,
-                                          int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture", "alpha", "fragmentTexTransform",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  sampler_location_ = locations[0];
-  alpha_location_ = locations[1];
-  fragment_tex_transform_location_ = locations[2];
 }
 
 std::string FragmentShaderRGBATexClampAlphaAA::GetShaderSource() const {
@@ -1444,40 +1354,6 @@ std::string FragmentShaderRGBATexClampSwizzleAlphaAA::GetShaderSource() const {
   });
 }
 
-FragmentShaderRGBATexAlphaMask::FragmentShaderRGBATexAlphaMask()
-    : sampler_location_(-1),
-      mask_sampler_location_(-1),
-      alpha_location_(-1),
-      mask_tex_coord_scale_location_(-1) {
-}
-
-void FragmentShaderRGBATexAlphaMask::Init(GLES2Interface* context,
-                                          unsigned program,
-                                          int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture",
-      "s_mask",
-      "alpha",
-      "maskTexCoordScale",
-      "maskTexCoordOffset",
-      BLEND_MODE_UNIFORMS,
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  sampler_location_ = locations[0];
-  mask_sampler_location_ = locations[1];
-  alpha_location_ = locations[2];
-  mask_tex_coord_scale_location_ = locations[3];
-  mask_tex_coord_offset_location_ = locations[4];
-  BLEND_MODE_SET_LOCATIONS(locations, 5);
-}
-
 std::string FragmentShaderRGBATexAlphaMask::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
@@ -1497,54 +1373,6 @@ std::string FragmentShaderRGBATexAlphaMask::GetShaderSource() const {
           texColor * alpha * maskColor.w, maskColor.w);
     }
   });
-}
-
-void FragmentShaderRGBATexAlphaMask::FillLocations(
-    ShaderLocations* locations) const {
-  locations->sampler = sampler_location();
-  locations->mask_sampler = mask_sampler_location();
-  locations->mask_tex_coord_scale = mask_tex_coord_scale_location();
-  locations->mask_tex_coord_offset = mask_tex_coord_offset_location();
-  locations->alpha = alpha_location();
-  locations->backdrop = backdrop_location();
-  locations->backdrop_rect = backdrop_rect_location();
-  if (mask_for_background())
-    locations->original_backdrop = original_backdrop_location();
-}
-
-FragmentShaderRGBATexAlphaMaskAA::FragmentShaderRGBATexAlphaMaskAA()
-    : sampler_location_(-1),
-      mask_sampler_location_(-1),
-      alpha_location_(-1),
-      mask_tex_coord_scale_location_(-1),
-      mask_tex_coord_offset_location_(-1) {
-}
-
-void FragmentShaderRGBATexAlphaMaskAA::Init(GLES2Interface* context,
-                                            unsigned program,
-                                            int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture",
-      "s_mask",
-      "alpha",
-      "maskTexCoordScale",
-      "maskTexCoordOffset",
-      BLEND_MODE_UNIFORMS,
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  sampler_location_ = locations[0];
-  mask_sampler_location_ = locations[1];
-  alpha_location_ = locations[2];
-  mask_tex_coord_scale_location_ = locations[3];
-  mask_tex_coord_offset_location_ = locations[4];
-  BLEND_MODE_SET_LOCATIONS(locations, 5);
 }
 
 std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderSource() const {
@@ -1570,61 +1398,6 @@ std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderSource() const {
           texColor * alpha * maskColor.w * aa, maskColor.w);
     }
   });
-}
-
-void FragmentShaderRGBATexAlphaMaskAA::FillLocations(
-    ShaderLocations* locations) const {
-  locations->sampler = sampler_location();
-  locations->mask_sampler = mask_sampler_location();
-  locations->mask_tex_coord_scale = mask_tex_coord_scale_location();
-  locations->mask_tex_coord_offset = mask_tex_coord_offset_location();
-  locations->alpha = alpha_location();
-  locations->backdrop = backdrop_location();
-  locations->backdrop_rect = backdrop_rect_location();
-  if (mask_for_background())
-    locations->original_backdrop = original_backdrop_location();
-}
-
-FragmentShaderRGBATexAlphaMaskColorMatrixAA::
-    FragmentShaderRGBATexAlphaMaskColorMatrixAA()
-    : sampler_location_(-1),
-      mask_sampler_location_(-1),
-      alpha_location_(-1),
-      mask_tex_coord_scale_location_(-1),
-      color_matrix_location_(-1),
-      color_offset_location_(-1) {
-}
-
-void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
-    GLES2Interface* context,
-    unsigned program,
-    int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture",
-      "s_mask",
-      "alpha",
-      "maskTexCoordScale",
-      "maskTexCoordOffset",
-      "colorMatrix",
-      "colorOffset",
-      BLEND_MODE_UNIFORMS,
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  sampler_location_ = locations[0];
-  mask_sampler_location_ = locations[1];
-  alpha_location_ = locations[2];
-  mask_tex_coord_scale_location_ = locations[3];
-  mask_tex_coord_offset_location_ = locations[4];
-  color_matrix_location_ = locations[5];
-  color_offset_location_ = locations[6];
-  BLEND_MODE_SET_LOCATIONS(locations, 7);
 }
 
 std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderSource()
@@ -1660,50 +1433,6 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderSource()
   });
 }
 
-void FragmentShaderRGBATexAlphaMaskColorMatrixAA::FillLocations(
-    ShaderLocations* locations) const {
-  locations->sampler = sampler_location();
-  locations->alpha = alpha_location();
-  locations->mask_sampler = mask_sampler_location();
-  locations->mask_tex_coord_scale = mask_tex_coord_scale_location();
-  locations->mask_tex_coord_offset = mask_tex_coord_offset_location();
-  locations->color_matrix = color_matrix_location();
-  locations->color_offset = color_offset_location();
-  locations->backdrop = backdrop_location();
-  locations->backdrop_rect = backdrop_rect_location();
-  if (mask_for_background())
-    locations->original_backdrop = original_backdrop_location();
-}
-
-FragmentShaderRGBATexAlphaColorMatrixAA::
-    FragmentShaderRGBATexAlphaColorMatrixAA()
-    : sampler_location_(-1),
-      alpha_location_(-1),
-      color_matrix_location_(-1),
-      color_offset_location_(-1) {
-}
-
-void FragmentShaderRGBATexAlphaColorMatrixAA::Init(GLES2Interface* context,
-                                                   unsigned program,
-                                                   int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture", "alpha", "colorMatrix", "colorOffset", BLEND_MODE_UNIFORMS,
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  sampler_location_ = locations[0];
-  alpha_location_ = locations[1];
-  color_matrix_location_ = locations[2];
-  color_offset_location_ = locations[3];
-  BLEND_MODE_SET_LOCATIONS(locations, 4);
-}
-
 std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
@@ -1726,55 +1455,6 @@ std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderSource() const {
       gl_FragColor = ApplyBlendMode(texColor * alpha * aa, 0.0);
     }
   });
-}
-
-void FragmentShaderRGBATexAlphaColorMatrixAA::FillLocations(
-    ShaderLocations* locations) const {
-  locations->sampler = sampler_location();
-  locations->alpha = alpha_location();
-  locations->color_matrix = color_matrix_location();
-  locations->color_offset = color_offset_location();
-  locations->backdrop = backdrop_location();
-  locations->backdrop_rect = backdrop_rect_location();
-}
-
-FragmentShaderRGBATexAlphaMaskColorMatrix::
-    FragmentShaderRGBATexAlphaMaskColorMatrix()
-    : sampler_location_(-1),
-      mask_sampler_location_(-1),
-      alpha_location_(-1),
-      mask_tex_coord_scale_location_(-1) {
-}
-
-void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(GLES2Interface* context,
-                                                     unsigned program,
-                                                     int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture",
-      "s_mask",
-      "alpha",
-      "maskTexCoordScale",
-      "maskTexCoordOffset",
-      "colorMatrix",
-      "colorOffset",
-      BLEND_MODE_UNIFORMS,
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms) - UNUSED_BLEND_MODE_UNIFORMS,
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  sampler_location_ = locations[0];
-  mask_sampler_location_ = locations[1];
-  alpha_location_ = locations[2];
-  mask_tex_coord_scale_location_ = locations[3];
-  mask_tex_coord_offset_location_ = locations[4];
-  color_matrix_location_ = locations[5];
-  color_offset_location_ = locations[6];
-  BLEND_MODE_SET_LOCATIONS(locations, 7);
 }
 
 std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderSource() const {
@@ -1803,21 +1483,6 @@ std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderSource() const {
           texColor * alpha * maskColor.w, maskColor.w);
     }
   });
-}
-
-void FragmentShaderRGBATexAlphaMaskColorMatrix::FillLocations(
-    ShaderLocations* locations) const {
-  locations->sampler = sampler_location();
-  locations->mask_sampler = mask_sampler_location();
-  locations->mask_tex_coord_scale = mask_tex_coord_scale_location();
-  locations->mask_tex_coord_offset = mask_tex_coord_offset_location();
-  locations->alpha = alpha_location();
-  locations->color_matrix = color_matrix_location();
-  locations->color_offset = color_offset_location();
-  locations->backdrop = backdrop_location();
-  locations->backdrop_rect = backdrop_rect_location();
-  if (mask_for_background())
-    locations->original_backdrop = original_backdrop_location();
 }
 
 FragmentShaderYUVVideo::FragmentShaderYUVVideo()
@@ -1982,52 +1647,12 @@ std::string FragmentShaderYUVVideo::GetShaderSource() const {
   return head + functions;
 }
 
-FragmentShaderColor::FragmentShaderColor() : color_location_(-1) {
-}
-
-void FragmentShaderColor::Init(GLES2Interface* context,
-                               unsigned program,
-                               int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "color",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  color_location_ = locations[0];
-}
-
 std::string FragmentShaderColor::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     uniform vec4 color;
     void main() { gl_FragColor = color; }
   });
-}
-
-FragmentShaderColorAA::FragmentShaderColorAA() : color_location_(-1) {
-}
-
-void FragmentShaderColorAA::Init(GLES2Interface* context,
-                                 unsigned program,
-                                 int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "color",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  color_location_ = locations[0];
 }
 
 std::string FragmentShaderColorAA::GetShaderSource() const {

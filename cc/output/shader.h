@@ -356,12 +356,12 @@ class VertexShaderVideoTransform {
 
 class FragmentShaderBase {
  public:
+  virtual void Init(gpu::gles2::GLES2Interface* context,
+                    unsigned program,
+                    int* base_uniform_index);
   std::string GetShaderString(TexCoordPrecision precision,
                               SamplerType sampler) const;
-
-  int backdrop_location() const { return backdrop_location_; }
-  int original_backdrop_location() const { return original_backdrop_location_; }
-  int backdrop_rect_location() const { return backdrop_rect_location_; }
+  void FillLocations(ShaderLocations* locations) const;
 
   BlendMode blend_mode() const { return blend_mode_; }
   void set_blend_mode(BlendMode blend_mode) { blend_mode_ = blend_mode; }
@@ -371,19 +371,52 @@ class FragmentShaderBase {
   }
   bool mask_for_background() const { return mask_for_background_; }
 
+  int sampler_location() const { return sampler_location_; }
+  int alpha_location() const { return alpha_location_; }
+  int color_location() const { return color_location_; }
+  int background_color_location() const { return background_color_location_; }
+  int fragment_tex_transform_location() const {
+    return fragment_tex_transform_location_;
+  }
+
  protected:
   FragmentShaderBase();
   virtual std::string GetShaderSource() const = 0;
 
   std::string SetBlendModeFunctions(const std::string& shader_string) const;
 
-  int backdrop_location_;
-  int original_backdrop_location_;
-  int backdrop_rect_location_;
+  // Used only if |blend_mode_| is not BLEND_MODE_NONE.
+  int backdrop_location_ = -1;
+  int original_backdrop_location_ = -1;
+  int backdrop_rect_location_ = -1;
+
+  bool has_mask_sampler_ = false;
+  int mask_sampler_location_ = -1;
+  int mask_tex_coord_scale_location_ = -1;
+  int mask_tex_coord_offset_location_ = -1;
+
+  bool has_color_matrix_ = false;
+  int color_matrix_location_ = -1;
+  int color_offset_location_ = -1;
+
+  bool has_sampler_ = false;
+  int sampler_location_ = -1;
+
+  bool has_uniform_alpha_ = false;
+  int alpha_location_ = -1;
+
+  bool has_background_color_ = false;
+  int background_color_location_ = -1;
+
+  bool has_fragment_tex_transform_ = false;
+  int fragment_tex_transform_location_ = -1;
+
+  bool has_uniform_color_ = false;
+  int color_location_ = -1;
 
  private:
-  BlendMode blend_mode_;
-  bool mask_for_background_;
+  BlendMode blend_mode_ = BLEND_MODE_NONE;
+  bool mask_for_background_ = false;
 
   std::string GetHelperFunctions() const;
   std::string GetBlendFunction() const;
@@ -392,74 +425,42 @@ class FragmentShaderBase {
 
 class FragmentTexAlphaBinding : public FragmentShaderBase {
  public:
-  FragmentTexAlphaBinding();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int alpha_location() const { return alpha_location_; }
-  int fragment_tex_transform_location() const { return -1; }
-  int sampler_location() const { return sampler_location_; }
+  FragmentTexAlphaBinding() {
+    has_sampler_ = true;
+    has_uniform_alpha_ = true;
+  }
 
  private:
-  int sampler_location_;
-  int alpha_location_;
-
   DISALLOW_COPY_AND_ASSIGN(FragmentTexAlphaBinding);
 };
 
 class FragmentTexColorMatrixAlphaBinding : public FragmentShaderBase {
  public:
-    FragmentTexColorMatrixAlphaBinding();
-
-    void Init(gpu::gles2::GLES2Interface* context,
-              unsigned program,
-              int* base_uniform_index);
-    int alpha_location() const { return alpha_location_; }
-    int color_matrix_location() const { return color_matrix_location_; }
-    int color_offset_location() const { return color_offset_location_; }
-    int fragment_tex_transform_location() const { return -1; }
-    int sampler_location() const { return sampler_location_; }
+  FragmentTexColorMatrixAlphaBinding() {
+    has_sampler_ = true;
+    has_uniform_alpha_ = true;
+    has_color_matrix_ = true;
+  }
 
  private:
-    int sampler_location_;
-    int alpha_location_;
-    int color_matrix_location_;
-    int color_offset_location_;
 };
 
 class FragmentTexOpaqueBinding : public FragmentShaderBase {
  public:
-  FragmentTexOpaqueBinding();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int alpha_location() const { return -1; }
-  int fragment_tex_transform_location() const { return -1; }
-  int background_color_location() const { return -1; }
-  int sampler_location() const { return sampler_location_; }
+  FragmentTexOpaqueBinding() { has_sampler_ = true; }
 
  private:
-  int sampler_location_;
-
   DISALLOW_COPY_AND_ASSIGN(FragmentTexOpaqueBinding);
 };
 
 class FragmentTexBackgroundBinding : public FragmentShaderBase {
  public:
-  FragmentTexBackgroundBinding();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int background_color_location() const { return background_color_location_; }
-  int sampler_location() const { return sampler_location_; }
+  FragmentTexBackgroundBinding() {
+    has_sampler_ = true;
+    has_background_color_ = true;
+  }
 
  private:
-  int background_color_location_;
-  int sampler_location_;
-
   DISALLOW_COPY_AND_ASSIGN(FragmentTexBackgroundBinding);
 };
 
@@ -486,18 +487,12 @@ class FragmentShaderTexBackgroundPremultiplyAlpha
 };
 
 class FragmentShaderRGBATexAlpha : public FragmentTexAlphaBinding {
- public:
-  void FillLocations(ShaderLocations* locations) const;
-
  private:
   std::string GetShaderSource() const override;
 };
 
 class FragmentShaderRGBATexColorMatrixAlpha
     : public FragmentTexColorMatrixAlphaBinding {
- public:
-  void FillLocations(ShaderLocations* locations) const;
-
  private:
   std::string GetShaderSource() const override;
 };
@@ -526,42 +521,24 @@ class FragmentShaderRGBATexSwizzleOpaque : public FragmentTexOpaqueBinding {
 
 class FragmentShaderRGBATexAlphaAA : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaAA();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  void FillLocations(ShaderLocations* locations) const;
-
-  int alpha_location() const { return alpha_location_; }
-  int sampler_location() const { return sampler_location_; }
+  FragmentShaderRGBATexAlphaAA() {
+    has_sampler_ = true;
+    has_uniform_alpha_ = true;
+  }
 
  private:
   std::string GetShaderSource() const override;
-  int sampler_location_;
-  int alpha_location_;
-
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaAA);
 };
 
 class FragmentTexClampAlphaAABinding : public FragmentShaderBase {
  public:
-  FragmentTexClampAlphaAABinding();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int alpha_location() const { return alpha_location_; }
-  int sampler_location() const { return sampler_location_; }
-  int fragment_tex_transform_location() const {
-    return fragment_tex_transform_location_;
+  FragmentTexClampAlphaAABinding() {
+    has_sampler_ = true;
+    has_uniform_alpha_ = true;
+    has_fragment_tex_transform_ = true;
   }
-
  private:
-  int sampler_location_;
-  int alpha_location_;
-  int fragment_tex_transform_location_;
-
   DISALLOW_COPY_AND_ASSIGN(FragmentTexClampAlphaAABinding);
 };
 
@@ -580,138 +557,62 @@ class FragmentShaderRGBATexClampSwizzleAlphaAA
 
 class FragmentShaderRGBATexAlphaMask : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaMask();
-  void FillLocations(ShaderLocations* locations) const;
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int alpha_location() const { return alpha_location_; }
-  int sampler_location() const { return sampler_location_; }
-  int mask_sampler_location() const { return mask_sampler_location_; }
-  int mask_tex_coord_scale_location() const {
-    return mask_tex_coord_scale_location_;
+  FragmentShaderRGBATexAlphaMask() {
+    has_sampler_ = true;
+    has_uniform_alpha_ = true;
+    has_mask_sampler_ = true;
   }
-  int mask_tex_coord_offset_location() const {
-    return mask_tex_coord_offset_location_;
-  }
-
  private:
   std::string GetShaderSource() const override;
-  int sampler_location_;
-  int mask_sampler_location_;
-  int alpha_location_;
-  int mask_tex_coord_scale_location_;
-  int mask_tex_coord_offset_location_;
-
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaMask);
 };
 
 class FragmentShaderRGBATexAlphaMaskAA : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaMaskAA();
-  void FillLocations(ShaderLocations* locations) const;
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int alpha_location() const { return alpha_location_; }
-  int sampler_location() const { return sampler_location_; }
-  int mask_sampler_location() const { return mask_sampler_location_; }
-  int mask_tex_coord_scale_location() const {
-    return mask_tex_coord_scale_location_;
+  FragmentShaderRGBATexAlphaMaskAA() {
+    has_sampler_ = true;
+    has_uniform_alpha_ = true;
+    has_mask_sampler_ = true;
   }
-  int mask_tex_coord_offset_location() const {
-    return mask_tex_coord_offset_location_;
-  }
-
  private:
   std::string GetShaderSource() const override;
-  int sampler_location_;
-  int mask_sampler_location_;
-  int alpha_location_;
-  int mask_tex_coord_scale_location_;
-  int mask_tex_coord_offset_location_;
-
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaMaskAA);
 };
 
 class FragmentShaderRGBATexAlphaMaskColorMatrixAA : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaMaskColorMatrixAA();
-  void FillLocations(ShaderLocations* locations) const;
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int alpha_location() const { return alpha_location_; }
-  int sampler_location() const { return sampler_location_; }
-  int mask_sampler_location() const { return mask_sampler_location_; }
-  int mask_tex_coord_scale_location() const {
-    return mask_tex_coord_scale_location_;
+  FragmentShaderRGBATexAlphaMaskColorMatrixAA() {
+    has_sampler_ = true;
+    has_uniform_alpha_ = true;
+    has_mask_sampler_ = true;
+    has_color_matrix_ = true;
   }
-  int mask_tex_coord_offset_location() const {
-    return mask_tex_coord_offset_location_;
-  }
-  int color_matrix_location() const { return color_matrix_location_; }
-  int color_offset_location() const { return color_offset_location_; }
-
  private:
   std::string GetShaderSource() const override;
-  int sampler_location_;
-  int mask_sampler_location_;
-  int alpha_location_;
-  int mask_tex_coord_scale_location_;
-  int mask_tex_coord_offset_location_;
-  int color_matrix_location_;
-  int color_offset_location_;
 };
 
 class FragmentShaderRGBATexAlphaColorMatrixAA : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaColorMatrixAA();
-  void FillLocations(ShaderLocations* locations) const;
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int alpha_location() const { return alpha_location_; }
-  int sampler_location() const { return sampler_location_; }
-  int color_matrix_location() const { return color_matrix_location_; }
-  int color_offset_location() const { return color_offset_location_; }
+  FragmentShaderRGBATexAlphaColorMatrixAA() {
+    has_sampler_ = true;
+    has_uniform_alpha_ = true;
+    has_color_matrix_ = true;
+  }
 
  private:
   std::string GetShaderSource() const override;
-  int sampler_location_;
-  int alpha_location_;
-  int color_matrix_location_;
-  int color_offset_location_;
 };
 
 class FragmentShaderRGBATexAlphaMaskColorMatrix : public FragmentShaderBase {
  public:
-  FragmentShaderRGBATexAlphaMaskColorMatrix();
-  void FillLocations(ShaderLocations* locations) const;
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int alpha_location() const { return alpha_location_; }
-  int sampler_location() const { return sampler_location_; }
-  int mask_sampler_location() const { return mask_sampler_location_; }
-  int mask_tex_coord_scale_location() const {
-    return mask_tex_coord_scale_location_;
+  FragmentShaderRGBATexAlphaMaskColorMatrix() {
+    has_sampler_ = true;
+    has_uniform_alpha_ = true;
+    has_mask_sampler_ = true;
+    has_color_matrix_ = true;
   }
-  int mask_tex_coord_offset_location() const {
-    return mask_tex_coord_offset_location_;
-  }
-  int color_matrix_location() const { return color_matrix_location_; }
-  int color_offset_location() const { return color_offset_location_; }
-
  private:
   std::string GetShaderSource() const override;
-  int sampler_location_;
-  int mask_sampler_location_;
-  int alpha_location_;
-  int mask_tex_coord_scale_location_;
-  int mask_tex_coord_offset_location_;
-  int color_matrix_location_;
-  int color_offset_location_;
 };
 
 class FragmentShaderYUVVideo : public FragmentShaderBase {
@@ -721,7 +622,7 @@ class FragmentShaderYUVVideo : public FragmentShaderBase {
 
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
-            int* base_uniform_index);
+            int* base_uniform_index) override;
   int y_texture_location() const { return y_texture_location_; }
   int u_texture_location() const { return u_texture_location_; }
   int v_texture_location() const { return v_texture_location_; }
@@ -741,56 +642,42 @@ class FragmentShaderYUVVideo : public FragmentShaderBase {
  private:
   std::string GetShaderSource() const override;
 
-  bool use_alpha_texture_;
-  bool use_nv12_;
-  bool use_color_lut_;
+  bool use_alpha_texture_ = false;
+  bool use_nv12_ = false;
+  bool use_color_lut_ = false;
 
-  int y_texture_location_;
-  int u_texture_location_;
-  int v_texture_location_;
-  int uv_texture_location_;
-  int a_texture_location_;
-  int lut_texture_location_;
-  int alpha_location_;
-  int yuv_matrix_location_;
-  int yuv_adj_location_;
-  int ya_clamp_rect_location_;
-  int uv_clamp_rect_location_;
-  int resource_multiplier_location_;
-  int resource_offset_location_;
+  int y_texture_location_ = -1;
+  int u_texture_location_ = -1;
+  int v_texture_location_ = -1;
+  int uv_texture_location_ = -1;
+  int a_texture_location_ = -1;
+  int lut_texture_location_ = -1;
+  int alpha_location_ = -1;
+  int yuv_matrix_location_ = -1;
+  int yuv_adj_location_ = -1;
+  int ya_clamp_rect_location_ = -1;
+  int uv_clamp_rect_location_ = -1;
+  int resource_multiplier_location_ = -1;
+  int resource_offset_location_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderYUVVideo);
 };
 
 class FragmentShaderColor : public FragmentShaderBase {
  public:
-  FragmentShaderColor();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int color_location() const { return color_location_; }
+  FragmentShaderColor() { has_uniform_color_ = true; }
 
  private:
   std::string GetShaderSource() const override;
-  int color_location_;
-
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderColor);
 };
 
 class FragmentShaderColorAA : public FragmentShaderBase {
  public:
-  FragmentShaderColorAA();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  int color_location() const { return color_location_; }
+  FragmentShaderColorAA() { has_uniform_color_ = true; }
 
  private:
   std::string GetShaderSource() const override;
-  int color_location_;
-
   DISALLOW_COPY_AND_ASSIGN(FragmentShaderColorAA);
 };
 
