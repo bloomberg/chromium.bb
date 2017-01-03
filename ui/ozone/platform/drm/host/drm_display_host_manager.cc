@@ -14,9 +14,9 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -52,10 +52,9 @@ base::FilePath MapDevPathToSysPath(const base::FilePath& device_path) {
       base::FilePath("/sys/class/drm").Append(device_path.BaseName()));
 }
 
-void OpenDeviceOnWorkerThread(
-    const base::FilePath& device_path,
-    const scoped_refptr<base::TaskRunner>& reply_runner,
-    const OnOpenDeviceReplyCallback& callback) {
+void OpenDeviceAsync(const base::FilePath& device_path,
+                     const scoped_refptr<base::TaskRunner>& reply_runner,
+                     const OnOpenDeviceReplyCallback& callback) {
   base::FilePath sys_path = MapDevPathToSysPath(device_path);
 
   std::unique_ptr<DrmDeviceHandle> handle(new DrmDeviceHandle());
@@ -245,13 +244,17 @@ void DrmDisplayHostManager::ProcessEvent() {
     switch (event.action_type) {
       case DeviceEvent::ADD:
         if (drm_devices_.find(event.path) == drm_devices_.end()) {
-          task_pending_ = base::WorkerPool::PostTask(
+          base::PostTaskWithTraits(
               FROM_HERE,
-              base::Bind(&OpenDeviceOnWorkerThread, event.path,
+              base::TaskTraits()
+                  .WithShutdownBehavior(
+                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                  .MayBlock(),
+              base::Bind(&OpenDeviceAsync, event.path,
                          base::ThreadTaskRunnerHandle::Get(),
                          base::Bind(&DrmDisplayHostManager::OnAddGraphicsDevice,
-                                    weak_ptr_factory_.GetWeakPtr())),
-              false /* task_is_slow */);
+                                    weak_ptr_factory_.GetWeakPtr())));
+          task_pending_ = true;
         }
         break;
       case DeviceEvent::CHANGE:
