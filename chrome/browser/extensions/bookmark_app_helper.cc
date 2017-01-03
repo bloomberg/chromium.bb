@@ -11,7 +11,9 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -689,6 +691,13 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     callback_.Run(extension, web_app_info_);
     return;
   }
+
+  // Record an app banner added to homescreen event to ensure banners are not
+  // shown for this app.
+  AppBannerSettingsHelper::RecordBannerEvent(
+      contents_, web_app_info_.app_url, web_app_info_.app_url.spec(),
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+      base::Time::Now());
 
   Browser* browser = chrome::FindBrowserWithWebContents(contents_);
   if (!browser) {

@@ -9,8 +9,10 @@
 #include "apps/launcher.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -316,16 +318,6 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
                             extensions::NUM_LAUNCH_CONTAINERS);
 
   GURL url = UrlForExtension(extension, params.override_url);
-  if (extension->from_bookmark()) {
-    UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchContainer",
-                              params.container,
-                              extensions::NUM_LAUNCH_CONTAINERS);
-
-    // Record the launch time in the site engagement service. A recent bookmark
-    // app launch will provide an engagement boost to the origin.
-    SiteEngagementService* service = SiteEngagementService::Get(params.profile);
-    service->SetLastShortcutLaunchTime(url);
-  }
 
   // Record v1 app launch. Platform app launch is recorded when dispatching
   // the onLaunched event.
@@ -347,6 +339,25 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
     default:
       NOTREACHED();
       break;
+  }
+
+  if (extension->from_bookmark()) {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchContainer",
+                              params.container,
+                              extensions::NUM_LAUNCH_CONTAINERS);
+
+    // Record the launch time in the site engagement service. A recent bookmark
+    // app launch will provide an engagement boost to the origin.
+    SiteEngagementService* service = SiteEngagementService::Get(params.profile);
+    service->SetLastShortcutLaunchTime(url);
+
+    // Refresh the app banner added to homescreen event. The user may have
+    // cleared their browsing data since installing the app, which removes the
+    // event and will potentially permit a banner to be shown for the site.
+    AppBannerSettingsHelper::RecordBannerEvent(
+        tab, url, url.spec(),
+        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
+        base::Time::Now());
   }
   return tab;
 }

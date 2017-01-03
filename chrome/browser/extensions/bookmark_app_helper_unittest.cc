@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -340,6 +341,11 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   EXPECT_FALSE(
       IconsInfo::GetIconResource(
           extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY).empty());
+  EXPECT_FALSE(
+      AppBannerSettingsHelper::GetSingleBannerEvent(
+          contents.get(), web_app_info.app_url, web_app_info.app_url.spec(),
+          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
+          .is_null());
 }
 
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppWithManifest) {
@@ -368,6 +374,11 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppWithManifest) {
   EXPECT_TRUE(extension->from_bookmark());
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
+  EXPECT_FALSE(
+      AppBannerSettingsHelper::GetSingleBannerEvent(
+          contents.get(), manifest.start_url, manifest.start_url.spec(),
+          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN)
+          .is_null());
 }
 
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
