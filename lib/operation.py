@@ -184,8 +184,10 @@ class ProgressBarOperation(object):
     Args:
       func: Function to execute in the background and whose output is to be
         captured.
-      upadate_period: Optional argument to specify the period that output should
+      update_period: Optional argument to specify the period that output should
         be read.
+      log_level: Logging level to run the func at. By default, it runs at log
+        level info.
     """
     update_period = kwargs.pop('update_period',
                                self._PROGRESS_BAR_UPDATE_INTERVAL)
@@ -193,7 +195,13 @@ class ProgressBarOperation(object):
     # If we are not running in a terminal device, do not display the progress
     # bar.
     if not self._isatty:
-      func(*args, **kwargs)
+      log_level = kwargs.pop('log_level', logging.INFO)
+      restore_log_level = logging.getLogger().getEffectiveLevel()
+      logging.getLogger().setLevel(log_level)
+      try:
+        func(*args, **kwargs)
+      finally:
+        logging.getLogger().setLevel(restore_log_level)
       return
 
     with osutils.TempDir() as tempdir:
