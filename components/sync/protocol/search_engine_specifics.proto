@@ -35,7 +35,7 @@ message SearchEngineSpecifics {
   optional string input_encodings = 8;
   // Obsolete field. This used to represent whether or not this entry is shown
   // in the list of default search engines.
-  // optional bool deprecated_show_in_default_list = 9;
+  optional bool deprecated_show_in_default_list = 9 [deprecated = true];
   // The parameterized URL that provides suggestions as the user types.
   optional string suggestions_url = 10;
   // The ID associated with the prepopulate data this search engine comes from.
