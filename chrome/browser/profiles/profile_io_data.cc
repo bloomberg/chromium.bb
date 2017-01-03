@@ -1190,7 +1190,7 @@ ProfileIOData::SetUpJobFactoryDefaults(
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 #if BUILDFLAG(DEBUG_DEVTOOLS)
-  request_interceptors.push_back(new DebugDevToolsInterceptor);
+  request_interceptors.push_back(base::MakeUnique<DebugDevToolsInterceptor>());
 #endif
 
   // Set up interceptors in the reverse order.
