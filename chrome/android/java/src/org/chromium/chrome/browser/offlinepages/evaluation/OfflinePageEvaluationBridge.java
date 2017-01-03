@@ -207,6 +207,7 @@ public class OfflinePageEvaluationBridge {
         String logString = formatter.format(date) + ": " + sourceTag + " | " + message
                 + System.getProperty("line.separator");
         LogTask logTask = new LogTask();
+        Log.d(TAG, logString);
         logTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, logString);
     }
 

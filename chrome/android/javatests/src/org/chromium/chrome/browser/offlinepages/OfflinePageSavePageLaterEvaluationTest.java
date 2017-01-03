@@ -75,6 +75,7 @@ public class OfflinePageSavePageLaterEvaluationTest
     }
 
     private static final String TAG = "OPSPLEvaluation";
+    private static final String TAG_PROGRESS = "EvalProgress@@@@@@";
     private static final String NAMESPACE = "async_loading";
     private static final String NEW_LINE = System.getProperty("line.separator");
     private static final String DELIMITER = ";";
@@ -181,15 +182,15 @@ public class OfflinePageSavePageLaterEvaluationTest
                     for (String file : files) {
                         File currentFile = new File(externalArchiveDir.getPath(), file);
                         if (!currentFile.delete()) {
-                            log(file + " cannot be deleted when clearing previous archives.");
+                            log(TAG, file + " cannot be deleted when clearing previous archives.");
                         }
                     }
                 }
             } else if (!externalArchiveDir.mkdir()) {
-                log("Cannot create directory on external storage to store saved pages.");
+                log(TAG, "Cannot create directory on external storage to store saved pages.");
             }
         } catch (SecurityException e) {
-            log("Failed to delete or create external archive folder!");
+            log(TAG, "Failed to delete or create external archive folder!");
         }
         return externalArchiveDir;
     }
@@ -197,8 +198,8 @@ public class OfflinePageSavePageLaterEvaluationTest
     /**
      * Print log message in output file through evaluation bridge.
      */
-    private void log(String message) {
-        mBridge.log(TAG, message);
+    private void log(String tag, String format, Object... args) {
+        mBridge.log(tag, String.format(format, args));
     }
 
     /**
@@ -206,7 +207,7 @@ public class OfflinePageSavePageLaterEvaluationTest
      */
     private void checkTrue(boolean condition, String message) {
         if (!condition) {
-            log(message);
+            log(TAG, message);
             fail();
         }
     }
@@ -274,17 +275,20 @@ public class OfflinePageSavePageLaterEvaluationTest
                 timeDelta.setStartTime(System.currentTimeMillis());
                 metadata.mTimeDelta = timeDelta;
                 mRequestMetadata.put(request.getRequestId(), metadata);
-                log("SavePageRequest Added for " + metadata.mUrl + "  with id " + metadata.mId);
+                log(TAG,
+                        "SavePageRequest Added for " + metadata.mUrl + "  with id " + metadata.mId);
             }
             public void savePageRequestCompleted(SavePageRequest request, int status) {
                 RequestMetadata metadata = mRequestMetadata.get(request.getRequestId());
                 metadata.mTimeDelta.setEndTime(System.currentTimeMillis());
                 if (metadata.mStatus == -1) {
                     mCount++;
+                    log(TAG_PROGRESS, "%s is saved with result: %s. (%d/%d)", metadata.mUrl,
+                            statusToString(status), mCount, mUrls.size());
                 } else {
-                    log("The request for url: " + metadata.mUrl
-                            + " has more than one completion callbacks!");
-                    log("Previous status: " + metadata.mStatus + ". Current: " + status);
+                    log(TAG, "The request for url: " + metadata.mUrl
+                                    + " has more than one completion callbacks!");
+                    log(TAG, "Previous status: " + metadata.mStatus + ". Current: " + status);
                 }
                 metadata.mStatus = status;
                 if (mCount == mUrls.size() || mCount % mScheduleBatchSize == 0) {
@@ -325,7 +329,7 @@ public class OfflinePageSavePageLaterEvaluationTest
             return;
         }
         int count = 0;
-        log("# of Urls in file: " + mUrls.size());
+        log(TAG_PROGRESS, "# of Urls in file: " + mUrls.size());
         for (int i = 0; i < mUrls.size(); i++) {
             savePageLater(mUrls.get(i), NAMESPACE);
             count++;
@@ -335,8 +339,8 @@ public class OfflinePageSavePageLaterEvaluationTest
                 mCompletionLatch.await();
             }
         }
-        log("All urls are processed, going to write results.");
         writeResults();
+        log(TAG_PROGRESS, "Urls processing DONE.");
     }
 
     private void getUrlListFromInputFile(String inputFilePath)
@@ -430,7 +434,7 @@ public class OfflinePageSavePageLaterEvaluationTest
         try {
             int failedCount = 0;
             if (mCount < mUrls.size()) {
-                log("Test terminated before all requests completed.");
+                log(TAG, "Test terminated before all requests completed.");
             }
             File externalArchiveDir = getExternalArchiveDir();
             for (int i = 0; i < mRequestMetadata.size(); i++) {
@@ -453,7 +457,7 @@ public class OfflinePageSavePageLaterEvaluationTest
                 File originalPage = new File(page.getFilePath());
                 File externalPage = new File(externalArchiveDir, originalPage.getName());
                 if (!OfflinePageUtils.copyToShareableLocation(originalPage, externalPage)) {
-                    log("Saved page for url " + page.getUrl() + " cannot be moved.");
+                    log(TAG, "Saved page for url " + page.getUrl() + " cannot be moved.");
                 }
             }
             output.write(String.format(
