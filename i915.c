@@ -73,41 +73,6 @@ static int get_gen(int device_id)
 	return 4;
 }
 
-static int i915_init(struct driver *drv)
-{
-	struct i915_device *i915_drv;
-	drm_i915_getparam_t get_param;
-	int device_id;
-	int ret;
-
-	i915_drv = (struct i915_device*)malloc(sizeof(*i915_drv));
-	if (!i915_drv)
-		return -1;
-
-	memset(&get_param, 0, sizeof(get_param));
-	get_param.param = I915_PARAM_CHIPSET_ID;
-	get_param.value = &device_id;
-	ret = drmIoctl(drv->fd, DRM_IOCTL_I915_GETPARAM, &get_param);
-	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_I915_GETPARAM failed\n");
-		free(i915_drv);
-		return -1;
-	}
-
-	i915_drv->gen = get_gen(device_id);
-
-	drv->priv = i915_drv;
-
-	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
-	return drv_add_kms_flags(drv);
-}
-
-static void i915_close(struct driver *drv)
-{
-	free(drv->priv);
-	drv->priv = NULL;
-}
-
 static void i915_align_dimensions(struct driver *drv, uint32_t tiling_mode,
 				  uint32_t *width, uint32_t *height, int bpp)
 {
@@ -156,6 +121,41 @@ static int i915_verify_dimensions(struct driver *drv, uint32_t stride,
 		return 0;
 
 	return 1;
+}
+
+static int i915_init(struct driver *drv)
+{
+	struct i915_device *i915_drv;
+	drm_i915_getparam_t get_param;
+	int device_id;
+	int ret;
+
+	i915_drv = (struct i915_device*)malloc(sizeof(*i915_drv));
+	if (!i915_drv)
+		return -1;
+
+	memset(&get_param, 0, sizeof(get_param));
+	get_param.param = I915_PARAM_CHIPSET_ID;
+	get_param.value = &device_id;
+	ret = drmIoctl(drv->fd, DRM_IOCTL_I915_GETPARAM, &get_param);
+	if (ret) {
+		fprintf(stderr, "drv: DRM_IOCTL_I915_GETPARAM failed\n");
+		free(i915_drv);
+		return -1;
+	}
+
+	i915_drv->gen = get_gen(device_id);
+
+	drv->priv = i915_drv;
+
+	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
+	return drv_add_kms_flags(drv);
+}
+
+static void i915_close(struct driver *drv)
+{
+	free(drv->priv);
+	drv->priv = NULL;
 }
 
 static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
