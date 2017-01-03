@@ -3748,7 +3748,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     return true;
   }
   ShBuiltInResources resources;
-  ShInitBuiltInResources(&resources);
+  sh::InitBuiltInResources(&resources);
   resources.MaxVertexAttribs = group_->max_vertex_attribs();
   resources.MaxVertexUniformVectors =
       group_->max_vertex_uniform_vectors();

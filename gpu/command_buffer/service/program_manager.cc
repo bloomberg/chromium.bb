@@ -2080,9 +2080,8 @@ bool Program::CheckVaryingsPacking(
   for (const auto& key_value : combined_map) {
     variables.push_back(*key_value.second);
   }
-  return ShCheckVariablesWithinPackingLimits(
-      static_cast<int>(manager_->max_varying_vectors()),
-      variables);
+  return sh::CheckVariablesWithinPackingLimits(
+      static_cast<int>(manager_->max_varying_vectors()), variables);
 }
 
 void Program::GetProgramInfo(

@@ -24,7 +24,7 @@ class ShaderTranslatorTest : public testing::Test {
  protected:
   void SetUp() override {
     ShBuiltInResources resources;
-    ShInitBuiltInResources(&resources);
+    sh::InitBuiltInResources(&resources);
     resources.MaxExpressionComplexity = 32;
     resources.MaxCallStackDepth = 32;
 
@@ -63,7 +63,7 @@ class ES3ShaderTranslatorTest : public testing::Test {
  protected:
   void SetUp() override {
     ShBuiltInResources resources;
-    ShInitBuiltInResources(&resources);
+    sh::InitBuiltInResources(&resources);
     resources.MaxExpressionComplexity = 32;
     resources.MaxCallStackDepth = 32;
 
@@ -424,7 +424,7 @@ TEST_F(ShaderTranslatorTest, OptionsString) {
   scoped_refptr<ShaderTranslator> translator_3 = new ShaderTranslator();
 
   ShBuiltInResources resources;
-  ShInitBuiltInResources(&resources);
+  sh::InitBuiltInResources(&resources);
 
   ASSERT_TRUE(translator_1->Init(GL_VERTEX_SHADER, SH_GLES2_SPEC, &resources,
                                  SH_GLSL_150_CORE_OUTPUT,
@@ -464,7 +464,7 @@ class ShaderTranslatorOutputVersionTest
 // https://bugs.chromium.org/p/angleproject/issues/detail?id=1277
 TEST_F(ShaderTranslatorOutputVersionTest, DISABLED_CompatibilityOutput) {
   ShBuiltInResources resources;
-  ShInitBuiltInResources(&resources);
+  sh::InitBuiltInResources(&resources);
   ShCompileOptions compile_options = SH_OBJECT_CODE;
   ShShaderOutput shader_output_language = SH_GLSL_COMPATIBILITY_OUTPUT;
   scoped_refptr<ShaderTranslator> vertex_translator = new ShaderTranslator();
@@ -532,7 +532,7 @@ TEST_P(ShaderTranslatorOutputVersionTest, HasCorrectOutputGLSLVersion) {
 
   scoped_refptr<ShaderTranslator> translator = new ShaderTranslator();
   ShBuiltInResources resources;
-  ShInitBuiltInResources(&resources);
+  sh::InitBuiltInResources(&resources);
   ShCompileOptions compile_options = SH_OBJECT_CODE;
   ShShaderOutput shader_output_language =
       ShaderTranslator::GetShaderOutputLanguageForContext(

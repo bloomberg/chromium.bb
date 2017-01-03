@@ -24,12 +24,12 @@ int RunHelper(base::TestSuite* test_suite) {
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   testing::InitGoogleMock(&argc, argv);
-  ShInitialize();
+  sh::Initialize();
   base::TestSuite test_suite(argc, argv);
   int rt = base::LaunchUnitTestsSerially(
       argc,
       argv,
       base::Bind(&RunHelper, base::Unretained(&test_suite)));
-  ShFinalize();
+  sh::Finalize();
   return rt;
 }
