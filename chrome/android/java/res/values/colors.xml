@@ -105,8 +105,8 @@
     <color name="ntp_list_header_text">#333</color>
     <color name="ntp_list_header_subtext">#969696</color>
     <color name="ntp_list_header_subtext_active">#7cadff</color>
-    <color name="snippets_thumnail_placeholder_bg">#f2f2f2</color>
-    <color name="snippets_thumnail_placeholder_fg">#757575</color>
+    <color name="snippets_thumbnail_placeholder_bg">#f2f2f2</color>
+    <color name="snippets_thumbnail_placeholder_fg">#757575</color>
     <color name="snippets_publisher_name_color">#646464</color>
     <color name="snippets_text_color">#646464</color>
     <color name="snippets_list_header_text_color">#646464</color>
