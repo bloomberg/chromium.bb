@@ -4,7 +4,7 @@
 
 #include "ui/accelerated_widget_mac/ca_renderer_layer_tree.h"
 
-#include <AVFoundation/AVFoundation.h>
+#import <AVFoundation/AVFoundation.h>
 #include <CoreMedia/CoreMedia.h>
 #include <CoreVideo/CoreVideo.h>
 #include <GLES2/gl2extchromium.h>

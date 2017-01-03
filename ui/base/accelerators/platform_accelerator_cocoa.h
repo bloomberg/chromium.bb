@@ -5,7 +5,7 @@
 #ifndef UI_BASE_ACCELERATORS_PLATFORM_ACCELERATOR_COCOA_H_
 #define UI_BASE_ACCELERATORS_PLATFORM_ACCELERATOR_COCOA_H_
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"

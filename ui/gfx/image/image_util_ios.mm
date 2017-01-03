@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_util.h"

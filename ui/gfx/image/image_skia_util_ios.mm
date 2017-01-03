@@ -4,7 +4,7 @@
 
 #include "ui/gfx/image/image_skia_util_ios.h"
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"

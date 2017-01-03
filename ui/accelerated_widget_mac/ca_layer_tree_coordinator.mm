@@ -4,7 +4,7 @@
 
 #include "ui/accelerated_widget_mac/ca_layer_tree_coordinator.h"
 
-#include <AVFoundation/AVFoundation.h>
+#import <AVFoundation/AVFoundation.h>
 
 #include "base/mac/mac_util.h"
 #include "base/trace_event/trace_event.h"
