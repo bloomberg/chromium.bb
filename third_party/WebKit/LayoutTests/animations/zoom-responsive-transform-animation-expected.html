@@ -14,7 +14,9 @@
 }
 </style>
 <div id="container"></div>
+<div id="footer"></div>
 <script>
+'use strict';
 internals.setZoomFactor(2);
 
 [
@@ -50,10 +52,16 @@ internals.setZoomFactor(2);
 if (window.testRunner)
   testRunner.waitUntilDone();
 
+function waitForCompositor() {
+  return footer.animate({opacity: ['1', '1']}, 1).ready;
+}
+
 requestAnimationFrame(() => {
   requestAnimationFrame(() => {
-    if (window.testRunner)
-      testRunner.notifyDone();
+    waitForCompositor().then(() => {
+      if (window.testRunner)
+        testRunner.notifyDone();
+    });
   });
 });
 </script>
