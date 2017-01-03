@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-vr-service.js"></script>
+<script>
+
+vr_test(() => {
+  return  navigator.getVRDisplays().then(devices => {
+      assert_true(devices != null);
+      assert_equals(0, devices.length);
+    });
+}, null, 'test no VRDisplay');
+
+</script>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-vr-displays.js"></script>
+<script src="resources/mock-vr-service.js"></script>
+<script>
+
+vr_test(() => {
+  return navigator.getVRDisplays().then(displays => {
+      assert_true(displays != null);
+      assert_equals(1, displays.length);
+      assert_equals(displays[0].displayName, 'FakeVRDevice');
+      assert_true(displays[0].capabilities.hasOrientation);
+      assert_true(displays != null);
+  });
+}, fakeVRDisplays(), 'test 1 VRDisplay');
+
+</script>
