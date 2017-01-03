@@ -35,8 +35,9 @@ class Field(object):
         self.name = kwargs.pop('name')
         # Name of property field is for
         self.property_name = kwargs.pop('property_name')
-        # Internal field storage type
+        # Internal field storage type (storage_type_path can be None)
         self.storage_type = kwargs.pop('storage_type')
+        self.storage_type_path = kwargs.pop('storage_type_path')
         # Bits needed for storage
         self.size = kwargs.pop('size')
         # Default value for field
@@ -78,7 +79,8 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         # A map of enum name -> list of enum values
         self._computed_enums = {}
         for property in self._properties.values():
-            if property['keyword_only']:
+            # Only generate enums for keyword properties that use the default field_storage_type.
+            if property['keyword_only'] and property['field_storage_type'] is None:
                 enum_name = property['type_name']
                 # From the Blink style guide: Enum members should use InterCaps with an initial capital letter. [names-enum-members]
                 enum_values = [camel_case(k) for k in property['keywords']]
@@ -94,7 +96,13 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 # From the Blink style guide: Other data members should be prefixed by "m_". [names-data-members]
                 field_name = 'm_' + property_name_lower
                 bits_needed = math.log(len(property['keywords']), 2)
+
+                # Separate the type path from the type name, if specified.
                 type_name = property['type_name']
+                type_path = None
+                if property['field_storage_type']:
+                    type_path = property['field_storage_type']
+                    type_name = type_path.split('/')[-1]
 
                 assert property['initial_keyword'] is not None, \
                     ('MakeComputedStyleBase requires an initial keyword for keyword_only values, none specified '
@@ -111,6 +119,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                         name='m_' + field_name_suffix_lower,
                         property_name=property['name'],
                         storage_type='bool',
+                        storage_type_path=None,
                         size=1,
                         default_value='true',
                         getter_method_name=field_name_suffix_lower,
@@ -127,6 +136,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                     inherited=property['inherited'],
                     independent=property['independent'],
                     storage_type=type_name,
+                    storage_type_path=type_path,
                     size=int(math.ceil(bits_needed)),
                     default_value=default_value,
                     getter_method_name=property_name_lower,

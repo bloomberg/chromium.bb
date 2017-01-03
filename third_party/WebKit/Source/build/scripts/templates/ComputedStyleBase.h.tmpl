@@ -6,6 +6,9 @@
 
 #include "core/ComputedStyleBaseConstants.h"
 #include "core/CoreExport.h"
+{% for field in fields if field.storage_type_path != None %}
+#include "{{field.storage_type_path}}.h"
+{% endfor %}
 
 {# Returns the default value for the field, converted to fit in the storage container. #}
 {% macro default_value(field) %}

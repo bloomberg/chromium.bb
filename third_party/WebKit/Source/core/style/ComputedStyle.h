@@ -200,7 +200,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     bool operator==(const InheritedData& other) const {
       return (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
              (m_cursorStyle == other.m_cursorStyle) &&
-             (m_direction == other.m_direction) &&
              (m_rtlOrdering == other.m_rtlOrdering) &&
              (m_insideLink == other.m_insideLink) &&
              (m_writingMode == other.m_writingMode);
@@ -213,7 +212,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_hasSimpleUnderline : 1;  // True if 'underline solid' is the only
                                         // text decoration on this element.
     unsigned m_cursorStyle : 6;     // ECursor
-    unsigned m_direction : 1;       // TextDirection
     // 32 bits
 
     // non CSS2 inherited
@@ -313,7 +311,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     ComputedStyleBase::setBitDefaults();
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
-    m_inheritedData.m_direction = static_cast<unsigned>(initialDirection());
     m_inheritedData.m_rtlOrdering = static_cast<unsigned>(initialRTLOrdering());
     m_inheritedData.m_insideLink = NotInsideLink;
     m_inheritedData.m_writingMode = static_cast<unsigned>(initialWritingMode());
@@ -2019,15 +2016,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setCursor(ECursor c) {
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(c);
-  }
-
-  // direction
-  static TextDirection initialDirection() { return TextDirection::Ltr; }
-  TextDirection direction() const {
-    return static_cast<TextDirection>(m_inheritedData.m_direction);
-  }
-  void setDirection(TextDirection v) {
-    m_inheritedData.m_direction = static_cast<unsigned>(v);
   }
 
   // color

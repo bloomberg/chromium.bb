@@ -32,6 +32,8 @@ class CSSProperties(in_generator.Writer):
         'builder_skip': False,
         'direction_aware': False,
         'api_class': None,
+        # Generated ComputedStyle annotations.
+        'field_storage_type': None,
         # Typed OM annotations.
         'typedom_types': [],
         'keywords': [],

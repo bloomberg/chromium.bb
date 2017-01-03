@@ -812,8 +812,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
       m_inheritedData.m_rtlOrdering != other.m_inheritedData.m_rtlOrdering ||
       textAlign() != other.textAlign() ||
       textTransform() != other.textTransform() ||
-      m_inheritedData.m_direction != other.m_inheritedData.m_direction ||
-      whiteSpace() != other.whiteSpace() ||
+      direction() != other.direction() || whiteSpace() != other.whiteSpace() ||
       m_inheritedData.m_writingMode != other.m_inheritedData.m_writingMode)
     return true;
 

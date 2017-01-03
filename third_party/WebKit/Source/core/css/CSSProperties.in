@@ -40,8 +40,19 @@
 // generating the ComputedStyle storage for the property. The initial
 // value for this property on a ComputedStyle is specified with the
 // initial_keyword flag below.
+// TODO(sashab): Rename this to field_type=keyword once we support
+// multiple types of generatable fields in ComputedStyle
 // TODO(sashab, meade): Remove this once TypedOM types are specified for
 // every property, since this value can be inferred from that.
+
+
+// - field_storage_type=path/to/Type
+// For properties that have generated field storage in ComputedStyle,
+// this optional argument will override the field's generated type with
+// an external one specified at the given path. The type must be defined
+// in a header file at that path, and have the same name as the file.
+// Currently, only enum types are supported, and the enum's only values
+// must be CamelCase values of the keywords of the property.
 
 
 // - keywords=[keyword1|keyword2]
@@ -151,7 +162,7 @@ transition-timing-function custom_all
 // High Priority and all other font properties.
 // Other properties can depend upon high priority properties (e.g. font-size / ems)
 color interpolable, inherited, custom_all
-direction inherited, custom_value
+direction inherited, custom_value, keyword_only, keywords=[ltr|rtl], initial_keyword=ltr, field_storage_type=platform/text/TextDirection
 font-family inherited, font, type_name=FontDescription::FamilyDescription, name_for_methods=FamilyDescription, converter=convertFontFamily
 font-kerning inherited, font, type_name=FontDescription::Kerning, name_for_methods=Kerning
 font-size interpolable, inherited, font, name_for_methods=Size, getter=getSize, converter=convertFontSize
