@@ -1229,10 +1229,4 @@ void MetricsService::RecordCurrentState(PrefService* pref) {
                  base::Time::Now().ToTimeT());
 }
 
-void MetricsService::SkipAndDiscardUpload() {
-  log_manager_.DiscardStagedLog();
-  scheduler_->UploadCancelled();
-  log_upload_in_progress_ = false;
-}
-
 }  // namespace metrics
