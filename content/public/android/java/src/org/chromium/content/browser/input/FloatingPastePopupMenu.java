@@ -43,10 +43,6 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
     private int mRawPositionX;
     private int mRawPositionY;
 
-    // Embedders may not support floating ActionModes, in which case we should
-    // use the legacy menu as a fallback.
-    private LegacyPastePopupMenu mFallbackPastePopupMenu;
-
     public FloatingPastePopupMenu(Context context, View parent, PastePopupMenuDelegate delegate) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 
@@ -63,11 +59,6 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
 
     @Override
     public void show(int x, int y) {
-        if (mFallbackPastePopupMenu != null) {
-            mFallbackPastePopupMenu.show(x, y);
-            return;
-        }
-
         if (isShowing()) {
             int dx = mRawPositionX - x;
             int dy = mRawPositionY - y;
@@ -81,16 +72,11 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
             return;
         }
 
-        ensureActionModeOrFallback();
+        ensureActionMode();
     }
 
     @Override
     public void hide() {
-        if (mFallbackPastePopupMenu != null) {
-            mFallbackPastePopupMenu.hide();
-            return;
-        }
-
         if (mActionMode != null) {
             mActionMode.finish();
             mActionMode = null;
@@ -99,13 +85,11 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
 
     @Override
     public boolean isShowing() {
-        if (mFallbackPastePopupMenu != null) return mFallbackPastePopupMenu.isShowing();
         return mActionMode != null;
     }
 
-    private void ensureActionModeOrFallback() {
+    private void ensureActionMode() {
         if (mActionMode != null) return;
-        if (mFallbackPastePopupMenu != null) return;
 
         ActionMode actionMode = mParent.startActionMode(
                 new ActionModeCallback(), ActionMode.TYPE_FLOATING);
@@ -115,9 +99,6 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
 
             assert actionMode.getType() == ActionMode.TYPE_FLOATING;
             mActionMode = actionMode;
-        } else {
-            mFallbackPastePopupMenu = new LegacyPastePopupMenu(mContext, mParent, mDelegate);
-            mFallbackPastePopupMenu.show(mRawPositionX, mRawPositionY);
         }
     }
 
