@@ -534,6 +534,11 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections,
     // Use the payload size as recorded by the heap to determine how many
     // elements to trace.
     size_t length = header->payloadSize() / sizeof(T);
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+    // As commented above, HeapVectorBacking can trace unused slots
+    // (which are already zeroed out).
+    ANNOTATE_CHANGE_SIZE(array, length, 0, length);
+#endif
     if (std::is_polymorphic<T>::value) {
       char* pointer = reinterpret_cast<char*>(array);
       for (unsigned i = 0; i < length; ++i) {
@@ -544,11 +549,6 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections,
                                                                      array[i]);
       }
     } else {
-#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-      // As commented above, HeapVectorBacking can trace unused slots
-      // (which are already zeroed out).
-      ANNOTATE_CHANGE_SIZE(array, length, 0, length);
-#endif
       for (size_t i = 0; i < length; ++i)
         blink::TraceIfEnabled<
             T, IsTraceableInCollectionTrait<Traits>::value>::trace(visitor,
