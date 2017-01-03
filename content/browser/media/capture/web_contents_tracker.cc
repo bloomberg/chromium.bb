@@ -5,21 +5,20 @@
 #include "content/browser/media/capture/web_contents_tracker.h"
 
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content {
 
-WebContentsTracker::WebContentsTracker(bool track_fullscreen_rwh)
-    : track_fullscreen_rwh_(track_fullscreen_rwh),
-      last_target_(NULL) {}
+WebContentsTracker::WebContentsTracker(bool track_fullscreen_rwhv)
+    : track_fullscreen_rwhv_(track_fullscreen_rwhv),
+      last_target_view_(nullptr) {}
 
 WebContentsTracker::~WebContentsTracker() {
-  DCHECK(!web_contents()) << "BUG: Still observering!";
+  // Likely unintentional BUG if Stop() was not called before this point.
+  DCHECK(!web_contents());
 }
 
 void WebContentsTracker::Start(int render_process_id, int main_render_frame_id,
@@ -47,36 +46,34 @@ void WebContentsTracker::Stop() {
   resize_callback_.Reset();
 
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    WebContentsObserver::Observe(NULL);
+    WebContentsObserver::Observe(nullptr);
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebContentsTracker::Observe, this,
-                   static_cast<WebContents*>(NULL)));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&WebContentsTracker::Observe, this,
+                                       static_cast<WebContents*>(nullptr)));
   }
 }
 
-RenderWidgetHost* WebContentsTracker::GetTargetRenderWidgetHost() const {
+RenderWidgetHostView* WebContentsTracker::GetTargetView() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* const wc = web_contents();
   if (!wc)
-    return NULL;
+    return nullptr;
 
-  RenderWidgetHost* rwh = NULL;
-  if (track_fullscreen_rwh_) {
-    RenderWidgetHostView* const view = wc->GetFullscreenRenderWidgetHostView();
-    if (view)
-      rwh = view->GetRenderWidgetHost();
-  }
-  if (!rwh) {
-    RenderFrameHostImpl* const rfh =
-        static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
-    if (rfh)
-      rwh = rfh->GetRenderWidgetHost();
+  if (track_fullscreen_rwhv_) {
+    if (auto* view = wc->GetFullscreenRenderWidgetHostView())
+      return view;
   }
 
-  return rwh;
+  if (auto* view = wc->GetRenderWidgetHostView()) {
+    // Make sure the RWHV is still associated with a RWH before considering the
+    // view "alive." This is because a null RWH indicates the RWHV has had its
+    // Destroy() method called.
+    if (view->GetRenderWidgetHost())
+      return view;
+  }
+  return nullptr;
 }
 
 void WebContentsTracker::SetResizeChangeCallback(
@@ -88,21 +85,23 @@ void WebContentsTracker::SetResizeChangeCallback(
 void WebContentsTracker::OnPossibleTargetChange(bool force_callback_run) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RenderWidgetHost* const rwh = GetTargetRenderWidgetHost();
-  if (rwh == last_target_ && !force_callback_run)
+  RenderWidgetHostView* const rwhv = GetTargetView();
+  if (rwhv == last_target_view_ && !force_callback_run) {
+    DVLOG(1) << "No target view change (RenderWidgetHostView@" << rwhv << ')';
     return;
-  DVLOG(1) << "Will report target change from RenderWidgetHost@" << last_target_
-           << " to RenderWidgetHost@" << rwh;
-  last_target_ = rwh;
+  }
+  DVLOG(1) << "Will report target change from RenderWidgetHostView@"
+           << last_target_view_ << " to RenderWidgetHostView@" << rwhv;
+  last_target_view_ = rwhv;
 
   if (task_runner_->BelongsToCurrentThread()) {
-    MaybeDoCallback(rwh != nullptr);
+    MaybeDoCallback(is_still_tracking());
     return;
   }
 
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&WebContentsTracker::MaybeDoCallback, this, rwh != nullptr));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&WebContentsTracker::MaybeDoCallback, this,
+                                    is_still_tracking()));
 }
 
 void WebContentsTracker::MaybeDoCallback(bool was_still_tracking) {
@@ -135,13 +134,22 @@ void WebContentsTracker::StartObservingWebContents(int render_process_id,
   OnPossibleTargetChange(true);
 }
 
+void WebContentsTracker::RenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
+  DVLOG(1) << "RenderFrameCreated(rfh=" << render_frame_host << ')';
+  OnPossibleTargetChange(false);
+}
+
 void WebContentsTracker::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
+  DVLOG(1) << "RenderFrameDeleted(rfh=" << render_frame_host << ')';
   OnPossibleTargetChange(false);
 }
 
 void WebContentsTracker::RenderFrameHostChanged(RenderFrameHost* old_host,
                                                 RenderFrameHost* new_host) {
+  DVLOG(1) << "RenderFrameHostChanged(old=" << old_host << ", new=" << new_host
+           << ')';
   OnPossibleTargetChange(false);
 }
 
@@ -159,15 +167,18 @@ void WebContentsTracker::MainFrameWasResized(bool width_changed) {
 }
 
 void WebContentsTracker::WebContentsDestroyed() {
-  Observe(NULL);
-  OnPossibleTargetChange(false);
+  DVLOG(1) << "WebContentsDestroyed()";
+  Observe(nullptr);
+  OnPossibleTargetChange(true);
 }
 
 void WebContentsTracker::DidShowFullscreenWidget() {
+  DVLOG(1) << "DidShowFullscreenWidget()";
   OnPossibleTargetChange(false);
 }
 
 void WebContentsTracker::DidDestroyFullscreenWidget() {
+  DVLOG(1) << "DidDestroyFullscreenWidget()";
   OnPossibleTargetChange(false);
 }
 

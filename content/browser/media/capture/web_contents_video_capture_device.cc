@@ -155,7 +155,7 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
   base::WeakPtrFactory<FrameSubscriber> weak_ptr_factory_;
 };
 
-// ContentCaptureSubscription is the relationship between a RenderWidgetHost
+// ContentCaptureSubscription is the relationship between a RenderWidgetHostView
 // whose content is updating, a subscriber that is deciding which of these
 // updates to capture (and where to deliver them to), and a callback that
 // knows how to do the capture and prepare the result for delivery.
@@ -180,7 +180,7 @@ class ContentCaptureSubscription {
   // subscription will invoke |capture_callback| on the UI thread to do the
   // work.
   ContentCaptureSubscription(
-      const RenderWidgetHost& source,
+      base::WeakPtr<RenderWidgetHostViewBase> source_view,
       const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
       const CaptureCallback& capture_callback);
   ~ContentCaptureSubscription();
@@ -191,11 +191,7 @@ class ContentCaptureSubscription {
   // Called for active frame refresh requests, or mouse activity events.
   void OnEvent(FrameSubscriber* subscriber);
 
-  // Maintain a weak reference to the RenderWidgetHost (via its routing ID),
-  // since the instance could be destroyed externally during the lifetime of
-  // |this|.
-  const int render_process_id_;
-  const int render_widget_id_;
+  const base::WeakPtr<RenderWidgetHostViewBase> source_view_;
 
   std::unique_ptr<FrameSubscriber> refresh_subscriber_;
   std::unique_ptr<FrameSubscriber> mouse_activity_subscriber_;
@@ -288,9 +284,10 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
       const gfx::Rect& region_in_frame,
       bool success);
 
-  // Remove the old subscription, and attempt to start a new one if |had_target|
-  // is true.
-  void RenewFrameSubscription(bool had_target);
+  // Remove the old subscription, and attempt to start a new one. If
+  // |is_still_tracking| is false, emit an error rather than attempt to start a
+  // new subscription.
+  void RenewFrameSubscription(bool is_still_tracking);
 
   // Called whenever the render widget is resized.
   void UpdateCaptureSize();
@@ -300,7 +297,7 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
   const int initial_main_render_frame_id_;
 
   // Tracks events and calls back to RenewFrameSubscription() to maintain
-  // capture on the correct RenderWidgetHost.
+  // capture on the correct RenderWidgetHostView.
   const scoped_refptr<WebContentsTracker> tracker_;
 
   // Set to false to prevent the capture size from automatically adjusting in
@@ -404,21 +401,17 @@ bool FrameSubscriber::IsUserInteractingWithContent() {
 }
 
 ContentCaptureSubscription::ContentCaptureSubscription(
-    const RenderWidgetHost& source,
+    base::WeakPtr<RenderWidgetHostViewBase> source_view,
     const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
     const CaptureCallback& capture_callback)
-    : render_process_id_(source.GetProcess()->GetID()),
-      render_widget_id_(source.GetRoutingID()),
-      capture_callback_(capture_callback) {
+    : source_view_(source_view), capture_callback_(capture_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(source_view_);
 
-  RenderWidgetHostView* const view = source.GetView();
 #if defined(USE_AURA) || defined(OS_MACOSX)
-  if (view) {
-    cursor_renderer_ = CursorRenderer::Create(view->GetNativeView());
-    window_activity_tracker_ =
-        WindowActivityTracker::Create(view->GetNativeView());
-  }
+  cursor_renderer_ = CursorRenderer::Create(source_view_->GetNativeView());
+  window_activity_tracker_ =
+      WindowActivityTracker::Create(source_view_->GetNativeView());
 #endif
   refresh_subscriber_.reset(new FrameSubscriber(
       media::VideoCaptureOracle::kActiveRefreshRequest, oracle_proxy,
@@ -435,16 +428,14 @@ ContentCaptureSubscription::ContentCaptureSubscription(
 
   // Subscribe to compositor updates. These will be serviced directly by the
   // oracle.
-  if (view) {
-    std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
-        new FrameSubscriber(
-            media::VideoCaptureOracle::kCompositorUpdate, oracle_proxy,
-            cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
-                             : base::WeakPtr<CursorRenderer>(),
-            window_activity_tracker_ ? window_activity_tracker_->GetWeakPtr()
-                                     : base::WeakPtr<WindowActivityTracker>()));
-    view->BeginFrameSubscription(std::move(subscriber));
-  }
+  std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
+      new FrameSubscriber(
+          media::VideoCaptureOracle::kCompositorUpdate, oracle_proxy,
+          cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
+                           : base::WeakPtr<CursorRenderer>(),
+          window_activity_tracker_ ? window_activity_tracker_->GetWeakPtr()
+                                   : base::WeakPtr<WindowActivityTracker>()));
+  source_view_->BeginFrameSubscription(std::move(subscriber));
 
   // Subscribe to mouse movement and mouse cursor update events.
   if (window_activity_tracker_) {
@@ -462,11 +453,13 @@ ContentCaptureSubscription::~ContentCaptureSubscription() {
     return;
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderWidgetHost* const source =
-      RenderWidgetHost::FromID(render_process_id_, render_widget_id_);
-  RenderWidgetHostView* const view = source ? source->GetView() : NULL;
-  if (view)
-    view->EndFrameSubscription();
+  // If the RWHV weak pointer is still valid, make sure the view is still
+  // associated with a RWH before attempting to end the frame subscription. This
+  // is because a null RWH indicates the RWHV has had its Destroy() method
+  // called, which makes it invalid to call any of its methods that assume the
+  // compositor is present.
+  if (source_view_ && source_view_->GetRenderWidgetHost())
+    source_view_->EndFrameSubscription();
 }
 
 void ContentCaptureSubscription::MaybeCaptureForRefresh() {
@@ -641,7 +634,7 @@ void WebContentsCaptureMachine::InternalSuspend() {
     return;
   frame_capture_active_ = false;
   if (IsStarted())
-    RenewFrameSubscription(true);
+    RenewFrameSubscription(tracker_->is_still_tracking());
 }
 
 void WebContentsCaptureMachine::Resume() {
@@ -656,7 +649,7 @@ void WebContentsCaptureMachine::InternalResume() {
     return;
   frame_capture_active_ = true;
   if (IsStarted())
-    RenewFrameSubscription(true);
+    RenewFrameSubscription(tracker_->is_still_tracking());
 }
 
 void WebContentsCaptureMachine::Stop(const base::Closure& callback) {
@@ -714,9 +707,8 @@ void WebContentsCaptureMachine::Capture(
         deliver_frame_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RenderWidgetHost* rwh = tracker_->GetTargetRenderWidgetHost();
-  RenderWidgetHostViewBase* view =
-      rwh ? static_cast<RenderWidgetHostViewBase*>(rwh->GetView()) : NULL;
+  auto* const view =
+      static_cast<RenderWidgetHostViewBase*>(tracker_->GetTargetView());
   if (!view) {
     deliver_frame_cb.Run(base::TimeTicks(), gfx::Rect(), false);
     return;
@@ -736,13 +728,15 @@ void WebContentsCaptureMachine::Capture(
             ? gfx::Size()
             : media::ComputeLetterboxRegion(target->visible_rect(), view_size)
                   .size();
-    rwh->CopyFromBackingStore(
-        gfx::Rect(),
-        fitted_size,  // Size here is a request not always honored.
-        base::Bind(&WebContentsCaptureMachine::DidCopyFromBackingStore,
-                   weak_ptr_factory_.GetWeakPtr(), start_time, target,
-                   deliver_frame_cb),
-        kN32_SkColorType);
+    if (auto* rwh = view->GetRenderWidgetHost()) {
+      rwh->CopyFromBackingStore(
+          gfx::Rect(),
+          fitted_size,  // Size here is a request not always honored.
+          base::Bind(&WebContentsCaptureMachine::DidCopyFromBackingStore,
+                     weak_ptr_factory_.GetWeakPtr(), start_time, target,
+                     deliver_frame_cb),
+          kN32_SkColorType);
+    }
   }
 }
 
@@ -795,9 +789,7 @@ gfx::Size WebContentsCaptureMachine::ComputeOptimalViewSize() const {
   // render widget to the "preferred size," the widget will be physically
   // rendered at the exact capture size, thereby eliminating unnecessary scaling
   // operations in the graphics pipeline.
-  RenderWidgetHost* const rwh = tracker_->GetTargetRenderWidgetHost();
-  RenderWidgetHostView* const rwhv = rwh ? rwh->GetView() : NULL;
-  if (rwhv) {
+  if (auto* rwhv = tracker_->GetTargetView()) {
     const gfx::NativeView view = rwhv->GetNativeView();
     const float scale = ui::GetScaleFactorForNativeView(view);
     if (scale > 1.0f) {
@@ -849,20 +841,16 @@ void WebContentsCaptureMachine::DidCopyFromCompositingSurfaceToVideoFrame(
   deliver_frame_cb.Run(start_time, region_in_frame, success);
 }
 
-void WebContentsCaptureMachine::RenewFrameSubscription(bool had_target) {
+void WebContentsCaptureMachine::RenewFrameSubscription(bool is_still_tracking) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  RenderWidgetHost* const rwh =
-      had_target ? tracker_->GetTargetRenderWidgetHost() : nullptr;
 
   // Always destroy the old subscription before creating a new one.
   if (subscription_) {
-    DVLOG(1) << "Cancelling existing ContentCaptureSubscription.";
+    DVLOG(1) << "Cancelling existing subscription.";
     subscription_.reset();
   }
 
-  if (!rwh) {
-    DVLOG(1) << "Cannot renew ContentCaptureSubscription: no RWH target.";
+  if (!is_still_tracking) {
     if (IsStarted()) {
       // Tracking of WebContents and/or its main frame has failed before Stop()
       // was called, so report this as an error:
@@ -872,12 +860,23 @@ void WebContentsCaptureMachine::RenewFrameSubscription(bool had_target) {
     return;
   }
 
-  if (frame_capture_active_) {
-    DVLOG(1) << "Renewing ContentCaptureSubscription to RWH@" << rwh;
-    subscription_.reset(new ContentCaptureSubscription(
-        *rwh, oracle_proxy_, base::Bind(&WebContentsCaptureMachine::Capture,
-                                        weak_ptr_factory_.GetWeakPtr())));
+  if (!frame_capture_active_) {
+    DVLOG(1) << "Not renewing subscription: Frame capture is suspended.";
+    return;
   }
+
+  auto* const view =
+      static_cast<RenderWidgetHostViewBase*>(tracker_->GetTargetView());
+  if (!view) {
+    DVLOG(1) << "Cannot renew subscription: No view to capture.";
+    return;
+  }
+
+  DVLOG(1) << "Renewing subscription to RenderWidgetHostView@" << view;
+  subscription_.reset(new ContentCaptureSubscription(
+      view->GetWeakPtr(), oracle_proxy_,
+      base::Bind(&WebContentsCaptureMachine::Capture,
+                 weak_ptr_factory_.GetWeakPtr())));
 }
 
 void WebContentsCaptureMachine::UpdateCaptureSize() {
@@ -885,8 +884,7 @@ void WebContentsCaptureMachine::UpdateCaptureSize() {
 
   if (!oracle_proxy_)
     return;
-  RenderWidgetHost* const rwh = tracker_->GetTargetRenderWidgetHost();
-  RenderWidgetHostView* const view = rwh ? rwh->GetView() : nullptr;
+  RenderWidgetHostView* const view = tracker_->GetTargetView();
   if (!view)
     return;
 

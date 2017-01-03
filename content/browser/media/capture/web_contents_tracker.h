@@ -4,14 +4,13 @@
 //
 // Given a starting render_process_id and main_render_frame_id, the
 // WebContentsTracker tracks changes to the active RenderFrameHost tree during
-// the lifetime of a WebContents instance.  This is used when mirroring tab
-// video and audio so that user navigations, crashes, iframes, etc., during a
-// tab's lifetime allow the capturing code to remain active on the
-// current/latest render frame tree.
+// the lifetime of a WebContents instance. This is used to maintain capture of
+// the WebContents's video and audio across page transitions such as user
+// navigations, crashes, iframes, etc..
 //
-// Threading issues: Start(), Stop() and the ChangeCallback are invoked on the
-// same thread.  This can be any thread, and the decision is locked-in by
-// WebContentsTracker when Start() is called.
+// Threading issues: Start(), Stop() and the ChangeCallback must be invoked on
+// the same thread. This can be any thread, and the decision is locked-in once
+// WebContentsTracker::Start() is called.
 
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_TRACKER_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_TRACKER_H_
@@ -28,21 +27,22 @@ class SingleThreadTaskRunner;
 
 namespace content {
 
-class RenderWidgetHost;
+class RenderWidgetHostView;
 
 class CONTENT_EXPORT WebContentsTracker
     : public base::RefCountedThreadSafe<WebContentsTracker>,
       public WebContentsObserver {
  public:
-  // If |track_fullscreen_rwh| is true, the ChangeCallback will be run when a
-  // WebContents shows/destroys a fullscreen RenderWidgetHost view.  If false,
-  // fullscreen events are ignored.  Specify true for video tab capture and
-  // false for audio tab capture.
-  explicit WebContentsTracker(bool track_fullscreen_rwh);
+  // If |track_fullscreen_rwhv| is true, the ChangeCallback will be run when a
+  // WebContents shows/destroys a fullscreen RenderWidgetHostView. If false,
+  // fullscreen events are ignored. Normally, specify true for video capture and
+  // false for audio capture.
+  explicit WebContentsTracker(bool track_fullscreen_rwhv);
 
-  // Callback to indicate a new RenderWidgetHost should be targeted for capture.
-  // This is also invoked with false to indicate tracking will not continue
-  // (i.e., the WebContents instance was not found or has been destroyed).
+  // Callback to indicate a new RenderWidgetHostView should be targeted for
+  // capture. This is also invoked with false to indicate tracking will not
+  // continue (i.e., the WebContents instance was not found or has been
+  // destroyed).
   typedef base::Callback<void(bool was_still_tracking)> ChangeCallback;
 
   // Start tracking.  The last-known |render_process_id| and
@@ -57,8 +57,13 @@ class CONTENT_EXPORT WebContentsTracker
   // be invoked again.
   virtual void Stop();
 
-  // Current target.  This must only be called on the UI BrowserThread.
-  RenderWidgetHost* GetTargetRenderWidgetHost() const;
+  // Returns true if this tracker is still able to continue tracking changes.
+  // This must only be called on the UI BrowserThread.
+  bool is_still_tracking() const { return !!web_contents(); }
+
+  // Current target view. May return nullptr during certain transient periods.
+  // This must only be called on the UI BrowserThread.
+  RenderWidgetHostView* GetTargetView() const;
 
   // Set a callback that is run whenever the main frame of the WebContents is
   // resized.  This method must be called on the same thread that calls
@@ -71,10 +76,10 @@ class CONTENT_EXPORT WebContentsTracker
   ~WebContentsTracker() override;
 
  private:
-  // Determine the target RenderWidgetHost and, if different from that last
-  // reported, runs the ChangeCallback on the appropriate thread.  If
+  // Determine the target RenderWidgetHostView and, if different from that last
+  // reported, runs the ChangeCallback on the appropriate thread. If
   // |force_callback_run| is true, the ChangeCallback is run even if the
-  // RenderWidgetHost has not changed.
+  // RenderWidgetHostView has not changed.
   void OnPossibleTargetChange(bool force_callback_run);
 
   // Called on the thread that Start()/Stop() are called on.  Checks whether the
@@ -91,41 +96,41 @@ class CONTENT_EXPORT WebContentsTracker
   void StartObservingWebContents(int render_process_id,
                                  int main_render_frame_id);
 
-  // WebContentsObserver overrides: According to web_contents_observer.h, these
-  // two method overrides are all that is necessary to track the set of active
-  // RenderFrameHosts.
-  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  // WebContentsObserver overrides: These events indicate that the view of the
+  // main frame may have changed.
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) final;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) final;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
-                              RenderFrameHost* new_host) override;
+                              RenderFrameHost* new_host) final;
 
   // WebContentsObserver override to notify the client that the source size has
   // changed.
-  void MainFrameWasResized(bool width_changed) override;
+  void MainFrameWasResized(bool width_changed) final;
 
   // WebContentsObserver override to notify the client that the capture target
   // has been permanently lost.
-  void WebContentsDestroyed() override;
+  void WebContentsDestroyed() final;
 
   // WebContentsObserver overrides to notify the client that the capture target
   // may have changed due to a separate fullscreen widget shown/destroyed.
-  void DidShowFullscreenWidget() override;
-  void DidDestroyFullscreenWidget() override;
+  void DidShowFullscreenWidget() final;
+  void DidDestroyFullscreenWidget() final;
 
   // If true, the client is interested in the showing/destruction of fullscreen
-  // RenderWidgetHosts.
-  const bool track_fullscreen_rwh_;
+  // RenderWidgetHostViews.
+  const bool track_fullscreen_rwhv_;
+
+  // Pointer to the RenderWidgetHostView provided in the last run of
+  // |callback_|. This is used to eliminate duplicate callback runs.
+  RenderWidgetHostView* last_target_view_;
 
   // TaskRunner corresponding to the thread that called Start().
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // Callback to run when the target RenderWidgetHost has changed.
+  // Callback to run when the target RenderWidgetHostView has changed.
   ChangeCallback callback_;
 
-  // Pointer to the RenderWidgetHost provided in the last run of |callback_|.
-  // This is used to eliminate duplicate callback runs.
-  RenderWidgetHost* last_target_;
-
-  // Callback to run when the target RenderWidgetHost has resized.
+  // Callback to run when the target RenderWidgetHostView has resized.
   base::Closure resize_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsTracker);
