@@ -29,6 +29,8 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
+#include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -90,6 +92,35 @@ void MoveMouseToCenter(NSView* view) {
   ui_controls::SendMouseMoveNotifyWhenDone(
       centerPoint.x, centerPoint.y, runLoop.QuitClosure());
   runLoop.Run();
+}
+
+// Simulates a click on the action button in the overflow menu, and runs
+// |closure| upon completion.
+void ClickOnOverflowedAction(ToolbarController* toolbarController,
+                             const base::Closure& closure) {
+  AppMenuController* appMenuController = [toolbarController appMenuController];
+  // The app menu should start as open (since that's where the overflowed
+  // actions are).
+  EXPECT_TRUE([appMenuController isMenuOpen]);
+  BrowserActionsController* overflowController =
+      [appMenuController browserActionsController];
+
+  ASSERT_TRUE(overflowController);
+  BrowserActionButton* actionButton = [overflowController buttonWithIndex:0];
+  // The action should be attached to a superview.
+  EXPECT_TRUE([actionButton superview]);
+
+  // ui_controls:: methods don't play nice when there is an open menu (like the
+  // app menu). Instead, simulate a right click by feeding the event directly to
+  // the button.
+  NSPoint centerPoint = GetCenterPoint(actionButton);
+  NSEvent* mouseEvent = cocoa_test_event_utils::RightMouseDownAtPointInWindow(
+      centerPoint, [actionButton window]);
+  [actionButton rightMouseDown:mouseEvent];
+
+  // This should close the app menu.
+  EXPECT_FALSE([appMenuController isMenuOpen]);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
 }
 
 }  // namespace
@@ -229,6 +260,35 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
     ExtensionBrowserTest::TearDownOnMainThread();
   }
 
+  // Opens the app menu and the context menu of the overflowed action, and
+  // checks that the menus get opened/closed properly. |menuHelper| must be set
+  // as the delegate for the context menu.
+  void OpenAppMenuAndActionContextMenu(MenuHelper* menuHelper) {
+    // Move the mouse over the app menu button.
+    MoveMouseToCenter(appMenuButton());
+
+    // No menu yet (on the browser action).
+    EXPECT_FALSE([menuHelper menuOpened]);
+    base::RunLoop runLoop;
+    // Click on the app menu, and pass in a callback to continue the test in
+    // ClickOnOverflowedAction. Due to the blocking nature of Cocoa menus, we
+    // can't test the menu synchronously here by quitting the run loop when it
+    // opens, and instead need to test through a callback.
+    base::scoped_nsobject<MenuWatcher> menuWatcher(
+        [[MenuWatcher alloc] initWithController:appMenuController()]);
+    [menuWatcher
+        setOpenClosure:base::Bind(&ClickOnOverflowedAction,
+                                  base::Unretained(toolbarController()),
+                                  runLoop.QuitClosure())];
+    ui_controls::SendMouseEvents(ui_controls::LEFT,
+                                 ui_controls::DOWN | ui_controls::UP);
+    runLoop.Run();
+
+    // The menu opened on the main bar's action button rather than the
+    // overflow's since Cocoa does not support running a menu within a menu.
+    EXPECT_TRUE([menuHelper menuOpened]);
+  }
+
   ToolbarController* toolbarController() { return toolbarController_; }
   AppMenuController* appMenuController() { return appMenuController_; }
   ToolbarActionsModel* model() { return model_; }
@@ -243,37 +303,6 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionButtonUiTest);
 };
-
-// Simulates a clicks on the action button in the overflow menu, and runs
-// |closure| upon completion.
-void ClickOnOverflowedAction(ToolbarController* toolbarController,
-                             const base::Closure& closure) {
-  AppMenuController* appMenuController =
-      [toolbarController appMenuController];
-  // The app menu should start as open (since that's where the overflowed
-  // actions are).
-  EXPECT_TRUE([appMenuController isMenuOpen]);
-  BrowserActionsController* overflowController =
-      [appMenuController browserActionsController];
-
-  ASSERT_TRUE(overflowController);
-  BrowserActionButton* actionButton =
-      [overflowController buttonWithIndex:0];
-  // The action should be attached to a superview.
-  EXPECT_TRUE([actionButton superview]);
-
-  // ui_controls:: methods don't play nice when there is an open menu (like the
-  // app menu). Instead, simulate a right click by feeding the event directly to
-  // the button.
-  NSPoint centerPoint = GetCenterPoint(actionButton);
-  NSEvent* mouseEvent = cocoa_test_event_utils::RightMouseDownAtPointInWindow(
-      centerPoint, [actionButton window]);
-  [actionButton rightMouseDown:mouseEvent];
-
-  // This should close the app menu.
-  EXPECT_FALSE([appMenuController isMenuOpen]);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
-}
 
 // Verifies that the action is "popped out" of overflow; that is, it is visible
 // on the main bar, and is set as the popped out action on the controlling
@@ -342,32 +371,37 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
   model()->SetVisibleIconCount(0);
   EXPECT_EQ(nil, [actionButton superview]);
 
-  // Move the mouse over the app menu button.
-  MoveMouseToCenter(appMenuButton());
+  OpenAppMenuAndActionContextMenu(menuHelper.get());
+}
 
-  {
-    // No menu yet (on the browser action).
-    EXPECT_FALSE([menuHelper menuOpened]);
-    base::RunLoop runLoop;
-    // Click on the app menu, and pass in a callback to continue the test in
-    // ClickOnOverflowedAction (Due to the blocking nature of Cocoa menus,
-    // passing in runLoop.QuitClosure() is not sufficient here.)
-    base::scoped_nsobject<MenuWatcher> menuWatcher(
-        [[MenuWatcher alloc] initWithController:appMenuController()]);
-    [menuWatcher setOpenClosure:
-        base::Bind(&ClickOnOverflowedAction,
-                   base::Unretained(toolbarController()),
-                   runLoop.QuitClosure())];
-    ui_controls::SendMouseEvents(ui_controls::LEFT,
-                                 ui_controls::DOWN | ui_controls::UP);
-    runLoop.Run();
+IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
+                       MediaRouterActionContextMenuInOverflow) {
+  model()->AddComponentAction(
+      ComponentToolbarActionsFactory::kMediaRouterActionId);
+  ASSERT_EQ(1u, model()->toolbar_items().size());
 
-    // The menu should have opened. Note that the menu opened on the main bar's
-    // action button, not the overflow's. Since Cocoa doesn't support running
-    // a menu-within-a-menu, this is what has to happen.
-    EXPECT_TRUE([menuHelper menuOpened]);
-    EXPECT_FALSE([actionButton isHighlighted]);
-  }
+  BrowserActionButton* actionButton =
+      [[toolbarController() browserActionsController] buttonWithIndex:0];
+  ASSERT_TRUE(actionButton);
+
+  // Stub out the action button's normal context menu with a fake one so we
+  // can track when it opens.
+  base::scoped_nsobject<NSMenu> testContextMenu(
+      [[NSMenu alloc] initWithTitle:@""]);
+  base::scoped_nsobject<MenuHelper> menuHelper([[MenuHelper alloc] init]);
+  [testContextMenu setDelegate:menuHelper.get()];
+  [actionButton setTestContextMenu:testContextMenu.get()];
+
+  model()->SetActionVisibility(
+      ComponentToolbarActionsFactory::kMediaRouterActionId, false);
+
+  OpenAppMenuAndActionContextMenu(menuHelper.get());
+
+  ToolbarActionsBar* actionsBar =
+      [[toolbarController() browserActionsController] toolbarActionsBar];
+  // The action should be back in the overflow.
+  EXPECT_FALSE(
+      actionsBar->IsActionVisibleOnMainBar(actionsBar->GetActions()[0]));
 }
 
 // Checks the layout of the overflow bar in the app menu.

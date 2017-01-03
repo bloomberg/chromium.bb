@@ -138,6 +138,13 @@ ui::MenuModel* MediaRouterAction::GetContextMenu() {
   return contextual_menu_.menu_model();
 }
 
+void MediaRouterAction::OnContextMenuClosed() {
+  if (toolbar_actions_bar_->popped_out_action() == this &&
+      !GetMediaRouterDialogController()->IsShowingMediaRouterDialog()) {
+    toolbar_actions_bar_->UndoPopOut();
+  }
+}
+
 bool MediaRouterAction::ExecuteAction(bool by_user) {
   base::RecordAction(base::UserMetricsAction("MediaRouter_Icon_Click"));
 
