@@ -71,13 +71,23 @@ def _PackageChecks(input_api, output_api):
     return []
 
 
+def _RunUnittests(input_api, output_api):
+  return input_api.canned_checks.RunUnitTestsInDirectory(
+      input_api, output_api, '.', [ r'^.+_unittest\.py$'])
+
+
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_PyLintChecks(input_api, output_api))
   results.extend(
       input_api.canned_checks.CheckPatchFormatted(input_api, output_api))
   results.extend(_PackageChecks(input_api, output_api))
+  results.extend(_RunUnittests(input_api, output_api))
   return results
+
+
+def CheckChangeOnCommit(input_api, output_api):
+  return _RunUnittests(input_api, output_api)
 
 
 def _GetTryMasters(project, change):

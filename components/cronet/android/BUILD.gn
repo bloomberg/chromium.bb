@@ -1403,6 +1403,40 @@ if (target_cpu == "arm" && arm_version == 7 && !arm_use_neon) {
   }
 }
 
+# Enforce restrictions for API<->impl boundary.
+action("api_static_checks") {
+  script = "//components/cronet/tools/api_static_checks.py"
+  outputs = [
+    "$target_gen_dir/$target_name.stamp",
+  ]
+  args = [
+    "--api_jar",
+    rebase_path(
+        "$root_out_dir/lib.java/components/cronet/android/cronet_api.jar",
+        root_build_dir),
+    "--impl_jar",
+    rebase_path(
+        "$root_out_dir/lib.java/components/cronet/android/cronet_impl_common_java.jar",
+        root_build_dir),
+    "--impl_jar",
+    rebase_path(
+        "$root_out_dir/lib.java/components/cronet/android/cronet_impl_platform_java.jar",
+        root_build_dir),
+    "--impl_jar",
+    rebase_path(
+        "$root_out_dir/lib.java/components/cronet/android/cronet_impl_native_java.jar",
+        root_build_dir),
+    "--stamp",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+  deps = [
+    ":cronet_api_java",
+    ":cronet_impl_common_java",
+    ":cronet_impl_native_java",
+    ":cronet_impl_platform_java",
+  ]
+}
+
 group("cronet_package") {
   # Marked as testonly as it contains test-only targets too.
   testonly = true
@@ -1413,6 +1447,7 @@ group("cronet_package") {
   if (use_platform_icu_alternatives &&
       (!(target_cpu == "arm" && arm_version == 7) || !arm_use_neon)) {
     deps = [
+      ":api_static_checks",
       ":cronet_package_copy",
       ":cronet_package_copy_native_lib",
       ":cronet_package_copy_native_lib_unstripped",
