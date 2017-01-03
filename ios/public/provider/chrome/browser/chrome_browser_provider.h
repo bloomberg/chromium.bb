@@ -39,14 +39,12 @@ class SyncedWindowDelegatesGetter;
 }
 
 @protocol AppRatingPrompt;
-@protocol InfoBarViewProtocol;
 @protocol LogoVendor;
 @protocol TextFieldStyling;
 @protocol NativeAppWhitelistManager;
 @class UITextField;
 @class UIView;
 @protocol UrlLoader;
-typedef UIView<InfoBarViewProtocol>* InfoBarViewPlaceholder;
 
 namespace ios {
 

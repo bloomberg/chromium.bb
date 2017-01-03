@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol InfoBarViewProtocol;
+@class InfoBarView;
 class InfoBarViewDelegate;
 namespace infobars {
 class InfoBarDelegate;
@@ -17,6 +17,7 @@ class InfoBarDelegate;
 @interface InfoBarController : NSObject
 
 @property(nonatomic, readonly) InfoBarViewDelegate* delegate;
+
 // Designated initializer.
 - (instancetype)initWithDelegate:(InfoBarViewDelegate*)delegate
     NS_DESIGNATED_INITIALIZER;
@@ -25,9 +26,8 @@ class InfoBarDelegate;
 
 // Creates a view and lays out all the infobar elements in it. Will not add
 // it as a subview yet. This method must be overriden in subclasses.
-- (UIView<InfoBarViewProtocol>*)viewForDelegate:
-                                    (infobars::InfoBarDelegate*)delegate
-                                          frame:(CGRect)bounds;
+- (InfoBarView*)viewForDelegate:(infobars::InfoBarDelegate*)delegate
+                          frame:(CGRect)bounds;
 
 // Creates the view.
 - (void)layoutForDelegate:(infobars::InfoBarDelegate*)delegate
@@ -47,7 +47,7 @@ class InfoBarDelegate;
 - (void)removeView;
 
 // Accesses the view.
-- (UIView<InfoBarViewProtocol>*)view;
+- (InfoBarView*)view;
 
 @end
 

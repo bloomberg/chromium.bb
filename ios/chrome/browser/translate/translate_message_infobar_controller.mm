@@ -10,7 +10,6 @@
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view_delegate.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_protocol.h"
 #include "ui/gfx/image/image.h"
 
 @interface TranslateMessageInfoBarController ()
@@ -22,10 +21,9 @@
 
 @implementation TranslateMessageInfoBarController
 
-- (UIView<InfoBarViewProtocol>*)viewForDelegate:
-                                    (infobars::InfoBarDelegate*)delegate
-                                          frame:(CGRect)frame {
-  base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
+- (InfoBarView*)viewForDelegate:(infobars::InfoBarDelegate*)delegate
+                          frame:(CGRect)frame {
+  base::scoped_nsobject<InfoBarView> infoBarView;
   translate::TranslateInfoBarDelegate* translateInfoBarDelegate =
       delegate->AsTranslateInfoBarDelegate();
   infoBarView.reset(

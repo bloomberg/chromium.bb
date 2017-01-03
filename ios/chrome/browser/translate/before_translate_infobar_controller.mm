@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view_delegate.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_protocol.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -104,7 +103,7 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
 // Dismisses the language selection view.
 - (void)dismissLanguageSelectionView;
 // Changes the text on the view to match the language.
-- (void)updateInfobarLabelOnView:(UIView<InfoBarViewProtocol>*)view;
+- (void)updateInfobarLabelOnView:(InfoBarView*)view;
 
 @end
 
@@ -128,10 +127,9 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
 #pragma mark -
 #pragma mark InfoBarControllerProtocol
 
-- (UIView<InfoBarViewProtocol>*)viewForDelegate:
-                                    (infobars::InfoBarDelegate*)delegate
-                                          frame:(CGRect)frame {
-  base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
+- (InfoBarView*)viewForDelegate:(infobars::InfoBarDelegate*)delegate
+                          frame:(CGRect)frame {
+  base::scoped_nsobject<InfoBarView> infoBarView;
   _translateInfoBarDelegate = delegate->AsTranslateInfoBarDelegate();
   infoBarView.reset(
       [[InfoBarView alloc] initWithFrame:frame delegate:self.delegate]);
@@ -159,7 +157,7 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
   return [[infoBarView retain] autorelease];
 }
 
-- (void)updateInfobarLabelOnView:(UIView<InfoBarViewProtocol>*)view {
+- (void)updateInfobarLabelOnView:(InfoBarView*)view {
   NSString* originalLanguage = base::SysUTF16ToNSString(
       _translateInfoBarDelegate->original_language_name());
   NSString* targetLanguage = base::SysUTF16ToNSString(

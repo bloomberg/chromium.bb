@@ -7,7 +7,6 @@ source_set("infobars") {
     "infobar_view.h",
     "infobar_view.mm",
     "infobar_view_delegate.h",
-    "infobar_view_protocol.h",
   ]
   deps = [
     "//base",

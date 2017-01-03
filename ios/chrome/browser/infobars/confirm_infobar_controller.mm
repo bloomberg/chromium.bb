@@ -10,7 +10,6 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view_delegate.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_protocol.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/image/image.h"
@@ -57,12 +56,10 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
 #pragma mark -
 #pragma mark InfoBarController
 
-- (UIView<InfoBarViewProtocol>*)viewForDelegate:
-                                    (infobars::InfoBarDelegate*)delegate
-                                          frame:(CGRect)frame {
-  UIView<InfoBarViewProtocol>* infoBarView;
+- (InfoBarView*)viewForDelegate:(infobars::InfoBarDelegate*)delegate
+                          frame:(CGRect)frame {
   _confirmInfobarDelegate = delegate->AsConfirmInfoBarDelegate();
-  infoBarView =
+  InfoBarView* infoBarView =
       [[InfoBarView alloc] initWithFrame:frame delegate:self.delegate];
   // Model data.
   gfx::Image modelIcon = _confirmInfobarDelegate->GetIcon();
@@ -109,7 +106,7 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
   return infoBarView;
 }
 
-- (void)updateInfobarLabel:(UIView<InfoBarViewProtocol>*)view {
+- (void)updateInfobarLabel:(InfoBarView*)view {
   if (!_confirmInfobarDelegate->GetMessageText().length())
     return;
   if (_confirmInfobarDelegate->GetLinkText().length()) {

@@ -9,7 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/native_app_launcher/native_app_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view.h"
-#include "ios/chrome/browser/ui/infobars/infobar_view_protocol.h"
+#include "ios/chrome/browser/ui/infobars/infobar_view.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,10 +34,9 @@
 
 #pragma mark - InfoBarController
 
-- (UIView<InfoBarViewProtocol>*)viewForDelegate:
-                                    (infobars::InfoBarDelegate*)delegate
-                                          frame:(CGRect)frame {
-  base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
+- (InfoBarView*)viewForDelegate:(infobars::InfoBarDelegate*)delegate
+                          frame:(CGRect)frame {
+  base::scoped_nsobject<InfoBarView> infoBarView;
   nativeAppInfoBarDelegate_ = static_cast<NativeAppInfoBarDelegate*>(delegate);
   DCHECK(nativeAppInfoBarDelegate_);
   infoBarView.reset(

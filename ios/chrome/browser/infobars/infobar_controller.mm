@@ -7,14 +7,14 @@
 #include <memory>
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_protocol.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface InfoBarController () {
-  UIView<InfoBarViewProtocol>* _infoBarView;
+  InfoBarView* _infoBarView;
 }
 @end
 
@@ -49,9 +49,8 @@
   _infoBarView = [self viewForDelegate:delegate frame:bounds];
 }
 
-- (UIView<InfoBarViewProtocol>*)viewForDelegate:
-                                    (infobars::InfoBarDelegate*)delegate
-                                          frame:(CGRect)bounds {
+- (InfoBarView*)viewForDelegate:(infobars::InfoBarDelegate*)delegate
+                          frame:(CGRect)bounds {
   // Must be overriden in subclasses.
   NOTREACHED();
   return _infoBarView;
@@ -61,7 +60,7 @@
   [_infoBarView setVisibleHeight:newHeight];
 }
 
-- (UIView<InfoBarViewProtocol>*)view {
+- (InfoBarView*)view {
   return _infoBarView;
 }
 

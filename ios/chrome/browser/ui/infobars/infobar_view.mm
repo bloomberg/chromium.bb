@@ -258,7 +258,8 @@ enum InfoBarButtonPosition { ON_FIRST_LINE, CENTER, LEFT, RIGHT };
 
 @synthesize visibleHeight = visibleHeight_;
 
-- (id)initWithFrame:(CGRect)frame delegate:(InfoBarViewDelegate*)delegate {
+- (instancetype)initWithFrame:(CGRect)frame
+                     delegate:(InfoBarViewDelegate*)delegate {
   self = [super initWithFrame:frame];
   if (self) {
     delegate_ = delegate;

@@ -13,7 +13,7 @@
 // Action for any of the user defined links.
 - (void)infobarLinkDidPress:(NSNumber*)tag;
 // Updates the label on the provided view.
-- (void)updateInfobarLabel:(UIView<InfoBarViewProtocol>*)view;
+- (void)updateInfobarLabel:(InfoBarView*)view;
 @end
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_CONFIRM_INFOBAR_CONTROLLER_PROTECTED_H_

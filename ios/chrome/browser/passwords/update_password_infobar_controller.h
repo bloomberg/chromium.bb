@@ -13,9 +13,9 @@ class IOSChromeUpdatePasswordInfoBarDelegate;
 // the user whether they want to update their password.
 @interface UpdatePasswordInfoBarController : ConfirmInfoBarController
 
-- (UIView<InfoBarViewProtocol>*)
-viewForDelegate:(IOSChromeUpdatePasswordInfoBarDelegate*)delegate
-          frame:(CGRect)frame;
+- (InfoBarView*)viewForDelegate:
+                    (IOSChromeUpdatePasswordInfoBarDelegate*)delegate
+                          frame:(CGRect)frame;
 
 @end
 

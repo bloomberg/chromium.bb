@@ -10,7 +10,7 @@
 #include "ios/chrome/browser/infobars/confirm_infobar_controller+protected.h"
 #include "ios/chrome/browser/passwords/ios_chrome_update_password_infobar_delegate.h"
 #import "ios/chrome/browser/ui/elements/selector_coordinator.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_protocol.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view.h"
 
 namespace {
 // Tag for the account link in the info bar message. Set to 10 to avoid conflict
@@ -39,14 +39,14 @@ NSUInteger kAccountTag = 10;
   return self;
 }
 
-- (UIView<InfoBarViewProtocol>*)
-viewForDelegate:(IOSChromeUpdatePasswordInfoBarDelegate*)delegate
-          frame:(CGRect)frame {
+- (InfoBarView*)viewForDelegate:
+                    (IOSChromeUpdatePasswordInfoBarDelegate*)delegate
+                          frame:(CGRect)frame {
   _delegate = delegate;
   return [super viewForDelegate:delegate frame:frame];
 }
 
-- (void)updateInfobarLabel:(UIView<InfoBarViewProtocol>*)view {
+- (void)updateInfobarLabel:(InfoBarView*)view {
   [super updateInfobarLabel:view];
 
   // Get the message text with current links marked.
