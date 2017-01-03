@@ -124,6 +124,65 @@ TEST(PaymentRequestTest, PaymentItemFromDictionaryValueFailure) {
   EXPECT_FALSE(actual.FromDictionaryValue(item_dict));
 }
 
+// Tests the success case when populating a PaymentShippingOption from a
+// dictionary.
+TEST(PaymentRequestTest, PaymentShippingOptionFromDictionaryValueSuccess) {
+  PaymentShippingOption expected;
+  expected.id = base::ASCIIToUTF16("123");
+  expected.label = base::ASCIIToUTF16("Ground Shipping");
+  expected.amount.currency = base::ASCIIToUTF16("BRL");
+  expected.amount.value = base::ASCIIToUTF16("4,000.32");
+  expected.selected = true;
+
+  base::DictionaryValue shipping_option_dict;
+  shipping_option_dict.SetString("id", "123");
+  shipping_option_dict.SetString("label", "Ground Shipping");
+  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
+  amount_dict->SetString("currency", "BRL");
+  amount_dict->SetString("value", "4,000.32");
+  shipping_option_dict.Set("amount", std::move(amount_dict));
+  shipping_option_dict.SetBoolean("selected", true);
+
+  PaymentShippingOption actual;
+  EXPECT_TRUE(actual.FromDictionaryValue(shipping_option_dict));
+
+  EXPECT_EQ(expected, actual);
+}
+
+// Tests the failure case when populating a PaymentShippingOption from a
+// dictionary.
+TEST(PaymentRequestTest, PaymentShippingOptionFromDictionaryValueFailure) {
+  PaymentShippingOption expected;
+  expected.id = base::ASCIIToUTF16("123");
+  expected.label = base::ASCIIToUTF16("Ground Shipping");
+  expected.amount.currency = base::ASCIIToUTF16("BRL");
+  expected.amount.value = base::ASCIIToUTF16("4,000.32");
+  expected.selected = true;
+
+  PaymentShippingOption actual;
+  base::DictionaryValue shipping_option_dict;
+
+  // Id, Label, and amount are required.
+  shipping_option_dict.SetString("id", "123");
+  EXPECT_FALSE(actual.FromDictionaryValue(shipping_option_dict));
+
+  shipping_option_dict.SetString("label", "Ground Shipping");
+  EXPECT_FALSE(actual.FromDictionaryValue(shipping_option_dict));
+
+  // Id must be a string.
+  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
+  amount_dict->SetString("currency", "BRL");
+  amount_dict->SetString("value", "4,000.32");
+  shipping_option_dict.Set("amount", std::move(amount_dict));
+  shipping_option_dict.SetInteger("id", 123);
+  EXPECT_FALSE(actual.FromDictionaryValue(shipping_option_dict));
+
+  // Label must be a string.
+  shipping_option_dict.SetString("id", "123");
+  shipping_option_dict.SetInteger("label", 123);
+  EXPECT_FALSE(actual.FromDictionaryValue(shipping_option_dict));
+}
+
 // Tests that populating a PaymentRequest from an empty dictionary fails.
 TEST(PaymentRequestTest, ParsingEmptyRequestDictionaryFails) {
   PaymentRequest output_request;

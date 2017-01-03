@@ -11,35 +11,40 @@ namespace {
 // All of these are defined here (even though most are only used once each) so
 // the format details are easy to locate and update or compare to the spec doc.
 // (https://w3c.github.io/browser-payment-api/).
-static const char kAddressCountry[] = "country";
 static const char kAddressAddressLine[] = "addressLine";
-static const char kAddressRegion[] = "region";
 static const char kAddressCity[] = "city";
+static const char kAddressCountry[] = "country";
 static const char kAddressDependentLocality[] = "dependentLocality";
-static const char kAddressPostalCode[] = "postalCode";
-static const char kAddressSortingCode[] = "sortingCode";
 static const char kAddressLanguageCode[] = "languageCode";
 static const char kAddressOrganization[] = "organization";
-static const char kAddressRecipient[] = "recipient";
 static const char kAddressPhone[] = "phone";
-static const char kMethodData[] = "methodData";
-static const char kMethodDataData[] = "data";
-static const char kPaymentCurrencyAmountCurrency[] = "currency";
-static const char kPaymentCurrencyAmountValue[] = "value";
-static const char kPaymentItemLabel[] = "label";
-static const char kPaymentItemAmount[] = "amount";
-static const char kPaymentItemPending[] = "pending";
-static const char kSupportedMethods[] = "supportedMethods";
-static const char kPaymentDetails[] = "details";
-static const char kPaymentDetailsTotal[] = "total";
-static const char kPaymentDetailsDisplayItems[] = "displayItems";
-static const char kMethodName[] = "methodName";
+static const char kAddressPostalCode[] = "postalCode";
+static const char kAddressRecipient[] = "recipient";
+static const char kAddressRegion[] = "region";
+static const char kAddressSortingCode[] = "sortingCode";
+static const char kCardBillingAddress[] = "billingAddress";
 static const char kCardCardholderName[] = "cardholderName";
 static const char kCardCardNumber[] = "cardNumber";
+static const char kCardCardSecurityCode[] = "cardSecurityCode";
 static const char kCardExpiryMonth[] = "expiryMonth";
 static const char kCardExpiryYear[] = "expiryYear";
-static const char kCardCardSecurityCode[] = "cardSecurityCode";
-static const char kCardBillingAddress[] = "billingAddress";
+static const char kMethodData[] = "methodData";
+static const char kMethodDataData[] = "data";
+static const char kMethodName[] = "methodName";
+static const char kPaymentCurrencyAmountCurrency[] = "currency";
+static const char kPaymentCurrencyAmountValue[] = "value";
+static const char kPaymentDetails[] = "details";
+static const char kPaymentDetailsDisplayItems[] = "displayItems";
+static const char kPaymentDetailsShippingOptions[] = "shippingOptions";
+static const char kPaymentDetailsTotal[] = "total";
+static const char kPaymentItemAmount[] = "amount";
+static const char kPaymentItemLabel[] = "label";
+static const char kPaymentItemPending[] = "pending";
+static const char kPaymentShippingOptionAmount[] = "amount";
+static const char kPaymentShippingOptionId[] = "id";
+static const char kPaymentShippingOptionLabel[] = "label";
+static const char kPaymentShippingOptionSelected[] = "selected";
+static const char kSupportedMethods[] = "supportedMethods";
 
 }  // namespace
 
@@ -206,6 +211,30 @@ bool PaymentShippingOption::operator!=(
   return !(*this == other);
 }
 
+bool PaymentShippingOption::FromDictionaryValue(
+    const base::DictionaryValue& value) {
+  if (!value.GetString(kPaymentShippingOptionId, &this->id)) {
+    return false;
+  }
+
+  if (!value.GetString(kPaymentShippingOptionLabel, &this->label)) {
+    return false;
+  }
+
+  const base::DictionaryValue* amount_dict = nullptr;
+  if (!value.GetDictionary(kPaymentShippingOptionAmount, &amount_dict)) {
+    return false;
+  }
+  if (!this->amount.FromDictionaryValue(*amount_dict)) {
+    return false;
+  }
+
+  // Selected is optional.
+  value.GetBoolean(kPaymentShippingOptionSelected, &this->selected);
+
+  return true;
+}
+
 PaymentDetailsModifier::PaymentDetailsModifier() {}
 PaymentDetailsModifier::PaymentDetailsModifier(
     const PaymentDetailsModifier& other) = default;
@@ -263,6 +292,21 @@ bool PaymentDetails::FromDictionaryValue(const base::DictionaryValue& value) {
         return false;
       }
       this->display_items.push_back(payment_item);
+    }
+  }
+
+  const base::ListValue* shipping_options_list = nullptr;
+  if (value.GetList(kPaymentDetailsShippingOptions, &shipping_options_list)) {
+    for (size_t i = 0; i < shipping_options_list->GetSize(); ++i) {
+      const base::DictionaryValue* shipping_option_dict;
+      if (!shipping_options_list->GetDictionary(i, &shipping_option_dict)) {
+        return false;
+      }
+      PaymentShippingOption shipping_option;
+      if (!shipping_option.FromDictionaryValue(*shipping_option_dict)) {
+        return false;
+      }
+      this->shipping_options.push_back(shipping_option);
     }
   }
 
