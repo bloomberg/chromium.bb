@@ -88,14 +88,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
                                  base::WrapUnique(pair.second.release()));
     }
     protocol_handlers_.clear();
-
-    std::vector<std::unique_ptr<net::URLRequestInterceptor>>
-        request_interceptors;
-    for (auto it : request_interceptors_) {
-      request_interceptors.push_back(base::WrapUnique(it));
-    }
-    request_interceptors_.weak_clear();
-    builder.SetInterceptors(std::move(request_interceptors));
+    builder.SetInterceptors(std::move(request_interceptors_));
 
     url_request_context_ = builder.Build();
   }

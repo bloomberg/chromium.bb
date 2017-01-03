@@ -14,6 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
+#include "ios/chrome/browser/net/net_types.h"
 #include "ios/web/public/browser_state.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -124,7 +125,7 @@ class ChromeBrowserState : public web::BrowserState {
       std::map<std::string,
                linked_ptr<net::URLRequestJobFactory::ProtocolHandler>>*
           protocol_handlers,
-      ScopedVector<net::URLRequestInterceptor> request_interceptors) = 0;
+      URLRequestInterceptorScopedVector request_interceptors) = 0;
 
   // Creates a isolated net::URLRequestContextGetter. Should only be called once
   // per partition_path per browser state object.

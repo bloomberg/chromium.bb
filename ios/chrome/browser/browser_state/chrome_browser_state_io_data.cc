@@ -416,13 +416,12 @@ ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
   // Set up interceptors in the reverse order.
   std::unique_ptr<net::URLRequestJobFactory> top_job_factory =
       std::move(job_factory);
-  for (URLRequestInterceptorScopedVector::reverse_iterator i =
-           request_interceptors.rbegin();
-       i != request_interceptors.rend(); ++i) {
+  for (auto i = request_interceptors.rbegin(); i != request_interceptors.rend();
+       ++i) {
     top_job_factory.reset(new net::URLRequestInterceptingJobFactory(
-        std::move(top_job_factory), base::WrapUnique(*i)));
+        std::move(top_job_factory), std::move(*i)));
   }
-  request_interceptors.weak_clear();
+  request_interceptors.clear();
   return top_job_factory;
 }
 

@@ -10,11 +10,11 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/zoom_level_delegate.h"
@@ -63,13 +63,13 @@ class SSLHostStateDelegate;
 
 // A mapping from the scheme name to the protocol handler that services its
 // content.
-typedef std::map<
-  std::string, linked_ptr<net::URLRequestJobFactory::ProtocolHandler> >
-    ProtocolHandlerMap;
+using ProtocolHandlerMap =
+    std::map<std::string,
+             linked_ptr<net::URLRequestJobFactory::ProtocolHandler>>;
 
-// A scoped vector of protocol interceptors.
-typedef ScopedVector<net::URLRequestInterceptor>
-    URLRequestInterceptorScopedVector;
+// A owning vector of protocol interceptors.
+using URLRequestInterceptorScopedVector =
+    std::vector<std::unique_ptr<net::URLRequestInterceptor>>;
 
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread. All these methods must only be called on the UI
@@ -87,7 +87,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       BrowserContext* browser_context, SiteInstance* site_instance);
   static content::StoragePartition* GetStoragePartitionForSite(
       BrowserContext* browser_context, const GURL& site);
-  typedef base::Callback<void(StoragePartition*)> StoragePartitionCallback;
+  using StoragePartitionCallback = base::Callback<void(StoragePartition*)>;
   static void ForEachStoragePartition(
       BrowserContext* browser_context,
       const StoragePartitionCallback& callback);
@@ -106,7 +106,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static content::StoragePartition* GetDefaultStoragePartition(
       BrowserContext* browser_context);
 
-  typedef base::Callback<void(std::unique_ptr<BlobHandle>)> BlobCallback;
+  using BlobCallback = base::Callback<void(std::unique_ptr<BlobHandle>)>;
 
   // |callback| returns a nullptr scoped_ptr on failure.
   static void CreateMemoryBackedBlob(BrowserContext* browser_context,

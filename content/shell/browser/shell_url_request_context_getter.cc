@@ -241,14 +241,12 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     // Set up interceptors in the reverse order.
     std::unique_ptr<net::URLRequestJobFactory> top_job_factory =
         std::move(job_factory);
-    for (URLRequestInterceptorScopedVector::reverse_iterator i =
-             request_interceptors_.rbegin();
-         i != request_interceptors_.rend();
-         ++i) {
+    for (auto i = request_interceptors_.rbegin();
+         i != request_interceptors_.rend(); ++i) {
       top_job_factory.reset(new net::URLRequestInterceptingJobFactory(
-          std::move(top_job_factory), base::WrapUnique(*i)));
+          std::move(top_job_factory), std::move(*i)));
     }
-    request_interceptors_.weak_clear();
+    request_interceptors_.clear();
 
     storage_->set_job_factory(std::move(top_job_factory));
   }

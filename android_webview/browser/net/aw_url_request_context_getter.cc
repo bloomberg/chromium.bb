@@ -136,10 +136,8 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
   // it cannot be used by child processes until access to it is granted via
   // ChildProcessSecurityPolicy::GrantScheme(). This is done in
   // AwContentBrowserClient.
-  request_interceptors.push_back(
-      CreateAndroidContentRequestInterceptor().release());
-  request_interceptors.push_back(
-      CreateAndroidAssetFileRequestInterceptor().release());
+  request_interceptors.push_back(CreateAndroidContentRequestInterceptor());
+  request_interceptors.push_back(CreateAndroidAssetFileRequestInterceptor());
   // The AwRequestInterceptor must come after the content and asset file job
   // factories. This for WebViewClassic compatibility where it was not
   // possible to intercept resource loads to resolvable content:// and
@@ -147,20 +145,18 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
   // This logical dependency is also the reason why the Content
   // URLRequestInterceptor has to be added as an interceptor rather than as a
   // ProtocolHandler.
-  request_interceptors.push_back(new AwRequestInterceptor());
+  request_interceptors.push_back(base::MakeUnique<AwRequestInterceptor>());
 
   // The chain of responsibility will execute the handlers in reverse to the
   // order in which the elements of the chain are created.
   std::unique_ptr<net::URLRequestJobFactory> job_factory(
       std::move(aw_job_factory));
-  for (content::URLRequestInterceptorScopedVector::reverse_iterator i =
-           request_interceptors.rbegin();
-       i != request_interceptors.rend();
+  for (auto i = request_interceptors.rbegin(); i != request_interceptors.rend();
        ++i) {
     job_factory.reset(new net::URLRequestInterceptingJobFactory(
-        std::move(job_factory), base::WrapUnique(*i)));
+        std::move(job_factory), std::move(*i)));
   }
-  request_interceptors.weak_clear();
+  request_interceptors.clear();
 
   return job_factory;
 }

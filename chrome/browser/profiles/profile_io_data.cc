@@ -1099,7 +1099,7 @@ void ProfileIOData::Init(
   // Install the New Tab Page Interceptor.
   if (profile_params_->new_tab_page_interceptor.get()) {
     request_interceptors.push_back(
-        profile_params_->new_tab_page_interceptor.release());
+        std::move(profile_params_->new_tab_page_interceptor));
   }
 
   std::unique_ptr<net::MultiLogCTVerifier> ct_verifier(
@@ -1196,14 +1196,12 @@ ProfileIOData::SetUpJobFactoryDefaults(
   // Set up interceptors in the reverse order.
   std::unique_ptr<net::URLRequestJobFactory> top_job_factory =
       std::move(job_factory);
-  for (content::URLRequestInterceptorScopedVector::reverse_iterator i =
-           request_interceptors.rbegin();
-       i != request_interceptors.rend();
+  for (auto i = request_interceptors.rbegin(); i != request_interceptors.rend();
        ++i) {
     top_job_factory.reset(new net::URLRequestInterceptingJobFactory(
-        std::move(top_job_factory), base::WrapUnique(*i)));
+        std::move(top_job_factory), std::move(*i)));
   }
-  request_interceptors.weak_clear();
+  request_interceptors.clear();
 
   if (protocol_handler_interceptor) {
     protocol_handler_interceptor->Chain(std::move(top_job_factory));

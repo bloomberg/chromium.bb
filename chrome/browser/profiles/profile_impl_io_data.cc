@@ -550,16 +550,16 @@ void ProfileImplIOData::InitializeInternal(
 
   // Install the Offline Page Interceptor.
 #if defined(OS_ANDROID)
-  request_interceptors.push_back(std::unique_ptr<net::URLRequestInterceptor>(
-      new offline_pages::OfflinePageRequestInterceptor(
-          previews_io_data_.get())));
+  request_interceptors.push_back(
+      base::MakeUnique<offline_pages::OfflinePageRequestInterceptor>(
+          previews_io_data_.get()));
 #endif
 
   // The data reduction proxy interceptor should be as close to the network
   // as possible.
   request_interceptors.insert(
       request_interceptors.begin(),
-      data_reduction_proxy_io_data()->CreateInterceptor().release());
+      data_reduction_proxy_io_data()->CreateInterceptor());
   main_context_storage->set_job_factory(SetUpJobFactoryDefaults(
       std::move(main_job_factory), std::move(request_interceptors),
       std::move(profile_params->protocol_handler_interceptor),
@@ -713,7 +713,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   // as possible.
   request_interceptors.insert(
       request_interceptors.begin(),
-      data_reduction_proxy_io_data()->CreateInterceptor().release());
+      data_reduction_proxy_io_data()->CreateInterceptor());
 
   std::unique_ptr<net::URLRequestJobFactory> top_job_factory(
       SetUpJobFactoryDefaults(

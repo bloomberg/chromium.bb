@@ -66,14 +66,7 @@ net::URLRequestContext* BlimpURLRequestContextGetter::GetURLRequestContext() {
           base::WrapUnique(scheme_handler.second.release()));
     }
     protocol_handlers_.clear();
-
-    std::vector<std::unique_ptr<net::URLRequestInterceptor>>
-        request_interceptors;
-    for (auto* i : request_interceptors_) {
-      request_interceptors.push_back(base::WrapUnique(i));
-    }
-    request_interceptors_.weak_clear();
-    builder.SetInterceptors(std::move(request_interceptors));
+    builder.SetInterceptors(std::move(request_interceptors_));
 
     net::URLRequestContextBuilder::HttpCacheParams cache_params;
     cache_params.type =

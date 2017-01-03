@@ -13,7 +13,6 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
-#include "ios/chrome/browser/net/net_types.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/public/webui/web_ui_ios.h"
