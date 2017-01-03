@@ -338,54 +338,18 @@ public class ExternalNavigationHandler {
         // check whether the intent can be resolved. If not, we will see
         // whether we can download it from the Market.
         if (!canResolveActivity) {
-            Pair<String, String> appInfo = null;
             if (hasBrowserFallbackUrl) {
-                // If the fallback URL is a link to Play Store, send the user to Play Store app
-                // instead: crbug.com/638672.
-                appInfo = maybeGetPlayStoreAppIdAndReferrer(browserFallbackUrl);
-                if (appInfo == null) {
-                    return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
-                }
+                return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
             }
 
-            String packagename = appInfo != null ? appInfo.first : intent.getPackage();
-            if (packagename != null) {
-                String marketReferrer = appInfo != null ? appInfo.second :
-                        IntentUtils.safeGetStringExtra(intent, EXTRA_MARKET_REFERRER);
+            if (intent.getPackage() != null) {
+                String marketReferrer = IntentUtils.safeGetStringExtra(
+                        intent, EXTRA_MARKET_REFERRER);
                 if (TextUtils.isEmpty(marketReferrer)) {
                     marketReferrer = mDelegate.getPackageName();
                 }
-                try {
-                    Uri marketUri = new Uri.Builder()
-                            .scheme("market")
-                            .authority("details")
-                            .appendQueryParameter(PLAY_PACKAGE_PARAM, packagename)
-                            .appendQueryParameter(PLAY_REFERRER_PARAM, Uri.decode(marketReferrer))
-                            .build();
-                    intent = new Intent(Intent.ACTION_VIEW, marketUri);
-                    intent.addCategory(Intent.CATEGORY_BROWSABLE);
-                    intent.setPackage("com.android.vending");
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    if (params.getReferrerUrl() != null) {
-                        intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(params.getReferrerUrl()));
-                    }
-                    if (params.isIncognito()) {
-                        mDelegate.startIncognitoIntent(intent, params.getReferrerUrl(),
-                                hasBrowserFallbackUrl ? browserFallbackUrl : null, params.getTab(),
-                                params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(),
-                                false);
-                        return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
-                    } else {
-                        mDelegate.startActivity(intent, false);
-                        return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-                    }
-                } catch (ActivityNotFoundException ex) {
-                    // ignore the error on devices that does not have
-                    // play market installed.
-                    return OverrideUrlLoadingResult.NO_OVERRIDE;
-                }
+                return sendIntentToMarket(intent.getPackage(), marketReferrer, params);
             }
-
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
@@ -559,6 +523,42 @@ public class ExternalNavigationHandler {
     }
 
     /**
+     * @return OVERRIDE_WITH_EXTERNAL_INTENT when we successfully started market activity,
+     *         NO_OVERRIDE otherwise.
+     */
+    private OverrideUrlLoadingResult sendIntentToMarket(String packageName, String marketReferrer,
+            ExternalNavigationParams params) {
+        try {
+            Uri marketUri = new Uri.Builder()
+                    .scheme("market")
+                    .authority("details")
+                    .appendQueryParameter(PLAY_PACKAGE_PARAM, packageName)
+                    .appendQueryParameter(PLAY_REFERRER_PARAM, Uri.decode(marketReferrer))
+                    .build();
+            Intent intent = new Intent(Intent.ACTION_VIEW, marketUri);
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            intent.setPackage("com.android.vending");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            if (params.getReferrerUrl() != null) {
+                intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(params.getReferrerUrl()));
+            }
+            if (params.isIncognito()) {
+                mDelegate.startIncognitoIntent(intent, params.getReferrerUrl(), null,
+                        params.getTab(),
+                        params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(), false);
+                return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
+            } else {
+                mDelegate.startActivity(intent, false);
+                return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+            }
+        } catch (ActivityNotFoundException ex) {
+            // ignore the error on devices that does not have
+            // play market installed.
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+    }
+
+    /**
      * Checks whether {@param intent} is for an Instant App. Considers both package and actions that
      * would resolve to Supervisor.
      * @return Whether the given intent is going to open an Instant App.
@@ -585,6 +585,15 @@ public class ExternalNavigationHandler {
      */
     private OverrideUrlLoadingResult clobberCurrentTabWithFallbackUrl(
             String browserFallbackUrl, ExternalNavigationParams params) {
+        // If the fallback URL is a link to Play Store, send the user to Play Store app
+        // instead: crbug.com/638672.
+        Pair<String, String> appInfo = maybeGetPlayStoreAppIdAndReferrer(browserFallbackUrl);
+        if (appInfo != null) {
+            String marketReferrer = TextUtils.isEmpty(appInfo.second) ? mDelegate.getPackageName()
+                    : appInfo.second;
+            return sendIntentToMarket(appInfo.first, marketReferrer, params);
+        }
+
         // For subframes, we don't support fallback url for now.
         // http://crbug.com/364522.
         if (!params.isMainFrame()) return OverrideUrlLoadingResult.NO_OVERRIDE;

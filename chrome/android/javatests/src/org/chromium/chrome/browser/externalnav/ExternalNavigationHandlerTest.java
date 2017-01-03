@@ -713,6 +713,34 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    public void testFallbackUrl_RedirectToIntentToMarket() {
+        TestContext context = new TestContext();
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(context);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0);
+        checkUrl("http://goo.gl/abcdefg")
+                .withPageTransition(PageTransition.TYPED)
+                .withRedirectHandler(redirectHandler)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 0);
+        String realIntent = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
+                + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
+                + "https://play.google.com/store/apps/details?id=com.imdb.mobile"
+                + "&referrer=mypage;end";
+
+        checkUrl(realIntent)
+                .withPageTransition(PageTransition.LINK)
+                .withIsRedirect(true)
+                .withRedirectHandler(redirectHandler)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+
+        assertEquals("market://details?id=com.imdb.mobile&referrer=mypage",
+                mDelegate.startActivityIntent.getDataString());
+    }
+
+    @SmallTest
     public void testFallbackUrl_IntentResolutionFailsWithoutPackageName() {
         // IMDB app isn't installed.
         mDelegate.setCanResolveActivity(false);
