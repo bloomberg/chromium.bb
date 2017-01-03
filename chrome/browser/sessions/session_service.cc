@@ -714,7 +714,7 @@ void SessionService::OnBrowserSetLastActive(Browser* browser) {
 
 void SessionService::OnGotSessionCommands(
     const sessions::GetLastSessionCallback& callback,
-    ScopedVector<sessions::SessionCommand> commands) {
+    std::vector<std::unique_ptr<sessions::SessionCommand>> commands) {
   std::vector<std::unique_ptr<sessions::SessionWindow>> valid_windows;
   SessionID::id_type active_window_id = 0;
 

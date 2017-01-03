@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_TEST_HELPER_H_
 #define COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_TEST_HELPER_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/task/cancelable_task_tracker.h"
 
 namespace sessions {
@@ -29,7 +31,8 @@ class BaseSessionServiceTestHelper {
   bool ProcessedAnyCommands();
 
   // Read the last session commands directly from file.
-  bool ReadLastSessionCommands(ScopedVector<SessionCommand>* commands);
+  bool ReadLastSessionCommands(
+      std::vector<std::unique_ptr<SessionCommand>>* commands);
 
  private:
   BaseSessionService* base_session_service_;

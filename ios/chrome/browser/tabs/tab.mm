@@ -897,7 +897,7 @@ void AddNetworkClientFactoryOnIOThread(
 - (void)replaceHistoryWithNavigations:
             (const std::vector<sessions::SerializedNavigationEntry>&)navigations
                          currentIndex:(NSInteger)currentIndex {
-  ScopedVector<web::NavigationItem> items =
+  std::vector<std::unique_ptr<web::NavigationItem>> items =
       sessions::IOSSerializedNavigationBuilder::ToNavigationItems(navigations);
   [self navigationManager]->ReplaceSessionHistory(std::move(items),
                                                   currentIndex);

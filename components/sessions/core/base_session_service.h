@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/sessions/core/sessions_export.h"
@@ -35,7 +34,7 @@ class SESSIONS_EXPORT BaseSessionService {
     TAB_RESTORE
   };
 
-  typedef base::Callback<void(ScopedVector<SessionCommand>)>
+  typedef base::Callback<void(std::vector<std::unique_ptr<SessionCommand>>)>
       GetCommandsCallback;
 
   // Creates a new BaseSessionService. After creation you need to invoke
@@ -55,7 +54,7 @@ class SESSIONS_EXPORT BaseSessionService {
 
   // Returns the set of commands which were scheduled to be written. Once
   // committed to the backend, the commands are removed from here.
-  const ScopedVector<SessionCommand>& pending_commands() {
+  const std::vector<std::unique_ptr<SessionCommand>>& pending_commands() {
     return pending_commands_;
   }
 
@@ -112,7 +111,7 @@ class SESSIONS_EXPORT BaseSessionService {
   scoped_refptr<SessionBackend> backend_;
 
   // Commands we need to send over to the backend.
-  ScopedVector<SessionCommand> pending_commands_;
+  std::vector<std::unique_ptr<SessionCommand>> pending_commands_;
 
   // Whether the backend file should be recreated the next time we send
   // over the commands.

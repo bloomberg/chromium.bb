@@ -211,11 +211,12 @@ class PersistentTabRestoreService::Delegate
   // Invoked when we've loaded the session commands that identify the previously
   // closed tabs. This creates entries, adds them to staging_entries_, and
   // invokes LoadState.
-  void OnGotLastSessionCommands(ScopedVector<SessionCommand> commands);
+  void OnGotLastSessionCommands(
+      std::vector<std::unique_ptr<SessionCommand>> commands);
 
   // Populates |loaded_entries| with Entries from |commands|.
   void CreateEntriesFromCommands(
-      const std::vector<SessionCommand*>& commands,
+      const std::vector<std::unique_ptr<SessionCommand>>& commands,
       std::vector<std::unique_ptr<Entry>>* loaded_entries);
 
   // Validates all entries in |entries|, deleting any with no navigations. This
@@ -578,9 +579,9 @@ int PersistentTabRestoreService::Delegate::GetSelectedNavigationIndexToPersist(
 }
 
 void PersistentTabRestoreService::Delegate::OnGotLastSessionCommands(
-    ScopedVector<SessionCommand> commands) {
+    std::vector<std::unique_ptr<SessionCommand>> commands) {
   std::vector<std::unique_ptr<TabRestoreService::Entry>> entries;
-  CreateEntriesFromCommands(commands.get(), &entries);
+  CreateEntriesFromCommands(commands, &entries);
   // Closed tabs always go to the end.
   staging_entries_.insert(staging_entries_.end(),
                           make_move_iterator(entries.begin()),
@@ -590,7 +591,7 @@ void PersistentTabRestoreService::Delegate::OnGotLastSessionCommands(
 }
 
 void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
-    const std::vector<SessionCommand*>& commands,
+    const std::vector<std::unique_ptr<SessionCommand>>& commands,
     std::vector<std::unique_ptr<Entry>>* loaded_entries) {
   if (tab_restore_service_helper_->entries().size() == kMaxEntries)
     return;
@@ -603,8 +604,7 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
   Window* current_window = nullptr;
   // If > 0, we've gotten a window command but not all the tabs yet.
   int pending_window_tabs = 0;
-  for (std::vector<SessionCommand*>::const_iterator i = commands.begin();
-       i != commands.end(); ++i) {
+  for (auto i = commands.begin(); i != commands.end(); ++i) {
     const SessionCommand& command = *(*i);
     switch (command.id()) {
       case kCommandRestoredEntry: {

@@ -7,7 +7,8 @@
 
 #import "ios/web/navigation/crw_session_controller.h"
 
-#include "base/memory/scoped_vector.h"
+#include <memory>
+#include <vector>
 
 namespace web {
 class BrowserState;
@@ -29,7 +30,8 @@ class NavigationItem;
 
 // Initializes a session controller, supplying a list of NavigationItem objects
 // and the current index in the navigation history.
-- (id)initWithNavigationItems:(ScopedVector<web::NavigationItem>)scoped_items
+- (id)initWithNavigationItems:
+          (std::vector<std::unique_ptr<web::NavigationItem>>)items
                  currentIndex:(NSUInteger)currentIndex
                  browserState:(web::BrowserState*)browserState;
 @end

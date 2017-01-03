@@ -105,7 +105,7 @@ void NavigationManagerImpl::InitializeSession(NSString* window_name,
 }
 
 void NavigationManagerImpl::ReplaceSessionHistory(
-    ScopedVector<web::NavigationItem> items,
+    std::vector<std::unique_ptr<web::NavigationItem>> items,
     int current_index) {
   SetSessionController([[CRWSessionController alloc]
       initWithNavigationItems:std::move(items)

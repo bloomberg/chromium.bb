@@ -30,7 +30,7 @@ bool BaseSessionServiceTestHelper::ProcessedAnyCommands() {
 }
 
 bool BaseSessionServiceTestHelper::ReadLastSessionCommands(
-    ScopedVector<SessionCommand>* commands) {
+    std::vector<std::unique_ptr<SessionCommand>>* commands) {
   return base_session_service_->backend_->ReadLastSessionCommandsImpl(commands);
 }
 

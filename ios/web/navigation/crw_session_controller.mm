@@ -164,7 +164,8 @@ NSString* const kWindowNameKey = @"windowName";
   return self;
 }
 
-- (id)initWithNavigationItems:(ScopedVector<web::NavigationItem>)scoped_items
+- (id)initWithNavigationItems:
+          (std::vector<std::unique_ptr<web::NavigationItem>>)items
                  currentIndex:(NSUInteger)currentIndex
                  browserState:(web::BrowserState*)browserState {
   self = [super init];
@@ -174,12 +175,9 @@ NSString* const kWindowNameKey = @"windowName";
     _browserState = browserState;
 
     // Create entries array from list of navigations.
-    _entries = [[NSMutableArray alloc] initWithCapacity:scoped_items.size()];
-    std::vector<web::NavigationItem*> items;
-    scoped_items.release(&items);
+    _entries = [[NSMutableArray alloc] initWithCapacity:items.size()];
 
-    for (size_t i = 0; i < items.size(); ++i) {
-      std::unique_ptr<web::NavigationItem> item(items[i]);
+    for (auto& item : items) {
       base::scoped_nsobject<CRWSessionEntry> entry(
           [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)]);
       [_entries addObject:entry];

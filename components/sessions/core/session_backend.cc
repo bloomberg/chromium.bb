@@ -11,7 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -55,17 +55,16 @@ class SessionFileReader {
         path, base::File::FLAG_OPEN | base::File::FLAG_READ));
   }
   // Reads the contents of the file specified in the constructor, returning
-  // true on success. It is up to the caller to free all SessionCommands
-  // added to commands.
+  // true on success, and filling up |commands| with commands.
   bool Read(sessions::BaseSessionService::SessionType type,
-            ScopedVector<sessions::SessionCommand>* commands);
+            std::vector<std::unique_ptr<sessions::SessionCommand>>* commands);
 
  private:
   // Reads a single command, returning it. A return value of NULL indicates
   // either there are no commands, or there was an error. Use errored_ to
   // distinguish the two. If NULL is returned, and there is no error, it means
   // the end of file was successfully reached.
-  sessions::SessionCommand* ReadCommand();
+  std::unique_ptr<sessions::SessionCommand> ReadCommand();
 
   // Shifts the unused portion of buffer_ to the beginning and fills the
   // remaining portion with data from the file. Returns false if the buffer
@@ -91,8 +90,9 @@ class SessionFileReader {
   DISALLOW_COPY_AND_ASSIGN(SessionFileReader);
 };
 
-bool SessionFileReader::Read(sessions::BaseSessionService::SessionType type,
-                             ScopedVector<sessions::SessionCommand>* commands) {
+bool SessionFileReader::Read(
+    sessions::BaseSessionService::SessionType type,
+    std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
   if (!file_->IsValid())
     return false;
   FileHeader header;
@@ -104,10 +104,10 @@ bool SessionFileReader::Read(sessions::BaseSessionService::SessionType type,
       header.version != kFileCurrentVersion)
     return false;
 
-  ScopedVector<sessions::SessionCommand> read_commands;
-  for (sessions::SessionCommand* command = ReadCommand(); command && !errored_;
-       command = ReadCommand())
-    read_commands.push_back(command);
+  std::vector<std::unique_ptr<sessions::SessionCommand>> read_commands;
+  for (std::unique_ptr<sessions::SessionCommand> command = ReadCommand();
+       command && !errored_; command = ReadCommand())
+    read_commands.push_back(std::move(command));
   if (!errored_)
     read_commands.swap(*commands);
   if (type == sessions::BaseSessionService::TAB_RESTORE) {
@@ -120,7 +120,7 @@ bool SessionFileReader::Read(sessions::BaseSessionService::SessionType type,
   return !errored_;
 }
 
-sessions::SessionCommand* SessionFileReader::ReadCommand() {
+std::unique_ptr<sessions::SessionCommand> SessionFileReader::ReadCommand() {
   // Make sure there is enough in the buffer for the size of the next command.
   if (available_count_ < sizeof(size_type)) {
     if (!FillBuffer())
@@ -157,8 +157,9 @@ sessions::SessionCommand* SessionFileReader::ReadCommand() {
   const id_type command_id = buffer_[buffer_position_];
   // NOTE: command_size includes the size of the id, which is not part of
   // the contents of the SessionCommand.
-  sessions::SessionCommand* command =
-      new sessions::SessionCommand(command_id, command_size - sizeof(id_type));
+  std::unique_ptr<sessions::SessionCommand> command =
+      base::MakeUnique<sessions::SessionCommand>(
+          command_id, command_size - sizeof(id_type));
   if (command_size > sizeof(id_type)) {
     memcpy(command->contents(),
            &(buffer_[buffer_position_ + sizeof(id_type)]),
@@ -227,7 +228,7 @@ void SessionBackend::Init() {
 }
 
 void SessionBackend::AppendCommands(
-    ScopedVector<sessions::SessionCommand> commands,
+    std::vector<std::unique_ptr<sessions::SessionCommand>> commands,
     bool reset_first) {
   Init();
   // Make sure and check current_session_file_, if opening the file failed
@@ -252,13 +253,13 @@ void SessionBackend::ReadLastSessionCommands(
 
   Init();
 
-  ScopedVector<sessions::SessionCommand> commands;
+  std::vector<std::unique_ptr<sessions::SessionCommand>> commands;
   ReadLastSessionCommandsImpl(&commands);
   callback.Run(std::move(commands));
 }
 
 bool SessionBackend::ReadLastSessionCommandsImpl(
-    ScopedVector<sessions::SessionCommand>* commands) {
+    std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
   Init();
   SessionFileReader file_reader(GetLastSessionPath());
   return file_reader.Read(type_, commands);
@@ -299,17 +300,16 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
 }
 
 bool SessionBackend::ReadCurrentSessionCommandsImpl(
-    ScopedVector<sessions::SessionCommand>* commands) {
+    std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
   Init();
   SessionFileReader file_reader(GetCurrentSessionPath());
   return file_reader.Read(type_, commands);
 }
 
-bool SessionBackend::AppendCommandsToFile(base::File* file,
-    const ScopedVector<sessions::SessionCommand>& commands) {
-  for (ScopedVector<sessions::SessionCommand>::const_iterator i =
-           commands.begin();
-       i != commands.end(); ++i) {
+bool SessionBackend::AppendCommandsToFile(
+    base::File* file,
+    const std::vector<std::unique_ptr<sessions::SessionCommand>>& commands) {
+  for (auto i = commands.begin(); i != commands.end(); ++i) {
     int wrote;
     const size_type content_size = static_cast<size_type>((*i)->size());
     const size_type total_size =  content_size + sizeof(id_type);

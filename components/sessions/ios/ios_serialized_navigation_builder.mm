@@ -52,15 +52,13 @@ IOSSerializedNavigationBuilder::ToNavigationItem(
 }
 
 // static
-ScopedVector<web::NavigationItem>
+std::vector<std::unique_ptr<web::NavigationItem>>
 IOSSerializedNavigationBuilder::ToNavigationItems(
     const std::vector<SerializedNavigationEntry>& navigations) {
-  ScopedVector<web::NavigationItem> items;
-  for (std::vector<SerializedNavigationEntry>::const_iterator it =
-           navigations.begin();
-       it != navigations.end(); ++it) {
-    items.push_back(ToNavigationItem(&(*it)).release());
-  }
+  std::vector<std::unique_ptr<web::NavigationItem>> items;
+  for (const auto& navigation : navigations)
+    items.push_back(ToNavigationItem(&navigation));
+
   return items;
 }
 

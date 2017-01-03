@@ -8,8 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
-
 namespace web {
 class NavigationItem;
 }
@@ -34,9 +32,7 @@ class IOSSerializedNavigationBuilder {
 
   // Converts a set of SerializedNavigationEntrys into a list of
   // NavigationItems with sequential page IDs.
-  // TODO(crbug.com/561329): Change this API to return a
-  // std::vector<scoped_ptr> in coordination with changing downstream clients.
-  static ScopedVector<web::NavigationItem> ToNavigationItems(
+  static std::vector<std::unique_ptr<web::NavigationItem>> ToNavigationItems(
       const std::vector<SerializedNavigationEntry>& navigations);
 };
 

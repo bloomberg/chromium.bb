@@ -24,7 +24,7 @@ namespace {
 void RunIfNotCanceled(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
     const BaseSessionService::GetCommandsCallback& callback,
-    ScopedVector<SessionCommand> commands) {
+    std::vector<std::unique_ptr<SessionCommand>> commands) {
   if (is_canceled.Run())
     return;
   callback.Run(std::move(commands));
@@ -33,7 +33,7 @@ void RunIfNotCanceled(
 void PostOrRunInternalGetCommandsCallback(
     base::TaskRunner* task_runner,
     const BaseSessionService::GetCommandsCallback& callback,
-    ScopedVector<SessionCommand> commands) {
+    std::vector<std::unique_ptr<SessionCommand>> commands) {
   if (task_runner->RunsTasksOnCurrentThread()) {
     callback.Run(std::move(commands));
   } else {
@@ -80,21 +80,22 @@ void BaseSessionService::ScheduleCommand(
     std::unique_ptr<SessionCommand> command) {
   DCHECK(command);
   commands_since_reset_++;
-  pending_commands_.push_back(command.release());
+  pending_commands_.push_back(std::move(command));
   StartSaveTimer();
 }
 
 void BaseSessionService::AppendRebuildCommand(
     std::unique_ptr<SessionCommand> command) {
   DCHECK(command);
-  pending_commands_.push_back(command.release());
+  pending_commands_.push_back(std::move(command));
 }
 
 void BaseSessionService::EraseCommand(SessionCommand* old_command) {
-  ScopedVector<SessionCommand>::iterator it =
-      std::find(pending_commands_.begin(),
-                pending_commands_.end(),
-                old_command);
+  auto it = std::find_if(
+      pending_commands_.begin(), pending_commands_.end(),
+      [old_command](const std::unique_ptr<SessionCommand>& command_ptr) {
+        return command_ptr.get() == old_command;
+      });
   CHECK(it != pending_commands_.end());
   pending_commands_.erase(it);
 }
@@ -102,13 +103,13 @@ void BaseSessionService::EraseCommand(SessionCommand* old_command) {
 void BaseSessionService::SwapCommand(
     SessionCommand* old_command,
     std::unique_ptr<SessionCommand> new_command) {
-  ScopedVector<SessionCommand>::iterator it =
-      std::find(pending_commands_.begin(),
-                pending_commands_.end(),
-                old_command);
+  auto it = std::find_if(
+      pending_commands_.begin(), pending_commands_.end(),
+      [old_command](const std::unique_ptr<SessionCommand>& command_ptr) {
+        return command_ptr.get() == old_command;
+      });
   CHECK(it != pending_commands_.end());
-  *it = new_command.release();
-  delete old_command;
+  *it = std::move(new_command);
 }
 
 void BaseSessionService::ClearPendingCommands() {
@@ -134,7 +135,7 @@ void BaseSessionService::Save() {
   if (pending_commands_.empty())
     return;
 
-  // We create a new ScopedVector which will receive all elements from the
+  // We create a new vector which will receive all elements from the
   // current commands. This will also clear the current list.
   RunTaskOnBackendThread(
       FROM_HERE,

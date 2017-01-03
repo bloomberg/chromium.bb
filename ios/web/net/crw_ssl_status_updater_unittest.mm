@@ -102,7 +102,7 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
 
   // Returns autoreleased session controller with a single committed entry.
   CRWSessionController* SessionControllerWithEntry(std::string item_url_spec) {
-    ScopedVector<web::NavigationItem> nav_items;
+    std::vector<std::unique_ptr<web::NavigationItem>> nav_items;
     base::scoped_nsobject<CRWSessionController> session_controller(
         [[CRWSessionController alloc]
             initWithNavigationItems:std::move(nav_items)

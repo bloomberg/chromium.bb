@@ -96,7 +96,7 @@ SESSIONS_EXPORT bool IsClosingCommand(SessionCommand* command);
 // id of the last active window, but it's only valid when this id corresponds
 // to the id of one of the windows in |valid_windows|.
 SESSIONS_EXPORT void RestoreSessionFromCommands(
-    const ScopedVector<SessionCommand>& commands,
+    const std::vector<std::unique_ptr<SessionCommand>>& commands,
     std::vector<std::unique_ptr<SessionWindow>>* valid_windows,
     SessionID::id_type* active_window_id);
 

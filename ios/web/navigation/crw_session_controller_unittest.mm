@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_entry.h"
@@ -673,14 +674,15 @@ TEST_F(CRWSessionControllerTest, EmptyController) {
   EXPECT_EQ(-1, [session_controller_ pendingEntryIndex]);
 }
 
-// Helper to create a NavigationItem. Caller is responsible for freeing
-// the memory.
-web::NavigationItem* CreateNavigationItem(const std::string& url,
-                                          const std::string& referrer,
-                                          NSString* title) {
+// Helper to create a NavigationItem.
+std::unique_ptr<web::NavigationItemImpl> CreateNavigationItem(
+    const std::string& url,
+    const std::string& referrer,
+    NSString* title) {
   web::Referrer referrer_object(GURL(referrer),
                                 web::ReferrerPolicyDefault);
-  web::NavigationItemImpl* navigation_item = new web::NavigationItemImpl();
+  std::unique_ptr<web::NavigationItemImpl> navigation_item =
+      base::MakeUnique<web::NavigationItemImpl>();
   navigation_item->SetURL(GURL(url));
   navigation_item->SetReferrer(referrer_object);
   navigation_item->SetTitle(base::SysNSStringToUTF16(title));
@@ -690,7 +692,7 @@ web::NavigationItem* CreateNavigationItem(const std::string& url,
 }
 
 TEST_F(CRWSessionControllerTest, CreateWithEmptyNavigations) {
-  ScopedVector<web::NavigationItem> items;
+  std::vector<std::unique_ptr<web::NavigationItem>> items;
   base::scoped_nsobject<CRWSessionController> controller(
       [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
                                                currentIndex:0
@@ -702,7 +704,7 @@ TEST_F(CRWSessionControllerTest, CreateWithEmptyNavigations) {
 }
 
 TEST_F(CRWSessionControllerTest, CreateWithNavList) {
-  ScopedVector<web::NavigationItem> items;
+  std::vector<std::unique_ptr<web::NavigationItem>> items;
   items.push_back(CreateNavigationItem("http://www.google.com",
                                        "http://www.referrer.com", @"Google"));
   items.push_back(CreateNavigationItem("http://www.yahoo.com",
@@ -765,7 +767,7 @@ TEST_F(CRWSessionControllerTest, PreviousNavigationEntry) {
 }
 
 TEST_F(CRWSessionControllerTest, PushNewEntry) {
-  ScopedVector<web::NavigationItem> items;
+  std::vector<std::unique_ptr<web::NavigationItem>> items;
   items.push_back(CreateNavigationItem("http://www.firstpage.com",
                                        "http://www.starturl.com", @"First"));
   items.push_back(CreateNavigationItem("http://www.secondpage.com",
@@ -808,7 +810,7 @@ TEST_F(CRWSessionControllerTest, PushNewEntry) {
 }
 
 TEST_F(CRWSessionControllerTest, IsSameDocumentNavigation) {
-  ScopedVector<web::NavigationItem> items;
+  std::vector<std::unique_ptr<web::NavigationItem>> items;
   items.push_back(
       CreateNavigationItem("http://foo.com", "http://google.com", @"First"));
   // Push state navigation.
@@ -855,7 +857,7 @@ TEST_F(CRWSessionControllerTest, IsSameDocumentNavigation) {
 }
 
 TEST_F(CRWSessionControllerTest, UpdateCurrentEntry) {
-  ScopedVector<web::NavigationItem> items;
+  std::vector<std::unique_ptr<web::NavigationItem>> items;
   items.push_back(CreateNavigationItem("http://www.firstpage.com",
                                        "http://www.starturl.com", @"First"));
   items.push_back(CreateNavigationItem("http://www.secondpage.com",

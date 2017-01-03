@@ -83,7 +83,7 @@ sessions::LiveTab* TabRestoreServiceDelegateImplIOS::AddRestoredTab(
   DCHECK_LT(selected_navigation, static_cast<int>(navigations.size()));
 
   std::unique_ptr<WebStateImpl> webState(new WebStateImpl(browser_state_));
-  ScopedVector<web::NavigationItem> items =
+  std::vector<std::unique_ptr<web::NavigationItem>> items =
       sessions::IOSSerializedNavigationBuilder::ToNavigationItems(navigations);
   webState->GetNavigationManagerImpl().ReplaceSessionHistory(
       std::move(items), selected_navigation);

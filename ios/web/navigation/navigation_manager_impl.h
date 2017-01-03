@@ -12,7 +12,6 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -57,7 +56,7 @@ class NavigationManagerImpl : public NavigationManager {
   // Replace the session history with a new one, where |items| is the
   // complete set of navigation items in the new history, and |current_index|
   // is the index of the currently active item.
-  void ReplaceSessionHistory(ScopedVector<NavigationItem> items,
+  void ReplaceSessionHistory(std::vector<std::unique_ptr<NavigationItem>> items,
                              int current_index);
 
   // Sets the delegate used to drive the navigation controller facade.

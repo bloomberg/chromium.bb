@@ -323,17 +323,18 @@ void AddTabsToWindows(IdToSessionTab* tabs, IdToSessionWindow* windows) {
 //
 // This does NOT add any created SessionTabs to SessionWindow.tabs, that is
 // done by AddTabsToWindows.
-bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
-                          IdToSessionTab* tabs,
-                          IdToSessionWindow* windows,
-                          SessionID::id_type* active_window_id) {
+bool CreateTabsAndWindows(
+    const std::vector<std::unique_ptr<SessionCommand>>& data,
+    IdToSessionTab* tabs,
+    IdToSessionWindow* windows,
+    SessionID::id_type* active_window_id) {
   // If the file is corrupt (command with wrong size, or unknown command), we
   // still return true and attempt to restore what we we can.
   DVLOG(1) << "CreateTabsAndWindows";
 
-  for (auto i = data.begin(); i != data.end(); ++i) {
+  for (const auto& command_ptr : data) {
     const SessionCommand::id_type kCommandSetWindowBounds2 = 10;
-    const SessionCommand* command = *i;
+    const SessionCommand* command = command_ptr.get();
 
     DVLOG(1) << "Read command " << (int) command->id();
     switch (command->id()) {
@@ -825,10 +826,9 @@ bool ReplacePendingCommand(BaseSessionService* base_session_service,
       (*command)->id() != kCommandSetActiveWindow) {
     return false;
   }
-  for (ScopedVector<SessionCommand>::const_reverse_iterator i =
-           base_session_service->pending_commands().rbegin();
+  for (auto i = base_session_service->pending_commands().rbegin();
        i != base_session_service->pending_commands().rend(); ++i) {
-    SessionCommand* existing_command = *i;
+    SessionCommand* existing_command = i->get();
     if ((*command)->id() == kCommandUpdateTabNavigation &&
         existing_command->id() == kCommandUpdateTabNavigation) {
       std::unique_ptr<base::Pickle> command_pickle(
@@ -859,8 +859,8 @@ bool ReplacePendingCommand(BaseSessionService* base_session_service,
         // existing_command is an update for the same tab/index pair. Replace
         // it with the new one. We need to add to the end of the list just in
         // case there is a prune command after the update command.
-        base_session_service->EraseCommand(*(i.base() - 1));
-        base_session_service->AppendRebuildCommand((std::move(*command)));
+        base_session_service->EraseCommand((i.base() - 1)->get());
+        base_session_service->AppendRebuildCommand(std::move(*command));
         return true;
       }
       return false;
@@ -881,7 +881,7 @@ bool IsClosingCommand(SessionCommand* command) {
 }
 
 void RestoreSessionFromCommands(
-    const ScopedVector<SessionCommand>& commands,
+    const std::vector<std::unique_ptr<SessionCommand>>& commands,
     std::vector<std::unique_ptr<SessionWindow>>* valid_windows,
     SessionID::id_type* active_window_id) {
   IdToSessionTab tabs;
