@@ -496,6 +496,10 @@ void View::OnEnabledChanged() {
   SchedulePaint();
 }
 
+View::Views View::GetChildrenInZOrder() {
+  return children_;
+}
+
 // Transformations -------------------------------------------------------------
 
 gfx::Transform View::GetTransform() const {
@@ -954,7 +958,9 @@ View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
 
   // Walk the child Views recursively looking for the View that most
   // tightly encloses the specified point.
-  for (auto* child : base::Reversed(children_)) {
+  View::Views children = GetChildrenInZOrder();
+  DCHECK_EQ(child_count(), static_cast<int>(children.size()));
+  for (auto* child : base::Reversed(children)) {
     if (!child->visible())
       continue;
 
@@ -1473,8 +1479,9 @@ void View::NativeViewHierarchyChanged() {
 
 void View::PaintChildren(const ui::PaintContext& context) {
   TRACE_EVENT1("views", "View::PaintChildren", "class", GetClassName());
-  internal::ScopedChildrenLock lock(this);
-  for (auto* child : children_) {
+  View::Views children = GetChildrenInZOrder();
+  DCHECK_EQ(child_count(), static_cast<int>(children.size()));
+  for (auto* child : children) {
     if (!child->layer())
       child->Paint(context);
   }
@@ -1628,10 +1635,10 @@ void View::ReorderChildLayers(ui::Layer* parent_layer) {
     // Iterate backwards through the children so that a child with a layer
     // which is further to the back is stacked above one which is further to
     // the front.
-    internal::ScopedChildrenLock lock(this);
-    for (auto* child : base::Reversed(children_)) {
+    View::Views children = GetChildrenInZOrder();
+    DCHECK_EQ(child_count(), static_cast<int>(children.size()));
+    for (auto* child : base::Reversed(children))
       child->ReorderChildLayers(parent_layer);
-    }
   }
 }
 

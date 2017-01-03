@@ -6,6 +6,7 @@
 
 #include <limits.h>
 
+#include "base/containers/adapters.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view.h"
@@ -42,9 +43,9 @@ View* ViewTargeterDelegate::TargetForRect(View* root, const gfx::Rect& rect) {
   // from this function call if point-based targeting were used.
   View* point_view = NULL;
 
-  for (int i = root->child_count() - 1; i >= 0; --i) {
-    View* child = root->child_at(i);
-
+  View::Views children = root->GetChildrenInZOrder();
+  DCHECK_EQ(root->child_count(), static_cast<int>(children.size()));
+  for (auto* child : base::Reversed(children)) {
     if (!child->CanProcessEventsWithinSubtree())
       continue;
 

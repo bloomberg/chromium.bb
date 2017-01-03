@@ -192,6 +192,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void RemoveAllChildViews(bool delete_children);
 
   int child_count() const { return static_cast<int>(children_.size()); }
+  // See also |GetChildrenInZOrder()| below that returns |children_|
+  // in reverse z-order.
   bool has_children() const { return !children_.empty(); }
 
   // Returns the child view at |index|.
@@ -307,6 +309,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Returns whether the view is enabled.
   bool enabled() const { return enabled_; }
+
+  // Returns the child views ordered in reverse z-order. That is, views later in
+  // the returned vector have a higher z-order (are painted later) than those
+  // early in the vector. The returned vector has exactly the same number of
+  // Views as |children_|. The default implementation returns |children_|,
+  // subclass if the paint order should differ from that of |children_|.
+  // This order is taken into account by painting and targeting implementations.
+  virtual View::Views GetChildrenInZOrder();
 
   // Transformations -----------------------------------------------------------
 

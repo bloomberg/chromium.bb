@@ -4669,6 +4669,67 @@ TEST_F(ViewTest, DestroyLayerInClose) {
   EXPECT_FALSE(view.GetWidget());
 }
 
+// A View that keeps the children with a special ID above other children.
+class OrderableView : public View {
+ public:
+  // ID used by the children that are stacked above other children.
+  static constexpr int VIEW_ID_RAISED = 1000;
+
+  OrderableView() : View() {}
+  ~OrderableView() override {}
+
+  View::Views GetChildrenInZOrder() override {
+    View::Views children;
+    // Iterate over regular children and later over the raised children to
+    // create a custom Z-order.
+    for (int i = 0; i < child_count(); ++i) {
+      if (child_at(i)->id() != VIEW_ID_RAISED)
+        children.push_back(child_at(i));
+    }
+    for (int i = 0; i < child_count(); ++i) {
+      if (child_at(i)->id() == VIEW_ID_RAISED)
+        children.push_back(child_at(i));
+    }
+    DCHECK_EQ(child_count(), static_cast<int>(children.size()));
+    return children;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OrderableView);
+};
+
+TEST_F(ViewTest, ChildViewZOrderChanged) {
+  const int kChildrenCount = 4;
+  std::unique_ptr<View> view(new OrderableView());
+  view->SetPaintToLayer(true);
+  for (int i = 0; i < kChildrenCount; ++i)
+    AddViewWithChildLayer(view.get());
+  View::Views children = view->GetChildrenInZOrder();
+  const std::vector<ui::Layer*>& layers = view->layer()->children();
+  EXPECT_EQ(kChildrenCount, static_cast<int>(layers.size()));
+  EXPECT_EQ(kChildrenCount, static_cast<int>(children.size()));
+  for (int i = 0; i < kChildrenCount; ++i) {
+    EXPECT_EQ(view->child_at(i)->layer(), layers[i]);
+    EXPECT_EQ(view->child_at(i), children[i]);
+  }
+
+  // Raise one of the children in z-order and add another child to reorder.
+  view->child_at(2)->set_id(OrderableView::VIEW_ID_RAISED);
+  AddViewWithChildLayer(view.get());
+
+  // 2nd child should be now on top, i.e. the last element in the array returned
+  // by GetChildrenInZOrder(). Its layer should also be above the others.
+  // The rest of the children and layers order should be unchanged.
+  const int expected_order[] = {0, 1, 3, 4, 2};
+  children = view->GetChildrenInZOrder();
+  EXPECT_EQ(kChildrenCount + 1, static_cast<int>(children.size()));
+  EXPECT_EQ(kChildrenCount + 1, static_cast<int>(layers.size()));
+  for (size_t i = 0; i < kChildrenCount + 1; ++i) {
+    EXPECT_EQ(view->child_at(expected_order[i]), children[i]);
+    EXPECT_EQ(view->child_at(expected_order[i])->layer(), layers[i]);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Observer tests.
 ////////////////////////////////////////////////////////////////////////////////
