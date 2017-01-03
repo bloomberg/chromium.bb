@@ -7,6 +7,10 @@ source_set("autofill") {
     "autofill_client_ios.h",
     "autofill_client_ios.mm",
     "autofill_save_card_infobar.mm",
+    "card_unmask_prompt_view_bridge.h",
+    "card_unmask_prompt_view_bridge.mm",
+    "storage_switch_tooltip.h",
+    "storage_switch_tooltip.mm",
   ]
   deps = [
     "//base",
@@ -17,30 +21,17 @@ source_set("autofill") {
     "//components/keyed_service/core",
     "//components/password_manager/core/browser",
     "//components/prefs",
+    "//components/strings",
     "//google_apis",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
-    "//ios/public/provider/chrome/browser",
-  ]
-}
-
-source_set("autofill_internal") {
-  sources = [
-    "card_unmask_prompt_view_bridge.h",
-    "card_unmask_prompt_view_bridge.mm",
-    "storage_switch_tooltip.h",
-    "storage_switch_tooltip.mm",
-  ]
-  deps = [
-    "//base",
-    "//components/autofill/core/browser",
-    "//components/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
+    "//ios/public/provider/chrome/browser",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ui/base",

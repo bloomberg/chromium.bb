@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
+#include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
@@ -77,10 +78,11 @@ void AutofillClientIOS::ShowUnmaskPrompt(
     const CreditCard& card,
     UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
-  ios::ChromeBrowserProvider* provider = ios::GetChromeBrowserProvider();
   unmask_controller_.ShowPrompt(
-      provider->CreateCardUnmaskPromptView(&unmask_controller_), card, reason,
-      delegate);
+      // autofill::CardUnmaskPromptViewBridge manages its own lifetime, so
+      // do not use std::unique_ptr<> here.
+      new autofill::CardUnmaskPromptViewBridge(&unmask_controller_), card,
+      reason, delegate);
 }
 
 void AutofillClientIOS::OnUnmaskVerificationResult(PaymentsRpcResult result) {

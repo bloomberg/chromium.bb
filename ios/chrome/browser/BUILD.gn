@@ -277,7 +277,6 @@ source_set("downstream_provider") {
     "//ios/chrome/browser/tabs:tabs_internal",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui:browser_list",
-    "//ios/chrome/browser/ui/autofill:autofill_internal",
     "//ios/chrome/browser/ui/webui:webui_internal",
   ]
 }

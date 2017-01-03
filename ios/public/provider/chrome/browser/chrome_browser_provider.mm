@@ -62,12 +62,6 @@ std::string ChromeBrowserProvider::GetDistributionBrandCode() {
   return std::string();
 }
 
-autofill::CardUnmaskPromptView*
-ChromeBrowserProvider::CreateCardUnmaskPromptView(
-    autofill::CardUnmaskPromptController* controller) {
-  return nullptr;
-}
-
 std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
 }

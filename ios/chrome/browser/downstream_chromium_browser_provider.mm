@@ -11,19 +11,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/tabs/tab_model_synced_window_delegate_getter.h"
-#include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/ui/browser_list_ios.h"
 #include "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 
 DownstreamChromiumBrowserProvider::DownstreamChromiumBrowserProvider() {}
 
 DownstreamChromiumBrowserProvider::~DownstreamChromiumBrowserProvider() {}
-
-autofill::CardUnmaskPromptView*
-DownstreamChromiumBrowserProvider::CreateCardUnmaskPromptView(
-    autofill::CardUnmaskPromptController* controller) {
-  return new autofill::CardUnmaskPromptViewBridge(controller);
-}
 
 bool DownstreamChromiumBrowserProvider::IsOffTheRecordSessionActive() {
   return BrowserListIOS::IsOffTheRecordSessionActive();

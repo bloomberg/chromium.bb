@@ -25,11 +25,6 @@ class SpotlightProvider;
 class UserFeedbackProvider;
 class VoiceSearchProvider;
 
-namespace autofill {
-class CardUnmaskPromptController;
-class CardUnmaskPromptView;
-}
-
 namespace web {
 class WebState;
 }
@@ -94,10 +89,6 @@ class ChromeBrowserProvider {
   virtual std::string DataReductionProxyAvailability();
   // Returns the distribution brand code.
   virtual std::string GetDistributionBrandCode();
-  // Returns an instance of a CardUnmaskPromptView used to unmask Wallet cards.
-  // The view is responsible for its own lifetime.
-  virtual autofill::CardUnmaskPromptView* CreateCardUnmaskPromptView(
-      autofill::CardUnmaskPromptController* controller);
   // Returns risk data used in Wallet requests.
   virtual std::string GetRiskData();
   // Returns whether there is an Off-The-Record session active.
