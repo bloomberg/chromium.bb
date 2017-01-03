@@ -82,6 +82,7 @@ const char kProfileDownloadReason[] = "Preferences";
 ChangePictureHandler::ChangePictureHandler()
     : previous_image_url_(url::kAboutBlankURL),
       previous_image_index_(user_manager::User::USER_IMAGE_INVALID),
+      user_manager_observer_(this),
       camera_observer_(this) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   media::SoundsManager* manager = media::SoundsManager::Get();
@@ -116,14 +117,12 @@ void ChangePictureHandler::RegisterMessages() {
 }
 
 void ChangePictureHandler::OnJavascriptAllowed() {
-  user_manager::UserManager::Get()->AddObserver(this);
-
+  user_manager_observer_.Add(user_manager::UserManager::Get());
   camera_observer_.Add(CameraPresenceNotifier::GetInstance());
 }
 
 void ChangePictureHandler::OnJavascriptDisallowed() {
-  user_manager::UserManager::Get()->RemoveObserver(this);
-
+  user_manager_observer_.Remove(user_manager::UserManager::Get());
   camera_observer_.Remove(CameraPresenceNotifier::GetInstance());
 }
 

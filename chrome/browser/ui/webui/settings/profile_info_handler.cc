@@ -41,6 +41,9 @@ const char ProfileInfoHandler::kProfileStatsCountReadyEventName[] =
 
 ProfileInfoHandler::ProfileInfoHandler(Profile* profile)
     : profile_(profile),
+#if defined(OS_CHROMEOS)
+      user_manager_observer_(this),
+#endif
       profile_observer_(this) {
 #if defined(OS_CHROMEOS)
   // Set up the chrome://userimage/ source.
@@ -79,7 +82,7 @@ void ProfileInfoHandler::OnJavascriptAllowed() {
                  base::Unretained(this)));
 
 #if defined(OS_CHROMEOS)
-  user_manager::UserManager::Get()->AddObserver(this);
+  user_manager_observer_.Add(user_manager::UserManager::Get());
 #endif
 }
 
@@ -90,7 +93,7 @@ void ProfileInfoHandler::OnJavascriptDisallowed() {
   profile_pref_registrar_.RemoveAll();
 
 #if defined(OS_CHROMEOS)
-  user_manager::UserManager::Get()->RemoveObserver(this);
+  user_manager_observer_.Remove(user_manager::UserManager::Get());
 #endif
 }
 

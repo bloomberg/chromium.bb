@@ -126,6 +126,8 @@ class ChangePictureHandler : public ::settings::SettingsPageUIHandler,
   // Data URL for |user_photo_|.
   std::string user_photo_data_url_;
 
+  ScopedObserver<user_manager::UserManager, ChangePictureHandler>
+      user_manager_observer_;
   ScopedObserver<CameraPresenceNotifier, ChangePictureHandler> camera_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangePictureHandler);

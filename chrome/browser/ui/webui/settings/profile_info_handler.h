@@ -16,8 +16,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #else
 #include "chrome/browser/profiles/profile_statistics_common.h"
 #endif
@@ -85,6 +83,11 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
 
   // Weak pointer.
   Profile* profile_;
+
+#if defined(OS_CHROMEOS)
+  ScopedObserver<user_manager::UserManager, ProfileInfoHandler>
+      user_manager_observer_;
+#endif
 
   ScopedObserver<ProfileAttributesStorage, ProfileInfoHandler>
       profile_observer_;
