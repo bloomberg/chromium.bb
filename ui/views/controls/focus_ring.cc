@@ -36,7 +36,6 @@ const char FocusRing::kViewClassName[] = "FocusRing";
 // static
 views::View* FocusRing::Install(views::View* parent,
                                 ui::NativeTheme::ColorId override_color_id) {
-  DCHECK(parent->HasFocus());
   FocusRing* ring = GetFocusRing(parent);
   if (!ring) {
     ring = new FocusRing();
