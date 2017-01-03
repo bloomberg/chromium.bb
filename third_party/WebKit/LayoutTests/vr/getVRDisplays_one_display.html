@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-vr-displays.js"></script>
+<script src="resources/mock-vr-service.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+vr_test((service) => {
+  return navigator.getVRDisplays().then(devices => {
+      assert_true(devices != null);
+      assert_equals(1, devices.length);
+      assert_equals(devices[0].displayName, 'Google, Inc. Daydream View');
+      assert_true(devices[0].capabilities.hasOrientation);
+      assert_true(devices != null);
+    });
+}, [fakeDisplays['Pixel']], 'test 1 VRDisplay');
+
+</script>

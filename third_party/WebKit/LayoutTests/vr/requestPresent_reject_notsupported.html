@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-vr-displays.js"></script>
+<script src="resources/mock-vr-service.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="resources/presentation-setup.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+vr_test((service) => {
+  return navigator.getVRDisplays().then(displays => {
+      assert_true(displays != null);
+      assert_equals(1, displays.length);
+      var asyncTest = async_test(
+          "requestPresent rejects and does not present");
+      runWithUserGesture( () => {
+        displays[0].requestPresent([{ source : webglCanvas }]).then( () => {
+          asyncTest.step( () => {
+            assert_unreached();
+          }, "Display should be presenting");
+        }, (err) => {
+          asyncTest.step( () => {
+            assert_false(displays[0].isPresenting);
+          }, "requestPresent rejected and not presenting");
+        }).then( () => {
+          asyncTest.done();
+        });
+      });
+    });
+}, [fakeDisplays['FakeMagicWindowOnly']],
+'Test requestPresent rejects if display does not support it');
+
+</script>

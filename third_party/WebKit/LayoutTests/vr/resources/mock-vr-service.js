@@ -21,6 +21,10 @@ let mockVRService = loadMojoModules(
       this.router_ = new router.Router(handle);
       this.router_.setIncomingReceiver(this);
     }
+
+    requestPresent(secureOrigin) {
+      return Promise.resolve({success: true});
+    }
   }
 
   class MockVRService extends vr_service.VRService.stubClass {
@@ -29,7 +33,7 @@ let mockVRService = loadMojoModules(
       interfaceProvider.addInterfaceOverrideForTesting(
           vr_service.VRService.name,
           handle => this.connect_(handle));
-      this.vrDisplays_ = null;
+      this.vr_displays_ = null;
     }
 
     connect_(handle) {
@@ -38,25 +42,36 @@ let mockVRService = loadMojoModules(
     }
 
     setVRDisplays(displays) {
-      this.vrDisplays_ = displays;
+      for (let i = 0; i < displays.length; i++) {
+        displays[i].index = i;
+      }
+      this.vr_displays_ = displays;
+    }
+
+    notifyClientOfDisplays() {
+      if (this.vr_displays_ == null) {
+        return;
+      }
+      for (let i = 0; i < this.vr_displays_.length; i++) {
+        let displayPtr = new vr_service.VRDisplayPtr();
+        let request = bindings.makeRequest(displayPtr);
+        let binding = new bindings.Binding(
+            vr_service.VRDisplay,
+            new MockVRDisplay(mojo.frameInterfaces), request);
+        let client_handle = new bindings.InterfaceRequest(
+          connection.bindProxy(proxy => {
+            this.displayClient_ = proxy;
+        }, vr_service.VRDisplayClient));
+        this.client_.onDisplayConnected(displayPtr, client_handle, this.vr_displays_[i]);
+      }
     }
 
     setClient(client) {
-      if (this.vrDisplays_ != null) {
-        this.vrDisplays_.forEach(display => {
-          var displayPtr = new vr_service.VRDisplayPtr();
-          var request = bindings.makeRequest(displayPtr);
-          var binding = new bindings.Binding(
-              vr_service.VRDisplay,
-              new MockVRDisplay(mojo.frameInterfaces), request);
-          var client_handle = new bindings.InterfaceRequest(
-            connection.bindProxy(proxy => {}, vr_service.VRDisplayClient));
-          client.onDisplayConnected(displayPtr, client_handle, display);
-        });
-        return Promise.resolve(
-            {numberOfConnectedDevices: this.vrDisplays_.length});
-      }
-      return Promise.resolve({numberOfConnectedDevices: 0});
+      this.client_ = client;
+      this.notifyClientOfDisplays();
+
+      var device_number = (this.vr_displays_== null ? 0 : this.vr_displays_.length);
+      return Promise.resolve({numberOfConnectedDevices: device_number});
     }
   }
 
@@ -69,5 +84,3 @@ function vr_test(func, vrDisplays, name, properties) {
     return func();
   }), name, properties);
 }
-
-

@@ -5,11 +5,11 @@
 <script src="resources/mock-vr-service.js"></script>
 <script>
 
-vr_test(() => {
+vr_test((service) => {
   return  navigator.getVRDisplays().then(devices => {
       assert_true(devices != null);
       assert_equals(0, devices.length);
     });
-}, null, 'test no VRDisplay');
+}, [], 'test no VRDisplay');
 
 </script>
