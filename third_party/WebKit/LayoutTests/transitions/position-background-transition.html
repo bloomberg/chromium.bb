@@ -6,12 +6,13 @@ top: 0;
 width: 100px;
 height: 100px;
 background: red;
--webkit-transition-property: top, background;
--webkit-transition-duration: 200ms;
+transition-property: top, background;
+transition-duration: 50ms;
 transform: translateZ(0);
 }
 </style>
 <script>
+'use strict';
 if (window.testRunner) {
   testRunner.waitUntilDone();
 }

@@ -2352,8 +2352,6 @@ crbug.com/664857 virtual/threaded/animations/composited-animations-simple.html [
 # crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Pass Failure ]
 # crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Pass Failure ]
 # crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Pass Failure ]
-
-crbug.com/664859 virtual/threaded/transitions/position-background-transition.html [ Pass Failure ]
 # ====== Random order flaky tests end here ======
 
 # ====== Begin of display:contents tests ======
