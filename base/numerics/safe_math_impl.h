@@ -51,9 +51,9 @@ struct UnsignedOrFloatForSize<Numeric, false, true> {
 #define USE_OVERFLOW_BUILTINS (0)
 #endif
 
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+template <typename T>
 bool CheckedAddImpl(T x, T y, T* result) {
+  static_assert(std::is_integral<T>::value, "Type must be integral");
   // Since the value of x+y is undefined if we have a signed type, we compute
   // it using the unsigned type of the same size.
   using UnsignedDst = typename std::make_unsigned<T>::type;
@@ -102,9 +102,9 @@ struct CheckedAddOp<T,
   }
 };
 
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+template <typename T>
 bool CheckedSubImpl(T x, T y, T* result) {
+  static_assert(std::is_integral<T>::value, "Type must be integral");
   // Since the value of x+y is undefined if we have a signed type, we compute
   // it using the unsigned type of the same size.
   using UnsignedDst = typename std::make_unsigned<T>::type;
@@ -153,54 +153,24 @@ struct CheckedSubOp<T,
   }
 };
 
-// Integer multiplication is a bit complicated. In the fast case we just
-// we just promote to a twice wider type, and range check the result. In the
-// slow case we need to manually check that the result won't be truncated by
-// checking with division against the appropriate bound.
-template <typename T,
-          typename std::enable_if<
-              std::is_integral<T>::value &&
-              ((IntegerBitsPlusSign<T>::value * 2) <=
-               IntegerBitsPlusSign<intmax_t>::value)>::type* = nullptr>
+template <typename T>
 bool CheckedMulImpl(T x, T y, T* result) {
-  using IntermediateType = typename TwiceWiderInteger<T>::type;
-  IntermediateType tmp =
-      static_cast<IntermediateType>(x) * static_cast<IntermediateType>(y);
-  *result = static_cast<T>(tmp);
-  return DstRangeRelationToSrcRange<T>(tmp) == RANGE_VALID;
-}
-
-template <typename T,
-          typename std::enable_if<
-              std::is_integral<T>::value && std::is_signed<T>::value &&
-              ((IntegerBitsPlusSign<T>::value * 2) >
-               IntegerBitsPlusSign<intmax_t>::value)>::type* = nullptr>
-bool CheckedMulImpl(T x, T y, T* result) {
+  static_assert(std::is_integral<T>::value, "Type must be integral");
   // Since the value of x*y is potentially undefined if we have a signed type,
   // we compute it using the unsigned type of the same size.
   using UnsignedDst = typename std::make_unsigned<T>::type;
+  using SignedDst = typename std::make_signed<T>::type;
   const UnsignedDst ux = SafeUnsignedAbs(x);
   const UnsignedDst uy = SafeUnsignedAbs(y);
   UnsignedDst uresult = static_cast<UnsignedDst>(ux * uy);
-  // This is a non-branching conditional negation.
-  const T is_negative = (x ^ y) < 0;
-  *result = static_cast<T>((uresult ^ -is_negative) + is_negative);
-  // This uses the unsigned overflow check on the absolute value, with a +1
-  // bound for a negative result.
-  return (uy == 0 ||
-          ux <= (static_cast<UnsignedDst>(std::numeric_limits<T>::max()) +
-                 is_negative) /
-                    uy);
-}
-
-template <typename T,
-          typename std::enable_if<
-              std::is_integral<T>::value && !std::is_signed<T>::value &&
-              ((IntegerBitsPlusSign<T>::value * 2) >
-               IntegerBitsPlusSign<uintmax_t>::value)>::type* = nullptr>
-bool CheckedMulImpl(T x, T y, T* result) {
-  *result = x * y;
-  return (y == 0 || x <= std::numeric_limits<T>::max() / y);
+  const bool is_negative =
+      std::is_signed<T>::value && static_cast<SignedDst>(x ^ y) < 0;
+  *result = is_negative ? 0 - uresult : uresult;
+  // We have a fast out for unsigned identity or zero on the second operand.
+  // After that it's an unsigned overflow check on the absolute value, with
+  // a +1 bound for a negative result.
+  return uy <= UnsignedDst(!std::is_signed<T>::value || is_negative) ||
+         ux <= (std::numeric_limits<T>::max() + UnsignedDst(is_negative)) / uy;
 }
 
 template <typename T, typename U, class Enable = void>
@@ -233,7 +203,7 @@ struct CheckedMulOp<T,
     if (kUseMaxInt)
       return !__builtin_mul_overflow(x, y, result);
 #endif
-    using Promotion = typename BigEnoughPromotion<T, U>::type;
+    using Promotion = typename FastIntegerArithmeticPromotion<T, U>::type;
     Promotion presult;
     // Fail if either operand is out of range for the promoted type.
     // TODO(jschuh): This could be made to work for a broader range of values.
@@ -256,9 +226,9 @@ struct CheckedMulOp<T,
 
 // Division just requires a check for a zero denominator or an invalid negation
 // on signed min/-1.
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+template <typename T>
 bool CheckedDivImpl(T x, T y, T* result) {
+  static_assert(std::is_integral<T>::value, "Type must be integral");
   if (y && (!std::is_signed<T>::value ||
             x != std::numeric_limits<T>::lowest() || y != static_cast<T>(-1))) {
     *result = x / y;
@@ -291,9 +261,9 @@ struct CheckedDivOp<T,
   }
 };
 
-template <typename T,
-          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+template <typename T>
 bool CheckedModImpl(T x, T y, T* result) {
+  static_assert(std::is_integral<T>::value, "Type must be integral");
   if (y > 0) {
     *result = static_cast<T>(x % y);
     return true;
