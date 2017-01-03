@@ -1123,7 +1123,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     recently_autofilled_forms_.push_back(
         std::map<std::string, base::string16>());
     auto& map = recently_autofilled_forms_.back();
-    for (const auto* field : submitted_form) {
+    for (const auto& field : submitted_form) {
       AutofillType type = field->Type();
       // Even though this is for development only, mask full credit card #'s.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER &&
@@ -1164,7 +1164,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     // local save but we believe that sometimes offering upload and sometimes
     // offering local save is a confusing user experience.
     int cvc;
-    for (const AutofillField* field : submitted_form) {
+    for (const auto& field : submitted_form) {
       if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE &&
           base::StringToInt(field->value, &cvc)) {
         upload_request_.cvc = field->value;
@@ -1680,9 +1680,9 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
 
   // Find the AutofillField that corresponds to |field|.
   *autofill_field = NULL;
-  for (AutofillField* current : **form_structure) {
+  for (const auto& current : **form_structure) {
     if (current->SameFieldAs(field)) {
-      *autofill_field = current;
+      *autofill_field = current.get();
       break;
     }
   }

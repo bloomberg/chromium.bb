@@ -30,7 +30,7 @@ class FormField {
   // Each field has a derived unique name that is used as the key into the
   // returned FieldCandidatesMap.
   static FieldCandidatesMap ParseFormFields(
-      const std::vector<AutofillField*>& fields,
+      const std::vector<std::unique_ptr<AutofillField>>& fields,
       bool is_form_tag);
 
  protected:

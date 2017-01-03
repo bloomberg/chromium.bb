@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_vector.h"
+#include <memory>
+#include <vector>
+
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -124,32 +127,36 @@ TEST(FormFieldTest, Match) {
 
 // Test that we ignore checkable elements.
 TEST(FormFieldTest, ParseFormFields) {
-  ScopedVector<AutofillField> fields;
+  std::vector<std::unique_ptr<AutofillField>> fields;
   FormFieldData field_data;
   field_data.form_control_type = "text";
 
   field_data.label = ASCIIToUTF16("Address line1");
-  fields.push_back(new AutofillField(field_data, field_data.label));
+  fields.push_back(
+      base::MakeUnique<AutofillField>(field_data, field_data.label));
 
   field_data.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   field_data.label = ASCIIToUTF16("Is PO Box");
-  fields.push_back(new AutofillField(field_data, field_data.label));
+  fields.push_back(
+      base::MakeUnique<AutofillField>(field_data, field_data.label));
 
   // reset |is_checkable| to false.
   field_data.check_status = FormFieldData::NOT_CHECKABLE;
 
   field_data.label = ASCIIToUTF16("Address line2");
-  fields.push_back(new AutofillField(field_data, field_data.label));
+  fields.push_back(
+      base::MakeUnique<AutofillField>(field_data, field_data.label));
 
   // Does not parse since there are only 2 recognized fields.
-  ASSERT_TRUE(FormField::ParseFormFields(fields.get(), true).empty());
+  ASSERT_TRUE(FormField::ParseFormFields(fields, true).empty());
 
   field_data.label = ASCIIToUTF16("City");
-  fields.push_back(new AutofillField(field_data, field_data.label));
+  fields.push_back(
+      base::MakeUnique<AutofillField>(field_data, field_data.label));
 
   // Checkable element shouldn't interfere with inference of Address line2.
   const FieldCandidatesMap field_candidates_map =
-      FormField::ParseFormFields(fields.get(), true);
+      FormField::ParseFormFields(fields, true);
   ASSERT_EQ(3U, field_candidates_map.size());
 
   EXPECT_EQ(ADDRESS_HOME_LINE1,
@@ -170,11 +177,11 @@ TEST(FormFieldTest, ParseFormFieldsImmutableForm) {
   field_data.form_control_type = "text";
   field_data.name = ASCIIToUTF16("business_email_address");
 
-  ScopedVector<AutofillField> fields;
-  fields.push_back(new AutofillField(field_data, unique_name));
+  std::vector<std::unique_ptr<AutofillField>> fields;
+  fields.push_back(base::MakeUnique<AutofillField>(field_data, unique_name));
 
   const FieldCandidatesMap field_candidates_map =
-      FormField::ParseFormFields(fields.get(), true);
+      FormField::ParseFormFields(fields, true);
 
   // The input form should not be modified.
   EXPECT_EQ(1U, fields.size());

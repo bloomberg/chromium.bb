@@ -9,12 +9,12 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -1178,7 +1178,7 @@ void PasswordAutofillAgent::DidStartProvisionalLoad() {
           *provisionally_saved_form_);
       provisionally_saved_form_.reset();
     } else {
-      ScopedVector<PasswordForm> possible_submitted_forms;
+      std::vector<std::unique_ptr<PasswordForm>> possible_submitted_forms;
       // Loop through the forms on the page looking for one that has been
       // filled out. If one exists, try and save the credentials.
       blink::WebVector<blink::WebFormElement> forms;
@@ -1201,7 +1201,7 @@ void PasswordAutofillAgent::DidStartProvisionalLoad() {
               *render_frame()->GetWebFrame(), &field_value_and_properties_map_,
               &form_predictions_));
 
-      for (const PasswordForm* password_form : possible_submitted_forms) {
+      for (const auto& password_form : possible_submitted_forms) {
         if (password_form && !password_form->username_value.empty() &&
             FormContainsNonDefaultPasswordValue(*password_form)) {
           password_forms_found = true;

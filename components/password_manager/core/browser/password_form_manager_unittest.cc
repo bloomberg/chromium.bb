@@ -114,7 +114,7 @@ MATCHER_P2(CheckUploadedAutofillTypesAndSignature,
     // An unexpected form is uploaded.
     return false;
   }
-  for (const autofill::AutofillField* field : arg) {
+  for (const auto& field : arg) {
     if (expected_types.find(field->name) == expected_types.end()) {
       if (!field->possible_types().empty()) {
         // Unexpected types are uploaded.
@@ -153,7 +153,7 @@ MATCHER_P2(CheckUploadedGenerationTypesAndSignature,
                   << ", but found " << arg.FormSignatureAsStr();
     return false;
   }
-  for (const autofill::AutofillField* field : arg) {
+  for (const auto& field : arg) {
     if (expected_generation_types.find(field->name) ==
         expected_generation_types.end()) {
       if (field->generation_type() !=
@@ -183,7 +183,7 @@ MATCHER_P2(CheckUploadedFormClassifierVote,
            found_generation_element,
            generation_element,
            "Wrong form classifier votes") {
-  for (const autofill::AutofillField* field : arg) {
+  for (const auto& field : arg) {
     if (found_generation_element && field->name == generation_element) {
       EXPECT_EQ(field->form_classifier_outcome(),
                 autofill::AutofillUploadContents::Field::GENERATION_ELEMENT);
@@ -199,7 +199,7 @@ MATCHER_P2(CheckUploadedFormClassifierVote,
 MATCHER_P(CheckFieldPropertiesMasksUpload,
           expected_field_properties,
           "Wrong field properties flags") {
-  for (const autofill::AutofillField* field : arg) {
+  for (const auto& field : arg) {
     autofill::FieldPropertiesMask expected_mask =
         expected_field_properties.find(field->name) !=
                 expected_field_properties.end()

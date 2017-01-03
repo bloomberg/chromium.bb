@@ -131,7 +131,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
     const std::vector<std::unique_ptr<FormStructure>>& forms) {
   std::string forms_string;
   for (const std::unique_ptr<FormStructure>& form : forms) {
-    for (const AutofillField* field : *form) {
+    for (const auto& field : *form) {
       forms_string += field->Type().ToString();
       forms_string += " | " + base::UTF16ToUTF8(field->name);
       forms_string += " | " + base::UTF16ToUTF8(field->label);

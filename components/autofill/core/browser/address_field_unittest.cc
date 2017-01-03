@@ -5,10 +5,10 @@
 #include "components/autofill/core/browser/address_field.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -25,7 +25,7 @@ class AddressFieldTest : public testing::Test {
   AddressFieldTest() {}
 
  protected:
-  ScopedVector<AutofillField> list_;
+  std::vector<std::unique_ptr<AutofillField>> list_;
   std::unique_ptr<AddressField> field_;
   FieldCandidatesMap field_candidates_map_;
 
@@ -40,14 +40,14 @@ class AddressFieldTest : public testing::Test {
 };
 
 TEST_F(AddressFieldTest, Empty) {
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_EQ(nullptr, field_.get());
 }
 
 TEST_F(AddressFieldTest, NonParse) {
-  list_.push_back(new AutofillField);
-  AutofillScanner scanner(list_.get());
+  list_.push_back(base::MakeUnique<AutofillField>());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_EQ(nullptr, field_.get());
 }
@@ -58,9 +58,10 @@ TEST_F(AddressFieldTest, ParseOneLineAddress) {
 
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("address");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("addr1")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -76,13 +77,15 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
 
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("address");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("addr1")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("address2");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("addr2")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -102,17 +105,20 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
 
   field.label = ASCIIToUTF16("Address Line1");
   field.name = ASCIIToUTF16("Address1");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("addr1")));
 
   field.label = ASCIIToUTF16("Address Line2");
   field.name = ASCIIToUTF16("Address2");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("addr2")));
 
   field.label = ASCIIToUTF16("Address Line3");
   field.name = ASCIIToUTF16("Address3");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr3")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("addr3")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -136,9 +142,9 @@ TEST_F(AddressFieldTest, ParseStreetAddressFromTextArea) {
 
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("address");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("addr")));
+  list_.push_back(base::MakeUnique<AutofillField>(field, ASCIIToUTF16("addr")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -154,9 +160,10 @@ TEST_F(AddressFieldTest, ParseCity) {
 
   field.label = ASCIIToUTF16("City");
   field.name = ASCIIToUTF16("city");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("city1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("city1")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -172,9 +179,10 @@ TEST_F(AddressFieldTest, ParseState) {
 
   field.label = ASCIIToUTF16("State");
   field.name = ASCIIToUTF16("state");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("state1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("state1")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -190,9 +198,9 @@ TEST_F(AddressFieldTest, ParseZip) {
 
   field.label = ASCIIToUTF16("Zip");
   field.name = ASCIIToUTF16("zip");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("zip1")));
+  list_.push_back(base::MakeUnique<AutofillField>(field, ASCIIToUTF16("zip1")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -208,13 +216,14 @@ TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
 
   field.label = ASCIIToUTF16("State/Province, Zip/Postal Code");
   field.name = ASCIIToUTF16("state");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("state")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("state")));
 
   field.label = ASCIIToUTF16("State/Province, Zip/Postal Code");
   field.name = ASCIIToUTF16("zip");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("zip")));
+  list_.push_back(base::MakeUnique<AutofillField>(field, ASCIIToUTF16("zip")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -234,9 +243,10 @@ TEST_F(AddressFieldTest, ParseCountry) {
 
   field.label = ASCIIToUTF16("Country");
   field.name = ASCIIToUTF16("country");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("country1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("country1")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -253,9 +263,10 @@ TEST_F(AddressFieldTest, ParseCompany) {
 
   field.label = ASCIIToUTF16("Company");
   field.name = ASCIIToUTF16("company");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("company1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("company1")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);

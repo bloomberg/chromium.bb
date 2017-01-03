@@ -9,11 +9,16 @@
 
 namespace autofill {
 
-AutofillScanner::AutofillScanner(const std::vector<AutofillField*>& fields)
-    : cursor_(fields.begin()),
-      saved_cursor_(fields.begin()),
-      begin_(fields.begin()),
-      end_(fields.end()) {
+AutofillScanner::AutofillScanner(const std::vector<AutofillField*>& fields) {
+  Init(fields);
+}
+
+AutofillScanner::AutofillScanner(
+    const std::vector<std::unique_ptr<AutofillField>>& fields) {
+  for (const auto& field : fields)
+    non_owning_.push_back(field.get());
+
+  Init(non_owning_);
 }
 
 AutofillScanner::~AutofillScanner() {
@@ -27,7 +32,7 @@ void AutofillScanner::Advance() {
 AutofillField* AutofillScanner::Cursor() const {
   if (IsEnd()) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   return *cursor_;
@@ -52,6 +57,13 @@ void AutofillScanner::RewindTo(size_t index) {
 size_t AutofillScanner::SaveCursor() {
   saved_cursor_ = cursor_;
   return static_cast<size_t>(cursor_ - begin_);
+}
+
+void AutofillScanner::Init(const std::vector<AutofillField*>& fields) {
+  cursor_ = fields.begin();
+  saved_cursor_ = fields.begin();
+  begin_ = fields.begin();
+  end_ = fields.end();
 }
 
 }  // namespace autofill

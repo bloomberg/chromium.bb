@@ -30,14 +30,10 @@ void PasswordGenerationManager::DetectFormsEligibleForGeneration(
 
   std::vector<autofill::PasswordFormGenerationData>
       forms_eligible_for_generation;
-  for (std::vector<autofill::FormStructure*>::const_iterator form_it =
-           forms.begin();
-       form_it != forms.end(); ++form_it) {
+  for (auto form_it = forms.begin(); form_it != forms.end(); ++form_it) {
     autofill::FormStructure* form = *form_it;
-    for (std::vector<autofill::AutofillField*>::const_iterator field_it =
-             form->begin();
-         field_it != form->end(); ++field_it) {
-      autofill::AutofillField* field = *field_it;
+    for (auto field_it = form->begin(); field_it != form->end(); ++field_it) {
+      autofill::AutofillField* field = field_it->get();
       if (field->server_type() == autofill::ACCOUNT_CREATION_PASSWORD ||
           field->server_type() == autofill::NEW_PASSWORD) {
         forms_eligible_for_generation.push_back(

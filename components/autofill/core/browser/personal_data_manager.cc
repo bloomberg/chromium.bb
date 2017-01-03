@@ -1373,7 +1373,7 @@ bool PersonalDataManager::ImportAddressProfiles(const FormStructure& form) {
 
   // Relevant sections for address fields.
   std::set<std::string> sections;
-  for (const AutofillField* field : form) {
+  for (const auto& field : form) {
     if (field->Type().group() != CREDIT_CARD)
       sections.insert(field->section());
   }
@@ -1410,7 +1410,7 @@ bool PersonalDataManager::ImportAddressProfileForSection(
   std::set<ServerFieldType> types_seen;
 
   // Go through each |form| field and attempt to constitute a valid profile.
-  for (const AutofillField* field : form) {
+  for (const auto& field : form) {
     // Reject fields that are not within the specified |section|.
     if (field->section() != section)
       continue;
@@ -1490,7 +1490,7 @@ bool PersonalDataManager::ImportCreditCard(
   candidate_credit_card.set_origin(form.source_url().spec());
 
   std::set<ServerFieldType> types_seen;
-  for (const AutofillField* field : form) {
+  for (const auto& field : form) {
     base::string16 value;
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 

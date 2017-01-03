@@ -27,19 +27,6 @@
 #include "components/autofill/core/common/autofill_util.h"
 
 namespace autofill {
-namespace {
-
-bool ShouldBeProcessed(const AutofillField* field) {
-  // Ignore checkable fields as they interfere with parsers assuming context.
-  // Eg., while parsing address, "Is PO box" checkbox after ADDRESS_LINE1
-  // interferes with correctly understanding ADDRESS_LINE2.
-  // Ignore fields marked as presentational. See
-  // http://www.w3.org/TR/wai-aria/roles#presentation
-  return !(IsCheckable(field->check_status) ||
-           field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION);
-}
-
-}  // namespace
 
 // There's an implicit precedence determined by the values assigned here. Email
 // is currently the most important followed by Phone, Address, Credit Card and
@@ -52,12 +39,22 @@ const float FormField::kBaseNameParserScore = 1.0f;
 
 // static
 FieldCandidatesMap FormField::ParseFormFields(
-    const std::vector<AutofillField*>& fields,
+    const std::vector<std::unique_ptr<AutofillField>>& fields,
     bool is_form_tag) {
   // Set up a working copy of the fields to be processed.
   std::vector<AutofillField*> processed_fields;
-  std::copy_if(fields.begin(), fields.end(),
-               std::back_inserter(processed_fields), ShouldBeProcessed);
+  for (const auto& field : fields) {
+    // Ignore checkable fields as they interfere with parsers assuming context.
+    // Eg., while parsing address, "Is PO box" checkbox after ADDRESS_LINE1
+    // interferes with correctly understanding ADDRESS_LINE2.
+    // Ignore fields marked as presentational. See
+    // http://www.w3.org/TR/wai-aria/roles#presentation
+    if (IsCheckable(field->check_status) ||
+        field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) {
+      continue;
+    }
+    processed_fields.push_back(field.get());
+  }
 
   FieldCandidatesMap field_candidates;
 
@@ -175,7 +172,7 @@ void FormField::ParseFormFieldsPass(ParseFunction parse,
                                     FieldCandidatesMap* field_candidates) {
   AutofillScanner scanner(fields);
   while (!scanner.IsEnd()) {
-    std::unique_ptr<FormField> form_field(parse(&scanner));
+    std::unique_ptr<FormField> form_field = parse(&scanner);
     if (form_field == nullptr) {
       scanner.Advance();
     } else {

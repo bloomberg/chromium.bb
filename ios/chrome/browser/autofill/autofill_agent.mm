@@ -851,7 +851,7 @@ void GetFormAndField(autofill::FormData* form,
     // |predictionData| will take ownership below.
     base::DictionaryValue* formJSONData = new base::DictionaryValue;
     autofill::FormData formData = form->ToFormData();
-    for (const autofill::AutofillField* field : *form) {
+    for (const auto& field : *form) {
       autofill::AutofillType type(field->Type());
       if (type.IsUnknown())
         continue;

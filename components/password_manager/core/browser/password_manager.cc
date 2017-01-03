@@ -829,19 +829,17 @@ void PasswordManager::ProcessAutofillPredictions(
   for (const autofill::FormStructure* form : forms) {
     if (logger)
       logger->LogFormStructure(Logger::STRING_SERVER_PREDICTIONS, *form);
-    for (std::vector<autofill::AutofillField*>::const_iterator field =
-             form->begin();
-         field != form->end(); ++field) {
+    for (const auto& field : *form) {
       autofill::PasswordFormFieldPredictionType prediction_type;
-      if (ServerTypeToPrediction((*field)->server_type(), &prediction_type)) {
-        predictions[form->ToFormData()][*(*field)] = prediction_type;
+      if (ServerTypeToPrediction(field->server_type(), &prediction_type)) {
+        predictions[form->ToFormData()][*field] = prediction_type;
       }
       // Certain fields are annotated by the browsers as "not passwords" i.e.
       // they should not be treated as passwords by the Password Manager.
-      if ((*field)->form_control_type == "password" &&
+      if (field->form_control_type == "password" &&
           IsPredictedTypeNotPasswordPrediction(
-              (*field)->Type().GetStorableType())) {
-        predictions[form->ToFormData()][*(*field)] =
+              field->Type().GetStorableType())) {
+        predictions[form->ToFormData()][*field] =
             autofill::PREDICTION_NOT_PASSWORD;
       }
     }

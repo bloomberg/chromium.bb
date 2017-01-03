@@ -7,11 +7,12 @@
 #include <stddef.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -77,6 +78,14 @@ void SetupTestProfile(AutofillProfile& profile) {
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
+}
+
+std::vector<AutofillProfile*> ToRawPointerVector(
+    const std::vector<std::unique_ptr<AutofillProfile>>& list) {
+  std::vector<AutofillProfile*> result;
+  for (const auto& item : list)
+    result.push_back(item.get());
+  return result;
 }
 
 }  // namespace
@@ -186,62 +195,32 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
 }
 
 TEST(AutofillProfileTest, AdjustInferredLabels) {
-  ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(
-      profiles[0],
-      "John",
-      "",
-      "Doe",
-      "johndoe@hades.com",
-      "Underworld",
-      "666 Erebus St.",
-      "",
-      "Elysium", "CA",
-      "91111",
-      "US",
-      "16502111111");
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "http://www.example.com/"));
-  test::SetProfileInfo(
-      profiles[1],
-      "Jane",
-      "",
-      "Doe",
-      "janedoe@tertium.com",
-      "Pluto Inc.",
-      "123 Letha Shore.",
-      "",
-      "Dis", "CA",
-      "91222",
-      "US",
-      "12345678910");
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[0].get(), "John", "", "Doe",
+                       "johndoe@hades.com", "Underworld", "666 Erebus St.", "",
+                       "Elysium", "CA", "91111", "US", "16502111111");
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "http://www.example.com/"));
+  test::SetProfileInfo(profiles[1].get(), "Jane", "", "Doe",
+                       "janedoe@tertium.com", "Pluto Inc.", "123 Letha Shore.",
+                       "", "Dis", "CA", "91222", "US", "12345678910");
   std::vector<base::string16> labels;
-  AutofillProfile::CreateDifferentiatingLabels(
-      profiles.get(), "en-US", &labels);
+  AutofillProfile::CreateDifferentiatingLabels(ToRawPointerVector(profiles),
+                                               "en-US", &labels);
   ASSERT_EQ(2U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St."), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."), labels[1]);
 
   profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), kSettingsOrigin));
-  test::SetProfileInfo(
-      profiles[2],
-      "John",
-      "",
-      "Doe",
-      "johndoe@tertium.com",
-      "Underworld",
-      "666 Erebus St.",
-      "",
-      "Elysium", "CA",
-      "91111",
-      "US",
-      "16502111111");
+      base::MakeUnique<AutofillProfile>(base::GenerateGUID(), kSettingsOrigin));
+  test::SetProfileInfo(profiles[2].get(), "John", "", "Doe",
+                       "johndoe@tertium.com", "Underworld", "666 Erebus St.",
+                       "", "Elysium", "CA", "91111", "US", "16502111111");
   labels.clear();
-  AutofillProfile::CreateDifferentiatingLabels(
-      profiles.get(), "en-US", &labels);
+  AutofillProfile::CreateDifferentiatingLabels(ToRawPointerVector(profiles),
+                                               "en-US", &labels);
 
   // Profile 0 and 2 inferred label now includes an e-mail.
   ASSERT_EQ(3U, labels.size());
@@ -254,24 +233,15 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   profiles.resize(2);
 
   profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), std::string()));
-  test::SetProfileInfo(
-      profiles[2],
-      "John",
-      "",
-      "Doe",
-      "johndoe@hades.com",
-      "Underworld",
-      "666 Erebus St.",
-      "",
-      "Elysium", "CO",  // State is different
-      "91111",
-      "US",
-      "16502111111");
+      base::MakeUnique<AutofillProfile>(base::GenerateGUID(), std::string()));
+  test::SetProfileInfo(profiles[2].get(), "John", "", "Doe",
+                       "johndoe@hades.com", "Underworld", "666 Erebus St.", "",
+                       "Elysium", "CO",  // State is different
+                       "91111", "US", "16502111111");
 
   labels.clear();
-  AutofillProfile::CreateDifferentiatingLabels(
-      profiles.get(), "en-US", &labels);
+  AutofillProfile::CreateDifferentiatingLabels(ToRawPointerVector(profiles),
+                                               "en-US", &labels);
 
   // Profile 0 and 2 inferred label now includes a state.
   ASSERT_EQ(3U, labels.size());
@@ -279,25 +249,17 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."), labels[1]);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CO"), labels[2]);
 
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(
-      profiles[3],
-      "John",
-      "",
-      "Doe",
-      "johndoe@hades.com",
-      "Underworld",
-      "666 Erebus St.",
-      "",
-      "Elysium", "CO",  // State is different for some.
-      "91111",
-      "US",
-      "16504444444");  // Phone is different for some.
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[3].get(), "John", "", "Doe",
+                       "johndoe@hades.com", "Underworld", "666 Erebus St.", "",
+                       "Elysium", "CO",  // State is different for some.
+                       "91111", "US",
+                       "16504444444");  // Phone is different for some.
 
   labels.clear();
-  AutofillProfile::CreateDifferentiatingLabels(
-      profiles.get(), "en-US", &labels);
+  AutofillProfile::CreateDifferentiatingLabels(ToRawPointerVector(profiles),
+                                               "en-US", &labels);
   ASSERT_EQ(4U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CA"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."), labels[1]);
@@ -308,25 +270,18 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CO, 16504444444"),
             labels[3]);
 
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(
-      profiles[4],
-      "John",
-      "",
-      "Doe",
-      "johndoe@styx.com",  // E-Mail is different for some.
-      "Underworld",
-      "666 Erebus St.",
-      "",
-      "Elysium", "CO",  // State is different for some.
-      "91111",
-      "US",
-      "16504444444");  // Phone is different for some.
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[4].get(), "John", "", "Doe",
+                       "johndoe@styx.com",  // E-Mail is different for some.
+                       "Underworld", "666 Erebus St.", "", "Elysium",
+                       "CO",  // State is different for some.
+                       "91111", "US",
+                       "16504444444");  // Phone is different for some.
 
   labels.clear();
-  AutofillProfile::CreateDifferentiatingLabels(
-      profiles.get(), "en-US", &labels);
+  AutofillProfile::CreateDifferentiatingLabels(ToRawPointerVector(profiles),
+                                               "en-US", &labels);
   ASSERT_EQ(5U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CA"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."), labels[1]);
@@ -341,21 +296,13 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
 }
 
 TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
-  ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles.back(),
-                       "H.",
-                       "R.",
-                       "Giger",
-                       "hrgiger@beispiel.com",
-                       "Beispiel Inc",
-                       "Brandschenkestrasse 110",
-                       "",
-                       "Zurich", "",
-                       "8002",
-                       "CH",
-                       "+41 44-668-1800");
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles.back().get(), "H.", "R.", "Giger",
+                       "hrgiger@beispiel.com", "Beispiel Inc",
+                       "Brandschenkestrasse 110", "", "Zurich", "", "8002",
+                       "CH", "+41 44-668-1800");
   profiles.back()->set_language_code("de_CH");
   static const char* kExpectedLabels[] = {
     "",
@@ -374,8 +321,8 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
 
   std::vector<base::string16> labels;
   for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
-    AutofillProfile::CreateInferredLabels(
-        profiles.get(), NULL, UNKNOWN_TYPE, i, "en-US", &labels);
+    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+                                          UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
     EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
   }
@@ -383,21 +330,12 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
 
 
 TEST(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
-  ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles.back(),
-                       "Antoine",
-                       "",
-                       "de Saint-Exupéry",
-                       "antoine@exemple.com",
-                       "Exemple Inc",
-                       "8 Rue de Londres",
-                       "",
-                       "Paris", "",
-                       "75009",
-                       "FR",
-                       "+33 (0) 1 42 68 53 00");
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles.back().get(), "Antoine", "", "de Saint-Exupéry",
+                       "antoine@exemple.com", "Exemple Inc", "8 Rue de Londres",
+                       "", "Paris", "", "75009", "FR", "+33 (0) 1 42 68 53 00");
   profiles.back()->set_language_code("fr_FR");
   profiles.back()->SetInfo(
       AutofillType(ADDRESS_HOME_SORTING_CODE), UTF8ToUTF16("CEDEX"), "en-US");
@@ -422,29 +360,21 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
 
   std::vector<base::string16> labels;
   for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
-    AutofillProfile::CreateInferredLabels(
-        profiles.get(), NULL, UNKNOWN_TYPE, i, "en-US", &labels);
+    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+                                          UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
     EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
   }
 }
 
 TEST(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
-  ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles.back(),
-                       "Park",
-                       "",
-                       "Jae-sang",
-                       "park@yeleul.com",
-                       "Yeleul Inc",
-                       "Gangnam Finance Center",
-                       "152 Teheran-ro",
-                       "Gangnam-Gu", "Seoul",
-                       "135-984",
-                       "KR",
-                       "+82-2-531-9000");
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles.back().get(), "Park", "", "Jae-sang",
+                       "park@yeleul.com", "Yeleul Inc",
+                       "Gangnam Finance Center", "152 Teheran-ro", "Gangnam-Gu",
+                       "Seoul", "135-984", "KR", "+82-2-531-9000");
   profiles.back()->set_language_code("ko_Latn");
   profiles.back()->SetInfo(AutofillType(ADDRESS_HOME_DEPENDENT_LOCALITY),
                            UTF8ToUTF16("Yeoksam-Dong"),
@@ -475,29 +405,21 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
 
   std::vector<base::string16> labels;
   for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
-    AutofillProfile::CreateInferredLabels(
-        profiles.get(), NULL, UNKNOWN_TYPE, i, "en-US", &labels);
+    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+                                          UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
     EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
   }
 }
 
 TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
-  ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles.back(),
-                       "Miku",
-                       "",
-                       "Hatsune",
-                       "miku@rei.com",
-                       "Rei Inc",
-                       "Roppongi Hills Mori Tower",
-                       "6-10-1 Roppongi",
-                       "Minato-ku", "Tokyo",
-                       "106-6126",
-                       "JP",
-                       "+81-3-6384-9000");
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles.back().get(), "Miku", "", "Hatsune",
+                       "miku@rei.com", "Rei Inc", "Roppongi Hills Mori Tower",
+                       "6-10-1 Roppongi", "Minato-ku", "Tokyo", "106-6126",
+                       "JP", "+81-3-6384-9000");
   profiles.back()->set_language_code("ja_Latn");
   static const char* kExpectedLabels[] = {
     "",
@@ -521,28 +443,20 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
 
   std::vector<base::string16> labels;
   for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
-    AutofillProfile::CreateInferredLabels(
-        profiles.get(), NULL, UNKNOWN_TYPE, i, "en-US", &labels);
+    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+                                          UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
     EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
   }
 }
 
 TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_ja) {
-  ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles.back(),
-                       "ミク",
-                       "",
-                       "初音",
-                       "miku@rei.com",
-                       "例",
-                       "六本木ヒルズ森タワー",
-                       "六本木 6-10-1",
-                       "港区", "東京都",
-                       "106-6126",
-                       "JP",
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles.back().get(), "ミク", "", "初音",
+                       "miku@rei.com", "例", "六本木ヒルズ森タワー",
+                       "六本木 6-10-1", "港区", "東京都", "106-6126", "JP",
                        "03-6384-9000");
   profiles.back()->set_language_code("ja_JP");
   static const char* kExpectedLabels[] = {
@@ -563,53 +477,35 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_ja) {
 
   std::vector<base::string16> labels;
   for (size_t i = 0; i < arraysize(kExpectedLabels); ++i) {
-    AutofillProfile::CreateInferredLabels(
-        profiles.get(), NULL, UNKNOWN_TYPE, i, "en-US", &labels);
+    AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+                                          UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
     EXPECT_EQ(UTF8ToUTF16(kExpectedLabels[i]), labels.back());
   }
 }
 
 TEST(AutofillProfileTest, CreateInferredLabels) {
-  ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles[0],
-                       "John",
-                       "",
-                       "Doe",
-                       "johndoe@hades.com",
-                       "Underworld",
-                       "666 Erebus St.",
-                       "",
-                       "Elysium", "CA",
-                       "91111",
-                       "US",
-                       "16502111111");
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles[1],
-                       "Jane",
-                       "",
-                       "Doe",
-                       "janedoe@tertium.com",
-                       "Pluto Inc.",
-                       "123 Letha Shore.",
-                       "",
-                       "Dis", "CA",
-                       "91222",
-                       "US",
-                       "12345678910");
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[0].get(), "John", "", "Doe",
+                       "johndoe@hades.com", "Underworld", "666 Erebus St.", "",
+                       "Elysium", "CA", "91111", "US", "16502111111");
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[1].get(), "Jane", "", "Doe",
+                       "janedoe@tertium.com", "Pluto Inc.", "123 Letha Shore.",
+                       "", "Dis", "CA", "91222", "US", "12345678910");
   std::vector<base::string16> labels;
   // Two fields at least - no filter.
-  AutofillProfile::CreateInferredLabels(profiles.get(), NULL, UNKNOWN_TYPE, 2,
-                                        "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+                                        UNKNOWN_TYPE, 2, "en-US", &labels);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St."), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."), labels[1]);
 
   // Three fields at least - no filter.
-  AutofillProfile::CreateInferredLabels(profiles.get(), NULL, UNKNOWN_TYPE, 3,
-                                        "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+                                        UNKNOWN_TYPE, 3, "en-US", &labels);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., Elysium"),
             labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore., Dis"),
@@ -621,21 +517,24 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
   suggested_fields.push_back(ADDRESS_HOME_ZIP);
 
   // Two fields at least, from suggested fields - no filter.
-  AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
-                                        UNKNOWN_TYPE, 2, "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles),
+                                        &suggested_fields, UNKNOWN_TYPE, 2,
+                                        "en-US", &labels);
   EXPECT_EQ(ASCIIToUTF16("Elysium 91111"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Dis 91222"), labels[1]);
 
   // Three fields at least, from suggested fields - no filter.
-  AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
-                                        UNKNOWN_TYPE, 3, "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles),
+                                        &suggested_fields, UNKNOWN_TYPE, 3,
+                                        "en-US", &labels);
   EXPECT_EQ(ASCIIToUTF16("Elysium, CA 91111"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Dis, CA 91222"), labels[1]);
 
   // Three fields at least, from suggested fields - but filter reduces available
   // fields to two.
-  AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
-                                        ADDRESS_HOME_ZIP, 3, "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles),
+                                        &suggested_fields, ADDRESS_HOME_ZIP, 3,
+                                        "en-US", &labels);
   EXPECT_EQ(ASCIIToUTF16("Elysium, CA"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Dis, CA"), labels[1]);
 
@@ -643,15 +542,17 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
   // In our implementation we always display NAME_FULL for all NAME* fields...
   suggested_fields.push_back(NAME_MIDDLE);
   // One field at least, from suggested fields - no filter.
-  AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
-                                        UNKNOWN_TYPE, 1, "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles),
+                                        &suggested_fields, UNKNOWN_TYPE, 1,
+                                        "en-US", &labels);
   EXPECT_EQ(ASCIIToUTF16("John Doe"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe"), labels[1]);
 
   // One field at least, from suggested fields - filter the same as suggested
   // field.
-  AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
-                                        NAME_MIDDLE, 1, "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles),
+                                        &suggested_fields, NAME_MIDDLE, 1,
+                                        "en-US", &labels);
   EXPECT_EQ(base::string16(), labels[0]);
   EXPECT_EQ(base::string16(), labels[1]);
 
@@ -659,8 +560,9 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
   // In our implementation we always display NAME_FULL for NAME_MIDDLE_INITIAL
   suggested_fields.push_back(NAME_MIDDLE_INITIAL);
   // One field at least, from suggested fields - no filter.
-  AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
-                                        UNKNOWN_TYPE, 1, "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles),
+                                        &suggested_fields, UNKNOWN_TYPE, 1,
+                                        "en-US", &labels);
   EXPECT_EQ(ASCIIToUTF16("John Doe"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe"), labels[1]);
 
@@ -670,13 +572,14 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
   suggested_fields.push_back(UNKNOWN_TYPE);
   suggested_fields.push_back(NAME_FULL);
   suggested_fields.push_back(ADDRESS_HOME_LINE1);
-  AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
-                                        NAME_FULL, 1, "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles),
+                                        &suggested_fields, NAME_FULL, 1,
+                                        "en-US", &labels);
   EXPECT_EQ(base::string16(ASCIIToUTF16("666 Erebus St.")), labels[0]);
   EXPECT_EQ(base::string16(ASCIIToUTF16("123 Letha Shore.")), labels[1]);
 
   // No suggested fields, but non-unknown excluded field.
-  AutofillProfile::CreateInferredLabels(profiles.get(), NULL,
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
                                         NAME_FULL, 1, "en-US", &labels);
   EXPECT_EQ(base::string16(ASCIIToUTF16("666 Erebus St.")), labels[0]);
   EXPECT_EQ(base::string16(ASCIIToUTF16("123 Letha Shore.")), labels[1]);
@@ -685,17 +588,16 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
 // Test that we fall back to using the full name if there are no other
 // distinguishing fields, but only if it makes sense given the suggested fields.
 TEST(AutofillProfileTest, CreateInferredLabelsFallsBackToFullName) {
-  ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles[0],
-                       "John", "", "Doe", "doe@example.com", "",
-                       "88 Nowhere Ave.", "", "", "", "", "", "");
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles[1],
-                       "Johnny", "K", "Doe", "doe@example.com", "",
-                       "88 Nowhere Ave.", "", "", "", "", "", "");
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[0].get(), "John", "", "Doe", "doe@example.com",
+                       "", "88 Nowhere Ave.", "", "", "", "", "", "");
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[1].get(), "Johnny", "K", "Doe",
+                       "doe@example.com", "", "88 Nowhere Ave.", "", "", "", "",
+                       "", "");
 
   // If the only name field in the suggested fields is the excluded field, we
   // should not fall back to the full name as a distinguishing field.
@@ -704,16 +606,18 @@ TEST(AutofillProfileTest, CreateInferredLabelsFallsBackToFullName) {
   suggested_fields.push_back(ADDRESS_HOME_LINE1);
   suggested_fields.push_back(EMAIL_ADDRESS);
   std::vector<base::string16> labels;
-  AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
-                                        NAME_LAST, 1, "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles),
+                                        &suggested_fields, NAME_LAST, 1,
+                                        "en-US", &labels);
   ASSERT_EQ(2U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave."), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave."), labels[1]);
 
   // Otherwise, we should.
   suggested_fields.push_back(NAME_FIRST);
-  AutofillProfile::CreateInferredLabels(profiles.get(),  &suggested_fields,
-                                        NAME_LAST, 1, "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles),
+                                        &suggested_fields, NAME_LAST, 1,
+                                        "en-US", &labels);
   ASSERT_EQ(2U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., John Doe"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., Johnny K Doe"), labels[1]);
@@ -721,17 +625,15 @@ TEST(AutofillProfileTest, CreateInferredLabelsFallsBackToFullName) {
 
 // Test that we do not show duplicate fields in the labels.
 TEST(AutofillProfileTest, CreateInferredLabelsNoDuplicatedFields) {
-  ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles[0],
-                       "John", "", "Doe", "doe@example.com", "",
-                       "88 Nowhere Ave.", "", "", "", "", "", "");
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles[1],
-                       "John", "", "Doe", "dojo@example.com", "",
-                       "88 Nowhere Ave.", "", "", "", "", "", "");
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[0].get(), "John", "", "Doe", "doe@example.com",
+                       "", "88 Nowhere Ave.", "", "", "", "", "", "");
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[1].get(), "John", "", "Doe", "dojo@example.com",
+                       "", "88 Nowhere Ave.", "", "", "", "", "", "");
 
   // If the only name field in the suggested fields is the excluded field, we
   // should not fall back to the full name as a distinguishing field.
@@ -740,8 +642,9 @@ TEST(AutofillProfileTest, CreateInferredLabelsNoDuplicatedFields) {
   suggested_fields.push_back(ADDRESS_BILLING_LINE1);
   suggested_fields.push_back(EMAIL_ADDRESS);
   std::vector<base::string16> labels;
-  AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
-                                        UNKNOWN_TYPE, 2, "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles),
+                                        &suggested_fields, UNKNOWN_TYPE, 2,
+                                        "en-US", &labels);
   ASSERT_EQ(2U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., doe@example.com"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., dojo@example.com"), labels[1]);
@@ -749,26 +652,24 @@ TEST(AutofillProfileTest, CreateInferredLabelsNoDuplicatedFields) {
 
 // Make sure that empty fields are not treated as distinguishing fields.
 TEST(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
-  ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles[0],
-                       "John", "", "Doe", "doe@example.com",
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[0].get(), "John", "", "Doe", "doe@example.com",
                        "Gogole", "", "", "", "", "", "", "");
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles[1],
-                       "John", "", "Doe", "doe@example.com",
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[1].get(), "John", "", "Doe", "doe@example.com",
                        "Ggoole", "", "", "", "", "", "", "");
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles[2],
-                       "John", "", "Doe", "john.doe@example.com",
-                       "Goolge", "", "", "", "", "", "", "");
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[2].get(), "John", "", "Doe",
+                       "john.doe@example.com", "Goolge", "", "", "", "", "", "",
+                       "");
 
   std::vector<base::string16> labels;
-  AutofillProfile::CreateInferredLabels(profiles.get(), NULL, UNKNOWN_TYPE, 3,
-                                        "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+                                        UNKNOWN_TYPE, 3, "en-US", &labels);
   ASSERT_EQ(3U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Gogole"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Ggoole"), labels[1]);
@@ -777,8 +678,8 @@ TEST(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
   // A field must have a non-empty value for each profile to be considered a
   // distinguishing field.
   profiles[1]->SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("88 Nowhere Ave."));
-  AutofillProfile::CreateInferredLabels(profiles.get(), NULL, UNKNOWN_TYPE, 1,
-                                        "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), NULL,
+                                        UNKNOWN_TYPE, 1, "en-US", &labels);
   ASSERT_EQ(3U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Gogole"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 88 Nowhere Ave., doe@example.com, Ggoole"),
@@ -788,12 +689,11 @@ TEST(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
 
 // Test that labels that would otherwise have multiline values are flattened.
 TEST(AutofillProfileTest, CreateInferredLabelsFlattensMultiLineValues) {
-  ScopedVector<AutofillProfile> profiles;
-  profiles.push_back(
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com/"));
-  test::SetProfileInfo(profiles[0],
-                       "John", "", "Doe", "doe@example.com", "",
-                       "88 Nowhere Ave.", "Apt. 42", "", "", "", "", "");
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  profiles.push_back(base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com/"));
+  test::SetProfileInfo(profiles[0].get(), "John", "", "Doe", "doe@example.com",
+                       "", "88 Nowhere Ave.", "Apt. 42", "", "", "", "", "");
 
   // If the only name field in the suggested fields is the excluded field, we
   // should not fall back to the full name as a distinguishing field.
@@ -801,8 +701,9 @@ TEST(AutofillProfileTest, CreateInferredLabelsFlattensMultiLineValues) {
   suggested_fields.push_back(NAME_FULL);
   suggested_fields.push_back(ADDRESS_HOME_STREET_ADDRESS);
   std::vector<base::string16> labels;
-  AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
-                                        NAME_FULL, 1, "en-US", &labels);
+  AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles),
+                                        &suggested_fields, NAME_FULL, 1,
+                                        "en-US", &labels);
   ASSERT_EQ(1U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., Apt. 42"), labels[0]);
 }

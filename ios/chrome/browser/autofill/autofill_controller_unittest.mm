@@ -121,7 +121,7 @@ NSString* const kAutofillVisible = @"AutofillVisible";
 void CheckField(const FormStructure& form,
                 ServerFieldType fieldType,
                 const char* name) {
-  for (const AutofillField* field : form) {
+  for (const auto& field : form) {
     if (field->heuristic_type() == fieldType) {
       EXPECT_EQ(base::UTF8ToUTF16(name), field->unique_name());
       return;

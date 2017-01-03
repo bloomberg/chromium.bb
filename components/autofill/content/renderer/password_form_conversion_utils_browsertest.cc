@@ -213,9 +213,8 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
     FormStructure form_structure(form_data);
 
     int field_index = 0;
-    for (std::vector<AutofillField *>::const_iterator
-             field = form_structure.begin();
-         field != form_structure.end(); ++field, ++field_index) {
+    for (auto field = form_structure.begin(); field != form_structure.end();
+         ++field, ++field_index) {
       if (predictions_positions.find(field_index) !=
           predictions_positions.end()) {
         (*predictions)[form_data][*(*field)] =

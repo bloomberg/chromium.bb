@@ -114,7 +114,7 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
     const autofill::FormStructure& form_structure) {
   std::string result;
   result += GetStringFromID(STRING_FIELDS) + ": " + "\n";
-  for (const autofill::AutofillField* field : form_structure) {
+  for (const auto& field : form_structure) {
     std::string field_info = ScrubElementID(field->name) + ": " +
                              ScrubNonDigit(field->FieldSignatureAsStr()) +
                              ", " + ScrubElementID(field->form_control_type);

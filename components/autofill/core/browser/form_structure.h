@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -14,7 +15,6 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -188,10 +188,10 @@ class FormStructure {
   size_t autofill_count() const { return autofill_count_; }
 
   // Used for iterating over the fields.
-  std::vector<AutofillField*>::const_iterator begin() const {
+  std::vector<std::unique_ptr<AutofillField>>::const_iterator begin() const {
     return fields_.begin();
   }
-  std::vector<AutofillField*>::const_iterator end() const {
+  std::vector<std::unique_ptr<AutofillField>>::const_iterator end() const {
     return fields_.end();
   }
 
@@ -274,7 +274,7 @@ class FormStructure {
   size_t autofill_count_;
 
   // A vector of all the input fields in the form.
-  ScopedVector<AutofillField> fields_;
+  std::vector<std::unique_ptr<AutofillField>> fields_;
 
   // The number of fields that are part of the form signature and that are
   // included in queries to the Autofill server.

@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -321,7 +322,7 @@ FormStructure::FormStructure(const FormData& form)
     base::string16 unique_name =
         field.name + base::ASCIIToUTF16("_") +
         base::SizeTToString16(++unique_names[field.name]);
-    fields_.push_back(new AutofillField(field, unique_name));
+    fields_.push_back(base::MakeUnique<AutofillField>(field, unique_name));
   }
 
   form_signature_ = autofill::CalculateFormSignature(form);
@@ -345,8 +346,8 @@ void FormStructure::DetermineHeuristicTypes() {
   if (active_field_count() >= kRequiredFieldsForPredictionRoutines &&
       (is_form_tag_ || is_formless_checkout_)) {
     const FieldCandidatesMap field_type_map =
-        FormField::ParseFormFields(fields_.get(), is_form_tag_);
-    for (AutofillField* field : fields_) {
+        FormField::ParseFormFields(fields_, is_form_tag_);
+    for (const auto& field : fields_) {
       const auto iter = field_type_map.find(field->unique_name());
       if (iter != field_type_map.end())
         field->set_heuristic_type(iter->second.BestHeuristicType());
@@ -379,7 +380,7 @@ bool FormStructure::EncodeUploadRequest(
 
   // Verify that |available_field_types| agrees with the possible field types we
   // are uploading.
-  for (const AutofillField* field : *this) {
+  for (const auto& field : *this) {
     for (const auto& type : field->possible_types()) {
       DCHECK(type == UNKNOWN_TYPE || type == EMPTY_TYPE ||
              available_field_types.count(type));
@@ -468,7 +469,7 @@ void FormStructure::ParseQueryResponse(
         response.upload_required() ? UPLOAD_REQUIRED : UPLOAD_NOT_REQUIRED;
 
     bool query_response_has_no_server_data = true;
-    for (AutofillField* field : form->fields_) {
+    for (auto& field : form->fields_) {
       if (form->ShouldSkipField(*field))
         continue;
 
@@ -533,7 +534,7 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
     form.data.is_form_tag = form_structure->is_form_tag_;
     form.signature = form_structure->FormSignatureAsStr();
 
-    for (const AutofillField* field : form_structure->fields_) {
+    for (const auto& field : form_structure->fields_) {
       form.data.fields.push_back(FormFieldData(*field));
 
       FormFieldDataPredictions annotated_field;
@@ -574,7 +575,7 @@ bool FormStructure::IsAutofillable() const {
 bool FormStructure::IsCompleteCreditCardForm() const {
   bool found_cc_number = false;
   bool found_cc_expiration = false;
-  for (const AutofillField* field : fields_) {
+  for (const auto& field : fields_) {
     ServerFieldType type = field->Type().GetStorableType();
     if (!found_cc_expiration && IsCreditCardExpirationType(type)) {
       found_cc_expiration = true;
@@ -589,7 +590,7 @@ bool FormStructure::IsCompleteCreditCardForm() const {
 
 void FormStructure::UpdateAutofillCount() {
   autofill_count_ = 0;
-  for (const AutofillField* field : *this) {
+  for (const auto& field : *this) {
     if (field && field->IsFieldFillable())
       ++autofill_count_;
   }
@@ -610,7 +611,7 @@ bool FormStructure::ShouldBeParsed() const {
     return false;
 
   bool has_text_field = false;
-  for (const AutofillField* it : *this) {
+  for (const auto& it : *this) {
     has_text_field |= it->form_control_type != "select-one";
   }
 
@@ -627,11 +628,11 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
   // Map from field signatures to cached fields.
   std::map<std::string, const AutofillField*> cached_fields;
   for (size_t i = 0; i < cached_form.field_count(); ++i) {
-    const AutofillField* field = cached_form.field(i);
+    const auto& field = cached_form.field(i);
     cached_fields[field->FieldSignatureAsStr()] = field;
   }
 
-  for (AutofillField* field : *this) {
+  for (auto& field : *this) {
     std::map<std::string, const AutofillField*>::const_iterator cached_field =
         cached_fields.find(field->FieldSignatureAsStr());
     if (cached_field != cached_fields.end()) {
@@ -680,7 +681,7 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
   bool did_autofill_all_possible_fields = true;
   bool did_autofill_some_possible_fields = false;
   for (size_t i = 0; i < field_count(); ++i) {
-    const AutofillField* field = this->field(i);
+    const auto& field = this->field(i);
 
     // No further logging for password fields.  Those are primarily related to a
     // different feature code path, and so make more sense to track outside of
@@ -846,7 +847,7 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
 }
 
 void FormStructure::LogQualityMetricsBasedOnAutocomplete() const {
-  for (const AutofillField* field : fields_) {
+  for (const auto& field : fields_) {
     if (field->html_type() != HTML_TYPE_UNSPECIFIED &&
         field->html_type() != HTML_TYPE_UNRECOGNIZED) {
       // The type inferred by the autocomplete attribute.
@@ -887,7 +888,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
 
   has_author_specified_types_ = false;
   has_author_specified_sections_ = false;
-  for (AutofillField* field : fields_) {
+  for (const auto& field : fields_) {
     // To prevent potential section name collisions, add a default suffix for
     // other fields.  Without this, 'autocomplete' attribute values
     // "section--shipping street-address" and "shipping street-address" would be
@@ -1007,7 +1008,7 @@ bool FormStructure::FillFields(
 std::set<base::string16> FormStructure::PossibleValues(ServerFieldType type) {
   std::set<base::string16> values;
   AutofillType target_type(type);
-  for (const AutofillField* field : fields_) {
+  for (const auto& field : fields_) {
     if (field->Type().GetStorableType() != target_type.GetStorableType() ||
         field->Type().group() != target_type.group()) {
       continue;
@@ -1035,7 +1036,7 @@ std::set<base::string16> FormStructure::PossibleValues(ServerFieldType type) {
 
 base::string16 FormStructure::GetUniqueValue(HtmlFieldType type) const {
   base::string16 value;
-  for (const AutofillField* field : fields_) {
+  for (const auto& field : fields_) {
     if (field->html_type() != type)
       continue;
 
@@ -1057,7 +1058,7 @@ const AutofillField* FormStructure::field(size_t index) const {
     return NULL;
   }
 
-  return fields_[index];
+  return fields_[index].get();
 }
 
 AutofillField* FormStructure::field(size_t index) {
@@ -1108,7 +1109,7 @@ void FormStructure::EncodeFormForQuery(
   DCHECK(!IsMalformed());
 
   query_form->set_signature(form_signature());
-  for (const AutofillField* field : fields_) {
+  for (const auto& field : fields_) {
     if (ShouldSkipField(*field))
       continue;
 
@@ -1129,7 +1130,7 @@ void FormStructure::EncodeFormForQuery(
 void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
   DCHECK(!IsMalformed());
 
-  for (const AutofillField* field : fields_) {
+  for (const auto& field : fields_) {
     // Don't upload checkable fields.
     if (IsCheckable(field->check_status))
       continue;
@@ -1197,7 +1198,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
     std::set<ServerFieldType> seen_types;
     ServerFieldType previous_type = UNKNOWN_TYPE;
 
-    for (AutofillField* field : fields_) {
+    for (const auto& field : fields_) {
       const ServerFieldType current_type = field->Type().GetStorableType();
 
       bool already_saw_current_type = seen_types.count(current_type) > 0;
@@ -1251,7 +1252,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
 
   // Ensure that credit card and address fields are in separate sections.
   // This simplifies the section-aware logic in autofill_manager.cc.
-  for (AutofillField* field : fields_) {
+  for (const auto& field : fields_) {
     FieldTypeGroup field_type_group = field->Type().group();
     if (field_type_group == CREDIT_CARD)
       field->set_section(field->section() + "-cc");
@@ -1273,7 +1274,7 @@ void FormStructure::ProcessExtractedFields() {
   // Find the longest common prefix within all the field names.
   std::vector<base::string16> names;
   names.reserve(field_count());
-  for (const AutofillField* field : *this)
+  for (const auto& field : *this)
     names.push_back(field->name);
 
   const base::string16 longest_prefix = FindLongestCommonPrefix(names);
@@ -1281,7 +1282,7 @@ void FormStructure::ProcessExtractedFields() {
     return;
 
   // The name without the prefix will be used for heuristics parsing.
-  for (AutofillField* field : *this) {
+  for (auto& field : *this) {
     if (field->name.size() > longest_prefix.size()) {
       field->set_parseable_name(
           field->name.substr(longest_prefix.size(), field->name.size()));

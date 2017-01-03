@@ -74,7 +74,7 @@ const std::vector<base::FilePath> GetTestFiles() {
 
 // A data-driven test for verifying Autofill heuristics. Each input is an HTML
 // file that contains one or more forms. The corresponding output file lists the
-// heuristically detected type for eachfield.
+// heuristically detected type for each field.
 class FormStructureBrowserTest
     : public InProcessBrowserTest,
       public DataDrivenTest,
@@ -130,7 +130,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
     const std::vector<std::unique_ptr<FormStructure>>& forms) {
   std::string forms_string;
   for (const auto& form : forms) {
-    for (const AutofillField* field : *form) {
+    for (const auto& field : *form) {
       forms_string += field->Type().ToString();
       forms_string += " | " + base::UTF16ToUTF8(field->name);
       forms_string += " | " + base::UTF16ToUTF8(field->label);

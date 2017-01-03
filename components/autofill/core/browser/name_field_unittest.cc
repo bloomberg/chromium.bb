@@ -5,10 +5,10 @@
 #include "components/autofill/core/browser/name_field.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
@@ -24,7 +24,7 @@ class NameFieldTest : public testing::Test {
   NameFieldTest() {}
 
  protected:
-  ScopedVector<AutofillField> list_;
+  std::vector<std::unique_ptr<AutofillField>> list_;
   std::unique_ptr<NameField> field_;
   FieldCandidatesMap field_candidates_map_;
 
@@ -44,17 +44,20 @@ TEST_F(NameFieldTest, FirstMiddleLast) {
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("First");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = ASCIIToUTF16("Middle Name");
   field.name = ASCIIToUTF16("Middle");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("Last");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -78,17 +81,20 @@ TEST_F(NameFieldTest, FirstMiddleLast2) {
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("firstName");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("middleName");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("lastName");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -112,13 +118,15 @@ TEST_F(NameFieldTest, FirstLast) {
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("first_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("last_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -138,13 +146,15 @@ TEST_F(NameFieldTest, FirstLast2) {
 
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("first_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("last_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -164,17 +174,20 @@ TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
 
   field.label = ASCIIToUTF16("First  Name");
   field.name = ASCIIToUTF16("first_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = ASCIIToUTF16("Middle  Name");
   field.name = ASCIIToUTF16("middle_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = ASCIIToUTF16("Last  Name");
   field.name = ASCIIToUTF16("last_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -198,13 +211,15 @@ TEST_F(NameFieldTest, FirstLastEmpty) {
 
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("first_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
 
-    field.label = base::string16();
+  field.label = base::string16();
   field.name = ASCIIToUTF16("last_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -224,17 +239,20 @@ TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
 
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("first_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("middle_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("last_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -258,17 +276,20 @@ TEST_F(NameFieldTest, MiddleInitial) {
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("first_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = ASCIIToUTF16("MI");
   field.name = ASCIIToUTF16("middle_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("last_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
@@ -292,13 +313,15 @@ TEST_F(NameFieldTest, MiddleInitialNoLastName) {
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("first_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = ASCIIToUTF16("MI");
   field.name = ASCIIToUTF16("middle_name");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_EQ(nullptr, field_.get());
 }
@@ -311,17 +334,20 @@ TEST_F(NameFieldTest, MiddleInitialAtEnd) {
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("XXXnameXXXfirst");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("XXXnameXXXmi");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name2")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("XXXnameXXXlast");
-  list_.push_back(new AutofillField(field, ASCIIToUTF16("name3")));
+  list_.push_back(
+      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
 
-  AutofillScanner scanner(list_.get());
+  AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
   ASSERT_NE(nullptr, field_.get());
   field_->AddClassifications(&field_candidates_map_);
