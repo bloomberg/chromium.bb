@@ -270,10 +270,10 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   base::string16 GetTitle() override { return base::string16(); }
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override {
     ChromeLauncherAppMenuItems items;
-    items.push_back(
-        new ChromeLauncherAppMenuItem(base::string16(), NULL, false));
-    items.push_back(
-        new ChromeLauncherAppMenuItem(base::string16(), NULL, false));
+    items.push_back(base::MakeUnique<ChromeLauncherAppMenuItem>(
+        base::string16(), nullptr, false));
+    items.push_back(base::MakeUnique<ChromeLauncherAppMenuItem>(
+        base::string16(), nullptr, false));
     return items;
   }
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override {

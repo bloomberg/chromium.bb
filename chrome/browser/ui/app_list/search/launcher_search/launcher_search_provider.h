@@ -7,9 +7,9 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -29,8 +29,9 @@ class LauncherSearchProvider : public SearchProvider {
 
   void Start(bool is_voice_query, const base::string16& query) override;
   void Stop() override;
-  void SetSearchResults(const extensions::ExtensionId& extension_id,
-                        ScopedVector<LauncherSearchResult> extension_results);
+  void SetSearchResults(
+      const extensions::ExtensionId& extension_id,
+      std::vector<std::unique_ptr<LauncherSearchResult>> extension_results);
 
  private:
   // Delays query for |kLauncherSearchProviderQueryDelayInMs|. This dispatches
@@ -42,7 +43,7 @@ class LauncherSearchProvider : public SearchProvider {
 
   // The search results of each extension.
   std::map<extensions::ExtensionId,
-           std::unique_ptr<ScopedVector<LauncherSearchResult>>>
+           std::vector<std::unique_ptr<LauncherSearchResult>>>
       extension_results_;
 
   // A timer to delay query.

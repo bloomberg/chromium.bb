@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service_factory.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
@@ -127,19 +126,18 @@ void Service::SetSearchResults(
 
   // Set search results to provider.
   DCHECK(provider_);
-  ScopedVector<app_list::LauncherSearchResult> search_results;
+  std::vector<std::unique_ptr<app_list::LauncherSearchResult>> search_results;
   for (const auto& result : results) {
     const int relevance =
         std::min(kMaxSearchResultScore, std::max(result.relevance, 0));
     const GURL icon_url =
         result.icon_url ? GURL(*result.icon_url.get()) : GURL();
 
-    app_list::LauncherSearchResult* search_result =
-        new app_list::LauncherSearchResult(result.item_id, icon_url, relevance,
-                                           profile_, extension,
-                                           error_reporter->Duplicate());
+    auto search_result = base::MakeUnique<app_list::LauncherSearchResult>(
+        result.item_id, icon_url, relevance, profile_, extension,
+        error_reporter->Duplicate());
     search_result->set_title(base::UTF8ToUTF16(result.title));
-    search_results.push_back(search_result);
+    search_results.push_back(std::move(search_result));
   }
   provider_->SetSearchResults(extension->id(), std::move(search_results));
 }

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/wm/window_util.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
@@ -110,7 +111,8 @@ void AppWindowLauncherItemController::ActivateIndexedApp(size_t index) {
 ChromeLauncherAppMenuItems AppWindowLauncherItemController::GetApplicationList(
     int event_flags) {
   ChromeLauncherAppMenuItems items;
-  items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));
+  items.push_back(
+      base::MakeUnique<ChromeLauncherAppMenuItem>(GetTitle(), nullptr, false));
   return items;
 }
 

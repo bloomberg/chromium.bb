@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/ui/ash/launcher/test/launcher_application_menu_item_model_test_api.h"
 #include "chrome/browser/ui/ash/launcher/test/test_chrome_launcher_app_menu_item.h"
@@ -39,26 +40,22 @@ TEST(LauncherApplicationMenuItemModelTest,
      VerifyGetNumMenuItemsEnabledWithMenuItems) {
   ChromeLauncherAppMenuItems menu_items;
 
-  TestChromeLauncherAppMenuItem* enabled_menu_item_1 =
-      new TestChromeLauncherAppMenuItem();
+  auto enabled_menu_item_1 = base::MakeUnique<TestChromeLauncherAppMenuItem>();
   enabled_menu_item_1->set_is_enabled(true);
 
-  TestChromeLauncherAppMenuItem* enabled_menu_item_2 =
-      new TestChromeLauncherAppMenuItem();
+  auto enabled_menu_item_2 = base::MakeUnique<TestChromeLauncherAppMenuItem>();
   enabled_menu_item_2->set_is_enabled(true);
 
-  TestChromeLauncherAppMenuItem* enabled_menu_item_3 =
-      new TestChromeLauncherAppMenuItem();
+  auto enabled_menu_item_3 = base::MakeUnique<TestChromeLauncherAppMenuItem>();
   enabled_menu_item_3->set_is_enabled(true);
 
-  TestChromeLauncherAppMenuItem* disabled_menu_item_1 =
-      new TestChromeLauncherAppMenuItem();
+  auto disabled_menu_item_1 = base::MakeUnique<TestChromeLauncherAppMenuItem>();
   disabled_menu_item_1->set_is_enabled(false);
 
-  menu_items.push_back(enabled_menu_item_1);
-  menu_items.push_back(disabled_menu_item_1);
-  menu_items.push_back(enabled_menu_item_2);
-  menu_items.push_back(enabled_menu_item_3);
+  menu_items.push_back(std::move(enabled_menu_item_1));
+  menu_items.push_back(std::move(disabled_menu_item_1));
+  menu_items.push_back(std::move(enabled_menu_item_2));
+  menu_items.push_back(std::move(enabled_menu_item_3));
 
   LauncherApplicationMenuItemModel menu_model(std::move(menu_items));
   LauncherApplicationMenuItemModelTestAPI menu_model_test_api(&menu_model);
@@ -98,10 +95,9 @@ TEST(LauncherApplicationMenuItemModelTest,
   const int kFlags = 0;
 
   ChromeLauncherAppMenuItems menu_items;
-  TestChromeLauncherAppMenuItem* menu_item =
-      new TestChromeLauncherAppMenuItem();
+  auto menu_item = base::MakeUnique<TestChromeLauncherAppMenuItem>();
   menu_item->set_is_enabled(true);
-  menu_items.push_back(menu_item);
+  menu_items.push_back(std::move(menu_item));
 
   base::HistogramTester histogram_tester;
 

@@ -323,10 +323,9 @@ void ArcAppIcon::OnIconRead(
     RequestIcon(read_result->scale_factor);
 
   if (!read_result->unsafe_icon_data.empty()) {
-    decode_requests_.push_back(
-        new DecodeRequest(weak_ptr_factory_.GetWeakPtr(),
-                          resource_size_in_dip_,
-                          read_result->scale_factor));
+    decode_requests_.push_back(base::MakeUnique<DecodeRequest>(
+        weak_ptr_factory_.GetWeakPtr(), resource_size_in_dip_,
+        read_result->scale_factor));
     if (disable_safe_decoding) {
       SkBitmap bitmap;
       if (!read_result->unsafe_icon_data.empty() &&
@@ -340,7 +339,7 @@ void ArcAppIcon::OnIconRead(
         decode_requests_.back()->OnDecodeImageFailed();
       }
     } else {
-      ImageDecoder::Start(decode_requests_.back(),
+      ImageDecoder::Start(decode_requests_.back().get(),
                           read_result->unsafe_icon_data);
     }
   }
@@ -366,9 +365,10 @@ void ArcAppIcon::Update(const gfx::ImageSkia* image) {
 void ArcAppIcon::DiscardDecodeRequest(DecodeRequest* request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  ScopedVector<DecodeRequest>::iterator it = std::find(decode_requests_.begin(),
-                                                       decode_requests_.end(),
-                                                       request);
+  auto it = std::find_if(decode_requests_.begin(), decode_requests_.end(),
+                         [request](const std::unique_ptr<DecodeRequest>& ptr) {
+                           return ptr.get() == request;
+                         });
   CHECK(it != decode_requests_.end());
   decode_requests_.erase(it);
 }

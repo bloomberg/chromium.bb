@@ -7,6 +7,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -96,7 +97,7 @@ ExtensionAppWindowLauncherItemController::GetApplicationList(int event_flags) {
     if (result.IsEmpty())
       result = GetAppListIcon(app_window);
 
-    items.push_back(new ChromeLauncherAppMenuItemV2App(
+    items.push_back(base::MakeUnique<ChromeLauncherAppMenuItemV2App>(
         app_window->GetTitle(),
         &result,  // Will be copied
         app_id(), launcher_controller(), index,

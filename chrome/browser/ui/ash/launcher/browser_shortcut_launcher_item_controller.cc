@@ -13,6 +13,7 @@
 #include "ash/common/wm_window_property.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/wm/window_util.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
@@ -169,7 +170,8 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
   ChromeLauncherAppMenuItems items;
   bool found_tabbed_browser = false;
   // Add the application name to the menu.
-  items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));
+  items.push_back(
+      base::MakeUnique<ChromeLauncherAppMenuItem>(GetTitle(), nullptr, false));
   for (auto* browser : GetListOfActiveBrowsers()) {
     TabStripModel* tab_strip = browser->tab_strip_model();
     if (tab_strip->active_index() == -1)
@@ -181,7 +183,7 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
           tab_strip->GetWebContentsAt(tab_strip->active_index());
       gfx::Image app_icon = GetBrowserListIcon(web_contents);
       base::string16 title = GetBrowserListTitle(web_contents);
-      items.push_back(new ChromeLauncherAppMenuItemBrowser(
+      items.push_back(base::MakeUnique<ChromeLauncherAppMenuItemBrowser>(
           title, &app_icon, browser, items.size() == 1));
     } else {
       for (int index = 0; index  < tab_strip->count(); ++index) {
@@ -193,7 +195,7 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
             launcher_controller()->GetAppListTitle(web_contents);
         // Check if we need to insert a separator in front.
         bool leading_separator = !index;
-        items.push_back(new ChromeLauncherAppMenuItemTab(
+        items.push_back(base::MakeUnique<ChromeLauncherAppMenuItemTab>(
             title, &app_icon, web_contents, leading_separator));
       }
     }

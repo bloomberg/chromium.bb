@@ -313,17 +313,13 @@ void AppListViewDelegate::SetUpCustomLauncherPages() {
   if (custom_launcher_page_urls.empty())
     return;
 
-  for (std::vector<GURL>::const_iterator it = custom_launcher_page_urls.begin();
-       it != custom_launcher_page_urls.end();
-       ++it) {
+  for (auto it = custom_launcher_page_urls.begin();
+       it != custom_launcher_page_urls.end(); ++it) {
     std::string extension_id = it->host();
-    apps::CustomLauncherPageContents* page_contents =
-        new apps::CustomLauncherPageContents(
-            std::unique_ptr<extensions::AppDelegate>(
-                new ChromeAppDelegate(false)),
-            extension_id);
+    auto page_contents = base::MakeUnique<apps::CustomLauncherPageContents>(
+        base::MakeUnique<ChromeAppDelegate>(false), extension_id);
     page_contents->Initialize(profile_, *it);
-    custom_page_contents_.push_back(page_contents);
+    custom_page_contents_.push_back(std::move(page_contents));
   }
 
   std::string first_launcher_page_app_id = custom_launcher_page_urls[0].host();
@@ -637,11 +633,8 @@ std::vector<views::View*> AppListViewDelegate::CreateCustomPageWebViews(
     const gfx::Size& size) {
   std::vector<views::View*> web_views;
 
-  for (ScopedVector<apps::CustomLauncherPageContents>::const_iterator it =
-           custom_page_contents_.begin();
-       it != custom_page_contents_.end();
-       ++it) {
-    content::WebContents* web_contents = (*it)->web_contents();
+  for (const auto& contents : custom_page_contents_) {
+    content::WebContents* web_contents = contents->web_contents();
 
     // The web contents should belong to the current profile.
     DCHECK_EQ(profile_, web_contents->GetBrowserContext());

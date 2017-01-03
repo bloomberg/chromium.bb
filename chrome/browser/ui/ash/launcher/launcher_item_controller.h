@@ -11,14 +11,14 @@
 #include "ash/common/shelf/shelf_item_types.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "ui/events/event.h"
 
 class ChromeLauncherController;
 class ChromeLauncherAppMenuItem;
 
-typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
+using ChromeLauncherAppMenuItems =
+    std::vector<std::unique_ptr<ChromeLauncherAppMenuItem>>;
 
 // LauncherItemController is used by ChromeLauncherController to track one
 // or more windows associated with a shelf item.

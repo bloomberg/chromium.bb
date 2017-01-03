@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -76,7 +77,7 @@ ArcAppWindowLauncherItemController::GetApplicationList(int event_flags) {
     size_t i = std::distance(windows().begin(), it);
     gfx::Image image;
     aura::Window* window = (*it)->GetNativeWindow();
-    items.push_back(new ChromeLauncherAppMenuItemV2App(
+    items.push_back(base::MakeUnique<ChromeLauncherAppMenuItemV2App>(
         ((window && !window->GetTitle().empty()) ? window->GetTitle()
                                                  : GetTitle()),
         &image, app_id(), launcher_controller(), i,

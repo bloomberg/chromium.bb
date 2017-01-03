@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service.h"
 
@@ -58,17 +57,16 @@ void LauncherSearchProvider::Stop() {
 
 void LauncherSearchProvider::SetSearchResults(
     const extensions::ExtensionId& extension_id,
-    ScopedVector<LauncherSearchResult> results) {
+    std::vector<std::unique_ptr<LauncherSearchResult>> results) {
   DCHECK(Service::Get(profile_)->IsQueryRunning());
 
   // Add this extension's results (erasing any existing results).
-  extension_results_[extension_id] =
-      base::MakeUnique<ScopedVector<LauncherSearchResult>>(std::move(results));
+  extension_results_[extension_id] = std::move(results);
 
   // Update results with other extension results.
   ClearResults();
   for (const auto& item : extension_results_) {
-    for (const auto* result : *item.second)
+    for (const auto& result : item.second)
       Add(result->Duplicate());
   }
 }

@@ -12,7 +12,6 @@
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/public/interfaces/shelf.mojom.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -45,7 +44,8 @@ class BaseWindow;
 }
 
 // A list of the elements which makes up a simple menu description.
-typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
+using ChromeLauncherAppMenuItems =
+    std::vector<std::unique_ptr<ChromeLauncherAppMenuItem>>;
 
 // ChromeLauncherController manages the launcher items needed for content
 // windows. Launcher items have a type, an optional app id, and a controller.

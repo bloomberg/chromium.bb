@@ -6,16 +6,17 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APPLICATION_MENU_ITEM_MODEL_H_
 
 #include <memory>
+#include <vector>
 
 #include "ash/common/shelf/shelf_menu_model.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 
 class ChromeLauncherAppMenuItem;
 class LauncherApplicationMenuItemModelTestAPI;
 
 // A list of the elements which makes up a simple menu description.
-typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
+using ChromeLauncherAppMenuItems =
+    std::vector<std::unique_ptr<ChromeLauncherAppMenuItem>>;
 
 // A menu model that builds the contents of a menu for a launcher item
 // containing a list of running applications.
