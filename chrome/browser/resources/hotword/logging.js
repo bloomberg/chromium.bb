@@ -15,8 +15,5 @@ cr.define('hotword', function() {
       console.log.apply(console, arguments);
   }
 
-  return {
-    DEBUG: false,
-    debug: debug
-  };
+  return {DEBUG: false, debug: debug};
 });

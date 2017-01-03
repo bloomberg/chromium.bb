@@ -26,10 +26,10 @@ cr.define('hotword', function() {
      */
     this.source_ = source;
 
-     /**
-      * Callback invoked when the hotword has triggered.
-      * @private {!function()}
-      */
+    /**
+     * Callback invoked when the hotword has triggered.
+     * @private {!function()}
+     */
     this.triggerCb_ = triggerCb;
 
     /**
@@ -93,7 +93,7 @@ cr.define('hotword', function() {
      * @private {!HTMLAudioElement}
      */
     this.chime_ =
-        /** @type {!HTMLAudioElement} */(document.createElement('audio'));
+        /** @type {!HTMLAudioElement} */ (document.createElement('audio'));
 
     /**
      * Chrome event listeners. Saved so that they can be de-registered when
@@ -216,8 +216,8 @@ cr.define('hotword', function() {
      * @return {boolean} True if google.com/NTP/launcher hotwording is enabled.
      */
     isSometimesOnEnabled: function() {
-      assert(this.hotwordStatus_,
-             'No hotwording status (isSometimesOnEnabled)');
+      assert(
+          this.hotwordStatus_, 'No hotwording status (isSometimesOnEnabled)');
       // Although the two settings are supposed to be mutually exclusive, it's
       // possible for both to be set. In that case, always-on takes precedence.
       return this.hotwordStatus_.enabled &&
@@ -263,8 +263,7 @@ cr.define('hotword', function() {
       if (!this.hotwordStatus_)
         return;
 
-      if (this.hotwordStatus_.enabled ||
-          this.hotwordStatus_.alwaysOnEnabled ||
+      if (this.hotwordStatus_.enabled || this.hotwordStatus_.alwaysOnEnabled ||
           this.hotwordStatus_.trainingEnabled) {
         // Detect changes to audio logging and kill the detector if that setting
         // has changed.
@@ -322,16 +321,16 @@ cr.define('hotword', function() {
         this.state_ = State_.STARTING;
         var isHotwordStream = this.isAlwaysOnEnabled() &&
             this.hotwordStatus_.hotwordHardwareAvailable;
-        this.pluginManager_ = new hotword.NaClManager(this.loggingEnabled_,
-                                                      isHotwordStream);
-        this.pluginManager_.addEventListener(hotword.constants.Event.READY,
-                                             this.onReady_.bind(this));
-        this.pluginManager_.addEventListener(hotword.constants.Event.ERROR,
-                                             this.onError_.bind(this));
-        this.pluginManager_.addEventListener(hotword.constants.Event.TRIGGER,
-                                             this.onTrigger_.bind(this));
-        this.pluginManager_.addEventListener(hotword.constants.Event.TIMEOUT,
-                                             this.onTimeout_.bind(this));
+        this.pluginManager_ =
+            new hotword.NaClManager(this.loggingEnabled_, isHotwordStream);
+        this.pluginManager_.addEventListener(
+            hotword.constants.Event.READY, this.onReady_.bind(this));
+        this.pluginManager_.addEventListener(
+            hotword.constants.Event.ERROR, this.onError_.bind(this));
+        this.pluginManager_.addEventListener(
+            hotword.constants.Event.TRIGGER, this.onTrigger_.bind(this));
+        this.pluginManager_.addEventListener(
+            hotword.constants.Event.TIMEOUT, this.onTimeout_.bind(this));
         this.pluginManager_.addEventListener(
             hotword.constants.Event.SPEAKER_MODEL_SAVED,
             this.onSpeakerModelSaved_.bind(this));
@@ -346,10 +345,14 @@ cr.define('hotword', function() {
           // detection via a flag, and hence the hotword stream may not be
           // available.
           var constraints = /** @type {googMediaStreamConstraints} */
-              ({audio: {optional: [
-                { googDucking: false },
-                { googHotword: this.isAlwaysOnEnabled() }
-              ]}});
+              ({
+                audio: {
+                  optional: [
+                    {googDucking: false},
+                    {googHotword: this.isAlwaysOnEnabled()}
+                  ]
+                }
+              });
           navigator.webkitGetUserMedia(
               /** @type {MediaStreamConstraints} */ (constraints),
               function(stream) {
@@ -452,8 +455,9 @@ cr.define('hotword', function() {
      * started.
      */
     finalizeSpeakerModel: function() {
-      assert(this.pluginManager_,
-             'Cannot finalize speaker model: No NaCl plugin loaded');
+      assert(
+          this.pluginManager_,
+          'Cannot finalize speaker model: No NaCl plugin loaded');
       if (this.state_ != State_.RUNNING) {
         hotword.debug('Cannot finalize speaker model: NaCl plugin not started');
         return;
@@ -577,8 +581,8 @@ cr.define('hotword', function() {
      * @param {hotword.constants.RecognizerStartMode=} opt_mode The mode to
      *     start the recognizer in.
      */
-    startSession: function(source, startedCb, triggerCb,
-                           opt_modelSavedCb, opt_mode) {
+    startSession: function(
+        source, startedCb, triggerCb, opt_modelSavedCb, opt_mode) {
       if (this.isTrainingEnabled() && opt_mode) {
         this.startMode_ = opt_mode;
       } else {
@@ -586,8 +590,8 @@ cr.define('hotword', function() {
       }
       hotword.debug('Starting session for source: ' + source);
       this.removeSession_(source);
-      this.sessions_.push(new Session_(source, triggerCb, startedCb,
-                                       opt_modelSavedCb));
+      this.sessions_.push(
+          new Session_(source, triggerCb, startedCb, opt_modelSavedCb));
       this.updateStateFromStatus_();
     },
 
@@ -633,7 +637,5 @@ cr.define('hotword', function() {
     }
   };
 
-  return {
-    StateManager: StateManager
-  };
+  return {StateManager: StateManager};
 });

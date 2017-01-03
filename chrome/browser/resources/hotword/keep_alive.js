@@ -48,7 +48,5 @@ cr.define('hotword', function() {
     }
   };
 
-  return {
-    KeepAlive: KeepAlive
-  };
+  return {KeepAlive: KeepAlive};
 });

@@ -13,9 +13,8 @@ cr.define('hotword', function() {
    * @extends {hotword.BaseSessionManager}
    */
   function LauncherManager(stateManager) {
-    hotword.BaseSessionManager.call(this,
-                                    stateManager,
-                                    hotword.constants.SessionSource.LAUNCHER);
+    hotword.BaseSessionManager.call(
+        this, stateManager, hotword.constants.SessionSource.LAUNCHER);
   }
 
   LauncherManager.prototype = {
@@ -32,7 +31,5 @@ cr.define('hotword', function() {
     }
   };
 
-  return {
-    LauncherManager: LauncherManager
-  };
+  return {LauncherManager: LauncherManager};
 });

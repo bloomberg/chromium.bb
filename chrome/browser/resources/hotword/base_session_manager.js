@@ -56,8 +56,7 @@ cr.define('hotword', function() {
      * Called when the hotwording session is stopped.
      * @protected
      */
-    onSessionStop: function() {
-    },
+    onSessionStop: function() {},
 
     /**
      * Starts a launcher hotwording session.
@@ -65,13 +64,9 @@ cr.define('hotword', function() {
      *     recognizer in.
      */
     startSession: function(opt_mode) {
-      this.stateManager.startSession(
-          this.sessionSource_,
-          function() {
-            chrome.hotwordPrivate.setHotwordSessionState(true, function() {});
-          },
-          this.handleHotwordTrigger.bind(this),
-          opt_mode);
+      this.stateManager.startSession(this.sessionSource_, function() {
+        chrome.hotwordPrivate.setHotwordSessionState(true, function() {});
+      }, this.handleHotwordTrigger.bind(this), opt_mode);
     },
 
     /**
@@ -90,9 +85,8 @@ cr.define('hotword', function() {
      */
     handleHotwordTrigger: function(log) {
       hotword.debug('Hotword triggered: ' + this.sessionSource_, log);
-      chrome.hotwordPrivate.notifyHotwordRecognition('search',
-                                                     log,
-                                                     function() {});
+      chrome.hotwordPrivate.notifyHotwordRecognition(
+          'search', log, function() {});
     },
 
     /**
@@ -154,7 +148,5 @@ cr.define('hotword', function() {
     }
   };
 
-  return {
-    BaseSessionManager: BaseSessionManager
-  };
+  return {BaseSessionManager: BaseSessionManager};
 });

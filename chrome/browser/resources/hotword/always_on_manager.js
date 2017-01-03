@@ -14,18 +14,17 @@ cr.define('hotword', function() {
    * @extends {hotword.BaseSessionManager}
    */
   function AlwaysOnManager(stateManager) {
-    hotword.BaseSessionManager.call(this,
-                                    stateManager,
-                                    hotword.constants.SessionSource.ALWAYS);
+    hotword.BaseSessionManager.call(
+        this, stateManager, hotword.constants.SessionSource.ALWAYS);
   }
 
   AlwaysOnManager.prototype = {
     __proto__: hotword.BaseSessionManager.prototype,
 
     /** @override */
-     enabled: function() {
-       return this.stateManager.isAlwaysOnEnabled();
-     },
+    enabled: function() {
+      return this.stateManager.isAlwaysOnEnabled();
+    },
 
     /** @override */
     updateListeners: function() {
@@ -35,7 +34,5 @@ cr.define('hotword', function() {
     }
   };
 
-  return {
-    AlwaysOnManager: AlwaysOnManager
-  };
+  return {AlwaysOnManager: AlwaysOnManager};
 });

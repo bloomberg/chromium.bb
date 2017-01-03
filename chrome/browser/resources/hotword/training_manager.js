@@ -22,9 +22,8 @@ cr.define('hotword', function() {
     this.finalizedSpeakerModelListener_ =
         this.handleFinalizeSpeakerModel_.bind(this);
 
-    hotword.BaseSessionManager.call(this,
-                                    stateManager,
-                                    hotword.constants.SessionSource.TRAINING);
+    hotword.BaseSessionManager.call(
+        this, stateManager, hotword.constants.SessionSource.TRAINING);
   }
 
   /**
@@ -34,14 +33,16 @@ cr.define('hotword', function() {
    * @private
    */
   TrainingManager.deleteFiles_ = function(fs) {
-    fs.root.getFile(hotword.constants.SPEAKER_MODEL_FILE_NAME, {create: false},
+    fs.root.getFile(
+        hotword.constants.SPEAKER_MODEL_FILE_NAME, {create: false},
         TrainingManager.deleteFile_, TrainingManager.fileErrorHandler_);
 
     for (var i = 0; i < hotword.constants.NUM_TRAINING_UTTERANCES; ++i) {
-      fs.root.getFile(hotword.constants.UTTERANCE_FILE_PREFIX + i +
-          hotword.constants.UTTERANCE_FILE_EXTENSION,
-          {create: false},
-          TrainingManager.deleteFile_, TrainingManager.fileErrorHandler_);
+      fs.root.getFile(
+          hotword.constants.UTTERANCE_FILE_PREFIX + i +
+              hotword.constants.UTTERANCE_FILE_EXTENSION,
+          {create: false}, TrainingManager.deleteFile_,
+          TrainingManager.fileErrorHandler_);
     }
   };
 
@@ -59,7 +60,7 @@ cr.define('hotword', function() {
         });
       }
       fileEntry.remove(function() {
-          hotword.debug('File removed: ' + fileEntry.fullPath);
+        hotword.debug('File removed: ' + fileEntry.fullPath);
       }, TrainingManager.fileErrorHandler_);
     }
   };
@@ -70,7 +71,7 @@ cr.define('hotword', function() {
    * @private
    */
   TrainingManager.fileErrorHandler_ = function(e) {
-      hotword.debug('File error: ' + e.code);
+    hotword.debug('File error: ' + e.code);
   };
 
   /**
@@ -89,7 +90,8 @@ cr.define('hotword', function() {
    * @private
    */
   TrainingManager.speakerModelExists_ = function(fs) {
-    fs.root.getFile(hotword.constants.SPEAKER_MODEL_FILE_NAME, {create: false},
+    fs.root.getFile(
+        hotword.constants.SPEAKER_MODEL_FILE_NAME, {create: false},
         TrainingManager.sendSpeakerModelExistsResponse_,
         TrainingManager.sendNoSpeakerModelResponse_);
   };
@@ -116,29 +118,27 @@ cr.define('hotword', function() {
    * Handles a request to delete the speaker model.
    */
   TrainingManager.handleDeleteSpeakerModel = function() {
-    window.webkitRequestFileSystem(PERSISTENT,
-        hotword.constants.FILE_SYSTEM_SIZE_BYTES,
-        TrainingManager.deleteFiles_,
-        TrainingManager.fileErrorHandler_);
+    window.webkitRequestFileSystem(
+        PERSISTENT, hotword.constants.FILE_SYSTEM_SIZE_BYTES,
+        TrainingManager.deleteFiles_, TrainingManager.fileErrorHandler_);
   };
 
   /**
    * Handles a request for the speaker model existence.
    */
   TrainingManager.handleSpeakerModelExists = function() {
-    window.webkitRequestFileSystem(PERSISTENT,
-        hotword.constants.FILE_SYSTEM_SIZE_BYTES,
-        TrainingManager.speakerModelExists_,
-        TrainingManager.fileErrorHandler_);
+    window.webkitRequestFileSystem(
+        PERSISTENT, hotword.constants.FILE_SYSTEM_SIZE_BYTES,
+        TrainingManager.speakerModelExists_, TrainingManager.fileErrorHandler_);
   };
 
   TrainingManager.prototype = {
     __proto__: hotword.BaseSessionManager.prototype,
 
     /** @override */
-     enabled: function() {
-       return this.stateManager.isTrainingEnabled();
-     },
+    enabled: function() {
+      return this.stateManager.isTrainingEnabled();
+    },
 
     /** @override */
     updateListeners: function() {
@@ -175,8 +175,7 @@ cr.define('hotword', function() {
             chrome.hotwordPrivate.setHotwordSessionState(true, function() {});
           },
           this.handleHotwordTrigger.bind(this),
-          this.handleSpeakerModelSaved_.bind(this),
-          opt_mode);
+          this.handleSpeakerModelSaved_.bind(this), opt_mode);
     },
 
     /**
@@ -198,7 +197,5 @@ cr.define('hotword', function() {
     },
   };
 
-  return {
-    TrainingManager: TrainingManager
-  };
+  return {TrainingManager: TrainingManager};
 });

@@ -62,13 +62,10 @@ cr.define('hotword', function() {
      * @private
      */
     checkUrlPathIsEligible_: function(url, base) {
-      if (url == base ||
-          url == base + '/' ||
+      if (url == base || url == base + '/' ||
           url.startsWith(base + '/_/chrome/newtab?') ||  // Appcache NTP.
-          url.startsWith(base + '/?') ||
-          url.startsWith(base + '/#') ||
-          url.startsWith(base + '/webhp') ||
-          url.startsWith(base + '/search') ||
+          url.startsWith(base + '/?') || url.startsWith(base + '/#') ||
+          url.startsWith(base + '/webhp') || url.startsWith(base + '/search') ||
           url.startsWith(base + '/imghp')) {
         return true;
       }
@@ -87,28 +84,13 @@ cr.define('hotword', function() {
         return false;
 
       var baseGoogleUrls = [
-        'https://encrypted.google.',
-        'https://images.google.',
+        'https://encrypted.google.', 'https://images.google.',
         'https://www.google.'
       ];
       // TODO(amistry): Get this list from a file in the shared module instead.
       var tlds = [
-        'at',
-        'ca',
-        'com',
-        'com.au',
-        'com.mx',
-        'com.br',
-        'co.jp',
-        'co.kr',
-        'co.nz',
-        'co.uk',
-        'co.za',
-        'de',
-        'es',
-        'fr',
-        'it',
-        'ru'
+        'at', 'ca', 'com', 'com.au', 'com.mx', 'com.br', 'co.jp', 'co.kr',
+        'co.nz', 'co.uk', 'co.za', 'de', 'es', 'fr', 'it', 'ru'
       ];
 
       // Check for the new tab page first.
@@ -135,23 +117,21 @@ cr.define('hotword', function() {
      * @private
      */
     findCurrentTab_: function(callback) {
-      chrome.windows.getAll(
-          {'populate': true},
-          function(windows) {
-            for (var i = 0; i < windows.length; ++i) {
-              if (!windows[i].focused)
-                continue;
+      chrome.windows.getAll({'populate': true}, function(windows) {
+        for (var i = 0; i < windows.length; ++i) {
+          if (!windows[i].focused)
+            continue;
 
-              for (var j = 0; j < windows[i].tabs.length; ++j) {
-                var tab = windows[i].tabs[j];
-                if (tab.active) {
-                  callback.call(this, tab);
-                  return;
-                }
-              }
+          for (var j = 0; j < windows[i].tabs.length; ++j) {
+            var tab = windows[i].tabs[j];
+            if (tab.active) {
+              callback.call(this, tab);
+              return;
             }
-            callback.call(this, null);
-          }.bind(this));
+          }
+        }
+        callback.call(this, null);
+      }.bind(this));
     },
 
     /**
@@ -182,9 +162,7 @@ cr.define('hotword', function() {
         return;
 
       chrome.tabs.executeScript(
-          tab.id,
-          {'file': 'audio_client.js'},
-          function(results) {
+          tab.id, {'file': 'audio_client.js'}, function(results) {
             if (chrome.runtime.lastError) {
               // Ignore this error. For new tab pages, even though the URL is
               // reported to be chrome://newtab/, the actual URL is a
@@ -274,7 +252,7 @@ cr.define('hotword', function() {
       if (port.name != hotword.constants.CLIENT_PORT_NAME)
         return;
 
-      var tab = /** @type {!Tab} */(port.sender.tab);
+      var tab = /** @type {!Tab} */ (port.sender.tab);
       // An existing port from the same tab might already exist. But that port
       // may be from the previous page, so just overwrite the port.
       this.portMap_[tab.id] = port;
@@ -358,11 +336,9 @@ cr.define('hotword', function() {
      */
     startHotwording_: function() {
       this.stateManager_.startSession(
-          hotword.constants.SessionSource.NTP,
-          function() {
+          hotword.constants.SessionSource.NTP, function() {
             this.sendAllClients_(CommandToPage.HOTWORD_STARTED);
-          }.bind(this),
-          this.hotwordTriggered_.bind(this));
+          }.bind(this), this.hotwordTriggered_.bind(this));
     },
 
     /**
@@ -444,8 +420,7 @@ cr.define('hotword', function() {
             chrome.hotwordPrivate.getStatus(
                 true /* getOptionalFields */,
                 this.statusDone_.bind(
-                    this,
-                    request.tab || sender.tab || {incognito: true},
+                    this, request.tab || sender.tab || {incognito: true},
                     sendResponse));
             return true;
           }
@@ -527,8 +502,7 @@ cr.define('hotword', function() {
           this.microphoneStateChangedListener_);
       if (chrome.runtime.onMessage.hasListener(this.messageListener_))
         return;
-      chrome.runtime.onMessageExternal.addListener(
-          this.messageListener_);
+      chrome.runtime.onMessageExternal.addListener(this.messageListener_);
     },
 
     /**
@@ -563,7 +537,5 @@ cr.define('hotword', function() {
     }
   };
 
-  return {
-    PageAudioManager: PageAudioManager
-  };
+  return {PageAudioManager: PageAudioManager};
 });

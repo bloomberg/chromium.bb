@@ -22,7 +22,5 @@ cr.define('hotword.metrics', function() {
     chrome.metricsPrivate.recordValue(metricDesc, value);
   }
 
-  return {
-    recordEnum: recordEnum
-  };
+  return {recordEnum: recordEnum};
 });

@@ -133,8 +133,9 @@
    */
   AudioClient.prototype.checkSpeechOverlayUi_ = function() {
     if (!this.speechOverlay_) {
-      window.setTimeout(this.delayedCheckSpeechOverlayUi_.bind(this),
-                        AudioClient.RETRY_TIME_MS_);
+      window.setTimeout(
+          this.delayedCheckSpeechOverlayUi_.bind(this),
+          AudioClient.RETRY_TIME_MS_);
     } else {
       this.checkSpeechUiRetries_ = 0;
     }
@@ -147,8 +148,8 @@
    * @private
    */
   AudioClient.prototype.delayedCheckSpeechOverlayUi_ = function() {
-    this.speechOverlay_ = document.getElementById(
-        AudioClient.SPEECH_UI_OVERLAY_ID_);
+    this.speechOverlay_ =
+        document.getElementById(AudioClient.SPEECH_UI_OVERLAY_ID_);
     if (!this.speechOverlay_) {
       if (this.checkSpeechUiRetries_++ < AudioClient.MAX_RETRIES) {
         this.sendCommandToPage_(AudioClient.CommandToPage.VOICE_TRIGGER);
@@ -167,9 +168,8 @@
    * @private
    */
   AudioClient.prototype.checkUi_ = function(command) {
-    this.uiStatus_[command].timeoutId =
-        window.setTimeout(this.failedCheckUi_.bind(this, command),
-                          AudioClient.RETRY_TIME_MS_);
+    this.uiStatus_[command].timeoutId = window.setTimeout(
+        this.failedCheckUi_.bind(this, command), AudioClient.RETRY_TIME_MS_);
   };
 
   /**
