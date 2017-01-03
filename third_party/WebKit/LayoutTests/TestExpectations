@@ -783,7 +783,6 @@ crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-rendering.html [ Pass Timeout ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/unprefixed-perspective-origin.html [ Pass Timeout ]
 crbug.com/248938 [ Mac ] virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
-crbug.com/248938 virtual/threaded/animations/fill-mode-multiple-keyframes.html [ Pass Failure ]
 
 crbug.com/659123 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 
