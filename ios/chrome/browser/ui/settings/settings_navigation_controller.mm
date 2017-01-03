@@ -9,6 +9,7 @@
 #include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -25,6 +26,7 @@
 #import "ios/chrome/browser/ui/settings/contextual_search_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/native_apps_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/physical_web_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
@@ -254,6 +256,20 @@ newSavePasswordsController:(ios::ChromeBrowserState*)browserState
   // Make sure the close button is always present, as the Save Passwords screen
   // isn't just shown from Settings.
   [controller navigationItem].leftBarButtonItem = [nc closeButton];
+  return nc;
+}
+
++ (SettingsNavigationController*)
+newPhysicalWebController:(ios::ChromeBrowserState*)browserState
+                delegate:(id<SettingsNavigationControllerDelegate>)delegate {
+  base::scoped_nsobject<UIViewController> controller(
+      [[PhysicalWebCollectionViewController alloc]
+          initWithPrefs:GetApplicationContext()->GetLocalState()]);
+  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
+      initWithRootViewController:controller
+                    browserState:browserState
+                        delegate:delegate];
+  [controller navigationItem].rightBarButtonItem = [nc doneButton];
   return nc;
 }
 

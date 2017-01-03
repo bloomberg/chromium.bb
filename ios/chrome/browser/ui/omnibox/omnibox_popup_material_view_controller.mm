@@ -9,6 +9,7 @@
 #include "base/ios/ios_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -16,6 +17,8 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "ios/chrome/browser/ui/animation_util.h"
+#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
+#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_row.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
@@ -183,6 +186,9 @@ UIColor* BackgroundColorIncognito() {
                          action:@selector(appendButtonTapped:)
                forControlEvents:UIControlEventTouchUpInside];
     [row.appendButton setTag:i];
+    [row.physicalWebButton addTarget:self
+                              action:@selector(physicalWebButtonTapped:)
+                    forControlEvents:UIControlEventTouchUpInside];
     row.rowHeight = kRowHeight;
   }
   _rows.reset([rowsBuilder copy]);
@@ -384,7 +390,8 @@ UIColor* BackgroundColorIncognito() {
   BOOL physicalWebMatch =
       match.type == AutocompleteMatchType::PHYSICAL_WEB ||
       match.type == AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW;
-  row.physicalWebImageView.hidden = !physicalWebMatch;
+  row.physicalWebButton.hidden = !physicalWebMatch;
+  [row.physicalWebButton cancelTrackingWithEvent:nil];
 
   // If a right accessory element is present or the text alignment is right
   // aligned, adjust the width to align with the accessory element.
@@ -643,6 +650,16 @@ UIColor* BackgroundColorIncognito() {
   // a new round of autocomplete and modify |_currentResult|.
   base::string16 contents(match.contents);
   _popupView->CopyToOmnibox(contents);
+}
+
+- (void)physicalWebButtonTapped:(id)sender {
+  base::scoped_nsobject<GenericChromeCommand> command([
+      [GenericChromeCommand alloc] initWithTag:IDC_SHOW_PHYSICAL_WEB_SETTINGS]);
+  [command executeOnMainWindow];
+
+  // Record when the user opens the Physical Web preference page from the
+  // omnibox suggestion.
+  base::RecordAction(base::UserMetricsAction("PhysicalWeb.Prefs.FromOmnibox"));
 }
 
 #pragma mark -

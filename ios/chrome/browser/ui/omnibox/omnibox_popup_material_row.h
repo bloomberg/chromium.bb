@@ -21,7 +21,7 @@
 @property(nonatomic, readonly, retain) UIImageView* imageView;
 @property(nonatomic, readonly, retain) UIImageView* answerImageView;
 @property(nonatomic, readonly, retain) UIButton* appendButton;
-@property(nonatomic, readonly, retain) UIImageView* physicalWebImageView;
+@property(nonatomic, readonly, retain) UIButton* physicalWebButton;
 @property(nonatomic, assign) CGFloat rowHeight;
 
 // Initialize the row with the given incognito state. The colors and styling are

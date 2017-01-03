@@ -34,9 +34,9 @@ const CGFloat kAppendButtonTrailingMargin = 4;
 @synthesize textTruncatingLabel = _textTruncatingLabel;
 @synthesize detailTruncatingLabel = _detailTruncatingLabel;
 @synthesize appendButton = _appendButton;
+@synthesize physicalWebButton = _physicalWebButton;
 @synthesize answerImageView = _answerImageView;
 @synthesize imageView = _imageView;
-@synthesize physicalWebImageView = _physicalWebImageView;
 @synthesize rowHeight = _rowHeight;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
@@ -73,11 +73,10 @@ const CGFloat kAppendButtonTrailingMargin = 4;
     // The current implementation is from before using a UITableViewCell.
     [self addSubview:_appendButton];
 
-    _physicalWebImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    _physicalWebImageView.userInteractionEnabled = NO;
-    _physicalWebImageView.contentMode = UIViewContentModeCenter;
-    _physicalWebImageView.image = NativeImage(IDR_IOS_OMNIBOX_PHYSICAL_WEB);
-    [self addSubview:_physicalWebImageView];
+    _physicalWebButton = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
+    [_physicalWebButton setContentMode:UIViewContentModeRight];
+    [self updatePhysicalWebImage];
+    [self addSubview:_physicalWebButton];
 
     // Left icon is only displayed on iPad.
     if (IsIPadIdiom()) {
@@ -120,7 +119,7 @@ const CGFloat kAppendButtonTrailingMargin = 4;
                      floor((_rowHeight - appendButtonDimensionLength) / 2),
                      appendButtonDimensionLength, appendButtonDimensionLength);
   _appendButton.frame = LayoutRectGetRect(rightAccessoryLayout);
-  _physicalWebImageView.frame = LayoutRectGetRect(rightAccessoryLayout);
+  _physicalWebButton.frame = LayoutRectGetRect(rightAccessoryLayout);
 }
 
 - (void)updateLeftImage:(int)imageID {
@@ -166,6 +165,16 @@ const CGFloat kAppendButtonTrailingMargin = 4;
   UIImage* appendImageSelected = NativeImage(appendSelectedResourceID);
   [_appendButton setImage:appendImageSelected
                  forState:UIControlStateHighlighted];
+}
+
+- (void)updatePhysicalWebImage {
+  UIImage* physicalWebImage = NativeImage(IDR_IOS_OMNIBOX_PHYSICAL_WEB);
+  [_physicalWebButton setImage:physicalWebImage forState:UIControlStateNormal];
+
+  UIImage* physicalWebImageSelected =
+      NativeImage(IDR_IOS_OMNIBOX_PHYSICAL_WEB_HIGHLIGHTED);
+  [_physicalWebButton setImage:physicalWebImageSelected
+                      forState:UIControlStateHighlighted];
 }
 
 - (NSString*)accessibilityLabel {
