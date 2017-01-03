@@ -35,17 +35,6 @@ from webkitpy.common.memoized import memoized
 _log = logging.getLogger(__name__)
 
 
-# FIXME: Should this function be somewhere more general?
-def _invert_dictionary(dictionary):
-    inverted_dictionary = {}
-    for key, value in dictionary.items():
-        if inverted_dictionary.get(value):
-            inverted_dictionary[value].append(key)
-        else:
-            inverted_dictionary[value] = [key]
-    return inverted_dictionary
-
-
 class BaselineOptimizer(object):
     ROOT_LAYOUT_TESTS_DIRECTORY = 'LayoutTests'
 
