@@ -153,7 +153,7 @@ class CORE_EXPORT ScriptPromiseResolver
 
   ResolutionState m_state;
   const RefPtr<ScriptState> m_scriptState;
-  Timer<ScriptPromiseResolver> m_timer;
+  TaskRunnerTimer<ScriptPromiseResolver> m_timer;
   Resolver m_resolver;
   ScopedPersistent<v8::Value> m_value;
 

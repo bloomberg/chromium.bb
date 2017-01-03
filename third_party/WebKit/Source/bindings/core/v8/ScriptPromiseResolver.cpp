@@ -4,6 +4,7 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/InspectorInstrumentation.h"
 
 namespace blink {
@@ -12,7 +13,9 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
     : SuspendableObject(scriptState->getExecutionContext()),
       m_state(Pending),
       m_scriptState(scriptState),
-      m_timer(this, &ScriptPromiseResolver::onTimerFired),
+      m_timer(TaskRunnerHelper::get(TaskType::Microtask, getExecutionContext()),
+              this,
+              &ScriptPromiseResolver::onTimerFired),
       m_resolver(scriptState)
 #if ENABLE(ASSERT)
       ,
