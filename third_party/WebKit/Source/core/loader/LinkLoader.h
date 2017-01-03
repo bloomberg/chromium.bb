@@ -111,11 +111,6 @@ class CORE_EXPORT LinkLoader final
   void linkLoadTimerFired(TimerBase*);
   void linkLoadingErrorTimerFired(TimerBase*);
   void createLinkPreloadResourceClient(Resource*);
-  void prefetchIfNeeded(Document&,
-                        const KURL& href,
-                        const LinkRelAttribute&,
-                        CrossOriginAttributeValue,
-                        ReferrerPolicy);
 
   Member<LinkLoaderClient> m_client;
 

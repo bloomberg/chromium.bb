@@ -342,7 +342,7 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
   return document.loader()->startPreload(resourceType, linkRequest);
 }
 
-void LinkLoader::prefetchIfNeeded(Document& document,
+static Resource* prefetchIfNeeded(Document& document,
                                   const KURL& href,
                                   const LinkRelAttribute& relAttribute,
                                   CrossOriginAttributeValue crossOrigin,
@@ -361,9 +361,10 @@ void LinkLoader::prefetchIfNeeded(Document& document,
       linkRequest.setCrossOriginAccessControl(document.getSecurityOrigin(),
                                               crossOrigin);
     }
-    setResource(LinkFetchResource::fetch(Resource::LinkPrefetch, linkRequest,
-                                         document.fetcher()));
+    return LinkFetchResource::fetch(Resource::LinkPrefetch, linkRequest,
+                                    document.fetcher());
   }
+  return nullptr;
 }
 
 void LinkLoader::loadLinksFromHeader(
@@ -406,11 +407,14 @@ void LinkLoader::loadLinksFromHeader(
               ? &(viewportDescriptionWrapper->description)
               : nullptr;
 
+      CrossOriginAttributeValue crossOrigin =
+          crossOriginAttributeValue(header.crossOrigin());
       preloadIfNeeded(relAttribute, url, *document, header.as(),
-                      header.mimeType(), header.media(),
-                      crossOriginAttributeValue(header.crossOrigin()),
+                      header.mimeType(), header.media(), crossOrigin,
                       LinkCalledFromHeader, errorOccurred, viewportDescription,
                       ReferrerPolicyDefault);
+      prefetchIfNeeded(*document, url, relAttribute, crossOrigin,
+                       ReferrerPolicyDefault);
     }
     if (relAttribute.isServiceWorker()) {
       UseCounter::count(*document, UseCounter::LinkHeaderServiceWorker);
@@ -447,7 +451,10 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute,
   if (href.isEmpty() || !href.isValid())
     released();
 
-  prefetchIfNeeded(document, href, relAttribute, crossOrigin, referrerPolicy);
+  Resource* resource = prefetchIfNeeded(document, href, relAttribute,
+                                        crossOrigin, referrerPolicy);
+  if (resource)
+    setResource(resource);
 
   if (const unsigned prerenderRelTypes =
           prerenderRelTypesFromRelAttribute(relAttribute, document)) {
