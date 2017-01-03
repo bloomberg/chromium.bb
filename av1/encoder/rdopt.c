@@ -4525,9 +4525,7 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
                                        int64_t *distortion, int64_t *sse,
                                        ENTROPY_CONTEXT *ta, ENTROPY_CONTEXT *tl,
                                        int ir, int ic, int mi_row, int mi_col) {
-#if !CONFIG_PVQ
   const AV1_COMMON *const cm = &cpi->common;
-#endif
   int k;
   MACROBLOCKD *xd = &x->e_mbd;
   struct macroblockd_plane *const pd = &xd->plane[0];
@@ -4536,10 +4534,8 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
   const BLOCK_SIZE plane_bsize = get_plane_block_size(mi->mbmi.sb_type, pd);
   const int txb_width = max_block_wide(xd, plane_bsize, 0);
   const int txb_height = max_block_high(xd, plane_bsize, 0);
-#if !CONFIG_PVQ
   const int width = block_size_wide[plane_bsize];
   const int height = block_size_high[plane_bsize];
-#endif
   int idx, idy;
   const uint8_t *const src =
       &p->src.buf[av1_raster_block_offset(BLOCK_8X8, i, p->src.stride)];
@@ -4548,7 +4544,6 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
   int64_t thisdistortion = 0, thissse = 0;
   int thisrate = 0;
   TX_SIZE tx_size = mi->mbmi.tx_size;
-
   TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, i, tx_size);
   const int num_4x4_w = tx_size_wide_unit[tx_size];
   const int num_4x4_h = tx_size_high_unit[tx_size];
@@ -4558,6 +4553,7 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
   (void)cpi;
   (void)ta;
   (void)tl;
+  (void)tx_type;
 #endif
 
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
@@ -4567,11 +4563,11 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
 #else
   assert(tx_size == TX_4X4);
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+
   assert(tx_type == DCT_DCT);
 
   av1_build_inter_predictor_sub8x8(xd, 0, i, ir, ic, mi_row, mi_col);
 
-#if !CONFIG_PVQ
 #if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     aom_highbd_subtract_block(
@@ -4587,34 +4583,22 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
                      av1_raster_block_offset_int16(BLOCK_8X8, i, p->src_diff),
                      8, src, p->src.stride, dst, pd->dst.stride);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-#endif  // !CONFIG_PVQ
 
   k = i;
   for (idy = 0; idy < txb_height; idy += num_4x4_h) {
     for (idx = 0; idx < txb_width; idx += num_4x4_w) {
       int64_t dist, ssz, rd, rd1, rd2;
       int block;
-#if !CONFIG_PVQ
       int coeff_ctx;
-#else
-      const int src_stride = p->src.stride;
-      const int dst_stride = pd->dst.stride;
-      const int diff_stride = 8;
-      tran_low_t *coeff;
-      tran_low_t *dqcoeff;
-      tran_low_t *ref_coeff;
-      int16_t *pred = &pd->pred[4 * (ir * diff_stride + ic)];
-      int16_t *src_int16 = &p->src_int16[4 * (ir * diff_stride + ic)];
-      int ii, j, tx_blk_size;
-      int rate_pvq;
-#endif
+
       k += (idy * 2 + idx);
       if (tx_size == TX_4X4)
         block = k;
       else
         block = (i ? 2 : 0);
-#if !CONFIG_PVQ
+
       coeff_ctx = combine_entropy_contexts(*(ta + (k & 1)), *(tl + (k >> 1)));
+#if !CONFIG_PVQ
 #if CONFIG_NEW_QUANT
       av1_xform_quant(cm, x, 0, block, idy + (i >> 1), idx + (i & 0x01),
                       BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP_NUQ);
@@ -4625,39 +4609,9 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
       if (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0)
         av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
 #else
-      coeff = BLOCK_OFFSET(p->coeff, k);
-      dqcoeff = BLOCK_OFFSET(pd->dqcoeff, k);
-      ref_coeff = BLOCK_OFFSET(pd->pvq_ref_coeff, k);
-
-      // transform block size in pixels
-      tx_blk_size = 4;
-
-      // copy uint8 orig and predicted block to int16 buffer
-      // in order to use existing VP10 transform functions
-      for (j = 0; j < tx_blk_size; j++)
-        for (ii = 0; ii < tx_blk_size; ii++) {
-          src_int16[diff_stride * j + ii] =
-              src[src_stride * (j + 4 * idy) + (ii + 4 * idx)];
-          pred[diff_stride * j + ii] =
-              dst[dst_stride * (j + 4 * idy) + (ii + 4 * idx)];
-        }
-
-      {
-        FWD_TXFM_PARAM fwd_txfm_param;
-        fwd_txfm_param.tx_type = DCT_DCT;
-        fwd_txfm_param.tx_size = TX_4X4;
-        fwd_txfm_param.fwd_txfm_opt = FWD_TXFM_OPT_NORMAL;
-        fwd_txfm_param.rd_transform = 0;
-        fwd_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
-
-        fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
-        fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
-      }
-      av1_pvq_encode_helper(&x->daala_enc, coeff, ref_coeff, dqcoeff,
-                            &p->eobs[k], pd->dequant, 0, TX_4X4, tx_type,
-                            &rate_pvq, x->pvq_speed, NULL);
+      av1_xform_quant(cm, x, 0, block, idy + (i >> 1), idx + (i & 0x01),
+                      BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif
-
       dist_block(cpi, x, 0, block, idy + (i >> 1), idx + (i & 0x1), tx_size,
                  &dist, &ssz);
       thisdistortion += dist;
@@ -4666,11 +4620,13 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
       thisrate +=
           av1_cost_coeffs(cm, x, 0, block, coeff_ctx, tx_size, scan_order->scan,
                           scan_order->neighbors, cpi->sf.use_fast_coef_costing);
-#else
-      thisrate += rate_pvq;
-#endif
       *(ta + (k & 1)) = !(p->eobs[block] == 0);
       *(tl + (k >> 1)) = !(p->eobs[block] == 0);
+#else
+      thisrate += x->rate;
+      *(ta + (k & 1)) = !x->pvq_skip[0];
+      *(tl + (k >> 1)) = !x->pvq_skip[0];
+#endif
 #if CONFIG_EXT_TX
       if (tx_size == TX_8X4) {
         *(ta + (k & 1) + 1) = *(ta + (k & 1));
