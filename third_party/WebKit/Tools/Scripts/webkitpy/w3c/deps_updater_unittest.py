@@ -4,9 +4,9 @@
 
 import unittest
 
-from webkitpy.w3c.deps_updater import DepsUpdater
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.executive_mock import MockExecutive2
+from webkitpy.common.system.executive_mock import MockExecutive
+from webkitpy.w3c.deps_updater import DepsUpdater
 
 
 class DepsUpdaterTest(unittest.TestCase):
@@ -64,7 +64,7 @@ class DepsUpdaterTest(unittest.TestCase):
 
     def test_cl_description_with_empty_environ(self):
         host = MockHost()
-        host.executive = MockExecutive2(output='Last commit message\n')
+        host.executive = MockExecutive(output='Last commit message\n')
         updater = DepsUpdater(host)
         description = updater._cl_description()
         self.assertEqual(
@@ -76,7 +76,7 @@ class DepsUpdaterTest(unittest.TestCase):
 
     def test_cl_description_with_environ_variables(self):
         host = MockHost()
-        host.executive = MockExecutive2(output='Last commit message\n')
+        host.executive = MockExecutive(output='Last commit message\n')
         updater = DepsUpdater(host)
         updater.host.environ['BUILDBOT_MASTERNAME'] = 'my.master'
         updater.host.environ['BUILDBOT_BUILDERNAME'] = 'b'

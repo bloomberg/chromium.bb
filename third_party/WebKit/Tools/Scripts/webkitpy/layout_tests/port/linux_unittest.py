@@ -28,7 +28,7 @@
 
 import optparse
 
-from webkitpy.common.system import executive_mock
+from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.system_host_mock import MockSystemHost
 from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import port_testcase
@@ -47,7 +47,7 @@ class LinuxPortTest(port_testcase.PortTestCase):
         host = MockSystemHost(os_name=self.os_name, os_version=(os_version or self.os_version))
         host.filesystem.isfile = lambda x: 'content_shell' in x
         if driver_file_output:
-            host.executive = executive_mock.MockExecutive2(driver_file_output)
+            host.executive = MockExecutive(driver_file_output)
         port = self.make_port(host=host, port_name=port_name, os_version=os_version)
         self.assertEqual(port.name(), expected_name)
         self.assertEqual(port.version(), expected_version)

@@ -31,7 +31,7 @@ import sys
 import unittest
 
 from webkitpy.common.system.executive import Executive
-from webkitpy.common.system.executive_mock import MockExecutive2
+from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.platform_info import PlatformInfo
@@ -68,8 +68,8 @@ def fake_platform(mac_version_string='10.6.3', release_string='bar', linux_versi
 
 def fake_executive(output=None):
     if output:
-        return MockExecutive2(output=output)
-    return MockExecutive2(exception=SystemError)
+        return MockExecutive(output=output)
+    return MockExecutive(exception=SystemError)
 
 
 class TestPlatformInfo(unittest.TestCase):

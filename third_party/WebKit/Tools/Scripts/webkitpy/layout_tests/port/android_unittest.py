@@ -34,7 +34,7 @@ import sys
 import time
 import unittest
 
-from webkitpy.common.system.executive_mock import MockExecutive2
+from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.system_host_mock import MockSystemHost
 from webkitpy.layout_tests.port import android
 from webkitpy.layout_tests.port import driver_unittest
@@ -146,7 +146,7 @@ class ChromiumAndroidDriverTest(unittest.TestCase):
             return_value={'level': 100})
         self._mock_battery.start()
 
-        self._port = android.AndroidPort(MockSystemHost(executive=MockExecutive2()), 'android')
+        self._port = android.AndroidPort(MockSystemHost(executive=MockExecutive()), 'android')
         self._driver = android.ChromiumAndroidDriver(
             self._port,
             worker_number=0,
@@ -191,7 +191,7 @@ class ChromiumAndroidDriverTwoDriversTest(unittest.TestCase):
         self._mock_devices.stop()
 
     def test_two_drivers(self):
-        port = android.AndroidPort(MockSystemHost(executive=MockExecutive2()), 'android')
+        port = android.AndroidPort(MockSystemHost(executive=MockExecutive()), 'android')
         driver0 = android.ChromiumAndroidDriver(port, worker_number=0, pixel_tests=True,
                                                 driver_details=android.ContentShellDriverDetails(), android_devices=port._devices)
         driver1 = android.ChromiumAndroidDriver(port, worker_number=1, pixel_tests=True,
@@ -220,10 +220,10 @@ class ChromiumAndroidTwoPortsTest(unittest.TestCase):
 
     def test_options_with_two_ports(self):
         port0 = android.AndroidPort(
-            MockSystemHost(executive=MockExecutive2()), 'android',
+            MockSystemHost(executive=MockExecutive()), 'android',
             options=optparse.Values({'additional_driver_flag': ['--foo=bar']}))
         port1 = android.AndroidPort(
-            MockSystemHost(executive=MockExecutive2()), 'android',
+            MockSystemHost(executive=MockExecutive()), 'android',
             options=optparse.Values({'driver_name': 'content_shell'}))
 
         self.assertEqual(1, port0.driver_cmd_line().count('--foo=bar'))
@@ -244,7 +244,7 @@ class ChromiumAndroidDriverTombstoneTest(unittest.TestCase):
             return_value={'level': 100})
         self._mock_battery.start()
 
-        self._port = android.AndroidPort(MockSystemHost(executive=MockExecutive2()), 'android')
+        self._port = android.AndroidPort(MockSystemHost(executive=MockExecutive()), 'android')
         self._driver = android.ChromiumAndroidDriver(
             self._port,
             worker_number=0,

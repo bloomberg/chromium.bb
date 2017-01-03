@@ -3,10 +3,11 @@
 # found in the LICENSE file.
 
 import unittest
-from webkitpy.w3c.local_wpt import LocalWPT
+
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.executive_mock import MockExecutive2
+from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.filesystem_mock import MockFileSystem
+from webkitpy.w3c.local_wpt import LocalWPT
 
 
 class LocalWPTTest(unittest.TestCase):
@@ -59,7 +60,7 @@ class LocalWPTTest(unittest.TestCase):
             '123',
             '9ea4fc353a4b1c11c6e524270b11baa4d1ddfde8',
         ]
-        host.executive = MockExecutive2(run_command_fn=lambda _: return_vals.pop())
+        host.executive = MockExecutive(run_command_fn=lambda _: return_vals.pop())
         host.filesystem = MockFileSystem()
         local_wpt = LocalWPT(host, no_fetch=True)
 
@@ -70,7 +71,7 @@ class LocalWPTTest(unittest.TestCase):
 
     def test_last_wpt_exported_commit_not_found(self):
         host = MockHost()
-        host.executive = MockExecutive2(run_command_fn=lambda _: None)
+        host.executive = MockExecutive(run_command_fn=lambda _: None)
         host.filesystem = MockFileSystem()
         local_wpt = LocalWPT(host)
 

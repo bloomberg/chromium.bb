@@ -5,7 +5,7 @@
 import unittest
 
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.executive_mock import MockExecutive2
+from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.test_exporter import TestExporter
 from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
@@ -15,7 +15,7 @@ def mock_command_exec(vals):
     def run_fn(args):
         sub_command = args[1]
         return vals.get(sub_command, '')
-    return MockExecutive2(run_command_fn=run_fn)
+    return MockExecutive(run_command_fn=run_fn)
 
 
 class TestExporterTest(unittest.TestCase):
@@ -50,7 +50,7 @@ class TestExporterTest(unittest.TestCase):
 
     def test_dry_run_stops_before_creating_pr(self):
         host = MockHost()
-        host.executive = MockExecutive2(output='beefcafe')
+        host.executive = MockExecutive(output='beefcafe')
         wpt_github = MockWPTGitHub(pull_requests=[{'number': 1, 'title': 'abc'}])
         TestExporter(host, wpt_github, dry_run=True).run()
 
@@ -71,7 +71,7 @@ class TestExporterTest(unittest.TestCase):
             }
             return canned_git_outputs.get(args[1], '')
 
-        host.executive = MockExecutive2(run_command_fn=mock_command)
+        host.executive = MockExecutive(run_command_fn=mock_command)
         wpt_github = MockWPTGitHub(pull_requests=[])
 
         TestExporter(host, wpt_github).run()

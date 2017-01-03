@@ -32,17 +32,15 @@ import optparse
 import tempfile
 import unittest
 
-from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system import executive_mock
-from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.platform_info_mock import MockPlatformInfo
+from webkitpy.common.system.executive import ScriptError
+from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.output_capture import OutputCapture
-from webkitpy.common.system.executive_mock import MockExecutive2
+from webkitpy.common.system.platform_info_mock import MockPlatformInfo
 from webkitpy.common.system.system_host import SystemHost
 from webkitpy.common.system.system_host_mock import MockSystemHost
-
-from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
+from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
 from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem, LAYOUT_TEST_DIR, TestPort
 
 
@@ -86,7 +84,7 @@ class PortTest(unittest.TestCase):
         return new_file
 
     def test_pretty_patch_os_error(self):
-        port = self.make_port(executive=executive_mock.MockExecutive2(exception=OSError))
+        port = self.make_port(executive=executive_mock.MockExecutive(exception=OSError))
         oc = OutputCapture()
         oc.capture_output()
         self.assertEqual(port.pretty_patch_text("patch.txt"),
@@ -99,7 +97,7 @@ class PortTest(unittest.TestCase):
 
     def test_pretty_patch_script_error(self):
         # FIXME: This is some ugly white-box test hacking ...
-        port = self.make_port(executive=executive_mock.MockExecutive2(exception=ScriptError))
+        port = self.make_port(executive=executive_mock.MockExecutive(exception=ScriptError))
         port._pretty_patch_available = True
         self.assertEqual(port.pretty_patch_text("patch.txt"),
                          port._pretty_patch_error_html)
@@ -429,7 +427,7 @@ class PortTest(unittest.TestCase):
         self.assertFalse(port.http_server_supports_ipv6())
 
     def test_check_httpd_success(self):
-        port = self.make_port(executive=MockExecutive2())
+        port = self.make_port(executive=MockExecutive())
         port.path_to_apache = lambda: '/usr/sbin/httpd'
         capture = OutputCapture()
         capture.capture_output()
@@ -438,7 +436,7 @@ class PortTest(unittest.TestCase):
         self.assertEqual('', logs)
 
     def test_httpd_returns_error_code(self):
-        port = self.make_port(executive=MockExecutive2(exit_code=1))
+        port = self.make_port(executive=MockExecutive(exit_code=1))
         port.path_to_apache = lambda: '/usr/sbin/httpd'
         capture = OutputCapture()
         capture.capture_output()

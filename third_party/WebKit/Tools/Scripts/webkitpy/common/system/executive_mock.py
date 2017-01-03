@@ -26,9 +26,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import StringIO
 import logging
 import os
+import StringIO
 
 from webkitpy.common.system.executive import ScriptError
 
@@ -57,7 +57,6 @@ class MockProcess(object):
         return (self.stdout.getvalue(), self.stderr.getvalue())
 
 
-# FIXME: This should be unified with MockExecutive2 (http://crbug.com/626115).
 class MockExecutive(object):
     PIPE = "MOCK PIPE"
     STDOUT = "MOCK STDOUT"
@@ -191,41 +190,3 @@ class MockExecutive(object):
 
     def process_dump(self):
         return []
-
-
-class MockExecutive2(MockExecutive):
-    """MockExecutive2 is like MockExecutive except it doesn't log anything."""
-
-    def __init__(self, output='', exit_code=0, exception=None, run_command_fn=None, stderr=''):
-        super(MockExecutive2, self).__init__()
-        self._output = output
-        self._stderr = stderr
-        self._exit_code = exit_code
-        self._exception = exception
-        self._run_command_fn = run_command_fn
-
-    def run_command(self,
-                    args,
-                    cwd=None,
-                    input=None,
-                    error_handler=None,
-                    return_exit_code=False,
-                    return_stderr=True,
-                    decode_output=False,
-                    env=None,
-                    debug_logging=False):
-        self.calls.append(args)
-        assert isinstance(args, list) or isinstance(args, tuple)
-        assert all(isinstance(arg, basestring) for arg in args)
-        if self._exception:
-            raise self._exception  # pylint: disable=raising-bad-type
-        if self._run_command_fn:
-            return self._run_command_fn(args)
-        if return_exit_code:
-            return self._exit_code
-        if self._exit_code and error_handler:
-            script_error = ScriptError(script_args=args, exit_code=self._exit_code, output=self._output)
-            error_handler(script_error)
-        if return_stderr:
-            return self._output + self._stderr
-        return self._output

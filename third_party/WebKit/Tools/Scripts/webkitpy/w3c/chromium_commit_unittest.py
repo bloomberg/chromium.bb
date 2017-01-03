@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 import unittest
+
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.executive_mock import MockExecutive2
+from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.test_exporter_unittest import mock_command_exec
 
@@ -21,7 +22,7 @@ class ChromiumCommitTest(unittest.TestCase):
 
     def test_derives_sha_from_position(self):
         host = MockHost()
-        host.executive = MockExecutive2(output='deadbeefcafe')
+        host.executive = MockExecutive(output='deadbeefcafe')
         pos = 'Cr-Commit-Position: refs/heads/master@{#789}'
         chromium_commit = ChromiumCommit(host, position=pos)
 

@@ -34,7 +34,7 @@ import optparse
 import socket
 import unittest
 
-from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
+from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.output_capture import OutputCapture
 from webkitpy.common.system.system_host import SystemHost
 from webkitpy.common.system.system_host_mock import MockSystemHost
@@ -179,6 +179,7 @@ class PortTestCase(unittest.TestCase):
         self.assertEqual(port.diff_image('foo', ''), ('foo', None))
 
     def test_diff_image(self):
+
         def _path_to_image_diff():
             return "/path/to/image_diff"
 
@@ -192,15 +193,15 @@ class PortTestCase(unittest.TestCase):
             return 1
 
         # Images are different.
-        port._executive = MockExecutive2(run_command_fn=mock_run_command)
+        port._executive = MockExecutive(run_command_fn=mock_run_command)  # pylint: disable=protected-access
         self.assertEqual(mock_image_diff, port.diff_image("EXPECTED", "ACTUAL")[0])
 
         # Images are the same.
-        port._executive = MockExecutive2(exit_code=0)
+        port._executive = MockExecutive(exit_code=0)  # pylint: disable=protected-access
         self.assertEqual(None, port.diff_image("EXPECTED", "ACTUAL")[0])
 
         # There was some error running image_diff.
-        port._executive = MockExecutive2(exit_code=2)
+        port._executive = MockExecutive(exit_code=2)  # pylint: disable=protected-access
         exception_raised = False
         try:
             port.diff_image("EXPECTED", "ACTUAL")
@@ -210,7 +211,7 @@ class PortTestCase(unittest.TestCase):
 
     def test_diff_image_crashed(self):
         port = self.make_port()
-        port._executive = MockExecutive2(exit_code=2)
+        port._executive = MockExecutive(exit_code=2)  # pylint: disable=protected-access
         self.assertEqual(port.diff_image("EXPECTED", "ACTUAL"),
                          (None, 'Image diff returned an exit code of 2. See http://crbug.com/278596'))
 
@@ -220,7 +221,7 @@ class PortTestCase(unittest.TestCase):
 
     def test_wdiff_text_fails(self):
         host = MockSystemHost(os_name=self.os_name, os_version=self.os_version)
-        host.executive = MockExecutive(should_throw=True)
+        host.executive = MockExecutive(should_throw=True)  # pylint: disable=protected-access
         port = self.make_port(host=host)
         port._executive = host.executive  # AndroidPortTest.make_port sets its own executive, so reset that as well.
 
@@ -291,9 +292,9 @@ class PortTestCase(unittest.TestCase):
 
     def test_check_sys_deps(self):
         port = self.make_port()
-        port._executive = MockExecutive2(exit_code=0)
+        port._executive = MockExecutive(exit_code=0)  # pylint: disable=protected-access
         self.assertEqual(port.check_sys_deps(needs_http=False), test_run_results.OK_EXIT_STATUS)
-        port._executive = MockExecutive2(exit_code=1, output='testing output failure')
+        port._executive = MockExecutive(exit_code=1, output='testing output failure')  # pylint: disable=protected-access
         self.assertEqual(port.check_sys_deps(needs_http=False), test_run_results.SYS_DEPS_EXIT_STATUS)
 
     def test_expectations_ordering(self):

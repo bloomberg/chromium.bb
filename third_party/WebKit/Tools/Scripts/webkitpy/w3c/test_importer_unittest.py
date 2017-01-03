@@ -29,8 +29,8 @@ import optparse
 import unittest
 
 from webkitpy.common.host_mock import MockHost
+from webkitpy.common.system.executive_mock import MockExecutive, ScriptError
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.executive_mock import MockExecutive2, ScriptError
 from webkitpy.w3c.test_importer import TestImporter
 
 
@@ -65,7 +65,7 @@ class TestImporterTest(unittest.TestCase):
 
     def test_import_dir_with_no_tests(self):
         host = MockHost()
-        host.executive = MockExecutive2(exception=ScriptError(
+        host.executive = MockExecutive(exception=ScriptError(
             "abort: no repository found in '/Volumes/Source/src/wk/Tools/Scripts/webkitpy/w3c'"))
         host.filesystem = MockFileSystem(files=FAKE_FILES)
         importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())

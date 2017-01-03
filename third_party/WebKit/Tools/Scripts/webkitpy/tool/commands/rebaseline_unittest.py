@@ -7,7 +7,7 @@ import unittest
 
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.layout_test_results import LayoutTestResults
-from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
+from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.output_capture import OutputCapture
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.rebaseline import (
@@ -149,7 +149,7 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
             'original mac10.11 result')
 
     def test_copying_overwritten_baseline_to_multiple_locations(self):
-        self.tool.executive = MockExecutive2()
+        self.tool.executive = MockExecutive()
 
     def test_copy_baseline_win7_to_linux_trusty(self):
         port = self.tool.port_factory.get('test-win-win7')
@@ -298,7 +298,7 @@ class TestRebaselineTest(BaseTestCase):
         self.assertDictEqual(self.command.expectation_line_changes.to_dict(), {'remove-lines': []})
 
     def test_rebaseline_test_internal_with_port_that_lacks_buildbot(self):
-        self.tool.executive = MockExecutive2()
+        self.tool.executive = MockExecutive()
 
         port = self.tool.port_factory.get('test-win-win7')
         self._write(
@@ -381,7 +381,7 @@ class TestRebaselineJson(BaseTestCase):
 
     def setUp(self):
         super(TestRebaselineJson, self).setUp()
-        self.tool.executive = MockExecutive2()
+        self.tool.executive = MockExecutive()
 
     def tearDown(self):
         super(TestRebaselineJson, self).tearDown()
@@ -506,7 +506,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
 
     def setUp(self):
         super(TestRebaselineJsonUpdatesExpectationsFiles, self).setUp()
-        self.tool.executive = MockExecutive2()
+        self.tool.executive = MockExecutive()
 
         def mock_run_command(*args, **kwargs):  # pylint: disable=unused-argument
             return '{"add": [], "remove-lines": [{"test": "userscripts/first-test.html", "builder": "MOCK Mac10.11"}]}\n'
@@ -695,7 +695,7 @@ class TestRebaselineExpectations(BaseTestCase):
     def test_rebaseline_expectations(self):
         self._zero_out_test_expectations()
 
-        self.tool.executive = MockExecutive2()
+        self.tool.executive = MockExecutive()
 
         for builder in ['MOCK Mac10.10', 'MOCK Mac10.11']:
             self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
@@ -749,7 +749,7 @@ class TestRebaselineExpectations(BaseTestCase):
     def test_rebaseline_expectations_reftests(self):
         self._zero_out_test_expectations()
 
-        self.tool.executive = MockExecutive2()
+        self.tool.executive = MockExecutive()
 
         for builder in ['MOCK Mac10.10', 'MOCK Mac10.11']:
             self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
