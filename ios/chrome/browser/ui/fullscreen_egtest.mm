@@ -190,6 +190,12 @@ void AssertStringIsPresentOnPage(const std::string& text) {
                                                   }),
              @"JavaScript to hide the toolbar did not complete");
 
+  // Scroll up to be sure the toolbar can be dismissed by scrolling down.
+  [[EarlGrey
+      selectElementWithMatcher:webViewScrollView(
+                                   chrome_test_util::GetCurrentWebState())]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
   // Scroll to hide the UI.
   HideToolbarUsingUI();
   chrome_test_util::AssertToolbarNotVisible();
