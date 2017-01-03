@@ -8,12 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/security_state/core/security_state.h"
@@ -25,13 +23,6 @@
 namespace offline_pages {
 namespace {
 const base::FilePath::CharType kMHTMLExtension[] = FILE_PATH_LITERAL("mhtml");
-const base::FilePath::CharType kDefaultFileName[] =
-    FILE_PATH_LITERAL("offline_page");
-const int kTitleLengthMax = 80;
-const char kMHTMLFileNameExtension[] = ".mhtml";
-const char kFileNameComponentsSeparator[] = "-";
-const char kReplaceChars[] = " ";
-const char kReplaceWith[] = "_";
 
 void DeleteFileOnFileThread(const base::FilePath& file_path,
                             const base::Closure& callback) {
@@ -44,34 +35,6 @@ void DeleteFileOnFileThread(const base::FilePath& file_path,
 }  // namespace
 
 // static
-std::string OfflinePageMHTMLArchiver::GetFileNameExtension() {
-    return kMHTMLFileNameExtension;
-}
-
-// static
-base::FilePath OfflinePageMHTMLArchiver::GenerateFileName(
-    const GURL& url,
-    const std::string& title,
-    int64_t archive_id) {
-  std::string title_part(title.substr(0, kTitleLengthMax));
-  std::string suggested_name(
-      url.host() + kFileNameComponentsSeparator +
-      title_part + kFileNameComponentsSeparator +
-      base::Int64ToString(archive_id));
-
-  // Substitute spaces out from title.
-  base::ReplaceChars(suggested_name, kReplaceChars, kReplaceWith,
-                     &suggested_name);
-
-  return net::GenerateFileName(url,
-                               std::string(),  // content disposition
-                               std::string(),  // charset
-                               suggested_name,
-                               std::string(),  // mime-type
-                               kDefaultFileName)
-      .AddExtension(kMHTMLExtension);
-}
-
 OfflinePageMHTMLArchiver::OfflinePageMHTMLArchiver(
     content::WebContents* web_contents)
     : web_contents_(web_contents),
@@ -129,9 +92,7 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
   GURL url(web_contents_->GetLastCommittedURL());
   base::string16 title(web_contents_->GetTitle());
   base::FilePath file_path(
-      archives_dir.Append(
-          GenerateFileName(url, base::UTF16ToUTF8(title), archive_id)));
-
+      archives_dir.Append(base::GenerateGUID()).AddExtension(kMHTMLExtension));
   content::MHTMLGenerationParams params(file_path);
   params.use_binary_encoding = true;
 

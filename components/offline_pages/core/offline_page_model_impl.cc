@@ -708,11 +708,12 @@ void OfflinePageModelImpl::OnCreateArchiveDone(
   store_->AddOfflinePage(offline_page_item,
                          base::Bind(&OfflinePageModelImpl::OnAddOfflinePageDone,
                                     weak_ptr_factory_.GetWeakPtr(), archiver,
-                                    callback, offline_page_item));
+                                    file_path, callback, offline_page_item));
 }
 
 void OfflinePageModelImpl::OnAddOfflinePageDone(
     OfflinePageArchiver* archiver,
+    const base::FilePath& file_path,
     const SavePageCallback& callback,
     const OfflinePageItem& offline_page,
     ItemActionStatus status) {
@@ -727,6 +728,8 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
         offline_page.client_id.name_space, offline_page.url.spec(),
         std::to_string(offline_page.offline_id));
   } else if (status == ItemActionStatus::ALREADY_EXISTS) {
+    // Remove the orphaned archive.  No callback necessary.
+    archive_manager_->DeleteArchive(file_path, base::Bind([](bool) {}));
     result = SavePageResult::ALREADY_EXISTS;
   } else {
     result = SavePageResult::STORE_FAILURE;

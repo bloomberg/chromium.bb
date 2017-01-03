@@ -233,37 +233,4 @@ TEST_F(OfflinePageMHTMLArchiverTest, SuccessfullyCreateOfflineArchive) {
   EXPECT_EQ(kTestFileSize, last_file_size());
 }
 
-TEST_F(OfflinePageMHTMLArchiverTest, GenerateFileName) {
-  GURL url_1("http://news.google.com/page1");
-  std::string title_1("Google News Page");
-  base::FilePath expected_1(FILE_PATH_LITERAL(
-      "news.google.com-Google_News_Page-1234.mhtml"));
-  base::FilePath actual_1(
-      OfflinePageMHTMLArchiver::GenerateFileName(url_1, title_1, 1234LL));
-  EXPECT_EQ(expected_1, actual_1);
-
-  GURL url_2("https://en.m.wikipedia.org/Sample_page_about_stuff");
-  std::string title_2("Some Wiki Page");
-  base::FilePath expected_2(FILE_PATH_LITERAL(
-      "en.m.wikipedia.org-Some_Wiki_Page-56789.mhtml"));
-  base::FilePath actual_2(
-      OfflinePageMHTMLArchiver::GenerateFileName(url_2, title_2, 56789LL));
-  EXPECT_EQ(expected_2, actual_2);
-
-  GURL url_3("https://www.google.com/search");
-  std::string title_3 =
-      "A really really really really really long title "
-      "that is over 80 chars long here^ - TRUNCATE THIS PART";
-  std::string expected_title_3_part =
-      "A_really_really_really_really_really_long_title_"
-      "that_is_over_80_chars_long_here^";
-  base::FilePath expected_3(
-      FILE_PATH_LITERAL("www.google.com-" +
-                        expected_title_3_part +
-                        "-123456789.mhtml"));
-  base::FilePath actual_3(
-      OfflinePageMHTMLArchiver::GenerateFileName(url_3, title_3, 123456789LL));
-  EXPECT_EQ(expected_3, actual_3);
-}
-
 }  // namespace offline_pages

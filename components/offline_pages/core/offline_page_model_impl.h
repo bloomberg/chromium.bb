@@ -169,6 +169,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                            const base::string16& title,
                            int64_t file_size);
   void OnAddOfflinePageDone(OfflinePageArchiver* archiver,
+                            const base::FilePath& file_path,
                             const SavePageCallback& callback,
                             const OfflinePageItem& offline_page,
                             ItemActionStatus status);
