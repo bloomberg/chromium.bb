@@ -18,7 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -780,8 +780,13 @@ void WallpaperManagerBase::DeleteUserWallpapers(
   wallpaper_path = wallpaper_path.Append(path_to_file);
   file_to_remove.push_back(wallpaper_path);
 
-  base::WorkerPool::PostTask(
-      FROM_HERE, base::Bind(&DeleteWallpaperInList, file_to_remove), false);
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .MayBlock(),
+      base::Bind(&DeleteWallpaperInList, file_to_remove));
 }
 
 void WallpaperManagerBase::SetCommandLineForTesting(
