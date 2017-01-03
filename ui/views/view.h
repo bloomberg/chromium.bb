@@ -82,9 +82,6 @@ namespace internal {
 class PreEventDispatchHandler;
 class PostEventDispatchHandler;
 class RootView;
-}
-
-namespace {
 class ScopedChildrenLock;
 }
 
@@ -1233,8 +1230,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   friend class internal::PreEventDispatchHandler;
   friend class internal::PostEventDispatchHandler;
   friend class internal::RootView;
+  friend class internal::ScopedChildrenLock;
   friend class FocusManager;
-  friend class ScopedChildrenLock;
   friend class ViewLayerTest;
   friend class Widget;
 
