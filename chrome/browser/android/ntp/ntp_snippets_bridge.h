@@ -131,6 +131,9 @@ class NTPSnippetsBridge
                            jint j_category_id,
                            jint position);
 
+  void OnNTPInitialized(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
+
   static bool Register(JNIEnv* env);
 
  private:

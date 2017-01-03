@@ -396,6 +396,12 @@ void NTPSnippetsBridge::OnMoreButtonClicked(JNIEnv* env,
       ntp_snippets::UserClassifier::Metric::SUGGESTIONS_USED);
 }
 
+void NTPSnippetsBridge::OnNTPInitialized(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  content_suggestions_service_->remote_suggestions_scheduler()->OnNTPOpened();
+}
+
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
 
 void NTPSnippetsBridge::OnNewSuggestions(Category category) {

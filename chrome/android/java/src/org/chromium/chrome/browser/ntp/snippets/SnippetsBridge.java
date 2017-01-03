@@ -171,6 +171,14 @@ public class SnippetsBridge implements SuggestionsSource {
         nativeOnMoreButtonClicked(mNativeSnippetsBridge, category, position);
     }
 
+    /**
+     * Notifies the scheduler to adjust the plan due to a newly opened NTP.
+     */
+    public void onNtpInitialized() {
+        assert mNativeSnippetsBridge != 0;
+        nativeOnNTPInitialized(mNativeSnippetsBridge);
+    }
+
     public static void onSuggestionTargetVisited(int category, long visitTimeMs) {
         nativeOnSuggestionTargetVisited(category, visitTimeMs);
     }
@@ -305,5 +313,6 @@ public class SnippetsBridge implements SuggestionsSource {
     private native void nativeOnMoreButtonClicked(
             long nativeNTPSnippetsBridge, int category, int position);
     private static native void nativeOnSuggestionTargetVisited(int category, long visitTimeMs);
+    private static native void nativeOnNTPInitialized(long nativeNTPSnippetsBridge);
     private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsBridge bridge);
 }

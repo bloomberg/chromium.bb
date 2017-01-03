@@ -752,6 +752,10 @@ public class NewTabPage
         mNewTabPageView.initialize(mNewTabPageManager, mTab, mSearchProviderHasLogo,
                 getScrollPositionFromNavigationEntry());
 
+        if (mSnippetsBridge != null) {
+            mSnippetsBridge.onNtpInitialized();
+        }
+
         DownloadManagerService.getDownloadManagerService(ContextUtils.getApplicationContext())
                 .checkForExternallyRemovedDownloads(/*isOffRecord=*/false);
 
