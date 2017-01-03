@@ -34,12 +34,13 @@ TEST_F(CSPInfoUnitTest, SandboxedPages) {
       LoadAndExpectSuccess("sandboxed_pages_valid_5.json"));
 
   const char kSandboxedCSP[] =
-      "sandbox allow-scripts allow-forms allow-popups allow-modals";
+      "sandbox allow-scripts allow-forms allow-popups allow-modals; "
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';";
   const char kDefaultCSP[] =
       "script-src 'self' blob: filesystem: chrome-extension-resource:; "
       "object-src 'self' blob: filesystem:;";
   const char kCustomSandboxedCSP[] =
-      "sandbox; script-src: https://www.google.com";
+      "sandbox; script-src 'self'; child-src 'self';";
 
   EXPECT_EQ(kSandboxedCSP, CSPInfo::GetResourceContentSecurityPolicy(
                                extension1.get(), "/test"));

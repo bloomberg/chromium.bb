@@ -1,0 +1,57 @@
+This page should be sandboxed.
+
+<script>
+// We're not served with the extension default CSP, we can use inline script.
+
+var loadFrameExpectResponse = function(iframe, url) {
+  var identifier = performance.now();
+  return new Promise(function(resolve, reject) {
+    window.addEventListener('message', function(e) {
+      var data = JSON.parse(e.data);
+      if (data[0] == 'local frame msg' && data[1] == identifier) {
+        resolve();
+      } else {
+        reject();
+      }
+    });
+    iframe.onerror = reject;
+    iframe.onload = function() {
+      iframe.contentWindow.postMessage(
+          JSON.stringify(['sandboxed frame msg', identifier]), '*');
+    };
+    iframe.src = url;
+  });
+};
+
+var runTestAndRespond = function(localUrl, remoteUrl) {
+  var iframe = document.createElement('iframe');
+  var sendResponse = function(msg) {
+    var mainWindow = window.opener || window.top;
+    mainWindow.postMessage(msg, '*');
+  };
+
+  // First load local resource in |iframe|, expect the local frame to respond.
+  loadFrameExpectResponse(iframe, localUrl).then(function() {
+    // Then try to load remote resource on the same iframe element. The remote
+    // resource will fail to load but we'd get an iframe.onload event and the
+    // local frame will still be there. Therefore, expect the local frame to
+    // respond again.
+    return loadFrameExpectResponse(iframe, remoteUrl);
+  }).then(function() {
+    sendResponse('succeeded');
+  }).catch(function(err) {
+    sendResponse('failed');
+  });
+  document.body.appendChild(iframe);
+};
+
+onmessage = function(e) {
+  var command = JSON.parse(e.data);
+  if (command[0] == 'load') {
+    var localUrl = command[1];
+    var remoteUrl = command[2];
+    runTestAndRespond(localUrl, remoteUrl);
+  }
+};
+
+</script>

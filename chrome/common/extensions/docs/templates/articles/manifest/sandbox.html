@@ -1,6 +1,13 @@
 <h1 id="sandbox">Manifest - Sandbox</h1>
 
 <p>
+<b><em>Warning:</em></b> Starting in version 57, Chrome will no longer allow
+external web content (including embedded frames and scripts) inside sandboxed
+pages.  Please use a
+<a href="https://developer.chrome.com/apps/webview_tag">webview</a> instead.
+</p>
+
+<p>
 Defines an collection of app or extension pages that are to be served
 in a sandboxed unique origin, and optionally a Content Security Policy to use
 with them. Being in a sandbox has two implications:
@@ -30,7 +37,7 @@ direct access to non-sandboxed pages (it may communicate with them via
     ]
     // content_security_policy is optional.
     "content_security_policy":
-        "sandbox allow-scripts; script-src https://www.google.com"
+        "sandbox allow-scripts; script-src 'self'"
   ],
   ...
 }
@@ -38,11 +45,14 @@ direct access to non-sandboxed pages (it may communicate with them via
   
   <p>
   If not specified, the default <code>content_security_policy</code> value is
-  <code>sandbox allow-scripts allow-forms</code>. You can specify your CSP
-  value to restrict the sandbox even further, but it must have the <code>sandbox</code>
+  <code>sandbox allow-scripts allow-forms allow-popups allow-modals;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';</code>.
+  You can specify your CSP value to restrict the sandbox even further,
+  but it must have the <code>sandbox</code>
   directive and may not have the <code>allow-same-origin</code> token (see
   <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#attr-iframe-sandbox">the
-  HTML5 specification</a> for possible sandbox tokens).
+  HTML5 specification</a> for possible sandbox tokens). Also, the CSP you
+  specify may not allow loading external web content inside sandboxed pages.
   </p>
 </li>
 </ol>

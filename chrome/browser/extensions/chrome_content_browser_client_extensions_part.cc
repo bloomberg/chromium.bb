@@ -305,16 +305,10 @@ bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
       if (extension->id() == kWebStoreAppId)
         return true;
 
-      // --isolate-extensions should isolate extensions, except for a) hosted
-      // apps, b) platform apps.
-      // a) Isolating hosted apps is a good idea, but ought to be a separate
-      //    knob.
-      // b) Sandbox pages in platform app can load web content in iframes;
-      //    isolating the app and the iframe leads to StoragePartition mismatch
-      //    in the two processes.
-      //    TODO(lazyboy): We should deprecate this behaviour and not let web
-      //    content load in platform app's process; see http://crbug.com/615585.
-      if (extension->is_hosted_app() || extension->is_platform_app())
+      // --isolate-extensions should isolate extensions, except for hosted
+      // apps. Isolating hosted apps is a good idea, but ought to be a separate
+      // knob.
+      if (extension->is_hosted_app())
         return false;
 
       // Isolate all extensions.

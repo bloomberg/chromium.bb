@@ -4,6 +4,6 @@
   "manifest_version": 2,
   "sandbox": {
     "pages": ["test"],
-    "content_security_policy": "sandbox; script-src: https://www.google.com"
+    "content_security_policy": "sandbox; script-src https://www.google.com"
   }
 }
