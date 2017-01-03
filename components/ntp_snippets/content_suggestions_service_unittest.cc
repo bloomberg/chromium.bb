@@ -18,6 +18,7 @@
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/fake_category_ranker.h"
+#include "components/ntp_snippets/category_rankers/mock_category_ranker.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
@@ -741,6 +742,23 @@ TEST_F(ContentSuggestionsServiceTest, ShouldReturnCategoriesInOrderToDisplay) {
   // Categories order should reflect the new order.
   EXPECT_THAT(service()->GetCategories(),
               ElementsAre(second_category, first_category));
+}
+
+TEST_F(ContentSuggestionsServiceTest,
+       ShouldForwardDismissedCategoryToCategoryRanker) {
+  auto mock_ranker = base::MakeUnique<MockCategoryRanker>();
+  MockCategoryRanker* raw_mock_ranker = mock_ranker.get();
+  SetCategoryRanker(std::move(mock_ranker));
+
+  // The service is recreated to pick up the new ranker.
+  ResetService();
+
+  Category category = Category::FromKnownCategory(KnownCategories::BOOKMARKS);
+  MockProvider* provider = RegisterProvider(category);
+  provider->FireCategoryStatusChangedWithCurrentStatus(category);
+
+  EXPECT_CALL(*raw_mock_ranker, OnCategoryDismissed(category));
+  service()->DismissCategory(category);
 }
 
 }  // namespace ntp_snippets

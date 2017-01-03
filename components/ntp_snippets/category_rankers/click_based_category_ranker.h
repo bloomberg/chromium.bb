@@ -33,6 +33,7 @@ class ClickBasedCategoryRanker : public CategoryRanker {
   void ClearHistory(base::Time begin, base::Time end) override;
   void AppendCategoryIfNecessary(Category category) override;
   void OnSuggestionOpened(Category category) override;
+  void OnCategoryDismissed(Category category) override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -43,6 +44,10 @@ class ClickBasedCategoryRanker : public CategoryRanker {
   // Returns number of top categories with extra margin (i.e. with increased
   // passing margin). For testing only.
   static int GetNumTopCategoriesWithExtraMargin();
+
+  // Returns number of positions by which a dismissed category is downgraded.
+  // For testing only.
+  static int GetDismissedCategoryPenalty();
 
  private:
   struct RankedCategory {

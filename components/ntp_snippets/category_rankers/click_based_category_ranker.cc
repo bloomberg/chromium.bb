@@ -38,6 +38,9 @@ const int kNumTopCategoriesWithExtraMargin = 3;
 // value than the first non-top category).
 const int kExtraPassingMargin = 2;
 
+// Number of positions by which a dismissed category is downgraded.
+const int kDismissedCategoryPenalty = 1;
+
 const char kCategoryIdKey[] = "category";
 const char kClicksKey[] = "clicks";
 
@@ -94,7 +97,6 @@ void ClickBasedCategoryRanker::AppendCategoryIfNecessary(Category category) {
   }
 }
 
-// TODO(vitaliii): Listen to dismissed sections and penalise them.
 void ClickBasedCategoryRanker::OnSuggestionOpened(Category category) {
   if (!ContainsCategory(category)) {
     LOG(DFATAL) << "The category with ID " << category.id()
@@ -119,6 +121,33 @@ void ClickBasedCategoryRanker::OnSuggestionOpened(Category category) {
   StoreOrderToPrefs(ordered_categories_);
 }
 
+void ClickBasedCategoryRanker::OnCategoryDismissed(Category category) {
+  if (!ContainsCategory(category)) {
+    LOG(DFATAL) << "The category with ID " << category.id()
+                << " has not been added using AppendCategoryIfNecessary.";
+    return;
+  }
+
+  std::vector<RankedCategory>::iterator current = FindCategory(category);
+  for (int downgrade = 0; downgrade < kDismissedCategoryPenalty; ++downgrade) {
+    std::vector<RankedCategory>::iterator next = current + 1;
+    if (next == ordered_categories_.end()) {
+      break;
+    }
+    std::swap(*current, *next);
+    current = next;
+  }
+
+  int next_clicks = 0;
+  std::vector<RankedCategory>::iterator next = current + 1;
+  if (next != ordered_categories_.end()) {
+    next_clicks = next->clicks;
+  }
+
+  current->clicks = std::max(next_clicks - kPassingMargin, 0);
+  StoreOrderToPrefs(ordered_categories_);
+}
+
 // static
 void ClickBasedCategoryRanker::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
@@ -133,6 +162,11 @@ int ClickBasedCategoryRanker::GetPassingMargin() {
 // static
 int ClickBasedCategoryRanker::GetNumTopCategoriesWithExtraMargin() {
   return kNumTopCategoriesWithExtraMargin;
+}
+
+// static
+int ClickBasedCategoryRanker::GetDismissedCategoryPenalty() {
+  return kDismissedCategoryPenalty;
 }
 
 ClickBasedCategoryRanker::RankedCategory::RankedCategory(Category category,

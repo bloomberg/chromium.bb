@@ -36,6 +36,9 @@ class CategoryRanker {
 
   // Called whenever a suggestion is opened by the user.
   virtual void OnSuggestionOpened(Category category) = 0;
+
+  // Called whenever a category is dismissed by the user.
+  virtual void OnCategoryDismissed(Category category) = 0;
 };
 
 }  // namespace ntp_snippets

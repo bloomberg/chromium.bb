@@ -56,6 +56,10 @@ class ClickBasedCategoryRankerTest : public testing::Test {
     }
   }
 
+  void NotifyOnCategoryDismissed(Category category) {
+    ranker()->OnCategoryDismissed(category);
+  }
+
   ClickBasedCategoryRanker* ranker() { return ranker_.get(); }
 
  private:
@@ -224,6 +228,115 @@ TEST_F(ClickBasedCategoryRankerTest, ShouldPersistOrderAndClicksWhenRestarted) {
   NotifyOnSuggestionOpened(
       /*times=*/1, third);
   EXPECT_TRUE(CompareCategories(third, first));
+}
+
+TEST_F(ClickBasedCategoryRankerTest, ShouldMoveCategoryDownWhenDismissed) {
+  // Take top categories.
+  std::vector<KnownCategories> default_order =
+      ConstantCategoryRanker::GetKnownCategoriesDefaultOrder();
+  Category first = Category::FromKnownCategory(default_order[0]);
+  Category second = Category::FromKnownCategory(default_order[1]);
+
+  ASSERT_TRUE(CompareCategories(first, second));
+  NotifyOnCategoryDismissed(first);
+  EXPECT_FALSE(CompareCategories(first, second));
+}
+
+TEST_F(ClickBasedCategoryRankerTest,
+       ShouldMoveSecondToLastCategoryDownWhenDismissed) {
+  // Add categories to the bottom.
+  Category first = AddUnusedRemoteCategory();
+  Category second = AddUnusedRemoteCategory();
+
+  ASSERT_TRUE(CompareCategories(first, second));
+  NotifyOnCategoryDismissed(first);
+  EXPECT_FALSE(CompareCategories(first, second));
+}
+
+TEST_F(ClickBasedCategoryRankerTest,
+       ShouldNotMoveCategoryTooMuchDownWhenDismissed) {
+  // Add enough categories to the end.
+  std::vector<Category> categories;
+  const int penalty = ClickBasedCategoryRanker::GetDismissedCategoryPenalty();
+  for (int i = 0; i < 2 * penalty + 10; ++i) {
+    categories.push_back(AddUnusedRemoteCategory());
+  }
+
+  const int target = penalty + 1;
+  Category target_category = categories[target];
+  for (int i = 0; i < static_cast<int>(categories.size()); ++i) {
+    ASSERT_EQ(i < target, CompareCategories(categories[i], target_category));
+  }
+
+  // This should move exactly |penalty| categories up.
+  NotifyOnCategoryDismissed(categories[target]);
+
+  // Reflect expected change in |categories|.
+  const int expected = target + penalty;
+  for (int i = target; i + 1 <= expected; ++i) {
+    std::swap(categories[i], categories[i + 1]);
+  }
+
+  for (int i = 0; i < static_cast<int>(categories.size()); ++i) {
+    EXPECT_EQ(i < expected, CompareCategories(categories[i], target_category));
+  }
+}
+
+TEST_F(ClickBasedCategoryRankerTest,
+       ShouldNotChangeOrderOfOtherCategoriesWhenDismissed) {
+  // Add enough categories to the end.
+  std::vector<Category> categories;
+  const int penalty = ClickBasedCategoryRanker::GetDismissedCategoryPenalty();
+  for (int i = 0; i < 2 * penalty + 10; ++i) {
+    categories.push_back(AddUnusedRemoteCategory());
+  }
+
+  int target = penalty + 1;
+  // This should not change order of all other categories.
+  NotifyOnCategoryDismissed(categories[target]);
+
+  categories.erase(categories.begin() + target);
+  for (int first = 0; first < static_cast<int>(categories.size()); ++first) {
+    for (int second = 0; second < static_cast<int>(categories.size());
+         ++second) {
+      EXPECT_EQ(first < second,
+                CompareCategories(categories[first], categories[second]));
+    }
+  }
+}
+
+TEST_F(ClickBasedCategoryRankerTest, ShouldNotMoveLastCategoryWhenDismissed) {
+  Category first = AddUnusedRemoteCategory();
+  Category second = AddUnusedRemoteCategory();
+
+  ASSERT_TRUE(CompareCategories(first, second));
+  NotifyOnCategoryDismissed(second);
+  EXPECT_TRUE(CompareCategories(first, second));
+}
+
+TEST_F(ClickBasedCategoryRankerTest,
+       ShouldReduceLastCategoryClicksWhenDismissed) {
+  Category first = AddUnusedRemoteCategory();
+  Category second = AddUnusedRemoteCategory();
+
+  ASSERT_TRUE(CompareCategories(first, second));
+
+  NotifyOnSuggestionOpened(
+      /*times=*/1, second);
+
+  // This should reduce the click count back to 0.
+  NotifyOnCategoryDismissed(second);
+
+  // Try to move the second category up assuming that the previous click is
+  // still there.
+  NotifyOnSuggestionOpened(
+      /*times=*/ClickBasedCategoryRanker::GetPassingMargin() - 1, second);
+
+  EXPECT_TRUE(CompareCategories(first, second));
+
+  NotifyOnSuggestionOpened(
+      /*times=*/1, second);
+  EXPECT_FALSE(CompareCategories(first, second));
 }
 
 }  // namespace ntp_snippets

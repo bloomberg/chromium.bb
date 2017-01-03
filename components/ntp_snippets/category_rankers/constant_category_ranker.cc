@@ -60,6 +60,10 @@ void ConstantCategoryRanker::OnSuggestionOpened(Category category) {
   // Ignored. The order is constant.
 }
 
+void ConstantCategoryRanker::OnCategoryDismissed(Category category) {
+  // Ignored. The order is constant.
+}
+
 // static
 std::vector<KnownCategories>
 ConstantCategoryRanker::GetKnownCategoriesDefaultOrder() {

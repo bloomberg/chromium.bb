@@ -34,4 +34,8 @@ void FakeCategoryRanker::OnSuggestionOpened(Category category) {
   // Ignored.
 }
 
+void FakeCategoryRanker::OnCategoryDismissed(Category category) {
+  // Ignored.
+}
+
 }  // namespace ntp_snippets

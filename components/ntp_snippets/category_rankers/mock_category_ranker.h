@@ -21,6 +21,7 @@ class MockCategoryRanker : public CategoryRanker {
   MOCK_METHOD2(ClearHistory, void(base::Time begin, base::Time end));
   MOCK_METHOD1(AppendCategoryIfNecessary, void(Category category));
   MOCK_METHOD1(OnSuggestionOpened, void(Category category));
+  MOCK_METHOD1(OnCategoryDismissed, void(Category Category));
 };
 
 }  // namespace ntp_snippets

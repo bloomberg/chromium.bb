@@ -197,6 +197,8 @@ void ContentSuggestionsService::DismissCategory(Category category) {
 
   dismissed_providers_by_category_[category] = provider;
   StoreDismissedCategoriesToPrefs();
+
+  category_ranker_->OnCategoryDismissed(category);
 }
 
 void ContentSuggestionsService::RestoreDismissedCategories() {

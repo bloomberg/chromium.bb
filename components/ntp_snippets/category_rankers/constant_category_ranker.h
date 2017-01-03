@@ -28,6 +28,7 @@ class ConstantCategoryRanker : public CategoryRanker {
   void ClearHistory(base::Time begin, base::Time end) override;
   void AppendCategoryIfNecessary(Category category) override;
   void OnSuggestionOpened(Category category) override;
+  void OnCategoryDismissed(Category category) override;
 
   static std::vector<KnownCategories> GetKnownCategoriesDefaultOrder();
 
