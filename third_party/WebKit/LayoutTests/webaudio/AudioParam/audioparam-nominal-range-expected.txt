@@ -1,25 +1,25 @@
-CONSOLE WARNING: line 397: Delay.delayTime.value -1 outside nominal range [0, 1.5]; value will be clamped.
-CONSOLE WARNING: line 406: Delay.delayTime.value 4 outside nominal range [0, 1.5]; value will be clamped.
-CONSOLE WARNING: line 397: StereoPanner.pan.value -3 outside nominal range [-1, 1]; value will be clamped.
-CONSOLE WARNING: line 406: StereoPanner.pan.value 3 outside nominal range [-1, 1]; value will be clamped.
-CONSOLE WARNING: line 397: DynamicsCompressor.threshold.value -201 outside nominal range [-100, 0]; value will be clamped.
-CONSOLE WARNING: line 406: DynamicsCompressor.threshold.value 1 outside nominal range [-100, 0]; value will be clamped.
-CONSOLE WARNING: line 397: DynamicsCompressor.knee.value -1 outside nominal range [0, 40]; value will be clamped.
-CONSOLE WARNING: line 406: DynamicsCompressor.knee.value 81 outside nominal range [0, 40]; value will be clamped.
-CONSOLE WARNING: line 406: DynamicsCompressor.ratio.value 41 outside nominal range [1, 20]; value will be clamped.
-CONSOLE WARNING: line 397: DynamicsCompressor.attack.value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 406: DynamicsCompressor.attack.value 3 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 397: DynamicsCompressor.release.value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 406: DynamicsCompressor.release.value 3 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 397: BiquadFilter.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
-CONSOLE WARNING: line 406: BiquadFilter.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
-CONSOLE WARNING: line 397: Oscillator.frequency.value -48001 outside nominal range [-24000, 24000]; value will be clamped.
-CONSOLE WARNING: line 406: Oscillator.frequency.value 48001 outside nominal range [-24000, 24000]; value will be clamped.
-CONSOLE WARNING: line 326: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 327: Delay.delayTime.linearRampToValueAtTime value 2 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 328: Delay.delayTime.exponentialRampToValue value 3 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 329: Delay.delayTime.setTargetAtTime value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 330: Delay.delayTime.setValueCurveAtTime value 1.5 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 396: Delay.delayTime.value -1 outside nominal range [0, 1.5]; value will be clamped.
+CONSOLE WARNING: line 405: Delay.delayTime.value 4 outside nominal range [0, 1.5]; value will be clamped.
+CONSOLE WARNING: line 396: StereoPanner.pan.value -3 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: line 405: StereoPanner.pan.value 3 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: line 396: DynamicsCompressor.threshold.value -201 outside nominal range [-100, 0]; value will be clamped.
+CONSOLE WARNING: line 405: DynamicsCompressor.threshold.value 1 outside nominal range [-100, 0]; value will be clamped.
+CONSOLE WARNING: line 396: DynamicsCompressor.knee.value -1 outside nominal range [0, 40]; value will be clamped.
+CONSOLE WARNING: line 405: DynamicsCompressor.knee.value 81 outside nominal range [0, 40]; value will be clamped.
+CONSOLE WARNING: line 405: DynamicsCompressor.ratio.value 41 outside nominal range [1, 20]; value will be clamped.
+CONSOLE WARNING: line 396: DynamicsCompressor.attack.value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 405: DynamicsCompressor.attack.value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 396: DynamicsCompressor.release.value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 405: DynamicsCompressor.release.value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 396: BiquadFilter.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: line 405: BiquadFilter.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: line 396: Oscillator.frequency.value -48001 outside nominal range [-24000, 24000]; value will be clamped.
+CONSOLE WARNING: line 405: Oscillator.frequency.value 48001 outside nominal range [-24000, 24000]; value will be clamped.
+CONSOLE WARNING: line 325: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 326: Delay.delayTime.linearRampToValueAtTime value 2 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 327: Delay.delayTime.exponentialRampToValue value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 328: Delay.delayTime.setTargetAtTime value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 329: Delay.delayTime.setValueCurveAtTime value 1.5 outside nominal range [0, 1]; value will be clamped.
 Test AudioParam Nominal Range Values.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

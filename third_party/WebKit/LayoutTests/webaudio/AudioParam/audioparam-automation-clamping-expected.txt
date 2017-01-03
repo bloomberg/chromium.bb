@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 50: BiquadFilter.frequency.linearRampToValueAtTime value -1000 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: line 49: BiquadFilter.frequency.linearRampToValueAtTime value -1000 outside nominal range [0, 24000]; value will be clamped.
 Test Clamping of Automations.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

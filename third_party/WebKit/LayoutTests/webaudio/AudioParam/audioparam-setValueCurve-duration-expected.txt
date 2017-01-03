@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 45: [object AudioBuffer]
+CONSOLE MESSAGE: line 44: [object AudioBuffer]
 Test AudioParam setValueCurveAtTime() with Huge Duration.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
