@@ -5,6 +5,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -39,11 +40,12 @@ class TestResourceDispatcherHostDelegate
   using RequestDeferredHook = base::Callback<void(const base::Closure& resume)>;
   TestResourceDispatcherHostDelegate() : throttle_created_(false) {}
 
-  void RequestBeginning(net::URLRequest* request,
-                        ResourceContext* resource_context,
-                        AppCacheService* appcache_service,
-                        ResourceType resource_type,
-                        ScopedVector<ResourceThrottle>* throttles) override {
+  void RequestBeginning(
+      net::URLRequest* request,
+      ResourceContext* resource_context,
+      AppCacheService* appcache_service,
+      ResourceType resource_type,
+      std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ShellResourceDispatcherHostDelegate::RequestBeginning(
         request, resource_context, appcache_service, resource_type, throttles);
@@ -54,8 +56,8 @@ class TestResourceDispatcherHostDelegate
       ASSERT_FALSE(throttle_created_);
       throttle_created_ = true;
 
-      throttles->push_back(
-          new CallbackRunningResourceThrottle(request, this, run_on_start_));
+      throttles->push_back(base::MakeUnique<CallbackRunningResourceThrottle>(
+          request, this, run_on_start_));
     }
   }
 

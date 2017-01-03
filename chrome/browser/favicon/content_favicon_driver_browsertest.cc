@@ -61,12 +61,12 @@ class TestResourceDispatcherHostDelegate
     return true;
   }
 
-  void RequestBeginning(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::AppCacheService* appcache_service,
-      content::ResourceType resource_type,
-      ScopedVector<content::ResourceThrottle>* throttles) override {
+  void RequestBeginning(net::URLRequest* request,
+                        content::ResourceContext* resource_context,
+                        content::AppCacheService* appcache_service,
+                        content::ResourceType resource_type,
+                        std::vector<std::unique_ptr<content::ResourceThrottle>>*
+                            throttles) override {
     if (request->url() == url_) {
       was_requested_ = true;
       if (request->load_flags() & net::LOAD_BYPASS_CACHE)

@@ -6,6 +6,7 @@
 #define CHROME_TEST_NACL_PNACL_HEADER_TEST_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -24,17 +25,17 @@ using content::ResourceDispatcherHostDelegate;
 
 class TestDispatcherHostDelegate : public ResourceDispatcherHostDelegate {
  public:
-  explicit TestDispatcherHostDelegate()
+  TestDispatcherHostDelegate()
       : ResourceDispatcherHostDelegate(), found_pnacl_header_(false) {}
 
   ~TestDispatcherHostDelegate() override {}
 
-  void RequestBeginning(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::AppCacheService* appcache_service,
-      content::ResourceType resource_type,
-      ScopedVector<content::ResourceThrottle>* throttles) override;
+  void RequestBeginning(net::URLRequest* request,
+                        content::ResourceContext* resource_context,
+                        content::AppCacheService* appcache_service,
+                        content::ResourceType resource_type,
+                        std::vector<std::unique_ptr<content::ResourceThrottle>>*
+                            throttles) override;
 
   bool found_pnacl_header() const { return found_pnacl_header_; }
 

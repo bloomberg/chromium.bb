@@ -1705,13 +1705,13 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   InterceptingResourceHandler* intercepting_handler =
       static_cast<InterceptingResourceHandler*>(handler.get());
 
-  ScopedVector<ResourceThrottle> throttles;
+  std::vector<std::unique_ptr<ResourceThrottle>> throttles;
 
   // Add a NavigationResourceThrottle for navigations.
   // PlzNavigate: the throttle is unnecessary as communication with the UI
   // thread is handled by the NavigationURLloader.
   if (!IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type)) {
-    throttles.push_back(new NavigationResourceThrottle(
+    throttles.push_back(base::MakeUnique<NavigationResourceThrottle>(
         request, delegate_, fetch_request_context_type));
   }
 
@@ -1725,7 +1725,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
 
   if (request->has_upload()) {
     // Block power save while uploading data.
-    throttles.push_back(new PowerSaveBlockResourceThrottle(
+    throttles.push_back(base::MakeUnique<PowerSaveBlockResourceThrottle>(
         request->url().host(),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
@@ -1738,18 +1738,16 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
 
   // Split the handler in two groups: the ones that need to execute
   // WillProcessResponse before mime sniffing and the others.
-  // TODO(clamy): ScopedVector is deprecated. The interface should be changed
-  // to use vectors instead.
-  ScopedVector<ResourceThrottle> pre_mime_sniffing_throttles;
-  ScopedVector<ResourceThrottle> post_mime_sniffing_throttles;
-  for (auto throttle : throttles) {
+  std::vector<std::unique_ptr<ResourceThrottle>> pre_mime_sniffing_throttles;
+  std::vector<std::unique_ptr<ResourceThrottle>> post_mime_sniffing_throttles;
+  for (auto& throttle : throttles) {
     if (throttle->MustProcessResponseBeforeReadingBody()) {
-      pre_mime_sniffing_throttles.push_back(throttle);
+      pre_mime_sniffing_throttles.push_back(std::move(throttle));
     } else {
-      post_mime_sniffing_throttles.push_back(throttle);
+      post_mime_sniffing_throttles.push_back(std::move(throttle));
     }
   }
-  throttles.weak_clear();
+  throttles.clear();
 
   // Add the post mime sniffing throttles.
   handler.reset(new ThrottlingResourceHandler(
@@ -2818,7 +2816,7 @@ ResourceDispatcherHostImpl::HandleDownloadStarted(
   if (delegate()) {
     const ResourceRequestInfoImpl* request_info(
         ResourceRequestInfoImpl::ForRequest(request));
-    ScopedVector<ResourceThrottle> throttles;
+    std::vector<std::unique_ptr<ResourceThrottle>> throttles;
     delegate()->DownloadStarting(request, request_info->GetContext(),
                                  is_content_initiated, true, is_new_request,
                                  &throttles);

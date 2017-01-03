@@ -265,8 +265,7 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     content::ResourceContext* resource_context,
     content::AppCacheService* appcache_service,
     ResourceType resource_type,
-    ScopedVector<content::ResourceThrottle>* throttles) {
-
+    std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   AddExtraHeadersIfNeeded(request, resource_context);
 
   const content::ResourceRequestInfo* request_info =
@@ -277,15 +276,16 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
   // is called whether or not requests are blocked via BlockRequestForRoute()
   // however io_client may or may not be ready at the time depending on whether
   // webcontents is created.
-  throttles->push_back(new IoThreadClientThrottle(
+  throttles->push_back(base::MakeUnique<IoThreadClientThrottle>(
       request_info->GetChildID(), request_info->GetRenderFrameID(), request));
 
   bool is_main_frame = resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
   if (!is_main_frame)
     InterceptNavigationDelegate::UpdateUserGestureCarryoverInfo(request);
-  throttles->push_back(new web_restrictions::WebRestrictionsResourceThrottle(
-      AwBrowserContext::GetDefault()->GetWebRestrictionProvider(),
-      request->url(), is_main_frame));
+  throttles->push_back(
+      base::MakeUnique<web_restrictions::WebRestrictionsResourceThrottle>(
+          AwBrowserContext::GetDefault()->GetWebRestrictionProvider(),
+          request->url(), is_main_frame));
 }
 
 void AwResourceDispatcherHostDelegate::OnRequestRedirected(
@@ -316,7 +316,7 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
     bool is_content_initiated,
     bool must_download,
     bool is_new_request,
-    ScopedVector<content::ResourceThrottle>* throttles) {
+    std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   GURL url(request->url());
   std::string user_agent;
   std::string content_disposition;

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/time/time.h"
@@ -16,8 +17,6 @@
 #include "ui/base/page_transition_types.h"
 
 class GURL;
-template <class T> class ScopedVector;
-
 namespace net {
 class AuthChallengeInfo;
 class ClientCertStore;
@@ -46,23 +45,25 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
 
   // Called after ShouldBeginRequest to allow the embedder to add resource
   // throttles.
-  virtual void RequestBeginning(net::URLRequest* request,
-                                ResourceContext* resource_context,
-                                AppCacheService* appcache_service,
-                                ResourceType resource_type,
-                                ScopedVector<ResourceThrottle>* throttles);
+  virtual void RequestBeginning(
+      net::URLRequest* request,
+      ResourceContext* resource_context,
+      AppCacheService* appcache_service,
+      ResourceType resource_type,
+      std::vector<std::unique_ptr<ResourceThrottle>>* throttles);
 
   // Allows an embedder to add additional resource handlers for a download.
   // |must_download| is set if the request must be handled as a download.
   // |is_new_request| is true if this is a call for a new, unstarted request
   // which also means that RequestBeginning has not been and will not be
   // called for this request.
-  virtual void DownloadStarting(net::URLRequest* request,
-                                ResourceContext* resource_context,
-                                bool is_content_initiated,
-                                bool must_download,
-                                bool is_new_request,
-                                ScopedVector<ResourceThrottle>* throttles);
+  virtual void DownloadStarting(
+      net::URLRequest* request,
+      ResourceContext* resource_context,
+      bool is_content_initiated,
+      bool must_download,
+      bool is_new_request,
+      std::vector<std::unique_ptr<ResourceThrottle>>* throttles);
 
   // Creates a ResourceDispatcherHostLoginDelegate that asks the user for a
   // username and password.

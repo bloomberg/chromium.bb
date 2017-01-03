@@ -13,7 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
@@ -751,21 +751,22 @@ class TestResourceDispatcherHostDelegate
 
   // ResourceDispatcherHostDelegate implementation:
 
-  void RequestBeginning(net::URLRequest* request,
-                        ResourceContext* resource_context,
-                        AppCacheService* appcache_service,
-                        ResourceType resource_type,
-                        ScopedVector<ResourceThrottle>* throttles) override {
+  void RequestBeginning(
+      net::URLRequest* request,
+      ResourceContext* resource_context,
+      AppCacheService* appcache_service,
+      ResourceType resource_type,
+      std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     if (user_data_) {
       const void* key = user_data_.get();
       request->SetUserData(key, user_data_.release());
     }
 
     if (flags_ != NONE) {
-      throttles->push_back(new GenericResourceThrottle(
+      throttles->push_back(base::MakeUnique<GenericResourceThrottle>(
           flags_, error_code_for_cancellation_));
       if (create_two_throttles_)
-        throttles->push_back(new GenericResourceThrottle(
+        throttles->push_back(base::MakeUnique<GenericResourceThrottle>(
             flags_, error_code_for_cancellation_));
     }
   }

@@ -552,11 +552,12 @@ class PageTransitionResourceDispatcherHostDelegate
     : watch_url_(watch_url) {}
 
   // ResourceDispatcherHostDelegate implementation:
-  void RequestBeginning(net::URLRequest* request,
-                        ResourceContext* resource_context,
-                        AppCacheService* appcache_service,
-                        ResourceType resource_type,
-                        ScopedVector<ResourceThrottle>* throttles) override {
+  void RequestBeginning(
+      net::URLRequest* request,
+      ResourceContext* resource_context,
+      AppCacheService* appcache_service,
+      ResourceType resource_type,
+      std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     if (request->url() == watch_url_) {
       const ResourceRequestInfo* info =
           ResourceRequestInfo::ForRequest(request);
@@ -612,11 +613,12 @@ class LoFiModeResourceDispatcherHostDelegate
   ~LoFiModeResourceDispatcherHostDelegate() override {}
 
   // ResourceDispatcherHostDelegate implementation:
-  void RequestBeginning(net::URLRequest* request,
-                        ResourceContext* resource_context,
-                        AppCacheService* appcache_service,
-                        ResourceType resource_type,
-                        ScopedVector<ResourceThrottle>* throttles) override {
+  void RequestBeginning(
+      net::URLRequest* request,
+      ResourceContext* resource_context,
+      AppCacheService* appcache_service,
+      ResourceType resource_type,
+      std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
     if (request->url() != main_frame_url_ && request->url() != subresource_url_
@@ -825,11 +827,12 @@ class RequestDataResourceDispatcherHostDelegate
   const ScopedVector<RequestDataForDelegate>& data() { return requests_; }
 
   // ResourceDispatcherHostDelegate implementation:
-  void RequestBeginning(net::URLRequest* request,
-                        ResourceContext* resource_context,
-                        AppCacheService* appcache_service,
-                        ResourceType resource_type,
-                        ScopedVector<ResourceThrottle>* throttles) override {
+  void RequestBeginning(
+      net::URLRequest* request,
+      ResourceContext* resource_context,
+      AppCacheService* appcache_service,
+      ResourceType resource_type,
+      std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     requests_.push_back(new RequestDataForDelegate(
         request->url(), request->first_party_for_cookies(),
         request->initiator()));

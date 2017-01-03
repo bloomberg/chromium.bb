@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -44,11 +45,12 @@ class TrackingResourceDispatcherHostDelegate
   TrackingResourceDispatcherHostDelegate() : throttle_created_(false) {
   }
 
-  void RequestBeginning(net::URLRequest* request,
-                        ResourceContext* resource_context,
-                        AppCacheService* appcache_service,
-                        ResourceType resource_type,
-                        ScopedVector<ResourceThrottle>* throttles) override {
+  void RequestBeginning(
+      net::URLRequest* request,
+      ResourceContext* resource_context,
+      AppCacheService* appcache_service,
+      ResourceType resource_type,
+      std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ShellResourceDispatcherHostDelegate::RequestBeginning(
         request, resource_context, appcache_service, resource_type, throttles);
@@ -56,7 +58,7 @@ class TrackingResourceDispatcherHostDelegate
     ASSERT_FALSE(throttle_created_);
     // If this is a request for the tracked URL, add a throttle to track it.
     if (request->url() == tracked_url_)
-      throttles->push_back(new TrackingThrottle(request, this));
+      throttles->push_back(base::MakeUnique<TrackingThrottle>(request, this));
   }
 
   // Starts tracking a URL.  The request for previously tracked URL, if any,

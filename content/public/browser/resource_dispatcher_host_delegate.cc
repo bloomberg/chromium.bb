@@ -24,8 +24,7 @@ void ResourceDispatcherHostDelegate::RequestBeginning(
     ResourceContext* resource_context,
     AppCacheService* appcache_service,
     ResourceType resource_type,
-    ScopedVector<ResourceThrottle>* throttles) {
-}
+    std::vector<std::unique_ptr<ResourceThrottle>>* throttles) {}
 
 void ResourceDispatcherHostDelegate::DownloadStarting(
     net::URLRequest* request,
@@ -33,7 +32,7 @@ void ResourceDispatcherHostDelegate::DownloadStarting(
     bool is_content_initiated,
     bool must_download,
     bool is_new_request,
-    ScopedVector<ResourceThrottle>* throttles) {}
+    std::vector<std::unique_ptr<ResourceThrottle>>* throttles) {}
 
 ResourceDispatcherHostLoginDelegate*
     ResourceDispatcherHostDelegate::CreateLoginDelegate(

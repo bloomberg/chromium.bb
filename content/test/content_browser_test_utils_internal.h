@@ -10,6 +10,7 @@
 // Note: If a function here also works with browser_tests, it should be in
 // the content public API.
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -107,12 +108,12 @@ class NavigationStallDelegate : public ResourceDispatcherHostDelegate {
 
  private:
   // ResourceDispatcherHostDelegate
-  void RequestBeginning(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::AppCacheService* appcache_service,
-      ResourceType resource_type,
-      ScopedVector<content::ResourceThrottle>* throttles) override;
+  void RequestBeginning(net::URLRequest* request,
+                        content::ResourceContext* resource_context,
+                        content::AppCacheService* appcache_service,
+                        ResourceType resource_type,
+                        std::vector<std::unique_ptr<content::ResourceThrottle>>*
+                            throttles) override;
 
   GURL url_;
 };

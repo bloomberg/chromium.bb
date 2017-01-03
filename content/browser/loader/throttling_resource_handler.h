@@ -7,8 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/public/browser/resource_throttle.h"
 #include "net/url_request/redirect_info.h"
@@ -26,10 +28,10 @@ struct ResourceResponse;
 class ThrottlingResourceHandler : public LayeredResourceHandler,
                                   public ResourceThrottle::Delegate {
  public:
-  // Takes ownership of the ResourceThrottle instances.
-  ThrottlingResourceHandler(std::unique_ptr<ResourceHandler> next_handler,
-                            net::URLRequest* request,
-                            ScopedVector<ResourceThrottle> throttles);
+  ThrottlingResourceHandler(
+      std::unique_ptr<ResourceHandler> next_handler,
+      net::URLRequest* request,
+      std::vector<std::unique_ptr<ResourceThrottle>> throttles);
   ~ThrottlingResourceHandler() override;
 
   // LayeredResourceHandler overrides:
@@ -62,7 +64,7 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   };
   DeferredStage deferred_stage_;
 
-  ScopedVector<ResourceThrottle> throttles_;
+  std::vector<std::unique_ptr<ResourceThrottle>> throttles_;
   size_t next_index_;
 
   GURL deferred_url_;

@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -262,7 +263,7 @@ void AppendComponentUpdaterThrottles(
     const ResourceRequestInfo& info,
     content::ResourceContext* resource_context,
     ResourceType resource_type,
-    ScopedVector<content::ResourceThrottle>* throttles) {
+    std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   bool is_prerendering =
       info.GetVisibilityState() == blink::WebPageVisibilityStatePrerender;
   if (is_prerendering)
@@ -287,8 +288,8 @@ void AppendComponentUpdaterThrottles(
   if (crx_id) {
     // We got a component we need to install, so throttle the resource
     // until the component is installed.
-    throttles->push_back(
-        component_updater::GetOnDemandResourceThrottle(cus, crx_id));
+    throttles->push_back(base::WrapUnique(
+        component_updater::GetOnDemandResourceThrottle(cus, crx_id)));
   }
 }
 #endif  // !defined(DISABLE_NACL)
@@ -429,7 +430,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     content::ResourceContext* resource_context,
     content::AppCacheService* appcache_service,
     ResourceType resource_type,
-    ScopedVector<content::ResourceThrottle>* throttles) {
+    std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   if (safe_browsing_.get())
     safe_browsing_->OnResourceRequest(request);
 
@@ -472,7 +473,8 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     // progress while we are attempting to load a google property.
     if (!merge_session_throttling_utils::AreAllSessionMergedAlready() &&
         request->url().SchemeIsHTTPOrHTTPS()) {
-      throttles->push_back(new MergeSessionResourceThrottle(request));
+      throttles->push_back(
+          base::MakeUnique<MergeSessionResourceThrottle>(request));
     }
   }
 #endif
@@ -522,7 +524,7 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
     bool is_content_initiated,
     bool must_download,
     bool is_new_request,
-    ScopedVector<content::ResourceThrottle>* throttles) {
+    std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   const content::ResourceRequestInfo* info =
         content::ResourceRequestInfo::ForRequest(request);
   BrowserThread::PostTask(
@@ -532,7 +534,7 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (is_content_initiated) {
-    throttles->push_back(new DownloadResourceThrottle(
+    throttles->push_back(base::MakeUnique<DownloadResourceThrottle>(
         download_request_limiter_, info->GetWebContentsGetterForRequest(),
         request->url(), request->method()));
   }
@@ -547,7 +549,7 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
 #if BUILDFLAG(ANDROID_JAVA_UI)
     // On Android, forward text/html downloads to OfflinePages backend.
     throttles->push_back(
-        new offline_pages::downloads::ResourceThrottle(request));
+        base::MakeUnique<offline_pages::downloads::ResourceThrottle>(request));
 #endif
   }
 }
@@ -610,7 +612,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
     ResourceType resource_type,
-    ScopedVector<content::ResourceThrottle>* throttles) {
+    std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
   // Insert either safe browsing or data reduction proxy throttle at the front
@@ -629,14 +631,14 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 
   if (first_throttle)
-    throttles->push_back(first_throttle);
+    throttles->push_back(base::WrapUnique(first_throttle));
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   std::unique_ptr<content::ResourceThrottle> supervised_user_throttle =
       SupervisedUserResourceThrottle::MaybeCreate(
           request, resource_type, io_data->supervised_user_url_filter());
   if (supervised_user_throttle)
-    throttles->push_back(supervised_user_throttle.release());
+    throttles->push_back(std::move(supervised_user_throttle));
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -644,7 +646,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
       user_script_listener_->CreateResourceThrottle(request->url(),
                                                     resource_type);
   if (wait_for_extensions_init_throttle)
-    throttles->push_back(wait_for_extensions_init_throttle);
+    throttles->push_back(base::WrapUnique(wait_for_extensions_init_throttle));
 
   extensions::ExtensionThrottleManager* extension_throttle_manager =
       io_data->GetExtensionThrottleManager();
@@ -652,19 +654,20 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     std::unique_ptr<content::ResourceThrottle> extension_throttle =
         extension_throttle_manager->MaybeCreateThrottle(request);
     if (extension_throttle)
-      throttles->push_back(extension_throttle.release());
+      throttles->push_back(std::move(extension_throttle));
   }
 #endif
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info->GetVisibilityState() == blink::WebPageVisibilityStatePrerender) {
-    throttles->push_back(new prerender::PrerenderResourceThrottle(request));
+    throttles->push_back(
+        base::MakeUnique<prerender::PrerenderResourceThrottle>(request));
   }
 
   std::unique_ptr<PredictorResourceThrottle> predictor_throttle =
       PredictorResourceThrottle::MaybeCreate(request, io_data);
   if (predictor_throttle)
-    throttles->push_back(predictor_throttle.release());
+    throttles->push_back(std::move(predictor_throttle));
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(

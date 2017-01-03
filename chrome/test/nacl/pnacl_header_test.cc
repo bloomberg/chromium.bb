@@ -30,7 +30,7 @@ void TestDispatcherHostDelegate::RequestBeginning(
     content::ResourceContext* resource_context,
     content::AppCacheService* appcache_service,
     content::ResourceType resource_type,
-    ScopedVector<content::ResourceThrottle>* throttles) {
+    std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   // This checks the same condition as the one for PNaCl in
   // AppendComponentUpdaterThrottles.
   if (resource_type == content::RESOURCE_TYPE_OBJECT) {

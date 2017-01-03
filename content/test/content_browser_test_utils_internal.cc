@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -337,10 +338,10 @@ void NavigationStallDelegate::RequestBeginning(
     content::ResourceContext* resource_context,
     content::AppCacheService* appcache_service,
     ResourceType resource_type,
-    ScopedVector<content::ResourceThrottle>* throttles) {
+    std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (request->url() == url_)
-    throttles->push_back(new HttpRequestStallThrottle);
+    throttles->push_back(base::MakeUnique<HttpRequestStallThrottle>());
 }
 
 FileChooserDelegate::FileChooserDelegate(const base::FilePath& file)

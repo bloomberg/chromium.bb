@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "content/browser/loader/resource_controller.h"
@@ -73,20 +72,22 @@ class TestResourceDispatcherHostDelegate final
     return false;
   }
 
-  void RequestBeginning(net::URLRequest* request,
-                        ResourceContext* resource_context,
-                        AppCacheService* appcache_service,
-                        ResourceType resource_type,
-                        ScopedVector<ResourceThrottle>* throttles) override {
+  void RequestBeginning(
+      net::URLRequest* request,
+      ResourceContext* resource_context,
+      AppCacheService* appcache_service,
+      ResourceType resource_type,
+      std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     ADD_FAILURE() << "RequestBeginning should not be called.";
   }
 
-  void DownloadStarting(net::URLRequest* request,
-                        ResourceContext* resource_context,
-                        bool is_content_initiated,
-                        bool must_download,
-                        bool is_new_request,
-                        ScopedVector<ResourceThrottle>* throttles) override {
+  void DownloadStarting(
+      net::URLRequest* request,
+      ResourceContext* resource_context,
+      bool is_content_initiated,
+      bool must_download,
+      bool is_new_request,
+      std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
     ADD_FAILURE() << "DownloadStarting should not be called.";
   }
 

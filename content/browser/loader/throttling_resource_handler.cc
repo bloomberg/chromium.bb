@@ -16,17 +16,17 @@ namespace content {
 ThrottlingResourceHandler::ThrottlingResourceHandler(
     std::unique_ptr<ResourceHandler> next_handler,
     net::URLRequest* request,
-    ScopedVector<ResourceThrottle> throttles)
+    std::vector<std::unique_ptr<ResourceThrottle>> throttles)
     : LayeredResourceHandler(request, std::move(next_handler)),
       deferred_stage_(DEFERRED_NONE),
       throttles_(std::move(throttles)),
       next_index_(0),
       cancelled_by_resource_throttle_(false) {
-  for (size_t i = 0; i < throttles_.size(); ++i) {
-    throttles_[i]->set_delegate(this);
+  for (const auto& throttle : throttles_) {
+    throttle->set_delegate(this);
     // Throttles must have a name, as otherwise, bugs where a throttle fails
     // to resume a request can be very difficult to debug.
-    DCHECK(throttles_[i]->GetNameForLogging());
+    DCHECK(throttle->GetNameForLogging());
   }
 }
 

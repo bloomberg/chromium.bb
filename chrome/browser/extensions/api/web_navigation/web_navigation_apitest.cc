@@ -7,6 +7,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
@@ -119,13 +120,13 @@ class TestNavigationListener
   // Constructs a ResourceThrottle if the request for |url| should be held.
   //
   // Needs to be invoked on the IO thread.
-  content::ResourceThrottle* CreateResourceThrottle(
+  std::unique_ptr<content::ResourceThrottle> CreateResourceThrottle(
       const GURL& url) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (urls_to_delay_.find(url) == urls_to_delay_.end())
       return NULL;
 
-    Throttle* throttle = new Throttle();
+    auto throttle = base::MakeUnique<Throttle>();
     throttle->set_url(url);
     throttles_.push_back(throttle->AsWeakPtr());
     return throttle;
@@ -303,22 +304,22 @@ class TestResourceDispatcherHostDelegate
   }
   ~TestResourceDispatcherHostDelegate() override {}
 
-  void RequestBeginning(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::AppCacheService* appcache_service,
-      ResourceType resource_type,
-      ScopedVector<content::ResourceThrottle>* throttles) override {
+  void RequestBeginning(net::URLRequest* request,
+                        content::ResourceContext* resource_context,
+                        content::AppCacheService* appcache_service,
+                        ResourceType resource_type,
+                        std::vector<std::unique_ptr<content::ResourceThrottle>>*
+                            throttles) override {
     ChromeResourceDispatcherHostDelegate::RequestBeginning(
         request,
         resource_context,
         appcache_service,
         resource_type,
         throttles);
-    content::ResourceThrottle* throttle =
+    std::unique_ptr<content::ResourceThrottle> throttle =
         test_navigation_listener_->CreateResourceThrottle(request->url());
     if (throttle)
-      throttles->push_back(throttle);
+      throttles->push_back(std::move(throttle));
   }
 
  private:
