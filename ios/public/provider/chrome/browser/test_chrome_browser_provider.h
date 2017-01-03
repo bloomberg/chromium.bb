@@ -26,7 +26,6 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   void SetChromeIdentityServiceForTesting(
       std::unique_ptr<ChromeIdentityService> service) override;
   ChromeIdentityService* GetChromeIdentityService() override;
-  LiveTabContextProvider* GetLiveTabContextProvider() override;
   UITextField<TextFieldStyling>* CreateStyledTextField(
       CGRect frame) const override NS_RETURNS_RETAINED;
   VoiceSearchProvider* GetVoiceSearchProvider() const override;
@@ -44,7 +43,6 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   std::unique_ptr<AppDistributionProvider> app_distribution_provider_;
   std::unique_ptr<BrandedImageProvider> branded_image_provider_;
   std::unique_ptr<ChromeIdentityService> chrome_identity_service_;
-  std::unique_ptr<LiveTabContextProvider> live_tab_context_provider_;
   std::unique_ptr<OmahaServiceProvider> omaha_service_provider_;
   std::unique_ptr<SigninResourcesProvider> signin_resources_provider_;
   std::unique_ptr<VoiceSearchProvider> voice_search_provider_;

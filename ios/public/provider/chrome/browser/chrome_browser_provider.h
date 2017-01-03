@@ -56,7 +56,6 @@ class ChromeIdentityService;
 class GeolocationUpdaterProvider;
 class SigninErrorProvider;
 class SigninResourcesProvider;
-class LiveTabContextProvider;
 
 // Setter and getter for the provider. The provider should be set early, before
 // any browser code is called.
@@ -91,8 +90,7 @@ class ChromeBrowserProvider {
       std::unique_ptr<ChromeIdentityService> service);
   // Returns an instance of a Chrome identity service.
   virtual ChromeIdentityService* GetChromeIdentityService();
-  // Returns an instance of a LiveTabContextProvider.
-  virtual LiveTabContextProvider* GetLiveTabContextProvider();
+  // Returns an instance of a GeolocationUpdaterProvider.
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
   // Returns "enabled", "disabled", or "default".
   virtual std::string DataReductionProxyAvailability();

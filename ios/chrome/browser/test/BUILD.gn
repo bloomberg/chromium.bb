@@ -17,7 +17,7 @@ source_set("perf_test_support") {
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/search_engines",
-    "//ios/chrome/browser/sessions:sessions_internal",
+    "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/web:web_internal",

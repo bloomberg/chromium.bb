@@ -10,24 +10,15 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#include "ios/chrome/browser/sessions/tab_restore_service_delegate_provider_impl.h"
 #include "ios/chrome/browser/tabs/tab_model_synced_window_delegate_getter.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/ui/browser_list_ios.h"
 #include "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/common/material_timing.h"
 
-DownstreamChromiumBrowserProvider::DownstreamChromiumBrowserProvider()
-    : tab_restore_service_delegate_provider_(
-          base::MakeUnique<
-              ios_internal::TabRestoreServiceDelegateProviderImpl>()) {}
+DownstreamChromiumBrowserProvider::DownstreamChromiumBrowserProvider() {}
 
 DownstreamChromiumBrowserProvider::~DownstreamChromiumBrowserProvider() {}
-
-ios::LiveTabContextProvider*
-DownstreamChromiumBrowserProvider::GetLiveTabContextProvider() {
-  return tab_restore_service_delegate_provider_.get();
-}
 
 void DownstreamChromiumBrowserProvider::SetUIViewAlphaWithAnimation(
     UIView* view,

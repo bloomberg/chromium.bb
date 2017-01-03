@@ -19,7 +19,6 @@ class DownstreamChromiumBrowserProvider : public ChromiumBrowserProvider {
   // ChromeBrowserProvider implementations.  All of these will move upstream
   // into ChromiumBrowserProvider eventually, and from there callers will be
   // converted to not go through the provider API at all.
-  ios::LiveTabContextProvider* GetLiveTabContextProvider() override;
   void SetUIViewAlphaWithAnimation(UIView* view, float alpha) override;
   autofill::CardUnmaskPromptView* CreateCardUnmaskPromptView(
       autofill::CardUnmaskPromptController* controller) override;
@@ -32,9 +31,6 @@ class DownstreamChromiumBrowserProvider : public ChromiumBrowserProvider {
   std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
   CreateSyncedWindowDelegatesGetter(
       ios::ChromeBrowserState* browser_state) override;
-
-  std::unique_ptr<ios::LiveTabContextProvider>
-      tab_restore_service_delegate_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DownstreamChromiumBrowserProvider);
 };

@@ -49,10 +49,6 @@ ChromeIdentityService* ChromeBrowserProvider::GetChromeIdentityService() {
   return nullptr;
 }
 
-LiveTabContextProvider* ChromeBrowserProvider::GetLiveTabContextProvider() {
-  return nullptr;
-}
-
 GeolocationUpdaterProvider*
 ChromeBrowserProvider::GetGeolocationUpdaterProvider() {
   return nullptr;

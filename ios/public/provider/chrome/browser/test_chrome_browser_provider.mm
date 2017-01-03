@@ -12,7 +12,6 @@
 #include "ios/public/provider/chrome/browser/distribution/test_app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/images/test_branded_image_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/test_omaha_service_provider.h"
-#include "ios/public/provider/chrome/browser/sessions/test_live_tab_context_provider.h"
 #include "ios/public/provider/chrome/browser/sessions/test_synced_window_delegates_getter.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
@@ -28,8 +27,6 @@ TestChromeBrowserProvider::TestChromeBrowserProvider()
     : app_distribution_provider_(
           base::MakeUnique<TestAppDistributionProvider>()),
       branded_image_provider_(base::MakeUnique<TestBrandedImageProvider>()),
-      live_tab_context_provider_(
-          base::MakeUnique<TestLiveTabContextProvider>()),
       omaha_service_provider_(base::MakeUnique<TestOmahaServiceProvider>()),
       signin_resources_provider_(
           base::MakeUnique<TestSigninResourcesProvider>()),
@@ -61,10 +58,6 @@ ChromeIdentityService* TestChromeBrowserProvider::GetChromeIdentityService() {
     chrome_identity_service_.reset(new FakeChromeIdentityService());
   }
   return chrome_identity_service_.get();
-}
-
-LiveTabContextProvider* TestChromeBrowserProvider::GetLiveTabContextProvider() {
-  return live_tab_context_provider_.get();
 }
 
 UITextField<TextFieldStyling>* TestChromeBrowserProvider::CreateStyledTextField(

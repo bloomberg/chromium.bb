@@ -29,7 +29,6 @@ source_set("recent_tabs") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/sessions",
-    "//ios/chrome/browser/sessions:sessions_internal",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui",

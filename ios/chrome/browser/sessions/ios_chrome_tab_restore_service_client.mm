@@ -4,10 +4,16 @@
 
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_client.h"
 
+#include "components/sessions/ios/ios_live_tab.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
+#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
+#include "ios/chrome/browser/tabs/tab.h"
+#include "ios/chrome/browser/tabs/tab_model.h"
+#include "ios/chrome/browser/ui/browser_ios.h"
+#include "ios/chrome/browser/ui/browser_list_ios.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/sessions/live_tab_context_provider.h"
 #include "ios/web/public/web_thread.h"
 #include "url/gurl.h"
 
@@ -24,24 +30,41 @@ IOSChromeTabRestoreServiceClient::~IOSChromeTabRestoreServiceClient() {}
 sessions::LiveTabContext*
 IOSChromeTabRestoreServiceClient::CreateLiveTabContext(
     const std::string& app_name) {
-  return ios::GetChromeBrowserProvider()->GetLiveTabContextProvider()->Create(
+  return TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
       browser_state_);
 }
 
 sessions::LiveTabContext*
 IOSChromeTabRestoreServiceClient::FindLiveTabContextForTab(
     const sessions::LiveTab* tab) {
-  return ios::GetChromeBrowserProvider()
-      ->GetLiveTabContextProvider()
-      ->FindContextForTab(tab);
+  const sessions::IOSLiveTab* requested_tab =
+      static_cast<const sessions::IOSLiveTab*>(tab);
+  for (BrowserListIOS::const_iterator iter = BrowserListIOS::begin();
+       iter != BrowserListIOS::end(); ++iter) {
+    id<BrowserIOS> browser = *iter;
+    for (Tab* current_tab in [browser tabModel]) {
+      if (current_tab.webState &&
+          current_tab.webState == requested_tab->web_state()) {
+        return TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
+            [browser browserState]);
+      }
+    }
+  }
+  return nullptr;
 }
 
 sessions::LiveTabContext*
 IOSChromeTabRestoreServiceClient::FindLiveTabContextWithID(
     SessionID::id_type desired_id) {
-  return ios::GetChromeBrowserProvider()
-      ->GetLiveTabContextProvider()
-      ->FindContextWithID(desired_id);
+  for (BrowserListIOS::const_iterator iter = BrowserListIOS::begin();
+       iter != BrowserListIOS::end(); ++iter) {
+    id<BrowserIOS> browser = *iter;
+    if ([browser tabModel].sessionID.id() == desired_id) {
+      return TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
+          [browser browserState]);
+    }
+  }
+  return nullptr;
 }
 
 bool IOSChromeTabRestoreServiceClient::ShouldTrackURLForRestore(

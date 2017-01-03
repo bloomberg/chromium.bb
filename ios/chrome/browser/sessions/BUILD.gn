@@ -18,14 +18,19 @@ source_set("sessions") {
     "//components/sessions",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui:browser_list",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/sessions",
     "//ios/web",
     "//url",
   ]
+  public_deps = [
+    ":sessions_non_arc",
+  ]
 }
 
-source_set("sessions_internal") {
+source_set("sessions_non_arc") {
+  visibility = [ ":sessions" ]
   sources = [
     "NSCoder+Compatibility.h",
     "NSCoder+Compatibility.mm",
@@ -39,8 +44,6 @@ source_set("sessions_internal") {
     "tab_restore_service_delegate_impl_ios.mm",
     "tab_restore_service_delegate_impl_ios_factory.h",
     "tab_restore_service_delegate_impl_ios_factory.mm",
-    "tab_restore_service_delegate_provider_impl.h",
-    "tab_restore_service_delegate_provider_impl.mm",
   ]
   deps = [
     "//base",
@@ -50,7 +53,6 @@ source_set("sessions_internal") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:browser_list",
-    "//ios/public/provider/chrome/browser/sessions",
     "//ios/web",
     "//net",
   ]
@@ -64,7 +66,7 @@ source_set("test_support") {
     "test_session_service.mm",
   ]
   deps = [
-    ":sessions_internal",
+    ":sessions",
   ]
 }
 
@@ -76,7 +78,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":resources_unit_tests",
-    ":sessions_internal",
+    ":sessions",
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",

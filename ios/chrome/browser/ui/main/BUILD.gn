@@ -21,7 +21,7 @@ source_set("main") {
     "//ios/chrome/browser/crash_report:crash_report_internal",
     "//ios/chrome/browser/device_sharing",
     "//ios/chrome/browser/physical_web",
-    "//ios/chrome/browser/sessions:sessions_internal",
+    "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/tabs:tabs_internal",
     "//ios/public/provider/chrome/browser",

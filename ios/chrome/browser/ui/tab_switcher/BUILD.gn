@@ -103,7 +103,6 @@ source_set("tab_switcher") {
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/sessions",
-    "//ios/chrome/browser/sessions:sessions_internal",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/tabs",
