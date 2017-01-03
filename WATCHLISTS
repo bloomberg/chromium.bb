@@ -732,8 +732,13 @@
                   '|chrome/android/java/src/org/chromium/chrome/browser/offlinepages/'
     },
     'omnibox': {
-      'filepath': 'chrome/browser/autocomplete/'\
-                  '|chrome/browser/ui/.*/omnibox/'
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/omnibox/|'\
+                  'chrome/android/javatests/src/org/chromium/chrome/browser/omnibox/|'\
+                  'chrome/browser/autocomplete/|'\
+                  'chrome/browser/ui/omnibox/|'\
+                  'chrome/browser/ui/.*/omnibox/|'\
+                  'components/omnibox/|'\
+                  'ios/chrome/browser/ui/omnibox/'
     },
     'options': {
       'filepath': 'chrome/browser/resources/options/|'\
@@ -1951,7 +1956,7 @@
                       'fgorski+watch@chromium.org',
                       'petewil+watch@chromium.org',
                       'romax+watch@chromium.org'],
-    'omnibox': ['suzhe@chromium.org'],
+    'omnibox': ['jdonnelly+watch@chromium.org'],
     'options': ['dbeam+watch-options@chromium.org',
                 'michaelpg+watch-options@chromium.org'],
     'origin_trials': ['chasej+watch@chromium.org',
