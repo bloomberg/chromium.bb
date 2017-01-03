@@ -104,21 +104,8 @@ void FormData::append(ExecutionContext* context,
                       const String& name,
                       Blob* blob,
                       const String& filename) {
-  if (blob) {
-    if (blob->isFile()) {
-      if (filename.isNull())
-        UseCounter::count(context, UseCounter::FormDataAppendFile);
-      else
-        UseCounter::count(context, UseCounter::FormDataAppendFileWithFilename);
-    } else {
-      if (filename.isNull())
-        UseCounter::count(context, UseCounter::FormDataAppendBlob);
-      else
-        UseCounter::count(context, UseCounter::FormDataAppendBlobWithFilename);
-    }
-  } else {
+  if (!blob)
     UseCounter::count(context, UseCounter::FormDataAppendNull);
-  }
   append(name, blob, filename);
 }
 
