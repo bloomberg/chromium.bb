@@ -108,6 +108,12 @@ TEST_F(SymbolsIteratorTest, NumbersAndHashNormalAndEmoji) {
               {"0123456789#*", FontFallbackPriority::Text}});
 }
 
+TEST_F(SymbolsIteratorTest, VS16onDigits) {
+  CHECK_RUNS({{"#", FontFallbackPriority::Text},
+              {"#\uFE0F#\uFE0F\u20E3", FontFallbackPriority::EmojiEmoji},
+              {"#", FontFallbackPriority::Text}});
+}
+
 TEST_F(SymbolsIteratorTest, SingleFlag) {
   CHECK_RUNS({{"🇺", FontFallbackPriority::Text}});
 }
@@ -199,6 +205,11 @@ TEST_F(SymbolsIteratorTest, ExtraZWJPrefix) {
 
 TEST_F(SymbolsIteratorTest, Arrows) {
   CHECK_RUNS({{"x→←x←↑↓→", FontFallbackPriority::Text}});
+}
+
+TEST_F(SymbolsIteratorTest, JudgePilot) {
+  CHECK_RUNS({{"👨‍⚖️👩‍⚖️👨🏼‍⚖️👩🏼‍⚖️",
+               FontFallbackPriority::EmojiEmoji}});
 }
 
 }  // namespace blink

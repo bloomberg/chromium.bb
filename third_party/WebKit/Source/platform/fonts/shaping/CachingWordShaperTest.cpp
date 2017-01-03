@@ -300,6 +300,22 @@ TEST_F(CachingWordShaperTest, SegmentEmojiZWJCommon) {
   ASSERT_FALSE(iterator.next(&wordResult));
 }
 
+TEST_F(CachingWordShaperTest, SegmentEmojiPilotJudgeSequence) {
+  // A family followed by a couple with heart emoji sequence,
+  // the latter including a variation selector.
+  const UChar str[] = {0xD83D, 0xDC68, 0xD83C, 0xDFFB, 0x200D, 0x2696, 0xFE0F,
+                       0xD83D, 0xDC68, 0xD83C, 0xDFFB, 0x200D, 0x2708, 0xFE0F};
+  TextRun textRun(str, ARRAY_SIZE(str));
+
+  RefPtr<const ShapeResult> wordResult;
+  CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+  ASSERT_TRUE(iterator.next(&wordResult));
+  EXPECT_EQ(ARRAY_SIZE(str), wordResult->numCharacters());
+
+  ASSERT_FALSE(iterator.next(&wordResult));
+}
+
 TEST_F(CachingWordShaperTest, SegmentEmojiHeartZWJSequence) {
   // A ZWJ, followed by two family ZWJ Sequences.
   const UChar str[] = {0xD83D, 0xDC69, 0x200D, 0x2764, 0xFE0F, 0x200D,

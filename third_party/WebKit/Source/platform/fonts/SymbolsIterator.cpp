@@ -86,7 +86,8 @@ bool SymbolsIterator::consume(unsigned* symbolsLimit,
         m_currentFontFallbackPriority = FontFallbackPriority::EmojiText;
       }
 
-      if (m_currentFontFallbackPriority == FontFallbackPriority::EmojiText &&
+      if ((m_currentFontFallbackPriority == FontFallbackPriority::EmojiText ||
+           Character::isEmojiKeycapBase(m_nextChar)) &&
           peekChar == variationSelector16Character) {
         m_currentFontFallbackPriority = FontFallbackPriority::EmojiEmoji;
       }
