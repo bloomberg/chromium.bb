@@ -422,8 +422,16 @@ PaintResult PaintLayerPainter::paintLayerContents(
           localPaintingInfo.paintDirtyRect, cacheSlot,
           IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot,
           localPaintingInfo.subPixelAccumulation);
-    } else if (!collectPaintFragmentsForPaginatedFixedPosition(
-                   paintingInfo, layerFragments)) {
+    } else if (isFixedPositionObjectInPagedMedia()) {
+      PaintLayerFragments singleFragment;
+      m_paintLayer.appendSingleFragmentIgnoringPagination(
+          singleFragment, localPaintingInfo.rootLayer,
+          localPaintingInfo.paintDirtyRect, cacheSlot,
+          IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot,
+          localPaintingInfo.subPixelAccumulation);
+      repeatFixedPositionObjectInPages(singleFragment[0], paintingInfo,
+                                       layerFragments);
+    } else {
       m_paintLayer.collectFragments(layerFragments, localPaintingInfo.rootLayer,
                                     localPaintingInfo.paintDirtyRect, cacheSlot,
                                     IgnoreOverlayScrollbarSize,
@@ -586,40 +594,42 @@ bool PaintLayerPainter::atLeastOneFragmentIntersectsDamageRect(
   return false;
 }
 
-bool PaintLayerPainter::collectPaintFragmentsForPaginatedFixedPosition(
-    const PaintLayerPaintingInfo& paintingInfo,
-    PaintLayerFragments& layerFragments) {
+inline bool PaintLayerPainter::isFixedPositionObjectInPagedMedia() {
   LayoutObject* object = m_paintLayer.layoutObject();
   LayoutView* view = object->view();
-  bool isFixedPosObjectInPagedMedia =
-      object->style()->position() == FixedPosition &&
-      object->container() == view && view->pageLogicalHeight();
+  return object->styleRef().position() == FixedPosition &&
+         object->container() == view && view->pageLogicalHeight() &&
+         // TODO(crbug.com/619094): Figure out the correct behaviour for fixed
+         // position objects in paged media with vertical writing modes.
+         view->isHorizontalWritingMode();
+}
 
-  // TODO(crbug.com/619094): Figure out the correct behaviour for fixed position
-  // objects in paged media with vertical writing modes.
-  if (!isFixedPosObjectInPagedMedia || !view->isHorizontalWritingMode())
-    return false;
+void PaintLayerPainter::repeatFixedPositionObjectInPages(
+    const PaintLayerFragment& singleFragmentIgnoredPagination,
+    const PaintLayerPaintingInfo& paintingInfo,
+    PaintLayerFragments& layerFragments) {
+  DCHECK(isFixedPositionObjectInPagedMedia());
 
-  // "For paged media, boxes with fixed positions are repeated on every page."
-  // https://www.w3.org/TR/2011/REC-CSS2-20110607/visuren.html#fixed-positioning
+  LayoutView* view = m_paintLayer.layoutObject()->view();
   unsigned pages =
       ceilf(view->documentRect().height() / view->pageLogicalHeight());
-  LayoutPoint paginationOffset;
 
   // The fixed position object is offset from the top of the page, so remove
   // any scroll offset.
   LayoutPoint offsetFromRoot;
   m_paintLayer.convertToLayerCoords(paintingInfo.rootLayer, offsetFromRoot);
-  paginationOffset -= offsetFromRoot - m_paintLayer.location();
+  LayoutSize offsetAdjustment = m_paintLayer.location() - offsetFromRoot;
+  layerFragments.append(singleFragmentIgnoredPagination);
+  layerFragments[0].paginationOffset += offsetAdjustment;
+  layerFragments[0].layerBounds.move(offsetAdjustment);
 
-  for (unsigned i = 0; i < pages; i++) {
-    PaintLayerFragment fragment;
-    fragment.backgroundRect = paintingInfo.paintDirtyRect;
-    fragment.paginationOffset = paginationOffset;
+  LayoutPoint pageOffset(LayoutUnit(), view->pageLogicalHeight());
+  for (unsigned i = 1; i < pages; i++) {
+    PaintLayerFragment fragment = layerFragments[i - 1];
+    fragment.paginationOffset += pageOffset;
+    fragment.layerBounds.moveBy(pageOffset);
     layerFragments.append(fragment);
-    paginationOffset += LayoutPoint(LayoutUnit(), view->pageLogicalHeight());
   }
-  return true;
 }
 
 PaintResult PaintLayerPainter::paintLayerWithTransform(
@@ -637,48 +647,43 @@ PaintResult PaintLayerPainter::paintLayerWithTransform(
   // its parent.
   PaintLayer* parentLayer = m_paintLayer.parent();
 
-  LayoutObject* object = m_paintLayer.layoutObject();
-  LayoutView* view = object->view();
-  bool isFixedPosObjectInPagedMedia =
-      object->style()->position() == FixedPosition &&
-      object->container() == view && view->pageLogicalHeight();
   PaintLayer* paginationLayer = m_paintLayer.enclosingPaginationLayer();
   PaintLayerFragments layerFragments;
-  if (!collectPaintFragmentsForPaginatedFixedPosition(paintingInfo,
-                                                      layerFragments)) {
-    if (paginationLayer) {
-      // FIXME: This is a mess. Look closely at this code and the code in Layer
-      // and fix any issues in it & refactor to make it obvious from code
-      // structure what it does and that it's correct.
-      ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects)
-                                         ? UncachedClipRects
-                                         : PaintingClipRects;
-      ShouldRespectOverflowClipType respectOverflowClip =
-          shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject());
-      // Calculate the transformed bounding box in the current coordinate space,
-      // to figure out which fragmentainers (e.g. columns) we need to visit.
-      LayoutRect transformedExtent = PaintLayer::transparencyClipBox(
-          &m_paintLayer, paginationLayer,
-          PaintLayer::PaintingTransparencyClipBox,
-          PaintLayer::RootOfTransparencyClipBox,
-          paintingInfo.subPixelAccumulation,
-          paintingInfo.getGlobalPaintFlags());
-      // FIXME: we don't check if paginationLayer is within
-      // paintingInfo.rootLayer
-      // here.
-      paginationLayer->collectFragments(
-          layerFragments, paintingInfo.rootLayer, paintingInfo.paintDirtyRect,
-          cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, 0,
-          paintingInfo.subPixelAccumulation, &transformedExtent);
-    } else {
-      // We don't need to collect any fragments in the regular way here. We have
-      // already calculated a clip rectangle for the ancestry if it was needed,
-      // and clipping this layer is something that can be done further down the
-      // path, when the transform has been applied.
-      PaintLayerFragment fragment;
-      fragment.backgroundRect = paintingInfo.paintDirtyRect;
+  bool isFixedPositionObjectInPagedMedia =
+      this->isFixedPositionObjectInPagedMedia();
+  if (!paginationLayer || isFixedPositionObjectInPagedMedia) {
+    // We don't need to collect any fragments in the regular way here. We have
+    // already calculated a clip rectangle for the ancestry if it was needed,
+    // and clipping this layer is something that can be done further down the
+    // path, when the transform has been applied.
+    PaintLayerFragment fragment;
+    fragment.backgroundRect = paintingInfo.paintDirtyRect;
+    if (isFixedPositionObjectInPagedMedia)
+      repeatFixedPositionObjectInPages(fragment, paintingInfo, layerFragments);
+    else
       layerFragments.append(fragment);
-    }
+  } else {
+    // FIXME: This is a mess. Look closely at this code and the code in Layer
+    // and fix any issues in it & refactor to make it obvious from code
+    // structure what it does and that it's correct.
+    ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects)
+                                       ? UncachedClipRects
+                                       : PaintingClipRects;
+    ShouldRespectOverflowClipType respectOverflowClip =
+        shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject());
+    // Calculate the transformed bounding box in the current coordinate space,
+    // to figure out which fragmentainers (e.g. columns) we need to visit.
+    LayoutRect transformedExtent = PaintLayer::transparencyClipBox(
+        &m_paintLayer, paginationLayer, PaintLayer::PaintingTransparencyClipBox,
+        PaintLayer::RootOfTransparencyClipBox,
+        paintingInfo.subPixelAccumulation, paintingInfo.getGlobalPaintFlags());
+    // FIXME: we don't check if paginationLayer is within
+    // paintingInfo.rootLayer
+    // here.
+    paginationLayer->collectFragments(
+        layerFragments, paintingInfo.rootLayer, paintingInfo.paintDirtyRect,
+        cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, nullptr,
+        paintingInfo.subPixelAccumulation, &transformedExtent);
   }
 
   Optional<DisplayItemCacheSkipper> cacheSkipper;
@@ -707,9 +712,9 @@ PaintResult PaintLayerPainter::paintLayerWithTransform(
     Optional<LayerClipRecorder> clipRecorder;
     if (parentLayer && !RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       ClipRect clipRectForFragment(ancestorBackgroundClipRect);
-      // A fixed-position object is repeated on every page, but if it is clipped
-      // by an ancestor layer then the repetitions are clipped out.
-      if (!isFixedPosObjectInPagedMedia)
+      // A fixed-position object is repeated on every page instead of paginated,
+      // so we should apply the original ancestor clip rect.
+      if (!isFixedPositionObjectInPagedMedia)
         clipRectForFragment.moveBy(fragment.paginationOffset);
       clipRectForFragment.intersect(fragment.backgroundRect);
       if (clipRectForFragment.isEmpty())

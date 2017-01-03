@@ -56,7 +56,15 @@ class CORE_EXPORT PaintLayerPainter {
  private:
   enum ClipState { HasNotClipped, HasClipped };
 
-  bool collectPaintFragmentsForPaginatedFixedPosition(
+  inline bool isFixedPositionObjectInPagedMedia();
+
+  // "For paged media, boxes with fixed positions are repeated on every page."
+  // https://www.w3.org/TR/2011/REC-CSS2-20110607/visuren.html#fixed-positioning
+  // Repeats singleFragmentIgnoredPagination of the fixed-position object in
+  // each page, with paginationOffset and layerBounds adjusted for each page.
+  // TODO(wangxianzhu): Fold this into PaintLayer::collectFragments().
+  void repeatFixedPositionObjectInPages(
+      const PaintLayerFragment& singleFragmentIgnoredPagination,
       const PaintLayerPaintingInfo&,
       PaintLayerFragments&);
 
