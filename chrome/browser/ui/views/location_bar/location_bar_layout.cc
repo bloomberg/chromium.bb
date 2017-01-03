@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
-
 
 // Description of a decoration to be added inside the location bar, either to
 // the left or to the right.
@@ -86,7 +86,7 @@ void LocationBarLayout::AddDecoration(int y,
                                       int edge_item_padding,
                                       int item_padding,
                                       views::View* view) {
-  decorations_.push_back(new LocationBarDecoration(
+  decorations_.push_back(base::MakeUnique<LocationBarDecoration>(
       y, height, auto_collapse, max_fraction, edge_item_padding, item_padding,
       view));
 }
@@ -94,77 +94,76 @@ void LocationBarLayout::AddDecoration(int y,
 void LocationBarLayout::AddDecoration(int y,
                                       int height,
                                       views::View* view) {
-  decorations_.push_back(new LocationBarDecoration(
+  decorations_.push_back(base::MakeUnique<LocationBarDecoration>(
       y, height, false, 0, item_padding_, item_padding_, view));
 }
 
 void LocationBarLayout::LayoutPass1(int* entry_width) {
   bool first_item = true;
-  for (Decorations::iterator i(decorations_.begin()); i != decorations_.end();
-       ++i) {
+  for (const auto& decoration : decorations_) {
     // Autocollapsing decorations are ignored in this pass.
-    if (!(*i)->auto_collapse) {
-      *entry_width -=
-          (first_item ? (*i)->edge_item_padding : (*i)->item_padding);
+    if (!decoration->auto_collapse) {
+      *entry_width -= (first_item ? decoration->edge_item_padding
+                                  : decoration->item_padding);
     }
     first_item = false;
     // Resizing decorations are ignored in this pass.
-    if (!(*i)->auto_collapse && ((*i)->max_fraction == 0.0)) {
-      (*i)->computed_width = (*i)->view->GetPreferredSize().width();
-      *entry_width -= (*i)->computed_width;
+    if (!decoration->auto_collapse && (decoration->max_fraction == 0.0)) {
+      decoration->computed_width = decoration->view->GetPreferredSize().width();
+      *entry_width -= decoration->computed_width;
     }
   }
   *entry_width -= item_edit_padding_;
 }
 
 void LocationBarLayout::LayoutPass2(int *entry_width) {
-  for (Decorations::iterator i(decorations_.begin()); i != decorations_.end();
-       ++i) {
-    if ((*i)->max_fraction > 0.0) {
-      int max_width = static_cast<int>(*entry_width * (*i)->max_fraction);
-      (*i)->computed_width =
-          std::min((*i)->view->GetPreferredSize().width(),
-                   std::max((*i)->view->GetMinimumSize().width(), max_width));
-      *entry_width -= (*i)->computed_width;
+  for (const auto& decoration : decorations_) {
+    if (decoration->max_fraction > 0.0) {
+      int max_width = static_cast<int>(*entry_width * decoration->max_fraction);
+      decoration->computed_width = std::min(
+          decoration->view->GetPreferredSize().width(),
+          std::max(decoration->view->GetMinimumSize().width(), max_width));
+      *entry_width -= decoration->computed_width;
     }
   }
 }
 
 void LocationBarLayout::LayoutPass3(gfx::Rect* bounds, int* available_width) {
   bool first_visible = true;
-  for (Decorations::iterator i(decorations_.begin()); i != decorations_.end();
-       ++i) {
+  for (const auto& decoration : decorations_) {
     // Collapse decorations if needed.
-    if ((*i)->auto_collapse) {
-      int padding =
-          (first_visible ? (*i)->edge_item_padding : (*i)->item_padding);
+    if (decoration->auto_collapse) {
+      int padding = (first_visible ? decoration->edge_item_padding
+                                   : decoration->item_padding);
       // Try preferred size, if it fails try minimum size, if it fails collapse.
-      (*i)->computed_width = (*i)->view->GetPreferredSize().width();
-      if ((*i)->computed_width + padding > *available_width)
-        (*i)->computed_width = (*i)->view->GetMinimumSize().width();
-      if ((*i)->computed_width + padding > *available_width) {
-        (*i)->computed_width = 0;
-        (*i)->view->SetVisible(false);
+      decoration->computed_width = decoration->view->GetPreferredSize().width();
+      if (decoration->computed_width + padding > *available_width)
+        decoration->computed_width = decoration->view->GetMinimumSize().width();
+      if (decoration->computed_width + padding > *available_width) {
+        decoration->computed_width = 0;
+        decoration->view->SetVisible(false);
       } else {
-        (*i)->view->SetVisible(true);
-        (*available_width) -= (*i)->computed_width + padding;
+        decoration->view->SetVisible(true);
+        (*available_width) -= decoration->computed_width + padding;
       }
     } else {
-      (*i)->view->SetVisible(true);
+      decoration->view->SetVisible(true);
     }
 
     // Layout visible decorations.
-    if (!(*i)->view->visible())
+    if (!decoration->view->visible())
       continue;
-    int padding =
-        (first_visible ? (*i)->edge_item_padding : (*i)->item_padding);
+    int padding = (first_visible ? decoration->edge_item_padding
+                                 : decoration->item_padding);
     first_visible = false;
-    int x = (position_ == LEFT_EDGE) ? (bounds->x() + padding) :
-        (bounds->right() - padding - (*i)->computed_width);
-    (*i)->view->SetBounds(x, (*i)->y, (*i)->computed_width, (*i)->height);
-    bounds->set_width(bounds->width() - padding - (*i)->computed_width);
+    int x = (position_ == LEFT_EDGE)
+                ? (bounds->x() + padding)
+                : (bounds->right() - padding - decoration->computed_width);
+    decoration->view->SetBounds(x, decoration->y, decoration->computed_width,
+                                decoration->height);
+    bounds->set_width(bounds->width() - padding - decoration->computed_width);
     if (position_ == LEFT_EDGE)
-      bounds->set_x(bounds->x() + padding + (*i)->computed_width);
+      bounds->set_x(bounds->x() + padding + decoration->computed_width);
   }
   bounds->set_width(bounds->width() - item_edit_padding_);
   if (position_ == LEFT_EDGE)

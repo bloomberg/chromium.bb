@@ -27,8 +27,7 @@ class WebContents;
 
 class ContentSettingDecoration : public ImageDecoration {
  public:
-  // ContentSettingDecoration takes ownership of its model.
-  ContentSettingDecoration(ContentSettingImageModel* model,
+  ContentSettingDecoration(std::unique_ptr<ContentSettingImageModel> model,
                            LocationBarViewMac* owner,
                            Profile* profile);
   ~ContentSettingDecoration() override;

@@ -173,16 +173,14 @@ enum AnimationState {
 
 @end
 
-
 ContentSettingDecoration::ContentSettingDecoration(
-    ContentSettingImageModel* model,
+    std::unique_ptr<ContentSettingImageModel> model,
     LocationBarViewMac* owner,
     Profile* profile)
-    : content_setting_image_model_(model),
+    : content_setting_image_model_(std::move(model)),
       owner_(owner),
       profile_(profile),
-      text_width_(0.0) {
-}
+      text_width_(0.0) {}
 
 ContentSettingDecoration::~ContentSettingDecoration() {
   // Just in case the timer is still holding onto the animation object, force

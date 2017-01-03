@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #import "base/mac/mac_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -123,14 +124,13 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       is_width_available_for_security_verbose_(false),
       security_level_(security_state::NONE),
       weak_ptr_factory_(this) {
-  ScopedVector<ContentSettingImageModel> models =
+  std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
-  for (ContentSettingImageModel* model : models.get()) {
-    // ContentSettingDecoration takes ownership of its model.
+  for (auto& model : models) {
     content_setting_decorations_.push_back(
-        new ContentSettingDecoration(model, this, profile));
+        base::MakeUnique<ContentSettingDecoration>(std::move(model), this,
+                                                   profile));
   }
-  models.weak_clear();
 
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
@@ -246,11 +246,9 @@ void LocationBarViewMac::UpdateLocationBarVisibility(bool visible,
 
 bool LocationBarViewMac::ShowPageActionPopup(
     const extensions::Extension* extension, bool grant_active_tab) {
-  for (ScopedVector<PageActionDecoration>::iterator iter =
-           page_action_decorations_.begin();
-       iter != page_action_decorations_.end(); ++iter) {
-    if ((*iter)->GetExtension() == extension)
-      return (*iter)->ActivatePageAction(grant_active_tab);
+  for (const auto& decoration : page_action_decorations_) {
+    if (decoration->GetExtension() == extension)
+      return decoration->ActivatePageAction(grant_active_tab);
   }
   return false;
 }
@@ -287,8 +285,8 @@ int LocationBarViewMac::PageActionCount() {
 
 int LocationBarViewMac::PageActionVisibleCount() {
   int result = 0;
-  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
-    if (page_action_decorations_[i]->IsVisible())
+  for (const auto& decoration : page_action_decorations_) {
+    if (decoration->IsVisible())
       ++result;
   }
   return result;
@@ -303,10 +301,10 @@ ExtensionAction* LocationBarViewMac::GetPageAction(size_t index) {
 
 ExtensionAction* LocationBarViewMac::GetVisiblePageAction(size_t index) {
   size_t current = 0;
-  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
-    if (page_action_decorations_[i]->IsVisible()) {
+  for (const auto& decoration : page_action_decorations_) {
+    if (decoration->IsVisible()) {
       if (current == index)
-        return page_action_decorations_[i]->GetPageAction();
+        return decoration->GetPageAction();
 
       ++current;
     }
@@ -319,7 +317,7 @@ ExtensionAction* LocationBarViewMac::GetVisiblePageAction(size_t index) {
 void LocationBarViewMac::TestPageActionPressed(size_t index) {
   DCHECK_LT(index, static_cast<size_t>(PageActionVisibleCount()));
   size_t current = 0;
-  for (PageActionDecoration* decoration : page_action_decorations_) {
+  for (const auto& decoration : page_action_decorations_) {
     if (decoration->IsVisible()) {
       if (current == index) {
         decoration->OnMousePressed(NSZeroRect, NSZeroPoint);
@@ -425,14 +423,12 @@ void LocationBarViewMac::Layout() {
   [cell addTrailingDecoration:manage_passwords_decoration_.get()];
 
   // Note that display order is front to back.
-  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
-    [cell addTrailingDecoration:page_action_decorations_[i]];
+  for (const auto& decoration : page_action_decorations_) {
+    [cell addTrailingDecoration:decoration.get()];
   }
 
-  for (ScopedVector<ContentSettingDecoration>::iterator i =
-       content_setting_decorations_.begin();
-       i != content_setting_decorations_.end(); ++i) {
-    [cell addTrailingDecoration:*i];
+  for (const auto& decoration : content_setting_decorations_) {
+    [cell addTrailingDecoration:decoration.get()];
   }
 
   [cell addTrailingDecoration:keyword_hint_decoration_.get()];
@@ -741,9 +737,9 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
 PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
     ExtensionAction* page_action) {
   DCHECK(page_action);
-  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
-    if (page_action_decorations_[i]->GetPageAction() == page_action)
-      return page_action_decorations_[i];
+  for (const auto& decoration : page_action_decorations_) {
+    if (decoration->GetPageAction() == page_action)
+      return decoration.get();
   }
   // If |page_action| is the browser action of an extension, no element in
   // |page_action_decorations_| will match.
@@ -783,15 +779,15 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
 
   if (PageActionsDiffer(new_page_actions)) {
     DeletePageActionDecorations();
-    for (size_t i = 0; i < new_page_actions.size(); ++i) {
-      page_action_decorations_.push_back(
-          new PageActionDecoration(this, browser_, new_page_actions[i]));
+    for (const auto new_page_action : new_page_actions) {
+      page_action_decorations_.push_back(base::MakeUnique<PageActionDecoration>(
+          this, browser_, new_page_action));
     }
   }
 
   GURL url = GetToolbarModel()->GetURL();
-  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
-    page_action_decorations_[i]->UpdateVisibility(
+  for (const auto& decoration : page_action_decorations_) {
+    decoration->UpdateVisibility(
         GetToolbarModel()->input_in_progress() ? NULL : web_contents);
   }
 }
@@ -802,7 +798,7 @@ bool LocationBarViewMac::PageActionsDiffer(
     return true;
 
   for (size_t index = 0; index < page_actions.size(); ++index) {
-    PageActionDecoration* decoration = page_action_decorations_[index];
+    PageActionDecoration* decoration = page_action_decorations_[index].get();
     if (decoration->GetPageAction() != page_actions[index])
       return true;
   }
@@ -815,10 +811,8 @@ bool LocationBarViewMac::RefreshContentSettingsDecorations() {
   WebContents* web_contents = input_in_progress ?
       NULL : browser_->tab_strip_model()->GetActiveWebContents();
   bool icons_updated = false;
-  for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
-    icons_updated |=
-        content_setting_decorations_[i]->UpdateFromWebContents(web_contents);
-  }
+  for (const auto& decoration : content_setting_decorations_)
+    icons_updated |= decoration->UpdateFromWebContents(web_contents);
   return icons_updated;
 }
 

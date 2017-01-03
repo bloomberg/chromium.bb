@@ -234,17 +234,15 @@ void LocationBarView::Init() {
       GetColor(LocationBarView::DEEMPHASIZED_TEXT), background_color);
   AddChildView(keyword_hint_view_);
 
-  ScopedVector<ContentSettingImageModel> models =
+  std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
-  for (ContentSettingImageModel* model : models.get()) {
-    // ContentSettingImageView takes ownership of its model.
+  for (auto& model : models) {
     ContentSettingImageView* image_view =
-        new ContentSettingImageView(model, this, font_list);
+        new ContentSettingImageView(std::move(model), this, font_list);
     content_setting_views_.push_back(image_view);
     image_view->SetVisible(false);
     AddChildView(image_view);
   }
-  models.weak_clear();
 
   zoom_view_ = new ZoomView(delegate_);
   AddChildView(zoom_view_);

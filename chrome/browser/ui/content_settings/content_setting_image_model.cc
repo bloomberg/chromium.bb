@@ -522,34 +522,34 @@ ContentSettingImageModel::ContentSettingImageModel()
       explanatory_string_id_(0) {}
 
 // static
-ScopedVector<ContentSettingImageModel>
-    ContentSettingImageModel::GenerateContentSettingImageModels() {
-  ScopedVector<ContentSettingImageModel> result;
+std::vector<std::unique_ptr<ContentSettingImageModel>>
+ContentSettingImageModel::GenerateContentSettingImageModels() {
+  std::vector<std::unique_ptr<ContentSettingImageModel>> result;
 
   // The ordering of the models here influences the order in which icons are
   // shown in the omnibox.
+  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
+      CONTENT_SETTINGS_TYPE_COOKIES));
+  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
+      CONTENT_SETTINGS_TYPE_IMAGES));
+  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
+      CONTENT_SETTINGS_TYPE_PPAPI_BROKER));
+  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
+      CONTENT_SETTINGS_TYPE_PLUGINS));
+  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
+      CONTENT_SETTINGS_TYPE_POPUPS));
+  result.push_back(base::MakeUnique<ContentSettingGeolocationImageModel>());
+  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
+      CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
+  result.push_back(base::MakeUnique<ContentSettingRPHImageModel>());
+  result.push_back(base::MakeUnique<ContentSettingMediaImageModel>());
   result.push_back(
-      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_COOKIES));
-  result.push_back(
-      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_IMAGES));
-  result.push_back(
-      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
-  result.push_back(
-      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_PPAPI_BROKER));
-  result.push_back(
-      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_PLUGINS));
-  result.push_back(
-      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_POPUPS));
-  result.push_back(new ContentSettingGeolocationImageModel());
-  result.push_back(
-      new ContentSettingBlockedImageModel(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT));
-  result.push_back(new ContentSettingRPHImageModel());
-  result.push_back(new ContentSettingMediaImageModel());
-  result.push_back(new ContentSettingSubresourceFilterImageModel());
-  result.push_back(
-      new ContentSettingBlockedImageModel(
-          CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS));
-  result.push_back(new ContentSettingMIDISysExImageModel());
+      base::MakeUnique<ContentSettingSubresourceFilterImageModel>());
+  result.push_back(base::MakeUnique<ContentSettingBlockedImageModel>(
+      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS));
+  result.push_back(base::MakeUnique<ContentSettingMIDISysExImageModel>());
 
   return result;
 }

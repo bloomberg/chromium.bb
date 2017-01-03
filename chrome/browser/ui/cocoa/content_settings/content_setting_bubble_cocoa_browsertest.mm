@@ -72,9 +72,9 @@ ContentSettingBubbleControllerTest::CreateBubbleController(
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest, Init) {
   TabSpecificContentSettings::FromWebContents(web_contents())->
       BlockAllContentForTesting();
-  ScopedVector<ContentSettingImageModel> models =
+  std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
-  for (ContentSettingImageModel* model : models.get()) {
+  for (const auto& model : models) {
     ContentSettingBubbleModel* bubble =
         model->CreateBubbleModel(nullptr, web_contents(), profile());
     ContentSettingBubbleController* controller = CreateBubbleController(bubble);

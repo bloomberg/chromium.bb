@@ -54,9 +54,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest, CreateBubbleModel) {
   }
 
   // For other models, we can only test that they create a valid bubble.
-  ScopedVector<ContentSettingImageModel> models =
+  std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
-  for (ContentSettingImageModel* model : models) {
+  for (auto& model : models) {
     EXPECT_TRUE(base::WrapUnique(
                     model->CreateBubbleModel(nullptr, web_contents, profile))
                     .get());

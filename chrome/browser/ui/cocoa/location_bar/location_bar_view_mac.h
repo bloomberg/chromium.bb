@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
@@ -301,10 +300,11 @@ class LocationBarViewMac : public LocationBar,
   std::unique_ptr<ZoomDecoration> zoom_decoration_;
 
   // Decorations for the installed Page Actions.
-  ScopedVector<PageActionDecoration> page_action_decorations_;
+  std::vector<std::unique_ptr<PageActionDecoration>> page_action_decorations_;
 
   // The content blocked decorations.
-  ScopedVector<ContentSettingDecoration> content_setting_decorations_;
+  std::vector<std::unique_ptr<ContentSettingDecoration>>
+      content_setting_decorations_;
 
   // Keyword hint decoration displayed on the right-hand side.
   std::unique_ptr<KeywordHintDecoration> keyword_hint_decoration_;

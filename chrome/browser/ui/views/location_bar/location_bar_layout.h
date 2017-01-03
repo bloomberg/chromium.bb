@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_BAR_LAYOUT_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_BAR_LAYOUT_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 
 namespace gfx {
 class Rect;
@@ -71,8 +73,6 @@ class LocationBarLayout {
   void LayoutPass3(gfx::Rect* bounds, int* available_width);
 
  private:
-  typedef ScopedVector<LocationBarDecoration> Decorations;
-
   // LEFT_EDGE means decorations are added from left to right and stacked on
   // the left of the omnibox, RIGHT_EDGE means the opposite.
   Position position_;
@@ -84,7 +84,7 @@ class LocationBarLayout {
   int item_edit_padding_;
 
   // The list of decorations to layout.
-  Decorations decorations_;
+  std::vector<std::unique_ptr<LocationBarDecoration>> decorations_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarLayout);
 };
