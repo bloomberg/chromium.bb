@@ -32,11 +32,8 @@ component("common_base") {
     "common_type_converters.h",
     "data_pipe_drainer.cc",
     "data_pipe_drainer.h",
-    "data_pipe_file_utils.cc",
     "data_pipe_utils.cc",
     "data_pipe_utils.h",
-    "user_agent.cc",
-    "user_agent.h",
   ]
 
   defines = [ "MOJO_COMMON_IMPLEMENTATION" ]
