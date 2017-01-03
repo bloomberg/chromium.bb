@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/imports/HTMLImportsController.h"
+#include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
 
@@ -67,8 +68,13 @@ LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
 }
 
 FetchRequest LinkRequestBuilder::build(bool lowPriority) const {
-  FetchRequest request(ResourceRequest(m_owner->document().completeURL(m_url)),
-                       m_owner->localName(), m_charset);
+  ResourceRequest resourceRequest(m_owner->document().completeURL(m_url));
+  ReferrerPolicy referrerPolicy = m_owner->referrerPolicy();
+  if (referrerPolicy != ReferrerPolicyDefault) {
+    resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
+        referrerPolicy, m_url, m_owner->document().outgoingReferrer()));
+  }
+  FetchRequest request(resourceRequest, m_owner->localName(), m_charset);
   if (lowPriority)
     request.setDefer(FetchRequest::LazyLoad);
   request.setContentSecurityPolicyNonce(
