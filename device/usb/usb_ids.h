@@ -13,14 +13,14 @@
 namespace device {
 
 struct UsbProduct {
-  const uint16_t id;
+  uint16_t id;
   const char* name;
 };
 
 struct UsbVendor {
-  const uint16_t id;
+  uint16_t id;
   const char* name;
-  const size_t product_size;
+  size_t product_size;
   const UsbProduct* products;
 };
 
