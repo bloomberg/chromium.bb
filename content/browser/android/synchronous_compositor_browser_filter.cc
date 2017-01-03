@@ -46,7 +46,8 @@ void SynchronousCompositorBrowserFilter::SyncStateAfterVSync(
   if (window_android_in_vsync_)
     return;
   window_android_in_vsync_ = window_android;
-  window_android_in_vsync_->GetBeginFrameSource()->AddObserver(this);
+  window_android_in_vsync_->AddVSyncCompleteCallback(
+      base::Bind(&SynchronousCompositorBrowserFilter::VSyncComplete, this));
 }
 
 bool SynchronousCompositorBrowserFilter::OnMessageReceived(
@@ -178,13 +179,8 @@ void SynchronousCompositorBrowserFilter::SignalAllFutures() {
   filter_ready_ = false;
 }
 
-void SynchronousCompositorBrowserFilter::OnBeginFrame(
-    const cc::BeginFrameArgs& args) {
-  // This is called after DidSendBeginFrame for all SynchronousCompositorHosts
-  // belonging to this WindowAndroid, since this is added as an Observer after
-  // the observer iteration has started.
+void SynchronousCompositorBrowserFilter::VSyncComplete() {
   DCHECK(window_android_in_vsync_);
-  window_android_in_vsync_->GetBeginFrameSource()->RemoveObserver(this);
   window_android_in_vsync_ = nullptr;
 
   std::vector<int> routing_ids;
@@ -211,20 +207,6 @@ void SynchronousCompositorBrowserFilter::OnBeginFrame(
     compositor_host_pending_renderer_state_[i]->ProcessCommonParams(params[i]);
   }
   compositor_host_pending_renderer_state_.clear();
-}
-
-const cc::BeginFrameArgs&
-SynchronousCompositorBrowserFilter::LastUsedBeginFrameArgs() const {
-  // Not called by the source since we add and remove ourselves during a single
-  // OnVSync() iteration.
-  NOTREACHED();
-  return last_used_begin_frame_args_;
-}
-
-void SynchronousCompositorBrowserFilter::OnBeginFrameSourcePausedChanged(
-    bool paused) {
-  // The BeginFrameSources we listen to don't use this.
-  DCHECK(!paused);
 }
 
 }  // namespace content

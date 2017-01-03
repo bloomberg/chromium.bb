@@ -4,15 +4,12 @@
 
 #include "ui/android/window_android.h"
 
-#include <unordered_set>
-
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/auto_reset.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "cc/output/begin_frame_args.h"
@@ -32,9 +29,10 @@ class WindowAndroid::WindowBeginFrameSource : public cc::BeginFrameSource {
  public:
   explicit WindowBeginFrameSource(WindowAndroid* window)
       : window_(window),
+        observers_(
+            base::ObserverList<cc::BeginFrameObserver>::NOTIFY_EXISTING_ONLY),
         observer_count_(0),
-        next_sequence_number_(cc::BeginFrameArgs::kStartingFrameNumber),
-        in_on_vsync_(false) {}
+        next_sequence_number_(cc::BeginFrameArgs::kStartingFrameNumber) {}
   ~WindowBeginFrameSource() override {}
 
   // cc::BeginFrameSource implementation.
@@ -52,7 +50,6 @@ class WindowAndroid::WindowBeginFrameSource : public cc::BeginFrameSource {
   int observer_count_;
   cc::BeginFrameArgs last_begin_frame_args_;
   uint64_t next_sequence_number_;
-  bool in_on_vsync_;
 };
 
 void WindowAndroid::WindowBeginFrameSource::AddObserver(
@@ -65,9 +62,8 @@ void WindowAndroid::WindowBeginFrameSource::AddObserver(
   obs->OnBeginFrameSourcePausedChanged(false);
   window_->SetNeedsBeginFrames(true);
 
-  // Send a MISSED BeginFrame if possible and necessary. If an observer is added
-  // during OnVSync(), it will get a NORMAL BeginFrame from OnVSync() instead.
-  if (!in_on_vsync_ && last_begin_frame_args_.IsValid()) {
+  // Send a MISSED BeginFrame if possible and necessary.
+  if (last_begin_frame_args_.IsValid()) {
     cc::BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
     if (!last_args.IsValid() ||
         last_args.frame_time < last_begin_frame_args_.frame_time) {
@@ -108,25 +104,8 @@ void WindowAndroid::WindowBeginFrameSource::OnVSync(
   DCHECK(last_begin_frame_args_.IsValid());
   next_sequence_number_++;
 
-  // We support adding/removing observers during observer iteration through
-  // base::ObserverList. We also prevent observers that are added during
-  // observer iteration from receiving a MISSED BeginFrame by means of
-  // |in_on_vsync_| - they will receive the current NORMAL one during the
-  // iteration instead. Note that SynchronousCompositorBrowserFilter relies on
-  // this behavior.
-  // TODO(eseckler): Remove SynchronousCompositorBrowserFilter's dependency on
-  // this and replace observers_ by a std::unordered_set, iterate on a copy.
-  base::AutoReset<bool> auto_reset(&in_on_vsync_, true);
-  std::unordered_set<cc::BeginFrameObserver*> notified_observers;
-  for (auto& obs : observers_) {
-    // An observer may remove and add itself during a single OnBeginFrame, in
-    // which case it'd appear twice during the iteration. To deal with this, we
-    // keep track of whether we already notified it.
-    if (!base::ContainsKey(notified_observers, &obs)) {
-      obs.OnBeginFrame(last_begin_frame_args_);
-      notified_observers.insert(&obs);
-    }
-  }
+  for (auto& obs : observers_)
+    obs.OnBeginFrame(last_begin_frame_args_);
 }
 
 WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj, int display_id)
@@ -174,6 +153,10 @@ void WindowAndroid::OnCompositingDidCommit() {
 void WindowAndroid::AddObserver(WindowAndroidObserver* observer) {
   if (!observer_list_.HasObserver(observer))
     observer_list_.AddObserver(observer);
+}
+
+void WindowAndroid::AddVSyncCompleteCallback(const base::Closure& callback) {
+  vsync_complete_callbacks_.push_back(callback);
 }
 
 void WindowAndroid::RemoveObserver(WindowAndroidObserver* observer) {
@@ -231,7 +214,13 @@ void WindowAndroid::OnVSync(JNIEnv* env,
   base::TimeTicks frame_time(base::TimeTicks::FromInternalValue(time_micros));
   base::TimeDelta vsync_period(
       base::TimeDelta::FromMicroseconds(period_micros));
+
   begin_frame_source_->OnVSync(frame_time, vsync_period);
+
+  for (const base::Closure& callback : vsync_complete_callbacks_)
+    callback.Run();
+  vsync_complete_callbacks_.clear();
+
   if (needs_begin_frames_)
     RequestVSyncUpdate();
 }

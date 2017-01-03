@@ -11,9 +11,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ui/android/window_android_observer.h"
@@ -27,15 +25,12 @@ namespace content {
 class RenderProcessHost;
 class SynchronousCompositorHost;
 
-class SynchronousCompositorBrowserFilter : public cc::BeginFrameObserver,
-                                           public BrowserMessageFilter {
+class SynchronousCompositorBrowserFilter : public BrowserMessageFilter {
  public:
   explicit SynchronousCompositorBrowserFilter(int process_id);
 
-  // cc::BeginFrameObserver overrides.
-  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
-  const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override;
+  // Callback passed to WindowAndroid, runs when the current vsync is completed.
+  void VSyncComplete();
 
   // BrowserMessageFilter overrides.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -67,7 +62,6 @@ class SynchronousCompositorBrowserFilter : public cc::BeginFrameObserver,
   ui::WindowAndroid* window_android_in_vsync_ = nullptr;
   std::vector<SynchronousCompositorHost*>
       compositor_host_pending_renderer_state_;
-  cc::BeginFrameArgs last_used_begin_frame_args_;
 
   // Only accessed on the UI thread. Note this is not a parallel map to
   // |future_map_|.
