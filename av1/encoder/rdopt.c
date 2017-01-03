@@ -2004,9 +2004,7 @@ static int64_t rd_pick_intra4x4block(
     PREDICTION_MODE *best_mode, const int *bmode_costs, ENTROPY_CONTEXT *a,
     ENTROPY_CONTEXT *l, int *bestrate, int *bestratey, int64_t *bestdistortion,
     BLOCK_SIZE bsize, int *y_skip, int64_t rd_thresh) {
-#if !CONFIG_PVQ
   const AV1_COMMON *const cm = &cpi->common;
-#endif
   PREDICTION_MODE mode;
   MACROBLOCKD *const xd = &x->e_mbd;
   int64_t best_rd = rd_thresh;
@@ -2201,17 +2199,10 @@ static int64_t rd_pick_intra4x4block(
         int16_t *const src_diff =
             av1_raster_block_offset_int16(BLOCK_8X8, block, p->src_diff);
 #else
-        int lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
-        const int diff_stride = 8;
-        tran_low_t *const coeff = BLOCK_OFFSET(x->plane[0].coeff, block);
-        tran_low_t *const dqcoeff = BLOCK_OFFSET(xd->plane[0].dqcoeff, block);
-        tran_low_t *ref_coeff = BLOCK_OFFSET(pd->pvq_ref_coeff, block);
-        int16_t *pred = &pd->pred[4 * (row * diff_stride + col)];
-        int16_t *src_int16 = &p->src_int16[4 * (row * diff_stride + col)];
         int i, j, tx_blk_size;
-        TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, TX_4X4);
-        int rate_pvq;
         int skip;
+
+        tx_blk_size = 4;
 #endif
         xd->mi[0]->bmi[block].as_mode = mode;
         av1_predict_intra_block(xd, pd->width, pd->height, TX_4X4, mode, dst,
@@ -2224,32 +2215,9 @@ static int64_t rd_pick_intra4x4block(
                                 0);
 #if !CONFIG_PVQ
         aom_subtract_block(4, 4, src_diff, 8, src, src_stride, dst, dst_stride);
-#else
-        if (lossless) tx_type = DCT_DCT;
-        // transform block size in pixels
-        tx_blk_size = 4;
-
-        // copy uint8 orig and predicted block to int16 buffer
-        // in order to use existing VP10 transform functions
-        for (j = 0; j < tx_blk_size; j++)
-          for (i = 0; i < tx_blk_size; i++) {
-            src_int16[diff_stride * j + i] = src[src_stride * j + i];
-            pred[diff_stride * j + i] = dst[dst_stride * j + i];
-          }
-        {
-          FWD_TXFM_PARAM fwd_txfm_param;
-          fwd_txfm_param.tx_type = tx_type;
-          fwd_txfm_param.tx_size = TX_4X4;
-          fwd_txfm_param.fwd_txfm_opt = FWD_TXFM_OPT_NORMAL;
-          fwd_txfm_param.rd_transform = 0;
-          fwd_txfm_param.lossless = lossless;
-          fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
-          fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
-        }
 #endif
 
         if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
-#if !CONFIG_PVQ
           TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, TX_4X4);
           const SCAN_ORDER *scan_order = get_scan(cm, TX_4X4, tx_type, 0);
           const int coeff_ctx =
@@ -2257,6 +2225,7 @@ static int64_t rd_pick_intra4x4block(
 #if CONFIG_CB4X4
           block = 4 * block;
 #endif
+#if !CONFIG_PVQ
 #if CONFIG_NEW_QUANT
           av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
                           TX_4X4, coeff_ctx, AV1_XFORM_QUANT_B_NUQ);
@@ -2276,10 +2245,21 @@ static int64_t rd_pick_intra4x4block(
           *(templ + idy) = !(p->eobs[block] == 0);
           can_skip &= (p->eobs[block] == 0);
 #else
-          skip = av1_pvq_encode_helper(&x->daala_enc, coeff, ref_coeff, dqcoeff,
-                                       &p->eobs[block], pd->dequant, 0, TX_4X4,
-                                       tx_type, &rate_pvq, x->pvq_speed, NULL);
-          ratey += rate_pvq;
+          (void)scan_order;
+
+          av1_xform_quant(cm, x, 0, block,
+#if CONFIG_CB4X4
+                          2 * (row + idy), 2 * (col + idx),
+#else
+                          row + idy, col + idx,
+#endif
+                          BLOCK_8X8, TX_4X4, coeff_ctx, AV1_XFORM_QUANT_B);
+
+          ratey += x->rate;
+          skip = x->pvq_skip[0];
+          *(tempa + idx) = !skip;
+          *(templ + idy) = !skip;
+          can_skip &= skip;
 #endif
           if (RDCOST(x->rdmult, x->rddiv, ratey, distortion) >= best_rd)
             goto next;
@@ -2296,7 +2276,6 @@ static int64_t rd_pick_intra4x4block(
         } else {
           int64_t dist;
           unsigned int tmp;
-#if !CONFIG_PVQ
           TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, TX_4X4);
           const SCAN_ORDER *scan_order = get_scan(cm, TX_4X4, tx_type, 0);
           const int coeff_ctx =
@@ -2304,6 +2283,7 @@ static int64_t rd_pick_intra4x4block(
 #if CONFIG_CB4X4
           block = 4 * block;
 #endif
+#if !CONFIG_PVQ
 #if CONFIG_NEW_QUANT
           av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
                           TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP_NUQ);
@@ -2324,10 +2304,20 @@ static int64_t rd_pick_intra4x4block(
           *(templ + idy) = !(p->eobs[block] == 0);
           can_skip &= (p->eobs[block] == 0);
 #else
-          skip = av1_pvq_encode_helper(&x->daala_enc, coeff, ref_coeff, dqcoeff,
-                                       &p->eobs[block], pd->dequant, 0, TX_4X4,
-                                       tx_type, &rate_pvq, x->pvq_speed, NULL);
-          ratey += rate_pvq;
+          (void)scan_order;
+
+          av1_xform_quant(cm, x, 0, block,
+#if CONFIG_CB4X4
+                          2 * (row + idy), 2 * (col + idx),
+#else
+                          row + idy, col + idx,
+#endif
+                          BLOCK_8X8, TX_4X4, coeff_ctx, AV1_XFORM_QUANT_FP);
+          ratey += x->rate;
+          skip = x->pvq_skip[0];
+          *(tempa + idx) = !skip;
+          *(templ + idy) = !skip;
+          can_skip &= skip;
 #endif
 #if CONFIG_PVQ
           if (!skip) {
