@@ -9,7 +9,7 @@
       margin: 10px;
       background-color: blue;
       transition-property: transform;
-      transition-duration: 0.5s;
+      transition-duration: 0.1s;
       transform: translate(100px);
     }
   </style>
@@ -18,7 +18,7 @@
     
     var expectedEndEvents = [
       // [property-name, element-id, elapsed-time, listen]
-      ["transform", "box1", 0.5, true]
+      ["transform", "box1", 0.1, true]
     ];
     
     function setupTest()
@@ -32,7 +32,7 @@
 </head>
 <body>
 
-<p>Initiating a 500ms transition on the transform property of box1.</p>
+<p>Initiating a 100ms transition on the transform property of box1.</p>
 
 <div id="container">
   <div id="box1" class="box"></div>

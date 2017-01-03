@@ -9,7 +9,7 @@
       margin: 10px;
       background-color: blue;
       -webkit-transition-property: width, left, background-color, height, top;
-      -webkit-transition-duration: 0.5s;
+      -webkit-transition-duration: 0.05s;
     }
     
     .box1 {
@@ -26,7 +26,7 @@
       background-color: green;
       left: 50px;
       height: 120px;
-      -webkit-transition-duration: 0.7s;
+      -webkit-transition-duration: 0.07s;
     }
     
   </style>
@@ -35,13 +35,13 @@
     
     var expectedEndEvents = [
       // [property-name, element-id, elapsed-time, listen]
-      ["background-color", "box2", 0.5, false],
-      ["background-color", "box3", 0.7, false],
-      ["height", "box3", 0.7, false],
-      ["left", "box1", 0.5, false],
-      ["left", "box2", 0.5, false],
-      ["left", "box3", 0.7, false],
-      ["width", "box3", 0.7, false],
+      ["background-color", "box2", 0.05, false],
+      ["background-color", "box3", 0.07, false],
+      ["height", "box3", 0.07, false],
+      ["left", "box1", 0.05, false],
+      ["left", "box2", 0.05, false],
+      ["left", "box3", 0.07, false],
+      ["width", "box3", 0.07, false],
     ];
 
     function setupTest()

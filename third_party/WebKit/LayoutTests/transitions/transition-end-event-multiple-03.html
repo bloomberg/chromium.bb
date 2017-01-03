@@ -9,7 +9,7 @@
       margin: 10px;
       background-color: blue;
       -webkit-transition-property: width, left, background-color, height, top;
-      -webkit-transition-duration: 0.5s;
+      -webkit-transition-duration: 0.05s;
     }
     
     .box1 {
@@ -26,13 +26,13 @@
       background-color: green;
       left: 50px;
       height: 120px;
-      -webkit-transition-duration: 0.6s;
+      -webkit-transition-duration: 0.06s;
     }
 
     .box4 {
       left: 100px;
       height: 140px;
-      -webkit-transition-duration: 0.3s;
+      -webkit-transition-duration: 0.03s;
     }
 
     .box5 {
@@ -45,15 +45,15 @@
     
     var expectedEndEvents = [
       // [property-name, element-id, elapsed-time, listen]
-      ["background-color", "box2", 0.5, false],
-      ["background-color", "box3", 0.6, false],
-      ["height", "box3", 0.6, false],
-      ["height", "box4", 0.3, false],
-      ["left", "box1", 0.5, false],
-      ["left", "box2", 0.5, false],
-      ["left", "box3", 0.6, false],
-      ["left", "box4", 0.3, false],
-      ["width", "box3", 0.6, false]
+      ["background-color", "box2", 0.05, false],
+      ["background-color", "box3", 0.06, false],
+      ["height", "box3", 0.06, false],
+      ["height", "box4", 0.03, false],
+      ["left", "box1", 0.05, false],
+      ["left", "box2", 0.05, false],
+      ["left", "box3", 0.06, false],
+      ["left", "box4", 0.03, false],
+      ["width", "box3", 0.06, false]
     ];
     
     function transitionElement(index)
@@ -69,11 +69,11 @@
         boxes[i].addEventListener("webkitTransitionEnd", recordTransitionEndEvent, false);
       }
 
-      window.setTimeout(function() { transitionElement(1); }, 100);
-      window.setTimeout(function() { transitionElement(2); }, 150);
-      window.setTimeout(function() { transitionElement(3); }, 200);
-      window.setTimeout(function() { transitionElement(4); }, 50);
-      window.setTimeout(function() { transitionElement(5); }, 150);
+      window.setTimeout(function() { transitionElement(1); }, 40);
+      window.setTimeout(function() { transitionElement(2); }, 60);
+      window.setTimeout(function() { transitionElement(3); }, 80);
+      window.setTimeout(function() { transitionElement(4); }, 20);
+      window.setTimeout(function() { transitionElement(5); }, 60);
     }
     
     runTransitionTest(expectedEndEvents, setupTest);

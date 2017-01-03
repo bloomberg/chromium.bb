@@ -10,9 +10,9 @@
       margin: 10px;
       background-color: blue;
       transition-property: left;
-      transition-duration: 0.5s;
+      transition-duration: 0.05s;
       -webkit-transition-property: left;
-      -webkit-transition-duration: 0.5s;
+      -webkit-transition-duration: 0.05s;
     }
   </style>
   <script src="transition-end-event-helpers.js"></script>
@@ -20,7 +20,7 @@
 
     var expectedEndEvents = [
       // [property-name, element-id, elapsed-time, listen]
-      ["left", "box1", 0.5, false]
+      ["left", "box1", 0.05, false]
     ];
 
     function setupTest()

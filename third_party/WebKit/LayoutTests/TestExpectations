@@ -777,12 +777,9 @@ crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.htm
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
-crbug.com/248938 [ Mac ] virtual/threaded/transitions/transition-end-event-unprefixed-01.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/display-none-terminates-animation.html [ Pass Failure ]
 crbug.com/638693 virtual/threaded/animations/display-inline-style-adjust.html [ Pass Crash Failure ]
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
-crbug.com/248938 [ Mac Win ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
-crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-rendering.html [ Pass Timeout ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/unprefixed-perspective-origin.html [ Pass Timeout ]
 crbug.com/248938 [ Mac ] virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
@@ -2361,14 +2358,6 @@ crbug.com/664857 virtual/threaded/animations/composited-animations-simple.html [
 
 crbug.com/664859 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ Pass Failure ]
 crbug.com/664859 virtual/threaded/transitions/position-background-transition.html [ Pass Failure ]
-crbug.com/664859 virtual/threaded/transitions/transition-end-event-container.html [ Pass Failure ]
-crbug.com/664859 virtual/threaded/transitions/transition-end-event-multiple-02.html [ Pass Failure ]
-
-# Possible duplicate of crbug.com/248938
-# crbug.com/664859 virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
-
-crbug.com/664859 virtual/threaded/transitions/transition-end-event-unprefixed-02.html [ Pass Failure ]
-crbug.com/664859 virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
 # ====== Random order flaky tests end here ======
 
 # ====== Begin of display:contents tests ======
