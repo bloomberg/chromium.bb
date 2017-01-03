@@ -20,7 +20,7 @@ temp12
 temp13
 Object {foo: "bar"}
 temp14
-[1, 2, 3, 4]
+[1, 2, 3, 4, callee: function, Symbol(Symbol.iterator): function]
 temp15
 function func() {}
 temp16

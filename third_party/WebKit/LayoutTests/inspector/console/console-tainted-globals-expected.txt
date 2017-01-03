@@ -13,7 +13,7 @@ Object {constructor: Object}
 testThrowConstructorName()
 Object {}
 testOverriddenIsFinite()
-["arg1", "arg2"]
+["arg1", "arg2", callee: function, Symbol(Symbol.iterator): function]
 testOverriddenError()
 Object {result: "PASS"}
 restoreError()

@@ -76,13 +76,16 @@ function onload()
     namespace.longSubNamespace.x = {};
     namespace.longSubNamespace.x.className = function(){};
     var instanceWithLongClassName = new namespace.longSubNamespace.x.className();
+    var bigArray = [];
+    bigArray.length = 200;
+    bigArray.fill(1);
     globals = [
         regex1, regex2, str, str2, error, errorWithMessage, errorWithMultilineMessage, node, func, multilinefunc, 
         num, linkify, null, undefined, valuelessAttribute, valuedAttribute, existingAttribute, throwingLengthGetter,
         NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar, svg,
         objectWithNonEnumerables, negZero, Object.create(null), Object, Object.prototype, arrayLikeFunction,
         new Number(42), new String("abc"), new Uint16Array([1, 2, 3]), textNode, domException(),
-        smallTypedArray, bigTypedArray, instanceWithLongClassName
+        smallTypedArray, bigTypedArray, instanceWithLongClassName, bigArray
     ];
 
     runTest();

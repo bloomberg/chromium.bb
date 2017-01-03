@@ -34,6 +34,20 @@ function logToConsole()
     }
     console.log(arrayWithManyProperties);
 
+    console.log("Array with gaps and overflow");
+    var arrayWithGapsAndOverflow = [];
+    for (var i = 0; i < 101; i++) {
+        arrayWithGapsAndOverflow[57 * i + 32] = i;
+    }
+    console.log(arrayWithGapsAndOverflow);
+
+    console.log("Array with gaps without overflow");
+    var arrayWithGapsWithoutOverflow = [];
+    for (var i = 0; i < 99; i++) {
+        arrayWithGapsWithoutOverflow[57 * i + 32] = i;
+    }
+    console.log(arrayWithGapsWithoutOverflow);
+
     console.log("Object with proto");
     var objectWithProto = { d: 1 };
     objectWithProto.__proto__ = object;
