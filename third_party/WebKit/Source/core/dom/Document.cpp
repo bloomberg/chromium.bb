@@ -3356,6 +3356,9 @@ void Document::didRemoveAllPendingStylesheet() {
 }
 
 void Document::didLoadAllScriptBlockingResources() {
+  if (m_executeScriptsWaitingForResourcesTaskHandle.isActive())
+    return;
+
   // Use wrapWeakPersistent because the task should not keep this Document alive
   // just for executing scripts.
   m_executeScriptsWaitingForResourcesTaskHandle =
