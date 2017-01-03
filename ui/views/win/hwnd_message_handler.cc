@@ -1802,10 +1802,7 @@ LRESULT HWNDMessageHandler::OnNCCreate(LPCREATESTRUCT lpCreateStruct) {
   SetMsgHandled(FALSE);
   if (delegate_->HasFrame() && base::win::IsProcessPerMonitorDpiAware()) {
     static auto enable_non_client_dpi_scaling_func = []() {
-      // Signature only available in the 10.0.14393.0 API. As of this writing,
-      // Chrome built against 10.0.10586.0.
-      using EnableNonClientDpiScalingPtr = LRESULT (WINAPI*)(HWND);
-      return reinterpret_cast<EnableNonClientDpiScalingPtr>(
+      return reinterpret_cast<decltype(::EnableNonClientDpiScaling)*>(
                  GetProcAddress(GetModuleHandle(L"user32.dll"),
                                 "EnableNonClientDpiScaling"));
     }();
