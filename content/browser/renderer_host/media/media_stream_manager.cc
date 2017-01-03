@@ -457,7 +457,7 @@ AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
 
 MediaDevicesManager* MediaStreamManager::media_devices_manager() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(media_devices_manager_.get());
+  // nullptr might be returned during shutdown.
   return media_devices_manager_.get();
 }
 
