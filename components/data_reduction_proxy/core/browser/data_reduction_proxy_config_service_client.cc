@@ -154,7 +154,8 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       foreground_fetch_pending_(false),
 #endif
       previous_request_failed_authentication_(false),
-      failed_attempts_before_success_(0) {
+      failed_attempts_before_success_(0),
+      fetch_in_progress_(false) {
   DCHECK(request_options);
   DCHECK(config_values);
   DCHECK(config);
@@ -290,6 +291,15 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
       RecordAuthExpiredHistogram(true);
       previous_request_failed_authentication_ = true;
       InvalidateConfig();
+      DCHECK(!config_->IsDataReductionProxy(proxy_server, nullptr));
+
+      if (fetch_in_progress_) {
+        // If a client config fetch is already in progress, then do not start
+        // another fetch since starting a new fetch will cause extra data
+        // usage, and also cancel the ongoing fetch.
+        return true;
+      }
+
       RetrieveConfig();
 
       if (!load_timing_info.send_start.is_null() &&
@@ -344,6 +354,7 @@ void DataReductionProxyConfigServiceClient::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(source == fetcher_.get());
+  fetch_in_progress_ = false;
   net::URLRequestStatus status = source->GetStatus();
   std::string response;
   source->GetResponseAsString(&response);
@@ -377,6 +388,7 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   }
 
   fetcher_ = std::move(fetcher);
+  fetch_in_progress_ = true;
   fetcher_->Start();
 }
 
@@ -406,8 +418,9 @@ DataReductionProxyConfigServiceClient::GetURLFetcherForConfig(
   fetcher->SetRequestContext(url_request_context_getter_);
   // |fetcher| should not retry on 5xx errors since the server may already be
   // overloaded. Spurious 5xx errors are still retried on exponential backoff.
-  static const int kMaxRetries = 5;
-  fetcher->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
+  // |fetcher| should not retry on network changes since a new fetch will be
+  // initiated.
+  fetcher->SetAutomaticallyRetryOnNetworkChanges(0);
   return fetcher;
 }
 

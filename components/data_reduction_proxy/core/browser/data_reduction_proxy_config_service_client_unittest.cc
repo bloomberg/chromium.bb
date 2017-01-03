@@ -744,8 +744,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChangeDisabled) {
 // headers matches the currrent session key.
 TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   Init(true);
-  net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
   net::HttpRequestHeaders request_headers;
   request_headers.SetHeader(
       "chrome-proxy", "something=something_else, s=" +
@@ -825,6 +823,170 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.ConfigService.AuthExpiredSessionKey",
       1 /* AUTH_EXPIRED_SESSION_KEY_MATCH */, 2);
+}
+
+// Verifies that a new config is not fetched due to auth failure while a
+// previous client config fetch triggered due to auth failure is already in
+// progress.
+TEST_F(DataReductionProxyConfigServiceClientTest, MultipleAuthFailures) {
+  Init(true);
+  net::HttpRequestHeaders request_headers;
+  request_headers.SetHeader(
+      "chrome-proxy", "something=something_else, s=" +
+                          std::string(kOldSuccessSessionKey) + ", key=value");
+
+  base::HistogramTester histogram_tester;
+  AddMockPreviousSuccess();
+  AddMockSuccess();
+
+  SetDataReductionProxyEnabled(true, true);
+  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.AuthExpired", 0);
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  // First remote config should be fetched.
+  VerifyRemoteSuccessWithOldConfig();
+  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
+  EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.ConfigService.AuthExpired", false, 1);
+
+  // Trigger an auth failure.
+  scoped_refptr<net::HttpResponseHeaders> parsed(new net::HttpResponseHeaders(
+      "HTTP/1.1 407 Proxy Authentication Required\n"));
+  net::ProxyServer origin = net::ProxyServer::FromURI(
+      kOldSuccessOrigin, net::ProxyServer::SCHEME_HTTP);
+  // Calling ShouldRetryDueToAuthFailure should trigger fetching of remote
+  // config.
+  net::LoadTimingInfo load_timing_info;
+  load_timing_info.request_start =
+      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1);
+  load_timing_info.send_start = load_timing_info.request_start;
+  EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
+      request_headers, parsed.get(), origin, load_timing_info));
+  EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
+  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+
+  // Persisted config on pref should be cleared.
+  EXPECT_TRUE(persisted_config().empty());
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", false, 1);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", true, 1);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty", 1);
+
+  // Trigger a second auth failure.
+  EXPECT_EQ(std::string(), request_options()->GetSecureSession());
+  request_headers.SetHeader(
+      "chrome-proxy", "something=something_else, s=" +
+                          std::string(kSuccessSessionKey) + ", key=value");
+  // Calling ShouldRetryDueToAuthFailure should trigger fetching of remote
+  // config.
+  EXPECT_FALSE(config_client()->ShouldRetryDueToAuthFailure(
+      request_headers, parsed.get(), origin, load_timing_info));
+  EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", false, 1);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", true, 1);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty", 1);
+
+  RunUntilIdle();
+  VerifyRemoteSuccess(true);
+
+  // Config should be fetched successfully.
+  EXPECT_FALSE(persisted_config().empty());
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.ConfigService.AuthExpiredSessionKey",
+      1 /* AUTH_EXPIRED_SESSION_KEY_MATCH */, 1);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", false, 2);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", true, 1);
+}
+
+// Verifies that a new config is not fetched due to auth failure while a
+// previous client config fetch triggered due to IP address changeis already in
+// progress.
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       IPAddressChangeWithAuthFailure) {
+  Init(true);
+  net::HttpRequestHeaders request_headers;
+  request_headers.SetHeader(
+      "chrome-proxy", "something=something_else, s=" +
+                          std::string(kOldSuccessSessionKey) + ", key=value");
+
+  base::HistogramTester histogram_tester;
+  AddMockPreviousSuccess();
+  AddMockSuccess();
+
+  SetDataReductionProxyEnabled(true, true);
+  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.AuthExpired", 0);
+  config_client()->RetrieveConfig();
+
+  RunUntilIdle();
+  // First remote config should be fetched.
+  VerifyRemoteSuccessWithOldConfig();
+  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
+  EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
+  EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.ConfigService.AuthExpired", false, 1);
+
+  // Trigger IP address change again.
+  AddMockPreviousSuccess();
+  AddMockPreviousSuccess();
+
+  SetDataReductionProxyEnabled(true, true);
+  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
+  config_client()->RetrieveConfig();
+
+  // Trigger an auth failure.
+  scoped_refptr<net::HttpResponseHeaders> parsed(new net::HttpResponseHeaders(
+      "HTTP/1.1 407 Proxy Authentication Required\n"));
+  net::ProxyServer origin = net::ProxyServer::FromURI(
+      kOldSuccessOrigin, net::ProxyServer::SCHEME_HTTP);
+  // Calling ShouldRetryDueToAuthFailure should trigger fetching of remote
+  // config.
+  net::LoadTimingInfo load_timing_info;
+  load_timing_info.request_start =
+      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1);
+  load_timing_info.send_start = load_timing_info.request_start;
+  EXPECT_TRUE(config_client()->ShouldRetryDueToAuthFailure(
+      request_headers, parsed.get(), origin, load_timing_info));
+  EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
+  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+
+  // Persisted config on pref should be cleared.
+  EXPECT_TRUE(persisted_config().empty());
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", false, 1);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", true, 1);
+
+  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+  // Persisted config on pref should be cleared.
+  EXPECT_TRUE(persisted_config().empty());
+
+  // Config should be fetched now.
+  RunUntilIdle();
+  VerifyRemoteSuccess(true);
+
+  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
+  // Persisted config on pref should be cleared.
+  EXPECT_FALSE(persisted_config().empty());
+  EXPECT_EQ(kSuccessSessionKey, request_options()->GetSecureSession());
+  EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", false, 2);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.ConfigService.AuthExpired", true, 1);
 }
 
 // Verifies the correctness of AuthFailure when the session key in the request
