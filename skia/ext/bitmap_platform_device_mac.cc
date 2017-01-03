@@ -244,8 +244,9 @@ BitmapPlatformDevice::~BitmapPlatformDevice() {
     CGContextRelease(bitmap_context_);
 }
 
-CGContextRef BitmapPlatformDevice::GetBitmapContext(const SkMatrix& transform,
-                                                    const SkIRect& clip_bounds) {
+NativeDrawingContext BitmapPlatformDevice::BeginPlatformPaint(
+    const SkMatrix& transform,
+    const SkIRect& clip_bounds) {
   LoadConfig(transform, clip_bounds);
   return bitmap_context_;
 }

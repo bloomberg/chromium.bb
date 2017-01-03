@@ -203,9 +203,6 @@ component("skia") {
     "ext/image_operations.cc",
     "ext/opacity_filter_canvas.cc",
     "ext/platform_device.cc",
-    "ext/platform_device_linux.cc",
-    "ext/platform_device_mac.cc",
-    "ext/platform_device_win.cc",
     "ext/recursive_gaussian_convolution.cc",
     "ext/skia_histogram.cc",
     "ext/skia_memory_dump_provider.cc",
@@ -420,7 +417,6 @@ component("skia") {
 
   if (is_android) {
     set_sources_assignment_filter([])
-    sources += [ "ext/platform_device_linux.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
     deps += [
       "//third_party/android_tools:cpu_features",

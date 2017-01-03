@@ -31,4 +31,6 @@ PlatformDevice* GetPlatformDevice(SkBaseDevice* device) {
   return NULL;
 }
 
+PlatformDevice::~PlatformDevice() {}
+
 }  // namespace skia

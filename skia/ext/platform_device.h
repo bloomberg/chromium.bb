@@ -7,11 +7,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <vector>
-#endif
-
 #include "skia/ext/native_drawing_context.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -50,22 +45,14 @@ SK_API PlatformDevice* GetPlatformDevice(SkBaseDevice* device);
 // from it.
 class SK_API PlatformDevice {
  public:
-  virtual ~PlatformDevice() {}
-
-#if defined(OS_MACOSX)
-  // The CGContext that corresponds to the bitmap, used for CoreGraphics
-  // operations drawing into the bitmap. This is possibly heavyweight, so it
-  // should exist only during one pass of rendering.
-  virtual CGContextRef GetBitmapContext(const SkMatrix& transform,
-                                        const SkIRect& clip_bounds) = 0;
-#endif
+  virtual ~PlatformDevice();
 
  private:
   // The DC that corresponds to the bitmap, used for GDI operations drawing
   // into the bitmap. This is possibly heavyweight, so it should be existant
   // only during one pass of rendering.
   virtual NativeDrawingContext BeginPlatformPaint(const SkMatrix& transform,
-                                                  const SkIRect& clip_bounds);
+                                                  const SkIRect& clip_bounds) = 0;
 
   friend class ScopedPlatformPaint;
 };

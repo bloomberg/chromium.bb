@@ -46,10 +46,6 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
 
   ~BitmapPlatformDevice() override;
 
-  // PlatformDevice overrides
-  CGContextRef GetBitmapContext(const SkMatrix& transform,
-                                const SkIRect& clip_bounds) override;
-
  protected:
   BitmapPlatformDevice(CGContextRef context,
                        const SkBitmap& bitmap);
@@ -57,6 +53,9 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
   SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*) override;
 
  private:
+  NativeDrawingContext BeginPlatformPaint(const SkMatrix& transform,
+                                          const SkIRect& clip_bounds) override;
+
   void ReleaseBitmapContext();
 
   // Loads the current transform and clip into the context. Can be called even

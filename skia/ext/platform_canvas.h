@@ -154,10 +154,6 @@ SK_API SkMetaData& GetMetaData(const SkCanvas& canvas);
 #if defined(OS_MACOSX)
 SK_API void SetIsPreviewMetafile(const SkCanvas& canvas, bool is_preview);
 SK_API bool IsPreviewMetafile(const SkCanvas& canvas);
-
-// Returns the CGContext that backing the SkCanvas.
-// Returns NULL if none is bound.
-SK_API CGContextRef GetBitmapContext(const SkCanvas& canvas);
 #endif
 
 }  // namespace skia

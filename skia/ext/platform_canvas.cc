@@ -88,18 +88,6 @@ void SetIsPreviewMetafile(const SkCanvas& canvas, bool is_preview) {
 bool IsPreviewMetafile(const SkCanvas& canvas) {
   return GetBoolMetaData(canvas, kIsPreviewMetafileKey);
 }
-
-CGContextRef GetBitmapContext(const SkCanvas& canvas) {
-  PlatformDevice* platform_device =
-      GetPlatformDevice(canvas.getTopDevice(true));
-  SkIRect clip_bounds;
-  canvas.getClipDeviceBounds(&clip_bounds);
-  return platform_device ?
-      platform_device->GetBitmapContext(
-          canvas.getTotalMatrix(), clip_bounds) :
-      nullptr;
-}
-
 #endif
 
 ScopedPlatformPaint::ScopedPlatformPaint(SkCanvas* canvas) :
