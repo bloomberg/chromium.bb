@@ -5,6 +5,9 @@
 <head>
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
+<style>
+    body { overflow: hidden; }
+</style>
 <script>
 function scheduleScriptLoad() {
     window.setTimeout(loadScript, 0);
@@ -28,10 +31,15 @@ function scriptLoaded() {
             ++dummies;
     }
 
+    var text;
     if (dummies == 1)
-        console.log("PASS - 1 resource loaded");
+        text = document.createTextNode("PASS - 1 resource loaded");
     else
-        console.log("FAIL - " + dummies + " resources loaded");
+        text = document.createTextNode("FAIL - " + dummies + " resources loaded");
+    var result = document.createElement("p");
+    result.appendChild(text);
+    document.body.appendChild(result);
+    console.log("done");
 }
 
 function test()
@@ -47,7 +55,6 @@ function test()
     {
         InspectorTest.addConsoleSniffer(done);
         InspectorTest.evaluateInPage("scheduleScriptLoad()");
-
     }
 
     function done(msg)
@@ -57,7 +64,7 @@ function test()
 }
 </script>
 </head>
-<body onload="runTest()">
+<body onload="runTest(true)">
     <p>Tests disabling cache from inspector and seeing that preloads are not evicted from memory cache.</p>
 </body>
 </html>

@@ -1,5 +1,0 @@
-CONSOLE MESSAGE: line 29: PASS - 1 resource loaded
-Tests disabling cache from inspector and seeing that preloads are not evicted from memory cache.
-
-Page reloaded.
-
