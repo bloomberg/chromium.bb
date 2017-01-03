@@ -34,9 +34,11 @@ class W3CExpectationsLineAdder(object):
         self.finder = WebKitFinder(self.host.filesystem)
 
     def run(self, args=None):
+        """Downloads text new baselines and adds test expectations lines."""
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument('-v', '--verbose', action='store_true', help='More verbose logging.')
         args = parser.parse_args(args)
+
         log_level = logging.DEBUG if args.verbose else logging.INFO
         logging.basicConfig(level=log_level, format='%(message)s')
 
@@ -48,42 +50,33 @@ class W3CExpectationsLineAdder(object):
         rietveld = Rietveld(self.host.web)
         builds = rietveld.latest_try_jobs(issue_number, self.get_try_bots())
         _log.debug('Latest try jobs: %r', builds)
-
         if not builds:
             _log.error('No try job information was collected.')
             return 1
 
+        # Here we build up a dict of failing test results for all platforms.
         test_expectations = {}
         for build in builds:
             platform_results = self.get_failing_results_dict(build)
             test_expectations = self.merge_dicts(test_expectations, platform_results)
 
+        # And then we merge results for different platforms that had the same results.
         for test_name, platform_result in test_expectations.iteritems():
+            # platform_result is a dict mapping platforms to results.
             test_expectations[test_name] = self.merge_same_valued_keys(platform_result)
 
-        test_expectations = self.get_expected_txt_files(test_expectations)
+        test_expectations = self.download_text_baselines(test_expectations)
         test_expectation_lines = self.create_line_list(test_expectations)
         self.write_to_test_expectations(test_expectation_lines)
         return 0
 
     def get_issue_number(self):
+        """Returns current CL number. Can be replaced in unit tests."""
         return GitCL(self.host).get_issue_number()
 
     def get_try_bots(self):
+        """Returns try bot names. Can be replaced in unit tests."""
         return self.host.builders.all_try_builder_names()
-
-    def generate_results_dict(self, platform, result_list):
-        test_dict = {}
-        if '-' in platform:
-            platform = platform[platform.find('-') + 1:].capitalize()
-        for result in result_list:
-            test_dict[result.test_name()] = {
-                platform: {
-                    'expected': result.expected_results(),
-                    'actual': result.actual_results(),
-                    'bug': 'crbug.com/626703'
-                }}
-        return test_dict
 
     def get_failing_results_dict(self, build):
         """Returns a nested dict of failing test results.
@@ -111,9 +104,43 @@ class W3CExpectationsLineAdder(object):
             _log.warning('No results for build %s', build)
             return {}
         platform = self.host.builders.port_name_for_builder_name(build.builder_name)
-        result_list = layout_test_results.didnt_run_as_expected_results()
-        failing_results_dict = self.generate_results_dict(platform, result_list)
+        test_results = layout_test_results.didnt_run_as_expected_results()
+        failing_results_dict = self.generate_results_dict(platform, test_results)
         return failing_results_dict
+
+    def generate_results_dict(self, full_port_name, test_results):
+        """Makes a dict with results for one platform.
+
+        Args:
+            full_port_name: The full port name, e.g. "win-win10".
+            test_results: A list of LayoutTestResult objects.
+
+        Returns:
+            A dict mapping to platform string (e.g. "Win10") to a dict with
+            the results for that test and that platform.
+        """
+        platform = self._port_name_to_platform_specifier(full_port_name)
+        test_dict = {}
+        for result in test_results:
+            test_dict[result.test_name()] = {
+                platform: {
+                    'expected': result.expected_results(),
+                    'actual': result.actual_results(),
+                    'bug': 'crbug.com/626703'
+                }}
+        return test_dict
+
+    def _port_name_to_platform_specifier(self, port_name):
+        """Maps a port name to the string used in test expectations lines.
+
+        For example:
+            linux-trusty -> Trusty
+            mac-mac10.11 -> Mac10.11.
+        """
+        # TODO(qyearsley): Do this in a more robust way with Port classes.
+        if '-' in port_name:
+            return port_name[port_name.find('-') + 1:].capitalize()
+        return port_name
 
     def merge_dicts(self, target, source, path=None):
         """Recursively merges nested dictionaries.
@@ -286,12 +313,12 @@ class W3CExpectationsLineAdder(object):
     def _test_name_from_expectation_string(expectation_string):
         return TestExpectationLine.tokenize_line(filename='', expectation_string=expectation_string, line_number=0).name
 
-    def get_expected_txt_files(self, tests_results):
+    def download_text_baselines(self, tests_results):
         """Fetches new baseline files for tests that should be rebaselined.
 
-        Invokes webkit-patch rebaseline-from-try-jobs in order to download new
-        -expected.txt files for testharness.js tests that did not crash or time
-        out. Then, the platform-specific test is removed from the overall
+        Invokes `webkit-patch rebaseline-cl` in order to download new baselines
+        (-expected.txt files) for testharness.js tests that did not crash or
+        time out. Then, the platform-specific test is removed from the overall
         failure test dictionary.
 
         Args:
@@ -300,7 +327,7 @@ class W3CExpectationsLineAdder(object):
         Returns:
             An updated tests_results dictionary without the platform-specific
             testharness.js tests that required new baselines to be downloaded
-            from `webkit-patch rebaseline-from-try-jobs`.
+            from `webkit-patch rebaseline-cl`.
         """
         modified_tests = self.get_modified_existing_tests()
         tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(modified_tests, tests_results)
@@ -348,8 +375,8 @@ class W3CExpectationsLineAdder(object):
 
         Returns:
             A pair: A set of tests to be rebaselined, and a modified copy of
-            the test results dictionary. The tests to be rebaselined should include
-            testharness.js tests that failed due to a baseline mismatch.
+            the test results dictionary. The tests to be rebaselined should
+            include testharness.js tests that failed due to a baseline mismatch.
         """
         test_results = copy.deepcopy(test_results)
         tests_to_rebaseline = set()
