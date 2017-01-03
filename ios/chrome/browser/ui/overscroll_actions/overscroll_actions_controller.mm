@@ -94,10 +94,8 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 }
 }  // namespace
 
-namespace ios_internal {
-NSString* const kOverscollActionsWillStart = @"OverscollActionsWillStart";
-NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
-}  // namespace ios_internal
+NSString* const kOverscrollActionsWillStart = @"OverscrollActionsWillStart";
+NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 
 // This protocol describes the subset of methods used between the
 // CRWWebViewScrollViewProxy and the UIWebView.
@@ -183,8 +181,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
 // call. The cached value is reset when the webview proxy is set.
 @property(nonatomic, readonly) CGFloat initialHeaderHeight;
 // Redefined to be read-write.
-@property(nonatomic, assign, readwrite)
-    ios_internal::OverscrollState overscrollState;
+@property(nonatomic, assign, readwrite) OverscrollState overscrollState;
 // Point where the horizontal gesture started when the state of the
 // overscroll controller is in OverscrollStateActionReady.
 @property(nonatomic, assign) CGPoint panPointScreenOrigin;
@@ -212,7 +209,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
 - (void)triggerActionIfNeeded;
 // Performs work based on overscroll action state changes.
 - (void)onOverscrollStateChangeWithPreviousState:
-    (ios_internal::OverscrollState)previousOverscrollState;
+    (OverscrollState)previousOverscrollState;
 // Disables all interactions on the webview except pan.
 - (void)setWebViewInteractionEnabled:(BOOL)enabled;
 // Bounce dynamic animations methods.
@@ -294,7 +291,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
 }
 
 - (void)clear {
-  self.overscrollState = ios_internal::OverscrollState::NO_PULL_STARTED;
+  self.overscrollState = OverscrollState::NO_PULL_STARTED;
 }
 
 - (void)enableOverscrollActions {
@@ -307,7 +304,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
   [self tearDown];
 }
 
-- (void)setStyle:(ios_internal::OverscrollStyle)style {
+- (void)setStyle:(OverscrollStyle)style {
   [self.overscrollActionView setStyle:style];
 }
 
@@ -332,16 +329,16 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
       contentOffsetFromTheTop + self.initialHeaderInset;
   if (contentOffsetFromExpandedHeader >= 0) {
     // Record initial content offset and dispatch delegate on state change.
-    self.overscrollState = ios_internal::OverscrollState::NO_PULL_STARTED;
+    self.overscrollState = OverscrollState::NO_PULL_STARTED;
   } else {
     if (contentOffsetFromExpandedHeader < -kHeaderMaxExpansionThreshold) {
-      self.overscrollState = ios_internal::OverscrollState::ACTION_READY;
+      self.overscrollState = OverscrollState::ACTION_READY;
       [self scrollView].scrollIndicatorInsets = insets;
     } else {
       // Set the contentInset to remove the bounce that would fight with drag.
       [self setScrollViewContentInset:insets];
       [self scrollView].scrollIndicatorInsets = insets;
-      self.overscrollState = ios_internal::OverscrollState::STARTED_PULLING;
+      self.overscrollState = OverscrollState::STARTED_PULLING;
     }
     [self updateWithVerticalOffset:-contentOffsetFromExpandedHeader];
   }
@@ -371,7 +368,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
   const BOOL delegateAllowOverscrollActions =
       [self.delegate shouldAllowOverscrollActions];
   const BOOL isCurrentlyProcessingOverscroll =
-      self.overscrollState != ios_internal::OverscrollState::NO_PULL_STARTED;
+      self.overscrollState != OverscrollState::NO_PULL_STARTED;
   return isCurrentlyProcessingOverscroll ||
          (isScrolledToTop && isMinimumTimeBetweenScrollRespected &&
           delegateAllowOverscrollActions && !isZooming);
@@ -382,7 +379,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
   // Content is now hidden behind toolbar, make sure that contentInset is
   // restored to initial value.
   if (contentOffset.y >= 0 ||
-      self.overscrollState == ios_internal::OverscrollState::NO_PULL_STARTED) {
+      self.overscrollState == OverscrollState::NO_PULL_STARTED) {
     [self resetScrollViewTopContentInset];
   }
 
@@ -396,7 +393,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
   if (![self isOverscrollActionEnabled])
     return;
 
-  if (self.overscrollState != ios_internal::OverscrollState::NO_PULL_STARTED) {
+  if (self.overscrollState != OverscrollState::NO_PULL_STARTED) {
     *targetContentOffset = [[self scrollView] contentOffset];
     [self startBounceWithInitialVelocity:velocity];
   }
@@ -476,7 +473,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
     [self setWebViewInteractionEnabled:YES];
   }
   const CGPoint panPointScreen = [gesture locationInView:nil];
-  if (self.overscrollState == ios_internal::OverscrollState::ACTION_READY) {
+  if (self.overscrollState == OverscrollState::ACTION_READY) {
     const CGFloat direction = UseRTLLayout() ? -1 : 1;
     const CGFloat xOffset = direction *
                             (panPointScreen.x - self.panPointScreenOrigin.x) /
@@ -515,24 +512,24 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
 
 #pragma mark - Private
 
-- (void)recordMetricForTriggeredAction:(ios_internal::OverscrollAction)action {
+- (void)recordMetricForTriggeredAction:(OverscrollAction)action {
   switch (action) {
-    case ios_internal::OverscrollAction::NONE:
+    case OverscrollAction::NONE:
       UMA_HISTOGRAM_ENUMERATION(kOverscrollActionsHistogram,
                                 OVERSCROLL_ACTION_CANCELED,
                                 OVERSCROLL_ACTION_COUNT);
       break;
-    case ios_internal::OverscrollAction::NEW_TAB:
+    case OverscrollAction::NEW_TAB:
       UMA_HISTOGRAM_ENUMERATION(kOverscrollActionsHistogram,
                                 OVERSCROLL_ACTION_NEW_TAB,
                                 OVERSCROLL_ACTION_COUNT);
       break;
-    case ios_internal::OverscrollAction::REFRESH:
+    case OverscrollAction::REFRESH:
       UMA_HISTOGRAM_ENUMERATION(kOverscrollActionsHistogram,
                                 OVERSCROLL_ACTION_REFRESH,
                                 OVERSCROLL_ACTION_COUNT);
       break;
-    case ios_internal::OverscrollAction::CLOSE_TAB:
+    case OverscrollAction::CLOSE_TAB:
       UMA_HISTOGRAM_ENUMERATION(kOverscrollActionsHistogram,
                                 OVERSCROLL_ACTION_CLOSE_TAB,
                                 OVERSCROLL_ACTION_COUNT);
@@ -619,7 +616,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
 }
 
 - (void)deviceOrientationDidChange {
-  if (self.overscrollState == ios_internal::OverscrollState::NO_PULL_STARTED &&
+  if (self.overscrollState == OverscrollState::NO_PULL_STARTED &&
       !_performingScrollViewIndependentAnimation)
     return;
 
@@ -651,15 +648,13 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
 - (void)triggerActionIfNeeded {
   if ([self isOverscrollActionEnabled]) {
     const BOOL isOverscrollStateActionReady =
-        self.overscrollState == ios_internal::OverscrollState::ACTION_READY;
+        self.overscrollState == OverscrollState::ACTION_READY;
     const BOOL isOverscrollActionNone =
-        self.overscrollActionView.selectedAction ==
-        ios_internal::OverscrollAction::NONE;
+        self.overscrollActionView.selectedAction == OverscrollAction::NONE;
 
     if ((!isOverscrollStateActionReady && _didTransitionToActionReady) ||
         (isOverscrollStateActionReady && isOverscrollActionNone)) {
-      [self
-          recordMetricForTriggeredAction:ios_internal::OverscrollAction::NONE];
+      [self recordMetricForTriggeredAction:OverscrollAction::NONE];
     } else if (isOverscrollStateActionReady && !isOverscrollActionNone) {
       if (CACurrentMediaTime() - _lastScrollBeginTime >=
           kMinimumPullDurationToTriggerActionInSeconds) {
@@ -682,19 +677,19 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
   }
 }
 
-- (void)setOverscrollState:(ios_internal::OverscrollState)overscrollState {
+- (void)setOverscrollState:(OverscrollState)overscrollState {
   if (_overscrollState != overscrollState) {
-    const ios_internal::OverscrollState previousState = _overscrollState;
+    const OverscrollState previousState = _overscrollState;
     _overscrollState = overscrollState;
     [self onOverscrollStateChangeWithPreviousState:previousState];
   }
 }
 
 - (void)onOverscrollStateChangeWithPreviousState:
-    (ios_internal::OverscrollState)previousOverscrollState {
+    (OverscrollState)previousOverscrollState {
   [UIView beginAnimations:@"backgroundColor" context:NULL];
   switch (self.overscrollState) {
-    case ios_internal::OverscrollState::NO_PULL_STARTED: {
+    case OverscrollState::NO_PULL_STARTED: {
       UIView<RelaxedBoundsConstraintsHitTestSupport>* headerView =
           [self headerView];
       if ([headerView
@@ -707,17 +702,16 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
               [UIApplication sharedApplication].statusBarFrame.size.height);
       self.panPointScreenOrigin = CGPointZero;
       [[NSNotificationCenter defaultCenter]
-          postNotificationName:ios_internal::kOverscollActionsDidEnd
+          postNotificationName:kOverscrollActionsDidEnd
                         object:self];
     } break;
-    case ios_internal::OverscrollState::STARTED_PULLING: {
+    case OverscrollState::STARTED_PULLING: {
       if (!self.overscrollActionView.superview) {
-        if (previousOverscrollState ==
-            ios_internal::OverscrollState::NO_PULL_STARTED) {
+        if (previousOverscrollState == OverscrollState::NO_PULL_STARTED) {
           UIView* view = [self.delegate toolbarSnapshotView];
           [self.overscrollActionView addSnapshotView:view];
           [[NSNotificationCenter defaultCenter]
-              postNotificationName:ios_internal::kOverscollActionsWillStart
+              postNotificationName:kOverscrollActionsWillStart
                             object:self];
         }
         [CATransaction begin];
@@ -737,7 +731,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
         [CATransaction commit];
       }
     } break;
-    case ios_internal::OverscrollState::ACTION_READY: {
+    case OverscrollState::ACTION_READY: {
       _didTransitionToActionReady = YES;
       if (CGPointEqualToPoint(self.panPointScreenOrigin, CGPointZero)) {
         CGPoint panPointScreen = [self.panGestureRecognizer locationInView:nil];
@@ -814,7 +808,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
   [dpLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
   _dpLink = dpLink;
   memset(&_bounceState, 0, sizeof(_bounceState));
-  if (self.overscrollState == ios_internal::OverscrollState::ACTION_READY) {
+  if (self.overscrollState == OverscrollState::ACTION_READY) {
     const UIEdgeInsets insets = UIEdgeInsetsMake(
         -[self scrollView].contentOffset.y + self.initialContentInset, 0, 0, 0);
     [self setScrollViewContentInset:insets];
@@ -831,7 +825,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
   [_dpLink invalidate];
   _dpLink = nil;
   if (_performingScrollViewIndependentAnimation) {
-    self.overscrollState = ios_internal::OverscrollState::NO_PULL_STARTED;
+    self.overscrollState = OverscrollState::NO_PULL_STARTED;
     _performingScrollViewIndependentAnimation = NO;
   }
 }

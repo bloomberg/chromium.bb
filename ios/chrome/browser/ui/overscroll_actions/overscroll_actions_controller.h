@@ -14,7 +14,6 @@
 
 @class OverscrollActionsController;
 
-namespace ios_internal {
 // Describe the current state of the overscroll action controller.
 enum class OverscrollState {
   NO_PULL_STARTED,  // No pull started.
@@ -24,11 +23,10 @@ enum class OverscrollState {
 
 // Notification sent when the overscroll actions controller will start
 // displaying the UI.
-extern NSString* const kOverscollActionsWillStart;
+extern NSString* const kOverscrollActionsWillStart;
 // Notification sent when the overscroll actions controller did stop displaying
 // the UI.
-extern NSString* const kOverscollActionsDidEnd;
-}  // namespace ios_internal
+extern NSString* const kOverscrollActionsDidEnd;
 
 // The delegate of the OverscrollActionsController, it provides the headerView
 // on which the OverscrollActionsView will be added.
@@ -43,7 +41,7 @@ extern NSString* const kOverscollActionsDidEnd;
 // The action index holds the current triggered action which are numbered left
 // to right.
 - (void)overscrollActionsController:(OverscrollActionsController*)controller
-                   didTriggerAction:(ios_internal::OverscrollAction)action;
+                   didTriggerAction:(OverscrollAction)action;
 // Should return true when the delegate wants to enable the overscroll actions.
 - (BOOL)shouldAllowOverscrollActions;
 // The toolbar snapshot view that will be used to fade in/out the toolbar.
@@ -90,8 +88,7 @@ extern NSString* const kOverscollActionsDidEnd;
 // The scrollview the overscroll controller will control.
 @property(nonatomic, readonly) UIScrollView* scrollView;
 // The current state of the overscroll controller.
-@property(nonatomic, assign, readonly)
-    ios_internal::OverscrollState overscrollState;
+@property(nonatomic, assign, readonly) OverscrollState overscrollState;
 // The delegate must be set for the OverscrollActionsController to work
 // properly.
 @property(nonatomic, assign) id<OverscrollActionsControllerDelegate> delegate;
@@ -112,7 +109,7 @@ extern NSString* const kOverscollActionsDidEnd;
 // -disableOverscrollActions.
 - (void)enableOverscrollActions;
 // Sets the style of the overscroll actions.
-- (void)setStyle:(ios_internal::OverscrollStyle)style;
+- (void)setStyle:(OverscrollStyle)style;
 
 @end
 

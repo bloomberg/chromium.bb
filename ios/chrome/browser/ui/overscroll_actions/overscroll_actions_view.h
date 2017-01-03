@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-namespace ios_internal {
 // Describes the current Index of an action in the OverScrollActionsView.
 enum class OverscrollAction {
   NONE,       // No action
@@ -24,8 +23,6 @@ enum class OverscrollStyle {
   REGULAR_PAGE_INCOGNITO       // UI to fit regular pages in incognito.
 };
 
-}  // namespace ios_internal
-
 @class OverscrollActionsView;
 
 @protocol OverscrollActionsViewDelegate
@@ -40,8 +37,7 @@ enum class OverscrollStyle {
 @interface OverscrollActionsView : UIView
 
 // The currently selected action.
-@property(nonatomic, assign, readonly)
-    ios_internal::OverscrollAction selectedAction;
+@property(nonatomic, assign, readonly) OverscrollAction selectedAction;
 // The view displayed has the background of the overscroll actions view.
 @property(nonatomic, retain, readonly) UIView* backgroundView;
 // Whether cropping is set on the selection circle (true by default).
@@ -71,7 +67,7 @@ enum class OverscrollStyle {
 - (void)displayActionAnimation;
 
 // Sets the style of the overscroll action UI.
-- (void)setStyle:(ios_internal::OverscrollStyle)style;
+- (void)setStyle:(OverscrollStyle)style;
 
 @end
 

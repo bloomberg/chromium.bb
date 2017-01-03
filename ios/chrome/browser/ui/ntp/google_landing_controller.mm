@@ -949,8 +949,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   if (!IsIPadIdiom()) {
     _overscrollActionsController.reset([[OverscrollActionsController alloc]
         initWithScrollView:_mostVisitedView]);
-    [_overscrollActionsController
-        setStyle:ios_internal::OverscrollStyle::NTP_NON_INCOGNITO];
+    [_overscrollActionsController setStyle:OverscrollStyle::NTP_NON_INCOGNITO];
     [_overscrollActionsController setDelegate:self];
   }
 }
@@ -1687,22 +1686,22 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 #pragma mark - OverscrollActionsControllerDelegate
 
 - (void)overscrollActionsController:(OverscrollActionsController*)controller
-                   didTriggerAction:(ios_internal::OverscrollAction)action {
+                   didTriggerAction:(OverscrollAction)action {
   switch (action) {
-    case ios_internal::OverscrollAction::NEW_TAB: {
+    case OverscrollAction::NEW_TAB: {
       base::scoped_nsobject<GenericChromeCommand> command(
           [[GenericChromeCommand alloc] initWithTag:IDC_NEW_TAB]);
       [[self view] chromeExecuteCommand:command];
     } break;
-    case ios_internal::OverscrollAction::CLOSE_TAB: {
+    case OverscrollAction::CLOSE_TAB: {
       base::scoped_nsobject<GenericChromeCommand> command(
           [[GenericChromeCommand alloc] initWithTag:IDC_CLOSE_TAB]);
       [[self view] chromeExecuteCommand:command];
     } break;
-    case ios_internal::OverscrollAction::REFRESH:
+    case OverscrollAction::REFRESH:
       [self reload];
       break;
-    case ios_internal::OverscrollAction::NONE:
+    case OverscrollAction::NONE:
       NOTREACHED();
       break;
   }

@@ -1015,10 +1015,9 @@ void AddNetworkClientFactoryOnIOThread(
         [[OverscrollActionsController alloc] init]);
     [self.webController addObserver:overscrollActionsController_];
   }
-  ios_internal::OverscrollStyle style =
-      ios_internal::OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
+  OverscrollStyle style = OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
   if (browserState_->IsOffTheRecord()) {
-    style = ios_internal::OverscrollStyle::REGULAR_PAGE_INCOGNITO;
+    style = OverscrollStyle::REGULAR_PAGE_INCOGNITO;
   }
   [overscrollActionsController_ setStyle:style];
   [overscrollActionsController_

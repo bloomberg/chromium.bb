@@ -298,11 +298,11 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
     // crbug/451373.
     [center addObserver:self
                selector:@selector(overscrollActionsWillStart)
-                   name:ios_internal::kOverscollActionsWillStart
+                   name:kOverscrollActionsWillStart
                  object:nil];
     [center addObserver:self
                selector:@selector(overscrollActionsDidEnd)
-                   name:ios_internal::kOverscollActionsDidEnd
+                   name:kOverscrollActionsDidEnd
                  object:nil];
     [self moveHeaderToRestingPosition:YES];
   }

@@ -138,8 +138,7 @@ enum class OverscrollViewState {
 }
 
 // Redefined to readwrite.
-@property(nonatomic, assign, readwrite)
-    ios_internal::OverscrollAction selectedAction;
+@property(nonatomic, assign, readwrite) OverscrollAction selectedAction;
 
 // Actions image views.
 @property(nonatomic, retain) UIImageView* addTabActionImageView;
@@ -208,9 +207,9 @@ enum class OverscrollViewState {
 // to |dx|.
 - (UIBezierPath*)circlePath:(CGFloat)dx;
 // Returns the action at the given location in the view.
-- (ios_internal::OverscrollAction)actionAtLocation:(CGPoint)location;
+- (OverscrollAction)actionAtLocation:(CGPoint)location;
 // Update the selection circle frame to select the given action.
-- (void)updateSelectionForTouchedAction:(ios_internal::OverscrollAction)action;
+- (void)updateSelectionForTouchedAction:(OverscrollAction)action;
 // Clear the direct touch interaction after a small delay to prevent graphic
 // glitch with pan gesture selection deformation animations.
 - (void)clearDirectTouchInteraction;
@@ -617,7 +616,7 @@ enum class OverscrollViewState {
 
 - (void)updateSelectedAction {
   if (self.overscrollState != OverscrollViewState::READY) {
-    self.selectedAction = ios_internal::OverscrollAction::NONE;
+    self.selectedAction = OverscrollAction::NONE;
     return;
   }
 
@@ -631,15 +630,15 @@ enum class OverscrollViewState {
         2;
     if (fabs(self.addTabActionImageView.center.x - selectionPosition.x) <
         distanceBetweenTwoActions) {
-      self.selectedAction = ios_internal::OverscrollAction::NEW_TAB;
+      self.selectedAction = OverscrollAction::NEW_TAB;
     }
     if (fabs(self.refreshActionImageView.center.x - selectionPosition.x) <
         distanceBetweenTwoActions) {
-      self.selectedAction = ios_internal::OverscrollAction::REFRESH;
+      self.selectedAction = OverscrollAction::REFRESH;
     }
     if (fabs(self.closeTabActionImageView.center.x - selectionPosition.x) <
         distanceBetweenTwoActions) {
-      self.selectedAction = ios_internal::OverscrollAction::CLOSE_TAB;
+      self.selectedAction = OverscrollAction::CLOSE_TAB;
     }
   } else {
     const CGRect selectionRect =
@@ -651,18 +650,18 @@ enum class OverscrollViewState {
     const CGRect refreshRect = self.refreshActionImageView.frame;
 
     if (CGRectContainsRect(selectionRect, addTabRect)) {
-      self.selectedAction = ios_internal::OverscrollAction::NEW_TAB;
+      self.selectedAction = OverscrollAction::NEW_TAB;
     } else if (CGRectContainsRect(selectionRect, refreshRect)) {
-      self.selectedAction = ios_internal::OverscrollAction::REFRESH;
+      self.selectedAction = OverscrollAction::REFRESH;
     } else if (CGRectContainsRect(selectionRect, closeTabRect)) {
-      self.selectedAction = ios_internal::OverscrollAction::CLOSE_TAB;
+      self.selectedAction = OverscrollAction::CLOSE_TAB;
     } else {
-      self.selectedAction = ios_internal::OverscrollAction::NONE;
+      self.selectedAction = OverscrollAction::NONE;
     }
   }
 }
 
-- (void)setSelectedAction:(ios_internal::OverscrollAction)action {
+- (void)setSelectedAction:(OverscrollAction)action {
   if (_selectedAction != action) {
     _selectedAction = action;
     [self onSelectedActionChange];
@@ -676,7 +675,7 @@ enum class OverscrollViewState {
 
   [UIView beginAnimations:@"transform" context:NULL];
   [UIView setAnimationDuration:kSelectionSnappingAnimationDuration];
-  if (self.selectedAction == ios_internal::OverscrollAction::NONE) {
+  if (self.selectedAction == OverscrollAction::NONE) {
     if (!_deformationBehaviorEnabled) {
       // Scale selection down.
       self.selectionCircleLayer.transform =
@@ -835,24 +834,24 @@ enum class OverscrollViewState {
   return path;
 }
 
-- (void)setStyle:(ios_internal::OverscrollStyle)style {
+- (void)setStyle:(OverscrollStyle)style {
   switch (style) {
-    case ios_internal::OverscrollStyle::NTP_NON_INCOGNITO:
+    case OverscrollStyle::NTP_NON_INCOGNITO:
       [self.shadowView setHidden:YES];
       self.backgroundColor = [UIColor whiteColor];
       break;
-    case ios_internal::OverscrollStyle::NTP_INCOGNITO:
+    case OverscrollStyle::NTP_INCOGNITO:
       [self.shadowView setHidden:YES];
       self.backgroundColor = [UIColor colorWithWhite:0 alpha:0];
       break;
-    case ios_internal::OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO:
+    case OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO:
       [self.shadowView setHidden:NO];
       self.backgroundColor = [UIColor colorWithRed:242.0 / 256
                                              green:242.0 / 256
                                               blue:242.0 / 256
                                              alpha:1.0];
       break;
-    case ios_internal::OverscrollStyle::REGULAR_PAGE_INCOGNITO:
+    case OverscrollStyle::REGULAR_PAGE_INCOGNITO:
       [self.shadowView setHidden:NO];
       self.backgroundColor = [UIColor colorWithRed:80.0 / 256
                                              green:80.0 / 256
@@ -861,9 +860,8 @@ enum class OverscrollViewState {
       break;
   }
 
-  BOOL incognito =
-      style == ios_internal::OverscrollStyle::NTP_INCOGNITO ||
-      style == ios_internal::OverscrollStyle::REGULAR_PAGE_INCOGNITO;
+  BOOL incognito = style == OverscrollStyle::NTP_INCOGNITO ||
+                   style == OverscrollStyle::REGULAR_PAGE_INCOGNITO;
   if (incognito) {
     [_addTabActionImageView
         setImage:[UIImage imageNamed:kNewTabActionActiveImage]];
@@ -900,39 +898,39 @@ enum class OverscrollViewState {
   [_closeTabActionImageViewHighlighted sizeToFit];
 }
 
-- (ios_internal::OverscrollAction)actionAtLocation:(CGPoint)location {
-  ios_internal::OverscrollAction action = ios_internal::OverscrollAction::NONE;
+- (OverscrollAction)actionAtLocation:(CGPoint)location {
+  OverscrollAction action = OverscrollAction::NONE;
   if (CGRectContainsPoint(
           CGRectInset([_addTabActionImageView frame],
                       -kDirectTouchFrameExpansion, -kDirectTouchFrameExpansion),
           location)) {
-    action = ios_internal::OverscrollAction::NEW_TAB;
+    action = OverscrollAction::NEW_TAB;
   } else if (CGRectContainsPoint(CGRectInset([_refreshActionImageView frame],
                                              -kDirectTouchFrameExpansion,
                                              -kDirectTouchFrameExpansion),
                                  location)) {
-    action = ios_internal::OverscrollAction::REFRESH;
+    action = OverscrollAction::REFRESH;
   } else if (CGRectContainsPoint(CGRectInset([_closeTabActionImageView frame],
                                              -kDirectTouchFrameExpansion,
                                              -kDirectTouchFrameExpansion),
                                  location)) {
-    action = ios_internal::OverscrollAction::CLOSE_TAB;
+    action = OverscrollAction::CLOSE_TAB;
   }
   return action;
 }
 
-- (void)updateSelectionForTouchedAction:(ios_internal::OverscrollAction)action {
+- (void)updateSelectionForTouchedAction:(OverscrollAction)action {
   switch (action) {
-    case ios_internal::OverscrollAction::NEW_TAB:
+    case OverscrollAction::NEW_TAB:
       [self updateWithHorizontalOffset:-1];
       break;
-    case ios_internal::OverscrollAction::REFRESH:
+    case OverscrollAction::REFRESH:
       [self updateWithHorizontalOffset:0];
       break;
-    case ios_internal::OverscrollAction::CLOSE_TAB:
+    case OverscrollAction::CLOSE_TAB:
       [self updateWithHorizontalOffset:1];
       break;
-    case ios_internal::OverscrollAction::NONE:
+    case OverscrollAction::NONE:
       return;
       break;
   }
@@ -988,8 +986,8 @@ enum class OverscrollViewState {
 
 - (void)tapGesture:(UITapGestureRecognizer*)tapRecognizer {
   CGPoint tapLocation = [tapRecognizer locationInView:self];
-  ios_internal::OverscrollAction action = [self actionAtLocation:tapLocation];
-  if (action != ios_internal::OverscrollAction::NONE) {
+  OverscrollAction action = [self actionAtLocation:tapLocation];
+  if (action != OverscrollAction::NONE) {
     [self updateSelectionForTouchedAction:action];
     [self setSelectedAction:action];
     [self.delegate overscrollActionsViewDidTapTriggerAction:self];

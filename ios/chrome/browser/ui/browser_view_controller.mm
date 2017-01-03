@@ -2752,10 +2752,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
             initWithScrollView:[nativeContent scrollView]] autorelease];
     [[nativeContent scrollView] setDelegate:controller];
     [controller setDelegate:self];
-    ios_internal::OverscrollStyle style =
-        _isOffTheRecord
-            ? ios_internal::OverscrollStyle::REGULAR_PAGE_INCOGNITO
-            : ios_internal::OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
+    OverscrollStyle style = _isOffTheRecord
+                                ? OverscrollStyle::REGULAR_PAGE_INCOGNITO
+                                : OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
     controller.style = style;
     nativeContent.overscrollActionsController = controller;
   }
@@ -2764,22 +2763,22 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 #pragma mark - OverscrollActionsControllerDelegate methods.
 
 - (void)overscrollActionsController:(OverscrollActionsController*)controller
-                   didTriggerAction:(ios_internal::OverscrollAction)action {
+                   didTriggerAction:(OverscrollAction)action {
   switch (action) {
-    case ios_internal::OverscrollAction::NEW_TAB:
+    case OverscrollAction::NEW_TAB:
       [self newTab:nil];
       break;
-    case ios_internal::OverscrollAction::CLOSE_TAB:
+    case OverscrollAction::CLOSE_TAB:
       [self closeCurrentTab];
       break;
-    case ios_internal::OverscrollAction::REFRESH:
+    case OverscrollAction::REFRESH:
       if ([[[_model currentTab] webController] loadPhase] ==
           web::PAGE_LOADING) {
         [[_model currentTab] stopLoading];
       }
       [[_model currentTab] reload];
       break;
-    case ios_internal::OverscrollAction::NONE:
+    case OverscrollAction::NONE:
       NOTREACHED();
       break;
   }
