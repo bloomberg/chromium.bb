@@ -65,6 +65,27 @@ source_set("viewporter_protocol") {
   public_configs = [ ":viewporter_protocol_config" ]
 }
 
+config("presentation_time_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("presentation_time_protocol") {
+  sources = [
+    "include/protocol/presentation-time-client-protocol.h",
+    "include/protocol/presentation-time-server-protocol.h",
+    "protocol/presentation-time-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":presentation_time_protocol_config" ]
+}
+
 config("vsync_feedback_protocol_config") {
   include_dirs = [ "include/protocol" ]
 }
