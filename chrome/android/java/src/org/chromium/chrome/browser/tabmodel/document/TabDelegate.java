@@ -153,11 +153,12 @@ public class TabDelegate extends TabCreator {
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, mIsIncognito);
         intent.putExtra(IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
 
-        if (isChromeUI) {
+        if (mIsIncognito || isChromeUI) {
             intent.putExtra(Browser.EXTRA_APPLICATION_ID,
                     ContextUtils.getApplicationContext().getPackageName());
-            intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
         }
+
+        if (isChromeUI) intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
 
         Activity parentActivity = ActivityDelegate.getActivityForTabId(parentId);
         if (parentActivity != null && parentActivity.getIntent() != null) {
