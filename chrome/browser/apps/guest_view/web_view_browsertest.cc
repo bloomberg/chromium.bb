@@ -298,7 +298,12 @@ class SelectControlWaiter : public aura::WindowObserver,
 class LeftMouseClick {
  public:
   explicit LeftMouseClick(content::WebContents* web_contents)
-      : web_contents_(web_contents) {}
+      : web_contents_(web_contents),
+        mouse_event_(blink::WebInputEvent::MouseDown,
+                     blink::WebInputEvent::NoModifiers,
+                     blink::WebInputEvent::TimeStampForTesting) {
+    mouse_event_.button = blink::WebMouseEvent::Button::Left;
+  }
 
   ~LeftMouseClick() {
     DCHECK(click_completed_);
@@ -307,11 +312,9 @@ class LeftMouseClick {
   void Click(const gfx::Point& point, int duration_ms) {
     DCHECK(click_completed_);
     click_completed_ = false;
-    mouse_event_.type = blink::WebInputEvent::MouseDown;
-    mouse_event_.button = blink::WebMouseEvent::Button::Left;
+    mouse_event_.setType(blink::WebInputEvent::MouseDown);
     mouse_event_.x = point.x();
     mouse_event_.y = point.y();
-    mouse_event_.modifiers = 0;
     const gfx::Rect offset = web_contents_->GetContainerBounds();
     mouse_event_.globalX = point.x() + offset.x();
     mouse_event_.globalY = point.y() + offset.y();
@@ -336,7 +339,7 @@ class LeftMouseClick {
 
  private:
   void SendMouseUp() {
-    mouse_event_.type = blink::WebInputEvent::MouseUp;
+    mouse_event_.setType(blink::WebInputEvent::MouseUp);
     web_contents_->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
         mouse_event_);
     click_completed_ = true;
@@ -778,14 +781,15 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
   }
 
   void OpenContextMenu(content::WebContents* web_contents) {
-    blink::WebMouseEvent mouse_event;
-    mouse_event.type = blink::WebInputEvent::MouseDown;
+    blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
+                                     blink::WebInputEvent::NoModifiers,
+                                     blink::WebInputEvent::TimeStampForTesting);
     mouse_event.button = blink::WebMouseEvent::Button::Right;
     mouse_event.x = 1;
     mouse_event.y = 1;
     web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
         mouse_event);
-    mouse_event.type = blink::WebInputEvent::MouseUp;
+    mouse_event.setType(blink::WebInputEvent::MouseUp);
     web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
         mouse_event);
   }
@@ -3363,12 +3367,12 @@ IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, DISABLED_TouchAccessibility) {
 
   // Send an accessibility touch event to the main WebContents, but
   // positioned on top of the button inside the inner WebView.
-  blink::WebMouseEvent accessibility_touch_event;
-  accessibility_touch_event.type = blink::WebInputEvent::MouseMove;
+  blink::WebMouseEvent accessibility_touch_event(
+      blink::WebInputEvent::MouseMove,
+      blink::WebInputEvent::IsTouchAccessibility,
+      blink::WebInputEvent::TimeStampForTesting);
   accessibility_touch_event.x = 95;
   accessibility_touch_event.y = 55;
-  accessibility_touch_event.modifiers =
-      blink::WebInputEvent::IsTouchAccessibility;
   web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
       accessibility_touch_event);
 

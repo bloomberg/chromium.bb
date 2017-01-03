@@ -63,8 +63,9 @@ class ImeOnFocusTest : public ::testing::Test {
 };
 
 void ImeOnFocusTest::sendGestureTap(WebView* webView, IntPoint clientPoint) {
-  WebGestureEvent webGestureEvent;
-  webGestureEvent.type = WebInputEvent::GestureTap;
+  WebGestureEvent webGestureEvent(WebInputEvent::GestureTap,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   // GestureTap is only ever from touch screens.
   webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
   webGestureEvent.x = clientPoint.x();

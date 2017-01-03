@@ -7,14 +7,24 @@
 #import <AppKit/AppKit.h>
 
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 
 namespace content {
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent()
-    : os_event(NULL),
-      skip_in_browser(false) {
-}
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
+                                               int modifiers,
+                                               base::TimeTicks timestamp)
+    : NativeWebKeyboardEvent(type,
+                             modifiers,
+                             ui::EventTimeStampToSeconds(timestamp)) {}
+
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
+                                               int modifiers,
+                                               double timestampSeconds)
+    : WebKeyboardEvent(type, modifiers, timestampSeconds),
+      os_event(NULL),
+      skip_in_browser(false) {}
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
     : WebKeyboardEvent(WebKeyboardEventBuilder::Build(native_event)),

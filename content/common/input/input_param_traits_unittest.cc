@@ -195,30 +195,36 @@ TEST_F(InputParamTraitsTest, InitializedEvents) {
 
   ui::LatencyInfo latency;
 
-  blink::WebKeyboardEvent key_event;
-  key_event.type = blink::WebInputEvent::RawKeyDown;
+  blink::WebKeyboardEvent key_event(blink::WebInputEvent::RawKeyDown,
+                                    blink::WebInputEvent::NoModifiers,
+                                    blink::WebInputEvent::TimeStampForTesting);
   key_event.nativeKeyCode = 5;
   events.push_back(new InputEvent(key_event, latency));
 
-  blink::WebMouseWheelEvent wheel_event;
-  wheel_event.type = blink::WebInputEvent::MouseWheel;
+  blink::WebMouseWheelEvent wheel_event(
+      blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
+      blink::WebInputEvent::TimeStampForTesting);
   wheel_event.deltaX = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1, 1);
   events.push_back(new InputEvent(wheel_event, latency));
 
-  blink::WebMouseEvent mouse_event;
-  mouse_event.type = blink::WebInputEvent::MouseDown;
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
+                                   blink::WebInputEvent::NoModifiers,
+                                   blink::WebInputEvent::TimeStampForTesting);
   mouse_event.x = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 2, 2);
   events.push_back(new InputEvent(mouse_event, latency));
 
-  blink::WebGestureEvent gesture_event;
-  gesture_event.type = blink::WebInputEvent::GestureScrollBegin;
+  blink::WebGestureEvent gesture_event(
+      blink::WebInputEvent::GestureScrollBegin,
+      blink::WebInputEvent::NoModifiers,
+      blink::WebInputEvent::TimeStampForTesting);
   gesture_event.x = -1;
   events.push_back(new InputEvent(gesture_event, latency));
 
-  blink::WebTouchEvent touch_event;
-  touch_event.type = blink::WebInputEvent::TouchStart;
+  blink::WebTouchEvent touch_event(blink::WebInputEvent::TouchStart,
+                                   blink::WebInputEvent::NoModifiers,
+                                   blink::WebInputEvent::TimeStampForTesting);
   touch_event.touchesLength = 1;
   touch_event.touches[0].radiusX = 1;
   events.push_back(new InputEvent(touch_event, latency));

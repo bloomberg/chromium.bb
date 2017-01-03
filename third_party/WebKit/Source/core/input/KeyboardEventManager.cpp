@@ -204,7 +204,7 @@ WebInputEventResult KeyboardEventManager::keyEvent(
 
   WebKeyboardEvent keyDownEvent = initialKeyEvent;
   if (keyDownEvent.type != WebInputEvent::RawKeyDown)
-    keyDownEvent.type = WebInputEvent::RawKeyDown;
+    keyDownEvent.setType(WebInputEvent::RawKeyDown);
   KeyboardEvent* keydown =
       KeyboardEvent::create(keyDownEvent, m_frame->document()->domWindow());
   if (matchedAnAccessKey)
@@ -244,7 +244,7 @@ WebInputEventResult KeyboardEventManager::keyEvent(
 #endif
 
   WebKeyboardEvent keyPressEvent = initialKeyEvent;
-  keyPressEvent.type = WebInputEvent::Char;
+  keyPressEvent.setType(WebInputEvent::Char);
   if (keyPressEvent.text[0] == 0)
     return WebInputEventResult::NotHandled;
   KeyboardEvent* keypress =

@@ -21,9 +21,8 @@ SyntheticTouchDriver::~SyntheticTouchDriver() {}
 
 void SyntheticTouchDriver::DispatchEvent(SyntheticGestureTarget* target,
                                          const base::TimeTicks& timestamp) {
-  touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-  if (touch_event_.type != blink::WebInputEvent::Undefined)
-    target->DispatchInputEventToPlatform(touch_event_);
+  touch_event_.setTimeStampSeconds(ConvertTimestampToSeconds(timestamp));
+  target->DispatchInputEventToPlatform(touch_event_);
   touch_event_.ResetPoints();
 }
 

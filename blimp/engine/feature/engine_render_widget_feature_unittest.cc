@@ -163,8 +163,9 @@ MATCHER_P5(BlimpImeMsgEquals,
 void SendInputMessage(BlimpMessageProcessor* processor,
                       int tab_id,
                       int rw_id) {
-  blink::WebGestureEvent input_event;
-  input_event.type = blink::WebGestureEvent::Type::GestureTap;
+  blink::WebGestureEvent input_event(blink::WebGestureEvent::Type::GestureTap,
+                                     blink::WebInputEvent::NoModifiers,
+                                     blink::WebInputEvent::TimeStampForTesting);
 
   InputMessageGenerator generator;
   std::unique_ptr<BlimpMessage> message =

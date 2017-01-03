@@ -392,31 +392,29 @@ WebTouchEvent* BuildTouchEvent(const InputEventData& event) {
 }
 
 WebKeyboardEvent* BuildKeyEvent(const InputEventData& event) {
-  WebKeyboardEvent* key_event = new WebKeyboardEvent();
+  WebInputEvent::Type type = WebInputEvent::Type::Undefined;
   switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
-      key_event->type = WebInputEvent::RawKeyDown;
+      type = WebInputEvent::RawKeyDown;
       break;
     case PP_INPUTEVENT_TYPE_KEYDOWN:
-      key_event->type = WebInputEvent::KeyDown;
+      type = WebInputEvent::KeyDown;
       break;
     case PP_INPUTEVENT_TYPE_KEYUP:
-      key_event->type = WebInputEvent::KeyUp;
+      type = WebInputEvent::KeyUp;
       break;
     default:
       NOTREACHED();
   }
-  key_event->timeStampSeconds = event.event_time_stamp;
-  key_event->modifiers = event.event_modifiers;
+  WebKeyboardEvent* key_event =
+      new WebKeyboardEvent(type, event.event_modifiers, event.event_time_stamp);
   key_event->windowsKeyCode = event.key_code;
   return key_event;
 }
 
 WebKeyboardEvent* BuildCharEvent(const InputEventData& event) {
-  WebKeyboardEvent* key_event = new WebKeyboardEvent();
-  key_event->type = WebInputEvent::Char;
-  key_event->timeStampSeconds = event.event_time_stamp;
-  key_event->modifiers = event.event_modifiers;
+  WebKeyboardEvent* key_event = new WebKeyboardEvent(
+      WebInputEvent::Char, event.event_modifiers, event.event_time_stamp);
 
   // Make sure to not read beyond the buffer in case some bad code doesn't
   // NULL-terminate it (this is called from plugins).
@@ -431,33 +429,32 @@ WebKeyboardEvent* BuildCharEvent(const InputEventData& event) {
 }
 
 WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
-  WebMouseEvent* mouse_event = new WebMouseEvent();
-  mouse_event->pointerType = blink::WebPointerProperties::PointerType::Mouse;
-
+  WebInputEvent::Type type = WebInputEvent::Undefined;
   switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
-      mouse_event->type = WebInputEvent::MouseDown;
+      type = WebInputEvent::MouseDown;
       break;
     case PP_INPUTEVENT_TYPE_MOUSEUP:
-      mouse_event->type = WebInputEvent::MouseUp;
+      type = WebInputEvent::MouseUp;
       break;
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:
-      mouse_event->type = WebInputEvent::MouseMove;
+      type = WebInputEvent::MouseMove;
       break;
     case PP_INPUTEVENT_TYPE_MOUSEENTER:
-      mouse_event->type = WebInputEvent::MouseEnter;
+      type = WebInputEvent::MouseEnter;
       break;
     case PP_INPUTEVENT_TYPE_MOUSELEAVE:
-      mouse_event->type = WebInputEvent::MouseLeave;
+      type = WebInputEvent::MouseLeave;
       break;
     case PP_INPUTEVENT_TYPE_CONTEXTMENU:
-      mouse_event->type = WebInputEvent::ContextMenu;
+      type = WebInputEvent::ContextMenu;
       break;
     default:
       NOTREACHED();
   }
-  mouse_event->timeStampSeconds = event.event_time_stamp;
-  mouse_event->modifiers = event.event_modifiers;
+  WebMouseEvent* mouse_event =
+      new WebMouseEvent(type, event.event_modifiers, event.event_time_stamp);
+  mouse_event->pointerType = blink::WebPointerProperties::PointerType::Mouse;
   mouse_event->button = static_cast<WebMouseEvent::Button>(event.mouse_button);
   if (mouse_event->type == WebInputEvent::MouseMove) {
     if (mouse_event->modifiers & WebInputEvent::LeftButtonDown)
@@ -476,10 +473,8 @@ WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
 }
 
 WebMouseWheelEvent* BuildMouseWheelEvent(const InputEventData& event) {
-  WebMouseWheelEvent* mouse_wheel_event = new WebMouseWheelEvent();
-  mouse_wheel_event->type = WebInputEvent::MouseWheel;
-  mouse_wheel_event->timeStampSeconds = event.event_time_stamp;
-  mouse_wheel_event->modifiers = event.event_modifiers;
+  WebMouseWheelEvent* mouse_wheel_event = new WebMouseWheelEvent(
+      WebInputEvent::MouseWheel, event.event_modifiers, event.event_time_stamp);
   mouse_wheel_event->deltaX = event.wheel_delta.x;
   mouse_wheel_event->deltaY = event.wheel_delta.y;
   mouse_wheel_event->wheelTicksX = event.wheel_ticks.x;
@@ -711,14 +706,15 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
                  &generate_char);
 
       // Synthesize key down and key up events in all cases.
-      std::unique_ptr<WebKeyboardEvent> key_down_event(new WebKeyboardEvent());
+      std::unique_ptr<WebKeyboardEvent> key_down_event(new WebKeyboardEvent(
+          WebInputEvent::RawKeyDown,
+          needs_shift_modifier ? WebInputEvent::ShiftKey
+                               : WebInputEvent::NoModifiers,
+          web_char_event->timeStampSeconds));
       std::unique_ptr<WebKeyboardEvent> key_up_event(new WebKeyboardEvent());
 
-      key_down_event->type = WebInputEvent::RawKeyDown;
       key_down_event->windowsKeyCode = code;
       key_down_event->nativeKeyCode = code;
-      if (needs_shift_modifier)
-        key_down_event->modifiers |= WebInputEvent::ShiftKey;
 
       // If a char event is needed, set the text fields.
       if (generate_char) {
@@ -731,11 +727,11 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
       events.push_back(std::move(key_down_event));
 
       if (generate_char) {
-        web_char_event->type = WebInputEvent::Char;
+        web_char_event->setType(WebInputEvent::Char);
         events.push_back(std::move(original_event));
       }
 
-      key_up_event->type = WebInputEvent::KeyUp;
+      key_up_event->setType(WebInputEvent::KeyUp);
       events.push_back(std::move(key_up_event));
       break;
     }

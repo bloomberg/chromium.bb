@@ -6548,11 +6548,9 @@ void RenderFrameImpl::HandlePepperImeCommit(const base::string16& text) {
     base::i18n::UTF16CharIterator iterator(&text);
     int32_t i = 0;
     while (iterator.Advance()) {
-      blink::WebKeyboardEvent char_event;
-      char_event.type = blink::WebInputEvent::Char;
-      char_event.timeStampSeconds =
-          ui::EventTimeStampToSeconds(ui::EventTimeForNow());
-      char_event.modifiers = 0;
+      blink::WebKeyboardEvent char_event(
+          blink::WebInputEvent::Char, blink::WebInputEvent::NoModifiers,
+          ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
       char_event.windowsKeyCode = text[i];
       char_event.nativeKeyCode = text[i];
 

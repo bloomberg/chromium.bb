@@ -128,7 +128,7 @@ bool ShouldBoostFling(const gfx::Vector2dF& current_fling_velocity,
 
 WebGestureEvent ObtainGestureScrollBegin(const WebGestureEvent& event) {
   WebGestureEvent scroll_begin_event = event;
-  scroll_begin_event.type = WebInputEvent::GestureScrollBegin;
+  scroll_begin_event.setType(WebInputEvent::GestureScrollBegin);
   scroll_begin_event.data.scrollBegin.deltaXHint = 0;
   scroll_begin_event.data.scrollBegin.deltaYHint = 0;
   return scroll_begin_event;
@@ -1405,9 +1405,9 @@ bool InputHandlerProxy::TouchpadFlingScroll(
       break;
     case cc::EventListenerProperties::kPassive:
     case cc::EventListenerProperties::kNone: {
-      WebMouseWheelEvent synthetic_wheel;
-      synthetic_wheel.type = WebInputEvent::MouseWheel;
-      synthetic_wheel.timeStampSeconds = InSecondsF(base::TimeTicks::Now());
+      WebMouseWheelEvent synthetic_wheel(WebInputEvent::MouseWheel,
+                                         fling_parameters_.modifiers,
+                                         InSecondsF(base::TimeTicks::Now()));
       synthetic_wheel.deltaX = increment.width;
       synthetic_wheel.deltaY = increment.height;
       synthetic_wheel.hasPreciseScrollingDeltas = true;
@@ -1415,7 +1415,6 @@ bool InputHandlerProxy::TouchpadFlingScroll(
       synthetic_wheel.y = fling_parameters_.point.y;
       synthetic_wheel.globalX = fling_parameters_.globalPoint.x;
       synthetic_wheel.globalY = fling_parameters_.globalPoint.y;
-      synthetic_wheel.modifiers = fling_parameters_.modifiers;
 
       disposition = ScrollByMouseWheel(synthetic_wheel, properties);
 

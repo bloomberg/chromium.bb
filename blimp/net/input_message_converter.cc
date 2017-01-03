@@ -15,9 +15,8 @@ namespace {
 std::unique_ptr<blink::WebGestureEvent> BuildCommonWebGesture(
     const InputMessage& proto,
     blink::WebInputEvent::Type type) {
-  std::unique_ptr<blink::WebGestureEvent> event(new blink::WebGestureEvent);
-  event->type = type;
-  event->timeStampSeconds = proto.timestamp_seconds();
+  std::unique_ptr<blink::WebGestureEvent> event(new blink::WebGestureEvent(
+      type, blink::WebInputEvent::NoModifiers, proto.timestamp_seconds()));
 
   const GestureCommon& common = proto.gesture_common();
   event->x = common.x();

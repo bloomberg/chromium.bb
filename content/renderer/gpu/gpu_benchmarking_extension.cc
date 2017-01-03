@@ -51,6 +51,7 @@
 // Note that headers in third_party/skia/src are fragile.  This is
 // an experimental, fragile, and diagnostic-only document type.
 #include "third_party/skia/src/utils/SkMultiPictureDocument.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "v8/include/v8.h"
 
@@ -344,8 +345,9 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
     context.web_view()->setIsActive(true);
     blink::WebRect contentRect =
         context.web_view()->mainFrame()->visibleContentRect();
-    blink::WebMouseEvent mouseMove;
-    mouseMove.type = blink::WebInputEvent::MouseMove;
+    blink::WebMouseEvent mouseMove(
+        blink::WebInputEvent::MouseMove, blink::WebInputEvent::NoModifiers,
+        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
     mouseMove.x = (contentRect.x + contentRect.width / 2) * page_scale_factor;
     mouseMove.y = (contentRect.y + contentRect.height / 2) * page_scale_factor;
     context.web_view()->handleInputEvent(mouseMove);

@@ -21,6 +21,7 @@
 #include "third_party/WebKit/public/web/WebRange.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/events/base_event_utils.h"
 #include "v8/include/v8.h"
 
 namespace test_runner {
@@ -293,9 +294,10 @@ std::vector<int> TextInputController::FirstRectForCharacterRange(
 void TextInputController::SetComposition(const std::string& text) {
   // Sends a keydown event with key code = 0xE5 to emulate input method
   // behavior.
-  blink::WebKeyboardEvent key_down;
-  key_down.type = blink::WebInputEvent::RawKeyDown;
-  key_down.modifiers = 0;
+  blink::WebKeyboardEvent key_down(
+      blink::WebInputEvent::RawKeyDown, blink::WebInputEvent::NoModifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+
   key_down.windowsKeyCode = 0xE5;  // VKEY_PROCESSKEY
   view()->handleInputEvent(key_down);
 

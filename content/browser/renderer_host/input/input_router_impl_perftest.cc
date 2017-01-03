@@ -17,6 +17,7 @@
 #include "ipc/ipc_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -125,13 +126,14 @@ Gestures BuildScrollSequence(size_t steps,
   Gestures gestures;
   const gfx::Vector2dF delta = ScaleVector2d(distance, 1.f / steps);
 
-  WebGestureEvent gesture;
-  gesture.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent gesture(WebInputEvent::GestureScrollBegin,
+                          WebInputEvent::NoModifiers,
+                          ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   gesture.x = origin.x();
   gesture.y = origin.y();
   gestures.push_back(gesture);
 
-  gesture.type = WebInputEvent::GestureScrollUpdate;
+  gesture.setType(WebInputEvent::GestureScrollUpdate);
   gesture.data.scrollUpdate.deltaX = delta.x();
   gesture.data.scrollUpdate.deltaY = delta.y();
   for (size_t i = 0; i < steps; ++i) {
@@ -140,7 +142,7 @@ Gestures BuildScrollSequence(size_t steps,
     gestures.push_back(gesture);
   }
 
-  gesture.type = WebInputEvent::GestureScrollEnd;
+  gesture.setType(WebInputEvent::GestureScrollEnd);
   gestures.push_back(gesture);
   return gestures;
 }
@@ -152,9 +154,9 @@ Touches BuildTouchSequence(size_t steps,
   Touches touches;
   const gfx::Vector2dF delta = ScaleVector2d(distance, 1.f / steps);
 
-  WebTouchEvent touch;
+  WebTouchEvent touch(WebInputEvent::TouchStart, WebInputEvent::NoModifiers,
+                      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   touch.touchesLength = 1;
-  touch.type = WebInputEvent::TouchStart;
   touch.touches[0].id = 0;
   touch.touches[0].state = WebTouchPoint::StatePressed;
   touch.touches[0].position.x = origin.x();
@@ -163,7 +165,7 @@ Touches BuildTouchSequence(size_t steps,
   touch.touches[0].screenPosition.y = origin.y();
   touches.push_back(touch);
 
-  touch.type = WebInputEvent::TouchMove;
+  touch.setType(WebInputEvent::TouchMove);
   touch.touches[0].state = WebTouchPoint::StateMoved;
   for (size_t i = 0; i < steps; ++i) {
     touch.touches[0].position.x += delta.x();
@@ -173,7 +175,7 @@ Touches BuildTouchSequence(size_t steps,
     touches.push_back(touch);
   }
 
-  touch.type = WebInputEvent::TouchEnd;
+  touch.setType(WebInputEvent::TouchEnd);
   touch.touches[0].state = WebTouchPoint::StateReleased;
   touches.push_back(touch);
   return touches;

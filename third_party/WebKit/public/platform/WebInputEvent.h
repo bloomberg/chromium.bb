@@ -194,6 +194,7 @@ class WebInputEvent {
     // and don't indicate explicit depressed state.
     KeyModifiers =
         SymbolKey | FnKey | AltGrKey | MetaKey | AltKey | ControlKey | ShiftKey,
+    NoModifiers = 0,
   };
 
   // Indicates whether the browser needs to block on the ACK result for
@@ -227,6 +228,8 @@ class WebInputEvent {
   };
 
   static const int InputModifiers = ShiftKey | ControlKey | AltKey | MetaKey;
+
+  static constexpr double TimeStampForTesting = 123.0;
 
   double timeStampSeconds;  // Seconds since platform start with microsecond
                             // resolution.
@@ -276,6 +279,12 @@ class WebInputEvent {
     m_frameTranslate = translate;
   }
 
+  void setType(Type typeParam) { type = typeParam; }
+
+  void setModifiers(int modifiersParam) { modifiers = modifiersParam; }
+
+  void setTimeStampSeconds(double seconds) { timeStampSeconds = seconds; }
+
  protected:
   // The root frame scale.
   float m_frameScale;
@@ -283,12 +292,29 @@ class WebInputEvent {
   // The root frame translation (applied post scale).
   WebFloatPoint m_frameTranslate;
 
-  explicit WebInputEvent(unsigned sizeParam) {
+  WebInputEvent(unsigned sizeParam,
+                Type typeParam,
+                int modifiersParam,
+                double timeStampSecondsParam) {
+    memset(this, 0, sizeParam);
+    timeStampSeconds = timeStampSecondsParam;
+    size = sizeParam;
+    type = typeParam;
+    modifiers = modifiersParam;
+#if DCHECK_IS_ON()
+    // If dcheck is on force failures if frame scale is not initialized
+    // correctly by causing DIV0.
+    m_frameScale = 0;
+#else
+    m_frameScale = 1;
+#endif
+  }
+
+  WebInputEvent(unsigned sizeParam) {
     memset(this, 0, sizeParam);
     timeStampSeconds = 0.0;
     size = sizeParam;
     type = Undefined;
-    modifiers = 0;
 #if DCHECK_IS_ON()
     // If dcheck is on force failures if frame scale is not initialized
     // correctly by causing DIV0.
@@ -351,13 +377,13 @@ class WebKeyboardEvent : public WebInputEvent {
   WebUChar text[textLengthCap];
   WebUChar unmodifiedText[textLengthCap];
 
-  WebKeyboardEvent()
-      : WebInputEvent(sizeof(WebKeyboardEvent)),
-        windowsKeyCode(0),
-        nativeKeyCode(0),
-        isSystemKey(false),
-        isBrowserShortcut(false) {
-  }
+  WebKeyboardEvent(Type type, int modifiers, double timeStampSeconds)
+      : WebInputEvent(sizeof(WebKeyboardEvent),
+                      type,
+                      modifiers,
+                      timeStampSeconds) {}
+
+  WebKeyboardEvent() : WebInputEvent(sizeof(WebKeyboardEvent)) {}
 
   // Please refer to bug http://b/issue?id=961192, which talks about Webkit
   // keyboard event handling changes. It also mentions the list of keys
@@ -396,32 +422,23 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   int movementY;
   int clickCount;
 
+  WebMouseEvent(Type type, int modifiers, double timeStampSeconds)
+      : WebInputEvent(sizeof(WebMouseEvent), type, modifiers, timeStampSeconds),
+        WebPointerProperties() {}
+
   WebMouseEvent()
-      : WebInputEvent(sizeof(WebMouseEvent)),
-        WebPointerProperties(),
-        x(0),
-        y(0),
-        windowX(0),
-        windowY(0),
-        globalX(0),
-        globalY(0),
-        movementX(0),
-        movementY(0),
-        clickCount(0) {}
+      : WebInputEvent(sizeof(WebMouseEvent)), WebPointerProperties() {}
 
  protected:
   explicit WebMouseEvent(unsigned sizeParam)
-      : WebInputEvent(sizeParam),
-        WebPointerProperties(),
-        x(0),
-        y(0),
-        windowX(0),
-        windowY(0),
-        globalX(0),
-        globalY(0),
-        movementX(0),
-        movementY(0),
-        clickCount(0) {}
+      : WebInputEvent(sizeParam), WebPointerProperties() {}
+
+  WebMouseEvent(unsigned sizeParam,
+                Type type,
+                int modifiers,
+                double timeStampSeconds)
+      : WebInputEvent(sizeParam, type, modifiers, timeStampSeconds),
+        WebPointerProperties() {}
 };
 
 // WebTouchEvent --------------------------------------------------------------
@@ -455,12 +472,11 @@ class WebTouchEvent : public WebInputEvent {
   uint32_t uniqueTouchEventId;
 
   WebTouchEvent()
-      : WebInputEvent(sizeof(WebTouchEvent)),
-        touchesLength(0),
-        dispatchType(Blocking),
-        movedBeyondSlopRegion(false),
-        touchStartOrFirstTouchMove(false),
-        uniqueTouchEventId(0) {}
+      : WebInputEvent(sizeof(WebTouchEvent)), dispatchType(Blocking) {}
+
+  WebTouchEvent(Type type, int modifiers, double timeStampSeconds)
+      : WebInputEvent(sizeof(WebTouchEvent), type, modifiers, timeStampSeconds),
+        dispatchType(Blocking) {}
 };
 
 #pragma pack(pop)

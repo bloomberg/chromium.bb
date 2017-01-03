@@ -53,8 +53,11 @@ class WebMouseWheelEvent : public WebMouseEvent {
   // listeners were passive or was forced to be non-blocking.
   DispatchType dispatchType;
 
-  WebMouseWheelEvent()
-      : WebMouseEvent(sizeof(WebMouseWheelEvent)),
+  WebMouseWheelEvent(Type type, int modifiers, double timeStampSeconds)
+      : WebMouseEvent(sizeof(WebMouseWheelEvent),
+                      type,
+                      modifiers,
+                      timeStampSeconds),
         deltaX(0.0f),
         deltaY(0.0f),
         wheelTicksX(0.0f),
@@ -66,6 +69,20 @@ class WebMouseWheelEvent : public WebMouseEvent {
         momentumPhase(PhaseNone),
         scrollByPage(false),
         hasPreciseScrollingDeltas(false),
+        railsMode(RailsModeFree),
+        dispatchType(Blocking) {}
+
+  WebMouseWheelEvent()
+      : WebMouseEvent(sizeof(WebMouseWheelEvent)),
+        deltaX(0.0f),
+        deltaY(0.0f),
+        wheelTicksX(0.0f),
+        wheelTicksY(0.0f),
+        accelerationRatioX(1.0f),
+        accelerationRatioY(1.0f),
+        resendingPluginId(-1),
+        phase(PhaseNone),
+        momentumPhase(PhaseNone),
         railsMode(RailsModeFree),
         dispatchType(Blocking) {}
 };

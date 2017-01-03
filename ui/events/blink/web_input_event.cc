@@ -90,23 +90,23 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
 #endif  // defined(OS_WIN)
 
 blink::WebKeyboardEvent MakeWebKeyboardEventFromUiEvent(const KeyEvent& event) {
-  blink::WebKeyboardEvent webkit_event;
-
-  webkit_event.timeStampSeconds = EventTimeStampToSeconds(event.time_stamp());
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags()) |
-                           DomCodeToWebInputEventModifiers(event.code());
-
+  blink::WebInputEvent::Type type = blink::WebInputEvent::Undefined;
   switch (event.type()) {
     case ET_KEY_PRESSED:
-      webkit_event.type = event.is_char() ? blink::WebInputEvent::Char
-                                          : blink::WebInputEvent::RawKeyDown;
+      type = event.is_char() ? blink::WebInputEvent::Char
+                             : blink::WebInputEvent::RawKeyDown;
       break;
     case ET_KEY_RELEASED:
-      webkit_event.type = blink::WebInputEvent::KeyUp;
+      type = blink::WebInputEvent::KeyUp;
       break;
     default:
       NOTREACHED();
   }
+
+  blink::WebKeyboardEvent webkit_event(
+      type, EventFlagsToWebEventModifiers(event.flags()) |
+                DomCodeToWebInputEventModifiers(event.code()),
+      EventTimeStampToSeconds(event.time_stamp()));
 
   if (webkit_event.modifiers & blink::WebInputEvent::AltKey)
     webkit_event.isSystemKey = true;
@@ -128,12 +128,12 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromUiEvent(const KeyEvent& event) {
 
 blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
     const ScrollEvent& event) {
-  blink::WebMouseWheelEvent webkit_event;
+  blink::WebMouseWheelEvent webkit_event(
+      blink::WebInputEvent::MouseWheel,
+      EventFlagsToWebEventModifiers(event.flags()),
+      EventTimeStampToSeconds(event.time_stamp()));
 
-  webkit_event.type = blink::WebInputEvent::MouseWheel;
   webkit_event.button = blink::WebMouseEvent::Button::NoButton;
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
-  webkit_event.timeStampSeconds = EventTimeStampToSeconds(event.time_stamp());
   webkit_event.hasPreciseScrollingDeltas = true;
 
   float offset_ordinal_x = event.x_offset_ordinal();
@@ -155,16 +155,13 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
 
 blink::WebGestureEvent MakeWebGestureEventFromUiEvent(
     const ScrollEvent& event) {
-  blink::WebGestureEvent webkit_event;
-
+  blink::WebInputEvent::Type type = blink::WebInputEvent::Undefined;
   switch (event.type()) {
     case ET_SCROLL_FLING_START:
-      webkit_event.type = blink::WebInputEvent::GestureFlingStart;
-      webkit_event.data.flingStart.velocityX = event.x_offset();
-      webkit_event.data.flingStart.velocityY = event.y_offset();
+      type = blink::WebInputEvent::GestureFlingStart;
       break;
     case ET_SCROLL_FLING_CANCEL:
-      webkit_event.type = blink::WebInputEvent::GestureFlingCancel;
+      type = blink::WebInputEvent::GestureFlingCancel;
       break;
     case ET_SCROLL:
       NOTREACHED() << "Invalid gesture type: " << event.type();
@@ -173,9 +170,15 @@ blink::WebGestureEvent MakeWebGestureEventFromUiEvent(
       NOTREACHED() << "Unknown gesture type: " << event.type();
   }
 
+  blink::WebGestureEvent webkit_event(
+      type, EventFlagsToWebEventModifiers(event.flags()),
+      EventTimeStampToSeconds(event.time_stamp()));
   webkit_event.sourceDevice = blink::WebGestureDeviceTouchpad;
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
-  webkit_event.timeStampSeconds = EventTimeStampToSeconds(event.time_stamp());
+  if (event.type() == ET_SCROLL_FLING_START) {
+    webkit_event.data.flingStart.velocityX = event.x_offset();
+    webkit_event.data.flingStart.velocityY = event.y_offset();
+  }
+
   return webkit_event;
 }
 
@@ -360,20 +363,48 @@ blink::WebGestureEvent MakeWebGestureEvent(
 }
 
 blink::WebGestureEvent MakeWebGestureEventFlingCancel() {
-  blink::WebGestureEvent gesture_event;
+  blink::WebGestureEvent gesture_event(
+      blink::WebInputEvent::GestureFlingCancel,
+      blink::WebInputEvent::NoModifiers,
+      EventTimeStampToSeconds(EventTimeForNow()));
 
   // All other fields are ignored on a GestureFlingCancel event.
-  gesture_event.type = blink::WebInputEvent::GestureFlingCancel;
-  gesture_event.timeStampSeconds = EventTimeStampToSeconds(EventTimeForNow());
   gesture_event.sourceDevice = blink::WebGestureDeviceTouchpad;
   return gesture_event;
 }
 
 blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
-  blink::WebMouseEvent webkit_event;
+  blink::WebInputEvent::Type type = blink::WebInputEvent::Undefined;
+  int click_count = 0;
+  switch (event.type()) {
+    case ET_MOUSE_PRESSED:
+      type = blink::WebInputEvent::MouseDown;
+      click_count = event.GetClickCount();
+      break;
+    case ET_MOUSE_RELEASED:
+      type = blink::WebInputEvent::MouseUp;
+      click_count = event.GetClickCount();
+      break;
+    case ET_MOUSE_EXITED:
+// TODO(chaopeng) this fix only for chromeos now, should convert ET_MOUSE_EXITED
+// to MouseLeave when crbug.com/450631 fixed.
+#if defined(OS_CHROMEOS)
+      type = blink::WebInputEvent::MouseLeave;
+      break;
+#endif
+    case ET_MOUSE_ENTERED:
+    case ET_MOUSE_MOVED:
+    case ET_MOUSE_DRAGGED:
+      type = blink::WebInputEvent::MouseMove;
+      break;
+    default:
+      NOTIMPLEMENTED() << "Received unexpected event: " << event.type();
+      break;
+  }
 
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
-  webkit_event.timeStampSeconds = EventTimeStampToSeconds(event.time_stamp());
+  blink::WebMouseEvent webkit_event(
+      type, EventFlagsToWebEventModifiers(event.flags()),
+      EventTimeStampToSeconds(event.time_stamp()));
   webkit_event.button = blink::WebMouseEvent::Button::NoButton;
   int button_flags = event.flags();
   if (event.type() == ET_MOUSE_PRESSED || event.type() == ET_MOUSE_RELEASED) {
@@ -390,32 +421,7 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
   if (button_flags & EF_RIGHT_MOUSE_BUTTON)
     webkit_event.button = blink::WebMouseEvent::Button::Right;
 
-  switch (event.type()) {
-    case ET_MOUSE_PRESSED:
-      webkit_event.type = blink::WebInputEvent::MouseDown;
-      webkit_event.clickCount = event.GetClickCount();
-      break;
-    case ET_MOUSE_RELEASED:
-      webkit_event.type = blink::WebInputEvent::MouseUp;
-      webkit_event.clickCount = event.GetClickCount();
-      break;
-    case ET_MOUSE_EXITED:
-// TODO(chaopeng) this fix only for chromeos now, should convert ET_MOUSE_EXITED
-// to MouseLeave when crbug.com/450631 fixed.
-#if defined(OS_CHROMEOS)
-      webkit_event.type = blink::WebInputEvent::MouseLeave;
-      break;
-#endif
-    case ET_MOUSE_ENTERED:
-    case ET_MOUSE_MOVED:
-    case ET_MOUSE_DRAGGED:
-      webkit_event.type = blink::WebInputEvent::MouseMove;
-      break;
-    default:
-      NOTIMPLEMENTED() << "Received unexpected event: " << event.type();
-      break;
-  }
-
+  webkit_event.clickCount = click_count;
   webkit_event.tiltX = roundf(event.pointer_details().tilt_x);
   webkit_event.tiltY = roundf(event.pointer_details().tilt_y);
   webkit_event.force = event.pointer_details().force;
@@ -427,12 +433,12 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
 
 blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
     const MouseWheelEvent& event) {
-  blink::WebMouseWheelEvent webkit_event;
+  blink::WebMouseWheelEvent webkit_event(
+      blink::WebInputEvent::MouseWheel,
+      EventFlagsToWebEventModifiers(event.flags()),
+      EventTimeStampToSeconds(event.time_stamp()));
 
-  webkit_event.type = blink::WebInputEvent::MouseWheel;
   webkit_event.button = blink::WebMouseEvent::Button::NoButton;
-  webkit_event.modifiers = EventFlagsToWebEventModifiers(event.flags());
-  webkit_event.timeStampSeconds = EventTimeStampToSeconds(event.time_stamp());
 
   webkit_event.deltaX = event.x_offset();
   webkit_event.deltaY = event.y_offset();

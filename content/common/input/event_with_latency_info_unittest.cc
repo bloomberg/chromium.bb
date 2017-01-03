@@ -25,29 +25,27 @@ using EventWithLatencyInfoTest = testing::Test;
 TouchEventWithLatencyInfo CreateTouchEvent(WebInputEvent::Type type,
                                            double timestamp,
                                            unsigned touch_count = 1) {
-  TouchEventWithLatencyInfo touch;
+  TouchEventWithLatencyInfo touch(type, WebInputEvent::NoModifiers, timestamp,
+                                  ui::LatencyInfo());
   touch.event.touchesLength = touch_count;
-  touch.event.type = type;
-  touch.event.timeStampSeconds = timestamp;
   return touch;
 }
 
 MouseEventWithLatencyInfo CreateMouseEvent(WebInputEvent::Type type,
                                            double timestamp) {
-  MouseEventWithLatencyInfo mouse;
-  mouse.event.type = type;
-  mouse.event.timeStampSeconds = timestamp;
-  return mouse;
+  return MouseEventWithLatencyInfo(type, WebInputEvent::NoModifiers, timestamp,
+                                   ui::LatencyInfo());
 }
 
-MouseWheelEventWithLatencyInfo CreateMouseWheelEvent(double timestamp,
-                                                     float deltaX = 0.0f,
-                                                     float deltaY = 0.0f) {
-  MouseWheelEventWithLatencyInfo mouse_wheel;
-  mouse_wheel.event.type = WebInputEvent::MouseWheel;
+MouseWheelEventWithLatencyInfo CreateMouseWheelEvent(
+    double timestamp,
+    float deltaX = 0.0f,
+    float deltaY = 0.0f,
+    int modifiers = WebInputEvent::NoModifiers) {
+  MouseWheelEventWithLatencyInfo mouse_wheel(
+      WebInputEvent::MouseWheel, modifiers, timestamp, ui::LatencyInfo());
   mouse_wheel.event.deltaX = deltaX;
   mouse_wheel.event.deltaY = deltaY;
-  mouse_wheel.event.timeStampSeconds = timestamp;
   return mouse_wheel;
 }
 
@@ -55,11 +53,10 @@ GestureEventWithLatencyInfo CreateGestureEvent(WebInputEvent::Type type,
                                                double timestamp,
                                                float x = 0.0f,
                                                float y = 0.0f) {
-  GestureEventWithLatencyInfo gesture;
-  gesture.event.type = type;
+  GestureEventWithLatencyInfo gesture(type, WebInputEvent::NoModifiers,
+                                      timestamp, ui::LatencyInfo());
   gesture.event.x = x;
   gesture.event.y = y;
-  gesture.event.timeStampSeconds = timestamp;
   return gesture;
 }
 
@@ -307,10 +304,8 @@ TEST_F(EventWithLatencyInfoTest, WebMouseWheelEventCoalescing) {
   EXPECT_TRUE(CanCoalesce(mouse_wheel_0, mouse_wheel_1));
 
   // WebMouseWheelEvent objects with different modifiers should not coalesce.
-  mouse_wheel_0 = CreateMouseWheel(1, 1);
-  mouse_wheel_1 = CreateMouseWheel(1, 1);
-  mouse_wheel_0.event.modifiers = WebInputEvent::ControlKey;
-  mouse_wheel_1.event.modifiers = WebInputEvent::ShiftKey;
+  mouse_wheel_0 = CreateMouseWheelEvent(2.0, 1, 1, WebInputEvent::ControlKey);
+  mouse_wheel_1 = CreateMouseWheelEvent(2.0, 1, 1, WebInputEvent::ShiftKey);
   EXPECT_FALSE(CanCoalesce(mouse_wheel_0, mouse_wheel_1));
 
   // Coalesce old and new events.
@@ -355,10 +350,10 @@ TEST_F(EventWithLatencyInfoTest, WebMouseWheelEventCoalescing) {
 
 // Coalescing preserves the newer timestamp.
 TEST_F(EventWithLatencyInfoTest, TimestampCoalescing) {
-  MouseWheelEventWithLatencyInfo mouse_wheel_0 = CreateMouseWheel(1, 1);
-  mouse_wheel_0.event.timeStampSeconds = 5.0;
-  MouseWheelEventWithLatencyInfo mouse_wheel_1 = CreateMouseWheel(2, 2);
-  mouse_wheel_1.event.timeStampSeconds = 10.0;
+  MouseWheelEventWithLatencyInfo mouse_wheel_0 =
+      CreateMouseWheelEvent(5.0, 1, 1);
+  MouseWheelEventWithLatencyInfo mouse_wheel_1 =
+      CreateMouseWheelEvent(10.0, 2, 2);
 
   EXPECT_TRUE(CanCoalesce(mouse_wheel_0, mouse_wheel_1));
   Coalesce(mouse_wheel_1, &mouse_wheel_0);

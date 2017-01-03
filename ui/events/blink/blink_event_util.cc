@@ -532,16 +532,15 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
                     static_cast<int>(blink::WebTouchEvent::kTouchesLengthCap),
                 "inconsistent maximum number of active touch points");
 
-  blink::WebTouchEvent result;
-
-  result.type = ToWebTouchEventType(event.GetAction());
+  blink::WebTouchEvent result(
+      ToWebTouchEventType(event.GetAction()),
+      EventFlagsToWebEventModifiers(event.GetFlags()),
+      ui::EventTimeStampToSeconds(event.GetEventTime()));
   result.dispatchType = result.type == WebInputEvent::TouchCancel
                             ? WebInputEvent::EventNonBlocking
                             : WebInputEvent::Blocking;
-  result.timeStampSeconds = ui::EventTimeStampToSeconds(event.GetEventTime());
   result.movedBeyondSlopRegion = moved_beyond_slop_region;
 
-  result.modifiers = EventFlagsToWebEventModifiers(event.GetFlags());
   // TODO(mustaq): MotionEvent flags seems unrelated, should use
   // metaState instead?
 
@@ -597,13 +596,13 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
                                       const gfx::PointF& raw_location,
                                       int flags,
                                       uint32_t unique_touch_event_id) {
-  WebGestureEvent gesture;
-  gesture.timeStampSeconds = ui::EventTimeStampToSeconds(timestamp);
+  WebGestureEvent gesture(WebInputEvent::Undefined,
+                          EventFlagsToWebEventModifiers(flags),
+                          ui::EventTimeStampToSeconds(timestamp));
   gesture.x = gfx::ToFlooredInt(location.x());
   gesture.y = gfx::ToFlooredInt(location.y());
   gesture.globalX = gfx::ToFlooredInt(raw_location.x());
   gesture.globalY = gfx::ToFlooredInt(raw_location.y());
-  gesture.modifiers = EventFlagsToWebEventModifiers(flags);
 
   switch (details.device_type()) {
     case GestureDeviceType::DEVICE_TOUCHSCREEN:
@@ -622,86 +621,86 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
 
   switch (details.type()) {
     case ET_GESTURE_SHOW_PRESS:
-      gesture.type = WebInputEvent::GestureShowPress;
+      gesture.setType(WebInputEvent::GestureShowPress);
       gesture.data.showPress.width = details.bounding_box_f().width();
       gesture.data.showPress.height = details.bounding_box_f().height();
       break;
     case ET_GESTURE_DOUBLE_TAP:
-      gesture.type = WebInputEvent::GestureDoubleTap;
+      gesture.setType(WebInputEvent::GestureDoubleTap);
       DCHECK_EQ(1, details.tap_count());
       gesture.data.tap.tapCount = details.tap_count();
       gesture.data.tap.width = details.bounding_box_f().width();
       gesture.data.tap.height = details.bounding_box_f().height();
       break;
     case ET_GESTURE_TAP:
-      gesture.type = WebInputEvent::GestureTap;
+      gesture.setType(WebInputEvent::GestureTap);
       DCHECK_GE(details.tap_count(), 1);
       gesture.data.tap.tapCount = details.tap_count();
       gesture.data.tap.width = details.bounding_box_f().width();
       gesture.data.tap.height = details.bounding_box_f().height();
       break;
     case ET_GESTURE_TAP_UNCONFIRMED:
-      gesture.type = WebInputEvent::GestureTapUnconfirmed;
+      gesture.setType(WebInputEvent::GestureTapUnconfirmed);
       DCHECK_EQ(1, details.tap_count());
       gesture.data.tap.tapCount = details.tap_count();
       gesture.data.tap.width = details.bounding_box_f().width();
       gesture.data.tap.height = details.bounding_box_f().height();
       break;
     case ET_GESTURE_LONG_PRESS:
-      gesture.type = WebInputEvent::GestureLongPress;
+      gesture.setType(WebInputEvent::GestureLongPress);
       gesture.data.longPress.width = details.bounding_box_f().width();
       gesture.data.longPress.height = details.bounding_box_f().height();
       break;
     case ET_GESTURE_LONG_TAP:
-      gesture.type = WebInputEvent::GestureLongTap;
+      gesture.setType(WebInputEvent::GestureLongTap);
       gesture.data.longPress.width = details.bounding_box_f().width();
       gesture.data.longPress.height = details.bounding_box_f().height();
       break;
     case ET_GESTURE_TWO_FINGER_TAP:
-      gesture.type = blink::WebInputEvent::GestureTwoFingerTap;
+      gesture.setType(blink::WebInputEvent::GestureTwoFingerTap);
       gesture.data.twoFingerTap.firstFingerWidth = details.first_finger_width();
       gesture.data.twoFingerTap.firstFingerHeight =
           details.first_finger_height();
       break;
     case ET_GESTURE_SCROLL_BEGIN:
-      gesture.type = WebInputEvent::GestureScrollBegin;
+      gesture.setType(WebInputEvent::GestureScrollBegin);
       gesture.data.scrollBegin.pointerCount = details.touch_points();
       gesture.data.scrollBegin.deltaXHint = details.scroll_x_hint();
       gesture.data.scrollBegin.deltaYHint = details.scroll_y_hint();
       break;
     case ET_GESTURE_SCROLL_UPDATE:
-      gesture.type = WebInputEvent::GestureScrollUpdate;
+      gesture.setType(WebInputEvent::GestureScrollUpdate);
       gesture.data.scrollUpdate.deltaX = details.scroll_x();
       gesture.data.scrollUpdate.deltaY = details.scroll_y();
       gesture.data.scrollUpdate.previousUpdateInSequencePrevented =
           details.previous_scroll_update_in_sequence_prevented();
       break;
     case ET_GESTURE_SCROLL_END:
-      gesture.type = WebInputEvent::GestureScrollEnd;
+      gesture.setType(WebInputEvent::GestureScrollEnd);
       break;
     case ET_SCROLL_FLING_START:
-      gesture.type = WebInputEvent::GestureFlingStart;
+      gesture.setType(WebInputEvent::GestureFlingStart);
       gesture.data.flingStart.velocityX = details.velocity_x();
       gesture.data.flingStart.velocityY = details.velocity_y();
       break;
     case ET_SCROLL_FLING_CANCEL:
-      gesture.type = WebInputEvent::GestureFlingCancel;
+      gesture.setType(WebInputEvent::GestureFlingCancel);
       break;
     case ET_GESTURE_PINCH_BEGIN:
-      gesture.type = WebInputEvent::GesturePinchBegin;
+      gesture.setType(WebInputEvent::GesturePinchBegin);
       break;
     case ET_GESTURE_PINCH_UPDATE:
-      gesture.type = WebInputEvent::GesturePinchUpdate;
+      gesture.setType(WebInputEvent::GesturePinchUpdate);
       gesture.data.pinchUpdate.scale = details.scale();
       break;
     case ET_GESTURE_PINCH_END:
-      gesture.type = WebInputEvent::GesturePinchEnd;
+      gesture.setType(WebInputEvent::GesturePinchEnd);
       break;
     case ET_GESTURE_TAP_CANCEL:
-      gesture.type = WebInputEvent::GestureTapCancel;
+      gesture.setType(WebInputEvent::GestureTapCancel);
       break;
     case ET_GESTURE_TAP_DOWN:
-      gesture.type = WebInputEvent::GestureTapDown;
+      gesture.setType(WebInputEvent::GestureTapDown);
       gesture.data.tapDown.width = details.bounding_box_f().width();
       gesture.data.tapDown.height = details.bounding_box_f().height();
       break;
@@ -709,7 +708,7 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
     case ET_GESTURE_END:
     case ET_GESTURE_SWIPE:
       // The caller is responsible for discarding these gestures appropriately.
-      gesture.type = WebInputEvent::Undefined;
+      gesture.setType(WebInputEvent::Undefined);
       break;
     default:
       NOTREACHED() << "EventType provided wasn't a valid gesture event: "

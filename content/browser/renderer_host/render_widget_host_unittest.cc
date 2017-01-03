@@ -32,6 +32,7 @@
 #include "content/test/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -259,7 +260,7 @@ class TestView : public TestRenderWidgetHostView {
   const WebTouchEvent& acked_event() const { return acked_event_; }
   int acked_event_count() const { return acked_event_count_; }
   void ClearAckedEvent() {
-    acked_event_.type = blink::WebInputEvent::Undefined;
+    acked_event_.setType(blink::WebInputEvent::Undefined);
     acked_event_count_ = 0;
   }
 
@@ -311,8 +312,8 @@ class TestView : public TestRenderWidgetHostView {
     // into WebInputEvent::MouseMove.)
     WebMouseEvent event =
         SyntheticWebMouseEventBuilder::Build(WebInputEvent::MouseMove);
-    event.timeStampSeconds =
-        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+    event.setTimeStampSeconds(
+        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
     rwh_->input_router()->SendMouseEvent(
         MouseEventWithLatencyInfo(event, ui::LatencyInfo()));
   }
@@ -448,7 +449,7 @@ class RenderWidgetHostTest : public testing::Test {
         handle_mouse_event_(false),
         simulated_event_time_delta_seconds_(0) {
     last_simulated_event_time_seconds_ =
-        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+        ui::EventTimeStampToSeconds(ui::EventTimeForNow());
   }
   ~RenderWidgetHostTest() override {}
 
@@ -545,10 +546,8 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void SimulateKeyboardEvent(WebInputEvent::Type type, int modifiers) {
-    WebKeyboardEvent event = SyntheticWebKeyboardEventBuilder::Build(type);
-    event.modifiers = modifiers;
-    NativeWebKeyboardEvent native_event;
-    memcpy(&native_event, &event, sizeof(event));
+    NativeWebKeyboardEvent native_event(type, modifiers,
+                                        GetNextSimulatedEventTimeSeconds());
     host_->ForwardKeyboardEvent(native_event);
   }
 
@@ -589,7 +588,7 @@ class RenderWidgetHostTest : public testing::Test {
         SyntheticWebMouseEventBuilder::Build(type, x, y, modifiers);
     if (pressed)
       event.button = WebMouseEvent::Button::Left;
-    event.timeStampSeconds = GetNextSimulatedEventTimeSeconds();
+    event.setTimeStampSeconds(GetNextSimulatedEventTimeSeconds());
     host_->ForwardMouseEvent(event);
   }
 

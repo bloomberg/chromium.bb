@@ -149,8 +149,8 @@ class RootScrollerTest : public ::testing::Test {
                                        WebGestureDevice device,
                                        int deltaX,
                                        int deltaY) {
-    WebGestureEvent event;
-    event.type = type;
+    WebGestureEvent event(type, WebInputEvent::NoModifiers,
+                          WebInputEvent::TimeStampForTesting);
     event.sourceDevice = device;
     event.x = 100;
     event.y = 100;

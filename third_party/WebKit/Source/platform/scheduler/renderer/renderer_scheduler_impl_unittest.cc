@@ -28,16 +28,12 @@ namespace scheduler {
 namespace {
 class FakeInputEvent : public blink::WebInputEvent {
  public:
-  explicit FakeInputEvent(blink::WebInputEvent::Type event_type)
-      : WebInputEvent(sizeof(FakeInputEvent)) {
-    type = event_type;
-  }
-
-  FakeInputEvent(blink::WebInputEvent::Type event_type, int event_modifiers)
-      : WebInputEvent(sizeof(FakeInputEvent)) {
-    type = event_type;
-    modifiers = event_modifiers;
-  }
+  explicit FakeInputEvent(blink::WebInputEvent::Type event_type,
+                          int modifiers = WebInputEvent::NoModifiers)
+      : WebInputEvent(sizeof(FakeInputEvent),
+                      event_type,
+                      modifiers,
+                      WebInputEvent::TimeStampForTesting) {}
 };
 
 void AppendToVectorTestTask(std::vector<std::string>* vector,

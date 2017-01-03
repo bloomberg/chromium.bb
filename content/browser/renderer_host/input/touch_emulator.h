@@ -73,7 +73,9 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   bool InPinchGestureMode() const;
 
   void FillTouchEventAndPoint(const blink::WebMouseEvent& mouse_event);
-  void FillPinchEvent(const blink::WebInputEvent& event);
+  blink::WebGestureEvent GetPinchGestureEvent(
+      blink::WebInputEvent::Type type,
+      const blink::WebInputEvent& original_event);
 
   // The following methods generate and pass gesture events to the renderer.
   void PinchBegin(const blink::WebGestureEvent& event);
@@ -118,7 +120,6 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   // did not send fling start in pinch mode.
   bool suppress_next_fling_cancel_;
 
-  blink::WebGestureEvent pinch_event_;
   // Point which does not move while pinch-zooming.
   gfx::Point pinch_anchor_;
   // The cumulative scale change from the start of pinch gesture.

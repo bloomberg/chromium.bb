@@ -83,14 +83,11 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(
     int unicode_character,
     bool is_system_key) {
   DCHECK(WebInputEvent::isKeyboardEventType(type));
-  WebKeyboardEvent result;
+  WebKeyboardEvent result(type, modifiers, time_sec);
 
   ui::DomCode dom_code = ui::DomCode::NONE;
   if (scancode)
     dom_code = ui::KeycodeConverter::NativeKeycodeToDomCode(scancode);
-  result.type = type;
-  result.modifiers = modifiers;
-  result.timeStampSeconds = time_sec;
   result.windowsKeyCode = ui::LocatedToNonLocatedKeyboardCode(
       ui::KeyboardCodeFromAndroidKeyCode(keycode));
   result.modifiers |= ui::DomCodeToWebInputEventModifiers(dom_code);
@@ -126,16 +123,14 @@ WebMouseEvent WebMouseEventBuilder::Build(
       int tool_type) {
 
   DCHECK(WebInputEvent::isMouseEventType(type));
-  WebMouseEvent result;
+  WebMouseEvent result(type, ui::EventFlagsToWebEventModifiers(modifiers),
+                       time_sec);
 
-  result.type = type;
   result.x = window_x;
   result.y = window_y;
   result.windowX = window_x;
   result.windowY = window_y;
-  result.timeStampSeconds = time_sec;
   result.clickCount = click_count;
-  result.modifiers = ui::EventFlagsToWebEventModifiers(modifiers);
 
   ui::SetWebPointerPropertiesFromMotionEventData(
       result,
@@ -155,14 +150,12 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(float ticks_x,
                                                     double time_sec,
                                                     int window_x,
                                                     int window_y) {
-  WebMouseWheelEvent result;
-
-  result.type = WebInputEvent::MouseWheel;
+  WebMouseWheelEvent result(WebInputEvent::MouseWheel,
+                            WebInputEvent::NoModifiers, time_sec);
   result.x = window_x;
   result.y = window_y;
   result.windowX = window_x;
   result.windowY = window_y;
-  result.timeStampSeconds = time_sec;
   result.button = WebMouseEvent::Button::NoButton;
   result.hasPreciseScrollingDeltas = true;
   result.deltaX = ticks_x * tick_multiplier;
@@ -178,12 +171,10 @@ WebGestureEvent WebGestureEventBuilder::Build(WebInputEvent::Type type,
                                               int x,
                                               int y) {
   DCHECK(WebInputEvent::isGestureEventType(type));
-  WebGestureEvent result;
+  WebGestureEvent result(type, WebInputEvent::NoModifiers, time_sec);
 
-  result.type = type;
   result.x = x;
   result.y = y;
-  result.timeStampSeconds = time_sec;
   result.sourceDevice = blink::WebGestureDeviceTouchscreen;
 
   return result;

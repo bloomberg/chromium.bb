@@ -5881,8 +5881,8 @@ class DisambiguationPopupTestWebViewClient
 };
 
 static WebGestureEvent fatTap(int x, int y) {
-  WebGestureEvent event;
-  event.type = WebInputEvent::GestureTap;
+  WebGestureEvent event(WebInputEvent::GestureTap, WebInputEvent::NoModifiers,
+                        WebInputEvent::TimeStampForTesting);
   event.sourceDevice = WebGestureDeviceTouchscreen;
   event.x = x;
   event.y = y;
@@ -9730,8 +9730,8 @@ class WebFrameOverscrollTest
   WebGestureEvent generateEvent(WebInputEvent::Type type,
                                 float deltaX = 0.0,
                                 float deltaY = 0.0) {
-    WebGestureEvent event;
-    event.type = type;
+    WebGestureEvent event(type, WebInputEvent::NoModifiers,
+                          WebInputEvent::TimeStampForTesting);
     // TODO(wjmaclean): Make sure that touchpad device is only ever used for
     // gesture scrolling event types.
     event.sourceDevice = GetParam();
@@ -10670,14 +10670,17 @@ TEST_F(WebFrameTest, ScrollBeforeLayoutDoesntCrash) {
   Document* document = webView->mainFrameImpl()->frame()->document();
   document->documentElement()->setLayoutObject(nullptr);
 
-  WebGestureEvent beginEvent;
-  beginEvent.type = WebInputEvent::GestureScrollEnd;
+  WebGestureEvent beginEvent(WebInputEvent::GestureScrollBegin,
+                             WebInputEvent::NoModifiers,
+                             WebInputEvent::TimeStampForTesting);
   beginEvent.sourceDevice = WebGestureDeviceTouchpad;
-  WebGestureEvent updateEvent;
-  updateEvent.type = WebInputEvent::GestureScrollEnd;
+  WebGestureEvent updateEvent(WebInputEvent::GestureScrollUpdate,
+                              WebInputEvent::NoModifiers,
+                              WebInputEvent::TimeStampForTesting);
   updateEvent.sourceDevice = WebGestureDeviceTouchpad;
-  WebGestureEvent endEvent;
-  endEvent.type = WebInputEvent::GestureScrollEnd;
+  WebGestureEvent endEvent(WebInputEvent::GestureScrollEnd,
+                           WebInputEvent::NoModifiers,
+                           WebInputEvent::TimeStampForTesting);
   endEvent.sourceDevice = WebGestureDeviceTouchpad;
 
   // Try GestureScrollEnd and GestureScrollUpdate first to make sure that not

@@ -609,15 +609,13 @@ WebInputEventResult WebViewImpl::handleMouseWheel(
 WebGestureEvent WebViewImpl::createGestureScrollEventFromFling(
     WebInputEvent::Type type,
     WebGestureDevice sourceDevice) const {
-  WebGestureEvent gestureEvent;
-  gestureEvent.type = type;
+  WebGestureEvent gestureEvent(type, m_flingModifier,
+                               WTF::monotonicallyIncreasingTime());
   gestureEvent.sourceDevice = sourceDevice;
-  gestureEvent.timeStampSeconds = WTF::monotonicallyIncreasingTime();
   gestureEvent.x = m_positionOnFlingStart.x;
   gestureEvent.y = m_positionOnFlingStart.y;
   gestureEvent.globalX = m_globalPositionOnFlingStart.x;
   gestureEvent.globalY = m_globalPositionOnFlingStart.y;
-  gestureEvent.modifiers = m_flingModifier;
   return gestureEvent;
 }
 
@@ -629,11 +627,11 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta,
     return false;
 
   if (m_flingSourceDevice == WebGestureDeviceTouchpad) {
-    WebMouseWheelEvent syntheticWheel;
+    WebMouseWheelEvent syntheticWheel(WebInputEvent::MouseWheel,
+                                      m_flingModifier,
+                                      WTF::monotonicallyIncreasingTime());
     const float tickDivisor = WheelEvent::TickMultiplier;
 
-    syntheticWheel.type = WebInputEvent::MouseWheel;
-    syntheticWheel.timeStampSeconds = WTF::monotonicallyIncreasingTime();
     syntheticWheel.deltaX = delta.width;
     syntheticWheel.deltaY = delta.height;
     syntheticWheel.wheelTicksX = delta.width / tickDivisor;
@@ -643,7 +641,6 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta,
     syntheticWheel.y = m_positionOnFlingStart.y;
     syntheticWheel.globalX = m_globalPositionOnFlingStart.x;
     syntheticWheel.globalY = m_globalPositionOnFlingStart.y;
-    syntheticWheel.modifiers = m_flingModifier;
 
     if (handleMouseWheel(*m_page->deprecatedLocalMainFrame(), syntheticWheel) !=
         WebInputEventResult::NotHandled)
@@ -938,14 +935,14 @@ WebInputEventResult WebViewImpl::handleSyntheticWheelFromTouchpadPinchEvent(
   // sending fake wheel events with the ctrl modifier set when we see trackpad
   // pinch gestures.  Ideally we'd someday get a platform 'pinch' event and
   // send that instead.
-  WebMouseWheelEvent wheelEvent;
-  wheelEvent.type = WebInputEvent::MouseWheel;
-  wheelEvent.timeStampSeconds = pinchEvent.timeStampSeconds;
+  WebMouseWheelEvent wheelEvent(
+      WebInputEvent::MouseWheel,
+      pinchEvent.modifiers | WebInputEvent::ControlKey,
+      pinchEvent.timeStampSeconds);
   wheelEvent.windowX = wheelEvent.x = pinchEvent.x;
   wheelEvent.windowY = wheelEvent.y = pinchEvent.y;
   wheelEvent.globalX = pinchEvent.globalX;
   wheelEvent.globalY = pinchEvent.globalY;
-  wheelEvent.modifiers = pinchEvent.modifiers | WebInputEvent::ControlKey;
   wheelEvent.deltaX = 0;
 
   // The function to convert scales to deltaY values is designed to be
@@ -3784,10 +3781,11 @@ WebHitTestResult WebViewImpl::hitTestResultForTap(
   if (!m_page->mainFrame()->isLocalFrame())
     return HitTestResult();
 
-  WebGestureEvent tapEvent;
+  WebGestureEvent tapEvent(WebInputEvent::GestureTap,
+                           WebInputEvent::NoModifiers,
+                           WTF::monotonicallyIncreasingTime());
   tapEvent.x = tapPointWindowPos.x;
   tapEvent.y = tapPointWindowPos.y;
-  tapEvent.type = WebInputEvent::GestureTap;
   // GestureTap is only ever from a touchscreen.
   tapEvent.sourceDevice = WebGestureDeviceTouchscreen;
   tapEvent.data.tap.tapCount = 1;

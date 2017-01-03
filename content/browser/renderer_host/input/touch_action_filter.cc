@@ -81,7 +81,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
         // zero-velocity fling, convert the now zero-velocity fling accordingly.
         if (!gesture_event->data.flingStart.velocityX &&
             !gesture_event->data.flingStart.velocityY) {
-          gesture_event->type = WebInputEvent::GestureScrollEnd;
+          gesture_event->setType(WebInputEvent::GestureScrollEnd);
         }
       }
       return FilterScrollEndingGesture();
@@ -107,7 +107,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
     case WebInputEvent::GestureDoubleTap:
       DCHECK_EQ(1, gesture_event->data.tap.tapCount);
       if (!allow_current_double_tap_event_)
-        gesture_event->type = WebInputEvent::GestureTap;
+        gesture_event->setType(WebInputEvent::GestureTap);
       allow_current_double_tap_event_ = true;
       break;
 
@@ -117,7 +117,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
       allow_current_double_tap_event_ =
           (allowed_touch_action_ & TOUCH_ACTION_DOUBLE_TAP_ZOOM) != 0;
       if (!allow_current_double_tap_event_) {
-        gesture_event->type = WebInputEvent::GestureTap;
+        gesture_event->setType(WebInputEvent::GestureTap);
         drop_current_tap_ending_event_ = true;
       }
       break;

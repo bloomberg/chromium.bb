@@ -26,15 +26,17 @@ const struct {
 };
 
 TEST(BrowserWindowUtilsTest, TestIsTextEditingEvent) {
-  content::NativeWebKeyboardEvent event;
+  content::NativeWebKeyboardEvent event(WebInputEvent::Char,
+                                        WebInputEvent::NoModifiers,
+                                        WebInputEvent::TimeStampForTesting);
   EXPECT_FALSE([BrowserWindowUtils isTextEditingEvent:event]);
 
   for (const auto& test : kTextEditingEventTestCases) {
     SCOPED_TRACE(base::StringPrintf("key = %c, modifiers = %d",
                  test.key_code, test.modifiers));
-    content::NativeWebKeyboardEvent event;
+    content::NativeWebKeyboardEvent event(WebInputEvent::Char, test.modifiers,
+                                          WebInputEvent::TimeStampForTesting);
     event.windowsKeyCode = test.key_code;
-    event.modifiers = test.modifiers;
     EXPECT_EQ(test.is_text_editing_event,
               [BrowserWindowUtils isTextEditingEvent:event]);
   }

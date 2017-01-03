@@ -31,6 +31,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/events/base_event_utils.h"
 
 #if defined(OS_MACOSX)
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
@@ -563,16 +564,19 @@ void RenderWidgetHostViewGuest::MaybeSendSyntheticTapGesture(
     gfx::Vector2d offset =
         GetViewBounds().origin() -
         GetOwnerRenderWidgetHostView()->GetBoundsInRootWindow().origin();
-    blink::WebGestureEvent gesture_tap_event;
+    blink::WebGestureEvent gesture_tap_event(
+        blink::WebGestureEvent::GestureTapDown,
+        blink::WebInputEvent::NoModifiers,
+        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
     gesture_tap_event.sourceDevice = blink::WebGestureDeviceTouchscreen;
-    gesture_tap_event.type = blink::WebGestureEvent::GestureTapDown;
     gesture_tap_event.x = position.x + offset.x();
     gesture_tap_event.y = position.y + offset.y();
     gesture_tap_event.globalX = screenPosition.x;
     gesture_tap_event.globalY = screenPosition.y;
     GetOwnerRenderWidgetHostView()->ProcessGestureEvent(
         gesture_tap_event, ui::LatencyInfo(ui::SourceEventType::TOUCH));
-    gesture_tap_event.type = blink::WebGestureEvent::GestureTapCancel;
+
+    gesture_tap_event.setType(blink::WebGestureEvent::GestureTapCancel);
     GetOwnerRenderWidgetHostView()->ProcessGestureEvent(
         gesture_tap_event, ui::LatencyInfo(ui::SourceEventType::TOUCH));
   }

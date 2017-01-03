@@ -120,8 +120,9 @@ class InputBrowserTest : public BlimpBrowserTest {
 IN_PROC_BROWSER_TEST_F(InputBrowserTest, InputText) {
   LoadPage(kInputPagePath);
 
-  blink::WebGestureEvent event;
-  event.type = blink::WebInputEvent::Type::GestureTap;
+  blink::WebGestureEvent event(blink::WebInputEvent::Type::GestureTap,
+                               blink::WebInputEvent::NoModifiers,
+                               blink::WebInputEvent::TimeStampForTesting);
   client::ImeFeature::WebInputRequest request;
 
   // Send a tap event from the client and expect the IME dialog to show.
@@ -149,8 +150,9 @@ IN_PROC_BROWSER_TEST_F(InputBrowserTest, InputText) {
 IN_PROC_BROWSER_TEST_F(InputBrowserTest, InputTextAndSubmit) {
   LoadPage(kInputPagePath);
 
-  blink::WebGestureEvent event;
-  event.type = blink::WebInputEvent::Type::GestureTap;
+  blink::WebGestureEvent event(blink::WebInputEvent::Type::GestureTap,
+                               blink::WebInputEvent::NoModifiers,
+                               blink::WebInputEvent::TimeStampForTesting);
   client::ImeFeature::WebInputRequest request;
 
   // Send a tap event from the client and expect the IME dialog to show.

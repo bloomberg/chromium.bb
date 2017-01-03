@@ -370,8 +370,8 @@ void TouchActionTest::sendTouchEvent(WebView* webView,
   ASSERT_TRUE(type == WebInputEvent::TouchStart ||
               type == WebInputEvent::TouchCancel);
 
-  WebTouchEvent webTouchEvent;
-  webTouchEvent.type = type;
+  WebTouchEvent webTouchEvent(type, WebInputEvent::NoModifiers,
+                              WebInputEvent::TimeStampForTesting);
   if (type == WebInputEvent::TouchCancel)
     webTouchEvent.dispatchType = WebInputEvent::EventNonBlocking;
   webTouchEvent.touchesLength = 1;

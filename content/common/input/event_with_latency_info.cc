@@ -31,7 +31,7 @@ void ScopedWebInputEventWithLatencyInfo::CoalesceWith(
   // should always be preserved.
   const double time_stamp_seconds = other.event().timeStampSeconds;
   ui::Coalesce(other.event(), event_.get());
-  event_->timeStampSeconds = time_stamp_seconds;
+  event_->setTimeStampSeconds(time_stamp_seconds);
 
   // When coalescing two input events, we keep the oldest LatencyInfo
   // since it will represent the longest latency.

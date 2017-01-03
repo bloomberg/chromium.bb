@@ -158,9 +158,9 @@ inline blink::WebGestureEvent CreateScrollBeginForWrapping(
     const blink::WebGestureEvent& gesture_event) {
   DCHECK(gesture_event.type == blink::WebInputEvent::GestureScrollUpdate);
 
-  blink::WebGestureEvent wrap_gesture_scroll_begin;
-  wrap_gesture_scroll_begin.type = blink::WebInputEvent::GestureScrollBegin;
-  wrap_gesture_scroll_begin.timeStampSeconds = gesture_event.timeStampSeconds;
+  blink::WebGestureEvent wrap_gesture_scroll_begin(
+      blink::WebInputEvent::GestureScrollBegin, gesture_event.modifiers,
+      gesture_event.timeStampSeconds);
   wrap_gesture_scroll_begin.sourceDevice = gesture_event.sourceDevice;
   wrap_gesture_scroll_begin.data.scrollBegin.deltaXHint = 0;
   wrap_gesture_scroll_begin.data.scrollBegin.deltaYHint = 0;
@@ -175,9 +175,9 @@ inline blink::WebGestureEvent CreateScrollEndForWrapping(
     const blink::WebGestureEvent& gesture_event) {
   DCHECK(gesture_event.type == blink::WebInputEvent::GestureScrollUpdate);
 
-  blink::WebGestureEvent wrap_gesture_scroll_end;
-  wrap_gesture_scroll_end.type = blink::WebInputEvent::GestureScrollEnd;
-  wrap_gesture_scroll_end.timeStampSeconds = gesture_event.timeStampSeconds;
+  blink::WebGestureEvent wrap_gesture_scroll_end(
+      blink::WebInputEvent::GestureScrollEnd, gesture_event.modifiers,
+      gesture_event.timeStampSeconds);
   wrap_gesture_scroll_end.sourceDevice = gesture_event.sourceDevice;
   wrap_gesture_scroll_end.resendingPluginId = gesture_event.resendingPluginId;
   wrap_gesture_scroll_end.data.scrollEnd.deltaUnits =

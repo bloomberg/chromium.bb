@@ -52,7 +52,8 @@ class CONTENT_EXPORT SyntheticWebKeyboardEventBuilder {
 class CONTENT_EXPORT SyntheticWebGestureEventBuilder {
  public:
   static blink::WebGestureEvent Build(blink::WebInputEvent::Type type,
-                                      blink::WebGestureDevice source_device);
+                                      blink::WebGestureDevice source_device,
+                                      int modifiers = 0);
   static blink::WebGestureEvent BuildScrollBegin(
       float dx_hint,
       float dy_hint,

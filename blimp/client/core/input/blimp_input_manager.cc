@@ -81,7 +81,7 @@ void BlimpInputManager::OnGestureEvent(const ui::GestureEventData& gesture) {
   // See crbug.com/443247.
   if (web_gesture.type == blink::WebInputEvent::GestureTap &&
       web_gesture.modifiers == blink::WebInputEvent::ShiftKey) {
-    web_gesture.modifiers = 0;
+    web_gesture.setModifiers(blink::WebInputEvent::NoModifiers);
   }
 
   compositor_task_runner_->PostTask(

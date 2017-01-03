@@ -101,8 +101,8 @@ class BrowserControlsTest : public testing::Test {
   WebGestureEvent generateEvent(WebInputEvent::Type type,
                                 int deltaX = 0,
                                 int deltaY = 0) {
-    WebGestureEvent event;
-    event.type = type;
+    WebGestureEvent event(type, WebInputEvent::NoModifiers,
+                          WebInputEvent::TimeStampForTesting);
     event.sourceDevice = WebGestureDeviceTouchscreen;
     event.x = 100;
     event.y = 100;

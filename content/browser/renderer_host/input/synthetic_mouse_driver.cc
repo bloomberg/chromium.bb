@@ -14,7 +14,7 @@ SyntheticMouseDriver::~SyntheticMouseDriver() {}
 
 void SyntheticMouseDriver::DispatchEvent(SyntheticGestureTarget* target,
                                          const base::TimeTicks& timestamp) {
-  mouse_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
+  mouse_event_.setTimeStampSeconds(ConvertTimestampToSeconds(timestamp));
   target->DispatchInputEventToPlatform(mouse_event_);
 }
 

@@ -83,9 +83,8 @@ class GetNavigationPolicyTest : public testing::Test {
       int modifiers,
       WebMouseEvent::Button button,
       bool asPopup) {
-    WebMouseEvent event;
-    event.modifiers = modifiers;
-    event.type = WebInputEvent::MouseUp;
+    WebMouseEvent event(WebInputEvent::MouseUp, modifiers,
+                        WebInputEvent::TimeStampForTesting);
     event.button = button;
     setCurrentInputEventForTest(&event);
     m_chromeClientImpl->setScrollbarsVisible(!asPopup);

@@ -1144,8 +1144,9 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
   registerMockedHttpURLLoad("200-by-300.html");
   navigateTo(m_baseURL + "200-by-300.html");
 
-  WebMouseEvent mouseDownEvent;
-  mouseDownEvent.type = WebInputEvent::MouseDown;
+  WebMouseEvent mouseDownEvent(WebInputEvent::MouseDown,
+                               WebInputEvent::NoModifiers,
+                               WebInputEvent::TimeStampForTesting);
   mouseDownEvent.x = 10;
   mouseDownEvent.y = 10;
   mouseDownEvent.windowX = 10;
@@ -1157,7 +1158,7 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
 
   // Corresponding release event (Windows shows context menu on release).
   WebMouseEvent mouseUpEvent(mouseDownEvent);
-  mouseUpEvent.type = WebInputEvent::MouseUp;
+  mouseUpEvent.setType(WebInputEvent::MouseUp);
 
   WebFrameClient* oldClient = webViewImpl()->mainFrameImpl()->client();
   MockWebFrameClient mockWebFrameClient;
@@ -2004,8 +2005,9 @@ TEST_P(VisualViewportTest, PinchZoomGestureScrollsVisualViewportOnly) {
   registerMockedHttpURLLoad("200-by-800-viewport.html");
   navigateTo(m_baseURL + "200-by-800-viewport.html");
 
-  WebGestureEvent pinchUpdate;
-  pinchUpdate.type = WebInputEvent::GesturePinchUpdate;
+  WebGestureEvent pinchUpdate(WebInputEvent::GesturePinchUpdate,
+                              WebInputEvent::NoModifiers,
+                              WebInputEvent::TimeStampForTesting);
   pinchUpdate.sourceDevice = WebGestureDeviceTouchpad;
   pinchUpdate.x = 100;
   pinchUpdate.y = 100;

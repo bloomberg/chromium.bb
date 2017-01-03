@@ -18,6 +18,7 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "ui/events/base_event_utils.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -258,8 +259,8 @@ class MouseWheelEventQueueTest : public testing::TestWithParam<bool>,
   }
 
   void SendGestureEvent(WebInputEvent::Type type) {
-    WebGestureEvent event;
-    event.type = type;
+    WebGestureEvent event(type, WebInputEvent::NoModifiers,
+                          ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
     event.sourceDevice = blink::WebGestureDeviceTouchscreen;
     queue_->OnGestureScrollEvent(
         GestureEventWithLatencyInfo(event, ui::LatencyInfo()));

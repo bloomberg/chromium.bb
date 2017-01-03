@@ -21,9 +21,8 @@ using blink::WebTouchPoint;
 
 WebMouseEvent SyntheticWebMouseEventBuilder::Build(
     blink::WebInputEvent::Type type) {
-  WebMouseEvent result;
-  result.type = type;
-  return result;
+  return WebMouseEvent(type, WebInputEvent::NoModifiers,
+                       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
 }
 
 WebMouseEvent SyntheticWebMouseEventBuilder::Build(
@@ -32,12 +31,12 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
     int window_y,
     int modifiers) {
   DCHECK(WebInputEvent::isMouseEventType(type));
-  WebMouseEvent result = Build(type);
+  WebMouseEvent result(type, modifiers,
+                       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   result.x = window_x;
   result.y = window_y;
   result.windowX = window_x;
   result.windowY = window_y;
-  result.modifiers = modifiers;
 
   if (type == WebInputEvent::MouseDown || type == WebInputEvent::MouseUp)
     result.button = WebMouseEvent::Button::Left;
@@ -49,8 +48,9 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
 
 WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(
     WebMouseWheelEvent::Phase phase) {
-  WebMouseWheelEvent result;
-  result.type = WebInputEvent::MouseWheel;
+  WebMouseWheelEvent result(WebInputEvent::MouseWheel,
+                            WebInputEvent::NoModifiers,
+                            ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   result.phase = phase;
   return result;
 }
@@ -72,8 +72,8 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float x,
                                                              float dy,
                                                              int modifiers,
                                                              bool precise) {
-  WebMouseWheelEvent result;
-  result.type = WebInputEvent::MouseWheel;
+  WebMouseWheelEvent result(WebInputEvent::MouseWheel, modifiers,
+                            ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   result.globalX = global_x;
   result.globalY = global_y;
   result.x = x;
@@ -84,7 +84,6 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float x,
     result.wheelTicksX = dx > 0.0f ? 1.0f : -1.0f;
   if (dy)
     result.wheelTicksY = dy > 0.0f ? 1.0f : -1.0f;
-  result.modifiers = modifiers;
   result.hasPreciseScrollingDeltas = precise;
   return result;
 }
@@ -92,18 +91,19 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float x,
 WebKeyboardEvent SyntheticWebKeyboardEventBuilder::Build(
     WebInputEvent::Type type) {
   DCHECK(WebInputEvent::isKeyboardEventType(type));
-  WebKeyboardEvent result;
-  result.type = type;
+  WebKeyboardEvent result(type, WebInputEvent::NoModifiers,
+                          ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   result.windowsKeyCode = ui::VKEY_L;  // non-null made up value.
   return result;
 }
 
 WebGestureEvent SyntheticWebGestureEventBuilder::Build(
     WebInputEvent::Type type,
-    blink::WebGestureDevice source_device) {
+    blink::WebGestureDevice source_device,
+    int modifiers) {
   DCHECK(WebInputEvent::isGestureEventType(type));
-  WebGestureEvent result;
-  result.type = type;
+  WebGestureEvent result(type, modifiers,
+                         ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   result.sourceDevice = source_device;
   if (type == WebInputEvent::GestureTap ||
       type == WebInputEvent::GestureTapUnconfirmed ||
@@ -132,10 +132,9 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildScrollUpdate(
     int modifiers,
     blink::WebGestureDevice source_device) {
   WebGestureEvent result =
-      Build(WebInputEvent::GestureScrollUpdate, source_device);
+      Build(WebInputEvent::GestureScrollUpdate, source_device, modifiers);
   result.data.scrollUpdate.deltaX = dx;
   result.data.scrollUpdate.deltaY = dy;
-  result.modifiers = modifiers;
   return result;
 }
 
@@ -146,13 +145,12 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildPinchUpdate(
     int modifiers,
     blink::WebGestureDevice source_device) {
   WebGestureEvent result =
-      Build(WebInputEvent::GesturePinchUpdate, source_device);
+      Build(WebInputEvent::GesturePinchUpdate, source_device, modifiers);
   result.data.pinchUpdate.scale = scale;
   result.x = anchor_x;
   result.y = anchor_y;
   result.globalX = anchor_x;
   result.globalY = anchor_y;
-  result.modifiers = modifiers;
   return result;
 }
 
@@ -169,7 +167,7 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildFling(
 
 SyntheticWebTouchEvent::SyntheticWebTouchEvent() : WebTouchEvent() {
   uniqueTouchEventId = ui::GetNextTouchEventId();
-  SetTimestamp(base::TimeTicks::Now());
+  SetTimestamp(ui::EventTimeForNow());
 }
 
 void SyntheticWebTouchEvent::ResetPoints() {
@@ -210,8 +208,8 @@ int SyntheticWebTouchEvent::PressPoint(float x, float y) {
   point.force = 1.f;
   point.tiltX = point.tiltY = 0;
   ++touchesLength;
-  WebTouchEventTraits::ResetType(
-      WebInputEvent::TouchStart, timeStampSeconds, this);
+  WebTouchEventTraits::ResetType(WebInputEvent::TouchStart, timeStampSeconds,
+                                 this);
   return point.id;
 }
 
@@ -225,28 +223,28 @@ void SyntheticWebTouchEvent::MovePoint(int index, float x, float y) {
   point.position.x = point.screenPosition.x = x;
   point.position.y = point.screenPosition.y = y;
   touches[index].state = WebTouchPoint::StateMoved;
-  WebTouchEventTraits::ResetType(
-      WebInputEvent::TouchMove, timeStampSeconds, this);
+  WebTouchEventTraits::ResetType(WebInputEvent::TouchMove, timeStampSeconds,
+                                 this);
 }
 
 void SyntheticWebTouchEvent::ReleasePoint(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, kTouchesLengthCap);
   touches[index].state = WebTouchPoint::StateReleased;
-  WebTouchEventTraits::ResetType(
-      WebInputEvent::TouchEnd, timeStampSeconds, this);
+  WebTouchEventTraits::ResetType(WebInputEvent::TouchEnd, timeStampSeconds,
+                                 this);
 }
 
 void SyntheticWebTouchEvent::CancelPoint(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, kTouchesLengthCap);
   touches[index].state = WebTouchPoint::StateCancelled;
-  WebTouchEventTraits::ResetType(
-      WebInputEvent::TouchCancel, timeStampSeconds, this);
+  WebTouchEventTraits::ResetType(WebInputEvent::TouchCancel, timeStampSeconds,
+                                 this);
 }
 
 void SyntheticWebTouchEvent::SetTimestamp(base::TimeTicks timestamp) {
-  timeStampSeconds = ui::EventTimeStampToSeconds(timestamp);
+  setTimeStampSeconds(ui::EventTimeStampToSeconds(timestamp));
 }
 
 int SyntheticWebTouchEvent::FirstFreeIndex() {

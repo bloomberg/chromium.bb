@@ -115,10 +115,7 @@ class TouchEmulatorTest : public testing::Test,
   }
 
   void SendKeyboardEvent(WebInputEvent::Type type) {
-    WebKeyboardEvent event;
-    event.timeStampSeconds = GetNextEventTimeSeconds();
-    event.type = type;
-    event.modifiers = modifiers();
+    WebKeyboardEvent event(type, modifiers(), GetNextEventTimeSeconds());
     emulator()->HandleKeyboardEvent(event);
   }
 
@@ -135,12 +132,9 @@ class TouchEmulatorTest : public testing::Test,
   }
 
   void SendMouseEvent(WebInputEvent::Type type, int  x, int y) {
-    WebMouseEvent event;
-    event.timeStampSeconds = GetNextEventTimeSeconds();
-    event.type = type;
+    WebMouseEvent event(type, modifiers(), GetNextEventTimeSeconds());
     event.button = mouse_pressed_ ? WebMouseEvent::Button::Left :
         WebMouseEvent::Button::NoButton;
-    event.modifiers = modifiers();
     last_mouse_x_ = x;
     last_mouse_y_ = y;
     event.x = event.windowX = event.globalX = x;
@@ -149,9 +143,8 @@ class TouchEmulatorTest : public testing::Test,
   }
 
   bool SendMouseWheelEvent() {
-    WebMouseWheelEvent event;
-    event.type = WebInputEvent::MouseWheel;
-    event.timeStampSeconds = GetNextEventTimeSeconds();
+    WebMouseWheelEvent event(WebInputEvent::MouseWheel, modifiers(),
+                             GetNextEventTimeSeconds());
     // Return whether mouse wheel is forwarded.
     return !emulator()->HandleMouseWheelEvent(event);
   }
@@ -199,9 +192,7 @@ class TouchEmulatorTest : public testing::Test,
 
   WebTouchEvent MakeTouchEvent(WebInputEvent::Type type,
       WebTouchPoint::State state, int x, int y) {
-    WebTouchEvent event;
-    event.type = type;
-    event.timeStampSeconds = GetNextEventTimeSeconds();
+    WebTouchEvent event(type, modifiers(), GetNextEventTimeSeconds());
     event.touchesLength = 1;
     event.touches[0].id = 0;
     event.touches[0].state = state;

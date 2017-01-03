@@ -220,7 +220,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message,
          dispatch_type == DISPATCH_TYPE_NON_BLOCKING);
 
   if (!received_time.is_null())
-    event->timeStampSeconds = ui::EventTimeStampToSeconds(received_time);
+    event->setTimeStampSeconds(ui::EventTimeStampToSeconds(received_time));
 
   input_handler_manager_->HandleInputEvent(
       routing_id, std::move(event), latency_info,

@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
 using blink::WebGestureEvent;
@@ -86,15 +87,14 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
       event_sent_for_gesture_ack_->event.resendingPluginId == -1 &&
       (scrolling_device_ == blink::WebGestureDeviceUninitialized ||
        scrolling_device_ == blink::WebGestureDeviceTouchpad)) {
-    WebGestureEvent scroll_update;
-    scroll_update.timeStampSeconds =
-        event_sent_for_gesture_ack_->event.timeStampSeconds;
+    WebGestureEvent scroll_update(
+        WebInputEvent::GestureScrollUpdate, WebInputEvent::NoModifiers,
+        event_sent_for_gesture_ack_->event.timeStampSeconds);
 
     scroll_update.x = event_sent_for_gesture_ack_->event.x;
     scroll_update.y = event_sent_for_gesture_ack_->event.y;
     scroll_update.globalX = event_sent_for_gesture_ack_->event.globalX;
     scroll_update.globalY = event_sent_for_gesture_ack_->event.globalY;
-    scroll_update.type = WebInputEvent::GestureScrollUpdate;
     scroll_update.sourceDevice = blink::WebGestureDeviceTouchpad;
     scroll_update.resendingPluginId = -1;
 
@@ -300,9 +300,9 @@ void MouseWheelEventQueue::SendScrollEnd(WebGestureEvent update_event,
   DCHECK((synthetic && !needs_scroll_end_) || needs_scroll_end_);
 
   WebGestureEvent scroll_end(update_event);
-  scroll_end.timeStampSeconds =
-      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-  scroll_end.type = WebInputEvent::GestureScrollEnd;
+  scroll_end.setTimeStampSeconds(
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  scroll_end.setType(WebInputEvent::GestureScrollEnd);
   scroll_end.resendingPluginId = -1;
   scroll_end.data.scrollEnd.synthetic = synthetic;
   scroll_end.data.scrollEnd.inertialPhase =
@@ -327,7 +327,7 @@ void MouseWheelEventQueue::SendScrollBegin(
   DCHECK((synthetic && !needs_scroll_begin_) || needs_scroll_begin_);
 
   WebGestureEvent scroll_begin(gesture_update);
-  scroll_begin.type = WebInputEvent::GestureScrollBegin;
+  scroll_begin.setType(WebInputEvent::GestureScrollBegin);
   scroll_begin.data.scrollBegin.synthetic = synthetic;
   scroll_begin.data.scrollBegin.inertialPhase =
       gesture_update.data.scrollUpdate.inertialPhase;

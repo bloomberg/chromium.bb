@@ -534,8 +534,8 @@ void WebDevToolsAgentImpl::inspectElementAt(int sessionId,
       HitTestRequest::Move | HitTestRequest::ReadOnly |
       HitTestRequest::AllowChildFrameContent;
   HitTestRequest request(hitType);
-  WebMouseEvent dummyEvent;
-  dummyEvent.type = WebInputEvent::MouseDown;
+  WebMouseEvent dummyEvent(WebInputEvent::MouseDown, WebInputEvent::NoModifiers,
+                           WTF::monotonicallyIncreasingTimeMS());
   dummyEvent.x = pointInRootFrame.x;
   dummyEvent.y = pointInRootFrame.y;
   IntPoint transformedPoint =

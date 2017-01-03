@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace {
@@ -24,10 +25,19 @@ void DeleteGlobalRefForKeyEvent(jobject key_event) {
 
 namespace content {
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent()
-    : os_event(nullptr),
-      skip_in_browser(false) {
-}
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
+                                               int modifiers,
+                                               base::TimeTicks timestamp)
+    : NativeWebKeyboardEvent(type,
+                             modifiers,
+                             ui::EventTimeStampToSeconds(timestamp)) {}
+
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
+                                               int modifiers,
+                                               double timestampSeconds)
+    : WebKeyboardEvent(type, modifiers, timestampSeconds),
+      os_event(nullptr),
+      skip_in_browser(false) {}
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
     JNIEnv* env,

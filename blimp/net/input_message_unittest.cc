@@ -34,9 +34,9 @@ void ValidateWebGestureEventRoundTripping(const blink::WebGestureEvent& event) {
   EXPECT_EQ(0, memcmp(&event, new_event.get(), event.size));
 }
 
-blink::WebGestureEvent BuildBaseTestEvent() {
-  blink::WebGestureEvent event;
-  event.timeStampSeconds = 1.23;
+blink::WebGestureEvent BuildBaseTestEvent(blink::WebInputEvent::Type type) {
+  blink::WebGestureEvent event(type, blink::WebInputEvent::NoModifiers,
+                               blink::WebInputEvent::TimeStampForTesting);
   event.x = 2;
   event.y = 3;
   event.globalX = 4;
@@ -48,8 +48,8 @@ blink::WebGestureEvent BuildBaseTestEvent() {
 }  // namespace
 
 TEST(InputMessageTest, TestGestureScrollBeginRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebInputEvent::Type::GestureScrollBegin;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebInputEvent::Type::GestureScrollBegin);
   event.data.scrollBegin.deltaXHint = 2.34f;
   event.data.scrollBegin.deltaYHint = 3.45f;
   event.data.scrollBegin.targetViewport = true;
@@ -57,14 +57,14 @@ TEST(InputMessageTest, TestGestureScrollBeginRoundTrip) {
 }
 
 TEST(InputMessageTest, TestGestureScrollEndRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebInputEvent::Type::GestureScrollEnd;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebInputEvent::Type::GestureScrollEnd);
   ValidateWebGestureEventRoundTripping(event);
 }
 
 TEST(InputMessageTest, TestGestureScrollUpdateRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebInputEvent::Type::GestureScrollUpdate;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebInputEvent::Type::GestureScrollUpdate);
   event.data.scrollUpdate.deltaX = 2.34f;
   event.data.scrollUpdate.deltaY = 3.45f;
   event.data.scrollUpdate.velocityX = 4.56f;
@@ -76,8 +76,8 @@ TEST(InputMessageTest, TestGestureScrollUpdateRoundTrip) {
 }
 
 TEST(InputMessageTest, TestGestureFlingStartRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebInputEvent::Type::GestureFlingStart;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebInputEvent::Type::GestureFlingStart);
   event.data.flingStart.velocityX = 2.34f;
   event.data.flingStart.velocityY = 3.45f;
   event.data.flingStart.targetViewport = true;
@@ -85,15 +85,15 @@ TEST(InputMessageTest, TestGestureFlingStartRoundTrip) {
 }
 
 TEST(InputMessageTest, TestGestureFlingCancelRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebInputEvent::Type::GestureFlingCancel;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebInputEvent::Type::GestureFlingCancel);
   event.data.flingCancel.preventBoosting = true;
   ValidateWebGestureEventRoundTripping(event);
 }
 
 TEST(InputMessageTest, TestGestureTapRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebGestureEvent::Type::GestureTap;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebGestureEvent::Type::GestureTap);
   event.data.tap.tapCount = 3;
   event.data.tap.width = 2.34f;
   event.data.tap.height = 3.45f;
@@ -101,20 +101,20 @@ TEST(InputMessageTest, TestGestureTapRoundTrip) {
 }
 
 TEST(InputMessageTest, TestGesturePinchBeginRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebInputEvent::Type::GesturePinchBegin;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebInputEvent::Type::GesturePinchBegin);
   ValidateWebGestureEventRoundTripping(event);
 }
 
 TEST(InputMessageTest, TestGesturePinchEndRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebInputEvent::Type::GesturePinchEnd;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebInputEvent::Type::GesturePinchEnd);
   ValidateWebGestureEventRoundTripping(event);
 }
 
 TEST(InputMessageTest, TestGesturePinchUpdateRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebInputEvent::Type::GesturePinchUpdate;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebInputEvent::Type::GesturePinchUpdate);
   event.data.pinchUpdate.zoomDisabled = true;
   event.data.pinchUpdate.scale = 2.34f;
   ValidateWebGestureEventRoundTripping(event);
@@ -123,8 +123,9 @@ TEST(InputMessageTest, TestGesturePinchUpdateRoundTrip) {
 TEST(InputMessageTest, TestUnsupportedInputEventSerializationFails) {
   // We currently do not support MouseWheel events.  If that changes update
   // this test.
-  blink::WebGestureEvent event;
-  event.type = blink::WebInputEvent::Type::MouseWheel;
+  blink::WebGestureEvent event(blink::WebInputEvent::Type::MouseWheel,
+                               blink::WebInputEvent::NoModifiers,
+                               blink::WebInputEvent::TimeStampForTesting);
   InputMessageGenerator generator;
   EXPECT_EQ(nullptr, generator.GenerateMessage(event).get());
 }
@@ -139,22 +140,22 @@ TEST(InputMessageConverterTest, TestTextInputTypeToProtoConversion) {
 }
 
 TEST(InputMessageTest, TestGestureTapDownRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebGestureEvent::Type::GestureTapDown;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebGestureEvent::Type::GestureTapDown);
   event.data.tapDown.width = 2.3f;
   event.data.tapDown.height = 3.4f;
   ValidateWebGestureEventRoundTripping(event);
 }
 
 TEST(InputMessageTest, TestGestureTapCancelRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebGestureEvent::Type::GestureTapCancel;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebGestureEvent::Type::GestureTapCancel);
   ValidateWebGestureEventRoundTripping(event);
 }
 
 TEST(InputMessageTest, TestGestureTapUnconfirmedRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebGestureEvent::Type::GestureTapUnconfirmed;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebGestureEvent::Type::GestureTapUnconfirmed);
   event.data.tap.tapCount = 2;
   event.data.tap.width = 2.3f;
   event.data.tap.height = 3.4f;
@@ -162,8 +163,8 @@ TEST(InputMessageTest, TestGestureTapUnconfirmedRoundTrip) {
 }
 
 TEST(InputMessageTest, TestGestureShowPressRoundTrip) {
-  blink::WebGestureEvent event = BuildBaseTestEvent();
-  event.type = blink::WebGestureEvent::Type::GestureShowPress;
+  blink::WebGestureEvent event =
+      BuildBaseTestEvent(blink::WebGestureEvent::Type::GestureShowPress);
   event.data.showPress.width = 2.3f;
   event.data.showPress.height = 3.4f;
   ValidateWebGestureEventRoundTripping(event);

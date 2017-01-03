@@ -420,9 +420,8 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest) {
                                                       WebInputEvent::NumLockOn |
                                                       WebInputEvent::IsLeft);
 #endif
-  WebKeyboardEvent webKeyboardEventC;
-  webKeyboardEventC.type = WebInputEvent::RawKeyDown;
-  webKeyboardEventC.modifiers = modifierKey;
+  WebKeyboardEvent webKeyboardEventC(WebInputEvent::RawKeyDown, modifierKey,
+                                     WebInputEvent::TimeStampForTesting);
   webKeyboardEventC.windowsKeyCode = 67;
   KeyboardEvent* keyEventC = KeyboardEvent::create(webKeyboardEventC, 0);
   toWebPluginContainerImpl(pluginContainerOneElement.pluginContainer())
@@ -435,9 +434,9 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest) {
   EXPECT_EQ(WebString(""), Platform::current()->clipboard()->readPlainText(
                                WebClipboard::Buffer()));
 
-  WebKeyboardEvent webKeyboardEventInsert;
-  webKeyboardEventInsert.type = WebInputEvent::RawKeyDown;
-  webKeyboardEventInsert.modifiers = modifierKey;
+  WebKeyboardEvent webKeyboardEventInsert(WebInputEvent::RawKeyDown,
+                                          modifierKey,
+                                          WebInputEvent::TimeStampForTesting);
   webKeyboardEventInsert.windowsKeyCode = 45;
   KeyboardEvent* keyEventInsert =
       KeyboardEvent::create(webKeyboardEventInsert, 0);
@@ -488,8 +487,9 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
                           ->plugin();
   EventTestPlugin* testPlugin = static_cast<EventTestPlugin*>(plugin);
 
-  WebGestureEvent event;
-  event.type = WebInputEvent::GestureLongPress;
+  WebGestureEvent event(WebInputEvent::GestureLongPress,
+                        WebInputEvent::NoModifiers,
+                        WebInputEvent::TimeStampForTesting);
   event.sourceDevice = WebGestureDeviceTouchscreen;
 
   // First, send an event that doesn't hit the plugin to verify that the

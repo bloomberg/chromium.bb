@@ -80,6 +80,7 @@
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -1409,8 +1410,9 @@ TEST_F(RenderViewImplTest, ContextMenu) {
 
   // Create a right click in the center of the iframe. (I'm hoping this will
   // make this a bit more robust in case of some other formatting or other bug.)
-  WebMouseEvent mouse_event;
-  mouse_event.type = WebInputEvent::MouseDown;
+  WebMouseEvent mouse_event(WebInputEvent::MouseDown,
+                            WebInputEvent::NoModifiers,
+                            ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   mouse_event.button = WebMouseEvent::Button::Right;
   mouse_event.x = 250;
   mouse_event.y = 250;
@@ -1420,7 +1422,7 @@ TEST_F(RenderViewImplTest, ContextMenu) {
   SendWebMouseEvent(mouse_event);
 
   // Now simulate the corresponding up event which should display the menu
-  mouse_event.type = WebInputEvent::MouseUp;
+  mouse_event.setType(WebInputEvent::MouseUp);
   SendWebMouseEvent(mouse_event);
 
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(

@@ -49,6 +49,12 @@ class EventWithLatencyInfo {
   EventWithLatencyInfo(const T& e, const ui::LatencyInfo& l)
       : event(e), latency(l) {}
 
+  EventWithLatencyInfo(blink::WebInputEvent::Type type,
+                       int modifiers,
+                       double timeStampSeconds,
+                       const ui::LatencyInfo& l)
+      : event(type, modifiers, timeStampSeconds), latency(l) {}
+
   EventWithLatencyInfo() {}
 
   bool CanCoalesceWith(const EventWithLatencyInfo& other)
@@ -71,7 +77,7 @@ class EventWithLatencyInfo {
     // should always be preserved.
     const double time_stamp_seconds = other.event.timeStampSeconds;
     ui::Coalesce(other.event, &event);
-    event.timeStampSeconds = time_stamp_seconds;
+    event.setTimeStampSeconds(time_stamp_seconds);
 
     // When coalescing two input events, we keep the oldest LatencyInfo
     // for Telemetry latency tests, since it will represent the longest

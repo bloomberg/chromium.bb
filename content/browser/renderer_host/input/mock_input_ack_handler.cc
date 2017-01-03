@@ -31,7 +31,7 @@ void MockInputAckHandler::OnKeyboardEventAck(
     const NativeWebKeyboardEventWithLatencyInfo& event,
     InputEventAckState ack_result)  {
   VLOG(1) << __FUNCTION__ << " called!";
-  acked_key_event_ = event.event;
+  acked_key_event_.reset(new NativeWebKeyboardEvent(event.event));
   RecordAckCalled(event.event.type, ack_result);
 }
 

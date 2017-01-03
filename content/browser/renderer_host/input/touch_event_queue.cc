@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/common/input/web_touch_event_traits.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/point_f.h"
 
 using blink::WebInputEvent;
@@ -504,10 +505,9 @@ void TouchEventQueue::PrependTouchScrollNotification() {
   // non-empty queue to keep those tests as-is w/o exposing internals of this
   // class all the way up.
   if (!touch_queue_.empty()) {
-    TouchEventWithLatencyInfo touch;
-    touch.event.type = WebInputEvent::TouchScrollStarted;
-    touch.event.uniqueTouchEventId = 0;
-    touch.event.touchesLength = 0;
+    TouchEventWithLatencyInfo touch(
+        WebInputEvent::TouchScrollStarted, WebInputEvent::NoModifiers,
+        ui::EventTimeStampToSeconds(ui::EventTimeForNow()), LatencyInfo());
     touch.event.dispatchType = WebInputEvent::EventNonBlocking;
 
     auto it = touch_queue_.begin();

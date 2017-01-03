@@ -187,7 +187,7 @@ TEST_P(MainThreadEventQueueTest, NonBlockingTouch) {
   SyntheticWebTouchEvent kEvents[4];
   kEvents[0].PressPoint(10, 10);
   kEvents[1].PressPoint(10, 10);
-  kEvents[1].modifiers = 1;
+  kEvents[1].setModifiers(1);
   kEvents[1].MovePoint(0, 20, 20);
   kEvents[2].PressPoint(10, 10);
   kEvents[2].MovePoint(0, 30, 30);

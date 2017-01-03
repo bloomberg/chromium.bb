@@ -92,7 +92,7 @@ void LinkSelectionTestBase::emulateMouseClick(const IntPoint& clickPoint,
       WebMouseEvent::MouseDown, button, clickPoint, modifiers);
   event.clickCount = count;
   m_webView->handleInputEvent(event);
-  event.type = WebMouseEvent::MouseUp;
+  event.setType(WebMouseEvent::MouseUp);
   m_webView->handleInputEvent(event);
 }
 

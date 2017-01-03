@@ -55,25 +55,36 @@ bool StringToGestureSourceType(Maybe<std::string> in,
   return false;
 }
 
-void SetEventModifiers(blink::WebInputEvent* event, int modifiers) {
+int GetEventModifiers(int modifiers, bool auto_repeat, bool is_keypad) {
+  int result = 0;
+  if (auto_repeat)
+    result |= blink::WebInputEvent::IsAutoRepeat;
+  if (is_keypad)
+    result |= blink::WebInputEvent::IsKeyPad;
+
   if (modifiers & 1)
-    event->modifiers |= blink::WebInputEvent::AltKey;
+    result |= blink::WebInputEvent::AltKey;
   if (modifiers & 2)
-    event->modifiers |= blink::WebInputEvent::ControlKey;
+    result |= blink::WebInputEvent::ControlKey;
   if (modifiers & 4)
-    event->modifiers |= blink::WebInputEvent::MetaKey;
+    result |= blink::WebInputEvent::MetaKey;
   if (modifiers & 8)
-    event->modifiers |= blink::WebInputEvent::ShiftKey;
+    result |= blink::WebInputEvent::ShiftKey;
+  return result;
 }
 
-void SetEventTimestamp(blink::WebInputEvent* event, Maybe<double> timestamp) {
+base::TimeTicks GetEventTimeTicks(Maybe<double> timestamp) {
   // Convert timestamp, in seconds since unix epoch, to an event timestamp
   // which is time ticks since platform start time.
-  base::TimeTicks ticks = timestamp.isJust()
-      ? base::TimeDelta::FromSecondsD(timestamp.fromJust()) +
-          base::TimeTicks::UnixEpoch()
-      : base::TimeTicks::Now();
-  event->timeStampSeconds = (ticks - base::TimeTicks()).InSecondsF();
+  return timestamp.isJust()
+             ? base::TimeDelta::FromSecondsD(timestamp.fromJust()) +
+                   base::TimeTicks::UnixEpoch()
+             : base::TimeTicks::Now();
+}
+
+double GetEventTimestamp(Maybe<double> timestamp) {
+  return (GetEventTimeTicks(std::move(timestamp)) - base::TimeTicks())
+      .InSecondsF();
 }
 
 bool SetKeyboardEventText(blink::WebUChar* to, Maybe<std::string> from) {
@@ -89,39 +100,37 @@ bool SetKeyboardEventText(blink::WebUChar* to, Maybe<std::string> from) {
   return true;
 }
 
-bool SetMouseEventButton(blink::WebMouseEvent* event,
-                         const std::string& button) {
+bool GetMouseEventButton(const std::string& button,
+                         blink::WebPointerProperties::Button* event_button,
+                         int* event_modifiers) {
   if (button.empty())
     return true;
 
   if (button == Input::DispatchMouseEvent::ButtonEnum::None) {
-    event->button = blink::WebMouseEvent::Button::NoButton;
+    *event_button = blink::WebMouseEvent::Button::NoButton;
   } else if (button == Input::DispatchMouseEvent::ButtonEnum::Left) {
-    event->button = blink::WebMouseEvent::Button::Left;
-    event->modifiers |= blink::WebInputEvent::LeftButtonDown;
+    *event_button = blink::WebMouseEvent::Button::Left;
+    *event_modifiers = blink::WebInputEvent::LeftButtonDown;
   } else if (button == Input::DispatchMouseEvent::ButtonEnum::Middle) {
-    event->button = blink::WebMouseEvent::Button::Middle;
-    event->modifiers |= blink::WebInputEvent::MiddleButtonDown;
+    *event_button = blink::WebMouseEvent::Button::Middle;
+    *event_modifiers = blink::WebInputEvent::MiddleButtonDown;
   } else if (button == Input::DispatchMouseEvent::ButtonEnum::Right) {
-    event->button = blink::WebMouseEvent::Button::Right;
-    event->modifiers |= blink::WebInputEvent::RightButtonDown;
+    *event_button = blink::WebMouseEvent::Button::Right;
+    *event_modifiers = blink::WebInputEvent::RightButtonDown;
   } else {
     return false;
   }
   return true;
 }
 
-bool SetMouseEventType(blink::WebMouseEvent* event, const std::string& type) {
-  if (type == Input::DispatchMouseEvent::TypeEnum::MousePressed) {
-    event->type = blink::WebInputEvent::MouseDown;
-  } else if (type == Input::DispatchMouseEvent::TypeEnum::MouseReleased) {
-    event->type = blink::WebInputEvent::MouseUp;
-  } else if (type == Input::DispatchMouseEvent::TypeEnum::MouseMoved) {
-    event->type = blink::WebInputEvent::MouseMove;
-  } else {
-    return false;
-  }
-  return true;
+blink::WebInputEvent::Type GetMouseEventType(const std::string& type) {
+  if (type == Input::DispatchMouseEvent::TypeEnum::MousePressed)
+    return blink::WebInputEvent::MouseDown;
+  if (type == Input::DispatchMouseEvent::TypeEnum::MouseReleased)
+    return blink::WebInputEvent::MouseUp;
+  if (type == Input::DispatchMouseEvent::TypeEnum::MouseMoved)
+    return blink::WebInputEvent::MouseMove;
+  return blink::WebInputEvent::Undefined;
 }
 
 void SendSynthesizePinchGestureResponse(
@@ -229,24 +238,28 @@ Response InputHandler::DispatchKeyEvent(
     Maybe<bool> auto_repeat,
     Maybe<bool> is_keypad,
     Maybe<bool> is_system_key) {
-  NativeWebKeyboardEvent event;
-  event.skip_in_browser = true;
+  blink::WebInputEvent::Type web_event_type;
 
   if (type == Input::DispatchKeyEvent::TypeEnum::KeyDown) {
-    event.type = blink::WebInputEvent::KeyDown;
+    web_event_type = blink::WebInputEvent::KeyDown;
   } else if (type == Input::DispatchKeyEvent::TypeEnum::KeyUp) {
-    event.type = blink::WebInputEvent::KeyUp;
+    web_event_type = blink::WebInputEvent::KeyUp;
   } else if (type == Input::DispatchKeyEvent::TypeEnum::Char) {
-    event.type = blink::WebInputEvent::Char;
+    web_event_type = blink::WebInputEvent::Char;
   } else if (type == Input::DispatchKeyEvent::TypeEnum::RawKeyDown) {
-    event.type = blink::WebInputEvent::RawKeyDown;
+    web_event_type = blink::WebInputEvent::RawKeyDown;
   } else {
     return Response::InvalidParams(
         base::StringPrintf("Unexpected event type '%s'", type.c_str()));
   }
 
-  SetEventModifiers(&event, modifiers.fromMaybe(0));
-  SetEventTimestamp(&event, std::move(timestamp));
+  NativeWebKeyboardEvent event(
+      web_event_type,
+      GetEventModifiers(modifiers.fromMaybe(blink::WebInputEvent::NoModifiers),
+                        auto_repeat.fromMaybe(false),
+                        is_keypad.fromMaybe(false)),
+      GetEventTimeTicks(std::move(timestamp)));
+  event.skip_in_browser = true;
   if (!SetKeyboardEventText(event.text, std::move(text)))
     return Response::InvalidParams("Invalid 'text' parameter");
   if (!SetKeyboardEventText(event.unmodifiedText, std::move(unmodified_text)))
@@ -256,10 +269,6 @@ Response InputHandler::DispatchKeyEvent(
     event.windowsKeyCode = windows_virtual_key_code.fromJust();
   if (native_virtual_key_code.isJust())
     event.nativeKeyCode = native_virtual_key_code.fromJust();
-  if (auto_repeat.fromMaybe(false))
-    event.modifiers |= blink::WebInputEvent::IsAutoRepeat;
-  if (is_keypad.fromMaybe(false))
-    event.modifiers |= blink::WebInputEvent::IsKeyPad;
   if (is_system_key.isJust())
     event.isSystemKey = is_system_key.fromJust();
 
@@ -289,17 +298,26 @@ Response InputHandler::DispatchMouseEvent(
     Maybe<double> timestamp,
     Maybe<std::string> button,
     Maybe<int> click_count) {
-  blink::WebMouseEvent event;
-
-  if (!SetMouseEventType(&event, type)) {
+  blink::WebInputEvent::Type event_type = GetMouseEventType(type);
+  if (event_type == blink::WebInputEvent::Undefined) {
     return Response::InvalidParams(
         base::StringPrintf("Unexpected event type '%s'", type.c_str()));
   }
-  SetEventModifiers(&event, modifiers.fromMaybe(0));
-  SetEventTimestamp(&event, std::move(timestamp));
-  if (!SetMouseEventButton(&event, button.fromMaybe("")))
+  blink::WebPointerProperties::Button event_button =
+      blink::WebPointerProperties::Button::NoButton;
+  int button_modifiers = 0;
+  if (!GetMouseEventButton(button.fromMaybe(""), &event_button,
+                           &button_modifiers))
     return Response::InvalidParams("Invalid mouse button");
 
+  blink::WebMouseEvent event(
+      event_type,
+      GetEventModifiers(modifiers.fromMaybe(blink::WebInputEvent::NoModifiers),
+                        false, false) |
+          button_modifiers,
+      GetEventTimestamp(std::move(timestamp)));
+
+  event.button = event_button;
   event.x = x * page_scale_factor_;
   event.y = y * page_scale_factor_;
   event.windowX = x * page_scale_factor_;
@@ -326,45 +344,68 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
                                                   Maybe<double> delta_y,
                                                   Maybe<int> modifiers,
                                                   Maybe<int> click_count) {
-  blink::WebMouseWheelEvent wheel_event;
-  blink::WebMouseEvent mouse_event;
-  blink::WebMouseEvent* event = &mouse_event;
-
+  blink::WebInputEvent::Type event_type;
   if (type == Input::EmulateTouchFromMouseEvent::TypeEnum::MouseWheel) {
+    event_type = blink::WebInputEvent::MouseWheel;
     if (!delta_x.isJust() || !delta_y.isJust()) {
       return Response::InvalidParams(
           "'deltaX' and 'deltaY' are expected for mouseWheel event");
     }
-    wheel_event.deltaX = static_cast<float>(delta_x.fromJust());
-    wheel_event.deltaY = static_cast<float>(delta_y.fromJust());
-    event = &wheel_event;
-    event->type = blink::WebInputEvent::MouseWheel;
-  } else if (!SetMouseEventType(event, type)) {
-    return Response::InvalidParams(
-        base::StringPrintf("Unexpected event type '%s'", type.c_str()));
+  } else {
+    event_type = GetMouseEventType(type);
+    if (event_type == blink::WebInputEvent::Undefined) {
+      return Response::InvalidParams(
+          base::StringPrintf("Unexpected event type '%s'", type.c_str()));
+    }
   }
 
-  SetEventModifiers(event, modifiers.fromMaybe(0));
-  SetEventTimestamp(event, Maybe<double>(timestamp));
-  if (!SetMouseEventButton(event, button))
+  blink::WebPointerProperties::Button event_button =
+      blink::WebPointerProperties::Button::NoButton;
+  int button_modifiers = 0;
+  if (!GetMouseEventButton(button, &event_button, &button_modifiers))
     return Response::InvalidParams("Invalid mouse button");
 
-  event->x = x;
-  event->y = y;
-  event->windowX = x;
-  event->windowY = y;
-  event->globalX = x;
-  event->globalY = y;
-  event->clickCount = click_count.fromMaybe(0);
-  event->pointerType = blink::WebPointerProperties::PointerType::Touch;
+  ui::ScopedWebInputEvent event;
+  blink::WebMouseWheelEvent* wheel_event = nullptr;
+  blink::WebMouseEvent* mouse_event = nullptr;
+  if (type == Input::EmulateTouchFromMouseEvent::TypeEnum::MouseWheel) {
+    wheel_event = new blink::WebMouseWheelEvent(
+        event_type, GetEventModifiers(
+                        modifiers.fromMaybe(blink::WebInputEvent::NoModifiers),
+                        false, false) |
+                        button_modifiers,
+        GetEventTimestamp(timestamp));
+    mouse_event = wheel_event;
+    event.reset(wheel_event);
+    wheel_event->deltaX = static_cast<float>(delta_x.fromJust());
+    wheel_event->deltaY = static_cast<float>(delta_y.fromJust());
+  } else {
+    mouse_event = new blink::WebMouseEvent(
+        event_type, GetEventModifiers(
+                        modifiers.fromMaybe(blink::WebInputEvent::NoModifiers),
+                        false, false) |
+                        button_modifiers,
+        GetEventTimestamp(timestamp));
+    event.reset(mouse_event);
+  }
+
+  mouse_event->x = x;
+  mouse_event->y = y;
+  mouse_event->button = event_button;
+  mouse_event->windowX = x;
+  mouse_event->windowY = y;
+  mouse_event->globalX = x;
+  mouse_event->globalY = y;
+  mouse_event->clickCount = click_count.fromMaybe(0);
+  mouse_event->pointerType = blink::WebPointerProperties::PointerType::Touch;
 
   if (!host_ || !host_->GetRenderWidgetHost())
     return Response::InternalError();
 
-  if (event->type == blink::WebInputEvent::MouseWheel)
-    host_->GetRenderWidgetHost()->ForwardWheelEvent(wheel_event);
+  if (wheel_event)
+    host_->GetRenderWidgetHost()->ForwardWheelEvent(*wheel_event);
   else
-    host_->GetRenderWidgetHost()->ForwardMouseEvent(mouse_event);
+    host_->GetRenderWidgetHost()->ForwardMouseEvent(*mouse_event);
   return Response::OK();
 }
 

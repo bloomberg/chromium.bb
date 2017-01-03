@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -247,8 +248,10 @@ TEST_F(RenderWidgetUnittest, EventOverscroll) {
       .WillRepeatedly(
           ::testing::Return(blink::WebInputEventResult::NotHandled));
 
-  blink::WebGestureEvent scroll;
-  scroll.type = blink::WebInputEvent::GestureScrollUpdate;
+  blink::WebGestureEvent scroll(
+      blink::WebInputEvent::GestureScrollUpdate,
+      blink::WebInputEvent::NoModifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   scroll.x = -10;
   scroll.data.scrollUpdate.deltaY = 10;
   widget()->SendInputEvent(scroll);

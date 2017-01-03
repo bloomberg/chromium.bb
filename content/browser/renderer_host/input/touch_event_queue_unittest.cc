@@ -20,6 +20,7 @@
 #include "content/common/input/web_touch_event_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "ui/events/base_event_utils.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -125,8 +126,8 @@ class TouchEventQueueTest : public testing::Test,
   }
 
   void SendGestureEvent(WebInputEvent::Type type) {
-    WebGestureEvent event;
-    event.type = type;
+    WebGestureEvent event(type, WebInputEvent::NoModifiers,
+                          ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
     queue_->OnGestureScrollEvent(
         GestureEventWithLatencyInfo(event, ui::LatencyInfo()));
   }
@@ -148,9 +149,9 @@ class TouchEventQueueTest : public testing::Test,
 
   void SendGestureEventAck(WebInputEvent::Type type,
                            InputEventAckState ack_result) {
-    blink::WebGestureEvent gesture_event;
-    gesture_event.type = type;
-    GestureEventWithLatencyInfo event(gesture_event, ui::LatencyInfo());
+    GestureEventWithLatencyInfo event(
+        type, blink::WebInputEvent::NoModifiers,
+        ui::EventTimeStampToSeconds(ui::EventTimeForNow()), ui::LatencyInfo());
     queue_->OnGestureEventAck(event, ack_result);
   }
 
@@ -242,7 +243,7 @@ class TouchEventQueueTest : public testing::Test,
   }
 
   void AdvanceTouchTime(double seconds) {
-    touch_event_.timeStampSeconds += seconds;
+    touch_event_.setTimeStampSeconds(touch_event_.timeStampSeconds + seconds);
   }
 
   void ResetTouchEvent() {
@@ -842,8 +843,9 @@ TEST_F(TouchEventQueueTest, AckWithFollowupEvents) {
 
   // Create a touch event that will be queued synchronously by a touch ack.
   // Note, this will be triggered by all subsequent touch acks.
-  WebTouchEvent followup_event;
-  followup_event.type = WebInputEvent::TouchMove;
+  WebTouchEvent followup_event(
+      WebInputEvent::TouchMove, WebInputEvent::NoModifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   followup_event.touchesLength = 1;
   followup_event.touches[0].id = 0;
   followup_event.touches[0].state = WebTouchPoint::StateMoved;
@@ -911,8 +913,9 @@ TEST_F(TouchEventQueueTest, SynchronousAcks) {
 // TouchEventQueue::QueueEvent() are properly handled.
 TEST_F(TouchEventQueueTest, ImmediateAckWithFollowupEvents) {
   // Create a touch event that will be queued synchronously by a touch ack.
-  WebTouchEvent followup_event;
-  followup_event.type = WebInputEvent::TouchStart;
+  WebTouchEvent followup_event(
+      WebInputEvent::TouchStart, WebInputEvent::NoModifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   followup_event.touchesLength = 1;
   followup_event.touches[0].id = 1;
   followup_event.touches[0].state = WebTouchPoint::StatePressed;
@@ -921,9 +924,11 @@ TEST_F(TouchEventQueueTest, ImmediateAckWithFollowupEvents) {
   // Now, enqueue a stationary touch that will not be forwarded.  This should be
   // immediately ack'ed with "NO_CONSUMER_EXISTS".  The followup event should
   // then be enqueued and immediately sent to the renderer.
-  WebTouchEvent stationary_event;
+  WebTouchEvent stationary_event(
+      WebInputEvent::TouchMove, WebInputEvent::NoModifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  ;
   stationary_event.touchesLength = 1;
-  stationary_event.type = WebInputEvent::TouchMove;
   stationary_event.touches[0].id = 1;
   stationary_event.touches[0].state = WebTouchPoint::StateStationary;
   SendTouchEvent(stationary_event);
@@ -1241,8 +1246,9 @@ TEST_F(TouchEventQueueTest, TouchTimeoutWithFollowupGesture) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // The cancelled sequence may turn into a scroll gesture.
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(
+      WebInputEvent::GestureScrollBegin, WebInputEvent::NoModifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   SetFollowupEvent(followup_scroll);
 
   // Delay the ack.
@@ -1296,8 +1302,9 @@ TEST_F(TouchEventQueueTest, TouchTimeoutWithFollowupGestureAndDelayedAck) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   // The cancelled sequence may turn into a scroll gesture.
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(
+      WebInputEvent::GestureScrollBegin, WebInputEvent::NoModifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   SetFollowupEvent(followup_scroll);
 
   // Delay the ack.
@@ -1580,8 +1587,9 @@ TEST_F(TouchEventQueueTest, NoForwardingAfterScrollWithNoTouchConsumers) {
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
 
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(WebInputEvent::GestureScrollBegin,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   SetFollowupEvent(followup_scroll);
   MoveTouchPoint(0, 20, 5);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -1641,8 +1649,9 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
 
   // Now send the first touch move and associated GestureScrollBegin.
   MoveTouchPoint(0, 0, 5);
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(WebInputEvent::GestureScrollBegin,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -1653,7 +1662,7 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   // Send the second touch move and associated GestureScrollUpdate, but don't
   // ACK the gesture event yet.
   MoveTouchPoint(0, 0, 50);
-  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  followup_scroll.setType(WebInputEvent::GestureScrollUpdate);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -1671,7 +1680,7 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   // this case, we will first dispatch an async touchmove and then a touchend.
   // For the async touchmove, we will not send ack again.
   ReleaseTouchPoint(0);
-  followup_scroll.type = WebInputEvent::GestureScrollEnd;
+  followup_scroll.setType(WebInputEvent::GestureScrollEnd);
   SetFollowupEvent(followup_scroll);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
   EXPECT_EQ(2U, all_sent_events().size());
@@ -1704,14 +1713,14 @@ TEST_F(TouchEventQueueTest, AsyncTouchThrottledAfterScroll) {
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   MoveTouchPoint(0, 0, 5);
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  followup_scroll.setType(WebInputEvent::GestureScrollBegin);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 0, 6);
-  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  followup_scroll.setType(WebInputEvent::GestureScrollUpdate);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
@@ -1826,15 +1835,16 @@ TEST_F(TouchEventQueueTest, AsyncTouchFlushedByTouchEnd) {
 
   // Initiate async touchmove dispatch after the start of a scroll sequence.
   MoveTouchPoint(0, 0, 5);
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(WebInputEvent::GestureScrollBegin,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 0, 10);
-  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  followup_scroll.setType(WebInputEvent::GestureScrollUpdate);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -1888,8 +1898,9 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithAckTimeout) {
   MoveTouchPoint(0, 1, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_TRUE(IsTimeoutRunning());
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(WebInputEvent::GestureScrollBegin,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(IsTimeoutRunning());
@@ -1963,8 +1974,9 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithTouchCancelAfterAck) {
   // The start of a scroll gesture should trigger async touch event dispatch.
   MoveTouchPoint(0, 1, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(WebInputEvent::GestureScrollBegin,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -1975,8 +1987,9 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithTouchCancelAfterAck) {
   // The async touchmove should be ack'ed immediately, but not forwarded.
   // However, because the ack triggers a touchcancel, both the pending touch and
   // the queued touchcancel should be flushed.
-  WebTouchEvent followup_cancel;
-  followup_cancel.type = WebInputEvent::TouchCancel;
+  WebTouchEvent followup_cancel(WebInputEvent::TouchCancel,
+                                WebInputEvent::NoModifiers,
+                                WebInputEvent::TimeStampForTesting);
   followup_cancel.touchesLength = 1;
   followup_cancel.touches[0].state = WebTouchPoint::StateCancelled;
   SetFollowupEvent(followup_cancel);
@@ -2012,8 +2025,9 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithHardTouchStartReset) {
   // Trigger async touchmove dispatch.
   MoveTouchPoint(0, 1, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(WebInputEvent::GestureScrollBegin,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -2052,15 +2066,16 @@ TEST_F(TouchEventQueueTest, SendNextThrottledAsyncTouchMoveAfterAck) {
 
   // Initiate async touchmove dispatch after the start of a scroll sequence.
   MoveTouchPoint(0, 0, 5);
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(WebInputEvent::GestureScrollBegin,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 0, 10);
-  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  followup_scroll.setType(WebInputEvent::GestureScrollUpdate);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
@@ -2113,15 +2128,16 @@ TEST_F(TouchEventQueueTest, SendNextAsyncTouchMoveAfterAckAndTimeExpire) {
 
   // Initiate async touchmove dispatch after the start of a scroll sequence.
   MoveTouchPoint(0, 0, 5);
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(WebInputEvent::GestureScrollBegin,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 0, 10);
-  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  followup_scroll.setType(WebInputEvent::GestureScrollUpdate);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
@@ -2171,15 +2187,16 @@ TEST_F(TouchEventQueueTest, AsyncTouchFlushedByNonTouchMove) {
 
   // Initiate async touchmove dispatch after the start of a scroll sequence.
   MoveTouchPoint(0, 0, 5);
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(WebInputEvent::GestureScrollBegin,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 0, 10);
-  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  followup_scroll.setType(WebInputEvent::GestureScrollUpdate);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
@@ -2285,15 +2302,16 @@ TEST_F(TouchEventQueueTest, DoNotIncreaseIfClientConsumeAsyncTouchMove) {
 
   // Initiate async touchmove dispatch after the start of a scroll sequence.
   MoveTouchPoint(0, 0, 5);
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  WebGestureEvent followup_scroll(WebInputEvent::GestureScrollBegin,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   MoveTouchPoint(0, 0, 10);
-  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  followup_scroll.setType(WebInputEvent::GestureScrollUpdate);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_FALSE(HasPendingAsyncTouchMove());
@@ -2359,8 +2377,9 @@ TEST_F(TouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
 
   MoveTouchPoint(0, 20, 5);
-  WebGestureEvent followup_scroll;
-  followup_scroll.type = WebInputEvent::GestureScrollUpdate;
+  WebGestureEvent followup_scroll(WebInputEvent::GestureScrollUpdate,
+                                  WebInputEvent::NoModifiers,
+                                  WebInputEvent::TimeStampForTesting);
   SetFollowupEvent(followup_scroll);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   SendGestureEventAck(WebInputEvent::GestureScrollUpdate,

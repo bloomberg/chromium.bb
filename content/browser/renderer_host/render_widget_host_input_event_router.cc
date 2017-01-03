@@ -29,10 +29,10 @@ void TransformEventTouchPositions(blink::WebTouchEvent* event,
   }
 }
 
-blink::WebGestureEvent DummyGestureScrollUpdate() {
-  blink::WebGestureEvent dummy_gesture_scroll_update;
-  dummy_gesture_scroll_update.type = blink::WebInputEvent::GestureScrollUpdate;
-  return dummy_gesture_scroll_update;
+blink::WebGestureEvent DummyGestureScrollUpdate(double timeStampSeconds) {
+  return blink::WebGestureEvent(blink::WebInputEvent::GestureScrollUpdate,
+                                blink::WebInputEvent::NoModifiers,
+                                timeStampSeconds);
 }
 
 }  // anonymous namespace
@@ -337,8 +337,9 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
           return;
 
         if (touch_target_.target == bubbling_gesture_scroll_target_.target) {
-          SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
-                               DummyGestureScrollUpdate());
+          SendGestureScrollEnd(
+              bubbling_gesture_scroll_target_.target,
+              DummyGestureScrollUpdate(event->timeStampSeconds));
           CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
         }
       }
@@ -452,7 +453,7 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
   // Send MouseLeaves.
   for (auto view : exited_views) {
     blink::WebMouseEvent mouse_leave(*event);
-    mouse_leave.type = blink::WebInputEvent::MouseLeave;
+    mouse_leave.setType(blink::WebInputEvent::MouseLeave);
     // There is a chance of a race if the last target has recently created a
     // new compositor surface. The SurfaceID for that might not have
     // propagated to its embedding surface, which makes it impossible to
@@ -468,7 +469,7 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
   // The ancestor might need to trigger MouseOut handlers.
   if (common_ancestor && common_ancestor != target) {
     blink::WebMouseEvent mouse_move(*event);
-    mouse_move.type = blink::WebInputEvent::MouseMove;
+    mouse_move.setType(blink::WebInputEvent::MouseMove);
     if (!root_view->TransformPointToCoordSpaceForView(
             gfx::Point(event->x, event->y), common_ancestor,
             &transformed_point))
@@ -483,7 +484,7 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     if (view == target)
       continue;
     blink::WebMouseEvent mouse_enter(*event);
-    mouse_enter.type = blink::WebInputEvent::MouseMove;
+    mouse_enter.setType(blink::WebInputEvent::MouseMove);
     if (!root_view->TransformPointToCoordSpaceForView(
             gfx::Point(event->x, event->y), view, &transformed_point))
       transformed_point = gfx::Point();
@@ -572,7 +573,7 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
   DCHECK(event.type == blink::WebInputEvent::GestureScrollUpdate ||
          event.type == blink::WebInputEvent::GesturePinchBegin);
   blink::WebGestureEvent scroll_begin(event);
-  scroll_begin.type = blink::WebInputEvent::GestureScrollBegin;
+  scroll_begin.setType(blink::WebInputEvent::GestureScrollBegin);
   scroll_begin.data.scrollBegin.deltaXHint = event.data.scrollUpdate.deltaX;
   scroll_begin.data.scrollBegin.deltaYHint = event.data.scrollUpdate.deltaY;
   scroll_begin.data.scrollBegin.deltaHintUnits =
@@ -588,9 +589,9 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
   DCHECK(event.type == blink::WebInputEvent::GestureScrollUpdate ||
          event.type == blink::WebInputEvent::GesturePinchEnd);
   blink::WebGestureEvent scroll_end(event);
-  scroll_end.type = blink::WebInputEvent::GestureScrollEnd;
-  scroll_end.timeStampSeconds =
-      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+  scroll_end.setType(blink::WebInputEvent::GestureScrollEnd);
+  scroll_end.setTimeStampSeconds(
+      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
   scroll_end.data.scrollEnd.inertialPhase =
       event.data.scrollUpdate.inertialPhase;
   scroll_end.data.scrollEnd.deltaUnits = event.data.scrollUpdate.deltaUnits;
@@ -727,7 +728,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
         touchscreen_gesture_target_.target ==
             bubbling_gesture_scroll_target_.target) {
       SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
-                           DummyGestureScrollUpdate());
+                           DummyGestureScrollUpdate(event->timeStampSeconds));
       CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
     }
   }
@@ -765,7 +766,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchpadGestureEvent(
         touchpad_gesture_target_.target ==
             bubbling_gesture_scroll_target_.target) {
       SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
-                           DummyGestureScrollUpdate());
+                           DummyGestureScrollUpdate(event->timeStampSeconds));
       CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
     }
   }

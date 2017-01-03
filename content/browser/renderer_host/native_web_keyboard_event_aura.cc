@@ -25,10 +25,19 @@ using blink::WebKeyboardEvent;
 
 namespace content {
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent()
-    : os_event(NULL),
-      skip_in_browser(false) {
-}
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
+                                               int modifiers,
+                                               base::TimeTicks timestamp)
+    : NativeWebKeyboardEvent(type,
+                             modifiers,
+                             ui::EventTimeStampToSeconds(timestamp)) {}
+
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
+                                               int modifiers,
+                                               double timestampSeconds)
+    : WebKeyboardEvent(type, modifiers, timestampSeconds),
+      os_event(nullptr),
+      skip_in_browser(false) {}
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
     : NativeWebKeyboardEvent(static_cast<ui::KeyEvent&>(*native_event)) {
@@ -49,7 +58,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(const ui::KeyEvent& key_event,
                                                base::char16 character)
     : WebKeyboardEvent(ui::MakeWebKeyboardEvent(key_event)),
-      os_event(NULL),
+      os_event(nullptr),
       skip_in_browser(false) {
   type = blink::WebInputEvent::Char;
   windowsKeyCode = character;

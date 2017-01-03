@@ -33,6 +33,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -84,7 +85,7 @@ WebInputEvent& GetEventWithType(WebInputEvent::Type type) {
     event = &wheel;
   }
   CHECK(event);
-  event->type = type;
+  event->setType(type);
   return *event;
 }
 
@@ -185,10 +186,9 @@ class InputRouterImplTest : public testing::Test {
   }
 
   void SimulateKeyboardEvent(WebInputEvent::Type type) {
-    WebKeyboardEvent event = SyntheticWebKeyboardEventBuilder::Build(type);
-    NativeWebKeyboardEvent native_event;
-    memcpy(&native_event, &event, sizeof(event));
-    NativeWebKeyboardEventWithLatencyInfo key_event(native_event);
+    NativeWebKeyboardEventWithLatencyInfo key_event(
+        type, WebInputEvent::NoModifiers,
+        ui::EventTimeStampToSeconds(ui::EventTimeForNow()), ui::LatencyInfo());
     input_router_->SendKeyboardEvent(key_event);
   }
 

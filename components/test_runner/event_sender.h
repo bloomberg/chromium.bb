@@ -188,10 +188,9 @@ class EventSender {
 
   void UpdateClickCountForButton(blink::WebMouseEvent::Button);
 
-  void InitMouseWheelEvent(gin::Arguments* args,
-                           MouseScrollType scroll_type,
-                           blink::WebMouseWheelEvent* event,
-                           bool* send_gestures);
+  blink::WebMouseWheelEvent GetMouseWheelEvent(gin::Arguments* args,
+                                               MouseScrollType scroll_type,
+                                               bool* send_gestures);
   void InitPointerProperties(gin::Arguments* args,
                              blink::WebPointerProperties* e,
                              float* radius_x,
@@ -199,6 +198,7 @@ class EventSender {
 
   void FinishDragAndDrop(const blink::WebMouseEvent&, blink::WebDragOperation);
 
+  int ModifiersForPointer(int pointer_id);
   void DoDragAfterMouseUp(const blink::WebMouseEvent&);
   void DoDragAfterMouseMove(const blink::WebMouseEvent&);
   void ReplaySavedEvents();

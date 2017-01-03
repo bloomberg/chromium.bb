@@ -65,35 +65,36 @@ class FullscreenMouseLockDispatcher : public MouseLockDispatcher {
 };
 
 WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
-  WebMouseEvent mouse;
 
   // Only convert touch screen gesture events, do not convert
   // touchpad/mouse wheel gesture events. (crbug.com/620974)
   if (gesture.sourceDevice != blink::WebGestureDeviceTouchscreen)
-    return mouse;
+    return WebMouseEvent();
 
+  WebInputEvent::Type type = WebInputEvent::Undefined;
   switch (gesture.type) {
     case WebInputEvent::GestureScrollBegin:
-      mouse.type = WebInputEvent::MouseDown;
+      type = WebInputEvent::MouseDown;
       break;
     case WebInputEvent::GestureScrollUpdate:
-      mouse.type = WebInputEvent::MouseMove;
+      type = WebInputEvent::MouseMove;
       break;
     case WebInputEvent::GestureFlingStart:
       // A scroll gesture on the touchscreen may end with a GestureScrollEnd
       // when there is no velocity, or a GestureFlingStart when it has a
       // velocity. In both cases, it should end the drag that was initiated by
       // the GestureScrollBegin (and subsequent GestureScrollUpdate) events.
-      mouse.type = WebInputEvent::MouseUp;
+      type = WebInputEvent::MouseUp;
+      break;
     case WebInputEvent::GestureScrollEnd:
-      mouse.type = WebInputEvent::MouseUp;
+      type = WebInputEvent::MouseUp;
       break;
     default:
-      return mouse;
+      return WebMouseEvent();
   }
 
-  mouse.timeStampSeconds = gesture.timeStampSeconds;
-  mouse.modifiers = gesture.modifiers | WebInputEvent::LeftButtonDown;
+  WebMouseEvent mouse(type, gesture.modifiers | WebInputEvent::LeftButtonDown,
+                      gesture.timeStampSeconds);
   mouse.button = WebMouseEvent::Button::Left;
   mouse.clickCount = (mouse.type == WebInputEvent::MouseDown ||
                       mouse.type == WebInputEvent::MouseUp);
@@ -170,12 +171,9 @@ class PepperWidget : public WebWidget {
           static_cast<const WebGestureEvent*>(&event);
       switch (event.type) {
         case WebInputEvent::GestureTap: {
-          WebMouseEvent mouse;
-
-          mouse.timeStampSeconds = gesture_event->timeStampSeconds;
-          mouse.type = WebInputEvent::MouseMove;
-          mouse.modifiers = gesture_event->modifiers;
-
+          WebMouseEvent mouse(WebInputEvent::MouseMove,
+                              gesture_event->modifiers,
+                              gesture_event->timeStampSeconds);
           mouse.x = gesture_event->x;
           mouse.y = gesture_event->y;
           mouse.windowX = gesture_event->x;
@@ -186,12 +184,12 @@ class PepperWidget : public WebWidget {
           mouse.movementY = 0;
           result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);
 
-          mouse.type = WebInputEvent::MouseDown;
+          mouse.setType(WebInputEvent::MouseDown);
           mouse.button = WebMouseEvent::Button::Left;
           mouse.clickCount = gesture_event->data.tap.tapCount;
           result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);
 
-          mouse.type = WebInputEvent::MouseUp;
+          mouse.setType(WebInputEvent::MouseUp);
           result |= widget_->plugin()->HandleInputEvent(mouse, &cursor);
           break;
         }

@@ -155,12 +155,16 @@ class WebGestureEvent : public WebInputEvent {
     } pinchUpdate;
   } data;
 
+  WebGestureEvent(Type type, int modifiers, double timeStampSeconds)
+      : WebInputEvent(sizeof(WebGestureEvent),
+                      type,
+                      modifiers,
+                      timeStampSeconds),
+        sourceDevice(WebGestureDeviceUninitialized),
+        resendingPluginId(-1) {}
+
   WebGestureEvent()
       : WebInputEvent(sizeof(WebGestureEvent)),
-        x(0),
-        y(0),
-        globalX(0),
-        globalY(0),
         sourceDevice(WebGestureDeviceUninitialized),
         resendingPluginId(-1) {}
 

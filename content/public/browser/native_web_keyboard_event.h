@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -26,7 +27,12 @@ namespace content {
 // platform independent code.
 struct CONTENT_EXPORT NativeWebKeyboardEvent :
   NON_EXPORTED_BASE(public blink::WebKeyboardEvent) {
-  NativeWebKeyboardEvent();
+  NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
+                         int modifiers,
+                         base::TimeTicks timestamp);
+  NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
+                         int modifiers,
+                         double timestampSeconds);
 
   explicit NativeWebKeyboardEvent(gfx::NativeEvent native_event);
 #if defined(OS_ANDROID)

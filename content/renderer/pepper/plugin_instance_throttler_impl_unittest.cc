@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -63,9 +64,9 @@ class PluginInstanceThrottlerImplTest
                         bool expect_consumed,
                         bool expect_throttled,
                         int expect_change_callback_count) {
-    blink::WebMouseEvent event;
-    event.type = event_type;
-    event.modifiers = blink::WebInputEvent::Modifiers::LeftButtonDown;
+    blink::WebMouseEvent event(
+        event_type, blink::WebInputEvent::Modifiers::LeftButtonDown,
+        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
     EXPECT_EQ(expect_consumed, throttler()->ConsumeInputEvent(event));
     EXPECT_EQ(expect_throttled, throttler()->IsThrottled());
     EXPECT_EQ(expect_change_callback_count, change_callback_calls());
@@ -202,18 +203,18 @@ TEST_F(PluginInstanceThrottlerImplTest, ThrottleOnLeftClickOnly) {
   EXPECT_TRUE(throttler()->IsThrottled());
   EXPECT_EQ(1, change_callback_calls());
 
-  blink::WebMouseEvent event;
-  event.type = blink::WebInputEvent::Type::MouseUp;
-
-  event.modifiers = blink::WebInputEvent::Modifiers::RightButtonDown;
+  blink::WebMouseEvent event(
+      blink::WebInputEvent::Type::MouseUp,
+      blink::WebInputEvent::Modifiers::RightButtonDown,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   EXPECT_FALSE(throttler()->ConsumeInputEvent(event));
   EXPECT_TRUE(throttler()->IsThrottled());
 
-  event.modifiers = blink::WebInputEvent::Modifiers::MiddleButtonDown;
+  event.setModifiers(blink::WebInputEvent::Modifiers::MiddleButtonDown);
   EXPECT_TRUE(throttler()->ConsumeInputEvent(event));
   EXPECT_TRUE(throttler()->IsThrottled());
 
-  event.modifiers = blink::WebInputEvent::Modifiers::LeftButtonDown;
+  event.setModifiers(blink::WebInputEvent::Modifiers::LeftButtonDown);
   EXPECT_TRUE(throttler()->ConsumeInputEvent(event));
   EXPECT_FALSE(throttler()->IsThrottled());
 }

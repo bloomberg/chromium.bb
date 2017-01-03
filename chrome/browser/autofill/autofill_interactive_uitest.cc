@@ -53,6 +53,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -466,11 +467,12 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
                              ui::DomCode code,
                              ui::KeyboardCode key_code) {
     // Route popup-targeted key presses via the render view host.
-    content::NativeWebKeyboardEvent event;
+    content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::RawKeyDown,
+                                          blink::WebInputEvent::NoModifiers,
+                                          ui::EventTimeForNow());
     event.windowsKeyCode = key_code;
     event.domCode = static_cast<int>(code);
     event.domKey = key;
-    event.type = blink::WebKeyboardEvent::RawKeyDown;
     test_delegate_.Reset();
     // Install the key press event sink to ensure that any events that are not
     // handled by the installed callbacks do not end up crashing the test.
@@ -494,11 +496,12 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
                               ui::DomCode code,
                               ui::KeyboardCode key_code) {
     // Route popup-targeted key presses via the render view host.
-    content::NativeWebKeyboardEvent event;
+    content::NativeWebKeyboardEvent event(blink::WebKeyboardEvent::RawKeyDown,
+                                          blink::WebInputEvent::NoModifiers,
+                                          ui::EventTimeForNow());
     event.windowsKeyCode = key_code;
     event.domCode = static_cast<int>(code);
     event.domKey = key;
-    event.type = blink::WebKeyboardEvent::RawKeyDown;
     // Install the key press event sink to ensure that any events that are not
     // handled by the installed callbacks do not end up crashing the test.
     GetRenderViewHost()->GetWidget()->AddKeyPressEventCallback(
