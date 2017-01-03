@@ -346,7 +346,11 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
     if (counts) ++counts->txfm_partition[ctx][1];
 
     if (tx_size == TX_8X8) {
+      int idx, idy;
       inter_tx_size[0][0] = TX_4X4;
+      for (idy = 0; idy < tx_size_high_unit[tx_size] / 2; ++idy)
+        for (idx = 0; idx < tx_size_wide_unit[tx_size] / 2; ++idx)
+          inter_tx_size[idy][idx] = tx_size;
       mbmi->tx_size = TX_4X4;
       mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
       txfm_partition_update(xd->above_txfm_context + tx_col,
@@ -1969,8 +1973,8 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
         mbmi->tx_size = read_tx_size_intra(cm, xd, r);
 
       if (inter_block) {
-        const int width = num_4x4_blocks_wide_lookup[bsize];
-        const int height = num_4x4_blocks_high_lookup[bsize];
+        const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
+        const int height = block_size_high[bsize] >> tx_size_high_log2[0];
         int idx, idy;
         for (idy = 0; idy < height; ++idy)
           for (idx = 0; idx < width; ++idx)

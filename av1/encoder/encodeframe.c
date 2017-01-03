@@ -5261,8 +5261,8 @@ static void tx_partition_count_update(const AV1_COMMON *const cm, MACROBLOCK *x,
                                       BLOCK_SIZE plane_bsize, int mi_row,
                                       int mi_col, FRAME_COUNTS *td_counts) {
   MACROBLOCKD *xd = &x->e_mbd;
-  const int mi_width = num_4x4_blocks_wide_lookup[plane_bsize];
-  const int mi_height = num_4x4_blocks_high_lookup[plane_bsize];
+  const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  const int mi_height = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
   TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
   const int bh = tx_size_high_unit[max_tx_size];
   const int bw = tx_size_wide_unit[max_tx_size];
@@ -5319,8 +5319,8 @@ static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
 static void tx_partition_set_contexts(const AV1_COMMON *const cm,
                                       MACROBLOCKD *xd, BLOCK_SIZE plane_bsize,
                                       int mi_row, int mi_col) {
-  const int mi_width = num_4x4_blocks_wide_lookup[plane_bsize];
-  const int mi_height = num_4x4_blocks_high_lookup[plane_bsize];
+  const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];
   TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
   const int bh = tx_size_high_unit[max_tx_size];
   const int bw = tx_size_wide_unit[max_tx_size];
@@ -5482,8 +5482,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     av1_encode_sb((AV1_COMMON *)cm, x, block_size);
 #if CONFIG_VAR_TX
     if (mbmi->skip) mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
-    av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col,
-                          AOMMAX(bsize, BLOCK_8X8), rate);
+    av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col, block_size,
+                          rate);
 #else
     av1_tokenize_sb(cpi, td, t, dry_run, block_size, rate);
 #endif

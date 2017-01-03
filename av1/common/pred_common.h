@@ -237,11 +237,10 @@ static INLINE void inter_block_tx_count_update(AV1_COMMON *cm, MACROBLOCKD *xd,
                                                MB_MODE_INFO *mbmi,
                                                BLOCK_SIZE plane_bsize,
                                                int ctx) {
-  const int mi_width = num_4x4_blocks_wide_lookup[plane_bsize];
-  const int mi_height = num_4x4_blocks_high_lookup[plane_bsize];
+  const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  const int mi_height = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
   TX_SIZE max_tx_size = max_txsize_lookup[plane_bsize];
-  BLOCK_SIZE txb_size = txsize_to_bsize[max_tx_size];
-  int bh = num_4x4_blocks_wide_lookup[txb_size];
+  int bh = tx_size_wide_unit[max_tx_size];
   int idx, idy;
 
   for (idy = 0; idy < mi_height; idy += bh)

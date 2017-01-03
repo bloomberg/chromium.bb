@@ -632,7 +632,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 #endif
 #if CONFIG_VAR_TX
   int i;
-  const int bwl = b_width_log2_lookup[plane_bsize];
+  int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
 #endif
   dst = &pd->dst
              .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
@@ -646,9 +646,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 
 #if CONFIG_VAR_TX
   // Assert not magic number (uninitialized).
-  assert(x->blk_skip[plane][(blk_row << bwl) + blk_col] != 234);
+  assert(x->blk_skip[plane][blk_row * bw + blk_col] != 234);
 
-  if (x->blk_skip[plane][(blk_row << bwl) + blk_col] == 0) {
+  if (x->blk_skip[plane][blk_row * bw + blk_col] == 0) {
 #else
   {
 #endif

@@ -1327,8 +1327,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
       const int bh = tx_size_high_unit[max_tx_size];
       const int bw = tx_size_wide_unit[max_tx_size];
-      const int width = num_4x4_blocks_wide_lookup[bsize];
-      const int height = num_4x4_blocks_high_lookup[bsize];
+      const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
+      const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
       int idx, idy;
       for (idy = 0; idy < height; idy += bh)
         for (idx = 0; idx < width; idx += bw)
@@ -1999,8 +1999,12 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
 #if CONFIG_VAR_TX
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       BLOCK_SIZE bsize = mbmi->sb_type;
+#if CONFIG_CB4X4
+      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#else
       const BLOCK_SIZE plane_bsize =
           get_plane_block_size(AOMMAX(bsize, BLOCK_8X8), pd);
+#endif
 
       const int num_4x4_w =
           block_size_wide[plane_bsize] >> tx_size_wide_log2[0];

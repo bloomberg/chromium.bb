@@ -3150,8 +3150,11 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   int txb_w = tx_size_wide_unit[tx_size];
 
   int src_stride = p->src.stride;
-  uint8_t *src = &p->src.buf[4 * blk_row * src_stride + 4 * blk_col];
-  uint8_t *dst = &pd->dst.buf[4 * blk_row * pd->dst.stride + 4 * blk_col];
+  uint8_t *src =
+      &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
+  uint8_t *dst =
+      &pd->dst
+           .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
 #if CONFIG_AOM_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint16_t, rec_buffer16[MAX_TX_SQUARE]);
   uint8_t *rec_buffer;
@@ -3161,7 +3164,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   int max_blocks_high = block_size_high[plane_bsize];
   int max_blocks_wide = block_size_wide[plane_bsize];
   const int diff_stride = max_blocks_wide;
-  const int16_t *diff = &p->src_diff[4 * (blk_row * diff_stride + blk_col)];
+  const int16_t *diff =
+      &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
   int txb_coeff_cost;
 
   assert(tx_size < TX_SIZES_ALL);
@@ -3206,10 +3210,11 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     int blocks_height = AOMMIN(txb_h, max_blocks_high - blk_row);
     int blocks_width = AOMMIN(txb_w, max_blocks_wide - blk_col);
     tmp = 0;
-    for (idy = 0; idy < blocks_height; idy += 2) {
-      for (idx = 0; idx < blocks_width; idx += 2) {
-        const int16_t *d = diff + 4 * idy * diff_stride + 4 * idx;
-        tmp += aom_sum_squares_2d_i16(d, diff_stride, 8);
+    for (idy = 0; idy < blocks_height; ++idy) {
+      for (idx = 0; idx < blocks_width; ++idx) {
+        const int16_t *d =
+            diff + ((idy * diff_stride + idx) << tx_size_wide_log2[0]);
+        tmp += aom_sum_squares_2d_i16(d, diff_stride, 4);
       }
     }
   } else {
@@ -3247,11 +3252,13 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
       int blocks_height = AOMMIN(txb_h, max_blocks_high - blk_row);
       int blocks_width = AOMMIN(txb_w, max_blocks_wide - blk_col);
       tmp = 0;
-      for (idy = 0; idy < blocks_height; idy += 2) {
-        for (idx = 0; idx < blocks_width; idx += 2) {
-          uint8_t *const s = src + 4 * idy * src_stride + 4 * idx;
-          uint8_t *const r = rec_buffer + 4 * idy * MAX_TX_SIZE + 4 * idx;
-          cpi->fn_ptr[BLOCK_8X8].vf(s, src_stride, r, MAX_TX_SIZE, &this_dist);
+      for (idy = 0; idy < blocks_height; ++idy) {
+        for (idx = 0; idx < blocks_width; ++idx) {
+          uint8_t *const s =
+              src + ((idy * src_stride + idx) << tx_size_wide_log2[0]);
+          uint8_t *const r =
+              rec_buffer + ((idy * MAX_TX_SIZE + idx) << tx_size_wide_log2[0]);
+          cpi->fn_ptr[BLOCK_4X4].vf(s, src_stride, r, MAX_TX_SIZE, &this_dist);
           tmp += this_dist;
         }
       }
@@ -3428,8 +3435,8 @@ static void inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   if (is_cost_valid) {
     const struct macroblockd_plane *const pd = &xd->plane[0];
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-    const int mi_width = num_4x4_blocks_wide_lookup[plane_bsize];
-    const int mi_height = num_4x4_blocks_high_lookup[plane_bsize];
+    const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+    const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];
     const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
@@ -3445,7 +3452,7 @@ static void inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     RD_STATS pn_rd_stats;
     av1_init_rd_stats(&pn_rd_stats);
 
-    av1_get_entropy_contexts(bsize, TX_4X4, pd, ctxa, ctxl);
+    av1_get_entropy_contexts(bsize, 0, pd, ctxa, ctxl);
     memcpy(tx_above, xd->above_txfm_context,
            sizeof(TXFM_CONTEXT) * (mi_width >> 1));
     memcpy(tx_left, xd->left_txfm_context,
@@ -3552,8 +3559,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   TX_SIZE best_tx_size[MAX_MIB_SIZE][MAX_MIB_SIZE];
   TX_SIZE best_tx = max_txsize_lookup[bsize];
   TX_SIZE best_min_tx_size = TX_SIZES_ALL;
-  uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 4];
-  const int n4 = 1 << (num_pels_log2_lookup[bsize] - 4);
+  uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
+  const int n4 = 1 << (num_pels_log2_lookup[bsize] - 2 * tx_size_wide_log2[0]);
   int idx, idy;
   int prune = 0;
   const int count32 = 1 << (2 * (cpi->common.mib_size_log2 -
@@ -3716,8 +3723,8 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
   for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-    const int mi_width = num_4x4_blocks_wide_lookup[plane_bsize];
-    const int mi_height = num_4x4_blocks_high_lookup[plane_bsize];
+    const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+    const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];
     const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
@@ -3729,7 +3736,7 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
     RD_STATS pn_rd_stats;
     av1_init_rd_stats(&pn_rd_stats);
 
-    av1_get_entropy_contexts(bsize, TX_4X4, pd, ta, tl);
+    av1_get_entropy_contexts(bsize, 0, pd, ta, tl);
 
     for (idy = 0; idy < mi_height; idy += bh) {
       for (idx = 0; idx < mi_width; idx += bw) {
