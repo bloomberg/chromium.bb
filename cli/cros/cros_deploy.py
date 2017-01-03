@@ -65,7 +65,7 @@ For more information of cros build usage:
     parser.add_argument(
         '--root', default='/',
         help="Package installation root, e.g. '/' or '/usr/local'"
-        "(default: '/').")
+        " (default: '%(default)s').")
     parser.add_argument(
         '--no-clean-binpkg', dest='clean_binpkg', action='store_false',
         default=True, help='Do not clean outdated binary packages. '
