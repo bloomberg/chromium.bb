@@ -16,9 +16,6 @@ namespace blink {
 class BluetoothDevice;
 class ExecutionContext;
 
-struct WebBluetoothRemoteGATTCharacteristicInit;
-struct WebBluetoothRemoteGATTService;
-
 // Map that holds all GATT attributes, i.e. BluetoothRemoteGATTService,
 // BluetoothRemoteGATTCharacteristic, BluetoothRemoteGATTDescriptor, for
 // the BluetoothDevice passed in when constructing the object.
@@ -33,7 +30,10 @@ class BluetoothAttributeInstanceMap final
   // Otherwise returns the BluetoothRemoteGATTService object already
   // in the map.
   BluetoothRemoteGATTService* getOrCreateBluetoothRemoteGATTService(
-      std::unique_ptr<WebBluetoothRemoteGATTService>);
+      const String& serviceInstanceId,
+      const String& uuid,
+      bool isPrimary,
+      const String& deviceInstanceId);
 
   // Returns true if a BluetoothRemoteGATTService with |serviceInstanceId|
   // is in the map.
@@ -46,7 +46,10 @@ class BluetoothAttributeInstanceMap final
   BluetoothRemoteGATTCharacteristic*
   getOrCreateBluetoothRemoteGATTCharacteristic(
       ExecutionContext*,
-      std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit>,
+      const String& characteristicInstanceId,
+      const String& serviceInstanceId,
+      const String& uuid,
+      uint32_t characteristicProperties,
       BluetoothRemoteGATTService*);
 
   // Returns true if a BluetoothRemoteGATTCharacteristic with

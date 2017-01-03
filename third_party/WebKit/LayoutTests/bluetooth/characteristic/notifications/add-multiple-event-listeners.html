@@ -17,7 +17,8 @@ promise_test(() => {
       return assert_event_fires_after_promise(characteristic,
                                               'startNotifications',
                                               'characteristicvaluechanged',
-                                              3 /* add 3 listeners */);
+                                              3 /* add 3 listeners */,
+                                              false /* ignore_event_promise_order */);
     })
     .then(() => char.stopNotifications())
     .then(() => assert_no_events(char, 'characteristicvaluechanged'));

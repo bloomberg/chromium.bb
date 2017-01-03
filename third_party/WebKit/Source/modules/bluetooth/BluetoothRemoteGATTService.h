@@ -10,7 +10,6 @@
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
-#include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTService.h"
 #include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
@@ -34,16 +33,18 @@ class BluetoothRemoteGATTService final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit BluetoothRemoteGATTService(
-      std::unique_ptr<WebBluetoothRemoteGATTService>,
-      BluetoothDevice*);
+  BluetoothRemoteGATTService(const String& serviceInstanceId,
+                             const String& uuid,
+                             bool isPrimary,
+                             const String& deviceInstanceId,
+                             BluetoothDevice*);
 
   // Interface required by garbage collection.
   DECLARE_VIRTUAL_TRACE();
 
   // IDL exposed interface:
-  String uuid() { return m_webService->uuid; }
-  bool isPrimary() { return m_webService->isPrimary; }
+  String uuid() { return m_uuid; }
+  bool isPrimary() { return m_isPrimary; }
   BluetoothDevice* device() { return m_device; }
   ScriptPromise getCharacteristic(ScriptState*,
                                   const StringOrUnsignedLong& characteristic,
@@ -54,12 +55,23 @@ class BluetoothRemoteGATTService final
   ScriptPromise getCharacteristics(ScriptState*, ExceptionState&);
 
  private:
+  void GetCharacteristicsCallback(
+      const String& serviceInstanceId,
+      mojom::blink::WebBluetoothGATTQueryQuantity,
+      ScriptPromiseResolver*,
+      mojom::blink::WebBluetoothResult,
+      Optional<Vector<mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr>>
+          services);
+
   ScriptPromise getCharacteristicsImpl(
       ScriptState*,
       mojom::blink::WebBluetoothGATTQueryQuantity,
-      String characteristicUUID = String());
+      const String& characteristicUUID = String());
 
-  std::unique_ptr<WebBluetoothRemoteGATTService> m_webService;
+  const String m_serviceInstanceId;
+  const String m_uuid;
+  const bool m_isPrimary;
+  const String m_deviceInstanceId;
   Member<BluetoothDevice> m_device;
 };
 

@@ -1128,6 +1128,7 @@ component("platform") {
     "mhtml/MHTMLArchive.h",
     "mhtml/MHTMLParser.cpp",
     "mhtml/MHTMLParser.h",
+    "mojo/BluetoothStructTraits.cpp",
     "mojo/CommonCustomTypesStructTraits.cpp",
     "mojo/GeometryStructTraits.cpp",
     "mojo/MojoHelper.h",

@@ -9,11 +9,10 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "modules/bluetooth/Bluetooth.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
-#include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/bluetooth/BluetoothUUID.h"
-#include "public/platform/modules/bluetooth/WebBluetooth.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 #include <utility>
@@ -33,93 +32,69 @@ const char kInvalidService[] =
 }  // namespace
 
 BluetoothRemoteGATTService::BluetoothRemoteGATTService(
-    std::unique_ptr<WebBluetoothRemoteGATTService> webService,
+    const String& serviceInstanceId,
+    const String& uuid,
+    bool isPrimary,
+    const String& deviceInstanceId,
     BluetoothDevice* device)
-    : m_webService(std::move(webService)), m_device(device) {
-  DCHECK(m_webService);
-}
+    : m_serviceInstanceId(serviceInstanceId),
+      m_uuid(uuid),
+      m_isPrimary(isPrimary),
+      m_deviceInstanceId(deviceInstanceId),
+      m_device(device) {}
 
 DEFINE_TRACE(BluetoothRemoteGATTService) {
   visitor->trace(m_device);
 }
 
-// Class that allows us to resolve the promise with a single Characteristic or
-// with a vector owning the characteristics.
-class GetCharacteristicsCallback
-    : public WebBluetoothGetCharacteristicsCallbacks {
- public:
-  GetCharacteristicsCallback(
-      BluetoothRemoteGATTService* service,
-      mojom::blink::WebBluetoothGATTQueryQuantity quantity,
-      ScriptPromiseResolver* resolver)
-      : m_service(service), m_quantity(quantity), m_resolver(resolver) {
-    // We always check that the device is connected before constructing this
-    // object.
-    CHECK(m_service->device()->gatt()->connected());
-    m_service->device()->gatt()->AddToActiveAlgorithms(m_resolver.get());
+// Callback that allows us to resolve the promise with a single Characteristic
+// or with a vector owning the characteristics.
+void BluetoothRemoteGATTService::GetCharacteristicsCallback(
+    const String& serviceInstanceId,
+    mojom::blink::WebBluetoothGATTQueryQuantity quantity,
+    ScriptPromiseResolver* resolver,
+    mojom::blink::WebBluetoothResult result,
+    Optional<Vector<mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr>>
+        characteristics) {
+  if (!resolver->getExecutionContext() ||
+      resolver->getExecutionContext()->isContextDestroyed())
+    return;
+
+  // If the resolver is not in the set of ActiveAlgorithms then the frame
+  // disconnected so we reject.
+  if (!device()->gatt()->RemoveFromActiveAlgorithms(resolver)) {
+    resolver->reject(
+        DOMException::create(NetworkError, kGATTServerDisconnected));
+    return;
   }
 
-  void onSuccess(const WebVector<WebBluetoothRemoteGATTCharacteristicInit*>&
-                     webCharacteristics) override {
-    if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->isContextDestroyed())
-      return;
+  if (result == mojom::blink::WebBluetoothResult::SUCCESS) {
+    DCHECK(characteristics);
 
-    // If the resolver is not in the set of ActiveAlgorithms then the frame
-    // disconnected so we reject.
-    if (!m_service->device()->gatt()->RemoveFromActiveAlgorithms(
-            m_resolver.get())) {
-      m_resolver->reject(
-          DOMException::create(NetworkError, kGATTServerDisconnected));
+    if (quantity == mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE) {
+      DCHECK_EQ(1u, characteristics->size());
+      resolver->resolve(device()->getOrCreateBluetoothRemoteGATTCharacteristic(
+          resolver->getExecutionContext(),
+          characteristics.value()[0]->instance_id, serviceInstanceId,
+          characteristics.value()[0]->uuid,
+          characteristics.value()[0]->properties, this));
       return;
     }
 
-    if (m_quantity == mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE) {
-      DCHECK_EQ(1u, webCharacteristics.size());
-      m_resolver->resolve(
-          m_service->device()->getOrCreateBluetoothRemoteGATTCharacteristic(
-              m_resolver->getExecutionContext(),
-              WTF::wrapUnique(webCharacteristics[0]), m_service));
-      return;
+    HeapVector<Member<BluetoothRemoteGATTCharacteristic>> gattCharacteristics;
+    gattCharacteristics.reserveInitialCapacity(characteristics->size());
+    for (const auto& characteristic : characteristics.value()) {
+      gattCharacteristics.append(
+          device()->getOrCreateBluetoothRemoteGATTCharacteristic(
+              resolver->getExecutionContext(), characteristic->instance_id,
+              serviceInstanceId, characteristic->uuid,
+              characteristic->properties, this));
     }
-
-    HeapVector<Member<BluetoothRemoteGATTCharacteristic>> characteristics;
-    characteristics.reserveInitialCapacity(webCharacteristics.size());
-    for (WebBluetoothRemoteGATTCharacteristicInit* webCharacteristic :
-         webCharacteristics) {
-      characteristics.append(
-          m_service->device()->getOrCreateBluetoothRemoteGATTCharacteristic(
-              m_resolver->getExecutionContext(),
-              WTF::wrapUnique(webCharacteristic), m_service));
-    }
-    m_resolver->resolve(characteristics);
+    resolver->resolve(gattCharacteristics);
+  } else {
+    resolver->reject(BluetoothError::take(resolver, result));
   }
-
-  void onError(
-      int32_t
-          error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
-      override {
-    if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->isContextDestroyed())
-      return;
-
-    // If the resolver is not in the set of ActiveAlgorithms then the frame
-    // disconnected so we reject.
-    if (!m_service->device()->gatt()->RemoveFromActiveAlgorithms(
-            m_resolver.get())) {
-      m_resolver->reject(
-          DOMException::create(NetworkError, kGATTServerDisconnected));
-      return;
-    }
-
-    m_resolver->reject(BluetoothError::take(m_resolver, error));
-  }
-
- private:
-  Persistent<BluetoothRemoteGATTService> m_service;
-  mojom::blink::WebBluetoothGATTQueryQuantity m_quantity;
-  const Persistent<ScriptPromiseResolver> m_resolver;
-};
+}
 
 ScriptPromise BluetoothRemoteGATTService::getCharacteristic(
     ScriptState* scriptState,
@@ -159,27 +134,34 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristics(
 ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(
     ScriptState* scriptState,
     mojom::blink::WebBluetoothGATTQueryQuantity quantity,
-    String characteristicsUUID) {
+    const String& characteristicsUUID) {
+  // We always check that the device is connected.
   if (!device()->gatt()->connected()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(NetworkError, kGATTServerNotConnected));
   }
 
-  if (!device()->isValidService(m_webService->serviceInstanceID)) {
+  if (!device()->isValidService(m_serviceInstanceId)) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(InvalidStateError, kInvalidService));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
+  device()->gatt()->AddToActiveAlgorithms(resolver);
 
-  WebBluetooth* webbluetooth =
-      BluetoothSupplement::fromScriptState(scriptState);
-  webbluetooth->getCharacteristics(
-      m_webService->serviceInstanceID, static_cast<int32_t>(quantity),
-      characteristicsUUID,
-      new GetCharacteristicsCallback(this, quantity, resolver));
+  mojom::blink::WebBluetoothService* service = m_device->bluetooth()->service();
+
+  WTF::Optional<String> uuid = WTF::nullopt;
+  if (!characteristicsUUID.isEmpty())
+    uuid = characteristicsUUID;
+  service->RemoteServiceGetCharacteristics(
+      m_serviceInstanceId, quantity, uuid,
+      convertToBaseCallback(
+          WTF::bind(&BluetoothRemoteGATTService::GetCharacteristicsCallback,
+                    wrapPersistent(this), m_serviceInstanceId, quantity,
+                    wrapPersistent(resolver))));
 
   return promise;
 }

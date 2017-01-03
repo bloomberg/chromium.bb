@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -3229,19 +3230,28 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
 
 WebBluetoothServiceImpl* RenderFrameHostImpl::CreateWebBluetoothService(
     blink::mojom::WebBluetoothServiceRequest request) {
-  DCHECK(!web_bluetooth_service_);
-  web_bluetooth_service_.reset(
-      new WebBluetoothServiceImpl(this, std::move(request)));
-  // RFHI owns web_bluetooth_service_ and web_bluetooth_service owns the
-  // binding_ which may run the error handler. binding_ can't run the error
+  // RFHI owns |web_bluetooth_services_| and |web_bluetooth_service| owns the
+  // |binding_| which may run the error handler. |binding_| can't run the error
   // handler after it's destroyed so it can't run after the RFHI is destroyed.
-  web_bluetooth_service_->SetClientConnectionErrorHandler(base::Bind(
-      &RenderFrameHostImpl::DeleteWebBluetoothService, base::Unretained(this)));
-  return web_bluetooth_service_.get();
+  auto web_bluetooth_service =
+      base::MakeUnique<WebBluetoothServiceImpl>(this, std::move(request));
+  web_bluetooth_service->SetClientConnectionErrorHandler(
+      base::Bind(&RenderFrameHostImpl::DeleteWebBluetoothService,
+                 base::Unretained(this), web_bluetooth_service.get()));
+  web_bluetooth_services_.push_back(std::move(web_bluetooth_service));
+  return web_bluetooth_services_.back().get();
 }
 
-void RenderFrameHostImpl::DeleteWebBluetoothService() {
-  web_bluetooth_service_.reset();
+void RenderFrameHostImpl::DeleteWebBluetoothService(
+    WebBluetoothServiceImpl* web_bluetooth_service) {
+  auto it = std::find_if(
+      web_bluetooth_services_.begin(), web_bluetooth_services_.end(),
+      [web_bluetooth_service](
+          const std::unique_ptr<WebBluetoothServiceImpl>& service) {
+        return web_bluetooth_service == service.get();
+      });
+  DCHECK(it != web_bluetooth_services_.end());
+  web_bluetooth_services_.erase(it);
 }
 
 void RenderFrameHostImpl::Create(

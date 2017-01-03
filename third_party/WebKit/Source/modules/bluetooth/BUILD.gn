@@ -22,11 +22,13 @@ blink_modules_sources("bluetooth") {
     "BluetoothRemoteGATTServer.h",
     "BluetoothRemoteGATTService.cpp",
     "BluetoothRemoteGATTService.h",
-    "BluetoothSupplement.cpp",
-    "BluetoothSupplement.h",
     "BluetoothUUID.cpp",
     "BluetoothUUID.h",
     "NavigatorBluetooth.cpp",
     "NavigatorBluetooth.h",
+  ]
+
+  deps = [
+    "//device/bluetooth/public/interfaces:interfaces_blink",
   ]
 }

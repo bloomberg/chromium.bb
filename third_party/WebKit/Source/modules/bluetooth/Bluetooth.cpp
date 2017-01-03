@@ -8,15 +8,17 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "modules/bluetooth/BluetoothError.h"
-#include "modules/bluetooth/BluetoothSupplement.h"
+#include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
 #include "modules/bluetooth/BluetoothUUID.h"
 #include "modules/bluetooth/RequestDeviceOptions.h"
 #include "platform/UserGestureIndicator.h"
-#include "public/platform/modules/bluetooth/WebBluetooth.h"
-#include "public/platform/modules/bluetooth/WebRequestDeviceOptions.h"
+#include "public/platform/InterfaceProvider.h"
 #include <memory>
 #include <utility>
 
@@ -38,9 +40,10 @@ const char kDeviceNameTooLong[] =
     "A device name can't be longer than 248 bytes.";
 }  // namespace
 
-static void canonicalizeFilter(const BluetoothScanFilterInit& filter,
-                               WebBluetoothScanFilter& canonicalizedFilter,
-                               ExceptionState& exceptionState) {
+static void canonicalizeFilter(
+    const BluetoothScanFilterInit& filter,
+    mojom::blink::WebBluetoothScanFilterPtr& canonicalizedFilter,
+    ExceptionState& exceptionState) {
   if (!(filter.hasServices() || filter.hasName() || filter.hasNamePrefix())) {
     exceptionState.throwTypeError(
         "A filter must restrict the devices in some way.");
@@ -53,18 +56,16 @@ static void canonicalizeFilter(const BluetoothScanFilterInit& filter,
           "'services', if present, must contain at least one service.");
       return;
     }
-    Vector<WebString> services;
+    canonicalizedFilter->services.emplace();
     for (const StringOrUnsignedLong& service : filter.services()) {
       const String& validatedService =
           BluetoothUUID::getService(service, exceptionState);
       if (exceptionState.hadException())
         return;
-      services.append(validatedService);
+      canonicalizedFilter->services->append(validatedService);
     }
-    canonicalizedFilter.services.assign(services);
   }
 
-  canonicalizedFilter.hasName = filter.hasName();
   if (filter.hasName()) {
     size_t nameLength = filter.name().utf8().length();
     if (nameLength > kMaxDeviceNameLength) {
@@ -75,7 +76,7 @@ static void canonicalizeFilter(const BluetoothScanFilterInit& filter,
       exceptionState.throwDOMException(NotFoundError, kFilterNameTooLong);
       return;
     }
-    canonicalizedFilter.name = filter.name();
+    canonicalizedFilter->name = filter.name();
   }
 
   if (filter.hasNamePrefix()) {
@@ -93,13 +94,14 @@ static void canonicalizeFilter(const BluetoothScanFilterInit& filter,
           "'namePrefix', if present, must me non-empty.");
       return;
     }
-    canonicalizedFilter.namePrefix = filter.namePrefix();
+    canonicalizedFilter->name_prefix = filter.namePrefix();
   }
 }
 
-static void convertRequestDeviceOptions(const RequestDeviceOptions& options,
-                                        WebRequestDeviceOptions& result,
-                                        ExceptionState& exceptionState) {
+static void convertRequestDeviceOptions(
+    const RequestDeviceOptions& options,
+    mojom::blink::WebBluetoothRequestDeviceOptionsPtr& result,
+    ExceptionState& exceptionState) {
   if (!(options.hasFilters() ^ options.acceptAllDevices())) {
     exceptionState.throwTypeError(
         "Either 'filters' should be present or 'acceptAllDevices' should be "
@@ -107,75 +109,64 @@ static void convertRequestDeviceOptions(const RequestDeviceOptions& options,
     return;
   }
 
-  result.acceptAllDevices = options.acceptAllDevices();
+  result->accept_all_devices = options.acceptAllDevices();
 
-  result.hasFilters = options.hasFilters();
-  if (result.hasFilters) {
+  if (options.hasFilters()) {
     if (options.filters().isEmpty()) {
       exceptionState.throwTypeError(
           "'filters' member must be non-empty to find any devices.");
       return;
     }
 
-    Vector<WebBluetoothScanFilter> filters;
+    result->filters.emplace();
+
     for (const BluetoothScanFilterInit& filter : options.filters()) {
-      WebBluetoothScanFilter canonicalizedFilter = WebBluetoothScanFilter();
+      auto canonicalizedFilter = mojom::blink::WebBluetoothScanFilter::New();
 
       canonicalizeFilter(filter, canonicalizedFilter, exceptionState);
 
       if (exceptionState.hadException())
         return;
 
-      filters.append(canonicalizedFilter);
+      result->filters.value().append(std::move(canonicalizedFilter));
     }
-
-    result.filters.assign(filters);
   }
 
   if (options.hasOptionalServices()) {
-    Vector<WebString> optionalServices;
     for (const StringOrUnsignedLong& optionalService :
          options.optionalServices()) {
       const String& validatedOptionalService =
           BluetoothUUID::getService(optionalService, exceptionState);
       if (exceptionState.hadException())
         return;
-      optionalServices.append(validatedOptionalService);
+      result->optional_services.append(validatedOptionalService);
     }
-    result.optionalServices.assign(optionalServices);
   }
 }
 
-class RequestDeviceCallback : public WebBluetoothRequestDeviceCallbacks {
- public:
-  RequestDeviceCallback(Bluetooth* bluetooth, ScriptPromiseResolver* resolver)
-      : m_bluetooth(bluetooth), m_resolver(resolver) {}
+void Bluetooth::dispose() {
+  // The pipe to this object must be closed when is marked unreachable to
+  // prevent messages from being dispatched before lazy sweeping.
+  if (m_clientBinding.is_bound())
+    m_clientBinding.Close();
+}
 
-  void onSuccess(std::unique_ptr<WebBluetoothDeviceInit> deviceInit) override {
-    if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->isContextDestroyed())
-      return;
+void Bluetooth::RequestDeviceCallback(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::WebBluetoothResult result,
+    mojom::blink::WebBluetoothDevicePtr device) {
+  if (!resolver->getExecutionContext() ||
+      resolver->getExecutionContext()->isContextDestroyed())
+    return;
 
-    BluetoothDevice* device = m_bluetooth->getBluetoothDeviceRepresentingDevice(
-        std::move(deviceInit), m_resolver);
-
-    m_resolver->resolve(device);
+  if (result == mojom::blink::WebBluetoothResult::SUCCESS) {
+    BluetoothDevice* bluetoothDevice = getBluetoothDeviceRepresentingDevice(
+        device->id->device_id, device->name, resolver);
+    resolver->resolve(bluetoothDevice);
+  } else {
+    resolver->reject(BluetoothError::take(resolver, result));
   }
-
-  void onError(
-      int32_t
-          error /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */)
-      override {
-    if (!m_resolver->getExecutionContext() ||
-        m_resolver->getExecutionContext()->isContextDestroyed())
-      return;
-    m_resolver->reject(BluetoothError::take(m_resolver, error));
-  }
-
- private:
-  Persistent<Bluetooth> m_bluetooth;
-  Persistent<ScriptPromiseResolver> m_resolver;
-};
+}
 
 // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetooth-requestdevice
 ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
@@ -201,40 +192,109 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  WebBluetooth* webbluetooth =
-      BluetoothSupplement::fromScriptState(scriptState);
-  if (!webbluetooth)
+  if (!m_service) {
+    InterfaceProvider* interfaceProvider = nullptr;
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
+    if (executionContext->isDocument()) {
+      Document* document = toDocument(executionContext);
+      if (document->frame())
+        interfaceProvider = document->frame()->interfaceProvider();
+    }
+
+    if (interfaceProvider)
+      interfaceProvider->getInterface(mojo::MakeRequest(&m_service));
+
+    if (m_service) {
+      // Create an associated interface ptr and pass it to the
+      // WebBluetoothService so that it can send us events without us
+      // prompting.
+      mojom::blink::WebBluetoothServiceClientAssociatedPtrInfo ptrInfo;
+      m_clientBinding.Bind(&ptrInfo, m_service.associated_group());
+      m_service->SetClient(std::move(ptrInfo));
+    }
+  }
+
+  if (!m_service) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(NotSupportedError));
+  }
 
   // In order to convert the arguments from service names and aliases to just
   // UUIDs, do the following substeps:
-  WebRequestDeviceOptions webOptions;
-  convertRequestDeviceOptions(options, webOptions, exceptionState);
+  auto deviceOptions = mojom::blink::WebBluetoothRequestDeviceOptions::New();
+  convertRequestDeviceOptions(options, deviceOptions, exceptionState);
+
   if (exceptionState.hadException())
     return exceptionState.reject(scriptState);
 
   // Subsequent steps are handled in the browser process.
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
-  webbluetooth->requestDevice(webOptions,
-                              new RequestDeviceCallback(this, resolver));
+
+  service()->RequestDevice(
+      std::move(deviceOptions),
+      convertToBaseCallback(WTF::bind(&Bluetooth::RequestDeviceCallback,
+                                      wrapPersistent(this),
+                                      wrapPersistent(resolver))));
   return promise;
+}
+
+void Bluetooth::addDevice(const String& deviceId, BluetoothDevice* device) {
+  m_connectedDevices.add(deviceId, device);
+}
+
+void Bluetooth::removeDevice(const String& deviceId) {
+  m_connectedDevices.remove(deviceId);
+}
+
+void Bluetooth::registerCharacteristicObject(
+    const String& characteristicInstanceId,
+    BluetoothRemoteGATTCharacteristic* characteristic) {
+  m_activeCharacteristics.add(characteristicInstanceId, characteristic);
+}
+
+void Bluetooth::characteristicObjectRemoved(
+    const String& characteristicInstanceId) {
+  m_activeCharacteristics.remove(characteristicInstanceId);
 }
 
 DEFINE_TRACE(Bluetooth) {
   visitor->trace(m_deviceInstanceMap);
+  visitor->trace(m_activeCharacteristics);
+  visitor->trace(m_connectedDevices);
+}
+
+Bluetooth::Bluetooth() : m_clientBinding(this) {}
+
+void Bluetooth::RemoteCharacteristicValueChanged(
+    const WTF::String& characteristicInstanceId,
+    const WTF::Vector<uint8_t>& value) {
+  BluetoothRemoteGATTCharacteristic* characteristic =
+      m_activeCharacteristics.get(characteristicInstanceId);
+  if (characteristic)
+    characteristic->dispatchCharacteristicValueChanged(value);
+}
+
+void Bluetooth::GattServerDisconnected(
+    mojom::blink::WebBluetoothDeviceIdPtr deviceId) {
+  BluetoothDevice* device = m_connectedDevices.get(deviceId->device_id);
+  if (device) {
+    // Remove device from the map before calling dispatchGattServerDisconnected
+    // to avoid removing a device the gattserverdisconnected event handler might
+    // have re-connected.
+    m_connectedDevices.remove(deviceId->device_id);
+    device->dispatchGattServerDisconnected();
+  }
 }
 
 BluetoothDevice* Bluetooth::getBluetoothDeviceRepresentingDevice(
-    std::unique_ptr<WebBluetoothDeviceInit> deviceInit,
+    const String& id,
+    const String& name,
     ScriptPromiseResolver* resolver) {
-  BluetoothDevice* device = m_deviceInstanceMap.get(deviceInit->id);
+  BluetoothDevice* device = m_deviceInstanceMap.get(id);
   if (!device) {
-    String deviceId = deviceInit->id;
-    device = BluetoothDevice::take(resolver, std::move(deviceInit));
-
-    auto result = m_deviceInstanceMap.add(deviceId, device);
+    device = BluetoothDevice::take(resolver, id, name, this);
+    auto result = m_deviceInstanceMap.add(id, device);
     DCHECK(result.isNewEntry);
   }
   return device;

@@ -643,7 +643,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                const blink::WebString& title) override;
   void unregisterProtocolHandler(const blink::WebString& scheme,
                                  const blink::WebURL& url) override;
-  blink::WebBluetooth* bluetooth() override;
   void checkIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,
@@ -1288,8 +1287,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Only valid if |accessibility_mode_| is anything other than
   // AccessibilityModeOff.
   RenderAccessibilityImpl* render_accessibility_;
-
-  std::unique_ptr<blink::WebBluetooth> bluetooth_;
 
   // Manages play, pause notifications for WebMediaPlayer implementations; its
   // lifetime is tied to the RenderFrame via the RenderFrameObserver interface.

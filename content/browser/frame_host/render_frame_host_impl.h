@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -817,7 +818,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::InterfaceRequest<blink::mojom::WebBluetoothService> request);
 
   // Deletes the Web Bluetooth Service owned by the frame.
-  void DeleteWebBluetoothService();
+  void DeleteWebBluetoothService(
+      WebBluetoothServiceImpl* web_bluetooth_service);
 
   // service_manager::InterfaceFactory<media::mojom::InterfaceFactory>
   void Create(const service_manager::Identity& remote_identity,
@@ -998,7 +1000,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       app_web_message_port_message_filter_;
 #endif
 
-  std::unique_ptr<WebBluetoothServiceImpl> web_bluetooth_service_;
+  std::list<std::unique_ptr<WebBluetoothServiceImpl>> web_bluetooth_services_;
 
   // The object managing the accessibility tree for this frame.
   std::unique_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;

@@ -55,7 +55,6 @@
 #include "core/page/PopupOpeningObserver.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
-#include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/installedapp/InstalledAppController.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "modules/presentation/PresentationController.h"
@@ -1147,9 +1146,6 @@ void ChromeClientImpl::installSupplements(LocalFrame& frame) {
   provideLocalFileSystemTo(frame, LocalFileSystemClient::create());
   provideNavigatorContentUtilsTo(
       frame, NavigatorContentUtilsClientImpl::create(webFrame));
-
-  if (RuntimeEnabledFeatures::webBluetoothEnabled())
-    BluetoothSupplement::provideTo(frame, client->bluetooth());
 
   ScreenOrientationControllerImpl::provideTo(
       frame, client->webScreenOrientationClient());

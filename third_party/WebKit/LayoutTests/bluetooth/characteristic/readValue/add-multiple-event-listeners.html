@@ -15,7 +15,8 @@ promise_test(() => {
       return assert_event_fires_after_promise(characteristic,
                                               'readValue',
                                               'characteristicvaluechanged',
-                                              3 /* attach 3 listeners */);
+                                              3 /* attach 3 listeners */,
+                                              true /* ignore_event_promise_order */);
     }).then(results => {
       let read_value = results[0].buffer;
       let event_values = results.slice(1).map(v => v.buffer);

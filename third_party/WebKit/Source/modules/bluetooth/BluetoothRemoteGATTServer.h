@@ -9,7 +9,7 @@
 #include "bindings/modules/v8/StringOrUnsignedLong.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "platform/heap/Heap.h"
-#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
+#include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -68,6 +68,15 @@ class BluetoothRemoteGATTServer final
       ScriptState*,
       mojom::blink::WebBluetoothGATTQueryQuantity,
       String serviceUUID = String());
+
+  void ConnectCallback(ScriptPromiseResolver*,
+                       mojom::blink::WebBluetoothResult);
+  void GetPrimaryServicesCallback(
+      mojom::blink::WebBluetoothGATTQueryQuantity,
+      ScriptPromiseResolver*,
+      mojom::blink::WebBluetoothResult,
+      Optional<Vector<mojom::blink::WebBluetoothRemoteGATTServicePtr>>
+          services);
 
   // Contains a ScriptPromiseResolver corresponding to each active algorithm
   // using this server’s connection.

@@ -72,7 +72,6 @@ class InterfaceProvider;
 class InterfaceRegistry;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebBluetooth;
 class WebColorChooser;
 class WebColorChooserClient;
 class WebContentDecryptionModule;
@@ -725,9 +724,6 @@ class BLINK_EXPORT WebFrameClient {
       const WebURL& url) {
     return WebCustomHandlersNew;
   }
-
-  // Bluetooth -----------------------------------------------------------
-  virtual WebBluetooth* bluetooth() { return 0; }
 
   // Audio Output Devices API --------------------------------------------
 

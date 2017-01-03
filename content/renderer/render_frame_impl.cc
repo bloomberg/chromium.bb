@@ -91,7 +91,6 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
-#include "content/renderer/bluetooth/web_bluetooth_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/child_frame_compositing_helper.h"
@@ -4677,12 +4676,6 @@ void RenderFrameImpl::unregisterProtocolHandler(const WebString& scheme,
       base::UTF16ToUTF8(base::StringPiece16(scheme)),
       url,
       user_gesture));
-}
-
-blink::WebBluetooth* RenderFrameImpl::bluetooth() {
-  if (!bluetooth_.get())
-    bluetooth_.reset(new WebBluetoothImpl(GetRemoteInterfaces()));
-  return bluetooth_.get();
 }
 
 void RenderFrameImpl::didSerializeDataForFrame(

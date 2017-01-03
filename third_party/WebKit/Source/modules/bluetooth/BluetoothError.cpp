@@ -6,15 +6,12 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
 
 namespace blink {
 
-DOMException* BluetoothError::take(
-    ScriptPromiseResolver*,
-    int32_t
-        webError /* Corresponds to WebBluetoothResult in web_bluetooth.mojom */) {
-  switch (static_cast<mojom::blink::WebBluetoothResult>(webError)) {
+DOMException* BluetoothError::take(ScriptPromiseResolver*,
+                                   mojom::blink::WebBluetoothResult error) {
+  switch (error) {
     case mojom::blink::WebBluetoothResult::SUCCESS:
       ASSERT_NOT_REACHED();
       return DOMException::create(UnknownError);

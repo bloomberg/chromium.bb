@@ -6,8 +6,6 @@
 
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
-#include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristicInit.h"
-#include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTService.h"
 #include <memory>
 #include <utility>
 
@@ -19,15 +17,16 @@ BluetoothAttributeInstanceMap::BluetoothAttributeInstanceMap(
 
 BluetoothRemoteGATTService*
 BluetoothAttributeInstanceMap::getOrCreateBluetoothRemoteGATTService(
-    std::unique_ptr<WebBluetoothRemoteGATTService> webService) {
-  String serviceInstanceId = webService->serviceInstanceID;
-
+    const String& serviceInstanceId,
+    const String& uuid,
+    bool isPrimary,
+    const String& deviceInstanceId) {
   BluetoothRemoteGATTService* service =
       m_serviceIdToObject.get(serviceInstanceId);
 
   if (!service) {
-    service =
-        new BluetoothRemoteGATTService(std::move(webService), m_device.get());
+    service = new BluetoothRemoteGATTService(serviceInstanceId, uuid, isPrimary,
+                                             deviceInstanceId, m_device);
     m_serviceIdToObject.add(serviceInstanceId, service);
   }
 
@@ -42,16 +41,18 @@ bool BluetoothAttributeInstanceMap::containsService(
 BluetoothRemoteGATTCharacteristic*
 BluetoothAttributeInstanceMap::getOrCreateBluetoothRemoteGATTCharacteristic(
     ExecutionContext* context,
-    std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> webCharacteristic,
+    const String& characteristicInstanceId,
+    const String& serviceInstanceId,
+    const String& uuid,
+    uint32_t characteristicProperties,
     BluetoothRemoteGATTService* service) {
-  String characteristicInstanceId = webCharacteristic->characteristicInstanceID;
-
   BluetoothRemoteGATTCharacteristic* characteristic =
       m_characteristicIdToObject.get(characteristicInstanceId);
 
   if (!characteristic) {
     characteristic = BluetoothRemoteGATTCharacteristic::create(
-        context, std::move(webCharacteristic), service);
+        context, characteristicInstanceId, serviceInstanceId, uuid,
+        characteristicProperties, service, m_device);
     m_characteristicIdToObject.add(characteristicInstanceId, characteristic);
   }
 
