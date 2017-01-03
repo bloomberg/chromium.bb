@@ -5,9 +5,6 @@
 // https://dev.w3.org/fxtf/geometry/#DOMPoint
 
 [
-    // FIXME: The point argument is optional in the spec:
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28108
-    Constructor(DOMPointInit point),
     Constructor(optional unrestricted double x = 0, optional unrestricted double y = 0,
                 optional unrestricted double z = 0, optional unrestricted double w = 1),
     // FIXME: Exposed=(Window,Worker)

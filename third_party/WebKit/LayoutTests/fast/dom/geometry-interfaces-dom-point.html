@@ -24,31 +24,6 @@ test(() => {
 }, 'DOMPoint constructor with x, y, z, w parameters');
 
 test(() => {
-  var point = new DOMPoint({x: 2});
-  assert_dom_point_equals(point, [2, 0, 0, 1]);
-}, 'DOMPoint constructor with x parameter');
-
-test(() => {
-  var point = new DOMPoint({y: 2});
-  assert_dom_point_equals(point, [0, 2, 0, 1]);
-}, 'DOMPoint constructor with y parameter');
-
-test(() => {
-  var point = new DOMPoint({z: 2});
-  assert_dom_point_equals(point, [0, 0, 2, 1]);
-}, 'DOMPoint constructor with z parameter');
-
-test(() => {
-  var point = new DOMPoint({w: 2});
-  assert_dom_point_equals(point, [0, 0, 0, 2]);
-}, 'DOMPoint constructor with w parameter');
-
-test(() => {
-  var point = new DOMPoint({x: 2, y: 3, z: 4, w: 5});
-  assert_dom_point_equals(point, [2, 3, 4, 5]);
-}, 'DOMPoint constructor with x, y, z, w parameters');
-
-test(() => {
   var point = new DOMPoint();
   assert_dom_point_equals(point, [0, 0, 0, 1]);
 }, 'DOMPoint constructor without parameter');
