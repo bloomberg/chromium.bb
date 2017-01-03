@@ -5,7 +5,8 @@
 #ifndef CONTENT_RENDERER_INPUT_INPUT_HANDLER_MANAGER_H_
 #define CONTENT_RENDERER_INPUT_INPUT_HANDLER_MANAGER_H_
 
-#include "base/containers/scoped_ptr_hash_map.h"
+#include <unordered_map>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
@@ -138,9 +139,9 @@ class CONTENT_EXPORT InputHandlerManager {
       const ui::LatencyInfo& latency_info,
       std::unique_ptr<ui::DidOverscrollParams> overscroll_params);
 
-  typedef base::ScopedPtrHashMap<int,  // routing_id
-                                 std::unique_ptr<InputHandlerWrapper>>
-      InputHandlerMap;
+  using InputHandlerMap =
+      std::unordered_map<int,  // routing_id
+                         std::unique_ptr<InputHandlerWrapper>>;
   InputHandlerMap input_handlers_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

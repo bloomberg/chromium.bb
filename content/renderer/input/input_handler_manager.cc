@@ -112,12 +112,12 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
     synchronous_handler_proxy_client_->DidAddSynchronousHandlerProxy(
         routing_id, wrapper->input_handler_proxy());
   }
-  input_handlers_.add(routing_id, std::move(wrapper));
+  input_handlers_[routing_id] = std::move(wrapper);
 }
 
 void InputHandlerManager::RemoveInputHandler(int routing_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(input_handlers_.contains(routing_id));
+  DCHECK(input_handlers_.find(routing_id) != input_handlers_.end());
 
   TRACE_EVENT0("input", "InputHandlerManager::RemoveInputHandler");
 
