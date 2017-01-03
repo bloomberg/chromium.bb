@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_vsync_provider.h"
@@ -131,8 +131,12 @@ void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
         base::Bind(&GbmSurfaceless::FenceRetired, weak_factory_.GetWeakPtr(),
                    fence, frame);
 
-    base::WorkerPool::PostTaskAndReply(FROM_HERE, fence_wait_task,
-                                       fence_retired_callback, false);
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits()
+                       .WithShutdownBehavior(
+                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                       .MayBlock(),
+        fence_wait_task, fence_retired_callback);
     return;  // Defer frame submission until fence signals.
   }
 
