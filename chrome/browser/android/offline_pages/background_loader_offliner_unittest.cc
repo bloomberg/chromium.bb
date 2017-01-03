@@ -220,12 +220,12 @@ TEST_F(BackgroundLoaderOfflinerTest, LoadedButSaveFails) {
   SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
-  EXPECT_TRUE(offliner()->is_loading());
 
   CompleteLoading();
   PumpLoop();
   model()->CompleteSavingAsArchiveCreationFailed();
   PumpLoop();
+
   EXPECT_TRUE(completion_callback_called());
   EXPECT_EQ(Offliner::RequestStatus::SAVE_FAILED, request_status());
   EXPECT_FALSE(offliner()->is_loading());
@@ -240,11 +240,9 @@ TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveSuccess) {
 
   CompleteLoading();
   PumpLoop();
-  EXPECT_FALSE(completion_callback_called());
-  EXPECT_TRUE(SaveInProgress());
-
   model()->CompleteSavingAsSuccess();
   PumpLoop();
+
   EXPECT_TRUE(completion_callback_called());
   EXPECT_EQ(Offliner::RequestStatus::SAVED, request_status());
   EXPECT_FALSE(offliner()->is_loading());
@@ -256,6 +254,41 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnInvalidURL) {
   SavePageRequest request(kRequestId, kFileUrl, kClientId, creation_time,
                           kUserRequested);
   EXPECT_FALSE(offliner()->LoadAndSave(request, callback()));
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, ReturnsOnRenderCrash) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+  offliner()->RenderProcessGone(
+      base::TerminationStatus::TERMINATION_STATUS_PROCESS_CRASHED);
+
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_NO_NEXT, request_status());
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, ReturnsOnRenderKilled) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+  offliner()->RenderProcessGone(
+      base::TerminationStatus::TERMINATION_STATUS_PROCESS_WAS_KILLED);
+
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED, request_status());
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, ReturnsOnWebContentsDestroyed) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, callback()));
+  offliner()->WebContentsDestroyed();
+
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED, request_status());
 }
 
 }  // namespace offline_pages

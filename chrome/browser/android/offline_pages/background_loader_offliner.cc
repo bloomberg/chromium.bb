@@ -97,6 +97,35 @@ void BackgroundLoaderOffliner::DidStopLoading() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void BackgroundLoaderOffliner::RenderProcessGone(
+    base::TerminationStatus status) {
+  if (pending_request_) {
+    SavePageRequest request(*pending_request_.get());
+    switch (status) {
+      case base::TERMINATION_STATUS_OOM:
+      case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      case base::TERMINATION_STATUS_STILL_RUNNING:
+        completion_callback_.Run(
+            request, Offliner::RequestStatus::LOADING_FAILED_NO_NEXT);
+        break;
+      case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+      default:
+        completion_callback_.Run(request,
+                                 Offliner::RequestStatus::LOADING_FAILED);
+    }
+    ResetState();
+  }
+}
+
+void BackgroundLoaderOffliner::WebContentsDestroyed() {
+  if (pending_request_) {
+    SavePageRequest request(*pending_request_.get());
+    completion_callback_.Run(*pending_request_.get(),
+                             Offliner::RequestStatus::LOADING_FAILED);
+    ResetState();
+  }
+}
+
 void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
                                            int64_t offline_id) {
   if (!pending_request_)

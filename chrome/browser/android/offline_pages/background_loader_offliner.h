@@ -41,6 +41,8 @@ class BackgroundLoaderOffliner : public Offliner,
 
   // WebContentsObserver implementation.
   void DidStopLoading() override;
+  void RenderProcessGone(base::TerminationStatus status) override;
+  void WebContentsDestroyed() override;
 
  protected:
   // Called to reset internal loader and observer state.
