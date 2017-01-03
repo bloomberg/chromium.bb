@@ -427,12 +427,17 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       kSubframeNames, kExpectScriptInFrameToLoadWithActivation));
 }
 
-// Flaky on all platforms. See: https://crbug.com/677819.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       DISABLED_FailedProvisionalLoadInMainframe) {
+                       FailedProvisionalLoadInMainframe) {
   GURL url_with_activation_but_dns_error(
       "http://host-with-dns-lookup-failure/");
-  GURL url_with_activation_but_not_existent(GetTestUrl("non-existent.html"));
+  // The /echo handler returns a 404 with a non-empty response body (containing
+  // the text 'Echo`). The latter is important to suppress showing Chrome's own
+  // navigation error page, in which case a background request is started to
+  // load navigation corrections (aka. Link Doctor), and once the results are
+  // back, there is a navigation to a second error page with the suggestions,
+  // which makes WaitForLoadStop() in the second NavigateToURL() below racey.
+  GURL url_with_activation_but_not_existent(GetTestUrl("/echo?status=404"));
   GURL url_without_activation(GetTestUrl(kTestFrameSetPath));
 
   ConfigureAsPhishingURL(url_with_activation_but_dns_error);
