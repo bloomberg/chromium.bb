@@ -3,5 +3,4 @@
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
-powershell -NoProfile Unblock-File -Path "%~dp0\cipd.ps1"
 powershell -NoProfile -ExecutionPolicy RemoteSigned -File "%~dp0\cipd.ps1" %*
