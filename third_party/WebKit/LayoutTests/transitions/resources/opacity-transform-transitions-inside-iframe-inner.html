@@ -1,4 +1,4 @@
-<!DOCTYPE>
+<!DOCTYPE html>
 <html>
 <head>
 <style>
@@ -37,6 +37,7 @@
 
 </style>
 <script type="text/javascript" charset="utf-8">
+    'use strict';
     function runTest()
     {
         var solid_color_overlay = document.getElementById("solid_color_overlay");
@@ -56,7 +57,13 @@
             window.internals.forceCompositingUpdate(document);
             window.internals.pauseAnimations(0.5);
         }
-        triggerPixelResults();
+        waitForCompositor().then(() => {
+            triggerPixelResults();
+        });
+    }
+
+    function waitForCompositor() {
+      return background.animate({opacity: ['1', '1']}, 1).ready;
     }
 
     function triggerPixelResults()
