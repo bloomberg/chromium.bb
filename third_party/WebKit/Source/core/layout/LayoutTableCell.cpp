@@ -27,6 +27,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTableCol.h"
@@ -1487,6 +1488,13 @@ LayoutRect LayoutTableCell::debugRect() const {
 
 void LayoutTableCell::adjustChildDebugRect(LayoutRect& r) const {
   r.move(0, -intrinsicPaddingBefore());
+}
+
+bool LayoutTableCell::hasLineIfEmpty() const {
+  if (node() && hasEditableStyle(*node()))
+    return true;
+
+  return LayoutBlock::hasLineIfEmpty();
 }
 
 }  // namespace blink

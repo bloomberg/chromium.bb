@@ -350,6 +350,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   void ensureIsReadyForPaintInvalidation() override;
 
+  bool hasLineIfEmpty() const override;
+
  protected:
   void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
   void computePreferredLogicalWidths() override;
