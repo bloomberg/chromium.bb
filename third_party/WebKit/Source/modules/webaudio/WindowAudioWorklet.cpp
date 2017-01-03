@@ -29,6 +29,8 @@ WindowAudioWorklet& WindowAudioWorklet::from(LocalDOMWindow& window) {
 }
 
 Worklet* WindowAudioWorklet::audioWorklet(DOMWindow& window) {
+  if (!window.frame())
+    return nullptr;
   return from(toLocalDOMWindow(window)).audioWorklet(toLocalDOMWindow(window));
 }
 
