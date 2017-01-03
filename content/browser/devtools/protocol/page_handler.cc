@@ -12,8 +12,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/page_navigation_throttle.h"
 #include "content/browser/devtools/protocol/color_picker.h"
@@ -516,8 +516,9 @@ void PageHandler::ScreencastFrameCaptured(cc::CompositorFrameMetadata metadata,
     --frames_in_flight_;
     return;
   }
-  base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().WithShutdownBehavior(
+                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
       base::Bind(&EncodeScreencastFrame, bitmap, screencast_format_,
                  screencast_quality_),
       base::Bind(&PageHandler::ScreencastFrameEncoded,
