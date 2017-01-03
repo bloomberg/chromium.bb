@@ -17,7 +17,7 @@
 namespace chromeos {
 
 SharedWebView::SharedWebView(Profile* profile) : profile_(profile) {
-  registrar_.Add(this, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
   memory_pressure_listener_ = base::MakeUnique<base::MemoryPressureListener>(
       base::Bind(&SharedWebView::OnMemoryPressure, base::Unretained(this)));
@@ -63,7 +63,7 @@ bool SharedWebView::Get(const GURL& url,
 void SharedWebView::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST, type);
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
   web_view_handle_ = nullptr;
 }
 

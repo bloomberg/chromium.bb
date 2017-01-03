@@ -106,7 +106,8 @@ void WebUIScreenLocker::Preload() {
       SharedWebViewFactory::GetForProfile(ProfileHelper::GetSigninProfile());
 
   scoped_refptr<WebViewHandle> web_view_handle;
-  if (!shared_web_view->Get(GURL(kLoginURL), &web_view_handle)) {
+  if (!shared_web_view->has_web_view() &&
+      !shared_web_view->Get(GURL(kLoginURL), &web_view_handle)) {
     web_view_handle->web_view()->LoadInitialURL(GURL(kLoginURL));
     InitializeWebView(
         web_view_handle->web_view(),

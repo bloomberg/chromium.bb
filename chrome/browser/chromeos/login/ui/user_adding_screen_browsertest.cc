@@ -266,15 +266,21 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, ScreenVisibility) {
   WaitUntilUserAddingFinishedOrCancelled();
   content::RunAllPendingInMessageLoop();
 
-  ScreenLocker::Show();
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::NotificationService::AllSources()).Wait();
+  {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+        content::NotificationService::AllSources());
+    ScreenLocker::Show();
+    observer.Wait();
+  }
 
-  ScreenLocker::Hide();
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::NotificationService::AllSources()).Wait();
+  {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+        content::NotificationService::AllSources());
+    ScreenLocker::Hide();
+    observer.Wait();
+  }
 
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();

@@ -37,6 +37,9 @@ class SharedWebView : public KeyedService,
   // was freshly created.
   bool Get(const GURL& url, scoped_refptr<WebViewHandle>* out_handle);
 
+  // Returns true if there is an attached views::WebView instance.
+  bool has_web_view() const { return !!web_view_handle_; }
+
  private:
   // content::NotificationObserver:
   void Observe(int type,
