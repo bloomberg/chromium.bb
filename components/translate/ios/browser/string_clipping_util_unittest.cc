@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/string_util.h"
+#include "components/translate/ios/browser/string_clipping_util.h"
 
 #include <stddef.h>
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace web {
 
 // Tests that a regular sentence is clipped correctly.
 TEST(StringByClippingLastWordTest, ClipRegularSentence) {
@@ -43,5 +41,3 @@ TEST(StringByClippingLastWordTest, ClipLongTextContentNoSpace) {
   EXPECT_EQ(kLongStringLength, result.size());
   EXPECT_EQ(0u, long_string.find_first_of(result));
 }
-
-}  // namespace web

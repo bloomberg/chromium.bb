@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_STRING_UTIL_H_
-#define IOS_WEB_PUBLIC_STRING_UTIL_H_
+#ifndef COMPONENTS_TRANSLATE_IOS_BROWSER_STRING_CLIPPING_UTIL_H_
+#define COMPONENTS_TRANSLATE_IOS_BROWSER_STRING_CLIPPING_UTIL_H_
 
 #include <stddef.h>
 
 #include "base/strings/string16.h"
-
-namespace web {
 
 // Truncates |contents| to |length|.
 // Returns a string terminated at the last space to ensure no words are
@@ -19,6 +17,4 @@ namespace web {
 base::string16 GetStringByClippingLastWord(const base::string16& contents,
                                            size_t length);
 
-}  // namespace web
-
-#endif  // IOS_WEB_PUBLIC_STRING_UTIL_H_
+#endif  // COMPONENTS_TRANSLATE_IOS_BROWSER_STRING_CLIPPING_UTIL_H_

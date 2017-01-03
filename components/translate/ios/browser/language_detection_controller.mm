@@ -14,7 +14,7 @@
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/translate/core/language_detection/language_detection_util.h"
 #import "components/translate/ios/browser/js_language_detection_manager.h"
-#include "ios/web/public/string_util.h"
+#include "components/translate/ios/browser/string_clipping_util.h"
 #import "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_state/web_state.h"
 
@@ -112,8 +112,8 @@ void LanguageDetectionController::OnTextRetrieved(
     const base::string16& text_content) {
   std::string language = translate::DeterminePageLanguage(
       http_content_language, html_lang,
-      web::GetStringByClippingLastWord(text_content,
-                                       language_detection::kMaxIndexChars),
+      GetStringByClippingLastWord(text_content,
+                                  language_detection::kMaxIndexChars),
       nullptr /* cld_language */, nullptr /* is_cld_reliable */);
   if (language.empty())
     return;  // No language detected.
