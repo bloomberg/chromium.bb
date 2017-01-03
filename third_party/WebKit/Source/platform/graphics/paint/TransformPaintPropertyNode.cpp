@@ -16,11 +16,14 @@ TransformPaintPropertyNode* TransformPaintPropertyNode::root() {
 String TransformPaintPropertyNode::toString() const {
   return String::format(
       "parent=%p transform=%s origin=%s flattensInheritedTransform=%s "
-      "renderContextID=%x directCompositingReasons=%s",
+      "renderingContextId=%x directCompositingReasons=%s "
+      "compositorElementId=(%d, "
+      "%d)",
       m_parent.get(), m_matrix.toString().ascii().data(),
       m_origin.toString().ascii().data(),
       m_flattensInheritedTransform ? "yes" : "no", m_renderingContextId,
-      compositingReasonsAsString(m_directCompositingReasons).ascii().data());
+      compositingReasonsAsString(m_directCompositingReasons).ascii().data(),
+      m_compositorElementId.primaryId, m_compositorElementId.secondaryId);
 }
 
 }  // namespace blink

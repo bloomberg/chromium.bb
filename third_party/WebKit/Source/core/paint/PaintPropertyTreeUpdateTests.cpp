@@ -445,18 +445,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
 TEST_P(PaintPropertyTreeUpdateTest,
        TransformNodeWithAnimationLosesNodeWhenAnimationRemoved) {
-  setBodyInnerHTML(
-      "<style>"
-      "@keyframes test {"
-      "  0% { transform: translate(1em, 1em) } "
-      "  100% { transform: translate(2em, 2em) } "
-      "} "
-      ".animate { "
-      "  animation-name: test; "
-      "  animation-duration: 1s "
-      "}"
-      "</style>"
-      "<div id='target' class='animate'></div>");
+  loadTestData("transform-animation.html");
   Element* target = document().getElementById("target");
   const ObjectPaintProperties* properties =
       target->layoutObject()->paintProperties();
@@ -470,23 +459,7 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
 TEST_P(PaintPropertyTreeUpdateTest,
        EffectNodeWithAnimationLosesNodeWhenAnimationRemoved) {
-  setBodyInnerHTML(
-      "<style>"
-      "div {"
-      "  width: 100px;"
-      "  height: 100px;"
-      "  background-color: red;"
-      "} "
-      ".animate {"
-      "  animation-name: test;"
-      "  animation-duration: 4s;"
-      "}"
-      "@keyframes test {"
-      "  from { opacity: 0.0;}"
-      "  to { opacity: 1.0;}"
-      "}"
-      "</style>"
-      "<div id='target' class='animate'></div>");
+  loadTestData("opacity-animation.html");
   Element* target = document().getElementById("target");
   const ObjectPaintProperties* properties =
       target->layoutObject()->paintProperties();
@@ -496,6 +469,43 @@ TEST_P(PaintPropertyTreeUpdateTest,
   target->removeAttribute(HTMLNames::classAttr);
   document().view()->updateAllLifecyclePhases();
   EXPECT_EQ(nullptr, properties->effect());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest,
+       TransformNodeLosesCompositorElementIdWhenAnimationRemoved) {
+  loadTestData("transform-animation.html");
+
+  Element* target = document().getElementById("target");
+  target->setAttribute(HTMLNames::styleAttr, "transform: translateX(2em)");
+  document().view()->updateAllLifecyclePhases();
+
+  const ObjectPaintProperties* properties =
+      target->layoutObject()->paintProperties();
+  EXPECT_NE(CompositorElementId(),
+            properties->transform()->compositorElementId());
+
+  // Remove the animation but keep the transform on the element.
+  target->removeAttribute(HTMLNames::classAttr);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(CompositorElementId(),
+            properties->transform()->compositorElementId());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest,
+       EffectNodeLosesCompositorElementIdWhenAnimationRemoved) {
+  loadTestData("opacity-animation.html");
+
+  Element* target = document().getElementById("target");
+  target->setAttribute(HTMLNames::styleAttr, "opacity: 0.2");
+  document().view()->updateAllLifecyclePhases();
+
+  const ObjectPaintProperties* properties =
+      target->layoutObject()->paintProperties();
+  EXPECT_NE(CompositorElementId(), properties->effect()->compositorElementId());
+
+  target->removeAttribute(HTMLNames::classAttr);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(CompositorElementId(), properties->effect()->compositorElementId());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, PerspectiveOriginUpdatesOnSizeChanges) {

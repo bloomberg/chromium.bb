@@ -57,6 +57,11 @@ LayoutPoint PaintPropertyTreeBuilderTest::paintOffset(
   return object->paintProperties()->localBorderBoxProperties()->paintOffset;
 }
 
+const ObjectPaintProperties*
+PaintPropertyTreeBuilderTest::paintPropertiesForElement(const char* name) {
+  return document().getElementById(name)->layoutObject()->paintProperties();
+}
+
 void PaintPropertyTreeBuilderTest::SetUp() {
   Settings::setMockScrollbarsEnabled(true);
 
@@ -421,60 +426,24 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective3DTransformedDescendant) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        TransformNodeWithActiveAnimationHasDirectCompositingReason) {
-  setBodyInnerHTML(
-      "<style>"
-      "@keyframes test {"
-      "  0% { transform: translate(1em, 1em) } "
-      "  100% { transform: translate(2em, 2em) } "
-      "} "
-      ".animate { "
-      "  animation-name: test; "
-      "  animation-duration: 1s "
-      "}"
-      "</style>"
-      "<div id='target' class='animate'></div>");
-  Element* target = document().getElementById("target");
-  const ObjectPaintProperties* properties =
-      target->layoutObject()->paintProperties();
-  EXPECT_TRUE(properties->transform()->hasDirectCompositingReasons());
+  loadTestData("transform-animation.html");
+  EXPECT_TRUE(paintPropertiesForElement("target")
+                  ->transform()
+                  ->hasDirectCompositingReasons());
 }
-
-namespace {
-
-const char* kSimpleOpacityExampleHTML =
-    "<style>"
-    "div {"
-    "  width: 100px;"
-    "  height: 100px;"
-    "  background-color: red;"
-    "  animation-name: example;"
-    "  animation-duration: 4s;"
-    "}"
-    "@keyframes example {"
-    "  from { opacity: 0.0;}"
-    "  to { opacity: 1.0;}"
-    "}"
-    "</style>"
-    "<div id='target'></div>";
-
-}  // namespace
 
 TEST_P(PaintPropertyTreeBuilderTest,
        OpacityAnimationDoesNotCreateTransformNode) {
-  setBodyInnerHTML(kSimpleOpacityExampleHTML);
-  Element* target = document().getElementById("target");
-  const ObjectPaintProperties* properties =
-      target->layoutObject()->paintProperties();
-  EXPECT_EQ(nullptr, properties->transform());
+  loadTestData("opacity-animation.html");
+  EXPECT_EQ(nullptr, paintPropertiesForElement("target")->transform());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
        EffectNodeWithActiveAnimationHasDirectCompositingReason) {
-  setBodyInnerHTML(kSimpleOpacityExampleHTML);
-  Element* target = document().getElementById("target");
-  const ObjectPaintProperties* properties =
-      target->layoutObject()->paintProperties();
-  EXPECT_TRUE(properties->effect()->hasDirectCompositingReasons());
+  loadTestData("opacity-animation.html");
+  EXPECT_TRUE(paintPropertiesForElement("target")
+                  ->effect()
+                  ->hasDirectCompositingReasons());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
@@ -3192,6 +3161,39 @@ TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
             descendant->paintProperties()
                 ->localBorderBoxProperties()
                 ->propertyTreeState.clip());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       TransformNodeNotAnimatedHasNoCompositorElementId) {
+  setBodyInnerHTML("<div id='target' style='transform: translateX(2em)'></div");
+  const ObjectPaintProperties* properties = paintPropertiesForElement("target");
+  EXPECT_TRUE(properties->transform());
+  EXPECT_EQ(CompositorElementId(),
+            properties->transform()->compositorElementId());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       EffectNodeNotAnimatedHasNoCompositorElementId) {
+  setBodyInnerHTML("<div id='target' style='opacity: 0.5'></div");
+  const ObjectPaintProperties* properties = paintPropertiesForElement("target");
+  EXPECT_TRUE(properties->effect());
+  EXPECT_EQ(CompositorElementId(), properties->effect()->compositorElementId());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       TransformNodeAnimatedHasCompositorElementId) {
+  loadTestData("transform-animation.html");
+  const ObjectPaintProperties* properties = paintPropertiesForElement("target");
+  EXPECT_TRUE(properties->transform());
+  EXPECT_NE(CompositorElementId(),
+            properties->transform()->compositorElementId());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, EffectNodeAnimatedHasCompositorElementId) {
+  loadTestData("opacity-animation.html");
+  const ObjectPaintProperties* properties = paintPropertiesForElement("target");
+  EXPECT_TRUE(properties->effect());
+  EXPECT_NE(CompositorElementId(), properties->effect()->compositorElementId());
 }
 
 }  // namespace blink

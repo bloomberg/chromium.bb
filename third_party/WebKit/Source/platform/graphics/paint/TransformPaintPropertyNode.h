@@ -8,6 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/CompositingReasons.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -34,10 +35,11 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       const FloatPoint3D& origin,
       bool flattensInheritedTransform = false,
       unsigned renderingContextId = 0,
-      CompositingReasons directCompositingReasons = CompositingReasonNone) {
+      CompositingReasons directCompositingReasons = CompositingReasonNone,
+      const CompositorElementId& compositorElementId = CompositorElementId()) {
     return adoptRef(new TransformPaintPropertyNode(
         std::move(parent), matrix, origin, flattensInheritedTransform,
-        renderingContextId, directCompositingReasons));
+        renderingContextId, directCompositingReasons, compositorElementId));
   }
 
   void update(
@@ -46,7 +48,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       const FloatPoint3D& origin,
       bool flattensInheritedTransform = false,
       unsigned renderingContextId = 0,
-      CompositingReasons directCompositingReasons = CompositingReasonNone) {
+      CompositingReasons directCompositingReasons = CompositingReasonNone,
+      CompositorElementId compositorElementId = CompositorElementId()) {
     DCHECK(!isRoot());
     DCHECK(parent != this);
     m_parent = parent;
@@ -55,6 +58,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     m_flattensInheritedTransform = flattensInheritedTransform;
     m_renderingContextId = renderingContextId;
     m_directCompositingReasons = directCompositingReasons;
+    m_compositorElementId = compositorElementId;
   }
 
   const TransformationMatrix& matrix() const { return m_matrix; }
@@ -76,6 +80,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return m_directCompositingReasons != CompositingReasonNone;
   }
 
+  const CompositorElementId& compositorElementId() const {
+    return m_compositorElementId;
+  }
+
   // Content whose transform nodes have a common rendering context ID are 3D
   // sorted. If this is 0, content will not be 3D sorted.
   unsigned renderingContextId() const { return m_renderingContextId; }
@@ -87,7 +95,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   PassRefPtr<TransformPaintPropertyNode> clone() const {
     return adoptRef(new TransformPaintPropertyNode(
         m_parent, m_matrix, m_origin, m_flattensInheritedTransform,
-        m_renderingContextId, m_directCompositingReasons));
+        m_renderingContextId, m_directCompositingReasons,
+        m_compositorElementId));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
@@ -97,7 +106,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
            m_origin == o.m_origin &&
            m_flattensInheritedTransform == o.m_flattensInheritedTransform &&
            m_renderingContextId == o.m_renderingContextId &&
-           m_directCompositingReasons == o.m_directCompositingReasons;
+           m_directCompositingReasons == o.m_directCompositingReasons &&
+           m_compositorElementId == o.m_compositorElementId;
   }
 #endif
 
@@ -110,13 +120,15 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       const FloatPoint3D& origin,
       bool flattensInheritedTransform,
       unsigned renderingContextId,
-      CompositingReasons directCompositingReasons)
+      CompositingReasons directCompositingReasons,
+      CompositorElementId compositorElementId)
       : m_parent(parent),
         m_matrix(matrix),
         m_origin(origin),
         m_flattensInheritedTransform(flattensInheritedTransform),
         m_renderingContextId(renderingContextId),
-        m_directCompositingReasons(directCompositingReasons) {}
+        m_directCompositingReasons(directCompositingReasons),
+        m_compositorElementId(compositorElementId) {}
 
   RefPtr<const TransformPaintPropertyNode> m_parent;
   TransformationMatrix m_matrix;
@@ -124,6 +136,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   bool m_flattensInheritedTransform;
   unsigned m_renderingContextId;
   CompositingReasons m_directCompositingReasons;
+  CompositorElementId m_compositorElementId;
 };
 
 // Redeclared here to avoid ODR issues.

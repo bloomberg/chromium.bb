@@ -26,11 +26,12 @@ cc::Layer* EffectPaintPropertyNode::ensureDummyLayer() const {
 String EffectPaintPropertyNode::toString() const {
   return String::format(
       "parent=%p localTransformSpace=%p outputClip=%p opacity=%f filter=%s "
-      "blendMode=%s directCompositingReasons=%s",
+      "blendMode=%s directCompositingReasons=%s compositorElementId=(%d, %d)",
       m_parent.get(), m_localTransformSpace.get(), m_outputClip.get(),
       m_opacity, m_filter.toString().ascii().data(),
       SkBlendMode_Name(m_blendMode),
-      compositingReasonsAsString(m_directCompositingReasons).ascii().data());
+      compositingReasonsAsString(m_directCompositingReasons).ascii().data(),
+      m_compositorElementId.primaryId, m_compositorElementId.secondaryId);
 }
 
 }  // namespace blink

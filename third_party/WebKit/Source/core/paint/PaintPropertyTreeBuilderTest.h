@@ -40,6 +40,8 @@ class PaintPropertyTreeBuilderTest
   // ObjectPaintProperties::localBorderBoxProperties().
   LayoutPoint paintOffset(const LayoutObject*);
 
+  const ObjectPaintProperties* paintPropertiesForElement(const char* name);
+
  private:
   void SetUp() override;
   void TearDown() override;

@@ -4,6 +4,7 @@
 
 #include "core/paint/PaintPropertyTreeBuilder.h"
 
+#include "core/dom/DOMNodeIds.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -336,6 +337,16 @@ static FloatPoint3D transformOrigin(const LayoutBox& box) {
       style.transformOriginZ());
 }
 
+namespace {
+
+CompositorElementId createDomNodeBasedCompositorElementId(
+    const LayoutObject& object) {
+  return createCompositorElementId(DOMNodeIds::idForNode(object.node()),
+                                   CompositorSubElementId::Primary);
+}
+
+}  // namespace
+
 void PaintPropertyTreeBuilder::updateTransform(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
@@ -375,12 +386,17 @@ void PaintPropertyTreeBuilder::updateTransform(
         if (style.preserves3D() && !renderingContextId)
           renderingContextId = PtrHash<const LayoutObject>::hash(&object);
 
+        CompositorElementId compositorElementId =
+            style.hasCurrentTransformAnimation()
+                ? createDomNodeBasedCompositorElementId(object)
+                : CompositorElementId();
+
         auto& properties =
             object.getMutableForPainting().ensurePaintProperties();
         context.forceSubtreeUpdate |= properties.updateTransform(
             context.current.transform, matrix, transformOrigin(box),
             context.current.shouldFlattenInheritedTransform, renderingContextId,
-            compositingReasons);
+            compositingReasons, compositorElementId);
         hasTransform = true;
       }
     }
@@ -484,16 +500,23 @@ void PaintPropertyTreeBuilder::updateEffect(
     }
 
     CompositingReasons compositingReasons =
-        CompositingReasonFinder::requiresCompositingForEffectAnimation(
-            object.styleRef());
+        CompositingReasonFinder::requiresCompositingForEffectAnimation(style);
     if (compositingReasons != CompositingReasonNone)
       effectNodeNeeded = true;
+
+    CompositorElementId compositorElementId =
+        (style.hasCurrentOpacityAnimation() ||
+         style.hasCurrentFilterAnimation() ||
+         style.hasCurrentBackdropFilterAnimation())
+            ? createDomNodeBasedCompositorElementId(object)
+            : CompositorElementId();
 
     if (effectNodeNeeded) {
       auto& properties = object.getMutableForPainting().ensurePaintProperties();
       context.forceSubtreeUpdate |= properties.updateEffect(
           context.currentEffect, context.current.transform, outputClip,
-          std::move(filter), opacity, blendMode, compositingReasons);
+          std::move(filter), opacity, blendMode, compositingReasons,
+          compositorElementId);
     } else {
       if (auto* properties = object.getMutableForPainting().paintProperties())
         context.forceSubtreeUpdate |= properties->clearEffect();
