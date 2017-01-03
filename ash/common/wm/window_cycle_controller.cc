@@ -78,6 +78,15 @@ void WindowCycleController::StartCycling() {
                            window_list.size());
 }
 
+void WindowCycleController::CompleteCycling() {
+  window_cycle_list_->set_user_did_accept(true);
+  StopCycling();
+}
+
+void WindowCycleController::CancelCycling() {
+  StopCycling();
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // WindowCycleController, private:
 

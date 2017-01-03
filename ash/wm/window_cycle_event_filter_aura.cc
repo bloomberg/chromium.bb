@@ -5,6 +5,7 @@
 #include "ash/wm/window_cycle_event_filter_aura.h"
 
 #include "ash/common/wm/window_cycle_controller.h"
+#include "ash/common/wm/window_cycle_list.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ui/events/event.h"
@@ -30,7 +31,7 @@ void WindowCycleEventFilterAura::OnKeyEvent(ui::KeyEvent* event) {
   // Views uses VKEY_MENU for both left and right Alt keys.
   if (event->key_code() == ui::VKEY_MENU &&
       event->type() == ui::ET_KEY_RELEASED) {
-    WmShell::Get()->window_cycle_controller()->StopCycling();
+    WmShell::Get()->window_cycle_controller()->CompleteCycling();
     // Warning: |this| will be deleted from here on.
   } else if (event->key_code() == ui::VKEY_TAB) {
     if (event->type() == ui::ET_KEY_RELEASED) {
@@ -46,7 +47,7 @@ void WindowCycleEventFilterAura::OnKeyEvent(ui::KeyEvent* event) {
                                    : WindowCycleController::FORWARD));
     }
   } else if (event->key_code() == ui::VKEY_ESCAPE) {
-    WmShell::Get()->window_cycle_controller()->StopCycling();
+    WmShell::Get()->window_cycle_controller()->CancelCycling();
   }
 }
 

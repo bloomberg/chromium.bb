@@ -39,17 +39,6 @@ bool g_disable_initial_delay = false;
 // Used for the highlight view and the shield (black background).
 constexpr float kBackgroundCornerRadius = 4.f;
 
-// Returns the window immediately below |window| in the current container.
-WmWindow* GetWindowBelow(WmWindow* window) {
-  WmWindow* parent = window->GetParent();
-  if (!parent)
-    return nullptr;
-  const WmWindow::Windows children = parent->GetChildren();
-  auto iter = std::find(children.begin(), children.end(), window);
-  CHECK(*iter == window);
-  return (iter != children.begin()) ? *(iter - 1) : nullptr;
-}
-
 // This background paints a |Painter| but fills the view's layer's size rather
 // than the view's size.
 class LayerFillBackgroundPainter : public views::Background {
@@ -71,36 +60,6 @@ class LayerFillBackgroundPainter : public views::Background {
 };
 
 }  // namespace
-
-// This class restores and moves a window to the front of the stacking order for
-// the duration of the class's scope.
-class ScopedShowWindow : public WmWindowObserver {
- public:
-  ScopedShowWindow();
-  ~ScopedShowWindow() override;
-
-  // Show |window| at the top of the stacking order.
-  void Show(WmWindow* window);
-
-  // Cancel restoring the window on going out of scope.
-  void CancelRestore();
-
- private:
-  // WmWindowObserver:
-  void OnWindowTreeChanging(WmWindow* window,
-                            const TreeChangeParams& params) override;
-
-  // The window being shown.
-  WmWindow* window_;
-
-  // The window immediately below where window_ belongs.
-  WmWindow* stack_window_above_;
-
-  // If true, minimize window_ on going out of scope.
-  bool minimized_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedShowWindow);
-};
 
 // This view represents a single WmWindow by displaying a title and a thumbnail
 // of the window's contents.
@@ -392,7 +351,7 @@ class WindowCycleView : public views::WidgetDelegateView {
   }
 
   void OnMouseCaptureLost() override {
-    WmShell::Get()->window_cycle_controller()->StopCycling();
+    WmShell::Get()->window_cycle_controller()->CancelCycling();
   }
 
   void OnPaintBackground(gfx::Canvas* canvas) override {
@@ -425,62 +384,8 @@ class WindowCycleView : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(WindowCycleView);
 };
 
-ScopedShowWindow::ScopedShowWindow()
-    : window_(nullptr), stack_window_above_(nullptr), minimized_(false) {}
-
-ScopedShowWindow::~ScopedShowWindow() {
-  if (window_) {
-    window_->GetParent()->RemoveObserver(this);
-
-    // Restore window's stacking position.
-    if (stack_window_above_)
-      window_->GetParent()->StackChildAbove(window_, stack_window_above_);
-    else
-      window_->GetParent()->StackChildAtBottom(window_);
-
-    // Restore minimized state.
-    if (minimized_)
-      window_->GetWindowState()->Minimize();
-  }
-}
-
-void ScopedShowWindow::Show(WmWindow* window) {
-  DCHECK(!window_);
-  window_ = window;
-  stack_window_above_ = GetWindowBelow(window);
-  minimized_ = window->GetWindowState()->IsMinimized();
-  window_->GetParent()->AddObserver(this);
-  window_->Show();
-  window_->GetWindowState()->Activate();
-}
-
-void ScopedShowWindow::CancelRestore() {
-  if (!window_)
-    return;
-  window_->GetParent()->RemoveObserver(this);
-  window_ = stack_window_above_ = nullptr;
-}
-
-void ScopedShowWindow::OnWindowTreeChanging(WmWindow* window,
-                                            const TreeChangeParams& params) {
-  // Only interested in removal.
-  if (params.new_parent != nullptr)
-    return;
-
-  if (params.target == window_) {
-    CancelRestore();
-  } else if (params.target == stack_window_above_) {
-    // If the window this window was above is removed, use the next window down
-    // as the restore marker.
-    stack_window_above_ = GetWindowBelow(stack_window_above_);
-  }
-}
-
 WindowCycleList::WindowCycleList(const WindowList& windows)
     : windows_(windows),
-      current_index_(0),
-      cycle_view_(nullptr),
-      cycle_ui_widget_(nullptr),
       screen_observer_(this) {
   if (!ShouldShowUi())
     WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
@@ -505,9 +410,7 @@ WindowCycleList::~WindowCycleList() {
   for (WmWindow* window : windows_)
     window->RemoveObserver(this);
 
-  if (showing_window_) {
-    showing_window_->CancelRestore();
-  } else if (!windows_.empty()) {
+  if (!windows_.empty() && user_did_accept_) {
     WmWindow* target_window = windows_[current_index_];
     target_window->Show();
     target_window->GetWindowState()->Activate();
@@ -553,10 +456,6 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
 
     if (cycle_view_)
       cycle_view_->SetTargetWindow(windows_[current_index_]);
-  } else {
-    // Make sure the next window is visible.
-    showing_window_.reset(new ScopedShowWindow);
-    showing_window_->Show(windows_[current_index_]);
   }
 }
 
@@ -584,7 +483,7 @@ void WindowCycleList::OnWindowDestroying(WmWindow* window) {
     cycle_view_->HandleWindowDestruction(window, new_target_window);
     if (windows_.empty()) {
       // This deletes us.
-      WmShell::Get()->window_cycle_controller()->StopCycling();
+      WmShell::Get()->window_cycle_controller()->CancelCycling();
       return;
     }
   }
@@ -602,7 +501,7 @@ void WindowCycleList::OnDisplayMetricsChanged(const display::Display& display,
               ->GetDisplayNearestWindow(cycle_ui_widget_->GetNativeView())
               .id() &&
       (changed_metrics & (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION))) {
-    WmShell::Get()->window_cycle_controller()->StopCycling();
+    WmShell::Get()->window_cycle_controller()->CancelCycling();
     // |this| is deleted.
     return;
   }

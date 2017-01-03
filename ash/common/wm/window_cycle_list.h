@@ -26,7 +26,6 @@ class Widget;
 
 namespace ash {
 
-class ScopedShowWindow;
 class WindowCycleView;
 
 // Tracks a set of Windows that can be stepped through. This class is used by
@@ -45,6 +44,10 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver,
   void Step(WindowCycleController::Direction direction);
 
   int current_index() const { return current_index_; }
+
+  void set_user_did_accept(bool user_did_accept) {
+    user_did_accept_ = user_did_accept;
+  }
 
  private:
   friend class WindowCycleControllerTest;
@@ -79,19 +82,18 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver,
 
   // Current position in the |windows_|. Can be used to query selection depth,
   // i.e., the position of an active window in a global MRU ordering.
-  int current_index_;
+  int current_index_ = 0;
 
-  // Wrapper for the window brought to the front.
-  // TODO(estade): remove ScopedShowWindow when we know we are happy launching
-  // the |cycle_view_| version.
-  std::unique_ptr<ScopedShowWindow> showing_window_;
+  // True if the user accepted the window switch (as opposed to cancelling or
+  // interrupting the interaction).
+  bool user_did_accept_ = false;
 
   // The top level View for the window cycle UI. May be null if the UI is not
   // showing.
-  WindowCycleView* cycle_view_;
+  WindowCycleView* cycle_view_ = nullptr;
 
   // The widget that hosts the window cycle UI.
-  views::Widget* cycle_ui_widget_;
+  views::Widget* cycle_ui_widget_ = nullptr;
 
   // The window list will dismiss if the display metrics change.
   ScopedObserver<display::Screen, display::DisplayObserver> screen_observer_;
