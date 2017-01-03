@@ -4,7 +4,9 @@
 
 #include "content/public/browser/resource_dispatcher_host.h"
 
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -824,7 +826,9 @@ class RequestDataResourceDispatcherHostDelegate
  public:
   RequestDataResourceDispatcherHostDelegate() {}
 
-  const ScopedVector<RequestDataForDelegate>& data() { return requests_; }
+  const std::vector<std::unique_ptr<RequestDataForDelegate>>& data() {
+    return requests_;
+  }
 
   // ResourceDispatcherHostDelegate implementation:
   void RequestBeginning(
@@ -833,7 +837,7 @@ class RequestDataResourceDispatcherHostDelegate
       AppCacheService* appcache_service,
       ResourceType resource_type,
       std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
-    requests_.push_back(new RequestDataForDelegate(
+    requests_.push_back(base::MakeUnique<RequestDataForDelegate>(
         request->url(), request->first_party_for_cookies(),
         request->initiator()));
   }
@@ -841,7 +845,7 @@ class RequestDataResourceDispatcherHostDelegate
   void SetDelegate() { ResourceDispatcherHost::Get()->SetDelegate(this); }
 
  private:
-  ScopedVector<RequestDataForDelegate> requests_;
+  std::vector<std::unique_ptr<RequestDataForDelegate>> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestDataResourceDispatcherHostDelegate);
 };
@@ -885,17 +889,17 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest, Basic) {
   // that match the URL of the top-level document.
   // PlzNavigate: the document itself should have an empty initiator.
   if (IsBrowserSideNavigationEnabled()) {
-    const RequestDataForDelegate* first_request = delegate_->data()[0];
+    const RequestDataForDelegate* first_request = delegate_->data()[0].get();
     EXPECT_EQ(top_url, first_request->first_party);
     EXPECT_FALSE(first_request->initiator.has_value());
     for (size_t i = 1; i < delegate_->data().size(); i++) {
-      const RequestDataForDelegate* request = delegate_->data()[i];
+      const RequestDataForDelegate* request = delegate_->data()[i].get();
       EXPECT_EQ(top_url, request->first_party);
       ASSERT_TRUE(request->initiator.has_value());
       EXPECT_EQ(top_origin, request->initiator);
     }
   } else {
-    for (auto* request : delegate_->data()) {
+    for (const auto& request : delegate_->data()) {
       SCOPED_TRACE(request->url);
       EXPECT_EQ(top_url, request->first_party);
       EXPECT_EQ(top_origin, request->initiator);

@@ -4,10 +4,11 @@
 
 #include "content/browser/loader/resource_scheduler.h"
 
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -171,57 +172,64 @@ class ResourceSchedulerTest : public testing::Test {
     return NewURLRequestWithChildAndRoute(url, priority, kChildId, kRouteId);
   }
 
-  TestRequest* NewRequestWithRoute(const char* url,
-                                   net::RequestPriority priority,
-                                   int route_id) {
+  std::unique_ptr<TestRequest> NewRequestWithRoute(
+      const char* url,
+      net::RequestPriority priority,
+      int route_id) {
     return NewRequestWithChildAndRoute(url, priority, kChildId, route_id);
   }
 
-  TestRequest* NewRequestWithChildAndRoute(const char* url,
-                                           net::RequestPriority priority,
-                                           int child_id,
-                                           int route_id) {
+  std::unique_ptr<TestRequest> NewRequestWithChildAndRoute(
+      const char* url,
+      net::RequestPriority priority,
+      int child_id,
+      int route_id) {
     return GetNewTestRequest(url, priority, child_id, route_id, true);
   }
 
-  TestRequest* NewRequest(const char* url, net::RequestPriority priority) {
+  std::unique_ptr<TestRequest> NewRequest(const char* url,
+                                          net::RequestPriority priority) {
     return NewRequestWithChildAndRoute(url, priority, kChildId, kRouteId);
   }
 
-  TestRequest* NewBackgroundRequest(const char* url,
-                                    net::RequestPriority priority) {
+  std::unique_ptr<TestRequest> NewBackgroundRequest(
+      const char* url,
+      net::RequestPriority priority) {
     return NewRequestWithChildAndRoute(
         url, priority, kBackgroundChildId, kBackgroundRouteId);
   }
 
-  TestRequest* NewSyncRequest(const char* url, net::RequestPriority priority) {
+  std::unique_ptr<TestRequest> NewSyncRequest(const char* url,
+                                              net::RequestPriority priority) {
     return NewSyncRequestWithChildAndRoute(url, priority, kChildId, kRouteId);
   }
 
-  TestRequest* NewBackgroundSyncRequest(const char* url,
-                                        net::RequestPriority priority) {
+  std::unique_ptr<TestRequest> NewBackgroundSyncRequest(
+      const char* url,
+      net::RequestPriority priority) {
     return NewSyncRequestWithChildAndRoute(
         url, priority, kBackgroundChildId, kBackgroundRouteId);
   }
 
-  TestRequest* NewSyncRequestWithChildAndRoute(const char* url,
-                                               net::RequestPriority priority,
-                                               int child_id,
-                                               int route_id) {
+  std::unique_ptr<TestRequest> NewSyncRequestWithChildAndRoute(
+      const char* url,
+      net::RequestPriority priority,
+      int child_id,
+      int route_id) {
     return GetNewTestRequest(url, priority, child_id, route_id, false);
   }
 
-  TestRequest* GetNewTestRequest(const char* url,
-                                 net::RequestPriority priority,
-                                 int child_id,
-                                 int route_id,
-                                 bool is_async) {
+  std::unique_ptr<TestRequest> GetNewTestRequest(const char* url,
+                                                 net::RequestPriority priority,
+                                                 int child_id,
+                                                 int route_id,
+                                                 bool is_async) {
     std::unique_ptr<net::URLRequest> url_request(
         NewURLRequestWithChildAndRoute(url, priority, child_id, route_id));
     std::unique_ptr<ResourceThrottle> throttle(scheduler_->ScheduleRequest(
         child_id, route_id, is_async, url_request.get()));
-    TestRequest* request = new TestRequest(std::move(url_request),
-                                           std::move(throttle), scheduler());
+    auto request = base::MakeUnique<TestRequest>(
+        std::move(url_request), std::move(throttle), scheduler());
     request->Start();
     return request;
   }
@@ -461,7 +469,7 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
 
   const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
   const int kMaxNumDelayableRequestsPerHost = 6;
-  ScopedVector<TestRequest> lows_singlehost;
+  std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
   // Queue up to the per-host limit (we subtract the current high-pri request).
   for (int i = 0; i < kMaxNumDelayableRequestsPerHost - 1; ++i) {
     string url = "http://host/low" + base::IntToString(i);
@@ -489,7 +497,7 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
   int expected_slots_left =
       kMaxNumDelayableRequestsPerClient - kMaxNumDelayableRequestsPerHost;
   EXPECT_GT(expected_slots_left, 0);
-  ScopedVector<TestRequest> lows_different_host;
+  std::vector<std::unique_ptr<TestRequest>> lows_different_host;
   base::RunLoop().RunUntilIdle();
   for (int i = 0; i < expected_slots_left; ++i) {
     string url = "http://host" + base::IntToString(i) + "/low";
@@ -535,7 +543,7 @@ TEST_F(ResourceSchedulerTest, RaisePriorityInQueue) {
   EXPECT_FALSE(idle->started());
 
   const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
-  ScopedVector<TestRequest> lows;
+  std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kMaxNumDelayableRequestsPerClient - 1; ++i) {
     string url = "http://host/low" + base::IntToString(i);
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
@@ -570,7 +578,7 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
   // 2 fewer filler requests: 1 for the "low" dummy at the start, and 1 for the
   // one at the end, which will be tested.
   const int kNumFillerRequests = kMaxNumDelayableRequestsPerClient - 2;
-  ScopedVector<TestRequest> lows;
+  std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kNumFillerRequests; ++i) {
     string url = "http://host" + base::IntToString(i) + "/low";
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
@@ -597,7 +605,7 @@ TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
   EXPECT_FALSE(idle->started());
 
   const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
-  ScopedVector<TestRequest> lows;
+  std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kMaxNumDelayableRequestsPerClient; ++i) {
     string url = "http://host/low" + base::IntToString(i);
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
@@ -626,7 +634,7 @@ TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
   std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
   const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
-  ScopedVector<TestRequest> lows;
+  std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kMaxNumDelayableRequestsPerClient; ++i) {
     string url = "http://host/low" + base::IntToString(i);
     lows.push_back(NewRequest(url.c_str(), net::IDLE));
@@ -715,7 +723,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   std::unique_ptr<TestRequest> low1_spdy(
       NewRequest("http://spdyhost1:8080/low", net::LOWEST));
   // Cancel a request after we learn the server supports SPDY.
-  ScopedVector<TestRequest> lows;
+  std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kMaxNumDelayableRequestsPerClient - 1; ++i) {
     string url = "http://host" + base::IntToString(i) + "/low";
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
@@ -754,7 +762,7 @@ TEST_F(ResourceSchedulerTest, NewDelayableSpdyHostInDelayableRequests) {
   std::unique_ptr<TestRequest> low1_spdy(
       NewRequest("http://spdyhost1:8080/low", net::LOWEST));
   // Cancel a request after we learn the server supports SPDY.
-  ScopedVector<TestRequest> lows;
+  std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kMaxNumDelayableRequestsPerClient - 1; ++i) {
     string url = "http://host" + base::IntToString(i) + "/low";
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
@@ -810,7 +818,7 @@ TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeletedManyDelayable) {
   std::unique_ptr<TestRequest> high(NewRequestWithChildAndRoute(
       "http://host/high", net::HIGHEST, kChildId2, kRouteId2));
   const int kMaxNumDelayableRequestsPerClient = 10;
-  ScopedVector<TestRequest> delayable_requests;
+  std::vector<std::unique_ptr<TestRequest>> delayable_requests;
   for (int i = 0; i < kMaxNumDelayableRequestsPerClient + 1; ++i) {
     delayable_requests.push_back(NewRequestWithChildAndRoute(
         "http://host/lowest", net::LOWEST, kChildId2, kRouteId2));
