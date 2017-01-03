@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
-#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
+#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace vr_shell {

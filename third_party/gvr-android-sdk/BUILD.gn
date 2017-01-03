@@ -12,9 +12,9 @@ android_aar_prebuilt("gvr_common_java") {
 }
 
 android_aar_prebuilt("gvr_controller_java") {
-  aar_path = "src/libraries/controller/controller.aar"
+  aar_path = "src/libraries/sdk-controller-1.10.0.aar"
 }
 
 config("libgvr_config") {
-  include_dirs = [ "src/ndk/include/" ]
+  include_dirs = [ "src/libraries/headers/" ]
 }
