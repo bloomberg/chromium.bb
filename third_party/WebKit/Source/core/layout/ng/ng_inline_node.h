@@ -19,12 +19,14 @@ namespace blink {
 
 class ComputedStyle;
 class LayoutObject;
+class LayoutUnit;
 class NGConstraintSpace;
 class NGFragmentBase;
 class NGLayoutAlgorithm;
 class NGLayoutInlineItem;
 class NGLayoutInlineItemRange;
 class NGLayoutInlineItemsBuilder;
+class NGLineBuilder;
 
 // Represents an inline node to be laid out.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
@@ -33,6 +35,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   ~NGInlineNode() override;
 
   bool Layout(NGConstraintSpace*, NGFragmentBase**) override;
+  bool LayoutInline(NGConstraintSpace*, NGLineBuilder*);
   NGInlineNode* NextSibling() override;
 
   // Prepare inline and text content for layout. Must be called before
@@ -104,6 +107,8 @@ class NGLayoutInlineItem {
   const ComputedStyle* Style() const { return style_; }
 
   void SetEndOffset(unsigned);
+
+  LayoutUnit InlineSize() const;
 
   static void Split(Vector<NGLayoutInlineItem>&,
                     unsigned index,

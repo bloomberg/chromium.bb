@@ -12,10 +12,8 @@ namespace blink {
 
 class NGBreakToken;
 class NGConstraintSpace;
-class NGFragmentBase;
 class NGInlineNode;
-class NGLayoutInlineItemRange;
-struct NGLogicalOffset;
+class NGLineBuilder;
 
 // A class for text layout. This takes a NGInlineNode which consists only
 // non-atomic inlines and produces NGTextFragments.
@@ -36,25 +34,23 @@ class CORE_EXPORT NGTextLayoutAlgorithm : public NGLayoutAlgorithm {
   NGLayoutStatus Layout(NGPhysicalFragmentBase*,
                         NGPhysicalFragmentBase**,
                         NGLayoutAlgorithm**) override;
+  bool LayoutInline(NGLineBuilder*);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  unsigned CreateLine(unsigned start_index,
-                      const NGConstraintSpace&,
-                      HeapVector<Member<NGFragmentBase>>*,
-                      Vector<NGLogicalOffset>*);
-  void CreateLine(const NGLayoutInlineItemRange&,
-                  const NGConstraintSpace&,
-                  HeapVector<Member<NGFragmentBase>>*,
-                  Vector<NGLogicalOffset>*);
-
   Member<NGInlineNode> inline_box_;
   Member<NGConstraintSpace> constraint_space_;
   Member<NGBreakToken> break_token_;
 
   friend class NGInlineNodeTest;
 };
+
+DEFINE_TYPE_CASTS(NGTextLayoutAlgorithm,
+                  NGLayoutAlgorithm,
+                  algorithm,
+                  algorithm->algorithmType() == kTextLayoutAlgorithm,
+                  algorithm.algorithmType() == kTextLayoutAlgorithm);
 
 }  // namespace blink
 

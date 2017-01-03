@@ -185,6 +185,13 @@ void NGLayoutInlineItem::SetEndOffset(unsigned end_offset) {
   end_offset_ = end_offset;
 }
 
+LayoutUnit NGLayoutInlineItem::InlineSize() const {
+  LayoutUnit inline_size;
+  for (const auto& result : shape_results_)
+    inline_size += result->width();
+  return inline_size;
+}
+
 void NGInlineNode::ShapeText() {
   // TODO(layout-dev): Should pass the entire range to the shaper as context
   // and then shape each item based on the relevant font.
@@ -208,6 +215,13 @@ void NGInlineNode::ShapeText() {
 
 bool NGInlineNode::Layout(NGConstraintSpace* constraint_space,
                           NGFragmentBase** out) {
+  ASSERT_NOT_REACHED();
+  *out = nullptr;
+  return true;
+}
+
+bool NGInlineNode::LayoutInline(NGConstraintSpace* constraint_space,
+                                NGLineBuilder* line_builder) {
   PrepareLayout();
 
   // NOTE: We don't need to change the coordinate system here as we are an
@@ -221,15 +235,11 @@ bool NGInlineNode::Layout(NGConstraintSpace* constraint_space,
     // TODO(layout-dev): If an atomic inline run the appropriate algorithm.
     layout_algorithm_ = new NGTextLayoutAlgorithm(this, child_constraint_space);
 
-  NGPhysicalFragmentBase* fragment = nullptr;
-  if (!layout_algorithm_->Layout(nullptr, &fragment, nullptr))
+  if (!toNGTextLayoutAlgorithm(layout_algorithm_)->LayoutInline(line_builder)) {
     return false;
+  }
 
   // TODO(layout-dev): Implement copying of fragment data to LayoutObject tree.
-
-  *out = new NGFragment(constraint_space->WritingMode(),
-                        constraint_space->Direction(),
-                        toNGPhysicalFragment(fragment));
 
   // Reset algorithm for future use
   layout_algorithm_ = nullptr;

@@ -16,6 +16,7 @@ class NGBreakToken;
 class NGConstraintSpace;
 class NGFragmentBuilder;
 class NGInlineNode;
+class NGLineBuilder;
 
 // A class for inline layout (e.g. a anonymous block with inline-level children
 // only).
@@ -59,6 +60,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
   Member<NGFragmentBuilder> builder_;
   Member<NGConstraintSpace> space_for_current_child_;
   Member<NGInlineNode> current_child_;
+  Member<NGLineBuilder> line_builder_;
 };
 
 }  // namespace blink

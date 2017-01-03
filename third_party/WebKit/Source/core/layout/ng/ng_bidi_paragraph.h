@@ -14,7 +14,6 @@
 namespace blink {
 
 class ComputedStyle;
-class NGLayoutInlineItemRange;
 
 // NGBidiParagraph resolves bidirectional runs in a paragraph using ICU BiDi.
 // http://userguide.icu-project.org/transforms/bidi
@@ -44,9 +43,10 @@ class NGBidiParagraph {
   unsigned GetLogicalRun(unsigned start, UBiDiLevel*) const;
 
   // Create a list of indicies in the visual order.
+  // A wrapper for ICU |ubidi_reorderVisual()|.
   static void IndiciesInVisualOrder(
-      const NGLayoutInlineItemRange&,
-      Vector<int32_t, 32>* item_indicies_in_visual_order_out);
+      const Vector<UBiDiLevel, 32>& levels,
+      Vector<int32_t, 32>* indicies_in_visual_order_out);
 
  private:
   UBiDi* ubidi_ = nullptr;

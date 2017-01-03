@@ -43,22 +43,12 @@ unsigned NGBidiParagraph::GetLogicalRun(unsigned start,
 }
 
 void NGBidiParagraph::IndiciesInVisualOrder(
-    const NGLayoutInlineItemRange& items,
-    Vector<int32_t, 32>* item_indicies_in_visual_order_out) {
-  // ICU |ubidi_getVisualMap()| works for a run of characters. Since we can
-  // handle the direction of each run, we use |ubidi_reorderVisual()| to reorder
-  // runs instead of characters.
-  // To do so, create a list of bidi levels by pretending a run is a character.
-  Vector<UBiDiLevel, 32> levels;
-  levels.reserveInitialCapacity(items.Size());
-  for (const NGLayoutInlineItem& item : items)
-    levels.append(item.BidiLevel());
-
+    const Vector<UBiDiLevel, 32>& levels,
+    Vector<int32_t, 32>* indicies_in_visual_order_out) {
   // Check the size before passing the raw pointers to ICU.
-  CHECK_EQ(items.Size(), levels.size());
-  CHECK_EQ(items.Size(), item_indicies_in_visual_order_out->size());
-  ubidi_reorderVisual(levels.data(), items.Size(),
-                      item_indicies_in_visual_order_out->data());
+  CHECK_EQ(levels.size(), indicies_in_visual_order_out->size());
+  ubidi_reorderVisual(levels.data(), levels.size(),
+                      indicies_in_visual_order_out->data());
 }
 
 }  // namespace blink

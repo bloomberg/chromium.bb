@@ -7,9 +7,11 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/layout/ng/ng_text_layout_algorithm.h"
+#include "core/layout/ng/ng_line_builder.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,23 +53,26 @@ class NGInlineNodeForTest : public NGInlineNode {
 
 class NGInlineNodeTest : public ::testing::Test {
  protected:
-  void SetUp() override { style_ = ComputedStyle::create(); }
+  void SetUp() override {
+    style_ = ComputedStyle::create();
+    style_->font().update(nullptr);
+  }
 
-  void CreateLine(NGInlineNode* node,
-                  unsigned start_index,
-                  unsigned end_index,
-                  HeapVector<Member<NGPhysicalTextFragment>>* fragments_out) {
+  void CreateLine(
+      NGInlineNode* node,
+      HeapVector<Member<const NGPhysicalTextFragment>>* fragments_out) {
     NGConstraintSpace* constraint_space =
         NGConstraintSpaceBuilder(kHorizontalTopBottom).ToConstraintSpace();
-    HeapVector<Member<NGFragmentBase>> fragments;
-    Vector<NGLogicalOffset> logical_offsets;
+    NGLineBuilder line_builder(node, constraint_space);
     NGTextLayoutAlgorithm* algorithm =
-        new NGTextLayoutAlgorithm(node, nullptr, nullptr);
-    algorithm->CreateLine(node->Items(start_index, end_index),
-                          *constraint_space, &fragments, &logical_offsets);
-    for (const NGFragmentBase* fragment : fragments) {
-      fragments_out->append(
-          toNGPhysicalTextFragment(fragment->PhysicalFragment()));
+        new NGTextLayoutAlgorithm(node, constraint_space);
+    algorithm->LayoutInline(&line_builder);
+
+    NGFragmentBuilder fragment_builder(NGPhysicalFragmentBase::kFragmentBox);
+    line_builder.CreateFragments(&fragment_builder);
+    NGPhysicalFragment* fragment = fragment_builder.ToFragment();
+    for (const NGPhysicalFragmentBase* child : fragment->Children()) {
+      fragments_out->append(toNGPhysicalTextFragment(child));
     }
   }
 
@@ -176,24 +181,14 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
 
 TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   NGInlineNodeForTest* node = CreateBidiIsolateNode(style_.get());
-  HeapVector<Member<NGPhysicalTextFragment>> fragments;
-  CreateLine(node, 0, node->Items().size(), &fragments);
+  HeapVector<Member<const NGPhysicalTextFragment>> fragments;
+  CreateLine(node, &fragments);
   ASSERT_EQ(5u, fragments.size());
   TEST_TEXT_FRAGMENT(fragments[0], node, 0u, 1u, TextDirection::Ltr);
   TEST_TEXT_FRAGMENT(fragments[1], node, 6u, 7u, TextDirection::Rtl);
   TEST_TEXT_FRAGMENT(fragments[2], node, 4u, 5u, TextDirection::Ltr);
   TEST_TEXT_FRAGMENT(fragments[3], node, 2u, 3u, TextDirection::Rtl);
   TEST_TEXT_FRAGMENT(fragments[4], node, 8u, 9u, TextDirection::Ltr);
-}
-
-TEST_F(NGInlineNodeTest, CreateLineRangeBidiIsolate) {
-  NGInlineNodeForTest* node = CreateBidiIsolateNode(style_.get());
-  HeapVector<Member<NGPhysicalTextFragment>> fragments;
-  CreateLine(node, 2, 7, &fragments);
-  ASSERT_EQ(3u, fragments.size());
-  TEST_TEXT_FRAGMENT(fragments[0], node, 6u, 7u, TextDirection::Rtl);
-  TEST_TEXT_FRAGMENT(fragments[1], node, 4u, 5u, TextDirection::Ltr);
-  TEST_TEXT_FRAGMENT(fragments[2], node, 2u, 3u, TextDirection::Rtl);
 }
 
 }  // namespace blink

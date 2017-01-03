@@ -319,6 +319,8 @@ blink_core_sources("layout") {
     "ng/ng_legacy_block_layout_algorithm.h",
     "ng/ng_length_utils.cc",
     "ng/ng_length_utils.h",
+    "ng/ng_line_builder.cc",
+    "ng/ng_line_builder.h",
     "ng/ng_macros.h",
     "ng/ng_physical_fragment.cc",
     "ng/ng_physical_fragment.h",

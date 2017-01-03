@@ -10,6 +10,7 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_length_utils.h"
+#include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/style/ComputedStyle.h"
 
@@ -39,10 +40,12 @@ NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
       builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::kFragmentBox);
       builder_->SetWritingMode(constraint_space_->WritingMode());
       builder_->SetDirection(constraint_space_->Direction());
-      // builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
       current_child_ = first_child_;
-      if (current_child_)
+      if (current_child_) {
         space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
+        line_builder_ =
+            new NGLineBuilder(current_child_, space_for_current_child_);
+      }
 
       state_ = kStateChildLayout;
       return kNotFinished;
@@ -53,6 +56,9 @@ NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
           return kNotFinished;
         current_child_ = current_child_->NextSibling();
         if (current_child_) {
+          // TODO(kojii): Since line_builder_ is bound to NGLayoutInlineItem
+          // in current_child_, changing current_child_ needs more work.
+          ASSERT_NOT_REACHED();
           space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
           return kNotFinished;
         }
@@ -61,7 +67,7 @@ NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
       return kNotFinished;
     }
     case kStateFinalize:
-      // TODO(kojii): Compute content size and set to the builder.
+      line_builder_->CreateFragments(builder_);
       *fragment_out = builder_->ToFragment();
       state_ = kStateInit;
       return kNewFragment;
@@ -72,12 +78,7 @@ NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
 }
 
 bool NGInlineLayoutAlgorithm::LayoutCurrentChild() {
-  NGFragmentBase* fragment;
-  if (!current_child_->Layout(space_for_current_child_, &fragment))
-    return false;
-
-  builder_->AddChild(fragment, NGLogicalOffset());
-  return true;
+  return current_child_->LayoutInline(space_for_current_child_, line_builder_);
 }
 
 NGConstraintSpace*
@@ -99,6 +100,7 @@ DEFINE_TRACE(NGInlineLayoutAlgorithm) {
   visitor->trace(builder_);
   visitor->trace(space_for_current_child_);
   visitor->trace(current_child_);
+  visitor->trace(line_builder_);
 }
 
 }  // namespace blink
