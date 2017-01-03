@@ -139,6 +139,7 @@ void CustomButton::OnEnabledChanged() {
     GetInkDrop()->SetHovered(should_enter_hover_state);
   } else {
     SetState(STATE_DISABLED);
+    GetInkDrop()->SetHovered(false);
   }
 }
 

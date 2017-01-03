@@ -465,6 +465,19 @@ TEST_F(CustomButtonTest, HideInkDropOnBlur) {
   EXPECT_TRUE(button()->pressed());
 }
 
+TEST_F(CustomButtonTest, HideInkDropHighlightOnDisable) {
+  TestInkDrop* ink_drop = new TestInkDrop();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
+
+  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  generator.MoveMouseToInHost(10, 10);
+  EXPECT_TRUE(ink_drop->is_hovered());
+  button()->SetEnabled(false);
+  EXPECT_FALSE(ink_drop->is_hovered());
+  button()->SetEnabled(true);
+  EXPECT_TRUE(ink_drop->is_hovered());
+}
+
 TEST_F(CustomButtonTest, InkDropAfterTryingToShowContextMenu) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
