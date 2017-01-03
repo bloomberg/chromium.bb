@@ -3022,8 +3022,9 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
 #if CONFIG_LOOP_RESTORATION
 static void encode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_write_bit_buffer *wb) {
-  RestorationInfo *rst = &cm->rst_info;
-  switch (rst->frame_restoration_type) {
+  int p;
+  RestorationInfo *rsi = &cm->rst_info[0];
+  switch (rsi->frame_restoration_type) {
     case RESTORE_NONE:
       aom_wb_write_bit(wb, 0);
       aom_wb_write_bit(wb, 0);
@@ -3047,6 +3048,14 @@ static void encode_restoration_mode(AV1_COMMON *cm,
       aom_wb_write_bit(wb, 1);
       break;
     default: assert(0);
+  }
+  for (p = 1; p < MAX_MB_PLANE; ++p) {
+    rsi = &cm->rst_info[p];
+    switch (rsi->frame_restoration_type) {
+      case RESTORE_NONE: aom_wb_write_bit(wb, 0); break;
+      case RESTORE_WIENER: aom_wb_write_bit(wb, 1); break;
+      default: assert(0);
+    }
   }
 }
 
@@ -3079,8 +3088,8 @@ static void write_domaintxfmrf_filter(DomaintxfmrfInfo *domaintxfmrf_info,
 }
 
 static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
-  int i;
-  RestorationInfo *rsi = &cm->rst_info;
+  int i, p;
+  RestorationInfo *rsi = &cm->rst_info[0];
   if (rsi->frame_restoration_type != RESTORE_NONE) {
     if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
       // RESTORE_SWITCHABLE
@@ -3119,6 +3128,14 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
           write_domaintxfmrf_filter(&rsi->domaintxfmrf_info[i], wb);
         }
       }
+    }
+  }
+  for (p = 1; p < MAX_MB_PLANE; ++p) {
+    rsi = &cm->rst_info[p];
+    if (rsi->frame_restoration_type == RESTORE_WIENER) {
+      write_wiener_filter(&rsi->wiener_info[0], wb);
+    } else if (rsi->frame_restoration_type != RESTORE_NONE) {
+      assert(0);
     }
   }
 }

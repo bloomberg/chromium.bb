@@ -404,9 +404,9 @@ typedef struct AV1_COMP {
 #if CONFIG_LOOP_RESTORATION
   YV12_BUFFER_CONFIG last_frame_db;
   YV12_BUFFER_CONFIG trial_frame_rst;
-  uint8_t *extra_rstbuf;       // Extra buffers used in restoration search
-  RestorationInfo rst_search;  // Used for encoder side search
-#endif                         // CONFIG_LOOP_RESTORATION
+  uint8_t *extra_rstbuf;  // Extra buffers used in restoration search
+  RestorationInfo rst_search[MAX_MB_PLANE];  // Used for encoder side search
+#endif                                       // CONFIG_LOOP_RESTORATION
 
   // Ambient reconstruction err target for force key frames
   int64_t ambient_err;

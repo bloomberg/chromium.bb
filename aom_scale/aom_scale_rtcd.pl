@@ -18,9 +18,13 @@ if (aom_config("CONFIG_SPATIAL_RESAMPLING") eq "yes") {
 
 add_proto qw/void aom_yv12_extend_frame_borders/, "struct yv12_buffer_config *ybf";
 
-add_proto qw/void aom_yv12_copy_frame/, "const struct yv12_buffer_config *src_ybc, struct yv12_buffer_config *dst_ybc";
+add_proto qw/void aom_yv12_copy_frame/, "const struct yv12_buffer_config *src_bc, struct yv12_buffer_config *dst_bc";
 
 add_proto qw/void aom_yv12_copy_y/, "const struct yv12_buffer_config *src_ybc, struct yv12_buffer_config *dst_ybc";
+
+add_proto qw/void aom_yv12_copy_u/, "const struct yv12_buffer_config *src_bc, struct yv12_buffer_config *dst_bc";
+
+add_proto qw/void aom_yv12_copy_v/, "const struct yv12_buffer_config *src_bc, struct yv12_buffer_config *dst_bc";
 
 if (aom_config("CONFIG_AV1") eq "yes") {
     add_proto qw/void aom_extend_frame_borders/, "struct yv12_buffer_config *ybf";

@@ -89,7 +89,9 @@ void av1_free_ref_frame_buffers(BufferPool *pool) {
 
 #if CONFIG_LOOP_RESTORATION
 void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
-  av1_alloc_restoration_struct(&cm->rst_info, cm->width, cm->height);
+  int p;
+  for (p = 0; p < MAX_MB_PLANE; ++p)
+    av1_alloc_restoration_struct(&cm->rst_info[p], cm->width, cm->height);
   cm->rst_internal.tmpbuf =
       (int32_t *)aom_realloc(cm->rst_internal.tmpbuf, RESTORATION_TMPBUF_SIZE);
   if (cm->rst_internal.tmpbuf == NULL)
@@ -98,7 +100,9 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
 }
 
 void av1_free_restoration_buffers(AV1_COMMON *cm) {
-  av1_free_restoration_struct(&cm->rst_info);
+  int p;
+  for (p = 0; p < MAX_MB_PLANE; ++p)
+    av1_free_restoration_struct(&cm->rst_info[p]);
   aom_free(cm->rst_internal.tmpbuf);
   cm->rst_internal.tmpbuf = NULL;
 }

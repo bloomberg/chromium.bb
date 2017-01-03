@@ -2294,7 +2294,8 @@ static void setup_segmentation(AV1_COMMON *const cm,
 #if CONFIG_LOOP_RESTORATION
 static void decode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_read_bit_buffer *rb) {
-  RestorationInfo *rsi = &cm->rst_info;
+  int p;
+  RestorationInfo *rsi = &cm->rst_info[0];
   if (aom_rb_read_bit(rb)) {
     if (aom_rb_read_bit(rb))
       rsi->frame_restoration_type =
@@ -2305,27 +2306,39 @@ static void decode_restoration_mode(AV1_COMMON *cm,
     rsi->frame_restoration_type =
         aom_rb_read_bit(rb) ? RESTORE_SWITCHABLE : RESTORE_NONE;
   }
+  for (p = 1; p < MAX_MB_PLANE; ++p) {
+    cm->rst_info[p].frame_restoration_type =
+        aom_rb_read_bit(rb) ? RESTORE_WIENER : RESTORE_NONE;
+  }
 }
 
 static void read_wiener_filter(WienerInfo *wiener_info, aom_reader *rb) {
-  wiener_info->vfilter[0] =
+  wiener_info->vfilter[0] = wiener_info->vfilter[WIENER_WIN - 1] =
       aom_read_literal(rb, WIENER_FILT_TAP0_BITS, ACCT_STR) +
       WIENER_FILT_TAP0_MINV;
-  wiener_info->vfilter[1] =
+  wiener_info->vfilter[1] = wiener_info->vfilter[WIENER_WIN - 2] =
       aom_read_literal(rb, WIENER_FILT_TAP1_BITS, ACCT_STR) +
       WIENER_FILT_TAP1_MINV;
-  wiener_info->vfilter[2] =
+  wiener_info->vfilter[2] = wiener_info->vfilter[WIENER_WIN - 3] =
       aom_read_literal(rb, WIENER_FILT_TAP2_BITS, ACCT_STR) +
       WIENER_FILT_TAP2_MINV;
-  wiener_info->hfilter[0] =
+  wiener_info->vfilter[WIENER_HALFWIN] =
+      WIENER_FILT_STEP -
+      2 * (wiener_info->vfilter[0] + wiener_info->vfilter[1] +
+           wiener_info->vfilter[2]);
+  wiener_info->hfilter[0] = wiener_info->hfilter[WIENER_WIN - 1] =
       aom_read_literal(rb, WIENER_FILT_TAP0_BITS, ACCT_STR) +
       WIENER_FILT_TAP0_MINV;
-  wiener_info->hfilter[1] =
+  wiener_info->hfilter[1] = wiener_info->hfilter[WIENER_WIN - 2] =
       aom_read_literal(rb, WIENER_FILT_TAP1_BITS, ACCT_STR) +
       WIENER_FILT_TAP1_MINV;
-  wiener_info->hfilter[2] =
+  wiener_info->hfilter[2] = wiener_info->hfilter[WIENER_WIN - 3] =
       aom_read_literal(rb, WIENER_FILT_TAP2_BITS, ACCT_STR) +
       WIENER_FILT_TAP2_MINV;
+  wiener_info->hfilter[WIENER_HALFWIN] =
+      WIENER_FILT_STEP -
+      2 * (wiener_info->hfilter[0] + wiener_info->hfilter[1] +
+           wiener_info->hfilter[2]);
 }
 
 static void read_sgrproj_filter(SgrprojInfo *sgrproj_info, aom_reader *rb) {
@@ -2343,10 +2356,10 @@ static void read_domaintxfmrf_filter(DomaintxfmrfInfo *domaintxfmrf_info,
 }
 
 static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
-  int i;
-  RestorationInfo *rsi = &cm->rst_info;
+  int i, p;
   const int ntiles =
       av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
+  RestorationInfo *rsi = &cm->rst_info[0];
   if (rsi->frame_restoration_type != RESTORE_NONE) {
     if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
       for (i = 0; i < ntiles; ++i) {
@@ -2396,6 +2409,19 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
           rsi->domaintxfmrf_info[i].level = 0;
           rsi->restoration_type[i] = RESTORE_NONE;
         }
+      }
+    }
+  }
+  for (p = 1; p < MAX_MB_PLANE; ++p) {
+    rsi = &cm->rst_info[p];
+    if (rsi->frame_restoration_type == RESTORE_WIENER) {
+      rsi->restoration_type[0] = RESTORE_WIENER;
+      rsi->wiener_info[0].level = 1;
+      read_wiener_filter(&rsi->wiener_info[0], rb);
+      for (i = 1; i < ntiles; ++i) {
+        rsi->restoration_type[i] = RESTORE_WIENER;
+        memcpy(&rsi->wiener_info[i], &rsi->wiener_info[0],
+               sizeof(rsi->wiener_info[0]));
       }
     }
   }
@@ -4596,8 +4622,10 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     *p_data_end = decode_tiles(pbi, data + first_partition_size, data_end);
   }
 #if CONFIG_LOOP_RESTORATION
-  if (cm->rst_info.frame_restoration_type != RESTORE_NONE) {
-    av1_loop_restoration_frame(new_fb, cm, &cm->rst_info, 0, 0, NULL);
+  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+    av1_loop_restoration_frame(new_fb, cm, cm->rst_info, 7, 0, NULL);
   }
 #endif  // CONFIG_LOOP_RESTORATION
 

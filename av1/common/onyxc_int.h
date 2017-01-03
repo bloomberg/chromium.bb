@@ -306,7 +306,7 @@ typedef struct AV1Common {
 
   loop_filter_info_n lf_info;
 #if CONFIG_LOOP_RESTORATION
-  RestorationInfo rst_info;
+  RestorationInfo rst_info[MAX_MB_PLANE];
   RestorationInternal rst_internal;
 #endif  // CONFIG_LOOP_RESTORATION
 

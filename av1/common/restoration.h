@@ -233,14 +233,9 @@ void av1_domaintxfmrf_restoration_highbd(uint16_t *dgd, int width, int height,
                                          int32_t *tmpbuf);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 void decode_xq(int *xqd, int *xq);
-void av1_loop_restoration_init(RestorationInternal *rst, RestorationInfo *rsi,
-                               int kf, int width, int height);
 void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
-                                RestorationInfo *rsi, int y_only,
+                                RestorationInfo *rsi, int components_pattern,
                                 int partial_frame, YV12_BUFFER_CONFIG *dst);
-void av1_loop_restoration_rows(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
-                               int start_mi_row, int end_mi_row, int y_only,
-                               YV12_BUFFER_CONFIG *dst);
 void av1_loop_restoration_precal();
 #ifdef __cplusplus
 }  // extern "C"

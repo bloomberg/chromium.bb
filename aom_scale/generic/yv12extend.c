@@ -228,79 +228,79 @@ static void memcpy_short_addr(uint8_t *dst8, const uint8_t *src8, int num) {
 // Copies the source image into the destination image and updates the
 // destination's UMV borders.
 // Note: The frames are assumed to be identical in size.
-void aom_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_ybc,
-                           YV12_BUFFER_CONFIG *dst_ybc) {
+void aom_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_bc,
+                           YV12_BUFFER_CONFIG *dst_bc) {
   int row;
-  const uint8_t *src = src_ybc->y_buffer;
-  uint8_t *dst = dst_ybc->y_buffer;
+  const uint8_t *src = src_bc->y_buffer;
+  uint8_t *dst = dst_bc->y_buffer;
 
 #if 0
   /* These assertions are valid in the codec, but the libaom-tester uses
    * this code slightly differently.
    */
-  assert(src_ybc->y_width == dst_ybc->y_width);
-  assert(src_ybc->y_height == dst_ybc->y_height);
+  assert(src_bc->y_width == dst_bc->y_width);
+  assert(src_bc->y_height == dst_bc->y_height);
 #endif
 
 #if CONFIG_AOM_HIGHBITDEPTH
-  if (src_ybc->flags & YV12_FLAG_HIGHBITDEPTH) {
-    assert(dst_ybc->flags & YV12_FLAG_HIGHBITDEPTH);
-    for (row = 0; row < src_ybc->y_height; ++row) {
-      memcpy_short_addr(dst, src, src_ybc->y_width);
-      src += src_ybc->y_stride;
-      dst += dst_ybc->y_stride;
+  if (src_bc->flags & YV12_FLAG_HIGHBITDEPTH) {
+    assert(dst_bc->flags & YV12_FLAG_HIGHBITDEPTH);
+    for (row = 0; row < src_bc->y_height; ++row) {
+      memcpy_short_addr(dst, src, src_bc->y_width);
+      src += src_bc->y_stride;
+      dst += dst_bc->y_stride;
     }
 
-    src = src_ybc->u_buffer;
-    dst = dst_ybc->u_buffer;
+    src = src_bc->u_buffer;
+    dst = dst_bc->u_buffer;
 
-    for (row = 0; row < src_ybc->uv_height; ++row) {
-      memcpy_short_addr(dst, src, src_ybc->uv_width);
-      src += src_ybc->uv_stride;
-      dst += dst_ybc->uv_stride;
+    for (row = 0; row < src_bc->uv_height; ++row) {
+      memcpy_short_addr(dst, src, src_bc->uv_width);
+      src += src_bc->uv_stride;
+      dst += dst_bc->uv_stride;
     }
 
-    src = src_ybc->v_buffer;
-    dst = dst_ybc->v_buffer;
+    src = src_bc->v_buffer;
+    dst = dst_bc->v_buffer;
 
-    for (row = 0; row < src_ybc->uv_height; ++row) {
-      memcpy_short_addr(dst, src, src_ybc->uv_width);
-      src += src_ybc->uv_stride;
-      dst += dst_ybc->uv_stride;
+    for (row = 0; row < src_bc->uv_height; ++row) {
+      memcpy_short_addr(dst, src, src_bc->uv_width);
+      src += src_bc->uv_stride;
+      dst += dst_bc->uv_stride;
     }
 
-    aom_yv12_extend_frame_borders_c(dst_ybc);
+    aom_yv12_extend_frame_borders_c(dst_bc);
     return;
   } else {
-    assert(!(dst_ybc->flags & YV12_FLAG_HIGHBITDEPTH));
+    assert(!(dst_bc->flags & YV12_FLAG_HIGHBITDEPTH));
   }
 #endif
 
-  for (row = 0; row < src_ybc->y_height; ++row) {
-    memcpy(dst, src, src_ybc->y_width);
-    src += src_ybc->y_stride;
-    dst += dst_ybc->y_stride;
+  for (row = 0; row < src_bc->y_height; ++row) {
+    memcpy(dst, src, src_bc->y_width);
+    src += src_bc->y_stride;
+    dst += dst_bc->y_stride;
   }
 
-  src = src_ybc->u_buffer;
-  dst = dst_ybc->u_buffer;
+  src = src_bc->u_buffer;
+  dst = dst_bc->u_buffer;
 
-  for (row = 0; row < src_ybc->uv_height; ++row) {
-    memcpy(dst, src, src_ybc->uv_width);
-    src += src_ybc->uv_stride;
-    dst += dst_ybc->uv_stride;
+  for (row = 0; row < src_bc->uv_height; ++row) {
+    memcpy(dst, src, src_bc->uv_width);
+    src += src_bc->uv_stride;
+    dst += dst_bc->uv_stride;
   }
 
-  src = src_ybc->v_buffer;
-  dst = dst_ybc->v_buffer;
+  src = src_bc->v_buffer;
+  dst = dst_bc->v_buffer;
 
-  for (row = 0; row < src_ybc->uv_height; ++row) {
-    memcpy(dst, src, src_ybc->uv_width);
-    src += src_ybc->uv_stride;
-    dst += dst_ybc->uv_stride;
+  for (row = 0; row < src_bc->uv_height; ++row) {
+    memcpy(dst, src, src_bc->uv_width);
+    src += src_bc->uv_stride;
+    dst += dst_bc->uv_stride;
   }
 
-  aom_yv12_extend_frame_borders_c(dst_ybc);
+  aom_yv12_extend_frame_borders_c(dst_bc);
 }
 
 void aom_yv12_copy_y_c(const YV12_BUFFER_CONFIG *src_ybc,
@@ -320,11 +320,63 @@ void aom_yv12_copy_y_c(const YV12_BUFFER_CONFIG *src_ybc,
     }
     return;
   }
-#endif
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
   for (row = 0; row < src_ybc->y_height; ++row) {
     memcpy(dst, src, src_ybc->y_width);
     src += src_ybc->y_stride;
     dst += dst_ybc->y_stride;
+  }
+}
+
+void aom_yv12_copy_u_c(const YV12_BUFFER_CONFIG *src_bc,
+                       YV12_BUFFER_CONFIG *dst_bc) {
+  int row;
+  const uint8_t *src = src_bc->u_buffer;
+  uint8_t *dst = dst_bc->u_buffer;
+
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (src_bc->flags & YV12_FLAG_HIGHBITDEPTH) {
+    const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
+    uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
+    for (row = 0; row < src_bc->uv_height; ++row) {
+      memcpy(dst16, src16, src_bc->uv_width * sizeof(uint16_t));
+      src16 += src_bc->uv_stride;
+      dst16 += dst_bc->uv_stride;
+    }
+    return;
+  }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+
+  for (row = 0; row < src_bc->uv_height; ++row) {
+    memcpy(dst, src, src_bc->uv_width);
+    src += src_bc->uv_stride;
+    dst += dst_bc->uv_stride;
+  }
+}
+
+void aom_yv12_copy_v_c(const YV12_BUFFER_CONFIG *src_bc,
+                       YV12_BUFFER_CONFIG *dst_bc) {
+  int row;
+  const uint8_t *src = src_bc->v_buffer;
+  uint8_t *dst = dst_bc->v_buffer;
+
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (src_bc->flags & YV12_FLAG_HIGHBITDEPTH) {
+    const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
+    uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
+    for (row = 0; row < src_bc->uv_height; ++row) {
+      memcpy(dst16, src16, src_bc->uv_width * sizeof(uint16_t));
+      src16 += src_bc->uv_stride;
+      dst16 += dst_bc->uv_stride;
+    }
+    return;
+  }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+
+  for (row = 0; row < src_bc->uv_height; ++row) {
+    memcpy(dst, src, src_bc->uv_width);
+    src += src_bc->uv_stride;
+    dst += dst_bc->uv_stride;
   }
 }

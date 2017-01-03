@@ -459,7 +459,8 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free_frame_buffer(&cpi->last_frame_db);
   aom_free_frame_buffer(&cpi->trial_frame_rst);
   aom_free(cpi->extra_rstbuf);
-  av1_free_restoration_struct(&cpi->rst_search);
+  for (i = 0; i < MAX_MB_PLANE; ++i)
+    av1_free_restoration_struct(&cpi->rst_search[i]);
 #endif  // CONFIG_LOOP_RESTORATION
   aom_free_frame_buffer(&cpi->scaled_source);
   aom_free_frame_buffer(&cpi->scaled_last_source);
@@ -712,6 +713,9 @@ static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
 }
 
 static void alloc_util_frame_buffers(AV1_COMP *cpi) {
+#if CONFIG_LOOP_RESTORATION
+  int i;
+#endif  // CONFIG_LOOP_RESTORATION
   AV1_COMMON *const cm = &cpi->common;
   if (aom_realloc_frame_buffer(&cpi->last_frame_uf, cm->width, cm->height,
                                cm->subsampling_x, cm->subsampling_y,
@@ -747,7 +751,8 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
   if (!cpi->extra_rstbuf)
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate extra rstbuf for restoration");
-  av1_alloc_restoration_struct(&cpi->rst_search, cm->width, cm->height);
+  for (i = 0; i < MAX_MB_PLANE; ++i)
+    av1_alloc_restoration_struct(&cpi->rst_search[i], cm->width, cm->height);
 #endif  // CONFIG_LOOP_RESTORATION
 
   if (aom_realloc_frame_buffer(&cpi->scaled_source, cm->width, cm->height,
@@ -3496,9 +3501,10 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 #endif
 #if CONFIG_LOOP_RESTORATION
-  if (cm->rst_info.frame_restoration_type != RESTORE_NONE) {
-    av1_loop_restoration_frame(cm->frame_to_show, cm, &cm->rst_info, 0, 0,
-                               NULL);
+  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+    av1_loop_restoration_frame(cm->frame_to_show, cm, cm->rst_info, 7, 0, NULL);
   }
 #endif  // CONFIG_LOOP_RESTORATION
   aom_extend_frame_inner_borders(cm->frame_to_show);
