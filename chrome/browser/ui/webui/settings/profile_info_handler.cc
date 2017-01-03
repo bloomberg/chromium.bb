@@ -41,7 +41,13 @@ const char ProfileInfoHandler::kProfileStatsCountReadyEventName[] =
 
 ProfileInfoHandler::ProfileInfoHandler(Profile* profile)
     : profile_(profile),
-      profile_observer_(this) {}
+      profile_observer_(this) {
+#if defined(OS_CHROMEOS)
+  // Set up the chrome://userimage/ source.
+  content::URLDataSource::Add(profile,
+                              new chromeos::options::UserImageSource());
+#endif
+}
 
 ProfileInfoHandler::~ProfileInfoHandler() {}
 
