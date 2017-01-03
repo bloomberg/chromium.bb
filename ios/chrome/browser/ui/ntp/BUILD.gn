@@ -67,7 +67,6 @@ bundle_data("resources") {
     "resources/ntp_mv_thumbnail_empty~ipad.png",
     "resources/ntp_mv_welcome_favicon.png",
     "resources/ntp_mv_welcome_favicon@2x.png",
-    "resources/ntp_opentabs.png",
     "resources/ntp_opentabs@2x.png",
     "resources/ntp_opentabs@3x.png",
     "resources/ntp_opentabs_header@2x~ipad.png",
