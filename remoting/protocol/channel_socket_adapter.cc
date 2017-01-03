@@ -10,15 +10,13 @@
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "third_party/webrtc/p2p/base/transportchannel.h"
 
 namespace remoting {
 namespace protocol {
 
 TransportChannelSocketAdapter::TransportChannelSocketAdapter(
-    cricket::TransportChannel* channel)
-    : channel_(channel),
-      closed_error_code_(net::OK) {
+    cricket::IceTransportInternal* ice_transport)
+    : channel_(ice_transport), closed_error_code_(net::OK) {
   DCHECK(channel_);
 
   channel_->SignalReadPacket.connect(
@@ -176,7 +174,7 @@ void TransportChannelSocketAdapter::OnWritableState(
 }
 
 void TransportChannelSocketAdapter::OnChannelDestroyed(
-    cricket::TransportChannel* channel) {
+    cricket::IceTransportInternal* channel) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(channel, channel_);
   Close(net::ERR_CONNECTION_ABORTED);

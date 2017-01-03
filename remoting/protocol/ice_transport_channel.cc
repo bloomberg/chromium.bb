@@ -183,14 +183,14 @@ bool IceTransportChannel::is_connected() const {
 }
 
 void IceTransportChannel::OnCandidateGathered(
-    cricket::TransportChannelImpl* channel,
+    cricket::IceTransportInternal2* ice_transport,
     const cricket::Candidate& candidate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   delegate_->OnChannelCandidate(this, candidate);
 }
 
 void IceTransportChannel::OnRouteChange(
-    cricket::TransportChannel* channel,
+    cricket::IceTransportInternal* ice_transport,
     const cricket::Candidate& candidate) {
   // Ignore notifications if the channel is not writable.
   if (channel_->writable())

@@ -15,6 +15,10 @@
 #include "remoting/protocol/transport.h"
 #include "third_party/webrtc/base/sigslot.h"
 
+// TODO(zhihuang):Replace #include by forward declaration once proper
+// inheritance is defined for cricket::IceTransportInternal and
+// cricket::P2PTransportChannel.
+#include "third_party/webrtc/p2p/base/icetransportinternal.h"
 // TODO(johan): Replace #include by forward declaration once proper inheritance
 // is defined for rtc::PacketTransportInterface and cricket::TransportChannel.
 #include "third_party/webrtc/p2p/base/packettransportinterface.h"
@@ -23,8 +27,6 @@ namespace cricket {
 class Candidate;
 class P2PTransportChannel;
 class PortAllocator;
-class TransportChannel;
-class TransportChannelImpl;
 }  // namespace cricket
 
 namespace remoting {
@@ -96,10 +98,10 @@ class IceTransportChannel : public sigslot::has_slots<> {
 
   void NotifyConnected();
 
-  // Signal handlers for cricket::TransportChannel.
-  void OnCandidateGathered(cricket::TransportChannelImpl* channel,
+  // Signal handlers for cricket::IceTransportInternal.
+  void OnCandidateGathered(cricket::IceTransportInternal2* ice_transport,
                            const cricket::Candidate& candidate);
-  void OnRouteChange(cricket::TransportChannel* channel,
+  void OnRouteChange(cricket::IceTransportInternal* ice_transport,
                      const cricket::Candidate& candidate);
   void OnWritableState(rtc::PacketTransportInterface* transport);
 

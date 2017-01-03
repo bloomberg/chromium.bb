@@ -15,27 +15,28 @@
 #include "third_party/webrtc/base/asyncpacketsocket.h"
 #include "third_party/webrtc/base/sigslot.h"
 #include "third_party/webrtc/base/socketaddress.h"
+// TODO(zhihuang):Replace #include by forward declaration once proper
+// inheritance is defined for cricket::IceTransportInternal and
+// cricket::P2PTransportChannel.
+#include "third_party/webrtc/p2p/base/icetransportinternal.h"
 // TODO(johan): Replace #include by forward declaration once proper
 // inheritance is defined for rtc::PacketTransportInterface and
 // cricket::TransportChannel.
 #include "third_party/webrtc/p2p/base/packettransportinterface.h"
 
-namespace cricket {
-class TransportChannel;
-}  // namespace cricket
-
 namespace remoting {
 namespace protocol {
 
 // TransportChannelSocketAdapter implements P2PDatagramSocket interface on
-// top of libjingle's TransportChannel. It is used by IceTransport to provide
+// top of cricket::IceTransportInternal. It is used by IceTransport to provide
 // P2PDatagramSocket interface for channels.
 class TransportChannelSocketAdapter : public P2PDatagramSocket,
                                       public sigslot::has_slots<> {
  public:
   // Doesn't take ownership of the |channel|. The |channel| must outlive
   // this adapter.
-  explicit TransportChannelSocketAdapter(cricket::TransportChannel* channel);
+  explicit TransportChannelSocketAdapter(
+      cricket::IceTransportInternal* ice_transport);
   ~TransportChannelSocketAdapter() override;
 
   // Sets callback that should be called when the adapter is being
@@ -61,11 +62,11 @@ class TransportChannelSocketAdapter : public P2PDatagramSocket,
                    const rtc::PacketTime& packet_time,
                    int flags);
   void OnWritableState(rtc::PacketTransportInterface* transport);
-  void OnChannelDestroyed(cricket::TransportChannel* channel);
+  void OnChannelDestroyed(cricket::IceTransportInternal* ice_transport);
 
   base::ThreadChecker thread_checker_;
 
-  cricket::TransportChannel* channel_;
+  cricket::IceTransportInternal* channel_;
 
   base::Closure destruction_callback_;
 
