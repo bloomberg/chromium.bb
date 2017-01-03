@@ -75,8 +75,8 @@ static icu::UnicodeSet* createUnicodeSet(const UChar32* characters,
   return unicodeSet->contains(c);
 #else
 // Freezed trie tree, see CharacterDataGenerator.cpp.
-extern int32_t serializedCharacterDataSize;
-extern uint8_t serializedCharacterData[];
+extern const int32_t serializedCharacterDataSize;
+extern const uint8_t serializedCharacterData[];
 
 static UTrie2* createTrie() {
   // Create a Trie from the value array.
