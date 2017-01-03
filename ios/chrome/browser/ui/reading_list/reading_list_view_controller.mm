@@ -349,30 +349,29 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   NSString* untaggedString =
       ParseStringWithTag(rawText, &tagRange, kBeginBoldMarker, kEndBoldMarker);
 
+  NSMutableParagraphStyle* paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
+  // This headIndent is needed to prevent a flicker of the text on iPhone 6+
+  // when the user scrolls the empty collection.
+  paragraphStyle.headIndent = 1;
   NSDictionary* attributes = @{
     NSFontAttributeName :
         [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:kFontSize],
-    NSForegroundColorAttributeName : [[MDCPalette greyPalette] tint700]
+    NSForegroundColorAttributeName : [[MDCPalette greyPalette] tint700],
+    NSParagraphStyleAttributeName : paragraphStyle
   };
+
   NSMutableAttributedString* baseAttributedString =
       [[NSMutableAttributedString alloc] initWithString:untaggedString
                                              attributes:attributes];
 
-  NSDictionary* boldAttributes = @{
-    NSFontAttributeName :
-        [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:kFontSize],
-    NSForegroundColorAttributeName : [[MDCPalette greyPalette] tint700]
-  };
-  NSAttributedString* boldAttributedString = [[NSAttributedString alloc]
-      initWithString:[untaggedString substringWithRange:tagRange]
-          attributes:boldAttributes];
-
-  [baseAttributedString replaceCharactersInRange:tagRange
-                            withAttributedString:boldAttributedString];
+  [baseAttributedString addAttribute:NSFontAttributeName
+                               value:[[MDFRobotoFontLoader sharedInstance]
+                                         mediumFontOfSize:kFontSize]
+                               range:tagRange];
 
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
   label.attributedText = baseAttributedString;
-  label.lineBreakMode = NSLineBreakByWordWrapping;
   label.numberOfLines = 0;
   label.textAlignment = NSTextAlignmentCenter;
   [label setTranslatesAutoresizingMaskIntoConstraints:NO];
