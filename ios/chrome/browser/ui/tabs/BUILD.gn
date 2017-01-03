@@ -49,8 +49,6 @@ source_set("tabs") {
     "tab_strip_controller_private.h",
     "tab_strip_view.h",
     "tab_strip_view.mm",
-    "tab_util.h",
-    "tab_util.mm",
     "tab_view.h",
     "tab_view.mm",
     "target_frame_cache.h",

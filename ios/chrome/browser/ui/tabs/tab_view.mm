@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#include "ios/chrome/browser/ui/tabs/tab_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"

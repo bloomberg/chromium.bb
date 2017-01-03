@@ -34,7 +34,6 @@
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/stack_view/close_button.h"
 #import "ios/chrome/browser/ui/stack_view/title_label.h"
-#import "ios/chrome/browser/ui/tabs/tab_util.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
