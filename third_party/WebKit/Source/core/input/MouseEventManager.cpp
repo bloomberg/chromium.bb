@@ -901,8 +901,7 @@ void MouseEventManager::dragSourceEndedAt(const PlatformMouseEvent& event,
                                           DragOperation operation) {
   if (dragState().m_dragSrc) {
     dragState().m_dragDataTransfer->setDestinationOperation(operation);
-    // For now we don't care if event handler cancels default behavior, since
-    // there is none.
+    // The return value is ignored because dragend is not cancelable.
     dispatchDragSrcEvent(EventTypeNames::dragend, event);
   }
   clearDragDataTransfer();
