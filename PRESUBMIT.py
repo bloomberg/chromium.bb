@@ -197,7 +197,7 @@ def GetPreferredTryMasters(_, change):
   has_toolchain_build = False
   has_others = False
 
-  for file in change.AffectedFiles(include_dirs=True):
+  for file in change.AffectedFiles():
     if IsFileInDirectories(file.AbsoluteLocalPath(),
                            [os.path.join(NACL_TOP_DIR, 'build'),
                             os.path.join(NACL_TOP_DIR, 'buildbot'),
