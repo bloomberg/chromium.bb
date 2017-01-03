@@ -2586,7 +2586,6 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimation) {
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 3.f);
-  EXPECT_BOTH_TRUE(GetRasterSource()->ShouldAttemptToUseDistanceFieldText());
 
   // Further changes to scale during the animation should not cause a new
   // high-res tiling to get created.

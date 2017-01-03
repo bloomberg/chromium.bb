@@ -40,7 +40,6 @@ RasterSource::RasterSource(const RecordingSource* other, bool can_use_lcd_text)
       clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
-      should_attempt_to_use_distance_field_text_(false),
       image_decode_cache_(nullptr) {}
 
 RasterSource::RasterSource(const RasterSource* other, bool can_use_lcd_text)
@@ -56,8 +55,6 @@ RasterSource::RasterSource(const RasterSource* other, bool can_use_lcd_text)
       clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
-      should_attempt_to_use_distance_field_text_(
-          other->should_attempt_to_use_distance_field_text_),
       image_decode_cache_(other->image_decode_cache_) {}
 
 RasterSource::~RasterSource() {
@@ -275,14 +272,6 @@ bool RasterSource::HasRecordings() const {
 
 gfx::Rect RasterSource::RecordedViewport() const {
   return recorded_viewport_;
-}
-
-void RasterSource::SetShouldAttemptToUseDistanceFieldText() {
-  should_attempt_to_use_distance_field_text_ = true;
-}
-
-bool RasterSource::ShouldAttemptToUseDistanceFieldText() const {
-  return should_attempt_to_use_distance_field_text_;
 }
 
 void RasterSource::AsValueInto(base::trace_event::TracedValue* array) const {

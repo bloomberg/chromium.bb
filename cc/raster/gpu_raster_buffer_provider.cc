@@ -213,16 +213,11 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
     gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
 
-  // Turn on distance fields for layers that have ever animated.
-  bool use_distance_field_text =
-      use_distance_field_text_ ||
-      raster_source->ShouldAttemptToUseDistanceFieldText();
-
   RasterizeSource(raster_source, resource_has_previous_content,
                   resource_lock->size(), raster_full_rect, raster_dirty_rect,
                   scales, playback_settings, worker_context_provider_,
                   resource_lock, async_worker_context_enabled_,
-                  use_distance_field_text, msaa_sample_count_);
+                  use_distance_field_text_, msaa_sample_count_);
 
   const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
 

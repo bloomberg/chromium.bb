@@ -107,14 +107,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // Valid rectangle in which everything is recorded and can be rastered from.
   virtual gfx::Rect RecordedViewport() const;
 
-  // Informs the raster source that it should attempt to use distance field text
-  // during rasterization.
-  virtual void SetShouldAttemptToUseDistanceFieldText();
-
-  // Return true iff this raster source would benefit from using distance
-  // field text.
-  virtual bool ShouldAttemptToUseDistanceFieldText() const;
-
   // Tracing functionality.
   virtual void DidBeginTracing();
   virtual void AsValueInto(base::trace_event::TracedValue* array) const;
@@ -153,9 +145,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   const gfx::Size size_;
   const bool clear_canvas_with_debug_color_;
   const int slow_down_raster_scale_factor_for_debug_;
-  // TODO(enne/vmiura): this has a read/write race between raster and compositor
-  // threads with multi-threaded Ganesh.  Make this const or remove it.
-  bool should_attempt_to_use_distance_field_text_;
 
   // In practice, this is only set once before raster begins, so it's ok with
   // respect to threading.

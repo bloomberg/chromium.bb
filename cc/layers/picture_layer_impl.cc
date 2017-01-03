@@ -478,9 +478,6 @@ bool PictureLayerImpl::UpdateTiles() {
   was_screen_space_transform_animating_ =
       draw_properties().screen_space_transform_is_animating;
 
-  if (screen_space_transform_is_animating())
-    raster_source_->SetShouldAttemptToUseDistanceFieldText();
-
   double current_frame_time_in_seconds =
       (layer_tree_impl()->CurrentBeginFrameArgs().frame_time -
        base::TimeTicks()).InSecondsF();
