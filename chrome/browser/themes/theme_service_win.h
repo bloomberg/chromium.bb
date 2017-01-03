@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_THEMES_THEME_SERVICE_WIN_H_
 #define CHROME_BROWSER_THEMES_THEME_SERVICE_WIN_H_
 
+#include "base/optional.h"
 #include "base/win/registry.h"
 #include "chrome/browser/themes/theme_service.h"
 
@@ -33,15 +34,15 @@ class ThemeServiceWin : public ThemeService {
   // Registry key containing the params that determine the DWM frame color.
   std::unique_ptr<base::win::RegKey> dwm_key_;
 
-  // True if the frame should be colored using the DWM values here. False if the
-  // default frame colors should be used instead.
-  bool use_dwm_frame_color_;
+  // The frame color when active. If empty the default colors should be used.
+  base::Optional<SkColor> dwm_frame_color_;
 
-  // The frame color when active.
-  SkColor dwm_frame_color_;
+  // True if we took dwm_inactive_frame_color_ from the registry (vs calculating
+  // it ourselves) and thus Windows will use it too.
+  bool inactive_frame_color_from_registry_;
 
-  // The frame color when inactive.
-  SkColor dwm_inactive_frame_color_;
+  // The frame color when inactive. If empty the default colors should be used.
+  base::Optional<SkColor> dwm_inactive_frame_color_;
 
   // The DWM accent border color, if available; white otherwise.
   SkColor dwm_accent_border_color_;

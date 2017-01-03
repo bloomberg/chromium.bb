@@ -43,12 +43,28 @@ SkColor ThemeServiceWin::GetDefaultColor(int id, bool incognito) const {
     if (id == ThemeProperties::COLOR_ACCENT_BORDER)
       return dwm_accent_border_color_;
 
-    if (use_dwm_frame_color_) {
-      // Incognito frame is the same as normal when we're using DWM colors.
-      if (id == ThemeProperties::COLOR_FRAME)
-        return dwm_frame_color_;
-      if (id == ThemeProperties::COLOR_FRAME_INACTIVE)
-        return dwm_inactive_frame_color_;
+    // When we're custom-drawing the titlebar we want to use either the colors
+    // we calculated in OnDwmKeyUpdated() or the default colors. When we're not
+    // custom-drawing the titlebar we want to match the color Windows actually
+    // uses because some things (like the incognito icon) use this color to
+    // decide whether they should draw in light or dark mode. Incognito colors
+    // should be the same as non-incognito in all cases here.
+    if (id == ThemeProperties::COLOR_FRAME) {
+      if (dwm_frame_color_)
+        return dwm_frame_color_.value();
+      if (!ShouldCustomDrawSystemTitlebar())
+        return SK_ColorWHITE;
+      // Fall through and use default.
+    }
+    if (id == ThemeProperties::COLOR_FRAME_INACTIVE) {
+      if (!ShouldCustomDrawSystemTitlebar()) {
+        return inactive_frame_color_from_registry_
+                   ? dwm_inactive_frame_color_.value()
+                   : SK_ColorWHITE;
+      }
+      if (dwm_inactive_frame_color_)
+        return dwm_inactive_frame_color_.value();
+      // Fall through and use default.
     }
   }
 
@@ -62,25 +78,30 @@ bool ThemeServiceWin::DwmColorsAllowed() const {
 
 void ThemeServiceWin::OnDwmKeyUpdated() {
   DWORD accent_color, color_prevalence;
-  use_dwm_frame_color_ =
+  bool use_dwm_frame_color =
       dwm_key_->ReadValueDW(L"AccentColor", &accent_color) == ERROR_SUCCESS &&
       dwm_key_->ReadValueDW(L"ColorPrevalence", &color_prevalence) ==
           ERROR_SUCCESS &&
       color_prevalence == 1;
-  if (use_dwm_frame_color_) {
+  inactive_frame_color_from_registry_ = false;
+  if (use_dwm_frame_color) {
     dwm_frame_color_ = skia::COLORREFToSkColor(accent_color);
     DWORD accent_color_inactive;
     if (dwm_key_->ReadValueDW(L"AccentColorInactive", &accent_color_inactive) ==
         ERROR_SUCCESS) {
       dwm_inactive_frame_color_ =
           skia::COLORREFToSkColor(accent_color_inactive);
+      inactive_frame_color_from_registry_ = true;
     } else {
       // Tint to create inactive color. Always use the non-incognito version of
       // the tint, since the frame should look the same in both modes.
       dwm_inactive_frame_color_ = color_utils::HSLShift(
-          dwm_frame_color_,
+          dwm_frame_color_.value(),
           GetTint(ThemeProperties::TINT_FRAME_INACTIVE, false));
     }
+  } else {
+    dwm_frame_color_.reset();
+    dwm_inactive_frame_color_.reset();
   }
 
   dwm_accent_border_color_ = SK_ColorWHITE;
