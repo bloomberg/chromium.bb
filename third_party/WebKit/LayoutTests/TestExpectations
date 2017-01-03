@@ -109,8 +109,9 @@ crbug.com/646176 virtual/spinvalidation/compositing/composited-iframe-hidden.htm
 crbug.com/646176 virtual/spinvalidation/fast/layers/remove-layer-with-nested-stacking.html [ Pass ]
 crbug.com/646176 virtual/spinvalidation/printing/fixed-positioned-scrolled.html [ Pass ]
 crbug.com/646176 virtual/spinvalidation/printing/overflow-auto.html [ Pass ]
-crbug.com/646176 virtual/spinvalidation/css3/filters/effect-reference-rename.html [ Pass ]
-crbug.com/646176 virtual/spinvalidation/css3/filters/effect-reference-rename-2.html [ Pass ]
+# The below two are marked [ Failure Pass ] below
+# crbug.com/646176 virtual/spinvalidation/css3/filters/effect-reference-rename.html [ Pass ]
+# crbug.com/646176 virtual/spinvalidation/css3/filters/effect-reference-rename-2.html [ Pass ]
 
 crbug.com/673003 virtual/spinvalidation/paint/invalidation/svg/marker-viewBox-changes.svg [ Pass Failure ]
 crbug.com/673003 virtual/spinvalidation/paint/invalidation/outline-clip-change.html [ Pass Failure ]
