@@ -172,6 +172,8 @@ void AncestorThrottle::ParseError(const std::string& value,
                                   HeaderDisposition disposition) {
   DCHECK(disposition == HeaderDisposition::CONFLICT ||
          disposition == HeaderDisposition::INVALID);
+  if (!navigation_handle()->GetRenderFrameHost())
+    return;  // Some responses won't have a RFH (i.e. 204/205s or downloads).
 
   std::string message;
   if (disposition == HeaderDisposition::CONFLICT) {
@@ -196,6 +198,9 @@ void AncestorThrottle::ParseError(const std::string& value,
 void AncestorThrottle::ConsoleError(HeaderDisposition disposition) {
   DCHECK(disposition == HeaderDisposition::DENY ||
          disposition == HeaderDisposition::SAMEORIGIN);
+  if (!navigation_handle()->GetRenderFrameHost())
+    return;  // Some responses won't have a RFH (i.e. 204/205s or downloads).
+
   std::string message = base::StringPrintf(
       "Refused to display '%s' in a frame because it set 'X-Frame-Options' "
       "to '%s'.",
