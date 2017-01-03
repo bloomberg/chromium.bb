@@ -16,9 +16,10 @@
 namespace new_tab_page_uma {
 
 bool IsCurrentlyOnNTP(ios::ChromeBrowserState* browserState) {
-  return [[BrowserListIOS::GetLastActiveWithBrowserState(browserState) tabModel]
-             currentTab]
-             .url == GURL(kChromeUINewTabURL);
+  Tab* currentTab =
+      [[BrowserListIOS::GetLastActiveWithBrowserState(browserState) tabModel]
+          currentTab];
+  return currentTab && currentTab.url == GURL(kChromeUINewTabURL);
 }
 
 void RecordAction(ios::ChromeBrowserState* browserState, ActionType type) {
