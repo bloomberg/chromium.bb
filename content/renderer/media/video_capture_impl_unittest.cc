@@ -37,7 +37,7 @@ class MockMojoVideoCaptureHost : public mojom::VideoCaptureHost {
         .WillByDefault(WithArgs<2>(Invoke(RunEmptyFormatsCallback)));
     ON_CALL(*this, GetDeviceFormatsInUse(_, _, _))
         .WillByDefault(WithArgs<2>(Invoke(RunEmptyFormatsCallback)));
-    ON_CALL(*this, ReleaseBuffer(_, _, _, _))
+    ON_CALL(*this, ReleaseBuffer(_, _, _))
         .WillByDefault(InvokeWithoutArgs(
             this, &MockMojoVideoCaptureHost::increase_released_buffer_count));
   }
@@ -56,8 +56,7 @@ class MockMojoVideoCaptureHost : public mojom::VideoCaptureHost {
   MOCK_METHOD3(Resume,
                void(int32_t, int32_t, const media::VideoCaptureParams&));
   MOCK_METHOD1(RequestRefreshFrame, void(int32_t));
-  MOCK_METHOD4(ReleaseBuffer,
-               void(int32_t, int32_t, const gpu::SyncToken&, double));
+  MOCK_METHOD3(ReleaseBuffer, void(int32_t, int32_t, double));
   MOCK_METHOD3(GetDeviceSupportedFormats,
                void(int32_t,
                     int32_t,
@@ -265,7 +264,7 @@ TEST_F(VideoCaptureImplTest, BufferReceived) {
   EXPECT_CALL(*this, OnFrameReady(_, _));
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
-  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kBufferId, _, _))
+  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kBufferId, _))
       .Times(0);
 
   StartCapture(0, params_small_);
@@ -290,7 +289,7 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
   EXPECT_CALL(*this, OnFrameReady(_, _)).Times(0);
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_large_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
-  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kBufferId, _, _));
+  EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kBufferId, _));
 
   StartCapture(0, params_large_);
   SimulateOnBufferCreated(kBufferId, shm);

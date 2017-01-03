@@ -378,7 +378,6 @@ void VideoCaptureController::ReturnBuffer(
     VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* event_handler,
     int buffer_id,
-    const gpu::SyncToken& sync_token,
     double consumer_resource_utilization) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

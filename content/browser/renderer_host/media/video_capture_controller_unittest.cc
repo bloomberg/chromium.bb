@@ -78,10 +78,9 @@ class MockVideoCaptureControllerEventHandler
         media::VideoFrameMetadata::REFERENCE_TIME, &reference_time));
     DoBufferReady(id, frame->coded_size());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&VideoCaptureController::ReturnBuffer,
-                   base::Unretained(controller_), id, this, buffer_id,
-                   gpu::SyncToken(), resource_utilization_));
+        FROM_HERE, base::Bind(&VideoCaptureController::ReturnBuffer,
+                              base::Unretained(controller_), id, this,
+                              buffer_id, resource_utilization_));
   }
   void OnEnded(VideoCaptureControllerID id) override {
     DoEnded(id);

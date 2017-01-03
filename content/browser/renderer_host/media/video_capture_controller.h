@@ -120,15 +120,12 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
   void StopSession(int session_id);
 
   // Return a buffer with id |buffer_id| previously given in
-  // VideoCaptureControllerEventHandler::OnBufferReady. In the case that the
-  // buffer was backed by a texture, |sync_token| will be waited on before
-  // destroying or recycling the texture, to synchronize with texture users in
-  // the renderer process. If the consumer provided resource utilization
+  // VideoCaptureControllerEventHandler::OnBufferReady.
+  // If the consumer provided resource utilization
   // feedback, this will be passed here (-1.0 indicates no feedback).
   void ReturnBuffer(VideoCaptureControllerID id,
                     VideoCaptureControllerEventHandler* event_handler,
                     int buffer_id,
-                    const gpu::SyncToken& sync_token,
                     double consumer_resource_utilization);
 
   const media::VideoCaptureFormat& GetVideoCaptureFormat() const;

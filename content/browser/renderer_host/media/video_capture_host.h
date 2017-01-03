@@ -64,7 +64,6 @@ class CONTENT_EXPORT VideoCaptureHost
   void RequestRefreshFrame(int32_t device_id) override;
   void ReleaseBuffer(int32_t device_id,
                      int32_t buffer_id,
-                     const gpu::SyncToken& sync_token,
                      double consumer_resource_utilization) override;
   void GetDeviceSupportedFormats(
       int32_t device_id,

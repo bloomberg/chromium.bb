@@ -269,8 +269,7 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
                 << ", storage:" << info->storage_type;
   }
   if (!consume_buffer) {
-    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
-                                         gpu::SyncToken(), -1.0);
+    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id, -1.0);
     return;
   }
 
@@ -310,18 +309,16 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
           buffer->buffer_size(), buffer->buffer()->handle(),
           0 /* shared_memory_offset */, info->timestamp);
   if (!frame) {
-    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id,
-                                         gpu::SyncToken(), -1.0);
+    GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer_id, -1.0);
     return;
   }
 
   BufferFinishedCallback buffer_finished_callback = media::BindToCurrentLoop(
       base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
                  weak_factory_.GetWeakPtr(), buffer_id, buffer));
-  std::unique_ptr<gpu::SyncToken> release_sync_token(new gpu::SyncToken);
   frame->AddDestructionObserver(
       base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame, frame->metadata(),
-                 base::Passed(&release_sync_token), buffer_finished_callback));
+                 buffer_finished_callback));
 
   frame->metadata()->MergeInternalValuesFrom(*info->metadata);
 
@@ -345,11 +342,10 @@ void VideoCaptureImpl::OnBufferDestroyed(int32_t buffer_id) {
 void VideoCaptureImpl::OnClientBufferFinished(
     int buffer_id,
     const scoped_refptr<ClientBuffer>& /* ignored_buffer */,
-    const gpu::SyncToken& release_sync_token,
     double consumer_resource_utilization) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   GetVideoCaptureHost()->ReleaseBuffer(
-      device_id_, buffer_id, release_sync_token, consumer_resource_utilization);
+      device_id_, buffer_id, consumer_resource_utilization);
 }
 
 void VideoCaptureImpl::StopDevice() {
@@ -428,7 +424,6 @@ mojom::VideoCaptureHost* VideoCaptureImpl::GetVideoCaptureHost() {
 // static
 void VideoCaptureImpl::DidFinishConsumingFrame(
     const media::VideoFrameMetadata* metadata,
-    std::unique_ptr<gpu::SyncToken> release_sync_token,
     const BufferFinishedCallback& callback_to_io_thread) {
   // Note: This function may be called on any thread by the VideoFrame
   // destructor.  |metadata| is still valid for read-access at this point.
@@ -437,8 +432,7 @@ void VideoCaptureImpl::DidFinishConsumingFrame(
                            &consumer_resource_utilization)) {
     consumer_resource_utilization = -1.0;
   }
-
-  callback_to_io_thread.Run(*release_sync_token, consumer_resource_utilization);
+  callback_to_io_thread.Run(consumer_resource_utilization);
 }
 
 }  // namespace content

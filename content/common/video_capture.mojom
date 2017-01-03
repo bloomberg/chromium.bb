@@ -4,7 +4,6 @@
 
 module content.mojom;
 
-import "gpu/ipc/common/sync_token.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 import "media/capture/mojo/video_capture_types.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -98,7 +97,6 @@ interface VideoCaptureHost {
 
   // Indicates that a renderer has finished using a previously shared buffer.
   ReleaseBuffer(int32 device_id, int32 buffer_id,
-                gpu.mojom.SyncToken sync_token,
                 double consumer_resource_utilization);
 
   // Get the formats supported by a device referenced by |session_id|.

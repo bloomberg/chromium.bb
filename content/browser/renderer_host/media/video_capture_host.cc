@@ -212,7 +212,6 @@ void VideoCaptureHost::RequestRefreshFrame(int32_t device_id) {
 
 void VideoCaptureHost::ReleaseBuffer(int32_t device_id,
                                      int32_t buffer_id,
-                                     const gpu::SyncToken& sync_token,
                                      double consumer_resource_utilization) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -223,7 +222,7 @@ void VideoCaptureHost::ReleaseBuffer(int32_t device_id,
 
   const base::WeakPtr<VideoCaptureController>& controller = it->second;
   if (controller) {
-    controller->ReturnBuffer(controller_id, this, buffer_id, sync_token,
+    controller->ReturnBuffer(controller_id, this, buffer_id,
                              consumer_resource_utilization);
   }
 }
