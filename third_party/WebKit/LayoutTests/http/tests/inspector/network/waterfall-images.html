@@ -5,19 +5,20 @@
 <script>
 // TODO(allada) Move much of this canvas code to a canvas-test.js file.
 var images = [];
-var sumWidth = 0;
-var maxHeight = 0;
 
 function receiveImage(imageUrl) {
   var image = new Image();
   image.src = imageUrl;
   images.push(image);
-
-  sumWidth += image.width;
-  maxHeight = Math.max(image.height, maxHeight);
 }
 
 function done() {
+  var sumWidth = 0;
+  var maxHeight = 0;
+  for (var image of images) {
+    sumWidth += image.width;
+    maxHeight = Math.max(image.height, maxHeight);
+  }
   var canvas = document.getElementById("outputCanvas");
   canvas.height = maxHeight;
   canvas.width = sumWidth;
@@ -268,15 +269,15 @@ function test()
     if (numDraws > 2)
       return;
     if (numDraws === 2) {
-      sendData(waterfall._canvas, true);
+      sendData(true);
       return;
     }
-    sendData(waterfall._canvas, false);
+    sendData(false);
     // This makes sure we test both old bars and new bars with same data.
     Common.moduleSetting('networkColorCodeResourceTypes').set(true);
   }
 
-  function sendData(canvas, done) {
+  function sendData(done) {
     var imageData = waterfall._canvas.toDataURL();
     var height = waterfall._canvas.height;
     var width = waterfall._canvas.width;

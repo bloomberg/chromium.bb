@@ -466,8 +466,7 @@ bool ImageLoader::shouldLoadImmediately(const KURL& url) const {
     if (resource && !resource->errorOccurred())
       return true;
   }
-  return (isHTMLObjectElement(m_element) || isHTMLEmbedElement(m_element) ||
-          url.protocolIsData());
+  return (isHTMLObjectElement(m_element) || isHTMLEmbedElement(m_element));
 }
 
 void ImageLoader::imageNotifyFinished(ImageResourceContent* resource) {

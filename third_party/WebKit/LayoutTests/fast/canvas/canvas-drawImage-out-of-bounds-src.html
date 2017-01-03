@@ -36,15 +36,17 @@ ctx1.drawImage(bgcanvas, -100, 0,    200, 200, -25, 175, 100, 100);
 ctx1.drawImage(bgcanvas, 0,    0,    100, 200, 75,  175, 100, 100);
 ctx1.drawImage(bgcanvas, 0,    0,    200, 200, 175, 175, 100, 100);
 
-ctx2.drawImage(img, -100, -100, 300, 300, -25, -25, 300, 300);
-ctx2.drawImage(img, -100, -100, 200, 200, -25, -25, 100, 100);
-ctx2.drawImage(img, 0,    -100, 100, 200, 75,  -25, 100, 100);
-ctx2.drawImage(img, 0,    -100, 200, 200, 175, -25, 100, 100);
-ctx2.drawImage(img, -100, 0,    200, 100, -25, 75,  100, 100);
-ctx2.drawImage(img, 0,  0,      200, 100, 175, 75,  100, 100);
-ctx2.drawImage(img, -100, 0,    200, 200, -25, 175, 100, 100);
-ctx2.drawImage(img, 0,    0,    100, 200, 75,  175, 100, 100);
-ctx2.drawImage(img, 0,    0,    200, 200, 175, 175, 100, 100);
+img.onload = function() {
+    ctx2.drawImage(img, -100, -100, 300, 300, -25, -25, 300, 300);
+    ctx2.drawImage(img, -100, -100, 200, 200, -25, -25, 100, 100);
+    ctx2.drawImage(img, 0,    -100, 100, 200, 75,  -25, 100, 100);
+    ctx2.drawImage(img, 0,    -100, 200, 200, 175, -25, 100, 100);
+    ctx2.drawImage(img, -100, 0,    200, 100, -25, 75,  100, 100);
+    ctx2.drawImage(img, 0,  0,      200, 100, 175, 75,  100, 100);
+    ctx2.drawImage(img, -100, 0,    200, 200, -25, 175, 100, 100);
+    ctx2.drawImage(img, 0,    0,    100, 200, 75,  175, 100, 100);
+    ctx2.drawImage(img, 0,    0,    200, 200, 175, 175, 100, 100);
+}
 
 if (window.testRunner) {
     testRunner.waitUntilDone();
