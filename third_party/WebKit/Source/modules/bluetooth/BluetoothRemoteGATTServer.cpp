@@ -123,7 +123,7 @@ void BluetoothRemoteGATTServer::GetPrimaryServicesCallback(
 
     if (quantity == mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE) {
       DCHECK_EQ(1u, services->size());
-      resolver->resolve(m_device->getOrCreateBluetoothRemoteGATTService(
+      resolver->resolve(m_device->getOrCreateRemoteGATTService(
           services.value()[0]->instance_id, services.value()[0]->uuid,
           true /* isPrimary */, device()->id()));
       return;
@@ -133,7 +133,7 @@ void BluetoothRemoteGATTServer::GetPrimaryServicesCallback(
     gattServices.reserveInitialCapacity(services->size());
 
     for (const auto& service : services.value()) {
-      gattServices.append(m_device->getOrCreateBluetoothRemoteGATTService(
+      gattServices.append(m_device->getOrCreateRemoteGATTService(
           service->instance_id, service->uuid, true /* isPrimary */,
           device()->id()));
     }

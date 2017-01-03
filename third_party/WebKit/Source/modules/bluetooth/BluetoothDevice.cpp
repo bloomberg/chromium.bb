@@ -46,13 +46,12 @@ mojom::blink::WebBluetoothDeviceIdPtr BluetoothDevice::createMojoDeviceId(
   return result;
 }
 
-BluetoothRemoteGATTService*
-BluetoothDevice::getOrCreateBluetoothRemoteGATTService(
+BluetoothRemoteGATTService* BluetoothDevice::getOrCreateRemoteGATTService(
     const String& serviceInstanceId,
     const String& uuid,
     bool isPrimary,
     const String& deviceInstanceId) {
-  return m_attributeInstanceMap->getOrCreateBluetoothRemoteGATTService(
+  return m_attributeInstanceMap->getOrCreateRemoteGATTService(
       serviceInstanceId, uuid, isPrimary, deviceInstanceId);
 }
 
@@ -61,14 +60,14 @@ bool BluetoothDevice::isValidService(const String& serviceInstanceId) {
 }
 
 BluetoothRemoteGATTCharacteristic*
-BluetoothDevice::getOrCreateBluetoothRemoteGATTCharacteristic(
+BluetoothDevice::getOrCreateRemoteGATTCharacteristic(
     ExecutionContext* context,
     const String& characteristicInstanceId,
     const String& serviceInstanceId,
     const String& uuid,
     uint32_t characteristicProperties,
     BluetoothRemoteGATTService* service) {
-  return m_attributeInstanceMap->getOrCreateBluetoothRemoteGATTCharacteristic(
+  return m_attributeInstanceMap->getOrCreateRemoteGATTCharacteristic(
       context, characteristicInstanceId, serviceInstanceId, uuid,
       characteristicProperties, service);
 }

@@ -29,7 +29,7 @@ class BluetoothAttributeInstanceMap final
   // no service with the same instance id and adds it to the map.
   // Otherwise returns the BluetoothRemoteGATTService object already
   // in the map.
-  BluetoothRemoteGATTService* getOrCreateBluetoothRemoteGATTService(
+  BluetoothRemoteGATTService* getOrCreateRemoteGATTService(
       const String& serviceInstanceId,
       const String& uuid,
       bool isPrimary,
@@ -43,8 +43,7 @@ class BluetoothAttributeInstanceMap final
   // characteristic with the same instance id and adds it to the map.
   // Otherwise returns the BluetoothRemoteGATTCharacteristic object already in
   // the map.
-  BluetoothRemoteGATTCharacteristic*
-  getOrCreateBluetoothRemoteGATTCharacteristic(
+  BluetoothRemoteGATTCharacteristic* getOrCreateRemoteGATTCharacteristic(
       ExecutionContext*,
       const String& characteristicInstanceId,
       const String& serviceInstanceId,

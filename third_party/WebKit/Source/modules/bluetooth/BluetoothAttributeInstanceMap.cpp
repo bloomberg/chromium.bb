@@ -16,7 +16,7 @@ BluetoothAttributeInstanceMap::BluetoothAttributeInstanceMap(
     : m_device(device) {}
 
 BluetoothRemoteGATTService*
-BluetoothAttributeInstanceMap::getOrCreateBluetoothRemoteGATTService(
+BluetoothAttributeInstanceMap::getOrCreateRemoteGATTService(
     const String& serviceInstanceId,
     const String& uuid,
     bool isPrimary,
@@ -39,7 +39,7 @@ bool BluetoothAttributeInstanceMap::containsService(
 }
 
 BluetoothRemoteGATTCharacteristic*
-BluetoothAttributeInstanceMap::getOrCreateBluetoothRemoteGATTCharacteristic(
+BluetoothAttributeInstanceMap::getOrCreateRemoteGATTCharacteristic(
     ExecutionContext* context,
     const String& characteristicInstanceId,
     const String& serviceInstanceId,

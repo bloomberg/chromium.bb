@@ -50,15 +50,14 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   static mojom::blink::WebBluetoothDeviceIdPtr createMojoDeviceId(
       const String& deviceId);
 
-  BluetoothRemoteGATTService* getOrCreateBluetoothRemoteGATTService(
+  BluetoothRemoteGATTService* getOrCreateRemoteGATTService(
       const String& serviceInstanceId,
       const String& uuid,
       bool isPrimary,
       const String& deviceInstanceId);
   bool isValidService(const String& serviceInstanceId);
 
-  BluetoothRemoteGATTCharacteristic*
-  getOrCreateBluetoothRemoteGATTCharacteristic(
+  BluetoothRemoteGATTCharacteristic* getOrCreateRemoteGATTCharacteristic(
       ExecutionContext*,
       const String& characteristicInstanceId,
       const String& serviceInstanceId,

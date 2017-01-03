@@ -73,7 +73,7 @@ void BluetoothRemoteGATTService::GetCharacteristicsCallback(
 
     if (quantity == mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE) {
       DCHECK_EQ(1u, characteristics->size());
-      resolver->resolve(device()->getOrCreateBluetoothRemoteGATTCharacteristic(
+      resolver->resolve(device()->getOrCreateRemoteGATTCharacteristic(
           resolver->getExecutionContext(),
           characteristics.value()[0]->instance_id, serviceInstanceId,
           characteristics.value()[0]->uuid,
@@ -84,11 +84,10 @@ void BluetoothRemoteGATTService::GetCharacteristicsCallback(
     HeapVector<Member<BluetoothRemoteGATTCharacteristic>> gattCharacteristics;
     gattCharacteristics.reserveInitialCapacity(characteristics->size());
     for (const auto& characteristic : characteristics.value()) {
-      gattCharacteristics.append(
-          device()->getOrCreateBluetoothRemoteGATTCharacteristic(
-              resolver->getExecutionContext(), characteristic->instance_id,
-              serviceInstanceId, characteristic->uuid,
-              characteristic->properties, this));
+      gattCharacteristics.append(device()->getOrCreateRemoteGATTCharacteristic(
+          resolver->getExecutionContext(), characteristic->instance_id,
+          serviceInstanceId, characteristic->uuid, characteristic->properties,
+          this));
     }
     resolver->resolve(gattCharacteristics);
   } else {
