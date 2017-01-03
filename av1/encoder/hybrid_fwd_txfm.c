@@ -16,14 +16,6 @@
 #include "av1/common/idct.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
 
-static INLINE void fdct32x32(int rd_transform, const int16_t *src,
-                             tran_low_t *dst, int src_stride) {
-  if (rd_transform)
-    aom_fdct32x32_rd(src, dst, src_stride);
-  else
-    av1_fht32x32(src, dst, src_stride, DCT_DCT);
-}
-
 #if CONFIG_TX64X64
 static INLINE void fdct64x64(const int16_t *src, tran_low_t *dst,
                              int src_stride) {
@@ -205,13 +197,13 @@ static void fwd_txfm_16x16(const int16_t *src_diff, tran_low_t *coeff,
   }
 }
 
-static void fwd_txfm_32x32(int rd_transform, const int16_t *src_diff,
-                           tran_low_t *coeff, int diff_stride, TX_TYPE tx_type,
+static void fwd_txfm_32x32(const int16_t *src_diff, tran_low_t *coeff,
+                           int diff_stride, TX_TYPE tx_type,
                            FWD_TXFM_OPT fwd_txfm_opt) {
   switch (tx_type) {
     case DCT_DCT:
       if (fwd_txfm_opt == FWD_TXFM_OPT_NORMAL)
-        fdct32x32(rd_transform, src_diff, coeff, diff_stride);
+        av1_fht32x32(src_diff, coeff, diff_stride, tx_type);
       else  // FWD_TXFM_OPT_DC
         aom_fdct32x32_1(src_diff, coeff, diff_stride);
       break;
@@ -458,11 +450,9 @@ static void highbd_fwd_txfm_16x16(const int16_t *src_diff, tran_low_t *coeff,
   }
 }
 
-static void highbd_fwd_txfm_32x32(int rd_transform, const int16_t *src_diff,
-                                  tran_low_t *coeff, int diff_stride,
-                                  TX_TYPE tx_type, FWD_TXFM_OPT fwd_txfm_opt,
-                                  const int bd) {
-  (void)rd_transform;
+static void highbd_fwd_txfm_32x32(const int16_t *src_diff, tran_low_t *coeff,
+                                  int diff_stride, TX_TYPE tx_type,
+                                  FWD_TXFM_OPT fwd_txfm_opt, const int bd) {
   (void)fwd_txfm_opt;
   switch (tx_type) {
     case DCT_DCT:
@@ -531,7 +521,6 @@ void fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
   const int fwd_txfm_opt = fwd_txfm_param->fwd_txfm_opt;
   const TX_TYPE tx_type = fwd_txfm_param->tx_type;
   const TX_SIZE tx_size = fwd_txfm_param->tx_size;
-  const int rd_transform = fwd_txfm_param->rd_transform;
   const int lossless = fwd_txfm_param->lossless;
   switch (tx_size) {
 #if CONFIG_TX64X64
@@ -540,8 +529,7 @@ void fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
       break;
 #endif  // CONFIG_TX64X64
     case TX_32X32:
-      fwd_txfm_32x32(rd_transform, src_diff, coeff, diff_stride, tx_type,
-                     fwd_txfm_opt);
+      fwd_txfm_32x32(src_diff, coeff, diff_stride, tx_type, fwd_txfm_opt);
       break;
     case TX_16X16:
       fwd_txfm_16x16(src_diff, coeff, diff_stride, tx_type, fwd_txfm_opt);
@@ -585,7 +573,6 @@ void highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
   const int fwd_txfm_opt = fwd_txfm_param->fwd_txfm_opt;
   const TX_TYPE tx_type = fwd_txfm_param->tx_type;
   const TX_SIZE tx_size = fwd_txfm_param->tx_size;
-  const int rd_transform = fwd_txfm_param->rd_transform;
   const int lossless = fwd_txfm_param->lossless;
   const int bd = fwd_txfm_param->bd;
   switch (tx_size) {
@@ -596,8 +583,8 @@ void highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
       break;
 #endif  // CONFIG_TX64X64
     case TX_32X32:
-      highbd_fwd_txfm_32x32(rd_transform, src_diff, coeff, diff_stride, tx_type,
-                            fwd_txfm_opt, bd);
+      highbd_fwd_txfm_32x32(src_diff, coeff, diff_stride, tx_type, fwd_txfm_opt,
+                            bd);
       break;
     case TX_16X16:
       highbd_fwd_txfm_16x16(src_diff, coeff, diff_stride, tx_type, fwd_txfm_opt,

@@ -1688,9 +1688,6 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
   aom_clear_system_state();
 
-  // Use the lower precision, but faster, 32x32 fdct for mode selection.
-  x->use_lp32x32fdct = 1;
-
 #if CONFIG_PVQ
   x->pvq_speed = 1;
   x->pvq_coded = 0;
@@ -2320,8 +2317,6 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
 
       if (!x->skip) {
         int this_rate = 0;
-        x->use_lp32x32fdct = cpi->sf.use_lp32x32fdct;
-
         av1_encode_sb_supertx((AV1_COMMON *)cm, x, bsize);
         av1_tokenize_sb_supertx(cpi, td, tp, dry_run, bsize, rate);
         if (rate) *rate += this_rate;
@@ -5351,8 +5346,6 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
   const int unify_bsize = 0;
   const BLOCK_SIZE block_size = AOMMAX(bsize, BLOCK_8X8);
 #endif
-
-  x->use_lp32x32fdct = cpi->sf.use_lp32x32fdct;
 
 #if CONFIG_PVQ
   x->pvq_speed = 0;

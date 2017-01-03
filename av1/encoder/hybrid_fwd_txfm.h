@@ -20,7 +20,6 @@ typedef struct FWD_TXFM_PARAM {
   TX_TYPE tx_type;
   TX_SIZE tx_size;
   FWD_TXFM_OPT fwd_txfm_opt;
-  int rd_transform;
   int lossless;
 #if CONFIG_AOM_HIGHBITDEPTH
   int bd;

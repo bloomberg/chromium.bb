@@ -171,9 +171,6 @@ struct macroblock {
 
   int optimize;
 
-  // indicate if it is in the rd search loop or encoding process
-  int use_lp32x32fdct;
-
   // Used to store sub partition's choices.
   MV pred_mv[TOTAL_REFS_PER_FRAME];
 

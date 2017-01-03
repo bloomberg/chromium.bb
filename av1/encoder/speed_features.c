@@ -228,7 +228,6 @@ static void set_good_speed_feature(AV1_COMP *cpi, AV1_COMMON *cm,
     if (cm->frame_type != KEY_FRAME)
       sf->mode_search_skip_flags |= FLAG_EARLY_TERMINATE;
     sf->disable_filter_search_var_thresh = 200;
-    sf->use_lp32x32fdct = 1;
     sf->use_fast_coef_updates = ONE_LOOP_REDUCED;
     sf->use_fast_coef_costing = 1;
     sf->partition_search_breakout_rate_thr = 300;
@@ -334,7 +333,6 @@ static void set_rt_speed_feature(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed,
     sf->lf_motion_threshold = LOW_MOTION_THRESHOLD;
     sf->adjust_partitioning_from_last_frame = 1;
     sf->last_partitioning_redo_frequency = 3;
-    sf->use_lp32x32fdct = 1;
     sf->mode_skip_start = 11;
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
   }
@@ -500,7 +498,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->comp_inter_joint_search_thresh = BLOCK_4X4;
   sf->adaptive_rd_thresh = 0;
   sf->tx_size_search_method = USE_FULL_RD;
-  sf->use_lp32x32fdct = 0;
   sf->adaptive_motion_search = 0;
   sf->adaptive_pred_interp_filter = 0;
   sf->adaptive_mode_search = 0;
