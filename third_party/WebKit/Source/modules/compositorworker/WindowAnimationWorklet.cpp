@@ -31,6 +31,8 @@ WindowAnimationWorklet& WindowAnimationWorklet::from(LocalDOMWindow& window) {
 
 // static
 Worklet* WindowAnimationWorklet::animationWorklet(DOMWindow& window) {
+  if (!window.frame())
+    return nullptr;
   return from(toLocalDOMWindow(window))
       .animationWorklet(toLocalDOMWindow(window));
 }
