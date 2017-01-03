@@ -12,6 +12,10 @@
 #include "chromeos/audio/audio_device.h"
 #include "ui/gfx/font.h"
 
+namespace gfx {
+struct VectorIcon;
+}
+
 namespace views {
 class View;
 }
@@ -34,8 +38,7 @@ class AudioDetailedView : public TrayDetailsView {
   // list.
   void AddInputHeader();
   void AddOutputHeader();
-  void AddScrollListInfoItem(const base::string16& text,
-                             const gfx::ImageSkia& image);
+  void AddScrollListInfoItem(int text_id, const gfx::VectorIcon& icon);
 
   HoverHighlightView* AddScrollListItem(const base::string16& text,
                                         bool highlight,
