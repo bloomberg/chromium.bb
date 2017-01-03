@@ -62,9 +62,6 @@ std::string ChromeBrowserProvider::GetDistributionBrandCode() {
   return std::string();
 }
 
-void ChromeBrowserProvider::SetUIViewAlphaWithAnimation(UIView* view,
-                                                        float alpha) {}
-
 autofill::CardUnmaskPromptView*
 ChromeBrowserProvider::CreateCardUnmaskPromptView(
     autofill::CardUnmaskPromptController* controller) {

@@ -19,7 +19,6 @@ class DownstreamChromiumBrowserProvider : public ChromiumBrowserProvider {
   // ChromeBrowserProvider implementations.  All of these will move upstream
   // into ChromiumBrowserProvider eventually, and from there callers will be
   // converted to not go through the provider API at all.
-  void SetUIViewAlphaWithAnimation(UIView* view, float alpha) override;
   autofill::CardUnmaskPromptView* CreateCardUnmaskPromptView(
       autofill::CardUnmaskPromptController* controller) override;
   bool IsOffTheRecordSessionActive() override;

@@ -94,8 +94,6 @@ class ChromeBrowserProvider {
   virtual std::string DataReductionProxyAvailability();
   // Returns the distribution brand code.
   virtual std::string GetDistributionBrandCode();
-  // Sets the alpha property of an UIView with an animation.
-  virtual void SetUIViewAlphaWithAnimation(UIView* view, float alpha);
   // Returns an instance of a CardUnmaskPromptView used to unmask Wallet cards.
   // The view is responsible for its own lifetime.
   virtual autofill::CardUnmaskPromptView* CreateCardUnmaskPromptView(

@@ -14,32 +14,10 @@
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/ui/browser_list_ios.h"
 #include "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
-#import "ios/chrome/common/material_timing.h"
 
 DownstreamChromiumBrowserProvider::DownstreamChromiumBrowserProvider() {}
 
 DownstreamChromiumBrowserProvider::~DownstreamChromiumBrowserProvider() {}
-
-void DownstreamChromiumBrowserProvider::SetUIViewAlphaWithAnimation(
-    UIView* view,
-    float alpha) {
-  CGFloat oldAlpha = [view alpha];
-  if (oldAlpha > 0 && alpha == 0) {
-    [view setUserInteractionEnabled:NO];
-  }
-  [UIView cr_transitionWithView:view
-      duration:ios::material::kDuration3
-      curve:ios::material::CurveEaseInOut
-      options:0
-      animations:^{
-        [view setAlpha:alpha];
-      }
-      completion:^(BOOL) {
-        if (oldAlpha == 0 && alpha > 0) {
-          [view setUserInteractionEnabled:YES];
-        };
-      }];
-}
 
 autofill::CardUnmaskPromptView*
 DownstreamChromiumBrowserProvider::CreateCardUnmaskPromptView(

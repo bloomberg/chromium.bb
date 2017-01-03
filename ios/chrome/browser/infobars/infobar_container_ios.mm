@@ -8,14 +8,34 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_container_view.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/chrome/common/material_timing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+void SetViewAlphaWithAnimation(UIView* view, float alpha) {
+  CGFloat oldAlpha = [view alpha];
+  if (oldAlpha > 0 && alpha == 0) {
+    [view setUserInteractionEnabled:NO];
+  }
+  [UIView cr_transitionWithView:view
+      duration:ios::material::kDuration3
+      curve:ios::material::CurveEaseInOut
+      options:0
+      animations:^{
+        [view setAlpha:alpha];
+      }
+      completion:^(BOOL) {
+        if (oldAlpha == 0 && alpha > 0) {
+          [view setUserInteractionEnabled:YES];
+        };
+      }];
+}
+}  // namespace
 
 InfoBarContainerIOS::InfoBarContainerIOS(
     infobars::InfoBarContainer::Delegate* delegate)
@@ -52,11 +72,6 @@ void InfoBarContainerIOS::PlatformSpecificRemoveInfoBar(
   // is added.
   if (infobar->total_height() == 0 && delegate_)
     delegate_->InfoBarContainerStateChanged(false);
-
-  // TODO(rohitrao, jif): [Merge 239355] Upstream InfoBarContainer deletes the
-  // infobar. Avoid deleting it here.
-  // crbug.com/327290
-  // base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, infobar_ios);
 }
 
 void InfoBarContainerIOS::PlatformSpecificInfoBarStateChanged(
@@ -66,11 +81,9 @@ void InfoBarContainerIOS::PlatformSpecificInfoBarStateChanged(
 }
 
 void InfoBarContainerIOS::SuspendInfobars() {
-  ios::GetChromeBrowserProvider()->SetUIViewAlphaWithAnimation(container_view_,
-                                                               0);
+  SetViewAlphaWithAnimation(container_view_, 0);
 }
 
 void InfoBarContainerIOS::RestoreInfobars() {
-  ios::GetChromeBrowserProvider()->SetUIViewAlphaWithAnimation(container_view_,
-                                                               1);
+  SetViewAlphaWithAnimation(container_view_, 1);
 }
