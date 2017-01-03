@@ -1067,8 +1067,8 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the advanced network options. Only visible by screen reader software.">
       Show advanced network options
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_NAMESERVERS" desc="Settings > Internet > Network details: Nameservers section label.">
-      Nameservers
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_NAMESERVERS" desc="Settings > Internet > Network details: Name servers section label.">
+      Name servers
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_NETWORK" desc="Settings > Internet > Network details: Network section label.">
       Network

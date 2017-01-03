@@ -459,9 +459,8 @@ Polymer({
   /** @private */
   onForgetTap_: function() {
     this.networkingPrivate.forgetNetwork(this.guid);
-    // A forgotten WiFi network can still be configured, but not other types.
-    if (this.networkProperties.Type != CrOnc.Type.WI_FI)
-      this.close_();
+    // A forgotten network no longer has a valid GUID, close the subpage.
+    this.close_();
   },
 
   /** @private */
