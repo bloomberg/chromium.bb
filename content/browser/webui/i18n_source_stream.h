@@ -40,14 +40,15 @@ class CONTENT_EXPORT I18nSourceStream : public net::FilterSourceStream {
                  int* consumed_bytes,
                  bool upstream_end_reached) override;
 
-  // Accumulated from upstream.
+  // Keep split $i18n tags (wait for the whole tag). This is expected to vary
+  // in size from 0 to a few KB and should never be larger than the input file
+  // (in the worst case).
   std::string input_;
 
-  // To send downstream.
+  // Keep excess that didn't fit in the output buffer. This is expected to vary
+  // in size from 0 to a few KB and should never get much larger than the input
+  // file (in the worst case).
   std::string output_;
-
-  // How much of the |output_| has been sent.
-  size_t drain_offset_;
 
   // A map of i18n replacement keys and translations.
   const ui::TemplateReplacements* replacements_;  // weak

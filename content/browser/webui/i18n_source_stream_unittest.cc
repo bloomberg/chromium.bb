@@ -178,19 +178,18 @@ TEST_P(I18nSourceStreamTest, NoTranslations) {
   const char kText[] = "This text has no i18n replacements.";
   size_t kTextLength = strlen(kText);
   source()->AddReadResult(kText, kTextLength, net::OK, GetParam().mode);
-  source()->AddReadResult(kText + kTextLength, 0, net::OK, GetParam().mode);
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int rv = ReadStream(&actual_output);
   EXPECT_EQ(static_cast<int>(kTextLength), rv);
-  EXPECT_EQ(std::string(kText, kTextLength), actual_output);
+  EXPECT_EQ(kText, actual_output);
   EXPECT_EQ("i18n", stream()->Description());
 }
 
 TEST_P(I18nSourceStreamTest, I18nOneRead) {
   Init();
   source()->AddReadResult(source_data(), kSourceSize, net::OK, GetParam().mode);
-  source()->AddReadResult(source_data() + kSourceSize, 0, net::OK,
-                          GetParam().mode);
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int rv = ReadStream(&actual_output);
   EXPECT_EQ(static_cast<int>(kResultSize), rv);
@@ -209,12 +208,24 @@ TEST_P(I18nSourceStreamTest, I18nInMultipleReads) {
   }
   source()->AddReadResult(source_data() + written, kSourceSize - written,
                           net::OK, GetParam().mode);
-  source()->AddReadResult(source_data() + kSourceSize, 0, net::OK,
-                          GetParam().mode);
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int rv = ReadStream(&actual_output);
   EXPECT_EQ(static_cast<int>(kResultSize), rv);
   EXPECT_EQ(std::string(result_data(), kResultSize), actual_output);
+  EXPECT_EQ("i18n", stream()->Description());
+}
+
+TEST_P(I18nSourceStreamTest, I18nTagAtEndOfLine) {
+  Init();
+  const char kSourceData[] = "test with tag at end of line $";
+  const size_t source_size = strlen(kSourceData);
+  source()->AddReadResult(kSourceData, source_size, net::OK, GetParam().mode);
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  std::string actual_output;
+  int rv = ReadStream(&actual_output);
+  EXPECT_EQ(static_cast<int>(source_size), rv);
+  EXPECT_EQ(kSourceData, actual_output);
   EXPECT_EQ("i18n", stream()->Description());
 }
 
