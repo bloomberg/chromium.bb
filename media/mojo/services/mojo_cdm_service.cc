@@ -129,7 +129,7 @@ void MojoCdmService::SetServerCertificate(
 }
 
 void MojoCdmService::CreateSessionAndGenerateRequest(
-    SessionType session_type,
+    CdmSessionType session_type,
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     const CreateSessionAndGenerateRequestCallback& callback) {
@@ -139,7 +139,7 @@ void MojoCdmService::CreateSessionAndGenerateRequest(
       base::MakeUnique<NewSessionMojoCdmPromise>(callback));
 }
 
-void MojoCdmService::LoadSession(SessionType session_type,
+void MojoCdmService::LoadSession(CdmSessionType session_type,
                                  const std::string& session_id,
                                  const LoadSessionCallback& callback) {
   DVLOG(2) << __func__;

@@ -36,6 +36,16 @@ typedef CdmPromiseTemplate<std::string> NewSessionCdmPromise;
 typedef CdmPromiseTemplate<> SimpleCdmPromise;
 typedef ScopedVector<CdmKeyInformation> CdmKeysInfo;
 
+// Type of license required when creating/loading a session.
+// Must be consistent with the values specified in the spec:
+// https://w3c.github.io/encrypted-media/#idl-def-MediaKeySessionType
+enum class CdmSessionType {
+  TEMPORARY_SESSION,
+  PERSISTENT_LICENSE_SESSION,
+  PERSISTENT_RELEASE_MESSAGE_SESSION,
+  SESSION_TYPE_MAX = PERSISTENT_RELEASE_MESSAGE_SESSION
+};
+
 // An interface that represents the Content Decryption Module (CDM) in the
 // Encrypted Media Extensions (EME) spec in Chromium.
 // See http://w3c.github.io/encrypted-media/#cdm
@@ -59,21 +69,10 @@ typedef ScopedVector<CdmKeyInformation> CdmKeysInfo;
 // that thread. For example, if the CDM supports a Decryptor interface, the
 // Decryptor methods could be called on a different thread. The CDM
 // implementation should make sure it's thread safe for these situations.
-
 class MEDIA_EXPORT ContentDecryptionModule
     : public base::RefCountedThreadSafe<ContentDecryptionModule,
                                         ContentDecryptionModuleTraits> {
  public:
-  // Type of license required when creating/loading a session.
-  // Must be consistent with the values specified in the spec:
-  // https://w3c.github.io/encrypted-media/#idl-def-MediaKeySessionType
-  enum SessionType {
-    TEMPORARY_SESSION,
-    PERSISTENT_LICENSE_SESSION,
-    PERSISTENT_RELEASE_MESSAGE_SESSION,
-    SESSION_TYPE_MAX = PERSISTENT_RELEASE_MESSAGE_SESSION
-  };
-
   // Type of message being sent to the application.
   // Must be consistent with the values specified in the spec:
   // https://w3c.github.io/encrypted-media/#idl-def-MediaKeyMessageType
@@ -100,7 +99,7 @@ class MEDIA_EXPORT ContentDecryptionModule
   // 3. UpdateSession(), CloseSession() and RemoveSession() should only be
   //    called after the |promise| is resolved.
   virtual void CreateSessionAndGenerateRequest(
-      SessionType session_type,
+      CdmSessionType session_type,
       EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
       std::unique_ptr<NewSessionCdmPromise> promise) = 0;
@@ -112,7 +111,7 @@ class MEDIA_EXPORT ContentDecryptionModule
   // happened.
   // Note: UpdateSession(), CloseSession() and RemoveSession() should only be
   //       called after the |promise| is resolved.
-  virtual void LoadSession(SessionType session_type,
+  virtual void LoadSession(CdmSessionType session_type,
                            const std::string& session_id,
                            std::unique_ptr<NewSessionCdmPromise> promise) = 0;
 

@@ -256,7 +256,7 @@ void AesDecryptor::SetServerCertificate(
 }
 
 void AesDecryptor::CreateSessionAndGenerateRequest(
-    SessionType session_type,
+    CdmSessionType session_type,
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<NewSessionCdmPromise> promise) {
@@ -315,7 +315,7 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
   session_message_cb_.Run(session_id, LICENSE_REQUEST, message);
 }
 
-void AesDecryptor::LoadSession(SessionType session_type,
+void AesDecryptor::LoadSession(CdmSessionType session_type,
                                const std::string& session_id,
                                std::unique_ptr<NewSessionCdmPromise> promise) {
   // TODO(xhwang): Change this to NOTREACHED() when blink checks for key systems
@@ -342,7 +342,7 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
   std::string key_string(response.begin(), response.end());
 
   KeyIdAndKeyPairs keys;
-  SessionType session_type = ContentDecryptionModule::TEMPORARY_SESSION;
+  CdmSessionType session_type = CdmSessionType::TEMPORARY_SESSION;
   if (!ExtractKeysFromJWKSet(key_string, &keys, &session_type)) {
     promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
                     "Response is not a valid JSON Web Key Set.");

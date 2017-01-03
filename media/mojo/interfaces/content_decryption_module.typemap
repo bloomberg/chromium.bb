@@ -21,7 +21,7 @@ deps = [
 type_mappings = [
   "media.mojom.CdmKeyInformation.KeyStatus=media::CdmKeyInformation::KeyStatus",
   "media.mojom.CdmPromiseResult.Exception=media::CdmPromise::Exception",
-  "media.mojom.ContentDecryptionModule.SessionType=media::ContentDecryptionModule::SessionType",
+  "media.mojom.ContentDecryptionModule.SessionType=media::CdmSessionType",
   "media.mojom.ContentDecryptionModuleClient.MessageType=media::ContentDecryptionModule::MessageType",
   "media.mojom.EmeInitDataType=media::EmeInitDataType",
 ]

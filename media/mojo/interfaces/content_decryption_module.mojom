@@ -50,7 +50,7 @@ struct CdmKeyInformation {
 // spec (https://w3c.github.io/encrypted-media/).
 // See media/base/content_decryption_module.h
 interface ContentDecryptionModule {
-  // See media::ContentDecryptionModule::SessionType
+  // See media::CdmSessionType
   [Native]
   enum SessionType;
 

@@ -36,7 +36,7 @@ void RemotingCdm::SetServerCertificate(
 }
 
 void RemotingCdm::CreateSessionAndGenerateRequest(
-    SessionType session_type,
+    CdmSessionType session_type,
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<NewSessionCdmPromise> promise) {
@@ -44,7 +44,7 @@ void RemotingCdm::CreateSessionAndGenerateRequest(
   NOTIMPLEMENTED();
 }
 
-void RemotingCdm::LoadSession(SessionType session_type,
+void RemotingCdm::LoadSession(CdmSessionType session_type,
                               const std::string& session_id,
                               std::unique_ptr<NewSessionCdmPromise> promise) {
   // TODO(xjz): Merge with erickung's implementation.

@@ -68,11 +68,11 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // |session_type| provided.
   void InitializeNewSession(EmeInitDataType init_data_type,
                             const std::vector<uint8_t>& init_data,
-                            ContentDecryptionModule::SessionType session_type,
+                            CdmSessionType session_type,
                             std::unique_ptr<NewSessionCdmPromise> promise);
 
   // Loads the session specified by |session_id|.
-  void LoadSession(ContentDecryptionModule::SessionType session_type,
+  void LoadSession(CdmSessionType session_type,
                    const std::string& session_id,
                    std::unique_ptr<NewSessionCdmPromise> promise);
 

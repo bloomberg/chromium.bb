@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "media/base/content_decryption_module.h"
 
 namespace media {
 
@@ -85,7 +86,7 @@ std::string GenerateJWKSet(const uint8_t* key,
 }
 
 std::string GenerateJWKSet(const KeyIdAndKeyPairs& keys,
-                           ContentDecryptionModule::SessionType session_type) {
+                           CdmSessionType session_type) {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (const auto& key_pair : keys) {
     list->Append(CreateJSONDictionary(
@@ -98,13 +99,13 @@ std::string GenerateJWKSet(const KeyIdAndKeyPairs& keys,
   base::DictionaryValue jwk_set;
   jwk_set.Set(kKeysTag, list.release());
   switch (session_type) {
-    case ContentDecryptionModule::TEMPORARY_SESSION:
+    case CdmSessionType::TEMPORARY_SESSION:
       jwk_set.SetString(kTypeTag, kTemporarySession);
       break;
-    case ContentDecryptionModule::PERSISTENT_LICENSE_SESSION:
+    case CdmSessionType::PERSISTENT_LICENSE_SESSION:
       jwk_set.SetString(kTypeTag, kPersistentLicenseSession);
       break;
-    case ContentDecryptionModule::PERSISTENT_RELEASE_MESSAGE_SESSION:
+    case CdmSessionType::PERSISTENT_RELEASE_MESSAGE_SESSION:
       jwk_set.SetString(kTypeTag, kPersistentReleaseMessageSession);
       break;
   }
@@ -164,7 +165,7 @@ static bool ConvertJwkToKeyPair(const base::DictionaryValue& jwk,
 
 bool ExtractKeysFromJWKSet(const std::string& jwk_set,
                            KeyIdAndKeyPairs* keys,
-                           ContentDecryptionModule::SessionType* session_type) {
+                           CdmSessionType* session_type) {
   if (!base::IsStringASCII(jwk_set)) {
     DVLOG(1) << "Non ASCII JWK Set: " << jwk_set;
     return false;
@@ -210,16 +211,16 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set,
   std::string session_type_id;
   if (!dictionary->Get(kTypeTag, &value)) {
     // Not specified, so use the default type.
-    *session_type = ContentDecryptionModule::TEMPORARY_SESSION;
+    *session_type = CdmSessionType::TEMPORARY_SESSION;
   } else if (!value->GetAsString(&session_type_id)) {
     DVLOG(1) << "Invalid '" << kTypeTag << "' value";
     return false;
   } else if (session_type_id == kTemporarySession) {
-    *session_type = ContentDecryptionModule::TEMPORARY_SESSION;
+    *session_type = CdmSessionType::TEMPORARY_SESSION;
   } else if (session_type_id == kPersistentLicenseSession) {
-    *session_type = ContentDecryptionModule::PERSISTENT_LICENSE_SESSION;
+    *session_type = CdmSessionType::PERSISTENT_LICENSE_SESSION;
   } else if (session_type_id == kPersistentReleaseMessageSession) {
-    *session_type = ContentDecryptionModule::PERSISTENT_RELEASE_MESSAGE_SESSION;
+    *session_type = CdmSessionType::PERSISTENT_RELEASE_MESSAGE_SESSION;
   } else {
     DVLOG(1) << "Invalid '" << kTypeTag << "' value: " << session_type_id;
     return false;
@@ -298,7 +299,7 @@ bool ExtractKeyIdsFromKeyIdsInitData(const std::string& input,
 }
 
 void CreateLicenseRequest(const KeyIdList& key_ids,
-                          ContentDecryptionModule::SessionType session_type,
+                          CdmSessionType session_type,
                           std::vector<uint8_t>* license) {
   // Create the license request.
   std::unique_ptr<base::DictionaryValue> request(new base::DictionaryValue());
@@ -315,13 +316,13 @@ void CreateLicenseRequest(const KeyIdList& key_ids,
   request->Set(kKeyIdsTag, list.release());
 
   switch (session_type) {
-    case ContentDecryptionModule::TEMPORARY_SESSION:
+    case CdmSessionType::TEMPORARY_SESSION:
       request->SetString(kTypeTag, kTemporarySession);
       break;
-    case ContentDecryptionModule::PERSISTENT_LICENSE_SESSION:
+    case CdmSessionType::PERSISTENT_LICENSE_SESSION:
       request->SetString(kTypeTag, kPersistentLicenseSession);
       break;
-    case ContentDecryptionModule::PERSISTENT_RELEASE_MESSAGE_SESSION:
+    case CdmSessionType::PERSISTENT_RELEASE_MESSAGE_SESSION:
       request->SetString(kTypeTag, kPersistentReleaseMessageSession);
       break;
   }

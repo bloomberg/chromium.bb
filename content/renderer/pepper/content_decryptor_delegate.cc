@@ -37,8 +37,9 @@
 #include "ui/gfx/geometry/rect.h"
 
 using media::CdmPromise;
-using media::Decryptor;
+using media::CdmSessionType;
 using media::ContentDecryptionModule;
+using media::Decryptor;
 using media::NewSessionCdmPromise;
 using media::SimpleCdmPromise;
 using ppapi::ArrayBufferVar;
@@ -272,14 +273,13 @@ media::SampleFormat PpDecryptedSampleFormatToMediaSampleFormat(
   }
 }
 
-PP_SessionType MediaSessionTypeToPpSessionType(
-    ContentDecryptionModule::SessionType session_type) {
+PP_SessionType MediaSessionTypeToPpSessionType(CdmSessionType session_type) {
   switch (session_type) {
-    case ContentDecryptionModule::TEMPORARY_SESSION:
+    case CdmSessionType::TEMPORARY_SESSION:
       return PP_SESSIONTYPE_TEMPORARY;
-    case ContentDecryptionModule::PERSISTENT_LICENSE_SESSION:
+    case CdmSessionType::PERSISTENT_LICENSE_SESSION:
       return PP_SESSIONTYPE_PERSISTENT_LICENSE;
-    case ContentDecryptionModule::PERSISTENT_RELEASE_MESSAGE_SESSION:
+    case CdmSessionType::PERSISTENT_RELEASE_MESSAGE_SESSION:
       return PP_SESSIONTYPE_PERSISTENT_RELEASE;
     default:
       NOTREACHED();
@@ -444,7 +444,7 @@ void ContentDecryptorDelegate::SetServerCertificate(
 }
 
 void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
-    ContentDecryptionModule::SessionType session_type,
+    CdmSessionType session_type,
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<NewSessionCdmPromise> promise) {
@@ -458,7 +458,7 @@ void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
 }
 
 void ContentDecryptorDelegate::LoadSession(
-    ContentDecryptionModule::SessionType session_type,
+    CdmSessionType session_type,
     const std::string& session_id,
     std::unique_ptr<NewSessionCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(std::move(promise));

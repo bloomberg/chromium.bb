@@ -145,18 +145,17 @@ static cdm::Error ConvertException(
   return cdm::kUnknownError;
 }
 
-static media::ContentDecryptionModule::SessionType ConvertSessionType(
-    cdm::SessionType session_type) {
+static media::CdmSessionType ConvertSessionType(cdm::SessionType session_type) {
   switch (session_type) {
     case cdm::kTemporary:
-      return media::ContentDecryptionModule::TEMPORARY_SESSION;
+      return media::CdmSessionType::TEMPORARY_SESSION;
     case cdm::kPersistentLicense:
-      return media::ContentDecryptionModule::PERSISTENT_LICENSE_SESSION;
+      return media::CdmSessionType::PERSISTENT_LICENSE_SESSION;
     case cdm::kPersistentKeyRelease:
-      return media::ContentDecryptionModule::PERSISTENT_RELEASE_MESSAGE_SESSION;
+      return media::CdmSessionType::PERSISTENT_RELEASE_MESSAGE_SESSION;
   }
   NOTREACHED();
-  return media::ContentDecryptionModule::TEMPORARY_SESSION;
+  return media::CdmSessionType::TEMPORARY_SESSION;
 }
 
 static media::EmeInitDataType ConvertInitDataType(
@@ -351,9 +350,9 @@ void ClearKeyCdm::LoadSession(uint32_t promise_id,
   std::vector<uint8_t> key_id(
       kLoadableSessionKeyId,
       kLoadableSessionKeyId + arraysize(kLoadableSessionKeyId) - 1);
-  decryptor_->CreateSessionAndGenerateRequest(
-      ContentDecryptionModule::TEMPORARY_SESSION, EmeInitDataType::WEBM, key_id,
-      std::move(promise));
+  decryptor_->CreateSessionAndGenerateRequest(CdmSessionType::TEMPORARY_SESSION,
+                                              EmeInitDataType::WEBM, key_id,
+                                              std::move(promise));
 }
 
 void ClearKeyCdm::UpdateSession(uint32_t promise_id,

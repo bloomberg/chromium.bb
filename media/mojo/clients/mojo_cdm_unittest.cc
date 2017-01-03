@@ -128,9 +128,9 @@ class MojoCdmTest : public ::testing::Test {
     }
 
     mojo_cdm_->CreateSessionAndGenerateRequest(
-        ContentDecryptionModule::SessionType::TEMPORARY_SESSION, data_type,
-        key_id, base::MakeUnique<MockCdmSessionPromise>(
-                    expected_result == SUCCESS, &session_id_));
+        CdmSessionType::TEMPORARY_SESSION, data_type, key_id,
+        base::MakeUnique<MockCdmSessionPromise>(expected_result == SUCCESS,
+                                                &session_id_));
 
     base::RunLoop().RunUntilIdle();
   }

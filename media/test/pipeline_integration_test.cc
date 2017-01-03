@@ -365,7 +365,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 
     if (current_session_id_.empty()) {
       decryptor->CreateSessionAndGenerateRequest(
-          ContentDecryptionModule::TEMPORARY_SESSION, init_data_type, init_data,
+          CdmSessionType::TEMPORARY_SESSION, init_data_type, init_data,
           CreateSessionPromise(RESOLVED));
       EXPECT_FALSE(current_session_id_.empty());
     }
@@ -400,7 +400,7 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
     ++num_distinct_need_key_calls_;
 
     decryptor->CreateSessionAndGenerateRequest(
-        ContentDecryptionModule::TEMPORARY_SESSION, init_data_type, init_data,
+        CdmSessionType::TEMPORARY_SESSION, init_data_type, init_data,
         CreateSessionPromise(RESOLVED));
   }
 

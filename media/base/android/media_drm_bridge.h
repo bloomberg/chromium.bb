@@ -107,12 +107,12 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       const std::vector<uint8_t>& certificate,
       std::unique_ptr<media::SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
-      SessionType session_type,
+      CdmSessionType session_type,
       media::EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
       std::unique_ptr<media::NewSessionCdmPromise> promise) override;
   void LoadSession(
-      SessionType session_type,
+      CdmSessionType session_type,
       const std::string& session_id,
       std::unique_ptr<media::NewSessionCdmPromise> promise) override;
   void UpdateSession(const std::string& session_id,

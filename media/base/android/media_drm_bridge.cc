@@ -360,14 +360,14 @@ void MediaDrmBridge::SetServerCertificate(
 }
 
 void MediaDrmBridge::CreateSessionAndGenerateRequest(
-    SessionType session_type,
+    CdmSessionType session_type,
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<media::NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;
 
-  if (session_type != ContentDecryptionModule::TEMPORARY_SESSION) {
+  if (session_type != CdmSessionType::TEMPORARY_SESSION) {
     NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
     promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
                     "Only the temporary session type is supported.");
@@ -418,7 +418,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
 }
 
 void MediaDrmBridge::LoadSession(
-    SessionType session_type,
+    CdmSessionType session_type,
     const std::string& session_id,
     std::unique_ptr<media::NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());

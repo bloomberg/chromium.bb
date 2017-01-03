@@ -278,7 +278,7 @@ enum CdmMessageType {
   LICENSE_RELEASE = 2;
 }
 
-// Should align with ::media::ContentDecryptionModule::SessionType
+// Should align with ::media::CdmSessionType
 enum CdmSessionType {
   TEMPORARY_SESSION = 0;
   PERSISTENT_LICENSE_SESSION = 1;

@@ -117,7 +117,7 @@ class CdmAdapterTest : public testing::Test {
     }
 
     adapter_->CreateSessionAndGenerateRequest(
-        ContentDecryptionModule::TEMPORARY_SESSION, data_type, key_id,
+        CdmSessionType::TEMPORARY_SESSION, data_type, key_id,
         CreateSessionPromise(expected_result));
     RunUntilIdle();
   }
@@ -129,8 +129,8 @@ class CdmAdapterTest : public testing::Test {
     DCHECK(!session_id.empty());
     ASSERT_EQ(expected_result, FAILURE) << "LoadSession not supported.";
 
-    adapter_->LoadSession(ContentDecryptionModule::TEMPORARY_SESSION,
-                          session_id, CreateSessionPromise(expected_result));
+    adapter_->LoadSession(CdmSessionType::TEMPORARY_SESSION, session_id,
+                          CreateSessionPromise(expected_result));
     RunUntilIdle();
   }
 

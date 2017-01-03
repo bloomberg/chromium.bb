@@ -68,11 +68,11 @@ class ContentDecryptorDelegate {
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
                             std::unique_ptr<media::SimpleCdmPromise> promise);
   void CreateSessionAndGenerateRequest(
-      media::ContentDecryptionModule::SessionType session_type,
+      media::CdmSessionType session_type,
       media::EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
       std::unique_ptr<media::NewSessionCdmPromise> promise);
-  void LoadSession(media::ContentDecryptionModule::SessionType session_type,
+  void LoadSession(media::CdmSessionType session_type,
                    const std::string& session_id,
                    std::unique_ptr<media::NewSessionCdmPromise> promise);
   void UpdateSession(const std::string& session_id,

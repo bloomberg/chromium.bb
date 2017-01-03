@@ -91,14 +91,14 @@ void CdmSessionAdapter::UnregisterSession(const std::string& session_id) {
 void CdmSessionAdapter::InitializeNewSession(
     EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
-    ContentDecryptionModule::SessionType session_type,
+    CdmSessionType session_type,
     std::unique_ptr<NewSessionCdmPromise> promise) {
   cdm_->CreateSessionAndGenerateRequest(session_type, init_data_type, init_data,
                                         std::move(promise));
 }
 
 void CdmSessionAdapter::LoadSession(
-    ContentDecryptionModule::SessionType session_type,
+    CdmSessionType session_type,
     const std::string& session_id,
     std::unique_ptr<NewSessionCdmPromise> promise) {
   cdm_->LoadSession(session_type, session_id, std::move(promise));

@@ -513,10 +513,10 @@ base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<::media::ContentDecryptionModule::SessionType> ToCdmSessionType(
+base::Optional<::media::CdmSessionType> ToCdmSessionType(
     pb::CdmSessionType value) {
   using OriginType = pb::CdmSessionType;
-  using OtherType = ::media::ContentDecryptionModule;
+  using OtherType = ::media::CdmSessionType;
   switch (value) {
     CASE_RETURN_OTHER(TEMPORARY_SESSION);
     CASE_RETURN_OTHER(PERSISTENT_LICENSE_SESSION);
@@ -526,8 +526,8 @@ base::Optional<::media::ContentDecryptionModule::SessionType> ToCdmSessionType(
 }
 
 base::Optional<pb::CdmSessionType> ToProtoCdmSessionType(
-    ::media::ContentDecryptionModule::SessionType value) {
-  using OriginType = ::media::ContentDecryptionModule;
+    ::media::CdmSessionType value) {
+  using OriginType = ::media::CdmSessionType;
   using OtherType = pb::CdmSessionType;
   switch (value) {
     CASE_RETURN_OTHER(TEMPORARY_SESSION);

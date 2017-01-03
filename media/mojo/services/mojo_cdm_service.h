@@ -31,8 +31,6 @@ class CdmFactory;
 class MEDIA_MOJO_EXPORT MojoCdmService
     : NON_EXPORTED_BASE(public mojom::ContentDecryptionModule) {
  public:
-  using SessionType = ::media::ContentDecryptionModule::SessionType;
-
   // Get the CDM associated with |cdm_id|, which is unique per process.
   // Can be called on any thread. The returned CDM is not guaranteed to be
   // thread safe.
@@ -59,11 +57,11 @@ class MEDIA_MOJO_EXPORT MojoCdmService
   void SetServerCertificate(const std::vector<uint8_t>& certificate_data,
                             const SetServerCertificateCallback& callback) final;
   void CreateSessionAndGenerateRequest(
-      SessionType session_type,
+      CdmSessionType session_type,
       EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
       const CreateSessionAndGenerateRequestCallback& callback) final;
-  void LoadSession(SessionType session_type,
+  void LoadSession(CdmSessionType session_type,
                    const std::string& session_id,
                    const LoadSessionCallback& callback) final;
   void UpdateSession(const std::string& session_id,

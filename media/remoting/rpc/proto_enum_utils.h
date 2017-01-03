@@ -91,10 +91,10 @@ ToMediaCdmMessageType(pb::CdmMessageType value);
 base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(
     ::media::ContentDecryptionModule::MessageType value);
 
-base::Optional<::media::ContentDecryptionModule::SessionType> ToCdmSessionType(
+base::Optional<::media::CdmSessionType> ToCdmSessionType(
     pb::CdmSessionType value);
 base::Optional<pb::CdmSessionType> ToProtoCdmSessionType(
-    ::media::ContentDecryptionModule::SessionType value);
+    ::media::CdmSessionType value);
 
 base::Optional<::media::EmeInitDataType> ToMediaEmeInitDataType(
     pb::CdmCreateSessionAndGenerateRequest::EmeInitDataType value);

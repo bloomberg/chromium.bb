@@ -123,7 +123,7 @@ void PpapiDecryptor::SetServerCertificate(
 }
 
 void PpapiDecryptor::CreateSessionAndGenerateRequest(
-    SessionType session_type,
+    media::CdmSessionType session_type,
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<media::NewSessionCdmPromise> promise) {
@@ -141,7 +141,7 @@ void PpapiDecryptor::CreateSessionAndGenerateRequest(
 }
 
 void PpapiDecryptor::LoadSession(
-    SessionType session_type,
+    media::CdmSessionType session_type,
     const std::string& session_id,
     std::unique_ptr<media::NewSessionCdmPromise> promise) {
   DVLOG(2) << __func__;
