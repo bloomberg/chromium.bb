@@ -116,10 +116,6 @@ class VIEWS_EXPORT TableView
   // Returns the number of rows in the TableView.
   int RowCount() const;
 
-  // Returns the number of selected rows.
-  // TODO(sky): remove this and force callers to use selection_model().
-  int SelectedRowCount();
-
   // Selects the specified item, making sure it's visible.
   void Select(int model_row);
 
@@ -141,11 +137,8 @@ class VIEWS_EXPORT TableView
   // or not).
   bool HasColumn(int id) const;
 
-  // TODO(sky): rename to set_observer().
-  void SetObserver(TableViewObserver* observer) {
-    table_view_observer_ = observer;
-  }
-  TableViewObserver* observer() const { return table_view_observer_; }
+  void set_observer(TableViewObserver* observer) { observer_ = observer; }
+  TableViewObserver* observer() const { return observer_; }
 
   const std::vector<VisibleColumn>& visible_columns() const {
     return visible_columns_;
@@ -331,8 +324,7 @@ class VIEWS_EXPORT TableView
   // is selected then.
   bool select_on_remove_ = true;
 
-  // TODO(sky): rename to observer_.
-  TableViewObserver* table_view_observer_;
+  TableViewObserver* observer_;
 
   // The selection, in terms of the model.
   ui::ListSelectionModel selection_model_;

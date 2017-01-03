@@ -146,7 +146,7 @@ class TaskViewerContents
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(sender, kill_button_);
-    DCHECK_EQ(table_view_->SelectedRowCount(), 1);
+    DCHECK_EQ(table_view_->selection_model().size(), 1UL);
     int row = table_view_->FirstSelectedRow();
     DCHECK(row < static_cast<int>(instances_.size()));
     base::Process process = base::Process::Open(instances_[row]->pid);

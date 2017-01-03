@@ -223,7 +223,7 @@ void CertificateSelector::InitWithText(
                                     ui::TableColumn::LEFT, -1, 0.2f));
   table_ = new views::TableView(model_.get(), columns, views::TEXT_ONLY,
                                 true /* single_selection */);
-  table_->SetObserver(this);
+  table_->set_observer(this);
   layout->StartRow(1, kColumnSetId);
   layout->AddView(table_->CreateParentIfNecessary(), 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,

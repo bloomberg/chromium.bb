@@ -324,7 +324,7 @@ void TaskManagerView::Init() {
       this));
   tab_table_->SetModel(table_model_.get());
   tab_table_->SetGrouper(this);
-  tab_table_->SetObserver(this);
+  tab_table_->set_observer(this);
   tab_table_->set_context_menu_controller(this);
   set_context_menu_controller(this);
 

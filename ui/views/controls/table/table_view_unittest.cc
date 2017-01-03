@@ -645,7 +645,7 @@ class TableViewObserverImpl : public TableViewObserver {
 // Assertions around changing the selection.
 TEST_F(TableViewTest, Selection) {
   TableViewObserverImpl observer;
-  table_->SetObserver(&observer);
+  table_->set_observer(&observer);
 
   // Initially no selection.
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
@@ -674,7 +674,7 @@ TEST_F(TableViewTest, Selection) {
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=3 anchor=3 selection=3", SelectionStateAsString());
 
-  table_->SetObserver(NULL);
+  table_->set_observer(NULL);
 }
 
 // 0 1 2 3:
@@ -686,7 +686,7 @@ TEST_F(TableViewTest, Selection) {
 // remove 0 -> 0 (none selected)
 TEST_F(TableViewTest, SelectionNoSelectOnRemove) {
   TableViewObserverImpl observer;
-  table_->SetObserver(&observer);
+  table_->set_observer(&observer);
   table_->set_select_on_remove(false);
 
   // Initially no selection.
@@ -724,7 +724,7 @@ TEST_F(TableViewTest, SelectionNoSelectOnRemove) {
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
 
-  table_->SetObserver(nullptr);
+  table_->set_observer(nullptr);
 }
 
 // Verifies selection works by way of a gesture.
@@ -733,14 +733,14 @@ TEST_F(TableViewTest, SelectOnTap) {
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
 
   TableViewObserverImpl observer;
-  table_->SetObserver(&observer);
+  table_->set_observer(&observer);
 
   // Click on the first row, should select it.
   TapOnRow(0);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0", SelectionStateAsString());
 
-  table_->SetObserver(NULL);
+  table_->set_observer(NULL);
 }
 
 // Verifies up/down correctly navigates through groups.
@@ -761,7 +761,7 @@ TEST_F(TableViewTest, KeyUpDown) {
   table_->SetGrouper(&grouper);
 
   TableViewObserverImpl observer;
-  table_->SetObserver(&observer);
+  table_->set_observer(&observer);
 
   // Initially no selection.
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
@@ -870,7 +870,7 @@ TEST_F(TableViewTest, KeyUpDown) {
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
 
-  table_->SetObserver(NULL);
+  table_->set_observer(NULL);
 }
 
 // Verifies home/end do the right thing.
@@ -891,7 +891,7 @@ TEST_F(TableViewTest, HomeEnd) {
   table_->SetGrouper(&grouper);
 
   TableViewObserverImpl observer;
-  table_->SetObserver(&observer);
+  table_->set_observer(&observer);
 
   // Initially no selection.
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
@@ -904,7 +904,7 @@ TEST_F(TableViewTest, HomeEnd) {
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
 
-  table_->SetObserver(NULL);
+  table_->set_observer(NULL);
 }
 
 // Verifies multiple selection gestures work (control-click, shift-click ...).
@@ -928,7 +928,7 @@ TEST_F(TableViewTest, Multiselection) {
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
 
   TableViewObserverImpl observer;
-  table_->SetObserver(&observer);
+  table_->set_observer(&observer);
 
   // Click on the first row, should select it and the second row.
   ClickOnRow(0, 0);
@@ -960,7 +960,7 @@ TEST_F(TableViewTest, Multiselection) {
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
 
-  table_->SetObserver(NULL);
+  table_->set_observer(NULL);
 }
 
 // Verifies multiple selection gestures work when sorted.
@@ -993,7 +993,7 @@ TEST_F(TableViewTest, MultiselectionWithSort) {
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
 
   TableViewObserverImpl observer;
-  table_->SetObserver(&observer);
+  table_->set_observer(&observer);
 
   // Click on the third row, should select it and the second row.
   ClickOnRow(2, 0);
@@ -1005,7 +1005,7 @@ TEST_F(TableViewTest, MultiselectionWithSort) {
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=2 anchor=4 selection=2 3 4", SelectionStateAsString());
 
-  table_->SetObserver(NULL);
+  table_->set_observer(NULL);
 }
 
 // Verifies we don't crash after removing the selected row when there is

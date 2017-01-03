@@ -66,7 +66,7 @@ ChooserContentView::ChooserContentView(
                                                       : views::TEXT_ONLY,
       !chooser_controller_->AllowMultipleSelection() /* single_selection */);
   table_view_->set_select_on_remove(false);
-  table_view_->SetObserver(table_view_observer);
+  table_view_->set_observer(table_view_observer);
   table_view_->SetEnabled(chooser_controller_->NumOptions() > 0);
 
   table_parent_ = table_view_->CreateParentIfNecessary();
@@ -91,7 +91,7 @@ ChooserContentView::ChooserContentView(
 
 ChooserContentView::~ChooserContentView() {
   chooser_controller_->set_view(nullptr);
-  table_view_->SetObserver(nullptr);
+  table_view_->set_observer(nullptr);
   table_view_->SetModel(nullptr);
 }
 

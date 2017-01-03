@@ -70,7 +70,7 @@ void TableExample::CreateExampleView(View* container) {
   columns.back().alignment = ui::TableColumn::RIGHT;
   table_ = new TableView(this, columns, ICON_AND_TEXT, true);
   table_->SetGrouper(this);
-  table_->SetObserver(this);
+  table_->set_observer(this);
   icon1_.allocN32Pixels(16, 16);
   SkCanvas canvas1(icon1_);
   canvas1.drawColor(SK_ColorRED);

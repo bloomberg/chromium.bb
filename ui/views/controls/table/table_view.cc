@@ -135,7 +135,7 @@ TableView::TableView(ui::TableModel* model,
       table_type_(table_type),
       single_selection_(single_selection),
       select_on_remove_(true),
-      table_view_observer_(NULL),
+      observer_(NULL),
       row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2),
       last_parent_width_(0),
       layout_width_(0),
@@ -193,10 +193,6 @@ int TableView::RowCount() const {
   return model_ ? model_->RowCount() : 0;
 }
 
-int TableView::SelectedRowCount() {
-  return static_cast<int>(selection_model_.size());
-}
-
 void TableView::Select(int model_row) {
   if (!model_)
     return;
@@ -205,7 +201,7 @@ void TableView::Select(int model_row) {
 }
 
 int TableView::FirstSelectedRow() {
-  return SelectedRowCount() == 0 ? -1 : selection_model_.selected_indices()[0];
+  return selection_model_.empty() ? -1 : selection_model_.selected_indices()[0];
 }
 
 void TableView::SetColumnVisibility(int id, bool is_visible) {
@@ -392,8 +388,8 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
     default:
       break;
   }
-  if (table_view_observer_)
-    table_view_observer_->OnKeyDown(event.key_code());
+  if (observer_)
+    observer_->OnKeyDown(event.key_code());
   return false;
 }
 
@@ -408,8 +404,8 @@ bool TableView::OnMousePressed(const ui::MouseEvent& event) {
 
   if (event.GetClickCount() == 2) {
     SelectByViewIndex(row);
-    if (table_view_observer_)
-      table_view_observer_->OnDoubleClick();
+    if (observer_)
+      observer_->OnDoubleClick();
   } else if (event.GetClickCount() == 1) {
     ui::ListSelectionModel new_model;
     ConfigureSelectionModelForEvent(event, &new_model);
@@ -509,8 +505,8 @@ void TableView::OnItemsRemoved(int start, int length) {
     selection_model_.set_active(FirstSelectedRow());
   if (!selection_model_.empty() && selection_model_.anchor() == -1)
     selection_model_.set_anchor(FirstSelectedRow());
-  if (table_view_observer_)
-    table_view_observer_->OnSelectionChanged();
+  if (observer_)
+    observer_->OnSelectionChanged();
 }
 
 gfx::Point TableView::GetKeyboardContextMenuLocation() {
@@ -846,8 +842,8 @@ void TableView::SetSelectionModel(const ui::ListSelectionModel& new_selection) {
     ScrollRectToVisible(vis_rect);
   }
 
-  if (table_view_observer_)
-    table_view_observer_->OnSelectionChanged();
+  if (observer_)
+    observer_->OnSelectionChanged();
 
   NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
