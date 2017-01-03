@@ -25,6 +25,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gin/array_buffer.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
@@ -607,8 +608,8 @@ void SetUpV8() {
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                  gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
-  g_isolate_holder =
-      new gin::IsolateHolder(gin::IsolateHolder::kSingleThread);
+  g_isolate_holder = new gin::IsolateHolder(base::ThreadTaskRunnerHandle::Get(),
+                                            gin::IsolateHolder::kSingleThread);
   g_isolate_holder->isolate()->Enter();
 }
 

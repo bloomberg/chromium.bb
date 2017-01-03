@@ -8,9 +8,14 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "gin/gin_export.h"
 #include "gin/public/v8_idle_task_runner.h"
 #include "v8/include/v8.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace gin {
 
@@ -42,8 +47,10 @@ class GIN_EXPORT IsolateHolder {
     kStableAndExperimentalV8Extras,
   };
 
-  IsolateHolder();
-  explicit IsolateHolder(AccessMode access_mode);
+  explicit IsolateHolder(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                AccessMode access_mode);
   ~IsolateHolder();
 
   // Should be invoked once before creating IsolateHolder instances to

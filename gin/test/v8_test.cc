@@ -4,6 +4,7 @@
 
 #include "gin/test/v8_test.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/v8_initializer.h"
@@ -29,7 +30,7 @@ void V8Test::SetUp() {
                                  gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
 
-  instance_.reset(new gin::IsolateHolder);
+  instance_.reset(new gin::IsolateHolder(base::ThreadTaskRunnerHandle::Get()));
   instance_->isolate()->Enter();
   HandleScope handle_scope(instance_->isolate());
   context_.Reset(instance_->isolate(), Context::New(instance_->isolate()));

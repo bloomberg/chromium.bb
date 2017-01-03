@@ -5,6 +5,7 @@
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "public/platform/WebScheduler.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -58,7 +59,12 @@ DataConsumerHandleTestUtil::Thread::~Thread() {
 
 void DataConsumerHandleTestUtil::Thread::initialize() {
   if (m_initializationPolicy >= ScriptExecution) {
-    m_isolateHolder = WTF::makeUnique<gin::IsolateHolder>();
+    m_isolateHolder =
+        WTF::makeUnique<gin::IsolateHolder>(Platform::current()
+                                                ->currentThread()
+                                                ->scheduler()
+                                                ->loadingTaskRunner()
+                                                ->toSingleThreadTaskRunner());
     isolate()->Enter();
   }
   m_thread->initialize();

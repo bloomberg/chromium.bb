@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/v8_initializer.h"
@@ -404,7 +405,7 @@ class JsToCppTest : public testing::Test {
     gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
                                    gin::IsolateHolder::kStableV8Extras,
                                    gin::ArrayBufferAllocator::SharedInstance());
-    gin::IsolateHolder instance;
+    gin::IsolateHolder instance(base::ThreadTaskRunnerHandle::Get());
     MojoRunnerDelegate delegate;
     gin::ShellRunner runner(&delegate, instance.isolate());
     delegate.Start(&runner, js_side_proxy.PassMessagePipe().release().value(),

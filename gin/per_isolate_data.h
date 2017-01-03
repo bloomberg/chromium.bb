@@ -32,7 +32,8 @@ class GIN_EXPORT PerIsolateData {
  public:
   PerIsolateData(v8::Isolate* isolate,
                  v8::ArrayBuffer::Allocator* allocator,
-                 IsolateHolder::AccessMode access_mode);
+                 IsolateHolder::AccessMode access_mode,
+                 scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~PerIsolateData();
 
   static PerIsolateData* From(v8::Isolate* isolate);

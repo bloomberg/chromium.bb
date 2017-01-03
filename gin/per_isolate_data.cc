@@ -21,13 +21,15 @@ using v8::ObjectTemplate;
 
 namespace gin {
 
-PerIsolateData::PerIsolateData(Isolate* isolate,
-                               ArrayBuffer::Allocator* allocator,
-                               IsolateHolder::AccessMode access_mode)
+PerIsolateData::PerIsolateData(
+    Isolate* isolate,
+    ArrayBuffer::Allocator* allocator,
+    IsolateHolder::AccessMode access_mode,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : isolate_(isolate),
       allocator_(allocator),
       access_mode_(access_mode),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      task_runner_(task_runner) {
   isolate_->SetData(kEmbedderNativeGin, this);
 }
 

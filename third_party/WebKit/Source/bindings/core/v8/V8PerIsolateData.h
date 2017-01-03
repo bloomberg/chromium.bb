@@ -48,6 +48,7 @@ class DOMDataStore;
 class StringCache;
 class ThreadDebugger;
 class V8PrivateProperty;
+class WebTaskRunner;
 struct WrapperTypeInfo;
 
 typedef WTF::Vector<DOMDataStore*> DOMDataStoreList;
@@ -89,7 +90,7 @@ class CORE_EXPORT V8PerIsolateData {
     const bool m_originalUseCounterDisabled;
   };
 
-  static v8::Isolate* initialize();
+  static v8::Isolate* initialize(WebTaskRunner*);
 
   static V8PerIsolateData* from(v8::Isolate* isolate) {
     ASSERT(isolate);
@@ -175,7 +176,7 @@ class CORE_EXPORT V8PerIsolateData {
   }
 
  private:
-  V8PerIsolateData();
+  explicit V8PerIsolateData(WebTaskRunner*);
   ~V8PerIsolateData();
 
   static void useCounterCallback(v8::Isolate*, v8::Isolate::UseCounterFeature);

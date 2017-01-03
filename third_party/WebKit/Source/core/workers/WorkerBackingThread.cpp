@@ -64,7 +64,8 @@ WorkerBackingThread::~WorkerBackingThread() {}
 void WorkerBackingThread::initialize() {
   DCHECK(!m_isolate);
   m_backingThread->initialize();
-  m_isolate = V8PerIsolateData::initialize();
+  m_isolate = V8PerIsolateData::initialize(
+      m_backingThread->platformThread().getWebTaskRunner());
   addWorkerIsolate(m_isolate);
   V8Initializer::initializeWorker(m_isolate);
 

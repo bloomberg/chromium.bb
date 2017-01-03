@@ -5,6 +5,7 @@
 #include "extensions/renderer/api_binding_test.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gin/array_buffer.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/isolate_holder.h"
@@ -31,7 +32,8 @@ void APIBindingTest::SetUp() {
                                  gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
 
-  isolate_holder_ = base::MakeUnique<gin::IsolateHolder>();
+  isolate_holder_ =
+      base::MakeUnique<gin::IsolateHolder>(base::ThreadTaskRunnerHandle::Get());
   isolate()->Enter();
 
   v8::HandleScope handle_scope(isolate());

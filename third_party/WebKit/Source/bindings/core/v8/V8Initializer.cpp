@@ -392,7 +392,9 @@ void V8Initializer::initializeMainThread() {
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                  v8ExtrasMode, &arrayBufferAllocator);
 
-  v8::Isolate* isolate = V8PerIsolateData::initialize();
+  WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
+  v8::Isolate* isolate =
+      V8PerIsolateData::initialize(scheduler->timerTaskRunner());
 
   initializeV8Common(isolate);
 
@@ -409,7 +411,6 @@ void V8Initializer::initializeMainThread() {
       codeGenerationCheckCallbackInMainThread);
 
   if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
-    WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
     V8PerIsolateData::enableIdleTasks(
         isolate, WTF::makeUnique<V8IdleTaskRunner>(scheduler));
   }

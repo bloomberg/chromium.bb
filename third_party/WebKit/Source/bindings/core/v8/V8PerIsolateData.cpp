@@ -53,8 +53,9 @@ static void microtasksCompletedCallback(v8::Isolate* isolate) {
   V8PerIsolateData::from(isolate)->runEndOfScopeTasks();
 }
 
-V8PerIsolateData::V8PerIsolateData()
-    : m_isolateHolder(WTF::makeUnique<gin::IsolateHolder>()),
+V8PerIsolateData::V8PerIsolateData(WebTaskRunner* taskRunner)
+    : m_isolateHolder(WTF::makeUnique<gin::IsolateHolder>(
+          taskRunner->toSingleThreadTaskRunner())),
       m_stringCache(WTF::wrapUnique(new StringCache(isolate()))),
       m_hiddenValue(V8HiddenValue::create()),
       m_privateProperty(V8PrivateProperty::create()),
@@ -78,8 +79,8 @@ v8::Isolate* V8PerIsolateData::mainThreadIsolate() {
   return mainThreadPerIsolateData->isolate();
 }
 
-v8::Isolate* V8PerIsolateData::initialize() {
-  V8PerIsolateData* data = new V8PerIsolateData();
+v8::Isolate* V8PerIsolateData::initialize(WebTaskRunner* taskRunner) {
+  V8PerIsolateData* data = new V8PerIsolateData(taskRunner);
   v8::Isolate* isolate = data->isolate();
   isolate->SetData(gin::kEmbedderBlink, data);
   return isolate;
