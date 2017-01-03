@@ -31,11 +31,11 @@ BOT_ASSIGNMENT = {
     'xp-bare-glibc-opt':
         python + ' buildbot\\buildbot_standard.py opt 32 glibc',
 
-    'precise-64-validator-opt':
+    'linux-64-validator-opt':
         python + ' buildbot/buildbot_standard.py opt 64 glibc --validator',
 
     # ASan.
-    'precise_64-newlib-dbg-asan':
+    'linux_64-newlib-dbg-asan':
         python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
     'mac-newlib-dbg-asan':
         python + ' buildbot/buildbot_standard.py opt 32 newlib --asan',
@@ -51,13 +51,13 @@ BOT_ASSIGNMENT = {
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-dbg',
     'oneiric_32-newlib-arm_hw-pnacl-panda-opt':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-opt',
-    'precise_64-newlib-arm_qemu-pnacl-dbg':
+    'linux_64-newlib-arm_qemu-pnacl-dbg':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-dbg',
-    'precise_64-newlib-arm_qemu-pnacl-opt':
+    'linux_64-newlib-arm_qemu-pnacl-opt':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-opt',
-    'precise_64-newlib-x86_32-pnacl':
+    'linux_64-newlib-x86_32-pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 32 pnacl',
-    'precise_64-newlib-x86_64-pnacl':
+    'linux_64-newlib-x86_64-pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'mac-newlib-opt-pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
@@ -65,28 +65,28 @@ BOT_ASSIGNMENT = {
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     # TODO: Use buildbot_pnacl.py instead of buildbot_pnacl.sh once
     # the gyp_build is moved to buildbot_pnacl.py.
-    'precise_64-newlib-mips-pnacl':
+    'linux_64-newlib-mips-pnacl':
         bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu mips32',
     # PNaCl Spec
-    'precise_64-newlib-arm_qemu-pnacl-buildonly-spec':
+    'linux_64-newlib-arm_qemu-pnacl-buildonly-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-arm-buildonly',
     'oneiric_32-newlib-arm_hw-pnacl-panda-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-arm-hw',
-    'lucid_64-newlib-x86_32-pnacl-spec':
+    'linux_64-newlib-x86_32-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-x8632',
-    'lucid_64-newlib-x86_64-pnacl-spec':
+    'linux_64-newlib-x86_64-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-x8664',
     # NaCl Spec
-    'lucid_64-newlib-x86_32-spec':
+    'linux_64-newlib-x86_32-spec':
         bash + ' buildbot/buildbot_spec2k.sh nacl-x8632',
-    'lucid_64-newlib-x86_64-spec':
+    'linux_64-newlib-x86_64-spec':
         bash + ' buildbot/buildbot_spec2k.sh nacl-x8664',
 
     # Valgrind bots.
-    'precise-64-newlib-dbg-valgrind':
+    'linux-64-newlib-dbg-valgrind':
         echo + ' "Valgrind bots are disabled: see '
             'https://code.google.com/p/nativeclient/issues/detail?id=3158"',
-    'precise-64-glibc-dbg-valgrind':
+    'linux-64-glibc-dbg-valgrind':
         echo + ' "Valgrind bots are disabled: see '
             'https://code.google.com/p/nativeclient/issues/detail?id=3158"',
 
@@ -146,7 +146,7 @@ BOT_ASSIGNMENT = {
         ' buildbot/buildbot_toolchain_build.py'
         ' --buildbot'
         ' toolchain_build',
-    'precise64-toolchain_arm':
+    'linux64-toolchain_arm':
         python +
         ' buildbot/buildbot_toolchain_build.py'
         ' --buildbot'
@@ -180,7 +180,7 @@ BOT_ASSIGNMENT = {
         bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu mips32',
 
     # Toolchain trybots.
-    'nacl-toolchain-precise64-newlib-arm': # TODO(bradnelson): rename
+    'nacl-toolchain-linux64-newlib-arm': # TODO(bradnelson): rename
         python +
         ' buildbot/buildbot_toolchain_build.py'
         ' --trybot'
@@ -196,7 +196,7 @@ BOT_ASSIGNMENT = {
         ' buildbot/buildbot_toolchain_build.py'
         ' --trybot'
         ' toolchain_build',
-    'nacl-toolchain-precise64-glibc':
+    'nacl-toolchain-linux64-glibc':
         bash + ' buildbot/buildbot_linux-glibc-makefile.sh',
     'nacl-toolchain-mac-glibc':
         bash + ' buildbot/buildbot_mac-glibc-makefile.sh',
@@ -241,14 +241,12 @@ BOT_ASSIGNMENT = {
 special_for_arm = [
     'win7_64',
     'win7-64',
-    'lucid-64',
-    'lucid64',
-    'precise-64',
-    'precise64'
+    'linux-64',
+    'linux64'
 ]
 for platform in [
     'vista', 'win7', 'win8', 'win',
-    'mac', 'lucid', 'precise'] + special_for_arm:
+    'mac', 'linux'] + special_for_arm:
   if platform in special_for_arm:
     arch_variants = ['arm']
   else:
