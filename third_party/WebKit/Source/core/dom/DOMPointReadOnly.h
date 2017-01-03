@@ -11,9 +11,12 @@
 
 namespace blink {
 
-class ScriptValue;
-class ScriptState;
+class DOMMatrixInit;
+class DOMPoint;
 class DOMPointInit;
+class ExceptionState;
+class ScriptState;
+class ScriptValue;
 
 class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
                                      public ScriptWrappable {
@@ -31,7 +34,8 @@ class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
   DEFINE_INLINE_TRACE() {}
   
   ScriptValue toJSONForBinding(ScriptState*) const;
- 
+  DOMPoint* matrixTransform(DOMMatrixInit&, ExceptionState&);
+
  protected:
   DOMPointReadOnly(double x, double y, double z, double w);
 
