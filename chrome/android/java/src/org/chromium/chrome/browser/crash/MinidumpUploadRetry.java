@@ -9,6 +9,7 @@ import android.os.Handler;
 
 import org.chromium.base.NonThreadSafe;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -18,14 +19,17 @@ import org.chromium.net.NetworkChangeNotifier;
  */
 class MinidumpUploadRetry implements NetworkChangeNotifier.ConnectionTypeObserver {
     private final Context mContext;
+    private final CrashReportingPermissionManager mPermissionManager;
     private static MinidumpUploadRetry sSingleton;
 
     private static class Scheduler implements Runnable {
         private static NonThreadSafe sThreadCheck;
         private final Context mContext;
+        private final CrashReportingPermissionManager mPermissionManager;
 
-        private Scheduler(Context context) {
+        private Scheduler(Context context, CrashReportingPermissionManager permissionManager) {
             this.mContext = context;
+            mPermissionManager = permissionManager;
         }
 
         @Override
@@ -39,7 +43,7 @@ class MinidumpUploadRetry implements NetworkChangeNotifier.ConnectionTypeObserve
                 return;
             }
             if (sSingleton == null) {
-                sSingleton = new MinidumpUploadRetry(mContext);
+                sSingleton = new MinidumpUploadRetry(mContext, mPermissionManager);
             }
         }
     }
@@ -47,24 +51,27 @@ class MinidumpUploadRetry implements NetworkChangeNotifier.ConnectionTypeObserve
     /**
      * Schedule a retry. If there is already one schedule, this is NO-OP.
      */
-    static void scheduleRetry(Context context) {
+    static void scheduleRetry(Context context, CrashReportingPermissionManager permissionManager) {
         // NetworkChangeNotifier is not thread safe. We will post to UI thread
         // instead since that's where it fires off notification changes.
-        new Handler(context.getMainLooper()).post(new Scheduler(context));
+        new Handler(context.getMainLooper()).post(new Scheduler(context, permissionManager));
     }
 
-    private MinidumpUploadRetry(Context context) {
+    private MinidumpUploadRetry(
+            Context context, CrashReportingPermissionManager permissionManager) {
         this.mContext = context;
+        this.mPermissionManager = permissionManager;
         NetworkChangeNotifier.addConnectionTypeObserver(this);
     }
 
     @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     @Override
     public void onConnectionTypeChanged(int connectionType) {
-        // Look for "favorable" connections. Note that we never
-        // know what the user's crash upload preference is until
-        // the time when we are actually uploading.
+        // Early-out if not connected at all - to avoid checking the current network state.
         if (connectionType == ConnectionType.CONNECTION_NONE) {
+            return;
+        }
+        if (!mPermissionManager.isNetworkAvailableForCrashUploads()) {
             return;
         }
         MinidumpUploadService.tryUploadAllCrashDumps(mContext);

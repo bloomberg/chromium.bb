@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.MinidumpUploadCallable;
+import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -258,7 +259,8 @@ public class MinidumpUploadService extends IntentService {
             if (newName != null) {
                 if (++tries < MAX_TRIES_ALLOWED) {
                     // TODO(nyquist): Do this as an exponential backoff.
-                    MinidumpUploadRetry.scheduleRetry(getApplicationContext());
+                    MinidumpUploadRetry.scheduleRetry(
+                            getApplicationContext(), getCrashReportingPermissionManager());
                 } else {
                     // Only record failure to UMA after we have maxed out the allotted tries.
                     incrementCrashFailureUploadCount(newName);
@@ -269,6 +271,13 @@ public class MinidumpUploadService extends IntentService {
                 Log.w(TAG, "Failed to rename minidump " + minidumpFileName);
             }
         }
+    }
+
+    /**
+     * Get the permission manager, can be overridden for testing.
+     */
+    CrashReportingPermissionManager getCrashReportingPermissionManager() {
+        return PrivacyPreferencesManager.getInstance();
     }
 
     private static String getNewNameAfterSuccessfulUpload(String fileName) {
@@ -342,7 +351,7 @@ public class MinidumpUploadService extends IntentService {
     @VisibleForTesting
     MinidumpUploadCallable createMinidumpUploadCallable(File minidumpFile, File logfile) {
         return new MinidumpUploadCallable(
-                minidumpFile, logfile, PrivacyPreferencesManager.getInstance());
+                minidumpFile, logfile, getCrashReportingPermissionManager());
     }
 
     /**

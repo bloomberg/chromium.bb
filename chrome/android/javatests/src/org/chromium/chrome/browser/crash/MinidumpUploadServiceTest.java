@@ -22,6 +22,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.CrashTestCase;
 import org.chromium.components.minidump_uploader.MinidumpUploadCallable;
+import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.NetworkChangeNotifier;
@@ -79,6 +80,8 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
     }
 
     private static class TestMinidumpUploadService extends MinidumpUploadService {
+        private final NetworkChangingPermissionManager mPermissionManager =
+                new NetworkChangingPermissionManager();
         private TestMinidumpUploadService() {}
         private TestMinidumpUploadService(Context context) {
             attachBaseContext(context);
@@ -86,6 +89,25 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
 
         private void attachBaseContextLate(Context base) {
             super.attachBaseContext(base);
+        }
+
+        private static class NetworkChangingPermissionManager
+                extends MockCrashReportingPermissionManager {
+            public boolean isNetworkAvailableForCrashUploads() {
+                return mIsNetworkAvailable;
+            }
+
+            public void setIsNetworkAvailableForCrashUploads(boolean networkAvailable) {
+                mIsNetworkAvailable = networkAvailable;
+            }
+        }
+
+        CrashReportingPermissionManager getCrashReportingPermissionManager() {
+            return mPermissionManager;
+        }
+
+        public void setIsNetworkAvailableForCrashUploads(boolean networkAvailable) {
+            mPermissionManager.setIsNetworkAvailableForCrashUploads(networkAvailable);
         }
     }
 
@@ -270,7 +292,9 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
                                 NetworkChangeNotifier.setAutoDetectConnectivityState(false);
                                 // Quickly force the state to be connected and back to disconnected.
                                 // An event should be triggered for retry logics.
+                                setIsNetworkAvailableForCrashUploads(false);
                                 NetworkChangeNotifier.forceConnectivityState(false);
+                                setIsNetworkAvailableForCrashUploads(true);
                                 NetworkChangeNotifier.forceConnectivityState(true);
                             }
                         });
