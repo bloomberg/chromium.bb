@@ -207,6 +207,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     private boolean mDeferredStartupPosted;
     private boolean mTabModelsInitialized;
+    private boolean mNativeInitialized;
+    private boolean mRemoveWindowBackgroundDone;
 
     // The class cannot implement TouchExplorationStateChangeListener,
     // because it is only available for Build.VERSION_CODES.KITKAT and later.
@@ -683,6 +685,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
+
+        maybeRemoveWindowBackground();
+
         Tab tab = getActivityTab();
         if (tab == null) return;
         if (hasFocus) {
@@ -1048,8 +1053,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 ApiCompatibilityUtils.getColor(getResources(), R.color.light_background_color));
     }
 
-    @Override
-    public void finishNativeInitialization() {
+    private void maybeRemoveWindowBackground() {
+        // Only need to do this logic once.
+        if (mRemoveWindowBackgroundDone) return;
+
+        // Remove the window background only after native init and window getting focus. It's done
+        // after native init because before native init, a fake background gets shown. The window
+        // focus dependency is because doing it earlier can cause drawing bugs, e.g. crbug/673831.
+        if (!mNativeInitialized || !hasWindowFocus()) return;
+
         // The window background color is used as the resizing background color in Android N+
         // multi-window mode. See crbug.com/602366.
         if (Build.VERSION.CODENAME.equals("N") || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
@@ -1059,6 +1071,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         } else {
             removeWindowBackground();
         }
+
+        mRemoveWindowBackgroundDone = true;
+    }
+
+    @Override
+    public void finishNativeInitialization() {
+        mNativeInitialized = true;
+        maybeRemoveWindowBackground();
         DownloadManagerService.getDownloadManagerService(
                 getApplicationContext()).onActivityLaunched();
 
