@@ -147,17 +147,13 @@ void BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession(
 //
 // TODO(http://crbug.com/633191): Remove OS_MACOSX from this check.
 // TODO(http://crbug.com/636270): Remove OS_WIN from this check.
-// TODO(http://crbug.com/636275): Remove OS_CHROMEOS and OS_LINUX from this
-// check.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || \
-    defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&BluetoothRemoteGattCharacteristic::OnStartNotifySessionError,
                  GetWeakPtr(), error_callback,
                  BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
-#else   // !(defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) ||
-  // defined(OS_WIN))
+#else   // !(defined(OS_MACOSX) || defined(OS_WIN))
   // Find the Client Characteristic Configuration descriptor.
   std::vector<BluetoothRemoteGattDescriptor*> ccc_descriptor =
       GetDescriptorsByUUID(BluetoothRemoteGattDescriptor::
@@ -187,8 +183,7 @@ void BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession(
           GetWeakPtr(), callback),
       base::Bind(&BluetoothRemoteGattCharacteristic::OnStartNotifySessionError,
                  GetWeakPtr(), error_callback));
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) ||
-        // defined(OS_WIN)
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 }
 
 void BluetoothRemoteGattCharacteristic::CancelStartNotifySession(
@@ -285,17 +280,13 @@ void BluetoothRemoteGattCharacteristic::ExecuteStopNotifySession(
 //
 // TODO(http://crbug.com/633191): Remove OS_MACOSX from this check.
 // TODO(http://crbug.com/636270): Remove OS_WIN from this check.
-// TODO(http://crbug.com/636275): Remove OS_CHROMEOS and OS_LINUX from this
-// check.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || \
-    defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN)
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&BluetoothRemoteGattCharacteristic::OnStopNotifySessionError,
                  GetWeakPtr(), session, callback,
                  BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
-#else   // !(defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) ||
-  // defined(OS_WIN))
+#else   // !(defined(OS_MACOSX) || defined(OS_WIN))
   // Find the Client Characteristic Configuration descriptor.
   std::vector<BluetoothRemoteGattDescriptor*> ccc_descriptor =
       GetDescriptorsByUUID(BluetoothRemoteGattDescriptor::
@@ -318,8 +309,7 @@ void BluetoothRemoteGattCharacteristic::ExecuteStopNotifySession(
                  GetWeakPtr(), session, callback),
       base::Bind(&BluetoothRemoteGattCharacteristic::OnStopNotifySessionError,
                  GetWeakPtr(), session, callback));
-#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) ||
-        // defined(OS_WIN)
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 }
 
 void BluetoothRemoteGattCharacteristic::CancelStopNotifySession(
