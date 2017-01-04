@@ -4552,6 +4552,14 @@ void FrameView::setNeedsUpdateViewportIntersection() {
 
 void FrameView::updateViewportIntersectionsForSubtree(
     DocumentLifecycle::LifecycleState targetState) {
+  // TODO(dcheng): Since widget tree updates are deferred, FrameViews might
+  // still be in the widget hierarchy even though the associated Document is
+  // already detached. Investigate if this check and a similar check in
+  // lifecycle updates are still needed when there are no more deferred widget
+  // updates: https://crbug.com/561683
+  if (!frame().document()->isActive())
+    return;
+
   // Notify javascript IntersectionObservers
   if (targetState == DocumentLifecycle::PaintClean &&
       frame().document()->intersectionObserverController())
