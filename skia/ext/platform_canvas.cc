@@ -58,10 +58,6 @@ bool GetWritablePixels(SkCanvas* canvas, SkPixmap* result) {
   return true;
 }
 
-bool SupportsPlatformPaint(const SkCanvas* canvas) {
-  return GetPlatformDevice(canvas->getTopDevice(true)) != nullptr;
-}
-
 size_t PlatformCanvasStrideForWidth(unsigned width) {
   return 4 * width;
 }

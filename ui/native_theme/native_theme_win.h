@@ -144,7 +144,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   // temporary HDC, and then blit the result to canvas.  This is to work around
   // the fact that Windows XP and some classic themes give bogus alpha values.
   void PaintIndirect(SkCanvas* destination_canvas,
-                     HDC destination_hdc,
                      Part part,
                      State state,
                      const gfx::Rect& rect,

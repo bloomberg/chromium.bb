@@ -121,11 +121,6 @@ SK_API SkBitmap ReadPixels(SkCanvas* canvas);
 // the pixmap to empty.
 SK_API bool GetWritablePixels(SkCanvas* canvas, SkPixmap* pixmap);
 
-// Returns true if native platform routines can be used to draw on the
-// given canvas. If this function returns false,
-// GetNativeDrawingContext() should return NULL.
-SK_API bool SupportsPlatformPaint(const SkCanvas* canvas);
-
 // Returns the NativeDrawingContext to use for native platform drawing calls.
 SK_API NativeDrawingContext GetNativeDrawingContext(SkCanvas* canvas);
 

@@ -285,10 +285,10 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
   // UI features like scrollbars. However, we need to set up that buffer,
   // and then read it back when it's done and blit it onto the screen.
 
-  if (skia::SupportsPlatformPaint(canvas))
+  if (surface)
     PaintDirect(canvas, surface, part, state, rect, extra);
   else
-    PaintIndirect(canvas, surface, part, state, rect, extra);
+    PaintIndirect(canvas, part, state, rect, extra);
 }
 
 NativeThemeWin::NativeThemeWin()
@@ -673,7 +673,6 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
 }
 
 void NativeThemeWin::PaintIndirect(SkCanvas* destination_canvas,
-                                   HDC destination_hdc,
                                    Part part,
                                    State state,
                                    const gfx::Rect& rect,
