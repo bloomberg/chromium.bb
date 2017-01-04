@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
@@ -13,6 +14,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
 SigninEmailConfirmationUI::SigninEmailConfirmationUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui) {
@@ -47,3 +49,11 @@ SigninEmailConfirmationUI::SigninEmailConfirmationUI(content::WebUI* web_ui)
 }
 
 SigninEmailConfirmationUI::~SigninEmailConfirmationUI() {}
+
+void SigninEmailConfirmationUI::Close() {
+  ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
+  if (delegate) {
+    delegate->GetWebDialogDelegate()->OnDialogClosed(std::string());
+    delegate->OnDialogCloseFromWebUI();
+  }
+}

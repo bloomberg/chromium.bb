@@ -13,6 +13,9 @@ class SigninEmailConfirmationUI : public ConstrainedWebDialogUI {
   explicit SigninEmailConfirmationUI(content::WebUI* web_ui);
   ~SigninEmailConfirmationUI() override;
 
+  // Closes this sign-in email confirmation webUI.
+  void Close();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SigninEmailConfirmationUI);
 };

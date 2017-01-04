@@ -46,6 +46,8 @@ class SigninEmailConfirmationDialog : public ui::WebDialogDelegate {
                                  const Callback& callback);
 
  private:
+  class DialogWebContentsObserver;
+
   SigninEmailConfirmationDialog(content::WebContents* contents,
                                 Profile* profile,
                                 const std::string& last_email,
@@ -68,7 +70,17 @@ class SigninEmailConfirmationDialog : public ui::WebDialogDelegate {
 
   // Shows the dialog and releases ownership of this object. It will
   // delete itself when the dialog is closed.
-  void Show();
+  void ShowDialog();
+
+  // Closes the dialog.
+  void CloseDialog();
+
+  // Resets the dialog observer.
+  void ResetDialogObserver();
+
+  // Returns the media router dialog WebContents.
+  // Returns nullptr if there is no dialog.
+  content::WebContents* GetDialogWebContents() const;
 
   // Web contents from which the "Learn more" link should be opened.
   content::WebContents* const web_contents_;
@@ -78,8 +90,8 @@ class SigninEmailConfirmationDialog : public ui::WebDialogDelegate {
   std::string new_email_;
   Callback callback_;
 
-  // Weak pointer to the dialog delegate.
-  ConstrainedWebDialogDelegate* dialog_delegate_;
+  // Observer for lifecycle events of the web contents of the dialog.
+  std::unique_ptr<DialogWebContentsObserver> dialog_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninEmailConfirmationDialog);
 };
