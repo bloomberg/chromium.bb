@@ -9,25 +9,6 @@
 #include "components/arc/common/tts.mojom.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace {
-
-// For Speak and Stop.
-constexpr uint32_t kDefaultMinVersion = 0;
-
-// Helper returning an ARC tts instance.
-arc::mojom::TtsInstance* GetArcTts(const std::string& method_name_for_logging,
-                                   uint32_t min_version) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* const arc_service_manager = arc::ArcServiceManager::Get();
-  if (!arc_service_manager)
-    return nullptr;
-
-  return arc_service_manager->arc_bridge_service()->tts()->GetInstanceForMethod(
-      method_name_for_logging, min_version);
-}
-
-}  // namespace
-
 // This class includes extension-based tts through LoadBuiltInTtsExtension and
 // native tts through ARC.
 class TtsPlatformImplChromeOs : public TtsPlatformImpl {
@@ -55,7 +36,12 @@ class TtsPlatformImplChromeOs : public TtsPlatformImpl {
              const std::string& lang,
              const VoiceData& voice,
              const UtteranceContinuousParameters& params) override {
-    arc::mojom::TtsInstance* tts = GetArcTts("Speak", kDefaultMinVersion);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    auto* const arc_service_manager = arc::ArcServiceManager::Get();
+    if (!arc_service_manager)
+      return false;
+    arc::mojom::TtsInstance* tts = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->tts(), Speak);
     if (!tts)
       return false;
 
@@ -69,7 +55,12 @@ class TtsPlatformImplChromeOs : public TtsPlatformImpl {
   }
 
   bool StopSpeaking() override {
-    arc::mojom::TtsInstance* tts = GetArcTts("Stop", kDefaultMinVersion);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    auto* const arc_service_manager = arc::ArcServiceManager::Get();
+    if (!arc_service_manager)
+      return false;
+    arc::mojom::TtsInstance* tts = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->tts(), Stop);
     if (!tts)
       return false;
 

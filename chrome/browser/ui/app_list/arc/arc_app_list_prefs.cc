@@ -50,9 +50,6 @@ const char kShouldSync[] = "should_sync";
 const char kSystem[] = "system";
 const char kUninstalled[] = "uninstalled";
 
-constexpr uint32_t kSetNotificationsEnabledMinVersion = 6;
-constexpr uint32_t kRequestIconMinVersion = 9;
-
 // Provider of write access to a dictionary storing ARC prefs.
 class ScopedArcPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -325,7 +322,7 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
 
   if (app_info->icon_resource_id.empty()) {
     auto* app_instance =
-        app_instance_holder_->GetInstanceForMethod("RequestAppIcon");
+        ARC_GET_INSTANCE_FOR_METHOD(app_instance_holder_, RequestAppIcon);
     // Version 0 instance should always be available here because has_instance()
     // returned true above.
     DCHECK(app_instance);
@@ -333,8 +330,8 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
         app_info->package_name, app_info->activity,
         static_cast<arc::mojom::ScaleFactor>(scale_factor));
   } else {
-    auto* app_instance = app_instance_holder_->GetInstanceForMethod(
-        "RequestIcon", kRequestIconMinVersion);
+    auto* app_instance =
+        ARC_GET_INSTANCE_FOR_METHOD(app_instance_holder_, RequestIcon);
     if (!app_instance)
       return;  // The instance version on ARC side was too old.
     app_instance->RequestIcon(
@@ -367,8 +364,8 @@ void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
     return;
   }
 
-  auto* app_instance = app_instance_holder_->GetInstanceForMethod(
-      "SetNotificationsEnabled", kSetNotificationsEnabledMinVersion);
+  auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(app_instance_holder_,
+                                                   SetNotificationsEnabled);
   if (!app_instance)
     return;
 
@@ -663,7 +660,7 @@ void ArcAppListPrefs::SetDefaltAppsReadyCallback(base::Closure callback) {
 void ArcAppListPrefs::OnInstanceReady() {
   // Init() is also available at version 0.
   arc::mojom::AppInstance* app_instance =
-      app_instance_holder_->GetInstanceForMethod("RefreshAppList");
+      ARC_GET_INSTANCE_FOR_METHOD(app_instance_holder_, RefreshAppList);
 
   // Note, sync_service_ may be nullptr in testing.
   sync_service_ = arc::ArcPackageSyncableService::Get(profile_);

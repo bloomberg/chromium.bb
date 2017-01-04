@@ -19,13 +19,6 @@
 
 namespace arc {
 
-namespace {
-
-// Min version to support Create/CloseNotificationWindow.
-constexpr int kMinVersionNotificationWindow = 7;
-
-}  // namespace
-
 ArcNotificationManager::ArcNotificationManager(ArcBridgeService* bridge_service,
                                                const AccountId& main_profile_id)
     : ArcNotificationManager(bridge_service,
@@ -51,7 +44,7 @@ void ArcNotificationManager::OnInstanceReady() {
   DCHECK(!ready_);
 
   auto* notifications_instance =
-      arc_bridge_service()->notifications()->GetInstanceForMethod("Init");
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->notifications(), Init);
   DCHECK(notifications_instance);
 
   notifications_instance->Init(binding_.CreateInterfacePtrAndBind());
@@ -120,9 +113,8 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
   std::unique_ptr<ArcNotificationItem> item = std::move(it->second);
   items_.erase(it);
 
-  auto* notifications_instance =
-      arc_bridge_service()->notifications()->GetInstanceForMethod(
-          "SendNotificationEventToAndroid");
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->notifications(), SendNotificationEventToAndroid);
 
   // On shutdown, the ARC channel may quit earlier then notifications.
   if (!notifications_instance) {
@@ -143,9 +135,8 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
     return;
   }
 
-  auto* notifications_instance =
-      arc_bridge_service()->notifications()->GetInstanceForMethod(
-          "SendNotificationEventToAndroid");
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->notifications(), SendNotificationEventToAndroid);
 
   // On shutdown, the ARC channel may quit earlier then notifications.
   if (!notifications_instance) {
@@ -167,9 +158,8 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
     return;
   }
 
-  auto* notifications_instance =
-      arc_bridge_service()->notifications()->GetInstanceForMethod(
-          "SendNotificationEventToAndroid");
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->notifications(), SendNotificationEventToAndroid);
 
   // On shutdown, the ARC channel may quit earlier then notifications.
   if (!notifications_instance) {
@@ -211,9 +201,8 @@ void ArcNotificationManager::CreateNotificationWindow(const std::string& key) {
     return;
   }
 
-  auto* notifications_instance =
-      arc_bridge_service()->notifications()->GetInstanceForMethod(
-          "CreateNotificationWindow", kMinVersionNotificationWindow);
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->notifications(), CreateNotificationWindow);
   if (!notifications_instance)
     return;
 
@@ -227,9 +216,8 @@ void ArcNotificationManager::CloseNotificationWindow(const std::string& key) {
     return;
   }
 
-  auto* notifications_instance =
-      arc_bridge_service()->notifications()->GetInstanceForMethod(
-          "CloseNotificationWindow", kMinVersionNotificationWindow);
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->notifications(), CloseNotificationWindow);
   if (!notifications_instance)
     return;
 

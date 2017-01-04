@@ -27,7 +27,6 @@ namespace arc {
 
 namespace {
 
-constexpr uint32_t kMinOnWallpaperChangedVersion = 1;
 constexpr char kAndroidWallpaperFilename[] = "android.jpg";
 
 // Sets a decoded bitmap as the wallpaper.
@@ -94,7 +93,7 @@ ArcWallpaperService::~ArcWallpaperService() {
 void ArcWallpaperService::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   mojom::WallpaperInstance* wallpaper_instance =
-      arc_bridge_service()->wallpaper()->GetInstanceForMethod("Init");
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->wallpaper(), Init);
   DCHECK(wallpaper_instance);
   wallpaper_instance->Init(binding_.CreateInterfacePtrAndBind());
   ash::WmShell::Get()->wallpaper_controller()->AddObserver(this);
@@ -134,9 +133,8 @@ void ArcWallpaperService::OnDecodeImageFailed() {
 
 void ArcWallpaperService::OnWallpaperDataChanged() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* wallpaper_instance =
-      arc_bridge_service()->wallpaper()->GetInstanceForMethod(
-          "OnWallpaperChanged", kMinOnWallpaperChangedVersion);
+  auto* wallpaper_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->wallpaper(), OnWallpaperChanged);
   if (!wallpaper_instance)
     return;
   wallpaper_instance->OnWallpaperChanged();

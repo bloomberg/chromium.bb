@@ -77,8 +77,9 @@ arc::mojom::AppInstance* GetAppInstance(uint32_t required_version,
     return nullptr;
   }
 
-  return arc_service_manager->arc_bridge_service()->app()->GetInstanceForMethod(
-      service_name, required_version);
+  return arc_service_manager->arc_bridge_service()
+      ->app()
+      ->GetInstanceForVersion(required_version, service_name.c_str());
 }
 
 // Helper function which returns the IntentHelperInstance. Create related logs
@@ -95,7 +96,7 @@ arc::mojom::IntentHelperInstance* GetIntentHelperInstance(
 
   return arc_service_manager->arc_bridge_service()
       ->intent_helper()
-      ->GetInstanceForMethod(service_name, required_version);
+      ->GetInstanceForVersion(required_version, service_name.c_str());
 }
 
 void PrioritizeArcInstanceCallback(bool success) {

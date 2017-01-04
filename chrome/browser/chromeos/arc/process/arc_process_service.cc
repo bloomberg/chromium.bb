@@ -247,9 +247,8 @@ bool ArcProcessService::RequestAppProcessList(
   if (!instance_ready_)
     return false;
 
-  mojom::ProcessInstance* process_instance =
-      arc_bridge_service()->process()->GetInstanceForMethod(
-          "RequestProcessList");
+  mojom::ProcessInstance* process_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->process(), RequestProcessList);
   if (!process_instance)
     return false;
 

@@ -64,8 +64,6 @@ const char kArcProcessNamePrefix[] = "org.chromium.arc.";
 // a little while before doing the adjustment.
 const int kFocusedProcessScoreAdjustIntervalMs = 500;
 
-const uint32_t kMinVersionForKillProcess = 1;
-
 aura::client::ActivationClient* GetActivationClient() {
   if (!ash::Shell::HasInstance())
     return nullptr;
@@ -550,10 +548,8 @@ bool TabManagerDelegate::KillArcProcess(const int nspid) {
   if (!arc_service_manager)
     return false;
 
-  auto* arc_process_instance =
-      arc_service_manager->arc_bridge_service()
-          ->process()
-          ->GetInstanceForMethod("KillProcess", kMinVersionForKillProcess);
+  auto* arc_process_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->process(), KillProcess);
   if (!arc_process_instance)
     return false;
 

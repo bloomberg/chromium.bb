@@ -28,9 +28,6 @@
 namespace {
 
 constexpr int kGetNetworksListLimit = 100;
-constexpr uint32_t kScanCompletedMinInstanceVersion = 1;
-constexpr uint32_t kDefaultNetworkChangedMinInstanceVersion = 2;
-constexpr uint32_t kWifiEnabledStateChanged = 3;
 
 chromeos::NetworkStateHandler* GetStateHandler() {
   return chromeos::NetworkHandler::Get()->network_state_handler();
@@ -307,7 +304,8 @@ void ArcNetHostImpl::OnInstanceReady() {
 
   mojom::NetHostPtr host;
   binding_.Bind(MakeRequest(&host));
-  auto* instance = arc_bridge_service()->net()->GetInstanceForMethod("Init");
+  auto* instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->net(), Init);
   DCHECK(instance);
   instance->Init(std::move(host));
 
@@ -587,8 +585,8 @@ void ArcNetHostImpl::StartScan() {
 }
 
 void ArcNetHostImpl::ScanCompleted(const chromeos::DeviceState* /*unused*/) {
-  auto* net_instance = arc_bridge_service()->net()->GetInstanceForMethod(
-      "ScanCompleted", kScanCompletedMinInstanceVersion);
+  auto* net_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->net(), ScanCompleted);
   if (!net_instance)
     return;
 
@@ -616,8 +614,8 @@ void ArcNetHostImpl::GetDefaultNetwork(
 void ArcNetHostImpl::DefaultNetworkSuccessCallback(
     const std::string& service_path,
     const base::DictionaryValue& dictionary) {
-  auto* net_instance = arc_bridge_service()->net()->GetInstanceForMethod(
-      "DefaultNetworkChanged", kDefaultNetworkChangedMinInstanceVersion);
+  auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->net(),
+                                                   DefaultNetworkChanged);
   if (!net_instance)
     return;
 
@@ -629,8 +627,8 @@ void ArcNetHostImpl::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
   if (!network) {
     VLOG(1) << "No default network";
-    auto* net_instance = arc_bridge_service()->net()->GetInstanceForMethod(
-        "DefaultNetworkChanged", kDefaultNetworkChangedMinInstanceVersion);
+    auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_bridge_service()->net(), DefaultNetworkChanged);
     if (net_instance)
       net_instance->DefaultNetworkChanged(nullptr, nullptr);
     return;
@@ -646,8 +644,8 @@ void ArcNetHostImpl::DefaultNetworkChanged(
 }
 
 void ArcNetHostImpl::DeviceListChanged() {
-  auto* net_instance = arc_bridge_service()->net()->GetInstanceForMethod(
-      "WifiEnabledStateChanged", kWifiEnabledStateChanged);
+  auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->net(),
+                                                   WifiEnabledStateChanged);
   if (!net_instance)
     return;
 

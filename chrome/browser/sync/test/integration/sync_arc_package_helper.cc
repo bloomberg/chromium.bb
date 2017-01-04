@@ -183,27 +183,25 @@ void SyncArcPackageHelper::InstallPackage(
     const mojom::ArcPackageInfo& package) {
   ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_app_list_prefs);
-  FakeAppInstance* fake_app_instance = static_cast<FakeAppInstance*>(
-      arc_app_list_prefs->app_instance_holder()->GetInstanceForMethod(
-          "InstallPackage"));
+  mojom::AppInstance* app_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_app_list_prefs->app_instance_holder(), InstallPackage);
 
-  DCHECK(fake_app_instance);
+  DCHECK(app_instance);
   // After this function, new package should be added to local sync service
   // and install event should be sent to sync server.
-  fake_app_instance->InstallPackage(package.Clone());
+  app_instance->InstallPackage(package.Clone());
 }
 
 void SyncArcPackageHelper::UninstallPackage(Profile* profile,
                                             const std::string& package_name) {
   ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_app_list_prefs);
-  FakeAppInstance* fake_app_instance = static_cast<FakeAppInstance*>(
-      arc_app_list_prefs->app_instance_holder()->GetInstanceForMethod(
-          "UninstallPackage"));
-  DCHECK(fake_app_instance);
+  mojom::AppInstance* app_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_app_list_prefs->app_instance_holder(), UninstallPackage);
+  DCHECK(app_instance);
   // After this function, package should be removed from local sync service
   // and uninstall event should be sent to sync server.
-  fake_app_instance->UninstallPackage(package_name);
+  app_instance->UninstallPackage(package_name);
 }
 
 // Packages from local pref are used for these test functions. Packages in local

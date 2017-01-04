@@ -67,7 +67,7 @@ ArcPrintService::~ArcPrintService() {
 
 void ArcPrintService::OnInstanceReady() {
   mojom::PrintInstance* print_instance =
-      arc_bridge_service()->print()->GetInstanceForMethod("Init");
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->print(), Init);
   DCHECK(print_instance);
   print_instance->Init(binding_.CreateInterfacePtrAndBind());
 }

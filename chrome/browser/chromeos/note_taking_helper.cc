@@ -24,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -55,16 +56,6 @@ bool LooksLikeAndroidPackageName(const std::string& app_id) {
   // validateName() in PackageParser.java), while Chrome extension IDs contain
   // only characters in [a-p].
   return app_id.find(".") != std::string::npos;
-}
-
-// Returns the helper used for intent-related communication with Android, or
-// null if it's unavailable.
-arc::mojom::IntentHelperInstance* GetIntentHelper(const std::string& method,
-                                                  uint32_t min_version) {
-  return arc::ArcServiceManager::Get()
-      ->arc_bridge_service()
-      ->intent_helper()
-      ->GetInstanceForMethod(method, min_version);
 }
 
 // Creates a new Mojo IntentInfo struct for launching an Android note-taking app
@@ -277,7 +268,9 @@ std::vector<const extensions::Extension*> NoteTakingHelper::GetChromeApps(
 
 void NoteTakingHelper::UpdateAndroidApps() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* helper = GetIntentHelper("RequestIntentHandlerList", 12);
+  auto* helper = ARC_GET_INSTANCE_FOR_METHOD(
+      arc::ArcServiceManager::Get()->arc_bridge_service()->intent_helper(),
+      RequestIntentHandlerList);
   if (!helper)
     return;
   helper->RequestIntentHandlerList(
@@ -314,7 +307,9 @@ bool NoteTakingHelper::LaunchAppInternal(Profile* profile,
       LOG(WARNING) << "Can't launch Android app " << app_id << " for profile";
       return false;
     }
-    auto* helper = GetIntentHelper("HandleIntent", 10);
+    auto* helper = ARC_GET_INSTANCE_FOR_METHOD(
+        arc::ArcServiceManager::Get()->arc_bridge_service()->intent_helper(),
+        HandleIntent);
     if (!helper)
       return false;
 

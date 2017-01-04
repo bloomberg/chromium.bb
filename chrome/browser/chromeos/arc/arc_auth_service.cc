@@ -27,8 +27,6 @@ namespace {
 
 ArcAuthService* g_arc_auth_service = nullptr;
 
-constexpr uint32_t kMinVersionForOnAccountInfoReady = 5;
-
 // Convers mojom::ArcSignInFailureReason into ProvisiningResult.
 ProvisioningResult ConvertArcSignInFailureReasonToProvisioningResult(
     mojom::ArcSignInFailureReason reason) {
@@ -145,7 +143,8 @@ ArcAuthService* ArcAuthService::GetForTest() {
 }
 
 void ArcAuthService::OnInstanceReady() {
-  auto* instance = arc_bridge_service()->auth()->GetInstanceForMethod("Init");
+  auto* instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->auth(), Init);
   DCHECK(instance);
   instance->Init(binding_.CreateInterfacePtrAndBind());
 }
@@ -173,8 +172,8 @@ void ArcAuthService::RequestAccountInfo() {
 
 void ArcAuthService::OnAccountInfoReady(mojom::AccountInfoPtr account_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* instance = arc_bridge_service()->auth()->GetInstanceForMethod(
-      "OnAccountInfoReady", kMinVersionForOnAccountInfoReady);
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->auth(),
+                                               OnAccountInfoReady);
   DCHECK(instance);
   instance->OnAccountInfoReady(std::move(account_info));
 }

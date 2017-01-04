@@ -75,9 +75,8 @@ void ArcMetricsService::OnProcessInstanceClosed() {
 }
 
 void ArcMetricsService::RequestProcessList() {
-  mojom::ProcessInstance* process_instance =
-      arc_bridge_service()->process()->GetInstanceForMethod(
-          "RequestProcessList");
+  mojom::ProcessInstance* process_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->process(), RequestProcessList);
   if (!process_instance)
     return;
   VLOG(2) << "RequestProcessList";
@@ -120,7 +119,7 @@ void ArcMetricsService::OnArcStartTimeRetrieved(
     return;
   }
   auto* instance =
-      arc_bridge_service()->metrics()->GetInstanceForMethod("Init");
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->metrics(), Init);
   if (!instance)
     return;
 

@@ -14,8 +14,6 @@ namespace arc {
 
 namespace {
 
-const int kMinInstanceVersion = 1;  // See storage_manager.mojom.
-
 // This class is owned by ArcServiceManager so that it is safe to use this raw
 // pointer as the singleton reference.
 ArcStorageManager* g_arc_storage_manager = nullptr;
@@ -40,9 +38,8 @@ ArcStorageManager* ArcStorageManager::Get() {
 }
 
 bool ArcStorageManager::OpenPrivateVolumeSettings() {
-  auto* storage_manager_instance =
-      arc_bridge_service()->storage_manager()->GetInstanceForMethod(
-          "OpenPrivateVolumeSettings", kMinInstanceVersion);
+  auto* storage_manager_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->storage_manager(), OpenPrivateVolumeSettings);
   if (!storage_manager_instance)
     return false;
   storage_manager_instance->OpenPrivateVolumeSettings();
@@ -51,9 +48,8 @@ bool ArcStorageManager::OpenPrivateVolumeSettings() {
 
 bool ArcStorageManager::GetApplicationsSize(
     const GetApplicationsSizeCallback& callback) {
-  auto* storage_manager_instance =
-      arc_bridge_service()->storage_manager()->GetInstanceForMethod(
-          "GetApplicationsSize", kMinInstanceVersion);
+  auto* storage_manager_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->storage_manager(), GetApplicationsSize);
   if (!storage_manager_instance)
     return false;
   storage_manager_instance->GetApplicationsSize(callback);
@@ -62,9 +58,8 @@ bool ArcStorageManager::GetApplicationsSize(
 
 bool ArcStorageManager::DeleteApplicationsCache(
     const base::Callback<void()>& callback) {
-  auto* storage_manager_instance =
-      arc_bridge_service()->storage_manager()->GetInstanceForMethod(
-          "DeleteApplicationsCache", kMinInstanceVersion);
+  auto* storage_manager_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->storage_manager(), DeleteApplicationsCache);
   if (!storage_manager_instance)
     return false;
   storage_manager_instance->DeleteApplicationsCache(callback);

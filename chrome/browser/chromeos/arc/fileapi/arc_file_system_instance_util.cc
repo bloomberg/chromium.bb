@@ -38,9 +38,10 @@ mojom::FileSystemInstance* GetFileSystemInstance(
     LOG(ERROR) << "Failed to get ArcServiceManager.";
     return nullptr;
   }
+  // TODO(lhchavez): Stop calling GetInstanceForVersion() directly.
   return arc_service_manager->arc_bridge_service()
       ->file_system()
-      ->GetInstanceForMethod(method_name_for_logging, min_version);
+      ->GetInstanceForVersion(min_version, method_name_for_logging.c_str());
 }
 
 template <typename T>

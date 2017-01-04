@@ -27,9 +27,8 @@ ArcEnterpriseReportingService::~ArcEnterpriseReportingService() {
 
 void ArcEnterpriseReportingService::OnInstanceReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  auto* instance =
-      arc_bridge_service()->enterprise_reporting()->GetInstanceForMethod(
-          "Init");
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->enterprise_reporting(), Init);
   DCHECK(instance);
   instance->Init(binding_.CreateInterfacePtrAndBind());
 }

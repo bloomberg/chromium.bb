@@ -232,7 +232,8 @@ bool ReadAndroidStatus(
       arc_service_manager->arc_bridge_service()->enterprise_reporting();
   if (!instance_holder)
     return false;
-  auto* const instance = instance_holder->GetInstanceForMethod("GetStatus", 1);
+  auto* const instance =
+      ARC_GET_INSTANCE_FOR_METHOD(instance_holder, GetStatus);
   if (!instance)
     return false;
   instance->GetStatus(receiver);

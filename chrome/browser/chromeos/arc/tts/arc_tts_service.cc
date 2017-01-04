@@ -21,7 +21,7 @@ ArcTtsService::~ArcTtsService() {
 
 void ArcTtsService::OnInstanceReady() {
   mojom::TtsInstance* tts_instance =
-      arc_bridge_service()->tts()->GetInstanceForMethod("Init");
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->tts(), Init);
   DCHECK(tts_instance);
   tts_instance->Init(binding_.CreateInterfacePtrAndBind());
 }

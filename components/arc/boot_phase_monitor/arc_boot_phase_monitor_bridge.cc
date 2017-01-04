@@ -35,8 +35,8 @@ ArcBootPhaseMonitorBridge::~ArcBootPhaseMonitorBridge() {
 
 void ArcBootPhaseMonitorBridge::OnInstanceReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  auto* instance =
-      arc_bridge_service()->boot_phase_monitor()->GetInstanceForMethod("Init");
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->boot_phase_monitor(), Init);
   DCHECK(instance);
   instance->Init(binding_.CreateInterfacePtrAndBind());
 }

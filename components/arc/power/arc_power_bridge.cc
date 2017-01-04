@@ -15,12 +15,6 @@
 
 namespace arc {
 
-namespace {
-
-constexpr uint32_t kMinVersionForSetInteractive = 1;
-
-}  // namespace
-
 ArcPowerBridge::ArcPowerBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
   arc_bridge_service()->power()->AddObserver(this);
@@ -33,7 +27,7 @@ ArcPowerBridge::~ArcPowerBridge() {
 
 void ArcPowerBridge::OnInstanceReady() {
   mojom::PowerInstance* power_instance =
-      arc_bridge_service()->power()->GetInstanceForMethod("Init");
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->power(), Init);
   DCHECK(power_instance);
   power_instance->Init(binding_.CreateInterfacePtrAndBind());
   ash::Shell::GetInstance()->display_configurator()->AddObserver(this);
@@ -46,9 +40,8 @@ void ArcPowerBridge::OnInstanceClosed() {
 
 void ArcPowerBridge::OnPowerStateChanged(
     chromeos::DisplayPowerState power_state) {
-  mojom::PowerInstance* power_instance =
-      arc_bridge_service()->power()->GetInstanceForMethod(
-          "SetInteractive", kMinVersionForSetInteractive);
+  mojom::PowerInstance* power_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->power(), SetInteractive);
   if (!power_instance)
     return;
 

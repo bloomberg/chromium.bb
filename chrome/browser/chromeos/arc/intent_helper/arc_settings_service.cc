@@ -39,8 +39,6 @@ using ::chromeos::system::TimezoneSettings;
 
 namespace {
 
-constexpr uint32_t kMinVersionForSendBroadcast = 1;
-
 bool GetHttpProxyServer(const ProxyConfigDictionary* proxy_config_dict,
                         std::string* host,
                         int* port) {
@@ -471,8 +469,8 @@ void ArcSettingsServiceImpl::SyncAccessibilityVirtualKeyboardEnabled() const {
 void ArcSettingsServiceImpl::SendSettingsBroadcast(
     const std::string& action,
     const base::DictionaryValue& extras) const {
-  auto* instance = arc_bridge_service_->intent_helper()->GetInstanceForMethod(
-      "SendBroadcast", kMinVersionForSendBroadcast);
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->intent_helper(), SendBroadcast);
   if (!instance)
     return;
   std::string extras_json;

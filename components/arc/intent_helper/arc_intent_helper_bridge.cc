@@ -48,7 +48,7 @@ void ArcIntentHelperBridge::OnInstanceReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ash::Shell::GetInstance()->set_link_handler_model_factory(this);
   auto* instance =
-      arc_bridge_service()->intent_helper()->GetInstanceForMethod("Init");
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->intent_helper(), Init);
   DCHECK(instance);
   instance->Init(binding_.CreateInterfacePtrAndBind());
 }
@@ -154,8 +154,9 @@ ArcIntentHelperBridge::GetIntentHelperInstanceWithErrorCode(
     return nullptr;
   }
 
-  auto* instance = intent_helper_holder->GetInstanceForMethod(
-      method_name_for_logging, min_instance_version);
+  // TODO(lhchavez): Stop calling GetInstanceForVersion() directly.
+  auto* instance = intent_helper_holder->GetInstanceForVersion(
+      min_instance_version, method_name_for_logging.c_str());
   if (!instance) {
     if (out_error_code)
       *out_error_code = GetResult::FAILED_ARC_NOT_SUPPORTED;

@@ -17,9 +17,6 @@
 namespace arc {
 namespace {
 
-constexpr uint32_t kMinVersionForOnKeyboardsBoundsChanging = 3;
-constexpr uint32_t kMinVersionForExtendSelectionAndDelete = 4;
-
 ui::TextInputType ConvertTextInputType(mojom::TextInputType ipc_type) {
   // The two enum types are similar, but intentionally made not identical.
   // We cannot force them to be in sync. If we do, updates in ui::TextInputType
@@ -86,7 +83,7 @@ ArcImeBridgeImpl::~ArcImeBridgeImpl() {
 }
 
 void ArcImeBridgeImpl::OnInstanceReady() {
-  auto* instance = bridge_service_->ime()->GetInstanceForMethod("Init");
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(), Init);
   DCHECK(instance);
   instance->Init(binding_.CreateInterfacePtrAndBind());
 }
@@ -94,7 +91,7 @@ void ArcImeBridgeImpl::OnInstanceReady() {
 void ArcImeBridgeImpl::SendSetCompositionText(
     const ui::CompositionText& composition) {
   auto* ime_instance =
-      bridge_service_->ime()->GetInstanceForMethod("SetCompositionText");
+      ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(), SetCompositionText);
   if (!ime_instance)
     return;
 
@@ -103,8 +100,8 @@ void ArcImeBridgeImpl::SendSetCompositionText(
 }
 
 void ArcImeBridgeImpl::SendConfirmCompositionText() {
-  auto* ime_instance =
-      bridge_service_->ime()->GetInstanceForMethod("ConfirmCompositionText");
+  auto* ime_instance = ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(),
+                                                   ConfirmCompositionText);
   if (!ime_instance)
     return;
 
@@ -113,7 +110,7 @@ void ArcImeBridgeImpl::SendConfirmCompositionText() {
 
 void ArcImeBridgeImpl::SendInsertText(const base::string16& text) {
   auto* ime_instance =
-      bridge_service_->ime()->GetInstanceForMethod("InsertText");
+      ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(), InsertText);
   if (!ime_instance)
     return;
 
@@ -122,8 +119,8 @@ void ArcImeBridgeImpl::SendInsertText(const base::string16& text) {
 
 void ArcImeBridgeImpl::SendOnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
-  auto* ime_instance = bridge_service_->ime()->GetInstanceForMethod(
-      "OnKeyboardBoundsChanging", kMinVersionForOnKeyboardsBoundsChanging);
+  auto* ime_instance = ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(),
+                                                   OnKeyboardBoundsChanging);
   if (!ime_instance)
     return;
 
@@ -132,8 +129,8 @@ void ArcImeBridgeImpl::SendOnKeyboardBoundsChanging(
 
 void ArcImeBridgeImpl::SendExtendSelectionAndDelete(
     size_t before, size_t after) {
-  auto* ime_instance = bridge_service_->ime()->GetInstanceForMethod(
-      "ExtendSelectionAndDelete", kMinVersionForExtendSelectionAndDelete);
+  auto* ime_instance = ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(),
+                                                   ExtendSelectionAndDelete);
   if (!ime_instance)
     return;
 

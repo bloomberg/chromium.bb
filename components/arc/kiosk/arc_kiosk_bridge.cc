@@ -21,7 +21,7 @@ ArcKioskBridge::~ArcKioskBridge() {
 
 void ArcKioskBridge::OnInstanceReady() {
   mojom::KioskInstance* kiosk_instance =
-      arc_bridge_service()->kiosk()->GetInstanceForMethod("Init");
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->kiosk(), Init);
   DCHECK(kiosk_instance);
   kiosk_instance->Init(binding_.CreateInterfacePtrAndBind());
 }

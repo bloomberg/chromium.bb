@@ -285,7 +285,7 @@ void ArcPolicyBridge::OnInstanceReady() {
   policy_service_->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
 
   mojom::PolicyInstance* const policy_instance =
-      arc_bridge_service()->policy()->GetInstanceForMethod("Init");
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->policy(), Init);
   DCHECK(policy_instance);
   policy_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
@@ -367,8 +367,8 @@ void ArcPolicyBridge::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                       const policy::PolicyMap& previous,
                                       const policy::PolicyMap& current) {
   VLOG(1) << "ArcPolicyBridge::OnPolicyUpdated";
-  auto* instance =
-      arc_bridge_service()->policy()->GetInstanceForMethod("OnPolicyUpdated");
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service()->policy(),
+                                               OnPolicyUpdated);
   if (!instance)
     return;
   instance->OnPolicyUpdated();

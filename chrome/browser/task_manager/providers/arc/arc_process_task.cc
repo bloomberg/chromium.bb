@@ -21,8 +21,6 @@ namespace task_manager {
 
 namespace {
 
-constexpr uint32_t kKillProcessMinInstanceVersion = 1;
-
 base::string16 MakeTitle(const std::string& process_name,
                          arc::mojom::ProcessState process_state) {
   int name_template = IDS_TASK_MANAGER_ARC_PREFIX;
@@ -136,11 +134,9 @@ bool ArcProcessTask::IsKillable() {
 }
 
 void ArcProcessTask::Kill() {
-  auto* process_instance =
-      arc::ArcServiceManager::Get()
-          ->arc_bridge_service()
-          ->process()
-          ->GetInstanceForMethod("KillProcess", kKillProcessMinInstanceVersion);
+  auto* process_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc::ArcServiceManager::Get()->arc_bridge_service()->process(),
+      KillProcess);
   if (!process_instance)
     return;
   process_instance->KillProcess(nspid_, "Killed manually from Task Manager");

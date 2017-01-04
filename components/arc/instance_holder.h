@@ -6,12 +6,23 @@
 #define COMPONENTS_ARC_INSTANCE_HOLDER_H_
 
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+
+// A convenience macro to call arc::InstanceHolder<T>::GetInstanceForVersion().
+// In order to avoid exposing method names from within the Mojo bindings, we
+// will rely on stringification and the fact that the method min versions have a
+// consistent naming scheme.
+#define ARC_GET_INSTANCE_FOR_METHOD(holder, method_name)        \
+  (holder)->GetInstanceForVersion(                              \
+      std::remove_pointer<decltype(                             \
+          holder)>::type::Instance::k##method_name##MinVersion, \
+      #method_name)
 
 namespace arc {
 
@@ -34,6 +45,8 @@ class InstanceHolder {
     virtual ~Observer() = default;
   };
 
+  using Instance = T;
+
   InstanceHolder() = default;
 
   // Returns true if the Mojo interface is ready at least for its version 0
@@ -45,9 +58,10 @@ class InstanceHolder {
   // |method_name_for_logging|, but only if its reported version is at least
   // |min_version|. Returns nullptr if the instance is either not ready or does
   // not have the requested version, and logs appropriately.
-  // TODO(lhchavez): Improve the API. (crbug.com/649782)
-  T* GetInstanceForMethod(const std::string& method_name_for_logging,
-                          uint32_t min_version) {
+  // This function should not be called directly. Instead, use the
+  // ARC_GET_INSTANCE_FOR_METHOD() macro.
+  T* GetInstanceForVersion(uint32_t min_version,
+                           const char method_name_for_logging[]) {
     if (!instance_) {
       VLOG(1) << "Instance for " << T::Name_ << "::" << method_name_for_logging
               << " not available.";
@@ -61,11 +75,6 @@ class InstanceHolder {
       return nullptr;
     }
     return instance_;
-  }
-
-  // Same as the above, but for the version zero.
-  T* GetInstanceForMethod(const std::string& method_name_for_logging) {
-    return GetInstanceForMethod(method_name_for_logging, 0u);
   }
 
   // Adds or removes observers. This can only be called on the thread that this

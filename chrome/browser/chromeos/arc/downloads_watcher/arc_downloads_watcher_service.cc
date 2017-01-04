@@ -360,8 +360,8 @@ void ArcDownloadsWatcherService::OnDownloadsChanged(
     const std::vector<std::string>& paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto* instance = arc_bridge_service()->file_system()->GetInstanceForMethod(
-      "RequestMediaScan");
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->file_system(), RequestMediaScan);
   if (!instance)
     return;
   instance->RequestMediaScan(paths);

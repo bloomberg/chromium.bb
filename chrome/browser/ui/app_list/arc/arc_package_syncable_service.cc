@@ -28,9 +28,6 @@ using ArcSyncItem = ArcPackageSyncableService::SyncItem;
 
 constexpr int64_t kNoAndroidID = 0;
 
-constexpr uint32_t kUninstallPackageMinVersion = 2;
-constexpr uint32_t kInstallPackageMinVersion = 8;
-
 std::unique_ptr<ArcSyncItem> CreateSyncItemFromSyncSpecifics(
     const sync_pb::ArcPackageSpecifics& specifics) {
   return base::MakeUnique<ArcSyncItem>(
@@ -405,8 +402,8 @@ void ArcPackageSyncableService::InstallPackage(const ArcSyncItem* sync_item) {
     return;
   }
 
-  auto* instance = prefs_->app_instance_holder()->GetInstanceForMethod(
-      "InstallPackage", kInstallPackageMinVersion);
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(prefs_->app_instance_holder(),
+                                               InstallPackage);
   if (!instance)
     return;
 
@@ -427,8 +424,8 @@ void ArcPackageSyncableService::UninstallPackage(const ArcSyncItem* sync_item) {
     return;
   }
 
-  auto* instance = prefs_->app_instance_holder()->GetInstanceForMethod(
-      "UninstallPackage", kUninstallPackageMinVersion);
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(prefs_->app_instance_holder(),
+                                               UninstallPackage);
   if (!instance)
     return;
 
