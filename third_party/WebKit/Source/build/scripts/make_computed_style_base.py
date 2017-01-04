@@ -104,6 +104,13 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                     type_path = property['field_storage_type']
                     type_name = type_path.split('/')[-1]
 
+                # For now, the getter name should match the field name. Later, getter names
+                # will start with an uppercase letter, so if they conflict with the type name,
+                # add 'get' to the front.
+                getter_method_name = property_name_lower
+                if type_name == property_name:
+                    getter_method_name = 'get' + property_name
+
                 assert property['initial_keyword'] is not None, \
                     ('MakeComputedStyleBase requires an initial keyword for keyword_only values, none specified '
                      'for property ' + property['name'])
@@ -139,7 +146,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                     storage_type_path=type_path,
                     size=int(math.ceil(bits_needed)),
                     default_value=default_value,
-                    getter_method_name=property_name_lower,
+                    getter_method_name=getter_method_name,
                     setter_method_name='set' + property_name,
                     initial_method_name='initial' + property_name,
                     resetter_method_name='reset' + property_name,

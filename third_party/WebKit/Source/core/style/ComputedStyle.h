@@ -201,8 +201,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       return (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
              (m_cursorStyle == other.m_cursorStyle) &&
              (m_rtlOrdering == other.m_rtlOrdering) &&
-             (m_insideLink == other.m_insideLink) &&
-             (m_writingMode == other.m_writingMode);
+             (m_insideLink == other.m_insideLink);
     }
 
     bool operator!=(const InheritedData& other) const {
@@ -212,15 +211,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_hasSimpleUnderline : 1;  // True if 'underline solid' is the only
                                         // text decoration on this element.
     unsigned m_cursorStyle : 6;     // ECursor
-    // 32 bits
 
     // non CSS2 inherited
     unsigned m_rtlOrdering : 1;       // EOrder
     unsigned m_insideLink : 2;     // EInsideLink
-
-    // CSS Text Layout Module Level 3: Vertical writing support
-    unsigned m_writingMode : 2;  // WritingMode
-                                 // 42 bits
   } m_inheritedData;
 
   // don't inherit
@@ -313,7 +307,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_rtlOrdering = static_cast<unsigned>(initialRTLOrdering());
     m_inheritedData.m_insideLink = NotInsideLink;
-    m_inheritedData.m_writingMode = static_cast<unsigned>(initialWritingMode());
 
     m_nonInheritedData.m_effectiveDisplay =
         m_nonInheritedData.m_originalDisplay =
@@ -2191,15 +2184,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return static_cast<LineBreak>(m_rareInheritedData->lineBreak);
   }
   void setLineBreak(LineBreak b) { SET_VAR(m_rareInheritedData, lineBreak, b); }
-
-  // writing-mode (aka -webkit-writing-mode, -epub-writing-mode)
-  static WritingMode initialWritingMode() { return WritingMode::HorizontalTb; }
-  WritingMode getWritingMode() const {
-    return static_cast<WritingMode>(m_inheritedData.m_writingMode);
-  }
-  void setWritingMode(WritingMode v) {
-    m_inheritedData.m_writingMode = static_cast<unsigned>(v);
-  }
 
   // Text emphasis properties.
   static TextEmphasisFill initialTextEmphasisFill() {

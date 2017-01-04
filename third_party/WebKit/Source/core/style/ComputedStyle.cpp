@@ -813,7 +813,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
       textAlign() != other.textAlign() ||
       textTransform() != other.textTransform() ||
       direction() != other.direction() || whiteSpace() != other.whiteSpace() ||
-      m_inheritedData.m_writingMode != other.m_inheritedData.m_writingMode)
+      getWritingMode() != other.getWritingMode())
     return true;
 
   if (m_nonInheritedData.m_overflowX != other.m_nonInheritedData.m_overflowX ||
