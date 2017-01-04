@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import os
 
 from gpu_tests import gpu_integration_test
@@ -250,7 +251,6 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         '--disable-gesture-requirement-for-media-playback',
         '--disable-domain-blocking-for-3d-apis',
         '--disable-gpu-process-crash-limit',
-        '--js-flags=--expose-gc',
         '--test-type=gpu',
         '--enable-experimental-canvas-features',
         # Try disabling the GPU watchdog to see if this affects the
@@ -258,6 +258,23 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         # waterfall. crbug.com/596622 crbug.com/609252
         '--disable-gpu-watchdog'
     ])
+
+    builtin_js_flags = '--js-flags=--expose-gc'
+    found_js_flags = False
+    user_js_flags = ''
+    if browser_options.extra_browser_args:
+      for o in browser_options.extra_browser_args:
+        if o.startswith('--js-flags'):
+          found_js_flags = True
+          user_js_flags = o
+          break
+    if found_js_flags:
+      logging.warning('Overriding built-in JavaScript flags:')
+      logging.warning(' Original flags: ' + builtin_js_flags)
+      logging.warning(' New flags: ' + user_js_flags)
+    else:
+      browser_options.AppendExtraBrowserArgs([builtin_js_flags])
+
     if cls._webgl_version == 2:
       browser_options.AppendExtraBrowserArgs([
         '--enable-es3-apis',
