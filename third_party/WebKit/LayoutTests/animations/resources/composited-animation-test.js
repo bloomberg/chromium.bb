@@ -139,15 +139,21 @@ class CompositedAnimationTestCommon {
     this.error.textContent += `${test.name}: ${message} `;
   }
 
+  waitForCompositor() {
+    return this.error.animate({opacity: ['1', '1']}, 1).ready;
+  }
+
   layoutAndPaint() {
     if (window.testRunner)
       testRunner.waitUntilDone();
 
-    requestAnimationFrame(() => {
-      if (window.internals)
-        this.assertAnimationCompositedState();
-      if (window.testRunner)
-        testRunner.notifyDone();
+    this.waitForCompositor().then(() => {
+      requestAnimationFrame(() => {
+        if (window.internals)
+          this.assertAnimationCompositedState();
+        if (window.testRunner)
+          testRunner.notifyDone();
+      });
     });
   }
 
