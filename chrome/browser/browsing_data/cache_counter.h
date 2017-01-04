@@ -12,25 +12,49 @@
 
 class Profile;
 
+namespace browsing_data {
+class ConditionalCacheCountingHelper;
+}
+
 class CacheCounter : public browsing_data::BrowsingDataCounter {
  public:
+  class CacheResult : public FinishedResult {
+   public:
+    CacheResult(const CacheCounter* source,
+                int64_t cache_size,
+                bool is_upper_limit);
+    ~CacheResult() override;
+
+    int64_t cache_size() const { return cache_size_; }
+    bool is_upper_limit() const { return is_upper_limit_; }
+
+   private:
+    int64_t cache_size_;
+    bool is_upper_limit_;
+
+    DISALLOW_COPY_AND_ASSIGN(CacheResult);
+  };
+
   explicit CacheCounter(Profile* profile);
   ~CacheCounter() override;
+
+  const char* GetPrefName() const override;
 
   // Whether this counter awaits the calculation result callback.
   // Used only for testing.
   bool Pending();
 
-  const char* GetPrefName() const override;
-
  private:
+  void Count() override;
+  void OnCacheSizeCalculated(bool is_upper_limit, int64_t bytes);
+  void FetchEstimate(
+      base::WeakPtr<browsing_data::ConditionalCacheCountingHelper>);
+
   Profile* profile_;
   bool pending_;
 
   base::WeakPtrFactory<CacheCounter> weak_ptr_factory_;
 
-  void Count() override;
-  void OnCacheSizeCalculated(int64_t bytes);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_CACHE_COUNTER_H_

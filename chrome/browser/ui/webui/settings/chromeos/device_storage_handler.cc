@@ -28,7 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/cryptohome/homedir_methods.h"
-#include "components/browsing_data/content/storage_partition_http_cache_data_remover.h"
+#include "components/browsing_data/content/conditional_cache_counting_helper.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -232,11 +232,11 @@ void StorageHandler::UpdateBrowsingDataSize() {
   has_browser_site_data_size_ = false;
   Profile* const profile = Profile::FromWebUI(web_ui());
   // Fetch the size of http cache in browsing data.
-  // StoragePartitionHttpCacheDataRemover deletes itself when it is done.
-  browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
+  // ConditionalCacheCountingHelper deletes itself when it is done.
+  browsing_data::ConditionalCacheCountingHelper::CreateForRange(
       content::BrowserContext::GetDefaultStoragePartition(profile),
-      base::Time(),
-      base::Time::Max())->Count(
+      base::Time(), base::Time::Max())
+      ->CountAndDestroySelfWhenFinished(
           base::Bind(&StorageHandler::OnGetBrowsingDataSize,
                      base::Unretained(this), false));
 

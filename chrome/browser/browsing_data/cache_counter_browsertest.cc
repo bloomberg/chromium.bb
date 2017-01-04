@@ -138,10 +138,9 @@ class CacheCounterTest : public InProcessBrowserTest {
     finished_ = result->Finished();
 
     if (finished_) {
-      result_ =
-          static_cast<browsing_data::BrowsingDataCounter::FinishedResult*>(
-              result.get())
-              ->Value();
+      auto cache_result = static_cast<CacheCounter::CacheResult*>(result.get());
+      result_ = cache_result->cache_size();
+      is_upper_limit_ = cache_result->is_upper_limit();
     }
 
     if (run_loop_ && finished_)
@@ -151,6 +150,11 @@ class CacheCounterTest : public InProcessBrowserTest {
   browsing_data::BrowsingDataCounter::ResultInt GetResult() {
     DCHECK(finished_);
     return result_;
+  }
+
+  bool IsUpperLimit() {
+    DCHECK(finished_);
+    return is_upper_limit_;
   }
 
  private:
@@ -169,6 +173,7 @@ class CacheCounterTest : public InProcessBrowserTest {
 
   bool finished_;
   browsing_data::BrowsingDataCounter::ResultInt result_;
+  bool is_upper_limit_;
 };
 
 // Tests that for the empty cache, the result is zero.
@@ -268,22 +273,27 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, PeriodChanged) {
   SetDeletionPeriodPref(browsing_data::LAST_HOUR);
   WaitForIOThread();
   browsing_data::BrowsingDataCounter::ResultInt result = GetResult();
+  EXPECT_TRUE(IsUpperLimit());
 
   SetDeletionPeriodPref(browsing_data::LAST_DAY);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
+  EXPECT_TRUE(IsUpperLimit());
 
   SetDeletionPeriodPref(browsing_data::LAST_WEEK);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
+  EXPECT_TRUE(IsUpperLimit());
 
   SetDeletionPeriodPref(browsing_data::FOUR_WEEKS);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
+  EXPECT_TRUE(IsUpperLimit());
 
   SetDeletionPeriodPref(browsing_data::ALL_TIME);
   WaitForIOThread();
   EXPECT_EQ(result, GetResult());
+  EXPECT_FALSE(IsUpperLimit());
 }
 
 }  // namespace

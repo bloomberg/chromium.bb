@@ -34,10 +34,8 @@ StoragePartitionHttpCacheDataRemover::StoragePartitionHttpCacheDataRemover(
       delete_end_(delete_end),
       main_context_getter_(main_context_getter),
       media_context_getter_(media_context_getter),
-      next_cache_state_(STATE_NONE),
-      cache_(nullptr),
-      calculation_result_(0) {
-}
+      next_cache_state_(CacheState::NONE),
+      cache_(nullptr) {}
 
 StoragePartitionHttpCacheDataRemover::~StoragePartitionHttpCacheDataRemover() {
 }
@@ -81,40 +79,15 @@ void StoragePartitionHttpCacheDataRemover::Remove(
           base::Unretained(this)));
 }
 
-void StoragePartitionHttpCacheDataRemover::Count(
-    const net::Int64CompletionCallback& result_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!result_callback.is_null());
-  result_callback_ = result_callback;
-  calculation_result_ = 0;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &StoragePartitionHttpCacheDataRemover::CountHttpCacheOnIOThread,
-          base::Unretained(this)));
-}
-
 void StoragePartitionHttpCacheDataRemover::ClearHttpCacheOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  next_cache_state_ = STATE_NONE;
-  DCHECK_EQ(STATE_NONE, next_cache_state_);
+  next_cache_state_ = CacheState::NONE;
+  DCHECK_EQ(CacheState::NONE, next_cache_state_);
   DCHECK(main_context_getter_.get());
   DCHECK(media_context_getter_.get());
 
-  next_cache_state_ = STATE_CREATE_MAIN;
+  next_cache_state_ = CacheState::CREATE_MAIN;
   DoClearCache(net::OK);
-}
-
-void StoragePartitionHttpCacheDataRemover::CountHttpCacheOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  next_cache_state_ = STATE_NONE;
-  DCHECK_EQ(STATE_NONE, next_cache_state_);
-  DCHECK(main_context_getter_.get());
-  DCHECK(media_context_getter_.get());
-
-  next_cache_state_ = STATE_CREATE_MAIN;
-  DoCountCache(net::OK);
 }
 
 void StoragePartitionHttpCacheDataRemover::ClearedHttpCache() {
@@ -123,34 +96,28 @@ void StoragePartitionHttpCacheDataRemover::ClearedHttpCache() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
-void StoragePartitionHttpCacheDataRemover::CountedHttpCache() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  result_callback_.Run(calculation_result_);
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-}
-
-// The expected state sequence is STATE_NONE --> STATE_CREATE_MAIN -->
-// STATE_PROCESS_MAIN --> STATE_CREATE_MEDIA --> STATE_PROCESS_MEDIA -->
-// STATE_DONE, and any errors are ignored.
+// The expected state sequence is CacheState::NONE --> CacheState::CREATE_MAIN
+// --> CacheState::PROCESS_MAIN --> CacheState::CREATE_MEDIA -->
+// CacheState::PROCESS_MEDIA --> CacheState::DONE, and any errors are ignored.
 void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
-  DCHECK_NE(STATE_NONE, next_cache_state_);
+  DCHECK_NE(CacheState::NONE, next_cache_state_);
 
-  while (rv != net::ERR_IO_PENDING && next_cache_state_ != STATE_NONE) {
+  while (rv != net::ERR_IO_PENDING && next_cache_state_ != CacheState::NONE) {
     switch (next_cache_state_) {
-      case STATE_CREATE_MAIN:
-      case STATE_CREATE_MEDIA: {
+      case CacheState::CREATE_MAIN:
+      case CacheState::CREATE_MEDIA: {
         // Get a pointer to the cache.
         net::URLRequestContextGetter* getter =
-            (next_cache_state_ == STATE_CREATE_MAIN)
+            (next_cache_state_ == CacheState::CREATE_MAIN)
                 ? main_context_getter_.get()
                 : media_context_getter_.get();
         net::HttpCache* http_cache = getter->GetURLRequestContext()
                                          ->http_transaction_factory()
                                          ->GetCache();
 
-        next_cache_state_ = (next_cache_state_ == STATE_CREATE_MAIN)
-                                ? STATE_PROCESS_MAIN
-                                : STATE_PROCESS_MEDIA;
+        next_cache_state_ = (next_cache_state_ == CacheState::CREATE_MAIN)
+                                ? CacheState::DELETE_MAIN
+                                : CacheState::DELETE_MEDIA;
 
         // Clear QUIC server information from memory and the disk cache.
         http_cache->GetSession()
@@ -172,11 +139,11 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
                        base::Unretained(this)));
         break;
       }
-      case STATE_PROCESS_MAIN:
-      case STATE_PROCESS_MEDIA: {
-        next_cache_state_ = (next_cache_state_ == STATE_PROCESS_MAIN)
-                                ? STATE_CREATE_MEDIA
-                                : STATE_DONE;
+      case CacheState::DELETE_MAIN:
+      case CacheState::DELETE_MEDIA: {
+        next_cache_state_ = (next_cache_state_ == CacheState::DELETE_MAIN)
+                                ? CacheState::CREATE_MEDIA
+                                : CacheState::DONE;
 
         // |cache_| can be null if it cannot be initialized.
         if (cache_) {
@@ -205,9 +172,9 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         }
         break;
       }
-      case STATE_DONE: {
+      case CacheState::DONE: {
         cache_ = NULL;
-        next_cache_state_ = STATE_NONE;
+        next_cache_state_ = CacheState::NONE;
 
         // Notify the UI thread that we are done.
         BrowserThread::PostTask(
@@ -216,91 +183,8 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
                        base::Unretained(this)));
         return;
       }
-      default: {
+      case CacheState::NONE: {
         NOTREACHED() << "bad state";
-        next_cache_state_ = STATE_NONE;  // Stop looping.
-        return;
-      }
-    }
-  }
-}
-
-// The expected state sequence is STATE_NONE --> STATE_CREATE_MAIN -->
-// STATE_PROCESS_MAIN --> STATE_CREATE_MEDIA --> STATE_PROCESS_MEDIA -->
-// STATE_DONE. On error, we jump directly to STATE_DONE.
-void StoragePartitionHttpCacheDataRemover::DoCountCache(int rv) {
-  DCHECK_NE(STATE_NONE, next_cache_state_);
-
-  while (rv != net::ERR_IO_PENDING && next_cache_state_ != STATE_NONE) {
-    // On error, finish and return the error code. A valid result value might
-    // be of two types - either net::OK from the CREATE states, or the result
-    // of calculation from the PROCESS states. Since net::OK == 0, it is valid
-    // to simply add the value to the final calculation result.
-    if (rv < 0) {
-      calculation_result_ = rv;
-      next_cache_state_ = STATE_DONE;
-    } else {
-      DCHECK_EQ(0, net::OK);
-      calculation_result_ += rv;
-    }
-
-    switch (next_cache_state_) {
-      case STATE_CREATE_MAIN:
-      case STATE_CREATE_MEDIA: {
-        // Get a pointer to the cache.
-        net::URLRequestContextGetter* getter =
-            (next_cache_state_ == STATE_CREATE_MAIN)
-                ? main_context_getter_.get()
-                : media_context_getter_.get();
-        net::HttpCache* http_cache = getter->GetURLRequestContext()
-                                         ->http_transaction_factory()
-                                         ->GetCache();
-
-        next_cache_state_ = (next_cache_state_ == STATE_CREATE_MAIN)
-                                ? STATE_PROCESS_MAIN
-                                : STATE_PROCESS_MEDIA;
-
-        rv = http_cache->GetBackend(
-            &cache_,
-            base::Bind(&StoragePartitionHttpCacheDataRemover::DoCountCache,
-                       base::Unretained(this)));
-        break;
-      }
-      case STATE_PROCESS_MAIN:
-      case STATE_PROCESS_MEDIA: {
-        next_cache_state_ = (next_cache_state_ == STATE_PROCESS_MAIN)
-                                ? STATE_CREATE_MEDIA
-                                : STATE_DONE;
-
-        // |cache_| can be null if it cannot be initialized.
-        if (cache_) {
-          if (delete_begin_.is_null() && delete_end_.is_max()) {
-            rv = cache_->CalculateSizeOfAllEntries(
-                base::Bind(
-                    &StoragePartitionHttpCacheDataRemover::DoCountCache,
-                    base::Unretained(this)));
-          } else {
-            // TODO(msramek): Implement this when we need it.
-            DoCountCache(net::ERR_NOT_IMPLEMENTED);
-          }
-          cache_ = NULL;
-        }
-        break;
-      }
-      case STATE_DONE: {
-        cache_ = NULL;
-        next_cache_state_ = STATE_NONE;
-
-        // Notify the UI thread that we are done.
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            base::Bind(&StoragePartitionHttpCacheDataRemover::CountedHttpCache,
-                       base::Unretained(this)));
-        return;
-      }
-      default: {
-        NOTREACHED() << "bad state";
-        next_cache_state_ = STATE_NONE;  // Stop looping.
         return;
       }
     }

@@ -4,9 +4,19 @@
 
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browsing_data/content/storage_partition_http_cache_data_remover.h"
+#include "components/browsing_data/content/conditional_cache_counting_helper.h"
 #include "components/browsing_data/core/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
+
+CacheCounter::CacheResult::CacheResult(const CacheCounter* source,
+                                       int64_t cache_size,
+                                       bool is_upper_limit)
+    : FinishedResult(source, cache_size),
+      cache_size_(cache_size),
+      is_upper_limit_(is_upper_limit) {}
+
+CacheCounter::CacheResult::~CacheResult() {}
 
 CacheCounter::CacheCounter(Profile* profile)
     : profile_(profile),
@@ -21,27 +31,27 @@ const char* CacheCounter::GetPrefName() const {
 }
 
 void CacheCounter::Count() {
-  // TODO(msramek): StoragePartitionHttpCacheDataRemover currently does not
-  // implement counting for subsets of cache, only for the entire cache. Thus,
-  // we ignore the time period setting and always request counting for
-  // the unbounded time interval. It is up to the UI to interpret the results
-  // for finite time intervals as upper estimates.
-  browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
-      content::BrowserContext::GetDefaultStoragePartition(profile_),
-      base::Time(), base::Time::Max())
-      ->Count(base::Bind(&CacheCounter::OnCacheSizeCalculated,
-                         weak_ptr_factory_.GetWeakPtr()));
+  bool is_upper_limit = !GetPeriodStart().is_null();
+  base::WeakPtr<browsing_data::ConditionalCacheCountingHelper> counter =
+      browsing_data::ConditionalCacheCountingHelper::CreateForRange(
+          content::BrowserContext::GetDefaultStoragePartition(profile_),
+          base::Time(), base::Time::Max())
+          ->CountAndDestroySelfWhenFinished(
+              base::Bind(&CacheCounter::OnCacheSizeCalculated,
+                         weak_ptr_factory_.GetWeakPtr(), is_upper_limit));
   pending_ = true;
 }
 
-void CacheCounter::OnCacheSizeCalculated(int64_t result_bytes) {
+void CacheCounter::OnCacheSizeCalculated(bool is_upper_limit,
+                                         int64_t result_bytes) {
   pending_ = false;
 
   // A value less than 0 means a net error code.
   if (result_bytes < 0)
     return;
-
-  ReportResult(result_bytes);
+  auto result =
+      base::MakeUnique<CacheResult>(this, result_bytes, is_upper_limit);
+  ReportResult(std::move(result));
 }
 
 bool CacheCounter::Pending() {

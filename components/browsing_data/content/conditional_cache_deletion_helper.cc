@@ -17,8 +17,8 @@ bool EntryPredicateFromURLsAndTime(
     const base::Time& begin_time,
     const base::Time& end_time,
     const disk_cache::Entry* entry) {
-  return (entry->GetLastModified() >= begin_time &&
-          entry->GetLastModified() < end_time &&
+  return (entry->GetLastUsed() >= begin_time &&
+          entry->GetLastUsed() < end_time &&
           url_predicate.Run(GURL(entry->GetKey())));
 }
 
@@ -76,7 +76,7 @@ void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
     }
 
     if (error == net::ERR_FAILED) {
-      // The iteration finished successfuly or we can no longer iterate
+      // The iteration finished successfully or we can no longer iterate
       // (e.g. the cache was destroyed). We cannot distinguish between the two,
       // but we know that there is nothing more that we can do, so we return OK.
       base::ThreadTaskRunnerHandle::Get()->PostTask(

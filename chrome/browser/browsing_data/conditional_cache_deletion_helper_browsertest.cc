@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/browser/browsing_data/cache_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -43,182 +44,64 @@ bool HasHttpsExampleOrigin(const GURL& url) {
 
 class ConditionalCacheDeletionHelperBrowserTest : public InProcessBrowserTest {
  public:
-  // Initialization ------------------------------------------------------------
-
   void SetUpOnMainThread() override {
-    // Prepare the commonly used callbacks.
-    done_callback_ = base::Bind(
-        &ConditionalCacheDeletionHelperBrowserTest::DoneCallback,
-        base::Unretained(this));
-
+    cache_util_ = base::MakeUnique<CacheTestUtil>(
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile()));
+    done_callback_ =
+        base::Bind(&ConditionalCacheDeletionHelperBrowserTest::DoneCallback,
+                   base::Unretained(this));
     // UI and IO thread synchronization.
     waitable_event_ = base::MakeUnique<base::WaitableEvent>(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
-
-    // Get the storage partition.
-    partition_ = content::BrowserContext::GetDefaultStoragePartition(
-        browser()->profile());
-
-    // Get the cache backends.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ConditionalCacheDeletionHelperBrowserTest::SetUpOnIOThread,
-                   base::Unretained(this)));
-    WaitForTasksOnIOThread();
   }
 
-  void SetUpOnIOThread() {
-    net::URLRequestContextGetter* context = partition_->GetURLRequestContext();
+  void TearDownOnMainThread() override { cache_util_.reset(); }
 
-    net::HttpCache* cache = context->GetURLRequestContext()->
-        http_transaction_factory()->GetCache();
+  void DeleteEntries(
+      const base::Callback<bool(const disk_cache::Entry*)>& condition) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    auto* helper =
+        new ConditionalCacheDeletionHelper(cache_util_->backend(), condition);
 
-    SetNumberOfWaitedTasks(1);
-    WaitForCompletion(cache->GetBackend(&backend_, done_callback_));
+    helper->DeleteAndDestroySelfWhenFinished(done_callback_);
   }
 
-  void TearDownOnMainThread() override {
-    // The cache iterator must be deleted on the thread where it was created,
-    // which is the IO thread.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &ConditionalCacheDeletionHelperBrowserTest::TearDownOnIOThread,
-            base::Unretained(this)));
-    WaitForTasksOnIOThread();
+  void CompareRemainingKeys(std::set<std::string> expected_set) {
+    std::vector<std::string> remaining_keys = cache_util_->GetEntryKeys();
+    std::sort(remaining_keys.begin(), remaining_keys.end());
+    std::vector<std::string> expected;
+    expected.assign(expected_set.begin(), expected_set.end());
+    EXPECT_EQ(expected, remaining_keys);
   }
 
-  void TearDownOnIOThread() {
-    iterator_.reset();
-    DoneCallback(net::OK);
+  void DoneCallback(int value) {
+    DCHECK_GE(value, 0);  // Negative values represent an error.
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    waitable_event_->Signal();
   }
-
-  // Waiting for tasks to be done on IO thread. --------------------------------
 
   void WaitForTasksOnIOThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     waitable_event_->Wait();
   }
 
-  void SetNumberOfWaitedTasks(int count) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    remaining_tasks_ = count;
-  }
-
-  void WaitForCompletion(int value) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    if (value >= 0) {
-      // We got the result immediately.
-      DoneCallback(value);
-    } else if (value == net::ERR_IO_PENDING) {
-      // We need to wait for the callback.
-    } else {
-      // An error has occurred.
-      NOTREACHED();
-    }
-  }
-
-  void DoneCallback(int value) {
-    DCHECK_GE(value, 0);  // Negative values represent an error.
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    if (--remaining_tasks_ > 0)
-      return;
-
-    waitable_event_->Signal();
-  }
-
-  // Cache operation shorthands. -----------------------------------------------
-
-  void CreateCacheEntries(const std::set<std::string>& keys) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-    entries_.resize(keys.size());
-    SetNumberOfWaitedTasks(keys.size());
-
-    int pos = 0;
-    for (const std::string& key : keys) {
-      WaitForCompletion(backend_->CreateEntry(
-          key, &entries_[pos++], done_callback_));
-    }
-  }
-
-  void DeleteEntries(
-      const base::Callback<bool(const disk_cache::Entry*)>& condition) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    ConditionalCacheDeletionHelper* helper = new ConditionalCacheDeletionHelper(
-        backend_,
-        condition);
-
-    WaitForCompletion(helper->DeleteAndDestroySelfWhenFinished(done_callback_));
-  }
-
-  void GetRemainingKeys() {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    current_entry_ = nullptr;
-    iterator_ = backend_->CreateIterator();
-    GetNextKey(net::OK);
-  }
-
-  void GetNextKey(int error) {
-    while (error != net::ERR_IO_PENDING) {
-      if (error == net::ERR_FAILED) {
-        DoneCallback(net::OK);
-        return;
-      }
-
-      if (current_entry_) {
-        remaining_keys_.push_back(current_entry_->GetKey());
-      }
-
-      error = iterator_->OpenNextEntry(
-          &current_entry_,
-          base::Bind(&ConditionalCacheDeletionHelperBrowserTest::GetNextKey,
-                     base::Unretained(this)));
-    }
-  }
-
-  void CompareRemainingKeys(std::set<std::string> expected_set) {
-    std::vector<std::string> expected;
-    expected.assign(expected_set.begin(), expected_set.end());
-    std::sort(remaining_keys_.begin(), remaining_keys_.end());
-    EXPECT_EQ(expected, remaining_keys_);
-  }
-
-  // Miscellaneous. ------------------------------------------------------------
+  CacheTestUtil* GetCacheTestUtil() { return cache_util_.get(); }
 
  private:
-  content::StoragePartition* partition_;
-  disk_cache::Backend* backend_ = nullptr;
-  std::unique_ptr<disk_cache::Backend::Iterator> iterator_;
-  disk_cache::Entry* current_entry_;
-  std::vector<disk_cache::Entry*> entries_;
-
   base::Callback<void(int)> done_callback_;
-
+  std::unique_ptr<CacheTestUtil> cache_util_;
   std::unique_ptr<base::WaitableEvent> waitable_event_;
-  int remaining_tasks_;
-
-  std::vector<std::string> remaining_keys_;
 };
 
 // Tests that ConditionalCacheDeletionHelper only deletes those cache entries
 // that match the condition.
 IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
   // Create 5 entries.
-  std::set<std::string> keys;
-  keys.insert("123");
-  keys.insert("47");
-  keys.insert("56");
-  keys.insert("81");
-  keys.insert("42");
+  std::set<std::string> keys = {"123", "47", "56", "81", "42"};
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ConditionalCacheDeletionHelperBrowserTest::CreateCacheEntries,
-                 base::Unretained(this),
-                 base::ConstRef(keys)));
-  WaitForTasksOnIOThread();
+  GetCacheTestUtil()->CreateCacheEntries(keys);
 
   // Delete the entries whose keys are even numbers.
   BrowserThread::PostTask(
@@ -229,12 +112,6 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
   WaitForTasksOnIOThread();
 
   // Expect that the keys with values 56 and 42 were deleted.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ConditionalCacheDeletionHelperBrowserTest::GetRemainingKeys,
-                 base::Unretained(this)));
-  WaitForTasksOnIOThread();
-
   keys.erase("56");
   keys.erase("42");
   CompareRemainingKeys(keys);
@@ -264,12 +141,7 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
   keys.insert("https://example.com/foo/bar/icon.png");
   keys.insert("http://chrome.com");
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ConditionalCacheDeletionHelperBrowserTest::CreateCacheEntries,
-                 base::Unretained(this),
-                 base::ConstRef(keys)));
-  WaitForTasksOnIOThread();
+  GetCacheTestUtil()->CreateCacheEntries(keys);
 
   // Wait |timeout_ms| milliseconds for the cache to write the entries.
   // This assures that future entries will have timestamps strictly greater than
@@ -284,12 +156,7 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
   newer_keys.insert("https://example.com/foo/bar/icon3.png");
   newer_keys.insert("http://example.com/foo/bar/icon4.png");
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ConditionalCacheDeletionHelperBrowserTest::CreateCacheEntries,
-                 base::Unretained(this),
-                 base::ConstRef(newer_keys)));
-  WaitForTasksOnIOThread();
+  GetCacheTestUtil()->CreateCacheEntries(newer_keys);
 
   // Create a condition for entries with the "https://example.com" origin
   // created after waiting.
@@ -306,12 +173,6 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
   WaitForTasksOnIOThread();
 
   // Expect that only "icon2.png" and "icon3.png" were deleted.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ConditionalCacheDeletionHelperBrowserTest::GetRemainingKeys,
-                 base::Unretained(this)));
-  WaitForTasksOnIOThread();
-
   keys.insert(newer_keys.begin(), newer_keys.end());
   keys.erase("https://example.com/foo/bar/icon2.png");
   keys.erase("https://example.com/foo/bar/icon3.png");

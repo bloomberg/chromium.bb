@@ -63,22 +63,17 @@ base::string16 GetChromeCounterTextFromResult(
 
   if (pref_name == browsing_data::prefs::kDeleteCache) {
     // Cache counter.
-    browsing_data::BrowsingDataCounter::ResultInt cache_size_bytes =
-        static_cast<const browsing_data::BrowsingDataCounter::FinishedResult*>(
-            result)
-            ->Value();
-
-    PrefService* prefs = result->source()->GetPrefs();
-    browsing_data::TimePeriod time_period =
-        static_cast<browsing_data::TimePeriod>(
-            prefs->GetInteger(browsing_data::prefs::kDeleteTimePeriod));
+    const auto* cache_result =
+        static_cast<const CacheCounter::CacheResult*>(result);
+    int64_t cache_size_bytes = cache_result->cache_size();
+    bool is_upper_limit = cache_result->is_upper_limit();
 
     // Three cases: Nonzero result for the entire cache, nonzero result for
     // a subset of cache (i.e. a finite time interval), and almost zero (< 1MB).
     static const int kBytesInAMegabyte = 1024 * 1024;
     if (cache_size_bytes >= kBytesInAMegabyte) {
       base::string16 formatted_size = FormatBytesMBOrHigher(cache_size_bytes);
-      return time_period == browsing_data::ALL_TIME
+      return !is_upper_limit
                  ? formatted_size
                  : l10n_util::GetStringFUTF16(
                        IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE, formatted_size);
