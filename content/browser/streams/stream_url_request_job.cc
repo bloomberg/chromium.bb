@@ -145,6 +145,15 @@ int StreamURLRequestJob::GetResponseCode() const {
   return response_info_->headers->response_code();
 }
 
+int64_t StreamURLRequestJob::GetTotalReceivedBytes() const {
+  int64_t total_received_bytes = 0;
+  if (response_info_)
+    total_received_bytes = response_info_->headers->raw_headers().size();
+  if (stream_.get())
+    total_received_bytes += total_bytes_read_;
+  return total_received_bytes;
+}
+
 void StreamURLRequestJob::DidStart() {
   if (range_parse_result() == net::OK && ranges().size() > 0) {
     // Only one range is supported, and it must start at the first byte.

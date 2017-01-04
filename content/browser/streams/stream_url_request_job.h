@@ -34,6 +34,7 @@ class CONTENT_EXPORT StreamURLRequestJob
   bool GetMimeType(std::string* mime_type) const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   int GetResponseCode() const override;
+  int64_t GetTotalReceivedBytes() const override;
 
  protected:
   ~StreamURLRequestJob() override;
@@ -50,6 +51,7 @@ class CONTENT_EXPORT StreamURLRequestJob
   int pending_buffer_size_;
   std::unique_ptr<net::HttpResponseInfo> response_info_;
 
+  // Total bytes received for this job.
   int total_bytes_read_;
   int max_range_;
   bool request_failed_;
