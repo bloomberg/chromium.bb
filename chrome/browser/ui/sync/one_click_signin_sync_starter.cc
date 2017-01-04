@@ -322,7 +322,14 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       FinishProfileSyncServiceSetup();
       Initialize(new_profile, nullptr);
       DCHECK_EQ(profile_, new_profile);
+
+#if defined(OS_MACOSX)
+      // On macOS, the sync confirmation dialog is web-contents modal and thus
+      // it is dismissed on tab navigation (which always occurs when signing in
+      // to a new profile).
+      // Skip sync confirmation on macOS to workaround this issue.
       skip_sync_confirm_ = true;
+#endif
 
       // We've transferred our credentials to the new profile - notify that
       // the signin for the original profile was cancelled (must do this after
@@ -494,10 +501,6 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
   // Regardless of whether the account was successfully added or not,
   // continue with sync starting.
 
-  // TODO(zmin): Remove this hack once the https://crbug.com/657924 fixed.
-  // Skip the Sync confirmation dialog if user choose to create a new profile
-  // for the corp signin. This is because the dialog doesn't work properly
-  // after the corp signin.
   if (skip_sync_confirm_) {
     OnSyncConfirmationUIClosed(LoginUIService::ABORT_SIGNIN);
     return;
