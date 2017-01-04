@@ -214,9 +214,7 @@ bool IsBlacklistedFunctionName(llvm::StringRef name) {
   if (name.find('_') != llvm::StringRef::npos)
     return true;
 
-  // https://crbug.com/677166: Have to avoid renaming |hash| -> |Hash| to avoid
-  // colliding with a struct already named |Hash|.
-  return name == "hash";
+  return false;
 }
 
 bool IsBlacklistedFreeFunctionName(llvm::StringRef name) {
@@ -358,8 +356,8 @@ AST_MATCHER_P(clang::QualType, hasString, std::string, ExpectedString) {
 }
 
 bool ShouldPrefixFunctionName(const std::string& old_method_name) {
-  // Methods that are named similarily to a type - they should be prefixed
-  // with a "get" prefix.
+  // Functions that are named similarily to a type - they should be prefixed
+  // with a "Get" prefix.
   static const char* kConflictingMethods[] = {
       "animationWorklet",
       "audioWorklet",
@@ -378,6 +376,9 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "font",
       "frame",
       "frameBlameContext",
+      "frontend",
+      "hash",
+      "heapObjectHeader",
       "iconURL",
       "inputMethodController",
       "inputType",
@@ -387,8 +388,12 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "layoutSize",
       "length",
       "lineCap",
+      "lineEndings",
       "lineJoin",
+      "listItems",
       "matchedProperties",
+      "midpointState",
+      "mouseEvent",
       "name",
       "navigationType",
       "node",
@@ -398,6 +403,8 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "path",
       "processingInstruction",
       "readyState",
+      "relList",
+      "resource",
       "response",
       "sandboxSupport",
       "screenInfo",
@@ -406,13 +413,18 @@ bool ShouldPrefixFunctionName(const std::string& old_method_name) {
       "signalingState",
       "state",
       "string",
+      "styleSheet",
       "text",
       "textAlign",
       "textBaseline",
       "theme",
+      "thread",
       "timing",
       "topLevelBlameContext",
+      "vector",
       "widget",
+      "wordBoundaries",
+      "wrapperTypeInfo",
   };
   for (const auto& conflicting_method : kConflictingMethods) {
     if (old_method_name == conflicting_method)
