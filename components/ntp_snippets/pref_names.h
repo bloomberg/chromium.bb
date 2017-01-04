@@ -71,6 +71,8 @@ extern const char kUserClassifierLastTimeToUseSuggestions[];
 
 // The pref name for the current order of categories and their clicks.
 extern const char kClickBasedCategoryRankerOrderWithClicks[];
+// The pref name for the time when last click decay has happened.
+extern const char kClickBasedCategoryRankerLastDecayTime[];
 
 }  // namespace prefs
 }  // namespace ntp_snippets

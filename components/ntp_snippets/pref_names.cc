@@ -63,6 +63,8 @@ const char kUserClassifierLastTimeToUseSuggestions[] =
 
 const char kClickBasedCategoryRankerOrderWithClicks[] =
     "ntp_suggestions.click_based_category_ranker.category_order_with_clicks";
+const char kClickBasedCategoryRankerLastDecayTime[] =
+    "ntp_suggestions.click_based_category_ranker.last_decay_time";
 
 }  // namespace prefs
 }  // namespace ntp_snippets

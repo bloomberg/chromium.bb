@@ -5,6 +5,9 @@
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/prefs/testing_pref_service.h"
@@ -21,7 +24,8 @@ class ClickBasedCategoryRankerTest : public testing::Test {
             static_cast<int>(KnownCategories::LAST_KNOWN_REMOTE_CATEGORY) + 1) {
     ClickBasedCategoryRanker::RegisterProfilePrefs(pref_service_->registry());
 
-    ranker_ = base::MakeUnique<ClickBasedCategoryRanker>(pref_service_.get());
+    ranker_ = base::MakeUnique<ClickBasedCategoryRanker>(
+        pref_service_.get(), base::MakeUnique<base::DefaultClock>());
   }
 
   int GetUnusedRemoteCategoryID() { return unused_remote_category_id_++; }
@@ -46,8 +50,9 @@ class ClickBasedCategoryRankerTest : public testing::Test {
     }
   }
 
-  void ResetRanker() {
-    ranker_ = base::MakeUnique<ClickBasedCategoryRanker>(pref_service_.get());
+  void ResetRanker(std::unique_ptr<base::Clock> clock) {
+    ranker_ = base::MakeUnique<ClickBasedCategoryRanker>(pref_service_.get(),
+                                                         std::move(clock));
   }
 
   void NotifyOnSuggestionOpened(int times, Category category) {
@@ -219,7 +224,7 @@ TEST_F(ClickBasedCategoryRankerTest, ShouldPersistOrderAndClicksWhenRestarted) {
   ASSERT_TRUE(CompareCategories(first, third));
 
   // Simulate Chrome restart.
-  ResetRanker();
+  ResetRanker(base::MakeUnique<base::DefaultClock>());
 
   // The old order must be preserved.
   EXPECT_TRUE(CompareCategories(third, second));
@@ -228,6 +233,94 @@ TEST_F(ClickBasedCategoryRankerTest, ShouldPersistOrderAndClicksWhenRestarted) {
   NotifyOnSuggestionOpened(
       /*times=*/1, third);
   EXPECT_TRUE(CompareCategories(third, first));
+}
+
+TEST_F(ClickBasedCategoryRankerTest, ShouldDecayClickCountsWithTime) {
+  // Add dummy remote categories to ensure that the following categories are not
+  // in the top anymore.
+  AddUnusedRemoteCategories(
+      ClickBasedCategoryRanker::GetNumTopCategoriesWithExtraMargin());
+
+  // Non-top categories are added.
+  Category first = AddUnusedRemoteCategory();
+  Category second = AddUnusedRemoteCategory();
+
+  const int first_clicks = 10 * ClickBasedCategoryRanker::GetPassingMargin();
+
+  // Simulate the user using the first category for a long time (and not using
+  // anything else).
+  NotifyOnSuggestionOpened(/*times=*/first_clicks, first);
+
+  // Let multiple years pass by.
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  base::SimpleTestClock* raw_test_clock = test_clock.get();
+  raw_test_clock->SetNow(base::Time::Now() + base::TimeDelta::FromDays(1000));
+  // Reset the ranker to pick up the new clock.
+  ResetRanker(std::move(test_clock));
+
+  // The user behavior changes and they start using the second category instead.
+  // According to our requirenments after such a long time it should take less
+  // than |first_clicks| for the second category to outperfom the first one.
+  int second_clicks = 0;
+  while (CompareCategories(first, second) && second_clicks < first_clicks) {
+    NotifyOnSuggestionOpened(/*times=*/1, second);
+    second_clicks++;
+  }
+  EXPECT_THAT(second_clicks, testing::Lt(first_clicks));
+}
+
+TEST_F(ClickBasedCategoryRankerTest, ShouldDecayAfterClearHistory) {
+  std::vector<KnownCategories> default_order =
+      ConstantCategoryRanker::GetKnownCategoriesDefaultOrder();
+  Category first = Category::FromKnownCategory(default_order[0]);
+  Category second = Category::FromKnownCategory(default_order[1]);
+
+  // The user clears entire history.
+  ranker()->ClearHistory(/*begin=*/base::Time(),
+                         /*end=*/base::Time::Max());
+
+  // Check whether decay happens by clicking on the first category and
+  // waiting.
+  const int first_clicks = 10 * ClickBasedCategoryRanker::GetPassingMargin();
+  NotifyOnSuggestionOpened(/*times=*/first_clicks, first);
+
+  // Let multiple years pass by.
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  base::SimpleTestClock* raw_test_clock = test_clock.get();
+  raw_test_clock->SetNow(base::Time::Now() + base::TimeDelta::FromDays(1000));
+  // Reset the ranker to pick up the new clock.
+  ResetRanker(std::move(test_clock));
+
+  // It should take less than |first_clicks| for the second category to
+  // overtake because of decays.
+  int second_clicks = 0;
+  while (CompareCategories(first, second) && second_clicks < first_clicks) {
+    NotifyOnSuggestionOpened(/*times=*/1, second);
+    second_clicks++;
+  }
+  EXPECT_THAT(second_clicks, testing::Lt(first_clicks));
+}
+
+TEST_F(ClickBasedCategoryRankerTest, ShouldRemoveLastDecayTimeOnClearHistory) {
+  ASSERT_NE(ranker()->GetLastDecayTime(), base::Time::FromInternalValue(0));
+
+  // The user clears entire history.
+  ranker()->ClearHistory(/*begin=*/base::Time(),
+                         /*end=*/base::Time::Max());
+
+  EXPECT_EQ(ranker()->GetLastDecayTime(), base::Time::FromInternalValue(0));
+}
+
+TEST_F(ClickBasedCategoryRankerTest, ShouldPersistLastDecayTimeWhenRestarted) {
+  base::Time before = ranker()->GetLastDecayTime();
+  ASSERT_NE(before, base::Time::FromInternalValue(0));
+
+  // Ensure that |Now()| is different from |before| by injecting our clock.
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  test_clock->SetNow(base::Time::Now() + base::TimeDelta::FromSeconds(10));
+  ResetRanker(std::move(test_clock));
+
+  EXPECT_EQ(before, ranker()->GetLastDecayTime());
 }
 
 TEST_F(ClickBasedCategoryRankerTest, ShouldMoveCategoryDownWhenDismissed) {

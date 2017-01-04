@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_SECTION_RANKERS_CLICK_BASED_SECTION_RANKER_H_
 #define COMPONENTS_NTP_SNIPPETS_SECTION_RANKERS_CLICK_BASED_SECTION_RANKER_H_
 
+#include <memory>
 #include <vector>
 
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
@@ -25,7 +27,8 @@ namespace ntp_snippets {
 // prefs.
 class ClickBasedCategoryRanker : public CategoryRanker {
  public:
-  explicit ClickBasedCategoryRanker(PrefService* pref_service);
+  explicit ClickBasedCategoryRanker(PrefService* pref_service,
+                                    std::unique_ptr<base::Clock> clock);
   ~ClickBasedCategoryRanker() override;
 
   // CategoryRanker implementation.
@@ -34,6 +37,9 @@ class ClickBasedCategoryRanker : public CategoryRanker {
   void AppendCategoryIfNecessary(Category category) override;
   void OnSuggestionOpened(Category category) override;
   void OnCategoryDismissed(Category category) override;
+
+  // Returns time when last decay occured. For testing only.
+  base::Time GetLastDecayTime() const;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -61,13 +67,20 @@ class ClickBasedCategoryRanker : public CategoryRanker {
       std::vector<RankedCategory>::const_iterator category_position) const;
   void RestoreDefaultOrder();
   void AppendKnownCategory(KnownCategories known_category);
-  bool ReadOrderFromPrefs(std::vector<RankedCategory>* result_categories);
+  bool ReadOrderFromPrefs(std::vector<RankedCategory>* result_categories) const;
   void StoreOrderToPrefs(const std::vector<RankedCategory>& ordered_categories);
   std::vector<RankedCategory>::iterator FindCategory(Category category);
   bool ContainsCategory(Category category) const;
 
+  base::Time ReadLastDecayTimeFromPrefs() const;
+  void StoreLastDecayTimeToPrefs(base::Time last_decay_time);
+  bool IsEnoughClicksToDecay() const;
+  bool DecayClicksIfNeeded();
+
   std::vector<RankedCategory> ordered_categories_;
   PrefService* pref_service_;
+  // Allow for an injectable clock for testing.
+  std::unique_ptr<base::Clock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickBasedCategoryRanker);
 };

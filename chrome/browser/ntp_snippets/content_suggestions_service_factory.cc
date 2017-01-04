@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -254,7 +255,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   PrefService* pref_service = profile->GetPrefs();
   std::unique_ptr<CategoryRanker> category_ranker =
-      ntp_snippets::BuildSelectedCategoryRanker(pref_service);
+      ntp_snippets::BuildSelectedCategoryRanker(
+          pref_service, base::MakeUnique<base::DefaultClock>());
   auto* service =
       new ContentSuggestionsService(state, signin_manager, history_service,
                                     pref_service, std::move(category_ranker));

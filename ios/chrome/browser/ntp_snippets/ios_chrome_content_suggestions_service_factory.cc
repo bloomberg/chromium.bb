@@ -11,6 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/image_fetcher/image_decoder.h"
@@ -127,7 +128,8 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       ios::HistoryServiceFactory::GetForBrowserState(
           chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   std::unique_ptr<ntp_snippets::CategoryRanker> category_ranker =
-      ntp_snippets::BuildSelectedCategoryRanker(prefs);
+      ntp_snippets::BuildSelectedCategoryRanker(
+          prefs, base::MakeUnique<base::DefaultClock>());
   std::unique_ptr<ContentSuggestionsService> service =
       base::MakeUnique<ContentSuggestionsService>(state, signin_manager,
                                                   history_service, prefs,

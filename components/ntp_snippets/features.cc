@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/features.h"
 
+#include "base/time/clock.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/variations/variations_associated_data.h"
@@ -75,13 +76,15 @@ CategoryRankerChoice GetSelectedCategoryRanker() {
 }
 
 std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
-    PrefService* pref_service) {
+    PrefService* pref_service,
+    std::unique_ptr<base::Clock> clock) {
   CategoryRankerChoice choice = ntp_snippets::GetSelectedCategoryRanker();
   switch (choice) {
     case CategoryRankerChoice::CONSTANT:
       return base::MakeUnique<ConstantCategoryRanker>();
     case CategoryRankerChoice::CLICK_BASED:
-      return base::MakeUnique<ClickBasedCategoryRanker>(pref_service);
+      return base::MakeUnique<ClickBasedCategoryRanker>(pref_service,
+                                                        std::move(clock));
     default:
       NOTREACHED() << "The category ranker choice value is "
                    << static_cast<int>(choice);

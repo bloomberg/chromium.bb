@@ -38,6 +38,23 @@ const int kNumTopCategoriesWithExtraMargin = 3;
 // value than the first non-top category).
 const int kExtraPassingMargin = 2;
 
+// The ranker must "forget" history with time, so that changes in the user
+// behavior are reflected by the order in reasonable time. This is done using
+// click count decay with time. However, if there is not enough data, there is
+// no need in "forgetting" it. This value defines how many total clicks (across
+// categories) are considered enough to decay.
+const int kMinNumClicksToDecay = 30;
+
+// Time between two consecutive decays (assuming enough clicks).
+const base::TimeDelta kTimeBetweenDecays = base::TimeDelta::FromDays(1);
+
+// Decay factor as a fraction. The current value approximates the seventh root
+// of 0.5. This yields a 50% decay per seven decays. Seven weak decays are used
+// instead of one 50% decay in order to decrease difference of click weight in
+// time.
+const int kDecayFactorNumerator = 91;
+const int kDecayFactorDenominator = 100;  // pow(0.91, 7) = 0.517
+
 // Number of positions by which a dismissed category is downgraded.
 const int kDismissedCategoryPenalty = 1;
 
@@ -46,13 +63,19 @@ const char kClicksKey[] = "clicks";
 
 }  // namespace
 
-ClickBasedCategoryRanker::ClickBasedCategoryRanker(PrefService* pref_service)
-    : pref_service_(pref_service) {
+ClickBasedCategoryRanker::ClickBasedCategoryRanker(
+    PrefService* pref_service,
+    std::unique_ptr<base::Clock> clock)
+    : pref_service_(pref_service), clock_(std::move(clock)) {
   if (!ReadOrderFromPrefs(&ordered_categories_)) {
     // TODO(crbug.com/676273): Handle adding new hardcoded KnownCategories to
     // existing order from prefs. Currently such new category is completely
     // ignored and may be never shown.
     RestoreDefaultOrder();
+  }
+
+  if (ReadLastDecayTimeFromPrefs() == base::Time::FromInternalValue(0)) {
+    StoreLastDecayTimeToPrefs(clock_->Now());
   }
 }
 
@@ -86,6 +109,8 @@ bool ClickBasedCategoryRanker::Compare(Category left, Category right) const {
 }
 
 void ClickBasedCategoryRanker::ClearHistory(base::Time begin, base::Time end) {
+  StoreLastDecayTimeToPrefs(base::Time::FromInternalValue(0));
+
   // The categories added through |AppendCategoryIfNecessary| cannot be
   // completely removed, since no one is required to reregister them. Instead
   // they are preserved in the default order (sorted by id).
@@ -128,15 +153,20 @@ void ClickBasedCategoryRanker::OnSuggestionOpened(Category category) {
     return;
   }
 
+  DecayClicksIfNeeded();
+
   std::vector<RankedCategory>::iterator current = FindCategory(category);
+  DCHECK_GE(current->clicks, 0);
+  // The overflow is ignored. It is unlikely to happen, because of click count
+  // decay.
   current->clicks++;
 
-  // TODO(crbug.com/676279): Prevent overflow.
+  // Move the category up if appropriate.
   if (current != ordered_categories_.begin()) {
     std::vector<RankedCategory>::iterator previous = current - 1;
     const int passing_margin = GetPositionPassingMargin(previous);
     if (current->clicks >= previous->clicks + passing_margin) {
-      // It is intended to move only by one position at a time in order to avoid
+      // It is intended to move only by one position per click in order to avoid
       // dramatic changes, which could confuse the user.
       std::swap(*current, *previous);
     }
@@ -172,10 +202,16 @@ void ClickBasedCategoryRanker::OnCategoryDismissed(Category category) {
   StoreOrderToPrefs(ordered_categories_);
 }
 
+base::Time ClickBasedCategoryRanker::GetLastDecayTime() const {
+  return ReadLastDecayTimeFromPrefs();
+}
+
 // static
 void ClickBasedCategoryRanker::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kClickBasedCategoryRankerOrderWithClicks);
+  registry->RegisterInt64Pref(prefs::kClickBasedCategoryRankerLastDecayTime,
+                              /*default_value=*/0);
 }
 
 // static
@@ -231,7 +267,7 @@ void ClickBasedCategoryRanker::AppendKnownCategory(
 }
 
 bool ClickBasedCategoryRanker::ReadOrderFromPrefs(
-    std::vector<RankedCategory>* result_categories) {
+    std::vector<RankedCategory>* result_categories) const {
   result_categories->clear();
   const base::ListValue* list =
       pref_service_->GetList(prefs::kClickBasedCategoryRankerOrderWithClicks);
@@ -287,6 +323,61 @@ bool ClickBasedCategoryRanker::ContainsCategory(Category category) const {
     if (category == ranked_category.category) {
       return true;
     }
+  }
+  return false;
+}
+
+base::Time ClickBasedCategoryRanker::ReadLastDecayTimeFromPrefs() const {
+  return base::Time::FromInternalValue(
+      pref_service_->GetInt64(prefs::kClickBasedCategoryRankerLastDecayTime));
+}
+
+void ClickBasedCategoryRanker::StoreLastDecayTimeToPrefs(
+    base::Time last_decay_time) {
+  pref_service_->SetInt64(prefs::kClickBasedCategoryRankerLastDecayTime,
+                          last_decay_time.ToInternalValue());
+}
+
+bool ClickBasedCategoryRanker::IsEnoughClicksToDecay() const {
+  int64_t num_clicks = 0;
+  for (const RankedCategory& ranked_category : ordered_categories_) {
+    num_clicks += ranked_category.clicks;
+  }
+  return num_clicks >= kMinNumClicksToDecay;
+}
+
+bool ClickBasedCategoryRanker::DecayClicksIfNeeded() {
+  base::Time now = clock_->Now();
+  base::Time last_decay = ReadLastDecayTimeFromPrefs();
+  if (last_decay == base::Time::FromInternalValue(0)) {
+    // No last decay time, start from now.
+    StoreLastDecayTimeToPrefs(clock_->Now());
+    return false;
+  }
+  DCHECK_LE(last_decay, now);
+
+  int num_pending_decays = (now - last_decay) / kTimeBetweenDecays;
+  int executed_decays = 0;
+  while (executed_decays < num_pending_decays && IsEnoughClicksToDecay()) {
+    for (RankedCategory& ranked_category : ordered_categories_) {
+      DCHECK_GE(ranked_category.clicks, 0);
+      const int64_t old_clicks = static_cast<int64_t>(ranked_category.clicks);
+      ranked_category.clicks =
+          old_clicks * kDecayFactorNumerator / kDecayFactorDenominator;
+    }
+
+    ++executed_decays;
+  }
+
+  // No matter how many decays were actually executed, all of them are marked
+  // done. Even if some were ignored due to absense of clicks, they would have
+  // no effect anyway for the same reason.
+  StoreLastDecayTimeToPrefs(last_decay +
+                            num_pending_decays * kTimeBetweenDecays);
+
+  if (executed_decays > 0) {
+    StoreOrderToPrefs(ordered_categories_);
+    return true;
   }
   return false;
 }

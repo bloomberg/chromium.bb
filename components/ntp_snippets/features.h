@@ -12,6 +12,10 @@
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/prefs/pref_service.h"
 
+namespace base {
+class Clock;
+}
+
 namespace ntp_snippets {
 
 // Features to turn individual providers/categories on/off.
@@ -63,7 +67,8 @@ CategoryRankerChoice GetSelectedCategoryRanker();
 
 // Builds a CategoryRanker according to kCategoryRanker feature.
 std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
-    PrefService* pref_service);
+    PrefService* pref_service,
+    std::unique_ptr<base::Clock> clock);
 
 }  // namespace ntp_snippets
 
