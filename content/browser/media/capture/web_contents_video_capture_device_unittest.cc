@@ -1012,10 +1012,12 @@ TEST_F(WebContentsVideoCaptureDeviceTest, SuspendsAndResumes) {
     SimulateDrawEvent();
     base::RunLoop().RunUntilIdle();
 
-    // Resume capture and then draw a BLUE frame and wait for it to be captured.
-    device()->Resume();
-    base::RunLoop().RunUntilIdle();
+    // Resume capture and expect a GREEN update frame to be captured.
     client_observer()->SetIsExpectingFrames(true);
+    device()->Resume();
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorGREEN));
+
+    // Draw a BLUE frame and wait for it to be captured.
     test_view()->SetSolidColor(SK_ColorBLUE);
     SimulateDrawEvent();
     ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorBLUE));

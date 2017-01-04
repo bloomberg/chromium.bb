@@ -664,6 +664,9 @@ void WebContentsCaptureMachine::RenewFrameSubscription(bool is_still_tracking) {
       view->GetWeakPtr(), oracle_proxy_,
       base::Bind(&WebContentsCaptureMachine::Capture,
                  weak_ptr_factory_.GetWeakPtr())));
+  // Capture a refresh frame immediately to make sure the latest frame in the
+  // video stream has the correct content.
+  subscription_->MaybeCaptureForRefresh();
 }
 
 void WebContentsCaptureMachine::UpdateCaptureSize() {
