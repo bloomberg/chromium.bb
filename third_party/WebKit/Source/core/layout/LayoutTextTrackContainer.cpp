@@ -69,10 +69,10 @@ bool LayoutTextTrackContainer::updateSizes(
   // the behavior is currently not portable. fontSize may have precision higher
   // than m_fontSize thus straight comparison can fail despite they cast to the
   // same float value.
-  volatile float& m_fontSize = this->m_fontSize;
-  float oldFontSize = m_fontSize;
-  m_fontSize = fontSize;
-  return m_fontSize != oldFontSize;
+  volatile float& currentFontSize = m_fontSize;
+  float oldFontSize = currentFontSize;
+  currentFontSize = fontSize;
+  return currentFontSize != oldFontSize;
 }
 
 }  // namespace blink
