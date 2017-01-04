@@ -1654,15 +1654,14 @@ void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,
           (tran_low_t)fdct_round_shift(input[i * stride + j] * 4 * Sqrt2);
     ht.rows(temp_in, temp_out);
     for (j = 0; j < n; ++j)
-      out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+      out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 4);
   }
 
   // Columns
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
     ht.cols(temp_in, temp_out);
-    for (j = 0; j < n2; ++j)
-      output[i + j * n] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+    for (j = 0; j < n2; ++j) output[i + j * n] = temp_out[j];
   }
   // Note: overall scale factor of transform is 4 times unitary
 }
@@ -1707,15 +1706,14 @@ void av1_fht32x16_c(const int16_t *input, tran_low_t *output, int stride,
           (tran_low_t)fdct_round_shift(input[j * stride + i] * 4 * Sqrt2);
     ht.cols(temp_in, temp_out);
     for (j = 0; j < n; ++j)
-      out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+      out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 4);
   }
 
   // Rows
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < n2; ++j)
-      output[j + i * n2] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+    for (j = 0; j < n2; ++j) output[j + i * n2] = temp_out[j];
   }
   // Note: overall scale factor of transform is 4 times unitary
 }
@@ -2074,17 +2072,6 @@ void av1_highbd_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-// TODO(luoyi): Adding this function to avoid DCT_DCT overflow.
-// Remove this function after we scale the column txfm output correctly.
-static INLINE int range_check_dct32x32(const int16_t *input, int16_t bound,
-                                       int size) {
-  int i;
-  for (i = 0; i < size; ++i) {
-    if (abs(input[i]) > bound) return 1;
-  }
-  return 0;
-}
-
 void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
                     int tx_type) {
   static const transform_2d FHT[] = {
@@ -2117,27 +2104,19 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
   maybe_flip_input(&input, &stride, 32, 32, flipped_input, tx_type);
 #endif
 
-  if (DCT_DCT == tx_type) {
-    if (range_check_dct32x32(input, (1 << 6) - 1, 1 << 10)) {
-      aom_fdct32x32_c(input, output, stride);
-      return;
-    }
-  }
   // Columns
   for (i = 0; i < 32; ++i) {
     for (j = 0; j < 32; ++j) temp_in[j] = input[j * stride + i] * 4;
     ht.cols(temp_in, temp_out);
     for (j = 0; j < 32; ++j)
-      out[j * 32 + i] = (temp_out[j] + 1 + (temp_out[j] > 0)) >> 2;
+      out[j * 32 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 4);
   }
 
   // Rows
   for (i = 0; i < 32; ++i) {
     for (j = 0; j < 32; ++j) temp_in[j] = out[j + i * 32];
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < 32; ++j)
-      output[j + i * 32] =
-          (tran_low_t)((temp_out[j] + 1 + (temp_out[j] < 0)) >> 2);
+    for (j = 0; j < 32; ++j) output[j + i * 32] = temp_out[j];
   }
 }
 
