@@ -68,14 +68,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_RendererCrash) {
 }
 
 // Tests that browser tests print the callstack when a child process crashes.
-#if defined(OS_WIN)
-#define MAYBE_RendererCrashCallStack \
-    DISABLED_RendererCrashCallStack
-#else
-#define MAYBE_RendererCrashCallStack \
-    RendererCrashCallStack
-#endif
-IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MAYBE_RendererCrashCallStack) {
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
   base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
