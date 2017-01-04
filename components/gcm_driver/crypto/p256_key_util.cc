@@ -51,8 +51,7 @@ bool CreateP256KeyPair(std::string* out_private_key,
   // Export the encrypted private key with an empty password. This is not done
   // to provide any security, but rather to achieve a consistent private key
   // storage between the BoringSSL and NSS implementations.
-  if (!key_pair->ExportEncryptedPrivateKey(
-          "" /* password */, 1 /* iteration */, &private_key)) {
+  if (!key_pair->ExportEncryptedPrivateKey(&private_key)) {
     DLOG(ERROR) << "Unable to export the private key.";
     return false;
   }
@@ -100,7 +99,6 @@ bool ComputeSharedP256Secret(const base::StringPiece& private_key,
 
   std::unique_ptr<crypto::ECPrivateKey> local_key_pair(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
-          "" /* no password */,
           std::vector<uint8_t>(private_key.data(),
                                private_key.data() + private_key.size()),
           std::vector<uint8_t>(
