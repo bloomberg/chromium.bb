@@ -35,6 +35,11 @@ struct PermissionDescriptor {
   PermissionDescriptorExtension? extension;
 };
 
+// Interface a client can implement to observe permission changes.
+interface PermissionObserver {
+  OnPermissionStatusChange(PermissionStatus status);
+};
+
 // The Permission service provides permission handling capabilities by exposing
 // methods to check, request, and revoke permissions. It also allows a client to
 // start listening to permission changes.
@@ -49,13 +54,10 @@ interface PermissionService {
     => (array<PermissionStatus> statuses);
   RevokePermission(PermissionDescriptor permission, url.mojom.Origin origin)
     => (PermissionStatus status);
-
-  // Runs the callback next time there is a permission status change for the
-  // given { permission, origin }. Callers of this method will have to call it
-  // again if they want to keep listening to the changes. To prevent race
-  // conditions, the caller must pass the last known value.
-  GetNextPermissionChange(PermissionDescriptor permission,
-                          url.mojom.Origin origin,
-                          PermissionStatus last_known_status)
-    => (PermissionStatus status);
+  // Subscribes |observer| to updates about changes to |origin|'s access to
+  // |permission|. Closing the pipe will cancel the subscription.
+  AddPermissionObserver(PermissionDescriptor permission,
+                        url.mojom.Origin origin,
+                        PermissionStatus last_known_status,
+                        PermissionObserver observer);
 };

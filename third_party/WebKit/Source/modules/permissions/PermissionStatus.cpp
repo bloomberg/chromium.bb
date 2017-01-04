@@ -38,9 +38,12 @@ PermissionStatus::PermissionStatus(ExecutionContext* executionContext,
                                    MojoPermissionDescriptor descriptor)
     : SuspendableObject(executionContext),
       m_status(status),
-      m_descriptor(std::move(descriptor)) {}
+      m_descriptor(std::move(descriptor)),
+      m_binding(this) {}
 
-PermissionStatus::~PermissionStatus() {
+PermissionStatus::~PermissionStatus() = default;
+
+void PermissionStatus::dispose() {
   stopListening();
 }
 
@@ -52,22 +55,8 @@ ExecutionContext* PermissionStatus::getExecutionContext() const {
   return SuspendableObject::getExecutionContext();
 }
 
-void PermissionStatus::permissionChanged(MojoPermissionStatus status) {
-  if (m_status == status)
-    return;
-
-  m_status = status;
-  dispatchEvent(Event::create(EventTypeNames::change));
-
-  m_service->GetNextPermissionChange(
-      m_descriptor->Clone(), getExecutionContext()->getSecurityOrigin(),
-      m_status,
-      convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged,
-                                      wrapWeakPersistent(this))));
-}
-
 bool PermissionStatus::hasPendingActivity() const {
-  return m_service;
+  return m_binding.is_bound();
 }
 
 void PermissionStatus::resume() {
@@ -82,21 +71,6 @@ void PermissionStatus::contextDestroyed() {
   stopListening();
 }
 
-void PermissionStatus::startListening() {
-  DCHECK(!m_service);
-  connectToPermissionService(getExecutionContext(),
-                             mojo::MakeRequest(&m_service));
-  m_service->GetNextPermissionChange(
-      m_descriptor->Clone(), getExecutionContext()->getSecurityOrigin(),
-      m_status,
-      convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged,
-                                      wrapWeakPersistent(this))));
-}
-
-void PermissionStatus::stopListening() {
-  m_service.reset();
-}
-
 String PermissionStatus::state() const {
   switch (m_status) {
     case MojoPermissionStatus::GRANTED:
@@ -109,6 +83,31 @@ String PermissionStatus::state() const {
 
   ASSERT_NOT_REACHED();
   return "denied";
+}
+
+void PermissionStatus::startListening() {
+  DCHECK(!m_binding.is_bound());
+  mojom::blink::PermissionObserverPtr observer;
+  m_binding.Bind(mojo::MakeRequest(&observer));
+
+  mojom::blink::PermissionServicePtr service;
+  connectToPermissionService(getExecutionContext(),
+                             mojo::MakeRequest(&service));
+  service->AddPermissionObserver(m_descriptor->Clone(),
+                                 getExecutionContext()->getSecurityOrigin(),
+                                 m_status, std::move(observer));
+}
+
+void PermissionStatus::stopListening() {
+  m_binding.Close();
+}
+
+void PermissionStatus::OnPermissionStatusChange(MojoPermissionStatus status) {
+  if (m_status == status)
+    return;
+
+  m_status = status;
+  dispatchEvent(Event::create(EventTypeNames::change));
 }
 
 DEFINE_TRACE(PermissionStatus) {

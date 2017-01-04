@@ -7,13 +7,19 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace blink {
 namespace mojom {
+class PermissionObserver;
 class PermissionService;
 }
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -36,9 +42,17 @@ class PermissionServiceContext : public WebContentsObserver {
   void CreateService(
       mojo::InterfaceRequest<blink::mojom::PermissionService> request);
 
+  void CreateSubscription(
+      PermissionType permission_type,
+      const url::Origin& origin,
+      mojo::InterfacePtr<blink::mojom::PermissionObserver> observer);
+
   // Called by a PermissionServiceImpl identified as |service| when it has a
   // connection error in order to get unregistered and killed.
   void ServiceHadConnectionError(PermissionServiceImpl* service);
+
+  // Called when the connection to a PermissionObserver has an error.
+  void ObserverHadConnectionError(int subscription_id);
 
   BrowserContext* GetBrowserContext() const;
   GURL GetEmbeddingOrigin() const;
@@ -46,6 +60,8 @@ class PermissionServiceContext : public WebContentsObserver {
   RenderFrameHost* render_frame_host() const;
 
  private:
+  class PermissionSubscription;
+
   // WebContentsObserver
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
@@ -58,7 +74,9 @@ class PermissionServiceContext : public WebContentsObserver {
 
   RenderFrameHost* render_frame_host_;
   RenderProcessHost* render_process_host_;
-  ScopedVector<PermissionServiceImpl> services_;
+  std::vector<std::unique_ptr<PermissionServiceImpl>> services_;
+  std::unordered_map<int, std::unique_ptr<PermissionSubscription>>
+      subscriptions_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionServiceContext);
 };

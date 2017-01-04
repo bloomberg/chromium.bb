@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/events/EventTarget.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "wtf/text/AtomicString.h"
@@ -22,9 +23,11 @@ class ScriptPromiseResolver;
 // ExecutionContext.
 class PermissionStatus final : public EventTargetWithInlineData,
                                public ActiveScriptWrappable<PermissionStatus>,
-                               public SuspendableObject {
+                               public SuspendableObject,
+                               public mojom::blink::PermissionObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
   DEFINE_WRAPPERTYPEINFO();
+  USING_PRE_FINALIZER(PermissionStatus, dispose);
 
   using MojoPermissionDescriptor = mojom::blink::PermissionDescriptorPtr;
   using MojoPermissionStatus = mojom::blink::PermissionStatus;
@@ -38,6 +41,7 @@ class PermissionStatus final : public EventTargetWithInlineData,
                                            MojoPermissionStatus,
                                            MojoPermissionDescriptor);
   ~PermissionStatus() override;
+  void dispose();
 
   // EventTarget implementation.
   const AtomicString& interfaceName() const override;
@@ -52,7 +56,6 @@ class PermissionStatus final : public EventTargetWithInlineData,
   void contextDestroyed() override;
 
   String state() const;
-  void permissionChanged(MojoPermissionStatus);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
@@ -66,9 +69,11 @@ class PermissionStatus final : public EventTargetWithInlineData,
   void startListening();
   void stopListening();
 
+  void OnPermissionStatusChange(MojoPermissionStatus);
+
   MojoPermissionStatus m_status;
   MojoPermissionDescriptor m_descriptor;
-  mojom::blink::PermissionServicePtr m_service;
+  mojo::Binding<mojom::blink::PermissionObserver> m_binding;
 };
 
 }  // namespace blink
