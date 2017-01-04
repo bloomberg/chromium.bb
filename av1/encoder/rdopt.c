@@ -6855,7 +6855,7 @@ static int64_t pick_interinter_seg_mask(const AV1_COMP *const cpi,
 #else
   const int bd_round = 0;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-  INTERINTER_COMPOUND_DATA comp_data = mbmi->interinter_compound_data;
+  INTERINTER_COMPOUND_DATA *comp_data = &mbmi->interinter_compound_data;
   DECLARE_ALIGNED(32, int16_t, r0[MAX_SB_SQUARE]);
   DECLARE_ALIGNED(32, int16_t, r1[MAX_SB_SQUARE]);
   DECLARE_ALIGNED(32, int16_t, d10[MAX_SB_SQUARE]);
@@ -6877,19 +6877,17 @@ static int64_t pick_interinter_seg_mask(const AV1_COMP *const cpi,
   }
 
   // build mask and inverse
-  build_compound_seg_mask(&comp_data, p0, bw, p1, bw, bsize, bh, bw);
+  build_compound_seg_mask(comp_data, p0, bw, p1, bw, bsize, bh, bw);
 
   // compute rd for mask0
-  sse = av1_wedge_sse_from_residuals(r1, d10, comp_data.seg_mask[0], N);
-  sse = 0;
+  sse = av1_wedge_sse_from_residuals(r1, d10, comp_data->seg_mask[0], N);
   sse = ROUND_POWER_OF_TWO(sse, bd_round);
 
   model_rd_from_sse(cpi, xd, bsize, 0, sse, &rate, &dist);
   rd0 = RDCOST(x->rdmult, x->rddiv, rate, dist);
 
   // compute rd for mask1
-  sse = av1_wedge_sse_from_residuals(r1, d10, comp_data.seg_mask[1], N);
-  sse = 0;
+  sse = av1_wedge_sse_from_residuals(r1, d10, comp_data->seg_mask[1], N);
   sse = ROUND_POWER_OF_TWO(sse, bd_round);
 
   model_rd_from_sse(cpi, xd, bsize, 0, sse, &rate, &dist);

@@ -263,7 +263,7 @@ typedef struct {
   int wedge_sign;
 #if CONFIG_COMPOUND_SEGMENT
   int which;
-  uint8_t seg_mask[2][2 * MAX_SB_SQUARE];
+  DECLARE_ALIGNED(16, uint8_t, seg_mask[2][2 * MAX_SB_SQUARE]);
 #endif  // CONFIG_COMPOUND_SEGMENT
 } INTERINTER_COMPOUND_DATA;
 #endif  // CONFIG_EXT_INTER
