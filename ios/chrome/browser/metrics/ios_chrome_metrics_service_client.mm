@@ -51,7 +51,7 @@
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
-#include "ios/chrome/browser/ui/browser_otr_state.h"
+#include "ios/chrome/browser/ui/browser_list_ios.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 
@@ -152,11 +152,10 @@ void IOSChromeMetricsServiceClient::CollectFinalMetricsForLog(
 std::unique_ptr<metrics::MetricsLogUploader>
 IOSChromeMetricsServiceClient::CreateUploader(
     const base::Callback<void(int)>& on_upload_complete) {
-  return std::unique_ptr<metrics::MetricsLogUploader>(
-      new metrics::NetMetricsLogUploader(
-          GetApplicationContext()->GetSystemURLRequestContext(),
-          metrics::kDefaultMetricsServerUrl, metrics::kDefaultMetricsMimeType,
-          on_upload_complete));
+  return base::MakeUnique<metrics::NetMetricsLogUploader>(
+      GetApplicationContext()->GetSystemURLRequestContext(),
+      metrics::kDefaultMetricsServerUrl, metrics::kDefaultMetricsMimeType,
+      on_upload_complete);
 }
 
 base::TimeDelta IOSChromeMetricsServiceClient::GetStandardUploadInterval() {
@@ -182,63 +181,69 @@ void IOSChromeMetricsServiceClient::WebStateDidStopLoading(
 }
 
 void IOSChromeMetricsServiceClient::Initialize() {
-  metrics_service_.reset(new metrics::MetricsService(
-      metrics_state_manager_, this, GetApplicationContext()->GetLocalState()));
+  metrics_service_ = base::MakeUnique<metrics::MetricsService>(
+      metrics_state_manager_, this, GetApplicationContext()->GetLocalState());
 
   // Register metrics providers.
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new metrics::NetworkMetricsProvider(
-              web::WebThread::GetBlockingPool())));
+      base::MakeUnique<metrics::NetworkMetricsProvider>(
+          web::WebThread::GetBlockingPool()));
 
   // Currently, we configure OmniboxMetricsProvider to not log events to UMA
   // if there is a single incognito session visible. In the future, it may
   // be worth revisiting this to still log events from non-incognito sessions.
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider(
-          base::Bind(&::IsOffTheRecordSessionActive))));
+      base::MakeUnique<OmniboxMetricsProvider>(
+          base::Bind(&BrowserListIOS::IsOffTheRecordSessionActive)));
 
-  stability_metrics_provider_ = new IOSChromeStabilityMetricsProvider(
-      GetApplicationContext()->GetLocalState());
-  metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(stability_metrics_provider_));
-
-  metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new metrics::ScreenInfoMetricsProvider));
-
-  drive_metrics_provider_ = new metrics::DriveMetricsProvider(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE),
-      ios::FILE_LOCAL_STATE);
-  metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(drive_metrics_provider_));
-
-  profiler_metrics_provider_ = new metrics::ProfilerMetricsProvider(
-      base::Bind(&metrics::IsCellularLogicEnabled));
-  metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
+  {
+    auto stability_metrics_provider =
+        base::MakeUnique<IOSChromeStabilityMetricsProvider>(
+            GetApplicationContext()->GetLocalState());
+    stability_metrics_provider_ = stability_metrics_provider.get();
+    metrics_service_->RegisterMetricsProvider(
+        std::move(stability_metrics_provider));
+  }
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new metrics::CallStackProfileMetricsProvider));
+      base::MakeUnique<metrics::ScreenInfoMetricsProvider>());
+
+  {
+    auto drive_metrics_provider =
+        base::MakeUnique<metrics::DriveMetricsProvider>(
+            web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE),
+            ios::FILE_LOCAL_STATE);
+    drive_metrics_provider_ = drive_metrics_provider.get();
+    metrics_service_->RegisterMetricsProvider(
+        std::move(drive_metrics_provider));
+  }
+
+  {
+    auto profiler_metrics_provider =
+        base::MakeUnique<metrics::ProfilerMetricsProvider>(
+            base::Bind(&metrics::IsCellularLogicEnabled));
+    profiler_metrics_provider_ = profiler_metrics_provider.get();
+    metrics_service_->RegisterMetricsProvider(
+        std::move(profiler_metrics_provider));
+  }
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          SigninStatusMetricsProvider::CreateInstance(base::WrapUnique(
-              new IOSChromeSigninStatusMetricsProviderDelegate))));
+      base::MakeUnique<metrics::CallStackProfileMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new MobileSessionShutdownMetricsProvider(metrics_service_.get())));
+      base::WrapUnique(SigninStatusMetricsProvider::CreateInstance(
+          base::MakeUnique<IOSChromeSigninStatusMetricsProviderDelegate>())));
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new syncer::DeviceCountMetricsProvider(
-              base::Bind(&IOSChromeSyncClient::GetDeviceInfoTrackers))));
+      base::MakeUnique<MobileSessionShutdownMetricsProvider>(
+          metrics_service_.get()));
 
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new translate::TranslateRankerMetricsProvider()));
+      base::MakeUnique<syncer::DeviceCountMetricsProvider>(
+          base::Bind(&IOSChromeSyncClient::GetDeviceInfoTrackers)));
+
+  metrics_service_->RegisterMetricsProvider(
+      base::MakeUnique<translate::TranslateRankerMetricsProvider>());
 }
 
 void IOSChromeMetricsServiceClient::OnInitTaskGotDriveMetrics() {

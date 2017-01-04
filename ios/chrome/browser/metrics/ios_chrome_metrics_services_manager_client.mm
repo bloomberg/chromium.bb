@@ -16,7 +16,7 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
-#include "ios/chrome/browser/ui/browser_otr_state.h"
+#include "ios/chrome/browser/ui/browser_list_ios.h"
 #include "ios/chrome/browser/variations/ios_chrome_variations_service_client.h"
 #include "ios/chrome/browser/variations/ios_ui_string_overrider_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -50,7 +50,8 @@ class IOSChromeMetricsServicesManagerClient::IOSChromeEnabledStateProvider
 
 IOSChromeMetricsServicesManagerClient::IOSChromeMetricsServicesManagerClient(
     PrefService* local_state)
-    : enabled_state_provider_(new IOSChromeEnabledStateProvider()),
+    : enabled_state_provider_(
+          base::MakeUnique<IOSChromeEnabledStateProvider>()),
       local_state_(local_state) {
   DCHECK(local_state);
 }
@@ -62,7 +63,7 @@ std::unique_ptr<rappor::RapporServiceImpl>
 IOSChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return base::MakeUnique<rappor::RapporServiceImpl>(
-      local_state_, base::Bind(&::IsOffTheRecordSessionActive));
+      local_state_, base::Bind(&BrowserListIOS::IsOffTheRecordSessionActive));
 }
 
 std::unique_ptr<variations::VariationsService>
@@ -73,7 +74,7 @@ IOSChromeMetricsServicesManagerClient::CreateVariationsService() {
   // a dummy value for the name of the switch that disables background
   // networking.
   return variations::VariationsService::Create(
-      base::WrapUnique(new IOSChromeVariationsServiceClient), local_state_,
+      base::MakeUnique<IOSChromeVariationsServiceClient>(), local_state_,
       GetMetricsStateManager(), "dummy-disable-background-switch",
       ::CreateUIStringOverrider());
 }

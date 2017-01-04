@@ -66,10 +66,6 @@ std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
 }
 
-bool ChromeBrowserProvider::IsOffTheRecordSessionActive() {
-  return false;
-}
-
 void ChromeBrowserProvider::GetFaviconForURL(
     ios::ChromeBrowserState* browser_state,
     const GURL& page_url,

@@ -11,16 +11,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/tabs/tab_model_synced_window_delegate_getter.h"
-#import "ios/chrome/browser/ui/browser_list_ios.h"
 #include "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 
 DownstreamChromiumBrowserProvider::DownstreamChromiumBrowserProvider() {}
 
 DownstreamChromiumBrowserProvider::~DownstreamChromiumBrowserProvider() {}
-
-bool DownstreamChromiumBrowserProvider::IsOffTheRecordSessionActive() {
-  return BrowserListIOS::IsOffTheRecordSessionActive();
-}
 
 void DownstreamChromiumBrowserProvider::GetFaviconForURL(
     ios::ChromeBrowserState* browser_state,

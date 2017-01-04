@@ -91,8 +91,6 @@ class ChromeBrowserProvider {
   virtual std::string GetDistributionBrandCode();
   // Returns risk data used in Wallet requests.
   virtual std::string GetRiskData();
-  // Returns whether there is an Off-The-Record session active.
-  virtual bool IsOffTheRecordSessionActive();
   // Get the favicon for |page_url| and run |callback| with result when loaded.
   // Note. |callback| is always run asynchronously.
   virtual void GetFaviconForURL(
