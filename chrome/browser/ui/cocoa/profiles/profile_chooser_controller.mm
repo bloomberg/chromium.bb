@@ -1568,8 +1568,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [[NSMutableArray alloc] init]);
   // Local and guest profiles cannot lock their profile.
   bool showLock = false;
-  bool isFastProfileChooser = switches::IsMaterialDesignUserMenu() ?
-      false : viewMode_ == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
+  bool isFastProfileChooser =
+      viewMode_ == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
   if (isFastProfileChooser) {
     // The user is using right-click switching, no need to tell them about it.
     PrefService* localState = g_browser_process->local_state();
@@ -1606,9 +1606,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   CGFloat yOffset = 1;
 
   if (isFastProfileChooser) {
-    [self buildFastUserSwitcherViewWithProfiles:otherProfiles.get()
-                                      atYOffset:yOffset
-                                    inContainer:container];
+    if (!switches::IsMaterialDesignUserMenu()) {
+      [self buildFastUserSwitcherViewWithProfiles:otherProfiles.get()
+                                        atYOffset:yOffset
+                                      inContainer:container];
+    }
   } else {
     [self buildProfileChooserViewWithProfileView:currentProfileView
                                     tutorialView:tutorialView
