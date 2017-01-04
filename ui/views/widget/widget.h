@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_types.h"
@@ -58,6 +59,10 @@ class OSExchangeData;
 class ThemeProvider;
 class Window;
 }  // namespace ui
+
+namespace wm {
+enum class ShadowElevation;
+}
 
 namespace views {
 
@@ -232,6 +237,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     Ownership ownership;
     bool mirror_origin_in_rtl;
     ShadowType shadow_type;
+    // A hint about the size of the shadow if the type is SHADOW_TYPE_DROP. May
+    // be ignored on some platforms. No value indicates no preference.
+    base::Optional<wm::ShadowElevation> shadow_elevation;
     // Specifies that the system default caption and icon should not be
     // rendered, and that the client area should be equivalent to the window
     // area. Only used on some platforms (Windows and Linux).

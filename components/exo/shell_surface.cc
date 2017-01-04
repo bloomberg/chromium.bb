@@ -1409,11 +1409,11 @@ void ShellSurface::UpdateShadow() {
     return;
   aura::Window* window = widget_->GetNativeWindow();
   if (!shadow_enabled_) {
-    wm::SetShadowType(window, wm::SHADOW_TYPE_NONE);
+    wm::SetShadowElevation(window, wm::ShadowElevation::NONE);
     if (shadow_underlay_)
       shadow_underlay_->Hide();
   } else {
-    wm::SetShadowType(window, wm::SHADOW_TYPE_RECTANGULAR);
+    wm::SetShadowElevation(window, wm::ShadowElevation::MEDIUM);
 
     gfx::Rect shadow_content_bounds = shadow_content_bounds_;
     if (shadow_content_bounds.IsEmpty())
@@ -1505,7 +1505,7 @@ void ShellSurface::UpdateShadow() {
     // Surfaces that can't be activated are usually menus and tooltips. Use a
     // small style shadow for them.
     if (!activatable_)
-      shadow->SetStyle(wm::Shadow::STYLE_SMALL);
+      shadow->SetElevation(wm::ShadowElevation::SMALL);
   }
 }
 

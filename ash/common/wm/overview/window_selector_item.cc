@@ -44,6 +44,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/wm/core/shadow.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -666,7 +667,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   if (ash::MaterialDesignController::GetMode() ==
       ash::MaterialDesignController::Mode::MATERIAL_EXPERIMENTAL) {
     shadow_.reset(new ::wm::Shadow());
-    shadow_->Init(::wm::Shadow::STYLE_INACTIVE);
+    shadow_->Init(::wm::ShadowElevation::MEDIUM);
     shadow_->layer()->SetVisible(true);
     window_label_->GetLayer()->Add(shadow_->layer());
   }

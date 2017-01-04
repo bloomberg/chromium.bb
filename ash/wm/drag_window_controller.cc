@@ -93,7 +93,7 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
     drag_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
     container->AddChild(drag_window_);
     drag_window_->SetBounds(bounds_in_screen);
-    SetShadowType(drag_window_, ::wm::SHADOW_TYPE_RECTANGULAR);
+    SetShadowElevation(drag_window_, ::wm::ShadowElevation::LARGE);
 
     RecreateWindowLayers(original_window);
     layer_owner_->root()->SetVisible(true);

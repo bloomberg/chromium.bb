@@ -26,6 +26,7 @@
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/wm/core/shadow.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace {
 
@@ -281,7 +282,7 @@ void KeyboardUIContent::OnWindowBoundsChanged(aura::Window* window,
                                               const gfx::Rect& new_bounds) {
   if (!shadow_) {
     shadow_.reset(new wm::Shadow());
-    shadow_->Init(wm::Shadow::STYLE_ACTIVE);
+    shadow_->Init(wm::ShadowElevation::LARGE);
     shadow_->layer()->SetVisible(true);
     DCHECK(keyboard_contents_->GetNativeView()->parent());
     keyboard_contents_->GetNativeView()->parent()->layer()->Add(

@@ -143,10 +143,12 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   window_->Init(params.layer_type);
   // Set name after layer init so it propagates to layer.
   window_->SetName(params.name);
-  if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_NONE)
-    SetShadowType(window_, wm::SHADOW_TYPE_NONE);
-  else if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP)
-    SetShadowType(window_, wm::SHADOW_TYPE_RECTANGULAR);
+  if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_NONE) {
+    SetShadowElevation(window_, wm::ShadowElevation::NONE);
+  } else if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP &&
+             params.shadow_elevation) {
+    SetShadowElevation(window_, *params.shadow_elevation);
+  }
   if (params.type == Widget::InitParams::TYPE_CONTROL)
     window_->Show();
 

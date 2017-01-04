@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace wm {
 namespace {
@@ -21,7 +22,7 @@ TEST_F(ShadowTest, SetContentBounds) {
   // Verify that layer bounds are outset from content bounds.
   Shadow shadow;
   {
-    shadow.Init(Shadow::STYLE_ACTIVE);
+    shadow.Init(ShadowElevation::LARGE);
     gfx::Rect content_bounds(100, 100, 300, 300);
     shadow.SetContentBounds(content_bounds);
     EXPECT_EQ(content_bounds, shadow.content_bounds());
@@ -31,7 +32,7 @@ TEST_F(ShadowTest, SetContentBounds) {
   }
 
   {
-    shadow.SetStyle(Shadow::STYLE_SMALL);
+    shadow.SetElevation(ShadowElevation::SMALL);
     gfx::Rect content_bounds(100, 100, 300, 300);
     shadow.SetContentBounds(content_bounds);
     EXPECT_EQ(content_bounds, shadow.content_bounds());
@@ -45,7 +46,7 @@ TEST_F(ShadowTest, SetContentBounds) {
 // the full elevation.
 TEST_F(ShadowTest, AdjustElevationForSmallContents) {
   Shadow shadow;
-  shadow.Init(Shadow::STYLE_ACTIVE);
+  shadow.Init(ShadowElevation::LARGE);
   {
     gfx::Rect content_bounds(100, 100, 300, 300);
     shadow.SetContentBounds(content_bounds);

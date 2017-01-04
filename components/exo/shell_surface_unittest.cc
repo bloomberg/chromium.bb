@@ -550,14 +550,14 @@ TEST_F(ShellSurfaceTest, Shadow) {
   shell_surface->SetRectangularShadow(false);
   surface->Commit();
 
-  EXPECT_EQ(wm::SHADOW_TYPE_NONE, wm::GetShadowType(window));
+  EXPECT_EQ(wm::ShadowElevation::NONE, wm::GetShadowElevation(window));
   EXPECT_FALSE(shadow->layer()->visible());
 
   // 6) This should enable shadow.
   shell_surface->SetRectangularShadow(true);
   surface->Commit();
 
-  EXPECT_EQ(wm::SHADOW_TYPE_RECTANGULAR, wm::GetShadowType(window));
+  EXPECT_EQ(wm::ShadowElevation::MEDIUM, wm::GetShadowElevation(window));
   EXPECT_TRUE(shadow->layer()->visible());
 }
 
@@ -588,7 +588,7 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
   shell_surface->SetRectangularShadow(true);
   shell_surface->SetRectangularShadowContentBounds(shadow_bounds);
   surface->Commit();
-  EXPECT_EQ(wm::SHADOW_TYPE_RECTANGULAR, wm::GetShadowType(window));
+  EXPECT_EQ(wm::ShadowElevation::MEDIUM, wm::GetShadowElevation(window));
 
   // Shadow overlay bounds.
   EXPECT_TRUE(shadow->layer()->visible());

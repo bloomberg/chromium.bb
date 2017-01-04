@@ -17,28 +17,15 @@ class Layer;
 }  // namespace ui
 
 namespace wm {
+enum class ShadowElevation;
 
 // Simple class that draws a drop shadow around content at given bounds.
 class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
  public:
-  // TODO(estade): remove this enum and instead set elevation directly.
-  enum Style {
-    // Active windows have more opaque shadows, shifted down to make the window
-    // appear "higher".
-    STYLE_ACTIVE,
-
-    // Inactive windows have less opaque shadows.
-    STYLE_INACTIVE,
-
-    // Small windows like tooltips and context menus have lighter, smaller
-    // shadows.
-    STYLE_SMALL,
-  };
-
   Shadow();
   ~Shadow() override;
 
-  void Init(Style style);
+  void Init(ShadowElevation elevation);
 
   // Returns |layer_.get()|. This is exposed so it can be added to the same
   // layer as the content and stacked below it.  SetContentBounds() should be
@@ -51,32 +38,33 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   ui::Layer* shadow_layer() const { return shadow_layer_.get(); }
 
   const gfx::Rect& content_bounds() const { return content_bounds_; }
-  Style style() const { return style_; }
+  ShadowElevation desired_elevation() const { return desired_elevation_; }
 
   // Moves and resizes the shadow layer to frame |content_bounds|.
   void SetContentBounds(const gfx::Rect& content_bounds);
 
-  // Sets the shadow's style, animating opacity as necessary.
-  void SetStyle(Style style);
+  // Sets the shadow's appearance, animating opacity as necessary.
+  void SetElevation(ShadowElevation elevation);
 
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
 
  private:
-  // Updates the shadow layer and its image to the current |style_|.
+  // Updates the shadow layer and its image to reflect |desired_elevation_|.
   void RecreateShadowLayer();
 
   // Updates the shadow layer bounds based on the inteior inset and the current
   // |content_bounds_|.
   void UpdateLayerBounds();
 
-  // Returns the "elevation" for |style_|, which dictates the shadow's display
-  // characteristics. The elevation is proportional to the size of the blur and
-  // its offset.
-  int ElevationForStyle();
+  // The goal elevation, set when the transition animation starts. The elevation
+  // dictates the shadow's display characteristics and is proportional to the
+  // size of the blur and its offset. This may not match reality if the window
+  // isn't big enough to support it.
+  ShadowElevation desired_elevation_;
 
-  // The current style, set when the transition animation starts.
-  Style style_ = STYLE_ACTIVE;
+  // The elevation of the shadow image that's currently set on |shadow_layer_|.
+  int effective_elevation_ = 0;
 
   // The parent layer of the shadow layer. It serves as a container accessible
   // from the outside to control the visibility of the shadow.
@@ -85,15 +73,12 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   // The actual shadow layer corresponding to a cc::NinePatchLayer.
   std::unique_ptr<ui::Layer> shadow_layer_;
 
-  // When the style changes, the old shadow cross-fades with the new one.
+  // When the elevation changes, the old shadow cross-fades with the new one.
   // When non-null, this is an old |shadow_layer_| that's being animated out.
   std::unique_ptr<ui::Layer> fading_layer_;
 
   // Bounds of the content that the shadow encloses.
   gfx::Rect content_bounds_;
-
-  // The elevation of the shadow image that's currently set on |shadow_layer_|.
-  int effective_elevation_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Shadow);
 };

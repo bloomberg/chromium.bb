@@ -10,6 +10,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace wm {
 
@@ -63,12 +64,12 @@ const ShadowDetails& GetDetailsForElevation(int elevation) {
 
 }  // namespace
 
-Shadow::Shadow() {}
+Shadow::Shadow() : desired_elevation_(ShadowElevation::NONE) {}
 
 Shadow::~Shadow() {}
 
-void Shadow::Init(Style style) {
-  style_ = style;
+void Shadow::Init(ShadowElevation elevation) {
+  desired_elevation_ = elevation;
   layer_.reset(new ui::Layer(ui::LAYER_NOT_DRAWN));
   RecreateShadowLayer();
 }
@@ -83,11 +84,11 @@ void Shadow::SetContentBounds(const gfx::Rect& content_bounds) {
   UpdateLayerBounds();
 }
 
-void Shadow::SetStyle(Style style) {
-  if (style_ == style)
+void Shadow::SetElevation(ShadowElevation elevation) {
+  if (desired_elevation_ == elevation)
     return;
 
-  style_ = style;
+  desired_elevation_ = elevation;
 
   // Stop waiting for any as yet unfinished implicit animations.
   StopObservingImplicitAnimations();
@@ -137,14 +138,14 @@ void Shadow::UpdateLayerBounds() {
   if (content_bounds_.IsEmpty())
     return;
 
-  // The elevation depends on the style, but the ninebox assumption breaks down
-  // when the window is too small. The height/width of |blur_region| will be
-  // 4 * elevation (see GetDetailsForElevation), so cap elevation at the most we
-  // can handle.
+  // The ninebox assumption breaks down when the window is too small for the
+  // desired elevation. The height/width of |blur_region| will be 4 * elevation
+  // (see GetDetailsForElevation), so cap elevation at the most we can handle.
   const int smaller_dimension =
       std::min(content_bounds_.width(), content_bounds_.height());
-  const int size_adjusted_elevation = std::min(
-      (smaller_dimension - 2 * kRoundedCornerRadius) / 4, ElevationForStyle());
+  const int size_adjusted_elevation =
+      std::min((smaller_dimension - 2 * kRoundedCornerRadius) / 4,
+               static_cast<int>(desired_elevation_));
   const ShadowDetails& details =
       GetDetailsForElevation(size_adjusted_elevation);
   gfx::Insets blur_region = gfx::ShadowValue::GetBlurRegion(details.values) +
@@ -202,19 +203,6 @@ void Shadow::UpdateLayerBounds() {
   shadow_layer_->UpdateNinePatchLayerBorder(
       gfx::Rect(blur_region.left(), blur_region.top(), blur_region.width(),
                 blur_region.height()));
-}
-
-int Shadow::ElevationForStyle() {
-  switch (style_) {
-    case STYLE_ACTIVE:
-      return 24;
-    case STYLE_INACTIVE:
-      return 8;
-    case STYLE_SMALL:
-      return 6;
-  }
-  NOTREACHED();
-  return 0;
 }
 
 }  // namespace wm

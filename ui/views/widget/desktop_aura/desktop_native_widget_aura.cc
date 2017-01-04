@@ -409,7 +409,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   }
   content_window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   content_window_->Init(params.layer_type);
-  wm::SetShadowType(content_window_, wm::SHADOW_TYPE_NONE);
+  wm::SetShadowElevation(content_window_, wm::ShadowElevation::NONE);
 
   content_window_container_ = new aura::Window(NULL);
   content_window_container_->Init(ui::LAYER_NOT_DRAWN);

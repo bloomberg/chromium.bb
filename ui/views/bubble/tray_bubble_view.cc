@@ -28,6 +28,7 @@
 #include "ui/views/bubble/bubble_window_targeter.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace views {
 
@@ -274,6 +275,7 @@ void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
     delegate_->OnBeforeBubbleWidgetInit(anchor_widget(), bubble_widget, params);
   // Apply a WM-provided shadow (see ui/wm/core/).
   params->shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
+  params->shadow_elevation = wm::ShadowElevation::LARGE;
 }
 
 NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(Widget* widget) {
