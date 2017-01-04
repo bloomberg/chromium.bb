@@ -129,9 +129,8 @@ void LoadablePluginPlaceholder::ReplacePlugin(blink::WebPlugin* new_plugin) {
 
   container->invalidate();
   container->reportGeometry();
-  if (plugin()->focused())
-    new_plugin->updateFocus(true, blink::WebFocusTypeNone);
   container->element().setAttribute("title", plugin()->old_title());
+  plugin()->ReplayReceivedData(new_plugin);
   plugin()->destroy();
 }
 
