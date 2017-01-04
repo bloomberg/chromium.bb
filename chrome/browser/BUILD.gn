@@ -3890,6 +3890,7 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java",
       "../android/java/src/org/chromium/chrome/browser/PasswordUIView.java",
       "../android/java/src/org/chromium/chrome/browser/SSLClientCertificateRequest.java",
+      "../android/java/src/org/chromium/chrome/browser/SearchGeolocationDisclosureTabHelper.java",
       "../android/java/src/org/chromium/chrome/browser/ServiceTabLauncher.java",
       "../android/java/src/org/chromium/chrome/browser/ShortcutHelper.java",
       "../android/java/src/org/chromium/chrome/browser/TabState.java",

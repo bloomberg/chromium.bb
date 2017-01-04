@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_SEARCH_GEOLOCATION_DISCLOSURE_TAB_HELPER_H_
 #define CHROME_BROWSER_ANDROID_SEARCH_GEOLOCATION_DISCLOSURE_TAB_HELPER_H_
 
+#include <jni.h>
+
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -30,12 +32,17 @@ class SearchGeolocationDisclosureTabHelper
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Registers native methods.
+  static bool Register(JNIEnv* env);
+
  private:
   explicit SearchGeolocationDisclosureTabHelper(content::WebContents* contents);
   friend class content::WebContentsUserData<
       SearchGeolocationDisclosureTabHelper>;
 
   void MaybeShowDefaultSearchGeolocationDisclosure(const GURL& gurl);
+
+  bool ShouldShowDisclosureForUrl(const GURL& gurl);
 
   // Record metrics, once per client, of the permission state before and after
   // the disclosure has been shown.

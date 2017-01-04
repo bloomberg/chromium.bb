@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/search_geolocation_disclosure_tab_helper.h"
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,6 +25,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/GeolocationHeader_jni.h"
+#include "jni/SearchGeolocationDisclosureTabHelper_jni.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace {
@@ -31,6 +34,9 @@ const int kDefaultMaxShowCount = 3;
 const int kDefaultDaysPerShow = 1;
 const char kMaxShowCountVariation[] = "MaxShowCount";
 const char kDaysPerShowVariation[] = "DaysPerShow";
+
+bool gIgnoreUrlChecksForTesting = false;
+int gDayOffsetForTesting = 0;
 
 int GetMaxShowCount() {
   std::string variation = variations::GetVariationParamValueByFeature(
@@ -50,6 +56,10 @@ int GetDaysPerShow() {
     return days_per_show;
 
   return kDefaultDaysPerShow;
+}
+
+base::Time GetTimeNow() {
+  return base::Time::Now() + base::TimeDelta::FromDays(gDayOffsetForTesting);
 }
 
 }  // namespace
@@ -88,29 +98,19 @@ void SearchGeolocationDisclosureTabHelper::RegisterProfilePrefs(
       prefs::kSearchGeolocationPostDisclosureMetricsRecorded, false);
 }
 
+// static
+bool SearchGeolocationDisclosureTabHelper::Register(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
 void SearchGeolocationDisclosureTabHelper::
     MaybeShowDefaultSearchGeolocationDisclosure(const GURL& gurl) {
   // Don't show in incognito.
   if (GetProfile()->IsOffTheRecord())
     return;
 
-  // Only show the disclosure for default search navigations from the omnibox.
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(GetProfile());
-  bool is_search_url =
-      template_url_service->IsSearchResultsPageFromDefaultSearchProvider(
-          gurl);
-  if (!is_search_url)
+  if (!ShouldShowDisclosureForUrl(gurl))
     return;
-
-  // Only show the disclosure if Google is the default search engine.
-  TemplateURL* default_search =
-      template_url_service->GetDefaultSearchProvider();
-  if (!default_search ||
-      !default_search->url_ref().HasGoogleBaseURLs(
-          template_url_service->search_terms_data())) {
-    return;
-  }
 
   // Don't show the infobar if the user has dismissed it, or they've seen it
   // enough times already.
@@ -132,8 +132,7 @@ void SearchGeolocationDisclosureTabHelper::
   // Or if it has been shown too recently.
   base::Time last_shown = base::Time::FromInternalValue(
       prefs->GetInt64(prefs::kSearchGeolocationDisclosureLastShowDate));
-  if (base::Time::Now() - last_shown <
-      base::TimeDelta::FromDays(GetDaysPerShow())) {
+  if (GetTimeNow() - last_shown < base::TimeDelta::FromDays(GetDaysPerShow())) {
     return;
   }
 
@@ -160,7 +159,33 @@ void SearchGeolocationDisclosureTabHelper::
   shown_count++;
   prefs->SetInteger(prefs::kSearchGeolocationDisclosureShownCount, shown_count);
   prefs->SetInt64(prefs::kSearchGeolocationDisclosureLastShowDate,
-                  base::Time::Now().ToInternalValue());
+                  GetTimeNow().ToInternalValue());
+}
+
+bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForUrl(
+    const GURL& gurl) {
+  if (gIgnoreUrlChecksForTesting)
+    return true;
+
+  // Only show the disclosure for default search navigations from the omnibox.
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(GetProfile());
+  bool is_search_url =
+      template_url_service->IsSearchResultsPageFromDefaultSearchProvider(
+          gurl);
+  if (!is_search_url)
+    return false;
+
+  // Only show the disclosure if Google is the default search engine.
+  TemplateURL* default_search =
+      template_url_service->GetDefaultSearchProvider();
+  if (!default_search ||
+      !default_search->url_ref().HasGoogleBaseURLs(
+          template_url_service->search_terms_data())) {
+    return false;
+  }
+
+  return true;
 }
 
 void SearchGeolocationDisclosureTabHelper::RecordPreDisclosureMetrics(
@@ -203,4 +228,18 @@ void SearchGeolocationDisclosureTabHelper::RecordPostDisclosureMetrics(
 
 Profile* SearchGeolocationDisclosureTabHelper::GetProfile() {
   return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+}
+
+// static
+void SetIgnoreUrlChecksForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& clazz) {
+  gIgnoreUrlChecksForTesting = true;
+}
+
+// static
+void SetDayOffsetForTesting(JNIEnv* env,
+                            const base::android::JavaParamRef<jclass>& clazz,
+                            jint days) {
+  gDayOffsetForTesting = days;
 }
