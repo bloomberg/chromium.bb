@@ -43,8 +43,6 @@ bool NGBlockNode::Layout(NGConstraintSpace* constraint_space,
                          NGFragmentBase** out) {
   DCHECK(!minmax_algorithm_)
       << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
-  if (layout_box_ && layout_box_->isOutOfFlowPositioned())
-    layout_box_->containingBlock()->insertPositionedObject(layout_box_);
   // We can either use the new layout code to do the layout and then copy the
   // resulting size to the LayoutObject, or use the old layout code and
   // synthesize a fragment.

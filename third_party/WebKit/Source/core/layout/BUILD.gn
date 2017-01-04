@@ -322,6 +322,8 @@ blink_core_sources("layout") {
     "ng/ng_line_builder.cc",
     "ng/ng_line_builder.h",
     "ng/ng_macros.h",
+    "ng/ng_out_of_flow_layout_part.cc",
+    "ng/ng_out_of_flow_layout_part.h",
     "ng/ng_physical_fragment.cc",
     "ng/ng_physical_fragment.h",
     "ng/ng_physical_fragment_base.cc",

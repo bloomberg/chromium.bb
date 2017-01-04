@@ -12,6 +12,7 @@
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_length_utils.h"
+#include "core/layout/ng/ng_out_of_flow_layout_part.h"
 #include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
@@ -292,15 +293,13 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
     }
     case kStatePrepareForChildLayout: {
       if (current_child_) {
-        // TODO(atotic): uncomment this code when implementing oof layout.
-        // This code cannot be turned on because it prevents layout of
-        // oof children, and non-layedout objects trigger  a DCHECK.
-        // EPosition position = current_child_->Style()->position();
-        // if ((position == AbsolutePosition || position == FixedPosition)) {
-        //   builder_->AddOutOfFlowCandidateChild(current_child_,
-        //   GetChildSpaceOffset());
-        // }
-        // else
+        EPosition position = current_child_->Style()->position();
+        if ((position == AbsolutePosition || position == FixedPosition)) {
+          builder_->AddOutOfFlowChildCandidate(current_child_,
+                                               GetChildSpaceOffset());
+          current_child_ = current_child_->NextSibling();
+          return kNotFinished;
+        }
         space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
         *algorithm_out = NGLayoutInputNode::AlgorithmForInputNode(
             current_child_, space_for_current_child_);
@@ -308,7 +307,21 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
         return kChildAlgorithmRequired;
       }
 
-      layout_state_ = kStateFinalize;
+      // Prepare for kStateOutOfFlowLayout
+      content_size_ += border_and_padding_.block_end;
+
+      // Recompute the block-axis size now that we know our content size.
+      LayoutUnit block_size = ComputeBlockSizeForFragment(
+          ConstraintSpace(), Style(), content_size_);
+      builder_->SetBlockSize(block_size);
+
+      // Out of flow setup.
+      out_of_flow_layout_ = new NGOutOfFlowLayoutPart(style_, builder_->Size());
+      builder_->GetAndClearOutOfFlowDescendantCandidates(
+          &out_of_flow_candidates_, &out_of_flow_candidate_positions_);
+      out_of_flow_candidate_positions_index_ = 0;
+      current_child_ = nullptr;
+      layout_state_ = kStateOutOfFlowLayout;
       return kNotFinished;
     }
     case kStateChildLayout: {
@@ -326,15 +339,12 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       layout_state_ = kStatePrepareForChildLayout;
       return kNotFinished;
     }
+    case kStateOutOfFlowLayout:
+      if (LayoutOutOfFlowChild())
+        layout_state_ = kStateFinalize;
+      return kNotFinished;
     case kStateFinalize: {
-      content_size_ += border_and_padding_.block_end;
-
-      // Recompute the block-axis size now that we know our content size.
-      LayoutUnit block_size = ComputeBlockSizeForFragment(
-          ConstraintSpace(), Style(), content_size_);
-
-      builder_->SetBlockSize(block_size)
-          .SetInlineOverflow(max_inline_size_)
+      builder_->SetInlineOverflow(max_inline_size_)
           .SetBlockOverflow(content_size_);
       *fragment_out = builder_->ToFragment();
       layout_state_ = kStateInit;
@@ -361,6 +371,34 @@ void NGBlockLayoutAlgorithm::FinishCurrentChildLayout(
     fragment_offset = PositionFragment(*fragment, child_margins);
   }
   builder_->AddChild(fragment, fragment_offset);
+}
+
+bool NGBlockLayoutAlgorithm::LayoutOutOfFlowChild() {
+  if (!current_child_) {
+    if (out_of_flow_candidates_.isEmpty()) {
+      out_of_flow_layout_ = nullptr;
+      out_of_flow_candidate_positions_.clear();
+      return true;
+    }
+    current_child_ = out_of_flow_candidates_.first();
+    out_of_flow_candidates_.removeFirst();
+    NGStaticPosition position = out_of_flow_candidate_positions_
+        [out_of_flow_candidate_positions_index_++];
+
+    if (!out_of_flow_layout_->StartLayout(current_child_, position)) {
+      builder_->AddOutOfFlowDescendant(current_child_, position);
+      current_child_ = nullptr;
+      return false;
+    }
+  }
+  NGFragmentBase* fragment;
+  NGLogicalOffset offset;
+  if (out_of_flow_layout_->Layout(&fragment, &offset) == kNewFragment) {
+    // TODO(atotic) Need to adjust size of overflow rect per spec.
+    builder_->AddChild(fragment, offset);
+    current_child_ = nullptr;
+  }
+  return false;
 }
 
 NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
@@ -523,6 +561,8 @@ DEFINE_TRACE(NGBlockLayoutAlgorithm) {
   visitor->trace(space_for_current_child_);
   visitor->trace(current_child_);
   visitor->trace(current_minmax_child_);
+  visitor->trace(out_of_flow_layout_);
+  visitor->trace(out_of_flow_candidates_);
 }
 
 }  // namespace blink

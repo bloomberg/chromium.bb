@@ -27,11 +27,12 @@ class CORE_EXPORT NGFragmentBuilder final
 
   NGFragmentBuilder& SetInlineSize(LayoutUnit);
   NGFragmentBuilder& SetBlockSize(LayoutUnit);
+  NGLogicalSize Size() const { return size_; }
 
   NGFragmentBuilder& SetInlineOverflow(LayoutUnit);
   NGFragmentBuilder& SetBlockOverflow(LayoutUnit);
 
-  NGFragmentBuilder& AddChild(NGFragmentBase*, NGLogicalOffset);
+  NGFragmentBuilder& AddChild(NGFragmentBase*, const NGLogicalOffset&);
 
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
@@ -55,11 +56,17 @@ class CORE_EXPORT NGFragmentBuilder final
   //
   // builder->SetInlineSize/SetBlockSize
   // builder->GetAndClearOutOfFlowDescendantCandidates(oof_candidates)
+  // NGOutOfFlowLayoutPart out_of_flow_layout(container_style,
+  //                                          builder->Size());
   // while (oof_candidates.size() > 0)
   // {
   //   candidate = oof_candidates.shift()
-  //   if (CanPosition(candidate))
-  //     fragment = candidate->Layout();
+  //   if (out_of_flow_layout.StartLayout(candidate))
+  //     NGFragmentBase* fragment;
+  //     NGLogicalOffset* fragment_offset;
+  //     while (out_of_flow_layout.Layout(&fragment, &fragment_offset) ==
+  //         kNotFinished)
+  //          ;
   //     builder->AddChild(fragment);
   //     builder->GetAndClearOutOfFlowDescendantCandidates(child_oof_candidates)
   //     oof_candidates.prepend(child_oof_candidates)

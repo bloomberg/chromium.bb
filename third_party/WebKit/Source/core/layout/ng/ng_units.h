@@ -105,6 +105,8 @@ struct NGPhysicalOffset {
 
   NGPhysicalOffset operator+(const NGPhysicalOffset& other) const;
   NGPhysicalOffset& operator+=(const NGPhysicalOffset& other);
+  NGPhysicalOffset operator-(const NGPhysicalOffset& other) const;
+  NGPhysicalOffset& operator-=(const NGPhysicalOffset& other);
 };
 
 struct NGPhysicalSize {
@@ -310,7 +312,6 @@ struct CORE_EXPORT NGStaticPosition {
   static NGStaticPosition Create(NGWritingMode,
                                  TextDirection,
                                  NGPhysicalOffset);
-
   // Left/Right/TopPosition functions map static position to
   // left/right/top edge wrt container space.
   // The function arguments are required to solve the equation:

@@ -19,6 +19,7 @@ class NGConstraintSpace;
 class NGConstraintSpaceBuilder;
 class NGFragment;
 class NGFragmentBuilder;
+class NGOutOfFlowLayoutPart;
 class NGPhysicalFragmentBase;
 
 // A class for general block layout (e.g. a <div> with no special style).
@@ -47,6 +48,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // Creates a new constraint space for the current child.
   NGConstraintSpace* CreateConstraintSpaceForCurrentChild() const;
   void FinishCurrentChildLayout(NGFragmentBase* fragment);
+  bool LayoutOutOfFlowChild();
 
   // Computes collapsed margins for 2 adjoining blocks and updates the resultant
   // fragment's MarginStrut if needed.
@@ -103,6 +105,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
     kStateInit,
     kStatePrepareForChildLayout,
     kStateChildLayout,
+    kStateOutOfFlowLayout,
     kStateFinalize
   };
   LayoutState layout_state_;
@@ -119,6 +122,11 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   Member<NGBlockNode> current_child_;
   Member<NGBlockNode> current_minmax_child_;
   MinAndMaxContentSizes pending_minmax_sizes_;
+
+  Member<NGOutOfFlowLayoutPart> out_of_flow_layout_;
+  HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_candidates_;
+  Vector<NGStaticPosition> out_of_flow_candidate_positions_;
+  size_t out_of_flow_candidate_positions_index_;
 
   NGBoxStrut border_and_padding_;
   LayoutUnit content_size_;
