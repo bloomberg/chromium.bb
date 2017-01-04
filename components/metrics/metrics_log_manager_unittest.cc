@@ -167,7 +167,7 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
       PersistedLogs ongoing_logs(std::unique_ptr<PersistedLogsMetricsImpl>(
                                      new PersistedLogsMetricsImpl()),
                                  &pref_service, prefs::kMetricsOngoingLogs,
-                                 prefs::kDeprecatedMetricsOngoingLogs, 1, 1, 0);
+                                 1, 1, 0);
       ongoing_logs.StoreLog(log);
       ongoing_logs.SerializeLogs();
     }

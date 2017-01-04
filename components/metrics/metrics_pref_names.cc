@@ -7,21 +7,6 @@
 namespace metrics {
 namespace prefs {
 
-// Array of strings that are each UMA logs that were supposed to be sent in the
-// first minute of a browser session. These logs include things like crash count
-// info, etc.
-// Deprecated by kMetricsInitialLogs.
-const char kDeprecatedMetricsInitialLogs[] =
-    "user_experience_metrics.initial_logs_list";
-
-// Array of strings that are each UMA logs that were not sent because the
-// browser terminated before these accumulated metrics could be sent. These
-// logs typically include histograms and memory reports, as well as ongoing
-// user activities.
-// Deprecated by kMetricsOngoingLogs.
-const char kDeprecatedMetricsOngoingLogs[] =
-    "user_experience_metrics.ongoing_logs_list";
-
 // Set once, to the current epoch time, on the first run of chrome on this
 // machine. Attached to metrics reports forever thereafter.
 const char kInstallDate[] = "uninstall_metrics.installation_date2";

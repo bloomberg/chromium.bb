@@ -23,7 +23,6 @@ namespace metrics {
 namespace {
 
 const char kTestPrefName[] = "TestPref";
-const char kTestOutdatedPrefName[] = "OutdatedTestPref";
 const size_t kLogCountLimit = 3;
 const size_t kLogByteLimit = 1000;
 
@@ -69,7 +68,6 @@ class TestPersistedLogs : public PersistedLogs {
                              new PersistedLogsMetricsImpl()),
                       service,
                       kTestPrefName,
-                      kTestOutdatedPrefName,
                       kLogCountLimit,
                       min_log_bytes,
                       0) {}

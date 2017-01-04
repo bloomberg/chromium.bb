@@ -27,17 +27,6 @@ const char kLogHashKey[] = "hash";
 const char kLogTimestampKey[] = "timestamp";
 const char kLogDataKey[] = "data";
 
-// Reads the value at |index| from |list_value| as a string and Base64-decodes
-// it into |result|. Returns true on success.
-bool ReadBase64String(const base::ListValue& list_value,
-                      size_t index,
-                      std::string* result) {
-  std::string base64_result;
-  if (!list_value.GetString(index, &base64_result))
-    return false;
-  return base::Base64Decode(base64_result, result);
-}
-
 std::string EncodeToBase64(const std::string& to_convert) {
   std::string base64_result;
   base::Base64Encode(to_convert, &base64_result);
@@ -71,14 +60,12 @@ void PersistedLogs::LogInfo::Init(PersistedLogsMetrics* metrics,
 PersistedLogs::PersistedLogs(std::unique_ptr<PersistedLogsMetrics> metrics,
                              PrefService* local_state,
                              const char* pref_name,
-                             const char* outdated_pref_name,
                              size_t min_log_count,
                              size_t min_log_bytes,
                              size_t max_log_size)
     : metrics_(std::move(metrics)),
       local_state_(local_state),
       pref_name_(pref_name),
-      outdated_pref_name_(outdated_pref_name),
       min_log_count_(min_log_count),
       min_log_bytes_(min_log_bytes),
       max_log_size_(max_log_size != 0 ? max_log_size : static_cast<size_t>(-1)),
@@ -93,20 +80,9 @@ PersistedLogs::~PersistedLogs() {}
 void PersistedLogs::SerializeLogs() const {
   ListPrefUpdate update(local_state_, pref_name_);
   WriteLogsToPrefList(update.Get());
-
-  // After writing all the logs to the new pref remove old outdated pref.
-  // TODO(gayane): Remove when all users are migrated. crbug.com/649440
-  if (local_state_->HasPrefPath(outdated_pref_name_))
-    local_state_->ClearPref(outdated_pref_name_);
 }
 
 PersistedLogs::LogReadStatus PersistedLogs::DeserializeLogs() {
-  // TODO(gayane): Remove the code for reading logs from outdated pref when all
-  // users are migrated. crbug.com/649440
-  if (local_state_->HasPrefPath(outdated_pref_name_)) {
-    return ReadLogsFromOldFormatPrefList(
-        *local_state_->GetList(outdated_pref_name_));
-  }
   return ReadLogsFromPrefList(*local_state_->GetList(pref_name_));
 }
 
@@ -205,31 +181,6 @@ void PersistedLogs::WriteLogsToPrefList(base::ListValue* list_value) const {
   }
   if (dropped_logs_num > 0)
     metrics_->RecordDroppedLogsNum(dropped_logs_num);
-}
-
-PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromOldFormatPrefList(
-    const base::ListValue& list_value) {
-  if (list_value.empty())
-    return metrics_->RecordLogReadStatus(LIST_EMPTY);
-
-  // For each log, there's two entries in the list (the data and the hash).
-  DCHECK_EQ(0U, list_value.GetSize() % 2);
-  const size_t log_count = list_value.GetSize() / 2;
-
-  // Resize |list_| ahead of time, so that values can be decoded directly into
-  // the elements of the list.
-  DCHECK(list_.empty());
-  list_.resize(log_count);
-
-  for (size_t i = 0; i < log_count; ++i) {
-    if (!ReadBase64String(list_value, i * 2, &list_[i].compressed_log_data) ||
-        !ReadBase64String(list_value, i * 2 + 1, &list_[i].hash)) {
-      list_.clear();
-      return metrics_->RecordLogReadStatus(LOG_STRING_CORRUPTION);
-    }
-  }
-
-  return metrics_->RecordLogReadStatus(RECALL_SUCCESS);
 }
 
 }  // namespace metrics
