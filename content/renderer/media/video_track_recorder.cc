@@ -53,6 +53,11 @@ namespace content {
 
 namespace {
 
+// HW encoders expect a nonzero bitrate, so |kVEADefaultBitratePerPixel| is used
+// to estimate bits per second for ~30 fps with ~1/16 compression rate.
+const int kVEADefaultBitratePerPixel = 2;
+// Number of output buffers used to copy the encoded data coming from HW
+// encoders.
 const int kVEAEncoderOutputBufferCount = 4;
 
 static struct {
@@ -509,7 +514,8 @@ VEAEncoder::VEAEncoder(
     media::VideoCodecProfile codec,
     const gfx::Size& size)
     : Encoder(on_encoded_video_callback,
-              bits_per_second,
+              bits_per_second > 0 ? bits_per_second
+                                  : size.GetArea() * kVEADefaultBitratePerPixel,
               RenderThreadImpl::current()->GetGpuFactories()->GetTaskRunner()),
       gpu_factories_(RenderThreadImpl::current()->GetGpuFactories()),
       codec_(codec),
@@ -692,6 +698,7 @@ void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
   DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   DCHECK(gpu_factories_->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK_GT(bits_per_second_, 0);
 
   input_size_ = size;
   video_encoder_ = gpu_factories_->CreateVideoEncodeAccelerator();
