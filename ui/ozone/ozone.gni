@@ -33,7 +33,9 @@ declare_args() {
     ozone_platform = "headless"
     ozone_platform_headless = true
 
-    if (is_chromecast) {
+    if (is_cast_audio_only) {
+      # Just use headless for audio-only Cast platforms.
+    } else if (is_chromecast) {
       # Enable the Cast ozone platform on all A/V Cast builds.
       ozone_platform_cast = true
 
