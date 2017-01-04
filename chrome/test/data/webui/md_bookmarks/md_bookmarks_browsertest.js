@@ -39,3 +39,31 @@ MaterialBookmarksStoreTest.prototype = {
 TEST_F('MaterialBookmarksStoreTest', 'All', function() {
   mocha.run();
 });
+
+function MaterialBookmarksSidebarTest() {}
+
+MaterialBookmarksSidebarTest.prototype = {
+  __proto__: MaterialBookmarksBrowserTest.prototype,
+
+  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+    'sidebar_test.js',
+  ]),
+};
+
+TEST_F('MaterialBookmarksSidebarTest', 'All', function() {
+  mocha.run();
+});
+
+function MaterialBookmarksItemTest() {}
+
+MaterialBookmarksItemTest.prototype = {
+  __proto__: MaterialBookmarksBrowserTest.prototype,
+
+  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+    'item_test.js',
+  ]),
+};
+
+TEST_F('MaterialBookmarksItemTest', 'All', function() {
+  mocha.run();
+});

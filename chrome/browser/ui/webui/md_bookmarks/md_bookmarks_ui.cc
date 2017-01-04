@@ -54,10 +54,21 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   // Resources.
   source->AddResourcePath("app.html", IDR_MD_BOOKMARKS_APP_HTML);
   source->AddResourcePath("app.js", IDR_MD_BOOKMARKS_APP_JS);
+  source->AddResourcePath("folder_node.html",
+                          IDR_MD_BOOKMARKS_FOLDER_NODE_HTML);
+  source->AddResourcePath("folder_node.js",
+                          IDR_MD_BOOKMARKS_FOLDER_NODE_JS);
+  source->AddResourcePath("icons.html", IDR_MD_BOOKMARKS_ICONS_HTML);
+  source->AddResourcePath("item.html", IDR_MD_BOOKMARKS_ITEM_HTML);
+  source->AddResourcePath("item.js", IDR_MD_BOOKMARKS_ITEM_JS);
+  source->AddResourcePath("list.html", IDR_MD_BOOKMARKS_LIST_HTML);
+  source->AddResourcePath("list.js", IDR_MD_BOOKMARKS_LIST_JS);
   source->AddResourcePath("shared_style.html",
                           IDR_MD_BOOKMARKS_SHARED_STYLE_HTML);
   source->AddResourcePath("shared_vars.html",
                           IDR_MD_BOOKMARKS_SHARED_VARS_HTML);
+  source->AddResourcePath("sidebar.html", IDR_MD_BOOKMARKS_SIDEBAR_HTML);
+  source->AddResourcePath("sidebar.js", IDR_MD_BOOKMARKS_SIDEBAR_JS);
   source->AddResourcePath("store.html", IDR_MD_BOOKMARKS_STORE_HTML);
   source->AddResourcePath("store.js", IDR_MD_BOOKMARKS_STORE_JS);
   source->AddResourcePath("toolbar.html", IDR_MD_BOOKMARKS_TOOLBAR_HTML);

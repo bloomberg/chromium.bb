@@ -1,0 +1,86 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://bookmarks/icons.html">
+<link rel="import" href="chrome://bookmarks/shared_style.html">
+
+<dom-module id="bookmarks-folder-node">
+  <template>
+    <style include="shared-style">
+      :host {
+        display: block;
+      }
+
+      .v-centered {
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+      }
+
+      .menu-label {
+        -webkit-margin-start: 24px;
+        color: var(--folder-inactive-color);
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #container {
+        height: 40px;
+      }
+
+      #descendants {
+        -webkit-padding-start: 40.5px;
+      }
+
+      #folder-label {
+        color: var(--secondary-text-color);
+        cursor: pointer;
+        flex-grow: 1;
+        overflow: hidden;
+      }
+
+      :host([is-selected]) .menu-label,
+      :host([is-selected]) #folder-label {
+        color: var(--folder-active-color);
+      }
+
+      iron-icon {
+        --iron-icon-height: 20px;
+        --iron-icon-width: 20px;
+        min-width: 20px;
+      }
+
+      paper-icon-button {
+        color: var(--secondary-text-color);
+        height: 36px;
+        min-width: 36px;
+        padding: 8px;
+        width: 36px;
+      }
+    </style>
+
+    <div id="container" class="v-centered">
+      <div id="folder-label" class="v-centered" on-tap="selectFolder_">
+        <iron-icon icon="[[getFolderIcon_(isSelected)]]"></iron-icon>
+        <div class="menu-label">[[item.title]]</div>
+      </div>
+      <template is="dom-if" if="[[hasChildFolder_(item.children)]]">
+        <paper-icon-button icon="[[getArrowIcon_(item.isOpen)]]"
+            on-tap="toggleFolder_"></paper-icon-button>
+      </template>
+    </div>
+    <div id="descendants" hidden$="[[!item.isOpen]]">
+      <template is="dom-repeat" items="[[item.children]]" as="child">
+        <template is="dom-if" if="[[!child.url]]">
+          <bookmarks-folder-node item="[[child]]"
+              is-selected="[[child.isSelected]]"></bookmarks-folder-node>
+        </template>
+      </template>
+    </div>
+  </template>
+  <script src="chrome://bookmarks/folder_node.js"></script>
+</dom-module>

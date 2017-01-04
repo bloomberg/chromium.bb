@@ -1,0 +1,68 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://bookmarks/shared_style.html">
+
+<dom-module id="bookmarks-item">
+  <template>
+    <style include="shared-style">
+      :host {
+        -webkit-padding-start: 20px;
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        height: 40px;
+      }
+
+      #website-title {
+        color: var(--primary-text-color);
+        cursor: pointer;
+        flex: 1;
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #icon {
+        background-repeat: no-repeat;
+        height: 16px;
+        margin: 2px;
+      }
+
+      #icon-wrapper {
+        -webkit-margin-end: 20px;
+        height: 20px;
+        width: 20px;
+      }
+
+      .more-vert-button {
+        -webkit-margin-end: 12px;
+      }
+
+      iron-icon {
+        --iron-icon-height: 20px;
+        --iron-icon-width: 20px;
+        color: var(--secondary-text-color);
+      }
+      </style>
+    <div id="icon-wrapper">
+      <iron-icon id="folder-icon" icon="bookmarks:folder"
+          hidden$="[[!isFolder_]]">
+      </iron-icon>
+      <div id="icon" hidden$="[[isFolder_]]"></div>
+    </div>
+    <div id="website-title">
+      [[item.title]]
+    </div>
+    <button is="paper-icon-button-light" class="more-vert-button"
+        on-tap="onMenuButtonOpenTap_">
+      <div></div>
+      <div></div>
+      <div></div>
+    </button>
+  </template>
+  <script src="chrome://bookmarks/item.js"></script>
+<dom-module>

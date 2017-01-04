@@ -1,0 +1,43 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
+<link rel="import" href="chrome://bookmarks/item.html">
+<link rel="import" href="chrome://bookmarks/shared_style.html">
+
+<dom-module id="bookmarks-list">
+  <template>
+    <style include="shared-style">
+      :host {
+        padding: 20px 32px;
+      }
+
+      #bookmarks-card {
+        @apply(--shadow-elevation-2dp);
+        background-color: #fff;
+        margin: 0 auto;
+        max-width: var(--card-max-width);
+        min-width: var(--card-min-width);
+        padding: 8px 0;
+      }
+    </style>
+    <dialog is="cr-action-menu" id="dropdown">
+      <button class="dropdown-item" on-tap="onEditTap_">
+        $i18n{menuEdit}
+      </button>
+      <button class="dropdown-item" on-tap="onCopyURLTap_">
+        $i18n{menuCopyURL}
+      </button>
+      <button class="dropdown-item" on-tap="onDeleteTap_">
+         $i18n{menuDelete}
+      </button>
+    </dialog>
+    <div id="bookmarks-card">
+      <!-- TODO(angelayang): handle empty folders -->
+      <template is="dom-repeat" items="[[selectedNode.children]]" as="item">
+        <bookmarks-item item="[[item]]"></bookmarks-item>
+      </template>
+    </div>
+  </template>
+  <script src="chrome://bookmarks/list.js"></script>
+</dom-module>
