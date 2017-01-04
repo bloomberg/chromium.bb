@@ -20,11 +20,14 @@ class ReadingListModel;
 @class TabModel;
 
 // Audience for the ReadingListViewController, managing the visibility of the
-// toolbar.
+// toolbar and dismissing the Reading List View.
 @protocol ReadingListViewControllerAudience<NSObject>
 
 // Whether the collection has items.
 - (void)setCollectionHasItems:(BOOL)hasItems;
+
+// Dismisses the Reading List View.
+- (void)dismiss;
 
 @end
 
@@ -48,13 +51,6 @@ class ReadingListModel;
     NS_UNAVAILABLE;
 
 @property(nonatomic, weak) id<ReadingListViewControllerAudience> audience;
-
-@end
-
-@interface ReadingListViewController (Testing)
-
-// Dismisses this view controller.
-- (void)dismiss;
 
 @end
 

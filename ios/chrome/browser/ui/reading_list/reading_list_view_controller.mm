@@ -447,8 +447,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   // Reset observer to prevent further model update notifications.
   _modelBridge.reset();
   [_actionSheet stop];
-  [self.presentingViewController dismissViewControllerAnimated:YES
-                                                    completion:nil];
+  [self.audience dismiss];
 }
 
 - (void)loadModel {

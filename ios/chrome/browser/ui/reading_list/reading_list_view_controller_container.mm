@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_view_controller_container.h"
 
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
 
@@ -83,7 +84,7 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
   constraint.active = YES;
 }
 
-#pragma mark - ReadingListViewControllerDelegate
+#pragma mark - ReadingListViewControllerAudience
 
 - (void)setCollectionHasItems:(BOOL)hasItems {
   if (hasItems) {
@@ -108,6 +109,11 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
     // the collection takes the whole view.
     [_toolbar removeFromSuperview];
   }
+}
+
+- (void)dismiss {
+  [self.presentingViewController dismissViewControllerAnimated:YES
+                                                    completion:nil];
 }
 
 #pragma mark - ReadingListToolbarActionTarget
@@ -142,6 +148,18 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
         break;
     }
   });
+}
+
+#pragma mark - UIResponder
+
+- (NSArray*)keyCommands {
+  __weak ReadingListViewControllerContainer* weakSelf = self;
+  return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
+                                   modifierFlags:Cr_UIKeyModifierNone
+                                           title:nil
+                                          action:^{
+                                            [weakSelf dismiss];
+                                          }] ];
 }
 
 @end

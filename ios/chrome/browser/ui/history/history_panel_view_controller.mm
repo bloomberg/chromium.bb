@@ -6,12 +6,14 @@
 
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
+#include "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/history/clear_browsing_bar.h"
 #import "ios/chrome/browser/ui/history/history_collection_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_search_view_controller.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/panel_bar_view.h"
 #import "ios/chrome/browser/ui/show_privacy_settings_util.h"
@@ -376,6 +378,18 @@ CGFloat kShadowOpacity = 0.2f;
       [_historyCollectionController hasSelectedEntries];
   _clearBrowsingBar.get().editButtonEnabled =
       [_historyCollectionController hasHistoryEntries];
+}
+
+#pragma mark - UIResponder
+
+- (NSArray*)keyCommands {
+  base::WeakNSObject<HistoryPanelViewController> weakSelf(self);
+  return @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
+                                   modifierFlags:Cr_UIKeyModifierNone
+                                           title:nil
+                                          action:^{
+                                            [weakSelf closeHistory];
+                                          }] ];
 }
 
 @end
