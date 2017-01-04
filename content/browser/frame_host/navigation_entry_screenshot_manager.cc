@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -32,14 +32,10 @@ class ScreenshotData : public base::RefCountedThreadSafe<ScreenshotData> {
   }
 
   void EncodeScreenshot(const SkBitmap& bitmap, base::Closure callback) {
-    if (!base::WorkerPool::PostTaskAndReply(FROM_HERE,
-            base::Bind(&ScreenshotData::EncodeOnWorker,
-                       this,
-                       bitmap),
-            callback,
-            true)) {
-      callback.Run();
-    }
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits().WithShutdownBehavior(
+                       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+        base::Bind(&ScreenshotData::EncodeOnWorker, this, bitmap), callback);
   }
 
   scoped_refptr<base::RefCountedBytes> data() const { return data_; }
