@@ -2,43 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/PresentationConnectionCallbacks.h"
+#include "modules/presentation/ExistingPresentationConnectionCallbacks.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "modules/presentation/PresentationConnection.h"
 #include "modules/presentation/PresentationError.h"
-#include "modules/presentation/PresentationRequest.h"
 #include "public/platform/modules/presentation/WebPresentationError.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
 namespace blink {
 
-PresentationConnectionCallbacks::PresentationConnectionCallbacks(
-    ScriptPromiseResolver* resolver,
-    PresentationRequest* request)
-    : m_resolver(resolver), m_request(request) {
-  ASSERT(m_resolver);
-  ASSERT(m_request);
+ExistingPresentationConnectionCallbacks::
+    ExistingPresentationConnectionCallbacks(ScriptPromiseResolver* resolver,
+                                            PresentationConnection* connection)
+    : m_resolver(resolver), m_connection(connection) {
+  DCHECK(m_resolver);
+  DCHECK(m_connection);
 }
 
-void PresentationConnectionCallbacks::onSuccess(
+void ExistingPresentationConnectionCallbacks::onSuccess(
     const WebPresentationSessionInfo& sessionInfo) {
   if (!m_resolver->getExecutionContext() ||
       m_resolver->getExecutionContext()->isContextDestroyed()) {
     return;
   }
-  m_resolver->resolve(
-      PresentationConnection::take(m_resolver.get(), sessionInfo, m_request));
+
+  if (m_connection->getState() == WebPresentationConnectionState::Closed)
+    m_connection->didChangeState(WebPresentationConnectionState::Connecting);
+
+  m_resolver->resolve(m_connection);
 }
 
-void PresentationConnectionCallbacks::onError(
+void ExistingPresentationConnectionCallbacks::onError(
     const WebPresentationError& error) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->isContextDestroyed())
-    return;
-  m_resolver->reject(PresentationError::take(error));
+  NOTREACHED();
 }
 
 }  // namespace blink

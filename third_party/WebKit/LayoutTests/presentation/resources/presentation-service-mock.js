@@ -29,6 +29,13 @@ let presentationServiceMock = loadMojoModules(
               error: null,
           });
         }
+
+        joinSession(urls) {
+          return Promise.resolve({
+              sessionInfo: { url: urls[0], id: 'fakeSessionId' },
+              error: null,
+          });
+        }
       }
 
       return new PresentationServiceMock(mojo.frameInterfaces);

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/gc.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/presentation-service-mock.js"></script>
+<button>click me</button>
+<script>
+
+function waitForClick(callback) {
+  var button = document.querySelector('button');
+  button.addEventListener('click', callback, { once: true });
+
+  if (!('eventSender' in window))
+    return;
+
+  var boundingRect = button.getBoundingClientRect();
+  var x = boundingRect.left + boundingRect.width / 2;
+  var y = boundingRect.top + boundingRect.height / 2;
+
+  eventSender.mouseMoveTo(x, y);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+}
+
+async_test(t => {
+  presentationServiceMock.then(mockService => {
+    var connection = null;
+    var request = new PresentationRequest('https://example.com');
+
+    waitForClick(_ => {
+      request.start().then(conn => {
+        connection = conn;
+        assert_not_equals(connection, null);
+
+        request.reconnect(connection.id).then(
+          t.step_func_done(conn => {
+            assert_true(connection === conn);
+        }));
+      });
+    });
+  });
+}, "Test that Presentation.reconnect() resolves with existing presentation connection.");
+
+</script>
+</body>
+</html>

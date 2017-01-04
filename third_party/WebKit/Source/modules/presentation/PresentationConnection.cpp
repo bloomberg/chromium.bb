@@ -381,6 +381,10 @@ void PresentationConnection::didReceiveBinaryMessage(const uint8_t* data,
   ASSERT_NOT_REACHED();
 }
 
+WebPresentationConnectionState PresentationConnection::getState() {
+  return m_state;
+}
+
 void PresentationConnection::close() {
   if (m_state != WebPresentationConnectionState::Connecting &&
       m_state != WebPresentationConnectionState::Connected) {
@@ -406,6 +410,10 @@ void PresentationConnection::terminate() {
 bool PresentationConnection::matches(
     const WebPresentationSessionInfo& sessionInfo) const {
   return m_url == KURL(sessionInfo.url) && m_id == String(sessionInfo.id);
+}
+
+bool PresentationConnection::matches(const String& id, const KURL& url) const {
+  return m_url == url && m_id == id;
 }
 
 void PresentationConnection::didChangeState(

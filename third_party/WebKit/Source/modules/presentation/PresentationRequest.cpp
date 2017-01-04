@@ -15,6 +15,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/loader/MixedContentChecker.h"
 #include "modules/EventTargetModules.h"
+#include "modules/presentation/ExistingPresentationConnectionCallbacks.h"
 #include "modules/presentation/PresentationAvailability.h"
 #include "modules/presentation/PresentationAvailabilityCallbacks.h"
 #include "modules/presentation/PresentationConnection.h"
@@ -28,14 +29,18 @@ namespace blink {
 namespace {
 
 // TODO(mlamouri): refactor in one common place.
-WebPresentationClient* presentationClient(ExecutionContext* executionContext) {
+PresentationController* presentationController(
+    ExecutionContext* executionContext) {
   DCHECK(executionContext);
 
   Document* document = toDocument(executionContext);
   if (!document->frame())
     return nullptr;
-  PresentationController* controller =
-      PresentationController::from(*document->frame());
+  return PresentationController::from(*document->frame());
+}
+
+WebPresentationClient* presentationClient(ExecutionContext* executionContext) {
+  PresentationController* controller = presentationController(executionContext);
   return controller ? controller->client() : nullptr;
 }
 
@@ -163,9 +168,23 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState,
   // TODO(crbug.com/627655): Accept multiple URLs per PresentationRequest.
   WebVector<WebURL> presentationUrls(static_cast<size_t>(1U));
   presentationUrls[0] = m_url;
-  client->joinSession(
-      presentationUrls, id,
-      WTF::makeUnique<PresentationConnectionCallbacks>(resolver, this));
+
+  PresentationController* controller =
+      presentationController(getExecutionContext());
+  DCHECK(controller);
+
+  PresentationConnection* existingConnection =
+      controller->findExistingConnection(presentationUrls, id);
+  if (existingConnection) {
+    client->joinSession(
+        presentationUrls, id,
+        WTF::makeUnique<ExistingPresentationConnectionCallbacks>(
+            resolver, existingConnection));
+  } else {
+    client->joinSession(
+        presentationUrls, id,
+        WTF::makeUnique<PresentationConnectionCallbacks>(resolver, this));
+  }
   return resolver->promise();
 }
 

@@ -70,6 +70,13 @@ class MODULES_EXPORT PresentationController final
   // Handling of running connections.
   void registerConnection(PresentationConnection*);
 
+  // Return a connection in |m_connections| with id equals to |presentationId|,
+  // url equals to one of |presentationUrls|, and state is not terminated.
+  // Return null if such a connection does not exist.
+  PresentationConnection* findExistingConnection(
+      const blink::WebVector<blink::WebURL>& presentationUrls,
+      const blink::WebString& presentationId);
+
  private:
   PresentationController(LocalFrame&, WebPresentationClient*);
 

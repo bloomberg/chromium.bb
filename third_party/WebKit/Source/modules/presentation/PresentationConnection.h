@@ -73,6 +73,10 @@ class PresentationConnection final : public EventTargetWithInlineData,
   // connection.
   bool matches(const WebPresentationSessionInfo&) const;
 
+  // Returns true if this connection's id equals to |id| and its url equals to
+  // |url|.
+  bool matches(const String& id, const KURL&) const;
+
   // Notifies the connection about its state change.
   void didChangeState(WebPresentationConnectionState);
 
@@ -82,6 +86,8 @@ class PresentationConnection final : public EventTargetWithInlineData,
   // Notifies the presentation about new message.
   void didReceiveTextMessage(const String& message);
   void didReceiveBinaryMessage(const uint8_t* data, size_t length);
+
+  WebPresentationConnectionState getState();
 
  protected:
   // EventTarget implementation.

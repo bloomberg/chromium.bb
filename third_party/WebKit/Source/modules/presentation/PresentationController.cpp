@@ -136,6 +136,21 @@ void PresentationController::contextDestroyed() {
   }
 }
 
+PresentationConnection* PresentationController::findExistingConnection(
+    const blink::WebVector<blink::WebURL>& presentationUrls,
+    const blink::WebString& presentationId) {
+  for (const auto& connection : m_connections) {
+    for (const auto& presentationUrl : presentationUrls) {
+      if (connection->getState() !=
+              WebPresentationConnectionState::Terminated &&
+          connection->matches(presentationId, presentationUrl)) {
+        return connection.get();
+      }
+    }
+  }
+  return nullptr;
+}
+
 PresentationConnection* PresentationController::findConnection(
     const WebPresentationSessionInfo& sessionInfo) {
   for (const auto& connection : m_connections) {
