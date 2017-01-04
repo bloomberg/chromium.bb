@@ -52,6 +52,38 @@ const RequestAttributes kAttributeInFlight = 0x01;
 const RequestAttributes kAttributeDelayable = 0x02;
 const RequestAttributes kAttributeLayoutBlocking = 0x04;
 
+// Reasons why pending requests may be started.  For logging only.
+enum class RequestStartTrigger {
+  NONE,
+  COMPLETION_PRE_BODY,
+  COMPLETION_POST_BODY,
+  BODY_REACHED,
+  CLIENT_KILL,
+  SPDY_PROXY_DETECTED,
+  REQUEST_REPRIORITIZED,
+};
+
+const char* RequestStartTriggerString(RequestStartTrigger trigger) {
+  switch (trigger) {
+    case RequestStartTrigger::NONE:
+      return "NONE";
+    case RequestStartTrigger::COMPLETION_PRE_BODY:
+      return "COMPLETION_PRE_BODY";
+    case RequestStartTrigger::COMPLETION_POST_BODY:
+      return "COMPLETION_POST_BODY";
+    case RequestStartTrigger::BODY_REACHED:
+      return "BODY_REACHED";
+    case RequestStartTrigger::CLIENT_KILL:
+      return "CLIENT_KILL";
+    case RequestStartTrigger::SPDY_PROXY_DETECTED:
+      return "SPDY_PROXY_DETECTED";
+    case RequestStartTrigger::REQUEST_REPRIORITIZED:
+      return "REQUEST_REPRIORITIZED";
+  }
+  NOTREACHED();
+  return "Unknown";
+}
+
 }  // namespace
 
 // The maximum number of delayable requests to allow to be in-flight at any
@@ -331,7 +363,7 @@ class ResourceScheduler::Client {
     SetRequestAttributes(request, DetermineRequestAttributes(request));
     if (ShouldStartRequest(request) == START_REQUEST) {
       // New requests can be started synchronously without issue.
-      StartRequest(request, START_SYNC);
+      StartRequest(request, START_SYNC, RequestStartTrigger::NONE);
     } else {
       pending_requests_.Insert(request);
     }
@@ -345,7 +377,10 @@ class ResourceScheduler::Client {
       EraseInFlightRequest(request);
 
       // Removing this request may have freed up another to load.
-      LoadAnyStartablePendingRequests();
+      LoadAnyStartablePendingRequests(
+          has_html_body_
+          ? RequestStartTrigger::COMPLETION_POST_BODY
+          : RequestStartTrigger::COMPLETION_PRE_BODY);
     }
   }
 
@@ -362,7 +397,7 @@ class ResourceScheduler::Client {
       pending_requests_.Erase(request);
       // Starting requests asynchronously ensures no side effects, and avoids
       // starting a bunch of requests that may be about to be deleted.
-      StartRequest(request, START_ASYNC);
+      StartRequest(request, START_ASYNC, RequestStartTrigger::CLIENT_KILL);
     }
     RequestSet unowned_requests;
     for (RequestSet::iterator it = in_flight_requests_.begin();
@@ -387,13 +422,13 @@ class ResourceScheduler::Client {
 
   void OnWillInsertBody() {
     has_html_body_ = true;
-    LoadAnyStartablePendingRequests();
+    LoadAnyStartablePendingRequests(RequestStartTrigger::BODY_REACHED);
   }
 
   void OnReceivedSpdyProxiedHttpResponse() {
     if (!using_spdy_proxy_) {
       using_spdy_proxy_ = true;
-      LoadAnyStartablePendingRequests();
+      LoadAnyStartablePendingRequests(RequestStartTrigger::SPDY_PROXY_DETECTED);
     }
   }
 
@@ -414,7 +449,8 @@ class ResourceScheduler::Client {
 
     if (new_priority_params.priority > old_priority_params.priority) {
       // Check if this request is now able to load at its new priority.
-      LoadAnyStartablePendingRequests();
+      LoadAnyStartablePendingRequests(
+          RequestStartTrigger::REQUEST_REPRIORITIZED);
     }
   }
 
@@ -560,7 +596,16 @@ class ResourceScheduler::Client {
   }
 
   void StartRequest(ScheduledResourceRequest* request,
-                    StartMode start_mode) {
+                    StartMode start_mode,
+                    RequestStartTrigger trigger) {
+    // Only log on requests that were blocked by the ResourceScheduler.
+    if (start_mode == START_ASYNC) {
+      DCHECK_NE(RequestStartTrigger::NONE, trigger);
+      request->url_request()->net_log().AddEvent(
+          net::NetLogEventType::RESOURCE_SCHEDULER_REQUEST_STARTED,
+          net::NetLog::StringCallback(
+              "trigger", RequestStartTriggerString(trigger)));
+    }
     InsertInFlightRequest(request);
     request->Start(start_mode);
   }
@@ -670,7 +715,7 @@ class ResourceScheduler::Client {
     return START_REQUEST;
   }
 
-  void LoadAnyStartablePendingRequests() {
+  void LoadAnyStartablePendingRequests(RequestStartTrigger trigger) {
     // We iterate through all the pending requests, starting with the highest
     // priority one. For each entry, one of three things can happen:
     // 1) We start the request, remove it from the list, and keep checking.
@@ -688,7 +733,7 @@ class ResourceScheduler::Client {
 
       if (query_result == START_REQUEST) {
         pending_requests_.Erase(request);
-        StartRequest(request, START_ASYNC);
+        StartRequest(request, START_ASYNC, trigger);
 
         // StartRequest can modify the pending list, so we (re)start evaluation
         // from the currently highest priority request. Avoid copying a singular

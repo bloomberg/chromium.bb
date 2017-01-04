@@ -186,8 +186,10 @@ var SourceEntry = (function() {
     /**
      * Returns the starting entry for this source. Conceptually this is the
      * first entry that was logged to this source. However, we skip over the
-     * TYPE_REQUEST_ALIVE entries which wrap TYPE_URL_REQUEST_START_JOB
-     * entries.
+     * TYPE_REQUEST_ALIVE entries without parameters which wrap
+     * TYPE_URL_REQUEST_START_JOB entries.  (TYPE_REQUEST_ALIVE may or may not
+     * have parameters depending on what version of Chromium they were
+     * generated from.)
      */
     getStartEntry_: function() {
       if (this.entries_.length < 1)
