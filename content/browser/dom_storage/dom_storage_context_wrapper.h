@@ -94,6 +94,9 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
 
   void PurgeMemory(DOMStorageContextImpl::PurgeOption purge_option);
 
+  void GotMojoLocalStorageUsage(GetLocalStorageUsageCallback callback,
+                                std::vector<LocalStorageUsageInfo> usage);
+
   // Keep all mojo-ish details together and not bleed them through the public
   // interface.
   std::unique_ptr<LocalStorageContextMojo> mojo_state_;

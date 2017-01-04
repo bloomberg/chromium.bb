@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/memory_coordinator_client_registry.h"
@@ -30,6 +31,7 @@
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 
 namespace content {
 namespace {
@@ -44,11 +46,12 @@ void InvokeLocalStorageUsageCallbackHelper(
 }
 
 void GetLocalStorageUsageHelper(
+    std::vector<LocalStorageUsageInfo> mojo_usage,
     base::SingleThreadTaskRunner* reply_task_runner,
     DOMStorageContextImpl* context,
     const DOMStorageContext::GetLocalStorageUsageCallback& callback) {
   std::vector<LocalStorageUsageInfo>* infos =
-      new std::vector<LocalStorageUsageInfo>;
+      new std::vector<LocalStorageUsageInfo>(std::move(mojo_usage));
   context->GetLocalStorageUsage(infos, true);
   reply_task_runner->PostTask(
       FROM_HERE, base::Bind(&InvokeLocalStorageUsageCallbackHelper, callback,
@@ -80,14 +83,17 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
     const base::FilePath& profile_path,
     const base::FilePath& local_partition_path,
     storage::SpecialStoragePolicy* special_storage_policy) {
-  base::FilePath storage_dir;
-  if (!profile_path.empty())
-    storage_dir = local_partition_path.AppendASCII(kLocalStorageDirectory);
-  // TODO(michaeln): Enable writing to disk when db is versioned,
-  // for now using an empty subdirectory to use an in-memory db.
-  // subdirectory_(subdirectory),
-  mojo_state_.reset(new LocalStorageContextMojo(
-      connector, base::FilePath() /* storage_dir */));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kMojoLocalStorage)) {
+    base::FilePath storage_dir;
+    if (!profile_path.empty())
+      storage_dir = local_partition_path.AppendASCII(kLocalStorageDirectory);
+    // TODO(michaeln): Enable writing to disk when db is versioned,
+    // for now using an empty subdirectory to use an in-memory db.
+    // subdirectory_(subdirectory),
+    mojo_state_.reset(new LocalStorageContextMojo(
+        connector, base::FilePath() /* storage_dir */));
+  }
 
   base::FilePath data_path;
   if (!profile_path.empty())
@@ -141,9 +147,15 @@ DOMStorageContextWrapper::~DOMStorageContextWrapper() {}
 void DOMStorageContextWrapper::GetLocalStorageUsage(
     const GetLocalStorageUsageCallback& callback) {
   DCHECK(context_.get());
+  if (mojo_state_) {
+    mojo_state_->GetStorageUsage(base::BindOnce(
+        &DOMStorageContextWrapper::GotMojoLocalStorageUsage, this, callback));
+    return;
+  }
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&GetLocalStorageUsageHelper,
+                 std::vector<LocalStorageUsageInfo>(),
                  base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
                  base::RetainedRef(context_), callback));
 }
@@ -165,6 +177,8 @@ void DOMStorageContextWrapper::DeleteLocalStorageForPhysicalOrigin(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&DOMStorageContextImpl::DeleteLocalStorageForPhysicalOrigin,
                  context_, origin));
+  if (mojo_state_)
+    mojo_state_->DeleteStorageForPhysicalOrigin(url::Origin(origin));
 }
 
 void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin) {
@@ -173,6 +187,8 @@ void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin) {
       FROM_HERE,
       DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&DOMStorageContextImpl::DeleteLocalStorage, context_, origin));
+  if (mojo_state_)
+    mojo_state_->DeleteStorage(url::Origin(origin));
 }
 
 void DOMStorageContextWrapper::DeleteSessionStorage(
@@ -233,11 +249,15 @@ void DOMStorageContextWrapper::Flush() {
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&DOMStorageContextImpl::Flush, context_));
+  if (mojo_state_)
+    mojo_state_->Flush();
 }
 
 void DOMStorageContextWrapper::OpenLocalStorage(
     const url::Origin& origin,
     mojom::LevelDBWrapperRequest request) {
+  if (!mojo_state_)
+    return;
   mojo_state_->OpenLocalStorage(origin, std::move(request));
 }
 
@@ -279,6 +299,16 @@ void DOMStorageContextWrapper::PurgeMemory(DOMStorageContextImpl::PurgeOption
   context_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&DOMStorageContextImpl::PurgeMemory, context_, purge_option));
+}
+
+void DOMStorageContextWrapper::GotMojoLocalStorageUsage(
+    GetLocalStorageUsageCallback callback,
+    std::vector<LocalStorageUsageInfo> usage) {
+  context_->task_runner()->PostShutdownBlockingTask(
+      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::Bind(&GetLocalStorageUsageHelper, base::Passed(&usage),
+                 base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                 base::RetainedRef(context_), callback));
 }
 
 }  // namespace content

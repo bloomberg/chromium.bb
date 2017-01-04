@@ -97,6 +97,11 @@ void LocalStorageContextMojo::DeleteStorageForPhysicalOrigin(
       weak_ptr_factory_.GetWeakPtr(), origin));
 }
 
+void LocalStorageContextMojo::Flush() {
+  for (const auto& it : level_db_wrappers_)
+    it.second->ScheduleImmediateCommit();
+}
+
 void LocalStorageContextMojo::SetDatabaseForTesting(
     leveldb::mojom::LevelDBDatabasePtr database) {
   DCHECK_EQ(connection_state_, NO_CONNECTION);

@@ -40,6 +40,7 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   void DeleteStorage(const url::Origin& origin);
   // Like DeleteStorage(), but also deletes storage for all sub-origins.
   void DeleteStorageForPhysicalOrigin(const url::Origin& origin);
+  void Flush();
 
   void SetDatabaseForTesting(leveldb::mojom::LevelDBDatabasePtr database);
 
