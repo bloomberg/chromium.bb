@@ -42,15 +42,6 @@ static ScopedJavaLocalRef<jstring> GetDownloadWarningText(
                base::android::ConvertJavaStringToUTF16(env, filename)));
 }
 
-// Returns true if a file name is dangerous, or false otherwise.
-static jboolean IsDownloadDangerous(JNIEnv* env,
-                                    const JavaParamRef<jclass>& clazz,
-                                    const JavaParamRef<jstring>& filename) {
-  base::FilePath path(base::android::ConvertJavaStringToUTF8(env, filename));
-  return safe_browsing::FileTypePolicies::GetInstance()->GetFileDangerLevel(
-             path) != safe_browsing::DownloadFileType::NOT_DANGEROUS;
-}
-
 // static
 bool ChromeDownloadDelegate::EnqueueDownloadManagerRequest(
     jobject chrome_download_delegate,

@@ -243,7 +243,9 @@ void DownloadController::OnDownloadStarted(
 
   ChromeDownloadDelegate* delegate =
       ChromeDownloadDelegate::FromWebContents(web_contents);
-  if (delegate) {
+  // For dangerous item, we need to show the dangerous infobar before the
+  // download can start.
+  if (!download_item->IsDangerous() && delegate) {
     delegate->OnDownloadStarted(
         download_item->GetTargetFilePath().BaseName().value());
   }

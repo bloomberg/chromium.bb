@@ -318,10 +318,8 @@ public class ChromeDownloadDelegate {
      */
     @CalledByNative
     private void onDownloadStarted(String filename) {
-        if (!isDangerousFile(filename)) {
-            DownloadUtils.showDownloadStartToast(mContext);
-            closeBlankTab();
-        }
+        DownloadUtils.showDownloadStartToast(mContext);
+        closeBlankTab();
     }
 
     /**
@@ -375,16 +373,6 @@ public class ChromeDownloadDelegate {
             if (index > 0) return filename.substring(index + 1);
         }
         return MimeTypeMap.getFileExtensionFromUrl(url);
-    }
-
-    /**
-     * Check whether a file is dangerous.
-     *
-     * @param filename Name of the file.
-     * @return true if the file is dangerous, or false otherwise.
-     */
-    protected boolean isDangerousFile(String filename) {
-        return nativeIsDownloadDangerous(filename);
     }
 
     /**
@@ -475,7 +463,6 @@ public class ChromeDownloadDelegate {
 
     private native void nativeInit(WebContents webContents);
     private static native String nativeGetDownloadWarningText(String filename);
-    private static native boolean nativeIsDownloadDangerous(String filename);
     private static native void nativeLaunchDuplicateDownloadInfoBar(ChromeDownloadDelegate delegate,
             Tab tab, DownloadInfo downloadInfo, String filePath, boolean isIncognito);
     private static native void nativeLaunchPermissionUpdateInfoBar(
