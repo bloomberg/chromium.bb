@@ -1435,6 +1435,13 @@ action("api_static_checks") {
     ":cronet_impl_native_java",
     ":cronet_impl_platform_java",
   ]
+  inputs = [
+    "//components/cronet/tools/update_api.py",
+  ]
+  sources = [
+    "//components/cronet/android/api.txt",
+    "//components/cronet/android/api_version.txt",
+  ]
 }
 
 group("cronet_package") {

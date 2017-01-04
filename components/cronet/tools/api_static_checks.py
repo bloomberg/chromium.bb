@@ -3,9 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""api_static_checks.py - Check Cronet implementation does not call through
-API classes.
-"""
+"""api_static_checks.py - Enforce Cronet API requirements."""
 
 import argparse
 import os
@@ -20,9 +18,13 @@ REPOSITORY_ROOT = os.path.abspath(os.path.join(
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'build/android/gyp/util'))
 import build_utils
 
+sys.path.append(os.path.join(REPOSITORY_ROOT, 'components'))
+from cronet.tools import update_api
+
+
 # These regular expressions catch the beginning of lines that declare classes
 # and methods.  The first group returned by a match is the class or method name.
-CLASS_RE = re.compile(r'.*class ([^ ]*) .*\{')
+from cronet.tools.update_api import CLASS_RE
 METHOD_RE = re.compile(r'.* ([^ ]*)\(.*\);')
 
 # Allowed exceptions.  Adding anything to this list is dangerous and should be
@@ -104,23 +106,8 @@ def find_api_calls(dump, api_classes, bad_calls):
         bad_calls += [bad_call]
 
 
-def main(args):
+def check_api_calls(opts):
   # Returns True if no calls through API classes in implementation.
-
-  parser = argparse.ArgumentParser(
-      description='Check modules do not contain ARM Neon instructions.')
-  parser.add_argument('--api_jar',
-                      help='Path to API jar (i.e. cronet_api.jar)',
-                      required=True,
-                      metavar='path/to/cronet_api.jar')
-  parser.add_argument('--impl_jar',
-                      help='Path to implementation jar '
-                          '(i.e. cronet_impl_native_java.jar)',
-                      required=True,
-                      metavar='path/to/cronet_impl_native_java.jar',
-                      action='append')
-  parser.add_argument('--stamp', help='Path to touch on success.')
-  opts = parser.parse_args(args)
 
   temp_dir = tempfile.mkdtemp()
 
@@ -174,10 +161,40 @@ def main(args):
     print '       does not contain newer methods.  Please call through a'
     print '       wrapper class from VersionSafeCallbacks.'
     print '\n'.join(bad_api_calls)
-
-  if not bad_api_calls and opts.stamp:
-    build_utils.Touch(opts.stamp)
   return not bad_api_calls
+
+
+def check_api_version(opts):
+  if update_api.check_up_to_date(opts.api_jar):
+    return True
+  print 'ERROR: API file out of date.  Please run this command:'
+  print '       components/cronet/tools/update_api.py --api_jar %s' % (
+      os.path.abspath(opts.api_jar))
+  return False
+
+
+def main(args):
+  parser = argparse.ArgumentParser(
+      description='Enforce Cronet API requirements.')
+  parser.add_argument('--api_jar',
+                      help='Path to API jar (i.e. cronet_api.jar)',
+                      required=True,
+                      metavar='path/to/cronet_api.jar')
+  parser.add_argument('--impl_jar',
+                      help='Path to implementation jar '
+                          '(i.e. cronet_impl_native_java.jar)',
+                      required=True,
+                      metavar='path/to/cronet_impl_native_java.jar',
+                      action='append')
+  parser.add_argument('--stamp', help='Path to touch on success.')
+  opts = parser.parse_args(args)
+
+  ret = True
+  ret = check_api_calls(opts) and ret
+  ret = check_api_version(opts) and ret
+  if ret and opts.stamp:
+    build_utils.Touch(opts.stamp)
+  return ret
 
 
 if __name__ == '__main__':
