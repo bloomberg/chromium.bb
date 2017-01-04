@@ -48,6 +48,7 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   bool IsValidSelectionIndex(int index) const;
 
   int num_results() const { return num_results_; }
+  void set_num_results(int num_results) { num_results_ = num_results; }
 
   void set_container_score(double score) { container_score_ = score; }
   double container_score() const { return container_score_; }
