@@ -79,7 +79,7 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   void svgAttributeChanged(const QualifiedName&) override;
 
   void setTargetElement(SVGElement*) final;
-  void setAttributeName(const QualifiedName&) final;
+  void setAttributeName(const QualifiedName&);
 
   enum AttributeType { AttributeTypeCSS, AttributeTypeXML, AttributeTypeAuto };
   AttributeType getAttributeType() const { return m_attributeType; }
@@ -94,6 +94,9 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
                             const QualifiedName& attributeName);
 
   void setAttributeType(const AtomicString&);
+
+  InsertionNotificationRequest insertedInto(ContainerNode*) final;
+  void removedFrom(ContainerNode*) final;
 
   void checkInvalidCSSAttributeType();
   bool hasValidAttributeName() const;

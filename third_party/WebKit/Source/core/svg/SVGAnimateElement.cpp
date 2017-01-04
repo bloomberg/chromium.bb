@@ -22,6 +22,7 @@
 
 #include "core/svg/SVGAnimateElement.h"
 
+#include "core/XLinkNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
@@ -69,6 +70,32 @@ AnimatedPropertyValueType propertyValueType(const QualifiedName& attributeName,
   return InheritValue;
 }
 
+QualifiedName constructQualifiedName(const SVGElement& svgElement,
+                                     const AtomicString& attributeName) {
+  if (attributeName.isEmpty())
+    return anyQName();
+  if (!attributeName.contains(':'))
+    return QualifiedName(nullAtom, attributeName, nullAtom);
+
+  AtomicString prefix;
+  AtomicString localName;
+  if (!Document::parseQualifiedName(attributeName, prefix, localName,
+                                    IGNORE_EXCEPTION))
+    return anyQName();
+
+  const AtomicString& namespaceURI = svgElement.lookupNamespaceURI(prefix);
+  if (namespaceURI.isEmpty())
+    return anyQName();
+
+  QualifiedName resolvedAttrName(nullAtom, localName, namespaceURI);
+  // "Animation elements treat attributeName='xlink:href' as being an alias
+  // for targetting the 'href' attribute."
+  // https://svgwg.org/svg2-draft/types.html#__svg__SVGURIReference__href
+  if (resolvedAttrName == XLinkNames::hrefAttr)
+    return SVGNames::hrefAttr;
+  return resolvedAttrName;
+}
+
 }  // unnamed namespace
 
 SVGAnimateElement::SVGAnimateElement(const QualifiedName& tagName,
@@ -109,6 +136,22 @@ bool SVGAnimateElement::isSVGAnimationAttributeSettingJavaScriptURL(
   return SVGSMILElement::isSVGAnimationAttributeSettingJavaScriptURL(attribute);
 }
 
+Node::InsertionNotificationRequest SVGAnimateElement::insertedInto(
+    ContainerNode* rootParent) {
+  SVGAnimationElement::insertedInto(rootParent);
+  if (rootParent->isConnected()) {
+    setAttributeName(constructQualifiedName(
+        *this, fastGetAttribute(SVGNames::attributeNameAttr)));
+  }
+  return InsertionDone;
+}
+
+void SVGAnimateElement::removedFrom(ContainerNode* rootParent) {
+  if (rootParent->isConnected())
+    setAttributeName(anyQName());
+  SVGAnimationElement::removedFrom(rootParent);
+}
+
 void SVGAnimateElement::parseAttribute(const QualifiedName& name,
                                        const AtomicString& oldValue,
                                        const AtomicString& value) {
@@ -121,10 +164,14 @@ void SVGAnimateElement::parseAttribute(const QualifiedName& name,
 
 void SVGAnimateElement::svgAttributeChanged(const QualifiedName& attrName) {
   if (attrName == SVGNames::attributeTypeAttr) {
-    animationAttributeChanged();
+  } else if (attrName == SVGNames::attributeNameAttr) {
+    setAttributeName(constructQualifiedName(
+        *this, fastGetAttribute(SVGNames::attributeNameAttr)));
+  } else {
+    SVGAnimationElement::svgAttributeChanged(attrName);
     return;
   }
-  SVGAnimationElement::svgAttributeChanged(attrName);
+  animationAttributeChanged();
 }
 
 void SVGAnimateElement::resolveTargetProperty() {
@@ -516,7 +563,11 @@ void SVGAnimateElement::setTargetElement(SVGElement* target) {
 }
 
 void SVGAnimateElement::setAttributeName(const QualifiedName& attributeName) {
-  SVGAnimationElement::setAttributeName(attributeName);
+  unscheduleIfScheduled();
+  if (targetElement())
+    clearAnimatedType();
+  m_attributeName = attributeName;
+  schedule();
   checkInvalidCSSAttributeType();
   resetAnimatedPropertyType();
 }

@@ -25,7 +25,6 @@
 
 #include "core/svg/animation/SVGSMILElement.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/XLinkNames.h"
 #include "core/dom/Document.h"
@@ -225,34 +224,6 @@ void SVGSMILElement::buildPendingResource() {
   connectEventBaseConditions();
 }
 
-static inline QualifiedName constructQualifiedName(
-    const SVGElement* svgElement,
-    const AtomicString& attributeName) {
-  ASSERT(svgElement);
-  if (attributeName.isEmpty())
-    return anyQName();
-  if (!attributeName.contains(':'))
-    return QualifiedName(nullAtom, attributeName, nullAtom);
-
-  AtomicString prefix;
-  AtomicString localName;
-  if (!Document::parseQualifiedName(attributeName, prefix, localName,
-                                    IGNORE_EXCEPTION))
-    return anyQName();
-
-  const AtomicString& namespaceURI = svgElement->lookupNamespaceURI(prefix);
-  if (namespaceURI.isEmpty())
-    return anyQName();
-
-  QualifiedName resolvedAttrName(nullAtom, localName, namespaceURI);
-  // "Animation elements treat attributeName='xlink:href' as being an alias
-  //  for targetting the 'href' attribute."
-  // https://svgwg.org/svg2-draft/types.html#__svg__SVGURIReference__href
-  if (resolvedAttrName == XLinkNames::hrefAttr)
-    return SVGNames::hrefAttr;
-  return resolvedAttrName;
-}
-
 static inline void clearTimesWithDynamicOrigins(
     Vector<SMILTimeWithOrigin>& timeList) {
   for (int i = timeList.size() - 1; i >= 0; --i) {
@@ -286,8 +257,6 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(
   if (document().isLoadCompleted())
     UseCounter::count(&document(), UseCounter::SVGSMILElementInsertedAfterLoad);
 
-  setAttributeName(constructQualifiedName(
-      this, fastGetAttribute(SVGNames::attributeNameAttr)));
   SVGSVGElement* owner = ownerSVGElement();
   if (!owner)
     return InsertionDone;
@@ -317,7 +286,6 @@ void SVGSMILElement::removedFrom(ContainerNode* rootParent) {
     clearResourceAndEventBaseReferences();
     clearConditions();
     setTargetElement(nullptr);
-    setAttributeName(anyQName());
     animationAttributeChanged();
     m_timeContainer = nullptr;
   }
@@ -524,9 +492,6 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName) {
     m_cachedMin = invalidCachedTime;
   } else if (attrName == SVGNames::maxAttr) {
     m_cachedMax = invalidCachedTime;
-  } else if (attrName == SVGNames::attributeNameAttr) {
-    setAttributeName(constructQualifiedName(
-        this, fastGetAttribute(SVGNames::attributeNameAttr)));
   } else if (attrName.matches(SVGNames::hrefAttr) ||
              attrName.matches(XLinkNames::hrefAttr)) {
     // TODO(fs): Could be smarter here when 'href' is specified and 'xlink:href'
@@ -641,14 +606,6 @@ void SVGSMILElement::disconnectEventBaseConditions() {
       condition->setEventListener(nullptr);
     }
   }
-}
-
-void SVGSMILElement::setAttributeName(const QualifiedName& attributeName) {
-  unscheduleIfScheduled();
-  if (m_targetElement)
-    clearAnimatedType();
-  m_attributeName = attributeName;
-  schedule();
 }
 
 void SVGSMILElement::setTargetElement(SVGElement* target) {

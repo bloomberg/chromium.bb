@@ -142,10 +142,11 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   // Sub-classes may need to take action when the target is changed.
   virtual void setTargetElement(SVGElement*);
-  virtual void setAttributeName(const QualifiedName&);
 
   void schedule();
   void unscheduleIfScheduled();
+
+  QualifiedName m_attributeName;
 
  private:
   void buildPendingResource() override;
@@ -243,8 +244,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void removeSyncBaseDependent(SVGSMILElement*);
 
   enum ActiveState { Inactive, Active, Frozen };
-
-  QualifiedName m_attributeName;
 
   ActiveState determineActiveState(SMILTime elapsed) const;
   float calculateAnimationPercentAndRepeat(double elapsed,
