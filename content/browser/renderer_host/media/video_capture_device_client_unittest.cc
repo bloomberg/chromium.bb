@@ -16,9 +16,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
+#include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
+#include "content/browser/renderer_host/media/video_frame_receiver_on_io_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/base/limits.h"
-#include "media/capture/video/video_capture_buffer_pool.h"
+#include "media/capture/video/video_capture_buffer_pool_impl.h"
+#include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,8 +36,7 @@ namespace {
 
 class MockVideoCaptureController : public VideoCaptureController {
  public:
-  explicit MockVideoCaptureController(int max_buffers)
-      : VideoCaptureController(max_buffers) {}
+  explicit MockVideoCaptureController() : VideoCaptureController() {}
   ~MockVideoCaptureController() override {}
 
   MOCK_METHOD1(MockOnIncomingCapturedVideoFrame, void(const gfx::Size&));
@@ -49,6 +51,11 @@ class MockVideoCaptureController : public VideoCaptureController {
   }
 };
 
+std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
+    const media::VideoCaptureJpegDecoder::DecodeDoneCB& decode_done_cb) {
+  return base::MakeUnique<content::VideoCaptureGpuJpegDecoder>(decode_done_cb);
+}
+
 // Note that this test does not exercise the class VideoCaptureDeviceClient
 // in isolation. The "unit under test" is an instance of
 // VideoCaptureDeviceClient with some context that is specific to
@@ -57,17 +64,29 @@ class MockVideoCaptureController : public VideoCaptureController {
 class VideoCaptureDeviceClientTest : public ::testing::Test {
  public:
   VideoCaptureDeviceClientTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        controller_(new MockVideoCaptureController(1)),
-        device_client_(controller_->NewDeviceClient()) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+    scoped_refptr<media::VideoCaptureBufferPoolImpl> buffer_pool(
+        new media::VideoCaptureBufferPoolImpl(
+            base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
+            1));
+    controller_ = base::MakeUnique<MockVideoCaptureController>();
+    device_client_ = base::MakeUnique<media::VideoCaptureDeviceClient>(
+        base::MakeUnique<VideoFrameReceiverOnIOThread>(
+            controller_->GetWeakPtrForIOThread()),
+        buffer_pool,
+        base::Bind(
+            &CreateGpuJpegDecoder,
+            base::Bind(&media::VideoFrameReceiver::OnIncomingCapturedVideoFrame,
+                       controller_->GetWeakPtrForIOThread())));
+  }
   ~VideoCaptureDeviceClientTest() override {}
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
  protected:
   const content::TestBrowserThreadBundle thread_bundle_;
-  const std::unique_ptr<MockVideoCaptureController> controller_;
-  const std::unique_ptr<media::VideoCaptureDevice::Client> device_client_;
+  std::unique_ptr<MockVideoCaptureController> controller_;
+  std::unique_ptr<media::VideoCaptureDeviceClient> device_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceClientTest);
