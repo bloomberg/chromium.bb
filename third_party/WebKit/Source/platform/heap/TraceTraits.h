@@ -188,7 +188,6 @@ class TraceTrait {
   static void trace(Visitor*, void* self);
   static void trace(InlinedGlobalMarkingVisitor, void* self);
 
-  static void markAndTraceWrapper(const WrapperVisitor*, const void*);
   static void markWrapperNoTracing(const WrapperVisitor*, const void*);
   static void traceMarkedWrapper(const WrapperVisitor*, const void*);
   static HeapObjectHeader* heapObjectHeader(const void*);
@@ -231,16 +230,6 @@ template <typename T>
 void TraceTrait<T>::trace(InlinedGlobalMarkingVisitor visitor, void* self) {
   static_assert(WTF::IsTraceable<T>::value, "T should not be traced");
   static_cast<T*>(self)->trace(visitor);
-}
-
-template <typename T>
-void TraceTrait<T>::markAndTraceWrapper(const WrapperVisitor* visitor,
-                                        const void* t) {
-  const T* traceable = ToWrapperTracingType(t);
-  if (visitor->markWrapperHeader(heapObjectHeader(traceable))) {
-    visitor->markWrappersInAllWorlds(traceable);
-    visitor->dispatchTraceWrappers(traceable);
-  }
 }
 
 template <typename T>

@@ -24,7 +24,6 @@ class TraceWrapperV8Reference;
 
 class WrapperMarkingData {
  public:
-  friend class ScriptWrappableVisitor;
 
   WrapperMarkingData(void (*traceWrappersCallback)(const WrapperVisitor*,
                                                    const void*),
@@ -50,9 +49,7 @@ class WrapperMarkingData {
     return !m_rawObjectPointer || heapObjectHeader()->isWrapperHeaderMarked();
   }
 
-  // Returns raw object pointer. Beware it doesn't necessarily point to the
-  // beginning of the object.
-  const void* rawObjectPointer() { return m_rawObjectPointer; }
+  inline const void* rawObjectPointer() { return m_rawObjectPointer; }
 
  private:
   inline bool shouldBeInvalidated() {
@@ -69,6 +66,8 @@ class WrapperMarkingData {
   void (*m_traceWrappersCallback)(const WrapperVisitor*, const void*);
   HeapObjectHeader* (*m_heapObjectHeaderCallback)(const void*);
   const void* m_rawObjectPointer;
+
+  friend class ScriptWrappableVisitor;
 };
 
 // ScriptWrappableVisitor is able to trace through the objects to get all
@@ -107,6 +106,8 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
 
   template <typename T>
   static void writeBarrier(const void* srcObject, const T* dstObject) {
+    static_assert(!NeedsAdjustAndMark<T>::value,
+                  "wrapper tracing is not supported within mixins");
     if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
       return;
     }
@@ -122,30 +123,13 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
 
     const ThreadState* threadState = ThreadState::current();
     DCHECK(threadState);
-    // We can only safely check the marking state of |dstObject| for non-mixin
-    // objects or if we are outside of object construction.
-    if (!IsGarbageCollectedMixin<T>::value ||
-        !threadState->isMixinInConstruction()) {
-      // If the wrapper is already marked we can bail out here.
-      if (TraceTrait<T>::heapObjectHeader(dstObject)->isWrapperHeaderMarked())
-        return;
-      // Otherwise, eagerly mark the wrapper header and put the object on the
-      // marking deque for further processing.
-      WrapperVisitor* const visitor = currentVisitor(threadState->isolate());
-      if (visitor->pushToMarkingDeque(TraceTrait<T>::traceMarkedWrapper,
-                                      TraceTrait<T>::heapObjectHeader,
-                                      dstObject)) {
-        TraceTrait<T>::markWrapperNoTracing(visitor, dstObject);
-      }
+    // If the wrapper is already marked we can bail out here.
+    if (TraceTrait<T>::heapObjectHeader(dstObject)->isWrapperHeaderMarked())
       return;
-    }
-
-    // We cannot eagerly mark the wrapper header because of mixin
-    // construction. Delay further processing until AdvanceMarking, which has to
-    // be in a non-construction state. This path may result in duplicates.
-    currentVisitor(threadState->isolate())
-        ->pushToMarkingDeque(TraceTrait<T>::markAndTraceWrapper,
-                             TraceTrait<T>::heapObjectHeader, dstObject);
+    // Otherwise, eagerly mark the wrapper header and put the object on the
+    // marking deque for further processing.
+    WrapperVisitor* const visitor = currentVisitor(threadState->isolate());
+    visitor->markAndPushToMarkingDeque(dstObject);
   }
 
   void RegisterV8References(const std::vector<std::pair<void*, void*>>&
@@ -171,6 +155,21 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
 
   void invalidateDeadObjectsInMarkingDeque();
 
+  bool markWrapperHeader(HeapObjectHeader*) const;
+
+  // Mark wrappers in all worlds for the given script wrappable as alive in
+  // V8.
+  void markWrappersInAllWorlds(const ScriptWrappable*) const override;
+
+  WTF::Deque<WrapperMarkingData>* getMarkingDeque() { return &m_markingDeque; }
+  WTF::Deque<WrapperMarkingData>* getVerifierDeque() {
+    return &m_verifierDeque;
+  }
+  WTF::Vector<HeapObjectHeader*>* getHeadersToUnmark() {
+    return &m_headersToUnmark;
+  }
+
+ protected:
   bool pushToMarkingDeque(
       void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
       HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
@@ -187,20 +186,6 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
     }
 #endif
     return true;
-  }
-
-  bool markWrapperHeader(HeapObjectHeader*) const;
-
-  // Mark wrappers in all worlds for the given script wrappable as alive in
-  // V8.
-  void markWrappersInAllWorlds(const ScriptWrappable*) const override;
-
-  WTF::Deque<WrapperMarkingData>* getMarkingDeque() { return &m_markingDeque; }
-  WTF::Deque<WrapperMarkingData>* getVerifierDeque() {
-    return &m_verifierDeque;
-  }
-  WTF::Vector<HeapObjectHeader*>* getHeadersToUnmark() {
-    return &m_headersToUnmark;
   }
 
  private:
