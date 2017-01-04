@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/style/StyleRareNonInheritedData.h"
@@ -47,6 +48,7 @@ static const char kSupplementName[] = "CSSSelectorWatch";
 CSSSelectorWatch::CSSSelectorWatch(Document& document)
     : m_document(document),
       m_callbackSelectorChangeTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &document),
           this,
           &CSSSelectorWatch::callbackSelectorChangeTimerFired),
       m_timerExpirations(0) {}
