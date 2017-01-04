@@ -146,10 +146,6 @@ void ShellDelegateMus::OpenUrlFromArc(const GURL& url) {
   NOTIMPLEMENTED();
 }
 
-app_list::AppListPresenter* ShellDelegateMus::GetAppListPresenter() {
-  return &app_list_presenter_;
-}
-
 ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
   return new ShelfDelegateMus();
 }

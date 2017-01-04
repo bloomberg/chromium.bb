@@ -9,13 +9,12 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
-#include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
 #include "ui/app_list/app_list_model.h"
 
+class AppListPresenterService;
+
 namespace app_list {
-class AppListPresenter;
 class AppListPresenterImpl;
-class AppListPresenterDelegateFactory;
 }
 
 namespace base {
@@ -30,7 +29,7 @@ class AppListServiceAsh : public AppListServiceImpl {
  public:
   static AppListServiceAsh* GetInstance();
 
-  app_list::AppListPresenter* GetAppListPresenter();
+  app_list::AppListPresenterImpl* GetAppListPresenter();
 
   // AppListService overrides:
   void Init(Profile* initial_profile) override;
@@ -72,12 +71,9 @@ class AppListServiceAsh : public AppListServiceImpl {
   void CreateForProfile(Profile* default_profile) override;
   void DestroyAppList() override;
 
-  std::unique_ptr<app_list::AppListPresenterDelegateFactory>
-      presenter_delegate_factory_;
   std::unique_ptr<app_list::AppListPresenterImpl> app_list_presenter_;
   std::unique_ptr<AppListControllerDelegateAsh> controller_delegate_;
-
-  AppListPresenterService app_list_presenter_service_;
+  std::unique_ptr<AppListPresenterService> app_list_presenter_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceAsh);
 };

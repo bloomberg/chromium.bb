@@ -44,8 +44,6 @@
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
-#include "chrome/browser/ui/app_list/app_list_view_delegate.h"
-#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
@@ -74,7 +72,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/service_manager_connection.h"
-#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -451,11 +448,6 @@ void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {
   // browser will be shown on the active desktop, we ensure the visibility.
   multi_user_util::MoveWindowToCurrentDesktop(
       displayer.browser()->window()->GetNativeWindow());
-}
-
-app_list::AppListPresenter* ChromeShellDelegate::GetAppListPresenter() {
-  DCHECK(ash::Shell::HasInstance());
-  return AppListServiceAsh::GetInstance()->GetAppListPresenter();
 }
 
 ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(

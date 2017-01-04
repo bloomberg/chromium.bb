@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/common/shell_delegate.h"
-#include "ash/mus/app_list_presenter_mus.h"
 #include "base/macros.h"
 
 namespace service_manager {
@@ -34,7 +33,6 @@ class ShellDelegateMus : public ShellDelegate {
   void Exit() override;
   keyboard::KeyboardUI* CreateKeyboardUI() override;
   void OpenUrlFromArc(const GURL& url) override;
-  app_list::AppListPresenter* GetAppListPresenter() override;
   ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
   SystemTrayDelegate* CreateSystemTrayDelegate() override;
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
@@ -53,7 +51,6 @@ class ShellDelegateMus : public ShellDelegate {
 
  private:
   service_manager::Connector* connector_;
-  AppListPresenterMus app_list_presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateMus);
 };

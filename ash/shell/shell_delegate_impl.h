@@ -11,11 +11,6 @@
 #include "ash/common/shell_delegate.h"
 #include "base/macros.h"
 
-namespace app_list {
-class AppListPresenterDelegateFactory;
-class AppListPresenterImpl;
-}
-
 namespace keyboard {
 class KeyboardUI;
 }
@@ -40,7 +35,6 @@ class ShellDelegateImpl : public ShellDelegate {
   void Exit() override;
   keyboard::KeyboardUI* CreateKeyboardUI() override;
   void OpenUrlFromArc(const GURL& url) override;
-  app_list::AppListPresenter* GetAppListPresenter() override;
   ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
   SystemTrayDelegate* CreateSystemTrayDelegate() override;
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
@@ -58,10 +52,7 @@ class ShellDelegateImpl : public ShellDelegate {
   void UpdateTouchscreenStatusFromPrefs() override;
 
  private:
-  ShelfDelegate* shelf_delegate_;
-  std::unique_ptr<app_list::AppListPresenterDelegateFactory>
-      app_list_presenter_delegate_factory_;
-  std::unique_ptr<app_list::AppListPresenterImpl> app_list_presenter_;
+  ShelfDelegate* shelf_delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);
 };

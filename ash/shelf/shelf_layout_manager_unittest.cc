@@ -25,6 +25,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_app_list_view_presenter_impl.h"
 #include "ash/test/test_system_tray_item.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -947,62 +948,63 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenStatusOrShelfFocused) {
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 }
 
-// Makes sure shelf will be visible when app list opens as shelf is in
-// SHELF_VISIBLE state,and toggling app list won't change shelf
-// visibility state.
+// Ensure a SHELF_VISIBLE shelf stays visible when the app list is shown.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
-  WmShell* shell = WmShell::Get();
   WmShelf* shelf = GetPrimaryShelf();
-  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
-  layout_manager->LayoutShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
-  // Create a normal unmaximized window, shelf should be visible.
+  // The tested behavior relies on the app list presenter implementation.
+  test::TestAppListViewPresenterImpl app_list_presenter_impl;
+
+  // Create a normal unmaximized window; the shelf should be visible.
   aura::Window* window = CreateTestWindow();
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->Show();
-  EXPECT_FALSE(shell->GetAppListTargetVisibility());
+  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  // Show app list and the shelf stays visible.
-  shell->ShowAppList();
-  EXPECT_TRUE(shell->GetAppListTargetVisibility());
+  // Show the app list and the shelf stays visible.
+  app_list_presenter_impl.Show(display_manager()->first_display_id());
+  EXPECT_TRUE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  // Hide app list and the shelf stays visible.
-  shell->DismissAppList();
-  EXPECT_FALSE(shell->GetAppListTargetVisibility());
+  // Hide the app list and the shelf stays visible.
+  app_list_presenter_impl.Dismiss();
+  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 }
 
-// Makes sure shelf will be shown with SHELF_AUTO_HIDE_SHOWN state
-// when app list opens as shelf is in SHELF_AUTO_HIDE state, and
-// toggling app list won't change shelf visibility state.
+// Ensure a SHELF_AUTO_HIDE shelf is shown temporarily (SHELF_AUTO_HIDE_SHOWN)
+// when the app list is shown, but the visibility state doesn't change.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
-  WmShell* shell = WmShell::Get();
   WmShelf* shelf = GetPrimaryShelf();
-  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
-  layout_manager->LayoutShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
-  EXPECT_FALSE(shell->GetAppListTargetVisibility());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  // The tested behavior relies on the app list presenter implementation.
+  test::TestAppListViewPresenterImpl app_list_presenter_impl;
 
-  // Show app list.
-  shell->ShowAppList();
+  // Create a normal unmaximized window; the shelf should be hidden.
+  aura::Window* window = CreateTestWindow();
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->Show();
+  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Show the app list and the shelf should be temporarily visible.
+  app_list_presenter_impl.Show(display_manager()->first_display_id());
   // The shelf's auto hide state won't be changed until the timer fires, so
   // force it to update now.
-  layout_manager->UpdateVisibilityState();
-  EXPECT_TRUE(shell->GetAppListTargetVisibility());
+  GetShelfLayoutManager()->UpdateVisibilityState();
+  EXPECT_TRUE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
-  // Hide app list.
-  shell->DismissAppList();
-  EXPECT_FALSE(shell->GetAppListTargetVisibility());
+  // Hide the app list and the shelf should be hidden again.
+  app_list_presenter_impl.Dismiss();
+  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
 
 // Makes sure that when we have dual displays, with one or both shelves are set
@@ -1043,65 +1045,63 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(shelf_2->GetWindow()->GetRootWindow(),
             WmWindowAura::Get(window_2)->GetRootWindow());
 
-  // Activate one window in one display and manually trigger the update of shelf
-  // visibility.
+  // Activate one window in one display.
   wm::ActivateWindow(window_1);
-  Shell::GetInstance()->UpdateShelfVisibility();
 
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
+  // The tested behavior relies on the app list presenter implementation.
+  test::TestAppListViewPresenterImpl app_list_presenter_impl;
+
+  Shell::GetInstance()->UpdateShelfVisibility();
+  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_1->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
 
-  // Show app list.
-  WmShell::Get()->ShowAppList();
+  // Show the app list; only the shelf on the same display should be shown.
+  app_list_presenter_impl.Show(display_manager()->first_display_id());
   Shell::GetInstance()->UpdateShelfVisibility();
-
-  // Only the shelf in the active display should be shown, the other is hidden.
-  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
+  EXPECT_TRUE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf_1->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
 
-  // Hide app list, both shelves should be hidden.
-  WmShell::Get()->DismissAppList();
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
+  // Hide the app list, both shelves should be hidden.
+  app_list_presenter_impl.Dismiss();
+  Shell::GetInstance()->UpdateShelfVisibility();
+  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_2->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_1->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
 }
 
-// Makes sure the shelf will be hidden when we have a fullscreen window, and it
-// will unhide when we open the app list.
+// Ensure a SHELF_HIDDEN shelf (for a fullscreen window) is shown temporarily
+// when the app list is shown, and hidden again when the app list is dismissed.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
-  WmShell* shell = WmShell::Get();
   WmShelf* shelf = GetPrimaryShelf();
-  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
-  // For shelf to be visible, app list is not open in initial state.
-  layout_manager->LayoutShelf();
 
-  // Create a window and make it full screen.
+  // The tested behavior relies on the app list presenter implementation.
+  test::TestAppListViewPresenterImpl app_list_presenter_impl;
+
+  // Create a window and make it full screen; the shelf should be hidden.
   aura::Window* window = CreateTestWindow();
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   window->Show();
   wm::ActivateWindow(window);
-
-  // App list and shelf is not shown.
-  EXPECT_FALSE(shell->GetAppListTargetVisibility());
+  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
-  // Show app list.
-  shell->ShowAppList();
-  EXPECT_TRUE(shell->GetAppListTargetVisibility());
+  // Show the app list and the shelf should be temporarily visible.
+  app_list_presenter_impl.Show(display_manager()->first_display_id());
+  EXPECT_TRUE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  // Hide app list.
-  shell->DismissAppList();
-  EXPECT_FALSE(shell->GetAppListTargetVisibility());
+  // Hide the app list and the shelf should be hidden again.
+  app_list_presenter_impl.Dismiss();
+  EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 }
 

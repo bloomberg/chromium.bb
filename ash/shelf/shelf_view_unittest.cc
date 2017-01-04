@@ -48,7 +48,7 @@
 #include "base/test/user_action_tester.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/app_list/presenter/app_list_presenter.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -1470,8 +1470,11 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
 }
 
 TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
-  WmShell::Get()->ShowAppList();
-  ASSERT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
+  // Trigger mock notifications that the app list was shown.
+  WmShell::Get()->app_list()->OnTargetVisibilityChanged(true);
+  WmShell::Get()->app_list()->OnVisibilityChanged(true);
+  AppListButton* app_list_button = shelf_view_->GetAppListButton();
+  app_list_button->OnAppListShown();
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
   for (int i = 1; i < test_api_->GetButtonCount(); i++) {
@@ -1484,8 +1487,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
         << "ShelfView tries to hide on button " << i;
   }
 
-  // The tooltip should hide on the app-list button.
-  AppListButton* app_list_button = shelf_view_->GetAppListButton();
+  // The tooltip should hide on the app list button if the app list is visible.
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
       app_list_button->GetMirroredBounds().CenterPoint()));
 }
@@ -2052,61 +2054,6 @@ class ListMenuShelfItemDelegate : public TestShelfItemDelegate {
   DISALLOW_COPY_AND_ASSIGN(ListMenuShelfItemDelegate);
 };
 
-// A test implementation for AppListPresenter that does not change visibility
-// state immediately to simulate an in-flight animation. Calling
-// FinishVisibilityChange() will change the visibility to the requested one,
-// simulating end of the animation. Similar to the actual AppListPresenter, this
-// class toggles app list visibility based on the actual visibility rather than
-// the target visibility (which might be different due to in-flight animation).
-class TestAppListPresenter : public app_list::AppListPresenter {
- public:
-  TestAppListPresenter() {}
-  ~TestAppListPresenter() override {}
-
-  void FinishVisibilityChange() { is_visible_ = target_visibility_; }
-
-  // app_list::AppListPresenter:
-  void Show(int64_t display_id) override { target_visibility_ = true; }
-  void Dismiss() override { target_visibility_ = false; }
-  void ToggleAppList(int64_t display_id) override {
-    if (is_visible_)
-      Dismiss();
-    else
-      Show(display_id);
-  }
-  bool IsVisible() const override { return is_visible_; }
-  bool GetTargetVisibility() const override { return target_visibility_; }
-
- private:
-  bool is_visible_ = false;
-  bool target_visibility_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAppListPresenter);
-};
-
-// A test ShellDelegate implementation that returns a TestAppListPresenter as
-// the app list presenter.
-class TestAppListShellDelegate : public TestShellDelegate {
- public:
-  TestAppListShellDelegate()
-      : app_list_presenter_(new TestAppListPresenter()) {}
-  ~TestAppListShellDelegate() override {}
-
-  TestAppListPresenter* app_list_presenter() const {
-    return app_list_presenter_.get();
-  }
-
-  // TestShellDelegate:
-  app_list::AppListPresenter* GetAppListPresenter() override {
-    return app_list_presenter();
-  }
-
- private:
-  std::unique_ptr<TestAppListPresenter> app_list_presenter_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAppListShellDelegate);
-};
-
 }  // namespace
 
 // Test fixture that forces material design mode in order to test ink drop
@@ -2129,8 +2076,7 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   // before calling base class's SetUp(). Shell will take ownership of the
   // returned object.
   virtual TestShellDelegate* CreateTestShellDelegate() {
-    shell_delegate_ = new TestAppListShellDelegate;
-    return shell_delegate_;
+    return new TestShellDelegate;
   }
 
   void InitAppListButtonInkDrop() {
@@ -2156,27 +2102,22 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   }
 
   void ShowAppList() {
-    DCHECK(shelf_delegate_);
-    shell_delegate_->app_list_presenter()->Show(0);
-    // Similar to real AppListPresenter, notify button that the app list is
-    // shown.
+    // Trigger a mock notification that the app list was shown.
+    WmShell::Get()->app_list()->OnTargetVisibilityChanged(true);
     app_list_button_->OnAppListShown();
   }
 
   void DismissAppList() {
-    DCHECK(shelf_delegate_);
-    shell_delegate_->app_list_presenter()->Dismiss();
-    // Similar to real AppListPresenter, notify button that the app list is
-    // dismissed.
+    // Trigger a mock notification that the app list was dismissed.
+    WmShell::Get()->app_list()->OnTargetVisibilityChanged(false);
     app_list_button_->OnAppListDismissed();
   }
 
   void FinishAppListVisibilityChange() {
-    DCHECK(shelf_delegate_);
-    shell_delegate_->app_list_presenter()->FinishVisibilityChange();
+    // Trigger a mock notification that the app list finished animating.
+    app_list::AppList* app_list = WmShell::Get()->app_list();
+    app_list->OnVisibilityChanged(app_list->GetTargetVisibility());
   }
-
-  TestAppListShellDelegate* shell_delegate_ = nullptr;  // Owned by Shell.
 
   AppListButton* app_list_button_ = nullptr;
   InkDropSpy* app_list_button_ink_drop_ = nullptr;
@@ -2219,7 +2160,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
   // Mouse press on the button, which shows the app list, should end up in the
   // activated state.
   generator.PressLeftButton();
-  // Similar to real AppListPresenter, notify button that the app list is shown.
+  // Trigger a mock button notification that the app list was shown.
   app_list_button_->OnAppListShown();
   FinishAppListVisibilityChange();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
@@ -2245,7 +2186,6 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
 TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
   InitAppListButtonInkDrop();
 
-  // Show the app list.
   ShowAppList();
   FinishAppListVisibilityChange();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
@@ -2258,7 +2198,6 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
 
   // Mouse press on the button, which dismisses the app list, should end up in
   // the hidden state.
-  // Dismiss app list similar to pre-target handler in real AppListPresenter.
   DismissAppList();
   generator.PressLeftButton();
   FinishAppListVisibilityChange();
@@ -2298,7 +2237,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
   // Touch release on the button, which shows the app list, should end up in the
   // activated state.
   generator.ReleaseTouch();
-  // Similar to real AppListPresenter, notify button that the app list is shown.
+  // Trigger a mock button notification that the app list was shown.
   app_list_button_->OnAppListShown();
   FinishAppListVisibilityChange();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
@@ -2312,7 +2251,6 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
   InitAppListButtonInkDrop();
 
-  // Show the app list.
   ShowAppList();
   FinishAppListVisibilityChange();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
@@ -2325,7 +2263,6 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
 
   // Touch press on the button, which dismisses the app list, should end up in
   // the hidden state.
-  // Dismiss app list similar to pre-target handler in real AppListPresenter.
   DismissAppList();
   generator.PressTouch();
   EXPECT_EQ(views::InkDropState::HIDDEN,
@@ -2380,7 +2317,6 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenHidden) {
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
   InitAppListButtonInkDrop();
 
-  // Show the app list.
   ShowAppList();
   FinishAppListVisibilityChange();
   EXPECT_EQ(views::InkDropState::ACTIVATED,
@@ -2395,7 +2331,6 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
 
   // Touch press on the button, which dismisses the app list, should end up in
   // the hidden state.
-  // Dismiss app list similar to pre-target handler in real AppListPresenter.
   DismissAppList();
   generator.PressTouch();
   EXPECT_EQ(views::InkDropState::HIDDEN,

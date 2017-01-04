@@ -2,4 +2,7 @@ specific_include_rules = {
   "accelerator_controller_delegate_aura\.cc": [
     "+ash/host"
   ],
+  "accelerator_interactive_uitest_chromeos\.cc": [
+    "+mojo/edk/embedder/embedder.h"
+  ],
 }

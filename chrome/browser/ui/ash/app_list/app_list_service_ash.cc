@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_delegate_mus.h"
+#include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/session_util.h"
@@ -58,7 +59,7 @@ class AppListPresenterDelegateFactoryMus
   ~AppListPresenterDelegateFactoryMus() override {}
 
   std::unique_ptr<app_list::AppListPresenterDelegate> GetDelegate(
-      app_list::AppListPresenter* presenter) override {
+      app_list::AppListPresenterImpl* presenter) override {
     return base::MakeUnique<AppListPresenterDelegateMus>(
         presenter, view_delegate_factory_.get());
   }
@@ -78,27 +79,32 @@ AppListServiceAsh* AppListServiceAsh::GetInstance() {
 }
 
 AppListServiceAsh::AppListServiceAsh() {
+  std::unique_ptr<app_list::AppListPresenterDelegateFactory> factory;
   if (chrome::IsRunningInMash()) {
-    presenter_delegate_factory_.reset(new AppListPresenterDelegateFactoryMus(
-        base::MakeUnique<ViewDelegateFactoryImpl>(this)));
+    factory = base::MakeUnique<AppListPresenterDelegateFactoryMus>(
+        base::MakeUnique<ViewDelegateFactoryImpl>(this));
   } else {
-    presenter_delegate_factory_.reset(new ash::AppListPresenterDelegateFactory(
-        base::MakeUnique<ViewDelegateFactoryImpl>(this)));
+    factory = base::MakeUnique<ash::AppListPresenterDelegateFactory>(
+        base::MakeUnique<ViewDelegateFactoryImpl>(this));
   }
-  app_list_presenter_.reset(
-      new app_list::AppListPresenterImpl(presenter_delegate_factory_.get()));
-  controller_delegate_.reset(
-      new AppListControllerDelegateAsh(app_list_presenter_.get()));
+  app_list_presenter_ =
+      base::MakeUnique<app_list::AppListPresenterImpl>(std::move(factory));
+  controller_delegate_ =
+      base::MakeUnique<AppListControllerDelegateAsh>(app_list_presenter_.get());
 }
 
-AppListServiceAsh::~AppListServiceAsh() {
-}
+AppListServiceAsh::~AppListServiceAsh() {}
 
-app_list::AppListPresenter* AppListServiceAsh::GetAppListPresenter() {
+app_list::AppListPresenterImpl* AppListServiceAsh::GetAppListPresenter() {
   return app_list_presenter_.get();
 }
 
 void AppListServiceAsh::Init(Profile* initial_profile) {
+  // The AppListPresenterService ctor calls AppListServiceAsh::GetInstance(),
+  // which isn't available in the AppListServiceAsh constructor, so init here.
+  // This establishes the mojo connections between the app list and presenter.
+  app_list_presenter_service_ = base::MakeUnique<AppListPresenterService>();
+
   // Ensure the StartPageService is created here. This early initialization is
   // necessary to allow the WebContents to load before the app list is shown.
   app_list::StartPageService* service =

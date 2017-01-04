@@ -24,7 +24,7 @@
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/presenter/app_list_presenter.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
@@ -75,7 +75,7 @@ bool IsFullscreenAppListEnabled() {
 // AppListPresenterDelegate, public:
 
 AppListPresenterDelegate::AppListPresenterDelegate(
-    app_list::AppListPresenter* presenter,
+    app_list::AppListPresenterImpl* presenter,
     app_list::AppListViewDelegateFactory* view_delegate_factory)
     : presenter_(presenter), view_delegate_factory_(view_delegate_factory) {
   WmShell::Get()->AddShellObserver(this);

@@ -18,6 +18,9 @@
 #include "base/run_loop.h"
 #include "base/test/user_action_tester.cc"
 #include "chromeos/network/network_handler.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "ui/app_list/presenter/app_list.h"
+#include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/base/test/ui_controls.h"
 
 namespace ash {
@@ -195,11 +198,18 @@ TEST_F(AcceleratorInteractiveUITest, MAYBE_ChromeOsAccelerators) {
 
 // Tests the app list accelerator.
 TEST_F(AcceleratorInteractiveUITest, MAYBE_ToggleAppList) {
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
+  mojo::edk::Init();
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+  WmShell::Get()->app_list()->SetAppListPresenter(
+      test_app_list_presenter.CreateInterfacePtrAndBind());
+
+  EXPECT_EQ(0u, test_app_list_presenter.toggle_count());
   SendKeyPressSync(ui::VKEY_LWIN, false, false, false);
-  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(1u, test_app_list_presenter.toggle_count());
   SendKeyPressSync(ui::VKEY_LWIN, false, false, false);
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(2u, test_app_list_presenter.toggle_count());
 }
 
 }  // namespace test

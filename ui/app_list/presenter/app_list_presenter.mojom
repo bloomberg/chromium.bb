@@ -14,6 +14,10 @@ import "services/ui/public/interfaces/window_manager_constants.mojom";
 interface AppList {
   // Set the app list presenter interface, to let ash trigger Chrome's app list.
   SetAppListPresenter(AppListPresenter presenter);
+
+  // Notify the app list that the presenter's [target] visibility changed.
+  OnTargetVisibilityChanged(bool visible);
+  OnVisibilityChanged(bool visible);
 };
 
 // Implemented by chrome. Used by ash to actually show and dismiss the app list.
@@ -23,7 +27,7 @@ interface AppListPresenter {
 
   // Dismiss the app list.
   Dismiss();
-  
+
   // Show the app list (on the specified display) if it is hidden; hide the
   // app list if it is shown.
   ToggleAppList(int64 display_id);

@@ -667,6 +667,8 @@ if (!is_android) {
         "//ash/resources",
         "//chrome/browser/media/router:test_support",
         "//chromeos",
+        "//mojo/edk/system",
+        "//ui/app_list/presenter:test_support",
       ]
 
       data += [
@@ -770,6 +772,7 @@ if (!is_android) {
 
     if (use_ash) {
       sources += [
+        "../browser/ui/ash/app_list/app_list_interactive_uitest.cc",
         "../browser/ui/views/ash/tab_scrubber_browsertest.cc",
         "../browser/ui/window_sizer/window_sizer_ash_uitest.cc",
         "//ash/drag_drop/drag_drop_interactive_uitest.cc",

@@ -10,7 +10,7 @@
 #include "ui/views/pointer_watcher.h"
 
 namespace app_list {
-class AppListPresenter;
+class AppListPresenterImpl;
 class AppListView;
 class AppListViewDelegateFactory;
 }  // namespace app_list
@@ -23,7 +23,7 @@ class AppListPresenterDelegateMus : public app_list::AppListPresenterDelegate,
                                     public views::PointerWatcher {
  public:
   AppListPresenterDelegateMus(
-      app_list::AppListPresenter* presenter,
+      app_list::AppListPresenterImpl* presenter,
       app_list::AppListViewDelegateFactory* view_delegate_factory);
   ~AppListPresenterDelegateMus() override;
 
@@ -45,7 +45,7 @@ class AppListPresenterDelegateMus : public app_list::AppListPresenterDelegate,
                               views::Widget* target) override;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
-  app_list::AppListPresenter* presenter_;
+  app_list::AppListPresenterImpl* presenter_;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
   app_list::AppListViewDelegateFactory* view_delegate_factory_;

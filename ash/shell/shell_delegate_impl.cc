@@ -4,7 +4,6 @@
 
 #include "ash/shell/shell_delegate_impl.h"
 
-#include "ash/app_list/app_list_presenter_delegate_factory.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/gpu_support_stub.h"
@@ -24,9 +23,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/user_manager/user_info_impl.h"
-#include "ui/app_list/app_list_view_delegate.h"
-#include "ui/app_list/presenter/app_list_presenter_impl.h"
-#include "ui/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -125,31 +121,9 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateImpl);
 };
 
-class AppListViewDelegateFactoryImpl
-    : public app_list::AppListViewDelegateFactory {
- public:
-  AppListViewDelegateFactoryImpl() {}
-  ~AppListViewDelegateFactoryImpl() override {}
-
-  // app_list::AppListViewDelegateFactory:
-  app_list::AppListViewDelegate* GetDelegate() override {
-    if (!app_list_view_delegate_.get())
-      app_list_view_delegate_.reset(CreateAppListViewDelegate());
-    return app_list_view_delegate_.get();
-  }
-
- private:
-  std::unique_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListViewDelegateFactoryImpl);
-};
-
 }  // namespace
 
-ShellDelegateImpl::ShellDelegateImpl()
-    : shelf_delegate_(nullptr),
-      app_list_presenter_delegate_factory_(new AppListPresenterDelegateFactory(
-          base::WrapUnique(new AppListViewDelegateFactoryImpl))) {}
+ShellDelegateImpl::ShellDelegateImpl() {}
 
 ShellDelegateImpl::~ShellDelegateImpl() {}
 
@@ -190,14 +164,6 @@ keyboard::KeyboardUI* ShellDelegateImpl::CreateKeyboardUI() {
 }
 
 void ShellDelegateImpl::OpenUrlFromArc(const GURL& url) {}
-
-app_list::AppListPresenter* ShellDelegateImpl::GetAppListPresenter() {
-  if (!app_list_presenter_) {
-    app_list_presenter_.reset(new app_list::AppListPresenterImpl(
-        app_list_presenter_delegate_factory_.get()));
-  }
-  return app_list_presenter_.get();
-}
 
 ShelfDelegate* ShellDelegateImpl::CreateShelfDelegate(ShelfModel* model) {
   shelf_delegate_ = new test::TestShelfDelegate(model);

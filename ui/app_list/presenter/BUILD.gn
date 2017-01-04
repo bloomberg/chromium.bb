@@ -25,7 +25,6 @@ component("presenter") {
   sources = [
     "app_list.cc",
     "app_list.h",
-    "app_list_presenter.h",
     "app_list_presenter_delegate.cc",
     "app_list_presenter_delegate.h",
     "app_list_presenter_delegate_factory.h",
@@ -58,6 +57,10 @@ static_library("test_support") {
   sources = [
     "test/app_list_presenter_impl_test_api.cc",
     "test/app_list_presenter_impl_test_api.h",
+    "test/test_app_list_presenter.cc",
+    "test/test_app_list_presenter.h",
+    "test/test_app_list_view_delegate_factory.cc",
+    "test/test_app_list_view_delegate_factory.h",
 
     # Temporary dependency to fix compile flake in http://crbug.com/611898.
     # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
@@ -65,10 +68,13 @@ static_library("test_support") {
   ]
 
   public_deps = [
+    ":mojom",
     ":presenter",
   ]
   deps = [
     "//base",
+    "//mojo/public/cpp/bindings",
+    "//ui/app_list:test_support",
   ]
 }
 

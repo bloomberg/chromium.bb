@@ -52,7 +52,6 @@
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/app_list/presenter/app_list.h"
-#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/display/display.h"
 #include "ui/views/focus/focus_manager_factory.h"
 
@@ -344,28 +343,25 @@ void WmShell::OnModalWindowRemoved(WmWindow* removed) {
 
 void WmShell::ShowAppList() {
   // Show the app list on the default display for new windows.
-  int64_t display_id =
-      GetRootWindowForNewWindows()->GetDisplayNearestWindow().id();
-  delegate_->GetAppListPresenter()->Show(display_id);
+  app_list_->Show(GetRootWindowForNewWindows()->GetDisplayNearestWindow().id());
 }
 
 void WmShell::DismissAppList() {
-  delegate_->GetAppListPresenter()->Dismiss();
+  app_list_->Dismiss();
 }
 
 void WmShell::ToggleAppList() {
-  // Show the app list on the default display for new windows.
-  int64_t display_id =
-      GetRootWindowForNewWindows()->GetDisplayNearestWindow().id();
-  delegate_->GetAppListPresenter()->ToggleAppList(display_id);
+  // Toggle the app list on the default display for new windows.
+  app_list_->ToggleAppList(
+      GetRootWindowForNewWindows()->GetDisplayNearestWindow().id());
 }
 
 bool WmShell::IsApplistVisible() const {
-  return delegate_->GetAppListPresenter()->IsVisible();
+  return app_list_->IsVisible();
 }
 
 bool WmShell::GetAppListTargetVisibility() const {
-  return delegate_->GetAppListPresenter()->GetTargetVisibility();
+  return app_list_->GetTargetVisibility();
 }
 
 void WmShell::SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui) {

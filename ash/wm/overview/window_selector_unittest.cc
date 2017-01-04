@@ -36,6 +36,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/test/test_app_list_view_presenter_impl.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -1207,10 +1208,15 @@ TEST_F(WindowSelectorTest, SelectingHidesAppList) {
   gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  WmShell::Get()->ShowAppList();
-  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
+
+  // The tested behavior relies on the app list presenter delegate.
+  test::TestAppListViewPresenterImpl app_list_presenter_impl;
+
+  app_list_presenter_impl.Show(display_manager()->first_display_id());
+  EXPECT_TRUE(app_list_presenter_impl.IsVisible());
+
   ToggleOverview();
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
+  EXPECT_FALSE(app_list_presenter_impl.IsVisible());
   ToggleOverview();
 }
 

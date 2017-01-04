@@ -22,6 +22,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
+#include "ash/test/test_app_list_view_presenter_impl.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -31,6 +32,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
@@ -473,14 +475,17 @@ TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
 
 // Tests that beginning window selection hides the app list.
 TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
+  // The tested behavior relies on the app list presenter implementation.
+  test::TestAppListViewPresenterImpl app_list_presenter_impl;
+
   WindowCycleController* controller = WmShell::Get()->window_cycle_controller();
 
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  WmShell::Get()->ShowAppList();
-  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
+  app_list_presenter_impl.Show(display_manager()->first_display_id());
+  EXPECT_TRUE(app_list_presenter_impl.IsVisible());
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
+  EXPECT_FALSE(app_list_presenter_impl.IsVisible());
 
   // Make sure that dismissing the app list this way doesn't pass activation
   // to a different window.

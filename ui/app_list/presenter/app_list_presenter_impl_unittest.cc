@@ -74,19 +74,15 @@ class AppListPresenterDelegateFactoryTest
       : container_(container) {}
   ~AppListPresenterDelegateFactoryTest() override {}
 
-  AppListPresenterDelegateTest* current_delegate() { return current_delegate_; }
-
   // AppListPresenterDelegateFactory:
   std::unique_ptr<AppListPresenterDelegate> GetDelegate(
-      AppListPresenter* presenter) override {
-    current_delegate_ =
-        new AppListPresenterDelegateTest(container_, &app_list_view_delegate_);
-    return base::WrapUnique(current_delegate_);
+      AppListPresenterImpl* presenter) override {
+    return base::MakeUnique<AppListPresenterDelegateTest>(
+        container_, &app_list_view_delegate_);
   }
 
  private:
   aura::Window* container_;
-  AppListPresenterDelegateTest* current_delegate_ = nullptr;
   test::AppListTestViewDelegate app_list_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateFactoryTest);
@@ -106,7 +102,8 @@ class AppListPresenterImplTest : public aura::test::AuraTestBase {
   // Don't cache the return of this method - a new delegate is created every
   // time the app list is shown.
   AppListPresenterDelegateTest* delegate() {
-    return factory_->current_delegate();
+    return static_cast<AppListPresenterDelegateTest*>(
+        presenter_test_api_->presenter_delegate());
   }
 
   // aura::test::AuraTestBase:
@@ -114,9 +111,9 @@ class AppListPresenterImplTest : public aura::test::AuraTestBase {
   void TearDown() override;
 
  private:
-  std::unique_ptr<AppListPresenterDelegateFactoryTest> factory_;
   std::unique_ptr<AppListPresenterImpl> presenter_;
   std::unique_ptr<aura::Window> container_;
+  std::unique_ptr<test::AppListPresenterImplTestApi> presenter_test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterImplTest);
 };
@@ -129,8 +126,10 @@ void AppListPresenterImplTest::SetUp() {
   AuraTestBase::SetUp();
   new wm::DefaultActivationClient(root_window());
   container_.reset(CreateNormalWindow(0, root_window(), nullptr));
-  factory_.reset(new AppListPresenterDelegateFactoryTest(container_.get()));
-  presenter_.reset(new AppListPresenterImpl(factory_.get()));
+  presenter_ = base::MakeUnique<AppListPresenterImpl>(
+      base::MakeUnique<AppListPresenterDelegateFactoryTest>(container_.get()));
+  presenter_test_api_ =
+      base::MakeUnique<test::AppListPresenterImplTestApi>(presenter());
 }
 
 void AppListPresenterImplTest::TearDown() {
@@ -204,8 +203,7 @@ TEST_F(AppListPresenterImplTest, WidgetDestroyed) {
   EXPECT_TRUE(presenter()->GetTargetVisibility());
   presenter()->GetView()->GetWidget()->CloseNow();
   EXPECT_FALSE(presenter()->GetTargetVisibility());
-  test::AppListPresenterImplTestApi presenter_test_api(presenter());
-  EXPECT_FALSE(presenter_test_api.presenter_delegate());
+  EXPECT_FALSE(delegate());
 }
 
 }  // namespace app_list

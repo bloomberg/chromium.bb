@@ -6,8 +6,6 @@
 
 #include <limits>
 
-#include "ash/app_list/app_list_presenter_delegate.h"
-#include "ash/app_list/app_list_presenter_delegate_factory.h"
 #include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/gpu_support_stub.h"
 #include "ash/common/palette_delegate.h"
@@ -23,9 +21,6 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "ui/app_list/presenter/app_list_presenter_impl.h"
-#include "ui/app_list/presenter/app_list_view_delegate_factory.h"
-#include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/image/image.h"
 
@@ -35,38 +30,12 @@
 
 namespace ash {
 namespace test {
-namespace {
-
-class AppListViewDelegateFactoryImpl
-    : public app_list::AppListViewDelegateFactory {
- public:
-  AppListViewDelegateFactoryImpl() {}
-  ~AppListViewDelegateFactoryImpl() override {}
-
-  // app_list::AppListViewDelegateFactory:
-  app_list::AppListViewDelegate* GetDelegate() override {
-    if (!app_list_view_delegate_.get()) {
-      app_list_view_delegate_.reset(
-          new app_list::test::AppListTestViewDelegate);
-    }
-    return app_list_view_delegate_.get();
-  }
-
- private:
-  std::unique_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListViewDelegateFactoryImpl);
-};
-
-}  // namespace
 
 TestShellDelegate::TestShellDelegate()
     : num_exit_requests_(0),
       multi_profiles_enabled_(false),
       force_maximize_on_first_run_(false),
-      touchscreen_enabled_in_local_pref_(true),
-      app_list_presenter_delegate_factory_(new AppListPresenterDelegateFactory(
-          base::WrapUnique(new AppListViewDelegateFactoryImpl))) {}
+      touchscreen_enabled_in_local_pref_(true) {}
 
 TestShellDelegate::~TestShellDelegate() {}
 
@@ -107,14 +76,6 @@ keyboard::KeyboardUI* TestShellDelegate::CreateKeyboardUI() {
 }
 
 void TestShellDelegate::OpenUrlFromArc(const GURL& url) {}
-
-app_list::AppListPresenter* TestShellDelegate::GetAppListPresenter() {
-  if (!app_list_presenter_) {
-    app_list_presenter_.reset(new app_list::AppListPresenterImpl(
-        app_list_presenter_delegate_factory_.get()));
-  }
-  return app_list_presenter_.get();
-}
 
 ShelfDelegate* TestShellDelegate::CreateShelfDelegate(ShelfModel* model) {
   return new TestShelfDelegate(model);

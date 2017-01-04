@@ -22,8 +22,7 @@ namespace app_list {
 class AppListView;
 class AppListViewDelegate;
 
-// Delegate of AppListPresenter which allows to customize AppListPresenter's
-// behavior.
+// Delegate of the app list presenter which allows customizing its behavior.
 // The design of this interface was heavily influenced by the needs of Ash's
 // app list implementation (see ash::AppListPresenterDelegate).
 class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {

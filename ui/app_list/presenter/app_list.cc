@@ -18,8 +18,39 @@ mojom::AppListPresenter* AppList::GetAppListPresenter() {
   return presenter_.get();
 }
 
+void AppList::Show(int64_t display_id) {
+  if (presenter_)
+    presenter_->Show(display_id);
+}
+
+void AppList::Dismiss() {
+  if (presenter_)
+    presenter_->Dismiss();
+}
+
+void AppList::ToggleAppList(int64_t display_id) {
+  if (presenter_)
+    presenter_->ToggleAppList(display_id);
+}
+
+bool AppList::IsVisible() const {
+  return visible_;
+}
+
+bool AppList::GetTargetVisibility() const {
+  return target_visible_;
+}
+
 void AppList::SetAppListPresenter(mojom::AppListPresenterPtr presenter) {
   presenter_ = std::move(presenter);
+}
+
+void AppList::OnTargetVisibilityChanged(bool visible) {
+  target_visible_ = visible;
+}
+
+void AppList::OnVisibilityChanged(bool visible) {
+  visible_ = visible;
 }
 
 }  // namespace app_list

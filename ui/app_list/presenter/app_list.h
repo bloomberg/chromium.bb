@@ -23,8 +23,19 @@ class APP_LIST_PRESENTER_EXPORT AppList : public mojom::AppList {
   // Get a raw pointer to the mojom::AppListPresenter interface; may be null.
   mojom::AppListPresenter* GetAppListPresenter();
 
+  // Helper functions to call the underlying functionality on the presenter.
+  void Show(int64_t display_id);
+  void Dismiss();
+  void ToggleAppList(int64_t display_id);
+
+  // Helper functions to get the cached state as reported by the presenter.
+  bool IsVisible() const;
+  bool GetTargetVisibility() const;
+
   // mojom::AppList:
   void SetAppListPresenter(mojom::AppListPresenterPtr presenter) override;
+  void OnTargetVisibilityChanged(bool visible) override;
+  void OnVisibilityChanged(bool visible) override;
 
  private:
   // Bindings for the mojom::AppList interface.
@@ -32,6 +43,10 @@ class APP_LIST_PRESENTER_EXPORT AppList : public mojom::AppList {
 
   // App list presenter interface in chrome; used to show/hide the app list.
   mojom::AppListPresenterPtr presenter_;
+
+  // The cached [target] visibility, as reported by the presenter.
+  bool target_visible_ = false;
+  bool visible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppList);
 };

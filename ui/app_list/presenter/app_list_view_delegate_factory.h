@@ -14,6 +14,7 @@ class APP_LIST_PRESENTER_EXPORT AppListViewDelegateFactory {
  public:
   virtual ~AppListViewDelegateFactory();
 
+  // This does not pass ownership of the delegate.
   virtual app_list::AppListViewDelegate* GetDelegate() = 0;
 };
 

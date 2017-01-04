@@ -30,6 +30,8 @@
 #include "ash/wm/window_util.h"
 #include "base/test/user_action_tester.cc"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "ui/app_list/presenter/app_list.h"
+#include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -274,7 +276,6 @@ AcceleratorController* AcceleratorControllerTest::GetController() {
   return WmShell::Get()->accelerator_controller();
 }
 
-#if !defined(OS_WIN)
 // Double press of exit shortcut => exiting
 TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestDoublePress) {
   ui::Accelerator press(ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
@@ -330,7 +331,6 @@ TEST_F(AcceleratorControllerTest, LingeringExitWarningBubble) {
 
   // Exit ash and there should be no crash
 }
-#endif  // !defined(OS_WIN)
 
 TEST_F(AcceleratorControllerTest, Register) {
   const ui::Accelerator accelerator_a(ui::VKEY_A, ui::EF_NONE);
@@ -743,15 +743,8 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
 }
 
 // TODO(oshima): Fix this test to use EventGenerator.
-#if defined(OS_WIN)
-// crbug.com/317592
-#define MAYBE_ProcessOnce DISABLED_ProcessOnce
-#else
-#define MAYBE_ProcessOnce ProcessOnce
-#endif
-
-#if defined(OS_WIN) || defined(USE_X11)
-TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
+#if defined(USE_X11)
+TEST_F(AcceleratorControllerTest, ProcessOnce) {
   // The IME event filter interferes with the basic key event propagation we
   // attempt to do here, so we disable it.
   DisableIME();
@@ -762,22 +755,7 @@ TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
   // The accelerator is processed only once.
   ui::EventProcessor* dispatcher =
       Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
-#if defined(OS_WIN)
-  MSG msg1 = {NULL, WM_KEYDOWN, ui::VKEY_A, 0};
-  ui::KeyEvent key_event1(msg1);
-  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&key_event1);
-  EXPECT_TRUE(key_event1.handled() || details.dispatcher_destroyed);
 
-  MSG msg2 = {NULL, WM_CHAR, L'A', 0};
-  ui::KeyEvent key_event2(msg2);
-  details = dispatcher->OnEventFromSource(&key_event2);
-  EXPECT_FALSE(key_event2.handled() || details.dispatcher_destroyed);
-
-  MSG msg3 = {NULL, WM_KEYUP, ui::VKEY_A, 0};
-  ui::KeyEvent key_event3(msg3);
-  details = dispatcher->OnEventFromSource(&key_event3);
-  EXPECT_FALSE(key_event3.handled() || details.dispatcher_destroyed);
-#elif defined(USE_X11)
   ui::ScopedXI2Event key_event;
   key_event.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   ui::KeyEvent key_event1(key_event);
@@ -792,7 +770,6 @@ TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
   ui::KeyEvent key_event3(key_event);
   details = dispatcher->OnEventFromSource(&key_event3);
   EXPECT_FALSE(key_event3.handled() || details.dispatcher_destroyed);
-#endif
   EXPECT_EQ(1, target.accelerator_pressed_count());
 }
 #endif
@@ -808,7 +785,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE)));
 
-#if defined(OS_CHROMEOS)
   // The "Take Screenshot", "Take Partial Screenshot", volume, brightness, and
   // keyboard brightness accelerators are only defined on ChromeOS.
   {
@@ -895,9 +871,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(1, delegate->handle_keyboard_brightness_up_count());
     EXPECT_EQ(alt_brightness_up, delegate->last_accelerator());
   }
-#endif
 
-#if !defined(OS_WIN)
   // Exit
   ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
   ASSERT_TRUE(ewh);
@@ -912,7 +886,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   EXPECT_TRUE(is_idle(ewh));
   EXPECT_FALSE(is_ui_shown(ewh));
   Reset(ewh);
-#endif
 
   // New tab
   EXPECT_TRUE(
@@ -934,7 +907,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   EXPECT_TRUE(
       ProcessInController(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN)));
 
-#if defined(OS_CHROMEOS)
   // Open file manager
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)));
@@ -945,24 +917,25 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // effect of locking the screen.
   EXPECT_TRUE(
       ProcessInController(ui::Accelerator(ui::VKEY_L, ui::EF_COMMAND_DOWN)));
-#endif
 }
 
 TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+  WmShell::Get()->app_list()->SetAppListPresenter(
+      test_app_list_presenter.CreateInterfacePtrAndBind());
   AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
 
-  // The press event should not open the AppList, the release should instead.
+  // The press event should not toggle the AppList, the release should instead.
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(ui::VKEY_LWIN, GetCurrentAccelerator().key_code());
-
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
+  EXPECT_EQ(0u, test_app_list_presenter.toggle_count());
 
   EXPECT_TRUE(
       ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
-
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(1u, test_app_list_presenter.toggle_count());
   EXPECT_EQ(ui::VKEY_LWIN, GetPreviousAccelerator().key_code());
 
   // When spoken feedback is on, the AppList should not toggle.
@@ -972,32 +945,26 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   EXPECT_FALSE(
       ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(1u, test_app_list_presenter.toggle_count());
 
+  // Turning off spoken feedback should allow the AppList to toggle again.
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_TRUE(
       ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(2u, test_app_list_presenter.toggle_count());
 
-  // When spoken feedback is on, the AppList should not toggle.
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  EXPECT_FALSE(
-      ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  EXPECT_FALSE(
-      ProcessInController(ReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
-  EXPECT_FALSE(WmShell::Get()->GetAppListTargetVisibility());
-
-#if defined(OS_CHROMEOS)
   // The press of VKEY_BROWSER_SEARCH should toggle the AppList
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
-  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(3u, test_app_list_presenter.toggle_count());
   EXPECT_FALSE(ProcessInController(
       ReleaseAccelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
-  EXPECT_TRUE(WmShell::Get()->GetAppListTargetVisibility());
-#endif
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(3u, test_app_list_presenter.toggle_count());
 }
 
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
@@ -1052,13 +1019,12 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAcceleratorsWorkaround139556) {
 }
 
 TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
-#if defined(OS_CHROMEOS)
   // Power key is reserved on chromeos.
   EXPECT_TRUE(GetController()->IsReserved(
       ui::Accelerator(ui::VKEY_POWER, ui::EF_NONE)));
   EXPECT_FALSE(GetController()->IsPreferred(
       ui::Accelerator(ui::VKEY_POWER, ui::EF_NONE)));
-#endif
+
   // ALT+Tab are not reserved but preferred.
   EXPECT_FALSE(GetController()->IsReserved(
       ui::Accelerator(ui::VKEY_TAB, ui::EF_ALT_DOWN)));
@@ -1115,14 +1081,13 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   ASSERT_TRUE(w1_state->IsFullscreen());
 
   ui::test::EventGenerator& generator = GetEventGenerator();
-#if defined(OS_CHROMEOS)
+
   // Power key (reserved) should always be handled.
   test::LockStateControllerTestApi test_api(
       Shell::GetInstance()->lock_state_controller());
   EXPECT_FALSE(test_api.is_animating_lock());
   generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
   EXPECT_TRUE(test_api.is_animating_lock());
-#endif
 
   auto press_and_release_alt_tab = [&generator]() {
     generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
@@ -1165,14 +1130,13 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   }
 
   ui::test::EventGenerator& generator = GetEventGenerator();
-#if defined(OS_CHROMEOS)
+
   // Power key (reserved) should always be handled.
   test::LockStateControllerTestApi test_api(
       Shell::GetInstance()->lock_state_controller());
   EXPECT_FALSE(test_api.is_animating_lock());
   generator.PressKey(ui::VKEY_POWER, ui::EF_NONE);
   EXPECT_TRUE(test_api.is_animating_lock());
-#endif
 
   // A pinned window can consume ALT-TAB (preferred), but no side effect.
   ASSERT_EQ(w1, wm::GetActiveWindow());
@@ -1182,7 +1146,6 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   ASSERT_NE(w2, wm::GetActiveWindow());
 }
 
-#if defined(OS_CHROMEOS)
 TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   std::set<AcceleratorAction> all_actions;
   for (size_t i = 0; i < kAcceleratorDataLength; ++i)
@@ -1282,7 +1245,6 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
   }
 }
-#endif
 
 TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
@@ -1315,7 +1277,6 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   }
 }
 
-#if defined(OS_CHROMEOS)
 namespace {
 
 // defines a class to test the behavior of deprecated accelerators.
@@ -1417,6 +1378,5 @@ TEST_F(DeprecatedAcceleratorTester, TestNewAccelerators) {
     ResetStateIfNeeded();
   }
 }
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

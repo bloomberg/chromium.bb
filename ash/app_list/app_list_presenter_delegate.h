@@ -16,7 +16,7 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace app_list {
-class AppListPresenter;
+class AppListPresenterImpl;
 class AppListView;
 class AppListViewDelegateFactory;
 }
@@ -40,7 +40,7 @@ class ASH_EXPORT AppListPresenterDelegate
       public WmShelfObserver {
  public:
   AppListPresenterDelegate(
-      app_list::AppListPresenter* presenter,
+      app_list::AppListPresenterImpl* presenter,
       app_list::AppListViewDelegateFactory* view_delegate_factory);
   ~AppListPresenterDelegate() override;
 
@@ -78,7 +78,7 @@ class ASH_EXPORT AppListPresenterDelegate
   bool is_visible_ = false;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
-  app_list::AppListPresenter* presenter_;
+  app_list::AppListPresenterImpl* presenter_;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
   app_list::AppListViewDelegateFactory* view_delegate_factory_;

@@ -10,6 +10,7 @@
 #include "ash/content/shell_content_state.h"
 #include "ash/shell.h"
 #include "ash/shell/content/shell_content_state_impl.h"
+#include "ash/shell/example_app_list_presenter.h"
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/shell_init_params.h"
@@ -27,6 +28,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_net_log.h"
 #include "net/base/net_module.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -145,6 +147,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   display::Screen::GetScreen()->AddObserver(window_watcher_.get());
 
   ash::shell::InitWindowTypeLauncher();
+
+  // Initialize the example app list presenter.
+  example_app_list_presenter_ = base::MakeUnique<ExampleAppListPresenter>();
+  WmShell::Get()->app_list()->SetAppListPresenter(
+      example_app_list_presenter_->CreateInterfacePtrAndBind());
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 }

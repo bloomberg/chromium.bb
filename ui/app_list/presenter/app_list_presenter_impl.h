@@ -10,8 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/app_list/pagination_model_observer.h"
-#include "ui/app_list/presenter/app_list_presenter.h"
+#include "ui/app_list/presenter/app_list_presenter.mojom.h"
 #include "ui/app_list/presenter/app_list_presenter_delegate.h"
+#include "ui/app_list/presenter/app_list_presenter_export.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -34,14 +35,14 @@ class AppListViewDelegate;
 // activation state to auto dismiss the UI. Delegates the responsibility
 // for laying out the app list UI to ash::AppListLayoutDelegate.
 class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
-    : public AppListPresenter,
-      public aura::client::FocusChangeObserver,
+    : public aura::client::FocusChangeObserver,
       public aura::WindowObserver,
       public ui::ImplicitAnimationObserver,
       public views::WidgetObserver,
       public PaginationModelObserver {
  public:
-  explicit AppListPresenterImpl(AppListPresenterDelegateFactory* factory);
+  explicit AppListPresenterImpl(
+      std::unique_ptr<AppListPresenterDelegateFactory> factory);
   ~AppListPresenterImpl() override;
 
   // Returns app list window or NULL if it is not visible.
@@ -50,12 +51,26 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Returns app list view if one exists, or NULL otherwise.
   AppListView* GetView() { return view_; }
 
-  // AppListPresenter:
-  void Show(int64_t display_id) override;
-  void Dismiss() final;
-  void ToggleAppList(int64_t display_id) override;
-  bool IsVisible() const override;
-  bool GetTargetVisibility() const override;
+  // Show/hide app list window. The |window| is used to deterime in which
+  // display (in which the |window| exists) the app list should be shown.
+  void Show(int64_t display_id);
+
+  // Invoked to dismiss app list. This may leave the view open but hidden from
+  // the user.
+  void Dismiss();
+
+  // Show the app list if it is visible, hide it if it is hidden.
+  void ToggleAppList(int64_t display_id);
+
+  // Returns current visibility of the app list.
+  bool IsVisible() const;
+
+  // Returns target visibility. This may differ from IsVisible() if a visibility
+  // transition is in progress.
+  bool GetTargetVisibility() const;
+
+  // Sets the app list interface pointer; used to report visibility changes.
+  void SetAppList(mojom::AppListPtr app_list);
 
  private:
   friend class test::AppListPresenterImplTestApi;
@@ -83,6 +98,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // views::WidgetObserver overrides:
   void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
   // PaginationModelObserver overrides:
   void TotalPagesChanged() override;
@@ -90,8 +106,8 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   void TransitionStarted() override;
   void TransitionChanged() override;
 
-  // Not owned
-  AppListPresenterDelegateFactory* const factory_;
+  // The factory for the presenter's delegate.
+  std::unique_ptr<AppListPresenterDelegateFactory> factory_;
 
   // Responsible for laying out the app list UI.
   std::unique_ptr<AppListPresenterDelegate> presenter_delegate_;
@@ -111,6 +127,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // Whether should schedule snap back animation.
   bool should_snap_back_ = false;
+
+  // The app list interface pointer; used for reporting visibility changes.
+  mojom::AppListPtr app_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterImpl);
 };

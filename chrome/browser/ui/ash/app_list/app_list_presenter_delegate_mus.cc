@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_delegate_mus.h"
 
-#include "ui/app_list/presenter/app_list_presenter.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/display/display.h"
@@ -39,7 +39,7 @@ gfx::Point GetCenterOfDisplay(int64_t display_id, int minimum_height) {
 }  // namespace
 
 AppListPresenterDelegateMus::AppListPresenterDelegateMus(
-    app_list::AppListPresenter* presenter,
+    app_list::AppListPresenterImpl* presenter,
     app_list::AppListViewDelegateFactory* view_delegate_factory)
     : presenter_(presenter), view_delegate_factory_(view_delegate_factory) {}
 

@@ -57,13 +57,11 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
 // ChromeOS does not support ShowForProfile(), or profile switching within the
 // app list. Profile switching on CrOS goes through a different code path.
 #if defined(OS_CHROMEOS)
-#define MAYBE_ShowAndDismiss DISABLED_ShowAndDismiss
 #define MAYBE_SwitchAppListProfiles DISABLED_SwitchAppListProfiles
 #define MAYBE_SwitchAppListLockedProfile DISABLED_SwitchAppListLockedProfile
 #define MAYBE_SwitchAppListProfilesDuringSearch \
     DISABLED_SwitchAppListProfilesDuringSearch
 #else
-#define MAYBE_ShowAndDismiss ShowAndDismiss
 #define MAYBE_SwitchAppListProfiles SwitchAppListProfiles
 #define MAYBE_SwitchAppListLockedProfile SwitchAppListLockedProfile
 #define MAYBE_SwitchAppListProfilesDuringSearch \
@@ -71,7 +69,7 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
 #endif
 
 // Show the app list, then dismiss it.
-IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest, MAYBE_ShowAndDismiss) {
+IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest, ShowAndDismiss) {
   AppListService* service = AppListService::Get();
   ASSERT_FALSE(service->IsAppListVisible());
   service->ShowForProfile(browser()->profile());

@@ -11,7 +11,7 @@
 
 namespace app_list {
 
-class AppListPresenter;
+class AppListPresenterImpl;
 class AppListPresenterDelegate;
 
 class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegateFactory {
@@ -19,7 +19,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegateFactory {
   virtual ~AppListPresenterDelegateFactory() {}
 
   virtual std::unique_ptr<AppListPresenterDelegate> GetDelegate(
-      AppListPresenter* presenter) = 0;
+      AppListPresenterImpl* presenter) = 0;
 };
 
 }  // namespace app_list

@@ -12,7 +12,6 @@
 #include "ui/app_list/presenter/app_list_presenter_delegate_factory.h"
 
 namespace app_list {
-class AppListPresenter;
 class AppListViewDelegateFactory;
 }
 
@@ -26,7 +25,7 @@ class ASH_EXPORT AppListPresenterDelegateFactory
   ~AppListPresenterDelegateFactory() override;
 
   std::unique_ptr<app_list::AppListPresenterDelegate> GetDelegate(
-      app_list::AppListPresenter* presenter) override;
+      app_list::AppListPresenterImpl* presenter) override;
 
  private:
   std::unique_ptr<app_list::AppListViewDelegateFactory> view_delegate_factory_;

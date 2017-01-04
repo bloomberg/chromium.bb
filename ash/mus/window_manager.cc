@@ -14,7 +14,6 @@
 #include "ash/display/screen_position_controller.h"
 #include "ash/mus/accelerators/accelerator_handler.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
-#include "ash/mus/app_list_presenter_mus.h"
 #include "ash/mus/bridge/wm_lookup_mus.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"

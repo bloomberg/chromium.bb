@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/app_list/presenter/app_list_presenter.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 
 AppListPresenterService::AppListPresenterService() : binding_(this) {
   content::ServiceManagerConnection* connection =
@@ -20,6 +20,8 @@ AppListPresenterService::AppListPresenterService() : binding_(this) {
         ash_util::GetAshServiceName(), &app_list_ptr);
     // Register this object as the app list presenter.
     app_list_ptr->SetAppListPresenter(binding_.CreateInterfacePtrAndBind());
+    // Pass the interface pointer to the presenter to report visibility changes.
+    GetPresenter()->SetAppList(std::move(app_list_ptr));
   }
 }
 
@@ -37,6 +39,6 @@ void AppListPresenterService::ToggleAppList(int64_t display_id) {
   GetPresenter()->ToggleAppList(display_id);
 }
 
-app_list::AppListPresenter* AppListPresenterService::GetPresenter() {
+app_list::AppListPresenterImpl* AppListPresenterService::GetPresenter() {
   return AppListServiceAsh::GetInstance()->GetAppListPresenter();
 }
