@@ -496,7 +496,7 @@ bool String::isSafeToSendToAnotherThread() const {
   return !m_impl || m_impl->isSafeToSendToAnotherThread();
 }
 
-void String::split(const String& separator,
+void String::split(const StringView& separator,
                    bool allowEmptyEntries,
                    Vector<String>& result) const {
   result.clear();

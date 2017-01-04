@@ -315,10 +315,10 @@ class WTF_EXPORT String {
     return StringImpl::createUninitialized(length, data);
   }
 
-  void split(const String& separator,
+  void split(const StringView& separator,
              bool allowEmptyEntries,
              Vector<String>& result) const;
-  void split(const String& separator, Vector<String>& result) const {
+  void split(const StringView& separator, Vector<String>& result) const {
     split(separator, false, result);
   }
   void split(UChar separator,
