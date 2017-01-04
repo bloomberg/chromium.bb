@@ -12,12 +12,15 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Process;
+import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
@@ -28,6 +31,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Provides methods for building the X-Geo HTTP header, which provides device location to a server
@@ -36,6 +40,7 @@ import java.util.Locale;
  * X-Geo header spec: https://goto.google.com/xgeospec.
  */
 public class GeolocationHeader {
+    private static final String TAG = "GeolocationHeader";
 
     // Values for the histogram Geolocation.HeaderSentOrNot. Values 1, 5, 6, and 7 are defined in
     // histograms.xml and should not be used in other ways.
@@ -152,6 +157,12 @@ public class GeolocationHeader {
     @IntDef({PERMISSION_GRANTED, PERMISSION_PROMPT, PERMISSION_BLOCKED})
     private @interface Permission {}
 
+    /** The maximum value for the GeolocationHeader.TimeListening* histograms. */
+    public static final int TIME_LISTENING_HISTOGRAM_MAX_MILLIS = 50 * 60 * 1000; // 50 minutes
+
+    /** The maximum value for the GeolocationHeader.LocationAge* histograms. */
+    public static final int LOCATION_AGE_HISTOGRAM_MAX_SECONDS = 30 * 24 * 60 * 60; // 30 days
+
     /** The maximum age in milliseconds of a location that we'll send in an X-Geo header. */
     private static final int MAX_LOCATION_AGE = 24 * 60 * 60 * 1000;  // 24 hours
 
@@ -159,6 +170,9 @@ public class GeolocationHeader {
     private static final int REFRESH_LOCATION_AGE = 5 * 60 * 1000;  // 5 minutes
 
     private static final String HTTPS_SCHEME = "https";
+
+    /** The time of the first location refresh. Contains Long.MAX_VALUE if not set. */
+    private static long sFirstLocationTime = Long.MAX_VALUE;
 
     /**
      * Requests a location refresh so that a valid location will be available for constructing
@@ -169,6 +183,9 @@ public class GeolocationHeader {
     public static void primeLocationForGeoHeader(Context context) {
         if (!hasGeolocationPermission(context)) return;
 
+        if (sFirstLocationTime == Long.MAX_VALUE) {
+            sFirstLocationTime = SystemClock.elapsedRealtime();
+        }
         GeolocationTracker.refreshLastKnownLocation(context, REFRESH_LOCATION_AGE);
     }
 
@@ -227,6 +244,7 @@ public class GeolocationHeader {
         boolean isIncognito = tab.isIncognito();
         boolean locationAttached = true;
         Location location = null;
+        long locationAge = Long.MAX_VALUE;
         if (isGeoHeaderEnabledForUrl(context, url, isIncognito, true)) {
             // Only send X-Geo header if there's a fresh location available.
             location = GeolocationTracker.getLastKnownLocation(context);
@@ -234,7 +252,8 @@ public class GeolocationHeader {
                 recordHistogram(UMA_LOCATION_NOT_AVAILABLE);
                 locationAttached = false;
             } else {
-                if (GeolocationTracker.getLocationAge(location) > MAX_LOCATION_AGE) {
+                locationAge = GeolocationTracker.getLocationAge(location);
+                if (locationAge > MAX_LOCATION_AGE) {
                     recordHistogram(UMA_LOCATION_STALE);
                     locationAttached = false;
                 }
@@ -250,6 +269,17 @@ public class GeolocationHeader {
         // Record the permission state with a histogram.
         recordPermissionHistogram(
                 locationSource, appPermission, domainPermission, locationAttached);
+
+        if (locationSource != LOCATION_SOURCE_MASTER_OFF && appPermission != PERMISSION_BLOCKED
+                && domainPermission != PERMISSION_BLOCKED) {
+            // Record the Location Age with a histogram.
+            recordLocationAgeHistogram(locationSource, locationAge);
+            long duration = sFirstLocationTime == Long.MAX_VALUE
+                    ? Long.MAX_VALUE
+                    : SystemClock.elapsedRealtime() - sFirstLocationTime;
+            // Record the Time Listening with a histogram.
+            recordTimeListeningHistogram(locationSource, locationAttached, duration);
+        }
 
         // Note that strictly speaking "location == null" is not needed here as the
         // logic above prevents location being null when locationAttached is true.
@@ -529,5 +559,62 @@ public class GeolocationHeader {
                 locationSource, appPermission, domainPermission, locationAttached);
         RecordHistogram.recordEnumeratedHistogram(
                 "Geolocation.Header.PermissionState", result, UMA_PERM_COUNT);
+    }
+
+    /**
+     * Determines the name for a Time Listening Histogram. Returns empty string if the location
+     * source is MASTER_OFF as we do not record histograms for that case.
+     */
+    private static String getTimeListeningHistogramEnum(
+            int locationSource, boolean locationAttached) {
+        switch (locationSource) {
+            case LOCATION_SOURCE_HIGH_ACCURACY:
+                return locationAttached
+                        ? "Geolocation.Header.TimeListening.HighAccuracy.LocationAttached"
+                        : "Geolocation.Header.TimeListening.HighAccuracy.LocationNotAttached";
+            case LOCATION_SOURCE_GPS_ONLY:
+                return locationAttached
+                        ? "Geolocation.Header.TimeListening.GpsOnly.LocationAttached"
+                        : "Geolocation.Header.TimeListening.GpsOnly.LocationNotAttached";
+            case LOCATION_SOURCE_BATTERY_SAVING:
+                return locationAttached
+                        ? "Geolocation.Header.TimeListening.BatterySaving.LocationAttached"
+                        : "Geolocation.Header.TimeListening.BatterySaving.LocationNotAttached";
+            default:
+                Log.e(TAG, "Unexpected locationSource: " + locationSource);
+                assert false : "Unexpected locationSource: " + locationSource;
+                return null;
+        }
+    }
+
+    /** Records a data point for one of the GeolocationHeader.TimeListening* histograms. */
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+    private static void recordTimeListeningHistogram(
+            int locationSource, boolean locationAttached, long duration) {
+        String name = getTimeListeningHistogramEnum(locationSource, locationAttached);
+        if (name == null) return;
+        RecordHistogram.recordCustomTimesHistogram(
+                name, duration, 1, TIME_LISTENING_HISTOGRAM_MAX_MILLIS, TimeUnit.MILLISECONDS, 50);
+    }
+
+    /** Records a data point for one of the GeolocationHeader.LocationAge* histograms. */
+    private static void recordLocationAgeHistogram(int locationSource, long durationMillis) {
+        String name = "";
+        if (locationSource == LOCATION_SOURCE_HIGH_ACCURACY) {
+            name = "Geolocation.Header.LocationAgeHighAccuracy";
+        } else if (locationSource == LOCATION_SOURCE_GPS_ONLY) {
+            name = "Geolocation.Header.LocationAgeGpsOnly";
+        } else if (locationSource == LOCATION_SOURCE_BATTERY_SAVING) {
+            name = "Geolocation.Header.LocationAgeBatterySaving";
+        } else {
+            Log.e(TAG, "Unexpected locationSource: " + locationSource);
+            assert false : "Unexpected locationSource: " + locationSource;
+            return;
+        }
+        long durationSeconds = durationMillis / 1000;
+        int duration = durationSeconds >= (long) Integer.MAX_VALUE ? Integer.MAX_VALUE
+                                                                   : (int) durationSeconds;
+        RecordHistogram.recordCustomCountHistogram(
+                name, duration, 1, LOCATION_AGE_HISTOGRAM_MAX_SECONDS, 50);
     }
 }
