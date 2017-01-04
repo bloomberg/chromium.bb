@@ -34,12 +34,13 @@ void InitWindow(ServerWindow* window) {
       window->GetOrCreateCompositorFrameSinkManager();
   compositor_frame_sink_manager->SetLatestSurfaceInfo(
       mojom::CompositorFrameSinkType::DEFAULT,
-      cc::SurfaceId(
-          cc::FrameSinkId(
-              WindowIdToTransportId(window->id()),
-              static_cast<uint32_t>(mojom::CompositorFrameSinkType::DEFAULT)),
-          cc::LocalFrameId(1u, kArbitraryToken)),
-      gfx::Size(100, 100));
+      cc::SurfaceInfo(
+          cc::SurfaceId(
+              cc::FrameSinkId(WindowIdToTransportId(window->id()),
+                              static_cast<uint32_t>(
+                                  mojom::CompositorFrameSinkType::DEFAULT)),
+              cc::LocalFrameId(1u, kArbitraryToken)),
+          1.0f, gfx::Size(100, 100)));
 }
 
 }  // namespace
@@ -125,12 +126,13 @@ TEST_F(FrameGeneratorTest, DrawWindowTree) {
   // that this creates an extra SharedQuadState in the CompositorFrame.
   child_window.GetOrCreateCompositorFrameSinkManager()->SetLatestSurfaceInfo(
       mojom::CompositorFrameSinkType::UNDERLAY,
-      cc::SurfaceId(
-          cc::FrameSinkId(
-              WindowIdToTransportId(child_window.id()),
-              static_cast<uint32_t>(mojom::CompositorFrameSinkType::UNDERLAY)),
-          cc::LocalFrameId(1u, kArbitraryToken)),
-      gfx::Size(100, 100));
+      cc::SurfaceInfo(
+          cc::SurfaceId(
+              cc::FrameSinkId(WindowIdToTransportId(child_window.id()),
+                              static_cast<uint32_t>(
+                                  mojom::CompositorFrameSinkType::UNDERLAY)),
+              cc::LocalFrameId(1u, kArbitraryToken)),
+          1.0f, gfx::Size(100, 100)));
 
   render_pass = cc::RenderPass::Create();
   DrawWindowTree(render_pass.get());

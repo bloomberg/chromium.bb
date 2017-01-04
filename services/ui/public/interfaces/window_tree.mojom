@@ -4,8 +4,7 @@
 
 module ui.mojom;
 
-import "cc/ipc/surface_id.mojom";
-import "cc/ipc/surface_sequence.mojom";
+import "cc/ipc/surface_info.mojom";
 import "cc/ipc/mojo_compositor_frame_sink.mojom";
 import "services/ui/public/interfaces/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
@@ -434,9 +433,7 @@ interface WindowTreeClient {
   // TODO(fsamuel): Surface IDs should be passed to parents directly instead of
   // going through the window server. http://crbug.com/655231
   OnWindowSurfaceChanged(uint32 window_id,
-                         cc.mojom.SurfaceId surface_id,
-                         gfx.mojom.Size frame_size,
-                         float device_scale_factor);
+                         cc.mojom.SurfaceInfo surface_info);
                          
   // Called when the mouse cursor enters a window on this connection for the
   // first time, providing a list of available mime types. We want to send this

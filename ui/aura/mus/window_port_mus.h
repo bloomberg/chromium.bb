@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "cc/surfaces/surface_info.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
@@ -209,8 +210,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetPropertyFromServer(
       const std::string& property_name,
       const std::vector<uint8_t>* property_data) override;
-  void SetSurfaceIdFromServer(
-      std::unique_ptr<SurfaceInfo> surface_info) override;
+  void SetSurfaceInfoFromServer(const cc::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
   void RemoveTransientChildFromServer(WindowMus* child) override;
@@ -247,7 +247,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChanges server_changes_;
 
   SurfaceIdHandler* surface_id_handler_ = nullptr;
-  std::unique_ptr<SurfaceInfo> surface_info_;
+  cc::SurfaceInfo surface_info_;
 
   ui::mojom::Cursor predefined_cursor_ = ui::mojom::Cursor::CURSOR_NULL;
 

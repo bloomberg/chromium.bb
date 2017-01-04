@@ -18,6 +18,7 @@
 #include "cc/resources/resource_provider.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,11 +84,9 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceObserver {
   }
 
   // SurfaceObserver implementation.
-  void OnSurfaceCreated(const SurfaceId& surface_id,
-                        const gfx::Size& frame,
-                        float device_scale_factor) override {
-    EXPECT_EQ(kArbitraryFrameSinkId, surface_id.frame_sink_id());
-    last_created_surface_id_ = surface_id;
+  void OnSurfaceCreated(const SurfaceInfo& surface_info) override {
+    EXPECT_EQ(kArbitraryFrameSinkId, surface_info.id().frame_sink_id());
+    last_created_surface_id_ = surface_info.id();
   }
 
   void OnSurfaceDamaged(const SurfaceId& id, bool* changed) override {

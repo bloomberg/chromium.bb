@@ -4,6 +4,7 @@ include_rules = [
   "+cc/output/compositor_frame_sink.h",
   "+cc/scheduler/begin_frame_source.h",
   "+cc/surfaces/surface_id_allocator.h",
+  "+cc/surfaces/surface_info.h",
   "+cc/surfaces/surface_manager.h",
   "+gpu/command_buffer/client/gpu_memory_buffer_manager.h",
   "+gpu/ipc/client/gpu_channel_host.h",

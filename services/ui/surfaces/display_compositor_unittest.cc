@@ -72,12 +72,10 @@ class TestDisplayCompositorClient : public cc::mojom::DisplayCompositorClient {
     got_root_surface_id_ = true;
   }
 
-  void OnSurfaceCreated(const cc::SurfaceId& surface_id,
-                        const gfx::Size& frame_size,
-                        float device_scale_factor) override {
+  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override {
     EXPECT_TRUE(got_root_surface_id_);
     AddEvent(base::StringPrintf("OnSurfaceCreated(%s)",
-                                SurfaceIdString(surface_id).c_str()));
+                                SurfaceIdString(surface_info.id()).c_str()));
   }
 
   mojo::Binding<cc::mojom::DisplayCompositorClient> binding_;
@@ -193,7 +191,8 @@ class DisplayCompositorTest : public TaskRunnerTestBase {
 TEST_F(DisplayCompositorTest, AddSurfaceThenReference) {
   const cc::SurfaceId parent_id = MakeSurfaceId(1, 1, 1);
   const cc::SurfaceId surface_id = MakeSurfaceId(2, 1, 1);
-  surface_observer()->OnSurfaceCreated(surface_id, gfx::Size(1, 1), 1.0f);
+  surface_observer()->OnSurfaceCreated(
+      cc::SurfaceInfo(surface_id, 1.0f, gfx::Size(1, 1)));
   RunUntilIdle();
 
   // Client should get OnSurfaceCreated call and temporary reference added.
@@ -212,7 +211,8 @@ TEST_F(DisplayCompositorTest, AddSurfaceThenReference) {
 
 TEST_F(DisplayCompositorTest, AddSurfaceThenRootReference) {
   const cc::SurfaceId surface_id = MakeSurfaceId(1, 1, 1);
-  surface_observer()->OnSurfaceCreated(surface_id, gfx::Size(1, 1), 1.0f);
+  surface_observer()->OnSurfaceCreated(
+      cc::SurfaceInfo(surface_id, 1.0f, gfx::Size(1, 1)));
   RunUntilIdle();
 
   // Temporary reference should be added.
@@ -234,8 +234,10 @@ TEST_F(DisplayCompositorTest, AddTwoSurfacesThenOneReference) {
   const cc::SurfaceId surface_id2 = MakeSurfaceId(3, 1, 1);
 
   // Add two surfaces with different FrameSinkIds.
-  surface_observer()->OnSurfaceCreated(surface_id1, gfx::Size(1, 1), 1.0f);
-  surface_observer()->OnSurfaceCreated(surface_id2, gfx::Size(1, 1), 1.0f);
+  surface_observer()->OnSurfaceCreated(
+      cc::SurfaceInfo(surface_id1, 1.0f, gfx::Size(1, 1)));
+  surface_observer()->OnSurfaceCreated(
+      cc::SurfaceInfo(surface_id2, 1.0f, gfx::Size(1, 1)));
   RunUntilIdle();
 
   // Temporary reference should be added for both surfaces.
@@ -259,8 +261,10 @@ TEST_F(DisplayCompositorTest, AddSurfacesSkipReference) {
 
   // Add two surfaces that have the same FrameSinkId. This would happen when a
   // client submits two CFs before parent submits a new CF.
-  surface_observer()->OnSurfaceCreated(surface_id1, gfx::Size(1, 1), 1.0f);
-  surface_observer()->OnSurfaceCreated(surface_id2, gfx::Size(1, 1), 1.0f);
+  surface_observer()->OnSurfaceCreated(
+      cc::SurfaceInfo(surface_id1, 1.0f, gfx::Size(1, 1)));
+  surface_observer()->OnSurfaceCreated(
+      cc::SurfaceInfo(surface_id2, 1.0f, gfx::Size(1, 1)));
   RunUntilIdle();
 
   // Client should get OnSurfaceCreated call and temporary reference added for

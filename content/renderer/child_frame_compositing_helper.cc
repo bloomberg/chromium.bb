@@ -209,11 +209,10 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
 }
 
 void ChildFrameCompositingHelper::OnSetSurface(
-    const cc::SurfaceId& surface_id,
-    const gfx::Size& frame_size,
-    float scale_factor,
+    const cc::SurfaceInfo& surface_info,
     const cc::SurfaceSequence& sequence) {
-  surface_id_ = surface_id;
+  float scale_factor = surface_info.device_scale_factor();
+  surface_id_ = surface_info.id();
   scoped_refptr<cc::SurfaceLayer> surface_layer =
       cc::SurfaceLayer::Create(surface_reference_factory_);
   // TODO(oshima): This is a stopgap fix so that the compositor does not
@@ -221,8 +220,9 @@ void ChildFrameCompositingHelper::OnSetSurface(
   // Fix this in cc/.
   if (IsUseZoomForDSFEnabled())
     scale_factor = 1.0f;
-  cc::SurfaceInfo info(surface_id, scale_factor, frame_size);
-  surface_layer->SetSurfaceInfo(info,
+
+  surface_layer->SetSurfaceInfo(cc::SurfaceInfo(surface_info.id(), scale_factor,
+                                                surface_info.size_in_pixels()),
                                 false /* stretch_content_to_fill_bounds */);
   surface_layer->SetMasksToBounds(true);
   std::unique_ptr<cc_blink::WebLayerImpl> layer(
@@ -247,7 +247,7 @@ void ChildFrameCompositingHelper::OnSetSurface(
   }
 
   CheckSizeAndAdjustLayerProperties(
-      frame_size, scale_factor,
+      surface_info.size_in_pixels(), surface_info.device_scale_factor(),
       static_cast<cc_blink::WebLayerImpl*>(web_layer_.get())->layer());
 }
 

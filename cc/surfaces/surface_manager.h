@@ -61,9 +61,7 @@ class CC_SURFACES_EXPORT SurfaceManager
 
   // Called when a CompositorFrame is submitted to a SurfaceFactory for a given
   // |surface_id| for the first time.
-  void SurfaceCreated(const SurfaceId& surface_id,
-                      const gfx::Size& frame_size,
-                      float device_scale_factor);
+  void SurfaceCreated(const SurfaceInfo& surface_info);
 
   // A frame for a surface satisfies a set of sequence numbers in a particular
   // id namespace.

@@ -371,9 +371,7 @@ void TestWindowTreeClient::OnWindowPredefinedCursorChanged(
 
 void TestWindowTreeClient::OnWindowSurfaceChanged(
     Id window_id,
-    const cc::SurfaceId& surface_id,
-    const gfx::Size& frame_size,
-    float device_scale_factor) {}
+    const cc::SurfaceInfo& surface_info) {}
 
 void TestWindowTreeClient::OnDragDropStart(
     const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data) {}

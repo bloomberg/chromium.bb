@@ -9,6 +9,9 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
+namespace mojom {
+class SurfaceInfoDataView;
+}
 
 // This class contains information about the surface that is being embedded.
 class SurfaceInfo {
@@ -34,6 +37,8 @@ class SurfaceInfo {
   const gfx::Size& size_in_pixels() const { return size_in_pixels_; }
 
  private:
+  friend struct mojo::StructTraits<mojom::SurfaceInfoDataView, SurfaceInfo>;
+
   SurfaceId id_;
   float device_scale_factor_ = 1.f;
   gfx::Size size_in_pixels_;

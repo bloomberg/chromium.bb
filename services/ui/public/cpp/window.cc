@@ -544,8 +544,8 @@ Window::~Window() {
     transient_parent_->LocalRemoveTransientWindow(this);
 
   // Return the surface reference if there is one.
-  if (surface_info_)
-    LocalSetSurfaceId(nullptr);
+  if (surface_info_.id().is_valid())
+    LocalSetSurfaceInfo(cc::SurfaceInfo());
 
   // Remove transient children.
   while (!transient_children_.empty()) {
@@ -809,11 +809,10 @@ void Window::LocalSetSharedProperty(const std::string& name,
     observer.OnWindowSharedPropertyChanged(this, name, old_value_ptr, value);
 }
 
-void Window::LocalSetSurfaceId(std::unique_ptr<SurfaceInfo> surface_info) {
-  if (surface_info_) {
-    const cc::SurfaceId& existing_surface_id = surface_info_->surface_id;
-    cc::SurfaceId new_surface_id =
-        surface_info ? surface_info->surface_id : cc::SurfaceId();
+void Window::LocalSetSurfaceInfo(const cc::SurfaceInfo& surface_info) {
+  if (surface_info_.id().is_valid()) {
+    const cc::SurfaceId& existing_surface_id = surface_info_.id();
+    const cc::SurfaceId& new_surface_id = surface_info.id();
     if (existing_surface_id.is_valid() &&
         existing_surface_id != new_surface_id) {
       // TODO(kylechar): Start return reference here?
@@ -821,9 +820,9 @@ void Window::LocalSetSurfaceId(std::unique_ptr<SurfaceInfo> surface_info) {
   }
   if (parent_ && parent_->surface_id_handler_) {
     parent_->surface_id_handler_->OnChildWindowSurfaceChanged(this,
-                                                              &surface_info);
+                                                              surface_info);
   }
-  surface_info_ = std::move(surface_info);
+  surface_info_ = surface_info;
 }
 
 void Window::NotifyWindowStackingChanged() {

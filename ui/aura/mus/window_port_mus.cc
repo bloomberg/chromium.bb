@@ -32,8 +32,8 @@ WindowPortMus::WindowPortMus(WindowTreeClient* client,
     : WindowMus(window_mus_type), window_tree_client_(client) {}
 
 WindowPortMus::~WindowPortMus() {
-  if (surface_info_)
-    SetSurfaceIdFromServer(nullptr);
+  if (surface_info_.id().is_valid())
+    SetSurfaceInfoFromServer(cc::SurfaceInfo());
 
   // DESTROY is only scheduled from DestroyFromServer(), meaning if DESTROY is
   // present then the server originated the change.
@@ -244,12 +244,11 @@ void WindowPortMus::SetPropertyFromServer(
                                                         property_data);
 }
 
-void WindowPortMus::SetSurfaceIdFromServer(
-    std::unique_ptr<SurfaceInfo> surface_info) {
-  if (surface_info_) {
-    const cc::SurfaceId& existing_surface_id = surface_info_->surface_id;
-    cc::SurfaceId new_surface_id =
-        surface_info ? surface_info->surface_id : cc::SurfaceId();
+void WindowPortMus::SetSurfaceInfoFromServer(
+    const cc::SurfaceInfo& surface_info) {
+  if (surface_info_.id().is_valid()) {
+    const cc::SurfaceId& existing_surface_id = surface_info_.id();
+    const cc::SurfaceId& new_surface_id = surface_info.id();
     if (existing_surface_id.is_valid() &&
         existing_surface_id != new_surface_id) {
       // TODO(kylechar): Start return reference here?
@@ -258,9 +257,9 @@ void WindowPortMus::SetSurfaceIdFromServer(
   WindowPortMus* parent = Get(window_->parent());
   if (parent && parent->surface_id_handler_) {
     parent->surface_id_handler_->OnChildWindowSurfaceChanged(window_,
-                                                             &surface_info);
+                                                             surface_info);
   }
-  surface_info_ = std::move(surface_info);
+  surface_info_ = surface_info;
 }
 
 void WindowPortMus::DestroyFromServer() {

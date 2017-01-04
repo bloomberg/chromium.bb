@@ -392,9 +392,7 @@ void Display::OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) {
     UpdateRootSurfaceResourcesLocked();
 }
 
-void Display::OnSurfaceCreated(const SurfaceId& surface_id,
-                               const gfx::Size& frame,
-                               float device_scale_factor) {}
+void Display::OnSurfaceCreated(const SurfaceInfo& surface_info) {}
 
 const SurfaceId& Display::CurrentSurfaceId() {
   return current_surface_id_;

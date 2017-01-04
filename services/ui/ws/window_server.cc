@@ -765,14 +765,12 @@ void WindowServer::OnGpuServiceInitialized() {
   delegate_->StartDisplayInit();
 }
 
-void WindowServer::OnSurfaceCreated(const cc::SurfaceId& surface_id,
-                                    const gfx::Size& frame_size,
-                                    float device_scale_factor) {
+void WindowServer::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
   WindowId window_id(
-      WindowIdFromTransportId(surface_id.frame_sink_id().client_id()));
+      WindowIdFromTransportId(surface_info.id().frame_sink_id().client_id()));
   mojom::CompositorFrameSinkType compositor_frame_sink_type(
       static_cast<mojom::CompositorFrameSinkType>(
-          surface_id.frame_sink_id().sink_id()));
+          surface_info.id().frame_sink_id().sink_id()));
   ServerWindow* window = GetWindow(window_id);
   // If the window doesn't have a parent then we have nothing to propagate.
   if (!window)
@@ -782,14 +780,14 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceId& surface_id,
   // DisplayCompositorFrameSink may submit a CompositorFrame without
   // creating a CompositorFrameSinkManager.
   window->GetOrCreateCompositorFrameSinkManager()->SetLatestSurfaceInfo(
-      compositor_frame_sink_type, surface_id, frame_size);
+      compositor_frame_sink_type, surface_info);
 
   // FrameGenerator will add an appropriate reference for the new surface.
   DCHECK(display_manager_->GetDisplayContaining(window));
   display_manager_->GetDisplayContaining(window)
       ->platform_display()
       ->GetFrameGenerator()
-      ->OnSurfaceCreated(surface_id, window);
+      ->OnSurfaceCreated(surface_info.id(), window);
 
   // This is only used for testing to observe that a window has a
   // CompositorFrame.
@@ -803,10 +801,8 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceId& surface_id,
     return;
   }
   WindowTree* window_tree = GetTreeWithId(window->parent()->id().client_id);
-  if (window_tree) {
-    window_tree->ProcessWindowSurfaceChanged(window, surface_id, frame_size,
-                                             device_scale_factor);
-  }
+  if (window_tree)
+    window_tree->ProcessWindowSurfaceChanged(window, surface_info);
 }
 
 void WindowServer::OnDisplayCompositorCreated(

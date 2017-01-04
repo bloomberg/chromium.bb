@@ -259,9 +259,7 @@ class TestWindowObserver : public aura::WindowObserver {
 
 class FakeSurfaceObserver : public cc::SurfaceObserver {
  public:
-  void OnSurfaceCreated(const cc::SurfaceId& surface_id,
-                        const gfx::Size& frame,
-                        float device_scale_factor) override {}
+  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override {}
 
   void OnSurfaceDamaged(const cc::SurfaceId& id, bool* changed) override {
     *changed = true;

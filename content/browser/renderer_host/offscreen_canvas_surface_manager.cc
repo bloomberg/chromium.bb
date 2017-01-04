@@ -28,15 +28,13 @@ OffscreenCanvasSurfaceManager* OffscreenCanvasSurfaceManager::GetInstance() {
 }
 
 void OffscreenCanvasSurfaceManager::OnSurfaceCreated(
-    const cc::SurfaceId& surface_id,
-    const gfx::Size& frame_size,
-    float device_scale_factor) {
+    const cc::SurfaceInfo& surface_info) {
   auto surface_iter =
-      registered_surface_instances_.find(surface_id.frame_sink_id());
+      registered_surface_instances_.find(surface_info.id().frame_sink_id());
   if (surface_iter == registered_surface_instances_.end())
     return;
   OffscreenCanvasSurfaceImpl* surfaceImpl = surface_iter->second;
-  surfaceImpl->OnSurfaceCreated(surface_id, frame_size, device_scale_factor);
+  surfaceImpl->OnSurfaceCreated(surface_info);
 }
 
 void OffscreenCanvasSurfaceManager::RegisterOffscreenCanvasSurfaceInstance(

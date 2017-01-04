@@ -251,23 +251,22 @@ const cc::SurfaceId& DisplayCompositor::GetRootSurfaceId() const {
   return reference_manager_->GetRootSurfaceId();
 }
 
-void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceId& surface_id,
-                                         const gfx::Size& frame_size,
-                                         float device_scale_factor) {
+void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_GT(device_scale_factor, 0.0f);
+  DCHECK_GT(surface_info.device_scale_factor(), 0.0f);
   // We can get into a situation where multiple CompositorFrames arrive for a
   // CompositorFrameSink before the DisplayCompositorClient can add any
   // references for the frame. When the second frame with a new size arrives,
   // the first will be destroyed and then if there are no references it will be
   // deleted during surface GC. A temporary reference, removed when a real
   // reference is received, is added to prevent this from happening.
-  reference_manager_->AddSurfaceReference(GetRootSurfaceId(), surface_id);
-  temp_references_[surface_id.frame_sink_id()].push_back(
-      surface_id.local_frame_id());
+  reference_manager_->AddSurfaceReference(GetRootSurfaceId(),
+                                          surface_info.id());
+  temp_references_[surface_info.id().frame_sink_id()].push_back(
+      surface_info.id().local_frame_id());
 
   if (client_)
-    client_->OnSurfaceCreated(surface_id, frame_size, device_scale_factor);
+    client_->OnSurfaceCreated(surface_info);
 }
 
 void DisplayCompositor::OnSurfaceDamaged(const cc::SurfaceId& surface_id,

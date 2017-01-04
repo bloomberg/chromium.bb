@@ -328,9 +328,7 @@ class WindowServer : public ServerWindowDelegate,
   void OnGpuServiceInitialized() override;
 
   // cc::mojom::DisplayCompositorClient:
-  void OnSurfaceCreated(const cc::SurfaceId& surface_id,
-                        const gfx::Size& frame_size,
-                        float device_scale_factor) override;
+  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
   void OnDisplayCompositorCreated(
       const cc::SurfaceId& root_surface_id) override;
 

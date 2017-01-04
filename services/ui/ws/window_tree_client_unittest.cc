@@ -383,11 +383,8 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   }
 
   void OnWindowSurfaceChanged(Id window_id,
-                              const cc::SurfaceId& surface_id,
-                              const gfx::Size& frame_size,
-                              float device_scale_factor) override {
-    tracker_.OnWindowSurfaceChanged(window_id, surface_id, frame_size,
-                                    device_scale_factor);
+                              const cc::SurfaceInfo& surface_info) override {
+    tracker_.OnWindowSurfaceChanged(window_id, surface_info);
   }
 
   void OnDragEnter(uint32_t window,

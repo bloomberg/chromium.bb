@@ -16,6 +16,7 @@
 
 namespace cc {
 class Layer;
+class SurfaceInfo;
 }  // namespace cc
 
 namespace blink {
@@ -40,10 +41,7 @@ class PLATFORM_EXPORT CanvasSurfaceLayerBridge
   const cc::FrameSinkId& getFrameSinkId() const { return m_frameSinkId; }
 
   // Implementation of mojom::blink::OffscreenCanvasSurfaceClient
-  void OnSurfaceCreated(const cc::SurfaceId&,
-                        int32_t width,
-                        int32_t height,
-                        float deviceScaleFactor) override;
+  void OnSurfaceCreated(const cc::SurfaceInfo&) override;
 
   void satisfyCallback(const cc::SurfaceSequence&);
   void requireCallback(const cc::SurfaceId&, const cc::SurfaceSequence&);

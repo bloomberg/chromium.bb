@@ -8,6 +8,7 @@ import "cc/ipc/compositor_frame.mojom";
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/mojo_compositor_frame_sink.mojom";
 import "cc/ipc/surface_id.mojom";
+import "cc/ipc/surface_info.mojom";
 import "cc/ipc/surface_sequence.mojom";
 
 interface OffscreenCanvasSurface {
@@ -17,10 +18,7 @@ interface OffscreenCanvasSurface {
 
 interface OffscreenCanvasSurfaceClient {
   // TODO(fsamuel, xlai): Replace this with DisplayCompositorClient
-  OnSurfaceCreated(cc.mojom.SurfaceId surface_id,
-                   int32 width,
-                   int32 height,
-                   float device_scale_factor);
+  OnSurfaceCreated(cc.mojom.SurfaceInfo surface_info);
 };
 
 interface OffscreenCanvasSurfaceFactory {

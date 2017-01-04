@@ -86,9 +86,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
   // SurfaceObserver implementation.
   void OnSurfaceDamaged(const SurfaceId& surface, bool* changed) override;
-  void OnSurfaceCreated(const SurfaceId& surface_id,
-                        const gfx::Size& frame,
-                        float device_scale_factor) override;
+  void OnSurfaceCreated(const SurfaceInfo& surface_info) override;
 
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }

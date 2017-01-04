@@ -495,12 +495,10 @@ bool SurfaceManager::SurfaceModified(const SurfaceId& surface_id) {
   return changed;
 }
 
-void SurfaceManager::SurfaceCreated(const SurfaceId& surface_id,
-                                    const gfx::Size& frame_size,
-                                    float device_scale_factor) {
+void SurfaceManager::SurfaceCreated(const SurfaceInfo& surface_info) {
   CHECK(thread_checker_.CalledOnValidThread());
   for (auto& observer : observer_list_)
-    observer.OnSurfaceCreated(surface_id, frame_size, device_scale_factor);
+    observer.OnSurfaceCreated(surface_info);
 }
 
 }  // namespace cc

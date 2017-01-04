@@ -783,10 +783,9 @@ void WindowTree::ProcessTransientWindowRemoved(
                                      transient_client_window_id.id);
 }
 
-void WindowTree::ProcessWindowSurfaceChanged(ServerWindow* window,
-                                             const cc::SurfaceId& surface_id,
-                                             const gfx::Size& frame_size,
-                                             float device_scale_factor) {
+void WindowTree::ProcessWindowSurfaceChanged(
+    ServerWindow* window,
+    const cc::SurfaceInfo& surface_info) {
   ServerWindow* parent_window = window->parent();
   ClientWindowId client_window_id, parent_client_window_id;
   if (!IsWindowKnown(window, &client_window_id) ||
@@ -795,8 +794,7 @@ void WindowTree::ProcessWindowSurfaceChanged(ServerWindow* window,
     return;
   }
 
-  client()->OnWindowSurfaceChanged(client_window_id.id, surface_id, frame_size,
-                                   device_scale_factor);
+  client()->OnWindowSurfaceChanged(client_window_id.id, surface_info);
 }
 
 void WindowTree::SendToPointerWatcher(const ui::Event& event,

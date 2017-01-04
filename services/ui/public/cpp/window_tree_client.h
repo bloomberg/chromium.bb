@@ -30,7 +30,6 @@ class Display;
 
 namespace gfx {
 class Insets;
-class Size;
 }
 
 namespace service_manager {
@@ -331,9 +330,7 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void OnWindowPredefinedCursorChanged(Id window_id,
                                        mojom::Cursor cursor) override;
   void OnWindowSurfaceChanged(Id window_id,
-                              const cc::SurfaceId& surface_id,
-                              const gfx::Size& frame_size,
-                              float device_scale_factor) override;
+                              const cc::SurfaceInfo& surface_info) override;
   void OnDragDropStart(
       const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data)
       override;

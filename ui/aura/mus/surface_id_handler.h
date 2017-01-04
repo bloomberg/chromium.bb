@@ -8,21 +8,13 @@
 #include "cc/surfaces/surface_id.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace cc {
+class SurfaceInfo;
+}
+
 namespace aura {
 
 class Window;
-
-// Holds information about the current surface held by a Window.
-// |surface_id| uniquely identifies the surface in the display
-// compositor.
-// |frame_size| is the size of the frame held by the surface.
-// |device_scale_factor| is the scale factor that the frame was
-// renderered for.
-struct SurfaceInfo {
-  cc::SurfaceId surface_id;
-  gfx::Size frame_size;
-  float device_scale_factor;
-};
 
 class SurfaceIdHandler {
  public:
@@ -32,7 +24,7 @@ class SurfaceIdHandler {
   // |surface_info| will refer to a null pointer.
   virtual void OnChildWindowSurfaceChanged(
       Window* window,
-      std::unique_ptr<SurfaceInfo>* surface_info) = 0;
+      const cc::SurfaceInfo& surface_info) = 0;
 };
 
 }  // namespace aura

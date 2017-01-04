@@ -7,7 +7,7 @@ module cc.mojom;
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/mojo_compositor_frame_sink.mojom";
 import "cc/ipc/surface_id.mojom";
-import "cc/ipc/surface_sequence.mojom";
+import "cc/ipc/surface_info.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "mojo/common/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -68,7 +68,5 @@ interface DisplayCompositorClient {
 
   // Called by the display compositor immediately upon receiving a
   // CompositorFrame with a new SurfaceId for the first time.
-  OnSurfaceCreated(cc.mojom.SurfaceId surface_id,
-                   gfx.mojom.Size frame_size,
-                   float device_scale_factor);
+  OnSurfaceCreated(SurfaceInfo surface_info);
 };

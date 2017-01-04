@@ -120,9 +120,7 @@ class DisplayCompositor : public cc::SurfaceObserver,
   const cc::SurfaceId& GetRootSurfaceId() const;
 
   // cc::SurfaceObserver implementation.
-  void OnSurfaceCreated(const cc::SurfaceId& surface_id,
-                        const gfx::Size& frame_size,
-                        float device_scale_factor) override;
+  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
   void OnSurfaceDamaged(const cc::SurfaceId& surface_id,
                         bool* changed) override;
 

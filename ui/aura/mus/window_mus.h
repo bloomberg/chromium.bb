@@ -14,6 +14,10 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/mus_types.h"
 
+namespace cc {
+class SurfaceInfo;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -26,7 +30,6 @@ enum class OrderDirection;
 
 namespace aura {
 
-struct SurfaceInfo;
 class Window;
 class WindowTreeClient;
 
@@ -79,8 +82,8 @@ class AURA_EXPORT WindowMus {
   virtual void SetPredefinedCursorFromServer(ui::mojom::Cursor cursor) = 0;
   virtual void SetPropertyFromServer(const std::string& property_name,
                                      const std::vector<uint8_t>* data) = 0;
-  virtual void SetSurfaceIdFromServer(
-      std::unique_ptr<SurfaceInfo> surface_info) = 0;
+  virtual void SetSurfaceInfoFromServer(
+      const cc::SurfaceInfo& surface_info) = 0;
   // The window was deleted on the server side. DestroyFromServer() should
   // result in deleting |this|.
   virtual void DestroyFromServer() = 0;

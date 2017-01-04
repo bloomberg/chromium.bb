@@ -129,8 +129,8 @@ void BrowserPlugin::OnSetChildFrameSurface(
 
   EnableCompositing(true);
   DCHECK(compositing_helper_.get());
-  compositing_helper_->OnSetSurface(surface_id, frame_size, scale_factor,
-                                    sequence);
+  compositing_helper_->OnSetSurface(
+      cc::SurfaceInfo(surface_id, scale_factor, frame_size), sequence);
 }
 
 void BrowserPlugin::SendSatisfySequence(const cc::SurfaceSequence& sequence) {

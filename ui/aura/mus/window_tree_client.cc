@@ -1222,17 +1222,11 @@ void WindowTreeClient::OnWindowPredefinedCursorChanged(
 
 void WindowTreeClient::OnWindowSurfaceChanged(
     Id window_id,
-    const cc::SurfaceId& surface_id,
-    const gfx::Size& frame_size,
-    float device_scale_factor) {
+    const cc::SurfaceInfo& surface_info) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
-  std::unique_ptr<SurfaceInfo> surface_info(base::MakeUnique<SurfaceInfo>());
-  surface_info->surface_id = surface_id;
-  surface_info->frame_size = frame_size;
-  surface_info->device_scale_factor = device_scale_factor;
-  window->SetSurfaceIdFromServer(std::move(surface_info));
+  window->SetSurfaceInfoFromServer(surface_info);
 }
 
 void WindowTreeClient::OnDragDropStart(

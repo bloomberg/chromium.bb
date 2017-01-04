@@ -29,9 +29,7 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceManager
   friend class OffscreenCanvasSurfaceManagerTest;
 
   // cc::SurfaceObserver implementation.
-  void OnSurfaceCreated(const cc::SurfaceId& surface_id,
-                        const gfx::Size& frame_size,
-                        float device_scale_factor) override;
+  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
   void OnSurfaceDamaged(const cc::SurfaceId&, bool* changed) override {}
 
   // When an OffscreenCanvasSurfaceImpl instance is destructed, it will

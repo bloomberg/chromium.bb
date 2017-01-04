@@ -26,9 +26,7 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
                      blink::mojom::OffscreenCanvasSurfaceClientPtr client,
                      blink::mojom::OffscreenCanvasSurfaceRequest request);
 
-  void OnSurfaceCreated(const cc::SurfaceId& surface_id,
-                        const gfx::Size& frame_size,
-                        float device_scale_factor);
+  void OnSurfaceCreated(const cc::SurfaceInfo& surface_info);
 
   // blink::mojom::OffscreenCanvasSurface implementation.
   void Require(const cc::SurfaceId& surface_id,

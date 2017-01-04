@@ -338,8 +338,8 @@ void RenderFrameProxy::OnSetChildFrameSurface(
     compositing_helper_ =
         ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
   }
-  compositing_helper_->OnSetSurface(surface_id, frame_size, scale_factor,
-                                    sequence);
+  compositing_helper_->OnSetSurface(
+      cc::SurfaceInfo(surface_id, scale_factor, frame_size), sequence);
 }
 
 void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {

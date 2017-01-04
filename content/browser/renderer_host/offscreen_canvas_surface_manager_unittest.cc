@@ -28,7 +28,7 @@ class OffscreenCanvasSurfaceManagerTest : public testing::Test {
 
   void OnSurfaceCreated(const cc::SurfaceId& surface_id) {
     OffscreenCanvasSurfaceManager::GetInstance()->OnSurfaceCreated(
-        surface_id, gfx::Size(10, 10), 1.0);
+        cc::SurfaceInfo(surface_id, 1.0f, gfx::Size(10, 10)));
   }
 
  protected:

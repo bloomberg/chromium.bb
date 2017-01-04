@@ -88,8 +88,8 @@ class WindowPrivate {
                               const std::vector<uint8_t>* data) {
     window_->LocalSetSharedProperty(name, data);
   }
-  void LocalSetSurfaceId(std::unique_ptr<SurfaceInfo> surface_info) {
-    window_->LocalSetSurfaceId(std::move(surface_info));
+  void LocalSetSurfaceInfo(const cc::SurfaceInfo& surface_info) {
+    window_->LocalSetSurfaceInfo(surface_info);
   }
 
   void NotifyWindowStackingChanged() { window_->NotifyWindowStackingChanged(); }

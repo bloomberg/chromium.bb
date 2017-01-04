@@ -94,7 +94,7 @@ gfx::Size ServerWindowCompositorFrameSinkManager::GetLatestFrameSize(
   if (it == type_to_compositor_frame_sink_map_.end())
     return gfx::Size();
 
-  return it->second.latest_submitted_frame_size;
+  return it->second.latest_submitted_surface_info.size_in_pixels();
 }
 
 cc::SurfaceId ServerWindowCompositorFrameSinkManager::GetLatestSurfaceId(
@@ -103,16 +103,14 @@ cc::SurfaceId ServerWindowCompositorFrameSinkManager::GetLatestSurfaceId(
   if (it == type_to_compositor_frame_sink_map_.end())
     return cc::SurfaceId();
 
-  return it->second.latest_submitted_surface_id;
+  return it->second.latest_submitted_surface_info.id();
 }
 
 void ServerWindowCompositorFrameSinkManager::SetLatestSurfaceInfo(
     mojom::CompositorFrameSinkType type,
-    const cc::SurfaceId& surface_id,
-    const gfx::Size& frame_size) {
+    const cc::SurfaceInfo& surface_info) {
   CompositorFrameSinkData& data = type_to_compositor_frame_sink_map_[type];
-  data.latest_submitted_surface_id = surface_id;
-  data.latest_submitted_frame_size = frame_size;
+  data.latest_submitted_surface_info = surface_info;
 }
 
 void ServerWindowCompositorFrameSinkManager::OnRootChanged(
@@ -136,10 +134,10 @@ bool ServerWindowCompositorFrameSinkManager::
   auto iter = type_to_compositor_frame_sink_map_.find(type);
   if (iter == type_to_compositor_frame_sink_map_.end())
     return false;
-  if (iter->second.latest_submitted_frame_size.IsEmpty())
+  if (iter->second.latest_submitted_surface_info.size_in_pixels().IsEmpty())
     return false;
   const gfx::Size& latest_submitted_frame_size =
-      iter->second.latest_submitted_frame_size;
+      iter->second.latest_submitted_surface_info.size_in_pixels();
   return latest_submitted_frame_size.width() >= window_->bounds().width() &&
          latest_submitted_frame_size.height() >= window_->bounds().height();
 }
@@ -196,12 +194,12 @@ CompositorFrameSinkData::~CompositorFrameSinkData() {}
 
 CompositorFrameSinkData::CompositorFrameSinkData(
     CompositorFrameSinkData&& other)
-    : latest_submitted_surface_id(other.latest_submitted_surface_id),
+    : latest_submitted_surface_info(other.latest_submitted_surface_info),
       compositor_frame_sink(std::move(other.compositor_frame_sink)) {}
 
 CompositorFrameSinkData& CompositorFrameSinkData::operator=(
     CompositorFrameSinkData&& other) {
-  latest_submitted_surface_id = other.latest_submitted_surface_id;
+  latest_submitted_surface_info = other.latest_submitted_surface_info;
   compositor_frame_sink = std::move(other.compositor_frame_sink);
   return *this;
 }

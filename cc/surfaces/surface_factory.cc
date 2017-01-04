@@ -12,6 +12,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_manager.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -67,8 +68,8 @@ void SurfaceFactory::SubmitCompositorFrame(const LocalFrameId& local_frame_id,
     // CompositorFrames may not be populated with a RenderPass in unit tests.
     if (!frame.render_pass_list.empty())
       frame_size = frame.render_pass_list[0]->output_rect.size();
-    manager_->SurfaceCreated(surface->surface_id(), frame_size,
-                             frame.metadata.device_scale_factor);
+    manager_->SurfaceCreated(SurfaceInfo(
+        surface->surface_id(), frame.metadata.device_scale_factor, frame_size));
   }
   surface->QueueFrame(std::move(frame), callback);
   if (!manager_->SurfaceModified(SurfaceId(frame_sink_id_, local_frame_id))) {

@@ -84,42 +84,36 @@ void CanvasSurfaceLayerBridge::createSolidColorLayer() {
   GraphicsLayer::registerContentsLayer(m_webLayer.get());
 }
 
-void CanvasSurfaceLayerBridge::OnSurfaceCreated(const cc::SurfaceId& surfaceId,
-                                                int32_t width,
-                                                int32_t height,
-                                                float deviceScaleFactor) {
-  if (!m_currentSurfaceId.is_valid() && surfaceId.is_valid()) {
+void CanvasSurfaceLayerBridge::OnSurfaceCreated(
+    const cc::SurfaceInfo& surfaceInfo) {
+  if (!m_currentSurfaceId.is_valid() && surfaceInfo.id().is_valid()) {
     // First time a SurfaceId is received
-    m_currentSurfaceId = surfaceId;
+    m_currentSurfaceId = surfaceInfo.id();
     GraphicsLayer::unregisterContentsLayer(m_webLayer.get());
     m_webLayer->removeFromParent();
 
     scoped_refptr<cc::SurfaceLayer> surfaceLayer =
         cc::SurfaceLayer::Create(m_refFactory);
-    cc::SurfaceInfo info(surfaceId, deviceScaleFactor,
-                         gfx::Size(width, height));
     surfaceLayer->SetSurfaceInfo(
-        info, true /* scale layer bounds with surface size */);
+        surfaceInfo, true /* scale layer bounds with surface size */);
     m_CCLayer = surfaceLayer;
 
     m_webLayer =
         Platform::current()->compositorSupport()->createLayerFromCCLayer(
             m_CCLayer.get());
     GraphicsLayer::registerContentsLayer(m_webLayer.get());
-  } else if (m_currentSurfaceId != surfaceId) {
+  } else if (m_currentSurfaceId != surfaceInfo.id()) {
     // A different SurfaceId is received, prompting change to existing
     // SurfaceLayer
-    m_currentSurfaceId = surfaceId;
-    cc::SurfaceInfo info(m_currentSurfaceId, deviceScaleFactor,
-                         gfx::Size(width, height));
+    m_currentSurfaceId = surfaceInfo.id();
     cc::SurfaceLayer* surfaceLayer =
         static_cast<cc::SurfaceLayer*>(m_CCLayer.get());
     surfaceLayer->SetSurfaceInfo(
-        info, true /* scale layer bounds with surface size */);
+        surfaceInfo, true /* scale layer bounds with surface size */);
   }
 
   m_observer->OnWebLayerReplaced();
-  m_CCLayer->SetBounds(gfx::Size(width, height));
+  m_CCLayer->SetBounds(surfaceInfo.size_in_pixels());
 }
 
 void CanvasSurfaceLayerBridge::satisfyCallback(

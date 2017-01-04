@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "cc/surfaces/surface_info.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "services/ui/common/types.h"
@@ -319,7 +320,7 @@ class Window {
   void LocalSetPredefinedCursor(mojom::Cursor cursor_id);
   void LocalSetSharedProperty(const std::string& name,
                               const std::vector<uint8_t>* data);
-  void LocalSetSurfaceId(std::unique_ptr<SurfaceInfo> surface_info);
+  void LocalSetSurfaceInfo(const cc::SurfaceInfo& surface_info);
 
   // Notifies this winodw that its stacking position has changed.
   void NotifyWindowStackingChanged();
@@ -405,7 +406,7 @@ class Window {
 
   std::map<const void*, Value> prop_map_;
 
-  std::unique_ptr<SurfaceInfo> surface_info_;
+  cc::SurfaceInfo surface_info_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

@@ -5,21 +5,15 @@
 #ifndef CC_SURFACES_SURFACE_OBSERVER_H_
 #define CC_SURFACES_SURFACE_OBSERVER_H_
 
-namespace gfx {
-class Size;
-}
-
 namespace cc {
 
-class SurfaceId;
+class SurfaceInfo;
 
 class SurfaceObserver {
  public:
-  // Runs when a CompositorFrame is received for the given |surface_id| for the
+  // Runs when a CompositorFrame is received for the given SurfaceInfo for the
   // first time.
-  virtual void OnSurfaceCreated(const SurfaceId& surface_id,
-                                const gfx::Size& frame_size,
-                                float device_scale_factor) = 0;
+  virtual void OnSurfaceCreated(const SurfaceInfo& surface_info) = 0;
 
   // Runs when a Surface is damaged. *changed should be set to true if this
   // causes a Display to be damaged.
