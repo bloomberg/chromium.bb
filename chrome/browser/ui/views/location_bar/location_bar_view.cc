@@ -370,7 +370,7 @@ void LocationBarView::SetStarToggled(bool on) {
 }
 
 gfx::Point LocationBarView::GetOmniboxViewOrigin() const {
-  gfx::Point origin(omnibox_view_->bounds().origin());
+  gfx::Point origin(omnibox_view_->origin());
   origin.set_x(GetMirroredXInView(origin.x()));
   views::View::ConvertPointToScreen(this, &origin);
   return origin;

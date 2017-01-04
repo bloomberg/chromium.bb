@@ -2593,8 +2593,7 @@ void TabStrip::SwapLayoutIfNecessary() {
     return;
 
   if (needs_touch) {
-    gfx::Size tab_size(Tab::GetMinimumActiveSize());
-    tab_size.set_width(Tab::GetTouchWidth());
+    gfx::Size tab_size(Tab::GetTouchWidth(), GetLayoutConstant(TAB_HEIGHT));
     touch_layout_.reset(new StackedTabStripLayout(
         tab_size, Tab::kOverlap, kStackedPadding, kMaxStackedCount, &tabs_));
     touch_layout_->SetWidth(GetTabAreaWidth());

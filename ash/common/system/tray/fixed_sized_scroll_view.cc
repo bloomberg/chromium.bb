@@ -62,7 +62,7 @@ void FixedSizedScrollView::Layout() {
   // away from the current visible region user is viewing. ScrollView::Layout()
   // will make sure the contents line up with its viewport properly if
   // the contents moves out of the viewport region.
-  bounds.set_origin(contents()->bounds().origin());
+  bounds.set_origin(contents()->origin());
   contents()->SetBoundsRect(bounds);
 
   views::ScrollView::Layout();

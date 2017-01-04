@@ -83,7 +83,7 @@ class DialogClientViewTest : public ViewsTestBase,
     const gfx::Size preferred_size = this->GetPreferredSize();
     EXPECT_EQ(preferred_size.height(), this->bounds().height());
     EXPECT_LE(preferred_size.width(), this->bounds().width());
-    EXPECT_EQ(this->bounds().origin(), client_bounds.origin());
+    EXPECT_EQ(this->origin(), client_bounds.origin());
     EXPECT_EQ(this->bounds().right(), client_bounds.right());
   }
 

@@ -192,10 +192,10 @@ TEST_F(StyledLabelTest, WrapLongWords) {
   styled()->Layout();
 
   ASSERT_EQ(2, styled()->child_count());
-  ASSERT_EQ(gfx::Point(), styled()->bounds().origin());
-  EXPECT_EQ(gfx::Point(), styled()->child_at(0)->bounds().origin());
+  ASSERT_EQ(gfx::Point(), styled()->origin());
+  EXPECT_EQ(gfx::Point(), styled()->child_at(0)->origin());
   EXPECT_EQ(gfx::Point(0, styled()->height() / 2),
-            styled()->child_at(1)->bounds().origin());
+            styled()->child_at(1)->origin());
 
   EXPECT_FALSE(static_cast<Label*>(styled()->child_at(0))->text().empty());
   EXPECT_FALSE(static_cast<Label*>(styled()->child_at(1))->text().empty());

@@ -541,19 +541,19 @@ TEST_F(ScrollViewTest, HeaderScrollsWithContent) {
 
   scroll_view_.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
   EXPECT_EQ("0,0", test_api.IntegralViewOffset().ToString());
-  EXPECT_EQ("0,0", header->bounds().origin().ToString());
+  EXPECT_EQ("0,0", header->origin().ToString());
 
   // Scroll the horizontal scrollbar.
   ASSERT_TRUE(scroll_view_.horizontal_scroll_bar());
   scroll_view_.ScrollToPosition(test_api.GetBaseScrollBar(HORIZONTAL), 1);
   EXPECT_EQ("-1,0", test_api.IntegralViewOffset().ToString());
-  EXPECT_EQ("-1,0", header->bounds().origin().ToString());
+  EXPECT_EQ("-1,0", header->origin().ToString());
 
   // Scrolling the vertical scrollbar shouldn't effect the header.
   ASSERT_TRUE(scroll_view_.vertical_scroll_bar());
   scroll_view_.ScrollToPosition(test_api.GetBaseScrollBar(VERTICAL), 1);
   EXPECT_EQ("-1,-1", test_api.IntegralViewOffset().ToString());
-  EXPECT_EQ("-1,0", header->bounds().origin().ToString());
+  EXPECT_EQ("-1,0", header->origin().ToString());
 }
 
 // Verifies ScrollRectToVisible() on the child works.

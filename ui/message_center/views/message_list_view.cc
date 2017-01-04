@@ -448,7 +448,7 @@ bool MessageListView::AnimateChild(views::View* child,
     return false;
   } else {
     gfx::Rect target(child_area.x(), top, child_area.width(), height);
-    if (child->bounds().origin() != target.origin() && animate_on_move)
+    if (child->origin() != target.origin() && animate_on_move)
       animator_.AnimateViewTo(child, target);
     else
       child->SetBoundsRect(target);

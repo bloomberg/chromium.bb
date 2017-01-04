@@ -62,7 +62,7 @@ class NotificationBarClientView : public views::ClientView {
     if (!bounds().Contains(point))
       return HTNOWHERE;
     // The whole window is HTCAPTION, except the |rect_|.
-    if (rect_.Contains(gfx::PointAtOffsetFromOrigin(point - bounds().origin())))
+    if (rect_.Contains(gfx::PointAtOffsetFromOrigin(point - origin())))
       return HTCLIENT;
 
     return HTCAPTION;

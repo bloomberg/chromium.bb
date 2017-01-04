@@ -147,10 +147,10 @@ class AppsGridViewTest : public views::ViewsTestBase {
     AppListItemView* view = GetItemViewForPoint(from);
     DCHECK(view);
 
-    gfx::Point translated_from = gfx::PointAtOffsetFromOrigin(
-        from - view->bounds().origin());
-    gfx::Point translated_to = gfx::PointAtOffsetFromOrigin(
-        to - view->bounds().origin());
+    gfx::Point translated_from =
+        gfx::PointAtOffsetFromOrigin(from - view->origin());
+    gfx::Point translated_to =
+        gfx::PointAtOffsetFromOrigin(to - view->origin());
 
     ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, translated_from, from,
                                  ui::EventTimeForNow(), 0, 0);
@@ -441,7 +441,7 @@ TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
   // Move onto the folder and end the drag.
   to = GetItemTileRectAt(0, 1).CenterPoint();
   gfx::Point translated_to =
-      gfx::PointAtOffsetFromOrigin(to - dragged_view->bounds().origin());
+      gfx::PointAtOffsetFromOrigin(to - dragged_view->origin());
   ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated_to, to,
                             ui::EventTimeForNow(), 0, 0);
   apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, drag_event);

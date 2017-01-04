@@ -167,11 +167,11 @@ class NotificationViewTest : public views::ViewsTestBase,
     std::vector<views::View*>::iterator current = vertical_order.begin();
     std::vector<views::View*>::iterator last = current++;
     while (current != vertical_order.end()) {
-      gfx::Point last_point = (*last)->bounds().origin();
+      gfx::Point last_point = (*last)->origin();
       views::View::ConvertPointToTarget(
           (*last), notification_view(), &last_point);
 
-      gfx::Point current_point = (*current)->bounds().origin();
+      gfx::Point current_point = (*current)->origin();
       views::View::ConvertPointToTarget(
           (*current), notification_view(), &current_point);
 

@@ -147,7 +147,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
     DCHECK(view);
 
     gfx::Point translated =
-        gfx::PointAtOffsetFromOrigin(point - view->bounds().origin());
+        gfx::PointAtOffsetFromOrigin(point - view->origin());
     ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, translated, point,
                                  ui::EventTimeForNow(), 0, 0);
     grid_view->InitiateDrag(view, pointer, pressed_event);
@@ -161,7 +161,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
                           const gfx::Point& point) {
     DCHECK(drag_view);
     gfx::Point translated =
-        gfx::PointAtOffsetFromOrigin(point - drag_view->bounds().origin());
+        gfx::PointAtOffsetFromOrigin(point - drag_view->origin());
     ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated, point,
                               ui::EventTimeForNow(), 0, 0);
     grid_view->UpdateDragFromItem(pointer, drag_event);

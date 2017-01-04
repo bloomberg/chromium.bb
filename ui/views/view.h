@@ -240,6 +240,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   int y() const { return bounds_.y(); }
   int width() const { return bounds_.width(); }
   int height() const { return bounds_.height(); }
+  const gfx::Point& origin() const { return bounds_.origin(); }
   const gfx::Size& size() const { return bounds_.size(); }
 
   // Returns the bounds of the content area of the view, i.e. the rectangle
