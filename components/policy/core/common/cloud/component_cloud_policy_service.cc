@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -31,9 +31,10 @@
 
 namespace em = enterprise_management;
 
-typedef base::ScopedPtrHashMap<policy::PolicyNamespace,
-                               std::unique_ptr<em::PolicyFetchResponse>>
-    ScopedResponseMap;
+using ScopedResponseMap =
+    std::unordered_map<policy::PolicyNamespace,
+                       std::unique_ptr<em::PolicyFetchResponse>,
+                       policy::PolicyNamespaceHash>;
 
 namespace policy {
 
@@ -42,7 +43,7 @@ namespace {
 bool NotInResponseMap(const ScopedResponseMap& map,
                       PolicyDomain domain,
                       const std::string& component_id) {
-  return !map.contains(PolicyNamespace(domain, component_id));
+  return map.find(PolicyNamespace(domain, component_id)) == map.end();
 }
 
 bool NotInSchemaMap(const scoped_refptr<SchemaMap> schema_map,
@@ -260,7 +261,7 @@ void ComponentCloudPolicyService::Backend::UpdateWithMostRecentPolicies() {
       base::Bind(&NotInResponseMap, base::ConstRef(*most_recent_policies_),
                  POLICY_DOMAIN_SIGNIN_EXTENSIONS));
 
-  for (ScopedResponseMap::iterator it = most_recent_policies_->begin();
+  for (auto it = most_recent_policies_->begin();
        it != most_recent_policies_->end(); ++it) {
     updater_->UpdateExternalPolicy(
         it->first, base::MakeUnique<em::PolicyFetchResponse>(*it->second));
@@ -470,7 +471,8 @@ void ComponentCloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
   // Pass a complete list of all the currently managed extensions to the
   // backend. The cache will purge the storage for any extensions that are not
   // in this list.
-  std::unique_ptr<ScopedResponseMap> valid_responses(new ScopedResponseMap());
+  std::unique_ptr<ScopedResponseMap> valid_responses =
+      base::MakeUnique<ScopedResponseMap>();
 
   const CloudPolicyClient::ResponseMap& responses =
       core_->client()->responses();
@@ -480,8 +482,8 @@ void ComponentCloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
         !current_schema_map_->GetSchema(ns)) {
       continue;
     }
-    valid_responses->set(
-        ns, base::MakeUnique<em::PolicyFetchResponse>(*it->second));
+    (*valid_responses)[ns] =
+        base::MakeUnique<em::PolicyFetchResponse>(*it->second);
   }
 
   backend_task_runner_->PostTask(
