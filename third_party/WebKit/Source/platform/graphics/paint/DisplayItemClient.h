@@ -45,6 +45,7 @@ class PLATFORM_EXPORT DisplayItemClient {
   static void endShouldKeepAliveAllClients(const void* owner);
   static void endShouldKeepAliveAllClients();
 #else
+  DisplayItemClient() {}
   virtual ~DisplayItemClient() {}
 #endif
 
@@ -171,6 +172,8 @@ class PLATFORM_EXPORT DisplayItemClient {
 
   mutable CacheGenerationOrInvalidationReason
       m_cacheGenerationOrInvalidationReason;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayItemClient);
 };
 
 inline bool operator==(const DisplayItemClient& client1,
