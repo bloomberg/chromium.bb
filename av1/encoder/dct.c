@@ -22,23 +22,6 @@
 #include "av1/common/av1_fwd_txfm2d_cfg.h"
 #include "av1/common/idct.h"
 
-static INLINE void range_check_high(const tran_high_t *input, const int size,
-                                    const int bit) {
-#if 0  // CONFIG_COEFFICIENT_RANGE_CHECKING
-// TODO(angiebird): the range_check is not used because the bit range
-// in fdct# is not correct. Since we are going to merge in a new version
-// of fdct# from nextgenv2, we won't fix the incorrect bit range now.
-  int i;
-  for (i = 0; i < size; ++i) {
-    assert(abs(input[i]) < (1 << bit));
-  }
-#else
-  (void)input;
-  (void)size;
-  (void)bit;
-#endif
-}
-
 static INLINE void range_check(const tran_low_t *input, const int size,
                                const int bit) {
 #if 0  // CONFIG_COEFFICIENT_RANGE_CHECKING
@@ -346,7 +329,7 @@ static void fdct16(const tran_low_t *input, tran_low_t *output) {
 
 static void fdct32(const tran_low_t *input, tran_low_t *output) {
   tran_high_t temp;
-  tran_high_t step[32];
+  tran_low_t step[32];
 
   // stage 0
   range_check(input, 32, 14);
@@ -429,7 +412,7 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
   step[30] = output[30];
   step[31] = output[31];
 
-  range_check_high(step, 32, 16);
+  range_check(step, 32, 16);
 
   // stage 3
   output[0] = step[0] + step[7];
@@ -515,7 +498,7 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
   step[30] = output[30];
   step[31] = output[31];
 
-  range_check_high(step, 32, 18);
+  range_check(step, 32, 18);
 
   // stage 5
   temp = step[0] * cospi_16_64 + step[1] * cospi_16_64;
@@ -607,7 +590,7 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
   step[30] = (tran_low_t)fdct_round_shift(temp);
   step[31] = output[31];
 
-  range_check_high(step, 32, 18);
+  range_check(step, 32, 18);
 
   // stage 7
   output[0] = step[0];
@@ -703,7 +686,7 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
   temp = output[31] * cospi_31_64 + output[16] * -cospi_1_64;
   step[31] = (tran_low_t)fdct_round_shift(temp);
 
-  range_check_high(step, 32, 18);
+  range_check(step, 32, 18);
 
   // stage 9
   output[0] = step[0];
