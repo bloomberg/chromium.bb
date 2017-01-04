@@ -6449,6 +6449,10 @@ PropertyRegistry* Document::propertyRegistry() {
   return m_propertyRegistry;
 }
 
+const PropertyRegistry* Document::propertyRegistry() const {
+  return const_cast<Document*>(this)->propertyRegistry();
+}
+
 void Document::incrementPasswordCount() {
   ++m_passwordCount;
   if (isSecureContext() || m_passwordCount != 1) {

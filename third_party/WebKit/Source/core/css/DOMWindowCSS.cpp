@@ -46,8 +46,9 @@ bool DOMWindowCSS::supports(const String& property, const String& value) {
     MutableStylePropertySet* dummyStyle =
         MutableStylePropertySet::create(HTMLStandardMode);
     bool isAnimationTainted = false;
-    return CSSParser::parseValueForCustomProperty(
-               dummyStyle, "--valid", value, false, nullptr, isAnimationTainted)
+    return CSSParser::parseValueForCustomProperty(dummyStyle, "--valid",
+                                                  nullptr, value, false,
+                                                  nullptr, isAnimationTainted)
         .didParse;
   }
 

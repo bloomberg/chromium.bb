@@ -31,7 +31,7 @@
     DOMString getPropertyPriority(DOMString property);
     // TODO(foolip): The value and priority arguments should have
     // [TreatNullAs=EmptyString] and should not be nullable.
-    [CEReactions, RaisesException] void setProperty(DOMString property, DOMString? value, optional DOMString? priority = null);
+    [CallWith=ExecutionContext, CEReactions, RaisesException] void setProperty(DOMString property, DOMString? value, optional DOMString? priority = null);
     // void setPropertyValue(DOMString property, [TreatNullAs=EmptyString] DOMString value);
     // void setPropertyPriority(DOMString property, [TreatNullAs=EmptyString] DOMString priority);
     [CEReactions, RaisesException] DOMString removeProperty(DOMString property);

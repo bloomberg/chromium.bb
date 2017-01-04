@@ -24,6 +24,7 @@ class StringKeyframe : public Keyframe {
 
   MutableStylePropertySet::SetResult setCSSPropertyValue(
       const AtomicString& propertyName,
+      const PropertyRegistry*,
       const String& value,
       StyleSheetContents*);
   MutableStylePropertySet::SetResult setCSSPropertyValue(CSSPropertyID,

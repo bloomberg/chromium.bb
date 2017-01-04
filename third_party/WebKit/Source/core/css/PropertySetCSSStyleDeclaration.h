@@ -53,7 +53,8 @@ class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
   String getPropertyPriority(const String& propertyName) final;
   String getPropertyShorthand(const String& propertyName) final;
   bool isPropertyImplicit(const String& propertyName) final;
-  void setProperty(const String& propertyName,
+  void setProperty(const ExecutionContext*,
+                   const String& propertyName,
                    const String& value,
                    const String& priority,
                    ExceptionState&) final;
@@ -70,6 +71,7 @@ class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
                            const String& customPropertyName,
                            const String& value,
                            bool important,
+                           const ExecutionContext*,
                            ExceptionState&) final;
 
   bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const final;

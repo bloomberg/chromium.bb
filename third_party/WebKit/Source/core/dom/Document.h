@@ -1295,6 +1295,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void maybeRecordLoadReason(WouldLoadReason);
   WouldLoadReason wouldLoadReason() { return m_wouldLoadReason; }
 
+  const PropertyRegistry* propertyRegistry() const;
   PropertyRegistry* propertyRegistry();
 
   // Indicates whether the user has interacted with this particular Document.

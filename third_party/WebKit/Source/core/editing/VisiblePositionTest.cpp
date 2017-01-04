@@ -89,13 +89,14 @@ TEST_F(VisiblePositionTest, NonNullInvalidatedAfterStyleChange) {
   Position position(paragraph->firstChild(), 1);
 
   VisiblePosition visiblePosition1 = createVisiblePosition(position);
-  div->style()->setProperty("color", "red", "important", ASSERT_NO_EXCEPTION);
+  div->style()->setProperty(nullptr, "color", "red", "important",
+                            ASSERT_NO_EXCEPTION);
   EXPECT_FALSE(visiblePosition1.isValid());
 
   updateAllLifecyclePhases();
 
   VisiblePosition visiblePosition2 = createVisiblePosition(position);
-  div->style()->setProperty("display", "none", "important",
+  div->style()->setProperty(nullptr, "display", "none", "important",
                             ASSERT_NO_EXCEPTION);
   EXPECT_FALSE(visiblePosition2.isValid());
 

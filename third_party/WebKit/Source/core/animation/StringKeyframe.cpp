@@ -24,10 +24,11 @@ StringKeyframe::StringKeyframe(const StringKeyframe& copyFrom)
 
 MutableStylePropertySet::SetResult StringKeyframe::setCSSPropertyValue(
     const AtomicString& propertyName,
+    const PropertyRegistry* registry,
     const String& value,
     StyleSheetContents* styleSheetContents) {
   bool isAnimationTainted = true;
-  return m_cssPropertyMap->setProperty(propertyName, value, false,
+  return m_cssPropertyMap->setProperty(propertyName, registry, value, false,
                                        styleSheetContents, isAnimationTainted);
 }
 

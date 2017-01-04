@@ -57,6 +57,7 @@ class CORE_EXPORT CSSParser {
   static MutableStylePropertySet::SetResult parseValueForCustomProperty(
       MutableStylePropertySet*,
       const AtomicString& propertyName,
+      const PropertyRegistry*,
       const String& value,
       bool important,
       StyleSheetContents*,

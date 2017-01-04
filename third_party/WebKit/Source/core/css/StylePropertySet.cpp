@@ -322,6 +322,7 @@ MutableStylePropertySet::SetResult MutableStylePropertySet::setProperty(
 
 MutableStylePropertySet::SetResult MutableStylePropertySet::setProperty(
     const AtomicString& customPropertyName,
+    const PropertyRegistry* registry,
     const String& value,
     bool important,
     StyleSheetContents* contextStyleSheet,
@@ -331,9 +332,9 @@ MutableStylePropertySet::SetResult MutableStylePropertySet::setProperty(
     bool didChange = removeProperty(customPropertyName);
     return MutableStylePropertySet::SetResult{didParse, didChange};
   }
-  return CSSParser::parseValueForCustomProperty(this, customPropertyName, value,
-                                                important, contextStyleSheet,
-                                                isAnimationTainted);
+  return CSSParser::parseValueForCustomProperty(
+      this, customPropertyName, registry, value, important, contextStyleSheet,
+      isAnimationTainted);
 }
 
 void MutableStylePropertySet::setProperty(CSSPropertyID propertyID,

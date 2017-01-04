@@ -235,6 +235,7 @@ bool AbstractPropertySetCSSStyleDeclaration::isPropertyImplicit(
 }
 
 void AbstractPropertySetCSSStyleDeclaration::setProperty(
+    const ExecutionContext* executionContext,
     const String& propertyName,
     const String& value,
     const String& priority,
@@ -248,7 +249,7 @@ void AbstractPropertySetCSSStyleDeclaration::setProperty(
     return;
 
   setPropertyInternal(propertyID, propertyName, value, important,
-                      exceptionState);
+                      executionContext, exceptionState);
 }
 
 String AbstractPropertySetCSSStyleDeclaration::removeProperty(
@@ -298,18 +299,24 @@ void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(
     const String& customPropertyName,
     const String& value,
     bool important,
+    const ExecutionContext* executionContext,
     ExceptionState&) {
   StyleAttributeMutationScope mutationScope(this);
   willMutate();
 
   bool didChange = false;
   if (unresolvedProperty == CSSPropertyVariable) {
+    AtomicString atomicName(customPropertyName);
+
+    DCHECK(executionContext);
+    const PropertyRegistry* registry =
+        toDocument(executionContext)->propertyRegistry();
+
     bool isAnimationTainted = isKeyframeStyle();
-    didChange =
-        propertySet()
-            .setProperty(AtomicString(customPropertyName), value, important,
-                         contextStyleSheet(), isAnimationTainted)
-            .didChange;
+    didChange = propertySet()
+                    .setProperty(atomicName, registry, value, important,
+                                 contextStyleSheet(), isAnimationTainted)
+                    .didChange;
   } else {
     didChange = propertySet()
                     .setProperty(unresolvedProperty, value, important,

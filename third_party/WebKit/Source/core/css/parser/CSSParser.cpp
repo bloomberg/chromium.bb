@@ -109,6 +109,7 @@ MutableStylePropertySet::SetResult CSSParser::parseValue(
 MutableStylePropertySet::SetResult CSSParser::parseValueForCustomProperty(
     MutableStylePropertySet* declaration,
     const AtomicString& propertyName,
+    const PropertyRegistry* registry,
     const String& value,
     bool important,
     StyleSheetContents* styleSheet,
@@ -125,8 +126,9 @@ MutableStylePropertySet::SetResult CSSParser::parseValueForCustomProperty(
     context = styleSheet->parserContext();
     context.setMode(parserMode);
   }
-  return CSSParserImpl::parseVariableValue(
-      declaration, propertyName, value, important, context, isAnimationTainted);
+  return CSSParserImpl::parseVariableValue(declaration, propertyName, registry,
+                                           value, important, context,
+                                           isAnimationTainted);
 }
 
 ImmutableStylePropertySet* CSSParser::parseCustomPropertySet(

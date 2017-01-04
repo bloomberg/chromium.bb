@@ -57,12 +57,12 @@ void RemoveCSSPropertyCommand::doApply(EditingState*) {
   // script. Setting to null string removes the property. We don't have internal
   // version of removeProperty.
   m_element->style()->setPropertyInternal(m_property, String(), String(), false,
-                                          IGNORE_EXCEPTION);
+                                          nullptr, IGNORE_EXCEPTION);
 }
 
 void RemoveCSSPropertyCommand::doUnapply() {
-  m_element->style()->setPropertyInternal(m_property, String(), m_oldValue,
-                                          m_important, IGNORE_EXCEPTION);
+  m_element->style()->setPropertyInternal(
+      m_property, String(), m_oldValue, m_important, nullptr, IGNORE_EXCEPTION);
 }
 
 DEFINE_TRACE(RemoveCSSPropertyCommand) {

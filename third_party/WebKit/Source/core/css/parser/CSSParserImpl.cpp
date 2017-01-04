@@ -8,6 +8,7 @@
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/PropertyRegistry.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleRuleKeyframe.h"
 #include "core/css/StyleRuleNamespace.h"
@@ -68,6 +69,7 @@ MutableStylePropertySet::SetResult CSSParserImpl::parseValue(
 MutableStylePropertySet::SetResult CSSParserImpl::parseVariableValue(
     MutableStylePropertySet* declaration,
     const AtomicString& propertyName,
+    const PropertyRegistry* registry,
     const String& value,
     bool important,
     const CSSParserContext& context,
@@ -79,6 +81,17 @@ MutableStylePropertySet::SetResult CSSParserImpl::parseVariableValue(
   bool didParse = false;
   bool didChange = false;
   if (!parser.m_parsedProperties.isEmpty()) {
+    if (registry) {
+      const PropertyRegistry::Registration* registration =
+          registry->registration(propertyName);
+      // TODO(timloh): This is a bit wasteful, we parse the registered property
+      // to validate but throw away the result.
+      if (registration &&
+          !registration->syntax().parse(tokenizer.tokenRange(),
+                                        isAnimationTainted)) {
+        return MutableStylePropertySet::SetResult{didParse, didChange};
+      }
+    }
     didParse = true;
     didChange = declaration->addParsedProperties(parser.m_parsedProperties);
   }

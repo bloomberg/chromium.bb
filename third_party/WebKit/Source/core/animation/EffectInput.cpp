@@ -95,8 +95,9 @@ void setKeyframeValue(Element& element,
   if (cssProperty != CSSPropertyInvalid) {
     MutableStylePropertySet::SetResult setResult =
         cssProperty == CSSPropertyVariable
-            ? keyframe.setCSSPropertyValue(AtomicString(property), value,
-                                           styleSheetContents)
+            ? keyframe.setCSSPropertyValue(
+                  AtomicString(property), element.document().propertyRegistry(),
+                  value, styleSheetContents)
             : keyframe.setCSSPropertyValue(cssProperty, value,
                                            styleSheetContents);
     if (!setResult.didParse && executionContext) {

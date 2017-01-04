@@ -38,6 +38,7 @@ namespace blink {
 class CSSStyleDeclaration;
 class ImmutableStylePropertySet;
 class MutableStylePropertySet;
+class PropertyRegistry;
 class StyleSheetContents;
 
 class CORE_EXPORT StylePropertySet
@@ -234,6 +235,7 @@ class CORE_EXPORT MutableStylePropertySet : public StylePropertySet {
                         bool important = false,
                         StyleSheetContents* contextStyleSheet = 0);
   SetResult setProperty(const AtomicString& customPropertyName,
+                        const PropertyRegistry*,
                         const String& value,
                         bool important,
                         StyleSheetContents* contextStyleSheet,
