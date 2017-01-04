@@ -106,4 +106,4 @@ class MODULES_EXPORT SpeechSynthesis final
 
 }  // namespace blink
 
-#endif  // SpeechSynthesisEvent_h
+#endif  // SpeechSynthesis_h
