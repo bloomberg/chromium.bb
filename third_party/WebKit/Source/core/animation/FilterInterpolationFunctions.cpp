@@ -187,12 +187,8 @@ InterpolationValue FilterInterpolationFunctions::maybeConvertFilter(
       break;
 
     case FilterOperation::DROP_SHADOW: {
-      const DropShadowFilterOperation& blurFilter =
-          toDropShadowFilterOperation(filter);
-      ShadowData shadowData(blurFilter.location(), blurFilter.stdDeviation(), 0,
-                            Normal, blurFilter.getColor());
-      result =
-          ShadowInterpolationFunctions::convertShadowData(shadowData, zoom);
+      result = ShadowInterpolationFunctions::convertShadowData(
+          toDropShadowFilterOperation(filter).shadow(), zoom);
       break;
     }
 
@@ -285,11 +281,9 @@ FilterOperation* FilterInterpolationFunctions::createFilter(
       ShadowData shadowData = ShadowInterpolationFunctions::createShadowData(
           interpolableValue, nonInterpolableValue.typeNonInterpolableValue(),
           state);
-      Color color = shadowData.color().isCurrentColor()
-                        ? Color::black
-                        : shadowData.color().getColor();
-      return DropShadowFilterOperation::create(
-          IntPoint(shadowData.x(), shadowData.y()), shadowData.blur(), color);
+      if (shadowData.color().isCurrentColor())
+        shadowData.overrideColor(Color::black);
+      return DropShadowFilterOperation::create(shadowData);
     }
 
     default:

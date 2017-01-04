@@ -258,13 +258,11 @@ FilterEffect* FilterEffectBuilder::buildFilterEffect(
         break;
       }
       case FilterOperation::DROP_SHADOW: {
-        DropShadowFilterOperation* dropShadowOperation =
-            toDropShadowFilterOperation(filterOperation);
-        float stdDeviation = dropShadowOperation->stdDeviation();
-        float x = dropShadowOperation->x();
-        float y = dropShadowOperation->y();
-        effect = FEDropShadow::create(parentFilter, stdDeviation, stdDeviation,
-                                      x, y, dropShadowOperation->getColor(), 1);
+        const ShadowData& shadow =
+            toDropShadowFilterOperation(*filterOperation).shadow();
+        effect = FEDropShadow::create(parentFilter, shadow.blur(),
+                                      shadow.blur(), shadow.x(), shadow.y(),
+                                      shadow.color().getColor(), 1);
         break;
       }
       case FilterOperation::BOX_REFLECT: {
@@ -371,11 +369,10 @@ CompositorFilterOperations FilterEffectBuilder::buildFilterOperations(
         break;
       }
       case FilterOperation::DROP_SHADOW: {
-        const DropShadowFilterOperation& drop =
-            toDropShadowFilterOperation(*op);
-        filters.appendDropShadowFilter(WebPoint(drop.x(), drop.y()),
-                                       drop.stdDeviation(),
-                                       drop.getColor().rgb());
+        const ShadowData& shadow = toDropShadowFilterOperation(*op).shadow();
+        filters.appendDropShadowFilter(WebPoint(shadow.x(), shadow.y()),
+                                       shadow.blur(),
+                                       shadow.color().getColor());
         break;
       }
       case FilterOperation::BOX_REFLECT: {

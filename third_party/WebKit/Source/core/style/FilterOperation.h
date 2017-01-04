@@ -27,6 +27,7 @@
 #define FilterOperation_h
 
 #include "core/CoreExport.h"
+#include "core/style/ShadowData.h"
 #include "platform/Length.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/BoxReflection.h"
@@ -288,17 +289,11 @@ DEFINE_FILTER_OPERATION_TYPE_CASTS(BlurFilterOperation, BLUR);
 
 class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
  public:
-  static DropShadowFilterOperation* create(const IntPoint& location,
-                                           int stdDeviation,
-                                           Color color) {
-    return new DropShadowFilterOperation(location, stdDeviation, color);
+  static DropShadowFilterOperation* create(const ShadowData& shadow) {
+    return new DropShadowFilterOperation(shadow);
   }
 
-  int x() const { return m_location.x(); }
-  int y() const { return m_location.y(); }
-  IntPoint location() const { return m_location; }
-  int stdDeviation() const { return m_stdDeviation; }
-  Color getColor() const { return m_color; }
+  const ShadowData& shadow() const { return m_shadow; }
 
   bool affectsOpacity() const override { return true; }
   bool movesPixels() const override { return true; }
@@ -312,21 +307,13 @@ class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
       return false;
     const DropShadowFilterOperation* other =
         static_cast<const DropShadowFilterOperation*>(&o);
-    return m_location == other->m_location &&
-           m_stdDeviation == other->m_stdDeviation && m_color == other->m_color;
+    return m_shadow == other->m_shadow;
   }
 
-  DropShadowFilterOperation(const IntPoint& location,
-                            int stdDeviation,
-                            Color color)
-      : FilterOperation(DROP_SHADOW),
-        m_location(location),
-        m_stdDeviation(stdDeviation),
-        m_color(color) {}
+  DropShadowFilterOperation(const ShadowData& shadow)
+      : FilterOperation(DROP_SHADOW), m_shadow(shadow) {}
 
-  IntPoint m_location;  // FIXME: should location be in Lengths?
-  int m_stdDeviation;
-  Color m_color;
+  ShadowData m_shadow;
 };
 
 DEFINE_FILTER_OPERATION_TYPE_CASTS(DropShadowFilterOperation, DROP_SHADOW);

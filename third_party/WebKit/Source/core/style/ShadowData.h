@@ -36,7 +36,7 @@ namespace blink {
 enum ShadowStyle { Normal, Inset };
 
 // This class holds information about shadows for the text-shadow and box-shadow
-// properties.
+// properties, as well as the drop-shadow(...) filter operation.
 class ShadowData {
   USING_FAST_MALLOC(ShadowData);
 
@@ -58,6 +58,7 @@ class ShadowData {
   ShadowData blend(const ShadowData& from,
                    double progress,
                    const Color& currentColor) const;
+  static ShadowData neutralValue();
 
   float x() const { return m_location.x(); }
   float y() const { return m_location.y(); }
@@ -66,6 +67,8 @@ class ShadowData {
   float spread() const { return m_spread; }
   ShadowStyle style() const { return m_style; }
   StyleColor color() const { return m_color; }
+
+  void overrideColor(Color color) { m_color = StyleColor(color); }
 
   // Outsets needed to adjust a source rectangle to the one cast by this
   // shadow.

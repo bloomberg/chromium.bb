@@ -1000,7 +1000,29 @@ LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state,
   return LengthSize(radiusWidth, radiusHeight);
 }
 
-PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(
+ShadowData StyleBuilderConverter::convertShadow(StyleResolverState& state,
+                                                const CSSValue& value) {
+  const CSSShadowValue& shadow = toCSSShadowValue(value);
+  float x = shadow.x->computeLength<float>(state.cssToLengthConversionData());
+  float y = shadow.y->computeLength<float>(state.cssToLengthConversionData());
+  float blur =
+      shadow.blur
+          ? shadow.blur->computeLength<float>(state.cssToLengthConversionData())
+          : 0;
+  float spread = shadow.spread
+                     ? shadow.spread->computeLength<float>(
+                           state.cssToLengthConversionData())
+                     : 0;
+  ShadowStyle shadowStyle =
+      shadow.style && shadow.style->getValueID() == CSSValueInset ? Inset
+                                                                  : Normal;
+  StyleColor color = StyleColor::currentColor();
+  if (shadow.color)
+    color = convertStyleColor(state, *shadow.color);
+  return ShadowData(FloatPoint(x, y), blur, spread, shadowStyle, color);
+}
+
+PassRefPtr<ShadowList> StyleBuilderConverter::convertShadowList(
     StyleResolverState& state,
     const CSSValue& value) {
   if (value.isIdentifierValue()) {
@@ -1008,30 +1030,10 @@ PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(
     return PassRefPtr<ShadowList>();
   }
 
-  const CSSValueList& valueList = toCSSValueList(value);
-  size_t shadowCount = valueList.length();
   ShadowDataVector shadows;
-  for (size_t i = 0; i < shadowCount; ++i) {
-    const CSSShadowValue& item = toCSSShadowValue(valueList.item(i));
-    float x = item.x->computeLength<float>(state.cssToLengthConversionData());
-    float y = item.y->computeLength<float>(state.cssToLengthConversionData());
-    float blur =
-        item.blur
-            ? item.blur->computeLength<float>(state.cssToLengthConversionData())
-            : 0;
-    float spread = item.spread
-                       ? item.spread->computeLength<float>(
-                             state.cssToLengthConversionData())
-                       : 0;
-    ShadowStyle shadowStyle =
-        item.style && item.style->getValueID() == CSSValueInset ? Inset
-                                                                : Normal;
-    StyleColor color = StyleColor::currentColor();
-    if (item.color)
-      color = convertStyleColor(state, *item.color);
-    shadows.append(
-        ShadowData(FloatPoint(x, y), blur, spread, shadowStyle, color));
-  }
+  for (const auto& item : toCSSValueList(value))
+    shadows.append(convertShadow(state, *item));
+
   return ShadowList::adopt(shadows);
 }
 

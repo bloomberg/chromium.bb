@@ -46,8 +46,8 @@ TEST(FilterOperationsTest, mapRectBlur) {
 
 TEST(FilterOperationsTest, mapRectDropShadow) {
   FilterOperations ops;
-  ops.operations().append(
-      DropShadowFilterOperation::create(IntPoint(3, 8), 20, Color(1, 2, 3)));
+  ops.operations().append(DropShadowFilterOperation::create(
+      ShadowData(FloatPoint(3, 8), 20, 0, Normal, StyleColor(Color(1, 2, 3)))));
   EXPECT_TRUE(ops.hasFilterThatMovesPixels());
   EXPECT_EQ(IntRect(-54, -49, 124, 124),
             enclosingIntRect(ops.mapRect(FloatRect(0, 0, 10, 10))));
@@ -67,8 +67,8 @@ TEST(FilterOperationsTest, mapRectDropShadowAndBoxReflect) {
   // This is a case where the order of filter operations matters, and it's
   // important that the bounds be filtered in the correct order.
   FilterOperations ops;
-  ops.operations().append(
-      DropShadowFilterOperation::create(IntPoint(100, 200), 0, Color::black));
+  ops.operations().append(DropShadowFilterOperation::create(ShadowData(
+      FloatPoint(100, 200), 0, 0, Normal, StyleColor(Color::black))));
   ops.operations().append(BoxReflectFilterOperation::create(
       BoxReflection(BoxReflection::VerticalReflection, 50)));
   EXPECT_TRUE(ops.hasFilterThatMovesPixels());

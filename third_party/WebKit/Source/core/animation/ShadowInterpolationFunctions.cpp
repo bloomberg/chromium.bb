@@ -146,10 +146,7 @@ InterpolationValue ShadowInterpolationFunctions::maybeConvertCSSValue(
 
 std::unique_ptr<InterpolableValue>
 ShadowInterpolationFunctions::createNeutralInterpolableValue() {
-  return convertShadowData(ShadowData(FloatPoint(0, 0), 0, 0, Normal,
-                                      StyleColor(Color::transparent)),
-                           1)
-      .interpolableValue;
+  return convertShadowData(ShadowData::neutralValue(), 1).interpolableValue;
 }
 
 void ShadowInterpolationFunctions::composite(

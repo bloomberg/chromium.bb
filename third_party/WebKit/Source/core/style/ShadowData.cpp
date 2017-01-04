@@ -42,4 +42,9 @@ ShadowData ShadowData::blend(const ShadowData& from,
                                  color().resolve(currentColor), progress));
 }
 
+ShadowData ShadowData::neutralValue() {
+  return ShadowData(FloatPoint(0, 0), 0, 0, Normal,
+                    StyleColor(Color::transparent));
+}
+
 }  // namespace blink

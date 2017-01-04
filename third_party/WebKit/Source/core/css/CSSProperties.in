@@ -225,7 +225,7 @@ border-top-right-radius interpolable, initial=initialBorderRadius, converter=con
 border-top-style type_name=EBorderStyle, initial=initialBorderStyle
 border-top-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>, typedom_types=[Length], keywords=[thin|medium|thick], supports_percentage
 bottom typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
-box-shadow interpolable, converter=convertShadow
+box-shadow interpolable, converter=convertShadowList
 box-sizing
 break-after type_name=EBreak
 break-before type_name=EBreak
@@ -381,7 +381,7 @@ text-decoration-style runtime_flag=CSS3TextDecorations, type_name=TextDecoration
 text-indent interpolable, inherited, custom_all
 text-justify runtime_flag=CSS3Text, inherited, type_name=TextJustify
 text-overflow type_name=TextOverflow
-text-shadow interpolable, inherited, converter=convertShadow
+text-shadow interpolable, inherited, converter=convertShadowList
 text-size-adjust inherited, converter=convertTextSizeAdjust, type_name=TextSizeAdjust
 text-transform inherited, keyword_only, keywords=[capitalize|uppercase|lowercase|none], initial_keyword=none
 text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition

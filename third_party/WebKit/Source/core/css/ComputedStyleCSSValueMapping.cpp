@@ -1817,15 +1817,13 @@ CSSValue* ComputedStyleCSSValueMapping::valueForFilter(
             style));
         break;
       case FilterOperation::DROP_SHADOW: {
-        DropShadowFilterOperation* dropShadowOperation =
-            toDropShadowFilterOperation(filterOperation);
+        const auto& dropShadowOperation =
+            toDropShadowFilterOperation(*filterOperation);
         filterValue = CSSFunctionValue::create(CSSValueDropShadow);
         // We want our computed style to look like that of a text shadow (has
         // neither spread nor inset style).
-        ShadowData shadow(dropShadowOperation->location(),
-                          dropShadowOperation->stdDeviation(), 0, Normal,
-                          StyleColor(dropShadowOperation->getColor()));
-        filterValue->append(*valueForShadowData(shadow, style, false));
+        filterValue->append(
+            *valueForShadowData(dropShadowOperation.shadow(), style, false));
         break;
       }
       default:

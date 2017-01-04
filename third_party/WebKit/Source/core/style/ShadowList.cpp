@@ -60,9 +60,8 @@ PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from,
 
   ShadowDataVector shadows;
 
-  DEFINE_STATIC_LOCAL(
-      ShadowData, defaultShadowData,
-      (FloatPoint(), 0, 0, Normal, StyleColor(Color::transparent)));
+  DEFINE_STATIC_LOCAL(ShadowData, defaultShadowData,
+                      (ShadowData::neutralValue()));
   DEFINE_STATIC_LOCAL(
       ShadowData, defaultInsetShadowData,
       (FloatPoint(), 0, 0, Inset, StyleColor(Color::transparent)));

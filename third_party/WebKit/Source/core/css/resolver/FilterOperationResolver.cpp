@@ -32,8 +32,8 @@
 
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSShadowValue.h"
 #include "core/css/CSSURIValue.h"
+#include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/frame/UseCounter.h"
 
@@ -200,18 +200,13 @@ FilterOperations FilterOperationResolver::createFilterOperations(
         break;
       }
       case CSSValueDropShadow: {
-        const CSSShadowValue& item = toCSSShadowValue(filterValue->item(0));
-        IntPoint location(item.x->computeLength<int>(conversionData),
-                          item.y->computeLength<int>(conversionData));
-        int blur =
-            item.blur ? item.blur->computeLength<int>(conversionData) : 0;
-        Color shadowColor = Color::black;
-        if (item.color)
-          shadowColor = state.document().textLinkColors().colorFromCSSValue(
-              *item.color, state.style()->color());
-
+        ShadowData shadow =
+            StyleBuilderConverter::convertShadow(state, filterValue->item(0));
+        // TODO(fs): Resolve 'currentcolor' when constructing the filter chain.
+        if (shadow.color().isCurrentColor())
+          shadow.overrideColor(state.style()->color());
         operations.operations().push_back(
-            DropShadowFilterOperation::create(location, blur, shadowColor));
+            DropShadowFilterOperation::create(shadow));
         break;
       }
       default:

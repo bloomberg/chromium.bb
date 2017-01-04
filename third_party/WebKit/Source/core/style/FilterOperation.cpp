@@ -174,25 +174,20 @@ FilterOperation* BlurFilterOperation::blend(const FilterOperation* from,
 }
 
 FloatRect DropShadowFilterOperation::mapRect(const FloatRect& rect) const {
-  float stdDeviation = m_stdDeviation;
+  float stdDeviation = m_shadow.blur();
   return FEDropShadow::mapEffect(FloatSize(stdDeviation, stdDeviation),
-                                 FloatPoint(m_location), rect);
+                                 m_shadow.location(), rect);
 }
 
 FilterOperation* DropShadowFilterOperation::blend(const FilterOperation* from,
                                                   double progress) const {
   if (!from) {
-    return DropShadowFilterOperation::create(
-        blink::blend(IntPoint(), m_location, progress),
-        blink::blend(0, m_stdDeviation, progress),
-        blink::blend(Color(Color::transparent), m_color, progress));
+    return create(m_shadow.blend(ShadowData::neutralValue(), progress,
+                                 Color::transparent));
   }
 
-  const DropShadowFilterOperation* fromOp = toDropShadowFilterOperation(from);
-  return DropShadowFilterOperation::create(
-      blink::blend(fromOp->location(), m_location, progress),
-      blink::blend(fromOp->stdDeviation(), m_stdDeviation, progress),
-      blink::blend(fromOp->getColor(), m_color, progress));
+  const auto& fromOp = toDropShadowFilterOperation(*from);
+  return create(m_shadow.blend(fromOp.m_shadow, progress, Color::transparent));
 }
 
 FloatRect BoxReflectFilterOperation::mapRect(const FloatRect& rect) const {

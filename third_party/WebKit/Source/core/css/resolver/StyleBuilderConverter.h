@@ -130,8 +130,9 @@ class StyleBuilderConverter {
                                               const CSSValue&);
   static LengthSize convertRadius(StyleResolverState&, const CSSValue&);
   static EPaintOrder convertPaintOrder(StyleResolverState&, const CSSValue&);
-  static PassRefPtr<ShadowList> convertShadow(StyleResolverState&,
-                                              const CSSValue&);
+  static ShadowData convertShadow(StyleResolverState&, const CSSValue&);
+  static PassRefPtr<ShadowList> convertShadowList(StyleResolverState&,
+                                                  const CSSValue&);
   static ShapeValue* convertShapeValue(StyleResolverState&, const CSSValue&);
   static float convertSpacing(StyleResolverState&, const CSSValue&);
   template <CSSValueID IdForNone>
