@@ -432,9 +432,20 @@ void XcodeWriter::CreateProductsProject(
                            env.get()));
         break;
 
-      case Target::CREATE_BUNDLE:
+      case Target::CREATE_BUNDLE: {
         if (target->bundle_data().product_type().empty())
           continue;
+
+        // Test files need to be known to Xcode for proper indexing and for
+        // discovery of tests function for XCTest, but the compilation is done
+        // via ninja and thus must prevent Xcode from linking object files via
+        // this hack.
+        PBXAttributes extra_attributes;
+        if (IsXCTestModuleTarget(target)) {
+          extra_attributes["OTHER_LDFLAGS"] = "-help";
+          extra_attributes["ONLY_ACTIVE_ARCH"] = "YES";
+          extra_attributes["DEBUG_INFORMATION_FORMAT"] = "dwarf";
+        }
 
         main_project->AddNativeTarget(
             target->label().name(), std::string(),
@@ -443,9 +454,10 @@ void XcodeWriter::CreateProductsProject(
                            .value(),
                        build_settings->build_dir()),
             target->bundle_data().product_type(),
-            GetBuildScript(target->label().name(), ninja_extra_args,
-                           env.get()));
+            GetBuildScript(target->label().name(), ninja_extra_args, env.get()),
+            extra_attributes);
         break;
+      }
 
       default:
         break;
