@@ -84,18 +84,60 @@ var PeerConnectionUpdateTable = (function() {
       var time = new Date(parseFloat(update.time));
       row.innerHTML = '<td>' + time.toLocaleString() + '</td>';
 
+      // map internal event names to spec event names.
+      var type = {
+        onRenegotiationNeeded: 'negotiationneeded',
+        signalingStateChange: 'signalingstatechange',
+        iceGatheringStateChange: 'icegatheringstatechange',
+        iceConnectionStateChange: 'iceconnectionstatechange',
+        onIceCandidate: 'icecandidate',
+        stop: 'close'
+      }[update.type] || update.type;
+
       if (update.value.length == 0) {
-        row.innerHTML += '<td>' + update.type + '</td>';
+        row.innerHTML += '<td>' + type + '</td>';
         return;
       }
 
-      row.innerHTML += '<td><details><summary>' + update.type +
+      row.innerHTML += '<td><details><summary>' + type +
           '</summary></details></td>';
 
       var valueContainer = document.createElement('pre');
       var details = row.cells[1].childNodes[0];
       details.appendChild(valueContainer);
-      valueContainer.textContent = update.value;
+
+      var value = update.value;
+      // map internal names and values to names and events from the
+      // specification. This is a display change which shall not
+      // change the JSON dump.
+      if (update.type === 'iceConnectionStateChange') {
+        value = {
+          ICEConnectionStateNew: 'new',
+          ICEConnectionStateChecking: 'checking',
+          ICEConnectionStateConnected: 'connected',
+          ICEConnectionStateCompleted: 'completed',
+          ICEConnectionStateFailed: 'failed',
+          ICEConnectionStateDisconnected: 'disconnected',
+          ICEConnectionStateClosed: 'closed',
+        }[value] || value;
+      } else if (update.type === 'iceGatheringStateChange') {
+        value = {
+          ICEGatheringStateNew: 'new',
+          ICEGatheringStateGathering: 'gathering',
+          ICEGatheringStateComplete: 'complete',
+        }[value] || value;
+      } else if (update.type === 'signalingStateChange') {
+        value = {
+          SignalingStateStable: 'stable',
+          SignalingStateHaveLocalOffer: 'have-local-offer',
+          SignalingStateHaveRemoteOffer: 'have-remote-offer',
+          SignalingStateHaveLocalPrAnswer: 'have-local-pranswer',
+          SignalingStateHaveRemotePrAnswer: 'have-remote-pranswer',
+          SignalingStateClosed: 'closed',
+        }[value] || value;
+      }
+
+      valueContainer.textContent = value;
     },
 
     /**
