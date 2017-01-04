@@ -3959,15 +3959,22 @@ static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
                                               struct aom_read_bit_buffer *rb) {
   if (cm->profile >= PROFILE_2) {
     cm->bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_12 : AOM_BITS_10;
-#if CONFIG_AOM_HIGHBITDEPTH
-    cm->use_highbitdepth = 1;
-#endif
   } else {
     cm->bit_depth = AOM_BITS_8;
+  }
+
 #if CONFIG_AOM_HIGHBITDEPTH
+  if (cm->bit_depth > AOM_BITS_8) {
+    cm->use_highbitdepth = 1;
+  } else {
+#if CONFIG_AOM_LOWBITDEPTH
     cm->use_highbitdepth = 0;
+#else
+    cm->use_highbitdepth = 1;
 #endif
   }
+#endif
+
   cm->color_space = aom_rb_read_literal(rb, 3);
   if (cm->color_space != AOM_CS_SRGB) {
     // [16,235] (including xvycc) vs [0,255] range
