@@ -605,7 +605,7 @@ void AudioBufferSourceHandler::handleStoppableSourceNode() {
   // If looping was ever done (m_didSetLooping = true), give up.  We can't
   // easily determine how long we looped so we don't know the actual duration
   // thus far, so don't try to do anything fancy.
-  if (!m_didSetLooping && buffer() && isPlayingOrScheduled() &&
+  if (!didSetLooping() && buffer() && isPlayingOrScheduled() &&
       m_minPlaybackRate > 0) {
     // Adjust the duration to include the playback rate. Only need to account
     // for rate < 1 which makes the sound last longer.  For rate >= 1, the
