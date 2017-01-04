@@ -331,6 +331,8 @@ TEST_F(ReadingListStoreTest, CompareEntriesForSync) {
   entryB.set_first_read_time_us(50);
   entryA.set_update_time_us(100);
   entryB.set_update_time_us(100);
+  entryA.set_update_title_time_us(110);
+  entryB.set_update_title_time_us(110);
   // Equal entries can be submitted.
   ExpectAB(entryA, entryB, true);
   ExpectAB(entryB, entryA, true);
@@ -343,18 +345,43 @@ TEST_F(ReadingListStoreTest, CompareEntriesForSync) {
   EXPECT_FALSE(ReadingListStore::CompareEntriesForSync(entryB, entryA));
   entryA.set_url("http://foo.bar/");
 
-  // You can set a title to a title later in alphabetical order.
+  // You can set a title to a title later in alphabetical order if the
+  // update_title_time is the same. If a title has been more recently updated,
+  // the only possible transition is to this one.
   entryA.set_title("");
   ExpectAB(entryA, entryB, true);
   ExpectAB(entryB, entryA, false);
+  entryA.set_update_title_time_us(109);
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
+  entryA.set_update_title_time_us(110);
+
   entryA.set_title("Foo Aar");
   ExpectAB(entryA, entryB, true);
   ExpectAB(entryB, entryA, false);
+  entryA.set_update_title_time_us(109);
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
+  entryA.set_update_title_time_us(110);
+
   entryA.set_title("Foo Ba");
   ExpectAB(entryA, entryB, true);
   ExpectAB(entryB, entryA, false);
+  entryA.set_update_title_time_us(109);
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
+  entryA.set_update_title_time_us(110);
+
+  entryA.set_title("Foo Bas");
+  ExpectAB(entryA, entryB, false);
+  ExpectAB(entryB, entryA, true);
+  entryA.set_update_title_time_us(109);
+  ExpectAB(entryA, entryB, true);
+  ExpectAB(entryB, entryA, false);
+  entryA.set_update_title_time_us(110);
   entryA.set_title("Foo Bar");
 
+  // Update times.
   entryA.set_creation_time_us(9);
   ExpectAB(entryA, entryB, true);
   ExpectAB(entryB, entryA, false);

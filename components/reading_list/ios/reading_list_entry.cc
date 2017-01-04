@@ -51,6 +51,7 @@ ReadingListEntry::ReadingListEntry(const GURL& url,
                        0,
                        0,
                        0,
+                       0,
                        WAITING,
                        base::FilePath(),
                        0,
@@ -63,6 +64,7 @@ ReadingListEntry::ReadingListEntry(
     int64_t creation_time,
     int64_t first_read_time,
     int64_t update_time,
+    int64_t update_title_time,
     ReadingListEntry::DistillationState distilled_state,
     const base::FilePath& distilled_path,
     int failed_download_counter,
@@ -75,7 +77,8 @@ ReadingListEntry::ReadingListEntry(
       failed_download_counter_(failed_download_counter),
       creation_time_us_(creation_time),
       first_read_time_us_(first_read_time),
-      update_time_us_(update_time) {
+      update_time_us_(update_time),
+      update_title_time_us_(update_title_time) {
   if (backoff) {
     backoff_ = std::move(backoff);
   } else {
@@ -83,9 +86,11 @@ ReadingListEntry::ReadingListEntry(
   }
   if (creation_time_us_ == 0) {
     DCHECK(update_time_us_ == 0);
+    DCHECK(update_title_time_us_ == 0);
     creation_time_us_ =
         (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
     update_time_us_ = creation_time_us_;
+    update_title_time_us_ = creation_time_us_;
   }
   DCHECK(!url.is_empty());
   DCHECK(url.is_valid());
@@ -101,7 +106,8 @@ ReadingListEntry::ReadingListEntry(ReadingListEntry&& entry)
       failed_download_counter_(std::move(entry.failed_download_counter_)),
       creation_time_us_(std::move(entry.creation_time_us_)),
       first_read_time_us_(std::move(entry.first_read_time_us_)),
-      update_time_us_(std::move(entry.update_time_us_)) {}
+      update_time_us_(std::move(entry.update_time_us_)),
+      update_title_time_us_(std::move(entry.update_title_time_us_)) {}
 
 ReadingListEntry::~ReadingListEntry() {}
 
@@ -140,6 +146,7 @@ ReadingListEntry& ReadingListEntry::operator=(ReadingListEntry&& other) {
   creation_time_us_ = std::move(other.creation_time_us_);
   first_read_time_us_ = std::move(other.first_read_time_us_);
   update_time_us_ = std::move(other.update_time_us_);
+  update_title_time_us_ = std::move(other.update_title_time_us_);
   return *this;
 }
 
@@ -149,6 +156,8 @@ bool ReadingListEntry::operator==(const ReadingListEntry& other) const {
 
 void ReadingListEntry::SetTitle(const std::string& title) {
   title_ = title;
+  update_title_time_us_ =
+      (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
 }
 
 void ReadingListEntry::SetRead(bool read) {
@@ -203,6 +212,10 @@ int64_t ReadingListEntry::UpdateTime() const {
   return update_time_us_;
 }
 
+int64_t ReadingListEntry::UpdateTitleTime() const {
+  return update_title_time_us_;
+}
+
 int64_t ReadingListEntry::CreationTime() const {
   return creation_time_us_;
 }
@@ -244,6 +257,11 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
   int64_t update_time_us = 0;
   if (pb_entry.has_update_time_us()) {
     update_time_us = pb_entry.update_time_us();
+  }
+
+  int64_t update_title_time_us = 0;
+  if (pb_entry.has_update_title_time_us()) {
+    update_title_time_us = pb_entry.update_title_time_us();
   }
 
   State state = UNSEEN;
@@ -306,8 +324,8 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
 
   return base::WrapUnique<ReadingListEntry>(new ReadingListEntry(
       url, title, state, creation_time_us, first_read_time_us, update_time_us,
-      distillation_state, distilled_path, failed_download_counter,
-      std::move(backoff)));
+      update_title_time_us, distillation_state, distilled_path,
+      failed_download_counter, std::move(backoff)));
 }
 
 // static
@@ -340,6 +358,11 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
     update_time_us = pb_entry.update_time_us();
   }
 
+  int64_t update_title_time_us = 0;
+  if (pb_entry.has_update_title_time_us()) {
+    update_title_time_us = pb_entry.update_title_time_us();
+  }
+
   State state = UNSEEN;
   if (pb_entry.has_status()) {
     switch (pb_entry.status()) {
@@ -357,7 +380,7 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
 
   return base::WrapUnique<ReadingListEntry>(new ReadingListEntry(
       url, title, state, creation_time_us, first_read_time_us, update_time_us,
-      WAITING, base::FilePath(), 0, nullptr));
+      update_title_time_us, WAITING, base::FilePath(), 0, nullptr));
 }
 
 void ReadingListEntry::MergeWithEntry(const ReadingListEntry& other) {
@@ -369,10 +392,16 @@ void ReadingListEntry::MergeWithEntry(const ReadingListEntry& other) {
       other.AsReadingListSpecifics());
 #endif
   DCHECK(url_ == other.url_);
-  if (title_.compare(other.title_) < 0) {
-    // Take the last in alphabetical order or the longer one.
-    // This ensure empty string is replaced.
+  if (update_title_time_us_ < other.update_title_time_us_) {
+    // Take the most recent title updated.
     title_ = std::move(other.title_);
+    update_title_time_us_ = std::move(other.update_title_time_us_);
+  } else if (update_title_time_us_ == other.update_title_time_us_) {
+    if (title_.compare(other.title_) < 0) {
+      // Take the last in alphabetical order or the longer one.
+      // This ensure empty string is replaced.
+      title_ = std::move(other.title_);
+    }
   }
   if (creation_time_us_ < other.creation_time_us_) {
     creation_time_us_ = std::move(other.creation_time_us_);
@@ -419,6 +448,7 @@ ReadingListEntry::AsReadingListLocal() const {
   pb_entry->set_creation_time_us(CreationTime());
   pb_entry->set_first_read_time_us(FirstReadTime());
   pb_entry->set_update_time_us(UpdateTime());
+  pb_entry->set_update_title_time_us(UpdateTitleTime());
 
   switch (state_) {
     case READ:
@@ -482,6 +512,7 @@ ReadingListEntry::AsReadingListSpecifics() const {
   pb_entry->set_creation_time_us(CreationTime());
   pb_entry->set_first_read_time_us(FirstReadTime());
   pb_entry->set_update_time_us(UpdateTime());
+  pb_entry->set_update_title_time_us(UpdateTitleTime());
 
   switch (state_) {
     case READ:

@@ -20,6 +20,7 @@ message ReadingListLocal {
   optional int64 creation_time_us = 4;
   optional int64 update_time_us = 5;
   optional int64 first_read_time_us = 11;
+  optional int64 update_title_time_us = 12;
 
   enum ReadingListEntryStatus {
     UNREAD = 0;

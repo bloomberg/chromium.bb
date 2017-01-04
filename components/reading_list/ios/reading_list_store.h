@@ -73,7 +73,13 @@ class ReadingListStore : public ReadingListModelStorage,
   // submitted to sync in strictly increasing order.
   // Entries are in increasing order if all the fields respect increasing order.
   // - URL must be the same.
-  // - title must verify rhs.title.compare(lhs.title) >= 0
+  // - update_title_time_us:
+  //       rhs.update_title_time_us >= lhs.update_title_time_us
+  // - title:
+  //       if rhs.update_title_time_us > lhs.update_title_time_us
+  //         title can be anything
+  //       if rhs.update_title_time_us == lhs.update_title_time_us
+  //         title must verify rhs.title.compare(lhs.title) >= 0
   // - creation_time_us:
   //       rhs.creation_time_us >= lhs.creation_time_us
   // - rhs.first_read_time_us:

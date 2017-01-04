@@ -68,6 +68,10 @@ class ReadingListEntry {
   // entries. The value is in microseconds since Jan 1st 1970.
   int64_t UpdateTime() const;
 
+  // The last update time of the title of the entry. The value is in
+  // microseconds since Jan 1st 1970.
+  int64_t UpdateTitleTime() const;
+
   // The creation update time of the entry. The value is in microseconds since
   // Jan 1st 1970.
   int64_t CreationTime() const;
@@ -129,6 +133,7 @@ class ReadingListEntry {
                    int64_t creation_time,
                    int64_t first_read_time,
                    int64_t update_time,
+                   int64_t update_title_time,
                    ReadingListEntry::DistillationState distilled_state,
                    const base::FilePath& distilled_path,
                    int failed_download_counter,
@@ -148,6 +153,7 @@ class ReadingListEntry {
   int64_t creation_time_us_;
   int64_t first_read_time_us_;
   int64_t update_time_us_;
+  int64_t update_title_time_us_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListEntry);
 };

@@ -418,6 +418,8 @@ bool ReadingListStore::CompareEntriesForSync(
   DCHECK(lhs.entry_id() == rhs.entry_id());
   DCHECK(lhs.has_update_time_us());
   DCHECK(rhs.has_update_time_us());
+  DCHECK(lhs.has_update_title_time_us());
+  DCHECK(rhs.has_update_title_time_us());
   DCHECK(lhs.has_creation_time_us());
   DCHECK(rhs.has_creation_time_us());
   DCHECK(lhs.has_url());
@@ -426,7 +428,8 @@ bool ReadingListStore::CompareEntriesForSync(
   DCHECK(rhs.has_title());
   DCHECK(lhs.has_status());
   DCHECK(rhs.has_status());
-  if (rhs.url() != lhs.url() || rhs.title().compare(lhs.title()) < 0 ||
+  if (rhs.url() != lhs.url() ||
+      rhs.update_title_time_us() < lhs.update_title_time_us() ||
       rhs.creation_time_us() < lhs.creation_time_us() ||
       rhs.update_time_us() < lhs.update_time_us()) {
     return false;
@@ -436,6 +439,10 @@ bool ReadingListStore::CompareEntriesForSync(
          lhs.status() != sync_pb::ReadingListSpecifics::UNSEEN) ||
         (rhs.status() == sync_pb::ReadingListSpecifics::UNREAD &&
          lhs.status() == sync_pb::ReadingListSpecifics::READ))
+      return false;
+  }
+  if (rhs.update_title_time_us() == lhs.update_title_time_us()) {
+    if (rhs.title().compare(lhs.title()) < 0)
       return false;
   }
   if (rhs.creation_time_us() == lhs.creation_time_us()) {

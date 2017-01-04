@@ -5,6 +5,7 @@
 #include "components/reading_list/ios/reading_list_entry.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/test/ios/wait_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/reading_list/ios/proto/reading_list.pb.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
@@ -54,6 +55,18 @@ TEST(ReadingListEntry, ReadState) {
   e.SetRead(true);
   EXPECT_TRUE(e.HasBeenSeen());
   EXPECT_TRUE(e.IsRead());
+}
+
+TEST(ReadingListEntry, UpdateTitle) {
+  ReadingListEntry e(GURL("http://example.com"), "bar");
+  ASSERT_EQ("bar", e.Title());
+  ASSERT_EQ(e.CreationTime(), e.UpdateTitleTime());
+
+  base::test::ios::SpinRunLoopWithMinDelay(
+      base::TimeDelta::FromMilliseconds(5));
+  e.SetTitle("foo");
+  EXPECT_GT(e.UpdateTitleTime(), e.CreationTime());
+  EXPECT_EQ("foo", e.Title());
 }
 
 TEST(ReadingListEntry, DistilledPathAndURL) {
