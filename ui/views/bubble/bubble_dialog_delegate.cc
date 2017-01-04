@@ -217,7 +217,6 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
                kPanelVertMargin,
                kPanelHorizMargin),
       accept_events_(true),
-      border_accepts_events_(true),
       adjust_if_offscreen_(true),
       parent_window_(NULL) {
   if (anchor_view)

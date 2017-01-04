@@ -361,8 +361,6 @@ group("both_gn_and_gyp") {
 
   if (use_aura) {
     deps += [
-      "//ui/app_list:app_list_unittests",
-      "//ui/app_list/presenter:app_list_presenter_unittests",
       "//ui/aura:aura_unittests",
       "//ui/aura:demo",
       "//ui/wm:wm_unittests",
@@ -483,6 +481,8 @@ group("both_gn_and_gyp") {
       "//chromeos:chromeos_unittests",
       "//chromeos/components:chromeos_components_unittests",
       "//components/session_manager/core",
+      "//ui/app_list:app_list_unittests",
+      "//ui/app_list/presenter:app_list_presenter_unittests",
       "//ui/arc:ui_arc_unittests",
       "//ui/chromeos:ui_chromeos_unittests",
     ]

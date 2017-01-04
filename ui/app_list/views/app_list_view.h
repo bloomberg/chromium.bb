@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/speech_ui_model_observer.h"
@@ -25,7 +24,6 @@ class ApplicationDragAndDropHost;
 class AppListMainView;
 class AppListModel;
 class AppListViewDelegate;
-class AppListViewObserver;
 class HideViewAnimationObserver;
 class PaginationModel;
 class SearchBoxView;
@@ -44,13 +42,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   explicit AppListView(AppListViewDelegate* delegate);
   ~AppListView() override;
 
-  // Initializes the widget and use a fixed |anchor_point_in_screen| for
-  // positioning.
-  void InitAsBubbleAtFixedLocation(gfx::NativeView parent,
-                                   int initial_apps_page,
-                                   const gfx::Point& anchor_point_in_screen,
-                                   views::BubbleBorder::Arrow arrow,
-                                   bool border_accepts_events);
+  // Initializes the widget.
+  void InitAsBubble(gfx::NativeView parent, int initial_apps_page);
 
   // Initializes the widget as a frameless window, not a bubble.
   void InitAsFramelessWindow(gfx::NativeView parent,
@@ -94,9 +87,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   void SetProfileByPath(const base::FilePath& profile_path);
 
-  void AddObserver(AppListViewObserver* observer);
-  void RemoveObserver(AppListViewObserver* observer);
-
   AppListMainView* app_list_main_view() { return app_list_main_view_; }
 
   // Gets the PaginationModel owned by this view's apps grid.
@@ -114,12 +104,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   void InitChildWidgets();
 
-  void InitAsBubbleInternal(gfx::NativeView parent,
-                            int initial_apps_page,
-                            views::BubbleBorder::Arrow arrow,
-                            bool border_accepts_events,
-                            const gfx::Vector2d& anchor_offset);
-
   // Overridden from views::BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;
@@ -133,7 +117,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Overridden from views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
-  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // Overridden from SpeechUIModelObserver:
   void OnSpeechRecognitionStateChanged(
@@ -152,7 +135,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // open.
   views::View* overlay_view_;
 
-  base::ObserverList<AppListViewObserver> observers_;
   std::unique_ptr<HideViewAnimationObserver> animation_observer_;
 
   // For UMA and testing. If non-null, triggered when the app list is painted.

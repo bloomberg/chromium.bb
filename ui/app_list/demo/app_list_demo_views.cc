@@ -22,11 +22,6 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views_content_client/views_content_client.h"
 
-#if defined(OS_WIN)
-#include "content/public/app/sandbox_helper_win.h"
-#include "sandbox/win/src/sandbox_types.h"
-#endif
-
 namespace {
 
 class AppListDemoService;
@@ -59,20 +54,14 @@ class DemoAppListViewDelegate : public app_list::test::AppListTestViewDelegate {
 
 app_list::AppListView* DemoAppListViewDelegate::InitView(
     gfx::NativeWindow window_context) {
-  gfx::NativeView container = NULL;
   // On Ash, the app list is placed into an aura::Window container. For the demo
   // use the root window context as the parent. This only works on Aura since an
   // aura::Window is also a NativeView.
-#if defined(USE_AURA)
-  container = window_context;
-#endif
+  gfx::NativeView container = window_context;
 
   view_ = new app_list::AppListView(this);
-  view_->InitAsBubbleAtFixedLocation(container,
-                                     0,
-                                     gfx::Point(300, 300),
-                                     views::BubbleBorder::FLOAT,
-                                     false /* border_accepts_events */);
+  view_->InitAsBubble(container, 0);
+  view_->SetAnchorPoint(gfx::Point(300, 300));
 
   // Populate some apps.
   GetTestModel()->PopulateApps(kInitialItems);
@@ -123,15 +112,8 @@ void ShowAppList(content::BrowserContext* browser_context,
 
 }  // namespace
 
-#if defined(OS_WIN)
-int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
-  sandbox::SandboxInterfaceInfo sandbox_info = {0};
-  content::InitializeSandboxInfo(&sandbox_info);
-  ui::ViewsContentClient views_content_client(instance, &sandbox_info);
-#else
 int main(int argc, const char** argv) {
   ui::ViewsContentClient views_content_client(argc, argv);
-#endif
 
   views_content_client.set_task(base::Bind(&ShowAppList));
   return views_content_client.RunMain();

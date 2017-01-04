@@ -122,11 +122,7 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
         container, current_apps_page,
         ScreenUtil::GetDisplayWorkAreaBoundsInParent(container));
   } else {
-    // Note: We can't center the app list until we have its dimensions, so we
-    // init at (0, 0) and then reset its anchor point.
-    view->InitAsBubbleAtFixedLocation(container, current_apps_page,
-                                      gfx::Point(), views::BubbleBorder::FLOAT,
-                                      true /* border_accepts_events */);
+    view->InitAsBubble(container, current_apps_page);
     // The app list is centered over the display of the app list button that was
     // pressed (if triggered via keyboard, this is the display with the
     // currently focused window).

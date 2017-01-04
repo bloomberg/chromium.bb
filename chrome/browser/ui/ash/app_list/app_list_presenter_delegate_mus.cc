@@ -60,16 +60,11 @@ void AppListPresenterDelegateMus::Init(app_list::AppListView* view,
 
   // Note: This would place the app list into the USER_WINDOWS container, unlike
   // in classic ash, where it has it's own container.
-  // Note: We can't center the app list until we have its dimensions, so we
-  // init at (0, 0) and then reset its anchor point.
   // TODO(mfomitchev): We are currently passing NULL for |parent|. It seems like
   // the only thing this is used for is choosing the right scale factor in
   // AppListMainView::PreloadIcons(), so we take care of that - perhaps by
   // passing the display_id or the scale factor directly
-  view->InitAsBubbleAtFixedLocation(nullptr /* parent */, current_apps_page,
-                                    gfx::Point(), views::BubbleBorder::FLOAT,
-                                    true /* border_accepts_events */);
-
+  view->InitAsBubble(nullptr /* parent */, current_apps_page);
   view->SetAnchorPoint(
       GetCenterOfDisplay(display_id, GetMinimumBoundsHeightForAppList(view)));
 

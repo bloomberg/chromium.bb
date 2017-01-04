@@ -175,11 +175,8 @@ AppListViewTestContext::AppListViewTestContext(gfx::NativeView parent) {
   view_ = new app_list::AppListView(delegate_.get());
 
   // Initialize centered around a point that ensures the window is wholly shown.
-  view_->InitAsBubbleAtFixedLocation(parent,
-                                     0,
-                                     gfx::Point(300, 300),
-                                     views::BubbleBorder::FLOAT,
-                                     false /* border_accepts_events */);
+  view_->InitAsBubble(parent, 0);
+  view_->SetAnchorPoint(gfx::Point(300, 300));
 }
 
 AppListViewTestContext::~AppListViewTestContext() {
