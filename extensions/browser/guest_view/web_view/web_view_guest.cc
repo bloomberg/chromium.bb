@@ -1375,6 +1375,16 @@ bool WebViewGuest::IsFullscreenForTabOrPending(
   return is_guest_fullscreen_;
 }
 
+void WebViewGuest::RequestToLockMouse(WebContents* web_contents,
+                                      bool user_gesture,
+                                      bool last_unlocked_by_target) {
+  RequestPointerLockPermission(
+      user_gesture, last_unlocked_by_target,
+      base::Bind(
+          base::IgnoreResult(&WebContents::GotResponseToLockMouseRequest),
+          base::Unretained(web_contents)));
+}
+
 void WebViewGuest::LoadURLWithParams(
     const GURL& url,
     const content::Referrer& referrer,

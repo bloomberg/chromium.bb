@@ -514,6 +514,7 @@ class WebViewInteractiveTest : public WebViewInteractiveTestBase,
 };
 
 class WebViewNewWindowInteractiveTest : public WebViewInteractiveTest {};
+class WebViewPointerLockInteractiveTest : public WebViewInteractiveTest {};
 
 // The tests below aren't needed in --use-cross-process-frames-for-guests.
 class WebViewContextMenuInteractiveTest : public WebViewInteractiveTestBase {};
@@ -523,7 +524,6 @@ class WebViewContextMenuInteractiveTest : public WebViewInteractiveTestBase {};
 // with WebViewInteractiveTest (see crbug.com/582562).
 class WebViewFocusInteractiveTest : public WebViewInteractiveTestBase {};
 class WebViewPopupInteractiveTest : public WebViewInteractiveTestBase {};
-class WebViewPointerLockInteractiveTest : public WebViewInteractiveTestBase {};
 class WebViewDragDropInteractiveTest : public WebViewInteractiveTestBase {};
 
 INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
@@ -532,6 +532,10 @@ INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
 
 INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
                         WebViewNewWindowInteractiveTest,
+                        testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
+                        WebViewPointerLockInteractiveTest,
                         testing::Bool());
 
 // ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MACOSX, and
@@ -544,7 +548,7 @@ INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
 
 #if defined(OS_LINUX)
 // flaky http://crbug.com/412086
-IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
+IN_PROC_BROWSER_TEST_P(WebViewPointerLockInteractiveTest,
                        DISABLED_PointerLock) {
   SetupTest("web_view/pointer_lock",
             "/extensions/platform_apps/web_view/pointer_lock/guest.html");
@@ -618,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
 }
 
 // flaky http://crbug.com/412086
-IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
+IN_PROC_BROWSER_TEST_P(WebViewPointerLockInteractiveTest,
                        DISABLED_PointerLockFocus) {
   SetupTest("web_view/pointer_lock_focus",
             "/extensions/platform_apps/web_view/pointer_lock_focus/guest.html");
@@ -1106,7 +1110,7 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, Navigation_BackForwardKeys) {
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
+IN_PROC_BROWSER_TEST_P(WebViewPointerLockInteractiveTest,
                        PointerLock_PointerLockLostWithFocus) {
   TestHelper("testPointerLockLostWithFocus",
              "web_view/pointerlock",

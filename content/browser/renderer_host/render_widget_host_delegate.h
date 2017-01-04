@@ -40,6 +40,7 @@ class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
 class RenderViewHostDelegateView;
 class TextInputManager;
+class WebContents;
 struct ScreenInfo;
 struct NativeWebKeyboardEvent;
 
@@ -248,6 +249,10 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // inside this RenderWidgetHost. If |editable| is true then the focused
   // element accepts text input.
   virtual void FocusedNodeTouched(bool editable) {}
+
+  // Return this object cast to a WebContents, if it is one. If the object is
+  // not a WebContents, returns nullptr.
+  virtual WebContents* GetAsWebContents();
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

@@ -1923,12 +1923,16 @@ void WebContentsImpl::RequestToLockMouse(
     bool user_gesture,
     bool last_unlocked_by_target,
     bool privileged) {
-  if (mouse_lock_widget_) {
-    render_widget_host->GotResponseToLockMouseRequest(false);
-    return;
+  for (WebContentsImpl* current = this; current;
+       current = current->GetOuterWebContents()) {
+    if (current->mouse_lock_widget_) {
+      render_widget_host->GotResponseToLockMouseRequest(false);
+      return;
+    }
   }
 
   if (privileged) {
+    DCHECK(!GetOuterWebContents());
     mouse_lock_widget_ = render_widget_host;
     render_widget_host->GotResponseToLockMouseRequest(true);
     return;
@@ -1944,7 +1948,11 @@ void WebContentsImpl::RequestToLockMouse(
   }
 
   if (widget_in_frame_tree && delegate_) {
-    mouse_lock_widget_ = render_widget_host;
+    for (WebContentsImpl* current = this; current;
+         current = current->GetOuterWebContents()) {
+      current->mouse_lock_widget_ = render_widget_host;
+    }
+
     delegate_->RequestToLockMouse(this, user_gesture, last_unlocked_by_target);
   } else {
     render_widget_host->GotResponseToLockMouseRequest(false);
@@ -1953,8 +1961,15 @@ void WebContentsImpl::RequestToLockMouse(
 
 void WebContentsImpl::LostMouseLock(RenderWidgetHostImpl* render_widget_host) {
   CHECK(mouse_lock_widget_);
+
+  if (mouse_lock_widget_->delegate()->GetAsWebContents() != this)
+    return mouse_lock_widget_->delegate()->LostMouseLock(render_widget_host);
+
   mouse_lock_widget_->SendMouseLockLost();
-  mouse_lock_widget_ = nullptr;
+  for (WebContentsImpl* current = this; current;
+       current = current->GetOuterWebContents()) {
+    current->mouse_lock_widget_ = nullptr;
+  }
 
   if (delegate_)
     delegate_->LostMouseLock();
@@ -3070,14 +3085,26 @@ gfx::Size WebContentsImpl::GetPreferredSize() const {
 }
 
 bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
-  if (GetBrowserPluginGuest())
+  if (!GuestMode::IsCrossProcessFrameGuest(GetWebContents()) &&
+      GetBrowserPluginGuest())
     return GetBrowserPluginGuest()->LockMouse(allowed);
 
-  if (mouse_lock_widget_ &&
-      mouse_lock_widget_->GotResponseToLockMouseRequest(allowed))
-    return true;
+  if (mouse_lock_widget_) {
+    if (mouse_lock_widget_->delegate()->GetAsWebContents() != this) {
+      return mouse_lock_widget_->delegate()
+          ->GetAsWebContents()
+          ->GotResponseToLockMouseRequest(allowed);
+    }
 
-  mouse_lock_widget_ = nullptr;
+    if (mouse_lock_widget_->GotResponseToLockMouseRequest(allowed))
+      return true;
+  }
+
+  for (WebContentsImpl* current = this; current;
+       current = current->GetOuterWebContents()) {
+    current->mouse_lock_widget_ = nullptr;
+  }
+
   return false;
 }
 

@@ -99,4 +99,8 @@ bool RenderWidgetHostDelegate::AddDomainInfoToRapporSample(
   return false;
 }
 
+WebContents* RenderWidgetHostDelegate::GetAsWebContents() {
+  return nullptr;
+}
+
 }  // namespace content
