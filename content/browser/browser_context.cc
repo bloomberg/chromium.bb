@@ -239,8 +239,6 @@ StoragePartition* BrowserContext::GetStoragePartition(
   std::string partition_name;
   bool in_memory = false;
 
-  // TODO(ajwong): After GetDefaultStoragePartition() is removed, get rid of
-  // this conditional and require that |site_instance| is non-NULL.
   if (site_instance) {
     GetContentClient()->browser()->GetStoragePartitionConfigForSite(
         browser_context, site_instance->GetSiteURL(), true,
