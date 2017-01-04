@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
+#import "chrome/browser/ui/cocoa/device_chooser_content_view_cocoa.h"
 
 #include <algorithm>
 
@@ -389,12 +389,8 @@ void ChooserContentViewController::UpdateTableView() {
   [table_view_ selectRowIndexes:selected_rows byExtendingSelection:NO];
 }
 
-@implementation ChooserContentViewCocoa
+@implementation DeviceChooserContentViewCocoa
 
-// TODO(juncai): restructure this function to be some smaller methods to
-// create the pieces for the view. By doing so, the methods that calculate
-// the frame and origins can be moved into those methods, rather than as
-// helper functions.
 - (instancetype)initWithChooserTitle:(NSString*)chooserTitle
                    chooserController:
                        (std::unique_ptr<ChooserController>)chooserController {

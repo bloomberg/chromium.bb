@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/chooser_content_view.h"
+#include "chrome/browser/ui/views/device_chooser_content_view.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
@@ -38,7 +38,7 @@ const int kSignalStrengthLevelImageIds[5] = {IDR_SIGNAL_0_BAR, IDR_SIGNAL_1_BAR,
 
 }  // namespace
 
-ChooserContentView::ChooserContentView(
+DeviceChooserContentView::DeviceChooserContentView(
     views::TableViewObserver* table_view_observer,
     std::unique_ptr<ChooserController> chooser_controller)
     : chooser_controller_(std::move(chooser_controller)),
@@ -89,17 +89,17 @@ ChooserContentView::ChooserContentView(
   AddChildView(turn_adapter_off_help_);
 }
 
-ChooserContentView::~ChooserContentView() {
+DeviceChooserContentView::~DeviceChooserContentView() {
   chooser_controller_->set_view(nullptr);
   table_view_->set_observer(nullptr);
   table_view_->SetModel(nullptr);
 }
 
-gfx::Size ChooserContentView::GetPreferredSize() const {
+gfx::Size DeviceChooserContentView::GetPreferredSize() const {
   return gfx::Size(kChooserWidth, kChooserHeight);
 }
 
-void ChooserContentView::Layout() {
+void DeviceChooserContentView::Layout() {
   gfx::Rect rect(GetContentsBounds());
   table_parent_->SetBoundsRect(rect);
   // Set the throbber in the center of the chooser.
@@ -113,14 +113,14 @@ void ChooserContentView::Layout() {
   views::View::Layout();
 }
 
-int ChooserContentView::RowCount() {
+int DeviceChooserContentView::RowCount() {
   // When there are no devices, the table contains a message saying there
   // are no devices, so the number of rows is always at least 1.
   return std::max(base::checked_cast<int>(chooser_controller_->NumOptions()),
                   1);
 }
 
-base::string16 ChooserContentView::GetText(int row, int column_id) {
+base::string16 DeviceChooserContentView::GetText(int row, int column_id) {
   int num_options = base::checked_cast<int>(chooser_controller_->NumOptions());
   if (num_options == 0) {
     DCHECK_EQ(0, row);
@@ -137,9 +137,9 @@ base::string16 ChooserContentView::GetText(int row, int column_id) {
              : text;
 }
 
-void ChooserContentView::SetObserver(ui::TableModelObserver* observer) {}
+void DeviceChooserContentView::SetObserver(ui::TableModelObserver* observer) {}
 
-gfx::ImageSkia ChooserContentView::GetIcon(int row) {
+gfx::ImageSkia DeviceChooserContentView::GetIcon(int row) {
   DCHECK(chooser_controller_->ShouldShowIconBeforeText());
 
   size_t num_options = chooser_controller_->NumOptions();
@@ -168,12 +168,12 @@ gfx::ImageSkia ChooserContentView::GetIcon(int row) {
       kSignalStrengthLevelImageIds[level]);
 }
 
-void ChooserContentView::OnOptionsInitialized() {
+void DeviceChooserContentView::OnOptionsInitialized() {
   table_view_->OnModelChanged();
   UpdateTableView();
 }
 
-void ChooserContentView::OnOptionAdded(size_t index) {
+void DeviceChooserContentView::OnOptionAdded(size_t index) {
   table_view_->OnItemsAdded(base::checked_cast<int>(index), 1);
   UpdateTableView();
   table_view_->SetVisible(true);
@@ -181,17 +181,17 @@ void ChooserContentView::OnOptionAdded(size_t index) {
   throbber_->Stop();
 }
 
-void ChooserContentView::OnOptionRemoved(size_t index) {
+void DeviceChooserContentView::OnOptionRemoved(size_t index) {
   table_view_->OnItemsRemoved(base::checked_cast<int>(index), 1);
   UpdateTableView();
 }
 
-void ChooserContentView::OnOptionUpdated(size_t index) {
+void DeviceChooserContentView::OnOptionUpdated(size_t index) {
   table_view_->OnItemsChanged(base::checked_cast<int>(index), 1);
   UpdateTableView();
 }
 
-void ChooserContentView::OnAdapterEnabledChanged(bool enabled) {
+void DeviceChooserContentView::OnAdapterEnabledChanged(bool enabled) {
   // No row is selected since the adapter status has changed.
   // This will also disable the OK button if it was enabled because
   // of a previously selected row.
@@ -216,7 +216,7 @@ void ChooserContentView::OnAdapterEnabledChanged(bool enabled) {
     GetWidget()->GetRootView()->Layout();
 }
 
-void ChooserContentView::OnRefreshStateChanged(bool refreshing) {
+void DeviceChooserContentView::OnRefreshStateChanged(bool refreshing) {
   if (refreshing) {
     // No row is selected since the chooser is refreshing. This will also
     // disable the OK button if it was enabled because of a previously
@@ -249,9 +249,9 @@ void ChooserContentView::OnRefreshStateChanged(bool refreshing) {
     GetWidget()->GetRootView()->Layout();
 }
 
-void ChooserContentView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                const gfx::Range& range,
-                                                int event_flags) {
+void DeviceChooserContentView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                      const gfx::Range& range,
+                                                      int event_flags) {
   if (label == turn_adapter_off_help_) {
     chooser_controller_->OpenAdapterOffHelpUrl();
   } else if (label == footnote_link_.get()) {
@@ -266,23 +266,24 @@ void ChooserContentView::StyledLabelLinkClicked(views::StyledLabel* label,
   }
 }
 
-base::string16 ChooserContentView::GetWindowTitle() const {
+base::string16 DeviceChooserContentView::GetWindowTitle() const {
   return chooser_controller_->GetTitle();
 }
 
-base::string16 ChooserContentView::GetDialogButtonLabel(
+base::string16 DeviceChooserContentView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK
              ? chooser_controller_->GetOkButtonLabel()
              : l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_CANCEL_BUTTON_TEXT);
 }
 
-bool ChooserContentView::IsDialogButtonEnabled(ui::DialogButton button) const {
+bool DeviceChooserContentView::IsDialogButtonEnabled(
+    ui::DialogButton button) const {
   return button != ui::DIALOG_BUTTON_OK ||
          !table_view_->selection_model().empty();
 }
 
-views::StyledLabel* ChooserContentView::footnote_link() {
+views::StyledLabel* DeviceChooserContentView::footnote_link() {
   if (chooser_controller_->ShouldShowFootnoteView()) {
     footnote_link_ = base::MakeUnique<views::StyledLabel>(help_text_, this);
     footnote_link_->set_owned_by_client();
@@ -293,22 +294,22 @@ views::StyledLabel* ChooserContentView::footnote_link() {
   return footnote_link_.get();
 }
 
-void ChooserContentView::Accept() {
+void DeviceChooserContentView::Accept() {
   std::vector<size_t> indices(
       table_view_->selection_model().selected_indices().begin(),
       table_view_->selection_model().selected_indices().end());
   chooser_controller_->Select(indices);
 }
 
-void ChooserContentView::Cancel() {
+void DeviceChooserContentView::Cancel() {
   chooser_controller_->Cancel();
 }
 
-void ChooserContentView::Close() {
+void DeviceChooserContentView::Close() {
   chooser_controller_->Close();
 }
 
-void ChooserContentView::UpdateTableView() {
+void DeviceChooserContentView::UpdateTableView() {
   if (chooser_controller_->NumOptions() == 0) {
     table_view_->OnModelChanged();
     table_view_->SetEnabled(false);
@@ -317,7 +318,7 @@ void ChooserContentView::UpdateTableView() {
   }
 }
 
-void ChooserContentView::SetGetHelpAndReScanLink() {
+void DeviceChooserContentView::SetGetHelpAndReScanLink() {
   DCHECK(footnote_link_);
   footnote_link_->SetText(help_and_re_scan_text_);
   footnote_link_->AddStyleRange(

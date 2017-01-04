@@ -38,7 +38,7 @@ class ChromeExtensionBluetoothChooser : public content::BluetoothChooser {
   void RemoveDevice(const std::string& device_id) override;
 
  private:
-  // Weak. ChooserContentView[Cocoa] owns it.
+  // Weak. DeviceChooserContentView[Cocoa] owns it.
   BluetoothChooserController* bluetooth_chooser_controller_;
   std::unique_ptr<ChromeExtensionChooserDialog> chooser_dialog_;
 

@@ -14,7 +14,7 @@
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/chooser_content_view.h"
+#include "chrome/browser/ui/views/device_chooser_content_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
@@ -72,7 +72,7 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
   void UpdateTableView() const;
 
  private:
-  ChooserContentView* chooser_content_view_;
+  DeviceChooserContentView* device_chooser_content_view_;
   BubbleReference bubble_reference_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserBubbleUiViewDelegate);
@@ -83,7 +83,7 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
     views::BubbleBorder::Arrow anchor_arrow,
     std::unique_ptr<ChooserController> chooser_controller)
     : views::BubbleDialogDelegateView(anchor_view, anchor_arrow),
-      chooser_content_view_(nullptr) {
+      device_chooser_content_view_(nullptr) {
   // ------------------------------------
   // | Chooser bubble title             |
   // | -------------------------------- |
@@ -99,59 +99,59 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   // | Get help                         |
   // ------------------------------------
 
-  chooser_content_view_ =
-      new ChooserContentView(this, std::move(chooser_controller));
+  device_chooser_content_view_ =
+      new DeviceChooserContentView(this, std::move(chooser_controller));
 }
 
 ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {}
 
 base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {
-  return chooser_content_view_->GetWindowTitle();
+  return device_chooser_content_view_->GetWindowTitle();
 }
 
 base::string16 ChooserBubbleUiViewDelegate::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return chooser_content_view_->GetDialogButtonLabel(button);
+  return device_chooser_content_view_->GetDialogButtonLabel(button);
 }
 
 bool ChooserBubbleUiViewDelegate::IsDialogButtonEnabled(
     ui::DialogButton button) const {
-  return chooser_content_view_->IsDialogButtonEnabled(button);
+  return device_chooser_content_view_->IsDialogButtonEnabled(button);
 }
 
 views::View* ChooserBubbleUiViewDelegate::CreateFootnoteView() {
-  return chooser_content_view_->footnote_link();
+  return device_chooser_content_view_->footnote_link();
 }
 
 bool ChooserBubbleUiViewDelegate::Accept() {
-  chooser_content_view_->Accept();
+  device_chooser_content_view_->Accept();
   if (bubble_reference_)
     bubble_reference_->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
   return true;
 }
 
 bool ChooserBubbleUiViewDelegate::Cancel() {
-  chooser_content_view_->Cancel();
+  device_chooser_content_view_->Cancel();
   if (bubble_reference_)
     bubble_reference_->CloseBubble(BUBBLE_CLOSE_CANCELED);
   return true;
 }
 
 bool ChooserBubbleUiViewDelegate::Close() {
-  chooser_content_view_->Close();
+  device_chooser_content_view_->Close();
   return true;
 }
 
 views::View* ChooserBubbleUiViewDelegate::GetContentsView() {
-  return chooser_content_view_;
+  return device_chooser_content_view_;
 }
 
 views::Widget* ChooserBubbleUiViewDelegate::GetWidget() {
-  return chooser_content_view_->GetWidget();
+  return device_chooser_content_view_->GetWidget();
 }
 
 const views::Widget* ChooserBubbleUiViewDelegate::GetWidget() const {
-  return chooser_content_view_->GetWidget();
+  return device_chooser_content_view_->GetWidget();
 }
 
 void ChooserBubbleUiViewDelegate::OnSelectionChanged() {
@@ -177,7 +177,7 @@ void ChooserBubbleUiViewDelegate::set_bubble_reference(
 }
 
 void ChooserBubbleUiViewDelegate::UpdateTableView() const {
-  chooser_content_view_->UpdateTableView();
+  device_chooser_content_view_->UpdateTableView();
 }
 
 //////////////////////////////////////////////////////////////////////////////

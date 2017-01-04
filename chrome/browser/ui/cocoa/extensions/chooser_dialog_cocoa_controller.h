@@ -11,15 +11,16 @@
 
 #include "base/mac/scoped_nsobject.h"
 
-@class ChooserContentViewCocoa;
 class ChooserController;
 class ChooserDialogCocoa;
+@class DeviceChooserContentViewCocoa;
 
 // Displays a chooser dialog, and notifies the ChooserController
 // of the selected option.
 @interface ChooserDialogCocoaController
     : NSViewController<NSTableViewDataSource, NSTableViewDelegate> {
-  base::scoped_nsobject<ChooserContentViewCocoa> chooserContentView_;
+  base::scoped_nsobject<DeviceChooserContentViewCocoa>
+      deviceChooserContentView_;
   NSTableView* tableView_;   // Weak.
   NSButton* connectButton_;  // Weak.
   NSButton* cancelButton_;   // Weak.
@@ -40,8 +41,8 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
 // Called when the "Cancel" button is pressed.
 - (void)onCancel:(id)sender;
 
-// Gets the |chooserContentView_|. For testing only.
-- (ChooserContentViewCocoa*)chooserContentView;
+// Gets the |deviceChooserContentView_|. For testing only.
+- (DeviceChooserContentViewCocoa*)deviceChooserContentView;
 
 @end
 

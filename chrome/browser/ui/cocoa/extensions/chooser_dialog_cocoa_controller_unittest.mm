@@ -11,7 +11,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
-#import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
+#import "chrome/browser/ui/cocoa/device_chooser_content_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa.h"
 #include "chrome/browser/ui/cocoa/spinner_view.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
@@ -70,38 +70,40 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
     chooser_dialog_controller_ =
         chooser_dialog_->chooser_dialog_cocoa_controller_.get();
     ASSERT_TRUE(chooser_dialog_controller_);
-    chooser_content_view_ = [chooser_dialog_controller_ chooserContentView];
-    ASSERT_TRUE(chooser_content_view_);
-    adapter_off_help_button_ = [chooser_content_view_ adapterOffHelpButton];
+    device_chooser_content_view_ =
+        [chooser_dialog_controller_ deviceChooserContentView];
+    ASSERT_TRUE(device_chooser_content_view_);
+    adapter_off_help_button_ =
+        [device_chooser_content_view_ adapterOffHelpButton];
     ASSERT_TRUE(adapter_off_help_button_);
-    table_view_ = [chooser_content_view_ tableView];
+    table_view_ = [device_chooser_content_view_ tableView];
     ASSERT_TRUE(table_view_);
-    spinner_ = [chooser_content_view_ spinner];
+    spinner_ = [device_chooser_content_view_ spinner];
     ASSERT_TRUE(spinner_);
-    connect_button_ = [chooser_content_view_ connectButton];
+    connect_button_ = [device_chooser_content_view_ connectButton];
     ASSERT_TRUE(connect_button_);
-    cancel_button_ = [chooser_content_view_ cancelButton];
+    cancel_button_ = [device_chooser_content_view_ cancelButton];
     ASSERT_TRUE(cancel_button_);
-    help_button_ = [chooser_content_view_ helpButton];
+    help_button_ = [device_chooser_content_view_ helpButton];
     ASSERT_TRUE(help_button_);
-    scanning_message_ = [chooser_content_view_ scanningMessage];
+    scanning_message_ = [device_chooser_content_view_ scanningMessage];
     ASSERT_TRUE(scanning_message_);
-    word_connector_ = [chooser_content_view_ wordConnector];
+    word_connector_ = [device_chooser_content_view_ wordConnector];
     ASSERT_TRUE(word_connector_);
-    rescan_button_ = [chooser_content_view_ rescanButton];
+    rescan_button_ = [device_chooser_content_view_ rescanButton];
     ASSERT_TRUE(rescan_button_);
   }
 
   void ExpectNoRowImage(int row) {
-    ASSERT_FALSE(
-        [chooser_content_view_ tableRowViewImage:static_cast<NSInteger>(row)]);
+    ASSERT_FALSE([device_chooser_content_view_
+        tableRowViewImage:static_cast<NSInteger>(row)]);
   }
 
   void ExpectSignalStrengthLevelImageIs(int row,
                                         int expected_signal_strength_level,
                                         int expected_color) {
-    NSImageView* image_view =
-        [chooser_content_view_ tableRowViewImage:static_cast<NSInteger>(row)];
+    NSImageView* image_view = [device_chooser_content_view_
+        tableRowViewImage:static_cast<NSInteger>(row)];
     ASSERT_TRUE(image_view);
     int image_id =
         expected_color == MockChooserController::kImageColorUnselected
@@ -113,8 +115,8 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
   }
 
   void ExpectRowImageIsConnectedImage(int row, SkColor expected_color) {
-    NSImageView* image_view =
-        [chooser_content_view_ tableRowViewImage:static_cast<NSInteger>(row)];
+    NSImageView* image_view = [device_chooser_content_view_
+        tableRowViewImage:static_cast<NSInteger>(row)];
     ASSERT_TRUE(image_view);
     EXPECT_TRUE(gfx::test::AreImagesEqual(
         gfx::Image(gfx::CreateVectorIcon(gfx::VectorIconId::BLUETOOTH_CONNECTED,
@@ -124,18 +126,18 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
 
   void ExpectRowTextIs(int row, NSString* expected_text) {
     EXPECT_NSEQ(expected_text,
-                [[chooser_content_view_
+                [[device_chooser_content_view_
                     tableRowViewText:static_cast<NSInteger>(row)] stringValue]);
   }
 
   void ExpectRowTextColorIs(int row, NSColor* expected_color) {
     EXPECT_NSEQ(expected_color,
-                [[chooser_content_view_
+                [[device_chooser_content_view_
                     tableRowViewText:static_cast<NSInteger>(row)] textColor]);
   }
 
   bool IsRowPaired(int row) {
-    NSTextField* paired_status = [chooser_content_view_
+    NSTextField* paired_status = [device_chooser_content_view_
         tableRowViewPairedStatus:static_cast<NSInteger>(row)];
     if (paired_status) {
       EXPECT_NSEQ(l10n_util::GetNSString(IDS_DEVICE_CHOOSER_PAIRED_STATUS_TEXT),
@@ -149,7 +151,7 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
   void ExpectPairedTextColorIs(int row, NSColor* expected_color) {
     EXPECT_NSEQ(
         expected_color,
-        [[chooser_content_view_
+        [[device_chooser_content_view_
             tableRowViewPairedStatus:static_cast<NSInteger>(row)] textColor]);
   }
 
@@ -159,7 +161,7 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
 
   MockChooserController* mock_chooser_controller_;
   ChooserDialogCocoaController* chooser_dialog_controller_;
-  ChooserContentViewCocoa* chooser_content_view_;
+  DeviceChooserContentViewCocoa* device_chooser_content_view_;
   NSButton* adapter_off_help_button_;
   NSTableView* table_view_;
   SpinnerView* spinner_;

@@ -33,9 +33,9 @@ class ChooserBubbleDelegate : public BubbleDelegate {
   const content::RenderFrameHost* const owning_frame_;
   Browser* browser_;
   // |chooser_controller_| is not owned by this class, it is owned by
-  // ChooserContentView[Cocoa].
+  // DeviceChooserContentView[Cocoa].
   // This field only temporarily owns the ChooserController. It is moved
-  // into the ChooserContentView[Cocoa] when BuildBubbleUi() is called
+  // into the DeviceChooserContentView[Cocoa] when BuildBubbleUi() is called
   // and the bubble is shown.
   std::unique_ptr<ChooserController> chooser_controller_;
 

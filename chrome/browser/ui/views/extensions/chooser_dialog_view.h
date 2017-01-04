@@ -11,8 +11,8 @@
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class ChooserContentView;
 class ChooserController;
+class DeviceChooserContentView;
 
 // Displays a chooser view as a modal dialog constrained
 // to the window/tab displaying the given web contents.
@@ -47,10 +47,10 @@ class ChooserDialogView : public views::DialogDelegateView,
   // views::TableViewObserver:
   void OnSelectionChanged() override;
 
-  ChooserContentView* chooser_content_view_for_test() const;
+  DeviceChooserContentView* device_chooser_content_view_for_test() const;
 
  private:
-  ChooserContentView* chooser_content_view_;
+  DeviceChooserContentView* device_chooser_content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserDialogView);
 };

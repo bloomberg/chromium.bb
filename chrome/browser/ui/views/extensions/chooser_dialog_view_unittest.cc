@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
-#include "chrome/browser/ui/views/chooser_content_view.h"
+#include "chrome/browser/ui/views/device_chooser_content_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -36,8 +36,8 @@ class ChooserDialogViewTest : public views::ViewsTestBase {
     std::unique_ptr<ChooserDialogView> chooser_dialog_view(
         new ChooserDialogView(std::move(mock_chooser_controller)));
     chooser_dialog_view_ = chooser_dialog_view.get();
-    table_view_ =
-        chooser_dialog_view_->chooser_content_view_for_test()->table_view_;
+    table_view_ = chooser_dialog_view_->device_chooser_content_view_for_test()
+                      ->table_view_;
     ASSERT_TRUE(table_view_);
 
     views::Widget::InitParams params =

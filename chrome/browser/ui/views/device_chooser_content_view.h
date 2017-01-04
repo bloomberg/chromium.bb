@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_CHOOSER_CONTENT_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_CHOOSER_CONTENT_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_DEVICE_CHOOSER_CONTENT_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_DEVICE_CHOOSER_CONTENT_VIEW_H_
 
 #include <memory>
 
@@ -24,17 +24,15 @@ class Throbber;
 
 // A bubble or dialog view for choosing among several options in a table.
 // Used for WebUSB/WebBluetooth device selection for Chrome and extensions.
-//
-// TODO(juncai): change ChooserContentView class name to be more specific.
-// https://crbug.com/651568
-class ChooserContentView : public views::View,
-                           public ui::TableModel,
-                           public ChooserController::View,
-                           public views::StyledLabelListener {
+class DeviceChooserContentView : public views::View,
+                                 public ui::TableModel,
+                                 public ChooserController::View,
+                                 public views::StyledLabelListener {
  public:
-  ChooserContentView(views::TableViewObserver* table_view_observer,
-                     std::unique_ptr<ChooserController> chooser_controller);
-  ~ChooserContentView() override;
+  DeviceChooserContentView(
+      views::TableViewObserver* table_view_observer,
+      std::unique_ptr<ChooserController> chooser_controller);
+  ~DeviceChooserContentView() override;
 
   // views::View:
   gfx::Size GetPreferredSize() const override;
@@ -70,16 +68,16 @@ class ChooserContentView : public views::View,
   void SetGetHelpAndReScanLink();
 
  private:
-  friend class ChooserContentViewTest;
   friend class ChooserDialogViewTest;
-  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest, InitialState);
-  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest, AdapterOnAndOffAndOn);
-  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest,
+  friend class DeviceChooserContentViewTest;
+  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest, InitialState);
+  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest, AdapterOnAndOffAndOn);
+  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest,
                            DiscoveringAndNoOptionAddedAndIdle);
-  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest,
+  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest,
                            DiscoveringAndOneOptionAddedAndSelectedAndIdle);
-  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest, ClickRescanLink);
-  FRIEND_TEST_ALL_PREFIXES(ChooserContentViewTest, ClickGetHelpLink);
+  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest, ClickRescanLink);
+  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest, ClickGetHelpLink);
 
   std::unique_ptr<ChooserController> chooser_controller_;
   views::TableView* table_view_ = nullptr;  // Weak.
@@ -93,7 +91,7 @@ class ChooserContentView : public views::View,
   gfx::Range help_text_range_;
   gfx::Range re_scan_text_range_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChooserContentView);
+  DISALLOW_COPY_AND_ASSIGN(DeviceChooserContentView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_CHOOSER_CONTENT_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_DEVICE_CHOOSER_CONTENT_VIEW_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/chooser_content_view.h"
+#include "chrome/browser/ui/views/device_chooser_content_view.h"
 
 #include <memory>
 
@@ -38,9 +38,9 @@ base::string16 GetPairedText(const std::string& device_name) {
 
 }  // namespace
 
-class ChooserContentViewTest : public views::ViewsTestBase {
+class DeviceChooserContentViewTest : public views::ViewsTestBase {
  public:
-  ChooserContentViewTest() {}
+  DeviceChooserContentViewTest() {}
 
   // views::ViewsTestBase:
   void SetUp() override {
@@ -49,23 +49,24 @@ class ChooserContentViewTest : public views::ViewsTestBase {
         new MockChooserController(nullptr));
     mock_chooser_controller_ = mock_chooser_controller.get();
     mock_table_view_observer_ = base::MakeUnique<MockTableViewObserver>();
-    chooser_content_view_ = base::MakeUnique<ChooserContentView>(
+    device_chooser_content_view_ = base::MakeUnique<DeviceChooserContentView>(
         mock_table_view_observer_.get(), std::move(mock_chooser_controller));
-    table_view_ = chooser_content_view_->table_view_;
+    table_view_ = device_chooser_content_view_->table_view_;
     ASSERT_TRUE(table_view_);
     table_model_ = table_view_->model();
     ASSERT_TRUE(table_model_);
-    throbber_ = chooser_content_view_->throbber_;
+    throbber_ = device_chooser_content_view_->throbber_;
     ASSERT_TRUE(throbber_);
-    turn_adapter_off_help_ = chooser_content_view_->turn_adapter_off_help_;
+    turn_adapter_off_help_ =
+        device_chooser_content_view_->turn_adapter_off_help_;
     ASSERT_TRUE(turn_adapter_off_help_);
-    footnote_link_ = chooser_content_view_->footnote_link();
+    footnote_link_ = device_chooser_content_view_->footnote_link();
     ASSERT_TRUE(footnote_link_);
   }
 
  protected:
   std::unique_ptr<MockTableViewObserver> mock_table_view_observer_;
-  std::unique_ptr<ChooserContentView> chooser_content_view_;
+  std::unique_ptr<DeviceChooserContentView> device_chooser_content_view_;
   MockChooserController* mock_chooser_controller_ = nullptr;
   views::TableView* table_view_ = nullptr;
   ui::TableModel* table_model_ = nullptr;
@@ -74,10 +75,10 @@ class ChooserContentViewTest : public views::ViewsTestBase {
   views::StyledLabel* footnote_link_ = nullptr;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChooserContentViewTest);
+  DISALLOW_COPY_AND_ASSIGN(DeviceChooserContentViewTest);
 };
 
-TEST_F(ChooserContentViewTest, InitialState) {
+TEST_F(DeviceChooserContentViewTest, InitialState) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(0);
 
   EXPECT_TRUE(table_view_->visible());
@@ -94,10 +95,10 @@ TEST_F(ChooserContentViewTest, InitialState) {
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
   EXPECT_FALSE(throbber_->visible());
   EXPECT_FALSE(turn_adapter_off_help_->visible());
-  EXPECT_EQ(chooser_content_view_->help_text_, footnote_link_->text());
+  EXPECT_EQ(device_chooser_content_view_->help_text_, footnote_link_->text());
 }
 
-TEST_F(ChooserContentViewTest, AddOption) {
+TEST_F(DeviceChooserContentViewTest, AddOption) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(0);
 
   mock_chooser_controller_->OptionAdded(
@@ -132,7 +133,7 @@ TEST_F(ChooserContentViewTest, AddOption) {
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
 }
 
-TEST_F(ChooserContentViewTest, RemoveOption) {
+TEST_F(DeviceChooserContentViewTest, RemoveOption) {
   // Called from TableView::OnItemsRemoved().
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(3);
 
@@ -185,7 +186,7 @@ TEST_F(ChooserContentViewTest, RemoveOption) {
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
 }
 
-TEST_F(ChooserContentViewTest, UpdateOption) {
+TEST_F(DeviceChooserContentViewTest, UpdateOption) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(0);
 
   mock_chooser_controller_->OptionAdded(
@@ -214,7 +215,7 @@ TEST_F(ChooserContentViewTest, UpdateOption) {
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
 }
 
-TEST_F(ChooserContentViewTest, AddAndRemoveOption) {
+TEST_F(DeviceChooserContentViewTest, AddAndRemoveOption) {
   // Called from TableView::OnItemsRemoved().
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(3);
 
@@ -244,7 +245,7 @@ TEST_F(ChooserContentViewTest, AddAndRemoveOption) {
   EXPECT_EQ(1, table_view_->RowCount());
 }
 
-TEST_F(ChooserContentViewTest, UpdateAndRemoveTheUpdatedOption) {
+TEST_F(DeviceChooserContentViewTest, UpdateAndRemoveTheUpdatedOption) {
   // Called from TableView::OnItemsRemoved().
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(1);
 
@@ -276,7 +277,7 @@ TEST_F(ChooserContentViewTest, UpdateAndRemoveTheUpdatedOption) {
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
 }
 
-TEST_F(ChooserContentViewTest, SelectAndDeselectAnOption) {
+TEST_F(DeviceChooserContentViewTest, SelectAndDeselectAnOption) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(4);
 
   mock_chooser_controller_->OptionAdded(
@@ -312,7 +313,7 @@ TEST_F(ChooserContentViewTest, SelectAndDeselectAnOption) {
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
 }
 
-TEST_F(ChooserContentViewTest, SelectAnOptionAndThenSelectAnotherOption) {
+TEST_F(DeviceChooserContentViewTest, SelectAnOptionAndThenSelectAnotherOption) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(3);
 
   mock_chooser_controller_->OptionAdded(
@@ -343,7 +344,7 @@ TEST_F(ChooserContentViewTest, SelectAnOptionAndThenSelectAnotherOption) {
   EXPECT_EQ(2, table_view_->FirstSelectedRow());
 }
 
-TEST_F(ChooserContentViewTest, SelectAnOptionAndRemoveAnotherOption) {
+TEST_F(DeviceChooserContentViewTest, SelectAnOptionAndRemoveAnotherOption) {
   // Called one time from TableView::Select() and two times from
   // TableView::OnItemsRemoved().
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(3);
@@ -380,7 +381,7 @@ TEST_F(ChooserContentViewTest, SelectAnOptionAndRemoveAnotherOption) {
   EXPECT_EQ(0, table_view_->FirstSelectedRow());
 }
 
-TEST_F(ChooserContentViewTest, SelectAnOptionAndRemoveTheSelectedOption) {
+TEST_F(DeviceChooserContentViewTest, SelectAnOptionAndRemoveTheSelectedOption) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(2);
 
   mock_chooser_controller_->OptionAdded(
@@ -408,7 +409,7 @@ TEST_F(ChooserContentViewTest, SelectAnOptionAndRemoveTheSelectedOption) {
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
 }
 
-TEST_F(ChooserContentViewTest, SelectAnOptionAndUpdateTheSelectedOption) {
+TEST_F(DeviceChooserContentViewTest, SelectAnOptionAndUpdateTheSelectedOption) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(1);
 
   mock_chooser_controller_->OptionAdded(
@@ -440,7 +441,7 @@ TEST_F(ChooserContentViewTest, SelectAnOptionAndUpdateTheSelectedOption) {
   EXPECT_EQ(base::ASCIIToUTF16("c"), table_model_->GetText(2, 0));
 }
 
-TEST_F(ChooserContentViewTest,
+TEST_F(DeviceChooserContentViewTest,
        AddAnOptionAndSelectItAndRemoveTheSelectedOption) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(2);
 
@@ -470,7 +471,7 @@ TEST_F(ChooserContentViewTest,
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
 }
 
-TEST_F(ChooserContentViewTest, AdapterOnAndOffAndOn) {
+TEST_F(DeviceChooserContentViewTest, AdapterOnAndOffAndOn) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(2);
 
   mock_chooser_controller_->OnAdapterPresenceChanged(
@@ -489,7 +490,7 @@ TEST_F(ChooserContentViewTest, AdapterOnAndOffAndOn) {
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
   EXPECT_FALSE(throbber_->visible());
   EXPECT_FALSE(turn_adapter_off_help_->visible());
-  EXPECT_EQ(chooser_content_view_->help_and_re_scan_text_,
+  EXPECT_EQ(device_chooser_content_view_->help_and_re_scan_text_,
             footnote_link_->text());
 
   mock_chooser_controller_->OptionAdded(
@@ -512,7 +513,7 @@ TEST_F(ChooserContentViewTest, AdapterOnAndOffAndOn) {
   EXPECT_FALSE(table_view_->visible());
   EXPECT_FALSE(throbber_->visible());
   EXPECT_TRUE(turn_adapter_off_help_->visible());
-  EXPECT_EQ(chooser_content_view_->help_text_, footnote_link_->text());
+  EXPECT_EQ(device_chooser_content_view_->help_text_, footnote_link_->text());
 
   mock_chooser_controller_->OnAdapterPresenceChanged(
       content::BluetoothChooser::AdapterPresence::POWERED_ON);
@@ -527,11 +528,11 @@ TEST_F(ChooserContentViewTest, AdapterOnAndOffAndOn) {
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
   EXPECT_FALSE(throbber_->visible());
   EXPECT_FALSE(turn_adapter_off_help_->visible());
-  EXPECT_EQ(chooser_content_view_->help_and_re_scan_text_,
+  EXPECT_EQ(device_chooser_content_view_->help_and_re_scan_text_,
             footnote_link_->text());
 }
 
-TEST_F(ChooserContentViewTest, DiscoveringAndNoOptionAddedAndIdle) {
+TEST_F(DeviceChooserContentViewTest, DiscoveringAndNoOptionAddedAndIdle) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(2);
 
   mock_chooser_controller_->OptionAdded(
@@ -551,7 +552,7 @@ TEST_F(ChooserContentViewTest, DiscoveringAndNoOptionAddedAndIdle) {
       content::BluetoothChooser::DiscoveryState::DISCOVERING);
   EXPECT_FALSE(table_view_->visible());
   EXPECT_TRUE(throbber_->visible());
-  EXPECT_EQ(chooser_content_view_->help_and_scanning_text_,
+  EXPECT_EQ(device_chooser_content_view_->help_and_scanning_text_,
             footnote_link_->text());
 
   mock_chooser_controller_->OnDiscoveryStateChanged(
@@ -569,11 +570,12 @@ TEST_F(ChooserContentViewTest, DiscoveringAndNoOptionAddedAndIdle) {
   EXPECT_EQ(0UL, table_view_->selection_model().size());
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
   EXPECT_FALSE(throbber_->visible());
-  EXPECT_EQ(chooser_content_view_->help_and_re_scan_text_,
+  EXPECT_EQ(device_chooser_content_view_->help_and_re_scan_text_,
             footnote_link_->text());
 }
 
-TEST_F(ChooserContentViewTest, DiscoveringAndOneOptionAddedAndSelectedAndIdle) {
+TEST_F(DeviceChooserContentViewTest,
+       DiscoveringAndOneOptionAddedAndSelectedAndIdle) {
   EXPECT_CALL(*mock_table_view_observer_, OnSelectionChanged()).Times(3);
 
   mock_chooser_controller_->OptionAdded(
@@ -603,7 +605,7 @@ TEST_F(ChooserContentViewTest, DiscoveringAndOneOptionAddedAndSelectedAndIdle) {
   EXPECT_EQ(0UL, table_view_->selection_model().size());
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
   EXPECT_FALSE(throbber_->visible());
-  EXPECT_EQ(chooser_content_view_->help_and_scanning_text_,
+  EXPECT_EQ(device_chooser_content_view_->help_and_scanning_text_,
             footnote_link_->text());
   table_view_->Select(0);
   EXPECT_EQ(1UL, table_view_->selection_model().size());
@@ -619,23 +621,23 @@ TEST_F(ChooserContentViewTest, DiscoveringAndOneOptionAddedAndSelectedAndIdle) {
   EXPECT_EQ(1UL, table_view_->selection_model().size());
   EXPECT_EQ(0, table_view_->FirstSelectedRow());
   EXPECT_FALSE(throbber_->visible());
-  EXPECT_EQ(chooser_content_view_->help_and_re_scan_text_,
+  EXPECT_EQ(device_chooser_content_view_->help_and_re_scan_text_,
             footnote_link_->text());
 }
 
-TEST_F(ChooserContentViewTest, ClickAdapterOffHelpLink) {
+TEST_F(DeviceChooserContentViewTest, ClickAdapterOffHelpLink) {
   EXPECT_CALL(*mock_chooser_controller_, OpenAdapterOffHelpUrl()).Times(1);
   turn_adapter_off_help_->LinkClicked(nullptr, 0);
 }
 
-TEST_F(ChooserContentViewTest, ClickRescanLink) {
+TEST_F(DeviceChooserContentViewTest, ClickRescanLink) {
   EXPECT_CALL(*mock_chooser_controller_, RefreshOptions()).Times(1);
-  chooser_content_view_->StyledLabelLinkClicked(
-      footnote_link_, chooser_content_view_->re_scan_text_range_, 0);
+  device_chooser_content_view_->StyledLabelLinkClicked(
+      footnote_link_, device_chooser_content_view_->re_scan_text_range_, 0);
 }
 
-TEST_F(ChooserContentViewTest, ClickGetHelpLink) {
+TEST_F(DeviceChooserContentViewTest, ClickGetHelpLink) {
   EXPECT_CALL(*mock_chooser_controller_, OpenHelpCenterUrl()).Times(1);
-  chooser_content_view_->StyledLabelLinkClicked(
-      footnote_link_, chooser_content_view_->help_text_range_, 0);
+  device_chooser_content_view_->StyledLabelLinkClicked(
+      footnote_link_, device_chooser_content_view_->help_text_range_, 0);
 }

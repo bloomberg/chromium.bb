@@ -31,7 +31,7 @@ class BluetoothChooserDesktop : public content::BluetoothChooser {
   void RemoveDevice(const std::string& device_id) override;
 
  private:
-  // Weak. ChooserContentView[Cocoa] owns it.
+  // Weak. DeviceChooserContentView[Cocoa] owns it.
   BluetoothChooserController* bluetooth_chooser_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothChooserDesktop);
