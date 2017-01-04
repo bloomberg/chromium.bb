@@ -25,6 +25,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_types.h"
@@ -69,9 +70,15 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #endif
 
+DECLARE_WINDOW_PROPERTY_TYPE(views::internal::NativeWidgetPrivate*)
+
 namespace views {
 
 namespace {
+
+DEFINE_WINDOW_PROPERTY_KEY(internal::NativeWidgetPrivate*,
+                           kNativeWidgetPrivateKey,
+                           nullptr);
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
   window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
@@ -110,7 +117,7 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate,
 void NativeWidgetAura::RegisterNativeWidgetForWindow(
       internal::NativeWidgetPrivate* native_widget,
       aura::Window* window) {
-  window->set_user_data(native_widget);
+  window->SetProperty(kNativeWidgetPrivateKey, native_widget);
 }
 
 // static
@@ -1103,15 +1110,13 @@ NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeView(
     gfx::NativeView native_view) {
-  // Cast must match type supplied to RegisterNativeWidgetForWindow().
-  return reinterpret_cast<NativeWidgetPrivate*>(native_view->user_data());
+  return native_view->GetProperty(kNativeWidgetPrivateKey);
 }
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
     gfx::NativeWindow native_window) {
-  // Cast must match type supplied to RegisterNativeWidgetForWindow().
-  return reinterpret_cast<NativeWidgetPrivate*>(native_window->user_data());
+  return native_window->GetProperty(kNativeWidgetPrivateKey);
 }
 
 // static

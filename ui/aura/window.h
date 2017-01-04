@@ -135,10 +135,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void set_host(WindowTreeHost* host) { host_ = host; }
   bool IsRootWindow() const { return !!host_; }
 
-  // The Window does not own this object.
-  void set_user_data(void* user_data) { user_data_ = user_data; }
-  void* user_data() const { return user_data_; }
-
   // Changes the visibility of the window.
   void Show();
   void Hide();
@@ -506,8 +502,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   std::unique_ptr<LayoutManager> layout_manager_;
   std::unique_ptr<ui::EventTargeter> targeter_;
-
-  void* user_data_;
 
   // Makes the window pass all events through to any windows behind it.
   bool ignore_events_;

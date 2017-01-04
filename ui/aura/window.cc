@@ -59,7 +59,6 @@ Window::Window(WindowDelegate* delegate, std::unique_ptr<WindowPort> port)
       visible_(false),
       id_(kInitialId),
       transparent_(false),
-      user_data_(nullptr),
       ignore_events_(false),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
