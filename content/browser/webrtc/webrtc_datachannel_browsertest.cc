@@ -16,19 +16,11 @@ const char kDataChannelHtmlFile[] = "/media/datachannel_test.html";
 
 namespace content {
 
-#if defined(OS_WIN) || (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
-// GC does not work correctly in some cases under Android ASAN.
-// See https://crbug.com/611620.
-// This test has become flaky on Windows. See https://crbug.com/616388
-#define MAYBE_WebRtcDataChannelTest DISABLED_WebRtcDataChannelTest
-#else
-#define MAYBE_WebRtcDataChannelTest WebRtcDataChannelTest
-#endif
-
-class MAYBE_WebRtcDataChannelTest : public WebRtcContentBrowserTestBase {
+// This test is flaky, see https://crbug.com/611620.
+class DISABLED_WebRtcDataChannelTest : public WebRtcContentBrowserTestBase {
  public:
-  MAYBE_WebRtcDataChannelTest() {}
-  ~MAYBE_WebRtcDataChannelTest() override {}
+  DISABLED_WebRtcDataChannelTest() {}
+  ~DISABLED_WebRtcDataChannelTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
@@ -38,10 +30,10 @@ class MAYBE_WebRtcDataChannelTest : public WebRtcContentBrowserTestBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_WebRtcDataChannelTest);
+  DISALLOW_COPY_AND_ASSIGN(DISABLED_WebRtcDataChannelTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataChannelTest, DataChannelGC) {
+IN_PROC_BROWSER_TEST_F(DISABLED_WebRtcDataChannelTest, DataChannelGC) {
   MakeTypicalCall("testDataChannelGC();", kDataChannelHtmlFile);
 }
 
