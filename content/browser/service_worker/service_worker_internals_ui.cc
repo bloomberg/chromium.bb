@@ -433,16 +433,16 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
   scoped_refptr<ServiceWorkerContextWrapper> context =
       static_cast<ServiceWorkerContextWrapper*>(
           partition->GetServiceWorkerContext());
-  if (PartitionObserver* observer =
-          observers_.get(reinterpret_cast<uintptr_t>(partition))) {
-    partition_id = observer->partition_id();
+  auto it = observers_.find(reinterpret_cast<uintptr_t>(partition));
+  if (it != observers_.end()) {
+    partition_id = it->second->partition_id();
   } else {
     partition_id = next_partition_id_++;
     std::unique_ptr<PartitionObserver> new_observer(
         new PartitionObserver(partition_id, web_ui()));
     context->AddObserver(new_observer.get());
-    observers_.set(reinterpret_cast<uintptr_t>(partition),
-                   std::move(new_observer));
+    observers_[reinterpret_cast<uintptr_t>(partition)] =
+        std::move(new_observer);
   }
 
   BrowserThread::PostTask(
@@ -455,10 +455,11 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
 
 void ServiceWorkerInternalsUI::RemoveObserverFromStoragePartition(
     StoragePartition* partition) {
-  std::unique_ptr<PartitionObserver> observer(
-      observers_.take_and_erase(reinterpret_cast<uintptr_t>(partition)));
-  if (!observer.get())
+  auto it = observers_.find(reinterpret_cast<uintptr_t>(partition));
+  if (it == observers_.end())
     return;
+  std::unique_ptr<PartitionObserver> observer = std::move(it->second);
+  observers_.erase(it);
   scoped_refptr<ServiceWorkerContextWrapper> context =
       static_cast<ServiceWorkerContextWrapper*>(
           partition->GetServiceWorkerContext());
@@ -469,9 +470,8 @@ void ServiceWorkerInternalsUI::FindContext(
     int partition_id,
     StoragePartition** result_partition,
     StoragePartition* storage_partition) const {
-  PartitionObserver* observer =
-      observers_.get(reinterpret_cast<uintptr_t>(storage_partition));
-  if (observer && partition_id == observer->partition_id()) {
+  auto it = observers_.find(reinterpret_cast<uintptr_t>(storage_partition));
+  if (it != observers_.end() && partition_id == it->second->partition_id()) {
     *result_partition = storage_partition;
   }
 }

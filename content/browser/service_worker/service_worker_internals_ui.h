@@ -7,8 +7,8 @@
 
 #include <memory>
 #include <set>
+#include <unordered_map>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -66,8 +66,7 @@ class ServiceWorkerInternalsUI
                            const GURL& scope,
                            const StatusCallback& callback) const;
 
-  base::ScopedPtrHashMap<uintptr_t, std::unique_ptr<PartitionObserver>>
-      observers_;
+  std::unordered_map<uintptr_t, std::unique_ptr<PartitionObserver>> observers_;
   int next_partition_id_;
 };
 

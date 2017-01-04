@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_info.h"
 
@@ -54,8 +54,8 @@ class ServiceWorkerContextWatcher
 
   void StoreRegistrationInfo(
       const ServiceWorkerRegistrationInfo& registration,
-      base::ScopedPtrHashMap<int64_t,
-                             std::unique_ptr<ServiceWorkerRegistrationInfo>>*
+      std::unordered_map<int64_t,
+                         std::unique_ptr<ServiceWorkerRegistrationInfo>>*
           info_map);
   void StoreVersionInfo(const ServiceWorkerVersionInfo& version);
 
@@ -102,7 +102,7 @@ class ServiceWorkerContextWatcher
   void OnRegistrationDeleted(int64_t registration_id,
                              const GURL& pattern) override;
 
-  base::ScopedPtrHashMap<int64_t, std::unique_ptr<ServiceWorkerVersionInfo>>
+  std::unordered_map<int64_t, std::unique_ptr<ServiceWorkerVersionInfo>>
       version_info_map_;
   scoped_refptr<ServiceWorkerContextWrapper> context_;
   WorkerRegistrationUpdatedCallback registration_callback_;

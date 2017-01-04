@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/containers/scoped_ptr_hash_map.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -66,8 +66,7 @@ void ServiceWorkerContextWatcher::OnStoredRegistrationsOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context_->AddObserver(this);
 
-  base::ScopedPtrHashMap<int64_t,
-                         std::unique_ptr<ServiceWorkerRegistrationInfo>>
+  std::unordered_map<int64_t, std::unique_ptr<ServiceWorkerRegistrationInfo>>
       registration_info_map;
   for (const auto& registration : stored_registrations)
     StoreRegistrationInfo(registration, &registration_info_map);
@@ -109,15 +108,13 @@ ServiceWorkerContextWatcher::~ServiceWorkerContextWatcher() {
 
 void ServiceWorkerContextWatcher::StoreRegistrationInfo(
     const ServiceWorkerRegistrationInfo& registration_info,
-    base::ScopedPtrHashMap<int64_t,
-                           std::unique_ptr<ServiceWorkerRegistrationInfo>>*
+    std::unordered_map<int64_t, std::unique_ptr<ServiceWorkerRegistrationInfo>>*
         info_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (registration_info.registration_id == kInvalidServiceWorkerRegistrationId)
     return;
-  info_map->set(registration_info.registration_id,
-                std::unique_ptr<ServiceWorkerRegistrationInfo>(
-                    new ServiceWorkerRegistrationInfo(registration_info)));
+  (*info_map)[registration_info.registration_id] =
+      base::MakeUnique<ServiceWorkerRegistrationInfo>(registration_info);
   StoreVersionInfo(registration_info.active_version);
   StoreVersionInfo(registration_info.waiting_version);
   StoreVersionInfo(registration_info.installing_version);
@@ -128,9 +125,8 @@ void ServiceWorkerContextWatcher::StoreVersionInfo(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (version_info.version_id == kInvalidServiceWorkerVersionId)
     return;
-  version_info_map_.set(version_info.version_id,
-                        std::unique_ptr<ServiceWorkerVersionInfo>(
-                            new ServiceWorkerVersionInfo(version_info)));
+  version_info_map_[version_info.version_id] =
+      base::MakeUnique<ServiceWorkerVersionInfo>(version_info);
 }
 
 void ServiceWorkerContextWatcher::SendRegistrationInfo(
@@ -168,24 +164,26 @@ void ServiceWorkerContextWatcher::OnNewLiveRegistration(int64_t registration_id,
 void ServiceWorkerContextWatcher::OnNewLiveVersion(
     const ServiceWorkerVersionInfo& version_info) {
   int64_t version_id = version_info.version_id;
-  if (ServiceWorkerVersionInfo* version = version_info_map_.get(version_id)) {
-    DCHECK_EQ(version->registration_id, version_info.registration_id);
-    DCHECK_EQ(version->script_url, version_info.script_url);
+  auto it = version_info_map_.find(version_id);
+  if (it != version_info_map_.end()) {
+    DCHECK_EQ(it->second->registration_id, version_info.registration_id);
+    DCHECK_EQ(it->second->script_url, version_info.script_url);
     return;
   }
 
-  std::unique_ptr<ServiceWorkerVersionInfo> version(
-      new ServiceWorkerVersionInfo(version_info));
+  std::unique_ptr<ServiceWorkerVersionInfo> version =
+      base::MakeUnique<ServiceWorkerVersionInfo>(version_info);
   SendVersionInfo(*version);
   if (!IsStoppedAndRedundant(*version))
-    version_info_map_.set(version_id, std::move(version));
+    version_info_map_[version_id] = std::move(version);
 }
 
 void ServiceWorkerContextWatcher::OnRunningStateChanged(
     int64_t version_id,
     content::EmbeddedWorkerStatus running_status) {
-  ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
-  DCHECK(version);
+  auto it = version_info_map_.find(version_id);
+  DCHECK(it != version_info_map_.end());
+  ServiceWorkerVersionInfo* version = it->second.get();
   if (version->running_status == running_status)
     return;
   version->running_status = running_status;
@@ -197,8 +195,9 @@ void ServiceWorkerContextWatcher::OnRunningStateChanged(
 void ServiceWorkerContextWatcher::OnVersionStateChanged(
     int64_t version_id,
     content::ServiceWorkerVersion::Status status) {
-  ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
-  DCHECK(version);
+  auto it = version_info_map_.find(version_id);
+  DCHECK(it != version_info_map_.end());
+  ServiceWorkerVersionInfo* version = it->second.get();
   if (version->status == status)
     return;
   version->status = status;
@@ -211,8 +210,9 @@ void ServiceWorkerContextWatcher::OnVersionDevToolsRoutingIdChanged(
     int64_t version_id,
     int process_id,
     int devtools_agent_route_id) {
-  ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
-  DCHECK(version);
+  auto it = version_info_map_.find(version_id);
+  DCHECK(it != version_info_map_.end());
+  ServiceWorkerVersionInfo* version = it->second.get();
   if (version->process_id == process_id &&
       version->devtools_agent_route_id == devtools_agent_route_id) {
     return;
@@ -228,8 +228,9 @@ void ServiceWorkerContextWatcher::OnMainScriptHttpResponseInfoSet(
     int64_t version_id,
     base::Time script_response_time,
     base::Time script_last_modified) {
-  ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
-  DCHECK(version);
+  auto it = version_info_map_.find(version_id);
+  DCHECK(it != version_info_map_.end());
+  ServiceWorkerVersionInfo* version = it->second.get();
   version->script_response_time = script_response_time;
   version->script_last_modified = script_last_modified;
   SendVersionInfo(*version);
@@ -240,8 +241,9 @@ void ServiceWorkerContextWatcher::OnErrorReported(int64_t version_id,
                                                   int thread_id,
                                                   const ErrorInfo& info) {
   int64_t registration_id = kInvalidServiceWorkerRegistrationId;
-  if (ServiceWorkerVersionInfo* version = version_info_map_.get(version_id))
-    registration_id = version->registration_id;
+  auto it = version_info_map_.find(version_id);
+  if (it != version_info_map_.end())
+    registration_id = it->second->registration_id;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(error_callback_, registration_id, version_id, info));
@@ -255,8 +257,9 @@ void ServiceWorkerContextWatcher::OnReportConsoleMessage(
   if (message.message_level != CONSOLE_MESSAGE_LEVEL_ERROR)
     return;
   int64_t registration_id = kInvalidServiceWorkerRegistrationId;
-  if (ServiceWorkerVersionInfo* version = version_info_map_.get(version_id))
-    registration_id = version->registration_id;
+  auto it = version_info_map_.find(version_id);
+  if (it != version_info_map_.end())
+    registration_id = it->second->registration_id;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(error_callback_, registration_id, version_id,
@@ -270,8 +273,9 @@ void ServiceWorkerContextWatcher::OnControlleeAdded(
     int process_id,
     int route_id,
     ServiceWorkerProviderType type) {
-  ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
-  DCHECK(version);
+  auto it = version_info_map_.find(version_id);
+  DCHECK(it != version_info_map_.end());
+  ServiceWorkerVersionInfo* version = it->second.get();
   version->clients[uuid] =
       ServiceWorkerVersionInfo::ClientInfo(process_id, route_id, type);
   SendVersionInfo(*version);
@@ -279,9 +283,10 @@ void ServiceWorkerContextWatcher::OnControlleeAdded(
 
 void ServiceWorkerContextWatcher::OnControlleeRemoved(int64_t version_id,
                                                       const std::string& uuid) {
-  ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
-  if (!version)
+  auto it = version_info_map_.find(version_id);
+  if (it == version_info_map_.end())
     return;
+  ServiceWorkerVersionInfo* version = it->second.get();
   version->clients.erase(uuid);
   SendVersionInfo(*version);
 }
