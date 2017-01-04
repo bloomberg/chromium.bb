@@ -32,6 +32,8 @@ struct MainThreadScrollingReason {
     kHandlingScrollFromMainThread = 1 << 13,
     kCustomScrollbarScrolling = 1 << 15,
     kHasOpacity = 1 << 16,
+    kHasTransform = 1 << 17,
+    kBackgroundNotOpaqueInRect = 1 << 18,
 
     // Transient scrolling reasons. These are computed for each scroll begin.
     kNonFastScrollableRegion = 1 << 5,
@@ -43,7 +45,7 @@ struct MainThreadScrollingReason {
     kPageBasedScrolling = 1 << 12,
 
     // The number of flags in this struct (excluding itself).
-    kMainThreadScrollingReasonCount = 18,
+    kMainThreadScrollingReasonCount = 20,
   };
 
   // Returns true if the given MainThreadScrollingReason can be set by the main
@@ -53,7 +55,8 @@ struct MainThreadScrollingReason {
         kNotScrollingOnMain | kHasBackgroundAttachmentFixedObjects |
         kHasNonLayerViewportConstrainedObjects | kThreadedScrollingDisabled |
         kScrollbarScrolling | kPageOverlay | kHandlingScrollFromMainThread |
-        kCustomScrollbarScrolling | kHasOpacity;
+        kCustomScrollbarScrolling | kHasOpacity | kHasTransform |
+        kBackgroundNotOpaqueInRect;
     return (reasons & reasons_set_by_main_thread) == reasons;
   }
 
@@ -100,6 +103,10 @@ struct MainThreadScrollingReason {
       tracedValue->AppendString("Custom scrollbar scrolling");
     if (reasons & MainThreadScrollingReason::kHasOpacity)
       tracedValue->AppendString("Has opacity");
+    if (reasons & MainThreadScrollingReason::kHasTransform)
+      tracedValue->AppendString("Has transform");
+    if (reasons & MainThreadScrollingReason::kBackgroundNotOpaqueInRect)
+      tracedValue->AppendString("Background is not opaque in rect");
 
     // Transient scrolling reasons.
     if (reasons & MainThreadScrollingReason::kNonFastScrollableRegion)

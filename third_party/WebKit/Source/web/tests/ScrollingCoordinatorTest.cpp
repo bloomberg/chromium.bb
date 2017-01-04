@@ -113,6 +113,9 @@ class ScrollingCoordinatorTest : public testing::Test {
     return webViewImpl()->layerTreeView();
   }
 
+  void styleRelatedMainThreadScrollingReasonTest(const std::string&,
+                                                 const uint32_t);
+
  protected:
   std::string m_baseURL;
   FrameTestHelpers::TestWebViewClient m_mockWebViewClient;
@@ -1029,51 +1032,70 @@ TEST_F(ScrollingCoordinatorTest,
       MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
 }
 
-TEST_F(ScrollingCoordinatorTest, StyleRelatedMainThreadScrollingReason) {
-  registerMockedHttpURLLoad("two_transparent_scrollable_area.html");
-  navigateTo(m_baseURL + "two_transparent_scrollable_area.html");
-  webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(false);
-  forceFullCompositingUpdate();
+class StyleRelatedMainThreadScrollingReasonTest
+    : public ScrollingCoordinatorTest {
+ protected:
+  StyleRelatedMainThreadScrollingReasonTest() {
+    registerMockedHttpURLLoad("two_scrollable_area.html");
+    navigateTo(m_baseURL + "two_scrollable_area.html");
+  }
+  void testStyle(const std::string& target, const uint32_t reason) {
+    webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(false);
+    Document* document = frame()->document();
+    Element* container = document->getElementById("scroller1");
+    container->setAttribute("class", target.c_str(), ASSERT_NO_EXCEPTION);
+    container = document->getElementById("scroller2");
+    container->setAttribute("class", target.c_str(), ASSERT_NO_EXCEPTION);
+    forceFullCompositingUpdate();
 
-  FrameView* frameView = frame()->view();
-  ASSERT_TRUE(frameView);
-  ASSERT_TRUE(frameView->mainThreadScrollingReasons() &
-              MainThreadScrollingReason::kHasOpacity);
+    FrameView* frameView = frame()->view();
+    ASSERT_TRUE(frameView);
+    ASSERT_TRUE(frameView->mainThreadScrollingReasons() & reason);
 
-  // Remove opacity from one of the scrollers.
-  // Still need to scroll on main thread.
-  Document* document = frame()->document();
-  Element* container = document->getElementById("scroller1");
-  DCHECK(container);
+    // Remove the target attribute from one of the scrollers.
+    // Still need to scroll on main thread.
+    container = document->getElementById("scroller1");
+    DCHECK(container);
 
-  container->removeAttribute("class");
-  forceFullCompositingUpdate();
+    container->removeAttribute("class");
+    forceFullCompositingUpdate();
 
-  ASSERT_TRUE(frameView->mainThreadScrollingReasons() &
-              MainThreadScrollingReason::kHasOpacity);
+    ASSERT_TRUE(frameView->mainThreadScrollingReasons() & reason);
 
-  // Remove opacity from the other scroller would lead to
-  // scroll on impl.
-  container = document->getElementById("scroller2");
-  DCHECK(container);
+    // Remove attribute from the other scroller would lead to
+    // scroll on impl.
+    container = document->getElementById("scroller2");
+    DCHECK(container);
 
-  container->removeAttribute("class");
-  forceFullCompositingUpdate();
+    container->removeAttribute("class");
+    forceFullCompositingUpdate();
 
-  ASSERT_FALSE(frameView->mainThreadScrollingReasons() &
-               MainThreadScrollingReason::kHasOpacity);
+    ASSERT_FALSE(frameView->mainThreadScrollingReasons() & reason);
 
-  // Add opacity would again lead to scroll on main thread
-  container->setAttribute("class", "transparent", ASSERT_NO_EXCEPTION);
-  forceFullCompositingUpdate();
+    // Add target attribute would again lead to scroll on main thread
+    container->setAttribute("class", target.c_str(), ASSERT_NO_EXCEPTION);
+    forceFullCompositingUpdate();
 
-  ASSERT_TRUE(frameView->mainThreadScrollingReasons() &
-              MainThreadScrollingReason::kHasOpacity);
+    ASSERT_TRUE(frameView->mainThreadScrollingReasons() & reason);
 
-  webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(true);
-  forceFullCompositingUpdate();
+    webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(true);
+    forceFullCompositingUpdate();
 
-  ASSERT_FALSE(frameView->mainThreadScrollingReasons());
+    ASSERT_FALSE(frameView->mainThreadScrollingReasons());
+  }
+};
+
+TEST_F(StyleRelatedMainThreadScrollingReasonTest, TransparentTest) {
+  testStyle("transparent", MainThreadScrollingReason::kHasOpacity);
+}
+
+TEST_F(StyleRelatedMainThreadScrollingReasonTest, TransformTest) {
+  testStyle("transform", MainThreadScrollingReason::kHasTransform);
+}
+
+TEST_F(StyleRelatedMainThreadScrollingReasonTest, BackgroundNotOpaqueTest) {
+  testStyle("background-not-opaque",
+            MainThreadScrollingReason::kBackgroundNotOpaqueInRect);
 }
 
 }  // namespace blink

@@ -1753,6 +1753,15 @@ bool PaintLayerScrollableArea::computeNeedsCompositedScrolling(
       addStyleRelatedMainThreadScrollingReasons(
           MainThreadScrollingReason::kHasOpacity);
     }
+    if (layer->compositesWithTransform()) {
+      addStyleRelatedMainThreadScrollingReasons(
+          MainThreadScrollingReason::kHasTransform);
+    }
+    if (!layer->backgroundIsKnownToBeOpaqueInRect(
+            toLayoutBox(layer->layoutObject())->paddingBoxRect())) {
+      addStyleRelatedMainThreadScrollingReasons(
+          MainThreadScrollingReason::kBackgroundNotOpaqueInRect);
+    }
     return false;
   }
 
