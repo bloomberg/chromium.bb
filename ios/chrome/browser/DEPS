@@ -92,7 +92,6 @@ include_rules = [
   "+ios/net",
   "+ios/public/provider/chrome",
   "+ios/public/provider/components",
-  "+ios/public/provider/web",
   "+ios/web/public",
   "+libxml/xmlwriter.h",
   "+net",

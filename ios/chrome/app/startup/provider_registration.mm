@@ -4,7 +4,6 @@
 
 #include "ios/chrome/app/startup/provider_registration.h"
 
-#include "ios/chrome/browser/web/web_controller_provider_factory_impl.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 @implementation ProviderRegistration
@@ -15,7 +14,6 @@
 
   // Leak the providers.
   ios::SetChromeBrowserProvider(provider.release());
-  ios::SetWebControllerProviderFactory(new WebControllerProviderFactoryImpl());
 }
 
 @end

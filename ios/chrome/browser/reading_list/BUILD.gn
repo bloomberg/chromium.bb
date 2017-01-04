@@ -40,7 +40,6 @@ source_set("reading_list") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",
-    "//ios/public/provider/web",
     "//ios/web",
     "//net",
     "//url",
