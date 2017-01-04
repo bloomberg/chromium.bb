@@ -33,6 +33,7 @@ bool TouchscreenTapSuppressionController::FilterTapEvent(
     const GestureEventWithLatencyInfo& event) {
   switch (event.event.type) {
     case WebInputEvent::GestureTapDown:
+      forward_next_tap_cancel_ = false;
       if (!controller_.ShouldDeferTapDown())
         return false;
       stashed_tap_down_.reset(new GestureEventWithLatencyInfo(event));
@@ -58,6 +59,8 @@ bool TouchscreenTapSuppressionController::FilterTapEvent(
       return !!stashed_tap_down_;
 
     case WebInputEvent::GestureTapCancel:
+      return !forward_next_tap_cancel_ && controller_.ShouldSuppressTapEnd();
+
     case WebInputEvent::GestureTap:
     case WebInputEvent::GestureDoubleTap:
     case WebInputEvent::GestureLongTap:
@@ -94,6 +97,7 @@ void TouchscreenTapSuppressionController::ForwardStashedTapDown() {
   gesture_event_queue_->ForwardGestureEvent(*tap_down);
   stashed_show_press_.reset();
   stashed_long_press_.reset();
+  forward_next_tap_cancel_ = true;
 }
 
 }  // namespace content

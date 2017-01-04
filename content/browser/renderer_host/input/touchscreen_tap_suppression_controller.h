@@ -50,6 +50,11 @@ class TouchscreenTapSuppressionController
   ScopedGestureEvent stashed_show_press_;
   ScopedGestureEvent stashed_long_press_;
 
+  // This is true when the stashed GestureTapDown event gets forwarded. The
+  // controller should forward the next GestureTapCancel as well to maintain a
+  // valid input stream.
+  bool forward_next_tap_cancel_;
+
   // The core controller of tap suppression.
   TapSuppressionController controller_;
 
