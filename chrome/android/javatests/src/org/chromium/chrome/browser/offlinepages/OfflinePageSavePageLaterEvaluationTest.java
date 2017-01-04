@@ -275,8 +275,7 @@ public class OfflinePageSavePageLaterEvaluationTest
                 timeDelta.setStartTime(System.currentTimeMillis());
                 metadata.mTimeDelta = timeDelta;
                 mRequestMetadata.put(request.getRequestId(), metadata);
-                log(TAG,
-                        "SavePageRequest Added for " + metadata.mUrl + "  with id " + metadata.mId);
+                log(TAG, "SavePageRequest Added for %s with id %d.", metadata.mUrl, metadata.mId);
             }
             public void savePageRequestCompleted(SavePageRequest request, int status) {
                 RequestMetadata metadata = mRequestMetadata.get(request.getRequestId());
