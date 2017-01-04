@@ -41,6 +41,15 @@ void DataUseNetworkDelegate::OnBeforeRedirectInternal(
   data_use_measurement_.OnBeforeRedirect(*request, new_location);
 }
 
+void DataUseNetworkDelegate::OnHeadersReceivedInternal(
+    net::URLRequest* request,
+    const net::CompletionCallback& callback,
+    const net::HttpResponseHeaders* original_response_headers,
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url) {
+  data_use_measurement_.OnHeadersReceived(request, original_response_headers);
+}
+
 void DataUseNetworkDelegate::OnNetworkBytesReceivedInternal(
     net::URLRequest* request,
     int64_t bytes_received) {

@@ -21,8 +21,8 @@ namespace data_use_measurement {
 
 namespace {
 
-class UserRequestUserDataForTesting : public base::SupportsUserData::Data,
-                                      public URLRequestClassifier {
+class TestURLRequestClassifier : public base::SupportsUserData::Data,
+                                 public URLRequestClassifier {
  public:
   static const void* const kUserDataKey;
 
@@ -31,7 +31,13 @@ class UserRequestUserDataForTesting : public base::SupportsUserData::Data,
   }
 
   static void MarkAsUserRequest(net::URLRequest* request) {
-    request->SetUserData(kUserDataKey, new UserRequestUserDataForTesting());
+    request->SetUserData(kUserDataKey, new TestURLRequestClassifier());
+  }
+
+  DataUseUserData::DataUseContentType GetContentType(
+      const net::URLRequest& request,
+      const net::HttpResponseHeaders& response_headers) const override {
+    return DataUseUserData::OTHER;
   }
 };
 
@@ -54,8 +60,8 @@ class TestDataUseAscriber : public DataUseAscriber {
 };
 
 // static
-const void* const UserRequestUserDataForTesting::kUserDataKey =
-    &UserRequestUserDataForTesting::kUserDataKey;
+const void* const TestURLRequestClassifier::kUserDataKey =
+    &TestURLRequestClassifier::kUserDataKey;
 
 // This function requests a URL, and makes it return a known response. If
 // |from_user| is true, it attaches a ResourceRequestInfo to the URLRequest,
@@ -92,7 +98,7 @@ std::unique_ptr<net::URLRequest> RequestURL(
       GURL("http://example.com"), net::DEFAULT_PRIORITY, &test_delegate));
 
   if (from_user) {
-    UserRequestUserDataForTesting::MarkAsUserRequest(request.get());
+    TestURLRequestClassifier::MarkAsUserRequest(request.get());
   } else {
     request->SetUserData(
         data_use_measurement::DataUseUserData::kUserDataKey,
@@ -109,11 +115,10 @@ class DataUseNetworkDelegateTest : public testing::Test {
  public:
   DataUseNetworkDelegateTest()
       : context_(true),
-        data_use_network_delegate_(
-            base::MakeUnique<net::TestNetworkDelegate>(),
-            &test_data_use_ascriber_,
-            base::MakeUnique<UserRequestUserDataForTesting>(),
-            metrics::UpdateUsagePrefCallbackType()) {
+        data_use_network_delegate_(base::MakeUnique<net::TestNetworkDelegate>(),
+                                   &test_data_use_ascriber_,
+                                   base::MakeUnique<TestURLRequestClassifier>(),
+                                   metrics::UpdateUsagePrefCallbackType()) {
     context_.set_client_socket_factory(&mock_socket_factory_);
     context_.set_network_delegate(&data_use_network_delegate_);
     context_.Init();

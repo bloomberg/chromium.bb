@@ -10,6 +10,7 @@
 #include "components/data_use_measurement/core/data_use_network_delegate.h"
 #include "components/data_use_measurement/core/data_use_recorder.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
+#include "net/http/http_response_headers.h"
 
 namespace data_use_measurement {
 

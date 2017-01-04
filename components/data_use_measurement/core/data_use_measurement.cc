@@ -103,11 +103,13 @@ void DataUseMeasurement::OnBeforeURLRequest(net::URLRequest* request) {
       // Detect if the request originated from DomainReliability.
       // DataUseUserData::AttachToFetcher() cannot be called from domain
       // reliability, since it sets userdata on URLFetcher for its purposes.
-      service_name = DataUseUserData::ServiceName::NOT_TAGGED;
+      service_name = DataUseUserData::ServiceName::DOMAIN_RELIABILITY;
     }
 
     data_use_user_data = new DataUseUserData(service_name, CurrentAppState());
     request->SetUserData(DataUseUserData::kUserDataKey, data_use_user_data);
+  } else {
+    data_use_user_data->set_app_state(CurrentAppState());
   }
 }
 
@@ -117,6 +119,17 @@ void DataUseMeasurement::OnBeforeRedirect(const net::URLRequest& request,
   // TODO(rajendrant): May not be needed when http://crbug/651957 is fixed.
   UpdateDataUsePrefs(request);
   ReportServicesMessageSizeUMA(request);
+}
+
+void DataUseMeasurement::OnHeadersReceived(
+    net::URLRequest* request,
+    const net::HttpResponseHeaders* response_headers) {
+  DataUseUserData* data_use_user_data = reinterpret_cast<DataUseUserData*>(
+      request->GetUserData(DataUseUserData::kUserDataKey));
+  if (data_use_user_data) {
+    data_use_user_data->set_content_type(
+        url_request_classifier_->GetContentType(*request, *response_headers));
+  }
 }
 
 void DataUseMeasurement::OnNetworkBytesReceived(const net::URLRequest& request,
@@ -196,12 +209,21 @@ void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
   }
 #endif
 
+  bool is_tab_visible = false;
+
   if (is_user_traffic) {
     const DataUseRecorder* recorder = ascriber_->GetDataUseRecorder(request);
     if (recorder) {
+      is_tab_visible = recorder->is_visible();
       RecordTabStateHistogram(dir, new_app_state, recorder->is_visible(),
                               bytes);
     }
+  }
+  if (attached_service_data && dir == DOWNSTREAM &&
+      new_app_state != DataUseUserData::UNKNOWN) {
+    RecordContentTypeHistogram(attached_service_data->content_type(),
+                               is_user_traffic, new_app_state, is_tab_visible,
+                               bytes);
   }
 }
 
@@ -361,6 +383,42 @@ void DataUseMeasurement::RecordTabStateHistogram(
     histogram_name.append("AppForeground.TabBackground");
   }
   RecordUMAHistogramCount(histogram_name, bytes);
+}
+
+void DataUseMeasurement::RecordContentTypeHistogram(
+    DataUseUserData::DataUseContentType content_type,
+    bool is_user_traffic,
+    DataUseUserData::AppState app_state,
+    bool is_tab_visible,
+    int64_t bytes) {
+  if (content_type == DataUseUserData::AUDIO) {
+    content_type = app_state != DataUseUserData::FOREGROUND
+                       ? DataUseUserData::AUDIO_APPBACKGROUND
+                       : (!is_tab_visible ? DataUseUserData::AUDIO_TABBACKGROUND
+                                          : DataUseUserData::AUDIO);
+  } else if (content_type == DataUseUserData::VIDEO) {
+    content_type = app_state != DataUseUserData::FOREGROUND
+                       ? DataUseUserData::VIDEO_APPBACKGROUND
+                       : (!is_tab_visible ? DataUseUserData::VIDEO_TABBACKGROUND
+                                          : DataUseUserData::VIDEO);
+  }
+  // Use the more primitive STATIC_HISTOGRAM_POINTER_BLOCK macro because the
+  // simple UMA_HISTOGRAM_ENUMERATION macros don't expose 'AddCount'.
+  if (is_user_traffic) {
+    STATIC_HISTOGRAM_POINTER_BLOCK(
+        "DataUse.ContentType.UserTraffic", AddCount(content_type, bytes),
+        base::LinearHistogram::FactoryGet(
+            "DataUse.ContentType.UserTraffic", 1, DataUseUserData::TYPE_MAX,
+            DataUseUserData::TYPE_MAX + 1,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
+  } else {
+    STATIC_HISTOGRAM_POINTER_BLOCK(
+        "DataUse.ContentType.Services", AddCount(content_type, bytes),
+        base::LinearHistogram::FactoryGet(
+            "DataUse.ContentType.Services", 1, DataUseUserData::TYPE_MAX,
+            DataUseUserData::TYPE_MAX + 1,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
+  }
 }
 
 }  // namespace data_use_measurement

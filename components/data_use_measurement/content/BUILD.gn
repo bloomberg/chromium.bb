@@ -10,6 +10,7 @@ static_library("content") {
   deps = [
     "//base",
     "//content/public/browser",
+    "//content/public/common",
     "//net:net",
   ]
 }

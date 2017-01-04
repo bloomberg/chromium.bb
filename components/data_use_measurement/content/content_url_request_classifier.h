@@ -19,6 +19,10 @@ bool IsUserRequest(const net::URLRequest& request);
 class ContentURLRequestClassifier : public URLRequestClassifier {
  public:
   bool IsUserRequest(const net::URLRequest& request) const override;
+
+  DataUseUserData::DataUseContentType GetContentType(
+      const net::URLRequest& request,
+      const net::HttpResponseHeaders& response_headers) const override;
 };
 
 }  // namespace data_use_measurement

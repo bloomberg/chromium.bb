@@ -24,6 +24,7 @@
 class GURL;
 
 namespace net {
+class HttpResponseHeaders;
 class URLRequest;
 }
 
@@ -52,6 +53,10 @@ class DataUseMeasurement {
   // Called right after a redirect response code was received for |request|.
   void OnBeforeRedirect(const net::URLRequest& request,
                         const GURL& new_location);
+
+  // Called when response headers are received for |request|.
+  void OnHeadersReceived(net::URLRequest* request,
+                         const net::HttpResponseHeaders* response_headers);
 
   // Called when data is received or sent on the network, respectively.
   void OnNetworkBytesReceived(const net::URLRequest& request,
@@ -136,6 +141,15 @@ class DataUseMeasurement {
                                DataUseUserData::AppState app_state,
                                bool is_tab_visible,
                                int64_t bytes);
+
+  // Records data use histograms of user traffic and services traffic split on
+  // content type, AppState and TabState.
+  void RecordContentTypeHistogram(
+      DataUseUserData::DataUseContentType content_type,
+      bool is_user_traffic,
+      DataUseUserData::AppState app_state,
+      bool is_tab_visible,
+      int64_t bytes);
 
   // Classifier for identifying if an URL request is user initiated.
   std::unique_ptr<URLRequestClassifier> url_request_classifier_;

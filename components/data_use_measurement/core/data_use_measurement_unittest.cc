@@ -30,18 +30,33 @@
 
 namespace data_use_measurement {
 
-class UserRequestUserDataForTesting : public base::SupportsUserData::Data,
-                                      public URLRequestClassifier {
+class TestURLRequestClassifier : public base::SupportsUserData::Data,
+                                 public URLRequestClassifier {
  public:
   static const void* const kUserDataKey;
+
+  TestURLRequestClassifier() : content_type_(DataUseUserData::OTHER) {}
 
   bool IsUserRequest(const net::URLRequest& request) const override {
     return request.GetUserData(kUserDataKey) != nullptr;
   }
 
   static void MarkAsUserRequest(net::URLRequest* request) {
-    request->SetUserData(kUserDataKey, new UserRequestUserDataForTesting());
+    request->SetUserData(kUserDataKey, new TestURLRequestClassifier());
   }
+
+  DataUseUserData::DataUseContentType GetContentType(
+      const net::URLRequest& request,
+      const net::HttpResponseHeaders& response_headers) const override {
+    return content_type_;
+  }
+
+  void set_content_type(DataUseUserData::DataUseContentType content_type) {
+    content_type_ = content_type;
+  }
+
+ private:
+  DataUseUserData::DataUseContentType content_type_;
 };
 
 class TestDataUseAscriber : public DataUseAscriber {
@@ -69,26 +84,27 @@ class TestDataUseAscriber : public DataUseAscriber {
 };
 
 // The more usual initialization of kUserDataKey would be along the lines of
-//     const void* const UserRequestUserDataForTesting::kUserDataKey =
-//         &UserRequestUserDataForTesting::kUserDataKey;
+//     const void* const TestURLRequestClassifier::kUserDataKey =
+//         &TestURLRequestClassifier::kUserDataKey;
 // but lld's identical constant folding then folds that with
 // DataUseUserData::kUserDataKey which is initialized like that as well, and
-// then UserRequestUserDataForTesting::IsUserRequest() starts classifying
-// service requests as user requests.  To work around this, make
-// UserRequestUserDataForTesting::kUserDataKey point to an arbitrary integer
+// then TestURLRequestClassifier::IsUserRequest() starts classifying service
+// requests as user requests.  To work around this, make
+// TestURLRequestClassifier::kUserDataKey point to an arbitrary integer
 // instead.
 // TODO(thakis): If we changed lld to only ICF over code and not over data,
 // we could undo this again.
 const int kICFBuster = 12345634;
 
 // static
-const void* const UserRequestUserDataForTesting::kUserDataKey = &kICFBuster;
+const void* const TestURLRequestClassifier::kUserDataKey = &kICFBuster;
 
 class DataUseMeasurementTest : public testing::Test {
  public:
   DataUseMeasurementTest()
-      : data_use_measurement_(
-            base::MakeUnique<UserRequestUserDataForTesting>(),
+      : url_request_classifier_(new TestURLRequestClassifier()),
+        data_use_measurement_(
+            std::unique_ptr<URLRequestClassifier>(url_request_classifier_),
             base::Bind(&DataUseMeasurementTest::FakeDataUseforwarder,
                        base::Unretained(this)),
             &ascriber_) {
@@ -113,7 +129,7 @@ class DataUseMeasurementTest : public testing::Test {
     std::unique_ptr<net::URLRequest> request(context_->CreateRequest(
         GURL("http://foo.com"), net::DEFAULT_PRIORITY, &test_delegate));
     if (is_user_request == kUserRequest) {
-      UserRequestUserDataForTesting::MarkAsUserRequest(request.get());
+      TestURLRequestClassifier::MarkAsUserRequest(request.get());
     } else {
       request->SetUserData(
           data_use_measurement::DataUseUserData::kUserDataKey,
@@ -195,6 +211,7 @@ class DataUseMeasurementTest : public testing::Test {
   base::MessageLoopForIO loop_;
 
   TestDataUseAscriber ascriber_;
+  TestURLRequestClassifier* url_request_classifier_;
   DataUseMeasurement data_use_measurement_;
 
   std::unique_ptr<net::MockClientSocketFactory> socket_factory_;
@@ -407,7 +424,6 @@ TEST_F(DataUseMeasurementTest, AppTabState) {
   // First network access changes the app state to UNKNOWN and the next nextwork
   // access changes to BACKGROUND.
   data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
-  data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
   data_use_measurement_.OnNetworkBytesSent(*request, 100);
 
   histogram_tester.ExpectTotalCount(
@@ -415,6 +431,75 @@ TEST_F(DataUseMeasurementTest, AppTabState) {
   histogram_tester.ExpectTotalCount(
       "DataUse.AppTabState.Downstream.AppBackground", 1);
 }
+
+TEST_F(DataUseMeasurementTest, ContentType) {
+  {
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);
+    data_use_measurement_.OnBeforeURLRequest(request.get());
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTraffic",
+                                        DataUseUserData::OTHER, 1000);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<net::URLRequest> request =
+        CreateTestRequest(kServiceRequest);
+    data_use_measurement_.OnBeforeURLRequest(request.get());
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+    histogram_tester.ExpectUniqueSample("DataUse.ContentType.Services",
+                                        DataUseUserData::OTHER, 1000);
+  }
+
+  // Video request in foreground.
+  {
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);
+
+    ascriber_.SetTabVisibility(true);
+    url_request_classifier_->set_content_type(DataUseUserData::VIDEO);
+    data_use_measurement_.OnBeforeURLRequest(request.get());
+    data_use_measurement_.OnHeadersReceived(request.get(), nullptr);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+
+    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTraffic",
+                                        DataUseUserData::VIDEO, 1000);
+  }
+
+  // Audio request from background tab.
+  {
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);
+    ascriber_.SetTabVisibility(false);
+    url_request_classifier_->set_content_type(DataUseUserData::AUDIO);
+    data_use_measurement_.OnBeforeURLRequest(request.get());
+    data_use_measurement_.OnHeadersReceived(request.get(), nullptr);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+
+    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTraffic",
+                                        DataUseUserData::AUDIO_TABBACKGROUND,
+                                        1000);
+  }
+
+  // Video request from background app.
+  {
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);
+    url_request_classifier_->set_content_type(DataUseUserData::VIDEO);
+    data_use_measurement()->OnApplicationStateChangeForTesting(
+        base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
+    ascriber_.SetTabVisibility(false);
+    data_use_measurement_.OnBeforeURLRequest(request.get());
+    data_use_measurement_.OnHeadersReceived(request.get(), nullptr);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+
+    histogram_tester.ExpectUniqueSample("DataUse.ContentType.UserTraffic",
+                                        DataUseUserData::VIDEO_APPBACKGROUND,
+                                        1000);
+  }
+}
+
 #endif
 
 }  // namespace data_use_measurement

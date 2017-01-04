@@ -29,7 +29,9 @@ DataUseUserData::AppState GetCurrentAppState() {
 }  // namespace
 
 DataUseUserData::DataUseUserData(ServiceName service_name, AppState app_state)
-    : service_name_(service_name), app_state_(app_state) {}
+    : service_name_(service_name),
+      app_state_(app_state),
+      content_type_(DataUseContentType::OTHER) {}
 
 DataUseUserData::~DataUseUserData() {}
 
