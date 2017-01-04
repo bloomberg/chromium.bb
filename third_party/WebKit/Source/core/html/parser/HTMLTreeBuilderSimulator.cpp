@@ -159,7 +159,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(
   }
 
   if (token.type() == HTMLToken::EndTag ||
-      (token.selfClosing() && token.type() == HTMLToken::StartTag &&
+      (token.type() == HTMLToken::StartTag && token.selfClosing() &&
        inForeignContent())) {
     const String& tagName = token.data();
     if ((m_namespaceStack.back() == SVG &&
