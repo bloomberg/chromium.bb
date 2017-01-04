@@ -263,6 +263,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+#include "content/renderer/image_downloader/single_image_downloader.h"  // nogncheck
 #include "media/remoting/remoting_cdm_controller.h"       // nogncheck
 #include "media/remoting/remoting_cdm_factory.h"          // nogncheck
 #include "media/remoting/remoting_renderer_controller.h"  // nogncheck
@@ -2904,6 +2905,8 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   remoting_controller_ptr->SetRemoteSinkAvailableChangedCallback(base::Bind(
       &media::WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring,
       media_player->AsWeakPtr()));
+  remoting_controller_ptr->SetDownloadPosterCallback(base::Bind(
+      &SingleImageDownloader::DownloadImage, weak_factory_.GetWeakPtr()));
 #endif
   return media_player;
 }

@@ -7,6 +7,7 @@
 
 #include "media/base/cdm_context.h"
 #include "media/base/pipeline_metadata.h"
+#include "url/gurl.h"
 
 namespace media {
 
@@ -40,6 +41,10 @@ class MEDIA_EXPORT MediaObserver {
   // Called when the media is playing/paused.
   virtual void OnPlaying() = 0;
   virtual void OnPaused() = 0;
+
+  // Called when a poster image URL is set, which happens when media is loaded
+  // or the poster attribute is changed.
+  virtual void OnSetPoster(const GURL& poster) = 0;
 };
 
 }  // namespace media

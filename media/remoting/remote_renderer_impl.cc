@@ -631,7 +631,7 @@ void RemoteRendererImpl::OnFatalError(PipelineStatus error) {
 void RemoteRendererImpl::RequestUpdateInterstitialOnMainThread(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     base::WeakPtr<RemoteRendererImpl> remote_renderer_impl,
-    const SkBitmap& background_image,
+    const base::Optional<SkBitmap>& background_image,
     const gfx::Size& canvas_size,
     RemotingInterstitialType interstitial_type) {
   media_task_runner->PostTask(
@@ -641,12 +641,12 @@ void RemoteRendererImpl::RequestUpdateInterstitialOnMainThread(
 }
 
 void RemoteRendererImpl::UpdateInterstitial(
-    const SkBitmap& background_image,
+    const base::Optional<SkBitmap>& background_image,
     const gfx::Size& canvas_size,
     RemotingInterstitialType interstitial_type) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  if (!background_image.drawsNothing())
-    interstitial_background_ = background_image;
+  if (background_image.has_value())
+    interstitial_background_ = background_image.value();
   canvas_size_ = canvas_size;
   PaintRemotingInterstitial(interstitial_background_, canvas_size_,
                             interstitial_type, video_renderer_sink_);

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_checker.h"
-#include "media/base/video_util.h"
 #include "media/remoting/remoting_cdm_context.h"
 
 namespace media {
@@ -57,7 +56,7 @@ void RemotingRendererController::OnSessionStateChanged() {
   if (!sink_available_changed_cb_.is_null())
     sink_available_changed_cb_.Run(IsRemoteSinkAvailable());
 
-  UpdateInterstitial();
+  UpdateInterstitial(base::nullopt);
   UpdateAndMaybeSwitch();
 }
 
@@ -119,6 +118,18 @@ void RemotingRendererController::OnRemotePlaybackDisabled(bool disabled) {
   UpdateAndMaybeSwitch();
 }
 
+void RemotingRendererController::OnSetPoster(const GURL& poster_url) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (poster_url != poster_url_) {
+    poster_url_ = poster_url;
+    if (poster_url_.is_empty())
+      UpdateInterstitial(SkBitmap());
+    else
+      DownloadPosterImage();
+  }
+}
+
 void RemotingRendererController::SetSwitchRendererCallback(
     const base::Closure& cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -172,7 +183,7 @@ void RemotingRendererController::OnMetadataChanged(
   }
 
   if (pipeline_metadata_.natural_size != old_size)
-    UpdateInterstitial();
+    UpdateInterstitial(base::nullopt);
 
   UpdateAndMaybeSwitch();
 }
@@ -330,10 +341,22 @@ void RemotingRendererController::SetShowInterstitialCallback(
     const ShowInterstitialCallback& cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   show_interstitial_cb_ = cb;
-  UpdateInterstitial();
+  UpdateInterstitial(SkBitmap());
+  if (!poster_url_.is_empty())
+    DownloadPosterImage();
 }
 
-void RemotingRendererController::UpdateInterstitial() {
+void RemotingRendererController::SetDownloadPosterCallback(
+    const DownloadPosterCallback& cb) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(download_poster_cb_.is_null());
+  download_poster_cb_ = cb;
+  if (!poster_url_.is_empty())
+    DownloadPosterImage();
+}
+
+void RemotingRendererController::UpdateInterstitial(
+    const base::Optional<SkBitmap>& image) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (show_interstitial_cb_.is_null() ||
       pipeline_metadata_.natural_size.IsEmpty())
@@ -354,8 +377,28 @@ void RemotingRendererController::UpdateInterstitial() {
       break;
   }
 
-  // TODO(xjz): Download poster image when available.
-  show_interstitial_cb_.Run(SkBitmap(), pipeline_metadata_.natural_size, type);
+  show_interstitial_cb_.Run(image, pipeline_metadata_.natural_size, type);
+}
+
+void RemotingRendererController::DownloadPosterImage() {
+  if (download_poster_cb_.is_null() || show_interstitial_cb_.is_null())
+    return;
+  DCHECK(!poster_url_.is_empty());
+
+  download_poster_cb_.Run(
+      poster_url_,
+      base::Bind(&RemotingRendererController::OnPosterImageDownloaded,
+                 weak_factory_.GetWeakPtr(), poster_url_));
+}
+
+void RemotingRendererController::OnPosterImageDownloaded(
+    const GURL& download_url,
+    const SkBitmap& image) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (download_url != poster_url_)
+    return;  // The poster image URL has changed during the download.
+  UpdateInterstitial(image);
 }
 
 }  // namespace media

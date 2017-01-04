@@ -7,9 +7,11 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "media/base/media_observer.h"
 #include "media/remoting/remoting_interstitial_ui.h"
 #include "media/remoting/remoting_source_impl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace media {
 
@@ -42,16 +44,24 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   void OnRemotePlaybackDisabled(bool disabled) override;
   void OnPlaying() override;
   void OnPaused() override;
+  void OnSetPoster(const GURL& poster) override;
 
   void SetSwitchRendererCallback(const base::Closure& cb);
   void SetRemoteSinkAvailableChangedCallback(
       const base::Callback<void(bool)>& cb);
 
-  using ShowInterstitialCallback = base::Callback<
-      void(const SkBitmap&, const gfx::Size&, RemotingInterstitialType type)>;
+  using ShowInterstitialCallback =
+      base::Callback<void(const base::Optional<SkBitmap>&,
+                          const gfx::Size&,
+                          RemotingInterstitialType type)>;
   // Called by RemoteRendererImpl constructor to set the callback to draw and
   // show remoting interstial.
   void SetShowInterstitialCallback(const ShowInterstitialCallback& cb);
+  using DownloadPosterCallback =
+      base::Callback<void(const GURL&,
+                          const base::Callback<void(const SkBitmap&)>&)>;
+  // Set the callback to download poster image.
+  void SetDownloadPosterCallback(const DownloadPosterCallback& cb);
 
   base::WeakPtr<RemotingRendererController> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -99,18 +109,28 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // necessary.
   void UpdateAndMaybeSwitch();
 
-  // Called when any of the following happens:
-  // 1. SetShowInterstitialCallback() is called (RemoteRendererImpl is
-  //    constructed);
+  // Called to download the poster image. Called when:
+  // 1. Poster URL changes.
+  // 2. ShowInterstitialCallback is set.
+  // 3. DownloadPosterCallback is set.
+  void DownloadPosterImage();
+
+  // Called when poster image is downloaded.
+  void OnPosterImageDownloaded(const GURL& download_url, const SkBitmap& image);
+
+  // Update remoting interstitial with |image|. When |image| is not set,
+  // interstitial will be drawn on previously downloaded poster image (in
+  // RemoteRendererImpl) or black background if none was downloaded before.
+  // Call this when:
+  // 1. SetShowInterstitialCallback() is called (RemoteRendererImpl is created).
   // 2. The remoting session is shut down (to update the status message in the
   //    interstitial).
   // 3. The size of the canvas is changed (to update the background image and
   //    the position of the status message).
-  // TODO(xjz): Call this when poster url is set/changed. Download poster image
-  // when available, and draw interstitial on it.
-  void UpdateInterstitial();
+  // 4. Poster image is downloaded (to update the background image).
+  void UpdateInterstitial(const base::Optional<SkBitmap>& image);
 
-  // Indicates whether this media element or its ancestor is in full screen.
+  // Indicates whether this media element is in full screen.
   bool is_fullscreen_ = false;
 
   // Indicates whether remoting is started.
@@ -148,12 +168,21 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // debug builds.
   base::ThreadChecker thread_checker_;
 
+  // Current pipeline metadata.
   PipelineMetadata pipeline_metadata_;
 
   // The callback to show remoting interstitial. It is set when entering the
   // remoting mode (RemotingRendererImpl is constructed) by calling
   // SetShowInterstitialCallback(), and is reset when leaving the remoting mode.
   ShowInterstitialCallback show_interstitial_cb_;
+
+  // Current poster URL, whose image will feed into the local UI.
+  GURL poster_url_;
+
+  // The callback to download the poster image. Called when |poster_url_|
+  // changes during a remoting session or the show interstial callback is set.
+  // OnPosterImageDownloaded() will be called when download completes.
+  DownloadPosterCallback download_poster_cb_;
 
   base::WeakPtrFactory<RemotingRendererController> weak_factory_;
 

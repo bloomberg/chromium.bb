@@ -52,6 +52,9 @@ class MultiResolutionImageResourceFetcher {
   // HTTP status code upon fetch completion.
   int http_status_code() const { return http_status_code_; }
 
+  // Called when associated RenderFrame is destructed.
+  void OnRenderFrameDestruct();
+
  private:
   // ResourceFetcher::Callback. Decodes the image and invokes callback_.
   void OnURLFetchComplete(const blink::WebURLResponse& response,

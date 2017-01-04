@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "media/base/buffering_state.h"
 #include "media/base/pipeline_status.h"
@@ -72,7 +73,7 @@ class RemoteRendererImpl : public Renderer {
   static void RequestUpdateInterstitialOnMainThread(
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       base::WeakPtr<RemoteRendererImpl> remote_renderer_impl,
-      const SkBitmap& background_image,
+      const base::Optional<SkBitmap>& background_image,
       const gfx::Size& canvas_size,
       RemotingInterstitialType interstitial_type);
 
@@ -130,10 +131,9 @@ class RemoteRendererImpl : public Renderer {
   void OnStatisticsUpdate(std::unique_ptr<remoting::pb::RpcMessage> message);
   void OnDurationChange(std::unique_ptr<remoting::pb::RpcMessage> message);
 
-  // Called to update the remoting interstitial. Draw remoting interstitial on
-  // |interstitial_background_| if |background_image| is empty. Update
-  // |interstitial_background_| if |background_image| is not empty.
-  void UpdateInterstitial(const SkBitmap& background_image,
+  // Called to update the remoting interstitial. Update
+  // |interstitial_background_| if |background_image| is set.
+  void UpdateInterstitial(const base::Optional<SkBitmap>& background_image,
                           const gfx::Size& canvas_size,
                           RemotingInterstitialType interstitial_type);
 
