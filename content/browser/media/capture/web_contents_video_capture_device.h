@@ -15,9 +15,15 @@
 
 namespace content {
 
-// A virtualized VideoCaptureDevice that mirrors the displayed contents of a
+// A virtualized VideoCaptureDevice that captures the displayed contents of a
 // WebContents (i.e., the composition of an entire render frame tree), producing
-// a stream of video frames.
+// a stream of video frames. As such, WebContentsVideoCaptureDevice is only
+// supported on platforms that use the Chromium compositor, have a
+// content::RenderWidgetHostView implementation that supports frame subscription
+// (via BeginFrameSubscription()), and can perform read-back into
+// media::VideoFrames (i.e.,
+// RenderWidgetHostViewBase::CopyFromCompositingSurfaceToVideoFrame() is
+// functional).
 //
 // An instance is created by providing a device_id.  The device_id contains
 // information necessary for finding a WebContents instance.  From then on,

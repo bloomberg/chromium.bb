@@ -1128,9 +1128,7 @@ test("content_unittests") {
     "../browser/media/audible_metrics_unittest.cc",
     "../browser/media/audio_stream_monitor_unittest.cc",
     "../browser/media/capture/audio_mirroring_manager_unittest.cc",
-    "../browser/media/capture/cursor_renderer_aura_unittest.cc",
     "../browser/media/capture/web_contents_audio_input_stream_unittest.cc",
-    "../browser/media/capture/web_contents_video_capture_device_unittest.cc",
     "../browser/media/cdm_registry_impl_unittest.cc",
     "../browser/media/media_internals_unittest.cc",
     "../browser/media/midi_host_unittest.cc",
@@ -1587,11 +1585,6 @@ test("content_unittests") {
       deps += [ "//third_party/webrtc/modules/desktop_capture" ]
     }
 
-    if (is_chromeos) {
-      sources +=
-          [ "../browser/media/capture/desktop_capture_device_aura_unittest.cc" ]
-    }
-
     if (is_chromecast) {
       sources -= [
         "../renderer/media/audio_track_recorder_unittest.cc",
@@ -1606,6 +1599,18 @@ test("content_unittests") {
       "../renderer/media/pepper_to_video_track_adapter_unittest.cc",
       "../renderer/media/video_track_to_pepper_adapter_unittest.cc",
     ]
+  }
+
+  # Screen capture unit tests.
+  if (is_linux || is_mac || is_win) {
+    sources += [ "../browser/media/capture/web_contents_video_capture_device_unittest.cc" ]
+    if (use_aura) {
+      sources += [ "../browser/media/capture/cursor_renderer_aura_unittest.cc" ]
+    }
+    if (is_chromeos) {
+      sources +=
+          [ "../browser/media/capture/desktop_capture_device_aura_unittest.cc" ]
+    }
   }
 
   if (is_linux) {
@@ -1685,7 +1690,7 @@ test("content_unittests") {
   }
 
   # Avoid windows due to non-availability of cursor resources in test.
-  if (!use_aura || is_win) {
+  if (is_win) {
     sources -= [ "../browser/media/capture/cursor_renderer_aura_unittest.cc" ]
   }
   if (use_aura || toolkit_views) {

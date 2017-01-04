@@ -661,7 +661,9 @@ VideoCaptureManager::DoStartTabCaptureOnDeviceThread(
   DCHECK(IsOnDeviceThread());
 
   std::unique_ptr<VideoCaptureDevice> video_capture_device;
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
   video_capture_device = WebContentsVideoCaptureDevice::Create(id);
+#endif
 
   if (!video_capture_device) {
     device_client->OnError(FROM_HERE, "Could not create capture device");
@@ -689,6 +691,7 @@ VideoCaptureManager::DoStartDesktopCaptureOnDeviceThread(
   }
 
   if (desktop_id.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
     video_capture_device = WebContentsVideoCaptureDevice::Create(id);
     IncrementDesktopCaptureCounter(TAB_VIDEO_CAPTURER_CREATED);
     if (desktop_id.audio_share) {
@@ -696,6 +699,7 @@ VideoCaptureManager::DoStartDesktopCaptureOnDeviceThread(
     } else {
       IncrementDesktopCaptureCounter(TAB_VIDEO_CAPTURER_CREATED_WITHOUT_AUDIO);
     }
+#endif
   } else {
 #if defined(OS_ANDROID)
     video_capture_device = base::MakeUnique<ScreenCaptureDeviceAndroid>();
