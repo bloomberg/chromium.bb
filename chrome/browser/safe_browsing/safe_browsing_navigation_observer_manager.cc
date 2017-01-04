@@ -164,7 +164,10 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChain(
   if (!target_url.is_valid())
     return INVALID_URL;
 
-  NavigationEvent* nav_event = FindNavigationEvent(target_url, target_tab_id);
+  NavigationEvent* nav_event = FindNavigationEvent(
+      target_url,
+      GURL(),
+      target_tab_id);
   if (!nav_event) {
     // We cannot find a single navigation event related to this download.
     return NAVIGATION_EVENT_NOT_FOUND;
@@ -178,7 +181,9 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChain(
     // Back trace to the next nav_event that was initiated by the user.
     while (!nav_event->is_user_initiated) {
       nav_event =
-          FindNavigationEvent(nav_event->source_url, nav_event->source_tab_id);
+          FindNavigationEvent(nav_event->source_url,
+                              nav_event->source_main_frame_url,
+                              nav_event->source_tab_id);
       if (!nav_event)
         return result;
       AddToReferrerChain(out_referrer_chain, nav_event,
@@ -200,7 +205,9 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChain(
     }
 
     nav_event =
-        FindNavigationEvent(nav_event->source_url, nav_event->source_tab_id);
+        FindNavigationEvent(nav_event->source_url,
+                            nav_event->source_main_frame_url,
+                            nav_event->source_tab_id);
     if (!nav_event)
       return result;
 
@@ -344,8 +351,17 @@ void SafeBrowsingNavigationObserverManager::ScheduleNextCleanUpAfterInterval(
 
 NavigationEvent* SafeBrowsingNavigationObserverManager::FindNavigationEvent(
     const GURL& target_url,
+    const GURL& target_main_frame_url,
     int target_tab_id) {
-  auto it = navigation_map_.find(target_url);
+  if (target_url.is_empty() && target_main_frame_url.is_empty())
+    return nullptr;
+
+  // If target_url is empty, we should back trace navigation based on its
+  // main frame URL instead.
+  const GURL& search_url =
+      target_url.is_empty() ? target_main_frame_url : target_url;
+
+  auto it = navigation_map_.find(search_url);
   if (it == navigation_map_.end()) {
     return nullptr;
   }
@@ -353,7 +369,7 @@ NavigationEvent* SafeBrowsingNavigationObserverManager::FindNavigationEvent(
   // the vector in reverse order to get the latest match.
   for (auto rit = it->second.rbegin(); rit != it->second.rend(); ++rit) {
     // If tab id is not valid, we only compare url, otherwise we compare both.
-    if (rit->destination_url == target_url &&
+    if (rit->destination_url == search_url &&
         (target_tab_id == -1 || rit->target_tab_id == target_tab_id)) {
       // If both source_url and source_main_frame_url are empty, and this
       // navigation is not triggered by user, a retargeting navigation probably

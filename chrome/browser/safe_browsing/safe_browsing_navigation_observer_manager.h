@@ -139,9 +139,14 @@ class SafeBrowsingNavigationObserverManager
 
   void ScheduleNextCleanUpAfterInterval(base::TimeDelta interval);
 
-  // Find the most recent navigation event that navigated to |target_url| in the
-  // tab with ID |target_tab_id|. If |target_tab_id| is not available (-1), we
-  // look for all tabs for the most recent navigation to |target_url|.
+  // Find the most recent navigation event that navigated to |target_url| and
+  // its associated |target_main_frame_url| in the tab with ID |target_tab_id|.
+  // If navigation happened in the main frame, |target_url| and |target_main_
+  // frame_url| are the same.
+  // If |target_url| is empty, we use its main frame url (a.k.a.
+  // |target_main_frame_url|) to search for navigation events.
+  // If |target_tab_id| is not available (-1), we look for all tabs for the most
+  // recent navigation to |target_url| or |target_main_frame_url|.
   // For some cases, the most recent navigation to |target_url| may not be
   // relevant.
   // For example, url1 in window A opens url2 in window B, url1 then opens an
@@ -156,6 +161,7 @@ class SafeBrowsingNavigationObserverManager
   // However, it does not prevent us to attribute url1 in Window A as the cause
   // of all these navigations.
   NavigationEvent* FindNavigationEvent(const GURL& target_url,
+                                       const GURL& target_main_frame_url,
                                        int target_tab_id);
 
   void AddToReferrerChain(std::vector<ReferrerChainEntry>* referrer_chain,
@@ -168,8 +174,8 @@ class SafeBrowsingNavigationObserverManager
   // original target url. Since the same url can be requested multiple times
   // across different tabs and frames, the value of this map is a vector of
   // NavigationEvent ordered by navigation finish time.
-  // TODO(jialiul): Entries in navigation_map_ will be removed if they are older
-  // than 2 minutes since their corresponding navigations finish.
+  // Entries in navigation_map_ will be removed if they are older than 2 minutes
+  // since their corresponding navigations finish.
   NavigationMap navigation_map_;
 
   // user_gesture_map_ keeps track of the timestamp of last user gesture in

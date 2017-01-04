@@ -1054,11 +1054,10 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
 // Click a link in a subframe and start download.
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                        SubFrameDirectDownload) {
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kMultiFrameTestURL));
+  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
+  ClickTestLink("sub_frame_download_attribution", 1, initial_url);
   std::string test_name =
       base::StringPrintf("%s', '%s", "iframe1", "iframe_direct_download");
-  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
   GURL multi_frame_test_url =
       embedded_test_server()->GetURL(kMultiFrameTestURL);
   GURL iframe_url = embedded_test_server()->GetURL(kIframeDirectDownloadURL);
@@ -1083,8 +1082,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         true,         // has_committed
                         false,        // has_server_redirect
                         nav_map->at(initial_url).at(0));
-  VerifyNavigationEvent(GURL(),                // source_url
-                        GURL(),                // source_main_frame_url
+  VerifyNavigationEvent(initial_url,           // source_url
+                        initial_url,           // source_main_frame_url
                         multi_frame_test_url,  // original_request_url
                         multi_frame_test_url,  // destination_url
                         true,                  // is_user_initiated,
@@ -1118,7 +1117,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   VerifyHostToIpMap();
 
   auto referrer_chain = IdentifyReferrerChain(GetDownload());
-  ASSERT_EQ(2U, referrer_chain.size());
+  ASSERT_EQ(4U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
                            test_server_ip,                    // ip_address
@@ -1133,16 +1132,29 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            multi_frame_test_url,  // referrer_main_frame_url
                            false,                 // is_retargeting
                            referrer_chain[1]);
+  VerifyReferrerChainEntry(multi_frame_test_url,                 // url
+                           ReferrerChainEntry::CLIENT_REDIRECT,  // type
+                           test_server_ip,                       // ip_address
+                           initial_url,  // referrer_url
+                           initial_url,  // referrer_main_frame_url
+                           false,                 // is_retargeting
+                           referrer_chain[2]);
+  VerifyReferrerChainEntry(initial_url,                           // url
+                           ReferrerChainEntry::LANDING_REFERRER,  // type
+                           test_server_ip,                        // ip_address
+                           GURL(),  // referrer_url
+                           GURL(),  // referrer_main_frame_url
+                           false,                 // is_retargeting
+                           referrer_chain[3]);
 }
 
 // Click a link in a subframe and open download in a new tab.
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                        SubFrameNewTabDownload) {
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kMultiFrameTestURL));
+  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
+  ClickTestLink("sub_frame_download_attribution", 1, initial_url);
   std::string test_name =
       base::StringPrintf("%s', '%s", "iframe2", "iframe_new_tab_download");
-  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
   GURL multi_frame_test_url =
       embedded_test_server()->GetURL(kMultiFrameTestURL);
   GURL iframe_url = embedded_test_server()->GetURL(kIframeDirectDownloadURL);
@@ -1154,7 +1166,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
   auto nav_map = navigation_map();
   ASSERT_TRUE(nav_map);
-  ASSERT_EQ(std::size_t(6), nav_map->size());
+  ASSERT_EQ(6U, nav_map->size());
   ASSERT_EQ(1U, nav_map->at(multi_frame_test_url).size());
   ASSERT_EQ(1U, nav_map->at(iframe_url).size());
   ASSERT_EQ(1U, nav_map->at(iframe_retargeting_url).size());
@@ -1169,8 +1181,8 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         true,         // has_committed
                         false,        // has_server_redirect
                         nav_map->at(initial_url).at(0));
-  VerifyNavigationEvent(GURL(),                // source_url
-                        GURL(),                // source_main_frame_url
+  VerifyNavigationEvent(initial_url,           // source_url
+                        initial_url,           // source_main_frame_url
                         multi_frame_test_url,  // original_request_url
                         multi_frame_test_url,  // destination_url
                         true,                  // is_user_initiated,
@@ -1220,7 +1232,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   VerifyHostToIpMap();
 
   auto referrer_chain = IdentifyReferrerChain(GetDownload());
-  EXPECT_EQ(std::size_t(3), referrer_chain.size());
+  EXPECT_EQ(5U, referrer_chain.size());
   VerifyReferrerChainEntry(download_url,                      // url
                            ReferrerChainEntry::DOWNLOAD_URL,  // type
                            test_server_ip,                    // ip_address
@@ -1242,6 +1254,20 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            multi_frame_test_url,  // referrer_main_frame_url
                            false,                 // is_retargeting
                            referrer_chain[2]);
+  VerifyReferrerChainEntry(multi_frame_test_url,                 // url
+                           ReferrerChainEntry::CLIENT_REDIRECT,  // type
+                           test_server_ip,                       // ip_address
+                           initial_url,  // referrer_url
+                           initial_url,  // referrer_main_frame_url
+                           false,                 // is_retargeting
+                           referrer_chain[3]);
+  VerifyReferrerChainEntry(initial_url,                           // url
+                           ReferrerChainEntry::LANDING_REFERRER,  // type
+                           test_server_ip,                        // ip_address
+                           GURL(),  // referrer_url
+                           GURL(),  // referrer_main_frame_url
+                           false,                 // is_retargeting
+                           referrer_chain[4]);
 }
 
 // Click a link which redirects to the landing page, and then click on the
