@@ -92,9 +92,7 @@ class CORE_EXPORT CanvasRenderingContext
 
   virtual PassRefPtr<Image> getImage(AccelerationHint,
                                      SnapshotReason) const = 0;
-  virtual ImageData* toImageData(SnapshotReason reason) const {
-    return nullptr;
-  }
+  virtual ImageData* toImageData(SnapshotReason reason) { return nullptr; }
   virtual ContextType getContextType() const = 0;
   virtual bool isAccelerated() const { return false; }
   virtual bool shouldAntialias() const { return false; }

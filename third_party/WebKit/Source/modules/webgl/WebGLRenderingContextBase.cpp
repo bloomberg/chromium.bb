@@ -92,7 +92,9 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
+#include "platform/graphics/gpu/SharedGpuContext.h"
 #include "public/platform/Platform.h"
+#include "skia/ext/texture_handle.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
@@ -768,22 +770,42 @@ PassRefPtr<Image> WebGLRenderingContextBase::getImage(
   return buffer->newImageSnapshot(hint, reason);
 }
 
-ImageData* WebGLRenderingContextBase::toImageData(SnapshotReason reason) const {
-  // TODO: Furnish toImageData in webgl renderingcontext for jpeg and webp
-  // images. See crbug.com/657531.
+ImageData* WebGLRenderingContextBase::toImageData(SnapshotReason reason) {
   ImageData* imageData = nullptr;
   // TODO(ccameron): WebGL should produce sRGB images.
   // https://crbug.com/672299
-  if (this->drawingBuffer()) {
-    sk_sp<SkImage> snapshot =
-        this->drawingBuffer()
-            ->transferToStaticBitmapImage()
-            ->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
+  if (drawingBuffer()) {
+    // For un-premultiplied data
+    imageData = paintRenderingResultsToImageData(BackBuffer);
+    if (imageData) {
+      return imageData;
+    }
+
+    int width = drawingBuffer()->size().width();
+    int height = drawingBuffer()->size().height();
+    OpacityMode opacityMode = creationAttributes().alpha() ? NonOpaque : Opaque;
+
+    drawingBuffer()->resolveAndBindForReadAndDraw();
+    gpu::gles2::GLES2Interface* gl = SharedGpuContext::gl();
+    SkImageInfo imageInfo = SkImageInfo::Make(
+        width, height, kRGBA_8888_SkColorType,
+        Opaque == opacityMode ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
+    SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
+    sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
+        SharedGpuContext::gr(), SkBudgeted::kYes, imageInfo, 0,
+        Opaque == opacityMode ? nullptr : &disableLCDProps);
+    GLuint textureId = skia::GrBackendObjectToGrGLTextureInfo(
+                           surface->getTextureHandle(
+                               SkSurface::kDiscardWrite_TextureHandleAccess))
+                           ->fID;
+
+    drawingBuffer()->copyToPlatformTexture(
+        gl, textureId, GL_RGBA, GL_UNSIGNED_BYTE, 0, true, false,
+        IntPoint(0, 0), IntRect(IntPoint(0, 0), drawingBuffer()->size()),
+        BackBuffer);
+    sk_sp<SkImage> snapshot = surface->makeImageSnapshot();
     if (snapshot) {
-      imageData = ImageData::create(this->getOffscreenCanvas()->size());
-      SkImageInfo imageInfo = SkImageInfo::Make(
-          this->drawingBufferWidth(), this->drawingBufferHeight(),
-          kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+      imageData = ImageData::create(drawingBuffer()->size());
       snapshot->readPixels(imageInfo, imageData->data()->data(),
                            imageInfo.minRowBytes(), 0, 0);
     }

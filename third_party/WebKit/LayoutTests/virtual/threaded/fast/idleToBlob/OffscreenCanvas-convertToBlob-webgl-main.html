@@ -1,18 +1,30 @@
 <img id="png"/>
+<img id="jpeg-high"/>
+<img id="jpeg-low"/>
+<img id="webp-high"/>
+<img id="webp-low"/>
 <script type="text/javascript">
 if (window.testRunner) {
   testRunner.waitUntilDone();
 }
 
-// TODO: Add more image types to this test once the toImageData() for webgl
-// is completed. See crbug.com/657531.
 var pngImage = document.getElementById('png');
+var jpegImageHigh = document.getElementById('jpeg-high');
+var jpegImageLow = document.getElementById('jpeg-low');
+var webpImageHigh = document.getElementById('webp-high');
+var webpImageLow = document.getElementById('webp-low');
+var numTestCount = 5;
 function imageLoaded() {
-  if (window.testRunner) {
+  numTestCount--;
+  if (numTestCount == 0 && window.testRunner) {
     window.testRunner.notifyDone();
   }
 }
 pngImage.addEventListener('load', imageLoaded);
+jpegImageHigh.addEventListener('load', imageLoaded);
+jpegImageLow.addEventListener('load', imageLoaded);
+webpImageHigh.addEventListener('load', imageLoaded);
+webpImageLow.addEventListener('load', imageLoaded);
 
 var offCanvas = new OffscreenCanvas(50, 50);
 var gl = offCanvas.getContext('webgl');
@@ -22,6 +34,26 @@ gl.clear(gl.COLOR_BUFFER_BIT);
 offCanvas.convertToBlob()
   .then(function(blob) { 
     pngImage.src = URL.createObjectURL(blob);
+  });
+
+offCanvas.convertToBlob({type: "image/jpeg"})
+  .then(function(blob) {
+    jpegImageHigh.src = URL.createObjectURL(blob);
+  });
+
+offCanvas.convertToBlob({type: "image/jpeg", quality: 0.2})
+  .then(function(blob) {
+    jpegImageLow.src = URL.createObjectURL(blob);
+  });
+
+offCanvas.convertToBlob({type: "image/webp"})
+  .then(function(blob) { 
+    webpImageHigh.src = URL.createObjectURL(blob);
+  });
+
+offCanvas.convertToBlob({type: "image/webp", quality: 0.2})
+  .then(function(blob) {
+    webpImageLow.src = URL.createObjectURL(blob);
   });
 
 </script>

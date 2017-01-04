@@ -173,7 +173,7 @@ PassRefPtr<Image> OffscreenCanvasRenderingContext2D::getImage(
 }
 
 ImageData* OffscreenCanvasRenderingContext2D::toImageData(
-    SnapshotReason reason) const {
+    SnapshotReason reason) {
   if (!imageBuffer())
     return nullptr;
   sk_sp<SkImage> snapshot =
