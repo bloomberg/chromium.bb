@@ -149,17 +149,21 @@ class DepsUpdater(object):
             self.run(['git', 'add', destination])
 
     def _generate_manifest(self, original_repo_path, dest_path):
-        """Generate MANIFEST.json for imported tests.
+        """Generates MANIFEST.json for imported tests.
 
-        Run 'manifest' command if it exists in original_repo_path, and
-        add generated MANIFEST.json to dest_path.
+        Args:
+            original_repo_path: Path to the temporary source WPT repo directory.
+            dest_path: Path to the destination WPT directory.
+
+        Runs the (newly-updated) manifest command if it's found, and then
+        stages the generated MANIFEST.json in the git index, ready to commit.
         """
         manifest_command = self.fs.join(original_repo_path, 'manifest')
         if not self.fs.exists(manifest_command):
             # Do nothing for csswg-test.
             return
         _log.info('Generating MANIFEST.json')
-        self.run([manifest_command, '--tests-root', dest_path])
+        self.run([manifest_command, '--work', '--tests-root', dest_path])
         self.run(['git', 'add', self.fs.join(dest_path, 'MANIFEST.json')])
 
     def update(self, dest_dir_name, url, keep_w3c_repos_around, revision):

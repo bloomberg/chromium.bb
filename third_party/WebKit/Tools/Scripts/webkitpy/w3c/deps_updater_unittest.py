@@ -89,3 +89,40 @@ class DepsUpdaterTest(unittest.TestCase):
              'TBR=qyearsley@chromium.org\n'
              'NOEXPORT=true'))
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
+
+    def test_generate_manifest_command_not_found(self):
+        # If we're updating csswg-test, then the manifest file won't be found.
+        host = MockHost()
+        host.filesystem.files = {}
+        updater = DepsUpdater(host)
+        updater._generate_manifest(
+            '/mock-checkout/third_party/WebKit/css',
+            '/mock-checkout/third_party/WebKit/LayoutTests/imported/csswg-test')
+        self.assertEqual(host.executive.calls, [])
+
+    def test_generate_manifest_successful_run(self):
+        # This test doesn't test any aspect of the real manifest script, it just
+        # asserts that DepsUpdater._generate_manifest would invoke the script.
+        host = MockHost()
+        host.filesystem.files = {
+            '/mock-checkout/third_party/WebKit/wpt/manifest': 'dummy content'
+        }
+        updater = DepsUpdater(host)
+        updater._generate_manifest(
+            '/mock-checkout/third_party/WebKit/wpt',
+            '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt')
+        self.assertEqual(
+            host.executive.calls,
+            [
+                [
+                    '/mock-checkout/third_party/WebKit/wpt/manifest',
+                    '--work',
+                    '--tests-root',
+                    '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt'
+                ],
+                [
+                    'git',
+                    'add',
+                    '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt/MANIFEST.json'
+                ]
+            ])
