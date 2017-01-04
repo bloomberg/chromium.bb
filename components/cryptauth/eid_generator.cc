@@ -6,7 +6,6 @@
 
 #include <cstring>
 
-#include "base/base64.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"

@@ -39,12 +39,12 @@ const int64_t kDefaultCurrentPeriodStart = 1577836800000L;
 // 1:43am on 1/1/2020.
 const int64_t kDefaultCurrentTime = 1577843000000L;
 
-// Base64 encoded values for: "firstSeed", "secondSeed", "thirdSeed" and
-// "fourthSeed".
-const std::string kFirstSeed = "Zmlyc3RTZWVk";
-const std::string kSecondSeed = "c2Vjb25kU2VlZA==";
-const std::string kThirdSeed = "dGhpcmRTZWVk";
-const std::string kFourthSeed = "Zm91cnRoU2VlZA==";
+// The Base64 encoded values of these raw data strings are, respectively:
+// "Zmlyc3RTZWVk", "c2Vjb25kU2VlZA==", "dGhpcmRTZWVk","Zm91cnRoU2VlZA==".
+const std::string kFirstSeed = "firstSeed";
+const std::string kSecondSeed = "secondSeed";
+const std::string kThirdSeed = "thirdSeed";
+const std::string kFourthSeed = "fourthSeed";
 
 const std::string kDefaultAdvertisingDevicePublicKey = "publicKey";
 

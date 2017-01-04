@@ -258,13 +258,17 @@ void ExpectSyncedDevicesAndPrefAreEqual(
         const base::DictionaryValue* seed;
         ASSERT_TRUE(beacon_seeds_from_prefs->GetDictionary(i, &seed));
 
-        std::string data, start_ms, end_ms;
-        EXPECT_TRUE(seed->GetString("beacon_seed_data", &data));
+        std::string data_b64, start_ms, end_ms;
+        EXPECT_TRUE(seed->GetString("beacon_seed_data", &data_b64));
         EXPECT_TRUE(seed->GetString("beacon_seed_start_ms", &start_ms));
         EXPECT_TRUE(seed->GetString("beacon_seed_end_ms", &end_ms));
 
         const cryptauth::BeaconSeed& expected_seed =
             expected_device.beacon_seeds((int) i);
+
+        std::string data;
+        EXPECT_TRUE(base::Base64UrlDecode(
+            data_b64, base::Base64UrlDecodePolicy::REQUIRE_PADDING, &data));
         EXPECT_TRUE(expected_seed.has_data());
         EXPECT_EQ(expected_seed.data(), data);
 

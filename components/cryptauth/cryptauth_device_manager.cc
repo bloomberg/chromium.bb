@@ -68,9 +68,14 @@ std::unique_ptr<base::ListValue> BeaconSeedsToListValue(
     std::unique_ptr<base::DictionaryValue> beacon_seed_value(
         new base::DictionaryValue());
 
-    // Note: Seed data is already base-64 encoded, so there is no need to
-    // convert it.
-    beacon_seed_value->SetString(kExternalDeviceKeyBeaconSeedData, seed.data());
+    // Note that the |BeaconSeed|s' data is stored in Base64Url encoding because
+    // dictionary values must be valid UTF8 strings.
+    std::string seed_data_b64;
+    base::Base64UrlEncode(seed.data(),
+                          base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                          &seed_data_b64);
+    beacon_seed_value->SetString(kExternalDeviceKeyBeaconSeedData,
+                                 seed_data_b64);
 
     // Set the timestamps as string representations of their numeric value
     // since there is no notion of a base::LongValue.
@@ -168,16 +173,24 @@ void AddBeaconSeedsToExternalDevice(
       continue;
     }
 
-    std::string data, start_time_millis_str, end_time_millis_str;
-    if (!seed_dictionary->GetString(kExternalDeviceKeyBeaconSeedData, &data)
-        || !seed_dictionary->GetString(
-            kExternalDeviceKeyBeaconSeedStartMs,
-            &start_time_millis_str)
-        || !seed_dictionary->GetString(
-            kExternalDeviceKeyBeaconSeedEndMs,
-            &end_time_millis_str)) {
+    std::string seed_data_b64, start_time_millis_str, end_time_millis_str;
+    if (!seed_dictionary->GetString(kExternalDeviceKeyBeaconSeedData,
+                                    &seed_data_b64) ||
+        !seed_dictionary->GetString(kExternalDeviceKeyBeaconSeedStartMs,
+                                    &start_time_millis_str) ||
+        !seed_dictionary->GetString(kExternalDeviceKeyBeaconSeedEndMs,
+                                    &end_time_millis_str)) {
       PA_LOG(WARNING) << "Unable to deserialize BeaconSeed due to missing "
           << "data; skipping.";
+      continue;
+    }
+
+    // Seed data is returned as raw data, not in Base64 encoding.
+    std::string seed_data;
+    if (!base::Base64UrlDecode(seed_data_b64,
+                               base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                               &seed_data)) {
+      PA_LOG(WARNING) << "Decoding seed data failed.";
       continue;
     }
 
@@ -190,7 +203,7 @@ void AddBeaconSeedsToExternalDevice(
     }
 
     cryptauth::BeaconSeed* seed = external_device.add_beacon_seeds();
-    seed->set_data(data);
+    seed->set_data(seed_data);
     seed->set_start_time_millis(start_time_millis);
     seed->set_end_time_millis(end_time_millis);
   }
