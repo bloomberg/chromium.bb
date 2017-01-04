@@ -17,6 +17,7 @@ message Study {
   // Ex: "my_study"
   required string name = 1;
 
+  // DEPRECATED: Prefer end_date instead.
   // The expiry date of the study in Unix time format. (Seconds since midnight
   // January 1, 1970 UTC). See: http://en.wikipedia.org/wiki/Unix_time
   //
@@ -38,7 +39,8 @@ message Study {
   optional Consistency consistency = 7 [default = SESSION];
 
   // Name of the experiment that gets the default experience. This experiment
-  // must be included in the list below.
+  // must be included in the list below. If not specified, a generic default
+  // experiment name is used.
   // Ex: "default"
   optional string default_experiment_name = 8;
 
@@ -198,12 +200,21 @@ message Study {
   // Filtering criteria specifying whether this study is applicable to a given
   // Chrome instance.
   //
-  // Next tag: 13
+  // Next tag: 14
   message Filter {
     // The start date of the study in Unix time format. (Seconds since midnight
     // January 1, 1970 UTC). See: http://en.wikipedia.org/wiki/Unix_time
     // Ex: 1330893974  (corresponds to 2012-03-04 20:46:14Z)
     optional int64 start_date = 1;
+
+    // The end date of the study in Unix time format. (Seconds since midnight
+    // January 1, 1970 UTC). See: http://en.wikipedia.org/wiki/Unix_time
+    // Ex: 1330893974  (corresponds to 2012-03-04 20:46:14Z)
+    // Mutually exclusive with expiry_date. The difference between end_date and
+    // expiry_date is that, when end_date is past, the field trial will not be
+    // created. When expiry_date is past, the trial is still created, but will
+    // be disabled, causing it to select its default group.
+    optional int64 end_date = 13;
 
     // The minimum Chrome version for this study, allowing a trailing '*'
     // character for pattern matching. Inclusive. (To check for a match, iterate

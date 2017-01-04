@@ -43,6 +43,9 @@ bool CheckStudyPlatform(const Study_Filter& filter, Study_Platform platform);
 bool CheckStudyStartDate(const Study_Filter& filter,
                          const base::Time& date_time);
 
+// Checks whether a study is applicable for the given date/time per |filter|.
+bool CheckStudyEndDate(const Study_Filter& filter, const base::Time& date_time);
+
 // Checks whether a study is applicable for the given version per |filter|.
 bool CheckStudyVersion(const Study_Filter& filter,
                        const base::Version& version);

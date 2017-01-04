@@ -227,9 +227,11 @@ TEST(VariationsStudyFilteringTest, CheckStudyStartDate) {
     const base::Time start_date;
     bool expected_result;
   } start_test_cases[] = {
-    { now - delta, true },
-    { now, true },
-    { now + delta, false },
+      {now - delta, true},
+      // Note, the proto start_date is truncated to seconds, but the reference
+      // date isn't.
+      {now, true},
+      {now + delta, false},
   };
 
   Study_Filter filter;
@@ -242,6 +244,29 @@ TEST(VariationsStudyFilteringTest, CheckStudyStartDate) {
     const bool result = internal::CheckStudyStartDate(filter, now);
     EXPECT_EQ(start_test_cases[i].expected_result, result)
         << "Case " << i << " failed!";
+  }
+}
+
+TEST(VariationsStudyFilteringTest, CheckStudyEndDate) {
+  const base::Time now = base::Time::Now();
+  const base::TimeDelta delta = base::TimeDelta::FromHours(1);
+  const struct {
+    const base::Time end_date;
+    bool expected_result;
+  } start_test_cases[] = {
+      {now - delta, false}, {now + delta, true},
+  };
+
+  Study_Filter filter;
+
+  // End date not set should result in true.
+  EXPECT_TRUE(internal::CheckStudyEndDate(filter, now));
+
+  for (size_t i = 0; i < arraysize(start_test_cases); ++i) {
+    filter.set_end_date(TimeToProtoTime(start_test_cases[i].end_date));
+    const bool result = internal::CheckStudyEndDate(filter, now);
+    EXPECT_EQ(start_test_cases[i].expected_result, result) << "Case " << i
+                                                           << " failed!";
   }
 }
 
@@ -573,8 +598,9 @@ TEST(VariationsStudyFilteringTest, ValidateStudy) {
   study.mutable_filter()->set_max_version("2.3.4");
   EXPECT_TRUE(processed_study.Init(&study, false));
 
+  // A blank default study is allowed.
   study.clear_default_experiment_name();
-  EXPECT_FALSE(processed_study.Init(&study, false));
+  EXPECT_TRUE(processed_study.Init(&study, false));
 
   study.set_default_experiment_name("xyz");
   EXPECT_FALSE(processed_study.Init(&study, false));
