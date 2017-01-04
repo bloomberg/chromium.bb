@@ -79,7 +79,7 @@ void ViewsTestHelperAura::TearDown() {
 }
 
 gfx::NativeWindow ViewsTestHelperAura::GetContext() {
-  if (PlatformTestHelper::IsAuraMusClient()) {
+  if (PlatformTestHelper::IsMus()) {
     // GetContext() returns the root of a WindowTreeHost associated with a
     // single display that is intended for an ash like environment. Such a
     // configuration doesn't make sense for aura-mus-client, where it's testing

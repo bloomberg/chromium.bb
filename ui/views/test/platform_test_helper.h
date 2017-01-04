@@ -24,13 +24,8 @@ class PlatformTestHelper {
   static void set_factory(const Factory& factory);
   static std::unique_ptr<PlatformTestHelper> Create();
 
-  // Whether we are running under the mus environment. Methods are static so
-  // that they can be called before Create().
   static void SetIsMus();
   static bool IsMus();
-
-  static void SetIsAuraMusClient();
-  static bool IsAuraMusClient();
 
   // Called once the ViewsTestHelper has been created, but before SetUp() is
   // called.

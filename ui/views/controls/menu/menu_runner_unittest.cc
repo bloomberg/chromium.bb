@@ -108,7 +108,7 @@ TEST_F(MenuRunnerTest, AsynchronousRun) {
 TEST_F(MenuRunnerTest, AsynchronousKeyEventHandling) {
   // TODO: test uses GetContext(), which is not applicable to aura-mus.
   // http://crbug.com/663809.
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   InitMenuRunner(MenuRunner::ASYNC);
@@ -132,7 +132,7 @@ TEST_F(MenuRunnerTest, AsynchronousKeyEventHandling) {
 TEST_F(MenuRunnerTest, LatinMnemonic) {
   // TODO: test uses GetContext(), which is not applicable to aura-mus.
   // http://crbug.com/663809.
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   InitMenuRunner(MenuRunner::ASYNC);
@@ -157,7 +157,7 @@ TEST_F(MenuRunnerTest, LatinMnemonic) {
 TEST_F(MenuRunnerTest, NonLatinMnemonic) {
   // TODO: test uses GetContext(), which is not applicable to aura-mus.
   // http://crbug.com/663809.
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   InitMenuRunner(MenuRunner::ASYNC);
@@ -242,7 +242,7 @@ class MenuRunnerWidgetTest : public MenuRunnerTest {
   std::unique_ptr<ui::test::EventGenerator> EventGeneratorForWidget(
       Widget* widget) {
     return base::MakeUnique<ui::test::EventGenerator>(
-        IsMus() || IsAuraMusClient() ? widget->GetNativeWindow() : GetContext(),
+        IsMus() ? widget->GetNativeWindow() : GetContext(),
         widget->GetNativeWindow());
   }
 

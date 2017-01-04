@@ -7,7 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 
 namespace ui {
@@ -24,7 +24,7 @@ class ForwardingTestingClipboard : public ui::Clipboard {
         clipboard_to_test_(Clipboard::GetForCurrentThread()) {
     // If we don't have a window manager connection, we will get the default
     // platform clipboard instead.
-    EXPECT_TRUE(views::WindowManagerConnection::Exists());
+    EXPECT_TRUE(views::MusClient::Exists());
   }
 
   ~ForwardingTestingClipboard() override {

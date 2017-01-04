@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/mus/views_mus_test_suite.h"
+#include "ui/views/mus/views_aura_mus_test_suite.h"
 
 int MasterProcessMain(int argc, char** argv) {
-  return views::ViewsMusTestSuite(argc, argv).RunTestsSerially();
+  return views::ViewsAuraMusTestSuite(argc, argv).RunTestsSerially();
 }

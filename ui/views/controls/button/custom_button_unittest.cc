@@ -221,24 +221,21 @@ TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
   aura::test::TestCursorClient cursor_client(
       widget()->GetNativeView()->GetRootWindow());
 
-  // Mus doesn't support disabling mouse events. https://crbug.com/618321
-  if (!IsMus()) {
-    // In Aura views, no new hover effects are invoked if mouse events
-    // are disabled.
-    cursor_client.DisableMouseEvents();
+  // In Aura views, no new hover effects are invoked if mouse events
+  // are disabled.
+  cursor_client.DisableMouseEvents();
 
-    button()->SetEnabled(false);
-    EXPECT_EQ(CustomButton::STATE_DISABLED, button()->state());
+  button()->SetEnabled(false);
+  EXPECT_EQ(CustomButton::STATE_DISABLED, button()->state());
 
-    button()->SetEnabled(true);
-    EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+  button()->SetEnabled(true);
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
 
-    button()->SetVisible(false);
-    EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+  button()->SetVisible(false);
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
 
-    button()->SetVisible(true);
-    EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
-  }
+  button()->SetVisible(true);
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 }
 

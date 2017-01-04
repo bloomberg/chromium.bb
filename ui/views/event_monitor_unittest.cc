@@ -21,7 +21,7 @@ class EventMonitorTest : public WidgetTest {
     widget_ = CreateTopLevelNativeWidget();
     widget_->SetSize(gfx::Size(100, 100));
     widget_->Show();
-    if (IsMus() || IsAuraMusClient()) {
+    if (IsMus()) {
       generator_.reset(
           new ui::test::EventGenerator(widget_->GetNativeWindow()));
     } else {

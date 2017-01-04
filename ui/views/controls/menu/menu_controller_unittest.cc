@@ -1427,12 +1427,6 @@ TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
 // crash.
 TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
   // TODO: this test wedges with aura-mus-client. http://crbug.com/664280.
-  if (IsAuraMusClient())
-    return;
-
-  // This test creates two native widgets, but expects the child native widget
-  // to be able to reach up and use the parent native widget's aura
-  // objects. https://crbug.com/614037
   if (IsMus())
     return;
 
@@ -1450,12 +1444,6 @@ TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
 // destroys the Widget used for drag-and-drop, thereby ending the drag.
 TEST_F(MenuControllerTest, CancelAllDuringDrag) {
   // TODO: this test wedges with aura-mus-client. http://crbug.com/664280.
-  if (IsAuraMusClient())
-    return;
-
-  // This test creates two native widgets, but expects the child native widget
-  // to be able to reach up and use the parent native widget's aura
-  // objects. https://crbug.com/614037
   if (IsMus())
     return;
 

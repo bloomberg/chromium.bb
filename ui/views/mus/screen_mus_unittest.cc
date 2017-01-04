@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
-#include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/test/views_test_base.h"
 

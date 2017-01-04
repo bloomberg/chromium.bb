@@ -29,12 +29,9 @@ class ViewsTestBase : public PlatformTest {
   ViewsTestBase();
   ~ViewsTestBase() override;
 
-  // Whether the test is running under mus.
-  static bool IsMus();
-
   // Returns true if running aura-mus in a client configuration (not the window
   // manager).
-  static bool IsAuraMusClient();
+  static bool IsMus();
 
   // testing::Test:
   void SetUp() override;

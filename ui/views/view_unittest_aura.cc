@@ -63,7 +63,7 @@ typedef ViewsTestBase ViewAuraTest;
 TEST_F(ViewAuraTest, RecreateLayersWithWindows) {
   // TODO: test uses GetContext(), which is not applicable to aura-mus.
   // http://crbug.com/663809.
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   Widget* w1 = CreateControlWidget(GetContext(), gfx::Rect(0, 0, 100, 100));

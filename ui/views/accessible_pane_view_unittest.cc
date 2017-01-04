@@ -137,7 +137,7 @@ TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
   EXPECT_EQ(test_view_bar->child_button(),
             test_view_bar->GetWidget()->GetFocusManager()->GetFocusedView());
 
-  if (!IsMus() && !IsAuraMusClient()) {
+  if (!IsMus()) {
     // Deactivate() is only reliable on Ash. On Windows it uses
     // ::GetNextWindow() to simply activate another window, and which one is not
     // predictable. On Mac, Deactivate() is not implemented. Note that

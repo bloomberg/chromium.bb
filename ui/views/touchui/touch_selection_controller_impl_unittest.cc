@@ -77,7 +77,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     ViewsTestBase::SetUp();
     // TODO: test uses GetContext(), which is not applicable to aura-mus.
     // http://crbug.com/663809.
-    if (IsAuraMusClient())
+    if (IsMus())
       return;
     test_cursor_client_.reset(new aura::test::TestCursorClient(GetContext()));
   }
@@ -323,7 +323,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 // a Textfield changes.
 TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   CreateTextfield();
@@ -360,7 +360,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInTextfieldTest) {
 // Tests that the selection handles are placed appropriately in bidi text.
 TEST_F(TouchSelectionControllerImplTest, SelectionInBidiTextfieldTest) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   CreateTextfield();
@@ -416,7 +416,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectionInBidiTextfieldTest) {
 // handles are moved.
 TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   CreateTextfield();
@@ -462,7 +462,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
 
 TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   CreateTextfield();
@@ -594,7 +594,7 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
 TEST_F(TouchSelectionControllerImplTest,
        HiddenSelectionHandleRetainsCursorPosition) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   static const uint32_t selection_start = 10u;
@@ -616,7 +616,7 @@ TEST_F(TouchSelectionControllerImplTest,
 // drag and that it maintains the correct orientation when exposed.
 TEST_F(TouchSelectionControllerImplTest, HiddenSelectionHandleExposed) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   static const uint32_t selection_start = 0u;
@@ -637,7 +637,7 @@ TEST_F(TouchSelectionControllerImplTest, HiddenSelectionHandleExposed) {
 TEST_F(TouchSelectionControllerImplTest,
        DoubleTapInTextfieldWithCursorHandleShouldSelectText) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   CreateTextfield();
@@ -740,7 +740,7 @@ class TestTouchEditable : public ui::TouchEditable {
 TEST_F(TouchSelectionControllerImplTest,
        VisibilityOfHandleRegardingClientBounds) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   CreateWidget();
@@ -791,7 +791,7 @@ TEST_F(TouchSelectionControllerImplTest,
 
 TEST_F(TouchSelectionControllerImplTest, HandlesStackAboveParent) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   ui::EventTarget* root = GetContext();
@@ -833,7 +833,7 @@ TEST_F(TouchSelectionControllerImplTest, HandlesStackAboveParent) {
 
 TEST_F(TouchSelectionControllerImplTest, MouseEventDeactivatesTouchSelection) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   CreateTextfield();
@@ -878,7 +878,7 @@ TEST_F(TouchSelectionControllerImplTest, MouseEventDeactivatesTouchSelection) {
 
 TEST_F(TouchSelectionControllerImplTest, MouseCaptureChangedEventIgnored) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   CreateTextfield();
@@ -901,7 +901,7 @@ TEST_F(TouchSelectionControllerImplTest, MouseCaptureChangedEventIgnored) {
 
 TEST_F(TouchSelectionControllerImplTest, KeyEventDeactivatesTouchSelection) {
   // TODO: see comment in SetUp().
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   CreateTextfield();

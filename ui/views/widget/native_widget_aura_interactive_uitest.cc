@@ -52,7 +52,7 @@ using NativeWidgetAuraTest = ViewsInteractiveUITestBase;
 TEST_F(NativeWidgetAuraTest, NonActiveWindowRequestImeFocus) {
   // TODO: test uses GetContext(), which is not applicable to aura-mus.
   // http://crbug.com/663809.
-  if (IsAuraMusClient())
+  if (IsMus())
     return;
 
   TestFocusRules* test_focus_rules = new TestFocusRules;

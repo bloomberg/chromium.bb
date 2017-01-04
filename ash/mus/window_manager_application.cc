@@ -25,7 +25,6 @@
 #include "ui/events/event.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/mus/aura_init.h"
-#include "ui/views/mus/surface_context_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/power/power_status.h"
