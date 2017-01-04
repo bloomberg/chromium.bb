@@ -12,6 +12,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/timer/timer.h"
 #include "base/win/scoped_comptr.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/screen_resolution.h"
@@ -135,19 +136,33 @@ class RdpClientWindow
   int LogOnCreateError(HRESULT error);
 
   // Wrappers for the event handler's methods that make sure that
-  // OnDisconnected() is the last notification delivered and is delevered
+  // OnDisconnected() is the last notification delivered and is delivered
   // only once.
   void NotifyConnected();
   void NotifyDisconnected();
 
   // Updates the desktop using |screen_resolution_| if resizing is supported.
-  void UpdateDesktopResolution();
+  HRESULT UpdateDesktopResolution();
+
+  // Attempts to reapply the requested screen resolution.  This method is used
+  // to workaround the inconsistent behavior seen by the RDP API which can fail
+  // for an indeterminate amount of time (i.e. a few seconds) after the user has
+  // logged into the session.  In practice retrying after ~100ms will succeed,
+  // but we will use |apply_resolution_timer_| to try a few times if the machine
+  // is under load.
+  void ReapplyDesktopResolution();
 
   // Invoked to report connect/disconnect events.
   EventHandler* event_handler_;
 
   // Contains the requested dimensions of the screen.
   remoting::ScreenResolution screen_resolution_;
+
+  // Used for applying resolution changes after a timeout.
+  base::RepeatingTimer apply_resolution_timer_;
+
+  // Tracks the number of resolution change retries.
+  int apply_resolution_attempts_ = 0;
 
   // The endpoint to connect to.
   net::IPEndPoint server_endpoint_;

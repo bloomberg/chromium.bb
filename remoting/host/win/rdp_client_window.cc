@@ -8,7 +8,9 @@
 
 #include <list>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -35,6 +37,12 @@ constexpr int kMaxWindowClassLength = 256;
 constexpr BYTE kKeyPressedFlag = 0x80;
 
 constexpr int kKeyboardStateLength = 256;
+
+constexpr base::TimeDelta kReapplyResolutionPeriod =
+    base::TimeDelta::FromMilliseconds(250);
+
+// We want to try to reapply resolution changes for ~5 seconds (20 * 250ms).
+constexpr int kMaxResolutionReapplyAttempts = 20;
 
 // The RDP control creates 'IHWindowClass' window to handle keyboard input.
 constexpr wchar_t kRdpInputWindowClass[] = L"IHWindowClass";
@@ -215,8 +223,14 @@ void RdpClientWindow::InjectSas() {
 }
 
 void RdpClientWindow::ChangeResolution(const ScreenResolution& resolution) {
+  // Stop any pending resolution changes.
+  apply_resolution_timer_.Stop();
   screen_resolution_ = resolution;
-  UpdateDesktopResolution();
+  HRESULT result = UpdateDesktopResolution();
+  if (FAILED(result)) {
+    LOG(WARNING) << "UpdateSessionDisplaySettings() failed: 0x" << std::hex
+                 << result;
+  }
 }
 
 void RdpClientWindow::OnClose() {
@@ -230,7 +244,7 @@ void RdpClientWindow::OnClose() {
   HRESULT result = client_->RequestClose(&close_status);
   if (FAILED(result)) {
     LOG(ERROR) << "Failed to request a graceful shutdown of an RDP connection"
-               << ", result=0x" << std::hex << result << std::dec;
+               << ", result=0x" << std::hex << result;
     NotifyDisconnected();
     return;
   }
@@ -390,6 +404,7 @@ void RdpClientWindow::OnDestroy() {
   client_.Release();
   client_9_.Release();
   client_settings_.Release();
+  apply_resolution_timer_.Stop();
 }
 
 HRESULT RdpClientWindow::OnAuthenticationWarningDisplayed() {
@@ -421,8 +436,15 @@ HRESULT RdpClientWindow::OnLoginComplete() {
 
   user_logged_in_ = true;
 
-  // Apply pending screen size changes to the desktop.
-  UpdateDesktopResolution();
+  // Set up a timer to periodically apply pending screen size changes to the
+  // desktop.  Attempting to set the resolution now seems to fail consistently,
+  // but succeeds after a brief timeout.
+  if (client_9_) {
+    apply_resolution_attempts_ = 0;
+    apply_resolution_timer_.Start(
+        FROM_HERE, kReapplyResolutionPeriod,
+        base::Bind(&RdpClientWindow::ReapplyDesktopResolution, this));
+  }
 
   return S_OK;
 }
@@ -480,8 +502,7 @@ HRESULT RdpClientWindow::OnConfirmClose(VARIANT_BOOL* allow_close) {
 
 int RdpClientWindow::LogOnCreateError(HRESULT error) {
   LOG(ERROR) << "RDP: failed to initiate a connection to "
-             << server_endpoint_.ToString() << ": error="
-             << std::hex << error << std::dec;
+             << server_endpoint_.ToString() << ": error=" << std::hex << error;
   client_.Release();
   client_9_.Release();
   client_settings_.Release();
@@ -502,9 +523,9 @@ void RdpClientWindow::NotifyDisconnected() {
   }
 }
 
-void RdpClientWindow::UpdateDesktopResolution() {
+HRESULT RdpClientWindow::UpdateDesktopResolution() {
   if (!client_9_ || !user_logged_in_) {
-    return;
+    return S_FALSE;
   }
 
   // UpdateSessionDisplaySettings() is poorly documented in MSDN and has a few
@@ -512,8 +533,7 @@ void RdpClientWindow::UpdateDesktopResolution() {
   // 1.) This method will only work when the user is logged into their session.
   // 2.) The method may return E_UNEXPECTED until some amount of time (seconds)
   //     have elapsed after logging in to the user's session.
-  // TODO(joedow): Investigate adding retry logic for applying the settings.
-  HRESULT result = client_9_->UpdateSessionDisplaySettings(
+  return client_9_->UpdateSessionDisplaySettings(
       screen_resolution_.dimensions().width(),
       screen_resolution_.dimensions().height(),
       screen_resolution_.dimensions().width(),
@@ -521,9 +541,23 @@ void RdpClientWindow::UpdateDesktopResolution() {
       /*ulOrientation=*/0,
       screen_resolution_.dpi().x(),
       screen_resolution_.dpi().y());
-  if (FAILED(result)) {
-    LOG(ERROR) << "UpdateSessionDisplaySettings() failed: 0x" << std::hex
-               << result << std::dec;
+}
+
+void RdpClientWindow::ReapplyDesktopResolution() {
+  DCHECK_LT(apply_resolution_attempts_, kMaxResolutionReapplyAttempts);
+
+  HRESULT result = UpdateDesktopResolution();
+  apply_resolution_attempts_++;
+
+  if (SUCCEEDED(result)) {
+    // Successfully applied the new resolution so stop the retry timer.
+    apply_resolution_timer_.Stop();
+  } else if (apply_resolution_attempts_ == kMaxResolutionReapplyAttempts) {
+    // Only log an error on the last attempt to reduce log spam since a few
+    // errors can be expected and don't signal an actual failure.
+    LOG(WARNING) << "All UpdateSessionDisplaySettings() retries failed: 0x"
+                 << std::hex << result;
+    apply_resolution_timer_.Stop();
   }
 }
 
@@ -576,7 +610,7 @@ LRESULT CALLBACK RdpClientWindow::WindowHook::CloseWindowOnActivation(
 
   // Close the window once all pending window messages are processed.
   HWND window = reinterpret_cast<HWND>(wparam);
-  LOG(WARNING) << "RDP: closing a window: " << std::hex << window << std::dec;
+  LOG(WARNING) << "RDP: closing a window: " << std::hex << window;
   ::PostMessage(window, WM_CLOSE, 0, 0);
   return 0;
 }
