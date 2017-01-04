@@ -80,12 +80,9 @@ class FrameGenerator : public ServerWindowTracker,
   // Generates the CompositorFrame.
   cc::CompositorFrame GenerateCompositorFrame(const gfx::Rect& output_rect);
 
-  // DrawWindowTree recursively visits ServerWindows, creating a SurfaceDrawQuad
-  // for each that lacks one.
-  void DrawWindowTree(cc::RenderPass* pass,
-                      ServerWindow* window,
-                      const gfx::Vector2d& parent_to_root_origin_offset,
-                      float opacity);
+  // DrawWindow creates SurfaceDrawQuad for the provided ServerWindow and
+  // appends it to the provided cc::RenderPass.
+  void DrawWindow(cc::RenderPass* pass, ServerWindow* window);
 
   // Finds the parent surface id for |window|.
   cc::SurfaceId FindParentSurfaceId(ServerWindow* window);

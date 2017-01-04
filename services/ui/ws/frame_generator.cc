@@ -130,7 +130,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
   render_pass->SetNew(render_pass_id, output_rect, output_rect,
                       gfx::Transform());
 
-  DrawWindowTree(render_pass.get(), root_window_, gfx::Vector2d(), 1.0f);
+  DrawWindow(render_pass.get(), delegate_->GetActiveRootWindow());
 
   cc::CompositorFrame frame;
   frame.render_pass_list.push_back(std::move(render_pass));
@@ -155,80 +155,40 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
   return frame;
 }
 
-void FrameGenerator::DrawWindowTree(
-    cc::RenderPass* pass,
-    ServerWindow* window,
-    const gfx::Vector2d& parent_to_root_origin_offset,
-    float opacity) {
+void FrameGenerator::DrawWindow(cc::RenderPass* pass, ServerWindow* window) {
   if (!window->visible())
     return;
-
-  const gfx::Rect absolute_bounds =
-      window->bounds() + parent_to_root_origin_offset;
-  const ServerWindow::Windows& children = window->children();
-  const float combined_opacity = opacity * window->opacity();
-  for (ServerWindow* child : base::Reversed(children)) {
-    DrawWindowTree(pass, child, absolute_bounds.OffsetFromOrigin(),
-                   combined_opacity);
-  }
 
   if (!window->compositor_frame_sink_manager() ||
       !window->compositor_frame_sink_manager()->ShouldDraw())
     return;
 
-  cc::SurfaceId underlay_surface_id =
-      window->compositor_frame_sink_manager()->GetLatestSurfaceId(
-          mojom::CompositorFrameSinkType::UNDERLAY);
   cc::SurfaceId default_surface_id =
       window->compositor_frame_sink_manager()->GetLatestSurfaceId(
           mojom::CompositorFrameSinkType::DEFAULT);
 
-  if (!underlay_surface_id.is_valid() && !default_surface_id.is_valid())
+  if (!default_surface_id.is_valid())
     return;
 
-  if (default_surface_id.is_valid()) {
-    gfx::Transform quad_to_target_transform;
-    quad_to_target_transform.Translate(absolute_bounds.x(),
-                                       absolute_bounds.y());
+  gfx::Transform quad_to_target_transform;
+  quad_to_target_transform.Translate(window->bounds().x(),
+                                     window->bounds().y());
 
-    cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
+  cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
 
-    const gfx::Rect bounds_at_origin(window->bounds().size());
-    // TODO(fsamuel): These clipping and visible rects are incorrect. They need
-    // to be populated from CompositorFrame structs.
-    sqs->SetAll(
-        quad_to_target_transform, bounds_at_origin.size() /* layer_bounds */,
-        bounds_at_origin /* visible_layer_bounds */,
-        bounds_at_origin /* clip_rect */, false /* is_clipped */,
-        combined_opacity, SkBlendMode::kSrcOver, 0 /* sorting-context_id */);
-    auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-    quad->SetAll(sqs, bounds_at_origin /* rect */,
-                 gfx::Rect() /* opaque_rect */,
-                 bounds_at_origin /* visible_rect */, true /* needs_blending*/,
-                 default_surface_id);
-  }
-  if (underlay_surface_id.is_valid()) {
-    const gfx::Rect underlay_absolute_bounds =
-        absolute_bounds - window->underlay_offset();
-    gfx::Transform quad_to_target_transform;
-    quad_to_target_transform.Translate(underlay_absolute_bounds.x(),
-                                       underlay_absolute_bounds.y());
-    cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
-    const gfx::Rect bounds_at_origin(
-        window->compositor_frame_sink_manager()->GetLatestFrameSize(
-            mojom::CompositorFrameSinkType::UNDERLAY));
-    sqs->SetAll(
-        quad_to_target_transform, bounds_at_origin.size() /* layer_bounds */,
-        bounds_at_origin /* visible_layer_bounds */,
-        bounds_at_origin /* clip_rect */, false /* is_clipped */,
-        combined_opacity, SkBlendMode::kSrcOver, 0 /* sorting-context_id */);
-
-    auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-    quad->SetAll(sqs, bounds_at_origin /* rect */,
-                 gfx::Rect() /* opaque_rect */,
-                 bounds_at_origin /* visible_rect */, true /* needs_blending*/,
-                 underlay_surface_id);
-  }
+  const gfx::Rect bounds_at_origin(window->bounds().size());
+  // TODO(fsamuel): These clipping and visible rects are incorrect. They need
+  // to be populated from CompositorFrame structs.
+  sqs->SetAll(
+      quad_to_target_transform, bounds_at_origin.size() /* layer_bounds */,
+      bounds_at_origin /* visible_layer_bounds */,
+      bounds_at_origin /* clip_rect */, false /* is_clipped */,
+      1.0f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting-context_id */);
+  auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+  quad->SetAll(sqs, bounds_at_origin /* rect */,
+               gfx::Rect() /* opaque_rect */,
+               bounds_at_origin /* visible_rect */, true /* needs_blending*/,
+               default_surface_id);
 }
 
 cc::SurfaceId FrameGenerator::FindParentSurfaceId(ServerWindow* window) {

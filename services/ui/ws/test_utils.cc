@@ -151,9 +151,15 @@ TestPlatformDisplayFactory::CreatePlatformDisplay(
 
 // TestFrameGeneratorDelegate -------------------------------------------------
 
-TestFrameGeneratorDelegate::TestFrameGeneratorDelegate() {}
+TestFrameGeneratorDelegate::TestFrameGeneratorDelegate(
+    ServerWindow* root_window)
+    : root_window_(root_window) {}
 
 TestFrameGeneratorDelegate::~TestFrameGeneratorDelegate() {}
+
+ServerWindow* TestFrameGeneratorDelegate::GetActiveRootWindow() {
+  return root_window_;
+}
 
 bool TestFrameGeneratorDelegate::IsInHighContrastMode() {
   return false;

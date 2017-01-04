@@ -10,6 +10,8 @@ namespace ws {
 
 class FrameGeneratorDelegate {
  public:
+  // Returns the root window of the active user.
+  virtual ServerWindow* GetActiveRootWindow() = 0;
   virtual bool IsInHighContrastMode() = 0;
 
  protected:

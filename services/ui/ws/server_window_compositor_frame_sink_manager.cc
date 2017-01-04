@@ -29,9 +29,7 @@ bool ServerWindowCompositorFrameSinkManager::ShouldDraw() {
     return true;
 
   waiting_for_initial_frames_ = !IsCompositorFrameSinkReadyAndNonEmpty(
-                                    mojom::CompositorFrameSinkType::DEFAULT) ||
-                                !IsCompositorFrameSinkReadyAndNonEmpty(
-                                    mojom::CompositorFrameSinkType::UNDERLAY);
+      mojom::CompositorFrameSinkType::DEFAULT);
   return !waiting_for_initial_frames_;
 }
 

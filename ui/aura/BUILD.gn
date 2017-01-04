@@ -71,6 +71,8 @@ component("aura") {
     "mus/capture_synchronizer.cc",
     "mus/capture_synchronizer.h",
     "mus/capture_synchronizer_delegate.h",
+    "mus/client_surface_embedder.cc",
+    "mus/client_surface_embedder.h",
     "mus/drag_drop_controller_host.h",
     "mus/drag_drop_controller_mus.cc",
     "mus/drag_drop_controller_mus.h",
