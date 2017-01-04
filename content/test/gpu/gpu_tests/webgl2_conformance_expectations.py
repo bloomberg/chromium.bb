@@ -55,6 +55,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Windows only.
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['win'], bug=644740)
+    self.Flaky('deqp/functional/gles3/sync.html', ['win'], bug=676848)
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
