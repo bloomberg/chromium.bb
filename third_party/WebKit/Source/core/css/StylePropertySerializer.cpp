@@ -153,15 +153,6 @@ StylePropertySerializer::StylePropertySetForSerializer::getPropertyCSSValue(
   return value.value();
 }
 
-bool StylePropertySerializer::StylePropertySetForSerializer::isPropertyImplicit(
-    CSSPropertyID propertyID) const {
-  int index = findPropertyIndex(propertyID);
-  if (index == -1)
-    return false;
-  StylePropertySerializer::PropertyValueForSerializer value = propertyAt(index);
-  return value.isImplicit();
-}
-
 StylePropertySerializer::StylePropertySerializer(
     const StylePropertySet& properties)
     : m_propertySet(properties) {}
@@ -319,6 +310,7 @@ String StylePropertySerializer::asText() const {
 // special-casing
 static bool allowInitialInShorthand(CSSPropertyID propertyID) {
   switch (propertyID) {
+    case CSSPropertyBackground:
     case CSSPropertyBorder:
     case CSSPropertyBorderTop:
     case CSSPropertyBorderRight:
@@ -333,23 +325,18 @@ static bool allowInitialInShorthand(CSSPropertyID propertyID) {
     case CSSPropertyGridRow:
     case CSSPropertyGridArea:
     case CSSPropertyGridGap:
+    case CSSPropertyListStyle:
     case CSSPropertyMotion:
     case CSSPropertyOffset:
-    case CSSPropertyWebkitMarginCollapse:
-    case CSSPropertyListStyle:
     case CSSPropertyTextDecoration:
+    case CSSPropertyWebkitMarginCollapse:
+    case CSSPropertyWebkitMask:
     case CSSPropertyWebkitTextEmphasis:
     case CSSPropertyWebkitTextStroke:
       return true;
     default:
       return false;
   }
-}
-
-// TODO(timloh): This should go away eventually, see crbug.com/471917
-static bool allowImplicitInitialInShorthand(CSSPropertyID propertyID) {
-  return propertyID == CSSPropertyBackground ||
-         propertyID == CSSPropertyWebkitMask;
 }
 
 String StylePropertySerializer::commonShorthandChecks(
@@ -396,15 +383,8 @@ String StylePropertySerializer::commonShorthandChecks(
   }
 
   bool allowInitial = allowInitialInShorthand(shorthand.id());
-  bool allowImplicitInitial =
-      allowInitial || allowImplicitInitialInShorthand(shorthand.id());
   for (int i = 0; i < longhandCount; i++) {
     const CSSValue& value = *longhands[i];
-    if (value.isImplicitInitialValue()) {
-      if (allowImplicitInitial)
-        continue;
-      return emptyString();
-    }
     if (!allowInitial && value.isInitialValue())
       return emptyString();
     if (value.isInheritedValue() || value.isUnsetValue() ||
@@ -713,6 +693,8 @@ String StylePropertySerializer::getLayeredShorthandValue(
   // If the below loop succeeds, there should always be at minimum 1 layer.
   size_t numLayers = 1U;
 
+  // TODO(timloh): Shouldn't we fail if the lists are differently sized, with
+  // the exception of background-color?
   for (size_t i = 0; i < size; i++) {
     values[i] = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
     if (values[i]->isBaseValueList()) {
@@ -723,9 +705,7 @@ String StylePropertySerializer::getLayeredShorthandValue(
 
   StringBuilder result;
 
-  // Now stitch the properties together. Implicit initial values are flagged as
-  // such and
-  // can safely be omitted.
+  // Now stitch the properties together.
   for (size_t layer = 0; layer < numLayers; layer++) {
     StringBuilder layerResult;
     bool useRepeatXShorthand = false;
@@ -756,10 +736,8 @@ String StylePropertySerializer::getLayeredShorthandValue(
         continue;
 
       // Special case for background-repeat.
-      if ((propertyIndex < size - 1 &&
-           m_propertySet.isPropertyImplicit(property)) &&
-          (property == CSSPropertyBackgroundRepeatX ||
-           property == CSSPropertyWebkitMaskRepeatX)) {
+      if (property == CSSPropertyBackgroundRepeatX ||
+          property == CSSPropertyWebkitMaskRepeatX) {
         DCHECK(shorthand.properties()[propertyIndex + 1] ==
                    CSSPropertyBackgroundRepeatY ||
                shorthand.properties()[propertyIndex + 1] ==
@@ -791,8 +769,7 @@ String StylePropertySerializer::getLayeredShorthandValue(
         }
       }
 
-      if (!(value->isInitialValue() &&
-            toCSSInitialValue(value)->isImplicit())) {
+      if (!value->isInitialValue()) {
         if (property == CSSPropertyBackgroundSize ||
             property == CSSPropertyWebkitMaskSize) {
           if (foundPositionYCSSProperty || foundPositionXCSSProperty)
