@@ -51,8 +51,9 @@ class GLApiTest : public testing::Test {
         static_cast<GLGetProcAddressProc>(&FakeGLGetProcAddress));
   }
 
-  static void* GL_BINDING_CALL FakeGLGetProcAddress(const char *proc) {
-    return reinterpret_cast<void*>(0x1);
+  static GLFunctionPointerType GL_BINDING_CALL
+  FakeGLGetProcAddress(const char* proc) {
+    return reinterpret_cast<GLFunctionPointerType>(0x1);
   }
 
   void TearDown() override {

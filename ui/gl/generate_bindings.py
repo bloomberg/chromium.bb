@@ -2976,14 +2976,17 @@ void MakeFunctionUnique(const char *func_name) {
 
   # Write a function to lookup a mock GL function based on its name.
   file.write('\n')
-  file.write('void* GL_BINDING_CALL ' +
+  file.write('GLFunctionPointerType GL_BINDING_CALL ' +
       'MockGLInterface::GetGLProcAddress(const char* name) {\n')
   for key in sorted_function_names:
     name = uniquely_named_functions[key]['name']
     file.write('  if (strcmp(name, "%s") == 0)\n' % name)
-    file.write('    return reinterpret_cast<void*>(Mock_%s);\n' % name)
+    file.write(
+        '    return reinterpret_cast<GLFunctionPointerType>(Mock_%s);\n' %
+            name)
   # Always return a non-NULL pointer like some EGL implementations do.
-  file.write('  return reinterpret_cast<void*>(&MockInvalidFunction);\n')
+  file.write('  return reinterpret_cast<GLFunctionPointerType>('
+             '&MockInvalidFunction);\n')
   file.write('}\n')
 
   file.write('\n')

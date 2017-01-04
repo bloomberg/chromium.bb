@@ -3397,7 +3397,8 @@ TEST_P(GLES2DecoderManualInitTest, InvalidateFramebufferBinding) {
   // EXPECT_EQ can't be used to compare function pointers
   EXPECT_TRUE(
       gl::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=
-      gl::g_driver_gl.fn.glDiscardFramebufferEXTFn);
+      reinterpret_cast<gl::GLFunctionPointerType>(
+          gl::g_driver_gl.fn.glDiscardFramebufferEXTFn));
   EXPECT_TRUE(
       gl::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=
       gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT"));
@@ -3447,7 +3448,8 @@ TEST_P(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
   // EXPECT_EQ can't be used to compare function pointers
   EXPECT_TRUE(
       gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
-      gl::g_driver_gl.fn.glDiscardFramebufferEXTFn);
+      reinterpret_cast<gl::GLFunctionPointerType>(
+          gl::g_driver_gl.fn.glDiscardFramebufferEXTFn));
 
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;
@@ -3489,7 +3491,8 @@ TEST_P(GLES2DecoderManualInitTest, ClearBackbufferBitsOnDiscardFramebufferEXT) {
   // EXPECT_EQ can't be used to compare function pointers.
   EXPECT_TRUE(
       gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
-      gl::g_driver_gl.fn.glDiscardFramebufferEXTFn);
+      reinterpret_cast<gl::GLFunctionPointerType>(
+          gl::g_driver_gl.fn.glDiscardFramebufferEXTFn));
 
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;
@@ -3712,7 +3715,8 @@ TEST_P(GLES2DecoderManualInitTest,
   // and the framebuffer as incomplete.
   EXPECT_TRUE(
       gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
-      gl::g_driver_gl.fn.glDiscardFramebufferEXTFn);
+      reinterpret_cast<gl::GLFunctionPointerType>(
+          gl::g_driver_gl.fn.glDiscardFramebufferEXTFn));
 
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;

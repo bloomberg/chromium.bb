@@ -35,10 +35,11 @@ struct GL_EXPORT GLWindowSystemBindingInfo {
   bool direct_rendering;
 };
 
+using GLFunctionPointerType = void (*)();
 #if defined(OS_WIN)
-typedef void* (WINAPI *GLGetProcAddressProc)(const char* name);
+typedef GLFunctionPointerType(WINAPI* GLGetProcAddressProc)(const char* name);
 #else
-typedef void* (*GLGetProcAddressProc)(const char* name);
+typedef GLFunctionPointerType (*GLGetProcAddressProc)(const char* name);
 #endif
 
 // Initialize stub methods for drawing operations in the GL bindings. The
@@ -99,7 +100,7 @@ GL_EXPORT void SetGLGetProcAddressProc(GLGetProcAddressProc proc);
 // and when querying functions from the EGL library supplied by Android, it may
 // return a function that prints a log message about the function being
 // unsupported.
-GL_EXPORT void* GetGLProcAddress(const char* name);
+GL_EXPORT GLFunctionPointerType GetGLProcAddress(const char* name);
 
 // Helper for fetching the OpenGL extensions from the current context.
 // This helper abstracts over differences between the desktop OpenGL

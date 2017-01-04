@@ -57,9 +57,11 @@ class GLXApiTest : public testing::Test {
     return static_cast<GLXContext>(nullptr);
   }
 
-  static void* GL_BINDING_CALL FakeGLGetProcAddress(const char *proc) {
+  static GLFunctionPointerType GL_BINDING_CALL
+  FakeGLGetProcAddress(const char* proc) {
     if (!strcmp("glXCreateContextAttribsARB", proc)) {
-      return reinterpret_cast<void *>(&FakeCreateContextAttribsARB);
+      return reinterpret_cast<GLFunctionPointerType>(
+          &FakeCreateContextAttribsARB);
     }
     return NULL;
   }

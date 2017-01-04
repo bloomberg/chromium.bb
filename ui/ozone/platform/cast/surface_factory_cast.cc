@@ -321,7 +321,8 @@ bool SurfaceFactoryCast::LoadEGLGLES2Bindings() {
 
   void* lib_egl = egl_platform_->GetEglLibrary();
   void* lib_gles2 = egl_platform_->GetGles2Library();
-  gl::GLGetProcAddressProc gl_proc = egl_platform_->GetGLProcAddressProc();
+  gl::GLGetProcAddressProc gl_proc = reinterpret_cast<gl::GLGetProcAddressProc>(
+      egl_platform_->GetGLProcAddressProc());
   if (!lib_egl || !lib_gles2 || !gl_proc) {
     return false;
   }

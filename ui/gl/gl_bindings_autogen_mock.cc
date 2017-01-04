@@ -3865,958 +3865,1106 @@ static void MockInvalidFunction() {
   NOTREACHED();
 }
 
-void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
+GLFunctionPointerType GL_BINDING_CALL
+MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glActiveTexture") == 0)
-    return reinterpret_cast<void*>(Mock_glActiveTexture);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glActiveTexture);
   if (strcmp(name, "glApplyFramebufferAttachmentCMAAINTEL") == 0)
-    return reinterpret_cast<void*>(Mock_glApplyFramebufferAttachmentCMAAINTEL);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glApplyFramebufferAttachmentCMAAINTEL);
   if (strcmp(name, "glAttachShader") == 0)
-    return reinterpret_cast<void*>(Mock_glAttachShader);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glAttachShader);
   if (strcmp(name, "glBeginQuery") == 0)
-    return reinterpret_cast<void*>(Mock_glBeginQuery);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBeginQuery);
   if (strcmp(name, "glBeginQueryARB") == 0)
-    return reinterpret_cast<void*>(Mock_glBeginQueryARB);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBeginQueryARB);
   if (strcmp(name, "glBeginQueryEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glBeginQueryEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBeginQueryEXT);
   if (strcmp(name, "glBeginTransformFeedback") == 0)
-    return reinterpret_cast<void*>(Mock_glBeginTransformFeedback);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBeginTransformFeedback);
   if (strcmp(name, "glBeginTransformFeedbackEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glBeginTransformFeedbackEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBeginTransformFeedbackEXT);
   if (strcmp(name, "glBindAttribLocation") == 0)
-    return reinterpret_cast<void*>(Mock_glBindAttribLocation);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindAttribLocation);
   if (strcmp(name, "glBindBuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glBindBuffer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindBuffer);
   if (strcmp(name, "glBindBufferBase") == 0)
-    return reinterpret_cast<void*>(Mock_glBindBufferBase);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindBufferBase);
   if (strcmp(name, "glBindBufferBaseEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glBindBufferBaseEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindBufferBaseEXT);
   if (strcmp(name, "glBindBufferRange") == 0)
-    return reinterpret_cast<void*>(Mock_glBindBufferRange);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindBufferRange);
   if (strcmp(name, "glBindBufferRangeEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glBindBufferRangeEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindBufferRangeEXT);
   if (strcmp(name, "glBindFragDataLocation") == 0)
-    return reinterpret_cast<void*>(Mock_glBindFragDataLocation);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindFragDataLocation);
   if (strcmp(name, "glBindFragDataLocationEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glBindFragDataLocationEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBindFragDataLocationEXT);
   if (strcmp(name, "glBindFragDataLocationIndexed") == 0)
-    return reinterpret_cast<void*>(Mock_glBindFragDataLocationIndexed);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBindFragDataLocationIndexed);
   if (strcmp(name, "glBindFragDataLocationIndexedEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glBindFragDataLocationIndexedEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBindFragDataLocationIndexedEXT);
   if (strcmp(name, "glBindFramebuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glBindFramebuffer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindFramebuffer);
   if (strcmp(name, "glBindFramebufferEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glBindFramebufferEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindFramebufferEXT);
   if (strcmp(name, "glBindImageTexture") == 0)
-    return reinterpret_cast<void*>(Mock_glBindImageTexture);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindImageTexture);
   if (strcmp(name, "glBindImageTextureEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glBindImageTextureEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindImageTextureEXT);
   if (strcmp(name, "glBindRenderbuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glBindRenderbuffer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindRenderbuffer);
   if (strcmp(name, "glBindRenderbufferEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glBindRenderbufferEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindRenderbufferEXT);
   if (strcmp(name, "glBindSampler") == 0)
-    return reinterpret_cast<void*>(Mock_glBindSampler);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindSampler);
   if (strcmp(name, "glBindTexture") == 0)
-    return reinterpret_cast<void*>(Mock_glBindTexture);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindTexture);
   if (strcmp(name, "glBindTransformFeedback") == 0)
-    return reinterpret_cast<void*>(Mock_glBindTransformFeedback);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBindTransformFeedback);
   if (strcmp(name, "glBindUniformLocationCHROMIUM") == 0)
-    return reinterpret_cast<void*>(Mock_glBindUniformLocationCHROMIUM);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBindUniformLocationCHROMIUM);
   if (strcmp(name, "glBindVertexArray") == 0)
-    return reinterpret_cast<void*>(Mock_glBindVertexArray);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindVertexArray);
   if (strcmp(name, "glBindVertexArrayAPPLE") == 0)
-    return reinterpret_cast<void*>(Mock_glBindVertexArrayAPPLE);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindVertexArrayAPPLE);
   if (strcmp(name, "glBindVertexArrayOES") == 0)
-    return reinterpret_cast<void*>(Mock_glBindVertexArrayOES);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBindVertexArrayOES);
   if (strcmp(name, "glBlendBarrierKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glBlendBarrierKHR);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendBarrierKHR);
   if (strcmp(name, "glBlendBarrierNV") == 0)
-    return reinterpret_cast<void*>(Mock_glBlendBarrierNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendBarrierNV);
   if (strcmp(name, "glBlendColor") == 0)
-    return reinterpret_cast<void*>(Mock_glBlendColor);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendColor);
   if (strcmp(name, "glBlendEquation") == 0)
-    return reinterpret_cast<void*>(Mock_glBlendEquation);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendEquation);
   if (strcmp(name, "glBlendEquationSeparate") == 0)
-    return reinterpret_cast<void*>(Mock_glBlendEquationSeparate);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBlendEquationSeparate);
   if (strcmp(name, "glBlendFunc") == 0)
-    return reinterpret_cast<void*>(Mock_glBlendFunc);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendFunc);
   if (strcmp(name, "glBlendFuncSeparate") == 0)
-    return reinterpret_cast<void*>(Mock_glBlendFuncSeparate);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendFuncSeparate);
   if (strcmp(name, "glBlitFramebuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glBlitFramebuffer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlitFramebuffer);
   if (strcmp(name, "glBlitFramebufferANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glBlitFramebufferANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlitFramebufferANGLE);
   if (strcmp(name, "glBlitFramebufferEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glBlitFramebufferEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlitFramebufferEXT);
   if (strcmp(name, "glBufferData") == 0)
-    return reinterpret_cast<void*>(Mock_glBufferData);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBufferData);
   if (strcmp(name, "glBufferSubData") == 0)
-    return reinterpret_cast<void*>(Mock_glBufferSubData);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBufferSubData);
   if (strcmp(name, "glCheckFramebufferStatus") == 0)
-    return reinterpret_cast<void*>(Mock_glCheckFramebufferStatus);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCheckFramebufferStatus);
   if (strcmp(name, "glCheckFramebufferStatusEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glCheckFramebufferStatusEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCheckFramebufferStatusEXT);
   if (strcmp(name, "glClear") == 0)
-    return reinterpret_cast<void*>(Mock_glClear);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glClear);
   if (strcmp(name, "glClearBufferfi") == 0)
-    return reinterpret_cast<void*>(Mock_glClearBufferfi);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glClearBufferfi);
   if (strcmp(name, "glClearBufferfv") == 0)
-    return reinterpret_cast<void*>(Mock_glClearBufferfv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glClearBufferfv);
   if (strcmp(name, "glClearBufferiv") == 0)
-    return reinterpret_cast<void*>(Mock_glClearBufferiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glClearBufferiv);
   if (strcmp(name, "glClearBufferuiv") == 0)
-    return reinterpret_cast<void*>(Mock_glClearBufferuiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glClearBufferuiv);
   if (strcmp(name, "glClearColor") == 0)
-    return reinterpret_cast<void*>(Mock_glClearColor);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glClearColor);
   if (strcmp(name, "glClearDepth") == 0)
-    return reinterpret_cast<void*>(Mock_glClearDepth);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glClearDepth);
   if (strcmp(name, "glClearDepthf") == 0)
-    return reinterpret_cast<void*>(Mock_glClearDepthf);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glClearDepthf);
   if (strcmp(name, "glClearStencil") == 0)
-    return reinterpret_cast<void*>(Mock_glClearStencil);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glClearStencil);
   if (strcmp(name, "glClientWaitSync") == 0)
-    return reinterpret_cast<void*>(Mock_glClientWaitSync);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glClientWaitSync);
   if (strcmp(name, "glColorMask") == 0)
-    return reinterpret_cast<void*>(Mock_glColorMask);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glColorMask);
   if (strcmp(name, "glCompileShader") == 0)
-    return reinterpret_cast<void*>(Mock_glCompileShader);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCompileShader);
   if (strcmp(name, "glCompressedCopyTextureCHROMIUM") == 0)
-    return reinterpret_cast<void*>(Mock_glCompressedCopyTextureCHROMIUM);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCompressedCopyTextureCHROMIUM);
   if (strcmp(name, "glCompressedTexImage2D") == 0)
-    return reinterpret_cast<void*>(Mock_glCompressedTexImage2D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCompressedTexImage2D);
   if (strcmp(name, "glCompressedTexImage3D") == 0)
-    return reinterpret_cast<void*>(Mock_glCompressedTexImage3D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCompressedTexImage3D);
   if (strcmp(name, "glCompressedTexSubImage2D") == 0)
-    return reinterpret_cast<void*>(Mock_glCompressedTexSubImage2D);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCompressedTexSubImage2D);
   if (strcmp(name, "glCompressedTexSubImage3D") == 0)
-    return reinterpret_cast<void*>(Mock_glCompressedTexSubImage3D);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCompressedTexSubImage3D);
   if (strcmp(name, "glCopyBufferSubData") == 0)
-    return reinterpret_cast<void*>(Mock_glCopyBufferSubData);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCopyBufferSubData);
   if (strcmp(name, "glCopySubTextureCHROMIUM") == 0)
-    return reinterpret_cast<void*>(Mock_glCopySubTextureCHROMIUM);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCopySubTextureCHROMIUM);
   if (strcmp(name, "glCopyTexImage2D") == 0)
-    return reinterpret_cast<void*>(Mock_glCopyTexImage2D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCopyTexImage2D);
   if (strcmp(name, "glCopyTexSubImage2D") == 0)
-    return reinterpret_cast<void*>(Mock_glCopyTexSubImage2D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCopyTexSubImage2D);
   if (strcmp(name, "glCopyTexSubImage3D") == 0)
-    return reinterpret_cast<void*>(Mock_glCopyTexSubImage3D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCopyTexSubImage3D);
   if (strcmp(name, "glCopyTextureCHROMIUM") == 0)
-    return reinterpret_cast<void*>(Mock_glCopyTextureCHROMIUM);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCopyTextureCHROMIUM);
   if (strcmp(name, "glCoverFillPathInstancedNV") == 0)
-    return reinterpret_cast<void*>(Mock_glCoverFillPathInstancedNV);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCoverFillPathInstancedNV);
   if (strcmp(name, "glCoverFillPathNV") == 0)
-    return reinterpret_cast<void*>(Mock_glCoverFillPathNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCoverFillPathNV);
   if (strcmp(name, "glCoverStrokePathInstancedNV") == 0)
-    return reinterpret_cast<void*>(Mock_glCoverStrokePathInstancedNV);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glCoverStrokePathInstancedNV);
   if (strcmp(name, "glCoverStrokePathNV") == 0)
-    return reinterpret_cast<void*>(Mock_glCoverStrokePathNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCoverStrokePathNV);
   if (strcmp(name, "glCoverageModulationNV") == 0)
-    return reinterpret_cast<void*>(Mock_glCoverageModulationNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCoverageModulationNV);
   if (strcmp(name, "glCreateProgram") == 0)
-    return reinterpret_cast<void*>(Mock_glCreateProgram);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCreateProgram);
   if (strcmp(name, "glCreateShader") == 0)
-    return reinterpret_cast<void*>(Mock_glCreateShader);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCreateShader);
   if (strcmp(name, "glCullFace") == 0)
-    return reinterpret_cast<void*>(Mock_glCullFace);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glCullFace);
   if (strcmp(name, "glDebugMessageCallback") == 0)
-    return reinterpret_cast<void*>(Mock_glDebugMessageCallback);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDebugMessageCallback);
   if (strcmp(name, "glDebugMessageCallbackKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glDebugMessageCallbackKHR);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDebugMessageCallbackKHR);
   if (strcmp(name, "glDebugMessageControl") == 0)
-    return reinterpret_cast<void*>(Mock_glDebugMessageControl);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDebugMessageControl);
   if (strcmp(name, "glDebugMessageControlKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glDebugMessageControlKHR);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDebugMessageControlKHR);
   if (strcmp(name, "glDebugMessageInsert") == 0)
-    return reinterpret_cast<void*>(Mock_glDebugMessageInsert);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDebugMessageInsert);
   if (strcmp(name, "glDebugMessageInsertKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glDebugMessageInsertKHR);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDebugMessageInsertKHR);
   if (strcmp(name, "glDeleteBuffers") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteBuffers);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteBuffers);
   if (strcmp(name, "glDeleteFencesAPPLE") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteFencesAPPLE);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteFencesAPPLE);
   if (strcmp(name, "glDeleteFencesNV") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteFencesNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteFencesNV);
   if (strcmp(name, "glDeleteFramebuffers") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteFramebuffers);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteFramebuffers);
   if (strcmp(name, "glDeleteFramebuffersEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteFramebuffersEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDeleteFramebuffersEXT);
   if (strcmp(name, "glDeletePathsNV") == 0)
-    return reinterpret_cast<void*>(Mock_glDeletePathsNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeletePathsNV);
   if (strcmp(name, "glDeleteProgram") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteProgram);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteProgram);
   if (strcmp(name, "glDeleteQueries") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteQueries);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteQueries);
   if (strcmp(name, "glDeleteQueriesARB") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteQueriesARB);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteQueriesARB);
   if (strcmp(name, "glDeleteQueriesEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteQueriesEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteQueriesEXT);
   if (strcmp(name, "glDeleteRenderbuffers") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteRenderbuffers);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteRenderbuffers);
   if (strcmp(name, "glDeleteRenderbuffersEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteRenderbuffersEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDeleteRenderbuffersEXT);
   if (strcmp(name, "glDeleteSamplers") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteSamplers);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteSamplers);
   if (strcmp(name, "glDeleteShader") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteShader);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteShader);
   if (strcmp(name, "glDeleteSync") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteSync);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteSync);
   if (strcmp(name, "glDeleteTextures") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteTextures);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteTextures);
   if (strcmp(name, "glDeleteTransformFeedbacks") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteTransformFeedbacks);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDeleteTransformFeedbacks);
   if (strcmp(name, "glDeleteVertexArrays") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteVertexArrays);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDeleteVertexArrays);
   if (strcmp(name, "glDeleteVertexArraysAPPLE") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteVertexArraysAPPLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDeleteVertexArraysAPPLE);
   if (strcmp(name, "glDeleteVertexArraysOES") == 0)
-    return reinterpret_cast<void*>(Mock_glDeleteVertexArraysOES);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDeleteVertexArraysOES);
   if (strcmp(name, "glDepthFunc") == 0)
-    return reinterpret_cast<void*>(Mock_glDepthFunc);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDepthFunc);
   if (strcmp(name, "glDepthMask") == 0)
-    return reinterpret_cast<void*>(Mock_glDepthMask);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDepthMask);
   if (strcmp(name, "glDepthRange") == 0)
-    return reinterpret_cast<void*>(Mock_glDepthRange);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDepthRange);
   if (strcmp(name, "glDepthRangef") == 0)
-    return reinterpret_cast<void*>(Mock_glDepthRangef);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDepthRangef);
   if (strcmp(name, "glDetachShader") == 0)
-    return reinterpret_cast<void*>(Mock_glDetachShader);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDetachShader);
   if (strcmp(name, "glDisable") == 0)
-    return reinterpret_cast<void*>(Mock_glDisable);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDisable);
   if (strcmp(name, "glDisableVertexAttribArray") == 0)
-    return reinterpret_cast<void*>(Mock_glDisableVertexAttribArray);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDisableVertexAttribArray);
   if (strcmp(name, "glDiscardFramebufferEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glDiscardFramebufferEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDiscardFramebufferEXT);
   if (strcmp(name, "glDrawArrays") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawArrays);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDrawArrays);
   if (strcmp(name, "glDrawArraysInstanced") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawArraysInstanced);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDrawArraysInstanced);
   if (strcmp(name, "glDrawArraysInstancedANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawArraysInstancedANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDrawArraysInstancedANGLE);
   if (strcmp(name, "glDrawArraysInstancedARB") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawArraysInstancedARB);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDrawArraysInstancedARB);
   if (strcmp(name, "glDrawBuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawBuffer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDrawBuffer);
   if (strcmp(name, "glDrawBuffers") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawBuffers);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDrawBuffers);
   if (strcmp(name, "glDrawBuffersARB") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawBuffersARB);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDrawBuffersARB);
   if (strcmp(name, "glDrawBuffersEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawBuffersEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDrawBuffersEXT);
   if (strcmp(name, "glDrawElements") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawElements);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDrawElements);
   if (strcmp(name, "glDrawElementsInstanced") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawElementsInstanced);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDrawElementsInstanced);
   if (strcmp(name, "glDrawElementsInstancedANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawElementsInstancedANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDrawElementsInstancedANGLE);
   if (strcmp(name, "glDrawElementsInstancedARB") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawElementsInstancedARB);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDrawElementsInstancedARB);
   if (strcmp(name, "glDrawRangeElements") == 0)
-    return reinterpret_cast<void*>(Mock_glDrawRangeElements);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDrawRangeElements);
   if (strcmp(name, "glEGLImageTargetRenderbufferStorageOES") == 0)
-    return reinterpret_cast<void*>(Mock_glEGLImageTargetRenderbufferStorageOES);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glEGLImageTargetRenderbufferStorageOES);
   if (strcmp(name, "glEGLImageTargetTexture2DOES") == 0)
-    return reinterpret_cast<void*>(Mock_glEGLImageTargetTexture2DOES);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glEGLImageTargetTexture2DOES);
   if (strcmp(name, "glEnable") == 0)
-    return reinterpret_cast<void*>(Mock_glEnable);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glEnable);
   if (strcmp(name, "glEnableVertexAttribArray") == 0)
-    return reinterpret_cast<void*>(Mock_glEnableVertexAttribArray);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glEnableVertexAttribArray);
   if (strcmp(name, "glEndQuery") == 0)
-    return reinterpret_cast<void*>(Mock_glEndQuery);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glEndQuery);
   if (strcmp(name, "glEndQueryARB") == 0)
-    return reinterpret_cast<void*>(Mock_glEndQueryARB);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glEndQueryARB);
   if (strcmp(name, "glEndQueryEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glEndQueryEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glEndQueryEXT);
   if (strcmp(name, "glEndTransformFeedback") == 0)
-    return reinterpret_cast<void*>(Mock_glEndTransformFeedback);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glEndTransformFeedback);
   if (strcmp(name, "glEndTransformFeedbackEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glEndTransformFeedbackEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glEndTransformFeedbackEXT);
   if (strcmp(name, "glFenceSync") == 0)
-    return reinterpret_cast<void*>(Mock_glFenceSync);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glFenceSync);
   if (strcmp(name, "glFinish") == 0)
-    return reinterpret_cast<void*>(Mock_glFinish);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glFinish);
   if (strcmp(name, "glFinishFenceAPPLE") == 0)
-    return reinterpret_cast<void*>(Mock_glFinishFenceAPPLE);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glFinishFenceAPPLE);
   if (strcmp(name, "glFinishFenceNV") == 0)
-    return reinterpret_cast<void*>(Mock_glFinishFenceNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glFinishFenceNV);
   if (strcmp(name, "glFlush") == 0)
-    return reinterpret_cast<void*>(Mock_glFlush);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glFlush);
   if (strcmp(name, "glFlushMappedBufferRange") == 0)
-    return reinterpret_cast<void*>(Mock_glFlushMappedBufferRange);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glFlushMappedBufferRange);
   if (strcmp(name, "glFramebufferRenderbuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glFramebufferRenderbuffer);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glFramebufferRenderbuffer);
   if (strcmp(name, "glFramebufferRenderbufferEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glFramebufferRenderbufferEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glFramebufferRenderbufferEXT);
   if (strcmp(name, "glFramebufferTexture2D") == 0)
-    return reinterpret_cast<void*>(Mock_glFramebufferTexture2D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glFramebufferTexture2D);
   if (strcmp(name, "glFramebufferTexture2DEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glFramebufferTexture2DEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glFramebufferTexture2DEXT);
   if (strcmp(name, "glFramebufferTexture2DMultisampleEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glFramebufferTexture2DMultisampleEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glFramebufferTexture2DMultisampleEXT);
   if (strcmp(name, "glFramebufferTexture2DMultisampleIMG") == 0)
-    return reinterpret_cast<void*>(Mock_glFramebufferTexture2DMultisampleIMG);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glFramebufferTexture2DMultisampleIMG);
   if (strcmp(name, "glFramebufferTextureLayer") == 0)
-    return reinterpret_cast<void*>(Mock_glFramebufferTextureLayer);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glFramebufferTextureLayer);
   if (strcmp(name, "glFrontFace") == 0)
-    return reinterpret_cast<void*>(Mock_glFrontFace);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glFrontFace);
   if (strcmp(name, "glGenBuffers") == 0)
-    return reinterpret_cast<void*>(Mock_glGenBuffers);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenBuffers);
   if (strcmp(name, "glGenFencesAPPLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGenFencesAPPLE);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenFencesAPPLE);
   if (strcmp(name, "glGenFencesNV") == 0)
-    return reinterpret_cast<void*>(Mock_glGenFencesNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenFencesNV);
   if (strcmp(name, "glGenFramebuffers") == 0)
-    return reinterpret_cast<void*>(Mock_glGenFramebuffers);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenFramebuffers);
   if (strcmp(name, "glGenFramebuffersEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGenFramebuffersEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenFramebuffersEXT);
   if (strcmp(name, "glGenPathsNV") == 0)
-    return reinterpret_cast<void*>(Mock_glGenPathsNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenPathsNV);
   if (strcmp(name, "glGenQueries") == 0)
-    return reinterpret_cast<void*>(Mock_glGenQueries);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenQueries);
   if (strcmp(name, "glGenQueriesARB") == 0)
-    return reinterpret_cast<void*>(Mock_glGenQueriesARB);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenQueriesARB);
   if (strcmp(name, "glGenQueriesEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGenQueriesEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenQueriesEXT);
   if (strcmp(name, "glGenRenderbuffers") == 0)
-    return reinterpret_cast<void*>(Mock_glGenRenderbuffers);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenRenderbuffers);
   if (strcmp(name, "glGenRenderbuffersEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGenRenderbuffersEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenRenderbuffersEXT);
   if (strcmp(name, "glGenSamplers") == 0)
-    return reinterpret_cast<void*>(Mock_glGenSamplers);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenSamplers);
   if (strcmp(name, "glGenTextures") == 0)
-    return reinterpret_cast<void*>(Mock_glGenTextures);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenTextures);
   if (strcmp(name, "glGenTransformFeedbacks") == 0)
-    return reinterpret_cast<void*>(Mock_glGenTransformFeedbacks);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGenTransformFeedbacks);
   if (strcmp(name, "glGenVertexArrays") == 0)
-    return reinterpret_cast<void*>(Mock_glGenVertexArrays);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenVertexArrays);
   if (strcmp(name, "glGenVertexArraysAPPLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGenVertexArraysAPPLE);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenVertexArraysAPPLE);
   if (strcmp(name, "glGenVertexArraysOES") == 0)
-    return reinterpret_cast<void*>(Mock_glGenVertexArraysOES);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenVertexArraysOES);
   if (strcmp(name, "glGenerateMipmap") == 0)
-    return reinterpret_cast<void*>(Mock_glGenerateMipmap);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenerateMipmap);
   if (strcmp(name, "glGenerateMipmapEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGenerateMipmapEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGenerateMipmapEXT);
   if (strcmp(name, "glGetActiveAttrib") == 0)
-    return reinterpret_cast<void*>(Mock_glGetActiveAttrib);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetActiveAttrib);
   if (strcmp(name, "glGetActiveUniform") == 0)
-    return reinterpret_cast<void*>(Mock_glGetActiveUniform);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetActiveUniform);
   if (strcmp(name, "glGetActiveUniformBlockName") == 0)
-    return reinterpret_cast<void*>(Mock_glGetActiveUniformBlockName);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetActiveUniformBlockName);
   if (strcmp(name, "glGetActiveUniformBlockiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetActiveUniformBlockiv);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetActiveUniformBlockiv);
   if (strcmp(name, "glGetActiveUniformBlockivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetActiveUniformBlockivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetActiveUniformBlockivRobustANGLE);
   if (strcmp(name, "glGetActiveUniformsiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetActiveUniformsiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetActiveUniformsiv);
   if (strcmp(name, "glGetAttachedShaders") == 0)
-    return reinterpret_cast<void*>(Mock_glGetAttachedShaders);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetAttachedShaders);
   if (strcmp(name, "glGetAttribLocation") == 0)
-    return reinterpret_cast<void*>(Mock_glGetAttribLocation);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetAttribLocation);
   if (strcmp(name, "glGetBooleani_vRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetBooleani_vRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetBooleani_vRobustANGLE);
   if (strcmp(name, "glGetBooleanv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetBooleanv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetBooleanv);
   if (strcmp(name, "glGetBooleanvRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetBooleanvRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetBooleanvRobustANGLE);
   if (strcmp(name, "glGetBufferParameteri64vRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetBufferParameteri64vRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetBufferParameteri64vRobustANGLE);
   if (strcmp(name, "glGetBufferParameteriv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetBufferParameteriv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetBufferParameteriv);
   if (strcmp(name, "glGetBufferParameterivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetBufferParameterivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetBufferParameterivRobustANGLE);
   if (strcmp(name, "glGetBufferPointervRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetBufferPointervRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetBufferPointervRobustANGLE);
   if (strcmp(name, "glGetDebugMessageLog") == 0)
-    return reinterpret_cast<void*>(Mock_glGetDebugMessageLog);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetDebugMessageLog);
   if (strcmp(name, "glGetDebugMessageLogKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glGetDebugMessageLogKHR);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetDebugMessageLogKHR);
   if (strcmp(name, "glGetError") == 0)
-    return reinterpret_cast<void*>(Mock_glGetError);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetError);
   if (strcmp(name, "glGetFenceivNV") == 0)
-    return reinterpret_cast<void*>(Mock_glGetFenceivNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetFenceivNV);
   if (strcmp(name, "glGetFloatv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetFloatv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetFloatv);
   if (strcmp(name, "glGetFloatvRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetFloatvRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetFloatvRobustANGLE);
   if (strcmp(name, "glGetFragDataIndex") == 0)
-    return reinterpret_cast<void*>(Mock_glGetFragDataIndex);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetFragDataIndex);
   if (strcmp(name, "glGetFragDataIndexEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGetFragDataIndexEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetFragDataIndexEXT);
   if (strcmp(name, "glGetFragDataLocation") == 0)
-    return reinterpret_cast<void*>(Mock_glGetFragDataLocation);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetFragDataLocation);
   if (strcmp(name, "glGetFramebufferAttachmentParameteriv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetFramebufferAttachmentParameteriv);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetFramebufferAttachmentParameteriv);
   if (strcmp(name, "glGetFramebufferAttachmentParameterivEXT") == 0)
-    return reinterpret_cast<void*>(
+    return reinterpret_cast<GLFunctionPointerType>(
         Mock_glGetFramebufferAttachmentParameterivEXT);
   if (strcmp(name, "glGetFramebufferAttachmentParameterivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(
+    return reinterpret_cast<GLFunctionPointerType>(
         Mock_glGetFramebufferAttachmentParameterivRobustANGLE);
   if (strcmp(name, "glGetFramebufferParameterivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetFramebufferParameterivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetFramebufferParameterivRobustANGLE);
   if (strcmp(name, "glGetGraphicsResetStatus") == 0)
-    return reinterpret_cast<void*>(Mock_glGetGraphicsResetStatus);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetGraphicsResetStatus);
   if (strcmp(name, "glGetGraphicsResetStatusARB") == 0)
-    return reinterpret_cast<void*>(Mock_glGetGraphicsResetStatusARB);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetGraphicsResetStatusARB);
   if (strcmp(name, "glGetGraphicsResetStatusEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGetGraphicsResetStatusEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetGraphicsResetStatusEXT);
   if (strcmp(name, "glGetGraphicsResetStatusKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glGetGraphicsResetStatusKHR);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetGraphicsResetStatusKHR);
   if (strcmp(name, "glGetInteger64i_v") == 0)
-    return reinterpret_cast<void*>(Mock_glGetInteger64i_v);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetInteger64i_v);
   if (strcmp(name, "glGetInteger64i_vRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetInteger64i_vRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetInteger64i_vRobustANGLE);
   if (strcmp(name, "glGetInteger64v") == 0)
-    return reinterpret_cast<void*>(Mock_glGetInteger64v);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetInteger64v);
   if (strcmp(name, "glGetInteger64vRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetInteger64vRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetInteger64vRobustANGLE);
   if (strcmp(name, "glGetIntegeri_v") == 0)
-    return reinterpret_cast<void*>(Mock_glGetIntegeri_v);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetIntegeri_v);
   if (strcmp(name, "glGetIntegeri_vRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetIntegeri_vRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetIntegeri_vRobustANGLE);
   if (strcmp(name, "glGetIntegerv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetIntegerv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetIntegerv);
   if (strcmp(name, "glGetIntegervRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetIntegervRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetIntegervRobustANGLE);
   if (strcmp(name, "glGetInternalformativ") == 0)
-    return reinterpret_cast<void*>(Mock_glGetInternalformativ);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetInternalformativ);
   if (strcmp(name, "glGetInternalformativRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetInternalformativRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetInternalformativRobustANGLE);
   if (strcmp(name, "glGetMultisamplefvRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetMultisamplefvRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetMultisamplefvRobustANGLE);
   if (strcmp(name, "glGetObjectLabel") == 0)
-    return reinterpret_cast<void*>(Mock_glGetObjectLabel);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetObjectLabel);
   if (strcmp(name, "glGetObjectLabelKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glGetObjectLabelKHR);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetObjectLabelKHR);
   if (strcmp(name, "glGetObjectPtrLabel") == 0)
-    return reinterpret_cast<void*>(Mock_glGetObjectPtrLabel);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetObjectPtrLabel);
   if (strcmp(name, "glGetObjectPtrLabelKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glGetObjectPtrLabelKHR);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetObjectPtrLabelKHR);
   if (strcmp(name, "glGetPointerv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetPointerv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetPointerv);
   if (strcmp(name, "glGetPointervKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glGetPointervKHR);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetPointervKHR);
   if (strcmp(name, "glGetPointervRobustANGLERobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetPointervRobustANGLERobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetPointervRobustANGLERobustANGLE);
   if (strcmp(name, "glGetProgramBinary") == 0)
-    return reinterpret_cast<void*>(Mock_glGetProgramBinary);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetProgramBinary);
   if (strcmp(name, "glGetProgramBinaryOES") == 0)
-    return reinterpret_cast<void*>(Mock_glGetProgramBinaryOES);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetProgramBinaryOES);
   if (strcmp(name, "glGetProgramInfoLog") == 0)
-    return reinterpret_cast<void*>(Mock_glGetProgramInfoLog);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetProgramInfoLog);
   if (strcmp(name, "glGetProgramInterfaceiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetProgramInterfaceiv);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetProgramInterfaceiv);
   if (strcmp(name, "glGetProgramInterfaceivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetProgramInterfaceivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetProgramInterfaceivRobustANGLE);
   if (strcmp(name, "glGetProgramResourceLocation") == 0)
-    return reinterpret_cast<void*>(Mock_glGetProgramResourceLocation);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetProgramResourceLocation);
   if (strcmp(name, "glGetProgramResourceName") == 0)
-    return reinterpret_cast<void*>(Mock_glGetProgramResourceName);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetProgramResourceName);
   if (strcmp(name, "glGetProgramResourceiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetProgramResourceiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetProgramResourceiv);
   if (strcmp(name, "glGetProgramiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetProgramiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetProgramiv);
   if (strcmp(name, "glGetProgramivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetProgramivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetProgramivRobustANGLE);
   if (strcmp(name, "glGetQueryObjecti64v") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjecti64v);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetQueryObjecti64v);
   if (strcmp(name, "glGetQueryObjecti64vEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjecti64vEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetQueryObjecti64vEXT);
   if (strcmp(name, "glGetQueryObjecti64vRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjecti64vRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetQueryObjecti64vRobustANGLE);
   if (strcmp(name, "glGetQueryObjectiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjectiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetQueryObjectiv);
   if (strcmp(name, "glGetQueryObjectivARB") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjectivARB);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetQueryObjectivARB);
   if (strcmp(name, "glGetQueryObjectivEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjectivEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetQueryObjectivEXT);
   if (strcmp(name, "glGetQueryObjectivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjectivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetQueryObjectivRobustANGLE);
   if (strcmp(name, "glGetQueryObjectui64v") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjectui64v);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetQueryObjectui64v);
   if (strcmp(name, "glGetQueryObjectui64vEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjectui64vEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetQueryObjectui64vEXT);
   if (strcmp(name, "glGetQueryObjectui64vRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjectui64vRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetQueryObjectui64vRobustANGLE);
   if (strcmp(name, "glGetQueryObjectuiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjectuiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetQueryObjectuiv);
   if (strcmp(name, "glGetQueryObjectuivARB") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjectuivARB);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetQueryObjectuivARB);
   if (strcmp(name, "glGetQueryObjectuivEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjectuivEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetQueryObjectuivEXT);
   if (strcmp(name, "glGetQueryObjectuivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryObjectuivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetQueryObjectuivRobustANGLE);
   if (strcmp(name, "glGetQueryiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetQueryiv);
   if (strcmp(name, "glGetQueryivARB") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryivARB);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetQueryivARB);
   if (strcmp(name, "glGetQueryivEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryivEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetQueryivEXT);
   if (strcmp(name, "glGetQueryivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetQueryivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetQueryivRobustANGLE);
   if (strcmp(name, "glGetRenderbufferParameteriv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetRenderbufferParameteriv);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetRenderbufferParameteriv);
   if (strcmp(name, "glGetRenderbufferParameterivEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGetRenderbufferParameterivEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetRenderbufferParameterivEXT);
   if (strcmp(name, "glGetRenderbufferParameterivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(
+    return reinterpret_cast<GLFunctionPointerType>(
         Mock_glGetRenderbufferParameterivRobustANGLE);
   if (strcmp(name, "glGetSamplerParameterIivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetSamplerParameterIivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetSamplerParameterIivRobustANGLE);
   if (strcmp(name, "glGetSamplerParameterIuivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetSamplerParameterIuivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetSamplerParameterIuivRobustANGLE);
   if (strcmp(name, "glGetSamplerParameterfv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetSamplerParameterfv);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetSamplerParameterfv);
   if (strcmp(name, "glGetSamplerParameterfvRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetSamplerParameterfvRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetSamplerParameterfvRobustANGLE);
   if (strcmp(name, "glGetSamplerParameteriv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetSamplerParameteriv);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetSamplerParameteriv);
   if (strcmp(name, "glGetSamplerParameterivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetSamplerParameterivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetSamplerParameterivRobustANGLE);
   if (strcmp(name, "glGetShaderInfoLog") == 0)
-    return reinterpret_cast<void*>(Mock_glGetShaderInfoLog);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetShaderInfoLog);
   if (strcmp(name, "glGetShaderPrecisionFormat") == 0)
-    return reinterpret_cast<void*>(Mock_glGetShaderPrecisionFormat);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetShaderPrecisionFormat);
   if (strcmp(name, "glGetShaderSource") == 0)
-    return reinterpret_cast<void*>(Mock_glGetShaderSource);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetShaderSource);
   if (strcmp(name, "glGetShaderiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetShaderiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetShaderiv);
   if (strcmp(name, "glGetShaderivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetShaderivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetShaderivRobustANGLE);
   if (strcmp(name, "glGetString") == 0)
-    return reinterpret_cast<void*>(Mock_glGetString);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetString);
   if (strcmp(name, "glGetStringi") == 0)
-    return reinterpret_cast<void*>(Mock_glGetStringi);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetStringi);
   if (strcmp(name, "glGetSynciv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetSynciv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetSynciv);
   if (strcmp(name, "glGetTexLevelParameterfv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTexLevelParameterfv);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetTexLevelParameterfv);
   if (strcmp(name, "glGetTexLevelParameterfvRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTexLevelParameterfvRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetTexLevelParameterfvRobustANGLE);
   if (strcmp(name, "glGetTexLevelParameteriv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTexLevelParameteriv);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetTexLevelParameteriv);
   if (strcmp(name, "glGetTexLevelParameterivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTexLevelParameterivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetTexLevelParameterivRobustANGLE);
   if (strcmp(name, "glGetTexParameterIivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTexParameterIivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetTexParameterIivRobustANGLE);
   if (strcmp(name, "glGetTexParameterIuivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTexParameterIuivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetTexParameterIuivRobustANGLE);
   if (strcmp(name, "glGetTexParameterfv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTexParameterfv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetTexParameterfv);
   if (strcmp(name, "glGetTexParameterfvRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTexParameterfvRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetTexParameterfvRobustANGLE);
   if (strcmp(name, "glGetTexParameteriv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTexParameteriv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetTexParameteriv);
   if (strcmp(name, "glGetTexParameterivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTexParameterivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetTexParameterivRobustANGLE);
   if (strcmp(name, "glGetTransformFeedbackVarying") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTransformFeedbackVarying);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetTransformFeedbackVarying);
   if (strcmp(name, "glGetTransformFeedbackVaryingEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTransformFeedbackVaryingEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetTransformFeedbackVaryingEXT);
   if (strcmp(name, "glGetTranslatedShaderSourceANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetTranslatedShaderSourceANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetTranslatedShaderSourceANGLE);
   if (strcmp(name, "glGetUniformBlockIndex") == 0)
-    return reinterpret_cast<void*>(Mock_glGetUniformBlockIndex);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetUniformBlockIndex);
   if (strcmp(name, "glGetUniformIndices") == 0)
-    return reinterpret_cast<void*>(Mock_glGetUniformIndices);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetUniformIndices);
   if (strcmp(name, "glGetUniformLocation") == 0)
-    return reinterpret_cast<void*>(Mock_glGetUniformLocation);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetUniformLocation);
   if (strcmp(name, "glGetUniformfv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetUniformfv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetUniformfv);
   if (strcmp(name, "glGetUniformfvRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetUniformfvRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetUniformfvRobustANGLE);
   if (strcmp(name, "glGetUniformiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetUniformiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetUniformiv);
   if (strcmp(name, "glGetUniformivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetUniformivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetUniformivRobustANGLE);
   if (strcmp(name, "glGetUniformuiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetUniformuiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetUniformuiv);
   if (strcmp(name, "glGetUniformuivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetUniformuivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetUniformuivRobustANGLE);
   if (strcmp(name, "glGetVertexAttribIivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetVertexAttribIivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetVertexAttribIivRobustANGLE);
   if (strcmp(name, "glGetVertexAttribIuivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetVertexAttribIuivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetVertexAttribIuivRobustANGLE);
   if (strcmp(name, "glGetVertexAttribPointerv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetVertexAttribPointerv);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetVertexAttribPointerv);
   if (strcmp(name, "glGetVertexAttribPointervRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetVertexAttribPointervRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetVertexAttribPointervRobustANGLE);
   if (strcmp(name, "glGetVertexAttribfv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetVertexAttribfv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetVertexAttribfv);
   if (strcmp(name, "glGetVertexAttribfvRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetVertexAttribfvRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetVertexAttribfvRobustANGLE);
   if (strcmp(name, "glGetVertexAttribiv") == 0)
-    return reinterpret_cast<void*>(Mock_glGetVertexAttribiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glGetVertexAttribiv);
   if (strcmp(name, "glGetVertexAttribivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetVertexAttribivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetVertexAttribivRobustANGLE);
   if (strcmp(name, "glGetnUniformfvRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetnUniformfvRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetnUniformfvRobustANGLE);
   if (strcmp(name, "glGetnUniformivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetnUniformivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetnUniformivRobustANGLE);
   if (strcmp(name, "glGetnUniformuivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glGetnUniformuivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glGetnUniformuivRobustANGLE);
   if (strcmp(name, "glHint") == 0)
-    return reinterpret_cast<void*>(Mock_glHint);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glHint);
   if (strcmp(name, "glInsertEventMarkerEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glInsertEventMarkerEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glInsertEventMarkerEXT);
   if (strcmp(name, "glInvalidateFramebuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glInvalidateFramebuffer);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glInvalidateFramebuffer);
   if (strcmp(name, "glInvalidateSubFramebuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glInvalidateSubFramebuffer);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glInvalidateSubFramebuffer);
   if (strcmp(name, "glIsBuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glIsBuffer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsBuffer);
   if (strcmp(name, "glIsEnabled") == 0)
-    return reinterpret_cast<void*>(Mock_glIsEnabled);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsEnabled);
   if (strcmp(name, "glIsFenceAPPLE") == 0)
-    return reinterpret_cast<void*>(Mock_glIsFenceAPPLE);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsFenceAPPLE);
   if (strcmp(name, "glIsFenceNV") == 0)
-    return reinterpret_cast<void*>(Mock_glIsFenceNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsFenceNV);
   if (strcmp(name, "glIsFramebuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glIsFramebuffer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsFramebuffer);
   if (strcmp(name, "glIsFramebufferEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glIsFramebufferEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsFramebufferEXT);
   if (strcmp(name, "glIsPathNV") == 0)
-    return reinterpret_cast<void*>(Mock_glIsPathNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsPathNV);
   if (strcmp(name, "glIsProgram") == 0)
-    return reinterpret_cast<void*>(Mock_glIsProgram);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsProgram);
   if (strcmp(name, "glIsQuery") == 0)
-    return reinterpret_cast<void*>(Mock_glIsQuery);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsQuery);
   if (strcmp(name, "glIsQueryARB") == 0)
-    return reinterpret_cast<void*>(Mock_glIsQueryARB);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsQueryARB);
   if (strcmp(name, "glIsQueryEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glIsQueryEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsQueryEXT);
   if (strcmp(name, "glIsRenderbuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glIsRenderbuffer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsRenderbuffer);
   if (strcmp(name, "glIsRenderbufferEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glIsRenderbufferEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsRenderbufferEXT);
   if (strcmp(name, "glIsSampler") == 0)
-    return reinterpret_cast<void*>(Mock_glIsSampler);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsSampler);
   if (strcmp(name, "glIsShader") == 0)
-    return reinterpret_cast<void*>(Mock_glIsShader);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsShader);
   if (strcmp(name, "glIsSync") == 0)
-    return reinterpret_cast<void*>(Mock_glIsSync);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsSync);
   if (strcmp(name, "glIsTexture") == 0)
-    return reinterpret_cast<void*>(Mock_glIsTexture);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsTexture);
   if (strcmp(name, "glIsTransformFeedback") == 0)
-    return reinterpret_cast<void*>(Mock_glIsTransformFeedback);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsTransformFeedback);
   if (strcmp(name, "glIsVertexArray") == 0)
-    return reinterpret_cast<void*>(Mock_glIsVertexArray);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsVertexArray);
   if (strcmp(name, "glIsVertexArrayAPPLE") == 0)
-    return reinterpret_cast<void*>(Mock_glIsVertexArrayAPPLE);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsVertexArrayAPPLE);
   if (strcmp(name, "glIsVertexArrayOES") == 0)
-    return reinterpret_cast<void*>(Mock_glIsVertexArrayOES);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsVertexArrayOES);
   if (strcmp(name, "glLineWidth") == 0)
-    return reinterpret_cast<void*>(Mock_glLineWidth);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glLineWidth);
   if (strcmp(name, "glLinkProgram") == 0)
-    return reinterpret_cast<void*>(Mock_glLinkProgram);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glLinkProgram);
   if (strcmp(name, "glMapBuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glMapBuffer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glMapBuffer);
   if (strcmp(name, "glMapBufferOES") == 0)
-    return reinterpret_cast<void*>(Mock_glMapBufferOES);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glMapBufferOES);
   if (strcmp(name, "glMapBufferRange") == 0)
-    return reinterpret_cast<void*>(Mock_glMapBufferRange);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glMapBufferRange);
   if (strcmp(name, "glMapBufferRangeEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glMapBufferRangeEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glMapBufferRangeEXT);
   if (strcmp(name, "glMatrixLoadIdentityEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glMatrixLoadIdentityEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glMatrixLoadIdentityEXT);
   if (strcmp(name, "glMatrixLoadfEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glMatrixLoadfEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glMatrixLoadfEXT);
   if (strcmp(name, "glMemoryBarrier") == 0)
-    return reinterpret_cast<void*>(Mock_glMemoryBarrier);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glMemoryBarrier);
   if (strcmp(name, "glMemoryBarrierEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glMemoryBarrierEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glMemoryBarrierEXT);
   if (strcmp(name, "glObjectLabel") == 0)
-    return reinterpret_cast<void*>(Mock_glObjectLabel);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectLabel);
   if (strcmp(name, "glObjectLabelKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glObjectLabelKHR);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectLabelKHR);
   if (strcmp(name, "glObjectPtrLabel") == 0)
-    return reinterpret_cast<void*>(Mock_glObjectPtrLabel);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectPtrLabel);
   if (strcmp(name, "glObjectPtrLabelKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glObjectPtrLabelKHR);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectPtrLabelKHR);
   if (strcmp(name, "glPathCommandsNV") == 0)
-    return reinterpret_cast<void*>(Mock_glPathCommandsNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPathCommandsNV);
   if (strcmp(name, "glPathParameterfNV") == 0)
-    return reinterpret_cast<void*>(Mock_glPathParameterfNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPathParameterfNV);
   if (strcmp(name, "glPathParameteriNV") == 0)
-    return reinterpret_cast<void*>(Mock_glPathParameteriNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPathParameteriNV);
   if (strcmp(name, "glPathStencilFuncNV") == 0)
-    return reinterpret_cast<void*>(Mock_glPathStencilFuncNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPathStencilFuncNV);
   if (strcmp(name, "glPauseTransformFeedback") == 0)
-    return reinterpret_cast<void*>(Mock_glPauseTransformFeedback);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glPauseTransformFeedback);
   if (strcmp(name, "glPixelStorei") == 0)
-    return reinterpret_cast<void*>(Mock_glPixelStorei);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPixelStorei);
   if (strcmp(name, "glPointParameteri") == 0)
-    return reinterpret_cast<void*>(Mock_glPointParameteri);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPointParameteri);
   if (strcmp(name, "glPolygonOffset") == 0)
-    return reinterpret_cast<void*>(Mock_glPolygonOffset);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPolygonOffset);
   if (strcmp(name, "glPopDebugGroup") == 0)
-    return reinterpret_cast<void*>(Mock_glPopDebugGroup);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPopDebugGroup);
   if (strcmp(name, "glPopDebugGroupKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glPopDebugGroupKHR);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPopDebugGroupKHR);
   if (strcmp(name, "glPopGroupMarkerEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glPopGroupMarkerEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPopGroupMarkerEXT);
   if (strcmp(name, "glPrimitiveRestartIndex") == 0)
-    return reinterpret_cast<void*>(Mock_glPrimitiveRestartIndex);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glPrimitiveRestartIndex);
   if (strcmp(name, "glProgramBinary") == 0)
-    return reinterpret_cast<void*>(Mock_glProgramBinary);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glProgramBinary);
   if (strcmp(name, "glProgramBinaryOES") == 0)
-    return reinterpret_cast<void*>(Mock_glProgramBinaryOES);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glProgramBinaryOES);
   if (strcmp(name, "glProgramParameteri") == 0)
-    return reinterpret_cast<void*>(Mock_glProgramParameteri);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glProgramParameteri);
   if (strcmp(name, "glProgramPathFragmentInputGenNV") == 0)
-    return reinterpret_cast<void*>(Mock_glProgramPathFragmentInputGenNV);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glProgramPathFragmentInputGenNV);
   if (strcmp(name, "glPushDebugGroup") == 0)
-    return reinterpret_cast<void*>(Mock_glPushDebugGroup);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPushDebugGroup);
   if (strcmp(name, "glPushDebugGroupKHR") == 0)
-    return reinterpret_cast<void*>(Mock_glPushDebugGroupKHR);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPushDebugGroupKHR);
   if (strcmp(name, "glPushGroupMarkerEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glPushGroupMarkerEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPushGroupMarkerEXT);
   if (strcmp(name, "glQueryCounter") == 0)
-    return reinterpret_cast<void*>(Mock_glQueryCounter);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glQueryCounter);
   if (strcmp(name, "glQueryCounterEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glQueryCounterEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glQueryCounterEXT);
   if (strcmp(name, "glReadBuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glReadBuffer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glReadBuffer);
   if (strcmp(name, "glReadPixels") == 0)
-    return reinterpret_cast<void*>(Mock_glReadPixels);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glReadPixels);
   if (strcmp(name, "glReadPixelsRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glReadPixelsRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glReadPixelsRobustANGLE);
   if (strcmp(name, "glReadnPixelsRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glReadnPixelsRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glReadnPixelsRobustANGLE);
   if (strcmp(name, "glReleaseShaderCompiler") == 0)
-    return reinterpret_cast<void*>(Mock_glReleaseShaderCompiler);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glReleaseShaderCompiler);
   if (strcmp(name, "glRenderbufferStorage") == 0)
-    return reinterpret_cast<void*>(Mock_glRenderbufferStorage);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glRenderbufferStorage);
   if (strcmp(name, "glRenderbufferStorageEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glRenderbufferStorageEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glRenderbufferStorageEXT);
   if (strcmp(name, "glRenderbufferStorageMultisample") == 0)
-    return reinterpret_cast<void*>(Mock_glRenderbufferStorageMultisample);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glRenderbufferStorageMultisample);
   if (strcmp(name, "glRenderbufferStorageMultisampleANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glRenderbufferStorageMultisampleANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glRenderbufferStorageMultisampleANGLE);
   if (strcmp(name, "glRenderbufferStorageMultisampleEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glRenderbufferStorageMultisampleEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glRenderbufferStorageMultisampleEXT);
   if (strcmp(name, "glRenderbufferStorageMultisampleIMG") == 0)
-    return reinterpret_cast<void*>(Mock_glRenderbufferStorageMultisampleIMG);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glRenderbufferStorageMultisampleIMG);
   if (strcmp(name, "glResumeTransformFeedback") == 0)
-    return reinterpret_cast<void*>(Mock_glResumeTransformFeedback);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glResumeTransformFeedback);
   if (strcmp(name, "glSampleCoverage") == 0)
-    return reinterpret_cast<void*>(Mock_glSampleCoverage);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glSampleCoverage);
   if (strcmp(name, "glSamplerParameterIivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glSamplerParameterIivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glSamplerParameterIivRobustANGLE);
   if (strcmp(name, "glSamplerParameterIuivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glSamplerParameterIuivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glSamplerParameterIuivRobustANGLE);
   if (strcmp(name, "glSamplerParameterf") == 0)
-    return reinterpret_cast<void*>(Mock_glSamplerParameterf);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glSamplerParameterf);
   if (strcmp(name, "glSamplerParameterfv") == 0)
-    return reinterpret_cast<void*>(Mock_glSamplerParameterfv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glSamplerParameterfv);
   if (strcmp(name, "glSamplerParameterfvRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glSamplerParameterfvRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glSamplerParameterfvRobustANGLE);
   if (strcmp(name, "glSamplerParameteri") == 0)
-    return reinterpret_cast<void*>(Mock_glSamplerParameteri);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glSamplerParameteri);
   if (strcmp(name, "glSamplerParameteriv") == 0)
-    return reinterpret_cast<void*>(Mock_glSamplerParameteriv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glSamplerParameteriv);
   if (strcmp(name, "glSamplerParameterivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glSamplerParameterivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glSamplerParameterivRobustANGLE);
   if (strcmp(name, "glScissor") == 0)
-    return reinterpret_cast<void*>(Mock_glScissor);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glScissor);
   if (strcmp(name, "glSetFenceAPPLE") == 0)
-    return reinterpret_cast<void*>(Mock_glSetFenceAPPLE);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glSetFenceAPPLE);
   if (strcmp(name, "glSetFenceNV") == 0)
-    return reinterpret_cast<void*>(Mock_glSetFenceNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glSetFenceNV);
   if (strcmp(name, "glShaderBinary") == 0)
-    return reinterpret_cast<void*>(Mock_glShaderBinary);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glShaderBinary);
   if (strcmp(name, "glShaderSource") == 0)
-    return reinterpret_cast<void*>(Mock_glShaderSource);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glShaderSource);
   if (strcmp(name, "glStencilFillPathInstancedNV") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilFillPathInstancedNV);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilFillPathInstancedNV);
   if (strcmp(name, "glStencilFillPathNV") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilFillPathNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glStencilFillPathNV);
   if (strcmp(name, "glStencilFunc") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilFunc);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glStencilFunc);
   if (strcmp(name, "glStencilFuncSeparate") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilFuncSeparate);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glStencilFuncSeparate);
   if (strcmp(name, "glStencilMask") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilMask);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glStencilMask);
   if (strcmp(name, "glStencilMaskSeparate") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilMaskSeparate);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glStencilMaskSeparate);
   if (strcmp(name, "glStencilOp") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilOp);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glStencilOp);
   if (strcmp(name, "glStencilOpSeparate") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilOpSeparate);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glStencilOpSeparate);
   if (strcmp(name, "glStencilStrokePathInstancedNV") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilStrokePathInstancedNV);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilStrokePathInstancedNV);
   if (strcmp(name, "glStencilStrokePathNV") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilStrokePathNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glStencilStrokePathNV);
   if (strcmp(name, "glStencilThenCoverFillPathInstancedNV") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilThenCoverFillPathInstancedNV);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilThenCoverFillPathInstancedNV);
   if (strcmp(name, "glStencilThenCoverFillPathNV") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilThenCoverFillPathNV);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilThenCoverFillPathNV);
   if (strcmp(name, "glStencilThenCoverStrokePathInstancedNV") == 0)
-    return reinterpret_cast<void*>(
+    return reinterpret_cast<GLFunctionPointerType>(
         Mock_glStencilThenCoverStrokePathInstancedNV);
   if (strcmp(name, "glStencilThenCoverStrokePathNV") == 0)
-    return reinterpret_cast<void*>(Mock_glStencilThenCoverStrokePathNV);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glStencilThenCoverStrokePathNV);
   if (strcmp(name, "glTestFenceAPPLE") == 0)
-    return reinterpret_cast<void*>(Mock_glTestFenceAPPLE);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTestFenceAPPLE);
   if (strcmp(name, "glTestFenceNV") == 0)
-    return reinterpret_cast<void*>(Mock_glTestFenceNV);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTestFenceNV);
   if (strcmp(name, "glTexImage2D") == 0)
-    return reinterpret_cast<void*>(Mock_glTexImage2D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTexImage2D);
   if (strcmp(name, "glTexImage2DRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glTexImage2DRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTexImage2DRobustANGLE);
   if (strcmp(name, "glTexImage3D") == 0)
-    return reinterpret_cast<void*>(Mock_glTexImage3D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTexImage3D);
   if (strcmp(name, "glTexImage3DRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glTexImage3DRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTexImage3DRobustANGLE);
   if (strcmp(name, "glTexParameterIivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glTexParameterIivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTexParameterIivRobustANGLE);
   if (strcmp(name, "glTexParameterIuivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glTexParameterIuivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTexParameterIuivRobustANGLE);
   if (strcmp(name, "glTexParameterf") == 0)
-    return reinterpret_cast<void*>(Mock_glTexParameterf);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTexParameterf);
   if (strcmp(name, "glTexParameterfv") == 0)
-    return reinterpret_cast<void*>(Mock_glTexParameterfv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTexParameterfv);
   if (strcmp(name, "glTexParameterfvRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glTexParameterfvRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTexParameterfvRobustANGLE);
   if (strcmp(name, "glTexParameteri") == 0)
-    return reinterpret_cast<void*>(Mock_glTexParameteri);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTexParameteri);
   if (strcmp(name, "glTexParameteriv") == 0)
-    return reinterpret_cast<void*>(Mock_glTexParameteriv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTexParameteriv);
   if (strcmp(name, "glTexParameterivRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glTexParameterivRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTexParameterivRobustANGLE);
   if (strcmp(name, "glTexStorage2D") == 0)
-    return reinterpret_cast<void*>(Mock_glTexStorage2D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTexStorage2D);
   if (strcmp(name, "glTexStorage2DEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glTexStorage2DEXT);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTexStorage2DEXT);
   if (strcmp(name, "glTexStorage3D") == 0)
-    return reinterpret_cast<void*>(Mock_glTexStorage3D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTexStorage3D);
   if (strcmp(name, "glTexSubImage2D") == 0)
-    return reinterpret_cast<void*>(Mock_glTexSubImage2D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTexSubImage2D);
   if (strcmp(name, "glTexSubImage2DRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glTexSubImage2DRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTexSubImage2DRobustANGLE);
   if (strcmp(name, "glTexSubImage3D") == 0)
-    return reinterpret_cast<void*>(Mock_glTexSubImage3D);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glTexSubImage3D);
   if (strcmp(name, "glTexSubImage3DRobustANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glTexSubImage3DRobustANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTexSubImage3DRobustANGLE);
   if (strcmp(name, "glTransformFeedbackVaryings") == 0)
-    return reinterpret_cast<void*>(Mock_glTransformFeedbackVaryings);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTransformFeedbackVaryings);
   if (strcmp(name, "glTransformFeedbackVaryingsEXT") == 0)
-    return reinterpret_cast<void*>(Mock_glTransformFeedbackVaryingsEXT);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTransformFeedbackVaryingsEXT);
   if (strcmp(name, "glUniform1f") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform1f);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform1f);
   if (strcmp(name, "glUniform1fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform1fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform1fv);
   if (strcmp(name, "glUniform1i") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform1i);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform1i);
   if (strcmp(name, "glUniform1iv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform1iv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform1iv);
   if (strcmp(name, "glUniform1ui") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform1ui);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform1ui);
   if (strcmp(name, "glUniform1uiv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform1uiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform1uiv);
   if (strcmp(name, "glUniform2f") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform2f);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform2f);
   if (strcmp(name, "glUniform2fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform2fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform2fv);
   if (strcmp(name, "glUniform2i") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform2i);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform2i);
   if (strcmp(name, "glUniform2iv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform2iv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform2iv);
   if (strcmp(name, "glUniform2ui") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform2ui);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform2ui);
   if (strcmp(name, "glUniform2uiv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform2uiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform2uiv);
   if (strcmp(name, "glUniform3f") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform3f);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform3f);
   if (strcmp(name, "glUniform3fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform3fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform3fv);
   if (strcmp(name, "glUniform3i") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform3i);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform3i);
   if (strcmp(name, "glUniform3iv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform3iv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform3iv);
   if (strcmp(name, "glUniform3ui") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform3ui);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform3ui);
   if (strcmp(name, "glUniform3uiv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform3uiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform3uiv);
   if (strcmp(name, "glUniform4f") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform4f);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform4f);
   if (strcmp(name, "glUniform4fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform4fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform4fv);
   if (strcmp(name, "glUniform4i") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform4i);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform4i);
   if (strcmp(name, "glUniform4iv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform4iv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform4iv);
   if (strcmp(name, "glUniform4ui") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform4ui);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform4ui);
   if (strcmp(name, "glUniform4uiv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniform4uiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniform4uiv);
   if (strcmp(name, "glUniformBlockBinding") == 0)
-    return reinterpret_cast<void*>(Mock_glUniformBlockBinding);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniformBlockBinding);
   if (strcmp(name, "glUniformMatrix2fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniformMatrix2fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniformMatrix2fv);
   if (strcmp(name, "glUniformMatrix2x3fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniformMatrix2x3fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniformMatrix2x3fv);
   if (strcmp(name, "glUniformMatrix2x4fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniformMatrix2x4fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniformMatrix2x4fv);
   if (strcmp(name, "glUniformMatrix3fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniformMatrix3fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniformMatrix3fv);
   if (strcmp(name, "glUniformMatrix3x2fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniformMatrix3x2fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniformMatrix3x2fv);
   if (strcmp(name, "glUniformMatrix3x4fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniformMatrix3x4fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniformMatrix3x4fv);
   if (strcmp(name, "glUniformMatrix4fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniformMatrix4fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniformMatrix4fv);
   if (strcmp(name, "glUniformMatrix4x2fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniformMatrix4x2fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniformMatrix4x2fv);
   if (strcmp(name, "glUniformMatrix4x3fv") == 0)
-    return reinterpret_cast<void*>(Mock_glUniformMatrix4x3fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUniformMatrix4x3fv);
   if (strcmp(name, "glUnmapBuffer") == 0)
-    return reinterpret_cast<void*>(Mock_glUnmapBuffer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUnmapBuffer);
   if (strcmp(name, "glUnmapBufferOES") == 0)
-    return reinterpret_cast<void*>(Mock_glUnmapBufferOES);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUnmapBufferOES);
   if (strcmp(name, "glUseProgram") == 0)
-    return reinterpret_cast<void*>(Mock_glUseProgram);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glUseProgram);
   if (strcmp(name, "glValidateProgram") == 0)
-    return reinterpret_cast<void*>(Mock_glValidateProgram);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glValidateProgram);
   if (strcmp(name, "glVertexAttrib1f") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttrib1f);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttrib1f);
   if (strcmp(name, "glVertexAttrib1fv") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttrib1fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttrib1fv);
   if (strcmp(name, "glVertexAttrib2f") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttrib2f);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttrib2f);
   if (strcmp(name, "glVertexAttrib2fv") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttrib2fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttrib2fv);
   if (strcmp(name, "glVertexAttrib3f") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttrib3f);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttrib3f);
   if (strcmp(name, "glVertexAttrib3fv") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttrib3fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttrib3fv);
   if (strcmp(name, "glVertexAttrib4f") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttrib4f);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttrib4f);
   if (strcmp(name, "glVertexAttrib4fv") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttrib4fv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttrib4fv);
   if (strcmp(name, "glVertexAttribDivisor") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttribDivisor);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttribDivisor);
   if (strcmp(name, "glVertexAttribDivisorANGLE") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttribDivisorANGLE);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glVertexAttribDivisorANGLE);
   if (strcmp(name, "glVertexAttribDivisorARB") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttribDivisorARB);
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glVertexAttribDivisorARB);
   if (strcmp(name, "glVertexAttribI4i") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttribI4i);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttribI4i);
   if (strcmp(name, "glVertexAttribI4iv") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttribI4iv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttribI4iv);
   if (strcmp(name, "glVertexAttribI4ui") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttribI4ui);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttribI4ui);
   if (strcmp(name, "glVertexAttribI4uiv") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttribI4uiv);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttribI4uiv);
   if (strcmp(name, "glVertexAttribIPointer") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttribIPointer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttribIPointer);
   if (strcmp(name, "glVertexAttribPointer") == 0)
-    return reinterpret_cast<void*>(Mock_glVertexAttribPointer);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glVertexAttribPointer);
   if (strcmp(name, "glViewport") == 0)
-    return reinterpret_cast<void*>(Mock_glViewport);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glViewport);
   if (strcmp(name, "glWaitSync") == 0)
-    return reinterpret_cast<void*>(Mock_glWaitSync);
-  return reinterpret_cast<void*>(&MockInvalidFunction);
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glWaitSync);
+  return reinterpret_cast<GLFunctionPointerType>(&MockInvalidFunction);
 }
 
 }  // namespace gl

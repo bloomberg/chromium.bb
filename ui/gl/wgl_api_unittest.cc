@@ -25,8 +25,7 @@ class WGLApiTest : public testing::Test {
     g_driver_wgl.fn.wglGetExtensionsStringARBFn = &FakeGetExtensionsStringARB;
     g_driver_wgl.fn.wglGetExtensionsStringEXTFn = &FakeGetExtensionsStringEXT;
     SetGLImplementation(kGLImplementationDesktopGL);
-    SetGLGetProcAddressProc(
-        static_cast<GLGetProcAddressProc>(&FakeGLGetProcAddress));
+    SetGLGetProcAddressProc(&FakeGLGetProcAddress);
   }
 
   void TearDown() override {
@@ -65,7 +64,7 @@ class WGLApiTest : public testing::Test {
         stringify(wglGetExtensionsStringEXT()));
   }
 
-  static void* GL_BINDING_CALL FakeGLGetProcAddress(const char *proc) {
+  static GLFunctionPointerType WINAPI FakeGLGetProcAddress(const char* proc) {
     return NULL;
   }
 

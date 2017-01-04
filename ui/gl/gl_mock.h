@@ -14,6 +14,8 @@
 
 namespace gl {
 
+using GLFunctionPointerType = void (*)();
+
 class MockGLInterface {
  public:
   MockGLInterface();
@@ -24,7 +26,8 @@ class MockGLInterface {
   static void SetGLInterface(MockGLInterface* gl_interface);
 
   // Find an entry point to the mock GL implementation.
-  static void* GL_BINDING_CALL GetGLProcAddress(const char* name);
+  static GLFunctionPointerType GL_BINDING_CALL
+  GetGLProcAddress(const char* name);
 
   // Include the auto-generated parts of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
