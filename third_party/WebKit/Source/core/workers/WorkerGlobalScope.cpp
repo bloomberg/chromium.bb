@@ -91,13 +91,15 @@ void WorkerGlobalScope::dispose() {
   // Event listeners would keep DOMWrapperWorld objects alive for too long.
   // Also, they have references to JS objects, which become dangling once Heap
   // is destroyed.
-  for (auto it = m_eventListeners.begin(); it != m_eventListeners.end();) {
-    V8AbstractEventListener* listener = *it;
-    // clearListenerObject() will unregister the listener from
-    // m_eventListeners, and invalidate the iterator, so we have to advance
-    // it first.
-    ++it;
-    listener->clearListenerObject();
+  m_closing = true;
+  HeapHashSet<Member<V8AbstractEventListener>> listeners;
+  listeners.swap(m_eventListeners);
+  while (!listeners.isEmpty()) {
+    for (const auto& listener : listeners)
+      listener->clearListenerObject();
+    listeners.clear();
+    // Pick up any additions made while iterating.
+    listeners.swap(m_eventListeners);
   }
   removeAllEventListeners();
 
@@ -139,7 +141,7 @@ void WorkerGlobalScope::registerEventListener(
 void WorkerGlobalScope::deregisterEventListener(
     V8AbstractEventListener* eventListener) {
   auto it = m_eventListeners.find(eventListener);
-  CHECK(it != m_eventListeners.end());
+  CHECK(it != m_eventListeners.end() || m_closing);
   m_eventListeners.remove(it);
 }
 

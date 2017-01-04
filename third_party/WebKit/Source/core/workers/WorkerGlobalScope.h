@@ -208,7 +208,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   const double m_timeOrigin;
 
-  HeapListHashSet<Member<V8AbstractEventListener>> m_eventListeners;
+  HeapHashSet<Member<V8AbstractEventListener>> m_eventListeners;
 
   HeapHashMap<int, Member<ErrorEvent>> m_pendingErrorEvents;
   int m_lastPendingErrorEventId;
