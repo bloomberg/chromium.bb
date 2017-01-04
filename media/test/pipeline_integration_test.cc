@@ -1065,6 +1065,36 @@ TEST_F(PipelineIntegrationTest, TrackStatusChangesWhileSuspended) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
+TEST_F(PipelineIntegrationTest, PipelineStoppedWhileAudioRestartPending) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
+  Play();
+
+  // Disable audio track first, to re-enable it later and stop the pipeline
+  // (which destroys the media renderer) while audio restart is pending.
+  std::vector<MediaTrack::Id> track_ids;
+  pipeline_->OnEnabledAudioTracksChanged(track_ids);
+  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(200)));
+
+  track_ids.push_back("2");
+  pipeline_->OnEnabledAudioTracksChanged(track_ids);
+  Stop();
+}
+
+TEST_F(PipelineIntegrationTest, PipelineStoppedWhileVideoRestartPending) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
+  Play();
+
+  // Disable video track first, to re-enable it later and stop the pipeline
+  // (which destroys the media renderer) while video restart is pending.
+  std::vector<MediaTrack::Id> track_ids;
+  pipeline_->OnSelectedVideoTrackChanged(track_ids);
+  ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(200)));
+
+  track_ids.push_back("1");
+  pipeline_->OnSelectedVideoTrackChanged(track_ids);
+  Stop();
+}
+
 TEST_F(PipelineIntegrationTest,
        MAYBE_CLOCKLESS(BasicPlaybackOpusOggTrimmingHashed)) {
   ASSERT_EQ(PIPELINE_OK,

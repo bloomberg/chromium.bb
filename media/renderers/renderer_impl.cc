@@ -111,6 +111,11 @@ RendererImpl::~RendererImpl() {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  // RendererImpl is being destroyed, so invalidate weak pointers right away to
+  // avoid getting callbacks which might try to access fields that has been
+  // destroyed, e.g. audio_renderer_/video_renderer_ below (crbug.com/668963).
+  weak_factory_.InvalidateWeakPtrs();
+
   // Tear down in opposite order of construction as |video_renderer_| can still
   // need |time_source_| (which can be |audio_renderer_|) to be alive.
   video_renderer_.reset();
@@ -652,8 +657,8 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
         deferred_video_underflow_cb_.IsCancelled()) {
       DVLOG(4) << __func__ << " Deferring HAVE_NOTHING for video stream.";
       deferred_video_underflow_cb_.Reset(
-          base::Bind(&RendererImpl::OnBufferingStateChange,
-                     weak_factory_.GetWeakPtr(), type, new_buffering_state));
+          base::Bind(&RendererImpl::OnBufferingStateChange, weak_this_, type,
+                     new_buffering_state));
       task_runner_->PostDelayedTask(FROM_HERE,
                                     deferred_video_underflow_cb_.callback(),
                                     video_underflow_threshold_);
