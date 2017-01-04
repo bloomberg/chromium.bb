@@ -266,7 +266,7 @@ TEST_P(MainThreadEventQueueTest, BlockingTouch) {
   HandleEvent(kEvents[3], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   EXPECT_EQ(1u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
-  histogram_tester.ExpectUniqueSample(kCoalescedCountHistogram, 2, 1);
+  histogram_tester.ExpectUniqueSample(kCoalescedCountHistogram, 2, 2);
 }
 
 TEST_P(MainThreadEventQueueTest, InterleavedEvents) {
@@ -427,7 +427,7 @@ TEST_P(MainThreadEventQueueTest, RafAlignedTouchInput) {
 
   EXPECT_EQ(3u, event_queue().size());
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
-  EXPECT_FALSE(needs_main_frame_);
+  EXPECT_TRUE(needs_main_frame_);
   main_task_runner_->RunUntilIdle();
 }
 
@@ -455,7 +455,7 @@ TEST_P(MainThreadEventQueueTest, RafAlignedTouchInputCoalescedMoves) {
   EXPECT_TRUE(needs_main_frame_);
   HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(1u, event_queue().size());
-  EXPECT_TRUE(main_task_runner_->HasPendingTask());
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_TRUE(needs_main_frame_);
   RunPendingTasksWithSimulatedRaf();
   EXPECT_EQ(0u, event_queue().size());

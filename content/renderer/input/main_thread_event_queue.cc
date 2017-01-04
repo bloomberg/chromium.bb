@@ -18,13 +18,8 @@ bool IsContinuousEvent(const std::unique_ptr<EventWithDispatchType>& event) {
   switch (event->event().type) {
     case blink::WebInputEvent::MouseMove:
     case blink::WebInputEvent::MouseWheel:
-      return true;
     case blink::WebInputEvent::TouchMove:
-      // TouchMoves that are blocking end up blocking scroll. Do not treat
-      // them as continuous events otherwise we will end up waiting up to an
-      // additional frame.
-      return static_cast<const blink::WebTouchEvent&>(event->event())
-                 .dispatchType != blink::WebInputEvent::Blocking;
+      return true;
     default:
       return false;
   }
@@ -125,11 +120,6 @@ bool MainThreadEventQueue::HandleEvent(
       }
     }
 
-    // If handling rAF aligned touch input ACK non-cancelable events right
-    // away.
-    if (!non_blocking && IsRafAlignedEvent(*touch_event))
-      non_blocking = true;
-
     if (enable_non_blocking_due_to_main_thread_responsiveness_flag_ &&
         touch_event->dispatchType == blink::WebInputEvent::Blocking) {
       bool passive_due_to_unresponsive_main =
@@ -140,7 +130,12 @@ bool MainThreadEventQueue::HandleEvent(
         non_blocking = true;
       }
     }
+    // If the event is non-cancelable ACK it right away.
+    if (!non_blocking &&
+        touch_event->dispatchType != blink::WebInputEvent::Blocking)
+      non_blocking = true;
   }
+
   if (is_wheel && non_blocking) {
     // Adjust the |dispatchType| on the event since the compositor
     // determined all event listeners are passive.
@@ -340,12 +335,7 @@ bool MainThreadEventQueue::IsRafAlignedEvent(
     case blink::WebInputEvent::MouseWheel:
       return handle_raf_aligned_mouse_input_;
     case blink::WebInputEvent::TouchMove:
-      // TouchMoves that are blocking end up blocking scroll. Do not treat
-      // them as continuous events otherwise we will end up waiting up to an
-      // additional frame.
-      return static_cast<const blink::WebTouchEvent&>(event).dispatchType !=
-                 blink::WebInputEvent::Blocking &&
-             handle_raf_aligned_touch_input_;
+      return handle_raf_aligned_touch_input_;
     default:
       return false;
   }
