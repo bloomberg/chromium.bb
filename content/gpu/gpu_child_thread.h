@@ -56,7 +56,12 @@ class GpuChildThread : public ChildThreadImpl,
                        public gpu::GpuChannelManagerDelegate,
                        public base::FieldTrialList::Observer {
  public:
-  typedef std::queue<IPC::Message*> DeferredMessages;
+  struct LogMessage {
+    int severity;
+    std::string header;
+    std::string message;
+  };
+  typedef std::queue<LogMessage> DeferredMessages;
 
   GpuChildThread(std::unique_ptr<gpu::GpuWatchdogThread> gpu_watchdog_thread,
                  bool dead_on_arrival,

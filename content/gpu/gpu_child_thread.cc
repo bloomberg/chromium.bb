@@ -187,10 +187,6 @@ GpuChildThread::GpuChildThread(
 }
 
 GpuChildThread::~GpuChildThread() {
-  while (!deferred_messages_.empty()) {
-    delete deferred_messages_.front();
-    deferred_messages_.pop();
-  }
 }
 
 void GpuChildThread::Shutdown() {
@@ -320,7 +316,8 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
   gpu_info_.initialization_time = base::Time::Now() - process_start_time_;
   Send(new GpuHostMsg_Initialized(!dead_on_arrival_, gpu_info_));
   while (!deferred_messages_.empty()) {
-    Send(deferred_messages_.front());
+    const LogMessage& log = deferred_messages_.front();
+    Send(new GpuHostMsg_OnLogMessage(log.severity, log.header, log.message));
     deferred_messages_.pop();
   }
 

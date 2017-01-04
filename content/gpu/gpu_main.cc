@@ -106,10 +106,11 @@ bool GpuProcessLogMessageHandler(int severity,
                                  const char* file, int line,
                                  size_t message_start,
                                  const std::string& str) {
-  std::string header = str.substr(0, message_start);
-  std::string message = str.substr(message_start);
-  deferred_messages.Get().push(
-      new GpuHostMsg_OnLogMessage(severity, header, message));
+  GpuChildThread::LogMessage log;
+  log.severity = severity;
+  log.header = str.substr(0, message_start);
+  log.message = str.substr(message_start);
+  deferred_messages.Get().push(std::move(log));
   return false;
 }
 
