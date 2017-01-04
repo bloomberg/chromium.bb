@@ -123,29 +123,11 @@ SK_API bool GetWritablePixels(SkCanvas* canvas, SkPixmap* pixmap);
 
 // Returns true if native platform routines can be used to draw on the
 // given canvas. If this function returns false,
-// ScopedPlatformPaint::GetNativeDrawingContext() should return NULL.
+// GetNativeDrawingContext() should return NULL.
 SK_API bool SupportsPlatformPaint(const SkCanvas* canvas);
 
-// This object guards calls to platform drawing routines. The surface
-// returned from GetNativeDrawingContext() can be used with the native platform
-// routines.
-class SK_API ScopedPlatformPaint {
- public:
-  explicit ScopedPlatformPaint(SkCanvas* canvas);
-
-  // Returns the NativeDrawingContext to use for native platform drawing calls.
-  NativeDrawingContext GetNativeDrawingContext() {
-    return native_drawing_context_;
-  }
-
- private:
-  SkCanvas* canvas_;
-  NativeDrawingContext native_drawing_context_;
-
-  // Disallow copy and assign
-  ScopedPlatformPaint(const ScopedPlatformPaint&);
-  ScopedPlatformPaint& operator=(const ScopedPlatformPaint&);
-};
+// Returns the NativeDrawingContext to use for native platform drawing calls.
+SK_API NativeDrawingContext GetNativeDrawingContext(SkCanvas* canvas);
 
 // Following routines are used in print preview workflow to mark the
 // preview metafile.

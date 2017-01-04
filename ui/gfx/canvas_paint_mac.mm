@@ -25,9 +25,8 @@ CanvasSkiaPaint::~CanvasSkiaPaint() {
     canvas->restoreToCount(1);
 
     // Blit the dirty rect to the current context.
-    skia::ScopedPlatformPaint spp(canvas);
     CGImageRef image =
-        CGBitmapContextCreateImage(spp.GetNativeDrawingContext());
+        CGBitmapContextCreateImage(skia::GetNativeDrawingContext(canvas));
     CGRect dest_rect = NSRectToCGRect(rectangle_);
 
     CGContextRef destination_context =

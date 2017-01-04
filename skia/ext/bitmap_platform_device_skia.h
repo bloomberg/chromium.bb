@@ -14,8 +14,6 @@
 
 namespace skia {
 
-class ScopedPlatformPaint;
-
 // -----------------------------------------------------------------------------
 // For now we just use SkBitmap for SkBitmapDevice
 //
@@ -50,8 +48,6 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
                                           const SkIRect& clip_bounds) override;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
-
-  friend class ScopedPlatformPaint;
 };
 
 }  // namespace skia

@@ -11,8 +11,6 @@
 
 namespace skia {
 
-class ScopedPlatformPaint;
-
 // A device is basically a wrapper around SkBitmap that provides a surface for
 // SkCanvas to draw into. Our device provides a surface Windows can also write
 // to. BitmapPlatformDevice creates a bitmap using CreateDIBSection() in a
@@ -75,7 +73,6 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice,
   void LoadConfig(const SkMatrix& transform, const SkIRect& clip_bounds);
 
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
-  friend class ScopedPlatformPaint;
 };
 
 }  // namespace skia

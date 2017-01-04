@@ -16,7 +16,6 @@ class SkMatrix;
 namespace skia {
 
 class PlatformDevice;
-class ScopedPlatformPaint;
 
 // The following routines provide accessor points for the functionality
 // exported by the various PlatformDevice ports.  
@@ -47,14 +46,11 @@ class SK_API PlatformDevice {
  public:
   virtual ~PlatformDevice();
 
- private:
   // The DC that corresponds to the bitmap, used for GDI operations drawing
   // into the bitmap. This is possibly heavyweight, so it should be existant
   // only during one pass of rendering.
   virtual NativeDrawingContext BeginPlatformPaint(const SkMatrix& transform,
                                                   const SkIRect& clip_bounds) = 0;
-
-  friend class ScopedPlatformPaint;
 };
 
 }  // namespace skia

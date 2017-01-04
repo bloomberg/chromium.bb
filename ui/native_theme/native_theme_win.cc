@@ -278,8 +278,7 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
       break;
   }
 
-  skia::ScopedPlatformPaint paint(canvas);
-  HDC surface = paint.GetNativeDrawingContext();
+  HDC surface = skia::GetNativeDrawingContext(canvas);
 
   // When drawing the task manager or the bookmark editor, we draw into an
   // offscreen buffer, where we can use OS-specific drawing routines for

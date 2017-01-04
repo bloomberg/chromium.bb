@@ -178,8 +178,7 @@ void SoftwareOutputDeviceWin::EndPaint() {
     style |= WS_EX_LAYERED;
     SetWindowLong(hwnd_, GWL_EXSTYLE, style);
 
-    skia::ScopedPlatformPaint spp(contents_.get());
-    HDC dib_dc = spp.GetNativeDrawingContext();
+    HDC dib_dc = skia::GetNativeDrawingContext(contents_.get());
     ::UpdateLayeredWindow(hwnd_, NULL, &position, &size, dib_dc, &zero,
                           RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
   } else {

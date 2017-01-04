@@ -35,7 +35,6 @@ namespace skia {
 
 void DrawToNativeContext(SkCanvas* canvas, HDC destination_hdc, int x, int y,
                          const RECT* src_rect) {
-  ScopedPlatformPaint p(canvas);
   RECT temp_rect;
   if (!src_rect) {
     temp_rect.left = 0;
@@ -44,7 +43,7 @@ void DrawToNativeContext(SkCanvas* canvas, HDC destination_hdc, int x, int y,
     temp_rect.bottom = canvas->imageInfo().height();
     src_rect = &temp_rect;
   }
-  skia::CopyHDC(p.GetNativeDrawingContext(), destination_hdc, x, y,
+  skia::CopyHDC(skia::GetNativeDrawingContext(canvas), destination_hdc, x, y,
                 canvas->imageInfo().isOpaque(), *src_rect,
                 canvas->getTotalMatrix());
 }

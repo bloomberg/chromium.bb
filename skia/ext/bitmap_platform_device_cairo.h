@@ -46,8 +46,6 @@ typedef struct _cairo_surface cairo_surface_t;
 
 namespace skia {
 
-class ScopedPlatformPaint;
-
 // -----------------------------------------------------------------------------
 // This is the Linux bitmap backing for Skia. We create a Cairo image surface
 // to store the backing buffer. This buffer is BGRA in memory (on little-endian
@@ -98,14 +96,7 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   // Graphics context used to draw into the surface.
   cairo_t* cairo_;
 
-  // True when there is a transform or clip that has not been set to the
-  // context.  The context is retrieved for every text operation, and the
-  // transform and clip do not change as much. We can save time by not loading
-  // the clip and transform for every one.
-  bool config_dirty_;
-
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
-  friend class ScopedPlatformPaint;
 };
 
 }  // namespace skia

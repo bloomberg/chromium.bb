@@ -90,18 +90,17 @@ bool IsPreviewMetafile(const SkCanvas& canvas) {
 }
 #endif
 
-ScopedPlatformPaint::ScopedPlatformPaint(SkCanvas* canvas) :
-    canvas_(canvas),
-    native_drawing_context_(nullptr) {
-  // TODO(tomhudson) we're assuming non-null canvas?
+NativeDrawingContext GetNativeDrawingContext(SkCanvas* canvas) {
   PlatformDevice* platform_device = GetPlatformDevice(canvas->getTopDevice(true));
-  if (platform_device) {
-    // Compensate for drawing to a layer rather than the entire canvas
-    SkMatrix ctm;
-    SkIRect clip_bounds;
-    canvas->temporary_internal_describeTopLayer(&ctm, &clip_bounds);
-    native_drawing_context_ = platform_device->BeginPlatformPaint(ctm, clip_bounds);
-  }
+  if (!platform_device)
+    return nullptr;
+
+  // Compensate for drawing to a layer rather than the entire canvas
+  SkMatrix ctm;
+  SkIRect clip_bounds;
+  canvas->temporary_internal_describeTopLayer(&ctm, &clip_bounds);
+
+  return platform_device->BeginPlatformPaint(ctm, clip_bounds);
 }
 
 }  // namespace skia
