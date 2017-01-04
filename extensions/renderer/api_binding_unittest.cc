@@ -189,12 +189,32 @@ void APIBindingUnittest::RunTest(v8::Local<v8::Object> object,
   arguments_.reset();
 }
 
+TEST_F(APIBindingUnittest, TestEmptyAPI) {
+  ArgumentSpec::RefMap refs;
+  APIBinding binding(
+      "empty", nullptr, nullptr, nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
+  EXPECT_TRUE(refs.empty());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+  EXPECT_EQ(
+      0u,
+      binding_object->GetOwnPropertyNames(context).ToLocalChecked()->Length());
+}
+
 TEST_F(APIBindingUnittest, Test) {
   std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
   ASSERT_TRUE(functions);
   ArgumentSpec::RefMap refs;
   APIBinding binding(
-      "test", *functions, nullptr, nullptr,
+      "test", functions.get(), nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
   EXPECT_TRUE(refs.empty());
@@ -295,7 +315,7 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
   ASSERT_TRUE(types);
   ArgumentSpec::RefMap refs;
   APIBinding binding(
-      "test", *functions, types.get(), nullptr,
+      "test", functions.get(), types.get(), nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
   EXPECT_EQ(2u, refs.size());
@@ -341,7 +361,7 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
   ASSERT_TRUE(functions);
   ArgumentSpec::RefMap refs;
   APIBinding binding(
-      "test", *functions, nullptr, nullptr,
+      "test", functions.get(), nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
 
@@ -384,7 +404,7 @@ TEST_F(APIBindingUnittest, TestEventCreation) {
   ASSERT_TRUE(functions);
   ArgumentSpec::RefMap refs;
   APIBinding binding(
-      "test", *functions, nullptr, events.get(),
+      "test", functions.get(), nullptr, events.get(),
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
 
@@ -420,7 +440,7 @@ TEST_F(APIBindingUnittest, TestDisposedContext) {
   ASSERT_TRUE(functions);
   ArgumentSpec::RefMap refs;
   APIBinding binding(
-      "test", *functions, nullptr, nullptr,
+      "test", functions.get(), nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       base::MakeUnique<APIBindingHooks>(binding::RunJSFunction()), &refs);
   EXPECT_TRUE(refs.empty());
@@ -466,7 +486,7 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
   hooks->RegisterHandleRequest("test.oneString", base::Bind(hook, &did_call));
 
   APIBinding binding(
-      "test", *functions, nullptr, nullptr,
+      "test", functions.get(), nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       std::move(hooks), &refs);
   EXPECT_TRUE(refs.empty());
@@ -517,7 +537,7 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
   ArgumentSpec::RefMap refs;
 
   APIBinding binding(
-      "test", *functions, nullptr, nullptr,
+      "test", functions.get(), nullptr, nullptr,
       base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
       std::move(hooks), &refs);
   EXPECT_TRUE(refs.empty());

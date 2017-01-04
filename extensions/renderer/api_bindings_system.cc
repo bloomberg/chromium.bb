@@ -45,9 +45,8 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
   const base::DictionaryValue& api_schema = get_api_schema_.Run(api_name);
 
   const base::ListValue* function_definitions = nullptr;
-  CHECK(api_schema.GetList("functions", &function_definitions));
+  api_schema.GetList("functions", &function_definitions);
   const base::ListValue* type_definitions = nullptr;
-  // Type definitions might not exist for the given API.
   api_schema.GetList("types", &type_definitions);
   const base::ListValue* event_definitions = nullptr;
   api_schema.GetList("events", &event_definitions);
@@ -66,7 +65,7 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
   }
 
   return base::MakeUnique<APIBinding>(
-      api_name, *function_definitions, type_definitions, event_definitions,
+      api_name, function_definitions, type_definitions, event_definitions,
       base::Bind(&APIBindingsSystem::OnAPICall, base::Unretained(this)),
       std::move(hooks), &type_reference_map_);
 }

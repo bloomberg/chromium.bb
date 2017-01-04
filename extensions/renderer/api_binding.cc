@@ -64,7 +64,7 @@ void CallbackHelper(const v8::FunctionCallbackInfo<v8::Value>& info) {
 }  // namespace
 
 APIBinding::APIBinding(const std::string& api_name,
-                       const base::ListValue& function_definitions,
+                       const base::ListValue* function_definitions,
                        const base::ListValue* type_definitions,
                        const base::ListValue* event_definitions,
                        const APIMethodCallback& callback,
@@ -76,15 +76,17 @@ APIBinding::APIBinding(const std::string& api_name,
       type_refs_(type_refs),
       weak_factory_(this) {
   DCHECK(!method_callback_.is_null());
-  for (const auto& func : function_definitions) {
-    const base::DictionaryValue* func_dict = nullptr;
-    CHECK(func->GetAsDictionary(&func_dict));
-    std::string name;
-    CHECK(func_dict->GetString("name", &name));
+  if (function_definitions) {
+    for (const auto& func : *function_definitions) {
+      const base::DictionaryValue* func_dict = nullptr;
+      CHECK(func->GetAsDictionary(&func_dict));
+      std::string name;
+      CHECK(func_dict->GetString("name", &name));
 
-    const base::ListValue* params = nullptr;
-    CHECK(func_dict->GetList("parameters", &params));
-    signatures_[name] = base::MakeUnique<APISignature>(*params);
+      const base::ListValue* params = nullptr;
+      CHECK(func_dict->GetList("parameters", &params));
+      signatures_[name] = base::MakeUnique<APISignature>(*params);
+    }
   }
   if (type_definitions) {
     for (const auto& type : *type_definitions) {

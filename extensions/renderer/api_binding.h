@@ -57,10 +57,10 @@ class APIBinding {
   using HandlerCallback = base::Callback<void(gin::Arguments*)>;
 
   // The ArgumentSpec::RefMap is required to outlive this object.
-  // |type_definitions| and |event_definitions| may be null if the API does not
-  // specify any types or events.
+  // |function_definitions|, |type_definitions| and |event_definitions|
+  // may be null if the API does not specify any of that category.
   APIBinding(const std::string& name,
-             const base::ListValue& function_definitions,
+             const base::ListValue* function_definitions,
              const base::ListValue* type_definitions,
              const base::ListValue* event_definitions,
              const APIMethodCallback& callback,
