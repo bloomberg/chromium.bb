@@ -114,6 +114,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -821,6 +822,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                         loadUrlParams.setHasUserGesture(hasUserGesture);
                         loadUrlParams.setTransitionType(IntentHandler.getTransitionTypeFromIntent(
                                 getApplicationContext(), intent, transitionType));
+                        if (referer != null) {
+                            loadUrlParams.setReferrer(
+                                    new Referrer(referer, Referrer.REFERRER_POLICY_DEFAULT));
+                        }
                         currentTab.loadUrl(loadUrlParams);
                         RecordUserAction.record("MobileTabClobbered");
                     } else {
