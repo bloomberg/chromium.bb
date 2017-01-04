@@ -86,9 +86,33 @@ bool ClickBasedCategoryRanker::Compare(Category left, Category right) const {
 }
 
 void ClickBasedCategoryRanker::ClearHistory(base::Time begin, base::Time end) {
-  // TODO(crbug.com/675953): Preserve remote categories with 0 counts instead of
-  // removing them.
+  // The categories added through |AppendCategoryIfNecessary| cannot be
+  // completely removed, since no one is required to reregister them. Instead
+  // they are preserved in the default order (sorted by id).
+  std::vector<RankedCategory> old_categories = ordered_categories_;
   RestoreDefaultOrder();
+
+  std::vector<Category> added_categories;
+  for (const RankedCategory& old_category : old_categories) {
+    auto it =
+        std::find_if(ordered_categories_.begin(), ordered_categories_.end(),
+                     [old_category](const RankedCategory& other) {
+                       return other.category == old_category.category;
+                     });
+    if (it == ordered_categories_.end()) {
+      added_categories.push_back(old_category.category);
+    }
+  }
+
+  // Sort added categories by id to make their order history independent.
+  std::sort(added_categories.begin(), added_categories.end(),
+            Category::CompareByID());
+
+  for (Category added_category : added_categories) {
+    ordered_categories_.push_back(RankedCategory(added_category, /*clicks=*/0));
+  }
+
+  StoreOrderToPrefs(ordered_categories_);
 }
 
 void ClickBasedCategoryRanker::AppendCategoryIfNecessary(Category category) {

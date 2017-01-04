@@ -130,6 +130,7 @@ void ContentSuggestionsService::ClearHistory(
   for (const auto& provider : providers_) {
     provider->ClearHistory(begin, end, filter);
   }
+  category_ranker_->ClearHistory(begin, end);
 }
 
 void ContentSuggestionsService::ClearAllCachedSuggestions() {

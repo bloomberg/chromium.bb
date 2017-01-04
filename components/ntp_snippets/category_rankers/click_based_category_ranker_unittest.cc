@@ -339,4 +339,43 @@ TEST_F(ClickBasedCategoryRankerTest,
   EXPECT_FALSE(CompareCategories(first, second));
 }
 
+TEST_F(ClickBasedCategoryRankerTest, ShouldRestoreDefaultOrderOnClearHistory) {
+  std::vector<KnownCategories> default_order =
+      ConstantCategoryRanker::GetKnownCategoriesDefaultOrder();
+  Category first = Category::FromKnownCategory(default_order[0]);
+  Category second = Category::FromKnownCategory(default_order[1]);
+
+  ASSERT_TRUE(CompareCategories(first, second));
+
+  // Change the order.
+  while (CompareCategories(first, second)) {
+    NotifyOnSuggestionOpened(
+        /*times=*/ClickBasedCategoryRanker::GetPassingMargin(), second);
+  }
+
+  ASSERT_FALSE(CompareCategories(first, second));
+
+  // The user clears history.
+  ranker()->ClearHistory(/*begin=*/base::Time(),
+                         /*end=*/base::Time::Max());
+
+  // The default order must be restored.
+  EXPECT_TRUE(CompareCategories(first, second));
+}
+
+TEST_F(ClickBasedCategoryRankerTest,
+       ShouldPreserveRemoteCategoriesOnClearHistory) {
+  Category first = AddUnusedRemoteCategory();
+  Category second = AddUnusedRemoteCategory();
+
+  ASSERT_TRUE(CompareCategories(first, second));
+
+  // The user clears history.
+  ranker()->ClearHistory(/*begin=*/base::Time(),
+                         /*end=*/base::Time::Max());
+
+  // The order does not matter, but the ranker should not die.
+  CompareCategories(first, second);
+}
+
 }  // namespace ntp_snippets
