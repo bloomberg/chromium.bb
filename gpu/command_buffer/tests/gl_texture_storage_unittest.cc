@@ -64,7 +64,7 @@ TEST_F(TextureStorageTest, CorrectPixels) {
                   2, 2,
                   GL_RGBA, GL_UNSIGNED_BYTE,
                   source_pixels);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 2, 2, 0, source_pixels));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 2, 2, 0, source_pixels, nullptr));
 }
 
 TEST_F(TextureStorageTest, IsImmutable) {
@@ -145,14 +145,8 @@ TEST_F(TextureStorageTest, CannotRedefine) {
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
 
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  glTexImage2D(GL_TEXTURE_2D,
-               0,
-               GL_RGBA,
-               4, 4,
-               0,
-               GL_RGBA,
-               GL_UNSIGNED_BYTE,
-               NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               nullptr);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
 }
 

@@ -12,6 +12,8 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringize_macros.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -21,6 +23,62 @@
 namespace gpu {
 
 #if defined(OS_MACOSX)
+namespace {
+
+// clang-format off
+static const char* kSimpleVertexShader = STRINGIZE(
+  attribute vec2 a_position;
+  varying vec2 v_texCoord;
+  void main() {
+    gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
+    v_texCoord = (a_position + vec2(1.0, 1.0)) * 0.5;
+  }
+);
+// clang-format on
+
+// Generate fragment shader source for sampling out of a texture of |size|
+// bound to |target|.
+std::string GetFragmentShaderSource(unsigned target, const gfx::Size& size) {
+  // clang-format off
+  const char kFragmentShader[] = STRINGIZE(
+    uniform SamplerType u_texture;
+    varying vec2 v_texCoord;
+    void main() {
+      gl_FragColor = TextureLookup(u_texture, v_texCoord * TextureScale);
+    }
+  );
+  const char kShaderFloatPrecision[] = STRINGIZE(
+    precision mediump float;
+  );
+  // clang-format on
+
+  switch (target) {
+    case GL_TEXTURE_2D:
+      return base::StringPrintf(
+          "%s\n"
+          "#define SamplerType sampler2D\n"
+          "#define TextureLookup texture2D\n"
+          "#define TextureScale vec2(1.0, 1.0)\n"
+          "%s",
+          kShaderFloatPrecision, kFragmentShader);
+    case GL_TEXTURE_RECTANGLE_ARB:
+      return base::StringPrintf(
+          "%s\n"
+          "#extension GL_ARB_texture_rectangle : require\n"
+          "#define SamplerType sampler2DRect\n"
+          "#define TextureLookup texture2DRect\n"
+          "#define TextureScale vec2(%f, %f)\n"
+          "%s",
+          kShaderFloatPrecision, static_cast<double>(size.width()),
+          static_cast<double>(size.height()), kFragmentShader);
+    default:
+      NOTREACHED();
+      return std::string();
+  }
+}
+
+}  // namespace
+
 // A collection of tests that exercise the glCopyTexImage2D workaround. The
 // parameter expresses different formats of the destination texture.
 class GLCopyTexImage2DWorkaroundTest : public testing::TestWithParam<GLenum> {
@@ -29,13 +87,13 @@ class GLCopyTexImage2DWorkaroundTest : public testing::TestWithParam<GLenum> {
 
  protected:
   void SetUp() override {
-      base::CommandLine command_line(0, NULL);
-      command_line.AppendSwitchASCII(
-          switches::kGpuDriverBugWorkarounds,
-          base::IntToString(gpu::USE_INTERMEDIARY_FOR_COPY_TEXTURE_IMAGE));
-      gl_.InitializeWithCommandLine(GLManager::Options(), command_line);
-      gl_.set_use_iosurface_memory_buffers(true);
-      DCHECK(gl_.workarounds().use_intermediary_for_copy_texture_image);
+    base::CommandLine command_line(0, nullptr);
+    command_line.AppendSwitchASCII(
+        switches::kGpuDriverBugWorkarounds,
+        base::IntToString(gpu::USE_INTERMEDIARY_FOR_COPY_TEXTURE_IMAGE));
+    gl_.InitializeWithCommandLine(GLManager::Options(), command_line);
+    gl_.set_use_iosurface_memory_buffers(true);
+    DCHECK(gl_.workarounds().use_intermediary_for_copy_texture_image);
   }
 
   void TearDown() override {
@@ -108,12 +166,16 @@ TEST_P(GLCopyTexImage2DWorkaroundTest, UseIntermediaryTexture) {
     EXPECT_EQ(glGetError(), GLenum(GL_NO_ERROR));
 
     glViewport(0, 0, width, height);
-    GLTestHelper::DrawTextureQuad(dest_target, gfx::Size(width, height));
+    std::string fragment_shader_source =
+        GetFragmentShaderSource(dest_target, gfx::Size(width, height));
+    GLTestHelper::DrawTextureQuad(kSimpleVertexShader,
+                                  fragment_shader_source.c_str(), "a_position",
+                                  "u_texture");
 
     // Verify.
     const uint8_t* expected = expectations[i];
-    EXPECT_TRUE(
-        GLTestHelper::CheckPixels(0, 0, 1, 1, 1 /* tolerance */, expected));
+    EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 1 /* tolerance */,
+                                          expected, nullptr));
   }
 }
 

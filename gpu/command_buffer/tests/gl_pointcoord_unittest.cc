@@ -138,7 +138,7 @@ TEST_F(PointCoordTest, MAYBE_RenderTo) {
               static_cast<uint8_t>(s * 255),
               static_cast<uint8_t>((1 - t) * 255), 0, 255,
           };
-          GLTestHelper::CheckPixels(xf, yf, 1, 1, 4, color);
+          GLTestHelper::CheckPixels(xf, yf, 1, 1, 4, color, nullptr);
         }
       }
     }

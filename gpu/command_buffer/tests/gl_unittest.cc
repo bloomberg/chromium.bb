@@ -32,7 +32,7 @@ TEST_F(GLTest, Basic) {
   uint8_t expected[] = {
       0, 255, 0, 255,
   };
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected, nullptr));
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
 
@@ -61,7 +61,7 @@ TEST_F(GLTest, BasicFBO) {
   uint8_t expected[] = {
       0, 255, 0, 255,
   };
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 16, 16, 0, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 16, 16, 0, expected, nullptr));
   glDeleteFramebuffers(1, &fbo);
   glDeleteTextures(1, &tex);
   GLTestHelper::CheckGLError("no errors", __LINE__);
@@ -92,12 +92,13 @@ TEST_F(GLTest, SimpleShader) {
   };
   glClearColor(0.5f, 0.0f, 1.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 1, expected_clear));
+  EXPECT_TRUE(
+      GLTestHelper::CheckPixels(0, 0, 1, 1, 1, expected_clear, nullptr));
   uint8_t expected_draw[] = {
       0, 255, 0, 255,
   };
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_draw));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_draw, nullptr));
 }
 
 TEST_F(GLTest, FeatureFlagsMatchCapabilities) {

@@ -114,14 +114,14 @@ TEST_F(ES3MapBufferRangeTest, DrawArraysAndInstanced) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawArrays(GL_TRIANGLES, 0, 6);
   GLTestHelper::CheckGLError("no errors", __LINE__);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1, kRedColor));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
+                                        kRedColor, nullptr));
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawArraysInstancedANGLE(GL_TRIANGLES, 0, 6, kPrimCount);
   GLTestHelper::CheckGLError("no errors", __LINE__);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1, kRedColor));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
+                                        kRedColor, nullptr));
 
   glMapBufferRange(GL_ARRAY_BUFFER, 0, 6, GL_MAP_READ_BIT);
   GLTestHelper::CheckGLError("no errors", __LINE__);
@@ -130,13 +130,13 @@ TEST_F(ES3MapBufferRangeTest, DrawArraysAndInstanced) {
   glDrawArrays(GL_TRIANGLES, 0, 6);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
-                                        kBlackColor));
+                                        kBlackColor, nullptr));
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawArraysInstancedANGLE(GL_TRIANGLES, 0, 6, kPrimCount);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
-                                        kBlackColor));
+                                        kBlackColor, nullptr));
 
   // The following test is necessary to make sure draw calls do not just check
   // bound buffers, but actual buffers that are attached to the enabled vertex
@@ -147,13 +147,13 @@ TEST_F(ES3MapBufferRangeTest, DrawArraysAndInstanced) {
   glDrawArrays(GL_TRIANGLES, 0, 6);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
-                                        kBlackColor));
+                                        kBlackColor, nullptr));
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawArraysInstancedANGLE(GL_TRIANGLES, 0, 6, kPrimCount);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
-                                        kBlackColor));
+                                        kBlackColor, nullptr));
 
   glBindBuffer(GL_ARRAY_BUFFER, buffer);
   glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -162,14 +162,14 @@ TEST_F(ES3MapBufferRangeTest, DrawArraysAndInstanced) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawArrays(GL_TRIANGLES, 0, 6);
   GLTestHelper::CheckGLError("no errors", __LINE__);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1, kRedColor));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
+                                        kRedColor, nullptr));
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawArraysInstancedANGLE(GL_TRIANGLES, 0, 6, kPrimCount);
   GLTestHelper::CheckGLError("no errors", __LINE__);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1, kRedColor));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
+                                        kRedColor, nullptr));
 }
 
 TEST_F(ES3MapBufferRangeTest, DrawElementsAndInstanced) {
@@ -195,15 +195,15 @@ TEST_F(ES3MapBufferRangeTest, DrawElementsAndInstanced) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
   GLTestHelper::CheckGLError("no errors", __LINE__);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1, kRedColor));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
+                                        kRedColor, nullptr));
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawElementsInstancedANGLE(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0,
                                kPrimCount);
   GLTestHelper::CheckGLError("no errors", __LINE__);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1, kRedColor));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
+                                        kRedColor, nullptr));
 
   glMapBufferRange(GL_ARRAY_BUFFER, 0, 6, GL_MAP_READ_BIT);
   GLTestHelper::CheckGLError("no errors", __LINE__);
@@ -212,14 +212,14 @@ TEST_F(ES3MapBufferRangeTest, DrawElementsAndInstanced) {
   glDrawArrays(GL_TRIANGLES, 0, 6);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
-                                        kBlackColor));
+                                        kBlackColor, nullptr));
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawElementsInstancedANGLE(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0,
                                kPrimCount);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
-                                        kBlackColor));
+                                        kBlackColor, nullptr));
 
   // The following test is necessary to make sure draw calls do not just check
   // bound buffers, but actual buffers that are attached to the enabled vertex
@@ -230,14 +230,14 @@ TEST_F(ES3MapBufferRangeTest, DrawElementsAndInstanced) {
   glDrawArrays(GL_TRIANGLES, 0, 6);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
-                                        kBlackColor));
+                                        kBlackColor, nullptr));
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawElementsInstancedANGLE(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0,
                                kPrimCount);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
-                                        kBlackColor));
+                                        kBlackColor, nullptr));
 
   glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 
@@ -247,15 +247,15 @@ TEST_F(ES3MapBufferRangeTest, DrawElementsAndInstanced) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
   GLTestHelper::CheckGLError("no errors", __LINE__);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1, kRedColor));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
+                                        kRedColor, nullptr));
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawElementsInstancedANGLE(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0,
                                kPrimCount);
   GLTestHelper::CheckGLError("no errors", __LINE__);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1, kRedColor));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
+                                        kRedColor, nullptr));
 
   glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, 6, GL_MAP_READ_BIT);
   GLTestHelper::CheckGLError("no errors", __LINE__);
@@ -264,14 +264,14 @@ TEST_F(ES3MapBufferRangeTest, DrawElementsAndInstanced) {
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
-                                        kBlackColor));
+                                        kBlackColor, nullptr));
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawElementsInstancedANGLE(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0,
                                kPrimCount);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
-                                        kBlackColor));
+                                        kBlackColor, nullptr));
 
   glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
   GLTestHelper::CheckGLError("no errors", __LINE__);
@@ -279,15 +279,15 @@ TEST_F(ES3MapBufferRangeTest, DrawElementsAndInstanced) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
   GLTestHelper::CheckGLError("no errors", __LINE__);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1, kRedColor));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
+                                        kRedColor, nullptr));
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDrawElementsInstancedANGLE(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0,
                                kPrimCount);
   GLTestHelper::CheckGLError("no errors", __LINE__);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1, kRedColor));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kCanvasSize, kCanvasSize, 1,
+                                        kRedColor, nullptr));
 }
 
 TEST_F(ES3MapBufferRangeTest, ReadPixels) {

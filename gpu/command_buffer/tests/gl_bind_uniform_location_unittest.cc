@@ -95,8 +95,8 @@ TEST_P(BindUniformLocationTest, Basic) {
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
   static const uint8_t expected[] = {64, 128, 192, 255};
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kResolution, kResolution, 1, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kResolution, kResolution, 1,
+                                        expected, nullptr));
 
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
@@ -262,8 +262,8 @@ TEST_P(BindUniformLocationTest, Compositor) {
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
   static const uint8_t expected[] = {204, 204, 204, 204};
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kResolution, kResolution, 1, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kResolution, kResolution, 1,
+                                        expected, nullptr));
 
   GLTestHelper::CheckGLError("no errors", __LINE__);
 

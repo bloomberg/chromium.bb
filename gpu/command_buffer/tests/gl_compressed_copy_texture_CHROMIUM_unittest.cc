@@ -151,7 +151,7 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, Basic) {
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glFlush();
 
-  GLTestHelper::CheckPixels(0, 0, 4, 4, 0, kCompressedImageColor);
+  GLTestHelper::CheckPixels(0, 0, 4, 4, 0, kCompressedImageColor, nullptr);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 

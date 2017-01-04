@@ -11,9 +11,6 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
-#include "base/strings/stringize_macros.h"
-#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -21,54 +18,6 @@
 #ifndef COMPILER_MSVC
 const uint8_t GLTestHelper::kCheckClearValue;
 #endif
-
-// Compiles a fragment shader for sampling out of a texture of |size| bound to
-// |target| and checks for compilation errors.
-GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
-  // clang-format off
-  const char kFragmentShader[] = STRINGIZE(
-    uniform SamplerType u_texture;
-    varying vec2 v_texCoord;
-    void main() {
-      gl_FragColor = TextureLookup(u_texture, v_texCoord * TextureScale);
-    }
-  );
-  const char kShaderFloatPrecision[] = STRINGIZE(
-    precision mediump float;
-  );
-  // clang-format on
-
-  switch (target) {
-    case GL_TEXTURE_2D:
-      return GLTestHelper::LoadShader(
-          GL_FRAGMENT_SHADER,
-          base::StringPrintf("%s\n"
-                             "#define SamplerType sampler2D\n"
-                             "#define TextureLookup texture2D\n"
-                             "#define TextureScale vec2(1.0, 1.0)\n"
-                             "%s",
-                             kShaderFloatPrecision,
-                             kFragmentShader)
-              .c_str());
-    case GL_TEXTURE_RECTANGLE_ARB:
-      return GLTestHelper::LoadShader(
-          GL_FRAGMENT_SHADER,
-          base::StringPrintf("%s\n"
-                             "#extension GL_ARB_texture_rectangle : require\n"
-                             "#define SamplerType sampler2DRect\n"
-                             "#define TextureLookup texture2DRect\n"
-                             "#define TextureScale vec2(%f, %f)\n"
-                             "%s",
-                             kShaderFloatPrecision,
-                             static_cast<double>(size.width()),
-                             static_cast<double>(size.height()),
-                             kFragmentShader)
-              .c_str());
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
 
 bool GLTestHelper::HasExtension(const char* extension) {
   // Pad with an extra space to ensure that |extension| is not a substring of
@@ -214,7 +163,8 @@ bool GLTestHelper::CheckPixels(GLint x,
                                GLsizei width,
                                GLsizei height,
                                GLint tolerance,
-                               const uint8_t* color) {
+                               const uint8_t* color,
+                               const uint8_t* mask) {
   GLsizei size = width * height * 4;
   std::unique_ptr<uint8_t[]> pixels(new uint8_t[size]);
   memset(pixels.get(), kCheckClearValue, size);
@@ -228,7 +178,7 @@ bool GLTestHelper::CheckPixels(GLint x,
         uint8_t expected = color[jj];
         int diff = actual - expected;
         diff = diff < 0 ? -diff: diff;
-        if (diff > tolerance) {
+        if ((!mask || mask[jj]) && diff > tolerance) {
           EXPECT_EQ(expected, actual) << " at " << (xx + x) << ", " << (yy + y)
                                       << " channel " << jj;
           ++bad_count;
@@ -327,39 +277,26 @@ bool GLTestHelper::SaveBackbufferAsBMP(
   return true;
 }
 
-void GLTestHelper::DrawTextureQuad(GLenum target, const gfx::Size& size) {
-  // clang-format off
-  const char kVertexShader[] = STRINGIZE(
-    attribute vec2 a_position;
-    varying vec2 v_texCoord;
-    void main() {
-      gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
-      v_texCoord = (a_position + vec2(1.0, 1.0)) * 0.5;
-    }
-  );
-  // clang-format on
-
-  // Setup program.
-  GLuint vertex_shader =
-      GLTestHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
-  GLuint fragment_shader = LoadFragmentShader(target, size);
-  GLuint program = GLTestHelper::SetupProgram(vertex_shader, fragment_shader);
+void GLTestHelper::DrawTextureQuad(const char* vertex_src,
+                                   const char* fragment_src,
+                                   const char* position_name,
+                                   const char* sampler_name) {
+  GLuint program = GLTestHelper::LoadProgram(vertex_src, fragment_src);
   EXPECT_NE(program, 0u);
   glUseProgram(program);
 
-  GLint position_loc = glGetAttribLocation(program, "a_position");
-  GLint sampler_location = glGetUniformLocation(program, "u_texture");
+  GLint position_loc = glGetAttribLocation(program, position_name);
+  GLint sampler_location = glGetUniformLocation(program, sampler_name);
   ASSERT_NE(position_loc, -1);
   ASSERT_NE(sampler_location, -1);
 
   GLuint vertex_buffer = GLTestHelper::SetupUnitQuad(position_loc);
   ASSERT_NE(vertex_buffer, 0u);
+  glActiveTexture(GL_TEXTURE0);
   glUniform1i(sampler_location, 0);
 
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
-  glDeleteShader(vertex_shader);
-  glDeleteShader(fragment_shader);
   glDeleteProgram(program);
   glDeleteBuffers(1, &vertex_buffer);
 }

@@ -55,16 +55,18 @@ TEST_F(GLLoseContextTest, ShareGroup) {
       GLTestHelper::kCheckClearValue, GLTestHelper::kCheckClearValue,
   };
   // Expect the read will fail.
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_no_draw));
+  EXPECT_TRUE(
+      GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_no_draw, nullptr));
   gl1b_.MakeCurrent();
   // Expect the read will fail.
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_no_draw));
+  EXPECT_TRUE(
+      GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_no_draw, nullptr));
   gl2_.MakeCurrent();
   uint8_t expected_draw[] = {
       0, 0, 0, 0,
   };
   // Expect the read will succeed.
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_draw));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_draw, nullptr));
 }
 
 }  // namespace gpu

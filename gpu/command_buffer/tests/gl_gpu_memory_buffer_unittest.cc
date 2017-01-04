@@ -234,7 +234,7 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
   ASSERT_TRUE(glGetError() == GL_NO_ERROR);
 
   // Check if pixels match the values that were assigned to the mapped buffer.
-  GLTestHelper::CheckPixels(0, 0, kImageWidth, kImageHeight, 0, pixel);
+  GLTestHelper::CheckPixels(0, 0, kImageWidth, kImageHeight, 0, pixel, nullptr);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   // Release the image.

@@ -100,15 +100,8 @@ TEST_F(GLChromiumFramebufferMultisampleTest, DrawAndResolve) {
   GLuint resolve_fbo, resolve_tex;
   glGenTextures(1, &resolve_tex);
   glBindTexture(GL_TEXTURE_2D, resolve_tex);
-  glTexImage2D(GL_TEXTURE_2D,
-               0,
-               GL_RGBA,
-               width,
-               height,
-               0,
-               GL_RGBA,
-               GL_UNSIGNED_BYTE,
-               NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -150,9 +143,9 @@ TEST_F(GLChromiumFramebufferMultisampleTest, DrawAndResolve) {
   const uint8_t green[] = {0, 255, 0, 255};
   const uint8_t black[] = {0, 0, 0, 0};
   glBindFramebuffer(GL_READ_FRAMEBUFFER, resolve_fbo);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(width / 4, (3 * height) / 4, 1, 1, 0, green));
-  EXPECT_TRUE(GLTestHelper::CheckPixels(width - 1, 0, 1, 1, 0, black));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(width / 4, (3 * height) / 4, 1, 1, 0,
+                                        green, nullptr));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(width - 1, 0, 1, 1, 0, black, nullptr));
 }
 
 }  // namespace gpu

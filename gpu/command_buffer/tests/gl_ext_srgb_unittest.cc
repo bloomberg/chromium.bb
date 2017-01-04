@@ -66,10 +66,10 @@ TEST_F(GLEXTSRGBTest, TexImageSRGBALPHAFormat) {
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-  GLTestHelper::CheckPixels(0, 0, kSubImageX, kHeight, 0, kImageColor);
-  GLTestHelper::CheckPixels(0, 0, kWidth, kSubImageY, 0, kImageColor);
+  GLTestHelper::CheckPixels(0, 0, kSubImageX, kHeight, 0, kImageColor, nullptr);
+  GLTestHelper::CheckPixels(0, 0, kWidth, kSubImageY, 0, kImageColor, nullptr);
   GLTestHelper::CheckPixels(kSubImageX, kSubImageY, kSubImageWidth,
-                            kSubImageHeight, 0, kSubImageColor);
+                            kSubImageHeight, 0, kSubImageColor, nullptr);
 }
 
 }  // namespace gpu

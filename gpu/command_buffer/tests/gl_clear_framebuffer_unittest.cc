@@ -127,8 +127,8 @@ TEST_P(GLClearFramebufferTest, ClearColor) {
 
   // Verify.
   const uint8_t expected[] = {255, 128, 64, 128};
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, 1, 1, 1 /* tolerance */, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 1 /* tolerance */, expected,
+                                        nullptr));
 }
 
 TEST_P(GLClearFramebufferTest, ClearColorWithMask) {
@@ -142,8 +142,8 @@ TEST_P(GLClearFramebufferTest, ClearColorWithMask) {
 
   // Verify.
   const uint8_t expected[] = {255, 0, 0, 0};
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, expected,
+                                        nullptr));
 }
 
 // crbug.com/434094
@@ -158,8 +158,8 @@ TEST_P(GLClearFramebufferTest, ClearColorWithScissor) {
 
   // Verify.
   const uint8_t expected[] = {255, 255, 255, 255};
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, expected,
+                                        nullptr));
 
   glScissor(0, 0, 0, 0);
   glEnable(GL_SCISSOR_TEST);
@@ -167,8 +167,8 @@ TEST_P(GLClearFramebufferTest, ClearColorWithScissor) {
   glClear(GL_COLOR_BUFFER_BIT);
 
   // Verify - no changes.
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, expected,
+                                        nullptr));
 }
 #endif
 
@@ -185,7 +185,7 @@ TEST_P(GLClearFramebufferTest, ClearDepthStencil) {
   const uint8_t kRed[] = {255, 0, 0, 255};
   const uint8_t kGreen[] = {0, 255, 0, 255};
   EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kRed));
+      GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kRed, nullptr));
 
   glClearStencil(kStencilRef);
   glClear(GL_STENCIL_BUFFER_BIT);
@@ -197,13 +197,13 @@ TEST_P(GLClearFramebufferTest, ClearDepthStencil) {
   DrawQuad();
   // Verify - stencil should have failed, so still red.
   EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kRed));
+      GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kRed, nullptr));
 
   glStencilFunc(GL_EQUAL, kStencilRef, 0xFFFFFFFF);
   DrawQuad();
   // Verify - stencil should have passed, so green.
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kGreen));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kGreen,
+                                        nullptr));
 
   glEnable(GL_DEPTH_TEST);
   glClearDepthf(0.0f);
@@ -213,15 +213,15 @@ TEST_P(GLClearFramebufferTest, ClearDepthStencil) {
   SetDrawColor(1.0f, 0.0f, 0.0f, 1.0f);
   DrawQuad();
   // Verify - depth test should have failed, so still green.
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kGreen));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kGreen,
+                                        nullptr));
 
   glClearDepthf(0.9f);
   glClear(GL_DEPTH_BUFFER_BIT);
   DrawQuad();
   // Verify - depth test should have passed, so red.
   EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kRed));
+      GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kRed, nullptr));
 }
 
 }  // namespace gpu

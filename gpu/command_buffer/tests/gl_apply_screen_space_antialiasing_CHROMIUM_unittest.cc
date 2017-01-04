@@ -120,7 +120,7 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, MAYBE_Basic) {
             glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
   uint8_t pixels[1 * 4] = {0u, 255u, 0u, 255u};
-  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels);
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels, nullptr);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 }
 
@@ -159,7 +159,7 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, InternalFormat) {
                                                               << index;
 
     uint8_t pixels[1 * 4] = {0u, 255u, 0u, 255u};
-    GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels);
+    GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels, nullptr);
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   }
 }
@@ -188,7 +188,7 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, ImmutableTexture) {
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
     uint8_t pixels[1 * 4] = {0u, 255u, 0u, 255u};
-    GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels);
+    GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels, nullptr);
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   }
 }
@@ -219,18 +219,18 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, AntiAliasing) {
 
   uint8_t transparent[4] = {0u, 0u, 0u, 0u};
   uint8_t red[4] = {255u, 0u, 0u, 255u};
-  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, red);
-  GLTestHelper::CheckPixels(0, 1, 1, 1, 0, red);
-  GLTestHelper::CheckPixels(0, 2, 1, 1, 0, transparent);
-  GLTestHelper::CheckPixels(1, 0, 1, 1, 0, red);
-  GLTestHelper::CheckPixels(1, 1, 1, 1, 0, transparent);
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, red, nullptr);
+  GLTestHelper::CheckPixels(0, 1, 1, 1, 0, red, nullptr);
+  GLTestHelper::CheckPixels(0, 2, 1, 1, 0, transparent, nullptr);
+  GLTestHelper::CheckPixels(1, 0, 1, 1, 0, red, nullptr);
+  GLTestHelper::CheckPixels(1, 1, 1, 1, 0, transparent, nullptr);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   glApplyScreenSpaceAntialiasingCHROMIUM();
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
-  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, red);
-  GLTestHelper::CheckPixels(2, 2, 1, 1, 0, transparent);
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, red, nullptr);
+  GLTestHelper::CheckPixels(2, 2, 1, 1, 0, transparent, nullptr);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   // Check if middle pixel is anti-aliased.
@@ -394,9 +394,9 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, ProgramStatePreservation) {
   };
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, zero));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, zero, nullptr));
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected, nullptr));
 
   // Call copyTextureCHROMIUM
   uint8_t pixels[1 * 4] = {255u, 0u, 0u, 255u};
@@ -409,9 +409,9 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, ProgramStatePreservation) {
 
   // test using program after
   glClear(GL_COLOR_BUFFER_BIT);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, zero));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, zero, nullptr));
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected, nullptr));
 
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 

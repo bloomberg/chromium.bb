@@ -110,7 +110,7 @@ TEST_P(GLCubeMapTextureTest, ReadPixels) {
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-  GLTestHelper::CheckPixels(0, 0, width_, width_, 0, pixels_);
+  GLTestHelper::CheckPixels(0, 0, width_, width_, 0, pixels_, nullptr);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 }
 

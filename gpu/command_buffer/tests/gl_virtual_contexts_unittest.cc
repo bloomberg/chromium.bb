@@ -141,7 +141,8 @@ void TestDraw(int size) {
   };
   glClearColor(0.5f, 0.0f, 1.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, size, size, 1, expected_clear));
+  EXPECT_TRUE(
+      GLTestHelper::CheckPixels(0, 0, size, size, 1, expected_clear, nullptr));
   glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
@@ -179,8 +180,8 @@ TEST_F(GLVirtualContextsTest, Basic) {
     const TestInfo& test = tests[ii];
     GLManager* gl_manager = test.manager;
     gl_manager->MakeCurrent();
-    EXPECT_TRUE(GLTestHelper::CheckPixels(
-        0, 0, test.size, test.size, 0, test.color));
+    EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, test.size, test.size, 0,
+                                          test.color, nullptr));
   }
 
   for (int ii = 0; ii < kNumTests; ++ii) {
@@ -212,15 +213,16 @@ TEST_F(GLVirtualContextsTest, VertexArrayObjectRestore) {
   gl1_.MakeCurrent();
   // Test to ensure that vao1 is still the active VAO for this context.
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize1, kSize1, 0, kExpectedRed));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize1, kSize1, 0, kExpectedRed,
+                                        nullptr));
   glFinish();
   GLTestHelper::CheckGLError("no errors", __LINE__);
 
   gl2_.MakeCurrent();
   // Test to ensure that vao2 is still the active VAO for this context.
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kSize2, kSize2, 0, kExpectedGreen));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize2, kSize2, 0, kExpectedGreen,
+                                        nullptr));
   glFinish();
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
@@ -249,7 +251,8 @@ TEST_F(GLVirtualContextsTest, VertexArrayObjectRestoreRebind) {
   glBindVertexArrayOES(0);
   glBindVertexArrayOES(vao1);
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize1, kSize1, 0, kExpectedRed));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize1, kSize1, 0, kExpectedRed,
+                                        nullptr));
   glFinish();
   GLTestHelper::CheckGLError("no errors", __LINE__);
 
@@ -259,8 +262,8 @@ TEST_F(GLVirtualContextsTest, VertexArrayObjectRestoreRebind) {
   glBindVertexArrayOES(0);
   glBindVertexArrayOES(vao2);
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kSize2, kSize2, 0, kExpectedGreen));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize2, kSize2, 0, kExpectedGreen,
+                                        nullptr));
   glFinish();
 
   GLTestHelper::CheckGLError("no errors", __LINE__);
@@ -287,7 +290,8 @@ TEST_F(GLVirtualContextsTest, VertexArrayObjectRestoreDefault) {
   gl1_.MakeCurrent();
   // Test to ensure that default VAO on gl1_ is still valid.
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize1, kSize1, 0, kExpectedRed));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize1, kSize1, 0, kExpectedRed,
+                                        nullptr));
   glFinish();
 
   gl2_.MakeCurrent();
@@ -296,8 +300,8 @@ TEST_F(GLVirtualContextsTest, VertexArrayObjectRestoreDefault) {
   // bound during the context switch.
   glBindVertexArrayOES(0);
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, kSize2, kSize2, 0, kExpectedGreen));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize2, kSize2, 0, kExpectedGreen,
+                                        nullptr));
   glFinish();
 
   GLTestHelper::CheckGLError("no errors", __LINE__);

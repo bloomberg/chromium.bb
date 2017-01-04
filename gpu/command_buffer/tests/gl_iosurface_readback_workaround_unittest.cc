@@ -67,14 +67,14 @@ TEST_F(GLIOSurfaceReadbackWorkaroundTest, ReadPixels) {
   glClearColor(33.0 / 255.0, 44.0 / 255.0, 55.0 / 255.0, 66.0 / 255.0);
   glClear(GL_COLOR_BUFFER_BIT);
   const uint8_t expected[4] = {33, 44, 55, 66};
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, 1, 1, 1 /* tolerance */, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 1 /* tolerance */, expected,
+                                        nullptr));
 
   glClearColor(14.0 / 255.0, 15.0 / 255.0, 16.0 / 255.0, 17.0 / 255.0);
   glClear(GL_COLOR_BUFFER_BIT);
   const uint8_t expected2[4] = {14, 15, 16, 17};
-  EXPECT_TRUE(
-      GLTestHelper::CheckPixels(0, 0, 1, 1, 1 /* tolerance */, expected2));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 1 /* tolerance */,
+                                        expected2, nullptr));
 
   glReleaseTexImage2DCHROMIUM(source_target, image_id);
   glDestroyImageCHROMIUM(image_id);

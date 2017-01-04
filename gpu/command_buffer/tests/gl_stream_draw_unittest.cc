@@ -77,10 +77,12 @@ TEST_F(GLStreamDrawTest, Basic) {
   GLTestHelper::SetupUnitQuad(position_loc);
   GLTestHelper::SetupColorsForUnitQuad(color_loc, float_red, GL_STREAM_DRAW);
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_red));
+  EXPECT_TRUE(
+      GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_red, nullptr));
   GLTestHelper::SetupColorsForUnitQuad(color_loc, float_green, GL_STATIC_DRAW);
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_green));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_green,
+                                        nullptr));
 
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
@@ -109,14 +111,16 @@ TEST_F(GLStreamDrawTest, DrawElements) {
   static GLubyte indices[] = { 0, 1, 2, 3, 4, 5, };
   glBufferData(
       GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, NULL);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_red));
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+  EXPECT_TRUE(
+      GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_red, nullptr));
   GLTestHelper::SetupColorsForUnitQuad(color_loc, float_green, GL_STATIC_DRAW);
 
   glBufferData(
       GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, NULL);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_green));
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_green,
+                                        nullptr));
 
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
@@ -156,12 +160,13 @@ TEST_F(GLStreamDrawTest, VertexArrayObjects) {
   for (int ii = 0; ii < 2; ++ii) {
     glBindVertexArrayOES(vaos[0]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_red));
+    EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_red,
+                                          nullptr));
 
     glBindVertexArrayOES(vaos[1]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    EXPECT_TRUE(
-        GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_green));
+    EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kSize, kSize, 0, expected_green,
+                                          nullptr));
   }
 
   GLTestHelper::CheckGLError("no errors", __LINE__);

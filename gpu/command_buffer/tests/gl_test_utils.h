@@ -12,10 +12,6 @@
 
 #include <vector>
 
-namespace gfx {
-class Size;
-}  // namespace gfx
-
 class GLTestHelper {
  public:
   static const uint8_t kCheckClearValue = 123u;
@@ -59,17 +55,23 @@ class GLTestHelper {
       GLint location, const GLfloat color[4], GLenum usage);
 
   // Checks an area of pixels for a color.
+  // If mask is nullptr, compare all color channels; otherwise, compare the
+  // channels whose corresponding mask bit is true.
   static bool CheckPixels(GLint x,
                           GLint y,
                           GLsizei width,
                           GLsizei height,
                           GLint tolerance,
-                          const uint8_t* color);
+                          const uint8_t* color,
+                          const uint8_t* mask);
 
   // Uses ReadPixels to save an area of the current FBO/Backbuffer.
   static bool SaveBackbufferAsBMP(const char* filename, int width, int height);
 
-  static void DrawTextureQuad(GLenum target, const gfx::Size& size);
+  static void DrawTextureQuad(const char* vertex_src,
+                              const char* fragment_src,
+                              const char* position_name,
+                              const char* sampler_name);
 };
 
 #endif  // GPU_COMMAND_BUFFER_TESTS_GL_TEST_UTILS_H_

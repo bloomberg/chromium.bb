@@ -121,7 +121,7 @@ TEST_F(GLProgramTest, NewShaderInCurrentProgram) {
   GLuint fs = GLTestHelper::LoadShader(GL_FRAGMENT_SHADER, f_red_shader_str);
   GLuint program = GLTestHelper::SetupProgram(vs, fs);
   glUseProgram(program);
-  glShaderSource(fs, 1, &f_blue_shader_str, NULL);
+  glShaderSource(fs, 1, &f_blue_shader_str, nullptr);
   glCompileShader(fs);
   glLinkProgram(program);
   // We specifically don't call UseProgram again.
@@ -131,7 +131,8 @@ TEST_F(GLProgramTest, NewShaderInCurrentProgram) {
   uint8_t expected_color[] = {
       0, 0, 255, 255,
   };
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color));
+  EXPECT_TRUE(
+      GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color, nullptr));
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
 
@@ -149,7 +150,7 @@ TEST_F(GLProgramTest, ShaderLengthSpecified) {
   // Compiling invalid program should fail.
   const char* invalid_shader_strings[] = { invalid_shader.c_str() };
   GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vs, 1, invalid_shader_strings, NULL);
+  glShaderSource(vs, 1, invalid_shader_strings, nullptr);
   glCompileShader(vs);
 
   GLint compile_state = 0;
@@ -199,7 +200,8 @@ TEST_F(GLProgramTest, UniformsInCurrentProgram) {
   uint8_t expected_color[] = {
       0, 0, 255, 255,
   };
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color));
+  EXPECT_TRUE(
+      GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color, nullptr));
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
 

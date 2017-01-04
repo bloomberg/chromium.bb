@@ -233,9 +233,9 @@ TEST_P(CompressedTextureTest, Draw) {
   for (unsigned i = 0; i < kPaletteSize; ++i) {
     origin[0] = kBlockSize * i;
     ToRGB888(kPalette[i], expected_rgba);
-    EXPECT_TRUE(GLTestHelper::CheckPixels(origin[0], origin[1],
-                                          kBlockSize, kBlockSize,
-                                          0, expected_rgba));
+    EXPECT_TRUE(GLTestHelper::CheckPixels(origin[0], origin[1], kBlockSize,
+                                          kBlockSize, 0, expected_rgba,
+                                          nullptr));
   }
   GLTestHelper::CheckGLError("CompressedTextureTest.Draw", __LINE__);
 }

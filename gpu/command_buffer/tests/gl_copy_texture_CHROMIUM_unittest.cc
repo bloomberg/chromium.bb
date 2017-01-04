@@ -336,7 +336,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, Basic) {
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels);
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels, nullptr);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
@@ -487,53 +487,21 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
                 glCheckFramebufferStatus(GL_FRAMEBUFFER));
       glViewport(0, 0, kWidth, kHeight);
 
+      glBindTexture(GL_TEXTURE_2D, textures_[1]);
       std::string fragment_shader_source =
           GetFragmentShaderSource(dest_format_type.internal_format);
-      GLuint program = GLTestHelper::LoadProgram(
-          kSimpleVertexShaderES3, fragment_shader_source.c_str());
-      EXPECT_NE(program, 0u);
-      GLint position_loc = glGetAttribLocation(program, "a_position");
-      GLint texture_loc = glGetUniformLocation(program, "u_texture");
-      ASSERT_NE(position_loc, -1);
-      ASSERT_NE(texture_loc, -1);
-      glUseProgram(program);
+      GLTestHelper::DrawTextureQuad(kSimpleVertexShaderES3,
+                                    fragment_shader_source.c_str(),
+                                    "a_position", "u_texture");
 
-      GLuint vbo = GLTestHelper::SetupUnitQuad(position_loc);
-      ASSERT_NE(vbo, 0u);
-
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, textures_[1]);
-
-      glDrawArrays(GL_TRIANGLES, 0, 6);
-
-      EXPECT_TRUE(GL_NO_ERROR == glGetError());
-
-      GLsizei size = kWidth * kHeight * 4;
-      std::unique_ptr<uint8_t[]> result(new uint8_t[size]);
-      glReadPixels(0, 0, kWidth, kHeight, GL_RGBA, GL_UNSIGNED_BYTE,
-                   result.get());
       uint8_t tolerance = dest_format_type.internal_format == GL_RGBA4 ? 20 : 7;
-      for (GLint yy = 0; yy < kHeight; ++yy) {
-        for (GLint xx = 0; xx < kWidth; ++xx) {
-          int offset = yy * kWidth * 4 + xx * 4;
-          for (int jj = 0; jj < 4; ++jj) {
-            uint8_t actual = result[offset + jj];
-            uint8_t expected = expected_color[jj];
-            int diff = actual - expected;
-            diff = diff < 0 ? -diff : diff;
-            if (mask[jj] && diff > tolerance) {
-              EXPECT_EQ(expected, actual)
-                  << " at " << xx << ", " << yy << " channel " << jj
-                  << " src_internal_format: "
-                  << gles2::GLES2Util::GetStringEnum(
-                         src_format_type.internal_format)
-                  << " dest_internal_format: "
-                  << gles2::GLES2Util::GetStringEnum(
-                         dest_format_type.internal_format);
-            }
-          }
-        }
-      }
+      EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, kWidth, kHeight, tolerance,
+                                            expected_color, mask))
+          << " src_internal_format: "
+          << gles2::GLES2Util::GetStringEnum(src_format_type.internal_format)
+          << " dest_internal_format: "
+          << gles2::GLES2Util::GetStringEnum(dest_format_type.internal_format);
+      EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
       glDeleteTextures(1, &texture);
       glDeleteFramebuffers(1, &framebuffer);
@@ -589,7 +557,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, ImmutableTexture) {
         EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
                   glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-        GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels);
+        GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels, nullptr);
         EXPECT_TRUE(GL_NO_ERROR == glGetError());
       }
       glDeleteTextures(2, textures_);
@@ -747,7 +715,7 @@ TEST_F(GLCopyTextureCHROMIUMTest, RedefineDestinationTexture) {
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
-  GLTestHelper::CheckPixels(1, 1, 1, 1, 0, &pixels[12]);
+  GLTestHelper::CheckPixels(1, 1, 1, 1, 0, &pixels[12], nullptr);
 
   glDeleteTextures(2, textures_);
   glDeleteFramebuffers(1, &framebuffer_id_);
@@ -934,7 +902,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, FBOStatePreserved) {
   uint8_t expected_color[4] = {255u, 255u, 0, 255u};
   glClearColor(1.0, 1.0, 0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
-  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color);
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color, nullptr);
 
   if (copy_type == TexImage) {
     glCopyTextureCHROMIUM(textures_[0], textures_[1], GL_RGBA,
@@ -948,12 +916,12 @@ TEST_P(GLCopyTextureCHROMIUMTest, FBOStatePreserved) {
   EXPECT_TRUE(glIsFramebuffer(framebuffer_id));
 
   // Ensure that reading from the framebuffer produces correct pixels.
-  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color);
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color, nullptr);
 
   uint8_t expected_color2[4] = {255u, 0, 255u, 255u};
   glClearColor(1.0, 0, 1.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
-  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color2);
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color2, nullptr);
 
   GLint bound_fbo = 0;
   glGetIntegerv(GL_FRAMEBUFFER_BINDING, &bound_fbo);
@@ -1042,9 +1010,9 @@ TEST_P(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
       0, 0, 0, 0,
   };
   glClear(GL_COLOR_BUFFER_BIT);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, zero));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, zero, nullptr));
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected, nullptr));
 
   // Call copyTextureCHROMIUM
   uint8_t pixels[1 * 4] = {255u, 0u, 0u, 255u};
@@ -1064,9 +1032,9 @@ TEST_P(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
 
   // test using program after
   glClear(GL_COLOR_BUFFER_BIT);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, zero));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, zero, nullptr));
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected));
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected, nullptr));
 
   glDeleteTextures(2, textures_);
   glDeleteFramebuffers(1, &framebuffer_id_);
@@ -1252,10 +1220,10 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureOffset) {
   uint8_t red[1 * 4] = {255u, 0u, 0u, 255u};
   uint8_t green[1 * 4] = {0u, 255u, 0u, 255u};
   uint8_t blue[1 * 4] = {0u, 0u, 255u, 255u};
-  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, transparent);
-  GLTestHelper::CheckPixels(1, 1, 1, 1, 0, red);
-  GLTestHelper::CheckPixels(1, 0, 1, 1, 0, green);
-  GLTestHelper::CheckPixels(0, 1, 1, 1, 0, blue);
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, transparent, nullptr);
+  GLTestHelper::CheckPixels(1, 1, 1, 1, 0, red, nullptr);
+  GLTestHelper::CheckPixels(1, 0, 1, 1, 0, green, nullptr);
+  GLTestHelper::CheckPixels(0, 1, 1, 1, 0, blue, nullptr);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   glDeleteTextures(2, textures_);
@@ -1334,7 +1302,7 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopyTextureBetweenTexture2DAndRectangleArb) {
         for (GLint y = 0; y < dest_height; ++y) {
           if (x < copy_region_x || x >= copy_region_x + copy_region_width ||
               y < copy_region_y || y >= copy_region_y + copy_region_height) {
-            GLTestHelper::CheckPixels(x, y, 1, 1, 0, grey);
+            GLTestHelper::CheckPixels(x, y, 1, 1, 0, grey, nullptr);
             continue;
           }
 
@@ -1344,7 +1312,7 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopyTextureBetweenTexture2DAndRectangleArb) {
           } else {
             expected_color = y < copy_region_y + 1 ? blue : white;
           }
-          GLTestHelper::CheckPixels(x, y, 1, 1, 0, expected_color);
+          GLTestHelper::CheckPixels(x, y, 1, 1, 0, expected_color, nullptr);
         }
       }
 
