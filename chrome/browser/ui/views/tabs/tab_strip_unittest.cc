@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -131,32 +132,6 @@ class TabStripTest : public views::ViewsTestBase {
   bool IsShowingPinnedTabTitleChangedIndicator(int model_index) {
     return tab_strip_->tab_at(model_index)
         ->showing_pinned_tab_title_changed_indicator_;
-  }
-
-  // Returns the rectangular hit test region of |tab| in |tab|'s local
-  // coordinate space.
-  gfx::Rect GetTabHitTestMask(Tab* tab) {
-    views::ViewTargeter* targeter = tab->targeter();
-    DCHECK(targeter);
-    views::MaskedTargeterDelegate* delegate =
-        static_cast<views::MaskedTargeterDelegate*>(tab);
-
-    gfx::Path mask;
-    bool valid_mask = delegate->GetHitTestMask(&mask);
-    DCHECK(valid_mask);
-
-    return gfx::ToEnclosingRect((gfx::SkRectToRectF(mask.getBounds())));
-  }
-
-  // Returns the rectangular hit test region of the tab close button of
-  // |tab| in |tab|'s coordinate space (including padding if |padding|
-  // is true).
-  gfx::Rect GetTabCloseHitTestMask(Tab* tab, bool padding) {
-    gfx::RectF bounds_f = gfx::RectF(tab->close_button_->GetContentsBounds());
-    if (padding)
-      bounds_f = gfx::RectF(tab->close_button_->GetLocalBounds());
-    views::View::ConvertRectToTarget(tab->close_button_, tab, &bounds_f);
-    return gfx::ToEnclosingRect(bounds_f);
   }
 
   // Checks whether |tab| contains |point_in_tabstrip_coords|, where the point
@@ -326,13 +301,11 @@ TEST_F(TabStripTest, ImmersiveMode) {
   EXPECT_LT(immersive_height, normal_height);
 }
 
-// Creates a tab strip in stacked layout mode and verifies the correctness
-// of hit tests against the visible/occluded regions of a tab and the tab
-// close button of the active tab.
-// TODO(pkasting): Update the test for Material Design layout.
-// crbug.com/575327
-TEST_F(TabStripTest, DISABLED_TabHitTestMaskWhenStacked) {
-  tab_strip_->SetBounds(0, 0, 300, 20);
+// Creates a tab strip in stacked layout mode and verifies that as we move
+// across the strip at the top, middle, and bottom, events will target each tab
+// in order.
+TEST_F(TabStripTest, TabForEventWhenStacked) {
+  tab_strip_->SetBounds(0, 0, 200, GetLayoutConstant(TAB_HEIGHT));
 
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
@@ -340,91 +313,24 @@ TEST_F(TabStripTest, DISABLED_TabHitTestMaskWhenStacked) {
   controller_->AddTab(3, false);
   ASSERT_EQ(4, tab_strip_->tab_count());
 
-  Tab* left_tab = tab_strip_->tab_at(0);
-  left_tab->SetBoundsRect(gfx::Rect(gfx::Point(0, 0), gfx::Size(200, 20)));
-
-  Tab* active_tab = tab_strip_->tab_at(1);
-  active_tab->SetBoundsRect(gfx::Rect(gfx::Point(150, 0), gfx::Size(200, 20)));
-  ASSERT_TRUE(active_tab->IsActive());
-
-  Tab* right_tab = tab_strip_->tab_at(2);
-  right_tab->SetBoundsRect(gfx::Rect(gfx::Point(300, 0), gfx::Size(200, 20)));
-
-  Tab* most_right_tab = tab_strip_->tab_at(3);
-  most_right_tab->SetBoundsRect(gfx::Rect(gfx::Point(450, 0),
-                                          gfx::Size(200, 20)));
-
   // Switch to stacked layout mode and force a layout to ensure tabs stack.
   tab_strip_->SetStackedLayout(true);
   tab_strip_->DoLayout();
 
-  // Tests involving |left_tab|, which has part of its bounds occluded by
-  // |active_tab|.
-
-  // Bounds of the tab's hit test mask.
-  gfx::Rect tab_bounds = GetTabHitTestMask(left_tab);
-  EXPECT_EQ(gfx::Rect(6, 2, 61, 27).ToString(), tab_bounds.ToString());
-
-  // Hit tests in the non-occuluded region of the tab.
-  EXPECT_TRUE(left_tab->HitTestRect(gfx::Rect(6, 2, 2, 2)));
-  EXPECT_TRUE(left_tab->HitTestRect(gfx::Rect(6, 2, 1, 1)));
-  EXPECT_TRUE(left_tab->HitTestRect(gfx::Rect(30, 15, 1, 1)));
-  EXPECT_TRUE(left_tab->HitTestRect(gfx::Rect(30, 15, 25, 35)));
-  EXPECT_TRUE(left_tab->HitTestRect(gfx::Rect(-10, -5, 20, 30)));
-
-  // Hit tests in the occluded region of the tab.
-  EXPECT_FALSE(left_tab->HitTestRect(gfx::Rect(70, 15, 2, 2)));
-  EXPECT_FALSE(left_tab->HitTestRect(gfx::Rect(70, -15, 30, 40)));
-  EXPECT_FALSE(left_tab->HitTestRect(gfx::Rect(87, 20, 5, 3)));
-
-  // Hit tests completely outside of the tab.
-  EXPECT_FALSE(left_tab->HitTestRect(gfx::Rect(-20, -25, 1, 1)));
-  EXPECT_FALSE(left_tab->HitTestRect(gfx::Rect(-20, -25, 3, 19)));
-
-
-  // Tests involving |active_tab|, which is completely visible.
-
-  tab_bounds = GetTabHitTestMask(active_tab);
-  EXPECT_EQ(gfx::Rect(6, 2, 108, 27).ToString(), tab_bounds.ToString());
-  gfx::Rect contents_bounds = GetTabCloseHitTestMask(active_tab, false);
-  // TODO(tdanderson): Uncomment this line once crbug.com/311609 is resolved.
-  // EXPECT_EQ(gfx::Rect(84, 8, 18, 18).ToString(), contents_bounds.ToString());
-
-  // Verify that the tab close button is not occluded.
-  EXPECT_TRUE(tab_bounds.Contains(contents_bounds));
-
-  // Bounds of the tab close button (with padding) in the tab's coordinate
-  // space.
-  gfx::Rect local_bounds = GetTabCloseHitTestMask(active_tab, true);
-  EXPECT_EQ(gfx::Rect(82, 0, 38, 29).ToString(), local_bounds.ToString());
-
-  // Hit tests within the tab.
-  EXPECT_TRUE(active_tab->HitTestRect(gfx::Rect(30, 15, 1, 1)));
-  EXPECT_TRUE(active_tab->HitTestRect(gfx::Rect(30, 15, 2, 2)));
-
-  // Hit tests against the tab close button. Note that hit tests from either
-  // mouse or touch should both fail if they are strictly contained within
-  // the button's padding.
-  views::ImageButton* active_close = active_tab->close_button_;
-  EXPECT_FALSE(active_close->HitTestRect(gfx::Rect(1, 1, 1, 1)));
-  EXPECT_FALSE(active_close->HitTestRect(gfx::Rect(1, 1, 2, 2)));
-  EXPECT_TRUE(active_close->HitTestRect(gfx::Rect(10, 10, 1, 1)));
-  EXPECT_TRUE(active_close->HitTestRect(gfx::Rect(10, 10, 25, 35)));
-
-
-  // Tests involving |most_right_tab|, which has part of its bounds occluded
-  // by |right_tab|.
-
-  tab_bounds = GetTabHitTestMask(most_right_tab);
-  EXPECT_EQ(gfx::Rect(84, 2, 30, 27).ToString(), tab_bounds.ToString());
-
-  // Hit tests in the occluded region of the tab.
-  EXPECT_FALSE(most_right_tab->HitTestRect(gfx::Rect(20, 15, 1, 1)));
-  EXPECT_FALSE(most_right_tab->HitTestRect(gfx::Rect(20, 15, 5, 6)));
-
-  // Hit tests in the non-occluded region of the tab.
-  EXPECT_TRUE(most_right_tab->HitTestRect(gfx::Rect(85, 15, 1, 1)));
-  EXPECT_TRUE(most_right_tab->HitTestRect(gfx::Rect(85, 15, 2, 2)));
+  gfx::Point p;
+  for (int y : {0, tab_strip_->height() / 2, tab_strip_->height() - 1}) {
+    p.set_y(y);
+    int previous_tab = -1;
+    for (int x = 0; x < tab_strip_->width(); ++x) {
+      p.set_x(x);
+      int tab = tab_strip_->GetModelIndexOfTab(tab_strip_->FindTabForEvent(p));
+      if (tab == previous_tab)
+        continue;
+      if ((tab != -1) || (previous_tab != tab_strip_->tab_count() - 1))
+        EXPECT_EQ(previous_tab + 1, tab) << "p = " << p.ToString();
+      previous_tab = tab;
+    }
+  }
 }
 
 // Tests that the tab close buttons of non-active tabs are hidden when
