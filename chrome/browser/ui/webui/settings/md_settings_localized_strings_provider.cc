@@ -1068,6 +1068,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CONTINUE_BUTTON},
     {"configurePinMismatched", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_MISMATCHED},
     {"configurePinTooShort", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_SHORT},
+    {"configurePinTooLong", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_LONG},
     {"configurePinWeakPin", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_WEAK_PIN},
     {"enableScreenlock", IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK},
     {"lockScreenChangePinButton",

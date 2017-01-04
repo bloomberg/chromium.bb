@@ -2123,8 +2123,11 @@
     <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_WEAK_PIN" desc="Message shown below the title that warns the user they have entered a PIN that is easy to guess.">
       PIN may be easy to guess
     </message>
-    <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_SHORT" desc="Message shown below the title that tells the user that the PIN they entered needs to be at least four digits long.">
-      PIN must be at least 4 digits
+    <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_SHORT" desc="Message shown below the title that tells the user that the PIN they entered needs to be at least minimum digits long.">
+      PIN must be at least <ph name="MINIMUM">$1<ex>4</ex></ph> digits
+    </message>
+    <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_LONG" desc="Message shown below the title that tells the user that the PIN they entered needs to be less than maximum digits long.">
+      PIN must be less than <ph name="MAXIMUM">$1<ex>0</ex></ph> digits
     </message>
     <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_MISMATCHED" desc="Message shown below the title that tells the user they have entered two different PIN values.">
       PINs do not match

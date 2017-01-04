@@ -16,14 +16,21 @@
 'use strict';
 
 /**
- * A list of the top-10 most commmonly used PINs. This list is taken from
- * www.datagenetics.com/blog/september32012/.
- * @const
+ * Keep in sync with the string keys provided by settings.
+ * @enum {string}
  */
-var WEAK_PINS = [
-  '1234', '1111', '0000', '1212', '7777', '1004', '2000', '4444', '2222',
-  '6969'
-];
+var MessageType = {
+  TOO_SHORT: 'configurePinTooShort',
+  TOO_LONG: 'configurePinTooLong',
+  TOO_WEAK: 'configurePinWeakPin',
+  MISMATCH: 'configurePinMismatched'
+};
+
+/** @enum {string} */
+var ProblemType = {
+  WARNING: 'warning',
+  ERROR: 'error'
+};
 
 Polymer({
   is: 'settings-setup-pin-dialog',
@@ -80,6 +87,15 @@ Polymer({
       type: Boolean,
       value: false
     },
+
+    /**
+     * Interface for chrome.quickUnlockPrivate calls. May be overriden by tests.
+     * @private
+     */
+    quickUnlockPrivate_: {
+      type: Object,
+      value: chrome.quickUnlockPrivate
+    },
   },
 
   /** @override */
@@ -108,6 +124,7 @@ Polymer({
     this.pinKeyboardValue_ = '';
     this.enableSubmit_ = false;
     this.isConfirmStep_ = false;
+    this.hideProblem_();
     this.onPinChange_();
   },
 
@@ -118,49 +135,38 @@ Polymer({
   },
 
   /**
-   * Returns true if the given PIN is likely easy to guess.
+   * Returns true if the PIN is ready to be changed to a new value.
    * @private
-   * @param {string} pin
    * @return {boolean}
    */
-  isPinWeak_: function(pin) {
-    // Warn if it's a top-10 pin.
-    if (WEAK_PINS.includes(pin))
-      return true;
+  canSubmit_: function() {
+    return this.initialPin_ == this.pinKeyboardValue_;
+  },
 
-    // Warn if the PIN is consecutive digits.
-    var delta = 0;
-    for (var i = 1; i < pin.length; ++i) {
-      var prev = Number(pin[i - 1]);
-      var num = Number(pin[i]);
-      if (Number.isNaN(prev) || Number.isNaN(num))
-        return false;
-      delta = Math.max(delta, Math.abs(num - prev));
+  /**
+   * Handles writting the appropriate message to |problemMessage_|.
+   * @private
+   * @param {string} messageId
+   * @param {chrome.quickUnlockPrivate.CredentialRequirements} requirements
+   *     The requirements received from getCredentialRequirements.
+   */
+  processPinRequirements_: function(messageId, requirements) {
+    var additionalInformation = '';
+    switch (messageId) {
+      case MessageType.TOO_SHORT:
+        additionalInformation = requirements.minLength.toString();
+        break;
+      case MessageType.TOO_LONG:
+        additionalInformation = requirements.maxLength.toString();
+        break;
+      case MessageType.TOO_WEAK:
+      case MessageType.MISMATCH:
+        break;
+      default:
+        assertNotReached();
+        break;
     }
-
-    return delta <= 1;
-  },
-
-  /**
-   * Returns true if the given PIN matches PIN requirements, such as minimum
-   * length.
-   * @private
-   * @param {string|undefined} pin
-   * @return {boolean}
-   */
-  isPinLongEnough_: function(pin) {
-    return !!pin && pin.length >= 4;
-  },
-
-  /**
-   * Returns true if the currently entered PIN is the same as the initially
-   * submitted PIN.
-   * @private
-   * @return {boolean}
-   */
-  isPinConfirmed_: function() {
-    return this.isPinLongEnough_(this.pinKeyboardValue_) &&
-           this.initialPin_ == this.pinKeyboardValue_;
+    this.problemMessage_ = this.i18n(messageId, additionalInformation);
   },
 
   /**
@@ -170,17 +176,14 @@ Polymer({
    * @param {string} problemClass
    */
   showProblem_: function(messageId, problemClass) {
-    var previousMessage = this.problemMessage_;
-
-    // Update problem info.
-    this.problemMessage_ = this.i18n(messageId);
+    this.quickUnlockPrivate_.getCredentialRequirements(
+        chrome.quickUnlockPrivate.QuickUnlockMode.PIN,
+        this.processPinRequirements_.bind(this, messageId));
     this.problemClass_ = problemClass;
     this.updateStyles();
-
-    // If the problem message has changed, fire an alert.
-    if (previousMessage != this.problemMessage_)
-      this.$.problemDiv.setAttribute('role', 'alert');
-   },
+    this.enableSubmit_ = problemClass != ProblemType.ERROR &&
+        messageId != MessageType.MISMATCH;
+  },
 
   /** @private */
   hideProblem_: function() {
@@ -188,67 +191,100 @@ Polymer({
     this.problemClass_ = '';
   },
 
+  /**
+   * Processes the message received from the quick unlock api and hides/shows
+   * the problem based on the message.
+   * @private
+   * @param {chrome.quickUnlockPrivate.CredentialCheck} message The message
+   *     received from checkCredential.
+   */
+  processPinProblems_: function(message) {
+    if (!message.errors.length && !message.warnings.length) {
+      this.hideProblem_();
+      this.enableSubmit_ = true;
+      return;
+    }
+
+    if (message.warnings.length) {
+      assert(message.warnings[0] ==
+          chrome.quickUnlockPrivate.CredentialProblem.TOO_WEAK);
+      this.showProblem_(MessageType.TOO_WEAK, ProblemType.WARNING);
+    }
+
+    if (message.errors.length) {
+      switch (message.errors[0]) {
+        case chrome.quickUnlockPrivate.CredentialProblem.TOO_SHORT:
+          this.showProblem_(MessageType.TOO_SHORT, ProblemType.ERROR);
+          break;
+        case chrome.quickUnlockPrivate.CredentialProblem.TOO_LONG:
+          this.showProblem_(MessageType.TOO_LONG, ProblemType.ERROR);
+          break;
+        case chrome.quickUnlockPrivate.CredentialProblem.TOO_WEAK:
+          this.showProblem_(MessageType.TOO_WEAK, ProblemType.ERROR);
+          break;
+        default:
+          assertNotReached();
+          break;
+      }
+    }
+
+  },
+
   /** @private */
   onPinChange_: function() {
     if (!this.isConfirmStep_) {
-      var isPinLongEnough = this.isPinLongEnough_(this.pinKeyboardValue_);
-      var isWeak = isPinLongEnough && this.isPinWeak_(this.pinKeyboardValue_);
-
-      if (!isPinLongEnough)
-        this.showProblem_('configurePinTooShort', 'warning');
-      else if (isWeak)
-        this.showProblem_('configurePinWeakPin', 'warning');
-      else
-        this.hideProblem_();
-
-      this.enableSubmit_ = isPinLongEnough;
-
-    } else {
-      if (this.isPinConfirmed_())
-        this.hideProblem_();
-      else
-        this.showProblem_('configurePinMismatched', 'warning');
-
-      this.enableSubmit_ = true;
+      if (this.pinKeyboardValue_) {
+        this.quickUnlockPrivate_.checkCredential(
+            chrome.quickUnlockPrivate.QuickUnlockMode.PIN,
+            this.pinKeyboardValue_,
+            this.processPinProblems_.bind(this));
+      }
+      return;
     }
+
+    if (this.canSubmit_()) {
+      this.hideProblem_();
+      this.enableSubmit_ = true;
+      return;
+    }
+
+    this.showProblem_(MessageType.MISMATCH, ProblemType.WARNING);
   },
 
   /** @private */
   onPinSubmit_: function() {
     if (!this.isConfirmStep_) {
-      if (this.isPinLongEnough_(this.pinKeyboardValue_)) {
-        this.initialPin_ = this.pinKeyboardValue_;
-        this.pinKeyboardValue_ = '';
-        this.isConfirmStep_ = true;
-        this.onPinChange_();
-        this.$.pinKeyboard.focus();
-        this.writeUma_(LockScreenProgress.ENTER_PIN);
-      }
-    } else {
-      // onPinSubmit_ gets called if the user hits enter on the PIN keyboard.
-      // The PIN is not guaranteed to be valid in that case.
-      if (!this.isPinConfirmed_()) {
-        this.showProblem_('configurePinMismatched', 'error');
+      this.initialPin_ = this.pinKeyboardValue_;
+      this.pinKeyboardValue_ = '';
+      this.isConfirmStep_ = true;
+      this.onPinChange_();
+      this.$.pinKeyboard.focus();
+      this.writeUma_(LockScreenProgress.ENTER_PIN);
+      return;
+    }
+    // onPinSubmit_ gets called if the user hits enter on the PIN keyboard.
+    // The PIN is not guaranteed to be valid in that case.
+    if (!this.canSubmit_()) {
+      this.showProblem_(MessageType.MISMATCH, ProblemType.ERROR);
+      return;
+    }
+
+    function onSetModesCompleted(didSet) {
+      if (!didSet) {
+        console.error('Failed to update pin');
         return;
       }
 
-      function onSetModesCompleted(didSet) {
-        if (!didSet) {
-          console.error('Failed to update pin');
-          return;
-        }
-
-        this.resetState_();
-        this.fire('done');
-      }
-
-      this.setModes.call(
-        null,
-        [chrome.quickUnlockPrivate.QuickUnlockMode.PIN],
-        [this.pinKeyboardValue_],
-        onSetModesCompleted.bind(this));
-      this.writeUma_(LockScreenProgress.CONFIRM_PIN);
+      this.resetState_();
+      this.fire('done');
     }
+
+    this.setModes.call(
+      null,
+      [chrome.quickUnlockPrivate.QuickUnlockMode.PIN],
+      [this.pinKeyboardValue_],
+      onSetModesCompleted.bind(this));
+    this.writeUma_(LockScreenProgress.CONFIRM_PIN);
   },
 
   /**

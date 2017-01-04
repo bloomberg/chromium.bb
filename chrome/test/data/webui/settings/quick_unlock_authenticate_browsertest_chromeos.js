@@ -337,6 +337,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
         // Create setup-pin element.
         element = document.createElement('settings-setup-pin-dialog');
+        element.quickUnlockPrivate_ = quickUnlockPrivateApi;
         element.setModes =
             quickUnlockPrivateApi.setModes.bind(quickUnlockPrivateApi, '');
         element.writeUma_ = fakeUma.recordProgress.bind(fakeUma);
@@ -402,13 +403,30 @@ cr.define('settings_people_page_quick_unlock', function() {
         pinKeyboard.value = '11';
 
         assertTrue(isVisible(problemDiv));
-        assertHasClass(problemDiv, 'warning');
+        assertHasClass(problemDiv, 'error');
+        assertTrue(continueButton.disabled);
+      });
+
+      // If the PIN is too long an error problem is shown.
+      test('WarningShownForLongPins', function() {
+        // By default, there is no max length on pins.
+        quickUnlockPrivateApi.credentialRequirements.maxLength = 5;
+
+        // A pin of length five should be valid when max length is five.
+        pinKeyboard.value = '11111';
+        assertFalse(isVisible(problemDiv));
+        assertFalse(continueButton.disabled);
+
+        // A pin of length six should not be valid when max length is five.
+        pinKeyboard.value = '111111';
+        assertTrue(isVisible(problemDiv));
+        assertHasClass(problemDiv, 'error');
         assertTrue(continueButton.disabled);
       });
 
       // If the PIN is weak a warning problem is shown.
       test('WarningShownForWeakPins', function() {
-        pinKeyboard.value = '111111';
+        pinKeyboard.value = '1111';
 
         assertTrue(isVisible(problemDiv));
         assertHasClass(problemDiv, 'warning');
@@ -425,8 +443,9 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertTrue(isVisible(problemDiv));
         assertHasClass(problemDiv, 'warning');
 
-        // Submitting a mistmatched PIN shows an error.
-        MockInteractions.tap(continueButton);
+        // Submitting a mistmatched PIN shows an error. Directly call the button
+        // event since a tap on the disabled button does nothing.
+        element.onPinSubmit_();
         assertHasClass(problemDiv, 'error');
 
         // Changing the PIN changes the error to a warning.
