@@ -57,6 +57,8 @@ component("gfx") {
     "codec/jpeg_codec.h",
     "codec/png_codec.cc",
     "codec/png_codec.h",
+    "codec/skia_image_encoder_adapter.cc",
+    "codec/skia_image_encoder_adapter.h",
     "color_analysis.cc",
     "color_analysis.h",
     "color_palette.h",

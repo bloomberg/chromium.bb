@@ -220,10 +220,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_DISABLE_COLOR_XFORM_PIPELINE
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_IMAGE_ENCODER_CLASS
-#   define SK_SUPPORT_LEGACY_IMAGE_ENCODER_CLASS
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_BITMAP_SETPIXELREF
 #   define SK_SUPPORT_LEGACY_BITMAP_SETPIXELREF
 #endif
