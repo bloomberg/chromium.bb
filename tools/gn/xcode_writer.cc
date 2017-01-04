@@ -31,6 +31,12 @@
 
 namespace {
 
+using TargetToFileList = std::unordered_map<const Target*, Target::FileList>;
+
+const char kEarlGreyFileNameIdentifier[] = "egtest.mm";
+const char kXCTestFileNameIdentifier[] = "xctest.mm";
+const char kXCTestModuleTargetNamePostfix[] = "_module";
+
 struct SafeEnvironmentVariableInfo {
   const char* name;
   bool capture_at_generation;
@@ -84,6 +90,107 @@ std::string GetBuildScript(const std::string& target_name,
     script << " " << target_name;
   script << "\nexit 1\n";
   return script.str();
+}
+
+bool IsApplicationTarget(const Target* target) {
+  return target->output_type() == Target::CREATE_BUNDLE &&
+         target->bundle_data().product_type() ==
+             "com.apple.product-type.application";
+}
+
+bool IsXCTestModuleTarget(const Target* target) {
+  return target->output_type() == Target::CREATE_BUNDLE &&
+         target->bundle_data().product_type() ==
+             "com.apple.product-type.bundle.unit-test" &&
+         base::EndsWith(target->label().name(), kXCTestModuleTargetNamePostfix,
+                        base::CompareCase::SENSITIVE);
+}
+
+const Target* FindXCTestApplicationTarget(
+    const Target* xctest_module_target,
+    const std::vector<const Target*>& targets) {
+  DCHECK(IsXCTestModuleTarget(xctest_module_target));
+  DCHECK(base::EndsWith(xctest_module_target->label().name(),
+                        kXCTestModuleTargetNamePostfix,
+                        base::CompareCase::SENSITIVE));
+  std::string application_target_name =
+      xctest_module_target->label().name().substr(
+          0, xctest_module_target->label().name().size() -
+                 strlen(kXCTestModuleTargetNamePostfix));
+  for (const Target* target : targets) {
+    if (target->label().name() == application_target_name) {
+      return target;
+    }
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
+// Returns the corresponding application targets given XCTest module targets.
+void FindXCTestApplicationTargets(
+    const std::vector<const Target*>& xctest_module_targets,
+    const std::vector<const Target*>& targets,
+    std::vector<const Target*>* xctest_application_targets) {
+  for (const Target* xctest_module_target : xctest_module_targets) {
+    xctest_application_targets->push_back(
+        FindXCTestApplicationTarget(xctest_module_target, targets));
+  }
+}
+
+// Searches the list of xctest files recursively under |target|.
+void SearchXCTestFiles(const Target* target,
+                       TargetToFileList* xctest_files_per_target) {
+  // Early return if already visited and processed.
+  if (xctest_files_per_target->find(target) != xctest_files_per_target->end())
+    return;
+
+  Target::FileList xctest_files;
+  for (const SourceFile& file : target->sources()) {
+    if (base::EndsWith(file.GetName(), kEarlGreyFileNameIdentifier,
+                       base::CompareCase::SENSITIVE) ||
+        base::EndsWith(file.GetName(), kXCTestFileNameIdentifier,
+                       base::CompareCase::SENSITIVE)) {
+      xctest_files.push_back(file);
+    }
+  }
+
+  // Call recursively on public and private deps.
+  for (const auto& target : target->public_deps()) {
+    SearchXCTestFiles(target.ptr, xctest_files_per_target);
+    const Target::FileList& deps_xctest_files =
+        (*xctest_files_per_target)[target.ptr];
+    xctest_files.insert(xctest_files.end(), deps_xctest_files.begin(),
+                        deps_xctest_files.end());
+  }
+
+  for (const auto& target : target->private_deps()) {
+    SearchXCTestFiles(target.ptr, xctest_files_per_target);
+    const Target::FileList& deps_xctest_files =
+        (*xctest_files_per_target)[target.ptr];
+    xctest_files.insert(xctest_files.end(), deps_xctest_files.begin(),
+                        deps_xctest_files.end());
+  }
+
+  // Sort xctest_files to remove duplicates.
+  std::sort(xctest_files.begin(), xctest_files.end());
+  xctest_files.erase(std::unique(xctest_files.begin(), xctest_files.end()),
+                     xctest_files.end());
+
+  xctest_files_per_target->insert(std::make_pair(target, xctest_files));
+}
+
+// Finds the list of xctest files recursively under each of the application
+// targets.
+void FindXCTestFilesForTargets(
+    const std::vector<const Target*>& application_targets,
+    std::vector<Target::FileList>* file_lists) {
+  TargetToFileList xctest_files_per_target;
+
+  for (const Target* target : application_targets) {
+    DCHECK(IsApplicationTarget(target));
+    SearchXCTestFiles(target, &xctest_files_per_target);
+    file_lists->push_back(xctest_files_per_target[target]);
+  }
 }
 
 class CollectPBXObjectsPerClassHelper : public PBXObjectVisitor {
@@ -266,6 +373,18 @@ bool XcodeWriter::FilterTargets(const BuildSettings* build_settings,
   return true;
 }
 
+// static
+void XcodeWriter::FilterXCTestModuleTargets(
+    const std::vector<const Target*>& targets,
+    std::vector<const Target*>* xctest_module_targets) {
+  for (const Target* target : targets) {
+    if (!IsXCTestModuleTarget(target))
+      continue;
+
+    xctest_module_targets->push_back(target);
+  }
+}
+
 void XcodeWriter::CreateProductsProject(
     const std::vector<const Target*>& targets,
     const PBXAttributes& attributes,
@@ -277,6 +396,20 @@ void XcodeWriter::CreateProductsProject(
     TargetOsType target_os) {
   std::unique_ptr<PBXProject> main_project(
       new PBXProject("products", config_name, source_path, attributes));
+
+  // Filter xctest module and application targets and find list of xctest files
+  // recursively under them.
+  std::vector<const Target*> xctest_module_targets;
+  FilterXCTestModuleTargets(targets, &xctest_module_targets);
+
+  std::vector<const Target*> xctest_application_targets;
+  FindXCTestApplicationTargets(xctest_module_targets, targets,
+                               &xctest_application_targets);
+  DCHECK_EQ(xctest_module_targets.size(), xctest_application_targets.size());
+
+  std::vector<Target::FileList> xctest_file_lists;
+  FindXCTestFilesForTargets(xctest_application_targets, &xctest_file_lists);
+  DCHECK_EQ(xctest_application_targets.size(), xctest_file_lists.size());
 
   std::string build_path;
   std::unique_ptr<base::Environment> env(base::Environment::Create());
