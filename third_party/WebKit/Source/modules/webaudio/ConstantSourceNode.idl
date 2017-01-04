@@ -7,11 +7,9 @@
     Constructor(BaseAudioContext context, optional ConstantSourceOptions options),
     RaisesException=Constructor,
     ActiveScriptWrappable,
+    DependentLifetime,
     Measure
 ]
-interface ConstantSourceNode : AudioSourceNode {
+interface ConstantSourceNode : AudioScheduledSourceNode {
     readonly attribute AudioParam offset;
-    [RaisesException] void start(optional double when);
-    [RaisesException] void stop(optional double when);
-    attribute EventHandler onended;
 };

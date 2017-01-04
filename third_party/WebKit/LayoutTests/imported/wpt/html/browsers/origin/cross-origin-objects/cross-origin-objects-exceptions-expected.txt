@@ -10,7 +10,7 @@ FAIL [[GetOwnProperty]] - Property descriptors for cross-origin properties shoul
 FAIL [[Delete]] Should throw on cross-origin objects assert_throws: Can't delete cross-origin indexed property function "function () { delete C[0]; }" did not throw
 FAIL [[DefineOwnProperty]] Should throw for cross-origin objects assert_throws: Can't define cross-origin value property length function "function () { Object.defineProperty(obj, prop, valueDesc); }" did not throw
 FAIL [[Enumerate]] should return an empty iterator assert_unreached: Shouldn't have been able to enumerate stop on cross-origin Window Reached unreachable code
-FAIL [[OwnPropertyKeys]] should return all properties from cross-origin objects assert_array_equals: Object.getOwnPropertyNames() gives the right answer for cross-origin Window lengths differ, expected 870 got 13
+FAIL [[OwnPropertyKeys]] should return all properties from cross-origin objects assert_array_equals: Object.getOwnPropertyNames() gives the right answer for cross-origin Window lengths differ, expected 871 got 13
 PASS A and B jointly observe the same identity for cross-origin Window and Location 
 PASS Cross-origin functions get local Function.prototype 
 FAIL Cross-origin Window accessors get local Function.prototype Cannot read property 'name' of undefined

@@ -155,23 +155,20 @@ interface AudioBuffer
     method copyFromChannel
     method copyToChannel
     method getChannelData
-interface AudioBufferSourceNode : AudioSourceNode
+interface AudioBufferSourceNode : AudioScheduledSourceNode
     attribute @@toStringTag
     getter buffer
     getter detune
     getter loop
     getter loopEnd
     getter loopStart
-    getter onended
     getter playbackRate
     method constructor
     method start
-    method stop
     setter buffer
     setter loop
     setter loopEnd
     setter loopStart
-    setter onended
 interface AudioContext : BaseAudioContext
     attribute @@toStringTag
     method close
@@ -230,6 +227,13 @@ interface AudioProcessingEvent : Event
     getter outputBuffer
     getter playbackTime
     method constructor
+interface AudioScheduledSourceNode : AudioNode
+    attribute @@toStringTag
+    getter onended
+    method constructor
+    method start
+    method stop
+    setter onended
 interface AudioTrack
     attribute @@toStringTag
     getter enabled
@@ -902,14 +906,10 @@ interface CompositorWorker : EventTarget
     method terminate
     setter onerror
     setter onmessage
-interface ConstantSourceNode : AudioSourceNode
+interface ConstantSourceNode : AudioScheduledSourceNode
     attribute @@toStringTag
     getter offset
-    getter onended
     method constructor
-    method start
-    method stop
-    setter onended
 interface ConvolverNode : AudioNode
     attribute @@toStringTag
     getter buffer
@@ -4431,17 +4431,13 @@ interface OffscreenCanvasRenderingContext2D
     setter strokeStyle
 interface Option
     method constructor
-interface OscillatorNode : AudioSourceNode
+interface OscillatorNode : AudioScheduledSourceNode
     attribute @@toStringTag
     getter detune
     getter frequency
-    getter onended
     getter type
     method constructor
     method setPeriodicWave
-    method start
-    method stop
-    setter onended
     setter type
 interface PageTransitionEvent : Event
     attribute @@toStringTag

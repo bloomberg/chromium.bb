@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test AudioScheduledSourceNode</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="resources/audit.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context = new AudioContext();
+
+      var audit = Audit.createTaskRunner();
+
+      audit.define("construction", function (task, should) {
+        task.describe("Construct AudioScheduledSourceNode");
+        should(function () {
+          return new AudioScheduledSourceNode(context);
+        }, "new AudioScheduledSourceNode(c)").throw("TypeError");
+
+        task.done();
+      });
+
+      audit.define("properties", function (task, should) {
+        task.describe("Test properties on derived nodes");
+        var expectedProperties = ["start", "stop", "onended"];
+
+        // AudioScheduledSourceNode must have these properties.
+        for (p in expectedProperties) {
+          should(AudioScheduledSourceNode.prototype.hasOwnProperty(
+                expectedProperties[p]),
+              "AudioScheduledSourceNode." + expectedProperties[p])
+            .beTrue();
+        }
+
+        // ConstantSource and Oscillator must not
+        var nodes = ["ConstantSourceNode", "OscillatorNode"];
+        for (n in nodes) {
+          for (p in expectedProperties) {
+            should(window[nodes[n]].prototype.hasOwnProperty(
+                  expectedProperties[p]),
+                nodes[n] + "." + expectedProperties[p])
+              .beFalse();
+          }
+        }
+
+        // AudioBufferSourceNode has it's own start method, but should not have
+        // the others.
+        for (p in expectedProperties) {
+          if (expectedProperties[p] !== "start") {
+            should(AudioBufferSourceNode.prototype.hasOwnProperty(
+                  expectedProperties[p]),
+                "AudioBufferSourceNode." + expectedProperties[p])
+              .beFalse();
+          }
+        }
+
+        should(AudioBufferSourceNode.prototype.hasOwnProperty("start"),
+            "AudioBufferSourceNode.start")
+          .beTrue();
+
+        task.done();
+      });
+
+      audit.run();
+    </script>
+  </body>
+</html>

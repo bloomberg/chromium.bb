@@ -30,7 +30,7 @@
 #define AudioScheduledSourceNode_h
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "modules/webaudio/AudioSourceNode.h"
+#include "modules/webaudio/AudioNode.h"
 
 namespace blink {
 
@@ -125,9 +125,10 @@ class AudioScheduledSourceHandler : public AudioHandler {
 };
 
 class AudioScheduledSourceNode
-    : public AudioSourceNode,
+    : public AudioNode,
       public ActiveScriptWrappable<AudioScheduledSourceNode> {
   USING_GARBAGE_COLLECTED_MIXIN(AudioScheduledSourceNode);
+  DEFINE_WRAPPERTYPEINFO();
 
  public:
   void start(ExceptionState&);
@@ -141,7 +142,7 @@ class AudioScheduledSourceNode
   // ScriptWrappable:
   bool hasPendingActivity() const final;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { AudioSourceNode::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { AudioNode::trace(visitor); }
 
  protected:
   explicit AudioScheduledSourceNode(BaseAudioContext&);

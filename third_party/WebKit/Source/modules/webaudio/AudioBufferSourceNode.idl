@@ -29,9 +29,10 @@
     Constructor(BaseAudioContext context, optional AudioBufferSourceOptions options),
     RaisesException=Constructor,
     ActiveScriptWrappable,
+    DependentLifetime,
     Measure
 ]
-interface AudioBufferSourceNode : AudioSourceNode {
+interface AudioBufferSourceNode : AudioScheduledSourceNode {
     [RaisesException=Setter] attribute AudioBuffer buffer;
 
     readonly attribute AudioParam playbackRate;
@@ -41,8 +42,6 @@ interface AudioBufferSourceNode : AudioSourceNode {
     attribute double loopStart;
     attribute double loopEnd;
 
-    [RaisesException] void start(optional double when, optional double grainOffset, optional double grainDuration);
-    [RaisesException] void stop(optional double when);
+    [RaisesException] void start(optional double when = 0, optional double grainOffset, optional double grainDuration);
 
-    attribute EventHandler onended;
 };

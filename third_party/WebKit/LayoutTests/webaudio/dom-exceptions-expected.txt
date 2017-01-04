@@ -107,10 +107,10 @@ PASS source.start(1, 1, NaN) threw exception TypeError: Failed to execute 'start
 PASS source.start(1, 1, -1) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': The duration provided (-1) is less than the minimum bound (0)..
 PASS source.start(1, 1, -Number.MIN_VALUE) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': The duration provided (-4.94066e-324) is less than the minimum bound (0)..
 PASS source.start() did not throw exception.
-PASS source.stop(-Number.MIN_VALUE) threw exception InvalidAccessError: Failed to execute 'stop' on 'AudioBufferSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0)..
-PASS source.stop(Infinity) threw exception TypeError: Failed to execute 'stop' on 'AudioBufferSourceNode': The provided double value is non-finite..
-PASS source.stop(-Infinity) threw exception TypeError: Failed to execute 'stop' on 'AudioBufferSourceNode': The provided double value is non-finite..
-PASS source.stop(NaN) threw exception TypeError: Failed to execute 'stop' on 'AudioBufferSourceNode': The provided double value is non-finite..
+PASS source.stop(-Number.MIN_VALUE) threw exception InvalidAccessError: Failed to execute 'stop' on 'AudioScheduledSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0)..
+PASS source.stop(Infinity) threw exception TypeError: Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite..
+PASS source.stop(-Infinity) threw exception TypeError: Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite..
+PASS source.stop(NaN) threw exception TypeError: Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite..
 PASS source.stop() did not throw exception.
 PASS source = context.createBufferSource() did not throw exception.
 PASS source.buffer = buffer did not throw exception.
@@ -122,7 +122,7 @@ PASS source = context.createBufferSource() did not throw exception.
 PASS source.start() did not throw exception.
 PASS source = context.createBufferSource() did not throw exception.
 PASS source.buffer = buffer did not throw exception.
-PASS source.stop() threw exception InvalidStateError: Failed to execute 'stop' on 'AudioBufferSourceNode': cannot call stop without calling start first..
+PASS source.stop() threw exception InvalidStateError: Failed to execute 'stop' on 'AudioScheduledSourceNode': cannot call stop without calling start first..
 PASS source = context.createBufferSource() did not throw exception.
 PASS source.buffer = buffer did not throw exception.
 PASS source.start() did not throw exception.
@@ -132,18 +132,18 @@ PASS source.buffer = buffer did not throw exception.
 PASS source.start() did not throw exception.
 PASS source.stop() did not throw exception.
 PASS source = context.createOscillator() did not throw exception.
-PASS source.start(-Number.MIN_VALUE) threw exception InvalidAccessError: Failed to execute 'start' on 'OscillatorNode': The start time provided (-4.94066e-324) is less than the minimum bound (0)..
-PASS source.start(Infinity) threw exception TypeError: Failed to execute 'start' on 'OscillatorNode': The provided double value is non-finite..
-PASS source.start(-Infinity) threw exception TypeError: Failed to execute 'start' on 'OscillatorNode': The provided double value is non-finite..
-PASS source.start(NaN) threw exception TypeError: Failed to execute 'start' on 'OscillatorNode': The provided double value is non-finite..
+PASS source.start(-Number.MIN_VALUE) threw exception InvalidAccessError: Failed to execute 'start' on 'AudioScheduledSourceNode': The start time provided (-4.94066e-324) is less than the minimum bound (0)..
+PASS source.start(Infinity) threw exception TypeError: Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite..
+PASS source.start(-Infinity) threw exception TypeError: Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite..
+PASS source.start(NaN) threw exception TypeError: Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite..
 PASS source.start() did not throw exception.
-PASS source.stop(-Number.MIN_VALUE) threw exception InvalidAccessError: Failed to execute 'stop' on 'OscillatorNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0)..
-PASS source.stop(Infinity) threw exception TypeError: Failed to execute 'stop' on 'OscillatorNode': The provided double value is non-finite..
-PASS source.stop(-Infinity) threw exception TypeError: Failed to execute 'stop' on 'OscillatorNode': The provided double value is non-finite..
-PASS source.stop(NaN) threw exception TypeError: Failed to execute 'stop' on 'OscillatorNode': The provided double value is non-finite..
+PASS source.stop(-Number.MIN_VALUE) threw exception InvalidAccessError: Failed to execute 'stop' on 'AudioScheduledSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0)..
+PASS source.stop(Infinity) threw exception TypeError: Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite..
+PASS source.stop(-Infinity) threw exception TypeError: Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite..
+PASS source.stop(NaN) threw exception TypeError: Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite..
 PASS source.stop() did not throw exception.
 PASS osc = context.createOscillator() did not throw exception.
-PASS osc.stop() threw exception InvalidStateError: Failed to execute 'stop' on 'OscillatorNode': cannot call stop without calling start first..
+PASS osc.stop() threw exception InvalidStateError: Failed to execute 'stop' on 'AudioScheduledSourceNode': cannot call stop without calling start first..
 PASS osc1 = context.createOscillator() did not throw exception.
 PASS osc1.start() did not throw exception.
 PASS osc1.stop() did not throw exception.

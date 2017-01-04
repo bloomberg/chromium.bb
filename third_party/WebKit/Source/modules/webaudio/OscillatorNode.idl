@@ -36,20 +36,14 @@ enum OscillatorType {
 [
     Constructor(BaseAudioContext context, optional OscillatorOptions options),
     RaisesException=Constructor,
-    ActiveScriptWrappable,    
     Measure
 ]
-interface OscillatorNode : AudioSourceNode {
+interface OscillatorNode : AudioScheduledSourceNode {
 
     [RaisesException=Setter] attribute OscillatorType type;
 
     readonly attribute AudioParam frequency; // in Hertz
     readonly attribute AudioParam detune; // in Cents
 
-    [RaisesException] void start(optional double when);
-    [RaisesException] void stop(optional double when);
-
     void setPeriodicWave(PeriodicWave periodicWave);
-
-    attribute EventHandler onended;
 };
