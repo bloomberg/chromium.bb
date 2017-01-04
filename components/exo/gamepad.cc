@@ -123,7 +123,6 @@ class Gamepad::ThreadSafeGamepadChangeFetcher
     fetcher_->GetGamepadData(
         false /* No hardware changed notification from the system */);
 
-    new_state.length = 0;
     device::PadState& pad_state = pad_states_.get()[0];
 
     // After querying the gamepad clear the state if it did not have it's active
@@ -137,22 +136,15 @@ class Gamepad::ThreadSafeGamepadChangeFetcher
     MapAndSanitizeGamepadData(&pad_state, &new_state.items[0],
                               false /* Don't sanitize gamepad data */);
 
-    // If the gamepad was active then increment the length of the WebGamepads
-    // struct to indicate it's valid, then set the pad state to inactive. If the
-    // gamepad is still actively reporting the next call to GetGamepadData will
-    // set the active state to active again.
-    if (pad_state.active_state) {
-      new_state.length++;
+    // If the gamepad is still actively reporting the next call to
+    // GetGamepadData will set the active state to active again.
+    if (pad_state.active_state)
       pad_state.active_state = device::GAMEPAD_INACTIVE;
-    }
 
-    if (std::max(new_state.length, state_.length) > 0) {
-      if (new_state.items[0].connected != state_.items[0].connected ||
-          new_state.items[0].timestamp > state_.items[0].timestamp) {
-        origin_task_runner_->PostTask(
-            FROM_HERE,
-            base::Bind(process_gamepad_changes_, new_state.items[0]));
-      }
+    if (new_state.items[0].connected != state_.items[0].connected ||
+        new_state.items[0].timestamp > state_.items[0].timestamp) {
+      origin_task_runner_->PostTask(
+          FROM_HERE, base::Bind(process_gamepad_changes_, new_state.items[0]));
     }
 
     state_ = new_state;

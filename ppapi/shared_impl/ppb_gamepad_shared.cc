@@ -14,10 +14,8 @@ const size_t WebKitGamepads::kItemsLengthCap;
 
 void ConvertWebKitGamepadData(const WebKitGamepads& webkit_data,
                               PP_GamepadsSampleData* output_data) {
-  size_t length = std::min(WebKitGamepads::kItemsLengthCap,
-                           static_cast<const size_t>(webkit_data.length));
-  output_data->length = static_cast<unsigned>(length);
-  for (unsigned i = 0; i < length; ++i) {
+  output_data->length = WebKitGamepads::kItemsLengthCap;
+  for (unsigned i = 0; i < WebKitGamepads::kItemsLengthCap; ++i) {
     PP_GamepadSampleData& output_pad = output_data->items[i];
     const WebKitGamepad& webkit_pad = webkit_data.items[i];
     output_pad.connected = webkit_pad.connected ? PP_TRUE : PP_FALSE;

@@ -178,11 +178,6 @@ void GamepadController::Connect(int index) {
   if (index < 0 || index >= static_cast<int>(WebGamepads::itemsLengthCap))
     return;
   gamepads_.items[index].connected = true;
-  gamepads_.length = 0;
-  for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    if (gamepads_.items[i].connected)
-      gamepads_.length = i + 1;
-  }
 }
 
 void GamepadController::DispatchConnected(int index) {
@@ -199,11 +194,6 @@ void GamepadController::Disconnect(int index) {
     return;
   WebGamepad& pad = gamepads_.items[index];
   pad.connected = false;
-  gamepads_.length = 0;
-  for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
-    if (gamepads_.items[i].connected)
-      gamepads_.length = i + 1;
-  }
   if (listener_)
     listener_->didDisconnectGamepad(index, pad);
 }

@@ -272,7 +272,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Gamepad -------------------------------------------------------------
 
-  virtual void sampleGamepads(WebGamepads& into) { into.length = 0; }
+  virtual void sampleGamepads(WebGamepads& into) {}
 
   // History -------------------------------------------------------------
 

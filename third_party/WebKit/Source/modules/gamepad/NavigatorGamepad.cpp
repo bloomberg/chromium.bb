@@ -59,7 +59,7 @@ static void sampleGamepads(ListType* into) {
 
   for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
     WebGamepad& webGamepad = gamepads.items[i];
-    if (i < gamepads.length && webGamepad.connected) {
+    if (webGamepad.connected) {
       GamepadType* gamepad = into->item(i);
       if (!gamepad)
         gamepad = GamepadType::create();

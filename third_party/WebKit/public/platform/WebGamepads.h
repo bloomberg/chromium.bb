@@ -35,12 +35,7 @@ namespace blink {
 // browser.
 class WebGamepads {
  public:
-  WebGamepads() : length(0) {}
-
   static const size_t itemsLengthCap = 4;
-
-  // Number of valid entries in the items array.
-  unsigned length;
 
   // Gamepad data for N separate gamepad devices.
   WebGamepad items[itemsLengthCap];

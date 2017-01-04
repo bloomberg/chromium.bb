@@ -80,7 +80,6 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
 TEST_F(GamepadProviderTest, MAYBE_PollingAccess) {
   WebGamepads test_data;
   memset(&test_data, 0, sizeof(WebGamepads));
-  test_data.length = 1;
   test_data.items[0].connected = true;
   test_data.items[0].timestamp = 0;
   test_data.items[0].buttonsLength = 1;
@@ -110,7 +109,6 @@ TEST_F(GamepadProviderTest, MAYBE_PollingAccess) {
   WebGamepads output;
   ReadGamepadHardwareBuffer(buffer, &output);
 
-  EXPECT_EQ(1u, output.length);
   EXPECT_EQ(1u, output.items[0].buttonsLength);
   EXPECT_EQ(1.f, output.items[0].buttons[0].value);
   EXPECT_EQ(true, output.items[0].buttons[0].pressed);
@@ -119,10 +117,73 @@ TEST_F(GamepadProviderTest, MAYBE_PollingAccess) {
   EXPECT_EQ(0.5f, output.items[0].axes[1]);
 }
 
+// http://crbug.com/106163, crbug.com/147549
+#if defined(OS_ANDROID)
+#define MAYBE_ConnectDisconnectMultiple DISABLED_ConnectDisconnectMultiple
+#else
+#define MAYBE_ConnectDisconnectMultiple ConnectDisconnectMultiple
+#endif
+TEST_F(GamepadProviderTest, MAYBE_ConnectDisconnectMultiple) {
+  WebGamepads test_data;
+  test_data.items[0].connected = true;
+  test_data.items[0].timestamp = 0;
+  test_data.items[0].axesLength = 2;
+  test_data.items[0].axes[0] = -1.f;
+  test_data.items[0].axes[1] = .5f;
+
+  test_data.items[1].connected = true;
+  test_data.items[1].timestamp = 0;
+  test_data.items[1].axesLength = 2;
+  test_data.items[1].axes[0] = 1.f;
+  test_data.items[1].axes[1] = -.5f;
+
+  WebGamepads test_data_onedisconnected;
+  test_data_onedisconnected.items[1].connected = true;
+  test_data_onedisconnected.items[1].timestamp = 0;
+  test_data_onedisconnected.items[1].axesLength = 2;
+  test_data_onedisconnected.items[1].axes[0] = 1.f;
+  test_data_onedisconnected.items[1].axes[1] = -.5f;
+
+  GamepadProvider* provider = CreateProvider(test_data);
+  provider->SetSanitizationEnabled(false);
+  provider->Resume();
+
+  base::RunLoop().RunUntilIdle();
+
+  mock_data_fetcher_->WaitForDataRead();
+
+  // Renderer-side, pull data out of poll buffer.
+  base::SharedMemoryHandle handle = provider->GetSharedMemoryHandleForProcess(
+      base::GetCurrentProcessHandle());
+  std::unique_ptr<base::SharedMemory> shared_memory(
+      new base::SharedMemory(handle, true));
+  EXPECT_TRUE(shared_memory->Map(sizeof(GamepadHardwareBuffer)));
+
+  GamepadHardwareBuffer* buffer =
+      static_cast<GamepadHardwareBuffer*>(shared_memory->memory());
+  WebGamepads output;
+  ReadGamepadHardwareBuffer(buffer, &output);
+
+  EXPECT_EQ(2u, output.items[0].axesLength);
+  EXPECT_EQ(-1.f, output.items[0].axes[0]);
+  EXPECT_EQ(0.5f, output.items[0].axes[1]);
+  EXPECT_EQ(2u, output.items[1].axesLength);
+  EXPECT_EQ(1.f, output.items[1].axes[0]);
+  EXPECT_EQ(-0.5f, output.items[1].axes[1]);
+
+  mock_data_fetcher_->SetTestData(test_data_onedisconnected);
+  mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
+  ReadGamepadHardwareBuffer(buffer, &output);
+
+  EXPECT_EQ(0u, output.items[0].axesLength);
+  EXPECT_EQ(2u, output.items[1].axesLength);
+  EXPECT_EQ(1.f, output.items[1].axes[0]);
+  EXPECT_EQ(-0.5f, output.items[1].axes[1]);
+}
+
 // Tests that waiting for a user gesture works properly.
 TEST_F(GamepadProviderTest, UserGesture) {
   WebGamepads no_button_data;
-  no_button_data.length = 1;
   no_button_data.items[0].connected = true;
   no_button_data.items[0].timestamp = 0;
   no_button_data.items[0].buttonsLength = 1;
@@ -170,7 +231,6 @@ TEST_F(GamepadProviderTest, UserGesture) {
 // Tests that waiting for a user gesture works properly.
 TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
   WebGamepads active_data;
-  active_data.length = 1;
   active_data.items[0].connected = true;
   active_data.items[0].timestamp = 0;
   active_data.items[0].buttonsLength = 1;
@@ -180,7 +240,6 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
   active_data.items[0].axes[0] = -1.f;
 
   WebGamepads zero_data;
-  zero_data.length = 1;
   zero_data.items[0].connected = true;
   zero_data.items[0].timestamp = 0;
   zero_data.items[0].buttonsLength = 1;
@@ -212,7 +271,6 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
 
   // Initial data should all be zeroed out due to sanitization, even though the
   // gamepad reported input
-  EXPECT_EQ(1u, output.length);
   EXPECT_EQ(1u, output.items[0].buttonsLength);
   EXPECT_EQ(0.f, output.items[0].buttons[0].value);
   EXPECT_FALSE(output.items[0].buttons[0].pressed);
@@ -227,7 +285,6 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
   ReadGamepadHardwareBuffer(buffer, &output);
 
   // Should still read zero, which is now an accurate reflection of the data
-  EXPECT_EQ(1u, output.length);
   EXPECT_EQ(1u, output.items[0].buttonsLength);
   EXPECT_EQ(0.f, output.items[0].buttons[0].value);
   EXPECT_FALSE(output.items[0].buttons[0].pressed);
@@ -242,7 +299,6 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
   ReadGamepadHardwareBuffer(buffer, &output);
 
   // Should now accurately reflect the reported data.
-  EXPECT_EQ(1u, output.length);
   EXPECT_EQ(1u, output.items[0].buttonsLength);
   EXPECT_EQ(1.f, output.items[0].buttons[0].value);
   EXPECT_TRUE(output.items[0].buttons[0].pressed);

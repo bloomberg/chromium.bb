@@ -90,7 +90,11 @@ class WebGamepad {
   static const size_t buttonsLengthCap = 32;
 
   WebGamepad()
-      : connected(false), timestamp(0), axesLength(0), buttonsLength(0) {
+      : connected(false),
+        timestamp(0),
+        axesLength(0),
+        buttonsLength(0),
+        displayId(0) {
     id[0] = 0;
     mapping[0] = 0;
   }

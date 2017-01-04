@@ -105,7 +105,6 @@ TEST_F(GamepadTest, OnStateChange) {
   // Gamepad connected.
   EXPECT_CALL(delegate, OnStateChange(true)).Times(1);
   blink::WebGamepads gamepad_connected;
-  gamepad_connected.length = 1;
   gamepad_connected.items[0].connected = true;
   gamepad_connected.items[0].timestamp = 1;
   SetDataAndPostToDelegate(gamepad_connected);
@@ -134,7 +133,6 @@ TEST_F(GamepadTest, OnAxis) {
   InitializeGamepad(&delegate);
 
   blink::WebGamepads axis_moved;
-  axis_moved.length = 1;
   axis_moved.items[0].connected = true;
   axis_moved.items[0].timestamp = 1;
   axis_moved.items[0].axesLength = 1;
@@ -164,7 +162,6 @@ TEST_F(GamepadTest, OnButton) {
   InitializeGamepad(&delegate);
 
   blink::WebGamepads axis_moved;
-  axis_moved.length = 1;
   axis_moved.items[0].connected = true;
   axis_moved.items[0].timestamp = 1;
   axis_moved.items[0].buttonsLength = 1;

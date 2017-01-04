@@ -101,9 +101,6 @@ struct WebKitGamepad {
 struct WebKitGamepads {
   static const size_t kItemsLengthCap = 4;
 
-  // Number of valid entries in the items array.
-  unsigned length;
-
   // Gamepad data for N separate gamepad devices.
   WebKitGamepad items[kItemsLengthCap];
 };

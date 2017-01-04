@@ -265,13 +265,10 @@ void GamepadProvider::DoPoll() {
     // Acquire the SeqLock. There is only ever one writer to this data.
     // See gamepad_shared_buffer.h.
     gamepad_shared_buffer_->WriteBegin();
-    buffer->length = 0;
     for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
       PadState& state = pad_states_.get()[i];
       // Must run through the map+sanitize here or CheckForUserGesture may fail.
       MapAndSanitizeGamepadData(&state, &buffer->items[i], sanitize_);
-      if (state.active_state)
-        buffer->length++;
     }
     gamepad_shared_buffer_->WriteEnd();
   }

@@ -76,8 +76,6 @@ TEST_F(PepperGamepadHostTest, ValidateGamepadsMatch) {
                 "gamepads data must match");
   ppapi::WebKitGamepads ppapi_gamepads;
   blink::WebGamepads web_gamepads;
-  EXPECT_EQ(AddressDiff(&web_gamepads.length, &web_gamepads),
-            AddressDiff(&ppapi_gamepads.length, &ppapi_gamepads));
 
   // See comment below on storage & the EXPECT macro.
   size_t webkit_items_length_cap = blink::WebGamepads::itemsLengthCap;
@@ -137,7 +135,6 @@ TEST_F(PepperGamepadHostTest, ValidateGamepadMatch) {
 TEST_F(PepperGamepadHostTest, MAYBE_WaitForReply) {
   blink::WebGamepads default_data;
   memset(&default_data, 0, sizeof(blink::WebGamepads));
-  default_data.length = 1;
   default_data.items[0].connected = true;
   default_data.items[0].buttonsLength = 1;
   ConstructService(default_data);
@@ -185,7 +182,6 @@ TEST_F(PepperGamepadHostTest, MAYBE_WaitForReply) {
   const ppapi::ContentGamepadHardwareBuffer* buffer =
       static_cast<const ppapi::ContentGamepadHardwareBuffer*>(
           shared_memory.memory());
-  EXPECT_EQ(button_down_data.length, buffer->buffer.length);
   EXPECT_EQ(button_down_data.items[0].buttonsLength,
             buffer->buffer.items[0].buttons_length);
   for (size_t i = 0; i < ppapi::WebKitGamepad::kButtonsLengthCap; i++) {
