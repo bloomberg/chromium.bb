@@ -92,17 +92,15 @@ static inline bool shouldAlwaysUseDirectionalSelection(LocalFrame* frame) {
   return frame->editor().behavior().shouldConsiderSelectionAsDirectional();
 }
 
-FrameSelection::FrameSelection(LocalFrame* frame)
+FrameSelection::FrameSelection(LocalFrame& frame)
     : m_frame(frame),
       m_pendingSelection(PendingSelection::create(*this)),
       m_selectionEditor(SelectionEditor::create(frame)),
       m_granularity(CharacterGranularity),
       m_xPosForVerticalArrowNavigation(NoXPosForVerticalArrowNavigation()),
-      m_focused(frame->page() &&
-                frame->page()->focusController().focusedFrame() == frame),
-      m_frameCaret(new FrameCaret(frame, *m_selectionEditor)) {
-  DCHECK(frame);
-}
+      m_focused(frame.page() &&
+                frame.page()->focusController().focusedFrame() == frame),
+      m_frameCaret(new FrameCaret(frame, *m_selectionEditor)) {}
 
 FrameSelection::~FrameSelection() {}
 

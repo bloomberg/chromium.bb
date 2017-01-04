@@ -25,6 +25,7 @@
 
 #include "core/editing/FrameCaret.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/SelectionEditor.h"
@@ -41,19 +42,19 @@
 
 namespace blink {
 
-FrameCaret::FrameCaret(LocalFrame* frame,
+FrameCaret::FrameCaret(LocalFrame& frame,
                        const SelectionEditor& selectionEditor)
     : m_selectionEditor(&selectionEditor),
       m_frame(frame),
       m_caretVisibility(CaretVisibility::Hidden),
       m_previousCaretVisibility(CaretVisibility::Hidden),
-      m_caretBlinkTimer(this, &FrameCaret::caretBlinkTimerFired),
+      m_caretBlinkTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
+                        this,
+                        &FrameCaret::caretBlinkTimerFired),
       m_caretRectDirty(true),
       m_shouldPaintCaret(true),
       m_isCaretBlinkingSuspended(false),
-      m_shouldShowBlockCursor(false) {
-  DCHECK(frame);
-}
+      m_shouldShowBlockCursor(false) {}
 
 FrameCaret::~FrameCaret() = default;
 

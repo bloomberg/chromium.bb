@@ -5,6 +5,7 @@
 #include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 
 #include "core/dom/IdleRequestOptions.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleSelection.h"
@@ -47,7 +48,9 @@ IdleSpellCheckCallback* IdleSpellCheckCallback::create(LocalFrame& frame) {
 IdleSpellCheckCallback::IdleSpellCheckCallback(LocalFrame& frame)
     : m_state(State::kInactive),
       m_frame(frame),
-      m_coldModeTimer(this, &IdleSpellCheckCallback::coldModeTimerFired) {}
+      m_coldModeTimer(TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
+                      this,
+                      &IdleSpellCheckCallback::coldModeTimerFired) {}
 
 SpellCheckRequester& IdleSpellCheckCallback::spellCheckRequester() const {
   // TODO(xiaochengh): decouple with SpellChecker after SpellCheckRequester is

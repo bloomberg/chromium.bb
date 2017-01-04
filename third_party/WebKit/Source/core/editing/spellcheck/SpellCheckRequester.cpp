@@ -27,6 +27,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/spellcheck/SpellChecker.h"
@@ -138,6 +139,7 @@ SpellCheckRequester::SpellCheckRequester(LocalFrame& frame)
       m_lastRequestSequence(0),
       m_lastProcessedSequence(0),
       m_timerToProcessQueuedRequest(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
           this,
           &SpellCheckRequester::timerFiredToProcessQueuedRequest) {}
 

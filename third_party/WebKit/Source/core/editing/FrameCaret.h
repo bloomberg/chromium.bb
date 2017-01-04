@@ -38,7 +38,7 @@ enum class CaretVisibility { Visible, Hidden };
 
 class CORE_EXPORT FrameCaret final : public CaretBase {
  public:
-  FrameCaret(LocalFrame*, const SelectionEditor&);
+  FrameCaret(LocalFrame&, const SelectionEditor&);
   ~FrameCaret() override;
 
   bool isActive() const { return caretPosition().isNotNull(); }
@@ -95,7 +95,8 @@ class CORE_EXPORT FrameCaret final : public CaretBase {
   LayoutRect m_previousCaretRect;
   CaretVisibility m_caretVisibility;
   CaretVisibility m_previousCaretVisibility;
-  Timer<FrameCaret> m_caretBlinkTimer;
+  // TODO(https://crbug.com/668758): Consider using BeginFrame update for this.
+  TaskRunnerTimer<FrameCaret> m_caretBlinkTimer;
   bool m_caretRectDirty : 1;
   bool m_shouldPaintCaret : 1;
   bool m_isCaretBlinkingSuspended : 1;

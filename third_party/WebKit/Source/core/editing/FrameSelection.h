@@ -70,7 +70,7 @@ class CORE_EXPORT FrameSelection final
   WTF_MAKE_NONCOPYABLE(FrameSelection);
 
  public:
-  static FrameSelection* create(LocalFrame* frame) {
+  static FrameSelection* create(LocalFrame& frame) {
     return new FrameSelection(frame);
   }
   ~FrameSelection();
@@ -286,7 +286,7 @@ class CORE_EXPORT FrameSelection final
   FRIEND_TEST_ALL_PREFIXES(PaintControllerPaintTestForSlimmingPaintV1AndV2,
                            FullDocumentPaintingWithCaret);
 
-  explicit FrameSelection(LocalFrame*);
+  explicit FrameSelection(LocalFrame&);
 
   // Note: We have |selectionInFlatTree()| for unit tests, we should
   // use |visibleSelection<EditingInFlatTreeStrategy>()|.

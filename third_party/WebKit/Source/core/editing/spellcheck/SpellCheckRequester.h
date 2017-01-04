@@ -126,7 +126,7 @@ class SpellCheckRequester final
   int m_lastRequestSequence;
   int m_lastProcessedSequence;
 
-  Timer<SpellCheckRequester> m_timerToProcessQueuedRequest;
+  TaskRunnerTimer<SpellCheckRequester> m_timerToProcessQueuedRequest;
 
   Member<SpellCheckRequest> m_processingRequest;
 

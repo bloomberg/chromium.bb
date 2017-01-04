@@ -79,8 +79,7 @@ class CORE_EXPORT IdleSpellCheckCallback final : public IdleRequestCallback {
   State m_state;
   const Member<LocalFrame> m_frame;
 
-  // TODO(xiaochengh): assign the timer to some proper task runner.
-  Timer<IdleSpellCheckCallback> m_coldModeTimer;
+  TaskRunnerTimer<IdleSpellCheckCallback> m_coldModeTimer;
 };
 
 }  // namespace blink

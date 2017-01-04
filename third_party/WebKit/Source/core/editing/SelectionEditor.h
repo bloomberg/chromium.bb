@@ -40,7 +40,7 @@ class SelectionEditor final
   WTF_MAKE_NONCOPYABLE(SelectionEditor);
 
  public:
-  static SelectionEditor* create(LocalFrame* frame) {
+  static SelectionEditor* create(LocalFrame& frame) {
     return new SelectionEditor(frame);
   }
   virtual ~SelectionEditor();
@@ -85,7 +85,7 @@ class SelectionEditor final
   DECLARE_TRACE();
 
  private:
-  explicit SelectionEditor(LocalFrame*);
+  explicit SelectionEditor(LocalFrame&);
 
   const Document& document() const;
   LocalFrame* frame() const { return m_frame.get(); }

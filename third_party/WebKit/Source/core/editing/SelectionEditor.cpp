@@ -32,9 +32,8 @@
 
 namespace blink {
 
-SelectionEditor::SelectionEditor(LocalFrame* frame)
+SelectionEditor::SelectionEditor(LocalFrame& frame)
     : m_frame(frame), m_observingVisibleSelection(false) {
-  DCHECK(m_frame);
   clearVisibleSelection();
 }
 
