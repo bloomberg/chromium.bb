@@ -107,13 +107,18 @@ found in the LICENSE file.
       var glAttribs = {
         alpha: false,
       };
-      var gl = webglCanvas.getContext("webgl", glAttribs);
+      var useWebgl2 = WGLUUrl.getBool('webgl2', false);
+      var contextTypes = useWebgl2 ? ["webgl2"] : ["webgl", "experimental-webgl"];
+      var gl = null;
+      for (var i in contextTypes) {
+        gl = webglCanvas.getContext(contextTypes[i], glAttribs);
+        if (gl)
+          break;
+      }
       if (!gl) {
-        gl = webglCanvas.getContext("experimental-webgl", glAttribs);
-        if (!gl) {
-          VRSamplesUtil.addError("Your browser does not support WebGL.");
-          return;
-        }
+        var webglType = (useWebgl2 ? "WebGL 2" : "WebGL")
+        VRSamplesUtil.addError("Your browser does not support " + webglType + ".");
+        return;
       }
       gl.clearColor(0.1, 0.2, 0.3, 1.0);
       gl.enable(gl.DEPTH_TEST);
