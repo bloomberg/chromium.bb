@@ -78,6 +78,22 @@ TriView::~TriView() {
   enable_hierarchy_changed_dcheck_ = false;
 }
 
+void TriView::SetMinHeight(int height) {
+  gfx::Size min_size;
+
+  min_size = GetMinSize(TriView::Container::START);
+  min_size.set_height(height);
+  SetMinSize(TriView::Container::START, min_size);
+
+  min_size = GetMinSize(TriView::Container::CENTER);
+  min_size.set_height(height);
+  SetMinSize(TriView::Container::CENTER, min_size);
+
+  min_size = GetMinSize(TriView::Container::END);
+  min_size.set_height(height);
+  SetMinSize(TriView::Container::END, min_size);
+}
+
 void TriView::SetMinSize(Container container, const gfx::Size& size) {
   GetLayoutManager(container)->SetMinSize(size);
 }

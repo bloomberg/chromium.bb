@@ -29,6 +29,7 @@ SystemInfoDefaultView::SystemInfoDefaultView(SystemTrayItem* owner,
                                              LoginStatus login)
     : date_view_(nullptr),
       tri_view_(TrayPopupUtils::CreateMultiTargetRowView()) {
+  tri_view_->SetMinHeight(kTrayPopupSystemInfoRowHeight);
   AddChildView(tri_view_);
   SetLayoutManager(new views::FillLayout);
 

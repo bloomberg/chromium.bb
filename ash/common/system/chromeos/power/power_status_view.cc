@@ -155,15 +155,6 @@ void PowerStatusView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-gfx::Size PowerStatusView::GetPreferredSize() const {
-  gfx::Size size = views::View::GetPreferredSize();
-  return gfx::Size(size.width(), GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
-}
-
-int PowerStatusView::GetHeightForWidth(int width) const {
-  return GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT);
-}
-
 void PowerStatusView::Layout() {
   views::View::Layout();
 

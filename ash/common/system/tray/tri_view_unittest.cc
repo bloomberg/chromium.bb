@@ -34,6 +34,9 @@ class TriViewTest : public testing::Test {
   TriViewTest();
 
  protected:
+  // Convenience function to get the minimum height of |container|.
+  int GetMinHeight(TriView::Container container) const;
+
   // Returns the bounds of |child| in the coordinate space of
   // |tri_view_|.
   gfx::Rect GetBoundsInHost(const views::View* child) const;
@@ -49,6 +52,10 @@ class TriViewTest : public testing::Test {
 };
 
 TriViewTest::TriViewTest() : tri_view_(base::MakeUnique<TriView>()) {}
+
+int TriViewTest::GetMinHeight(TriView::Container container) const {
+  return tri_view_->GetMinSize(container).height();
+}
 
 gfx::Rect TriViewTest::GetBoundsInHost(const views::View* child) const {
   gfx::RectF rect_f(child->bounds());
@@ -354,6 +361,20 @@ TEST_F(TriViewTest, ChildViewsPreferredSizeChanged) {
 
   child_view->SetPreferredWidth(2);
   EXPECT_EQ(child_view->GetPreferredSize(), child_view->size());
+}
+
+TEST_F(TriViewTest, SetMinHeight) {
+  const int kMinHeight = 10;
+
+  EXPECT_NE(kMinHeight, GetMinHeight(TriView::Container::START));
+  EXPECT_NE(kMinHeight, GetMinHeight(TriView::Container::CENTER));
+  EXPECT_NE(kMinHeight, GetMinHeight(TriView::Container::END));
+
+  tri_view_->SetMinHeight(kMinHeight);
+
+  EXPECT_EQ(kMinHeight, GetMinHeight(TriView::Container::START));
+  EXPECT_EQ(kMinHeight, GetMinHeight(TriView::Container::CENTER));
+  EXPECT_EQ(kMinHeight, GetMinHeight(TriView::Container::END));
 }
 
 }  // namespace ash

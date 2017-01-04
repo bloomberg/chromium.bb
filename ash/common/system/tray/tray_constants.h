@@ -140,6 +140,9 @@ extern const int kTrayPopupInkDropInset;
 // The radius used to draw the corners of the rounded rect style ink drops.
 extern const int kTrayPopupInkDropCornerRadius;
 
+// The height of the system info row.
+extern const int kTrayPopupSystemInfoRowHeight;
+
 enum TrayConstant {
   // A legacy height value used in non-MD calculations for applying additional
   // borders on tray items.

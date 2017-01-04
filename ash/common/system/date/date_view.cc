@@ -173,8 +173,6 @@ DateView::DateView(SystemTrayItem* owner)
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
     box_layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-    box_layout->set_minimum_cross_axis_size(
-        GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
     SetLayoutManager(box_layout);
   } else {
     SetLayoutManager(
