@@ -489,9 +489,10 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
 
 // This test verifies our spellchecker can split a text into words and check
 // the spelling of each word in the text.
-#if defined(THREAD_SANITIZER)
+#if defined(THREAD_SANITIZER) || defined(OS_WIN)
 // SpellCheckTest.SpellCheckText fails under ThreadSanitizer v2.
 // See http://crbug.com/217909.
+// Also fails on windows: crbug.com/678300.
 #define MAYBE_SpellCheckText DISABLED_SpellCheckText
 #else
 #define MAYBE_SpellCheckText SpellCheckText
