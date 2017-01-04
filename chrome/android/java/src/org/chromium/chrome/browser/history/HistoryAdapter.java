@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.history.BrowsingHistoryBridge.BrowsingHistoryObserver;
+import org.chromium.chrome.browser.history.HistoryProvider.BrowsingHistoryObserver;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -37,7 +37,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private static final String GOOGLE_HISTORY_LINK = "history.google.com";
 
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
-    private final BrowsingHistoryBridge mBridge;
+    private final HistoryProvider mHistoryProvider;
     private final HistoryManager mManager;
 
     private TextView mSignedInNotSyncedTextView;
@@ -56,10 +56,12 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private long mNextQueryEndTime;
     private String mQueryText = EMPTY_QUERY;
 
-    public HistoryAdapter(SelectionDelegate<HistoryItem> delegate, HistoryManager manager) {
+    public HistoryAdapter(SelectionDelegate<HistoryItem> delegate, HistoryManager manager,
+            HistoryProvider provider) {
         setHasStableIds(true);
         mSelectionDelegate = delegate;
-        mBridge = new BrowsingHistoryBridge(this);
+        mHistoryProvider = provider;
+        mHistoryProvider.setObserver(this);
         mManager = manager;
     }
 
@@ -67,7 +69,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      * Called when the activity/native page is destroyed.
      */
     public void onDestroyed() {
-        mBridge.destroy();
+        mHistoryProvider.destroy();
         mIsDestroyed = true;
     }
 
@@ -79,7 +81,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mIsLoadingItems = true;
         mNextQueryEndTime = 0;
         mClearOnNextQueryComplete = true;
-        mBridge.queryHistory(mQueryText, mNextQueryEndTime);
+        mHistoryProvider.queryHistory(mQueryText, mNextQueryEndTime);
     }
 
     /**
@@ -92,7 +94,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mIsLoadingItems = true;
         addFooter();
         notifyDataSetChanged();
-        mBridge.queryHistory(mQueryText, mNextQueryEndTime);
+        mHistoryProvider.queryHistory(mQueryText, mNextQueryEndTime);
     }
 
     /**
@@ -111,7 +113,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mNextQueryEndTime = 0;
         mIsSearching = true;
         mClearOnNextQueryComplete = true;
-        mBridge.queryHistory(mQueryText, mNextQueryEndTime);
+        mHistoryProvider.queryHistory(mQueryText, mNextQueryEndTime);
     }
 
     /**
@@ -132,14 +134,19 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      */
     public void markItemForRemoval(HistoryItem item) {
         removeItem(item);
-        mBridge.markItemForRemoval(item);
+        mHistoryProvider.markItemForRemoval(item);
+
+        // If there is only one item left, remove the header so the empty view will be displayed.
+        if (getItemCount() == 1) {
+            removeHeader();
+        }
     }
 
     /**
      * Removes all items that have been marked for removal through #markItemForRemoval().
      */
     public void removeItems() {
-        mBridge.removeItems();
+        mHistoryProvider.removeItems();
     }
 
     @Override

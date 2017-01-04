@@ -288,15 +288,20 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
             }
         }
 
-        // Tell each group where they start in the list.
+        setGroupPositions();
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Tells each group where they start in the list.
+     */
+    private void setGroupPositions() {
         int startIndex = 0;
         for (ItemGroup group : mGroups) {
             group.resetPosition();
             group.setPosition(startIndex);
             startIndex += group.size();
         }
-
-        notifyDataSetChanged();
     }
 
     /**
@@ -311,6 +316,27 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
         mGroups.add(header);
         mSize++;
         mHasListHeader = true;
+    }
+
+    /**
+     * Removes the list headrer.
+     */
+    public void removeHeader() {
+        if (!mHasListHeader) return;
+
+        mGroups.remove(mGroups.first());
+        mSize--;
+        mHasListHeader = false;
+
+        setGroupPositions();
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Whether the adapter has a list header.
+     */
+    public boolean hasListHeader() {
+        return mHasListHeader;
     }
 
     /**
@@ -456,6 +482,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
             mSize--;
         }
 
+        setGroupPositions();
         notifyDataSetChanged();
     }
 

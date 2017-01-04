@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.history;
 
 import android.os.Bundle;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.SynchronousInitializationActivity;
 
 /**
@@ -27,5 +28,10 @@ public class HistoryActivity extends SynchronousInitializationActivity {
         mHistoryManager.onDestroyed();
         mHistoryManager = null;
         super.onDestroy();
+    }
+
+    @VisibleForTesting
+    HistoryManager getHistoryManagerForTests() {
+        return mHistoryManager;
     }
 }

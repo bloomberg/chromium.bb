@@ -139,10 +139,12 @@ public class SelectableListLayout<E> extends RelativeLayout {
      *
      * @param emptyDrawable The Drawable to show when the selectable list is empty.
      * @param emptyStringResId The string to show when the selectable list is empty.
+     * @return The {@link TextView} displayed when the list is empty.
      */
-    public void initializeEmptyView(Drawable emptyDrawable, int emptyStringResId) {
+    public TextView initializeEmptyView(Drawable emptyDrawable, int emptyStringResId) {
         mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, emptyDrawable, null, null);
         mEmptyView.setText(emptyStringResId);
+        return mEmptyView;
     }
 
     /**

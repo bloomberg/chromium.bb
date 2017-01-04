@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
+import android.support.annotation.VisibleForTesting;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
@@ -18,6 +19,7 @@ import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
@@ -42,11 +44,14 @@ public class HistoryManager implements OnMenuItemClickListener {
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int MEGABYTES_TO_BYTES =  1024 * 1024;
 
+    private static HistoryProvider sProviderForTests;
+
     private final Activity mActivity;
     private final SelectableListLayout<HistoryItem> mSelectableListLayout;
     private final HistoryAdapter mHistoryAdapter;
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
     private final HistoryManagerToolbar mToolbar;
+    private final TextView mEmptyView;
     private LargeIconBridge mLargeIconBridge;
 
     /**
@@ -57,7 +62,8 @@ public class HistoryManager implements OnMenuItemClickListener {
         mActivity = activity;
 
         mSelectionDelegate = new SelectionDelegate<>();
-        mHistoryAdapter = new HistoryAdapter(mSelectionDelegate, this);
+        mHistoryAdapter = new HistoryAdapter(mSelectionDelegate, this,
+                sProviderForTests != null ? sProviderForTests : new BrowsingHistoryBridge());
 
         mSelectableListLayout =
                 (SelectableListLayout<HistoryItem>) LayoutInflater.from(activity).inflate(
@@ -67,7 +73,7 @@ public class HistoryManager implements OnMenuItemClickListener {
                 R.layout.history_toolbar, mSelectionDelegate, R.string.menu_history, null,
                 R.id.normal_menu_group, R.id.selection_mode_menu_group, this);
         mToolbar.setManager(this);
-        mSelectableListLayout.initializeEmptyView(
+        mEmptyView = mSelectableListLayout.initializeEmptyView(
                 TintedDrawable.constructTintedDrawable(mActivity.getResources(),
                         R.drawable.history_large),
                 R.string.history_manager_empty);
@@ -119,6 +125,7 @@ public class HistoryManager implements OnMenuItemClickListener {
         } else if (item.getItemId() == R.id.search_menu_id) {
             mToolbar.showSearchView();
             mSelectableListLayout.setEmptyViewText(R.string.history_manager_no_results);
+            return true;
         }
         return false;
     }
@@ -226,5 +233,33 @@ public class HistoryManager implements OnMenuItemClickListener {
         for (HistoryItem item : items) {
             openUrl(item.getUrl(), isIncognito, true);
         }
+    }
+
+    /**
+     * Sets a {@link HistoryProvider} that is used in place of a real one.
+     */
+    @VisibleForTesting
+    public static void setProviderForTests(HistoryProvider provider) {
+        sProviderForTests = provider;
+    }
+
+    @VisibleForTesting
+    SelectionDelegate<HistoryItem> getSelectionDelegateForTests() {
+        return mSelectionDelegate;
+    }
+
+    @VisibleForTesting
+    HistoryManagerToolbar getToolbarForTests() {
+        return mToolbar;
+    }
+
+    @VisibleForTesting
+    TextView getEmptyViewForTests() {
+        return mEmptyView;
+    }
+
+    @VisibleForTesting
+    HistoryAdapter getAdapterForTests() {
+        return mHistoryAdapter;
     }
 }
