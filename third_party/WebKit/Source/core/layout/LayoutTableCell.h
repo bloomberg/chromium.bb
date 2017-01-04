@@ -293,7 +293,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   // CollapsedBorderValue.
   class CollapsedBorderValues : public DisplayItemClient {
    public:
-    CollapsedBorderValues(const LayoutTable&,
+    CollapsedBorderValues(const LayoutTableCell&,
                           const CollapsedBorderValue& startBorder,
                           const CollapsedBorderValue& endBorder,
                           const CollapsedBorderValue& beforeBorder,
@@ -311,7 +311,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
     LayoutRect visualRect() const;
 
    private:
-    const LayoutTable& m_layoutTable;
+    const LayoutTableCell& m_layoutTableCell;
     CollapsedBorderValue m_startBorder;
     CollapsedBorderValue m_endBorder;
     CollapsedBorderValue m_beforeBorder;
