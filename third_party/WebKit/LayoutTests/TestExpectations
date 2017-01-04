@@ -2425,3 +2425,4 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/index-cursor.html [ Pass Timeo
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Pass Timeout ]
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass Timeout ]
 
+crbug.com/678388 [ Trusty Mac10.10 Mac10.11 Debug ] fast/text/ellipsis-stroked.html [ Pass Failure ]
