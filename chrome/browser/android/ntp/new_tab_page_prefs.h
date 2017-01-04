@@ -16,14 +16,6 @@ class NewTabPagePrefs {
   explicit NewTabPagePrefs(Profile* profile);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  jboolean GetCurrentlyOpenTabsCollapsed(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  void SetCurrentlyOpenTabsCollapsed(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jboolean is_collapsed);
-
   jboolean GetSnapshotDocumentCollapsed(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

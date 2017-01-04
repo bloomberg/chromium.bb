@@ -1978,9 +1978,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_RECENT_TABS_HIDE_MENU_OPTION" desc="Context menu option to remove a foreign session.">
         Hide for now
       </message>
-      <message name="IDS_RECENT_TABS_THIS_DEVICE" desc="Header shown above the list of tabs currently open on this device.">
-        This device
-      </message>
       <message name="IDS_RECENT_TABS_SHOW_MORE" desc="Text shown on the button that shows all the currently open tabs in recent tabs page.">
         More
       </message>

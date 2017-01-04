@@ -164,9 +164,6 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mSignInManager.addSignInStateObserver(this);
     }
 
-    protected void updateCurrentlyOpenTabs() {
-    }
-
     private void updateRecentlyClosedTabs() {
         mRecentlyClosedTabs = mRecentlyClosedBridge.getRecentlyClosedTabs(
                 RECENTLY_CLOSED_MAX_TAB_COUNT);
@@ -177,13 +174,6 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         if (mForeignSessions == null) {
             mForeignSessions = Collections.emptyList();
         }
-    }
-
-    /**
-     * @return Most up-to-date list of currently open tabs.
-     */
-    public List<CurrentlyOpenTab> getCurrentlyOpenTabs() {
-        return null;
     }
 
     /**
@@ -268,49 +258,6 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void setUpdatedCallback(UpdatedCallback updatedCallback) {
         mUpdatedCallback = updatedCallback;
-    }
-
-    /**
-     * Sets the persistent expanded/collapsed state of the currently open tabs list.
-     *
-     * @param isCollapsed Whether the currently open tabs list is collapsed.
-     */
-    public void setCurrentlyOpenTabsCollapsed(boolean isCollapsed) {
-        if (mIsDestroyed) return;
-        mNewTabPagePrefs.setCurrentlyOpenTabsCollapsed(isCollapsed);
-    }
-
-    /**
-     * Determine the expanded/collapsed state of the currently open tabs list.
-     *
-     * @return Whether the currently open tabs list is collapsed.
-     */
-    public boolean isCurrentlyOpenTabsCollapsed() {
-        return mNewTabPagePrefs.getCurrentlyOpenTabsCollapsed();
-    }
-
-    /**
-     * Sets the state for showing all tabs in the currently open tabs list. This is intended to
-     * be overridden in extending classes and set to true when the user clicks the "More" button
-     * at the end of the list.
-     * @param showingAll Whether the currently open tabs list should start to show all.
-     */
-    public void setCurrentlyOpenTabsShowAll(boolean showingAll) {
-    }
-
-    /**
-     * @return Whether the currently open tabs group shows all tabs. If it is not, only a limited
-     * number of tabs is shown with a "More" button at the end of the list to show all.
-     */
-    public boolean isCurrentlyOpenTabsShowingAll() {
-        return false;
-    }
-
-    /**
-     * Closes the specified currently open tab.
-     * @param tab Information about the tab that should be closed.
-     */
-    public void closeTab(CurrentlyOpenTab tab) {
     }
 
     /**

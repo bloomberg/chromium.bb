@@ -36,21 +36,6 @@ void NewTabPagePrefs::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 NewTabPagePrefs::~NewTabPagePrefs() {
 }
 
-jboolean NewTabPagePrefs::GetCurrentlyOpenTabsCollapsed(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  PrefService* prefs = profile_->GetPrefs();
-  return prefs->GetBoolean(prefs::kNtpCollapsedCurrentlyOpenTabs);
-}
-
-void NewTabPagePrefs::SetCurrentlyOpenTabsCollapsed(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean is_collapsed) {
-  PrefService* prefs = profile_->GetPrefs();
-  prefs->SetBoolean(prefs::kNtpCollapsedCurrentlyOpenTabs, is_collapsed);
-}
-
 jboolean NewTabPagePrefs::GetSnapshotDocumentCollapsed(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -120,7 +105,6 @@ void NewTabPagePrefs::SetForeignSessionCollapsed(
 // static
 void NewTabPagePrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kNtpCollapsedCurrentlyOpenTabs, false);
   registry->RegisterBooleanPref(prefs::kNtpCollapsedSnapshotDocument, false);
   registry->RegisterBooleanPref(prefs::kNtpCollapsedRecentlyClosedTabs, false);
   registry->RegisterBooleanPref(prefs::kNtpCollapsedSyncPromo, false);

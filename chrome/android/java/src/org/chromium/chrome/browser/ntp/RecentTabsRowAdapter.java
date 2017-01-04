@@ -35,7 +35,6 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Row adapter for presenting recently closed tabs, synced tabs from other devices, the sync or
@@ -199,106 +198,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
          */
         void onCreateContextMenuForChild(int childPosition, ContextMenu menu,
                 Activity activity) {
-        }
-    }
-
-    /**
-     * A group containing all the tabs currently open on this device.
-     */
-    class CurrentlyOpenTabsGroup extends Group {
-        private static final int NUM_DEFAULT_VISIBLE_TABS = 6;
-
-        private final List<CurrentlyOpenTab> mCurrentlyOpenTabs;
-        private final boolean mShowingAll;
-
-        public CurrentlyOpenTabsGroup(List<CurrentlyOpenTab> tabsList) {
-            mCurrentlyOpenTabs = tabsList;
-            mShowingAll = mRecentTabsManager.isCurrentlyOpenTabsShowingAll();
-        }
-
-        private boolean isMoreButton(int childPosition) {
-            return !mShowingAll && childPosition
-                    == Math.min(NUM_DEFAULT_VISIBLE_TABS, mCurrentlyOpenTabs.size());
-        }
-
-        @Override
-        GroupType getGroupType() {
-            return GroupType.CONTENT;
-        }
-
-        @Override
-        int getChildrenCount() {
-            if (mShowingAll) return mCurrentlyOpenTabs.size();
-            return Math.min(NUM_DEFAULT_VISIBLE_TABS, mCurrentlyOpenTabs.size() - 1) + 1;
-        }
-
-        @Override
-        ChildType getChildType() {
-            return ChildType.DEFAULT_CONTENT;
-        }
-
-        @Override
-        CurrentlyOpenTab getChild(int childPosition) {
-            if (isMoreButton(childPosition)) return null;
-
-            return mCurrentlyOpenTabs.get(childPosition);
-        }
-
-        @Override
-        void configureChildView(int childPosition, ViewHolder viewHolder) {
-            if (isMoreButton(childPosition)) {
-                Resources resources = mActivity.getResources();
-                String text = resources.getString(R.string.recent_tabs_show_more);
-                viewHolder.textView.setText(text);
-                Drawable drawable =  ApiCompatibilityUtils.getDrawable(
-                        resources, R.drawable.more_horiz);
-                ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                        viewHolder.textView, drawable, null, null, null);
-            } else {
-                CurrentlyOpenTab openTab = getChild(childPosition);
-                viewHolder.textView.setText(TextUtils.isEmpty(openTab.getTitle()) ? openTab.getUrl()
-                        : openTab.getTitle());
-                loadLocalFavicon(viewHolder, openTab.getUrl());
-            }
-        }
-
-        @Override
-        void configureGroupView(RecentTabsGroupView groupView, boolean isExpanded) {
-            groupView.configureForCurrentlyOpenTabs(isExpanded);
-        }
-
-        @Override
-        void setCollapsed(boolean isCollapsed) {
-            mRecentTabsManager.setCurrentlyOpenTabsCollapsed(isCollapsed);
-        }
-
-        @Override
-        boolean isCollapsed() {
-            return mRecentTabsManager.isCurrentlyOpenTabsCollapsed();
-        }
-
-        @Override
-        boolean onChildClick(int childPosition) {
-            if (isMoreButton(childPosition)) {
-                mRecentTabsManager.setCurrentlyOpenTabsShowAll(true);
-            } else {
-                getChild(childPosition).getRunnable().run();
-            }
-            return true;
-        }
-
-        @Override
-        void onCreateContextMenuForChild(final int childPosition, ContextMenu menu,
-                Activity activity) {
-            if (isMoreButton(childPosition)) return;
-            OnMenuItemClickListener listener = new OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    mRecentTabsManager.closeTab(getChild(childPosition));
-                    return true;
-                }
-            };
-            menu.add(R.string.close_tab).setOnMenuItemClickListener(listener);
         }
     }
 
@@ -881,10 +780,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     @Override
     public void notifyDataSetChanged() {
         mGroups.clear();
-        List<CurrentlyOpenTab> tabList = mRecentTabsManager.getCurrentlyOpenTabs();
-        if (tabList != null && !tabList.isEmpty()) {
-            addGroup(new CurrentlyOpenTabsGroup(tabList));
-        }
         addGroup(mRecentlyClosedTabsGroup);
         for (ForeignSession session : mRecentTabsManager.getForeignSessions()) {
             if (!mHasForeignDataRecorded) {

@@ -17,7 +17,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.widget.TintedDrawable;
-import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Header view shown above each group of items on the Recent Tabs page. Shows the name of the
@@ -75,21 +74,6 @@ public class RecentTabsGroupView extends RelativeLayout {
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.blue_mode_tint));
         collapseIcon.addLevel(DRAWABLE_LEVEL_EXPANDED, DRAWABLE_LEVEL_EXPANDED, collapse);
         mExpandCollapseIcon.setImageDrawable(collapseIcon);
-    }
-
-    /**
-     * Configures the view for currently open tabs.
-     *
-     * @param isExpanded Whether the view is expanded or collapsed.
-     */
-    public void configureForCurrentlyOpenTabs(boolean isExpanded) {
-        mDeviceIcon.setVisibility(View.VISIBLE);
-        mDeviceIcon.setImageResource(DeviceFormFactor.isTablet(getContext())
-                ? R.drawable.recent_tablet : R.drawable.recent_phone);
-        String title = getResources().getString(R.string.recent_tabs_this_device);
-        mDeviceLabel.setText(title);
-        setTimeLabelVisibility(View.GONE);
-        configureExpandedCollapsed(isExpanded);
     }
 
     /**

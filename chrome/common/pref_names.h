@@ -550,9 +550,6 @@ extern const char kDisableExtensions[];
 extern const char kDisablePluginFinder[];
 
 extern const char kNtpAppPageNames[];
-#if BUILDFLAG(ANDROID_JAVA_UI)
-extern const char kNtpCollapsedCurrentlyOpenTabs[];
-#endif
 extern const char kNtpCollapsedForeignSessions[];
 #if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kNtpCollapsedRecentlyClosedTabs[];

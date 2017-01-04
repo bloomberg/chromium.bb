@@ -31,24 +31,6 @@ class NewTabPagePrefs {
     }
 
     /**
-     * Sets whether the list of currently open tabs is collapsed (vs expanded) on the Recent Tabs
-     * page.
-     * @param isCollapsed Whether we want the currently open tabs list to be collapsed.
-     */
-    void setCurrentlyOpenTabsCollapsed(boolean isCollapsed) {
-        nativeSetCurrentlyOpenTabsCollapsed(mNativeNewTabPagePrefs, isCollapsed);
-    }
-
-    /**
-     * Gets whether the list of currently open tabs is collapsed (vs expanded) on Recent Tabs page.
-     * @return Whether the list of currently open tabs is collapsed (vs expanded) on
-     *         the Recent Tabs page.
-     */
-    boolean getCurrentlyOpenTabsCollapsed() {
-        return nativeGetCurrentlyOpenTabsCollapsed(mNativeNewTabPagePrefs);
-    }
-
-    /**
      * Sets whether the list of snapshot documents is collapsed (vs expanded) on the Recent Tabs
      * page.
      * @param isCollapsed Whether we want the snapshot documents list to be collapsed.
@@ -122,10 +104,6 @@ class NewTabPagePrefs {
 
     private static native long nativeInit(Profile profile);
     private static native void nativeDestroy(long nativeNewTabPagePrefs);
-    private static native void nativeSetCurrentlyOpenTabsCollapsed(
-            long nativeNewTabPagePrefs, boolean isCollapsed);
-    private static native boolean nativeGetCurrentlyOpenTabsCollapsed(
-            long nativeNewTabPagePrefs);
     private static native void nativeSetSnapshotDocumentCollapsed(
             long nativeNewTabPagePrefs, boolean isCollapsed);
     private static native boolean nativeGetSnapshotDocumentCollapsed(
