@@ -553,6 +553,11 @@ template("test_runner_script") {
         "--test-suite",
         invoker.test_suite,
       ]
+    } else if (_test_type == "linker") {
+      test_runner_args += [
+        "--test-apk",
+        "@FileArg($_rebased_apk_build_config:deps_info:apk_path)",
+      ]
     } else {
       assert(false, "Invalid test type: $_test_type.")
     }

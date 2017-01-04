@@ -182,7 +182,11 @@ if (current_cpu != "x64") {
     android_manifest_dep = ":chromium_linker_test_manifest"
   }
 
-  android_apk("chromium_linker_test_apk") {
+  _linker_test_apk_target_name = "chromium_linker_test_apk__apk"
+  _linker_test_apk_test_runner_target_name =
+      "chromium_linker_test_apk__test_runner_script"
+
+  android_apk(_linker_test_apk_target_name) {
     testonly = true
     deps = [
       ":content_shell_assets",
@@ -203,6 +207,21 @@ if (current_cpu != "x64") {
     shared_libraries = [ ":linker_test" ]
     use_chromium_linker = true
     enable_chromium_linker_tests = true
+  }
+
+  test_runner_script(_linker_test_apk_test_runner_target_name) {
+    test_name = "chromium_linker_test_apk"
+    test_type = "linker"
+    apk_target = ":$_linker_test_apk_target_name"
+    ignore_all_data_deps = true
+  }
+
+  group("chromium_linker_test_apk") {
+    testonly = true
+    deps = [
+      ":$_linker_test_apk_target_name",
+      ":$_linker_test_apk_test_runner_target_name",
+    ]
   }
 
   shared_library("linker_test") {
