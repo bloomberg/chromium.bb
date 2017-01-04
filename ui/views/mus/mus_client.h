@@ -50,7 +50,7 @@ class WMState;
 namespace views {
 
 class MusClientObserver;
-class PointerWatcherEventRouter2;
+class PointerWatcherEventRouter;
 class ScreenMus;
 
 namespace internal {
@@ -96,7 +96,7 @@ class VIEWS_MUS_EXPORT MusClient
     return window_tree_client_.get();
   }
 
-  PointerWatcherEventRouter2* pointer_watcher_event_router() {
+  PointerWatcherEventRouter* pointer_watcher_event_router() {
     return pointer_watcher_event_router_.get();
   }
 
@@ -153,7 +153,7 @@ class VIEWS_MUS_EXPORT MusClient
 
   std::unique_ptr<ui::Gpu> gpu_;
 
-  std::unique_ptr<PointerWatcherEventRouter2> pointer_watcher_event_router_;
+  std::unique_ptr<PointerWatcherEventRouter> pointer_watcher_event_router_;
 
   std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
 

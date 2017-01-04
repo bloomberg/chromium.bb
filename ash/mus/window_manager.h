@@ -33,7 +33,7 @@ class Connector;
 }
 
 namespace views {
-class PointerWatcherEventRouter2;
+class PointerWatcherEventRouter;
 }
 
 namespace wm {
@@ -188,7 +188,7 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   aura::WindowManagerClient* window_manager_client_ = nullptr;
 
-  std::unique_ptr<views::PointerWatcherEventRouter2>
+  std::unique_ptr<views::PointerWatcherEventRouter>
       pointer_watcher_event_router_;
 
   std::unique_ptr<ShadowController> shadow_controller_;

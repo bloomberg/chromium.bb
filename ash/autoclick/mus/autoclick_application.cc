@@ -16,7 +16,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/mus_client.h"
-#include "ui/views/mus/pointer_watcher_event_router2.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"

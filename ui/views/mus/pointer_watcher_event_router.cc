@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/mus/pointer_watcher_event_router2.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -23,22 +23,22 @@ bool HasPointerWatcher(
 
 }  // namespace
 
-PointerWatcherEventRouter2::PointerWatcherEventRouter2(
+PointerWatcherEventRouter::PointerWatcherEventRouter(
     aura::WindowTreeClient* window_tree_client)
     : window_tree_client_(window_tree_client) {
   window_tree_client->AddObserver(this);
   window_tree_client_->GetCaptureClient()->AddObserver(this);
 }
 
-PointerWatcherEventRouter2::~PointerWatcherEventRouter2() {
+PointerWatcherEventRouter::~PointerWatcherEventRouter() {
   if (window_tree_client_) {
     window_tree_client_->RemoveObserver(this);
     window_tree_client_->GetCaptureClient()->RemoveObserver(this);
   }
 }
 
-void PointerWatcherEventRouter2::AddPointerWatcher(PointerWatcher* watcher,
-                                                   bool wants_moves) {
+void PointerWatcherEventRouter::AddPointerWatcher(PointerWatcher* watcher,
+                                                  bool wants_moves) {
   // Pointer watchers cannot be added multiple times.
   DCHECK(!move_watchers_.HasObserver(watcher));
   DCHECK(!non_move_watchers_.HasObserver(watcher));
@@ -59,7 +59,7 @@ void PointerWatcherEventRouter2::AddPointerWatcher(PointerWatcher* watcher,
   }
 }
 
-void PointerWatcherEventRouter2::RemovePointerWatcher(PointerWatcher* watcher) {
+void PointerWatcherEventRouter::RemovePointerWatcher(PointerWatcher* watcher) {
   if (non_move_watchers_.HasObserver(watcher)) {
     non_move_watchers_.RemoveObserver(watcher);
   } else {
@@ -86,7 +86,7 @@ void PointerWatcherEventRouter2::RemovePointerWatcher(PointerWatcher* watcher) {
   }
 }
 
-void PointerWatcherEventRouter2::OnPointerEventObserved(
+void PointerWatcherEventRouter::OnPointerEventObserved(
     const ui::PointerEvent& event,
     aura::Window* target) {
   Widget* target_widget = nullptr;
@@ -132,8 +132,8 @@ void PointerWatcherEventRouter2::OnPointerEventObserved(
   }
 }
 
-PointerWatcherEventRouter2::EventTypes
-PointerWatcherEventRouter2::DetermineEventTypes() {
+PointerWatcherEventRouter::EventTypes
+PointerWatcherEventRouter::DetermineEventTypes() {
   if (HasPointerWatcher(&move_watchers_))
     return EventTypes::MOVE_EVENTS;
 
@@ -143,9 +143,8 @@ PointerWatcherEventRouter2::DetermineEventTypes() {
   return EventTypes::NONE;
 }
 
-void PointerWatcherEventRouter2::OnCaptureChanged(
-    aura::Window* lost_capture,
-    aura::Window* gained_capture) {
+void PointerWatcherEventRouter::OnCaptureChanged(aura::Window* lost_capture,
+                                                 aura::Window* gained_capture) {
   const ui::MouseEvent mouse_event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
                                    gfx::Point(), ui::EventTimeForNow(), 0, 0);
   const ui::PointerEvent event(mouse_event);
@@ -157,7 +156,7 @@ void PointerWatcherEventRouter2::OnCaptureChanged(
     observer.OnPointerEventObserved(event, location_in_screen, nullptr);
 }
 
-void PointerWatcherEventRouter2::OnDidDestroyClient(
+void PointerWatcherEventRouter::OnDidDestroyClient(
     aura::WindowTreeClient* client) {
   // We expect that all observers have been removed by this time.
   DCHECK_EQ(event_types_, EventTypes::NONE);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/mus/views_aura_mus_test_suite.h"
+#include "ui/views/mus/views_mus_test_suite.h"
 
 #include <memory>
 #include <string>
@@ -151,10 +151,9 @@ class ServiceManagerConnection {
     background_service_manager_ =
         base::MakeUnique<service_manager::BackgroundServiceManager>();
     background_service_manager_->Init(nullptr);
-    context_ =
-        base::MakeUnique<service_manager::ServiceContext>(
-            base::MakeUnique<DefaultService>(),
-            background_service_manager_->CreateServiceRequest(GetTestName()));
+    context_ = base::MakeUnique<service_manager::ServiceContext>(
+        base::MakeUnique<DefaultService>(),
+        background_service_manager_->CreateServiceRequest(GetTestName()));
 
     // ui/views/mus requires a WindowManager running, so launch test_wm.
     service_manager::Connector* connector = context_->connector();
@@ -189,12 +188,12 @@ class ServiceManagerConnection {
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerConnection);
 };
 
-ViewsAuraMusTestSuite::ViewsAuraMusTestSuite(int argc, char** argv)
+ViewsMusTestSuite::ViewsMusTestSuite(int argc, char** argv)
     : ViewsTestSuite(argc, argv) {}
 
-ViewsAuraMusTestSuite::~ViewsAuraMusTestSuite() {}
+ViewsMusTestSuite::~ViewsMusTestSuite() {}
 
-void ViewsAuraMusTestSuite::Initialize() {
+void ViewsMusTestSuite::Initialize() {
   PlatformTestHelper::SetIsMus();
   // Let other services know that we're running in tests. Do this with a
   // command line flag to avoid making blocking calls to other processes for
@@ -207,7 +206,7 @@ void ViewsAuraMusTestSuite::Initialize() {
   service_manager_connections_ = base::MakeUnique<ServiceManagerConnection>();
 }
 
-void ViewsAuraMusTestSuite::Shutdown() {
+void ViewsMusTestSuite::Shutdown() {
   service_manager_connections_.reset();
   ViewsTestSuite::Shutdown();
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_MUS_POINTER_WATCHER_EVENT_ROUTER2_H_
-#define UI_VIEWS_MUS_POINTER_WATCHER_EVENT_ROUTER2_H_
+#ifndef UI_VIEWS_MUS_POINTER_WATCHER_EVENT_ROUTER_H_
+#define UI_VIEWS_MUS_POINTER_WATCHER_EVENT_ROUTER_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -23,14 +23,13 @@ class PointerEvent;
 namespace views {
 
 class PointerWatcher;
-class PointerWatcherEventRouter2Test;
+class PointerWatcherEventRouterTest;
 
-// PointerWatcherEventRouter2 is responsible for maintaining the list of
+// PointerWatcherEventRouter is responsible for maintaining the list of
 // PointerWatchers and notifying appropriately. It is expected the owner of
-// PointerWatcherEventRouter2 is a WindowTreeClientDelegate and calls
+// PointerWatcherEventRouter is a WindowTreeClientDelegate and calls
 // OnPointerEventObserved().
-// TODO(sky): Nuke existing PointerWatcherEventRouter and rename this.
-class VIEWS_MUS_EXPORT PointerWatcherEventRouter2
+class VIEWS_MUS_EXPORT PointerWatcherEventRouter
     : public aura::WindowTreeClientObserver,
       public aura::client::CaptureClientObserver {
  public:
@@ -46,9 +45,9 @@ class VIEWS_MUS_EXPORT PointerWatcherEventRouter2
     MOVE_EVENTS,
   };
 
-  explicit PointerWatcherEventRouter2(
+  explicit PointerWatcherEventRouter(
       aura::WindowTreeClient* window_tree_client);
-  ~PointerWatcherEventRouter2() override;
+  ~PointerWatcherEventRouter() override;
 
   // Called by WindowTreeClientDelegate to notify PointerWatchers appropriately.
   void OnPointerEventObserved(const ui::PointerEvent& event,
@@ -58,7 +57,7 @@ class VIEWS_MUS_EXPORT PointerWatcherEventRouter2
   void RemovePointerWatcher(PointerWatcher* watcher);
 
  private:
-  friend class PointerWatcherEventRouter2Test;
+  friend class PointerWatcherEventRouterTest;
 
   // Determines EventTypes based on the number and type of PointerWatchers.
   EventTypes DetermineEventTypes();
@@ -80,9 +79,9 @@ class VIEWS_MUS_EXPORT PointerWatcherEventRouter2
 
   EventTypes event_types_ = EventTypes::NONE;
 
-  DISALLOW_COPY_AND_ASSIGN(PointerWatcherEventRouter2);
+  DISALLOW_COPY_AND_ASSIGN(PointerWatcherEventRouter);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_MUS_POINTER_WATCHER_EVENT_ROUTER2_H_
+#endif  // UI_VIEWS_MUS_POINTER_WATCHER_EVENT_ROUTER_H_

@@ -49,7 +49,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/mojo/event.mojom.h"
-#include "ui/views/mus/pointer_watcher_event_router2.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
@@ -118,7 +118,7 @@ void WindowManager::Init(
   display::Screen::SetScreenInstance(screen_.get());
 
   pointer_watcher_event_router_ =
-      base::MakeUnique<views::PointerWatcherEventRouter2>(
+      base::MakeUnique<views::PointerWatcherEventRouter>(
           window_tree_client_.get());
 
   shadow_controller_ = base::MakeUnique<ShadowController>();

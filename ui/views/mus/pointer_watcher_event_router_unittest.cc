@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/mus/pointer_watcher_event_router2.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 
 #include <memory>
 
@@ -42,29 +42,29 @@ class TestPointerWatcher : public PointerWatcher {
 
 }  // namespace
 
-class PointerWatcherEventRouter2Test : public testing::Test {
+class PointerWatcherEventRouterTest : public testing::Test {
  public:
-  PointerWatcherEventRouter2Test() {}
-  ~PointerWatcherEventRouter2Test() override {}
+  PointerWatcherEventRouterTest() {}
+  ~PointerWatcherEventRouterTest() override {}
 
   void OnPointerEventObserved(const ui::PointerEvent& event) {
     MusClient::Get()->pointer_watcher_event_router()->OnPointerEventObserved(
         event, nullptr);
   }
 
-  PointerWatcherEventRouter2::EventTypes event_types() const {
+  PointerWatcherEventRouter::EventTypes event_types() const {
     return MusClient::Get()->pointer_watcher_event_router()->event_types_;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PointerWatcherEventRouter2Test);
+  DISALLOW_COPY_AND_ASSIGN(PointerWatcherEventRouterTest);
 };
 
-TEST_F(PointerWatcherEventRouter2Test, EventTypes) {
+TEST_F(PointerWatcherEventRouterTest, EventTypes) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   ScopedViewsTestHelper helper;
   TestPointerWatcher pointer_watcher1, pointer_watcher2;
-  PointerWatcherEventRouter2* pointer_watcher_event_router =
+  PointerWatcherEventRouter* pointer_watcher_event_router =
       MusClient::Get()->pointer_watcher_event_router();
   aura::WindowTreeClientPrivate test_api(
       MusClient::Get()->window_tree_client());
@@ -72,52 +72,52 @@ TEST_F(PointerWatcherEventRouter2Test, EventTypes) {
 
   // Start with no moves.
   pointer_watcher_event_router->AddPointerWatcher(&pointer_watcher1, false);
-  EXPECT_EQ(PointerWatcherEventRouter2::EventTypes::NON_MOVE_EVENTS,
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::NON_MOVE_EVENTS,
             event_types());
   EXPECT_TRUE(test_api.HasPointerWatcher());
 
   // Add moves.
   pointer_watcher_event_router->AddPointerWatcher(&pointer_watcher2, true);
-  EXPECT_EQ(PointerWatcherEventRouter2::EventTypes::MOVE_EVENTS, event_types());
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::MOVE_EVENTS, event_types());
   EXPECT_TRUE(test_api.HasPointerWatcher());
 
   // Remove no-moves.
   pointer_watcher_event_router->RemovePointerWatcher(&pointer_watcher1);
-  EXPECT_EQ(PointerWatcherEventRouter2::EventTypes::MOVE_EVENTS, event_types());
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::MOVE_EVENTS, event_types());
   EXPECT_TRUE(test_api.HasPointerWatcher());
 
   // Remove moves.
   pointer_watcher_event_router->RemovePointerWatcher(&pointer_watcher2);
-  EXPECT_EQ(PointerWatcherEventRouter2::EventTypes::NONE, event_types());
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::NONE, event_types());
   EXPECT_FALSE(test_api.HasPointerWatcher());
 
   // Add moves.
   pointer_watcher_event_router->AddPointerWatcher(&pointer_watcher2, true);
-  EXPECT_EQ(PointerWatcherEventRouter2::EventTypes::MOVE_EVENTS, event_types());
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::MOVE_EVENTS, event_types());
   EXPECT_TRUE(test_api.HasPointerWatcher());
 
   // Add no moves.
   pointer_watcher_event_router->AddPointerWatcher(&pointer_watcher1, false);
-  EXPECT_EQ(PointerWatcherEventRouter2::EventTypes::MOVE_EVENTS, event_types());
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::MOVE_EVENTS, event_types());
   EXPECT_TRUE(test_api.HasPointerWatcher());
 
   // Remove moves.
   pointer_watcher_event_router->RemovePointerWatcher(&pointer_watcher2);
-  EXPECT_EQ(PointerWatcherEventRouter2::EventTypes::NON_MOVE_EVENTS,
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::NON_MOVE_EVENTS,
             event_types());
   EXPECT_TRUE(test_api.HasPointerWatcher());
 
   // Remove no-moves.
   pointer_watcher_event_router->RemovePointerWatcher(&pointer_watcher1);
-  EXPECT_EQ(PointerWatcherEventRouter2::EventTypes::NONE, event_types());
+  EXPECT_EQ(PointerWatcherEventRouter::EventTypes::NONE, event_types());
   EXPECT_FALSE(test_api.HasPointerWatcher());
 }
 
-TEST_F(PointerWatcherEventRouter2Test, PointerWatcherNoMove) {
+TEST_F(PointerWatcherEventRouterTest, PointerWatcherNoMove) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   ScopedViewsTestHelper helper;
   ASSERT_TRUE(MusClient::Get());
-  PointerWatcherEventRouter2* pointer_watcher_event_router =
+  PointerWatcherEventRouter* pointer_watcher_event_router =
       MusClient::Get()->pointer_watcher_event_router();
   ASSERT_TRUE(pointer_watcher_event_router);
 
@@ -186,11 +186,11 @@ TEST_F(PointerWatcherEventRouter2Test, PointerWatcherNoMove) {
   EXPECT_FALSE(watcher2.last_event_observed());
 }
 
-TEST_F(PointerWatcherEventRouter2Test, PointerWatcherMove) {
+TEST_F(PointerWatcherEventRouterTest, PointerWatcherMove) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   ScopedViewsTestHelper helper;
   ASSERT_TRUE(MusClient::Get());
-  PointerWatcherEventRouter2* pointer_watcher_event_router =
+  PointerWatcherEventRouter* pointer_watcher_event_router =
       MusClient::Get()->pointer_watcher_event_router();
   ASSERT_TRUE(pointer_watcher_event_router);
 

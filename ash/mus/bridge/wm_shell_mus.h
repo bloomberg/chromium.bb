@@ -20,7 +20,7 @@ class WindowTreeClient;
 }
 
 namespace views {
-class PointerWatcherEventRouter2;
+class PointerWatcherEventRouter;
 }
 
 namespace ash {
@@ -40,7 +40,7 @@ class WmShellMus : public WmShell,
  public:
   WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
              WindowManager* window_manager,
-             views::PointerWatcherEventRouter2* pointer_watcher_event_router);
+             views::PointerWatcherEventRouter* pointer_watcher_event_router);
   ~WmShellMus() override;
 
   static WmShellMus* Get();
@@ -133,7 +133,7 @@ class WmShellMus : public WmShell,
 
   WindowManager* window_manager_;
 
-  views::PointerWatcherEventRouter2* pointer_watcher_event_router_;
+  views::PointerWatcherEventRouter* pointer_watcher_event_router_;
 
   std::vector<WmRootWindowControllerMus*> root_window_controllers_;
 

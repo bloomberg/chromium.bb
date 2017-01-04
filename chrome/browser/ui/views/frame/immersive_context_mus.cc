@@ -6,7 +6,7 @@
 
 #include "ui/aura/client/capture_client.h"
 #include "ui/views/mus/mus_client.h"
-#include "ui/views/mus/pointer_watcher_event_router2.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/pointer_watcher.h"
 
 ImmersiveContextMus::ImmersiveContextMus(

@@ -23,8 +23,8 @@ component("mus") {
     "mus_client.h",
     "mus_client_observer.h",
     "mus_export.h",
-    "pointer_watcher_event_router2.cc",
-    "pointer_watcher_event_router2.h",
+    "pointer_watcher_event_router.cc",
+    "pointer_watcher_event_router.h",
     "screen_mus.cc",
     "screen_mus.h",
     "screen_mus_delegate.h",
@@ -113,8 +113,8 @@ static_library("test_support") {
   sources = [
     "../test/native_widget_factory_aura_mus.cc",
     "test_utils.h",
-    "views_aura_mus_test_suite.cc",
-    "views_aura_mus_test_suite.h",
+    "views_mus_test_suite.cc",
+    "views_mus_test_suite.h",
   ]
 
   deps = [
@@ -144,8 +144,8 @@ test("views_mus_unittests") {
 
   sources = [
     "desktop_window_tree_host_mus_unittest.cc",
-    "pointer_watcher_event_router2_unittest.cc",
-    "run_all_unittests_aura_mus.cc",
+    "pointer_watcher_event_router_unittest.cc",
+    "run_all_unittests_mus.cc",
     "screen_mus_unittest.cc",
   ]
 

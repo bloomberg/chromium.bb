@@ -10,7 +10,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/mus/mus_client.h"
-#include "ui/views/mus/pointer_watcher_event_router2.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 
 namespace {
 

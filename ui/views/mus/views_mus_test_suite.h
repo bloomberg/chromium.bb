@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_MUS_VIEWS_AURA_MUS_TEST_SUITE_H_
-#define UI_VIEWS_MUS_VIEWS_AURA_MUS_TEST_SUITE_H_
+#ifndef UI_VIEWS_MUS_VIEWS_MUS_TEST_SUITE_H_
+#define UI_VIEWS_MUS_VIEWS_MUS_TEST_SUITE_H_
 
 #include <memory>
 
@@ -14,10 +14,10 @@ namespace views {
 
 class ServiceManagerConnection;
 
-class ViewsAuraMusTestSuite : public ViewsTestSuite {
+class ViewsMusTestSuite : public ViewsTestSuite {
  public:
-  ViewsAuraMusTestSuite(int argc, char** argv);
-  ~ViewsAuraMusTestSuite() override;
+  ViewsMusTestSuite(int argc, char** argv);
+  ~ViewsMusTestSuite() override;
 
  private:
   // ViewsTestSuite:
@@ -26,9 +26,9 @@ class ViewsAuraMusTestSuite : public ViewsTestSuite {
 
   std::unique_ptr<ServiceManagerConnection> service_manager_connections_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewsAuraMusTestSuite);
+  DISALLOW_COPY_AND_ASSIGN(ViewsMusTestSuite);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_MUS_VIEWS_AURA_MUS_TEST_SUITE_H_
+#endif  // UI_VIEWS_MUS_VIEWS_MUS_TEST_SUITE_H_

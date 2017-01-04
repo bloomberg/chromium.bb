@@ -26,7 +26,7 @@
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/clipboard_mus.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
-#include "ui/views/mus/pointer_watcher_event_router2.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -101,7 +101,7 @@ MusClient::MusClient(service_manager::Connector* connector,
   window_tree_client_->ConnectViaWindowTreeFactory();
 
   pointer_watcher_event_router_ =
-      base::MakeUnique<PointerWatcherEventRouter2>(window_tree_client_.get());
+      base::MakeUnique<PointerWatcherEventRouter>(window_tree_client_.get());
 
   screen_ = base::MakeUnique<ScreenMus>(this);
   screen_->Init(connector);

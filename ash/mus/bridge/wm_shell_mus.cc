@@ -37,7 +37,7 @@
 #include "ui/aura/window.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
-#include "ui/views/mus/pointer_watcher_event_router2.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
 
@@ -112,7 +112,7 @@ class SessionStateDelegateStub : public SessionStateDelegate {
 WmShellMus::WmShellMus(
     std::unique_ptr<ShellDelegate> shell_delegate,
     WindowManager* window_manager,
-    views::PointerWatcherEventRouter2* pointer_watcher_event_router)
+    views::PointerWatcherEventRouter* pointer_watcher_event_router)
     : WmShell(std::move(shell_delegate)),
       window_manager_(window_manager),
       pointer_watcher_event_router_(pointer_watcher_event_router),
