@@ -110,6 +110,7 @@ struct backend backend_exynos =
 	.init = exynos_init,
 	.bo_create = exynos_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
+	.bo_import = drv_prime_bo_import,
 	.bo_map = drv_dumb_bo_map,
 };
 

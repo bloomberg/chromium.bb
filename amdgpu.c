@@ -378,6 +378,7 @@ struct backend backend_amdgpu = {
 	.close = amdgpu_close,
 	.bo_create = amdgpu_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
+	.bo_import = drv_prime_bo_import,
 	.bo_map = amdgpu_bo_map,
 };
 

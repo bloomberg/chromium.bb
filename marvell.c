@@ -31,6 +31,7 @@ struct backend backend_marvell =
 	.init = marvell_init,
 	.bo_create = drv_dumb_bo_create,
 	.bo_destroy = drv_dumb_bo_destroy,
+	.bo_import = drv_prime_bo_import,
 	.bo_map = drv_dumb_bo_map,
 };
 

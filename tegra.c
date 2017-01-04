@@ -293,6 +293,7 @@ struct backend backend_tegra =
 	.init = tegra_init,
 	.bo_create = tegra_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
+	.bo_import = drv_prime_bo_import,
 	.bo_map = tegra_bo_map,
 	.bo_unmap = tegra_bo_unmap,
 };

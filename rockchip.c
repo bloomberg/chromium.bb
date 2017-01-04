@@ -216,6 +216,7 @@ struct backend backend_rockchip =
 	.bo_create = rockchip_bo_create,
 	.bo_create_with_modifiers = rockchip_bo_create_with_modifiers,
 	.bo_destroy = drv_gem_bo_destroy,
+	.bo_import = drv_prime_bo_import,
 	.bo_map = rockchip_bo_map,
 	.resolve_format = rockchip_resolve_format,
 };

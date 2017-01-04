@@ -210,6 +210,46 @@ int drv_gem_bo_destroy(struct bo *bo)
 	return error;
 }
 
+int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data)
+{
+	int ret;
+	size_t plane;
+	struct drm_prime_handle prime_handle;
+
+	for (plane = 0; plane < bo->num_planes; plane++) {
+		memset(&prime_handle, 0, sizeof(prime_handle));
+		prime_handle.fd = data->fds[plane];
+
+		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE,
+			       &prime_handle);
+
+		if (ret) {
+			fprintf(stderr, "drv: DRM_IOCTL_PRIME_FD_TO_HANDLE "
+				"failed (fd=%u)\n", prime_handle.fd);
+
+			/*
+			 * Need to call GEM close on planes that were opened,
+			 * if any. Adjust the num_planes variable to be the
+			 * plane that failed, so GEM close will be called on
+			 * planes before that plane.
+			 */
+			bo->num_planes = plane;
+			drv_gem_bo_destroy(bo);
+			return ret;
+		}
+
+		bo->handles[plane].u32 = prime_handle.handle;
+	}
+
+	for (plane = 0; plane < bo->num_planes; plane++) {
+		pthread_mutex_lock(&bo->drv->driver_lock);
+		drv_increment_reference_count(bo->drv, bo, plane);
+		pthread_mutex_unlock(&bo->drv->driver_lock);
+	}
+
+	return 0;
+}
+
 void *drv_dumb_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 {
 	int ret;

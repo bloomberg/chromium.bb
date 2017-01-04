@@ -107,6 +107,7 @@ struct backend backend_mediatek =
 	.init = mediatek_init,
 	.bo_create = mediatek_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
+	.bo_import = drv_prime_bo_import,
 	.bo_map = mediatek_bo_map,
 	.resolve_format = mediatek_resolve_format,
 };

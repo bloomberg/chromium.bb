@@ -262,6 +262,7 @@ struct backend backend_i915 =
 	.close = i915_close,
 	.bo_create = i915_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
+	.bo_import = drv_prime_bo_import,
 	.bo_map = i915_bo_map,
 	.resolve_format = i915_resolve_format,
 };
