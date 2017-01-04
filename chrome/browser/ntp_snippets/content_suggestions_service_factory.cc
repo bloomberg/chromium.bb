@@ -61,6 +61,7 @@
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 
@@ -101,6 +102,14 @@ void ClearScheduledTasks() {
 }
 
 #if defined(OS_ANDROID)
+
+bool IsRecentTabProviderEnabled() {
+  return base::FeatureList::IsEnabled(
+             ntp_snippets::kRecentOfflineTabSuggestionsFeature) &&
+         base::FeatureList::IsEnabled(
+             offline_pages::kOffliningRecentPagesFeature);
+}
+
 void RegisterRecentTabProvider(OfflinePageModel* offline_page_model,
                                ContentSuggestionsService* service,
                                PrefService* pref_service) {
@@ -285,8 +294,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       LanguageModelFactory::GetInstance()->GetForBrowserContext(profile);
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(
-          ntp_snippets::kRecentOfflineTabSuggestionsFeature)) {
+  if (IsRecentTabProviderEnabled()) {
     RegisterRecentTabProvider(offline_page_model, service, pref_service);
   }
 

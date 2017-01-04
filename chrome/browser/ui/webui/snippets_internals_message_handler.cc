@@ -31,6 +31,7 @@
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/switches.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 
@@ -280,6 +281,9 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
   SendBoolean("flag-recent-offline-tab-suggestions",
               base::FeatureList::IsEnabled(
                   ntp_snippets::kRecentOfflineTabSuggestionsFeature));
+  SendBoolean("flag-offlining-recent-pages-feature",
+              base::FeatureList::IsEnabled(
+                  offline_pages::kOffliningRecentPagesFeature));
   SendBoolean(
       "flag-asset-download-suggestions",
       base::FeatureList::IsEnabled(features::kAssetDownloadSuggestionsFeature));
