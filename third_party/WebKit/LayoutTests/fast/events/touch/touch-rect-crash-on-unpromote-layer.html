@@ -18,6 +18,7 @@
 <div id="console"></div>
 
 <script src="../../../resources/js-test.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script>
   jsTestIsAsync = true;
   description("Make sure we don't crash when a layer with a touch event handler becomes non-composited");
@@ -38,17 +39,15 @@
   // Make the layer non-composited
   layer.className = '';
 
-  // Verify we now have a hit rect on the document after waiting a frame.
-  setTimeout(function() {
-    window.requestAnimationFrame(function() {
-      if (window.internals) {
-        rects = window.internals.touchEventTargetLayerRects(document);
-        shouldBe("rects.length", "1");
-        shouldBeEqualToString("rects[0].layerAssociatedNode.nodeName", "#document");
-      }
-      finishJSTest();
-    });
-  }, 0);
+  // Verify we now have a hit rect on the document after layout and paint.
+  runAfterLayoutAndPaint(function() {
+    if (window.internals) {
+      rects = window.internals.touchEventTargetLayerRects(document);
+      shouldBe("rects.length", "1");
+      shouldBeEqualToString("rects[0].layerAssociatedNode.nodeName", "#document");
+    }
+    finishJSTest();
+  });
 </script>
 </body>
 </html>
