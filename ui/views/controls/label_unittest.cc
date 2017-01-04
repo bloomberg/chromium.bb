@@ -28,6 +28,7 @@
 #include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
+using base::WideToUTF16;
 
 #define EXPECT_STR_EQ(ascii, utf16) EXPECT_EQ(ASCIIToUTF16(ascii), utf16)
 
@@ -179,12 +180,30 @@ class LabelSelectionTest : public LabelTest {
     label()->OnMouseDragged(drag);
   }
 
-  gfx::Point GetCursorPoint(int cursor_pos) {
-    return label()
-        ->GetRenderTextForSelectionController()
-        ->GetCursorBounds(gfx::SelectionModel(cursor_pos, gfx::CURSOR_FORWARD),
-                          false)
-        .origin();
+  // Used to force layout on the underlying RenderText instance.
+  void SimulatePaint() {
+    gfx::Canvas canvas;
+    label()->OnPaint(&canvas);
+  }
+
+  gfx::Point GetCursorPoint(int index) {
+    SimulatePaint();
+    gfx::RenderText* render_text =
+        label()->GetRenderTextForSelectionController();
+    const std::vector<gfx::Rect> bounds =
+        render_text->GetSubstringBoundsForTesting(gfx::Range(index, index + 1));
+    DCHECK_EQ(1u, bounds.size());
+
+    const bool rtl =
+        render_text->GetDisplayTextDirection() == base::i18n::RIGHT_TO_LEFT;
+    // Return Point corresponding to the leading edge of the character.
+    return gfx::Point(rtl ? bounds[0].right() - 1 : bounds[0].x() + 1,
+                      bounds[0].y() + bounds[0].height() / 2);
+  }
+
+  size_t GetLineCount() {
+    SimulatePaint();
+    return label()->GetRenderTextForSelectionController()->GetNumLines();
   }
 
   base::string16 GetSelectedText() { return label()->GetSelectedText(); }
@@ -820,13 +839,9 @@ TEST_F(LabelSelectionTest, Selectable) {
   ASSERT_TRUE(label()->SetSelectable(true));
   EXPECT_TRUE(label()->selectable());
 
-  // Verify that making a label multiline causes the label to not support text
+  // Verify that making a label multiline still causes the label to support text
   // selection.
   label()->SetMultiLine(true);
-  EXPECT_FALSE(label()->selectable());
-
-  label()->SetMultiLine(false);
-  ASSERT_TRUE(label()->SetSelectable(true));
   EXPECT_TRUE(label()->selectable());
 
   // Verify that obscuring the label text causes the label to not support text
@@ -886,19 +901,19 @@ TEST_F(LabelSelectionTest, DoubleTripleClick) {
   label()->SizeToPreferredSize();
   ASSERT_TRUE(label()->SetSelectable(true));
 
-  PerformClick(gfx::Point());
+  PerformClick(GetCursorPoint(0));
   EXPECT_TRUE(GetSelectedText().empty());
 
   // Double clicking should select the word under cursor.
-  PerformClick(gfx::Point(), ui::EF_IS_DOUBLE_CLICK);
+  PerformClick(GetCursorPoint(0), ui::EF_IS_DOUBLE_CLICK);
   EXPECT_STR_EQ("Label", GetSelectedText());
 
   // Triple clicking should select all the text.
-  PerformClick(gfx::Point());
+  PerformClick(GetCursorPoint(0));
   EXPECT_EQ(label()->text(), GetSelectedText());
 
   // Clicking again should alternate to double click.
-  PerformClick(gfx::Point());
+  PerformClick(GetCursorPoint(0));
   EXPECT_STR_EQ("Label", GetSelectedText());
 
   // Clicking at another location should clear the selection.
@@ -915,18 +930,81 @@ TEST_F(LabelSelectionTest, MouseDrag) {
   ASSERT_TRUE(label()->SetSelectable(true));
 
   PerformMousePress(GetCursorPoint(5));
-  PerformMouseDragTo(gfx::Point());
+  PerformMouseDragTo(GetCursorPoint(0));
   EXPECT_STR_EQ("Label", GetSelectedText());
 
   PerformMouseDragTo(GetCursorPoint(8));
   EXPECT_STR_EQ(" mo", GetSelectedText());
 
-  PerformMouseDragTo(gfx::Point(200, 0));
-  PerformMouseRelease(gfx::Point(200, 0));
+  PerformMouseDragTo(gfx::Point(200, GetCursorPoint(0).y()));
+  PerformMouseRelease(gfx::Point(200, GetCursorPoint(0).y()));
   EXPECT_STR_EQ(" mouse drag", GetSelectedText());
 
   event_generator()->PressKey(ui::VKEY_C, kControlCommandModifier);
   EXPECT_STR_EQ(" mouse drag", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
+}
+
+TEST_F(LabelSelectionTest, MouseDragMultilineLTR) {
+  label()->SetMultiLine(true);
+  label()->SetText(ASCIIToUTF16("abcd\nefgh"));
+  label()->SizeToPreferredSize();
+  ASSERT_TRUE(label()->SetSelectable(true));
+  ASSERT_EQ(2u, GetLineCount());
+
+  PerformMousePress(GetCursorPoint(2));
+  PerformMouseDragTo(GetCursorPoint(0));
+  EXPECT_STR_EQ("ab", GetSelectedText());
+
+  PerformMouseDragTo(GetCursorPoint(7));
+  EXPECT_STR_EQ("cd\nef", GetSelectedText());
+
+  PerformMouseDragTo(gfx::Point(-5, GetCursorPoint(6).y()));
+  EXPECT_STR_EQ("cd\n", GetSelectedText());
+
+  PerformMouseDragTo(gfx::Point(100, GetCursorPoint(6).y()));
+  EXPECT_STR_EQ("cd\nefgh", GetSelectedText());
+
+  PerformMouseDragTo(gfx::Point(GetCursorPoint(3).x(), -5));
+  EXPECT_STR_EQ(gfx::RenderText::kDragToEndIfOutsideVerticalBounds ? "ab" : "c",
+                GetSelectedText());
+
+  PerformMouseDragTo(gfx::Point(GetCursorPoint(7).x(), 100));
+  EXPECT_STR_EQ(gfx::RenderText::kDragToEndIfOutsideVerticalBounds ? "cd\nefgh"
+                                                                   : "cd\nef",
+                GetSelectedText());
+}
+
+TEST_F(LabelSelectionTest, MouseDragMultilineRTL) {
+  label()->SetMultiLine(true);
+  label()->SetText(WideToUTF16(L"\x5d0\x5d1\x5d2\n\x5d3\x5d4\x5d5"));
+  label()->SizeToPreferredSize();
+  ASSERT_TRUE(label()->SetSelectable(true));
+  ASSERT_EQ(2u, GetLineCount());
+
+  PerformMousePress(GetCursorPoint(1));
+  PerformMouseDragTo(GetCursorPoint(0));
+  EXPECT_EQ(WideToUTF16(L"\x5d0"), GetSelectedText());
+
+  PerformMouseDragTo(GetCursorPoint(6));
+  EXPECT_EQ(WideToUTF16(L"\x5d1\x5d2\n\x5d3\x5d4"), GetSelectedText());
+
+  PerformMouseDragTo(gfx::Point(-5, GetCursorPoint(6).y()));
+  EXPECT_EQ(WideToUTF16(L"\x5d1\x5d2\n\x5d3\x5d4\x5d5"), GetSelectedText());
+
+  PerformMouseDragTo(gfx::Point(100, GetCursorPoint(6).y()));
+  EXPECT_EQ(WideToUTF16(L"\x5d1\x5d2\n"), GetSelectedText());
+
+  PerformMouseDragTo(gfx::Point(GetCursorPoint(2).x(), -5));
+  EXPECT_EQ(gfx::RenderText::kDragToEndIfOutsideVerticalBounds
+                ? WideToUTF16(L"\x5d0")
+                : WideToUTF16(L"\x5d1"),
+            GetSelectedText());
+
+  PerformMouseDragTo(gfx::Point(GetCursorPoint(6).x(), 100));
+  EXPECT_EQ(gfx::RenderText::kDragToEndIfOutsideVerticalBounds
+                ? WideToUTF16(L"\x5d1\x5d2\n\x5d3\x5d4\x5d5")
+                : WideToUTF16(L"\x5d1\x5d2\n\x5d3\x5d4"),
+            GetSelectedText());
 }
 
 // Verify the initially selected word on a double click, remains selected on
@@ -940,11 +1018,11 @@ TEST_F(LabelSelectionTest, MouseDragWord) {
   PerformMousePress(GetCursorPoint(8), ui::EF_IS_DOUBLE_CLICK);
   EXPECT_STR_EQ("drag", GetSelectedText());
 
-  PerformMouseDragTo(gfx::Point());
+  PerformMouseDragTo(GetCursorPoint(0));
   EXPECT_STR_EQ("Label drag", GetSelectedText());
 
-  PerformMouseDragTo(gfx::Point(200, 0));
-  PerformMouseRelease(gfx::Point(200, 0));
+  PerformMouseDragTo(gfx::Point(200, GetCursorPoint(0).y()));
+  PerformMouseRelease(gfx::Point(200, GetCursorPoint(0).y()));
   EXPECT_STR_EQ("drag word", GetSelectedText());
 }
 
@@ -963,8 +1041,8 @@ TEST_F(LabelSelectionTest, SelectionClipboard) {
 
   // Verify text selection using the mouse updates the selection clipboard.
   PerformMousePress(GetCursorPoint(5));
-  PerformMouseDragTo(gfx::Point());
-  PerformMouseRelease(gfx::Point());
+  PerformMouseDragTo(GetCursorPoint(0));
+  PerformMouseRelease(GetCursorPoint(0));
   EXPECT_STR_EQ("Label", GetSelectedText());
   EXPECT_STR_EQ("Label", GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION));
 }

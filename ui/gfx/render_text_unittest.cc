@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <numeric>
 
 #include "base/format_macros.h"
 #include "base/i18n/break_iterator.h"
@@ -472,6 +473,12 @@ class RenderTextTest : public testing::Test,
   }
 #endif
 
+  Rect GetSelectionBoundsUnion() {
+    const std::vector<Rect> bounds =
+        render_text_->GetSubstringBoundsForTesting(render_text_->selection());
+    return std::accumulate(bounds.begin(), bounds.end(), Rect(), UnionRects);
+  }
+
   Canvas* canvas() { return &canvas_; }
   TestSkiaTextRenderer* renderer() { return &renderer_; }
   test::RenderTextTestApi* test_api() { return test_api_.get(); };
@@ -512,6 +519,10 @@ class RenderTextHarfBuzzTest : public RenderTextTest {
                         const FontRenderParams& params,
                         internal::TextRunHarfBuzz* run) {
     return GetRenderTextHarfBuzz()->ShapeRunWithFont(text, font, params, run);
+  }
+
+  int GetCursorYForTesting(int line_num = 0) {
+    return GetRenderText()->GetLineOffset(line_num).y() + 1;
   }
 
  private:
@@ -788,10 +799,14 @@ TEST_P(RenderTextHarfBuzzTest, ObscuredText) {
 
   // FindCursorPosition() should not return positions between a surrogate pair.
   render_text->SetDisplayRect(Rect(0, 0, 20, 20));
-  EXPECT_EQ(render_text->FindCursorPosition(Point(0, 0)).caret_pos(), 0U);
-  EXPECT_EQ(render_text->FindCursorPosition(Point(20, 0)).caret_pos(), 2U);
+  const int cursor_y = GetCursorYForTesting();
+  EXPECT_EQ(render_text->FindCursorPosition(Point(0, cursor_y)).caret_pos(),
+            0U);
+  EXPECT_EQ(render_text->FindCursorPosition(Point(20, cursor_y)).caret_pos(),
+            2U);
   for (int x = -1; x <= 20; ++x) {
-    SelectionModel selection = render_text->FindCursorPosition(Point(x, 0));
+    SelectionModel selection =
+        render_text->FindCursorPosition(Point(x, cursor_y));
     EXPECT_TRUE(selection.caret_pos() == 0U || selection.caret_pos() == 2U);
   }
 
@@ -1653,10 +1668,21 @@ TEST_P(RenderTextHarfBuzzTest, MoveCursorLeftRight_MeiryoUILigatures) {
   // (code point) has unique bounds, so mid-glyph cursoring should be possible.
   render_text->SetFontList(FontList("Meiryo UI, 12px"));
   render_text->SetText(WideToUTF16(L"ff ffi"));
+  render_text->SetDisplayRect(gfx::Rect(100, 100));
+  test_api()->EnsureLayout();
   EXPECT_EQ(0U, render_text->cursor_position());
+
+  gfx::Rect last_selection_bounds = GetSelectionBoundsUnion();
   for (size_t i = 0; i < render_text->text().length(); ++i) {
-    render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+    render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_RETAIN);
     EXPECT_EQ(i + 1, render_text->cursor_position());
+
+    // Verify the selection bounds also increase and that the correct bounds are
+    // returned even when the grapheme boundary lies within a glyph.
+    const gfx::Rect selection_bounds = GetSelectionBoundsUnion();
+    EXPECT_GT(selection_bounds.right(), last_selection_bounds.right());
+    EXPECT_EQ(selection_bounds.x(), last_selection_bounds.x());
+    last_selection_bounds = selection_bounds;
   }
   EXPECT_EQ(6U, render_text->cursor_position());
 }
@@ -1754,6 +1780,7 @@ TEST_P(RenderTextHarfBuzzTest, MidGraphemeSelectionBounds) {
   const base::string16 cases[] = { kHindi, kThai };
 
   RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(Rect(100, 1000));
   for (size_t i = 0; i < arraysize(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
     render_text->SetText(cases[i]);
@@ -1762,8 +1789,17 @@ TEST_P(RenderTextHarfBuzzTest, MidGraphemeSelectionBounds) {
     EXPECT_TRUE(render_text->SelectRange(Range(2, 1)));
     EXPECT_EQ(Range(2, 1), render_text->selection());
     EXPECT_EQ(1U, render_text->cursor_position());
+
+    // Verify that the selection bounds extend over the entire grapheme, even if
+    // the selection is set amid the grapheme.
+    test_api()->EnsureLayout();
+    const gfx::Rect mid_grapheme_bounds = GetSelectionBoundsUnion();
+    render_text->SelectAll(false);
+    EXPECT_EQ(GetSelectionBoundsUnion(), mid_grapheme_bounds);
+
     // Although selection bounds may be set within a multi-character grapheme,
     // cursor movement (e.g. via arrow key) should avoid those indices.
+    EXPECT_TRUE(render_text->SelectRange(Range(2, 1)));
     render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
     EXPECT_EQ(0U, render_text->cursor_position());
     render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
@@ -1783,8 +1819,83 @@ TEST_P(RenderTextHarfBuzzTest, FindCursorPosition) {
       const Range range(render_text->GetGlyphBounds(j));
       // Test a point just inside the leading edge of the glyph bounds.
       int x = range.is_reversed() ? range.GetMax() - 1 : range.GetMin() + 1;
-      EXPECT_EQ(j, render_text->FindCursorPosition(Point(x, 0)).caret_pos());
+      EXPECT_EQ(
+          j, render_text->FindCursorPosition(Point(x, GetCursorYForTesting()))
+                 .caret_pos());
     }
+  }
+}
+
+// Tests that FindCursorPosition behaves correctly for multi-line text.
+TEST_P(RenderTextHarfBuzzTest, FindCursorPositionMultiline) {
+  const wchar_t* kTestStrings[] = {L"abc def",
+                                   L"\x5d0\x5d1\x5d2 \x5d3\x5d4\x5d5" /*rtl*/};
+
+  SetGlyphWidth(5);
+  RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(Rect(25, 1000));
+  render_text->SetMultiline(true);
+
+  for (size_t i = 0; i < arraysize(kTestStrings); i++) {
+    render_text->SetText(WideToUTF16(kTestStrings[i]));
+    test_api()->EnsureLayout();
+    EXPECT_EQ(2u, test_api()->lines().size());
+
+    const bool is_ltr =
+        render_text->GetDisplayTextDirection() == base::i18n::LEFT_TO_RIGHT;
+    for (size_t j = 0; j < render_text->text().length(); ++j) {
+      SCOPED_TRACE(base::StringPrintf(
+          "Testing index %" PRIuS " for case %" PRIuS "", j, i));
+      render_text->SelectRange(Range(j, j + 1));
+
+      // Test a point inside the leading edge of the glyph bounds.
+      const Rect bounds = GetSelectionBoundsUnion();
+      const Point cursor_position(is_ltr ? bounds.x() + 1 : bounds.right() - 1,
+                                  bounds.y() + 1);
+
+      const SelectionModel model =
+          render_text->FindCursorPosition(cursor_position);
+      EXPECT_EQ(j, model.caret_pos());
+      EXPECT_EQ(CURSOR_FORWARD, model.caret_affinity());
+    }
+  }
+}
+
+// Ensure FindCursorPosition returns positions only at valid grapheme
+// boundaries.
+TEST_P(RenderTextHarfBuzzTest, FindCursorPosition_GraphemeBoundaries) {
+  struct {
+    base::string16 text;
+    std::set<size_t> expected_cursor_positions;
+  } cases[] = {
+      // LTR 2-character grapheme, LTR abc, LTR 2-character grapheme.
+      {WideToUTF16(L"\x0915\x093f"
+                   L"abc"
+                   L"\x0915\x093f"),
+       {0, 2, 3, 4, 5, 7}},
+      // LTR ab, LTR 2-character grapheme, LTR cd.
+      {WideToUTF16(L"ab"
+                   L"\x0915\x093f"
+                   L"cd"),
+       {0, 1, 2, 4, 5, 6}},
+      // LTR ab, surrogate pair composed of two 16 bit characters, LTR cd.
+      {UTF8ToUTF16("ab"
+                   "\xF0\x9D\x84\x9E"
+                   "cd"),
+       {0, 1, 2, 4, 5, 6}}};
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(gfx::Rect(100, 30));
+  for (size_t i = 0; i < arraysize(cases); i++) {
+    SCOPED_TRACE(base::StringPrintf("Testing case %" PRIuS "", i));
+    render_text->SetText(cases[i].text);
+    test_api()->EnsureLayout();
+    std::set<size_t> obtained_cursor_positions;
+    size_t cursor_y = GetCursorYForTesting();
+    for (int x = -5; x < 105; x++)
+      obtained_cursor_positions.insert(
+          render_text->FindCursorPosition(gfx::Point(x, cursor_y)).caret_pos());
+    EXPECT_EQ(cases[i].expected_cursor_positions, obtained_cursor_positions);
   }
 }
 
@@ -2863,12 +2974,12 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_Newline) {
     // Ranges of the characters on each line preceding the newline.
     const Range line_char_ranges[3];
   } kTestStrings[] = {
-    {L"abc\ndef", 2ul, { Range(0, 3), Range(4, 7), Range::InvalidRange() } },
-    {L"a \n b ", 2ul, { Range(0, 2), Range(3, 6), Range::InvalidRange() } },
-    {L"ab\n", 2ul, { Range(0, 2), Range(), Range::InvalidRange() } },
-    {L"a\n\nb", 3ul, { Range(0, 1), Range(), Range(3, 4) } },
-    {L"\nab", 2ul, { Range(), Range(1, 3), Range::InvalidRange() } },
-    {L"\n", 2ul, { Range(), Range(), Range::InvalidRange() } },
+      {L"abc\ndef", 2ul, {Range(0, 3), Range(4, 7), Range::InvalidRange()}},
+      {L"a \n b ", 2ul, {Range(0, 2), Range(3, 6), Range::InvalidRange()}},
+      {L"ab\n", 2ul, {Range(0, 2), Range(), Range::InvalidRange()}},
+      {L"a\n\nb", 3ul, {Range(0, 1), Range(2, 3), Range(3, 4)}},
+      {L"\nab", 2ul, {Range(0, 1), Range(1, 3), Range::InvalidRange()}},
+      {L"\n", 2ul, {Range(0, 1), Range(), Range::InvalidRange()}},
   };
 
   RenderText* render_text = GetRenderText();
@@ -3898,6 +4009,7 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_LTR) {
   render_text->ApplyStyle(ITALIC, true, Range(3, 8));
   render_text->ApplyStyle(DIAGONAL_STRIKE, true, Range(5, 7));
   render_text->ApplyStyle(STRIKE, true, Range(1, 7));
+  const int cursor_y = GetCursorYForTesting();
 
   const std::vector<RenderText::FontSpan> font_spans =
       render_text->GetFontSpansForTesting();
@@ -3931,14 +4043,14 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_LTR) {
   {
     SCOPED_TRACE(base::StringPrintf("Query to the left of text bounds"));
     EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
-        Point(-5, 5), &decorated_word, &baseline_point));
+        Point(-5, cursor_y), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
     EXPECT_TRUE(left_glyph_word_1.Contains(baseline_point));
   }
   {
     SCOPED_TRACE(base::StringPrintf("Query to the right of text bounds"));
     EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
-        Point(105, 5), &decorated_word, &baseline_point));
+        Point(105, cursor_y), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_2, decorated_word);
     EXPECT_TRUE(left_glyph_word_2.Contains(baseline_point));
   }
@@ -3982,6 +4094,7 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_RTL) {
   render_text->ApplyStyle(ITALIC, true, Range(0, 3));
   render_text->ApplyStyle(DIAGONAL_STRIKE, true, Range(0, 2));
   render_text->ApplyStyle(STRIKE, true, Range(2, 5));
+  const int cursor_y = GetCursorYForTesting();
 
   const std::vector<RenderText::FontSpan> font_spans =
       render_text->GetFontSpansForTesting();
@@ -4014,14 +4127,14 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_RTL) {
   {
     SCOPED_TRACE(base::StringPrintf("Query to the left of text bounds"));
     EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
-        Point(-5, 5), &decorated_word, &baseline_point));
+        Point(-5, cursor_y), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_2, decorated_word);
     EXPECT_TRUE(left_glyph_word_2.Contains(baseline_point));
   }
   {
     SCOPED_TRACE(base::StringPrintf("Query to the right of text bounds"));
     EXPECT_TRUE(render_text->GetDecoratedWordAtPoint(
-        Point(105, 5), &decorated_word, &baseline_point));
+        Point(105, cursor_y), &decorated_word, &baseline_point));
     VerifyDecoratedWordsAreEqual(expected_word_1, decorated_word);
     EXPECT_TRUE(left_glyph_word_1.Contains(baseline_point));
   }
@@ -4074,6 +4187,82 @@ TEST_P(RenderTextHarfBuzzTest, GetDecoratedWordAtPoint_Return) {
               .origin();
   EXPECT_FALSE(render_text->GetDecoratedWordAtPoint(query, &decorated_word,
                                                     &baseline_point));
+}
+
+// Tests text selection made at end points of individual lines of multiline
+// text.
+TEST_P(RenderTextHarfBuzzTest, LineEndSelections) {
+  const wchar_t* const ltr = L"abc\n\ndef";
+  const wchar_t* const rtl = L"\x5d0\x5d1\x5d2\n\n\x5d3\x5d4\x5d5";
+  const int left_x = -100;
+  const int right_x = 200;
+  struct {
+    const wchar_t* const text;
+    const int line_num;
+    const int x;
+    const wchar_t* const selected_text;
+  } cases[] = {
+      {ltr, 1, left_x, L"abc\n"},
+      {ltr, 1, right_x, L"abc\n\n"},
+      {ltr, 2, left_x, L"abc\n\n"},
+      {ltr, 2, right_x, ltr},
+
+      {rtl, 1, left_x, L"\x5d0\x5d1\x5d2\n\n"},
+      {rtl, 1, right_x, L"\x5d0\x5d1\x5d2\n"},
+      {rtl, 2, left_x, rtl},
+      {rtl, 2, right_x, L"\x5d0\x5d1\x5d2\n\n"},
+  };
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+  render_text->SetDisplayRect(Rect(200, 1000));
+
+  for (size_t i = 0; i < arraysize(cases); i++) {
+    SCOPED_TRACE(base::StringPrintf("Testing case %" PRIuS "", i));
+    render_text->SetText(WideToUTF16(cases[i].text));
+    test_api()->EnsureLayout();
+
+    EXPECT_EQ(3u, test_api()->lines().size());
+    // Position the cursor at the logical beginning of text.
+    render_text->SelectRange(Range(0));
+
+    render_text->MoveCursorTo(
+        Point(cases[i].x, GetCursorYForTesting(cases[i].line_num)), true);
+    EXPECT_EQ(WideToUTF16(cases[i].selected_text),
+              GetSelectedText(render_text));
+  }
+}
+
+// Tests that GetSubstringBounds returns the correct bounds for multiline text.
+TEST_P(RenderTextHarfBuzzTest, GetSubstringBoundsMultiline) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+  render_text->SetDisplayRect(Rect(200, 1000));
+  render_text->SetText(WideToUTF16(L"abc\n\ndef"));
+  test_api()->EnsureLayout();
+
+  const std::vector<Range> line_char_range = {Range(0, 3), Range(4, 5),
+                                              Range(5, 8)};
+
+  // Test bounds for individual lines.
+  EXPECT_EQ(3u, test_api()->lines().size());
+  Rect expected_total_bounds;
+  for (size_t i = 0; i < test_api()->lines().size(); i++) {
+    SCOPED_TRACE(base::StringPrintf("Testing bounds for line %" PRIuS "", i));
+    const internal::Line& line = test_api()->lines()[i];
+    const Size line_size(std::ceil(line.size.width()),
+                         std::ceil(line.size.height()));
+    const Rect expected_line_bounds =
+        render_text->GetLineOffset(i) + Rect(line_size);
+    expected_total_bounds.Union(expected_line_bounds);
+
+    render_text->SelectRange(line_char_range[i]);
+    EXPECT_EQ(expected_line_bounds, GetSelectionBoundsUnion());
+  }
+
+  // Test complete bounds.
+  render_text->SelectAll(false);
+  EXPECT_EQ(expected_total_bounds, GetSelectionBoundsUnion());
 }
 
 // Prefix for test instantiations intentionally left blank since each test

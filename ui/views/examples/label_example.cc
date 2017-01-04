@@ -115,8 +115,10 @@ void LabelExample::CreateExampleView(View* container) {
   label->SetBorder(CreateSolidBorder(20, SK_ColorRED));
   container->AddChildView(label);
 
-  label = new Label(ASCIIToUTF16("A label supporting text selection."));
+  label = new Label(
+      ASCIIToUTF16("A multiline label...\n\n...which supports text selection"));
   label->SetSelectable(true);
+  label->SetMultiLine(true);
   container->AddChildView(label);
 
   AddCustomLabel(container);
@@ -132,6 +134,8 @@ void LabelExample::ButtonPressed(Button* button, const ui::Event& event) {
       shadows.push_back(gfx::ShadowValue(gfx::Vector2d(2, 2), 0, SK_ColorGRAY));
     }
     custom_label_->SetShadows(shadows);
+  } else if (button == selectable_) {
+    custom_label_->SetSelectable(selectable_->checked());
   }
   custom_label_->parent()->parent()->Layout();
   custom_label_->SchedulePaint();
@@ -186,6 +190,8 @@ void LabelExample::AddCustomLabel(View* container) {
                         0, GridLayout::USE_PREF, 0, 0);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
                         0, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                        GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 1);
   multiline_ = new Checkbox(base::ASCIIToUTF16("Multiline"));
   multiline_->set_listener(this);
@@ -193,6 +199,9 @@ void LabelExample::AddCustomLabel(View* container) {
   shadows_ = new Checkbox(base::ASCIIToUTF16("Shadows"));
   shadows_->set_listener(this);
   layout->AddView(shadows_);
+  selectable_ = new Checkbox(base::ASCIIToUTF16("Selectable"));
+  selectable_->set_listener(this);
+  layout->AddView(selectable_);
   layout->AddPaddingRow(0, 8);
 
   column_set = layout->AddColumnSet(2);
@@ -204,6 +213,10 @@ void LabelExample::AddCustomLabel(View* container) {
   custom_label_->SetElideBehavior(gfx::NO_ELIDE);
   custom_label_->SetText(textfield_->text());
   layout->AddView(custom_label_);
+
+  // Disable the text selection checkbox if |custom_label_| does not support
+  // text selection.
+  selectable_->SetEnabled(custom_label_->IsSelectionSupported());
 
   container->AddChildView(control_container);
 }

@@ -175,8 +175,6 @@ void Label::SetMultiLine(bool multi_line) {
   if (render_text_->MultilineSupported())
     render_text_->SetMultiline(multi_line);
   render_text_->SetReplaceNewlineCharsWithSymbols(!multi_line);
-  if (multi_line)
-    SetSelectable(false);
   ResetLayout();
 }
 
@@ -250,7 +248,7 @@ base::string16 Label::GetDisplayTextForTesting() {
 }
 
 bool Label::IsSelectionSupported() const {
-  return !multi_line() && !obscured() && render_text_->IsSelectionSupported();
+  return !obscured() && render_text_->IsSelectionSupported();
 }
 
 bool Label::SetSelectable(bool value) {

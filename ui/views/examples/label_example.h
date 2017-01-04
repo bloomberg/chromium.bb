@@ -58,6 +58,7 @@ class VIEWS_EXAMPLES_EXPORT LabelExample : public ExampleBase,
   std::vector<std::unique_ptr<ExampleComboboxModel>> example_combobox_models_;
   Checkbox* multiline_;
   Checkbox* shadows_;
+  Checkbox* selectable_;
   Label* custom_label_;
 
   DISALLOW_COPY_AND_ASSIGN(LabelExample);

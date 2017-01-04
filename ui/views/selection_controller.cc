@@ -196,18 +196,7 @@ void SelectionController::SelectThroughLastDragLocation() {
 
   delegate_->OnBeforePointerAction();
 
-  // TODO(karandeepb): See if this can be handled at the RenderText level.
-  const bool drags_to_end = PlatformStyle::kTextDragVerticallyDragsToEnd;
-  if (drags_to_end && last_drag_location_.y() < 0) {
-    render_text->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT,
-                            gfx::SELECTION_RETAIN);
-  } else if (drags_to_end &&
-             last_drag_location_.y() > delegate_->GetViewHeight()) {
-    render_text->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT,
-                            gfx::SELECTION_RETAIN);
-  } else {
-    render_text->MoveCursorTo(last_drag_location_, true);
-  }
+  render_text->MoveCursorTo(last_drag_location_, true);
 
   if (aggregated_clicks_ == 1) {
     render_text->SelectWord();

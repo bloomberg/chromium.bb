@@ -41,7 +41,6 @@ const int PlatformStyle::kMinLabelButtonWidth = 70;
 const int PlatformStyle::kMinLabelButtonHeight = 33;
 const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = true;
 const bool PlatformStyle::kDialogDefaultButtonCanBeCancel = true;
-const bool PlatformStyle::kTextDragVerticallyDragsToEnd = false;
 const bool PlatformStyle::kSelectWordOnRightClick = false;
 const CustomButton::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
     CustomButton::NOTIFY_ON_RELEASE;

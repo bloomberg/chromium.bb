@@ -423,6 +423,7 @@ void ApplyRenderParams(const FontRenderParams& params,
 
 // static
 constexpr base::char16 RenderText::kPasswordReplacementChar;
+constexpr bool RenderText::kDragToEndIfOutsideVerticalBounds;
 
 RenderText::~RenderText() {
 }
@@ -815,8 +816,13 @@ base::i18n::TextDirection RenderText::GetDisplayTextDirection() {
 }
 
 VisualCursorDirection RenderText::GetVisualDirectionOfLogicalEnd() {
-  return GetDisplayTextDirection() == base::i18n::LEFT_TO_RIGHT ?
-      CURSOR_RIGHT : CURSOR_LEFT;
+  return GetDisplayTextDirection() == base::i18n::LEFT_TO_RIGHT ? CURSOR_RIGHT
+                                                                : CURSOR_LEFT;
+}
+
+VisualCursorDirection RenderText::GetVisualDirectionOfLogicalBeginning() {
+  return GetDisplayTextDirection() == base::i18n::RIGHT_TO_LEFT ? CURSOR_RIGHT
+                                                                : CURSOR_LEFT;
 }
 
 SizeF RenderText::GetStringSizeF() {
@@ -894,7 +900,7 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
   // TODO(ckocagil): Support multiline. This function should return the height
   //                 of the line the cursor is on. |GetStringSize()| now returns
   //                 the multiline size, eliminate its use here.
-
+  DCHECK(!multiline_);
   EnsureLayout();
   size_t caret_pos = caret.caret_pos();
   DCHECK(IsValidLogicalIndex(caret_pos));
@@ -962,6 +968,11 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() const {
                         sel.is_reversed() ? CURSOR_BACKWARD : CURSOR_FORWARD);
 }
 
+std::vector<Rect> RenderText::GetSubstringBoundsForTesting(
+    const gfx::Range& range) {
+  return GetSubstringBounds(range);
+}
+
 const Vector2d& RenderText::GetUpdatedDisplayOffset() {
   UpdateCachedBoundsAndOffset();
   return display_offset_;
@@ -1004,12 +1015,15 @@ void RenderText::SetDisplayOffset(int horizontal_offset) {
 }
 
 Vector2d RenderText::GetLineOffset(size_t line_number) {
+  EnsureLayout();
   Vector2d offset = display_rect().OffsetFromOrigin();
   // TODO(ckocagil): Apply the display offset for multiline scrolling.
-  if (!multiline())
+  if (!multiline()) {
     offset.Add(GetUpdatedDisplayOffset());
-  else
+  } else {
+    DCHECK_LT(line_number, lines().size());
     offset.Add(Vector2d(0, lines_[line_number].preceding_heights));
+  }
   offset.Add(GetAlignmentOffset(line_number));
   return offset;
 }
@@ -1103,6 +1117,29 @@ SelectionModel RenderText::EdgeSelectionModel(
   if (direction == GetVisualDirectionOfLogicalEnd())
     return SelectionModel(text().length(), CURSOR_FORWARD);
   return SelectionModel(0, CURSOR_BACKWARD);
+}
+
+SelectionModel RenderText::LineSelectionModel(size_t line_index,
+                                              VisualCursorDirection direction) {
+  const internal::Line& line = lines()[line_index];
+  if (line.segments.empty()) {
+    // Only the last line can be empty.
+    DCHECK_EQ(lines().size() - 1, line_index);
+    return EdgeSelectionModel(GetVisualDirectionOfLogicalEnd());
+  }
+
+  size_t max_index = 0;
+  size_t min_index = text().length();
+  for (const auto& segment : line.segments) {
+    min_index = std::min<size_t>(min_index, segment.char_range.GetMin());
+    max_index = std::max<size_t>(max_index, segment.char_range.GetMax());
+  }
+
+  return direction == GetVisualDirectionOfLogicalEnd()
+             ? SelectionModel(DisplayIndexToTextIndex(max_index),
+                              CURSOR_FORWARD)
+             : SelectionModel(DisplayIndexToTextIndex(min_index),
+                              CURSOR_BACKWARD);
 }
 
 void RenderText::SetSelectionModel(const SelectionModel& model) {
@@ -1213,11 +1250,6 @@ void RenderText::UndoCompositionAndSelectionStyles() {
   composition_and_selection_styles_applied_ = false;
 }
 
-Point RenderText::ToTextPoint(const Point& point) {
-  return point - GetLineOffset(0);
-  // TODO(ckocagil): Convert multiline view space points to text space.
-}
-
 Point RenderText::ToViewPoint(const Point& point) {
   if (!multiline())
     return point + GetLineOffset(0);
@@ -1228,39 +1260,11 @@ Point RenderText::ToViewPoint(const Point& point) {
   size_t line = 0;
   for (; line < lines_.size() && x > lines_[line].size.width(); ++line)
     x -= lines_[line].size.width();
+
+  // If |point| is outside the text space, clip it to the end of the last line.
+  if (line == lines_.size())
+    x = lines_[--line].size.width();
   return Point(x, point.y()) + GetLineOffset(line);
-}
-
-std::vector<Rect> RenderText::TextBoundsToViewBounds(const Range& x) {
-  std::vector<Rect> rects;
-
-  if (!multiline()) {
-    rects.push_back(Rect(ToViewPoint(Point(x.GetMin(), 0)),
-                         Size(x.length(), GetStringSize().height())));
-    return rects;
-  }
-
-  EnsureLayout();
-
-  // Each line segment keeps its position in text coordinates. Traverse all line
-  // segments and if the segment intersects with the given range, add the view
-  // rect corresponding to the intersection to |rects|.
-  for (size_t line = 0; line < lines_.size(); ++line) {
-    int line_x = 0;
-    const Vector2d offset = GetLineOffset(line);
-    for (size_t i = 0; i < lines_[line].segments.size(); ++i) {
-      const internal::LineSegment* segment = &lines_[line].segments[i];
-      const Range intersection = segment->x_range.Intersect(x).Ceil();
-      if (!intersection.is_empty()) {
-        Rect rect(line_x + intersection.start() - segment->x_range.start(),
-                  0, intersection.length(), lines_[line].size.height());
-        rects.push_back(rect + offset);
-      }
-      line_x += segment->x_range.length();
-    }
-  }
-
-  return rects;
 }
 
 HorizontalAlignment RenderText::GetCurrentHorizontalAlignment() {

@@ -209,14 +209,17 @@ void ApplyRenderParams(const FontRenderParams& params,
 // for rendering and translation between logical and visual data.
 class GFX_EXPORT RenderText {
  public:
-// The character used for displaying obscured text.
-// TODO(benrg): GTK uses the first of U+25CF, U+2022, U+2731, U+273A, '*'
-// that's available in the font (find_invisible_char() in gtkentry.c).
-// Use a bullet character on Mac.
 #if defined(OS_MACOSX)
+  // The character used for displaying obscured text. Use a bullet character on
+  // Mac.
   static constexpr base::char16 kPasswordReplacementChar = 0x2022;
+
+  // On Mac, while selecting text if the cursor is outside the vertical text
+  // bounds, drag to the end of the text.
+  static constexpr bool kDragToEndIfOutsideVerticalBounds = true;
 #else
   static constexpr base::char16 kPasswordReplacementChar = '*';
+  static constexpr bool kDragToEndIfOutsideVerticalBounds = false;
 #endif
 
   virtual ~RenderText();
@@ -412,10 +415,11 @@ class GFX_EXPORT RenderText {
   }
   base::i18n::TextDirection GetDisplayTextDirection();
 
-  // Returns the visual movement direction corresponding to the logical end
-  // of the text, considering only the dominant direction returned by
-  // |GetDisplayTextDirection()|, not the direction of a particular run.
+  // Returns the visual movement direction corresponding to the logical
+  // end/beginning of the text, considering only the dominant direction returned
+  // by |GetDisplayTextDirection()|, not the direction of a particular run.
   VisualCursorDirection GetVisualDirectionOfLogicalEnd();
+  VisualCursorDirection GetVisualDirectionOfLogicalBeginning();
 
   // Returns the text used to display, which may be obscured, truncated or
   // elided. The subclass may compute elided text on the fly, or use
@@ -473,6 +477,7 @@ class GFX_EXPORT RenderText {
   // is longer than the textfield. Subsequent text, cursor, or bounds changes
   // may invalidate returned values. Note that |caret| must be placed at
   // grapheme boundary, i.e. caret.caret_pos() must be a cursorable position.
+  // TODO(crbug.com/248597): Add multiline support.
   Rect GetCursorBounds(const SelectionModel& caret, bool insert_mode);
 
   // Compute the current cursor bounds, panning the text to show the cursor in
@@ -502,6 +507,9 @@ class GFX_EXPORT RenderText {
   // specifies the character range for which the corresponding font has been
   // chosen.
   virtual std::vector<FontSpan> GetFontSpansForTesting() = 0;
+
+  // Helper function to be used in tests for retrieving the substring bounds.
+  std::vector<Rect> GetSubstringBoundsForTesting(const gfx::Range& range);
 
   // Gets the horizontal bounds (relative to the left of the text, not the view)
   // of the glyph starting at |index|. If the glyph is RTL then the returned
@@ -591,9 +599,14 @@ class GFX_EXPORT RenderText {
       const SelectionModel& selection,
       VisualCursorDirection direction) = 0;
 
-  // Get the SelectionModels corresponding to visual text ends.
+  // Get the selection model corresponding to visual text ends.
   // The returned value represents a cursor/caret position without a selection.
   SelectionModel EdgeSelectionModel(VisualCursorDirection direction);
+
+  // Get the selection model corresponding to visual text ends for |line_index|.
+  // The returned value represents a cursor/caret position without a selection.
+  SelectionModel LineSelectionModel(size_t line_index,
+                                    gfx::VisualCursorDirection direction);
 
   // Sets the selection model, the argument is assumed to be valid.
   virtual void SetSelectionModel(const SelectionModel& model);
@@ -640,13 +653,9 @@ class GFX_EXPORT RenderText {
   void ApplyCompositionAndSelectionStyles();
   void UndoCompositionAndSelectionStyles();
 
-  // Convert points from the text space to the view space and back. Handles the
-  // display area, display offset, application LTR/RTL mode and multiline.
-  Point ToTextPoint(const Point& point);
+  // Convert points from the text space to the view space. Handles the display
+  // area, display offset, application LTR/RTL mode and multiline.
   Point ToViewPoint(const Point& point);
-
-  // Convert a text space x-coordinate range to rects in view space.
-  std::vector<Rect> TextBoundsToViewBounds(const Range& x);
 
   // Get the alignment, resolving ALIGN_TO_HEAD with the current text direction.
   HorizontalAlignment GetCurrentHorizontalAlignment();

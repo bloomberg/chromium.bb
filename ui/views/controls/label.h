@@ -147,6 +147,13 @@ class VIEWS_EXPORT Label : public View,
   // Get the text as displayed to the user, respecting the obscured flag.
   base::string16 GetDisplayTextForTesting();
 
+  // Returns true if the label can be made selectable. For example, links do not
+  // support text selection.
+  // Subclasses should override this function in case they want to selectively
+  // support text selection. If a subclass stops supporting text selection, it
+  // should call SetSelectable(false).
+  virtual bool IsSelectionSupported() const;
+
   // Returns true if the label is selectable. Default is false.
   bool selectable() const { return !!selection_controller_; }
 
@@ -194,13 +201,6 @@ class VIEWS_EXPORT Label : public View,
   void PaintText(gfx::Canvas* canvas);
 
   SkColor disabled_color() const { return actual_disabled_color_; }
-
-  // Returns true if the label can be made selectable. For example, links do not
-  // support text selection.
-  // Subclasses should override this function in case they want to selectively
-  // support text selection. If a subclass stops supporting text selection, it
-  // should call SetSelectable(false).
-  virtual bool IsSelectionSupported() const;
 
   // View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
