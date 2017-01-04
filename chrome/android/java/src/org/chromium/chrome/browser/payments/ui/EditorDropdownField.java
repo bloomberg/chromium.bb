@@ -59,9 +59,15 @@ class EditorDropdownField implements EditorFieldView {
         ArrayAdapter<DropdownKeyValue> adapter;
         if (mFieldModel.getHint() != null) {
             // Use the BillingAddressAdapter and pass it a hint to be displayed as default.
-            adapter = new BillingAddressAdapter<DropdownKeyValue>(
-                    context, R.layout.multiline_spinner_item, dropdownKeyValues,
+            adapter = new BillingAddressAdapter<DropdownKeyValue>(context,
+                    R.layout.multiline_spinner_item, R.id.spinner_item, dropdownKeyValues,
                     new DropdownKeyValue("", mFieldModel.getHint().toString()));
+            // Wrap the TextView in the dropdown popup around with a FrameLayout to display the text
+            // in multiple lines.
+            // Note that the TextView in the dropdown popup is displayed in a DropDownListView for
+            // the dropdown style Spinner and the DropDownListView sets to display TextView instance
+            // in a single line.
+            adapter.setDropDownViewResource(R.layout.payment_request_dropdown_item);
 
             // If no value is selected, select the hint entry which is the last item in the adapter.
             // Using getCount will not result in an out of bounds index because the hint value is
@@ -70,8 +76,8 @@ class EditorDropdownField implements EditorFieldView {
         } else {
             adapter = new ArrayAdapter<DropdownKeyValue>(
                     context, R.layout.multiline_spinner_item, dropdownKeyValues);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         }
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         mDropdown = (Spinner) mLayout.findViewById(R.id.spinner);
         mDropdown.setTag(this);
