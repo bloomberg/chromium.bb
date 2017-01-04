@@ -63,7 +63,9 @@ audit.define("test1", function (task, should) {
   bufferSource.start(0);
 
   context.startRendering()
-    .then(test1Finished(should))
+    .then(function () {
+      test1Finished(should);
+    })
     .then(task.done.bind(task));
 });
 
@@ -88,7 +90,9 @@ audit.define("test2", function (task, should) {
   bufferSource.start(0);
 
   context.startRendering()
-    .then(test2Finished(should))
+    .then(function () {
+      test2Finished(should);
+    })
     .then(task.done.bind(task));
 });
 
@@ -113,7 +117,9 @@ audit.define("test3", function (task, should) {
   bufferSource.start(0);
 
   context.startRendering()
-    .then(test3Finished(should))
+    .then(function () {
+      test3Finished(should);
+    })
     .then(task.done.bind(task));
 });
 
