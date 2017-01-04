@@ -15,7 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_property_provider.h"
 
 namespace ui {
@@ -232,11 +232,15 @@ void DumpTouchEventLog(
     }
   }
 
-  // Compress touchpad/mouse logs on another thread and return.
-  base::WorkerPool::PostTaskAndReply(
-      FROM_HERE,
+  // Compress touchpad/mouse logs asynchronously
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .MayBlock(),
       base::Bind(&CompressDumpedLog, base::Passed(&log_paths_to_be_compressed)),
-      base::Bind(reply, base::Passed(&log_paths)), true /* task_is_slow */);
+      base::Bind(reply, base::Passed(&log_paths)));
 }
 
 }  // namespace ui
