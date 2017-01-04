@@ -10,6 +10,8 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -23,7 +25,25 @@
 
 namespace content {
 
-// This file contains tests to make sure that subframes zoom in a manner
+// This class contains basic tests of zoom functionality.
+class ZoomBrowserTest : public ContentBrowserTest {
+ public:
+  ZoomBrowserTest() {}
+
+ protected:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SetupCrossSiteRedirector(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  WebContentsImpl* web_contents() {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+};
+
+
+// This class contains tests to make sure that subframes zoom in a manner
 // consistent with the top-level frame, even when the subframes are cross-site.
 // Particular things we want to make sure of:
 //
@@ -138,6 +158,40 @@ struct FrameResizeObserver {
   double tolerance;
 };
 
+// This struct is used to wait until a resize has occurred.
+struct ResizeObserver {
+  ResizeObserver(RenderFrameHost* host)
+      : frame_host(host) {
+    SetupOnResizeCallback(host);
+  }
+
+  void SetupOnResizeCallback(const ToRenderFrameHost& adapter) {
+    const char kOnResizeCallbackSetup[] =
+        "document.body.onresize = function(){"
+        "  window.domAutomationController.setAutomationId(0);"
+        "  window.domAutomationController.send('Resized');"
+        "};";
+    EXPECT_TRUE(ExecuteScript(
+        adapter, kOnResizeCallbackSetup));
+  }
+
+  bool IsResizeCallback(const std::string& status_msg) {
+    return status_msg == "Resized";
+  }
+
+  RenderFrameHost* frame_host;
+};
+
+void WaitForResize(DOMMessageQueue& msg_queue, ResizeObserver& observer) {
+  std::string status;
+  while (msg_queue.WaitForMessage(&status)) {
+    // Strip the double quotes from the message.
+    status = status.substr(1, status.length() -2);
+    if (observer.IsResizeCallback(status))
+      break;
+  }
+}
+
 void WaitAndCheckFrameZoom(
     DOMMessageQueue& msg_queue,
     std::vector<FrameResizeObserver>& frame_observers) {
@@ -160,6 +214,65 @@ void WaitAndCheckFrameZoom(
 }
 
 }  // namespace
+
+IN_PROC_BROWSER_TEST_F(ZoomBrowserTest, ZoomPreservedOnReload) {
+  std::string top_level_host("a.com");
+
+  GURL main_url(embedded_test_server()->GetURL(
+      top_level_host, "/cross_site_iframe_factory.html?a(b(a))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  ASSERT_TRUE(entry);
+  GURL loaded_url = HostZoomMap::GetURLFromEntry(entry);
+  EXPECT_EQ(top_level_host, loaded_url.host());
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(web_contents())->GetFrameTree()->root();
+  double main_frame_window_border = GetMainframeWindowBorder(web_contents());
+
+  HostZoomMap* host_zoom_map = HostZoomMap::GetForWebContents(web_contents());
+  double default_zoom_level = host_zoom_map->GetDefaultZoomLevel();
+  EXPECT_EQ(0.0, default_zoom_level);
+
+  EXPECT_DOUBLE_EQ(
+      1.0, GetMainFrameZoomFactor(web_contents(), main_frame_window_border));
+
+  const double new_zoom_factor = 2.5;
+
+  // Set the new zoom, wait for the page to be resized, and sanity-check that
+  // the zoom was applied.
+  {
+    DOMMessageQueue msg_queue;
+    ResizeObserver observer(root->current_frame_host());
+
+    const double new_zoom_level =
+        default_zoom_level + ZoomFactorToZoomLevel(new_zoom_factor);
+    host_zoom_map->SetZoomLevelForHost(top_level_host, new_zoom_level);
+
+    WaitForResize(msg_queue, observer);
+  }
+
+  // Make this comparison approximate for Nexus5X test;
+  // https://crbug.com/622858.
+  EXPECT_NEAR(
+      new_zoom_factor,
+      GetMainFrameZoomFactor(web_contents(), main_frame_window_border),
+      0.01);
+
+  // Now the actual test: Reload the page and check that the main frame is
+  // still properly zoomed.
+  WindowedNotificationObserver load_stop_observer(
+      NOTIFICATION_LOAD_STOP,
+      NotificationService::AllSources());
+  shell()->Reload();
+  load_stop_observer.Wait();
+
+  EXPECT_NEAR(
+      new_zoom_factor,
+      GetMainFrameZoomFactor(web_contents(), main_frame_window_border),
+      0.01);
+}
 
 IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, SubframesZoomProperly) {
   std::string top_level_host("a.com");
