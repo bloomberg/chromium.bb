@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.26",
+  "version": "9.27",
   "entries": [
     {
       "id": 1,
@@ -2300,6 +2300,18 @@ LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "features": [
         "rewrite_float_unary_minus_operator"
+      ]
+    },
+    {
+      "id": 212,
+      "description": "Program binaries don't contain transform feedback varyings on Qualcomm GPUs",
+      "cr_bugs": [658074],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno.*",
+      "features": [
+        "disable_program_caching_for_transform_feedback"
       ]
     }
   ]

@@ -202,10 +202,14 @@ void RunShaderCallback(const ShaderCacheCallback& callback,
 
 }  // namespace
 
-MemoryProgramCache::MemoryProgramCache(size_t max_cache_size_bytes,
-                                       bool disable_gpu_shader_disk_cache)
+MemoryProgramCache::MemoryProgramCache(
+    size_t max_cache_size_bytes,
+    bool disable_gpu_shader_disk_cache,
+    bool disable_program_caching_for_transform_feedback)
     : max_size_bytes_(max_cache_size_bytes),
       disable_gpu_shader_disk_cache_(disable_gpu_shader_disk_cache),
+      disable_program_caching_for_transform_feedback_(
+          disable_program_caching_for_transform_feedback),
       curr_size_bytes_(0),
       store_(ProgramMRUCache::NO_AUTO_EVICT) {
 }
@@ -291,6 +295,10 @@ void MemoryProgramCache::SaveLinkedProgram(
     const std::vector<std::string>& transform_feedback_varyings,
     GLenum transform_feedback_buffer_mode,
     const ShaderCacheCallback& shader_callback) {
+  if (disable_program_caching_for_transform_feedback_ &&
+      !transform_feedback_varyings.empty()) {
+    return;
+  }
   GLenum format;
   GLsizei length = 0;
   glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH_OES, &length);

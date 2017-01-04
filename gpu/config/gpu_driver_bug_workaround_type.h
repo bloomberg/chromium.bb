@@ -73,6 +73,8 @@
          disable_post_sub_buffers_for_onscreen_surfaces)     \
   GPU_OP(DISABLE_PROGRAM_CACHE,                              \
          disable_program_cache)                              \
+  GPU_OP(DISABLE_PROGRAM_CACHING_FOR_TRANSFORM_FEEDBACK,     \
+         disable_program_caching_for_transform_feedback)     \
   GPU_OP(DISABLE_PROGRAM_DISK_CACHE,                         \
          disable_program_disk_cache)                         \
   GPU_OP(DISABLE_TEXTURE_CUBE_MAP_SEAMLESS,                  \

@@ -70,13 +70,15 @@ class MemoryProgramCacheTest : public GpuServiceTest {
  public:
   static const size_t kCacheSizeBytes = 1024;
   static const bool kDisableGpuDiskCache = false;
+  static const bool kDisableCachingForTransformFeedback = false;
   static const GLuint kVertexShaderClientId = 90;
   static const GLuint kVertexShaderServiceId = 100;
   static const GLuint kFragmentShaderClientId = 91;
   static const GLuint kFragmentShaderServiceId = 100;
 
   MemoryProgramCacheTest()
-      : cache_(new MemoryProgramCache(kCacheSizeBytes, kDisableGpuDiskCache)),
+      : cache_(new MemoryProgramCache(kCacheSizeBytes, kDisableGpuDiskCache,
+                                      kDisableCachingForTransformFeedback)),
         shader_manager_(nullptr),
         vertex_shader_(nullptr),
         fragment_shader_(nullptr),
@@ -526,6 +528,40 @@ TEST_F(MemoryProgramCacheTest, LoadFailOnDifferentTransformFeedbackVaryings) {
                  base::Unretained(this))));
 
   varyings_.push_back("different!");
+  EXPECT_EQ(ProgramCache::PROGRAM_LOAD_FAILURE, cache_->LoadLinkedProgram(
+      kProgramId,
+      vertex_shader_,
+      fragment_shader_,
+      NULL,
+      varyings_,
+      GL_INTERLEAVED_ATTRIBS,
+      base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
+                 base::Unretained(this))));
+}
+
+TEST_F(MemoryProgramCacheTest, LoadFailIfTransformFeedbackCachingDisabled) {
+  const GLenum kFormat = 1;
+  const int kProgramId = 10;
+  const int kBinaryLength = 20;
+  char test_binary[kBinaryLength];
+  for (int i = 0; i < kBinaryLength; ++i) {
+    test_binary[i] = i;
+  }
+  ProgramBinaryEmulator emulator(kBinaryLength, kFormat, test_binary);
+
+  // Forcibly reset the program cache so we can disable caching of
+  // programs which include transform feedback varyings.
+  cache_.reset(new MemoryProgramCache(
+      kCacheSizeBytes, kDisableGpuDiskCache, true));
+  varyings_.push_back("test");
+  cache_->SaveLinkedProgram(kProgramId,
+                            vertex_shader_,
+                            fragment_shader_,
+                            NULL,
+                            varyings_,
+                            GL_INTERLEAVED_ATTRIBS,
+                            base::Bind(&MemoryProgramCacheTest::ShaderCacheCb,
+                                       base::Unretained(this)));
   EXPECT_EQ(ProgramCache::PROGRAM_LOAD_FAILURE, cache_->LoadLinkedProgram(
       kProgramId,
       vertex_shader_,
