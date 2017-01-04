@@ -43,7 +43,7 @@ const CGFloat kImageViewWidth = 24;
   return [[self class] identifier];
 }
 
-- (void)loadSessionCellData:(SessionCellData*)sessionCellData {
+- (void)loadSessionCellData:(TabSwitcherSessionCellData*)sessionCellData {
   [_imageView setImage:sessionCellData.image];
   [_label setText:sessionCellData.title];
   [self setNeedsLayout];

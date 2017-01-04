@@ -18,7 +18,6 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
-#import "ios/chrome/browser/ui/tab_switcher/session_changes.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_model_snapshot.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_cache.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_model_private.h"

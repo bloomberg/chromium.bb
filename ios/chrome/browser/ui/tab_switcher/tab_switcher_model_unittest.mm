@@ -9,20 +9,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
-#include "ios/chrome/browser/ui/tab_switcher/session_changes.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_model_private.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_utils.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 namespace {
-
-// A lightweight SessionChanges.
-struct LightSessionChanges {
-  std::vector<int> updates;
-  std::vector<int> deletions;
-  std::vector<int> insertions;
-};
 
 // A lightweight DistantTab.
 class LightDT {

@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class SessionCellData;
+@class TabSwitcherSessionCellData;
 
 // This class is the cell class used in the table view of the tab switcher
 // header.
@@ -16,8 +16,8 @@
 // Default table view cell identifier.
 + (NSString*)identifier;
 
-// Load the cell content using the given SessionCellData object.
-- (void)loadSessionCellData:(SessionCellData*)sessionCellData;
+// Load the cell content using the given TabSwitcherSessionCellData object.
+- (void)loadSessionCellData:(TabSwitcherSessionCellData*)sessionCellData;
 
 @end
 

@@ -51,8 +51,6 @@ bundle_data("resources") {
 
 source_set("tab_switcher") {
   sources = [
-    "session_changes.h",
-    "session_changes.mm",
     "tab_model_snapshot.h",
     "tab_model_snapshot.mm",
     "tab_switcher.h",
@@ -81,6 +79,8 @@ source_set("tab_switcher") {
     "tab_switcher_panel_view.mm",
     "tab_switcher_session_cell_data.h",
     "tab_switcher_session_cell_data.mm",
+    "tab_switcher_session_changes.h",
+    "tab_switcher_session_changes.mm",
     "tab_switcher_tab_strip_placeholder_view.h",
     "tab_switcher_tab_strip_placeholder_view.mm",
     "tab_switcher_transition_context.h",

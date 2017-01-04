@@ -2,26 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TAB_SWITCHER_SESSION_CHANGES_H_
-#define IOS_CHROME_BROWSER_UI_TAB_SWITCHER_SESSION_CHANGES_H_
+#ifndef IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_SWITCHER_SESSION_CHANGES_H_
+#define IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_SWITCHER_SESSION_CHANGES_H_
 
 #include <vector>
 
 // This structure represents the changes a session undergoes.
 // It is used to update the UICollectionView showing a set of tabs.
-class SessionChanges {
+class TabSwitcherSessionChanges {
  public:
-  SessionChanges(std::vector<size_t> const& tabHashesInInitialState,
-                 std::vector<size_t> const& tabHashesInFinalState);
-  ~SessionChanges();
-  SessionChanges(const SessionChanges& sessionChanges) = delete;
-  SessionChanges& operator=(const SessionChanges& sessionChanges) = delete;
+  TabSwitcherSessionChanges(std::vector<size_t> const& tabHashesInInitialState,
+                            std::vector<size_t> const& tabHashesInFinalState);
+  ~TabSwitcherSessionChanges();
+  TabSwitcherSessionChanges(const TabSwitcherSessionChanges& sessionChanges) =
+      delete;
+  TabSwitcherSessionChanges& operator=(
+      const TabSwitcherSessionChanges& sessionChanges) = delete;
 
-  std::vector<size_t> const& deletions() const;
-  std::vector<size_t> const& insertions() const;
-  std::vector<size_t> const& updates() const;
+  std::vector<size_t> const& deletions() const { return deletions_; }
 
-  bool hasChanges() const;
+  std::vector<size_t> const& insertions() const { return insertions_; }
+
+  std::vector<size_t> const& updates() const { return updates_; }
+
+  bool HasChanges() const;
 
  private:
   // Those vectors contain indexes of tabs.
@@ -39,4 +43,4 @@ class SessionChanges {
   std::vector<size_t> updates_;
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_TAB_SWITCHER_SESSION_CHANGES_H_
+#endif  // IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_SWITCHER_SESSION_CHANGES_H_

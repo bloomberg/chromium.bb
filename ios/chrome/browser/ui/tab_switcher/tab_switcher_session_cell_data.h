@@ -20,7 +20,7 @@ enum TabSwitcherSessionCellType {
 
 // This class hold the data used to configure the content of a
 // TabSwitcherHeaderCell.
-@interface SessionCellData : NSObject
+@interface TabSwitcherSessionCellData : NSObject
 
 // Those two methods are used to create incognito and open tab cell data.
 // Each method create a SessionCellData object on the first call and returns

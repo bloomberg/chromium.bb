@@ -31,7 +31,6 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_in_sync_off_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_in_sync_on_no_sessions_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_out_view.h"
-#import "ios/chrome/browser/ui/tab_switcher/session_changes.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_cache.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_header_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_model.h"
@@ -1085,16 +1084,16 @@ enum class SnapshotViewOption {
   return [_tabSwitcherModel sessionCount] + promoPanel;
 }
 
-- (SessionCellData*)sessionCellDataAtIndex:(NSUInteger)index {
+- (TabSwitcherSessionCellData*)sessionCellDataAtIndex:(NSUInteger)index {
   if (index == kLocalTabsOffTheRecordPanelIndex) {
     // If has incognito tabs return incognito cell data.
-    return [SessionCellData incognitoSessionCellData];
+    return [TabSwitcherSessionCellData incognitoSessionCellData];
   } else if (index == kLocalTabsOnTheRecordPanelIndex) {
-    return [SessionCellData openTabSessionCellData];
+    return [TabSwitcherSessionCellData openTabSessionCellData];
   } else {
     if (![_tabSwitcherModel distantSessionCount]) {
       // Display promo panel cell if there is no distant sessions.
-      return [SessionCellData otherDevicesSessionCellData];
+      return [TabSwitcherSessionCellData otherDevicesSessionCellData];
     } else {
       index -= kHeaderDistantSessionIndexOffset;
 
@@ -1122,8 +1121,9 @@ enum class SnapshotViewOption {
           cellType = kLaptopRemoteSessionCell;
           break;
       }
-      SessionCellData* sessionData = [[[SessionCellData alloc]
-          initWithSessionCellType:cellType] autorelease];
+      TabSwitcherSessionCellData* sessionData =
+          [[[TabSwitcherSessionCellData alloc] initWithSessionCellType:cellType]
+              autorelease];
       sessionData.title = cellTitle;
       return sessionData;
     }

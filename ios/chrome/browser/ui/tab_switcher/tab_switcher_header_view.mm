@@ -334,7 +334,7 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
 
 - (NSString*)panelTitleAtIndex:(NSInteger)index {
   NSIndexPath* indexPath = [NSIndexPath indexPathForItem:index inSection:0];
-  SessionCellData* sessionCellData =
+  TabSwitcherSessionCellData* sessionCellData =
       [[self dataSource] sessionCellDataAtIndex:indexPath.row];
   return sessionCellData.title;
 }
@@ -373,7 +373,7 @@ enum PanelSelectionChangeDirection { RIGHT, LEFT };
   TabSwitcherHeaderCell* headerCell = [collectionView
       dequeueReusableCellWithReuseIdentifier:[TabSwitcherHeaderCell identifier]
                                 forIndexPath:indexPath];
-  SessionCellData* sessionCellData =
+  TabSwitcherSessionCellData* sessionCellData =
       [[self dataSource] sessionCellDataAtIndex:indexPath.row];
   [headerCell loadSessionCellData:sessionCellData];
   return headerCell;

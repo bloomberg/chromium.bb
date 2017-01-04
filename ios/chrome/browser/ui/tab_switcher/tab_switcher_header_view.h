@@ -9,7 +9,7 @@
 
 #include "base/ios/block_types.h"
 
-@class SessionCellData;
+@class TabSwitcherSessionCellData;
 @class TabSwitcherHeaderView;
 
 @protocol TabSwitcherHeaderViewDelegate<NSObject>
@@ -25,7 +25,7 @@
 @protocol TabSwitcherHeaderViewDataSource<NSObject>
 
 - (NSInteger)tabSwitcherHeaderViewSessionCount;
-- (SessionCellData*)sessionCellDataAtIndex:(NSUInteger)index;
+- (TabSwitcherSessionCellData*)sessionCellDataAtIndex:(NSUInteger)index;
 
 @end
 

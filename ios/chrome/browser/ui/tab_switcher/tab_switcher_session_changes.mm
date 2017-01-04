@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/tab_switcher/session_changes.h"
+#include "ios/chrome/browser/ui/tab_switcher/tab_switcher_session_changes.h"
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_utils.h"
 
-SessionChanges::SessionChanges(
+TabSwitcherSessionChanges::TabSwitcherSessionChanges(
     std::vector<size_t> const& tabHashesInInitialState,
     std::vector<size_t> const& tabHashesInFinalState) {
   TabSwitcherMinimalReplacementOperations(tabHashesInInitialState,
@@ -14,18 +14,8 @@ SessionChanges::SessionChanges(
                                           &deletions_, &insertions_);
 }
 
-SessionChanges::~SessionChanges() {}
+TabSwitcherSessionChanges::~TabSwitcherSessionChanges() {}
 
-std::vector<size_t> const& SessionChanges::deletions() const {
-  return deletions_;
-}
-std::vector<size_t> const& SessionChanges::insertions() const {
-  return insertions_;
-}
-std::vector<size_t> const& SessionChanges::updates() const {
-  return updates_;
-}
-
-bool SessionChanges::hasChanges() const {
+bool TabSwitcherSessionChanges::HasChanges() const {
   return updates_.size() || deletions_.size() || insertions_.size();
 }

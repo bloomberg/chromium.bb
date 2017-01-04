@@ -6,14 +6,14 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-@implementation SessionCellData
+@implementation TabSwitcherSessionCellData
 
 @synthesize type = _type;
 @synthesize title = _title;
 @synthesize image = _image;
 
 + (instancetype)incognitoSessionCellData {
-  static SessionCellData* incognitoSessionCellData = nil;
+  static TabSwitcherSessionCellData* incognitoSessionCellData = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     incognitoSessionCellData =
@@ -23,7 +23,7 @@
 }
 
 + (instancetype)openTabSessionCellData {
-  static SessionCellData* openTabSessionCellData = nil;
+  static TabSwitcherSessionCellData* openTabSessionCellData = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     openTabSessionCellData =
@@ -33,7 +33,7 @@
 }
 
 + (instancetype)otherDevicesSessionCellData {
-  static SessionCellData* otherDevicesSessionCellData = nil;
+  static TabSwitcherSessionCellData* otherDevicesSessionCellData = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     otherDevicesSessionCellData =

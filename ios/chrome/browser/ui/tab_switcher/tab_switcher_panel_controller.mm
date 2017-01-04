@@ -9,11 +9,11 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
-#import "ios/chrome/browser/ui/tab_switcher/session_changes.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_cache.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_overlay_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_view.h"
+#include "ios/chrome/browser/ui/tab_switcher/tab_switcher_session_changes.h"
 
 namespace {
 
@@ -109,7 +109,7 @@ void FillVectorWithHashesUsingDistantSession(
 - (void)updateCollectionViewIfNeeded {
   if (_sessionType == TabSwitcherSessionType::DISTANT_SESSION) {
     UICollectionView* collectionView = [_panelView collectionView];
-    // TODO(crbug.com/633928) Compute SessionChanges outside of the
+    // TODO(crbug.com/633928) Compute TabSwitcherSessionChanges outside of the
     // updateBlock.
     auto updateBlock = ^{
       std::unique_ptr<const synced_sessions::DistantSession> newDistantSession =
@@ -120,8 +120,8 @@ void FillVectorWithHashesUsingDistantSession(
                                               &oldTabsHashes);
       FillVectorWithHashesUsingDistantSession(*newDistantSession.get(),
                                               &newTabsHashes);
-      SessionChanges changes(oldTabsHashes, newTabsHashes);
-      if (changes.hasChanges()) {
+      TabSwitcherSessionChanges changes(oldTabsHashes, newTabsHashes);
+      if (changes.HasChanges()) {
         _distantSession = std::move(newDistantSession);
         [self applyChanges:changes toCollectionView:collectionView];
       }
@@ -132,9 +132,9 @@ void FillVectorWithHashesUsingDistantSession(
     auto updateBlock = ^{
       std::unique_ptr<const TabModelSnapshot> newLocalSession =
           [_model tabModelSnapshotForLocalSession:_sessionType];
-      SessionChanges changes(_localSession->hashes(),
-                             newLocalSession->hashes());
-      if (changes.hasChanges()) {
+      TabSwitcherSessionChanges changes(_localSession->hashes(),
+                                        newLocalSession->hashes());
+      if (changes.HasChanges()) {
         _localSession = std::move(newLocalSession);
         [self applyChanges:changes toCollectionView:collectionView];
       }
@@ -143,7 +143,7 @@ void FillVectorWithHashesUsingDistantSession(
   }
 }
 
-- (void)applyChanges:(SessionChanges&)changes
+- (void)applyChanges:(TabSwitcherSessionChanges&)changes
     toCollectionView:(UICollectionView*)collectionView {
   NSMutableArray* deletedIndexes = [NSMutableArray array];
   NSMutableArray* insertedIndexes = [NSMutableArray array];
