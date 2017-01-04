@@ -6,6 +6,10 @@
 
 #include "bidirectional_stream_c.h"
 
+// TODO(mef): Remove this header after transition to bidirectional_stream_c.h
+// See crbug.com/650462 for details.
+#include "cronet_c_for_grpc.h"
+
 // A block, that takes a request, and returns YES if the request should
 // be handled.
 typedef BOOL (^RequestFilterBlock)(NSURLRequest* request);
