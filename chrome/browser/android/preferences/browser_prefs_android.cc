@@ -5,7 +5,7 @@
 #include "chrome/browser/android/preferences/browser_prefs_android.h"
 
 #include "blimp/client/public/blimp_client_context.h"
-#include "chrome/browser/android/search_geolocation_disclosure_tab_helper.h"
+#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/notifications/notification_platform_bridge_android.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"

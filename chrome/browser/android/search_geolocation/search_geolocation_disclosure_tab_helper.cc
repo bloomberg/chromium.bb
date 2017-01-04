@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/search_geolocation_disclosure_tab_helper.h"
+#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/search_geolocation_disclosure_infobar_delegate.h"
+#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"

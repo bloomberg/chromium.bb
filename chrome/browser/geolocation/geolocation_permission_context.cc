@@ -15,7 +15,7 @@
 #include "device/geolocation/geolocation_provider.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/search_geolocation_disclosure_infobar_delegate.h"
+#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_infobar_delegate.h"
 #endif
 
 GeolocationPermissionContext::GeolocationPermissionContext(Profile* profile)
