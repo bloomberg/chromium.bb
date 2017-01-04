@@ -850,8 +850,10 @@ Length StyleBuilderConverter::convertLineHeight(StyleResolverState& state,
               100.0,
           Fixed);
     }
-    if (primitiveValue.isNumber())
-      return Length(primitiveValue.getDoubleValue() * 100.0, Percent);
+    if (primitiveValue.isNumber()) {
+      return Length(clampTo<float>(primitiveValue.getDoubleValue() * 100.0),
+                    Percent);
+    }
     if (primitiveValue.isCalculated()) {
       Length zoomedLength = Length(primitiveValue.cssCalcValue()->toCalcValue(
           lineHeightToLengthConversionData(state)));
