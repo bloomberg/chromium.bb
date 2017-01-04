@@ -37,11 +37,12 @@ var CaptureView = (function() {
       throw 'Not expecting byte logging to be enabled!';
     }
 
-    new MouseOverHelp(CaptureView.LIMIT_HELP_ID,
-                      CaptureView.LIMIT_HELP_HOVER_ID);
+    new MouseOverHelp(
+        CaptureView.LIMIT_HELP_ID, CaptureView.LIMIT_HELP_HOVER_ID);
 
-    new MouseOverHelp(CaptureView.BYTE_LOGGING_HELP_ID,
-                      CaptureView.BYTE_LOGGING_HELP_HOVER_ID);
+    new MouseOverHelp(
+        CaptureView.BYTE_LOGGING_HELP_ID,
+        CaptureView.BYTE_LOGGING_HELP_HOVER_ID);
 
     this.onChangeLimit_();
   }

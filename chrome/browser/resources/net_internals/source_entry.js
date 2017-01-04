@@ -31,8 +31,7 @@ var SourceEntry = (function() {
   SourceEntry.prototype = {
     update: function(logEntry) {
       // Only the last event should have the same type first event,
-      if (!this.isInactive_ &&
-          logEntry.phase == EventPhase.PHASE_END &&
+      if (!this.isInactive_ && logEntry.phase == EventPhase.PHASE_END &&
           logEntry.type == this.entries_[0].type) {
         this.isInactive_ = true;
       }
@@ -201,8 +200,7 @@ var SourceEntry = (function() {
       }
       if (this.entries_[0].source.type == EventSourceType.DOWNLOAD) {
         // If any rename occurred, use the last name
-        e = this.findLastLogEntryStartByType_(
-            EventType.DOWNLOAD_FILE_RENAMED);
+        e = this.findLastLogEntryStartByType_(EventType.DOWNLOAD_FILE_RENAMED);
         if (e != undefined)
           return e;
         // Otherwise, if the file was opened, use that name
@@ -345,10 +343,10 @@ var SourceEntry = (function() {
      */
     createTablePrinter: function() {
       return createLogEntryTablePrinter(
-          this.entries_,
-          SourceTracker.getInstance().getPrivacyStripping(),
+          this.entries_, SourceTracker.getInstance().getPrivacyStripping(),
           SourceTracker.getInstance().getUseRelativeTimes() ?
-              timeutil.getBaseTime() : 0,
+              timeutil.getBaseTime() :
+              0,
           Constants.clientInfo.numericDate);
     },
   };

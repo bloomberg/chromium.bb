@@ -61,7 +61,7 @@ var BandwidthView = (function() {
       return this.onBadProxiesChanged(data.badProxies) &&
           this.onDataReductionProxyInfoChanged(data.dataReductionProxyInfo) &&
           (this.onSessionNetworkStatsChanged(data.sessionNetworkStats) ||
-              this.onHistoricNetworkStatsChanged(data.historicNetworkStats));
+           this.onHistoricNetworkStatsChanged(data.historicNetworkStats));
     },
 
     /**
@@ -106,7 +106,7 @@ var BandwidthView = (function() {
       this.updateDataReductionProxyConfig_();
 
       for (var eventIndex = info.events.length - 1; eventIndex >= 0;
-          --eventIndex) {
+           --eventIndex) {
         var event = info.events[eventIndex];
         var headerRow = addNode($(BandwidthView.EVENTS_TBODY_ID), 'tr');
         var detailsRow = addNode($(BandwidthView.EVENTS_TBODY_ID), 'tr');
@@ -165,27 +165,26 @@ var BandwidthView = (function() {
 
       var rows = [];
       rows.push({
-          title: 'Original (KB)',
-          sessionValue: bytesToRoundedKilobytes_(sessionOriginal),
-          historicValue: bytesToRoundedKilobytes_(historicOriginal)
+        title: 'Original (KB)',
+        sessionValue: bytesToRoundedKilobytes_(sessionOriginal),
+        historicValue: bytesToRoundedKilobytes_(historicOriginal)
       });
       rows.push({
-          title: 'Received (KB)',
-          sessionValue: bytesToRoundedKilobytes_(sessionReceived),
-          historicValue: bytesToRoundedKilobytes_(historicReceived)
+        title: 'Received (KB)',
+        sessionValue: bytesToRoundedKilobytes_(sessionReceived),
+        historicValue: bytesToRoundedKilobytes_(historicReceived)
       });
       rows.push({
-          title: 'Savings (KB)',
-          sessionValue:
-              bytesToRoundedKilobytes_(sessionOriginal - sessionReceived),
-          historicValue:
-              bytesToRoundedKilobytes_(historicOriginal - historicReceived)
+        title: 'Savings (KB)',
+        sessionValue:
+            bytesToRoundedKilobytes_(sessionOriginal - sessionReceived),
+        historicValue:
+            bytesToRoundedKilobytes_(historicOriginal - historicReceived)
       });
       rows.push({
-          title: 'Savings (%)',
-          sessionValue: getPercentSavings_(sessionOriginal, sessionReceived),
-          historicValue: getPercentSavings_(historicOriginal,
-                                            historicReceived)
+        title: 'Savings (%)',
+        sessionValue: getPercentSavings_(sessionOriginal, sessionReceived),
+        historicValue: getPercentSavings_(historicOriginal, historicReceived)
       });
 
       var input = new JsEvalContext({rows: rows});
@@ -206,8 +205,8 @@ var BandwidthView = (function() {
         if (event.phase == EventPhase.PHASE_BEGIN ||
             event.phase == EventPhase.PHASE_END) {
           actionText = actionText + ' (' +
-              getKeyWithValue(EventPhase, event.phase)
-                  .replace('PHASE_', '') + ')';
+              getKeyWithValue(EventPhase, event.phase).replace('PHASE_', '') +
+              ')';
         }
 
         addTextNode(actionCell, actionText);
@@ -256,14 +255,15 @@ var BandwidthView = (function() {
         }
 
         if (hasBypassedProxy) {
-          this.createEventTable_(this.last_bypass_.params,
-                                 $(BandwidthView.BYPASS_STATE_ID));
+          this.createEventTable_(
+              this.last_bypass_.params, $(BandwidthView.BYPASS_STATE_ID));
         }
 
-        this.createEventTable_(this.data_reduction_proxy_config_,
-                               $(BandwidthView.PROXY_CONFIG_ID));
-        setNodeDisplay($(BandwidthView.BYPASS_STATE_CONTAINER_ID),
-                       hasBypassedProxy);
+        this.createEventTable_(
+            this.data_reduction_proxy_config_,
+            $(BandwidthView.PROXY_CONFIG_ID));
+        setNodeDisplay(
+            $(BandwidthView.BYPASS_STATE_CONTAINER_ID), hasBypassedProxy);
       }
     },
 
@@ -317,8 +317,8 @@ var BandwidthView = (function() {
             } else if (key == 'bypass_type') {
               value = getKeyWithValue(DataReductionProxyBypassEventType, value);
             } else if (key == 'bypass_action_type') {
-              value = getKeyWithValue(DataReductionProxyBypassActionType,
-                                      value);
+              value =
+                  getKeyWithValue(DataReductionProxyBypassActionType, value);
             } else if (key == 'expiration') {
               value = timeutil.convertTimeTicksToDate(value);
             }

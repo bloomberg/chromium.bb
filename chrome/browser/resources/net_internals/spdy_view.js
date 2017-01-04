@@ -42,7 +42,7 @@ var SpdyView = (function() {
 
     onLoadLogFinish: function(data) {
       return this.onSpdySessionInfoChanged(data.spdySessionInfo) &&
-             this.onSpdyStatusChanged(data.spdyStatus);
+          this.onSpdyStatusChanged(data.spdyStatus);
     },
 
     /**
@@ -52,7 +52,7 @@ var SpdyView = (function() {
     onSpdySessionInfoChanged: function(spdySessionInfo) {
       if (!spdySessionInfo)
         return false;
-      var input = new JsEvalContext({ spdySessionInfo: spdySessionInfo });
+      var input = new JsEvalContext({spdySessionInfo: spdySessionInfo});
       jstProcess(input, $(SpdyView.SESSION_INFO_ID));
       return true;
     },

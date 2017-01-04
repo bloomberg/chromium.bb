@@ -73,10 +73,9 @@ var HSTSView = (function() {
     __proto__: superClass.prototype,
 
     onSubmitAdd_: function(event) {
-      g_browser.sendHSTSAdd(this.addInput_.value,
-                            this.addStsCheck_.checked,
-                            this.addPkpCheck_.checked,
-                            this.addPins_.value);
+      g_browser.sendHSTSAdd(
+          this.addInput_.value, this.addStsCheck_.checked,
+          this.addPkpCheck_.checked, this.addPins_.value);
       g_browser.sendHSTSQuery(this.addInput_.value);
       this.queryInput_.value = this.addInput_.value;
       this.addStsCheck_.checked = false;
@@ -119,19 +118,26 @@ var HSTSView = (function() {
       s.innerHTML = '<b>Found:</b><br/>';
 
       var keys = [
-        'static_sts_domain', 'static_upgrade_mode',
-        'static_sts_include_subdomains', 'static_sts_observed',
-        'static_pkp_domain', 'static_pkp_include_subdomains',
-        'static_pkp_observed', 'static_spki_hashes', 'dynamic_sts_domain',
-        'dynamic_upgrade_mode', 'dynamic_sts_include_subdomains',
-        'dynamic_sts_observed', 'dynamic_pkp_domain',
-        'dynamic_pkp_include_subdomains', 'dynamic_pkp_observed',
+        'static_sts_domain',
+        'static_upgrade_mode',
+        'static_sts_include_subdomains',
+        'static_sts_observed',
+        'static_pkp_domain',
+        'static_pkp_include_subdomains',
+        'static_pkp_observed',
+        'static_spki_hashes',
+        'dynamic_sts_domain',
+        'dynamic_upgrade_mode',
+        'dynamic_sts_include_subdomains',
+        'dynamic_sts_observed',
+        'dynamic_pkp_domain',
+        'dynamic_pkp_include_subdomains',
+        'dynamic_pkp_observed',
         'dynamic_spki_hashes',
       ];
 
-      var kStaticHashKeys = [
-        'public_key_hashes', 'preloaded_spki_hashes', 'static_spki_hashes'
-      ];
+      var kStaticHashKeys =
+          ['public_key_hashes', 'preloaded_spki_hashes', 'static_spki_hashes'];
 
       var staticHashes = [];
       for (var i = 0; i < kStaticHashKeys.length; ++i) {
@@ -157,8 +163,8 @@ var HSTSView = (function() {
         } else if (key.indexOf('_upgrade_mode') >= 0) {
           addNodeWithText(this.queryOutputDiv_, 'tt', modeToString(value));
         } else {
-          addNodeWithText(this.queryOutputDiv_, 'tt',
-                          value == undefined ? '' : value);
+          addNodeWithText(
+              this.queryOutputDiv_, 'tt', value == undefined ? '' : value);
         }
         addNode(this.queryOutputDiv_, 'br');
       }

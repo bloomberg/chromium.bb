@@ -104,14 +104,12 @@ var DnsView = (function() {
         addTextNode(hostnameCell, e.hostname);
 
         var familyCell = addNode(tr, 'td');
-        addTextNode(familyCell,
-                    addressFamilyToString(e.address_family));
+        addTextNode(familyCell, addressFamilyToString(e.address_family));
 
         var addressesCell = addNode(tr, 'td');
 
         if (e.error != undefined) {
-          var errorText =
-              e.error + ' (' + netErrorToString(e.error) + ')';
+          var errorText = e.error + ' (' + netErrorToString(e.error) + ')';
           var errorNode = addTextNode(addressesCell, 'error: ' + errorText);
           addressesCell.classList.add('warning-text');
         } else {
@@ -146,10 +144,9 @@ var DnsView = (function() {
 
     // Figure out if the internal DNS resolver is disabled or has no valid
     // configuration information, and update display accordingly.
-    var enabled = hostResolverInfo &&
-                  hostResolverInfo.dns_config !== undefined;
-    var noConfig = enabled &&
-                   hostResolverInfo.dns_config.nameservers === undefined;
+    var enabled = hostResolverInfo && hostResolverInfo.dns_config !== undefined;
+    var noConfig =
+        enabled && hostResolverInfo.dns_config.nameservers === undefined;
     $(DnsView.INTERNAL_DNS_ENABLED_SPAN_ID).innerText = enabled;
     setNodeDisplay($(DnsView.INTERNAL_DNS_INVALID_CONFIG_SPAN_ID), noConfig);
 

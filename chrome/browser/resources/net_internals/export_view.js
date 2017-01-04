@@ -138,17 +138,14 @@ var ExportView = (function() {
 
       // If we have a cached log dump, update it synchronously.
       if (this.loadedLogDump_) {
-        var dumpText = log_util.createUpdatedLogDump(userComments,
-                                                     this.loadedLogDump_,
-                                                     privacyStripping);
+        var dumpText = log_util.createUpdatedLogDump(
+            userComments, this.loadedLogDump_, privacyStripping);
         callback(dumpText);
         return;
       }
 
       // Otherwise, poll information from the browser before creating one.
-      log_util.createLogDumpAsync(userComments,
-                                  callback,
-                                  privacyStripping);
+      log_util.createLogDumpAsync(userComments, callback, privacyStripping);
     },
 
     /**
