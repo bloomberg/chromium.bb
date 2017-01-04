@@ -6,7 +6,7 @@
 
 [
     ConstructorCallWith=ExecutionContext,
-    Constructor(MediaMetadataInit metadata),
+    Constructor(optional MediaMetadataInit metadata),
     RuntimeEnabled=MediaSession,
 ] interface MediaMetadata {
     attribute DOMString title;
