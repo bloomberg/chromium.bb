@@ -100,6 +100,10 @@ crbug.com/626748 virtual/spinvalidation/paint/invalidation/table/cached-change-t
 # individually listed tests.
 crbug.com/646176 virtual/spinvalidation/ [ Skip ]
 crbug.com/646176 virtual/spinvalidation/paint/invalidation/ [ Pass ]
+# Skip the base tests when SlimmingPaintInvalidation is enabled for experimental
+# to avoid rebaselining test expectations when switching back and forth the
+# flag. These tests are still run in virtual/spinvalidation suite.
+crbug.com/646176 paint/invalidation/ [ Skip ]
 
 crbug.com/646176 virtual/spinvalidation/compositing/overflow/scroller-with-border-radius.html [ Pass ]
 crbug.com/646176 virtual/spinvalidation/fast/dynamic/static-to-relative-with-absolute-child.html [ Pass ]

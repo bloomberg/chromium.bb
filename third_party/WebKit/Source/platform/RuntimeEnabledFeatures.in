@@ -222,7 +222,7 @@ ShadowPiercingDescendantCombinator status=experimental
 ShapeDetection status=experimental
 SharedArrayBuffer
 SharedWorker status=stable
-SlimmingPaintInvalidation implied_by=SlimmingPaintV2
+SlimmingPaintInvalidation implied_by=SlimmingPaintV2, status=experimental
 SlimmingPaintV2
 SlimmingPaintStrictCullRectClipping
 // Used as argument in attribute of stable-release functions/interfaces where
