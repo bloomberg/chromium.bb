@@ -101,7 +101,7 @@ int32_t PepperPDFHost::OnHostMsgDidStartLoading(
   if (!render_frame)
     return PP_ERROR_FAILED;
 
-  render_frame->DidStartLoading();
+  render_frame->PluginDidStartLoading();
   return PP_OK;
 }
 
@@ -111,7 +111,7 @@ int32_t PepperPDFHost::OnHostMsgDidStopLoading(
   if (!render_frame)
     return PP_ERROR_FAILED;
 
-  render_frame->DidStopLoading();
+  render_frame->PluginDidStopLoading();
   return PP_OK;
 }
 

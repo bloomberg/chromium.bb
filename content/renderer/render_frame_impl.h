@@ -428,8 +428,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const gfx::Size& unobscured_size,
       RecordPeripheralDecision record_decision) const override;
   void WhitelistContentOrigin(const url::Origin& content_origin) override;
-  void DidStartLoading() override;
-  void DidStopLoading() override;
+  void PluginDidStartLoading() override;
+  void PluginDidStopLoading() override;
 #endif
   bool IsFTPDirectoryListing() override;
   void AttachGuest(int element_instance_id) override;

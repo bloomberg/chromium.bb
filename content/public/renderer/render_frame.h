@@ -200,8 +200,8 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Used by plugins that load data in this RenderFrame to update the loading
   // notifications.
-  virtual void DidStartLoading() = 0;
-  virtual void DidStopLoading() = 0;
+  virtual void PluginDidStartLoading() = 0;
+  virtual void PluginDidStopLoading() = 0;
 #endif
 
   // Returns true if this frame is a FTP directory listing.

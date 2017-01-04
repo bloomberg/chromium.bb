@@ -2577,11 +2577,11 @@ void RenderFrameImpl::WhitelistContentOrigin(
   return plugin_power_saver_helper_->WhitelistContentOrigin(content_origin);
 }
 
-void RenderFrameImpl::DidStartLoading() {
+void RenderFrameImpl::PluginDidStartLoading() {
   didStartLoading(true);
 }
 
-void RenderFrameImpl::DidStopLoading() {
+void RenderFrameImpl::PluginDidStopLoading() {
   didStopLoading();
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
