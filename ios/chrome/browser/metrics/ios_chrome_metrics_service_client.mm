@@ -231,8 +231,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
       base::MakeUnique<metrics::CallStackProfileMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      base::WrapUnique(SigninStatusMetricsProvider::CreateInstance(
-          base::MakeUnique<IOSChromeSigninStatusMetricsProviderDelegate>())));
+      SigninStatusMetricsProvider::CreateInstance(
+          base::MakeUnique<IOSChromeSigninStatusMetricsProviderDelegate>()));
 
   metrics_service_->RegisterMetricsProvider(
       base::MakeUnique<MobileSessionShutdownMetricsProvider>(

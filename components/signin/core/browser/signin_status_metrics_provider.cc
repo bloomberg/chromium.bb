@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -45,9 +46,11 @@ void SigninStatusMetricsProvider::ProvideGeneralMetrics(
 }
 
 // static
-SigninStatusMetricsProvider* SigninStatusMetricsProvider::CreateInstance(
+std::unique_ptr<SigninStatusMetricsProvider>
+SigninStatusMetricsProvider::CreateInstance(
     std::unique_ptr<SigninStatusMetricsProviderDelegate> delegate) {
-  return new SigninStatusMetricsProvider(std::move(delegate), false);
+  return base::WrapUnique(
+      new SigninStatusMetricsProvider(std::move(delegate), false));
 }
 
 void SigninStatusMetricsProvider::OnSigninManagerCreated(

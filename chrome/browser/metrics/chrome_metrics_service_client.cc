@@ -684,9 +684,8 @@ void ChromeMetricsServiceClient::Initialize() {
 
 #if !defined(OS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          SigninStatusMetricsProvider::CreateInstance(base::WrapUnique(
-              new ChromeSigninStatusMetricsProviderDelegate))));
+      SigninStatusMetricsProvider::CreateInstance(
+          base::WrapUnique(new ChromeSigninStatusMetricsProviderDelegate)));
 #endif  // !defined(OS_CHROMEOS)
 
   metrics_service_->RegisterMetricsProvider(
