@@ -36,7 +36,7 @@ class ScriptWrappableVisitorVerifier : public WrapperVisitor {
   }
   void markWrapper(const v8::PersistentBase<v8::Value>*) const override {}
 
-  void pushToMarkingDeque(
+  bool pushToMarkingDeque(
       void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
       HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
       const void* object) const override {
@@ -54,6 +54,7 @@ class ScriptWrappableVisitorVerifier : public WrapperVisitor {
       NOTREACHED();
     }
     traceWrappersCallback(this, object);
+    return true;
   }
 
   bool markWrapperHeader(HeapObjectHeader* header) const override {

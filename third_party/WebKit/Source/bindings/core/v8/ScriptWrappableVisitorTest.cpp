@@ -69,7 +69,7 @@ TEST(ScriptWrappableVisitorTest, ScriptWrappableVisitorTracesWrappers) {
   EXPECT_TRUE(targetHeader->isWrapperHeaderMarked());
   EXPECT_TRUE(dependencyHeader->isWrapperHeaderMarked());
 
-  visitor->TraceEpilogue();
+  visitor->AbortTracing();
 }
 
 TEST(ScriptWrappableVisitorTest, OilpanCollectObjectsNotReachableFromV8) {
@@ -169,13 +169,14 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsHeadersWhenObjectDied) {
   DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::create();
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
+  visitor->TracePrologue();
   auto header = HeapObjectHeader::fromPayload(object);
   visitor->getHeadersToUnmark()->push_back(header);
 
   preciselyCollectGarbage();
 
   EXPECT_FALSE(visitor->getHeadersToUnmark()->contains(header));
-  visitor->getHeadersToUnmark()->clear();
+  visitor->AbortTracing();
 }
 
 TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
@@ -187,6 +188,7 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
   DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::create();
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
+  visitor->TracePrologue();
   visitor->pushToMarkingDeque(
       TraceTrait<DeathAwareScriptWrappable>::markAndTraceWrapper,
       TraceTrait<DeathAwareScriptWrappable>::heapObjectHeader, object);
@@ -197,8 +199,7 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
 
   EXPECT_EQ(visitor->getMarkingDeque()->first().rawObjectPointer(), nullptr);
 
-  visitor->getMarkingDeque()->clear();
-  visitor->getVerifierDeque()->clear();
+  visitor->AbortTracing();
 }
 
 TEST(ScriptWrappableVisitorTest, NonMarkedObjectDoesNothingOnWriteBarrierHit) {
@@ -209,6 +210,7 @@ TEST(ScriptWrappableVisitorTest, NonMarkedObjectDoesNothingOnWriteBarrierHit) {
 
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
+  visitor->TracePrologue();
 
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::create();
   DeathAwareScriptWrappable* dependency = DeathAwareScriptWrappable::create();
@@ -218,6 +220,7 @@ TEST(ScriptWrappableVisitorTest, NonMarkedObjectDoesNothingOnWriteBarrierHit) {
   target->setRawDependency(dependency);
 
   EXPECT_TRUE(visitor->getMarkingDeque()->isEmpty());
+  visitor->AbortTracing();
 }
 
 TEST(ScriptWrappableVisitorTest,
@@ -229,6 +232,7 @@ TEST(ScriptWrappableVisitorTest,
 
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
+  visitor->TracePrologue();
 
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::create();
   DeathAwareScriptWrappable* dependencies[] = {
@@ -249,6 +253,7 @@ TEST(ScriptWrappableVisitorTest,
   target->addWrappedHashMapDependency(dependencies[3], dependencies[4]);
 
   EXPECT_TRUE(visitor->getMarkingDeque()->isEmpty());
+  visitor->AbortTracing();
 }
 
 TEST(ScriptWrappableVisitorTest,
@@ -260,6 +265,7 @@ TEST(ScriptWrappableVisitorTest,
 
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
+  visitor->TracePrologue();
 
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::create();
   DeathAwareScriptWrappable* dependencies[] = {
@@ -280,9 +286,7 @@ TEST(ScriptWrappableVisitorTest,
     EXPECT_TRUE(DequeContains(*visitor->getMarkingDeque(), dependencies[i]));
   }
 
-  visitor->getMarkingDeque()->clear();
-  visitor->getVerifierDeque()->clear();
-  visitor->getHeadersToUnmark()->clear();
+  visitor->AbortTracing();
 }
 
 namespace {
@@ -357,7 +361,7 @@ TEST(ScriptWrappableVisitorTest, NoWriteBarrierOnUnmarkedContainer) {
   rawVisitor->AdvanceTracing(
       0, v8::EmbedderHeapTracer::AdvanceTracingActions(
              v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
-  rawVisitor->TraceEpilogue();
+  rawVisitor->AbortTracing();
 }
 
 TEST(ScriptWrappableVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
@@ -380,7 +384,7 @@ TEST(ScriptWrappableVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
   rawVisitor->AdvanceTracing(
       0, v8::EmbedderHeapTracer::AdvanceTracingActions(
              v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
-  rawVisitor->TraceEpilogue();
+  rawVisitor->AbortTracing();
 }
 
 TEST(ScriptWrappableVisitorTest, VtableAtObjectStart) {

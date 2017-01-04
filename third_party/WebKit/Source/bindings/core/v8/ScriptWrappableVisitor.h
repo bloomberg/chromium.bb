@@ -132,9 +132,11 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
       // Otherwise, eagerly mark the wrapper header and put the object on the
       // marking deque for further processing.
       WrapperVisitor* const visitor = currentVisitor(threadState->isolate());
-      TraceTrait<T>::markWrapperNoTracing(visitor, dstObject);
-      visitor->pushToMarkingDeque(TraceTrait<T>::traceMarkedWrapper,
-                                  TraceTrait<T>::heapObjectHeader, dstObject);
+      if (visitor->pushToMarkingDeque(TraceTrait<T>::traceMarkedWrapper,
+                                      TraceTrait<T>::heapObjectHeader,
+                                      dstObject)) {
+        TraceTrait<T>::markWrapperNoTracing(visitor, dstObject);
+      }
       return;
     }
 
@@ -169,10 +171,13 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
 
   void invalidateDeadObjectsInMarkingDeque();
 
-  void pushToMarkingDeque(
+  bool pushToMarkingDeque(
       void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
       HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
       const void* object) const override {
+    if (!m_tracingInProgress)
+      return false;
+
     m_markingDeque.append(WrapperMarkingData(traceWrappersCallback,
                                              heapObjectHeaderCallback, object));
 #if DCHECK_IS_ON()
@@ -181,6 +186,7 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
           traceWrappersCallback, heapObjectHeaderCallback, object));
     }
 #endif
+    return true;
   }
 
   bool markWrapperHeader(HeapObjectHeader*) const;

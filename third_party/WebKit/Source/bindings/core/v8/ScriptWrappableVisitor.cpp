@@ -60,12 +60,14 @@ void ScriptWrappableVisitor::TraceEpilogue() {
 #endif
 
   m_shouldCleanup = true;
+  m_tracingInProgress = false;
   scheduleIdleLazyCleanup();
 }
 
 void ScriptWrappableVisitor::AbortTracing() {
   CHECK(ThreadState::current());
   m_shouldCleanup = true;
+  m_tracingInProgress = false;
   performCleanup();
 }
 
@@ -90,7 +92,6 @@ void ScriptWrappableVisitor::performCleanup() {
   m_markingDeque.clear();
   m_verifierDeque.clear();
   m_shouldCleanup = false;
-  m_tracingInProgress = false;
 }
 
 void ScriptWrappableVisitor::scheduleIdleLazyCleanup() {
@@ -145,7 +146,6 @@ void ScriptWrappableVisitor::performLazyCleanup(double deadlineSeconds) {
   m_markingDeque.clear();
   m_verifierDeque.clear();
   m_shouldCleanup = false;
-  m_tracingInProgress = false;
 }
 
 void ScriptWrappableVisitor::RegisterV8Reference(
@@ -247,6 +247,10 @@ void ScriptWrappableVisitor::traceWrappers(
 
 void ScriptWrappableVisitor::markWrapper(
     const v8::PersistentBase<v8::Value>* handle) const {
+  // The write barrier may try to mark a wrapper because cleanup is still
+  // delayed. Bail out in this case.
+  if (!m_tracingInProgress)
+    return;
   handle->RegisterExternalReference(m_isolate);
 }
 

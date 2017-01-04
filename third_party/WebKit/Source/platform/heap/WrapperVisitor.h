@@ -105,9 +105,10 @@ class PLATFORM_EXPORT WrapperVisitor {
       return;
     }
 
-    TraceTrait<T>::markWrapperNoTracing(this, traceable);
-    pushToMarkingDeque(TraceTrait<T>::traceMarkedWrapper,
-                       TraceTrait<T>::heapObjectHeader, traceable);
+    if (pushToMarkingDeque(TraceTrait<T>::traceMarkedWrapper,
+                           TraceTrait<T>::heapObjectHeader, traceable)) {
+      TraceTrait<T>::markWrapperNoTracing(this, traceable);
+    }
   }
 
   /**
@@ -163,7 +164,8 @@ class PLATFORM_EXPORT WrapperVisitor {
     // don't require marking wrappers in all worlds, so just nop on those.
   }
 
-  virtual void pushToMarkingDeque(
+  // Returns true if pushing to the marking deque was successful.
+  virtual bool pushToMarkingDeque(
       void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
       HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
       const void*) const = 0;
