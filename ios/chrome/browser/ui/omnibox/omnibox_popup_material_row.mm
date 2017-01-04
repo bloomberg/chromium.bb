@@ -162,7 +162,8 @@ const CGFloat kAppendButtonTrailingMargin = 4;
   int appendSelectedResourceID =
       _incognito ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO_HIGHLIGHTED
                  : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_HIGHLIGHTED;
-  UIImage* appendImageSelected = NativeImage(appendSelectedResourceID);
+  UIImage* appendImageSelected =
+      NativeReversableImage(appendSelectedResourceID, YES);
   [_appendButton setImage:appendImageSelected
                  forState:UIControlStateHighlighted];
 }
