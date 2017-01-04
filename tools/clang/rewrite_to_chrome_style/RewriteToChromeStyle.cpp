@@ -328,6 +328,11 @@ bool IsProbablyConst(const clang::VarDecl& decl,
   if (type.isVolatileQualified())
     return false;
 
+  // Parameters should not be renamed to |kFooBar| style (even if they are
+  // const and have an initializer (aka default value)).
+  if (clang::isa<clang::ParmVarDecl>(&decl))
+    return false;
+
   // http://google.github.io/styleguide/cppguide.html#Constant_Names
   // Static variables that are const-qualified should use kConstantStyle naming.
   if (decl.getStorageDuration() == clang::SD_Static)
