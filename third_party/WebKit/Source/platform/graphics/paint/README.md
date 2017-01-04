@@ -259,6 +259,10 @@ to combine paint chunks into a smaller number of layers.
 The owner of the `PaintArtifactCompositor` (e.g. `WebView`) can then attach its
 root layer to the overall layer hierarchy to be displayed to the user.
 
+In the future we would like to explore moving to a single shared property tree
+representation across both cc and
+Blink. See [Web Page Geometries](https://goo.gl/MwVIto) for more.
+
 ## Geometry routines
 
 The [`GeometryMapper`](GeometryMapper.h) is responsible for efficiently computing
