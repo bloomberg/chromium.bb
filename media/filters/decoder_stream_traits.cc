@@ -144,6 +144,7 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecode(
   UMA_HISTOGRAM_MEDIUM_TIMES(
       "Media.Video.KeyFrameDistance",
       current_frame_timestamp - last_keyframe_timestamp_);
+  last_keyframe_timestamp_ = current_frame_timestamp;
 }
 
 }  // namespace media
