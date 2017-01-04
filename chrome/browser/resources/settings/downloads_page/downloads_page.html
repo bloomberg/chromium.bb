@@ -11,7 +11,12 @@
       <div class="start">
         <div>$i18n{downloadLocation}</div>
         <div class="secondary">
+<if expr="not chromeos">
+          [[prefs.download.default_directory.value]]
+</if>
+<if expr="chromeos">
           [[getDownloadLocation_(prefs.download.default_directory.value)]]
+</if>
         </div>
       </div>
       <div class="secondary-action">

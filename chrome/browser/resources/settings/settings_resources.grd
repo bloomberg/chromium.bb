@@ -524,7 +524,8 @@
                  allowexternalscript="true" />
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_JS"
                  file="downloads_page/downloads_page.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_I18n_SETUP_HTML"
                  file="i18n_setup.html"
                  type="chrome_html" />
