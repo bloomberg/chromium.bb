@@ -88,6 +88,7 @@
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
+#import "ios/web/web_state/ui/crw_wk_navigation_states.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #import "ios/web/web_state/ui/wk_back_forward_list_item_holder.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
@@ -448,8 +449,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   base::scoped_nsobject<CRWWebControllerPendingNavigationInfo>
       _pendingNavigationInfo;
 
-  // The WKNavigation for the most recent load request.
-  base::scoped_nsobject<WKNavigation> _latestWKNavigation;
+  // Holds all WKNavigation objects and their states which are currently in
+  // flight.
+  base::scoped_nsobject<CRWWKNavigationStates> _navigationStates;
 
   // The WKNavigation captured when |stopLoading| was called. Used for reporting
   // WebController.EmptyNavigationManagerCausedByStopLoading UMA metric which
@@ -1049,6 +1051,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         initWithBrowserState:browserState]);
     _certVerificationErrors.reset(
         new CertVerificationErrorsCacheType(kMaxCertErrorsCount));
+    _navigationStates.reset([[CRWWKNavigationStates alloc] init]);
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(orientationDidChange)
@@ -3586,14 +3589,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (web::GetWebClient()->IsAppSpecificURL(errorURL))
     return NO;
 
-  if (self.sessionController.pendingEntryIndex != -1 &&
-      ![self isLoadRequestPendingForURL:errorURL]) {
-    // Do not cancel the load if there is a pending back forward navigation for
-    // another URL (Back forward happened in the middle of WKWebView
-    // navigation).
-    return NO;
-  }
-
   // Don't cancel NSURLErrorCancelled errors originating from navigation
   // as the WKWebView will automatically retry these loads.
   WKWebViewErrorSource source = WKWebViewErrorSourceFromError(error);
@@ -4831,7 +4826,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)loadRequest:(NSMutableURLRequest*)request {
-  _latestWKNavigation.reset([[_webView loadRequest:request] retain]);
+  [_navigationStates setState:web::WKNavigationState::REQUESTED
+                forNavigation:[_webView loadRequest:request]];
 }
 
 - (void)loadPOSTRequest:(NSMutableURLRequest*)request {
@@ -4864,7 +4860,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self ensureWebViewCreated];
     DCHECK(_webView) << "_webView null while trying to load HTML";
   }
-  [_webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
+  WKNavigation* navigation =
+      [_webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
+  [_navigationStates setState:web::WKNavigationState::REQUESTED
+                forNavigation:navigation];
 }
 
 - (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL {
@@ -4877,7 +4876,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)stopLoading {
-  _stoppedWKNavigation.reset(_latestWKNavigation);
+  _stoppedWKNavigation.reset([_navigationStates lastAddedNavigation]);
 
   base::RecordAction(UserMetricsAction("Stop"));
   // Discard the pending and transient entried before notifying the tab model
@@ -5140,6 +5139,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 // superclass, and wire these up to the remaining methods.
 - (void)webView:(WKWebView*)webView
     didStartProvisionalNavigation:(WKNavigation*)navigation {
+  [_navigationStates setState:web::WKNavigationState::STARTED
+                forNavigation:navigation];
+
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
   if (webViewURL.is_empty()) {
     // May happen on iOS9, however in didCommitNavigation: callback the URL
@@ -5176,11 +5178,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Ensure the URL is registered and loadPhase is as expected.
   DCHECK(_lastRegisteredRequestURL == webViewURL);
   DCHECK(self.loadPhase == web::LOAD_REQUESTED);
-  _latestWKNavigation.reset([navigation retain]);
 }
 
 - (void)webView:(WKWebView*)webView
     didReceiveServerRedirectForProvisionalNavigation:(WKNavigation*)navigation {
+  [_navigationStates setState:web::WKNavigationState::REDIRECTED
+                forNavigation:navigation];
+
   [self registerLoadRequest:net::GURLWithNSURL(webView.URL)
                    referrer:[self currentReferrer]
                  transition:ui::PAGE_TRANSITION_SERVER_REDIRECT];
@@ -5189,10 +5193,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)webView:(WKWebView*)webView
     didFailProvisionalNavigation:(WKNavigation*)navigation
                        withError:(NSError*)error {
+  [_navigationStates setState:web::WKNavigationState::PROVISIONALY_FAILED
+                forNavigation:navigation];
+
   // Ignore provisional navigation failure if a new navigation has been started,
   // for example, if a page is reloaded after the start of the provisional
   // load but before the load has been committed.
-  if (![_latestWKNavigation isEqual:navigation]) {
+  if (![[_navigationStates lastAddedNavigation] isEqual:navigation]) {
     return;
   }
 
@@ -5240,8 +5247,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // this CHECK once there is at least one crash on this line (which means that
   // |didStartProvisionalNavigation| did not call |registerLoadRequest| and it
   // should be fixed.
-  CHECK([self currentSessionEntry] ||
-        ![_latestWKNavigation isEqual:navigation]);
+  CHECK([self currentSessionEntry] || !navigation ||
+        [_navigationStates stateForNavigation:navigation] ==
+            web::WKNavigationState::STARTED);
+
+  [_navigationStates setState:web::WKNavigationState::COMMITTED
+                forNavigation:navigation];
 
   DCHECK_EQ(_webView, webView);
   _certVerificationErrors->Clear();
@@ -5302,6 +5313,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)webView:(WKWebView*)webView
     didFinishNavigation:(WKNavigation*)navigation {
+  [_navigationStates setState:web::WKNavigationState::FINISHED
+                forNavigation:navigation];
+
   DCHECK(!_isHalted);
   // Trigger JavaScript driven post-document-load-completion tasks.
   // TODO(crbug.com/546350): Investigate using
@@ -5314,6 +5328,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)webView:(WKWebView*)webView
     didFailNavigation:(WKNavigation*)navigation
             withError:(NSError*)error {
+  [_navigationStates setState:web::WKNavigationState::FAILED
+                forNavigation:navigation];
+
   [self handleLoadError:WKWebViewErrorWithSource(error, NAVIGATION)
             inMainFrame:YES];
   _certVerificationErrors->Clear();
@@ -5681,12 +5698,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                      referrer:[self currentSessionEntryReferrer]
                    transition:[self currentTransition]];
     if (navigationURL == net::GURLWithNSURL([_webView URL])) {
-      [_webView reload];
+      [_navigationStates setState:web::WKNavigationState::REQUESTED
+                    forNavigation:[_webView reload]];
     } else {
       // |didCommitNavigation:| may not be called for fast navigation, so update
       // the navigation type now as it is already known.
       holder->set_navigation_type(WKNavigationTypeBackForward);
-      [_webView goToBackForwardListItem:holder->back_forward_list_item()];
+      WKNavigation* navigation =
+          [_webView goToBackForwardListItem:holder->back_forward_list_item()];
+      [_navigationStates setState:web::WKNavigationState::REQUESTED
+                    forNavigation:navigation];
     }
   };
 
