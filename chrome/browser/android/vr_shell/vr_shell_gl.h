@@ -57,10 +57,12 @@ class VrShellGl {
       const base::WeakPtr<VrInputManager>& ui_input_manager,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       gvr_context* gvr_api,
-      bool initially_web_vr);
+      bool initially_web_vr,
+      bool reprojected_rendering);
   ~VrShellGl();
 
-  bool Initialize();
+  void Initialize();
+  void InitializeGl(gfx::AcceleratedWidget window);
 
   void DrawFrame();
 
@@ -84,7 +86,6 @@ class VrShellGl {
   void UpdateScene(std::unique_ptr<base::ListValue> commands);
 
  private:
-  bool InitializeGl();
   void GvrInit(gvr_context* gvr_api);
   void InitializeRenderer();
   void DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame &frame);
@@ -163,6 +164,8 @@ class VrShellGl {
   std::vector<bool> webvr_head_pose_valid_;
   int webvr_texture_id_ = 0;
   bool web_vr_mode_;
+  bool ready_to_draw_ = false;
+  bool surfaceless_rendering_;
 
   std::unique_ptr<VrController> controller_;
 

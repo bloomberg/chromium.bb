@@ -9,6 +9,9 @@ import android.app.Activity;
 import android.graphics.Point;
 import android.os.StrictMode;
 import android.view.MotionEvent;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -37,7 +40,7 @@ import org.chromium.ui.display.VirtualDisplayAndroid;
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
  */
 @JNINamespace("vr_shell")
-public class VrShellImpl extends GvrLayout implements VrShell {
+public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Callback {
     private static final String TAG = "VrShellImpl";
 
     // TODO(mthiesse): These values work well for Pixel/Pixel XL in VR, but we need to come up with
@@ -63,7 +66,7 @@ public class VrShellImpl extends GvrLayout implements VrShell {
     private long mNativeVrShell;
 
     private FrameLayout mUiCVCContainer;
-    private FrameLayout mPresentationView;
+    private View mPresentationView;
 
     // The tab that holds the main ContentViewCore.
     private Tab mTab;
@@ -77,6 +80,8 @@ public class VrShellImpl extends GvrLayout implements VrShell {
     private ContentViewCore mUiCVC;
     private VrWindowAndroid mUiVrWindowAndroid;
 
+    private boolean mReprojectedRendering;
+
     public VrShellImpl(Activity activity) {
         super(activity);
         mActivity = activity;
@@ -88,12 +93,23 @@ public class VrShellImpl extends GvrLayout implements VrShell {
         };
         addView(mUiCVCContainer, 0, new FrameLayout.LayoutParams(0, 0));
 
-        mPresentationView = new FrameLayout(mActivity);
+        mReprojectedRendering = setAsyncReprojectionEnabled(true);
+        if (mReprojectedRendering) {
+            // No need render to a Surface if we're reprojected. We'll be rendering with surfaceless
+            // EGL.
+            mPresentationView = new FrameLayout(mActivity);
+
+            // Only enable sustained performance mode when Async reprojection decouples the app
+            // framerate from the display framerate.
+            AndroidCompat.setSustainedPerformanceMode(mActivity, true);
+        } else {
+            SurfaceView surfaceView = new SurfaceView(mActivity);
+            surfaceView.getHolder().addCallback(this);
+            mPresentationView = surfaceView;
+        }
+
         setPresentationView(mPresentationView);
 
-        if (setAsyncReprojectionEnabled(true)) {
-            AndroidCompat.setSustainedPerformanceMode(mActivity, true);
-        }
         DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(activity);
         mContentVirtualDisplay = VirtualDisplayAndroid.createVirtualDisplay();
         mContentVirtualDisplay.setTo(primaryDisplay);
@@ -118,7 +134,7 @@ public class VrShellImpl extends GvrLayout implements VrShell {
         mNativeVrShell = nativeInit(mContentCVC.getWebContents(),
                 mContentVrWindowAndroid.getNativePointer(), mUiContents,
                 mUiVrWindowAndroid.getNativePointer(), forWebVR, delegate,
-                getGvrApi().getNativeGvrContext());
+                getGvrApi().getNativeGvrContext(), mReprojectedRendering);
 
         // Set the UI and content sizes before we load the UI.
         setUiCssSize(DEFAULT_UI_WIDTH, DEFAULT_UI_HEIGHT, DEFAULT_DPR);
@@ -277,9 +293,28 @@ public class VrShellImpl extends GvrLayout implements VrShell {
         getUiLayout().setCloseButtonListener(runner);
     }
 
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        nativeSetSurface(mNativeVrShell, holder.getSurface());
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        // No need to do anything here, we don't care about surface width/height.
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        // TODO(mthiesse): For now we don't need to handle this because we exit VR on activity pause
+        // (which destroys the surface). If in the future we don't destroy VR Shell on exiting,
+        // we will need to handle this, or at least properly handle surfaceCreated being called
+        // multiple times.
+    }
+
     private native long nativeInit(WebContents contentWebContents,
             long nativeContentWindowAndroid, WebContents uiWebContents, long nativeUiWindowAndroid,
-            boolean forWebVR, VrShellDelegate delegate, long gvrApi);
+            boolean forWebVR, VrShellDelegate delegate, long gvrApi, boolean reprojectedRendering);
+    private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeLoadUIContent(long nativeVrShell);
     private native void nativeDestroy(long nativeVrShell);
     private native void nativeOnTriggerEvent(long nativeVrShell);

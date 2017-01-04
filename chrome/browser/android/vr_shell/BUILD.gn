@@ -72,8 +72,10 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "//ui/gl/init",
     ]
 
-    libs =
-        [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
+    libs = [
+      "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
+      "android",
+    ]
     configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
   }
 

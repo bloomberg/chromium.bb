@@ -63,7 +63,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
           ui::WindowAndroid* ui_window,
           bool for_web_vr,
           VrShellDelegate* delegate,
-          gvr_context* gvr_api);
+          gvr_context* gvr_api,
+          bool reprojected_rendering);
 
   void LoadUIContent(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
@@ -74,6 +75,9 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
                const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj);
+  void SetSurface(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& obj,
+                  const base::android::JavaParamRef<jobject>& surface);
   void SetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     bool enabled);
@@ -158,6 +162,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<base::Thread> gl_thread_;
+  bool reprojected_rendering_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

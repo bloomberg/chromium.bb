@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
 
+#include "base/android/jni_android.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -173,6 +174,10 @@ int64_t TimeInMicroseconds() {
       std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
+void WaitForSwapAck(const base::Closure& callback, gfx::SwapResult result) {
+  callback.Run();
+}
+
 }  // namespace
 
 VrShellGl::VrShellGl(
@@ -181,8 +186,10 @@ VrShellGl::VrShellGl(
     const base::WeakPtr<VrInputManager>& ui_input_manager,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     gvr_context* gvr_api,
-    bool initially_web_vr)
+    bool initially_web_vr,
+    bool reprojected_rendering)
       : web_vr_mode_(initially_web_vr),
+        surfaceless_rendering_(reprojected_rendering),
         task_runner_(base::ThreadTaskRunnerHandle::Get()),
         weak_vr_shell_(weak_vr_shell),
         content_input_manager_(content_input_manager),
@@ -196,48 +203,52 @@ VrShellGl::~VrShellGl() {
   draw_task_.Cancel();
 }
 
-bool VrShellGl::Initialize() {
-  if (!InitializeGl()) return false;
-
+void VrShellGl::Initialize() {
   gvr::Mat4f identity;
   SetIdentityM(identity);
   webvr_head_pose_.resize(kPoseRingBufferSize, identity);
   webvr_head_pose_valid_.resize(kPoseRingBufferSize, false);
 
-  draw_task_.Reset(base::Bind(&VrShellGl::DrawFrame, base::Unretained(this)));
-
   scene_.reset(new UiScene);
 
-  InitializeRenderer();
-
-  ScheduleNextDrawFrame();
-  return true;
+  if (surfaceless_rendering_) {
+    // If we're rendering surfaceless, we'll never get a java surface to render
+    // into, so we can initialize GL right away.
+    InitializeGl(nullptr);
+  }
 }
 
-bool VrShellGl::InitializeGl() {
+void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
+  CHECK(!ready_to_draw_);
   if (gl::GetGLImplementation() == gl::kGLImplementationNone &&
       !gl::init::InitializeGLOneOff()) {
     LOG(ERROR) << "gl::init::InitializeGLOneOff failed";
     ForceExitVr();
-    return false;
+    return;
   }
-  surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+  if (window) {
+    CHECK(!surfaceless_rendering_);
+    surface_ = gl::init::CreateViewGLSurface(window);
+  } else {
+    CHECK(surfaceless_rendering_);
+    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+  }
   if (!surface_.get()) {
     LOG(ERROR) << "gl::init::CreateOffscreenGLSurface failed";
     ForceExitVr();
-    return false;
+    return;
   }
   context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
                                        gl::GLContextAttribs());
   if (!context_.get()) {
     LOG(ERROR) << "gl::init::CreateGLContext failed";
     ForceExitVr();
-    return false;
+    return;
   }
   if (!context_->MakeCurrent(surface_.get())) {
     LOG(ERROR) << "gl::GLContext::MakeCurrent() failed";
     ForceExitVr();
-    return false;
+    return;
   }
 
   // TODO(mthiesse): We don't appear to have a VSync provider ever here. This is
@@ -273,7 +284,13 @@ bool VrShellGl::InitializeGl() {
       &VrShell::SurfacesChanged, weak_vr_shell_,
       content_surface_->j_surface().obj(),
       ui_surface_->j_surface().obj()));
-  return true;
+
+  InitializeRenderer();
+
+  draw_task_.Reset(base::Bind(&VrShellGl::DrawFrame, base::Unretained(this)));
+  ScheduleNextDrawFrame();
+
+  ready_to_draw_ = true;
 }
 
 void VrShellGl::OnUIFrameAvailable() {
@@ -385,7 +402,6 @@ void VrShellGl::InitializeRenderer() {
 
 void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
   controller_->UpdateState();
-
 
   // Note that button up/down state is transient, so ButtonUpHappened only
   // returns true for a single frame (and we're guaranteed not to miss it).
@@ -664,8 +680,19 @@ void VrShellGl::DrawFrame() {
   frame.Unbind();
   frame.Submit(*buffer_viewport_list_, head_pose);
 
-  // No need to SwapBuffers for an offscreen surface.
-  ScheduleNextDrawFrame();
+  // No need to swap buffers for surfaceless rendering.
+  if (surfaceless_rendering_) {
+    ScheduleNextDrawFrame();
+    return;
+  }
+
+  if (surface_->SupportsAsyncSwap()) {
+    surface_->SwapBuffersAsync(base::Bind(&WaitForSwapAck, base::Bind(
+        &VrShellGl::ScheduleNextDrawFrame, weak_ptr_factory_.GetWeakPtr())));
+  } else {
+    surface_->SwapBuffers();
+    ScheduleNextDrawFrame();
+  }
 }
 
 void VrShellGl::DrawVrShell(const gvr::Mat4f& head_pose,
@@ -897,8 +924,10 @@ void VrShellGl::OnResume() {
   gvr_api_->RefreshViewerProfile();
   gvr_api_->ResumeTracking();
   controller_->OnResume();
-  draw_task_.Reset(base::Bind(&VrShellGl::DrawFrame, base::Unretained(this)));
-  ScheduleNextDrawFrame();
+  if (ready_to_draw_) {
+    draw_task_.Reset(base::Bind(&VrShellGl::DrawFrame, base::Unretained(this)));
+    ScheduleNextDrawFrame();
+  }
 }
 
 void VrShellGl::SetWebVrMode(bool enabled) {

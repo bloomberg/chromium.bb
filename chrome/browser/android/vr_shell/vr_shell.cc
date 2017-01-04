@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 
+#include <android/native_window_jni.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -48,14 +50,16 @@ class GLThread : public base::Thread {
            const base::WeakPtr<VrInputManager>& ui_input_manager,
            scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
            gvr_context* gvr_api,
-           bool initially_web_vr)
+           bool initially_web_vr,
+           bool reprojected_rendering)
       : base::Thread("VrShellGL"),
         weak_vr_shell_(weak_vr_shell),
         content_input_manager_(content_input_manager),
         ui_input_manager_(ui_input_manager),
         main_thread_task_runner_(std::move(main_thread_task_runner)),
         gvr_api_(gvr_api),
-        initially_web_vr_(initially_web_vr) {}
+        initially_web_vr_(initially_web_vr),
+        reprojected_rendering_(reprojected_rendering) {}
 
   ~GLThread() override {
     Stop();
@@ -70,11 +74,10 @@ class GLThread : public base::Thread {
                                      std::move(ui_input_manager_),
                                      std::move(main_thread_task_runner_),
                                      gvr_api_,
-                                     initially_web_vr_));
+                                     initially_web_vr_,
+                                     reprojected_rendering_));
     weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
-    if (!vr_shell_gl_->Initialize()) {
-      vr_shell_gl_.reset();
-    }
+    vr_shell_gl_->Initialize();
   }
   void CleanUp() override {
     vr_shell_gl_.reset();
@@ -91,6 +94,7 @@ class GLThread : public base::Thread {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   gvr_context* gvr_api_;
   bool initially_web_vr_;
+  bool reprojected_rendering_;
 };
 
 }  // namespace
@@ -103,7 +107,8 @@ VrShell::VrShell(JNIEnv* env,
                  ui::WindowAndroid* ui_window,
                  bool for_web_vr,
                  VrShellDelegate* delegate,
-                 gvr_context* gvr_api)
+                 gvr_context* gvr_api,
+                 bool reprojected_rendering)
     : WebContentsObserver(ui_contents),
       main_contents_(main_contents),
       content_compositor_(new VrCompositor(content_window, false)),
@@ -112,6 +117,7 @@ VrShell::VrShell(JNIEnv* env,
       delegate_(delegate),
       metrics_helper_(new VrMetricsHelper(main_contents_)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      reprojected_rendering_(reprojected_rendering),
       weak_ptr_factory_(this) {
   DCHECK(g_instance == nullptr);
   g_instance = this;
@@ -128,7 +134,8 @@ VrShell::VrShell(JNIEnv* env,
                                 ui_input_manager_->GetWeakPtr(),
                                 main_thread_task_runner_,
                                 gvr_api,
-                                for_web_vr));
+                                for_web_vr,
+                                reprojected_rendering_));
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
@@ -213,6 +220,18 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   // exit vr session
   metrics_helper_->SetVRActive(true);
   SetShowingOverscrollGlow(false);
+}
+
+void VrShell::SetSurface(JNIEnv* env,
+                         const JavaParamRef<jobject>& obj,
+                         const JavaParamRef<jobject>& surface) {
+  CHECK(!reprojected_rendering_);
+  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
+  gfx::AcceleratedWidget window =
+      ANativeWindow_fromSurface(base::android::AttachCurrentThread(), surface);
+  PostToGlThreadWhenReady(base::Bind(&VrShellGl::InitializeGl,
+                                     thread->GetVrShellGl(),
+                                     base::Unretained(window)));
 }
 
 void VrShell::SetShowingOverscrollGlow(bool showing_glow) {
@@ -453,14 +472,14 @@ jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj,
            const JavaParamRef<jobject>& ui_web_contents,
            jlong ui_window_android, jboolean for_web_vr,
            const base::android::JavaParamRef<jobject>& delegate,
-           jlong gvr_api) {
+           jlong gvr_api, jboolean reprojected_rendering) {
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, content::WebContents::FromJavaWebContents(content_web_contents),
       reinterpret_cast<ui::WindowAndroid*>(content_window_android),
       content::WebContents::FromJavaWebContents(ui_web_contents),
       reinterpret_cast<ui::WindowAndroid*>(ui_window_android),
       for_web_vr, VrShellDelegate::GetNativeDelegate(env, delegate),
-      reinterpret_cast<gvr_context*>(gvr_api)));
+      reinterpret_cast<gvr_context*>(gvr_api), reprojected_rendering));
 }
 
 }  // namespace vr_shell
