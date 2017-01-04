@@ -2406,3 +2406,9 @@ crbug.com/676063 virtual/sharedarraybuffer/fast/workers/worker-sharedarraybuffer
 # Flaky on Win7 (dbg)
 crbug.com/677145 [ Win7 Debug ] inspector/tracing/timeline-js/timeline-script-tag-1.html [ Pass Failure ]
 crbug.com/677145 [ Win7 Debug ] virtual/threaded/inspector/tracing/timeline-js/timeline-script-tag-1.html [ Pass Failure ]
+crbug.com/678346 [ Win7 Debug ] fast/dom/shadow/selections-in-shadow.html [ Pass Timeout ]
+crbug.com/678346 [ Win7 Debug ] fast/forms/access-key-for-all-elements.html [ Pass Timeout ]
+crbug.com/678346 [ Win7 Debug ] storage/indexeddb/index-cursor.html [ Pass Timeout ]
+crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Pass Timeout ]
+crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass Timeout ]
+
