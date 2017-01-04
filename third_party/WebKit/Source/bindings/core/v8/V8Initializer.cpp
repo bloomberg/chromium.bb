@@ -424,15 +424,10 @@ void V8Initializer::initializeMainThread() {
   ASSERT(ThreadState::mainThreadState());
   ThreadState::mainThreadState()->addInterruptor(
       WTF::makeUnique<V8IsolateInterruptor>(isolate));
-  if (RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-    ThreadState::mainThreadState()->registerTraceDOMWrappers(
-        isolate, V8GCController::traceDOMWrappers,
-        ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque,
-        ScriptWrappableVisitor::performCleanup);
-  } else {
-    ThreadState::mainThreadState()->registerTraceDOMWrappers(
-        isolate, V8GCController::traceDOMWrappers, nullptr, nullptr);
-  }
+  ThreadState::mainThreadState()->registerTraceDOMWrappers(
+      isolate, V8GCController::traceDOMWrappers,
+      ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque,
+      ScriptWrappableVisitor::performCleanup);
 
   V8PerIsolateData::from(isolate)->setThreadDebugger(
       WTF::makeUnique<MainThreadDebugger>(isolate));

@@ -437,6 +437,9 @@ class PLATFORM_EXPORT ThreadState {
       void (*invalidateDeadObjectsInWrappersMarkingDeque)(v8::Isolate*),
       void (*performCleanup)(v8::Isolate*)) {
     m_isolate = isolate;
+    DCHECK(!m_isolate || traceDOMWrappers);
+    DCHECK(!m_isolate || invalidateDeadObjectsInWrappersMarkingDeque);
+    DCHECK(!m_isolate || performCleanup);
     m_traceDOMWrappers = traceDOMWrappers;
     m_invalidateDeadObjectsInWrappersMarkingDeque =
         invalidateDeadObjectsInWrappersMarkingDeque;

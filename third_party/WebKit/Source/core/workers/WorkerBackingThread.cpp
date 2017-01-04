@@ -73,7 +73,9 @@ void WorkerBackingThread::initialize() {
       WTF::makeUnique<V8IsolateInterruptor>(m_isolate);
   ThreadState::current()->addInterruptor(std::move(interruptor));
   ThreadState::current()->registerTraceDOMWrappers(
-      m_isolate, V8GCController::traceDOMWrappers, nullptr, nullptr);
+      m_isolate, V8GCController::traceDOMWrappers,
+      ScriptWrappableVisitor::invalidateDeadObjectsInMarkingDeque,
+      ScriptWrappableVisitor::performCleanup);
   if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
     V8PerIsolateData::enableIdleTasks(
         m_isolate, WTF::wrapUnique(new V8IdleTaskRunner(
