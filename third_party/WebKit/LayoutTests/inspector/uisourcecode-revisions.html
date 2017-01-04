@@ -24,8 +24,9 @@ function test()
     {
         var content = uiSourceCode._content;
         var revisionsString = "";
-        for (var i = 0; i < uiSourceCode.history.length; ++i) {
-            var revision = uiSourceCode.history[i];
+        var history = uiSourceCode.history();
+        for (var i = 0; i < history.length; ++i) {
+            var revision = history[i];
             if (i !== 0)
                 revisionsString += ", ";
             revisionsString += "'" + revision.content + "'";
@@ -102,7 +103,7 @@ function test()
 
             InspectorTest.addResult("Second revision added.");
             dumpUISourceCodeWithRevisions(uiSourceCode);
-            uiSourceCode.history[0].revertToThis().then(onReverted);
+            uiSourceCode.history()[0].revertToThis().then(onReverted);
 
             function onReverted()
             {
@@ -197,7 +198,7 @@ function test()
 
                 InspectorTest.addResult("Second revision added.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
-                uiSourceCode.history[0].revertToThis().then(onReverted);
+                uiSourceCode.history()[0].revertToThis().then(onReverted);
 
                 function onReverted()
                 {

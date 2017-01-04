@@ -62,7 +62,8 @@ function test()
 
     function dumpLiveLocationsCount()
     {
-        InspectorTest.addResult("Live locations count: " + Bindings.debuggerWorkspaceBinding._ensureInfoForScript(script)._locations.size);
+        var scriptInfo = Bindings.debuggerWorkspaceBinding._ensureInfoForScript(script);
+        InspectorTest.addResult("Live locations count: " + (scriptInfo._locations ? scriptInfo._locations.size : 0));
         InspectorTest.addResult("");
     }
 }

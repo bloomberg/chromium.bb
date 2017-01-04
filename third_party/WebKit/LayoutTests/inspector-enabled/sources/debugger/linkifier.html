@@ -89,7 +89,8 @@ function test()
 
     function liveLocationsCount()
     {
-        return Bindings.debuggerWorkspaceBinding._ensureInfoForScript(script)._locations.size;
+        var scriptInfo = Bindings.debuggerWorkspaceBinding._ensureInfoForScript(script);
+        return scriptInfo._locations ? scriptInfo._locations.size : 0;
     }
 }
 

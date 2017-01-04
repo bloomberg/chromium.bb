@@ -55,9 +55,9 @@ var test = function()
     function liveLocationsCount()
     {
         var count = 0;
-        var infos = Bindings.debuggerWorkspaceBinding._targetToData.get(InspectorTest.debuggerModel.target()).scriptDataMap.valuesArray();
+        var infos = Object.values(InspectorTest.debuggerModel.scripts).map(script => script[Bindings.DebuggerWorkspaceBinding._ScriptInfoSymbol]).filter(info => !!info);
         infos.forEach(function(info) {
-            count += info._locations.size;
+            count += info._locations ? info._locations.size : 0;
         });
         return count;
     }
