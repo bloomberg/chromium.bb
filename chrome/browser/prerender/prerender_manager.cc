@@ -65,6 +65,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "net/http/http_cache.h"
 #include "net/http/http_request_headers.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -575,6 +576,7 @@ void PrerenderManager::RecordNoStateFirstContentfulPaint(const GURL& url,
   base::TimeDelta prefetch_age;
   Origin origin;
   GetPrefetchInformation(url, &prefetch_age, &origin);
+  OnPrefetchUsed(url);
 
   histograms_->RecordPrefetchFirstContentfulPaintTime(
       origin, is_no_store, was_hidden, time, prefetch_age);
@@ -599,8 +601,8 @@ void PrerenderManager::RecordPrerenderFirstContentfulPaint(
   base::TimeDelta prefetch_age;
   // The origin at prefetch is superceeded by the tab_helper origin for the
   // histogram recording, below.
-  Origin unused_origin;
-  GetPrefetchInformation(url, &prefetch_age, &unused_origin);
+  GetPrefetchInformation(url, &prefetch_age, nullptr);
+  OnPrefetchUsed(url);
 
   base::TimeTicks swap_ticks = tab_helper->swap_ticks();
   bool fcp_recorded = false;
@@ -939,8 +941,18 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
     return nullptr;
   }
 
-  if (PrerenderData* preexisting_prerender_data =
-          FindPrerenderData(url, session_storage_namespace)) {
+  if (IsNoStatePrefetch(origin)) {
+    base::TimeDelta prefetch_age;
+    GetPrefetchInformation(url, &prefetch_age, nullptr);
+    if (!prefetch_age.is_zero() &&
+        prefetch_age <
+            base::TimeDelta::FromMinutes(net::HttpCache::kPrefetchReuseMins)) {
+      RecordFinalStatusWithoutCreatingPrerenderContents(url, origin,
+                                                        FINAL_STATUS_DUPLICATE);
+      return nullptr;
+    }
+  } else if (PrerenderData* preexisting_prerender_data =
+                 FindPrerenderData(url, session_storage_namespace)) {
     RecordFinalStatusWithoutCreatingPrerenderContents(
         url, origin, FINAL_STATUS_DUPLICATE);
     return base::WrapUnique(new PrerenderHandle(preexisting_prerender_data));
@@ -1192,19 +1204,22 @@ void PrerenderManager::GetPrefetchInformation(const GURL& url,
                                               base::TimeDelta* prefetch_age,
                                               Origin* origin) {
   DCHECK(prefetch_age);
-  DCHECK(origin);
   CleanUpOldNavigations(&prefetches_, base::TimeDelta::FromMinutes(30));
 
   *prefetch_age = base::TimeDelta();
-  *origin = ORIGIN_NONE;
+  if (origin)
+    *origin = ORIGIN_NONE;
   for (auto it = prefetches_.crbegin(); it != prefetches_.crend(); ++it) {
     if (it->url == url) {
       *prefetch_age = GetCurrentTimeTicks() - it->time;
-      *origin = it->origin;
+      if (origin)
+        *origin = it->origin;
       break;
     }
   }
+}
 
+void PrerenderManager::OnPrefetchUsed(const GURL& url) {
   // Loading a prefetched URL resets the revalidation bypass. Remove all
   // matching urls from the prefetch list for more accurate metrics.
   prefetches_.erase(

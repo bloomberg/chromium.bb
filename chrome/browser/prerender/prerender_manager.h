@@ -540,9 +540,14 @@ class PrerenderManager : public content::NotificationObserver,
   void DeleteOldWebContents();
 
   // Get information associated with a possible prefetch of |url|.
+  // |origin| may be null, in which case the origin is not returned.
   void GetPrefetchInformation(const GURL& url,
                               base::TimeDelta* prefetch_age,
                               Origin* origin);
+
+  // Called when a prefetch has been used. Prefetches avoid cache revalidation
+  // only once.
+  void OnPrefetchUsed(const GURL& url);
 
   // Cleans up old NavigationRecord's.
   void CleanUpOldNavigations(std::vector<NavigationRecord>* navigations,

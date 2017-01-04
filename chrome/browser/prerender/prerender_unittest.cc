@@ -38,6 +38,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/http_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -781,6 +782,37 @@ TEST_F(PrerenderTest, LinkManagerNavigateAwayLaunchAnother) {
             prerender_manager()->FindEntry(second_url));
 }
 
+// Prefetching the same URL twice during |time_to_live| results in a duplicate
+// and is aborted.
+TEST_F(PrerenderTest, NoStatePrefetchDuplicate) {
+  const GURL kUrl("http://www.google.com/");
+
+  RestorePrerenderMode restore_prerender_mode;
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+  base::SimpleTestTickClock* tick_clock =
+      OverridePrerenderManagerTimeTicks(prerender_manager());
+
+  // Prefetch the url once.
+  prerender_manager()->CreateNextPrerenderContents(
+      kUrl, ORIGIN_OMNIBOX, FINAL_STATUS_MANAGER_SHUTDOWN);
+  EXPECT_TRUE(
+      prerender_manager()->AddPrerenderFromOmnibox(kUrl, nullptr, gfx::Size()));
+
+  prerender_manager()->CreateNextPrerenderContents(
+      kUrl, ORIGIN_OMNIBOX, FINAL_STATUS_MANAGER_SHUTDOWN);
+
+  // Prefetching again before time_to_live aborts, because it is a duplicate.
+  tick_clock->Advance(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(
+      prerender_manager()->AddPrerenderFromOmnibox(kUrl, nullptr, gfx::Size()));
+
+  // Prefetching after time_to_live succeeds.
+  tick_clock->Advance(
+      base::TimeDelta::FromMinutes(net::HttpCache::kPrefetchReuseMins));
+  EXPECT_TRUE(
+      prerender_manager()->AddPrerenderFromOmnibox(kUrl, nullptr, gfx::Size()));
+}
 
 // Make sure that if we prerender more requests than we support, that we launch
 // them in the order given up until we reach MaxConcurrency, at which point we
