@@ -110,8 +110,11 @@ bool AppShortcutLauncherItemController::IsVisible() const {
 
 void AppShortcutLauncherItemController::Launch(ash::LaunchSource source,
                                                int event_flags) {
-  launcher_controller()->LaunchAppWithLaunchId(app_id(), launch_id(), source,
-                                               event_flags);
+  // Launching an app replaces shortcut item controller to app controller. As
+  // result app_id_, launch_id_ are deleted during this call. Use local copies
+  // to prevent crash condition.
+  launcher_controller()->LaunchAppWithLaunchId(
+      std::string(app_id()), std::string(launch_id()), source, event_flags);
 }
 
 ash::ShelfItemDelegate::PerformedAction
