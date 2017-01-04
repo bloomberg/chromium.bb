@@ -21,14 +21,11 @@
 void aom_decode_band_pvq_splits(aom_reader *r, od_pvq_codeword_ctx *adapt,
  od_coeff *y, int n, int k, int level);
 
-#if OD_ACCOUNTING
-# define aom_laplace_decode_special(r, decay, max, str) aom_laplace_decode_special_(r, decay, max, str)
-#else
-# define aom_laplace_decode_special(r, decay, max, str) aom_laplace_decode_special_(r, decay, max)
-#endif
+#define aom_laplace_decode_special(r, decay, max, ACCT_STR_NAME) \
+  aom_laplace_decode_special_(r, decay, max ACCT_STR_ARG(ACCT_STR_NAME))
 
 int aom_laplace_decode_special_(aom_reader *r, unsigned decay,
- int max OD_ACC_STR);
+ int max ACCT_STR_PARAM);
 
 void od_pvq_decode(daala_dec_ctx *dec, od_coeff *ref, od_coeff *out, int q0,
  int pli, int bs, const od_val16 *beta, int robust, int is_keyframe,

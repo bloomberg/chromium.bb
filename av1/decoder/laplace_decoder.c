@@ -20,18 +20,11 @@
 #include "av1/common/pvq.h"
 #include "pvq_decoder.h"
 
-#if OD_ACCOUNTING
-# define aom_decode_pvq_split(r, adapt, sum, ctx, str) \
-  aom_decode_pvq_split_(r, adapt, sum, ctx, str)
-#else
-# define aom_decode_pvq_split(r, adapt, sum, ctx, str) \
-  aom_decode_pvq_split_(r, adapt, sum, ctx)
-#endif
-
-#define ACCT_STR __func__
+#define aom_decode_pvq_split(r, adapt, sum, ctx, ACCT_STR_NAME) \
+  aom_decode_pvq_split_(r, adapt, sum, ctx ACCT_STR_ARG(ACCT_STR_NAME))
 
 static int aom_decode_pvq_split_(aom_reader *r, od_pvq_codeword_ctx *adapt,
- int sum, int ctx OD_ACC_STR) {
+ int sum, int ctx ACCT_STR_PARAM) {
   int shift;
   int count;
   int msbs;
@@ -41,8 +34,8 @@ static int aom_decode_pvq_split_(aom_reader *r, od_pvq_codeword_ctx *adapt,
   shift = OD_MAXI(0, OD_ILOG(sum) - 3);
   fctx = 7*ctx + (sum >> shift) - 1;
   msbs = aom_decode_cdf_adapt(r, adapt->pvq_split_cdf[fctx],
-   (sum >> shift) + 1, adapt->pvq_split_increment, ACCT_STR);
-  if (shift) count = aom_read_literal(r, shift, ACCT_STR);
+   (sum >> shift) + 1, adapt->pvq_split_increment, ACCT_STR_NAME);
+  if (shift) count = aom_read_literal(r, shift, ACCT_STR_NAME);
   count += msbs << shift;
   if (count > sum) {
     count = sum;
@@ -94,7 +87,7 @@ void aom_decode_band_pvq_splits(aom_reader *r, od_pvq_codeword_ctx *adapt,
  * @retval decoded variable x
  */
 int aom_laplace_decode_special_(aom_reader *r, unsigned decay,
- int max OD_ACC_STR) {
+ int max ACCT_STR_PARAM) {
   int pos;
   int shift;
   int xs;
@@ -127,14 +120,14 @@ int aom_laplace_decode_special_(aom_reader *r, unsigned decay,
     }
     if (ms > 0 && ms < 15) {
       /* Simple way of truncating the pdf when we have a bound. */
-      sym = aom_read_cdf_unscaled(r, cdf, ms + 1, ACCT_STR);
+      sym = aom_read_cdf_unscaled(r, cdf, ms + 1, ACCT_STR_NAME);
     }
-    else sym = aom_read_cdf(r, cdf, 16, ACCT_STR);
+    else sym = aom_read_cdf(r, cdf, 16, ACCT_STR_NAME);
     xs += sym;
     ms -= 15;
   }
   while (sym >= 15 && ms != 0);
-  if (shift) pos = (xs << shift) + aom_read_literal(r, shift, ACCT_STR);
+  if (shift) pos = (xs << shift) + aom_read_literal(r, shift, ACCT_STR_NAME);
   else pos = xs;
   OD_ASSERT(pos >> shift <= max >> shift || max == -1);
   if (max != -1 && pos > max) {

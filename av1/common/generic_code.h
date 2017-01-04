@@ -19,21 +19,12 @@
 
 # define GENERIC_TABLES 12
 
-#if OD_ACCOUNTING
-# define generic_decode(r, model, max, ex_q16, integration, str) \
-  generic_decode_(r, model, max, ex_q16, integration, str)
-# define aom_decode_cdf_adapt_q15(r, cdf, n, count, rate, str) \
-  aom_decode_cdf_adapt_q15_(r, cdf, n, count, rate, str)
-# define aom_decode_cdf_adapt(r, cdf, n, increment, str) \
-  aom_decode_cdf_adapt_(r, cdf, n, increment, str)
-#else
-# define generic_decode(r, model, max, ex_q16, integration, str) \
-  generic_decode_(r, model, max, ex_q16, integration)
-# define aom_decode_cdf_adapt_q15(r, cdf, n, count, rate, str) \
-  aom_decode_cdf_adapt_q15_(r, cdf, n, count, rate)
-# define aom_decode_cdf_adapt(r, cdf, n, increment, str) \
-  aom_decode_cdf_adapt_(r, cdf, n, increment)
-#endif
+#define generic_decode(r, model, max, ex_q16, integration, ACCT_STR_NAME) \
+  generic_decode_(r, model, max, ex_q16, integration ACCT_STR_ARG(ACCT_STR_NAME))
+#define aom_decode_cdf_adapt_q15(r, cdf, n, count, rate, ACCT_STR_NAME) \
+  aom_decode_cdf_adapt_q15_(r, cdf, n, count, rate ACCT_STR_ARG(ACCT_STR_NAME))
+#define aom_decode_cdf_adapt(r, cdf, n, increment, ACCT_STR_NAME) \
+  aom_decode_cdf_adapt_(r, cdf, n, increment ACCT_STR_ARG(ACCT_STR_NAME))
 
 typedef struct {
   /** cdf for multiple expectations of x */
@@ -69,7 +60,7 @@ void aom_encode_cdf_adapt(aom_writer *w, int val, uint16_t *cdf, int n,
  int increment);
 
 int aom_decode_cdf_adapt_(aom_reader *r, uint16_t *cdf, int n,
- int increment OD_ACC_STR);
+ int increment ACCT_STR_PARAM);
 
 void generic_encode(aom_writer *w, generic_encoder *model, int x, int max,
  int *ex_q16, int integration);
@@ -79,10 +70,10 @@ double generic_encode_cost(generic_encoder *model, int x, int max,
 double od_encode_cdf_cost(int val, uint16_t *cdf, int n);
 
 int aom_decode_cdf_adapt_q15_(aom_reader *r, uint16_t *cdf, int n,
- int *count, int rate OD_ACC_STR);
+ int *count, int rate ACCT_STR_PARAM);
 
 int generic_decode_(aom_reader *r, generic_encoder *model, int max,
- int *ex_q16, int integration OD_ACC_STR);
+ int *ex_q16, int integration ACCT_STR_PARAM);
 
 int log_ex(int ex_q16);
 

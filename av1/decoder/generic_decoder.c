@@ -22,8 +22,6 @@
 #include "av1/common/odintrin.h"
 #include "pvq_decoder.h"
 
-#define ACCT_STR __func__
-
 /** Decodes a value from 0 to N-1 (with N up to 16) based on a cdf and adapts
  * the cdf accordingly.
  *
@@ -35,7 +33,7 @@
  * @return decoded variable
  */
 int aom_decode_cdf_adapt_q15_(aom_reader *r, uint16_t *cdf, int n,
- int *count, int rate OD_ACC_STR) {
+ int *count, int rate ACCT_STR_PARAM) {
   int val;
   int i;
   if (*count == 0) {
@@ -45,7 +43,7 @@ int aom_decode_cdf_adapt_q15_(aom_reader *r, uint16_t *cdf, int n,
       cdf[i] = cdf[i]*32768/ft;
     }
   }
-  val = aom_read_cdf(r, cdf, n, ACCT_STR);
+  val = aom_read_cdf(r, cdf, n, ACCT_STR_NAME);
   aom_cdf_adapt_q15(val, cdf, n, count, rate);
   return val;
 }
@@ -61,10 +59,10 @@ int aom_decode_cdf_adapt_q15_(aom_reader *r, uint16_t *cdf, int n,
  * @retval decoded variable
  */
 int aom_decode_cdf_adapt_(aom_reader *r, uint16_t *cdf, int n,
- int increment OD_ACC_STR) {
+ int increment ACCT_STR_PARAM) {
   int i;
   int val;
-  val = aom_read_cdf_unscaled(r, cdf, n, ACCT_STR);
+  val = aom_read_cdf_unscaled(r, cdf, n, ACCT_STR_NAME);
   if (cdf[n-1] + increment > 32767) {
     for (i = 0; i < n; i++) {
       /* Second term ensures that the pdf is non-null */
@@ -89,7 +87,7 @@ int aom_decode_cdf_adapt_(aom_reader *r, uint16_t *cdf, int n,
  * @retval decoded variable x
  */
 int generic_decode_(aom_reader *r, generic_encoder *model, int max,
- int *ex_q16, int integration OD_ACC_STR) {
+ int *ex_q16, int integration ACCT_STR_PARAM) {
   int lg_q1;
   int shift;
   int id;
@@ -109,8 +107,8 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
   id = OD_MINI(GENERIC_TABLES - 1, lg_q1);
   cdf = model->cdf[id];
   ms = (max + (1 << shift >> 1)) >> shift;
-  if (max == -1) xs = aom_read_cdf_unscaled(r, cdf, 16, ACCT_STR);
-  else xs = aom_read_cdf_unscaled(r, cdf, OD_MINI(ms + 1, 16), ACCT_STR);
+  if (max == -1) xs = aom_read_cdf_unscaled(r, cdf, 16, ACCT_STR_NAME);
+  else xs = aom_read_cdf_unscaled(r, cdf, OD_MINI(ms + 1, 16), ACCT_STR_NAME);
   if (xs == 15) {
     int e;
     unsigned decay;
@@ -121,7 +119,7 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
     OD_ASSERT(*ex_q16 < INT_MAX >> 1);
     e = ((2**ex_q16 >> 8) + (1 << shift >> 1)) >> shift;
     decay = OD_MAXI(2, OD_MINI(254, 256*e/(e + 256)));
-    xs += aom_laplace_decode_special(r, decay, (max == -1) ? -1 : ms - 15, ACCT_STR);
+    xs += aom_laplace_decode_special(r, decay, (max == -1) ? -1 : ms - 15, ACCT_STR_NAME);
   }
   if (shift != 0) {
     int special;
@@ -129,7 +127,7 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
        for xs=0 */
     special = xs == 0;
     if (shift - special > 0) {
-      lsb = aom_read_literal(r, shift - special, ACCT_STR);
+      lsb = aom_read_literal(r, shift - special, ACCT_STR_NAME);
     }
     lsb -= !special << (shift - 1);
   }
