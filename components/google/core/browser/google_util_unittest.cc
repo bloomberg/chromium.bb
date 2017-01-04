@@ -239,7 +239,7 @@ TEST(GoogleUtilTest, GoogleDomains) {
   EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.ca"),
                                 google_util::ALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
-  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.biz.tj"),
+  EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.off.ai"),
                                 google_util::ALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
   EXPECT_TRUE(IsGoogleDomainUrl(GURL("http://www.google.com/search?q=thing"),
@@ -249,14 +249,20 @@ TEST(GoogleUtilTest, GoogleDomains) {
                                 google_util::ALLOW_SUBDOMAIN,
                                 google_util::DISALLOW_NON_STANDARD_PORTS));
 
-  // Test some bad Google domains (invalid TLDs).
+  // Test some bad Google domains (invalid/non-Google TLDs).
   EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.google.notrealtld"),
+                                 google_util::ALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.google.sd"),
                                  google_util::ALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
   EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.google.faketld/search?q=q"),
                                  google_util::ALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
   EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.yahoo.com"),
+                                 google_util::ALLOW_SUBDOMAIN,
+                                 google_util::DISALLOW_NON_STANDARD_PORTS));
+  EXPECT_FALSE(IsGoogleDomainUrl(GURL("http://www.google.biz.tj"),
                                  google_util::ALLOW_SUBDOMAIN,
                                  google_util::DISALLOW_NON_STANDARD_PORTS));
 

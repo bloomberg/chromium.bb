@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/google/core/browser/google_switches.h"
+#include "components/google/core/browser/google_tld_list.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/url_formatter/url_fixer.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -46,13 +47,16 @@ bool IsPathHomePageBase(base::StringPiece path) {
 
 // True if the given canonical |host| is "[www.]<domain_in_lower_case>.<TLD>"
 // with a valid TLD. If |subdomain_permission| is ALLOW_SUBDOMAIN, we check
-// against host "*.<domain_in_lower_case>.<TLD>" instead.
+// against host "*.<domain_in_lower_case>.<TLD>" instead. Will return the TLD
+// string in |tld|, if specified and the |host| can be parsed.
 bool IsValidHostName(base::StringPiece host,
                      base::StringPiece domain_in_lower_case,
-                     SubdomainPermission subdomain_permission) {
+                     SubdomainPermission subdomain_permission,
+                     base::StringPiece* tld) {
   // Fast path to avoid searching the registry set.
   if (host.find(domain_in_lower_case) == base::StringPiece::npos)
     return false;
+
   size_t tld_length =
       net::registry_controlled_domains::GetCanonicalHostRegistryLength(
           host, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
@@ -63,6 +67,10 @@ bool IsValidHostName(base::StringPiece host,
   // Removes the tld and the preceding dot.
   base::StringPiece host_minus_tld =
       host.substr(0, host.length() - tld_length - 1);
+
+  if (tld)
+    *tld = host.substr(host.length() - tld_length);
+
   if (base::LowerCaseEqualsASCII(host_minus_tld, domain_in_lower_case))
     return true;
 
@@ -92,7 +100,13 @@ bool IsCanonicalHostGoogleHostname(base::StringPiece canonical_host,
   if (base_url.is_valid() && (canonical_host == base_url.host_piece()))
     return true;
 
-  return IsValidHostName(canonical_host, "google", subdomain_permission);
+  base::StringPiece tld;
+  if (!IsValidHostName(canonical_host, "google", subdomain_permission, &tld))
+    return false;
+
+  CR_DEFINE_STATIC_LOCAL(std::set<std::string>, google_tlds,
+                         ({GOOGLE_TLD_LIST}));
+  return base::ContainsKey(google_tlds, tld.as_string());
 }
 
 }  // namespace
@@ -233,7 +247,8 @@ bool IsYoutubeDomainUrl(const GURL& url,
                         SubdomainPermission subdomain_permission,
                         PortPermission port_permission) {
   return IsValidURL(url, port_permission) &&
-      IsValidHostName(url.host_piece(), "youtube", subdomain_permission);
+      IsValidHostName(url.host_piece(), "youtube", subdomain_permission,
+                      nullptr);
 }
 
 }  // namespace google_util

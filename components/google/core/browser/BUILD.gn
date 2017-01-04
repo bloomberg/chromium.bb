@@ -8,6 +8,7 @@ static_library("browser") {
     "google_pref_names.h",
     "google_switches.cc",
     "google_switches.h",
+    "google_tld_list.h",
     "google_url_tracker.cc",
     "google_url_tracker.h",
     "google_url_tracker_client.cc",
