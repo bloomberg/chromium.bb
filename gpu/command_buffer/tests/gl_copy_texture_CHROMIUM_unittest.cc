@@ -210,15 +210,9 @@ class GLCopyTextureCHROMIUMTest
 
   void SetUp() override {
     gl_.Initialize(GLManager::Options());
-
-    CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   }
 
-  void TearDown() override {
-    glDeleteTextures(2, textures_);
-    glDeleteFramebuffers(1, &framebuffer_id_);
-    gl_.Destroy();
-  }
+  void TearDown() override { gl_.Destroy(); }
 
   void CreateBackingForTexture(GLenum target, GLsizei width, GLsizei height) {
     if (target == GL_TEXTURE_RECTANGLE_ARB) {
@@ -258,8 +252,6 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
     options.size = gfx::Size(64, 64);
     gl_.Initialize(options);
   }
-
-  void TearDown() override { gl_.Destroy(); }
 
   // If a driver isn't capable of supporting ES3 context, creating
   // ContextGroup will fail. Just skip the test.
@@ -316,6 +308,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, Basic) {
   CopyType copy_type = GetParam();
   uint8_t pixels[1 * 4] = {255u, 0u, 0u, 255u};
 
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels);
@@ -563,10 +556,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, ImmutableTexture) {
 
   for (auto src_internal_format : src_internal_formats) {
     for (auto dest_internal_format : dest_internal_formats) {
-      glDeleteTextures(2, textures_);
-      glDeleteFramebuffers(1, &framebuffer_id_);
       CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
-
       glBindTexture(GL_TEXTURE_2D, textures_[0]);
       glTexStorage2DEXT(GL_TEXTURE_2D, 1, src_internal_format, 1, 1);
       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1,
@@ -602,6 +592,8 @@ TEST_P(GLCopyTextureCHROMIUMTest, ImmutableTexture) {
         GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixels);
         EXPECT_TRUE(GL_NO_ERROR == glGetError());
       }
+      glDeleteTextures(2, textures_);
+      glDeleteFramebuffers(1, &framebuffer_id_);
     }
   }
 }
@@ -615,6 +607,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, InternalFormat) {
   for (size_t src_index = 0; src_index < arraysize(src_formats); src_index++) {
     for (size_t dest_index = 0; dest_index < arraysize(dest_formats);
          dest_index++) {
+      CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, textures_[0]);
       glTexImage2D(GL_TEXTURE_2D, 0, src_formats[src_index], 1, 1, 0,
                    src_formats[src_index], GL_UNSIGNED_BYTE, nullptr);
@@ -636,12 +629,15 @@ TEST_P(GLCopyTextureCHROMIUMTest, InternalFormat) {
 
       EXPECT_TRUE(GL_NO_ERROR == glGetError()) << "src_index:" << src_index
                                                << " dest_index:" << dest_index;
+      glDeleteTextures(2, textures_);
+      glDeleteFramebuffers(1, &framebuffer_id_);
     }
   }
 }
 
 TEST_P(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
   CopyType copy_type = GetParam();
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                nullptr);
@@ -666,9 +662,12 @@ TEST_P(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
     EXPECT_TRUE(GL_INVALID_OPERATION == glGetError())
         << "dest_index:" << dest_index;
   }
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
 }
 
 TEST_F(GLCopyTextureCHROMIUMTest, InternalFormatTypeCombinationNotSupported) {
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                nullptr);
@@ -689,6 +688,8 @@ TEST_F(GLCopyTextureCHROMIUMTest, InternalFormatTypeCombinationNotSupported) {
     EXPECT_TRUE(GL_INVALID_OPERATION == glGetError())
         << "dest_index:" << dest_index;
   }
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
 }
 
 // Test to ensure that the destination texture is redefined if the properties
@@ -697,6 +698,7 @@ TEST_F(GLCopyTextureCHROMIUMTest, RedefineDestinationTexture) {
   uint8_t pixels[4 * 4] = {255u, 0u, 0u, 255u, 255u, 0u, 0u, 255u,
                            255u, 0u, 0u, 255u, 255u, 0u, 0u, 255u};
 
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -746,6 +748,10 @@ TEST_F(GLCopyTextureCHROMIUMTest, RedefineDestinationTexture) {
             glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
   GLTestHelper::CheckPixels(1, 1, 1, 1, 0, &pixels[12]);
+
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
+
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
@@ -766,6 +772,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
   CopyType copy_type = GetParam();
   uint8_t pixels[1 * 4] = {255u, 0u, 0u, 255u};
 
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
@@ -822,6 +829,9 @@ TEST_P(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
     EXPECT_EQ(GL_TEXTURE1 + x, active_texture);
   }
 
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
+
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 };
 
@@ -831,6 +841,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, TextureStatePreserved) {
   CopyType copy_type = GetParam();
   // Setup the texture used for the extension invocation.
   uint8_t pixels[1 * 4] = {255u, 0u, 0u, 255u};
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels);
@@ -875,6 +886,8 @@ TEST_P(GLCopyTextureCHROMIUMTest, TextureStatePreserved) {
   glBindTexture(GL_TEXTURE_2D, 0);
 
   glDeleteTextures(2, texture_ids);
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
 
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
@@ -885,6 +898,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, FBOStatePreserved) {
   CopyType copy_type = GetParam();
   // Setup the texture used for the extension invocation.
   uint8_t pixels[1 * 4] = {255u, 0u, 0u, 255u};
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                pixels);
@@ -972,13 +986,15 @@ TEST_P(GLCopyTextureCHROMIUMTest, FBOStatePreserved) {
   glDeleteRenderbuffers(1, &renderbuffer_id);
   glDeleteTextures(1, &texture_id);
   glDeleteFramebuffers(1, &framebuffer_id);
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
 
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
 TEST_P(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
   CopyType copy_type = GetParam();
-  // unbind the one created in setup.
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -1052,6 +1068,9 @@ TEST_P(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
   glDrawArrays(GL_TRIANGLES, 0, 6);
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected));
 
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
+
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   gl2.MakeCurrent();
@@ -1063,6 +1082,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
 TEST_P(GLCopyTextureCHROMIUMTest, UninitializedSource) {
   CopyType copy_type = GetParam();
   const GLsizei kWidth = 64, kHeight = 64;
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kWidth, kHeight, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, nullptr);
@@ -1090,10 +1110,14 @@ TEST_P(GLCopyTextureCHROMIUMTest, UninitializedSource) {
     }
   }
 
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
+
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
 TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureDimension) {
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                nullptr);
@@ -1125,9 +1149,13 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureDimension) {
   glCopySubTextureCHROMIUM(textures_[0], textures_[1], 0, 0, 1,
                            1, 2, 2, false, false, false);
   EXPECT_TRUE(glGetError() == GL_INVALID_VALUE);
+
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
 }
 
 TEST_F(GLCopyTextureCHROMIUMTest, CopyTextureInvalidTextureIds) {
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                nullptr);
@@ -1151,9 +1179,13 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopyTextureInvalidTextureIds) {
   glCopyTextureCHROMIUM(textures_[0], textures_[1], GL_RGBA,
                         GL_UNSIGNED_BYTE, false, false, false);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
 }
 
 TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureInvalidTextureIds) {
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                nullptr);
@@ -1177,11 +1209,15 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureInvalidTextureIds) {
   glCopySubTextureCHROMIUM(textures_[0], textures_[1], 1, 1, 0,
                            0, 1, 1, false, false, false);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
 }
 
 TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureOffset) {
   uint8_t rgba_pixels[4 * 4] = {255u, 0u, 0u,   255u, 0u, 255u, 0u, 255u,
                                 0u,   0u, 255u, 255u, 0u, 0u,   0u, 255u};
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                rgba_pixels);
@@ -1221,6 +1257,9 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopySubTextureOffset) {
   GLTestHelper::CheckPixels(1, 0, 1, 1, 0, green);
   GLTestHelper::CheckPixels(0, 1, 1, 1, 0, blue);
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  glDeleteTextures(2, textures_);
+  glDeleteFramebuffers(1, &framebuffer_id_);
 }
 
 TEST_F(GLCopyTextureCHROMIUMTest, CopyTextureBetweenTexture2DAndRectangleArb) {
@@ -1252,11 +1291,6 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopyTextureBetweenTexture2DAndRectangleArb) {
          dest_index++) {
       GLenum dest_target = dest_targets[dest_index];
 
-      // SetUp() sets up textures with the wrong parameters for this test, and
-      // TearDown() expects to successfully delete textures/framebuffers, so
-      // this is the right place for the delete/create calls.
-      glDeleteTextures(2, textures_);
-      glDeleteFramebuffers(1, &framebuffer_id_);
       CreateAndBindDestinationTextureAndFBO(dest_target);
 
       // Allocate source and destination textures.
@@ -1313,6 +1347,9 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopyTextureBetweenTexture2DAndRectangleArb) {
           GLTestHelper::CheckPixels(x, y, 1, 1, 0, expected_color);
         }
       }
+
+      glDeleteTextures(2, textures_);
+      glDeleteFramebuffers(1, &framebuffer_id_);
     }
   }
 }
