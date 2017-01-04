@@ -559,11 +559,21 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo,
   if (respectHyphen)
     selectionEnd = textRun.length();
 
+  bool ltr = m_inlineTextBox.isLeftToRightDirection();
+  bool flowIsLTR =
+      m_inlineTextBox.getLineLayoutItem().style()->isLeftToRightDirection();
   if (m_inlineTextBox.truncation() != cNoTruncation) {
+    // In a mixed-direction flow the ellipsis is at the start of the text
+    // rather than at the end of it.
     selectionStart =
-        std::min<int>(selectionStart, m_inlineTextBox.truncation());
-    selectionEnd = std::min<int>(selectionEnd, m_inlineTextBox.truncation());
-    length = m_inlineTextBox.truncation();
+        ltr == flowIsLTR
+            ? std::min<int>(selectionStart, m_inlineTextBox.truncation())
+            : std::max<int>(selectionStart, m_inlineTextBox.truncation());
+    selectionEnd =
+        ltr == flowIsLTR
+            ? std::min<int>(selectionEnd, m_inlineTextBox.truncation())
+            : std::max<int>(selectionEnd, m_inlineTextBox.truncation());
+    length = ltr == flowIsLTR ? m_inlineTextBox.truncation() : textRun.length();
   }
 
   TextPainter textPainter(context, font, textRun, textOrigin, boxRect,
@@ -576,25 +586,23 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo,
                                 emphasisMarkPosition);
   if (combinedText)
     textPainter.setCombinedText(combinedText);
+  if (m_inlineTextBox.truncation() != cNoTruncation && ltr != flowIsLTR)
+    textPainter.setEllipsisOffset(m_inlineTextBox.truncation());
 
   if (!paintSelectedTextOnly) {
     int startOffset = 0;
     int endOffset = length;
-    if (paintSelectedTextSeparately && selectionStart < selectionEnd) {
-      startOffset = selectionEnd;
-      endOffset = selectionStart;
-    }
     // Where the text and its flow have opposite directions then our offset into
     // the text given by |truncation| is at the start of the part that will be
     // visible.
-    if (m_inlineTextBox.truncation() != cNoTruncation &&
-        m_inlineTextBox.getLineLayoutItem()
-                .containingBlock()
-                .style()
-                ->isLeftToRightDirection() !=
-            m_inlineTextBox.isLeftToRightDirection()) {
+    if (m_inlineTextBox.truncation() != cNoTruncation && ltr != flowIsLTR) {
       startOffset = m_inlineTextBox.truncation();
       endOffset = textRun.length();
+    }
+
+    if (paintSelectedTextSeparately && selectionStart < selectionEnd) {
+      startOffset = selectionEnd;
+      endOffset = selectionStart;
     }
 
     // FIXME: This cache should probably ultimately be held somewhere else.
@@ -945,11 +953,13 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context,
   bool flowIsLTR =
       m_inlineTextBox.getLineLayoutItem().style()->isLeftToRightDirection();
   if (m_inlineTextBox.truncation() != cNoTruncation) {
-    start = ltr == flowIsLTR ? m_inlineTextBox.start()
-                             : m_inlineTextBox.truncation();
-    length = ltr == flowIsLTR
-                 ? m_inlineTextBox.truncation()
-                 : m_inlineTextBox.len() - m_inlineTextBox.truncation();
+    // In a mixed-direction flow the ellipsis is at the start of the text
+    // so we need to start after it. Otherwise we just need to make sure
+    // the end of the text is where the ellipsis starts.
+    if (ltr != flowIsLTR)
+      sPos = std::max<int>(sPos, m_inlineTextBox.truncation());
+    else
+      length = m_inlineTextBox.truncation();
   }
   StringView string(m_inlineTextBox.getLineLayoutItem().text(), start,
                     static_cast<unsigned>(length));
@@ -988,10 +998,12 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context,
                          (boxRect.y() - deltaY).toFloat());
   LayoutRect selectionRect = LayoutRect(
       font.selectionRectForText(textRun, localOrigin, selHeight, sPos, ePos));
-  if (m_inlineTextBox.hasWrappedSelectionNewline()
-      // For line breaks, just painting a selection where the line break itself
-      // is rendered is sufficient.
-      && !m_inlineTextBox.isLineBreak())
+  // For line breaks, just painting a selection where the line break itself
+  // is rendered is sufficient. Don't select it if there's an ellipsis
+  // there.
+  if (m_inlineTextBox.hasWrappedSelectionNewline() &&
+      m_inlineTextBox.truncation() == cNoTruncation &&
+      !m_inlineTextBox.isLineBreak())
     expandToIncludeNewlineForSelection(selectionRect);
 
   // Line breaks report themselves as having zero width for layout purposes,
@@ -1001,7 +1013,7 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context,
   if (!m_inlineTextBox.isLeftToRightDirection() &&
       m_inlineTextBox.isLineBreak())
     selectionRect.move(-selectionRect.width(), LayoutUnit());
-  if (!flowIsLTR && m_inlineTextBox.truncation() != cNoTruncation)
+  if (!flowIsLTR && !ltr && m_inlineTextBox.truncation() != cNoTruncation)
     selectionRect.move(m_inlineTextBox.logicalWidth() - selectionRect.width(),
                        LayoutUnit());
 
@@ -1038,8 +1050,9 @@ void InlineTextBoxPainter::paintDecorations(
     bool flowIsLTR =
         m_inlineTextBox.getLineLayoutItem().style()->isLeftToRightDirection();
     width = LayoutUnit(m_inlineTextBox.getLineLayoutItem().width(
-        ltr == flowIsLTR ? m_inlineTextBox.start()
-                         : m_inlineTextBox.truncation(),
+        ltr == flowIsLTR
+            ? m_inlineTextBox.start()
+            : m_inlineTextBox.start() + m_inlineTextBox.truncation(),
         ltr == flowIsLTR ? m_inlineTextBox.truncation()
                          : m_inlineTextBox.len() - m_inlineTextBox.truncation(),
         m_inlineTextBox.textPos(),
