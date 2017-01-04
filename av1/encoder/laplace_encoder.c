@@ -125,9 +125,5 @@ void aom_laplace_encode_special(aom_writer *w, int x, unsigned decay, int max) {
     ms -= 15;
   }
   while (sym >= 15 && ms != 0);
-#if CONFIG_DAALA_EC
-  if (shift) od_ec_enc_bits(&w->ec, x & ((1 << shift) - 1), shift);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
+  if (shift) aom_write_literal(w, x & ((1 << shift) - 1), shift);
 }

@@ -139,12 +139,8 @@ int aom_laplace_decode_special_(aom_reader *r, unsigned decay,
     ms -= 15;
   }
   while (sym >= 15 && ms != 0);
-#if CONFIG_DAALA_EC
-  if (shift) pos = (xs << shift) + od_ec_dec_bits(&r->ec, shift, ACCT_STR);
+  if (shift) pos = (xs << shift) + aom_read_literal(r, shift, ACCT_STR);
   else pos = xs;
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
   OD_ASSERT(pos >> shift <= max >> shift || max == -1);
   if (max != -1 && pos > max) {
     pos = max;
