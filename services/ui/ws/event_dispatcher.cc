@@ -174,12 +174,12 @@ void EventDispatcher::SetDragDropSourceWindow(
     ServerWindow* window,
     DragTargetConnection* source_connection,
     int32_t drag_pointer,
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data,
+    const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data,
     uint32_t drag_operations) {
   CancelImplicitCaptureExcept(nullptr);
   drag_controller_ = base::MakeUnique<DragController>(
-      this, drag_source, window, source_connection, drag_pointer,
-      std::move(mime_data), drag_operations);
+      this, drag_source, window, source_connection, drag_pointer, mime_data,
+      drag_operations);
 }
 
 void EventDispatcher::CancelDragDrop() {

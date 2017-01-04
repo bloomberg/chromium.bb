@@ -693,9 +693,9 @@ TEST(UnionTest, PodUnionInMap) {
 TEST(UnionTest, PodUnionInMapSerialization) {
   using MojomType = MapDataView<StringDataView, PodUnionDataView>;
 
-  Map<String, PodUnionPtr> map;
-  map.insert("one", PodUnion::New());
-  map.insert("two", PodUnion::New());
+  std::unordered_map<std::string, PodUnionPtr> map;
+  map.insert(std::make_pair("one", PodUnion::New()));
+  map.insert(std::make_pair("two", PodUnion::New()));
 
   map["one"]->set_f_int8(8);
   map["two"]->set_f_int16(16);
@@ -713,7 +713,7 @@ TEST(UnionTest, PodUnionInMapSerialization) {
   mojo::internal::Serialize<MojomType>(map, &buf, &data, &validate_params,
                                        &context);
 
-  Map<String, PodUnionPtr> map2;
+  std::unordered_map<std::string, PodUnionPtr> map2;
   mojo::internal::Deserialize<MojomType>(data, &map2, &context);
 
   EXPECT_EQ(8, map2["one"]->get_f_int8());
@@ -723,9 +723,9 @@ TEST(UnionTest, PodUnionInMapSerialization) {
 TEST(UnionTest, PodUnionInMapSerializationWithNull) {
   using MojomType = MapDataView<StringDataView, PodUnionDataView>;
 
-  Map<String, PodUnionPtr> map;
-  map.insert("one", PodUnion::New());
-  map.insert("two", nullptr);
+  std::unordered_map<std::string, PodUnionPtr> map;
+  map.insert(std::make_pair("one", PodUnion::New()));
+  map.insert(std::make_pair("two", nullptr));
 
   map["one"]->set_f_int8(8);
 
@@ -741,7 +741,7 @@ TEST(UnionTest, PodUnionInMapSerializationWithNull) {
   mojo::internal::Serialize<MojomType>(map, &buf, &data, &validate_params,
                                        &context);
 
-  Map<String, PodUnionPtr> map2;
+  std::unordered_map<std::string, PodUnionPtr> map2;
   mojo::internal::Deserialize<MojomType>(data, &map2, &context);
 
   EXPECT_EQ(8, map2["one"]->get_f_int8());

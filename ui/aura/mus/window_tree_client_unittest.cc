@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

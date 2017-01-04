@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <unordered_set>
 #include <utility>
 
 #include "base/files/file_enumerator.h"
@@ -214,30 +215,27 @@ SerialDeviceEnumeratorMac::SerialDeviceEnumeratorMac() {}
 SerialDeviceEnumeratorMac::~SerialDeviceEnumeratorMac() {}
 
 mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
-  mojo::Array<serial::DeviceInfoPtr> newDevices = GetDevicesNew();
-  mojo::Array<serial::DeviceInfoPtr> oldDevices = GetDevicesOld();
+  mojo::Array<serial::DeviceInfoPtr> devices = GetDevicesNew();
+  mojo::Array<serial::DeviceInfoPtr> old_devices = GetDevicesOld();
 
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       "Hardware.Serial.NewMinusOldDeviceListSize",
-      Clamp(newDevices.size() - oldDevices.size(), -10, 10));
+      Clamp(devices.size() - old_devices.size(), -10, 10));
 
   // Add devices found from both the new and old methods of enumeration. If a
   // device is found using both the new and the old enumeration method, then we
   // take the device from the new enumeration method because it's able to
   // collect more information. We do this by inserting the new devices first,
   // because insertions are ignored if the key already exists.
-  mojo::Map<mojo::String, serial::DeviceInfoPtr> deviceMap;
-  for (unsigned long i = 0; i < newDevices.size(); i++) {
-    deviceMap.insert(newDevices[i]->path, newDevices[i].Clone());
+  std::unordered_set<std::string> devices_seen;
+  for (const auto& device : devices) {
+    bool inserted = devices_seen.insert(device->path).second;
+    DCHECK(inserted);
   }
-  for (unsigned long i = 0; i < oldDevices.size(); i++) {
-    deviceMap.insert(oldDevices[i]->path, oldDevices[i].Clone());
+  for (auto& device : old_devices) {
+    if (devices_seen.insert(device->path).second)
+      devices.push_back(std::move(device));
   }
-
-  mojo::Array<mojo::String> paths;
-  mojo::Array<serial::DeviceInfoPtr> devices;
-  deviceMap.DecomposeMapTo(&paths, &devices);
-
   return devices;
 }
 

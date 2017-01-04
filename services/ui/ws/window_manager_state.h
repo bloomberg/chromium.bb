@@ -68,7 +68,7 @@ class WindowManagerState : public EventDispatcherDelegate,
       DragSource* drag_source,
       ServerWindow* window,
       DragTargetConnection* source_connection,
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
+      const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
       uint32_t drag_operation);
   void CancelDragDrop();
   void EndDragDrop();

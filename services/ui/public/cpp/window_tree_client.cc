@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "mojo/public/cpp/bindings/map.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/util.h"
 #include "services/ui/public/cpp/in_flight_change.h"

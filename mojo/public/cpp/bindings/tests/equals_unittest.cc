@@ -84,37 +84,6 @@ TEST_F(EqualsTest, Array) {
   EXPECT_TRUE(n1.Equals(n2));
 }
 
-TEST_F(EqualsTest, Map) {
-  auto n1(NamedRegion::New());
-  n1->name.emplace("foo");
-  n1->rects.emplace();
-  n1->rects->push_back(CreateRect());
-
-  Map<std::string, NamedRegionPtr> m1;
-  m1.insert("foo", std::move(n1));
-
-  decltype(m1) m2;
-  EXPECT_FALSE(m1.Equals(m2));
-
-  m2.insert("bar", m1.at("foo").Clone());
-  EXPECT_FALSE(m1.Equals(m2));
-
-  m2 = m1.Clone();
-  m2.at("foo")->name.emplace("monkey");
-  EXPECT_FALSE(m1.Equals(m2));
-
-  m2 = m1.Clone();
-  m2.at("foo")->rects->push_back(Rect::New());
-  EXPECT_FALSE(m1.Equals(m2));
-
-  m2.at("foo")->rects->resize(1);
-  (*m2.at("foo")->rects)[0]->width = 1;
-  EXPECT_FALSE(m1.Equals(m2));
-
-  m2 = m1.Clone();
-  EXPECT_TRUE(m1.Equals(m2));
-}
-
 TEST_F(EqualsTest, InterfacePtr) {
   base::MessageLoop message_loop;
 

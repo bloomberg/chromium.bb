@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "mojo/public/cpp/bindings/map.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/geometry/vector2d.h"

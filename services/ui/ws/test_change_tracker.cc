@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/common/util.h"
 
 using mojo::Array;

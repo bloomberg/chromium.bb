@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "mojo/public/cpp/bindings/stl_converters.h"
+#include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/ws/default_access_policy.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
@@ -1643,9 +1643,7 @@ void WindowTree::PerformDragDrop(
   // normal.
   WindowManagerState* wms = display_root->window_manager_state();
   window_server_->StartDragLoop(change_id, window, this);
-  wms->SetDragDropSourceWindow(
-      this, window, this, mojo::WrapSTLType(mojo::UnorderedMapToMap(drag_data)),
-      drag_operation);
+  wms->SetDragDropSourceWindow(this, window, this, drag_data, drag_operation);
 }
 
 void WindowTree::CancelDragDrop(Id window_id) {
@@ -1953,9 +1951,8 @@ DragTargetConnection* WindowTree::GetDragTargetForWindow(
 }
 
 void WindowTree::PerformOnDragDropStart(
-    mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) {
-  client()->OnDragDropStart(
-      mojo::MapToUnorderedMap(mojo::UnwrapToSTLType(std::move(mime_data))));
+    const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data) {
+  client()->OnDragDropStart(mime_data);
 }
 
 void WindowTree::PerformOnDragEnter(

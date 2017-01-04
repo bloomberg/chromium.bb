@@ -37,13 +37,14 @@ using DropEffectBitmask = uint32_t;
 // WindowManagerState's EventDispatcher creates and owns this instance.
 class DragController : public ServerWindowObserver {
  public:
-  DragController(DragCursorUpdater* cursor_updater,
-                 DragSource* source,
-                 ServerWindow* source_window,
-                 DragTargetConnection* source_connection,
-                 int32_t drag_pointer,
-                 mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data,
-                 DropEffectBitmask drag_operations);
+  DragController(
+      DragCursorUpdater* cursor_updater,
+      DragSource* source,
+      ServerWindow* source_window,
+      DragTargetConnection* source_connection,
+      int32_t drag_pointer,
+      const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data,
+      DropEffectBitmask drag_operations);
   ~DragController() override;
 
   ui::mojom::Cursor current_cursor() const { return current_cursor_; }
@@ -130,7 +131,7 @@ class DragController : public ServerWindowObserver {
   DragTargetConnection* source_connection_;
 
   // A list of the offered mime types.
-  mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data_;
+  std::unordered_map<std::string, std::vector<uint8_t>> mime_data_;
 
   // We need to keep track of state on a per window basis. A window being in
   // this map means that we're observing it. WindowState also keeps track of

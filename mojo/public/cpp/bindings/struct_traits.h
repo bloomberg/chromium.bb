@@ -38,7 +38,7 @@ namespace mojo {
 //
 //        - map:
 //          Value or reference of any type that has a MapTraits defined.
-//          Supported by default: std::map, std::unordered_map, mojo::Map,
+//          Supported by default: std::map, std::unordered_map,
 //          WTF::HashMap (in blink).
 //
 //        - struct:

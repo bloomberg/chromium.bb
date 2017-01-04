@@ -498,7 +498,8 @@ class WindowTree : public mojom::WindowTree,
 
   // DragTargetConnection:
   void PerformOnDragDropStart(
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) override;
+      const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data)
+      override;
   void PerformOnDragEnter(
       const ServerWindow* window,
       uint32_t event_flags,

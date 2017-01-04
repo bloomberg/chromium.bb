@@ -5,10 +5,11 @@
 #ifndef SERVICES_UI_WS_DRAG_TARGET_CONNECTION_H_
 #define SERVICES_UI_WS_DRAG_TARGET_CONNECTION_H_
 
+#include <string>
+#include <unordered_map>
+
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/map.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {
@@ -37,7 +38,8 @@ class DragTargetConnection {
   // equivalent in ui::WindowDropTarget to minimize the load of inter-process
   // communication.)
   virtual void PerformOnDragDropStart(
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) = 0;
+      const std::unordered_map<std::string, std::vector<uint8_t>>&
+          mime_data) = 0;
 
   // Next, on each time that the mouse cursor moves from one |window| to
   // another, we send a DragEnter message. The value returned by |callback| is
