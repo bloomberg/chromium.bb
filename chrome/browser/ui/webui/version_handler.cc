@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -109,20 +110,23 @@ void VersionHandler::OnGotPlugins(
   std::vector<content::WebPluginInfo> info_array;
   content::PluginService::GetInstance()->GetPluginInfoArray(
       GURL(), content::kFlashPluginSwfMimeType, false, &info_array, NULL);
-  base::string16 flash_version =
-      l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN);
+  std::string flash_version_and_path =
+      l10n_util::GetStringUTF8(IDS_PLUGINS_DISABLED_PLUGIN);
   PluginPrefs* plugin_prefs =
       PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui())).get();
   if (plugin_prefs) {
     for (size_t i = 0; i < info_array.size(); ++i) {
       if (plugin_prefs->IsPluginEnabled(info_array[i])) {
-        flash_version = info_array[i].version;
+        flash_version_and_path = base::StringPrintf(
+            "%s %s", base::UTF16ToUTF8(info_array[i].version).c_str(),
+            base::UTF16ToUTF8(info_array[i].path.LossyDisplayName()).c_str());
         break;
       }
     }
   }
 
-  base::StringValue arg(flash_version);
+  base::StringValue arg(flash_version_and_path);
+
   web_ui()->CallJavascriptFunctionUnsafe(version_ui::kReturnFlashVersion, arg);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
