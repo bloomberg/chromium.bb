@@ -162,7 +162,7 @@ class GFX_EXPORT ColorSpace {
   bool operator<(const ColorSpace& other) const;
 
   // Note that this may return nullptr.
-  sk_sp<SkColorSpace> ToSkColorSpace() const;
+  const sk_sp<SkColorSpace>& ToSkColorSpace() const { return sk_color_space_; }
   static ColorSpace FromSkColorSpace(const sk_sp<SkColorSpace>& sk_color_space);
 
  private:

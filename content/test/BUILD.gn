@@ -480,6 +480,7 @@ static_library("layouttest_support") {
     "//skia",
     "//ui/accessibility:ax_gen",
     "//ui/events/blink",
+    "//ui/gfx:test_support",
     "//v8",
   ]
 
