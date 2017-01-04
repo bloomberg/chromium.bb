@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "components/prefs/base_prefs_export.h"
 
@@ -20,7 +20,7 @@ class Value;
 // A generic string to value map used by the PrefStore implementations.
 class COMPONENTS_PREFS_EXPORT PrefValueMap {
  public:
-  using Map = base::ScopedPtrHashMap<std::string, std::unique_ptr<base::Value>>;
+  using Map = std::unordered_map<std::string, std::unique_ptr<base::Value>>;
   using iterator = Map::iterator;
   using const_iterator = Map::const_iterator;
 

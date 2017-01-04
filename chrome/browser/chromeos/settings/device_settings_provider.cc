@@ -735,11 +735,11 @@ void DeviceSettingsProvider::UpdateValuesCache(
   // cache so that if somebody actually reads the cache will be already valid.
   std::vector<std::string> notifications;
   // Go through the new values and verify in the old ones.
-  PrefValueMap::iterator iter = new_values_cache.begin();
+  auto iter = new_values_cache.begin();
   for (; iter != new_values_cache.end(); ++iter) {
     const base::Value* old_value;
     if (!values_cache_.GetValue(iter->first, &old_value) ||
-        !old_value->Equals(iter->second)) {
+        !old_value->Equals(iter->second.get())) {
       notifications.push_back(iter->first);
     }
   }

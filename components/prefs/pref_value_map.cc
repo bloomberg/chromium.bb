@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/values.h"
 
 PrefValueMap::PrefValueMap() {}
@@ -19,7 +18,11 @@ PrefValueMap::~PrefValueMap() {}
 
 bool PrefValueMap::GetValue(const std::string& key,
                             const base::Value** value) const {
-  const base::Value* got_value = prefs_.get(key);
+  auto it = prefs_.find(key);
+  if (it == prefs_.end())
+    return false;
+
+  const base::Value* got_value = it->second.get();
   if (value && got_value)
     *value = got_value;
 
@@ -27,7 +30,11 @@ bool PrefValueMap::GetValue(const std::string& key,
 }
 
 bool PrefValueMap::GetValue(const std::string& key, base::Value** value) {
-  base::Value* got_value = prefs_.get(key);
+  auto it = prefs_.find(key);
+  if (it == prefs_.end())
+    return false;
+
+  base::Value* got_value = it->second.get();
   if (value && got_value)
     *value = got_value;
 
@@ -38,11 +45,11 @@ bool PrefValueMap::SetValue(const std::string& key,
                             std::unique_ptr<base::Value> value) {
   DCHECK(value);
 
-  base::Value* old_value = prefs_.get(key);
-  if (old_value && value->Equals(old_value))
+  std::unique_ptr<base::Value>& existing_value = prefs_[key];
+  if (existing_value && value->Equals(existing_value.get()))
     return false;
 
-  prefs_.set(key, std::move(value));
+  existing_value = std::move(value);
   return true;
 }
 
@@ -118,13 +125,16 @@ void PrefValueMap::GetDifferingKeys(
   differing_keys->clear();
 
   // Put everything into ordered maps.
-  std::map<std::string, base::Value*> this_prefs(prefs_.begin(), prefs_.end());
-  std::map<std::string, base::Value*> other_prefs(other->prefs_.begin(),
-                                                  other->prefs_.end());
+  std::map<std::string, base::Value*> this_prefs;
+  std::map<std::string, base::Value*> other_prefs;
+  for (const auto& pair : prefs_)
+    this_prefs[pair.first] = pair.second.get();
+  for (const auto& pair : other->prefs_)
+    other_prefs[pair.first] = pair.second.get();
 
   // Walk over the maps in lockstep, adding everything that is different.
-  auto this_pref(this_prefs.begin());
-  auto other_pref(other_prefs.begin());
+  auto this_pref = this_prefs.begin();
+  auto other_pref = other_prefs.begin();
   while (this_pref != this_prefs.end() && other_pref != other_prefs.end()) {
     const int diff = this_pref->first.compare(other_pref->first);
     if (diff == 0) {

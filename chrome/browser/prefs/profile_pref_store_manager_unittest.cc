@@ -37,7 +37,7 @@ class FirstEqualsPredicate {
  public:
   explicit FirstEqualsPredicate(const std::string& expected)
       : expected_(expected) {}
-  bool operator()(const std::pair<std::string, base::Value*>& pair) {
+  bool operator()(const PrefValueMap::Map::value_type& pair) {
     return pair.first == expected_;
   }
 
