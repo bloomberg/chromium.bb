@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/resources/transferable_resource.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -18,16 +19,13 @@ class TracedValue;
 }
 }
 
-namespace cc {
-class SingleReleaseCallback;
-class TextureMailbox;
-}
-
 namespace gfx {
 class GpuMemoryBuffer;
 }
 
 namespace exo {
+
+class CompositorFrameSinkHolder;
 
 // This class provides the content for a Surface. The mechanism by which a
 // client provides and updates the contents is the responsibility of the client
@@ -53,10 +51,12 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // buffer. Returns a release callback on success. The release callback should
   // be called before a new texture mailbox can be acquired unless
   // |non_client_usage| is true.
-  std::unique_ptr<cc::SingleReleaseCallback> ProduceTextureMailbox(
-      cc::TextureMailbox* mailbox,
+  bool ProduceTransferableResource(
+      CompositorFrameSinkHolder* compositor_frame_sink_holder,
+      cc::ResourceId resource_id,
       bool secure_output_only,
-      bool client_usage);
+      bool client_usage,
+      cc::TransferableResource* resource);
 
   // This should be called when the buffer is attached to a Surface.
   void OnAttach();
@@ -122,6 +122,12 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
 
   // The client release callback.
   base::Closure release_callback_;
+
+  // The CompositorFrameSinkHolder that has the ReleaseCallback of this buffer
+  // produced in ProduceTextureMailbox().
+  // Buffer holds a reference to the CompositorFrameSinkHolder to keep it alive.
+  // The refptr is reset when the release callback is called.
+  scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };

@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
-#include "cc/resources/single_release_callback.h"
+#include "cc/resources/release_callback.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "components/exo/compositor_frame_sink.h"
@@ -37,9 +37,8 @@ class CompositorFrameSinkHolder
       cc::mojom::MojoCompositorFrameSinkClientRequest request);
 
   bool HasReleaseCallbackForResource(cc::ResourceId id);
-  void AddResourceReleaseCallback(
-      cc::ResourceId id,
-      std::unique_ptr<cc::SingleReleaseCallback> callback);
+  void SetResourceReleaseCallback(cc::ResourceId id,
+                                  const cc::ReleaseCallback& callback);
 
   CompositorFrameSink* GetCompositorFrameSink() { return frame_sink_.get(); }
 
@@ -79,14 +78,8 @@ class CompositorFrameSinkHolder
 
   void UpdateNeedsBeginFrame();
 
-  // Each release callback holds a reference to the CompositorFrameSinkHolder
-  // itself to keep it alive. Running and erasing the callbacks might result in
-  // the instance being destroyed. Therefore, we should not access any member
-  // variables after running and erasing the callbacks.
-  using ResourceReleaseCallbackMap =
-      std::map<int,
-               std::pair<scoped_refptr<CompositorFrameSinkHolder>,
-                         std::unique_ptr<cc::SingleReleaseCallback>>>;
+  // A collection of callbacks used to release resources.
+  using ResourceReleaseCallbackMap = std::map<int, cc::ReleaseCallback>;
   ResourceReleaseCallbackMap release_callbacks_;
 
   Surface* surface_;

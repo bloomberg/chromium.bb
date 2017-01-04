@@ -658,32 +658,11 @@ void Surface::SetSurfaceHierarchyNeedsCommitToNewSurfaces() {
 }
 
 void Surface::UpdateResource(bool client_usage) {
-  std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
-
-  cc::TextureMailbox texture_mailbox;
-  if (current_buffer_.buffer()) {
-    texture_mailbox_release_callback =
-        current_buffer_.buffer()->ProduceTextureMailbox(
-            &texture_mailbox, state_.only_visible_on_secure_output,
-            client_usage);
-  }
-
-  if (texture_mailbox_release_callback) {
-    cc::TransferableResource resource;
-    resource.id = next_resource_id_++;
-    resource.format = cc::RGBA_8888;
-    resource.filter =
-        texture_mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR;
-    resource.size = texture_mailbox.size_in_pixels();
-    resource.mailbox_holder = gpu::MailboxHolder(texture_mailbox.mailbox(),
-                                                 texture_mailbox.sync_token(),
-                                                 texture_mailbox.target());
-    resource.is_overlay_candidate = texture_mailbox.is_overlay_candidate();
-
-    compositor_frame_sink_holder_->AddResourceReleaseCallback(
-        resource.id, std::move(texture_mailbox_release_callback));
-    current_resource_ = resource;
-  } else {
+  if (!current_buffer_.buffer() ||
+      !current_buffer_.buffer()->ProduceTransferableResource(
+          compositor_frame_sink_holder_.get(), next_resource_id_++,
+          state_.only_visible_on_secure_output, client_usage,
+          &current_resource_)) {
     current_resource_.id = 0;
     current_resource_.size = gfx::Size();
   }

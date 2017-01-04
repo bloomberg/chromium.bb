@@ -31,6 +31,9 @@ TEST_F(BufferTest, ReleaseCallback) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder =
+      new CompositorFrameSinkHolder(surface.get(), nullptr, nullptr);
 
   // Set the release callback.
   int release_call_count = 0;
@@ -38,15 +41,21 @@ TEST_F(BufferTest, ReleaseCallback) {
       base::Bind(&Release, base::Unretained(&release_call_count)));
 
   buffer->OnAttach();
-  // Produce a texture mailbox for the contents of the buffer.
-  cc::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> buffer_release_callback =
-      buffer->ProduceTextureMailbox(&texture_mailbox, false, true);
-  ASSERT_TRUE(buffer_release_callback);
+  cc::TransferableResource resource;
+  // Produce a transferable resource for the contents of the buffer.
+  bool rv = buffer->ProduceTransferableResource(
+      compositor_frame_sink_holder.get(), 0, false, true, &resource);
+  ASSERT_TRUE(rv);
 
   // Release buffer.
-  buffer_release_callback->Run(gpu::SyncToken(), false);
+  cc::ReturnedResource returned_resource;
+  returned_resource.id = resource.id;
+  returned_resource.sync_token = resource.mailbox_holder.sync_token;
+  returned_resource.lost = false;
+  cc::ReturnedResourceArray resources = {returned_resource};
+  compositor_frame_sink_holder->ReclaimResources(resources);
 
+  RunAllPendingInMessageLoop();
   ASSERT_EQ(release_call_count, 0);
 
   buffer->OnDetach();
@@ -59,13 +68,17 @@ TEST_F(BufferTest, IsLost) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  scoped_refptr<CompositorFrameSinkHolder> compositor_frame_sink_holder =
+      new CompositorFrameSinkHolder(surface.get(), nullptr, nullptr);
+  cc::ResourceId resource_id = 0;
 
   buffer->OnAttach();
-  // Acquire a texture mailbox for the contents of the buffer.
-  cc::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> buffer_release_callback =
-      buffer->ProduceTextureMailbox(&texture_mailbox, false, true);
-  ASSERT_TRUE(buffer_release_callback);
+  // Acquire a texture transferable resource for the contents of the buffer.
+  cc::TransferableResource resource;
+  bool rv = buffer->ProduceTransferableResource(
+      compositor_frame_sink_holder.get(), resource_id, false, true, &resource);
+  ASSERT_TRUE(rv);
 
   scoped_refptr<cc::ContextProvider> context_provider =
       aura::Env::GetInstance()
@@ -79,15 +92,31 @@ TEST_F(BufferTest, IsLost) {
 
   // Release buffer.
   bool is_lost = true;
-  buffer_release_callback->Run(gpu::SyncToken(), is_lost);
+  cc::ReturnedResource returned_resource;
+  returned_resource.id = resource_id;
+  returned_resource.sync_token = gpu::SyncToken();
+  returned_resource.lost = is_lost;
+  cc::ReturnedResourceArray resources = {returned_resource};
+  compositor_frame_sink_holder->ReclaimResources(resources);
+  RunAllPendingInMessageLoop();
 
-  // Producing a new texture mailbox for the contents of the buffer.
-  std::unique_ptr<cc::SingleReleaseCallback> buffer_release_callback2 =
-      buffer->ProduceTextureMailbox(&texture_mailbox, false, false);
-  ASSERT_TRUE(buffer_release_callback2);
+  // Producing a new texture transferable resource for the contents of the
+  // buffer.
+  ++resource_id;
+  cc::TransferableResource new_resource;
+  rv = buffer->ProduceTransferableResource(compositor_frame_sink_holder.get(),
+                                           resource_id, false, false,
+                                           &new_resource);
+  ASSERT_TRUE(rv);
   buffer->OnDetach();
 
-  buffer_release_callback2->Run(gpu::SyncToken(), false);
+  cc::ReturnedResource returned_resource2;
+  returned_resource2.id = resource_id;
+  returned_resource2.sync_token = gpu::SyncToken();
+  returned_resource2.lost = false;
+  cc::ReturnedResourceArray resources2 = {returned_resource2};
+  compositor_frame_sink_holder->ReclaimResources(resources2);
+  RunAllPendingInMessageLoop();
 }
 
 }  // namespace

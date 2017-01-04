@@ -4,7 +4,6 @@
 
 #include "components/exo/compositor_frame_sink_holder.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/resources/returned_resource.h"
 #include "components/exo/surface.h"
 
@@ -30,10 +29,11 @@ bool CompositorFrameSinkHolder::HasReleaseCallbackForResource(
   return release_callbacks_.find(id) != release_callbacks_.end();
 }
 
-void CompositorFrameSinkHolder::AddResourceReleaseCallback(
+void CompositorFrameSinkHolder::SetResourceReleaseCallback(
     cc::ResourceId id,
-    std::unique_ptr<cc::SingleReleaseCallback> callback) {
-  release_callbacks_[id] = std::make_pair(this, std::move(callback));
+    const cc::ReleaseCallback& callback) {
+  DCHECK(!callback.is_null());
+  release_callbacks_[id] = callback;
 }
 
 void CompositorFrameSinkHolder::ActivateFrameCallbacks(
@@ -84,10 +84,10 @@ void CompositorFrameSinkHolder::ReclaimResources(
   for (auto& resource : resources) {
     auto it = release_callbacks_.find(resource.id);
     DCHECK(it != release_callbacks_.end());
-    std::unique_ptr<cc::SingleReleaseCallback> callback =
-        std::move(it->second.second);
-    release_callbacks_.erase(it);
-    callback->Run(resource.sync_token, resource.lost);
+    if (it != release_callbacks_.end()) {
+      it->second.Run(resource.sync_token, resource.lost);
+      release_callbacks_.erase(it);
+    }
   }
 }
 
@@ -126,7 +126,10 @@ void CompositorFrameSinkHolder::OnSurfaceDestroying(Surface* surface) {
 ////////////////////////////////////////////////////////////////////////////////
 // ExoComopositorFrameSink, private:
 
-CompositorFrameSinkHolder::~CompositorFrameSinkHolder() {}
+CompositorFrameSinkHolder::~CompositorFrameSinkHolder() {
+  if (surface_)
+    surface_->RemoveSurfaceObserver(this);
+}
 
 void CompositorFrameSinkHolder::UpdateNeedsBeginFrame() {
   if (!begin_frame_source_)
