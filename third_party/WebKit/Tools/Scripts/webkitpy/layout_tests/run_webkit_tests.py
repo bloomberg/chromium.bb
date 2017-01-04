@@ -329,13 +329,16 @@ def parse_args(args):
             optparse.make_option(
                 "--order",
                 action="store",
-                default="random",
+                # TODO(jeffcarp): platforms are moving to random-order by default independently.
+                # See _set_up_derived_options below and crbug.com/601332.
+                default=("default"),
                 help=("Determine the order in which the test cases will be run. "
                       "'none' == use the order in which the tests were listed "
                       "either in arguments or test list, "
-                      "'random' == pseudo-random order (default). Seed can be specified "
-                      "via --seed, otherwise it will default to the current unix timestamp. "
-                      "'natural' == use the natural order")),
+                      "'random' == pseudo-random order. Seed can be specified "
+                      "via --seed, otherwise it will default to the current unix timestamp "
+                      "(default on Mac & Linux). "
+                      "'natural' == use the natural order (default on all others).")),
             optparse.make_option(
                 "--profile",
                 action="store_true",
@@ -562,6 +565,16 @@ def _set_up_derived_options(port, options, args):
 
     if not options.seed:
         options.seed = port.host.time()
+
+    # TODO(jeffcarp): This will be removed once all platforms move to random order.
+    # This must be here and not in parse_args because host is not instantiated yet there.
+    # See crbug.com/601332.
+    if options.order == 'default':
+        port_name = port.host.port_factory.get().port_name
+        if port_name.startswith(("linux-", "mac-")):
+            options.order = 'random'
+        else:
+            options.order = 'natural'
 
 def _run_tests(port, options, args, printer):
     _set_up_derived_options(port, options, args)

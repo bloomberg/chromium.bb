@@ -474,7 +474,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Test that we wrap around if the number of tests is not evenly divisible by the chunk size
         # (here we end up with 3 parts, each with 2 tests, and we only have 4 tests total, so the
         # last part repeats the first two tests).
-        chunk_tests_run = get_tests_run(['--order', 'natural', '--run-part', '3:3'] + tests_to_run)
+        chunk_tests_run = get_tests_run(['--run-part', '3:3'] + tests_to_run)
         self.assertEqual(['passes/error.html', 'passes/image.html'], chunk_tests_run)
 
     def test_run_singly(self):
@@ -512,7 +512,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_stderr_is_saved(self):
         host = MockHost()
-        self.assertTrue(passing_run(['--order', 'natural'], host=host))
+        self.assertTrue(passing_run(host=host))
 
     def test_reftest_crash_log_is_saved(self):
         host = MockHost()
@@ -545,12 +545,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         host.environ['GTEST_SHARD_INDEX'] = '0'
         host.environ['GTEST_TOTAL_SHARDS'] = '1'
-        shard_0_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
+        shard_0_tests_run = get_tests_run(['--order=natural'] + tests_to_run, host=host)
         self.assertEqual(shard_0_tests_run, ['passes/error.html', 'passes/image.html'])
 
         host.environ['GTEST_SHARD_INDEX'] = '1'
         host.environ['GTEST_TOTAL_SHARDS'] = '1'
-        shard_1_tests_run = get_tests_run(['--order', 'natural'] + tests_to_run, host=host)
+        shard_1_tests_run = get_tests_run(tests_to_run, host=host)
         self.assertEqual(shard_1_tests_run, ['passes/platform_image.html', 'passes/text.html'])
 
     def test_smoke_test(self):
@@ -677,9 +677,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(['failures/unexpected/text-image-checksum.html'], tests_run)
 
         # But we'll keep going for expected ones.
-        tests_run = get_tests_run(['failures/expected/text.html', 'passes/text.html',
-                                   '--exit-after-n-failures', '1',
-                                   '--order', 'natural'])
+        tests_run = get_tests_run(['failures/expected/text.html', 'passes/text.html', '--exit-after-n-failures', '1'])
         self.assertEqual(['failures/expected/text.html', 'passes/text.html'], tests_run)
 
     def test_exit_after_n_crashes(self):
@@ -690,14 +688,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         # Same with timeouts.
         tests_run = get_tests_run(['failures/unexpected/timeout.html', 'passes/text.html',
-                                   '--exit-after-n-crashes-or-timeouts', '1',
-                                   '--order', 'natural'])
+                                   '--exit-after-n-crashes-or-timeouts', '1'])
         self.assertEqual(['failures/unexpected/timeout.html'], tests_run)
 
         # But we'll keep going for expected ones.
-        tests_run = get_tests_run(['failures/expected/crash.html', 'passes/text.html',
-                                   '--exit-after-n-crashes-or-timeouts', '1',
-                                   '--order', 'natural'])
+        tests_run = get_tests_run(['failures/expected/crash.html', 'passes/text.html', '--exit-after-n-crashes-or-timeouts', '1'])
         self.assertEqual(['failures/expected/crash.html', 'passes/text.html'], tests_run)
 
     def test_results_directory_absolute(self):
@@ -751,8 +746,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
         filename = '/tmp/foo.txt'
         host.filesystem.write_text_file(filename, 'failures')
-        details, err, _ = logging_run(['--order', 'natural', '--debug-rwt-logging', '--test-list=%s' % filename],
-                                      tests_included=True, host=host)
+        details, err, _ = logging_run(['--debug-rwt-logging', '--test-list=%s' % filename], tests_included=True, host=host)
         self.assertEqual(details.exit_code, 0)
         self.assertIn('Retrying', err.getvalue())
 
@@ -840,7 +834,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_tests_run(['--order', 'natural', '-i', 'passes/virtual_passes', 'passes'])
         self.assertEqual(tests_run, sorted(tests_run))
 
-        tests_run = get_tests_run(['--order', 'natural', 'http/tests/passes'])
+        tests_run = get_tests_run(['http/tests/passes'])
         self.assertEqual(tests_run, sorted(tests_run))
 
     def test_virtual(self):
