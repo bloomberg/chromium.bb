@@ -324,7 +324,6 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
     : frame_sink_id_(
           ui::ContextProviderFactory::GetInstance()->AllocateFrameSinkId()),
       resource_manager_(root_window),
-      device_scale_factor_(1),
       window_(NULL),
       surface_handle_(gpu::kNullSurfaceHandle),
       client_(client),
@@ -443,7 +442,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_->SetFrameSinkId(frame_sink_id_);
   host_->GetLayerTree()->SetViewportSize(size_);
   SetHasTransparentBackground(false);
-  host_->GetLayerTree()->SetDeviceScaleFactor(device_scale_factor_);
+  host_->GetLayerTree()->SetDeviceScaleFactor(1);
 
   if (needs_animate_)
     host_->SetNeedsAnimate();
@@ -469,12 +468,6 @@ void CompositorImpl::SetVisible(bool visible) {
     if (compositor_frame_sink_request_pending_)
       HandlePendingCompositorFrameSinkRequest();
   }
-}
-
-void CompositorImpl::setDeviceScaleFactor(float factor) {
-  device_scale_factor_ = factor;
-  if (host_)
-    host_->GetLayerTree()->SetDeviceScaleFactor(factor);
 }
 
 void CompositorImpl::SetWindowBounds(const gfx::Size& size) {

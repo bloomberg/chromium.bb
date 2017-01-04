@@ -67,7 +67,6 @@ class CONTENT_EXPORT CompositorImpl
   // Compositor implementation.
   void SetRootLayer(scoped_refptr<cc::Layer> root) override;
   void SetSurface(jobject surface) override;
-  void setDeviceScaleFactor(float factor) override;
   void SetWindowBounds(const gfx::Size& size) override;
   void SetHasTransparentBackground(bool flag) override;
   void SetNeedsComposite() override;
@@ -142,7 +141,6 @@ class CONTENT_EXPORT CompositorImpl
 
   gfx::Size size_;
   bool has_transparent_background_;
-  float device_scale_factor_;
 
   ANativeWindow* window_;
   gpu::SurfaceHandle surface_handle_;
