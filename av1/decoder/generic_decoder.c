@@ -131,11 +131,9 @@ int generic_decode_(aom_reader *r, generic_encoder *model, int max,
     /* Because of the rounding, there's only half the number of possibilities
        for xs=0 */
     special = xs == 0;
-#if CONFIG_DAALA_EC
-    if (shift - special > 0) lsb = od_ec_dec_bits(&r->ec, shift - special, acc_str);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
+    if (shift - special > 0) {
+      lsb = aom_read_literal(r, shift - special, acc_str);
+    }
     lsb -= !special << (shift - 1);
   }
   x = (xs << shift) + lsb;

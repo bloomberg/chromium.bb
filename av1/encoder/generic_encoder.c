@@ -135,12 +135,8 @@ void generic_encode(aom_writer *w, generic_encoder *model, int x, int max,
        for xs=0. */
     special = xs == 0;
     if (shift - special > 0) {
-#if CONFIG_DAALA_EC
-      od_ec_enc_bits(&w->ec, x - (xs << shift) + (!special << (shift - 1)),
+      aom_write_literal(w, x - (xs << shift) + (!special << (shift - 1)),
        shift - special);
-#else
-# error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
-#endif
     }
   }
   generic_model_update(model, ex_q16, x, xs, id, integration);
