@@ -60,11 +60,17 @@ class MockEidGenerator : public EidGenerator {
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds)
           const override;
 
+  int num_identify_calls() {
+    return num_identify_calls_;
+  }
+
  private:
   std::unique_ptr<EidData> background_scan_filter_;
   std::unique_ptr<DataWithTimestamp> advertisement_;
   std::unique_ptr<std::vector<std::string>> possible_advertisements_;
   const RemoteDevice* identified_device_;
+
+  int num_identify_calls_;
 };
 
 }  // namespace cryptauth

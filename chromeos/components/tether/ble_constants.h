@@ -18,7 +18,7 @@ namespace tether {
 // Note that this upper limit on concurrent advertisements is imposed due to a
 // hardware limit of advertisements (many devices have <10 total advertisement
 // slots).
-extern const int kMaxConcurrentAdvertisements;
+extern const uint8_t kMaxConcurrentAdvertisements;
 
 // The service UUID used for BLE advertisements.
 extern const char kAdvertisingServiceUuid[];

@@ -36,7 +36,7 @@ class LocalDeviceDataProvider {
   // Fetches the public key and/or the beacon seeds for the local device.
   // Returns whether the operation succeeded. If |nullptr| is passed as a
   // parameter, the associated data will not be fetched.
-  bool GetLocalDeviceData(
+  virtual bool GetLocalDeviceData(
       std::string* public_key_out,
       std::vector<cryptauth::BeaconSeed>* beacon_seeds_out) const;
 

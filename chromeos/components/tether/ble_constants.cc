@@ -8,7 +8,7 @@ namespace chromeos {
 
 namespace tether {
 
-const int kMaxConcurrentAdvertisements = 2;
+const uint8_t kMaxConcurrentAdvertisements = 2;
 const char kAdvertisingServiceUuid[] = "0000fe50-0000-1000-8000-00805f9b34fb";
 
 }  // namespace tether

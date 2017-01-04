@@ -10,6 +10,8 @@ static_library("tether") {
     "ble_advertisement_device_queue.h",
     "ble_constants.cc",
     "ble_constants.h",
+    "ble_scanner.cc",
+    "ble_scanner.h",
     "host_scan_scheduler.cc",
     "host_scan_scheduler.h",
     "host_scanner.cc",
@@ -25,6 +27,7 @@ static_library("tether") {
     "//chromeos",
     "//components/cryptauth",
     "//components/proximity_auth/logging",
+    "//device/bluetooth",
   ]
 
   public_deps = [
@@ -35,7 +38,10 @@ static_library("tether") {
 static_library("test_support") {
   testonly = true
 
-  sources = []
+  sources = [
+    "mock_local_device_data_provider.cc",
+    "mock_local_device_data_provider.h",
+  ]
 
   public_deps = [
     ":tether",
@@ -43,6 +49,7 @@ static_library("test_support") {
 
   deps = [
     "//base",
+    "//components/cryptauth",
     "//testing/gmock",
   ]
 }
@@ -52,6 +59,7 @@ source_set("unit_tests") {
 
   sources = [
     "ble_advertisement_device_queue_unittest.cc",
+    "ble_scanner_unittest.cc",
     "host_scan_scheduler_unittest.cc",
     "local_device_data_provider_unittest.cc",
   ]
@@ -63,6 +71,8 @@ source_set("unit_tests") {
     "//chromeos",
     "//components/cryptauth",
     "//components/cryptauth:test_support",
+    "//device/bluetooth",
+    "//device/bluetooth:mocks",
     "//testing/gmock",
     "//testing/gtest",
   ]
