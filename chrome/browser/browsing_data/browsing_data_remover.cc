@@ -19,14 +19,14 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
-#include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/browsing_data/content/storage_partition_http_cache_data_remover.h"
 #include "components/prefs/pref_service.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_data_remover.h"
@@ -157,47 +157,14 @@ void BrowsingDataRemover::SubTask::CompletionCallback() {
   forward_callback_.Run();
 }
 
-bool BrowsingDataRemover::TimeRange::operator==(
-    const BrowsingDataRemover::TimeRange& other) const {
-  return begin == other.begin && end == other.end;
-}
-
-// static
-BrowsingDataRemover::TimeRange BrowsingDataRemover::Unbounded() {
-  return TimeRange(base::Time(), base::Time::Max());
-}
-
-// static
-BrowsingDataRemover::TimeRange BrowsingDataRemover::Period(
-    browsing_data::TimePeriod period) {
-  switch (period) {
-    case browsing_data::LAST_HOUR:
-      content::RecordAction(UserMetricsAction("ClearBrowsingData_LastHour"));
-      break;
-    case browsing_data::LAST_DAY:
-      content::RecordAction(UserMetricsAction("ClearBrowsingData_LastDay"));
-      break;
-    case browsing_data::LAST_WEEK:
-      content::RecordAction(UserMetricsAction("ClearBrowsingData_LastWeek"));
-      break;
-    case browsing_data::FOUR_WEEKS:
-      content::RecordAction(UserMetricsAction("ClearBrowsingData_LastMonth"));
-      break;
-    case browsing_data::ALL_TIME:
-      content::RecordAction(UserMetricsAction("ClearBrowsingData_Everything"));
-      break;
-  }
-  return TimeRange(CalculateBeginDeleteTime(period), base::Time::Max());
-}
-
 BrowsingDataRemover::BrowsingDataRemover(
     content::BrowserContext* browser_context)
-    : profile_(Profile::FromBrowserContext(browser_context)),
+    : browser_context_(browser_context),
       remove_mask_(-1),
       origin_type_mask_(-1),
       is_removing_(false),
 #if BUILDFLAG(ENABLE_PLUGINS)
-      flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(profile_)),
+      flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context_)),
 #endif
       sub_task_forward_callback_(
           base::Bind(&BrowsingDataRemover::NotifyIfDone,
@@ -209,7 +176,7 @@ BrowsingDataRemover::BrowsingDataRemover(
       clear_http_auth_cache_(sub_task_forward_callback_),
       clear_storage_partition_data_(sub_task_forward_callback_),
       weak_ptr_factory_(this) {
-  DCHECK(browser_context);
+  DCHECK(browser_context_);
 }
 
 BrowsingDataRemover::~BrowsingDataRemover() {
@@ -238,36 +205,40 @@ void BrowsingDataRemover::SetRemoving(bool is_removing) {
   is_removing_ = is_removing;
 }
 
-void BrowsingDataRemover::Remove(const TimeRange& time_range,
+void BrowsingDataRemover::Remove(const base::Time& delete_begin,
+                                 const base::Time& delete_end,
                                  int remove_mask,
                                  int origin_type_mask) {
-  RemoveInternal(time_range, remove_mask, origin_type_mask,
+  RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::unique_ptr<RegistrableDomainFilterBuilder>(), nullptr);
 }
 
 void BrowsingDataRemover::RemoveAndReply(
-    const TimeRange& time_range,
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
     int remove_mask,
     int origin_type_mask,
     Observer* observer) {
   DCHECK(observer);
-  RemoveInternal(time_range, remove_mask, origin_type_mask,
+  RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::unique_ptr<RegistrableDomainFilterBuilder>(), observer);
 }
 
 void BrowsingDataRemover::RemoveWithFilter(
-    const TimeRange& time_range,
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
     int remove_mask,
     int origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
   DCHECK_EQ(0, remove_mask & ~FILTERABLE_DATATYPES);
   DCHECK(filter_builder);
-  RemoveInternal(time_range, remove_mask, origin_type_mask,
+  RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::move(filter_builder), nullptr);
 }
 
 void BrowsingDataRemover::RemoveWithFilterAndReply(
-    const TimeRange& time_range,
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
     int remove_mask,
     int origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
@@ -275,12 +246,13 @@ void BrowsingDataRemover::RemoveWithFilterAndReply(
   DCHECK_EQ(0, remove_mask & ~FILTERABLE_DATATYPES);
   DCHECK(filter_builder);
   DCHECK(observer);
-  RemoveInternal(time_range, remove_mask, origin_type_mask,
+  RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::move(filter_builder), observer);
 }
 
 void BrowsingDataRemover::RemoveInternal(
-    const TimeRange& time_range,
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
     int remove_mask,
     int origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
@@ -298,7 +270,8 @@ void BrowsingDataRemover::RemoveInternal(
   }
 
   task_queue_.emplace(
-      time_range,
+      delete_begin,
+      delete_end,
       remove_mask,
       origin_type_mask,
       std::move(filter_builder),
@@ -317,14 +290,16 @@ void BrowsingDataRemover::RunNextTask() {
   DCHECK(!task_queue_.empty());
   const RemovalTask& removal_task = task_queue_.front();
 
-  RemoveImpl(removal_task.time_range,
+  RemoveImpl(removal_task.delete_begin,
+             removal_task.delete_end,
              removal_task.remove_mask,
              *removal_task.filter_builder,
              removal_task.origin_type_mask);
 }
 
 void BrowsingDataRemover::RemoveImpl(
-    const TimeRange& time_range,
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
     int remove_mask,
     const BrowsingDataFilterBuilder& filter_builder,
     int origin_type_mask) {
@@ -342,10 +317,10 @@ void BrowsingDataRemover::RemoveImpl(
 
   // crbug.com/140910: Many places were calling this with base::Time() as
   // delete_end, even though they should've used base::Time::Max().
-  DCHECK_NE(base::Time(), time_range.end);
+  DCHECK_NE(base::Time(), delete_end);
 
-  delete_begin_ = time_range.begin;
-  delete_end_ = time_range.end;
+  delete_begin_ = delete_begin;
+  delete_end_ = delete_end;
   remove_mask_ = remove_mask;
   origin_type_mask_ = origin_type_mask;
 
@@ -385,9 +360,12 @@ void BrowsingDataRemover::RemoveImpl(
 
   // Managed devices and supervised users can have restrictions on history
   // deletion.
-  PrefService* prefs = profile_->GetPrefs();
-  bool may_delete_history = prefs->GetBoolean(
-      prefs::kAllowDeletingBrowserHistory);
+  // TODO(crbug.com/668114): This should be provided via ContentBrowserClient
+  // once BrowsingDataRemover moves to content.
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context_)->GetPrefs();
+  bool may_delete_history =
+      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
 
   // All the UI entry points into the BrowsingDataRemover should be disabled,
   // but this will fire if something was missed or added.
@@ -405,8 +383,8 @@ void BrowsingDataRemover::RemoveImpl(
     // TODO(msramek): We can reuse the plugin filter here, since both plugins
     // and SSL host state are scoped to hosts and represent them as std::string.
     // Rename the method to indicate its more general usage.
-    if (profile_->GetSSLHostStateDelegate()) {
-      profile_->GetSSLHostStateDelegate()->Clear(
+    if (browser_context_->GetSSLHostStateDelegate()) {
+      browser_context_->GetSSLHostStateDelegate()->Clear(
           filter_builder.IsEmptyBlacklist()
               ? base::Callback<bool(const std::string&)>()
               : filter_builder.BuildPluginFilter());
@@ -418,12 +396,9 @@ void BrowsingDataRemover::RemoveImpl(
   if ((remove_mask & REMOVE_DOWNLOADS) && may_delete_history) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
     content::DownloadManager* download_manager =
-        BrowserContext::GetDownloadManager(profile_);
+        BrowserContext::GetDownloadManager(browser_context_);
     download_manager->RemoveDownloadsByURLAndTime(filter,
                                                   delete_begin_, delete_end_);
-    DownloadPrefs* download_prefs = DownloadPrefs::FromDownloadManager(
-        download_manager);
-    download_prefs->SetSaveFilePath(download_prefs->DownloadPath());
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -436,7 +411,7 @@ void BrowsingDataRemover::RemoveImpl(
         UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
     scoped_refptr<net::URLRequestContextGetter> rq_context =
-        content::BrowserContext::GetDefaultStoragePartition(profile_)->
+        content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
           GetURLRequestContext();
     clear_channel_ids_.Start();
     BrowserThread::PostTask(
@@ -502,10 +477,12 @@ void BrowsingDataRemover::RemoveImpl(
     clear_storage_partition_data_.Start();
 
     content::StoragePartition* storage_partition;
-    if (storage_partition_for_testing_)
+    if (storage_partition_for_testing_) {
       storage_partition = storage_partition_for_testing_;
-    else
-      storage_partition = BrowserContext::GetDefaultStoragePartition(profile_);
+    } else {
+      storage_partition =
+          BrowserContext::GetDefaultStoragePartition(browser_context_);
+    }
 
     uint32_t quota_storage_remove_mask =
         ~content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
@@ -547,7 +524,8 @@ void BrowsingDataRemover::RemoveImpl(
 
     if (filter_builder.IsEmptyBlacklist()) {
       DCHECK(!plugin_data_remover_);
-      plugin_data_remover_.reset(content::PluginDataRemover::Create(profile_));
+      plugin_data_remover_.reset(
+          content::PluginDataRemover::Create(browser_context_));
       base::WaitableEvent* event =
           plugin_data_remover_->StartRemoving(delete_begin_);
 
@@ -578,13 +556,13 @@ void BrowsingDataRemover::RemoveImpl(
     // StoragePartitionHttpCacheDataRemover deletes itself when it is done.
     if (filter_builder.IsEmptyBlacklist()) {
       browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
-          BrowserContext::GetDefaultStoragePartition(profile_),
+          BrowserContext::GetDefaultStoragePartition(browser_context_),
           delete_begin_, delete_end_)
           ->Remove(clear_cache_.GetCompletionCallback());
     } else {
       browsing_data::StoragePartitionHttpCacheDataRemover::
           CreateForURLsAndRange(
-              BrowserContext::GetDefaultStoragePartition(profile_),
+              BrowserContext::GetDefaultStoragePartition(browser_context_),
               filter, delete_begin_, delete_end_)
               ->Remove(clear_cache_.GetCompletionCallback());
     }
@@ -599,7 +577,8 @@ void BrowsingDataRemover::RemoveImpl(
   // Auth cache.
   if (remove_mask & REMOVE_COOKIES || remove_mask & REMOVE_PASSWORDS) {
     scoped_refptr<net::URLRequestContextGetter> request_context =
-        profile_->GetRequestContext();
+        BrowserContext::GetDefaultStoragePartition(browser_context_)
+            ->GetURLRequestContext();
     clear_http_auth_cache_.Start();
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
@@ -662,12 +641,14 @@ int BrowsingDataRemover::GetLastUsedOriginTypeMask() {
 }
 
 BrowsingDataRemover::RemovalTask::RemovalTask(
-    const TimeRange& time_range,
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
     int remove_mask,
     int origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
     Observer* observer)
-    : time_range(time_range),
+    : delete_begin(delete_begin),
+      delete_end(delete_end),
       remove_mask(remove_mask),
       origin_type_mask(origin_type_mask),
       filter_builder(std::move(filter_builder)),

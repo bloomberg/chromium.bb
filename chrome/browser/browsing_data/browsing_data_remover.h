@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
 #include "chrome/common/features.h"
-#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ppapi/features/features.h"
 #include "storage/common/quota/quota_types.h"
@@ -29,7 +28,6 @@
 class BrowsingDataFilterBuilder;
 class BrowsingDataFlashLSOHelper;
 class BrowsingDataRemoverFactory;
-class Profile;
 
 namespace content {
 class BrowserContext;
@@ -46,11 +44,11 @@ class StoragePartition;
 //  0. Instantiation.
 //
 //       BrowsingDataRemover remover =
-//           BrowsingDataRemoverFactory::GetForBrowserContext(profile);
+//           BrowsingDataRemoverFactory::GetForBrowserContext(browser_context);
 //
 //  1. No observer.
 //
-//       remover->Remove(Unbounded(), REMOVE_COOKIES, ALL);
+//       remover->Remove(base::Time(), base::Time::Max(), REMOVE_COOKIES, ALL);
 //
 //  2. Using an observer to report when one's own removal task is finished.
 //
@@ -59,7 +57,8 @@ class StoragePartition;
 //         ~CookiesDeleter() { remover->RemoveObserver(this); }
 //
 //         void DeleteCookies() {
-//           remover->RemoveAndReply(Unbounded(), REMOVE_COOKIES, ALL, this);
+//           remover->RemoveAndReply(base::Time(), base::Time::Max(),
+//                                   REMOVE_COOKIES, ALL, this);
 //         }
 //
 //         void OnBrowsingDataRemoverDone() {
@@ -91,8 +90,8 @@ class BrowsingDataRemover : public KeyedService {
     REMOVE_MEDIA_LICENSES = 1 << 13,
     REMOVE_SERVICE_WORKERS = 1 << 14,
     REMOVE_SITE_USAGE_DATA = 1 << 15,
-    // REMOVE_NOCHECKS intentionally does not check if the Profile's prohibited
-    // from deleting history or downloads.
+    // REMOVE_NOCHECKS intentionally does not check if the browser context is
+    // prohibited from deleting history or downloads.
     REMOVE_NOCHECKS = 1 << 16,
     REMOVE_CACHE_STORAGE = 1 << 17,
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -163,14 +162,6 @@ class BrowsingDataRemover : public KeyedService {
     MAX_CHOICE_VALUE
   };
 
-  struct TimeRange {
-    TimeRange(base::Time begin, base::Time end) : begin(begin), end(end) {}
-    bool operator==(const TimeRange& other) const;
-
-    base::Time begin;
-    base::Time end;
-  };
-
   // Observer is notified when its own removal task is done.
   class Observer {
    public:
@@ -224,10 +215,6 @@ class BrowsingDataRemover : public KeyedService {
     base::WeakPtrFactory<SubTask> weak_ptr_factory_;
   };
 
-  static TimeRange Unbounded();
-
-  static TimeRange Period(browsing_data::TimePeriod period);
-
   // Is the BrowsingDataRemover currently in the process of removing data?
   bool is_removing() { return is_removing_; }
 
@@ -253,13 +240,15 @@ class BrowsingDataRemover : public KeyedService {
 
   // Removes browsing data within the given |time_range|, with datatypes being
   // specified by |remove_mask| and origin types by |origin_type_mask|.
-  void Remove(const TimeRange& time_range,
+  void Remove(const base::Time& delete_begin,
+              const base::Time& delete_end,
               int remove_mask,
               int origin_type_mask);
 
   // A version of the above that in addition informs the |observer| when the
   // removal task is finished.
-  void RemoveAndReply(const TimeRange& time_range,
+  void RemoveAndReply(const base::Time& delete_begin,
+                      const base::Time& delete_end,
                       int remove_mask,
                       int origin_type_mask,
                       Observer* observer);
@@ -268,7 +257,8 @@ class BrowsingDataRemover : public KeyedService {
   // |filter_builder| (e.g. are on certain origin or domain).
   // RemoveWithFilter() currently only works with FILTERABLE_DATATYPES.
   void RemoveWithFilter(
-      const TimeRange& time_range,
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder);
@@ -276,7 +266,8 @@ class BrowsingDataRemover : public KeyedService {
   // A version of the above that in addition informs the |observer| when the
   // removal task is finished.
   void RemoveWithFilterAndReply(
-      const TimeRange& time_range,
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
@@ -311,7 +302,8 @@ class BrowsingDataRemover : public KeyedService {
 
   // A common reduction of all public Remove[WithFilter][AndReply] methods.
   virtual void RemoveInternal(
-      const TimeRange& time_range,
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
@@ -334,14 +326,16 @@ class BrowsingDataRemover : public KeyedService {
   // Represents a single removal task. Contains all parameters needed to execute
   // it and a pointer to the observer that added it.
   struct RemovalTask {
-    RemovalTask(const TimeRange& time_range,
+    RemovalTask(const base::Time& delete_begin,
+                const base::Time& delete_end,
                 int remove_mask,
                 int origin_type_mask,
                 std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
                 Observer* observer);
     ~RemovalTask();
 
-    TimeRange time_range;
+    base::Time delete_begin;
+    base::Time delete_end;
     int remove_mask;
     int origin_type_mask;
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder;
@@ -379,7 +373,8 @@ class BrowsingDataRemover : public KeyedService {
   // TODO(ttr314): Remove "(where implemented yet)" constraint above once
   // crbug.com/113621 is done.
   // TODO(crbug.com/589586): Support all backends w/ origin filter.
-  void RemoveImpl(const TimeRange& time_range,
+  void RemoveImpl(const base::Time& delete_begin,
+                  const base::Time& delete_end,
                   int remove_mask,
                   const BrowsingDataFilterBuilder& filter_builder,
                   int origin_type_mask);
@@ -393,8 +388,8 @@ class BrowsingDataRemover : public KeyedService {
   // Returns true if we're all done.
   bool AllDone();
 
-  // Profile we're to remove from.
-  Profile* profile_;
+  // The browser context we're to remove from.
+  content::BrowserContext* browser_context_;
 
   // A delegate to delete the embedder-specific data.
   std::unique_ptr<BrowsingDataRemoverDelegate> embedder_delegate_;

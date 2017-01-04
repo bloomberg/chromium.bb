@@ -121,6 +121,7 @@
 #include "chromeos/chromeos_constants.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -2577,7 +2578,7 @@ void ChromeContentBrowserClient::ClearCache(RenderFrameHost* rfh) {
       rfh->GetSiteInstance()->GetProcess()->GetBrowserContext());
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(profile);
-  remover->Remove(BrowsingDataRemover::Unbounded(),
+  remover->Remove(base::Time(), base::Time::Max(),
                   BrowsingDataRemover::REMOVE_CACHE,
                   BrowsingDataHelper::UNPROTECTED_WEB);
 }
@@ -2588,7 +2589,7 @@ void ChromeContentBrowserClient::ClearCookies(RenderFrameHost* rfh) {
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(profile);
   int remove_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
-  remover->Remove(BrowsingDataRemover::Unbounded(), remove_mask,
+  remover->Remove(base::Time(), base::Time::Max(), remove_mask,
                   BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
@@ -2626,7 +2627,7 @@ void ChromeContentBrowserClient::ClearSiteData(
     domain_filter_builder->AddRegisterableDomain(domain);
 
     remover->RemoveWithFilterAndReply(
-        BrowsingDataRemover::Period(browsing_data::TimePeriod::ALL_TIME),
+        base::Time(), base::Time::Max(),
         BrowsingDataRemover::REMOVE_COOKIES |
             BrowsingDataRemover::REMOVE_CHANNEL_IDS |
             BrowsingDataRemover::REMOVE_PLUGIN_DATA,
@@ -2653,7 +2654,7 @@ void ChromeContentBrowserClient::ClearSiteData(
     origin_filter_builder->AddOrigin(origin);
 
     remover->RemoveWithFilterAndReply(
-        BrowsingDataRemover::Period(browsing_data::TimePeriod::ALL_TIME),
+        base::Time(), base::Time::Max(),
         remove_mask, BrowsingDataHelper::ALL, std::move(origin_filter_builder),
         observer);
   } else {

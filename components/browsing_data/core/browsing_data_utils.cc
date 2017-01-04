@@ -4,6 +4,7 @@
 
 #include "components/browsing_data/core/browsing_data_utils.h"
 
+#include "base/metrics/user_metrics.h"
 #include "components/browsing_data/core/counters/autofill_counter.h"
 #include "components/browsing_data/core/counters/history_counter.h"
 #include "components/browsing_data/core/counters/passwords_counter.h"
@@ -34,6 +35,33 @@ base::Time CalculateBeginDeleteTime(TimePeriod time_period) {
       break;
   }
   return delete_begin_time - diff;
+}
+
+base::Time CalculateEndDeleteTime(TimePeriod time_period) {
+  // No TimePeriod currently supports the second time bound.
+  return base::Time::Max();
+}
+
+void RecordDeletionForPeriod(TimePeriod period) {
+  switch (period) {
+    case browsing_data::LAST_HOUR:
+      base::RecordAction(base::UserMetricsAction("ClearBrowsingData_LastHour"));
+      break;
+    case browsing_data::LAST_DAY:
+      base::RecordAction(base::UserMetricsAction("ClearBrowsingData_LastDay"));
+      break;
+    case browsing_data::LAST_WEEK:
+      base::RecordAction(base::UserMetricsAction("ClearBrowsingData_LastWeek"));
+      break;
+    case browsing_data::FOUR_WEEKS:
+      base::RecordAction(
+          base::UserMetricsAction("ClearBrowsingData_LastMonth"));
+      break;
+    case browsing_data::ALL_TIME:
+      base::RecordAction(
+          base::UserMetricsAction("ClearBrowsingData_Everything"));
+      break;
+  }
 }
 
 base::string16 GetCounterTextFromResult(

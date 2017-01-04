@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -409,8 +410,9 @@ class SdchBrowserTest : public InProcessBrowserTest,
         BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->RemoveAndReply(
-        BrowsingDataRemover::Period(browsing_data::LAST_HOUR), remove_mask,
-        BrowsingDataHelper::UNPROTECTED_WEB, &completion_observer);
+        browsing_data::CalculateBeginDeleteTime(browsing_data::LAST_HOUR),
+        browsing_data::CalculateEndDeleteTime(browsing_data::LAST_HOUR),
+        remove_mask, BrowsingDataHelper::UNPROTECTED_WEB, &completion_observer);
     completion_observer.BlockUntilCompletion();
   }
 

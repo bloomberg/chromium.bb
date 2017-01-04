@@ -1409,7 +1409,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ClearData) {
   // Clear cache which should clear all prefs.
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
-  remover->Remove(BrowsingDataRemover::Unbounded(),
+  remover->Remove(base::Time(), base::Time::Max(),
                   BrowsingDataRemover::REMOVE_HISTORY,
                   BrowsingDataHelper::UNPROTECTED_WEB);
 

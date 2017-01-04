@@ -355,13 +355,15 @@ class MockBrowsingDataRemover : public BrowsingDataRemover {
         << "Expectations were set but not verified.";
   }
 
-  void RemoveInternal(const TimeRange& time_range,
+  void RemoveInternal(const base::Time& delete_begin,
+                      const base::Time& delete_end,
                       int remove_mask,
                       int origin_type_mask,
                       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
                       BrowsingDataRemover::Observer* observer) override {
-    actual_calls_.emplace_back(time_range, remove_mask, origin_type_mask,
-                               std::move(filter_builder), UNKNOWN);
+    actual_calls_.emplace_back(delete_begin, delete_end, remove_mask,
+                               origin_type_mask, std::move(filter_builder),
+                               UNKNOWN);
 
     // |observer| is not recorded in |actual_calls_| to be compared with
     // expectations, because it's created internally in ClearSiteData() and
@@ -373,28 +375,32 @@ class MockBrowsingDataRemover : public BrowsingDataRemover {
   }
 
   void ExpectCall(
-      const TimeRange& time_range,
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
       int remove_mask,
       int origin_type_mask,
       std::unique_ptr<RegistrableDomainFilterBuilder> filter_builder) {
-    expected_calls_.emplace_back(time_range, remove_mask, origin_type_mask,
-                                 std::move(filter_builder),
+    expected_calls_.emplace_back(delete_begin, delete_end, remove_mask,
+                                 origin_type_mask, std::move(filter_builder),
                                  REGISTRABLE_DOMAIN_FILTER_BUILDER);
   }
 
-  void ExpectCall(const TimeRange& time_range,
+  void ExpectCall(const base::Time& delete_begin,
+                  const base::Time& delete_end,
                   int remove_mask,
                   int origin_type_mask,
                   std::unique_ptr<OriginFilterBuilder> filter_builder) {
-    expected_calls_.emplace_back(time_range, remove_mask, origin_type_mask,
-                                 std::move(filter_builder),
+    expected_calls_.emplace_back(delete_begin, delete_end, remove_mask,
+                                 origin_type_mask, std::move(filter_builder),
                                  ORIGIN_FILTER_BUILDER);
   }
 
-  void ExpectCallDontCareAboutFilterBuilder(const TimeRange& time_range,
+  void ExpectCallDontCareAboutFilterBuilder(const base::Time& delete_begin,
+                                            const base::Time& delete_end,
                                             int remove_mask,
                                             int origin_type_mask) {
-    expected_calls_.emplace_back(time_range, remove_mask, origin_type_mask,
+    expected_calls_.emplace_back(delete_begin, delete_end, remove_mask,
+                                 origin_type_mask,
                                  std::unique_ptr<BrowsingDataFilterBuilder>(),
                                  DONT_CARE);
   }
@@ -418,12 +424,14 @@ class MockBrowsingDataRemover : public BrowsingDataRemover {
 
   class CallParameters {
    public:
-    CallParameters(const TimeRange& time_range,
+    CallParameters(const base::Time& delete_begin,
+                   const base::Time& delete_end,
                    int remove_mask,
                    int origin_type_mask,
                    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
                    FilterBuilderType type)
-        : time_range_(time_range),
+        : delete_begin_(delete_begin),
+          delete_end_(delete_end),
           remove_mask_(remove_mask),
           origin_type_mask_(origin_type_mask),
           filter_builder_(std::move(filter_builder)),
@@ -434,7 +442,8 @@ class MockBrowsingDataRemover : public BrowsingDataRemover {
       const CallParameters& a = *this;
       const CallParameters& b = other;
 
-      if (!(a.time_range_ == b.time_range_) ||
+      if (a.delete_begin_ != b.delete_begin_ ||
+          a.delete_end_ != b.delete_end_ ||
           a.remove_mask_ != b.remove_mask_ ||
           a.origin_type_mask_ != b.origin_type_mask_) {
         return false;
@@ -468,7 +477,8 @@ class MockBrowsingDataRemover : public BrowsingDataRemover {
     }
 
    private:
-    TimeRange time_range_;
+    base::Time delete_begin_;
+    base::Time delete_end_;
     int remove_mask_;
     int origin_type_mask_;
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_;
@@ -550,7 +560,6 @@ TEST_F(ChromeContentBrowserClientClearSiteDataTest, Parameters) {
     const TestCase& test_case = test_cases[i];
 
     // We always delete data for all time and all origin types.
-    BrowsingDataRemover::TimeRange all_time(base::Time(), base::Time::Max());
     BrowsingDataHelper::OriginTypeMask all_origin_types =
         BrowsingDataHelper::ALL;
 
@@ -566,12 +575,14 @@ TEST_F(ChromeContentBrowserClientClearSiteDataTest, Parameters) {
 
     if (registrable_domain_deletion_mask) {
       remover()->ExpectCallDontCareAboutFilterBuilder(
-          all_time, registrable_domain_deletion_mask, all_origin_types);
+          base::Time(), base::Time::Max(),
+          registrable_domain_deletion_mask, all_origin_types);
     }
 
     if (origin_deletion_mask) {
       remover()->ExpectCallDontCareAboutFilterBuilder(
-          all_time, origin_deletion_mask, all_origin_types);
+          base::Time(), base::Time::Max(),
+          origin_deletion_mask, all_origin_types);
     }
 
     SetClearingFinished(false);
@@ -639,7 +650,7 @@ TEST_F(ChromeContentBrowserClientClearSiteDataTest, RegistrableDomains) {
     registrable_domain_filter_builder->AddRegisterableDomain(test_case.domain);
 
     remover()->ExpectCall(
-        BrowsingDataRemover::Period(browsing_data::TimePeriod::ALL_TIME),
+        base::Time(), base::Time::Max(),
         BrowsingDataRemover::REMOVE_COOKIES |
             BrowsingDataRemover::REMOVE_CHANNEL_IDS |
             BrowsingDataRemover::REMOVE_PLUGIN_DATA,
@@ -650,7 +661,7 @@ TEST_F(ChromeContentBrowserClientClearSiteDataTest, RegistrableDomains) {
     origin_filter_builder->AddOrigin(url::Origin(GURL(test_case.origin)));
 
     remover()->ExpectCall(
-        BrowsingDataRemover::Period(browsing_data::TimePeriod::ALL_TIME),
+        base::Time(), base::Time::Max(),
         BrowsingDataRemover::REMOVE_CACHE, BrowsingDataHelper::ALL,
         std::move(origin_filter_builder));
 

@@ -61,7 +61,7 @@ class ProfileDataRemover : public BrowsingDataRemover::Observer {
         origin_runner_(base::ThreadTaskRunnerHandle::Get()),
         remover_(BrowsingDataRemoverFactory::GetForBrowserContext(profile)) {
     remover_->AddObserver(this);
-    remover_->RemoveAndReply(BrowsingDataRemover::Unbounded(),
+    remover_->RemoveAndReply(base::Time(), base::Time::Max(),
                              BrowsingDataRemover::REMOVE_ALL,
                              BrowsingDataHelper::ALL, this);
   }

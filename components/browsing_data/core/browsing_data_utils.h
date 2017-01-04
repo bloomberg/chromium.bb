@@ -43,6 +43,12 @@ enum TimePeriod {
 // Calculate the begin time for the deletion range specified by |time_period|.
 base::Time CalculateBeginDeleteTime(TimePeriod time_period);
 
+// Calculate the end time for the deletion range specified by |time_period|.
+base::Time CalculateEndDeleteTime(TimePeriod time_period);
+
+// Records the UMA action of UI-triggered data deletion for |time_period|.
+void RecordDeletionForPeriod(TimePeriod time_period);
+
 // Constructs the text to be displayed by a counter from the given |result|.
 // Currently this can only be used for counters for which the Result is defined
 // in components/browsing_data/core/counters.

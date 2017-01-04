@@ -26,6 +26,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #endif
 
+class Profile;
 class WebappRegistry;
 
 // A delegate used by BrowsingDataRemover to delete data specific to Chrome

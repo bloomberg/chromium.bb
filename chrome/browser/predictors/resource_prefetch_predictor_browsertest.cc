@@ -406,7 +406,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     BrowsingDataRemover* remover =
         BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
     BrowsingDataRemoverObserver observer(remover);
-    remover->RemoveAndReply(BrowsingDataRemover::Unbounded(),
+    remover->RemoveAndReply(base::Time(), base::Time::Max(),
                             BrowsingDataRemover::REMOVE_CACHE,
                             BrowsingDataHelper::UNPROTECTED_WEB, &observer);
     observer.Wait();

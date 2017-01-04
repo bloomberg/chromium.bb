@@ -668,10 +668,14 @@ static void ClearBrowsingData(
   ClearBrowsingDataObserver* observer = new ClearBrowsingDataObserver(
       env, obj, browsing_data_remover, 2 /* tasks_count */);
 
+  browsing_data::TimePeriod period =
+      static_cast<browsing_data::TimePeriod>(time_period);
+  browsing_data::RecordDeletionForPeriod(period);
+
   if (filterable_mask) {
     browsing_data_remover->RemoveWithFilterAndReply(
-        BrowsingDataRemover::Period(
-            static_cast<browsing_data::TimePeriod>(time_period)),
+        browsing_data::CalculateBeginDeleteTime(period),
+        browsing_data::CalculateEndDeleteTime(period),
         filterable_mask, BrowsingDataHelper::UNPROTECTED_WEB,
         std::move(filter_builder), observer);
   } else {
@@ -681,8 +685,8 @@ static void ClearBrowsingData(
 
   if (nonfilterable_mask) {
     browsing_data_remover->RemoveAndReply(
-        BrowsingDataRemover::Period(
-            static_cast<browsing_data::TimePeriod>(time_period)),
+        browsing_data::CalculateBeginDeleteTime(period),
+        browsing_data::CalculateEndDeleteTime(period),
         nonfilterable_mask, BrowsingDataHelper::UNPROTECTED_WEB, observer);
   } else {
     // Make sure |observer| doesn't wait for the non-filtered task.

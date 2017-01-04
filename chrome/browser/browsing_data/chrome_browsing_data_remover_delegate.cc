@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/io_thread.h"
@@ -472,6 +473,15 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       previews_service->previews_ui_service()->ClearBlackList(delete_begin_,
                                                               delete_end_);
     }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // REMOVE_DOWNLOADS
+  if ((remove_mask & BrowsingDataRemover::REMOVE_DOWNLOADS) &&
+      may_delete_history) {
+    DownloadPrefs* download_prefs = DownloadPrefs::FromDownloadManager(
+        BrowserContext::GetDownloadManager(profile_));
+    download_prefs->SetSaveFilePath(download_prefs->DownloadPath());
   }
 
   //////////////////////////////////////////////////////////////////////////////

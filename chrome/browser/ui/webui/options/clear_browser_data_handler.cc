@@ -319,9 +319,12 @@ void ClearBrowserDataHandler::HandleClearBrowserData(
   remover_->AddObserver(this);
   int period_selected =
       prefs->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
+  browsing_data::TimePeriod time_period =
+      static_cast<browsing_data::TimePeriod>(period_selected);
+  browsing_data::RecordDeletionForPeriod(time_period);
   remover_->RemoveAndReply(
-      BrowsingDataRemover::Period(
-          static_cast<browsing_data::TimePeriod>(period_selected)),
+      browsing_data::CalculateBeginDeleteTime(time_period),
+      browsing_data::CalculateEndDeleteTime(time_period),
       remove_mask, origin_mask, this);
 
   // Store the clear browsing data time. Next time the clear browsing data

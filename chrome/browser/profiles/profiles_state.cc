@@ -242,7 +242,7 @@ void RemoveBrowsingDataForProfile(const base::FilePath& profile_path) {
     profile = profile->GetOffTheRecordProfile();
 
   BrowsingDataRemoverFactory::GetForBrowserContext(profile)->Remove(
-      BrowsingDataRemover::Unbounded(),
+      base::Time(), base::Time::Max(),
       BrowsingDataRemover::REMOVE_WIPE_PROFILE, BrowsingDataHelper::ALL);
 }
 

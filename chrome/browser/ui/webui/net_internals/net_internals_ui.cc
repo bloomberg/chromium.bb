@@ -524,7 +524,7 @@ void NetInternalsMessageHandler::OnClearBrowserCache(
   BrowsingDataRemover* remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(
           Profile::FromWebUI(web_ui()));
-  remover->Remove(BrowsingDataRemover::Unbounded(),
+  remover->Remove(base::Time(), base::Time::Max(),
                   BrowsingDataRemover::REMOVE_CACHE,
                   BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover deletes itself.

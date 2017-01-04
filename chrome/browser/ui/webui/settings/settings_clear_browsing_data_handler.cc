@@ -206,9 +206,12 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
       remover,
       base::Bind(&ClearBrowsingDataHandler::OnClearingTaskFinished,
                  base::Unretained(this), webui_callback_id));
+  browsing_data::TimePeriod time_period =
+      static_cast<browsing_data::TimePeriod>(period_selected);
+  browsing_data::RecordDeletionForPeriod(time_period);
   remover->RemoveAndReply(
-      BrowsingDataRemover::Period(
-          static_cast<browsing_data::TimePeriod>(period_selected)),
+      browsing_data::CalculateBeginDeleteTime(time_period),
+      browsing_data::CalculateEndDeleteTime(time_period),
       remove_mask, origin_mask, task_observer_.get());
 }
 

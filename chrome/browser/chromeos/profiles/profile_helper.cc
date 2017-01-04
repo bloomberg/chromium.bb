@@ -263,7 +263,7 @@ void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
         BrowsingDataRemoverFactory::GetForBrowserContext(GetSigninProfile());
     browsing_data_remover_->AddObserver(this);
     browsing_data_remover_->RemoveAndReply(
-        BrowsingDataRemover::Unbounded(), BrowsingDataRemover::REMOVE_SITE_DATA,
+        base::Time(), base::Time::Max(), BrowsingDataRemover::REMOVE_SITE_DATA,
         BrowsingDataHelper::ALL, this);
   } else {
     on_clear_profile_stage_finished_.Run();
