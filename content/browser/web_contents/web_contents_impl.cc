@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/i18n/character_encoding.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -5156,8 +5157,7 @@ void WebContentsImpl::SetEncoding(const std::string& encoding) {
     return;
   last_reported_encoding_ = encoding;
 
-  canonical_encoding_ = GetContentClient()->browser()->
-      GetCanonicalEncodingNameByAliasName(encoding);
+  canonical_encoding_ = base::GetCanonicalEncodingNameByAliasName(encoding);
 }
 
 bool WebContentsImpl::IsHidden() {

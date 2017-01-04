@@ -3078,7 +3078,6 @@ test("unit_tests") {
     "../browser/browsing_data/site_data_size_collector_unittest.cc",
     "../browser/budget_service/budget_database_unittest.cc",
     "../browser/budget_service/budget_manager_unittest.cc",
-    "../browser/character_encoding_unittest.cc",
     "../browser/chrome_content_browser_client_unittest.cc",
     "../browser/chrome_process_singleton_win_unittest.cc",
     "../browser/command_updater_unittest.cc",

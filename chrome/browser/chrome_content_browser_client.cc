@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
+#include "base/i18n/character_encoding.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -39,7 +40,6 @@
 #include "chrome/browser/browsing_data/origin_filter_builder.h"
 #include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
 #include "chrome/browser/budget_service/budget_service_impl.h"
-#include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -1411,11 +1411,6 @@ bool ChromeContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
   return !url.SchemeIs(chrome::kChromeNativeScheme);
 }
 
-std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
-    const std::string& alias_name) {
-  return ::GetCanonicalEncodingNameByAliasName(alias_name);
-}
-
 namespace {
 
 bool IsAutoReloadEnabled() {
@@ -2530,8 +2525,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #endif
 
   // Make sure we will set the default_encoding with canonical encoding name.
-  web_prefs->default_encoding = GetCanonicalEncodingNameByAliasName(
-          web_prefs->default_encoding);
+  web_prefs->default_encoding =
+      base::GetCanonicalEncodingNameByAliasName(web_prefs->default_encoding);
   if (web_prefs->default_encoding.empty()) {
     prefs->ClearPref(prefs::kDefaultCharset);
     web_prefs->default_encoding = prefs->GetString(prefs::kDefaultCharset);

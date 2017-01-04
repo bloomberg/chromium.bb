@@ -263,11 +263,6 @@ bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
   return net::URLRequest::IsHandledProtocol(scheme);
 }
 
-std::string AwContentBrowserClient::GetCanonicalEncodingNameByAliasName(
-    const std::string& alias_name) {
-  return alias_name;
-}
-
 void AwContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
