@@ -348,8 +348,6 @@ struct CORE_EXPORT NGStaticPosition {
                              LayoutUnit margin_end) const {
     DCHECK_GE(container_size, LayoutUnit());
     DCHECK_GE(length, LayoutUnit());
-    DCHECK_GE(margin_start, LayoutUnit());
-    DCHECK_GE(margin_end, LayoutUnit());
     if (position_matches)
       return position;
     else
