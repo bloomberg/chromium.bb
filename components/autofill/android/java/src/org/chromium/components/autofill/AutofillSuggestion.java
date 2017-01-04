@@ -28,11 +28,12 @@ public class AutofillSuggestion extends DropdownItemBase {
 
     /**
      * Constructs a Autofill suggestion container.
+     *
      * @param label The main label of the Autofill suggestion.
      * @param sublabel The describing sublabel of the Autofill suggestion.
      * @param iconId The resource ID for the icon associated with the suggestion, or
-     * {@code DropdownItem.NO_ICON} for no icon.
-     * @param isIconAtStart {@code true} if {@param iconId} is displayed before {@param label}.
+     *               {@code DropdownItem.NO_ICON} for no icon.
+     * @param isIconAtStart {@code true} if {@code iconId} is displayed before {@code label}.
      * @param suggestionId The type of suggestion.
      * @param isDeletable Whether the item can be deleted by the user.
      * @param isMultilineLabel Whether the label is displayed over multiple lines.
@@ -61,7 +62,7 @@ public class AutofillSuggestion extends DropdownItemBase {
     }
 
     @Override
-    public int getVectorDrawableIconId() {
+    public int getIconId() {
         return mIconId;
     }
 

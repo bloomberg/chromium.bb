@@ -20,7 +20,7 @@ public class DropdownItemBase implements DropdownItem {
     }
 
     @Override
-    public int getVectorDrawableIconId() {
+    public int getIconId() {
         return NO_ICON;
     }
 
