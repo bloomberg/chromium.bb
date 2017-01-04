@@ -573,6 +573,15 @@ void AutofillAgent::ShowInitialPasswordAccountSuggestions(
     ShowSuggestions(element, options);
 }
 
+void AutofillAgent::ShowNotSecureWarning(
+    const blink::WebInputElement& element) {
+  if (is_generation_popup_possibly_visible_)
+    return;
+  HidePopup();
+  password_autofill_agent_->ShowNotSecureWarning(element);
+  is_popup_possibly_visible_ = true;
+}
+
 void AutofillAgent::OnSamePageNavigationCompleted() {
   if (last_interacted_form_.isNull()) {
     // If no last interacted form is available (i.e., there is no form tag),

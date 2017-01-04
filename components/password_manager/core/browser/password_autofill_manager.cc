@@ -241,6 +241,21 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
                                       weak_ptr_factory_.GetWeakPtr());
 }
 
+void PasswordAutofillManager::OnShowNotSecureWarning(
+    base::i18n::TextDirection text_direction,
+    const gfx::RectF& bounds) {
+  DCHECK(security_state::IsHttpWarningInFormEnabled());
+  std::vector<autofill::Suggestion> suggestions;
+  autofill::Suggestion http_warning_suggestion(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_LOGIN_HTTP_WARNING_MESSAGE),
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE),
+      "httpWarning", autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
+  suggestions.insert(suggestions.begin(), http_warning_suggestion);
+
+  autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
+                                      weak_ptr_factory_.GetWeakPtr());
+}
+
 void PasswordAutofillManager::DidNavigateMainFrame() {
   login_to_password_info_.clear();
 }

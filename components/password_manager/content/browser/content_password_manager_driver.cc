@@ -273,6 +273,12 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
       key, text_direction, typed_username, options, bounds);
 }
 
+void ContentPasswordManagerDriver::ShowNotSecureWarning(
+    base::i18n::TextDirection text_direction,
+    const gfx::RectF& bounds) {
+  password_autofill_manager_.OnShowNotSecureWarning(text_direction, bounds);
+}
+
 void ContentPasswordManagerDriver::PasswordAutofillAgentConstructed() {
   SendLoggingAvailability();
 }

@@ -23,8 +23,8 @@ bool UsernamesCollectionKey::operator<(
 
 PasswordFormFillData::PasswordFormFillData()
     : wait_for_username(false),
-      is_possible_change_password_form(false) {
-}
+      is_possible_change_password_form(false),
+      show_form_not_secure_warning_on_autofill(false) {}
 
 PasswordFormFillData::PasswordFormFillData(const PasswordFormFillData& other) =
     default;

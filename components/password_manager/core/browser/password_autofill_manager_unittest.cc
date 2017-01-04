@@ -587,6 +587,47 @@ TEST_F(PasswordAutofillManagerTest, PreviewAndFillEmptyUsernameSuggestion) {
   testing::Mock::VerifyAndClearExpectations(client->mock_driver());
 }
 
+// Tests that a standalone Form Not Secure warning shows up in the
+// autofill popup when PasswordAutofillManager::OnShowNotSecureWarning()
+// is called.
+TEST_F(PasswordAutofillManagerTest, ShowStandaloneNotSecureWarning) {
+  auto client = base::MakeUnique<TestPasswordManagerClient>();
+  auto autofill_client = base::MakeUnique<MockAutofillClient>();
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  data.username_field.value = test_username_;
+  data.password_field.value = test_password_;
+  data.origin = GURL("http://foo.test");
+
+  int dummy_key = 0;
+  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+
+  // String "Login not secure" shown as a warning messages if password form is
+  // on http sites.
+  const base::string16 warning_message =
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_LOGIN_HTTP_WARNING_MESSAGE);
+
+  SetHttpWarningEnabled();
+
+  auto elements = testing::ElementsAre(warning_message);
+
+  EXPECT_CALL(*autofill_client,
+              ShowAutofillPopup(element_bounds, _,
+                                SuggestionVectorValuesAre(elements), _));
+  password_autofill_manager_->OnShowNotSecureWarning(base::i18n::RIGHT_TO_LEFT,
+                                                     element_bounds);
+
+  // Accepting the warning message should trigger a call to open the url and
+  // hide the popup.
+  EXPECT_CALL(*autofill_client, ShowHttpNotSecureExplanation());
+  EXPECT_CALL(*autofill_client, HideAutofillPopup());
+  password_autofill_manager_->DidAcceptSuggestion(
+      base::string16(), autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE,
+      0);
+}
+
 TEST_F(PasswordAutofillManagerTest, NonSecurePasswordFieldHttpWarningMessage) {
   auto client = base::MakeUnique<TestPasswordManagerClient>();
   auto autofill_client = base::MakeUnique<MockAutofillClient>();

@@ -83,6 +83,8 @@ class AutofillAgent : public content::RenderFrameObserver,
       int32_t key,
       const PasswordFormFillData& form_data) override;
 
+  void ShowNotSecureWarning(const blink::WebInputElement& element);
+
  protected:
   // blink::WebAutofillClient:
   void didAssociateFormControlsDynamically() override;

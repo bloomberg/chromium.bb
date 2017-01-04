@@ -44,6 +44,10 @@ class FakeContentPasswordManagerDriver
     show_pw_suggestions_options_ = -1;
   }
 
+  bool called_show_not_secure_warning() const {
+    return called_show_not_secure_warning_;
+  }
+
   bool called_password_form_submitted() const {
     return called_password_form_submitted_;
   }
@@ -135,6 +139,9 @@ class FakeContentPasswordManagerDriver
                                int options,
                                const gfx::RectF& bounds) override;
 
+  void ShowNotSecureWarning(base::i18n::TextDirection text_direction,
+                            const gfx::RectF& bounds) override;
+
   void PasswordAutofillAgentConstructed() override;
 
   void RecordSavePasswordProgress(const std::string& log) override;
@@ -149,6 +156,8 @@ class FakeContentPasswordManagerDriver
   int show_pw_suggestions_key_ = -1;
   base::Optional<base::string16> show_pw_suggestions_username_;
   int show_pw_suggestions_options_ = -1;
+  // Records whether ShowNotSecureWarning() gets called.
+  bool called_show_not_secure_warning_ = false;
   // Records whether PasswordFormSubmitted() gets called.
   bool called_password_form_submitted_ = false;
   // Records data received via PasswordFormSubmitted() call.

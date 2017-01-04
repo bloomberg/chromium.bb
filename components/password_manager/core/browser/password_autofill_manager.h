@@ -58,6 +58,12 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
                                  int options,
                                  const gfx::RectF& bounds);
 
+  // Handles a request from the renderer to show a popup with a warning
+  // indicating that the form is not secure, used when a password field
+  // is autofilled on a non-secure page load.
+  void OnShowNotSecureWarning(base::i18n::TextDirection text_direction,
+                              const gfx::RectF& bounds);
+
   // Called when main frame navigates. Not called for in-page navigations.
   void DidNavigateMainFrame();
 

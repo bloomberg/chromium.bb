@@ -61,6 +61,9 @@ class FakeContentPasswordManagerDriver : public mojom::PasswordManagerDriver {
                                int options,
                                const gfx::RectF& bounds) override {}
 
+  void ShowNotSecureWarning(base::i18n::TextDirection text_direction,
+                            const gfx::RectF& bounds) override {}
+
   void PasswordAutofillAgentConstructed() override {}
 
   void RecordSavePasswordProgress(const std::string& log) override {
