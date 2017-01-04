@@ -16,8 +16,6 @@
 
 # include "aom_dsp/bitreader.h"
 # include "aom_dsp/bitwriter.h"
-# include "aom_dsp/entdec.h"
-# include "aom_dsp/entenc.h"
 
 # define GENERIC_TABLES 12
 

@@ -18,8 +18,6 @@
 #include <stdio.h>
 
 #include "aom_dsp/bitwriter.h"
-#include "aom_dsp/entdec.h"
-#include "aom_dsp/entenc.h"
 #include "av1/common/odintrin.h"
 #include "av1/common/pvq.h"
 #include "pvq_encoder.h"

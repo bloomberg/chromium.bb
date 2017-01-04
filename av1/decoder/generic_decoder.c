@@ -18,7 +18,6 @@
 #include <stdio.h>
 
 #include "aom_dsp/bitreader.h"
-#include "aom_dsp/entdec.h"
 #include "av1/common/generic_code.h"
 #include "av1/common/odintrin.h"
 #include "pvq_decoder.h"
