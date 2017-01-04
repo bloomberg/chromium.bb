@@ -151,7 +151,7 @@ void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
 }
 
 void ClearBrowserDataHandler::OnPageOpened(const base::ListValue* value) {
-  for (browsing_data::BrowsingDataCounter* counter : counters_) {
+  for (const auto& counter : counters_) {
     DCHECK(AreCountersEnabled());
     counter->Restart();
   }

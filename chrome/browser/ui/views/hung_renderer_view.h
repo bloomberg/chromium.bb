@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_HUNG_RENDERER_VIEW_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -86,8 +85,7 @@ class HungPagesTableModel : public ui::TableModel, public views::TableGrouper {
   // notifies the observer and delegate.
   void TabDestroyed(WebContentsObserverImpl* tab);
 
-  typedef ScopedVector<WebContentsObserverImpl> TabObservers;
-  TabObservers tab_observers_;
+  std::vector<std::unique_ptr<WebContentsObserverImpl>> tab_observers_;
 
   ui::TableModelObserver* observer_;
   Delegate* delegate_;

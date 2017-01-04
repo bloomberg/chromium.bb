@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_types.h"
@@ -56,13 +55,13 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
 
   // Sets user policies through the mock policy provider.
   void SetUserPolicies(const std::vector<std::string>& names,
-                       const std::vector<base::Value*>& values,
+                       const std::vector<std::unique_ptr<base::Value>>& values,
                        policy::PolicyLevel level);
   // Clears user policies.
   void ClearUserPolicies();
   // Set user-modified pref values directly in the C++ backend.
   void SetUserValues(const std::vector<std::string>& names,
-                     const std::vector<base::Value*>& values);
+                     const std::vector<std::unique_ptr<base::Value>>& values);
 
   // Verifies that a dictionary contains a (key, value) pair. Takes ownership of
   // |expected|.
@@ -73,7 +72,7 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
   // been decorated correctly.
   void VerifyPref(const base::DictionaryValue* prefs,
                   const std::string& name,
-                  const base::Value* value,
+                  const std::unique_ptr<base::Value>& value,
                   const std::string& controlledBy,
                   bool disabled,
                   bool uncommitted);
@@ -82,19 +81,20 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
   // correctly.
   void VerifyObservedPref(const std::string& observed_json,
                           const std::string& name,
-                          const base::Value* value,
+                          const std::unique_ptr<base::Value>& value,
                           const std::string& controlledBy,
                           bool disabled,
                           bool uncommitted);
   // Verifies that notifications received from the JavaScript Preferences class
   // contain the given prefs and that their values have been decorated
   // correctly.
-  void VerifyObservedPrefs(const std::string& observed_json,
-                           const std::vector<std::string>& names,
-                           const std::vector<base::Value*>& values,
-                           const std::string& controlledBy,
-                           bool disabled,
-                           bool uncommitted);
+  void VerifyObservedPrefs(
+      const std::string& observed_json,
+      const std::vector<std::string>& names,
+      const std::vector<std::unique_ptr<base::Value>>& values,
+      const std::string& controlledBy,
+      bool disabled,
+      bool uncommitted);
 
   // Sets up the expectation that the JavaScript Preferences class will make no
   // change to a user-modified pref value in the C++ backend.
@@ -102,7 +102,7 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
   // Sets up the expectation that the JavaScript Preferences class will set a
   // user-modified pref value in the C++ backend.
   void ExpectSetCommit(const std::string& name,
-                       const base::Value* value);
+                       const std::unique_ptr<base::Value>& value);
   // Sets up the expectation that the JavaScript Preferences class will clear a
   // user-modified pref value in the C++ backend.
   void ExpectClearCommit(const std::string& name);
@@ -119,7 +119,7 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
   // VerifyObserved* methods.
   void SetPref(const std::string& name,
                const std::string& type,
-               const base::Value* value,
+               const std::unique_ptr<base::Value>& value,
                bool commit,
                std::string* observed_json);
 
@@ -128,36 +128,36 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
   // the change to C++ if |commit| is true.
   void VerifySetPref(const std::string& name,
                      const std::string& type,
-                     const base::Value* value,
+                     const std::unique_ptr<base::Value>& value,
                      bool commit);
   // Verifies that clearing a user-modified pref value through the JavaScript
   // Preferences class fires the correct notification in JavaScript and does
   // respectively does not cause the change to be committed to the C++ backend.
   void VerifyClearPref(const std::string& name,
-                       const base::Value* value,
+                       const std::unique_ptr<base::Value>& value,
                        bool commit);
   // Verifies that committing a previously made change of a user-modified pref
   // value through the JavaScript Preferences class fires the correct
   // notification in JavaScript.
   void VerifyCommit(const std::string& name,
-                    const base::Value* value,
+                    const std::unique_ptr<base::Value>& value,
                     const std::string& controlledBy);
   // Verifies that committing a previously set user-modified pref value through
   // the JavaScript Preferences class fires the correct notification in
   // JavaScript and causes the change to be committed to the C++ backend.
   void VerifySetCommit(const std::string& name,
-                       const base::Value* value);
+                       const std::unique_ptr<base::Value>& value);
   // Verifies that committing the previously cleared user-modified pref value
   // through the JavaScript Preferences class fires the correct notification in
   // JavaScript and causes the change to be committed to the C++ backend.
   void VerifyClearCommit(const std::string& name,
-                         const base::Value* value);
+                         const std::unique_ptr<base::Value>& value);
   // Verifies that rolling back a previously made change of a user-modified pref
   // value through the JavaScript Preferences class fires the correct
   // notification in JavaScript and does not cause the change to be committed to
   // the C++ backend.
   void VerifyRollback(const std::string& name,
-                      const base::Value* value,
+                      const std::unique_ptr<base::Value>& value,
                       const std::string& controlledBy);
   // Start observing notifications sent by the JavaScript Preferences class for
   // pref values changes.
@@ -186,8 +186,8 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
   std::vector<std::string> types_;
   std::vector<std::string> pref_names_;
   std::vector<std::string> policy_names_;
-  ScopedVector<base::Value> default_values_;
-  ScopedVector<base::Value> non_default_values_;
+  std::vector<std::unique_ptr<base::Value>> default_values_;
+  std::vector<std::unique_ptr<base::Value>> non_default_values_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PreferencesBrowserTest);

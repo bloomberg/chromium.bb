@@ -68,8 +68,7 @@ class SyncInternalsMessageHandlerTest : public ::testing::Test {
   }
 
   void ValidateAboutInfoCall() {
-    const ScopedVector<content::TestWebUI::CallData>& data_vector =
-        web_ui_.call_data();
+    const auto& data_vector = web_ui_.call_data();
     ASSERT_FALSE(data_vector.empty());
     EXPECT_EQ(1u, data_vector.size());
 

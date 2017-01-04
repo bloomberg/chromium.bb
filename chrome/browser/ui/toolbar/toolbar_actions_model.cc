@@ -162,17 +162,16 @@ void ToolbarActionsModel::OnExtensionActionUpdated(
   }
 }
 
-ScopedVector<ToolbarActionViewController> ToolbarActionsModel::CreateActions(
-    Browser* browser,
-    ToolbarActionsBar* bar) {
+std::vector<std::unique_ptr<ToolbarActionViewController>>
+ToolbarActionsModel::CreateActions(Browser* browser, ToolbarActionsBar* bar) {
   DCHECK(browser);
   DCHECK(bar);
-  ScopedVector<ToolbarActionViewController> action_list;
+  std::vector<std::unique_ptr<ToolbarActionViewController>> action_list;
 
   // toolbar_items() might not equate to toolbar_items_ in the case where a
   // subset is highlighted.
   for (const ToolbarItem& item : toolbar_items())
-    action_list.push_back(CreateActionForItem(browser, bar, item).release());
+    action_list.push_back(CreateActionForItem(browser, bar, item));
 
   return action_list;
 }

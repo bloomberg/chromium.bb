@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/hung_renderer_view.h"
 
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -80,13 +81,14 @@ void HungPagesTableModel::InitForWebContents(WebContents* hung_contents) {
   if (hung_contents) {
     // Force hung_contents to be first.
     if (hung_contents) {
-      tab_observers_.push_back(new WebContentsObserverImpl(this,
-                                                           hung_contents));
+      tab_observers_.push_back(
+          base::MakeUnique<WebContentsObserverImpl>(this, hung_contents));
     }
     for (TabContentsIterator it; !it.done(); it.Next()) {
       if (*it != hung_contents &&
           it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost())
-        tab_observers_.push_back(new WebContentsObserverImpl(this, *it));
+        tab_observers_.push_back(
+            base::MakeUnique<WebContentsObserverImpl>(this, *it));
     }
   }
   // The world is different.
@@ -134,13 +136,15 @@ void HungPagesTableModel::GetGroupRange(int model_index,
 
 void HungPagesTableModel::TabDestroyed(WebContentsObserverImpl* tab) {
   // Clean up tab_observers_ and notify our observer.
-  TabObservers::iterator i = std::find(
-      tab_observers_.begin(), tab_observers_.end(), tab);
-  DCHECK(i != tab_observers_.end());
-  int index = static_cast<int>(i - tab_observers_.begin());
-  tab_observers_.erase(i);
+  size_t index = 0;
+  for (; index < tab_observers_.size(); ++index) {
+    if (tab_observers_[index].get() == tab)
+      break;
+  }
+  DCHECK(index < tab_observers_.size());
+  tab_observers_.erase(tab_observers_.begin() + index);
   if (observer_)
-    observer_->OnItemsRemoved(index, 1);
+    observer_->OnItemsRemoved(static_cast<int>(index), 1);
 
   // Notify the delegate.
   delegate_->TabDestroyed();

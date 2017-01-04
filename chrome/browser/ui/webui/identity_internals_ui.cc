@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
@@ -95,7 +96,7 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
   void RevokeToken(const base::ListValue* args);
 
   // A vector of token revokers that are currently revoking tokens.
-  ScopedVector<IdentityInternalsTokenRevoker> token_revokers_;
+  std::vector<std::unique_ptr<IdentityInternalsTokenRevoker>> token_revokers_;
 };
 
 // Handles the revoking of an access token and helps performing the clean up
@@ -159,10 +160,14 @@ void IdentityInternalsUIMessageHandler::OnTokenRevokerDone(
                                          result);
 
   // Erase the revoker.
-  ScopedVector<IdentityInternalsTokenRevoker>::iterator iter =
-      std::find(token_revokers_.begin(), token_revokers_.end(), token_revoker);
-  DCHECK(iter != token_revokers_.end());
-  token_revokers_.erase(iter);
+  for (auto iter = token_revokers_.begin(); iter != token_revokers_.end();
+       ++iter) {
+    if (iter->get() == token_revoker) {
+      token_revokers_.erase(iter);
+      return;
+    }
+  }
+  DCHECK(false) << "revoker should have been in the list";
 }
 
 const std::string IdentityInternalsUIMessageHandler::GetExtensionName(
@@ -259,7 +264,7 @@ void IdentityInternalsUIMessageHandler::RevokeToken(
   std::string access_token;
   args->GetString(kRevokeTokenExtensionOffset, &extension_id);
   args->GetString(kRevokeTokenTokenOffset, &access_token);
-  token_revokers_.push_back(new IdentityInternalsTokenRevoker(
+  token_revokers_.push_back(base::MakeUnique<IdentityInternalsTokenRevoker>(
       extension_id, access_token, Profile::FromWebUI(web_ui()), this));
 }
 

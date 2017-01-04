@@ -38,7 +38,7 @@ std::string VerifyToolbarOrderForBar(
     const char* expected_names[],
     size_t total_size,
     size_t visible_count) {
-  const std::vector<ToolbarActionViewController*>& toolbar_actions =
+  const ToolbarActionsBar::ToolbarActions& toolbar_actions =
       actions_bar->toolbar_actions_unordered();
   // If the total size is wrong, we risk segfaulting by continuing. Abort now.
   if (total_size != toolbar_actions.size()) {

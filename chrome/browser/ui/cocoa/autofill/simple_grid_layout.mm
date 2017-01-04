@@ -8,8 +8,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 
 namespace {
 const int kAutoColumnIdStart = 1000000;  // Starting ID for autogeneration.
@@ -47,22 +46,20 @@ class LayoutElement {
   virtual ~LayoutElement() {}
 
   template <class T>
-      static void ResetSizes(ScopedVector<T>* elements) {
+  static void ResetSizes(std::vector<std::unique_ptr<T>>* elements) {
     // Reset the layout width of each column.
-    for (typename std::vector<T*>::iterator i = elements->begin();
-         i != elements->end(); ++i) {
-      (*i)->ResetSize();
-    }
+    for (const auto& element : *elements)
+      element->ResetSize();
   }
 
   template <class T>
-      static void CalculateLocationsFromSize(ScopedVector<T>* elements) {
+  static void CalculateLocationsFromSize(
+      std::vector<std::unique_ptr<T>>* elements) {
     // Reset the layout width of each column.
     int location = 0;
-    for (typename std::vector<T*>::iterator i = elements->begin();
-         i != elements->end(); ++i) {
-      (*i)->SetLocation(location);
-      location += (*i)->Size();
+    for (const auto& element : *elements) {
+      element->SetLocation(location);
+      location += element->Size();
     }
   }
 
@@ -164,15 +161,15 @@ ColumnSet::~ColumnSet() {
 }
 
 void ColumnSet::AddPaddingColumn(int fixed_width) {
-  columns_.push_back(new Column(0.0f, fixed_width, true));
+  columns_.push_back(base::MakeUnique<Column>(0.0f, fixed_width, true));
 }
 
 void ColumnSet::AddColumn(float resize_percent) {
-  columns_.push_back(new Column(resize_percent, 0, false));
+  columns_.push_back(base::MakeUnique<Column>(resize_percent, 0, false));
 }
 
 void ColumnSet::CalculateSize(float width) {
-  // Reset column widths
+  // Reset column widths.
   LayoutElement::ResetSizes(&columns_);
   width = CalculateRemainingWidth(width);
   DistributeRemainingWidth(width);
@@ -183,8 +180,8 @@ void ColumnSet::ResetColumnXCoordinates() {
 }
 
 float ColumnSet::CalculateRemainingWidth(float width) {
-  for (size_t i = 0; i < columns_.size(); ++i)
-    width -= columns_[i]->Size();
+  for (const auto& column : columns_)
+    width -= column->Size();
 
   return width;
 }
@@ -193,20 +190,21 @@ void ColumnSet::DistributeRemainingWidth(float width) {
   float total_resize = 0.0f;
   int resizable_columns = 0.0;
 
-  for (size_t i = 0; i < columns_.size(); ++i) {
-    if (columns_[i]->IsResizable()) {
-      total_resize += columns_[i]->ResizePercent();
+  for (const auto& column : columns_) {
+    if (column->IsResizable()) {
+      total_resize += column->ResizePercent();
       resizable_columns++;
     }
   }
 
   float remaining_width = width;
-  for (size_t i = 0; i < columns_.size(); ++i) {
-    if (columns_[i]->IsResizable()) {
-      float delta = (resizable_columns == 0) ? remaining_width :
-          (width * columns_[i]->ResizePercent() / total_resize);
+  for (const auto& column : columns_) {
+    if (column->IsResizable()) {
+      float delta = (resizable_columns == 0)
+                        ? remaining_width
+                        : (width * column->ResizePercent() / total_resize);
       remaining_width -= delta;
-      columns_[i]->SetSize(columns_[i]->Size() + delta);
+      column->SetSize(column->Size() + delta);
       resizable_columns--;
     }
   }
@@ -235,35 +233,33 @@ SimpleGridLayout::~SimpleGridLayout() {
 }
 
 ColumnSet* SimpleGridLayout::AddColumnSet(int id) {
-  DCHECK(GetColumnSet(id) == NULL);
-  ColumnSet* column_set = new ColumnSet(id);
-  column_sets_.push_back(column_set);
-  return column_set;
+  DCHECK(GetColumnSet(id) == nullptr);
+  column_sets_.push_back(base::MakeUnique<ColumnSet>(id));
+  return column_sets_.back().get();
 }
 
 ColumnSet* SimpleGridLayout::GetColumnSet(int id) {
-  for (ScopedVector<ColumnSet>::const_iterator i = column_sets_.begin();
-       i != column_sets_.end(); ++i) {
-    if ((*i)->id() == id) {
-      return *i;
+  for (const auto& column_set : column_sets_) {
+    if (column_set->id() == id) {
+      return column_set.get();
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 void SimpleGridLayout::AddPaddingRow(int fixed_height) {
-  AddRow(new Row(0.0f, fixed_height, NULL));
+  AddRow(base::MakeUnique<Row>(0.0f, fixed_height, nullptr));
 }
 
 void SimpleGridLayout::StartRow(float vertical_resize, int column_set_id) {
   ColumnSet* column_set = GetColumnSet(column_set_id);
   DCHECK(column_set);
-  AddRow(new Row(vertical_resize, 0, column_set));
+  AddRow(base::MakeUnique<Row>(vertical_resize, 0, column_set));
 }
 
 ColumnSet* SimpleGridLayout::AddRow() {
-  AddRow(new Row(0, 0, AddColumnSet(current_auto_id_++)));
-  return column_sets_.back();
+  AddRow(base::MakeUnique<Row>(0, 0, AddColumnSet(current_auto_id_++)));
+  return column_sets_.back().get();
 }
 
 void SimpleGridLayout::SkipColumns(int col_count) {
@@ -278,20 +274,15 @@ void SimpleGridLayout::SkipColumns(int col_count) {
 void SimpleGridLayout::AddView(NSView* view) {
   [host_ addSubview:view];
   DCHECK(next_column_ < GetLastValidColumnSet()->num_columns());
-  view_states_.push_back(
-      new ViewState(view,
-                    GetLastValidColumnSet(),
-                    rows_.size() - 1,
-                    next_column_++));
+  view_states_.push_back(base::MakeUnique<ViewState>(
+      view, GetLastValidColumnSet(), rows_.size() - 1, next_column_++));
   SkipPaddingColumns();
 }
 
 // Sizes elements to fit into the superViews bounds, according to constraints.
 void SimpleGridLayout::Layout(NSView* superView) {
   SizeRowsAndColumns(NSWidth([superView bounds]));
-  for (std::vector<ViewState*>::iterator i = view_states_.begin();
-       i != view_states_.end(); ++i) {
-    ViewState* view_state = *i;
+  for (const auto& view_state : view_states_) {
     NSView* view = view_state->view();
     NSRect frame = NSMakeRect(view_state->GetColumn()->Location(),
                               rows_[view_state->row_index()]->Location(),
@@ -303,20 +294,16 @@ void SimpleGridLayout::Layout(NSView* superView) {
 
 void SimpleGridLayout::SizeRowsAndColumns(float width) {
   // Size all columns first.
-  for (ScopedVector<ColumnSet>::iterator i = column_sets_.begin();
-       i != column_sets_.end(); ++i) {
-    (*i)->CalculateSize(width);
-    (*i)->ResetColumnXCoordinates();
+  for (const auto& column_set : column_sets_) {
+    column_set->CalculateSize(width);
+    column_set->ResetColumnXCoordinates();
   }
 
   // Reset the height of each row.
   LayoutElement::ResetSizes(&rows_);
 
   // For each ViewState, obtain the preferred height
-  for (std::vector<ViewState*>::iterator i= view_states_.begin();
-       i != view_states_.end() ; ++i) {
-    ViewState* view_state = *i;
-
+  for (const auto& view_state : view_states_) {
     // The view is resizable. As the pref height may vary with the width,
     // ask for the pref again.
     int actual_width = view_state->GetColumnWidth();
@@ -329,10 +316,8 @@ void SimpleGridLayout::SizeRowsAndColumns(float width) {
 
 
   // Make sure each row can accommodate all contained ViewStates.
-  std::vector<ViewState*>::iterator view_states_iterator = view_states_.begin();
-  for (; view_states_iterator != view_states_.end(); ++view_states_iterator) {
-    ViewState* view_state = *view_states_iterator;
-    Row* row = rows_[view_state->row_index()];
+  for (const auto& view_state : view_states_) {
+    Row* row = rows_[view_state->row_index()].get();
     row->AdjustSize(view_state->preferred_height());
   }
 
@@ -353,7 +338,7 @@ ColumnSet* SimpleGridLayout::GetLastValidColumnSet() {
     if (rows_[i]->column_set())
       return rows_[i]->column_set();
   }
-  return NULL;
+  return nullptr;
 }
 
 float SimpleGridLayout::GetRowHeight(int row_index) {
@@ -376,8 +361,8 @@ float SimpleGridLayout::GetPreferredHeightForWidth(float width) {
   return rows_.back()->Location() + rows_.back()->Size();
 }
 
-void SimpleGridLayout::AddRow(Row* row) {
+void SimpleGridLayout::AddRow(std::unique_ptr<Row> row) {
   next_column_ = 0;
-  rows_.push_back(row);
+  rows_.push_back(std::move(row));
 }
 

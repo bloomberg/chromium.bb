@@ -8,10 +8,10 @@
 #include <stddef.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
@@ -47,6 +47,9 @@ class ToolbarActionViewController;
 class ToolbarActionsBar : public ToolbarActionsModel::Observer,
                           public TabStripModelObserver {
  public:
+  using ToolbarActions =
+      std::vector<std::unique_ptr<ToolbarActionViewController>>;
+
   // A struct to contain the platform settings.
   struct PlatformSettings {
     PlatformSettings();
@@ -221,9 +224,8 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
 
   // Returns the underlying toolbar actions, but does not order them. Primarily
   // for use in testing.
-  const std::vector<ToolbarActionViewController*>& toolbar_actions_unordered()
-      const {
-    return toolbar_actions_.get();
+  const ToolbarActions& toolbar_actions_unordered() const {
+    return toolbar_actions_;
   }
   bool enabled() const { return model_ != nullptr; }
   bool suppress_layout() const { return suppress_layout_; }
@@ -255,8 +257,6 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
       int time_in_seconds);
 
  private:
-  using ToolbarActions = ScopedVector<ToolbarActionViewController>;
-
   // ToolbarActionsModel::Observer:
   void OnToolbarActionAdded(const ToolbarActionsModel::ToolbarItem& item,
                             int index) override;

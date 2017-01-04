@@ -79,9 +79,12 @@ void AccountAvatarFetcherBridge::UpdateAvatar(const gfx::ImageSkia& image) {
           fromBridge:(AccountAvatarFetcherBridge*)bridge
              forView:(CredentialItemButton*)view {
   [view setImage:image];
-  auto it = std::find(bridges_.begin(), bridges_.end(), bridge);
-  if (it != bridges_.end())
-    bridges_.erase(it);
+  for (auto it = bridges_.begin(); it != bridges_.end(); it++) {
+    if (it->get() == bridge) {
+      bridges_.erase(it);
+      return;
+    }
+  }
 }
 
 @end

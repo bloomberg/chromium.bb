@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_BROWSER_TEST_UTIL_H_
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_BROWSER_TEST_UTIL_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/website_settings/permission_prompt.h"
@@ -42,13 +45,13 @@ class PermissionBubbleBrowserTest : public ExtensionBrowserTest {
   // Opens an app window, and returns the associated browser.
   Browser* OpenExtensionAppWindow();
 
-  std::vector<PermissionRequest*> requests() { return requests_.get(); }
+  std::vector<PermissionRequest*> requests();
   std::vector<bool> accept_states() { return accept_states_; }
   PermissionPrompt::Delegate* test_delegate() { return &test_delegate_; }
 
  private:
   TestPermissionBubbleViewDelegate test_delegate_;
-  ScopedVector<PermissionRequest> requests_;
+  std::vector<std::unique_ptr<PermissionRequest>> requests_;
   std::vector<bool> accept_states_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleBrowserTest);
