@@ -4,6 +4,7 @@
 
 #include "content/shell/app/blink_test_platform_support.h"
 
+#include "skia/ext/fontmgr_default_android.h"
 #include "third_party/skia/include/ports/SkFontMgr_android.h"
 
 namespace {
@@ -33,9 +34,14 @@ bool CheckLayoutSystemDeps() {
 
 bool BlinkTestPlatformInitialize() {
   // Initialize Skia with the font configuration files crafted for layout tests.
-  SkUseTestFontConfigFile(
-      kPrimaryFontConfig, kFallbackFontConfig, kFontDirectory);
+  SkFontMgr_Android_CustomFonts custom;
+  custom.fSystemFontUse = SkFontMgr_Android_CustomFonts::kOnlyCustom;
+  custom.fBasePath = kFontDirectory;
+  custom.fFontsXml = kPrimaryFontConfig;
+  custom.fFallbackFontsXml = kFallbackFontConfig;
+  custom.fIsolated = false;
 
+  SetDefaultSkiaFactory(SkFontMgr_New_Android(&custom));
   return true;
 }
 
