@@ -431,7 +431,6 @@ static int av1_pvq_decode_helper2(MACROBLOCKD *const xd,
 
     fwd_txfm_param.tx_type = tx_type;
     fwd_txfm_param.tx_size = tx_size;
-    fwd_txfm_param.fwd_txfm_opt = FWD_TXFM_OPT_NORMAL;
     fwd_txfm_param.lossless = xd->lossless[seg_id];
 
     fwd_txfm(pred, pvq_ref_coeff, diff_stride, &fwd_txfm_param);

@@ -472,14 +472,6 @@ static AV1_QUANT_FACADE quant_func_list[AV1_XFORM_QUANT_TYPES]
                                        };
 #endif
 
-static FWD_TXFM_OPT fwd_txfm_opt_list[AV1_XFORM_QUANT_TYPES] = {
-  FWD_TXFM_OPT_NORMAL, FWD_TXFM_OPT_NORMAL, FWD_TXFM_OPT_DC,
-#if CONFIG_NEW_QUANT
-  FWD_TXFM_OPT_NORMAL, FWD_TXFM_OPT_NORMAL, FWD_TXFM_OPT_DC,
-#endif  // CONFIG_NEW_QUANT
-  FWD_TXFM_OPT_NORMAL
-};
-
 void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      int blk_row, int blk_col, BLOCK_SIZE plane_bsize,
                      TX_SIZE tx_size, int ctx,
@@ -565,7 +557,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   fwd_txfm_param.tx_type = tx_type;
   fwd_txfm_param.tx_size = tx_size;
-  fwd_txfm_param.fwd_txfm_opt = fwd_txfm_opt_list[xform_quant_idx];
   fwd_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
 
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -596,6 +587,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   }
 #else   // #if !CONFIG_PVQ
 
+  (void)xform_quant_idx;
   fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
   fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
 

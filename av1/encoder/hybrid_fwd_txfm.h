@@ -14,12 +14,11 @@
 
 #include "./aom_config.h"
 
-typedef enum FWD_TXFM_OPT { FWD_TXFM_OPT_NORMAL, FWD_TXFM_OPT_DC } FWD_TXFM_OPT;
+typedef enum FWD_TXFM_OPT { FWD_TXFM_OPT_NORMAL } FWD_TXFM_OPT;
 
 typedef struct FWD_TXFM_PARAM {
   TX_TYPE tx_type;
   TX_SIZE tx_size;
-  FWD_TXFM_OPT fwd_txfm_opt;
   int lossless;
 #if CONFIG_AOM_HIGHBITDEPTH
   int bd;
