@@ -2687,10 +2687,9 @@ void HTMLMediaElement::removeTextTrack(WebInbandTextTrack* webTrack) {
   if (!m_textTracks)
     return;
 
-  // This cast is safe because we created the InbandTextTrack with the
-  // WebInbandTextTrack passed to mediaPlayerDidAddTextTrack.
-  InbandTextTrack* textTrack =
-      static_cast<InbandTextTrack*>(webTrack->client());
+  // This cast is safe because InbandTextTrack is the only concrete
+  // implementation of WebInbandTextTrackClient.
+  InbandTextTrack* textTrack = toInbandTextTrack(webTrack->client());
   if (!textTrack)
     return;
 

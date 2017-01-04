@@ -47,7 +47,7 @@ unsigned TextTrackList::length() const {
 
 int TextTrackList::getTrackIndex(TextTrack* textTrack) {
   if (textTrack->trackType() == TextTrack::TrackElement)
-    return static_cast<LoadableTextTrack*>(textTrack)->trackElementIndex();
+    return toLoadableTextTrack(textTrack)->trackElementIndex();
 
   if (textTrack->trackType() == TextTrack::AddTrack)
     return m_elementTracks.size() + m_addTrackTracks.find(textTrack);
@@ -171,7 +171,7 @@ void TextTrackList::append(TextTrack* track) {
     m_addTrackTracks.push_back(TraceWrapperMember<TextTrack>(this, track));
   } else if (track->trackType() == TextTrack::TrackElement) {
     // Insert tracks added for <track> element in tree order.
-    size_t index = static_cast<LoadableTextTrack*>(track)->trackElementIndex();
+    size_t index = toLoadableTextTrack(track)->trackElementIndex();
     m_elementTracks.insert(index, TraceWrapperMember<TextTrack>(this, track));
   } else if (track->trackType() == TextTrack::InBand) {
     m_inbandTracks.push_back(TraceWrapperMember<TextTrack>(this, track));

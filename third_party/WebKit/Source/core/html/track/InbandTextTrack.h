@@ -29,7 +29,7 @@
 #include "core/html/track/TextTrack.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebInbandTextTrackClient.h"
-#include "wtf/RefPtr.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 class WebInbandTextTrack;
@@ -47,7 +47,7 @@ class InbandTextTrack final : public TextTrack,
   void setTrackList(TextTrackList*) override;
 
  private:
-  InbandTextTrack(WebInbandTextTrack*);
+  explicit InbandTextTrack(WebInbandTextTrack*);
 
   void addWebVTTCue(double,
                     double,
@@ -57,6 +57,10 @@ class InbandTextTrack final : public TextTrack,
 
   WebInbandTextTrack* m_webTrack;
 };
+
+// All concrete implementations of WebInbandTextTrackClient are
+// InbandTextTracks.
+DEFINE_TYPE_CASTS(InbandTextTrack, WebInbandTextTrackClient, track, true, true);
 
 }  // namespace blink
 

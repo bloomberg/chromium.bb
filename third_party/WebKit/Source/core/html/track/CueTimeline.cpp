@@ -327,7 +327,7 @@ void CueTimeline::updateActiveCues(double movieTime) {
     // simple event named cuechange at the track element as well.
     if (track->trackType() == TextTrack::TrackElement) {
       HTMLTrackElement* trackElement =
-          static_cast<LoadableTextTrack*>(track.get())->trackElement();
+          toLoadableTextTrack(track.get())->trackElement();
       DCHECK(trackElement);
       mediaElement.scheduleEvent(
           createEventWithTarget(EventTypeNames::cuechange, trackElement));
