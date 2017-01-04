@@ -8,6 +8,7 @@ import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.SearchGeolocationDisclosureTabHelper;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -49,6 +50,7 @@ public class SearchGeolocationDisclosureInfoBarTest
         super.tearDown();
     }
 
+    @FlakyTest(message = "https://crbug.com/678210")
     @SmallTest
     @Feature({"Browser", "Main"})
     @CommandLineFlags.Add(ENABLE_NEW_DISCLOSURE_FEATURE)
