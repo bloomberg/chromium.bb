@@ -19,7 +19,7 @@
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/focus_controller.h"
 
 namespace simple_wm {
 
@@ -341,6 +341,9 @@ class SimpleWM::DisplayLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(DisplayLayoutManager);
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// SimpleWM, public:
+
 SimpleWM::SimpleWM() {}
 
 SimpleWM::~SimpleWM() {
@@ -354,6 +357,9 @@ SimpleWM::~SimpleWM() {
 
   display::Screen::SetScreenInstance(nullptr);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// SimpleWM, service_manager::Service implementation:
 
 void SimpleWM::OnStart() {
   CHECK(!started_);
@@ -379,6 +385,9 @@ bool SimpleWM::OnConnect(
     service_manager::InterfaceRegistry* registry) {
   return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// SimpleWM, aura::WindowTreeClientDelegate implementation:
 
 void SimpleWM::OnEmbed(
     std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) {
@@ -410,6 +419,9 @@ aura::client::CaptureClient* SimpleWM::GetCaptureClient() {
 aura::PropertyConverter* SimpleWM::GetPropertyConverter() {
   return &property_converter_;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// SimpleWM, aura::WindowManagerDelegate implementation:
 
 void SimpleWM::SetWindowManagerClient(
     aura::WindowManagerClient* client) {
@@ -515,8 +527,10 @@ void SimpleWM::OnWmNewDisplay(
   frame_decoration_values->max_title_bar_button_width = 0;
   window_manager_client_->SetFrameDecorationValues(
       std::move(frame_decoration_values));
-  new wm::DefaultActivationClient(display_root_);
-  aura::client::SetFocusClient(display_root_, &focus_client_);
+  focus_controller_ = base::MakeUnique<wm::FocusController>(this);
+  aura::client::SetFocusClient(display_root_, focus_controller_.get());
+  aura::client::SetActivationClient(display_root_, focus_controller_.get());
+  display_root_->AddPreTargetHandler(focus_controller_.get());
 }
 
 void SimpleWM::OnWmDisplayRemoved(
@@ -542,6 +556,29 @@ void SimpleWM::OnWmSetClientArea(
     aura::Window* window,
     const gfx::Insets& insets,
     const std::vector<gfx::Rect>& additional_client_areas) {}
+
+////////////////////////////////////////////////////////////////////////////////
+// SimpleWM, wm::BaseFocusRules implementation:
+
+bool SimpleWM::SupportsChildActivation(aura::Window* window) const {
+  return window == window_root_;
+}
+
+bool SimpleWM::IsWindowConsideredVisibleForActivation(
+    aura::Window* window) const {
+  if (window->IsVisible())
+    return true;
+
+  ui::WindowShowState show_state =
+    window->GetProperty(aura::client::kShowStateKey);
+  if (show_state == ui::SHOW_STATE_MINIMIZED)
+    return true;
+
+  return window->TargetVisibility();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SimpleWM, private:
 
 SimpleWM::FrameView* SimpleWM::GetFrameViewForClientWindow(
     aura::Window* client_window) {

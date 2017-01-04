@@ -23,9 +23,9 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
-#include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
+#include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/wm_state.h"
 
@@ -37,11 +37,16 @@ namespace views {
 class AuraInit;
 }
 
+namespace wm {
+class FocusController;
+}
+
 namespace simple_wm {
 
 class SimpleWM : public service_manager::Service,
                  public aura::WindowTreeClientDelegate,
-                 public aura::WindowManagerDelegate {
+                 public aura::WindowManagerDelegate,
+                 public wm::BaseFocusRules {
  public:
   SimpleWM();
   ~SimpleWM() override;
@@ -96,15 +101,20 @@ class SimpleWM : public service_manager::Service,
       const gfx::Insets& insets,
       const std::vector<gfx::Rect>& additional_client_areas) override;
 
+  // wm::BaseFocusRules:
+  bool SupportsChildActivation(aura::Window* window) const override;
+  bool IsWindowConsideredVisibleForActivation(
+      aura::Window* window) const override;
+
   FrameView* GetFrameViewForClientWindow(aura::Window* client_window);
 
   void OnWindowListViewItemActivated(aura::Window* index);
 
   std::unique_ptr<views::AuraInit> aura_init_;
-  ::wm::WMState wm_state_;
+  wm::WMState wm_state_;
   std::unique_ptr<display::ScreenBase> screen_;
   aura::PropertyConverter property_converter_;
-  aura::test::TestFocusClient focus_client_;
+  std::unique_ptr<wm::FocusController> focus_controller_;
   std::unique_ptr<aura::WindowTreeHostMus> window_tree_host_;
   aura::Window* display_root_ = nullptr;
   aura::Window* window_root_ = nullptr;

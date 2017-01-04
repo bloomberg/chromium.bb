@@ -46,6 +46,7 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
+  void ActivationChanged(bool active) override;
 
   // Overridden from View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -151,6 +152,10 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   // by the space used by the leading and trailing buttons.
   int minimum_title_bar_x_;
   int maximum_title_bar_x_;
+
+  // True if the frame containing this frameview is currently active. Updated in
+  // ActivationChanged().
+  bool active_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameView);
 };

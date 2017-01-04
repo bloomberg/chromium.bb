@@ -207,6 +207,13 @@ void CustomFrameView::SizeConstraintsChanged() {
   LayoutWindowControls();
 }
 
+void CustomFrameView::ActivationChanged(bool active) {
+  if (active_ == active)
+    return;
+  active_ = active;
+  SchedulePaint();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, View overrides:
 
