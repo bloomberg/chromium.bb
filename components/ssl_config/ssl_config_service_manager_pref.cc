@@ -240,7 +240,7 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
       ssl_config::prefs::kCertRevocationCheckingRequiredLocalAnchors,
       default_config.rev_checking_required_local_anchors);
   registry->RegisterBooleanPref(ssl_config::prefs::kCertEnableSha1LocalAnchors,
-                                default_config.sha1_local_anchors_enabled);
+                                false);
   registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMin,
                                std::string());
   registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMax,
