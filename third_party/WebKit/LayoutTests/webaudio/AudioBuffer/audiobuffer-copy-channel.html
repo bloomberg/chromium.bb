@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
     <title>Test Basic Functionality of AudioBuffer.copyFromChannel and AudioBuffer.copyToChannel</title>
@@ -9,9 +10,7 @@
 
   <body>
     <script>
-      description("Test Basic Functionality of copyFromChannel and AudioBuffer.copyToChannel");
 
-      window.jsTestIsAsync = true;
 
       // Define utility routines.
 
@@ -104,7 +103,9 @@
 
       // Test that expected exceptions are signaled for copyFrom.
       audit.defineTask("copyFrom-exceptions", function (done) {
-        shouldBeDefined("AudioBuffer.prototype.copyFromChannel");
+        Should("AudioBuffer.prototype.copyFromChannel",
+        AudioBuffer.prototype.copyFromChannel)
+          .exist();
 
         Should("buffer = context.createBuffer(" + numberOfChannels + ", " + bufferLength + ", context.sampleRate)",
           function () {
@@ -129,14 +130,18 @@
           buffer.copyFromChannel(x, 0, bufferLength);
         }).throw("IndexSizeError");
 
-        shouldThrow("buffer.copyFromChannel(x, 3)");
+        Should("buffer.copyFromChannel(x, 3)", function () {
+          buffer.copyFromChannel(x, 3);
+        }).throw("IndexSizeError");
 
         done();
       });
 
       // Test that expected exceptions are signaled for copyTo.
       audit.defineTask("copyTo-exceptions", function (done) {
-        shouldBeDefined("AudioBuffer.prototype.copyToChannel");
+        Should("AudioBuffer.prototype.copyToChannel",
+        AudioBuffer.prototype.copyToChannel)
+          .exist();
         Should("buffer.copyToChannel(null, 0)", function () {
           buffer.copyToChannel(null, 0);
         }).throw("TypeError");
@@ -156,7 +161,9 @@
           buffer.copyToChannel(x, 0, bufferLength);
         }).throw("IndexSizeError");
 
-        shouldThrow("buffer.copyToChannel(x, 3)");
+        Should("buffer.copyToChannel(x, 3)", function () {
+          buffer.copyToChannel(x, 3);
+        }).throw("IndexSizeError");
 
         done();
       });
@@ -244,7 +251,6 @@
       });
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 
