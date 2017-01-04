@@ -59,6 +59,18 @@ enum BlendMode {
   LAST_BLEND_MODE = BLEND_MODE_LUMINOSITY
 };
 
+enum InputColorSource {
+  INPUT_COLOR_SOURCE_RGBA_TEXTURE,
+  INPUT_COLOR_SOURCE_UNIFORM,
+};
+
+// TODO(ccameron): Merge this with BlendMode.
+enum FragColorMode {
+  FRAG_COLOR_MODE_DEFAULT,
+  FRAG_COLOR_MODE_OPAQUE,
+  FRAG_COLOR_MODE_APPLY_BLEND_MODE,
+};
+
 enum MaskMode {
   NO_MASK = 0,
   HAS_MASK = 1,
@@ -381,14 +393,36 @@ class FragmentShaderBase {
 
  protected:
   FragmentShaderBase();
-  virtual std::string GetShaderSource() const = 0;
+  virtual std::string GetShaderSource() const;
 
   std::string SetBlendModeFunctions(const std::string& shader_string) const;
+
+  // Settings that are modified by sub-classes.
+  bool has_aa_ = false;
+  bool has_varying_alpha_ = false;
+  bool has_swizzle_ = false;
+  bool has_premultiply_alpha_ = false;
+  FragColorMode frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  InputColorSource input_color_type_ = INPUT_COLOR_SOURCE_RGBA_TEXTURE;
 
   // Used only if |blend_mode_| is not BLEND_MODE_NONE.
   int backdrop_location_ = -1;
   int original_backdrop_location_ = -1;
   int backdrop_rect_location_ = -1;
+
+  // Used only if |input_color_type_| is INPUT_COLOR_SOURCE_RGBA_TEXTURE.
+  bool has_rgba_fragment_tex_transform_ = false;
+  int sampler_location_ = -1;
+  int fragment_tex_transform_location_ = -1;
+
+  // Always use sampler2D and texture2D for the RGBA texture, regardless of the
+  // specified SamplerType.
+  // TODO(ccameron): Change GLRenderer to always specify the correct
+  // SamplerType.
+  bool ignore_sampler_type_ = false;
+
+  // Used only if |input_color_type_| is INPUT_COLOR_SOURCE_UNIFORM.
+  int color_location_ = -1;
 
   bool has_mask_sampler_ = false;
   int mask_sampler_location_ = -1;
@@ -399,20 +433,11 @@ class FragmentShaderBase {
   int color_matrix_location_ = -1;
   int color_offset_location_ = -1;
 
-  bool has_sampler_ = false;
-  int sampler_location_ = -1;
-
   bool has_uniform_alpha_ = false;
   int alpha_location_ = -1;
 
   bool has_background_color_ = false;
   int background_color_location_ = -1;
-
-  bool has_fragment_tex_transform_ = false;
-  int fragment_tex_transform_location_ = -1;
-
-  bool has_uniform_color_ = false;
-  int color_location_ = -1;
 
  private:
   BlendMode blend_mode_ = BLEND_MODE_NONE;
@@ -421,198 +446,175 @@ class FragmentShaderBase {
   std::string GetHelperFunctions() const;
   std::string GetBlendFunction() const;
   std::string GetBlendFunctionBodyForRGB() const;
+
+  DISALLOW_COPY_AND_ASSIGN(FragmentShaderBase);
 };
 
-class FragmentTexAlphaBinding : public FragmentShaderBase {
+class FragmentShaderRGBATexVaryingAlpha : public FragmentShaderBase {
  public:
-  FragmentTexAlphaBinding() {
-    has_sampler_ = true;
-    has_uniform_alpha_ = true;
+  FragmentShaderRGBATexVaryingAlpha() {
+    has_varying_alpha_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FragmentTexAlphaBinding);
 };
 
-class FragmentTexColorMatrixAlphaBinding : public FragmentShaderBase {
+class FragmentShaderRGBATexPremultiplyAlpha : public FragmentShaderBase {
  public:
-  FragmentTexColorMatrixAlphaBinding() {
-    has_sampler_ = true;
+  FragmentShaderRGBATexPremultiplyAlpha() {
+    has_varying_alpha_ = true;
+    has_premultiply_alpha_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  }
+};
+
+class FragmentShaderTexBackgroundVaryingAlpha : public FragmentShaderBase {
+ public:
+  FragmentShaderTexBackgroundVaryingAlpha() {
+    has_background_color_ = true;
+    has_varying_alpha_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  }
+};
+
+class FragmentShaderTexBackgroundPremultiplyAlpha : public FragmentShaderBase {
+ public:
+  FragmentShaderTexBackgroundPremultiplyAlpha() {
+    has_background_color_ = true;
+    has_varying_alpha_ = true;
+    has_premultiply_alpha_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  }
+};
+
+class FragmentShaderRGBATexAlpha : public FragmentShaderBase {
+ public:
+  FragmentShaderRGBATexAlpha() {
+    has_uniform_alpha_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
+  }
+};
+
+class FragmentShaderRGBATexColorMatrixAlpha : public FragmentShaderBase {
+ public:
+  FragmentShaderRGBATexColorMatrixAlpha() {
     has_uniform_alpha_ = true;
     has_color_matrix_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
   }
-
- private:
 };
 
-class FragmentTexOpaqueBinding : public FragmentShaderBase {
+class FragmentShaderRGBATexOpaque : public FragmentShaderBase {
  public:
-  FragmentTexOpaqueBinding() { has_sampler_ = true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FragmentTexOpaqueBinding);
+  FragmentShaderRGBATexOpaque() { frag_color_mode_ = FRAG_COLOR_MODE_OPAQUE; }
 };
 
-class FragmentTexBackgroundBinding : public FragmentShaderBase {
+class FragmentShaderRGBATex : public FragmentShaderBase {
  public:
-  FragmentTexBackgroundBinding() {
-    has_sampler_ = true;
-    has_background_color_ = true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FragmentTexBackgroundBinding);
-};
-
-class FragmentShaderRGBATexVaryingAlpha : public FragmentTexOpaqueBinding {
- private:
-  std::string GetShaderSource() const override;
-};
-
-class FragmentShaderRGBATexPremultiplyAlpha : public FragmentTexOpaqueBinding {
- private:
-  std::string GetShaderSource() const override;
-};
-
-class FragmentShaderTexBackgroundVaryingAlpha
-    : public FragmentTexBackgroundBinding {
- private:
-  std::string GetShaderSource() const override;
-};
-
-class FragmentShaderTexBackgroundPremultiplyAlpha
-    : public FragmentTexBackgroundBinding {
- private:
-  std::string GetShaderSource() const override;
-};
-
-class FragmentShaderRGBATexAlpha : public FragmentTexAlphaBinding {
- private:
-  std::string GetShaderSource() const override;
-};
-
-class FragmentShaderRGBATexColorMatrixAlpha
-    : public FragmentTexColorMatrixAlphaBinding {
- private:
-  std::string GetShaderSource() const override;
-};
-
-class FragmentShaderRGBATexOpaque : public FragmentTexOpaqueBinding {
- private:
-  std::string GetShaderSource() const override;
-};
-
-class FragmentShaderRGBATex : public FragmentTexOpaqueBinding {
- private:
-  std::string GetShaderSource() const override;
+  FragmentShaderRGBATex() { frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT; }
 };
 
 // Swizzles the red and blue component of sampled texel with alpha.
-class FragmentShaderRGBATexSwizzleAlpha : public FragmentTexAlphaBinding {
- private:
-  std::string GetShaderSource() const override;
+class FragmentShaderRGBATexSwizzleAlpha : public FragmentShaderBase {
+ public:
+  FragmentShaderRGBATexSwizzleAlpha() {
+    has_uniform_alpha_ = true;
+    has_swizzle_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  }
 };
 
 // Swizzles the red and blue component of sampled texel without alpha.
-class FragmentShaderRGBATexSwizzleOpaque : public FragmentTexOpaqueBinding {
- private:
-  std::string GetShaderSource() const override;
+class FragmentShaderRGBATexSwizzleOpaque : public FragmentShaderBase {
+ public:
+  FragmentShaderRGBATexSwizzleOpaque() {
+    has_swizzle_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_OPAQUE;
+  }
 };
 
 class FragmentShaderRGBATexAlphaAA : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaAA() {
-    has_sampler_ = true;
+    has_aa_ = true;
     has_uniform_alpha_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
   }
-
- private:
-  std::string GetShaderSource() const override;
-  DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaAA);
 };
 
-class FragmentTexClampAlphaAABinding : public FragmentShaderBase {
+class FragmentShaderRGBATexClampAlphaAA : public FragmentShaderBase {
  public:
-  FragmentTexClampAlphaAABinding() {
-    has_sampler_ = true;
+  FragmentShaderRGBATexClampAlphaAA() {
+    has_aa_ = true;
     has_uniform_alpha_ = true;
-    has_fragment_tex_transform_ = true;
+    has_rgba_fragment_tex_transform_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
   }
- private:
-  DISALLOW_COPY_AND_ASSIGN(FragmentTexClampAlphaAABinding);
-};
-
-class FragmentShaderRGBATexClampAlphaAA
-    : public FragmentTexClampAlphaAABinding {
- private:
-  std::string GetShaderSource() const override;
 };
 
 // Swizzles the red and blue component of sampled texel.
-class FragmentShaderRGBATexClampSwizzleAlphaAA
-    : public FragmentTexClampAlphaAABinding {
- private:
-  std::string GetShaderSource() const override;
+class FragmentShaderRGBATexClampSwizzleAlphaAA : public FragmentShaderBase {
+ public:
+  FragmentShaderRGBATexClampSwizzleAlphaAA() {
+    has_aa_ = true;
+    has_uniform_alpha_ = true;
+    has_rgba_fragment_tex_transform_ = true;
+    has_swizzle_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  }
 };
 
 class FragmentShaderRGBATexAlphaMask : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaMask() {
-    has_sampler_ = true;
     has_uniform_alpha_ = true;
     has_mask_sampler_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
+    ignore_sampler_type_ = true;
   }
- private:
-  std::string GetShaderSource() const override;
-  DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaMask);
 };
 
 class FragmentShaderRGBATexAlphaMaskAA : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaMaskAA() {
-    has_sampler_ = true;
+    has_aa_ = true;
     has_uniform_alpha_ = true;
     has_mask_sampler_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
+    ignore_sampler_type_ = true;
   }
- private:
-  std::string GetShaderSource() const override;
-  DISALLOW_COPY_AND_ASSIGN(FragmentShaderRGBATexAlphaMaskAA);
 };
 
 class FragmentShaderRGBATexAlphaMaskColorMatrixAA : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaMaskColorMatrixAA() {
-    has_sampler_ = true;
+    has_aa_ = true;
     has_uniform_alpha_ = true;
     has_mask_sampler_ = true;
     has_color_matrix_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
+    ignore_sampler_type_ = true;
   }
- private:
-  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderRGBATexAlphaColorMatrixAA : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaColorMatrixAA() {
-    has_sampler_ = true;
+    has_aa_ = true;
     has_uniform_alpha_ = true;
     has_color_matrix_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
   }
-
- private:
-  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderRGBATexAlphaMaskColorMatrix : public FragmentShaderBase {
  public:
   FragmentShaderRGBATexAlphaMaskColorMatrix() {
-    has_sampler_ = true;
     has_uniform_alpha_ = true;
     has_mask_sampler_ = true;
     has_color_matrix_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_APPLY_BLEND_MODE;
+    ignore_sampler_type_ = true;
   }
- private:
-  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderYUVVideo : public FragmentShaderBase {
@@ -659,26 +661,23 @@ class FragmentShaderYUVVideo : public FragmentShaderBase {
   int uv_clamp_rect_location_ = -1;
   int resource_multiplier_location_ = -1;
   int resource_offset_location_ = -1;
-
-  DISALLOW_COPY_AND_ASSIGN(FragmentShaderYUVVideo);
 };
 
 class FragmentShaderColor : public FragmentShaderBase {
  public:
-  FragmentShaderColor() { has_uniform_color_ = true; }
-
- private:
-  std::string GetShaderSource() const override;
-  DISALLOW_COPY_AND_ASSIGN(FragmentShaderColor);
+  FragmentShaderColor() {
+    input_color_type_ = INPUT_COLOR_SOURCE_UNIFORM;
+    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  }
 };
 
 class FragmentShaderColorAA : public FragmentShaderBase {
  public:
-  FragmentShaderColorAA() { has_uniform_color_ = true; }
-
- private:
-  std::string GetShaderSource() const override;
-  DISALLOW_COPY_AND_ASSIGN(FragmentShaderColorAA);
+  FragmentShaderColorAA() {
+    input_color_type_ = INPUT_COLOR_SOURCE_UNIFORM;
+    has_aa_ = true;
+    frag_color_mode_ = FRAG_COLOR_MODE_DEFAULT;
+  }
 };
 
 }  // namespace cc

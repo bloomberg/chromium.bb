@@ -770,6 +770,9 @@ FragmentShaderBase::FragmentShaderBase() {}
 
 std::string FragmentShaderBase::GetShaderString(TexCoordPrecision precision,
                                                 SamplerType sampler) const {
+  // The AA shader values will use TexCoordPrecision.
+  if (has_aa_ && precision == TEX_COORD_PRECISION_NA)
+    precision = TEX_COORD_PRECISION_MEDIUM;
   return SetFragmentTexCoordPrecision(
       precision, SetFragmentSamplerType(
                      sampler, SetBlendModeFunctions(GetShaderSource())));
@@ -794,16 +797,20 @@ void FragmentShaderBase::Init(GLES2Interface* context,
     uniforms.push_back("colorMatrix");
     uniforms.push_back("colorOffset");
   }
-  if (has_sampler_)
-    uniforms.push_back("s_texture");
   if (has_uniform_alpha_)
     uniforms.push_back("alpha");
   if (has_background_color_)
     uniforms.push_back("background_color");
-  if (has_fragment_tex_transform_)
-    uniforms.push_back("fragmentTexTransform");
-  if (has_uniform_color_)
-    uniforms.push_back("color");
+  switch (input_color_type_) {
+    case INPUT_COLOR_SOURCE_RGBA_TEXTURE:
+      uniforms.push_back("s_texture");
+      if (has_rgba_fragment_tex_transform_)
+        uniforms.push_back("fragmentTexTransform");
+      break;
+    case INPUT_COLOR_SOURCE_UNIFORM:
+      uniforms.push_back("color");
+      break;
+  }
 
   locations.resize(uniforms.size());
 
@@ -825,16 +832,20 @@ void FragmentShaderBase::Init(GLES2Interface* context,
     color_matrix_location_ = locations[index++];
     color_offset_location_ = locations[index++];
   }
-  if (has_sampler_)
-    sampler_location_ = locations[index++];
   if (has_uniform_alpha_)
     alpha_location_ = locations[index++];
   if (has_background_color_)
     background_color_location_ = locations[index++];
-  if (has_fragment_tex_transform_)
-    fragment_tex_transform_location_ = locations[index++];
-  if (has_uniform_color_)
-    color_location_ = locations[index++];
+  switch (input_color_type_) {
+    case INPUT_COLOR_SOURCE_RGBA_TEXTURE:
+      sampler_location_ = locations[index++];
+      if (has_rgba_fragment_tex_transform_)
+        fragment_tex_transform_location_ = locations[index++];
+      break;
+    case INPUT_COLOR_SOURCE_UNIFORM:
+      color_location_ = locations[index++];
+      break;
+  }
   DCHECK_EQ(index, locations.size());
 }
 
@@ -854,10 +865,15 @@ void FragmentShaderBase::FillLocations(ShaderLocations* locations) const {
     locations->color_matrix = color_matrix_location_;
     locations->color_offset = color_offset_location_;
   }
-  if (has_sampler_)
-    locations->sampler = sampler_location_;
   if (has_uniform_alpha_)
     locations->alpha = alpha_location_;
+  switch (input_color_type_) {
+    case INPUT_COLOR_SOURCE_RGBA_TEXTURE:
+      locations->sampler = sampler_location_;
+      break;
+    case INPUT_COLOR_SOURCE_UNIFORM:
+      break;
+  }
 }
 
 std::string FragmentShaderBase::SetBlendModeFunctions(
@@ -1155,334 +1171,152 @@ std::string FragmentShaderBase::GetBlendFunctionBodyForRGB() const {
   return "result = vec4(1.0, 0.0, 0.0, 1.0);";
 }
 
-std::string FragmentShaderRGBATexAlpha::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    uniform SamplerType s_texture;
-    uniform float alpha;
-    void main() {
-      vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      gl_FragColor = ApplyBlendMode(texColor * alpha, 0.0);
-    }
-  });
-}
+std::string FragmentShaderBase::GetShaderSource() const {
+  std::string header = "precision mediump float;\n";
+  std::string source = "void main() {\n";
 
-std::string FragmentShaderRGBATexColorMatrixAlpha::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    uniform SamplerType s_texture;
-    uniform float alpha;
-    uniform mat4 colorMatrix;
-    uniform vec4 colorOffset;
-    void main() {
-      vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      float nonZeroAlpha = max(texColor.a, 0.00001);
-      texColor = vec4(texColor.rgb / nonZeroAlpha, nonZeroAlpha);
-      texColor = colorMatrix * texColor + colorOffset;
-      texColor.rgb *= texColor.a;
-      texColor = clamp(texColor, 0.0, 1.0);
-      gl_FragColor = ApplyBlendMode(texColor * alpha, 0.0);
-    }
-  });
-}
+#define HDR(x)                       \
+  do {                               \
+    header += x + std::string("\n"); \
+  } while (0)
+#define SRC(x)                                           \
+  do {                                                   \
+    source += std::string("  ") + x + std::string("\n"); \
+  } while (0)
 
-std::string FragmentShaderRGBATexVaryingAlpha::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying float v_alpha;
-    uniform SamplerType s_texture;
-    void main() {
-      vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      gl_FragColor = texColor * v_alpha;
-    }
-  });
-}
+  // Read the input into vec4 texColor.
+  switch (input_color_type_) {
+    case INPUT_COLOR_SOURCE_RGBA_TEXTURE:
+      if (ignore_sampler_type_)
+        HDR("uniform sampler2D s_texture;");
+      else
+        HDR("uniform SamplerType s_texture;");
+      HDR("varying TexCoordPrecision vec2 v_texCoord;");
+      if (has_rgba_fragment_tex_transform_) {
+        HDR("uniform TexCoordPrecision vec4 fragmentTexTransform;");
+        SRC("// Transformed texture lookup");
+        SRC("TexCoordPrecision vec2 texCoord =");
+        SRC("    clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw +");
+        SRC("   fragmentTexTransform.xy;");
+        SRC("vec4 texColor = TextureLookup(s_texture, texCoord);");
+        DCHECK(!ignore_sampler_type_);
+      } else {
+        SRC("// Texture lookup");
+        if (ignore_sampler_type_)
+          SRC("vec4 texColor = texture2D(s_texture, v_texCoord);");
+        else
+          SRC("vec4 texColor = TextureLookup(s_texture, v_texCoord);");
+      }
+      break;
+    case INPUT_COLOR_SOURCE_UNIFORM:
+      DCHECK(!ignore_sampler_type_);
+      DCHECK(!has_rgba_fragment_tex_transform_);
+      HDR("uniform vec4 color;");
+      SRC("// Uniform color");
+      SRC("vec4 texColor = color;");
+      break;
+  }
+  // Apply the color matrix to texColor.
+  if (has_color_matrix_) {
+    HDR("uniform mat4 colorMatrix;");
+    HDR("uniform vec4 colorOffset;");
+    SRC("// Apply color matrix");
+    SRC("float nonZeroAlpha = max(texColor.a, 0.00001);");
+    SRC("texColor = vec4(texColor.rgb / nonZeroAlpha, nonZeroAlpha);");
+    SRC("texColor = colorMatrix * texColor + colorOffset;");
+    SRC("texColor.rgb *= texColor.a;");
+    SRC("texColor = clamp(texColor, 0.0, 1.0);");
+  }
 
-std::string FragmentShaderRGBATexPremultiplyAlpha::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying float v_alpha;
-    uniform SamplerType s_texture;
-    void main() {
-      vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      texColor.rgb *= texColor.a;
-      gl_FragColor = texColor * v_alpha;
-    }
-  });
-}
+  // Read the mask texture.
+  if (has_mask_sampler_) {
+    HDR("uniform SamplerType s_mask;");
+    HDR("uniform vec2 maskTexCoordScale;");
+    HDR("uniform vec2 maskTexCoordOffset;");
+    SRC("// Read the mask");
+    SRC("TexCoordPrecision vec2 maskTexCoord =");
+    SRC("    vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,");
+    SRC("         maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);");
+    SRC("vec4 maskColor = TextureLookup(s_mask, maskTexCoord);");
+  }
 
-std::string FragmentShaderTexBackgroundVaryingAlpha::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying float v_alpha;
-    uniform vec4 background_color;
-    uniform SamplerType s_texture;
-    void main() {
-      vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      texColor += background_color * (1.0 - texColor.a);
-      gl_FragColor = texColor * v_alpha;
-    }
-  });
-}
+  // Compute AA.
+  if (has_aa_) {
+    HDR("varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.");
+    SRC("// Compute AA");
+    SRC("vec4 d4 = min(edge_dist[0], edge_dist[1]);");
+    SRC("vec2 d2 = min(d4.xz, d4.yw);");
+    SRC("float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);");
+  }
 
-std::string FragmentShaderTexBackgroundPremultiplyAlpha::GetShaderSource()
-    const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying float v_alpha;
-    uniform vec4 background_color;
-    uniform SamplerType s_texture;
-    void main() {
-      vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      texColor.rgb *= texColor.a;
-      texColor += background_color * (1.0 - texColor.a);
-      gl_FragColor = texColor * v_alpha;
-    }
-  });
-}
+  // Premultiply by alpha.
+  if (has_premultiply_alpha_) {
+    SRC("// Premultiply alpha");
+    SRC("texColor.rgb *= texColor.a;");
+  }
 
-std::string FragmentShaderRGBATexOpaque::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    uniform SamplerType s_texture;
-    void main() {
-      vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      gl_FragColor = vec4(texColor.rgb, 1.0);
-    }
-  });
-}
+  // Apply background texture.
+  if (has_background_color_) {
+    HDR("uniform vec4 background_color;");
+    SRC("// Apply uniform background color blending");
+    SRC("texColor += background_color * (1.0 - texColor.a);");
+  }
 
-std::string FragmentShaderRGBATex::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    uniform SamplerType s_texture;
-    void main() { gl_FragColor = TextureLookup(s_texture, v_texCoord); }
-  });
-}
+  // Apply swizzle.
+  if (has_swizzle_) {
+    SRC("// Apply swizzle");
+    SRC("texColor = texColor.bgra;\n");
+  }
 
-std::string FragmentShaderRGBATexSwizzleAlpha::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    uniform SamplerType s_texture;
-    uniform float alpha;
-    void main() {
-      vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      gl_FragColor =
-          vec4(texColor.z, texColor.y, texColor.x, texColor.w) * alpha;
-    }
-  });
-}
+  // Include header text for alpha.
+  if (has_uniform_alpha_) {
+    HDR("uniform float alpha;");
+  }
+  if (has_varying_alpha_) {
+    HDR("varying float v_alpha;");
+  }
 
-std::string FragmentShaderRGBATexSwizzleOpaque::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    uniform SamplerType s_texture;
-    void main() {
-      vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      gl_FragColor = vec4(texColor.z, texColor.y, texColor.x, 1.0);
-    }
-  });
-}
+  // Apply uniform alpha, aa, varying alpha, and the mask.
+  if (has_varying_alpha_ || has_aa_ || has_uniform_alpha_ ||
+      has_mask_sampler_) {
+    SRC("// Apply alpha from uniform, varying, aa, and mask.");
+    std::string line = "  texColor = texColor";
+    if (has_varying_alpha_)
+      line += " * v_alpha";
+    if (has_uniform_alpha_)
+      line += " * alpha";
+    if (has_aa_)
+      line += " * aa";
+    if (has_mask_sampler_)
+      line += " * maskColor.a";
+    line += ";\n";
+    source += line;
+  }
 
-std::string FragmentShaderRGBATexAlphaAA::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    uniform SamplerType s_texture;
-    uniform float alpha;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-    void main() {
-      vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      vec4 d4 = min(edge_dist[0], edge_dist[1]);
-      vec2 d2 = min(d4.xz, d4.yw);
-      float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-      gl_FragColor = ApplyBlendMode(texColor * alpha * aa, 0.0);
-    }
-  });
-}
+  // Write the fragment color.
+  SRC("// Write the fragment color");
+  switch (frag_color_mode_) {
+    case FRAG_COLOR_MODE_DEFAULT:
+      DCHECK_EQ(blend_mode_, BLEND_MODE_NONE);
+      SRC("gl_FragColor = texColor;");
+      break;
+    case FRAG_COLOR_MODE_OPAQUE:
+      DCHECK_EQ(blend_mode_, BLEND_MODE_NONE);
+      SRC("gl_FragColor = vec4(texColor.rgb, 1.0);");
+      break;
+    case FRAG_COLOR_MODE_APPLY_BLEND_MODE:
+      if (has_mask_sampler_)
+        SRC("gl_FragColor = ApplyBlendMode(texColor, maskColor.w);");
+      else
+        SRC("gl_FragColor = ApplyBlendMode(texColor, 0.0);");
+      break;
+  }
+  source += "}\n";
 
-std::string FragmentShaderRGBATexClampAlphaAA::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    uniform SamplerType s_texture;
-    uniform float alpha;
-    uniform TexCoordPrecision vec4 fragmentTexTransform;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-    void main() {
-      TexCoordPrecision vec2 texCoord =
-          clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw +
-          fragmentTexTransform.xy;
-      vec4 texColor = TextureLookup(s_texture, texCoord);
-      vec4 d4 = min(edge_dist[0], edge_dist[1]);
-      vec2 d2 = min(d4.xz, d4.yw);
-      float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-      gl_FragColor = texColor * alpha * aa;
-    }
-  });
-}
+#undef HDR
+#undef SRC
 
-std::string FragmentShaderRGBATexClampSwizzleAlphaAA::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    uniform SamplerType s_texture;
-    uniform float alpha;
-    uniform TexCoordPrecision vec4 fragmentTexTransform;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-    void main() {
-      TexCoordPrecision vec2 texCoord =
-          clamp(v_texCoord, 0.0, 1.0) * fragmentTexTransform.zw +
-          fragmentTexTransform.xy;
-      vec4 texColor = TextureLookup(s_texture, texCoord);
-      vec4 d4 = min(edge_dist[0], edge_dist[1]);
-      vec2 d2 = min(d4.xz, d4.yw);
-      float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-      gl_FragColor =
-          vec4(texColor.z, texColor.y, texColor.x, texColor.w) * alpha * aa;
-    }
-  });
-}
-
-std::string FragmentShaderRGBATexAlphaMask::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    uniform sampler2D s_texture;
-    uniform SamplerType s_mask;
-    uniform TexCoordPrecision vec2 maskTexCoordScale;
-    uniform TexCoordPrecision vec2 maskTexCoordOffset;
-    uniform float alpha;
-    void main() {
-      vec4 texColor = texture2D(s_texture, v_texCoord);
-      TexCoordPrecision vec2 maskTexCoord =
-          vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
-               maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
-      vec4 maskColor = TextureLookup(s_mask, maskTexCoord);
-      gl_FragColor = ApplyBlendMode(
-          texColor * alpha * maskColor.w, maskColor.w);
-    }
-  });
-}
-
-std::string FragmentShaderRGBATexAlphaMaskAA::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    uniform sampler2D s_texture;
-    uniform SamplerType s_mask;
-    uniform TexCoordPrecision vec2 maskTexCoordScale;
-    uniform TexCoordPrecision vec2 maskTexCoordOffset;
-    uniform float alpha;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-    void main() {
-      vec4 texColor = texture2D(s_texture, v_texCoord);
-      TexCoordPrecision vec2 maskTexCoord =
-          vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
-               maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
-      vec4 maskColor = TextureLookup(s_mask, maskTexCoord);
-      vec4 d4 = min(edge_dist[0], edge_dist[1]);
-      vec2 d2 = min(d4.xz, d4.yw);
-      float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-      gl_FragColor = ApplyBlendMode(
-          texColor * alpha * maskColor.w * aa, maskColor.w);
-    }
-  });
-}
-
-std::string FragmentShaderRGBATexAlphaMaskColorMatrixAA::GetShaderSource()
-    const {
-  return SHADER0([]() {
-    precision mediump float;
-    uniform sampler2D s_texture;
-    uniform SamplerType s_mask;
-    uniform vec2 maskTexCoordScale;
-    uniform vec2 maskTexCoordOffset;
-    uniform mat4 colorMatrix;
-    uniform vec4 colorOffset;
-    uniform float alpha;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-    void main() {
-      vec4 texColor = texture2D(s_texture, v_texCoord);
-      float nonZeroAlpha = max(texColor.a, 0.00001);
-      texColor = vec4(texColor.rgb / nonZeroAlpha, nonZeroAlpha);
-      texColor = colorMatrix * texColor + colorOffset;
-      texColor.rgb *= texColor.a;
-      texColor = clamp(texColor, 0.0, 1.0);
-      TexCoordPrecision vec2 maskTexCoord =
-          vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
-               maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
-      vec4 maskColor = TextureLookup(s_mask, maskTexCoord);
-      vec4 d4 = min(edge_dist[0], edge_dist[1]);
-      vec2 d2 = min(d4.xz, d4.yw);
-      float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-      gl_FragColor = ApplyBlendMode(
-          texColor * alpha * maskColor.w * aa, maskColor.w);
-    }
-  });
-}
-
-std::string FragmentShaderRGBATexAlphaColorMatrixAA::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    uniform SamplerType s_texture;
-    uniform float alpha;
-    uniform mat4 colorMatrix;
-    uniform vec4 colorOffset;
-    varying TexCoordPrecision vec2 v_texCoord;
-    varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-    void main() {
-      vec4 texColor = TextureLookup(s_texture, v_texCoord);
-      float nonZeroAlpha = max(texColor.a, 0.00001);
-      texColor = vec4(texColor.rgb / nonZeroAlpha, nonZeroAlpha);
-      texColor = colorMatrix * texColor + colorOffset;
-      texColor.rgb *= texColor.a;
-      texColor = clamp(texColor, 0.0, 1.0);
-      vec4 d4 = min(edge_dist[0], edge_dist[1]);
-      vec2 d2 = min(d4.xz, d4.yw);
-      float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-      gl_FragColor = ApplyBlendMode(texColor * alpha * aa, 0.0);
-    }
-  });
-}
-
-std::string FragmentShaderRGBATexAlphaMaskColorMatrix::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    uniform sampler2D s_texture;
-    uniform SamplerType s_mask;
-    uniform vec2 maskTexCoordScale;
-    uniform vec2 maskTexCoordOffset;
-    uniform mat4 colorMatrix;
-    uniform vec4 colorOffset;
-    uniform float alpha;
-    void main() {
-      vec4 texColor = texture2D(s_texture, v_texCoord);
-      float nonZeroAlpha = max(texColor.a, 0.00001);
-      texColor = vec4(texColor.rgb / nonZeroAlpha, nonZeroAlpha);
-      texColor = colorMatrix * texColor + colorOffset;
-      texColor.rgb *= texColor.a;
-      texColor = clamp(texColor, 0.0, 1.0);
-      TexCoordPrecision vec2 maskTexCoord =
-          vec2(maskTexCoordOffset.x + v_texCoord.x * maskTexCoordScale.x,
-               maskTexCoordOffset.y + v_texCoord.y * maskTexCoordScale.y);
-      vec4 maskColor = TextureLookup(s_mask, maskTexCoord);
-      gl_FragColor = ApplyBlendMode(
-          texColor * alpha * maskColor.w, maskColor.w);
-    }
-  });
+  return header + source;
 }
 
 FragmentShaderYUVVideo::FragmentShaderYUVVideo()
@@ -1645,28 +1479,6 @@ std::string FragmentShaderYUVVideo::GetShaderSource() const {
   });
 
   return head + functions;
-}
-
-std::string FragmentShaderColor::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    uniform vec4 color;
-    void main() { gl_FragColor = color; }
-  });
-}
-
-std::string FragmentShaderColorAA::GetShaderSource() const {
-  return SHADER0([]() {
-    precision mediump float;
-    uniform vec4 color;
-    varying vec4 edge_dist[2];  // 8 edge distances.
-    void main() {
-      vec4 d4 = min(edge_dist[0], edge_dist[1]);
-      vec2 d2 = min(d4.xz, d4.yw);
-      float aa = clamp(gl_FragCoord.w * min(d2.x, d2.y), 0.0, 1.0);
-      gl_FragColor = color * aa;
-    }
-  });
 }
 
 }  // namespace cc
