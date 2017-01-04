@@ -15,7 +15,7 @@
 
 @property(nonatomic, readonly) UICollectionView* collectionView;
 
-- (instancetype)initWithSessionType:(ios_internal::SessionType)sessionType
+- (instancetype)initWithSessionType:(TabSwitcherSessionType)sessionType
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;

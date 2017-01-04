@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_model_snapshot.h"
 
+class ChromeBrowserState;
 @class TabModel;
 @class TabSwitcherCache;
 
@@ -26,21 +27,15 @@ enum class TabSwitcherSignInPanelsType {
   NO_PANEL,
 };
 
-namespace ios_internal {
-
-enum class SessionType {
+enum class TabSwitcherSessionType {
   OFF_THE_RECORD_SESSION,
   REGULAR_SESSION,
   DISTANT_SESSION
 };
 
-class ChromeBrowserState;
-
 // Returns true if the session type is a local session. A local session is a
 // "regular session" or an "off the record" session.
-bool IsLocalSession(SessionType sessionType);
-
-}  // namespace ios_internal
+bool TabSwitcherSessionTypeIsLocalSession(TabSwitcherSessionType sessionType);
 
 // Protocol to observe changes to the TabSwitcherModel.
 @protocol TabSwitcherModelDelegate<NSObject>
@@ -51,12 +46,12 @@ bool IsLocalSession(SessionType sessionType);
 // Called when the distant session with the tag |tag| may need to be updated.
 - (void)distantSessionMayNeedUpdate:(std::string const&)tag;
 // Called when a local session of type |type| needs to be updated.
-- (void)localSessionMayNeedUpdate:(ios_internal::SessionType)type;
+- (void)localSessionMayNeedUpdate:(TabSwitcherSessionType)type;
 // Called when the signed-in panel (if any) must change.
 - (void)signInPanelChangedTo:(TabSwitcherSignInPanelsType)panelType;
 // Called to retrieve the size of the item at the |index| in |session|.
 - (CGSize)sizeForItemAtIndex:(NSUInteger)index
-                   inSession:(ios_internal::SessionType)session;
+                   inSession:(TabSwitcherSessionType)session;
 @end
 
 // This class serves as a bridge between Chrome-level data (CLD), and what is
@@ -90,7 +85,7 @@ bool IsLocalSession(SessionType sessionType);
 - (ios::ChromeBrowserState*)browserState;
 // Returns the latest data for the local session of type |type|.
 - (std::unique_ptr<TabModelSnapshot>)tabModelSnapshotForLocalSession:
-    (ios_internal::SessionType)type;
+    (TabSwitcherSessionType)type;
 // Returns the latest data for the distant session of tag |tag|.
 - (std::unique_ptr<const synced_sessions::DistantSession>)distantSessionForTag:
     (std::string const&)tag;

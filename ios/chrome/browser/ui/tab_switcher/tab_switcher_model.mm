@@ -24,14 +24,10 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_model_private.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_cell.h"
 
-namespace ios_internal {
-
-bool IsLocalSession(SessionType sessionType) {
-  return sessionType == SessionType::OFF_THE_RECORD_SESSION ||
-         sessionType == SessionType::REGULAR_SESSION;
+bool TabSwitcherSessionTypeIsLocalSession(TabSwitcherSessionType sessionType) {
+  return sessionType == TabSwitcherSessionType::OFF_THE_RECORD_SESSION ||
+         sessionType == TabSwitcherSessionType::REGULAR_SESSION;
 }
-
-}  // namespace ios_internal
 
 namespace {
 
@@ -77,7 +73,7 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
 
 // Returns the type of the local session corresponding to the given |tabModel|.
 // |tabModel| MUST be equal to either |_mainTabModel|, or |_otrTabModel|.
-- (ios_internal::SessionType)typeOfLocalSessionForTabModel:(TabModel*)tabModel;
+- (TabSwitcherSessionType)typeOfLocalSessionForTabModel:(TabModel*)tabModel;
 @end
 
 @implementation TabSwitcherModel
@@ -153,33 +149,32 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
   return _browserState;
 }
 
-- (TabModel*)tabModelForSessionOfType:(ios_internal::SessionType)type {
-  DCHECK(type == ios_internal::SessionType::OFF_THE_RECORD_SESSION ||
-         type == ios_internal::SessionType::REGULAR_SESSION);
-  return type == ios_internal::SessionType::OFF_THE_RECORD_SESSION
-             ? _otrTabModel
-             : _mainTabModel;
+- (TabModel*)tabModelForSessionOfType:(TabSwitcherSessionType)type {
+  DCHECK(type == TabSwitcherSessionType::OFF_THE_RECORD_SESSION ||
+         type == TabSwitcherSessionType::REGULAR_SESSION);
+  return type == TabSwitcherSessionType::OFF_THE_RECORD_SESSION ? _otrTabModel
+                                                                : _mainTabModel;
 }
 
-- (NSInteger)numberOfTabsInLocalSessionOfType:(ios_internal::SessionType)type {
+- (NSInteger)numberOfTabsInLocalSessionOfType:(TabSwitcherSessionType)type {
   TabModelSnapshot* tabModelSnapshot = [self tabModelSnapshotForSession:type];
   return tabModelSnapshot->tabs().size();
 }
 
 - (Tab*)tabAtIndex:(NSUInteger)index
-    inLocalSessionOfType:(ios_internal::SessionType)type {
+    inLocalSessionOfType:(TabSwitcherSessionType)type {
   TabModelSnapshot* tabModelSnapshot = [self tabModelSnapshotForSession:type];
   return tabModelSnapshot->tabs()[index];
 }
 
 - (std::unique_ptr<TabModelSnapshot>)tabModelSnapshotForLocalSession:
-    (ios_internal::SessionType)type {
+    (TabSwitcherSessionType)type {
   TabModel* tm = nullptr;
   switch (type) {
-    case ios_internal::SessionType::OFF_THE_RECORD_SESSION:
+    case TabSwitcherSessionType::OFF_THE_RECORD_SESSION:
       tm = _otrTabModel;
       break;
-    case ios_internal::SessionType::REGULAR_SESSION:
+    case TabSwitcherSessionType::REGULAR_SESSION:
       tm = _mainTabModel;
       break;
     default:
@@ -316,19 +311,18 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
   }
 }
 
-- (ios_internal::SessionType)typeOfLocalSessionForTabModel:(TabModel*)tabModel {
+- (TabSwitcherSessionType)typeOfLocalSessionForTabModel:(TabModel*)tabModel {
   DCHECK(tabModel == _mainTabModel || tabModel == _otrTabModel);
   if (tabModel == _otrTabModel)
-    return ios_internal::SessionType::OFF_THE_RECORD_SESSION;
-  return ios_internal::SessionType::REGULAR_SESSION;
+    return TabSwitcherSessionType::OFF_THE_RECORD_SESSION;
+  return TabSwitcherSessionType::REGULAR_SESSION;
 }
 
-- (TabModelSnapshot*)tabModelSnapshotForSession:
-    (ios_internal::SessionType)type {
+- (TabModelSnapshot*)tabModelSnapshotForSession:(TabSwitcherSessionType)type {
   switch (type) {
-    case ios_internal::SessionType::OFF_THE_RECORD_SESSION:
+    case TabSwitcherSessionType::OFF_THE_RECORD_SESSION:
       return _otrTabModelSnapshot.get();
-    case ios_internal::SessionType::REGULAR_SESSION:
+    case TabSwitcherSessionType::REGULAR_SESSION:
       return _mainTabModelSnapshot.get();
     default:
       NOTREACHED();
@@ -338,12 +332,12 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
 }
 
 - (void)setTabModelSnapshot:(std::unique_ptr<TabModelSnapshot>)tabModelSnapshot
-                 forSession:(ios_internal::SessionType)type {
+                 forSession:(TabSwitcherSessionType)type {
   switch (type) {
-    case ios_internal::SessionType::OFF_THE_RECORD_SESSION:
+    case TabSwitcherSessionType::OFF_THE_RECORD_SESSION:
       _otrTabModelSnapshot = std::move(tabModelSnapshot);
       break;
-    case ios_internal::SessionType::REGULAR_SESSION:
+    case TabSwitcherSessionType::REGULAR_SESSION:
       _mainTabModelSnapshot = std::move(tabModelSnapshot);
       break;
     default:
@@ -353,7 +347,7 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
 }
 
 - (void)tabModelChanged:(TabModel*)tabModel {
-  ios_internal::SessionType sessionType =
+  TabSwitcherSessionType sessionType =
       [self typeOfLocalSessionForTabModel:tabModel];
   [_delegate localSessionMayNeedUpdate:sessionType];
 }

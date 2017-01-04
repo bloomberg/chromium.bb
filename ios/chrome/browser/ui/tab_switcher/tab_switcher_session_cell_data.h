@@ -9,8 +9,7 @@
 
 @class TabSwitcherHeaderView;
 
-namespace ios_internal {
-enum SessionCellType {
+enum TabSwitcherSessionCellType {
   kIncognitoSessionCell,
   kOpenTabSessionCell,
   kGenericRemoteSessionCell,
@@ -18,7 +17,6 @@ enum SessionCellType {
   kTabletRemoteSessionCell,
   kLaptopRemoteSessionCell,
 };
-}
 
 // This class hold the data used to configure the content of a
 // TabSwitcherHeaderCell.
@@ -31,9 +29,9 @@ enum SessionCellType {
 + (instancetype)openTabSessionCellData;
 + (instancetype)otherDevicesSessionCellData;
 
-- (instancetype)initWithSessionCellType:(ios_internal::SessionCellType)type;
+- (instancetype)initWithSessionCellType:(TabSwitcherSessionCellType)type;
 
-@property(nonatomic, readonly) ios_internal::SessionCellType type;
+@property(nonatomic, readonly) TabSwitcherSessionCellType type;
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic, retain) UIImage* image;
 

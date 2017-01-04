@@ -52,13 +52,13 @@ class ChromeBrowserState;
 
 @property(nonatomic, readonly) TabSwitcherPanelView* view;
 @property(nonatomic, assign) id<TabSwitcherPanelControllerDelegate> delegate;
-@property(nonatomic, readonly) ios_internal::SessionType sessionType;
+@property(nonatomic, readonly) TabSwitcherSessionType sessionType;
 
 // Initializes a controller for a view showing local tabs. |offTheRecord|
 // determines whether the tabs will be shown for the incognito browser state or
 // not. |model| is used to populate the view and must not be nil.
 - (instancetype)initWithModel:(TabSwitcherModel*)model
-        forLocalSessionOfType:(ios_internal::SessionType)type
+        forLocalSessionOfType:(TabSwitcherSessionType)type
                     withCache:(TabSwitcherCache*)cache
                  browserState:(ios::ChromeBrowserState*)browserState;
 

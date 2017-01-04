@@ -12,14 +12,14 @@
   base::scoped_nsobject<UICollectionView> _collectionView;
   base::scoped_nsobject<TabSwitcherPanelCollectionViewLayout>
       _collectionViewLayout;
-  ios_internal::SessionType _sessionType;
+  TabSwitcherSessionType _sessionType;
 }
 
 @end
 
 @implementation TabSwitcherPanelView
 
-- (instancetype)initWithSessionType:(ios_internal::SessionType)sessionType {
+- (instancetype)initWithSessionType:(TabSwitcherSessionType)sessionType {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     _sessionType = sessionType;
@@ -62,7 +62,7 @@
   _collectionView.reset([[UICollectionView alloc]
              initWithFrame:self.bounds
       collectionViewLayout:_collectionViewLayout.get()]);
-  if (_sessionType == ios_internal::SessionType::DISTANT_SESSION) {
+  if (_sessionType == TabSwitcherSessionType::DISTANT_SESSION) {
     [_collectionView registerClass:[TabSwitcherDistantSessionCell class]
         forCellWithReuseIdentifier:[TabSwitcherDistantSessionCell identifier]];
   } else {

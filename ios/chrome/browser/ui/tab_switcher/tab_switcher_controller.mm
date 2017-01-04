@@ -136,12 +136,12 @@ enum class SnapshotViewOption {
 - (NSInteger)currentPanelIndex;
 
 // Returns the session type of the panel and the given index.
-- (ios_internal::SessionType)sessionTypeForPanelIndex:(NSInteger)panelIndex;
+- (TabSwitcherSessionType)sessionTypeForPanelIndex:(NSInteger)panelIndex;
 
 // Returns the tab model corresponding to the given session type.
 // There is no tab model for distant sessions so it returns nil for distant
 // sessions type.
-- (TabModel*)tabModelForSessionType:(ios_internal::SessionType)sessionType;
+- (TabModel*)tabModelForSessionType:(TabSwitcherSessionType)sessionType;
 
 // Returns the tab model of the currently selected tab.
 - (TabModel*)currentSelectedModel;
@@ -207,13 +207,13 @@ enum class SnapshotViewOption {
     [self loadTabSwitcherView];
     _onTheRecordSession.reset([[TabSwitcherPanelController alloc]
                 initWithModel:_tabSwitcherModel
-        forLocalSessionOfType:ios_internal::SessionType::REGULAR_SESSION
+        forLocalSessionOfType:TabSwitcherSessionType::REGULAR_SESSION
                     withCache:_cache
                  browserState:_browserState]);
     [_onTheRecordSession setDelegate:self];
     _offTheRecordSession.reset([[TabSwitcherPanelController alloc]
                 initWithModel:_tabSwitcherModel
-        forLocalSessionOfType:ios_internal::SessionType::OFF_THE_RECORD_SESSION
+        forLocalSessionOfType:TabSwitcherSessionType::OFF_THE_RECORD_SESSION
                     withCache:_cache
                  browserState:_browserState]);
     [_offTheRecordSession setDelegate:self];
@@ -392,10 +392,10 @@ enum class SnapshotViewOption {
                                  : kLocalTabsOffTheRecordPanelIndex;
       [_tabSwitcherView selectPanelAtIndex:panelIndex];
 
-      const ios_internal::SessionType panelSessionType =
+      const TabSwitcherSessionType panelSessionType =
           (command == IDC_NEW_TAB)
-              ? ios_internal::SessionType::REGULAR_SESSION
-              : ios_internal::SessionType::OFF_THE_RECORD_SESSION;
+              ? TabSwitcherSessionType::REGULAR_SESSION
+              : TabSwitcherSessionType::OFF_THE_RECORD_SESSION;
 
       TabModel* model = [self tabModelForSessionType:panelSessionType];
       [self dismissWithNewTabAnimation:GURL(kChromeUINewTabURL)
@@ -737,23 +737,23 @@ enum class SnapshotViewOption {
   return kSignInPromoPanelIndex + 1;
 }
 
-- (ios_internal::SessionType)sessionTypeForPanelIndex:(NSInteger)panelIndex {
+- (TabSwitcherSessionType)sessionTypeForPanelIndex:(NSInteger)panelIndex {
   if (panelIndex == kLocalTabsOffTheRecordPanelIndex)
-    return ios_internal::SessionType::OFF_THE_RECORD_SESSION;
+    return TabSwitcherSessionType::OFF_THE_RECORD_SESSION;
   if (panelIndex == kLocalTabsOnTheRecordPanelIndex)
-    return ios_internal::SessionType::REGULAR_SESSION;
-  return ios_internal::SessionType::DISTANT_SESSION;
+    return TabSwitcherSessionType::REGULAR_SESSION;
+  return TabSwitcherSessionType::DISTANT_SESSION;
 }
 
-- (TabModel*)tabModelForSessionType:(ios_internal::SessionType)sessionType {
+- (TabModel*)tabModelForSessionType:(TabSwitcherSessionType)sessionType {
   switch (sessionType) {
-    case ios_internal::SessionType::REGULAR_SESSION:
+    case TabSwitcherSessionType::REGULAR_SESSION:
       return [_tabSwitcherModel mainTabModel];
       break;
-    case ios_internal::SessionType::OFF_THE_RECORD_SESSION:
+    case TabSwitcherSessionType::OFF_THE_RECORD_SESSION:
       return [_tabSwitcherModel otrTabModel];
       break;
-    case ios_internal::SessionType::DISTANT_SESSION:
+    case TabSwitcherSessionType::DISTANT_SESSION:
       return nil;
       break;
   }
@@ -761,7 +761,7 @@ enum class SnapshotViewOption {
 
 - (TabModel*)currentSelectedModel {
   const NSInteger currentPanelIndex = [self currentPanelIndex];
-  const ios_internal::SessionType sessionType =
+  const TabSwitcherSessionType sessionType =
       [self sessionTypeForPanelIndex:currentPanelIndex];
   TabModel* model = [self tabModelForSessionType:sessionType];
   if (!model)
@@ -1003,11 +1003,11 @@ enum class SnapshotViewOption {
   }
 }
 
-- (void)localSessionMayNeedUpdate:(ios_internal::SessionType)type {
-  if (type == ios_internal::SessionType::REGULAR_SESSION) {
+- (void)localSessionMayNeedUpdate:(TabSwitcherSessionType)type {
+  if (type == TabSwitcherSessionType::REGULAR_SESSION) {
     [_onTheRecordSession updateCollectionViewIfNeeded];
   } else {
-    DCHECK(type == ios_internal::SessionType::OFF_THE_RECORD_SESSION);
+    DCHECK(type == TabSwitcherSessionType::OFF_THE_RECORD_SESSION);
     [_offTheRecordSession updateCollectionViewIfNeeded];
   }
 }
@@ -1042,13 +1042,13 @@ enum class SnapshotViewOption {
 }
 
 - (CGSize)sizeForItemAtIndex:(NSUInteger)index
-                   inSession:(ios_internal::SessionType)session {
+                   inSession:(TabSwitcherSessionType)session {
   switch (session) {
-    case ios_internal::SessionType::OFF_THE_RECORD_SESSION:
+    case TabSwitcherSessionType::OFF_THE_RECORD_SESSION:
       return [[_offTheRecordSession view] cellSize];
-    case ios_internal::SessionType::REGULAR_SESSION:
+    case TabSwitcherSessionType::REGULAR_SESSION:
       return [[_onTheRecordSession view] cellSize];
-    case ios_internal::SessionType::DISTANT_SESSION:
+    case TabSwitcherSessionType::DISTANT_SESSION:
       NOTREACHED();
       return {};
   }
@@ -1110,16 +1110,16 @@ enum class SnapshotViewOption {
         deviceType = distantSession->device_type;
         cellTitle = base::SysUTF8ToNSString(distantSession->name);
       }
-      ios_internal::SessionCellType cellType;
+      TabSwitcherSessionCellType cellType;
       switch (deviceType) {
         case sync_sessions::SyncedSession::TYPE_PHONE:
-          cellType = ios_internal::kPhoneRemoteSessionCell;
+          cellType = kPhoneRemoteSessionCell;
           break;
         case sync_sessions::SyncedSession::TYPE_TABLET:
-          cellType = ios_internal::kTabletRemoteSessionCell;
+          cellType = kTabletRemoteSessionCell;
           break;
         default:
-          cellType = ios_internal::kLaptopRemoteSessionCell;
+          cellType = kLaptopRemoteSessionCell;
           break;
       }
       SessionCellData* sessionData = [[[SessionCellData alloc]
@@ -1207,14 +1207,14 @@ enum class SnapshotViewOption {
             (TabSwitcherPanelController*)tabSwitcherPanelController
                  didSelectLocalTab:(Tab*)tab {
   DCHECK(tab);
-  const ios_internal::SessionType panelSessionType =
+  const TabSwitcherSessionType panelSessionType =
       tabSwitcherPanelController.sessionType;
   TabModel* tabModel = [self tabModelForSessionType:panelSessionType];
   [tabModel setCurrentTab:tab];
   [self.delegate tabSwitcher:self
       dismissTransitionWillStartWithActiveModel:tabModel];
   [self tabSwitcherDismissWithModel:tabModel];
-  if (panelSessionType == ios_internal::SessionType::OFF_THE_RECORD_SESSION) {
+  if (panelSessionType == TabSwitcherSessionType::OFF_THE_RECORD_SESSION) {
     base::RecordAction(
         base::UserMetricsAction("MobileTabSwitcherOpenIncognitoTab"));
   } else {
@@ -1227,10 +1227,10 @@ enum class SnapshotViewOption {
             (TabSwitcherPanelController*)tabSwitcherPanelController
                   didCloseLocalTab:(Tab*)tab {
   DCHECK(tab);
-  const ios_internal::SessionType panelSessionType =
+  const TabSwitcherSessionType panelSessionType =
       tabSwitcherPanelController.sessionType;
   [tab close];
-  if (panelSessionType == ios_internal::SessionType::OFF_THE_RECORD_SESSION) {
+  if (panelSessionType == TabSwitcherSessionType::OFF_THE_RECORD_SESSION) {
     base::RecordAction(
         base::UserMetricsAction("MobileTabSwitcherCloseIncognitoTab"));
   } else {

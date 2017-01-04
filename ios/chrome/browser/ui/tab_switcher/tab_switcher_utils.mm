@@ -18,15 +18,49 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 
-namespace ios_internal {
+namespace {
 
 UIImage* DefaultFaviconImage() {
   return NativeImage(IDR_IOS_OMNIBOX_HTTP);
 }
 
-void GetFavicon(GURL const& url,
-                ios::ChromeBrowserState* browser_state,
-                ios_internal::FaviconGetterCompletionBlock block) {
+enum BacktrackOperation { NOTHING, SUBSTITUTION, DELETION, INSERTION };
+
+BacktrackOperation BacktrackOperationInCostMatrix(
+    std::vector<std::vector<int>> const& costMatrix,
+    size_t finalIndex,
+    size_t initialIndex) {
+  DCHECK(finalIndex || initialIndex);
+  DCHECK(initialIndex < costMatrix.size());
+  DCHECK(finalIndex < costMatrix[initialIndex].size());
+
+  if (finalIndex == 0)
+    return DELETION;
+  if (initialIndex == 0)
+    return INSERTION;
+
+  int currentCost = costMatrix[initialIndex][finalIndex];
+
+  int costBeforeInsertion = costMatrix[initialIndex][finalIndex - 1];
+  if (costBeforeInsertion + 1 == currentCost)
+    return INSERTION;
+
+  int costBeforeDeletion = costMatrix[initialIndex - 1][finalIndex];
+  if (costBeforeDeletion + 1 == currentCost)
+    return DELETION;
+
+  int costBeforeSubstitution = costMatrix[initialIndex - 1][finalIndex - 1];
+  if (costBeforeSubstitution == currentCost)
+    return NOTHING;
+
+  return SUBSTITUTION;
+}
+
+}  // namespace
+
+void TabSwitcherGetFavicon(GURL const& url,
+                           ios::ChromeBrowserState* browser_state,
+                           TabSwitcherFaviconGetterCompletionBlock block) {
   DCHECK(browser_state);
   syncer::SyncService* sync_service =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
@@ -70,43 +104,11 @@ void GetFavicon(GURL const& url,
   block(DefaultFaviconImage());
 }
 
-enum BacktrackOperation { NOTHING, SUBSTITUTION, DELETION, INSERTION };
-
-BacktrackOperation BacktrackOperationInCostMatrix(
-    std::vector<std::vector<int>> const& costMatrix,
-    size_t finalIndex,
-    size_t initialIndex) {
-  DCHECK(finalIndex || initialIndex);
-  DCHECK(initialIndex < costMatrix.size());
-  DCHECK(finalIndex < costMatrix[initialIndex].size());
-
-  if (finalIndex == 0)
-    return DELETION;
-  if (initialIndex == 0)
-    return INSERTION;
-
-  int currentCost = costMatrix[initialIndex][finalIndex];
-
-  int costBeforeInsertion = costMatrix[initialIndex][finalIndex - 1];
-  if (costBeforeInsertion + 1 == currentCost)
-    return INSERTION;
-
-  int costBeforeDeletion = costMatrix[initialIndex - 1][finalIndex];
-  if (costBeforeDeletion + 1 == currentCost)
-    return DELETION;
-
-  int costBeforeSubstitution = costMatrix[initialIndex - 1][finalIndex - 1];
-  if (costBeforeSubstitution == currentCost)
-    return NOTHING;
-
-  return SUBSTITUTION;
-}
-
-void MinimalReplacementOperations(std::vector<size_t> const& initial,
-                                  std::vector<size_t> const& final,
-                                  std::vector<size_t>* substitutions,
-                                  std::vector<size_t>* deletions,
-                                  std::vector<size_t>* insertions) {
+void TabSwitcherMinimalReplacementOperations(std::vector<size_t> const& initial,
+                                             std::vector<size_t> const& final,
+                                             std::vector<size_t>* substitutions,
+                                             std::vector<size_t>* deletions,
+                                             std::vector<size_t>* insertions) {
   DCHECK(substitutions);
   DCHECK(deletions);
   DCHECK(insertions);
@@ -185,5 +187,3 @@ void MinimalReplacementOperations(std::vector<size_t> const& initial,
   std::reverse(std::begin(*deletions), std::end(*deletions));
   std::reverse(std::begin(*insertions), std::end(*insertions));
 }
-
-}  // namespace ios_internal

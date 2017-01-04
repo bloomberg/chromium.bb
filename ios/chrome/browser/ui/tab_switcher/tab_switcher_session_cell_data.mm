@@ -16,8 +16,8 @@
   static SessionCellData* incognitoSessionCellData = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    incognitoSessionCellData = [[self alloc]
-        initWithSessionCellType:ios_internal::kIncognitoSessionCell];
+    incognitoSessionCellData =
+        [[self alloc] initWithSessionCellType:kIncognitoSessionCell];
   });
   return incognitoSessionCellData;
 }
@@ -26,8 +26,8 @@
   static SessionCellData* openTabSessionCellData = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    openTabSessionCellData = [[self alloc]
-        initWithSessionCellType:ios_internal::kOpenTabSessionCell];
+    openTabSessionCellData =
+        [[self alloc] initWithSessionCellType:kOpenTabSessionCell];
   });
   return openTabSessionCellData;
 }
@@ -36,13 +36,13 @@
   static SessionCellData* otherDevicesSessionCellData = nil;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    otherDevicesSessionCellData = [[self alloc]
-        initWithSessionCellType:ios_internal::kGenericRemoteSessionCell];
+    otherDevicesSessionCellData =
+        [[self alloc] initWithSessionCellType:kGenericRemoteSessionCell];
   });
   return otherDevicesSessionCellData;
 }
 
-- (instancetype)initWithSessionCellType:(ios_internal::SessionCellType)type {
+- (instancetype)initWithSessionCellType:(TabSwitcherSessionCellType)type {
   self = [super init];
   if (self) {
     _type = type;
@@ -57,27 +57,27 @@
   NSString* imageName = nil;
   int messageId = 0;
   switch (self.type) {
-    case ios_internal::kIncognitoSessionCell:
+    case kIncognitoSessionCell:
       imageName = @"tabswitcher_incognito";
       messageId = IDS_IOS_TAB_SWITCHER_HEADER_INCOGNITO_TABS;
       break;
-    case ios_internal::kOpenTabSessionCell:
+    case kOpenTabSessionCell:
       imageName = @"tabswitcher_open_tabs";
       messageId = IDS_IOS_TAB_SWITCHER_HEADER_NON_INCOGNITO_TABS;
       break;
-    case ios_internal::kGenericRemoteSessionCell:
+    case kGenericRemoteSessionCell:
       imageName = @"tabswitcher_other_devices";
       messageId = IDS_IOS_TAB_SWITCHER_HEADER_OTHER_DEVICES_TABS;
       break;
-    case ios_internal::kPhoneRemoteSessionCell:
+    case kPhoneRemoteSessionCell:
       imageName = @"ntp_opentabs_phone";
       messageId = IDS_IOS_TAB_SWITCHER_HEADER_OTHER_DEVICES_TABS;
       break;
-    case ios_internal::kTabletRemoteSessionCell:
+    case kTabletRemoteSessionCell:
       imageName = @"ntp_opentabs_tablet";
       messageId = IDS_IOS_TAB_SWITCHER_HEADER_OTHER_DEVICES_TABS;
       break;
-    case ios_internal::kLaptopRemoteSessionCell:
+    case kLaptopRemoteSessionCell:
       imageName = @"ntp_opentabs_laptop";
       messageId = IDS_IOS_TAB_SWITCHER_HEADER_OTHER_DEVICES_TABS;
       break;

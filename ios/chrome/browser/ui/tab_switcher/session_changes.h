@@ -7,8 +7,6 @@
 
 #include <vector>
 
-namespace ios_internal {
-
 // This structure represents the changes a session undergoes.
 // It is used to update the UICollectionView showing a set of tabs.
 class SessionChanges {
@@ -40,7 +38,5 @@ class SessionChanges {
   std::vector<size_t> insertions_;
   std::vector<size_t> updates_;
 };
-
-}  // namespace ios_internal
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_SWITCHER_SESSION_CHANGES_H_

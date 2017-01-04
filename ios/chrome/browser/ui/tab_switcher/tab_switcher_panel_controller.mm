@@ -35,7 +35,7 @@ void FillVectorWithHashesUsingDistantSession(
   base::scoped_nsobject<TabSwitcherPanelView> _panelView;
   base::scoped_nsobject<TabSwitcherModel> _model;
   std::string _sessionTag;
-  ios_internal::SessionType _sessionType;
+  TabSwitcherSessionType _sessionType;
   base::scoped_nsobject<TabSwitcherCache> _cache;
   base::scoped_nsobject<TabSwitcherPanelOverlayView> _overlayView;
   std::unique_ptr<const synced_sessions::DistantSession> _distantSession;
@@ -58,7 +58,7 @@ void FillVectorWithHashesUsingDistantSession(
   self = [super init];
   if (self) {
     DCHECK(model);
-    _sessionType = ios_internal::SessionType::DISTANT_SESSION;
+    _sessionType = TabSwitcherSessionType::DISTANT_SESSION;
     _model.reset([model retain]);
     _distantSession = [model distantSessionForTag:sessionTag];
     _sessionTag = sessionTag;
@@ -69,7 +69,7 @@ void FillVectorWithHashesUsingDistantSession(
 }
 
 - (instancetype)initWithModel:(TabSwitcherModel*)model
-        forLocalSessionOfType:(ios_internal::SessionType)sessionType
+        forLocalSessionOfType:(TabSwitcherSessionType)sessionType
                     withCache:(TabSwitcherCache*)cache
                  browserState:(ios::ChromeBrowserState*)browserState {
   self = [super init];
@@ -99,7 +99,7 @@ void FillVectorWithHashesUsingDistantSession(
 }
 
 - (BOOL)shouldShowNewTabButton {
-  if (_sessionType == ios_internal::SessionType::DISTANT_SESSION) {
+  if (_sessionType == TabSwitcherSessionType::DISTANT_SESSION) {
     return NO;
   } else {
     return ![self isOverlayVisible];
@@ -107,7 +107,7 @@ void FillVectorWithHashesUsingDistantSession(
 }
 
 - (void)updateCollectionViewIfNeeded {
-  if (_sessionType == ios_internal::SessionType::DISTANT_SESSION) {
+  if (_sessionType == TabSwitcherSessionType::DISTANT_SESSION) {
     UICollectionView* collectionView = [_panelView collectionView];
     // TODO(crbug.com/633928) Compute SessionChanges outside of the
     // updateBlock.
@@ -120,7 +120,7 @@ void FillVectorWithHashesUsingDistantSession(
                                               &oldTabsHashes);
       FillVectorWithHashesUsingDistantSession(*newDistantSession.get(),
                                               &newTabsHashes);
-      ios_internal::SessionChanges changes(oldTabsHashes, newTabsHashes);
+      SessionChanges changes(oldTabsHashes, newTabsHashes);
       if (changes.hasChanges()) {
         _distantSession = std::move(newDistantSession);
         [self applyChanges:changes toCollectionView:collectionView];
@@ -132,8 +132,8 @@ void FillVectorWithHashesUsingDistantSession(
     auto updateBlock = ^{
       std::unique_ptr<const TabModelSnapshot> newLocalSession =
           [_model tabModelSnapshotForLocalSession:_sessionType];
-      ios_internal::SessionChanges changes(_localSession->hashes(),
-                                           newLocalSession->hashes());
+      SessionChanges changes(_localSession->hashes(),
+                             newLocalSession->hashes());
       if (changes.hasChanges()) {
         _localSession = std::move(newLocalSession);
         [self applyChanges:changes toCollectionView:collectionView];
@@ -143,7 +143,7 @@ void FillVectorWithHashesUsingDistantSession(
   }
 }
 
-- (void)applyChanges:(ios_internal::SessionChanges&)changes
+- (void)applyChanges:(SessionChanges&)changes
     toCollectionView:(UICollectionView*)collectionView {
   NSMutableArray* deletedIndexes = [NSMutableArray array];
   NSMutableArray* insertedIndexes = [NSMutableArray array];
@@ -202,7 +202,7 @@ void FillVectorWithHashesUsingDistantSession(
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
   DCHECK_EQ(section, 0);
-  if (_sessionType == ios_internal::SessionType::DISTANT_SESSION) {
+  if (_sessionType == TabSwitcherSessionType::DISTANT_SESSION) {
     CHECK(_distantSession);
     return _distantSession->tabs.size();
   } else {
@@ -217,7 +217,7 @@ void FillVectorWithHashesUsingDistantSession(
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
   UICollectionViewCell* cell = nil;
   NSUInteger tabIndex = indexPath.item;
-  if (_sessionType == ios_internal::SessionType::DISTANT_SESSION) {
+  if (_sessionType == TabSwitcherSessionType::DISTANT_SESSION) {
     cell = [collectionView
         dequeueReusableCellWithReuseIdentifier:[TabSwitcherDistantSessionCell
                                                    identifier]
@@ -262,7 +262,7 @@ void FillVectorWithHashesUsingDistantSession(
   const NSInteger tabIndex =
       [[_panelView collectionView] indexPathForCell:cell].item;
 
-  if (_sessionType == ios_internal::SessionType::DISTANT_SESSION) {
+  if (_sessionType == TabSwitcherSessionType::DISTANT_SESSION) {
     synced_sessions::DistantTab* tab = _distantSession->tabs[tabIndex].get();
     if (tab)
       [self.delegate tabSwitcherPanelController:self didSelectDistantTab:tab];
@@ -274,7 +274,7 @@ void FillVectorWithHashesUsingDistantSession(
 }
 
 - (void)deleteButtonPressedForCell:(UICollectionViewCell*)cell {
-  DCHECK(_sessionType != ios_internal::SessionType::DISTANT_SESSION);
+  DCHECK(_sessionType != TabSwitcherSessionType::DISTANT_SESSION);
   const NSInteger tabIndex =
       [[_panelView collectionView] indexPathForCell:cell].item;
   Tab* tab = _localSession->tabs()[tabIndex];
@@ -292,7 +292,7 @@ void FillVectorWithHashesUsingDistantSession(
   if (show == [self isOverlayVisible])
     return;
 
-  DCHECK(ios_internal::IsLocalSession(_sessionType));
+  DCHECK(TabSwitcherSessionTypeIsLocalSession(_sessionType));
 
   if (!_overlayView) {
     _overlayView.reset([[TabSwitcherPanelOverlayView alloc]
@@ -300,7 +300,7 @@ void FillVectorWithHashesUsingDistantSession(
          browserState:_browserState]);
     [_overlayView
         setOverlayType:
-            (_sessionType == ios_internal::SessionType::OFF_THE_RECORD_SESSION)
+            (_sessionType == TabSwitcherSessionType::OFF_THE_RECORD_SESSION)
                 ? TabSwitcherPanelOverlayType::
                       OVERLAY_PANEL_USER_NO_INCOGNITO_TABS
                 : TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_NO_OPEN_TABS];

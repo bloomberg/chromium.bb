@@ -43,7 +43,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight();
 // Sets the cell's appearance using information in |tab|.
 - (void)setAppearanceForTab:(Tab*)tab cellSize:(CGSize)cellSize;
 // Sets the cell's appearance depending on |type|.
-- (void)setSessionType:(ios_internal::SessionType)type;
+- (void)setSessionType:(TabSwitcherSessionType)type;
 // Sets the cell's delegate.
 - (void)setDelegate:(id<SessionCellDelegate>)delegate;
 

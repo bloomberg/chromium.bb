@@ -106,7 +106,7 @@ const CGFloat kDesiredHeight = 48;
   DCHECK(browserState);
   [_label setText:text];
   self.accessibilityLabel = [_label accessibilityLabel];
-  ios_internal::GetFavicon(url, browserState, ^(UIImage* newIcon) {
+  TabSwitcherGetFavicon(url, browserState, ^(UIImage* newIcon) {
     [_favicon setImage:newIcon];
   });
 }

@@ -18,8 +18,8 @@ class TabSwitcherUtilsTest : public PlatformTest {
     std::vector<size_t> substitutions;
     std::vector<size_t> deletions;
     std::vector<size_t> insertions;
-    ios_internal::MinimalReplacementOperations(initial, final, &substitutions,
-                                               &deletions, &insertions);
+    TabSwitcherMinimalReplacementOperations(initial, final, &substitutions,
+                                            &deletions, &insertions);
     EXPECT_EQ(substitutions, expectedSubstitutions);
     EXPECT_EQ(deletions, expectedDeletions);
     EXPECT_EQ(insertions, expectedInsertions);

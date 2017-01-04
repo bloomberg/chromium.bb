@@ -239,12 +239,12 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
                           }];
 }
 
-- (void)setSessionType:(ios_internal::SessionType)type {
+- (void)setSessionType:(TabSwitcherSessionType)type {
   UIColor* topBarBackgroundColor;
   UIColor* closeButtonTintColor;
   UIColor* textColor;
   UIColor* snapshotBackgroundColor;
-  if (type == ios_internal::SessionType::OFF_THE_RECORD_SESSION) {
+  if (type == TabSwitcherSessionType::OFF_THE_RECORD_SESSION) {
     topBarBackgroundColor = [[MDCPalette greyPalette] tint700];
     closeButtonTintColor = [[MDCPalette greyPalette] tint100];
     textColor = [[MDCPalette greyPalette] tint100];
@@ -398,7 +398,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 
 - (void)setSessionGURL:(GURL const&)gurl
       withBrowserState:(ios::ChromeBrowserState*)browserState {
-  ios_internal::FaviconGetterCompletionBlock block = ^(UIImage* favicon) {
+  TabSwitcherFaviconGetterCompletionBlock block = ^(UIImage* favicon) {
     UIColor* imageDominantColor =
         DominantColorForImage(gfx::Image(favicon), 1.0);
     MDCPalette* dominantPalette =
@@ -424,7 +424,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   };
   GURL gurlCopy = gurl;
   _faviconObtainer.reset([[NSBlockOperation blockOperationWithBlock:^{
-    ios_internal::GetFavicon(gurlCopy, browserState, block);
+    TabSwitcherGetFavicon(gurlCopy, browserState, block);
   }] retain]);
   NSOperationQueue* operationQueue = [NSOperationQueue mainQueue];
   [operationQueue addOperation:_faviconObtainer];

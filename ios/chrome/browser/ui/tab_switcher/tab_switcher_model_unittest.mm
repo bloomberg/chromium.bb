@@ -88,7 +88,7 @@ using LightSS = std::vector<LightDS>;
   EXPECT_EQ(1UL, _expectedTagsOfTheSessionsNeedingUpdates.erase(tag));
 }
 
-- (void)localSessionMayNeedUpdate:(ios_internal::SessionType)type {
+- (void)localSessionMayNeedUpdate:(TabSwitcherSessionType)type {
   NOTREACHED();
 }
 
@@ -96,7 +96,7 @@ using LightSS = std::vector<LightDS>;
   NOTREACHED();
 }
 - (CGSize)sizeForItemAtIndex:(NSUInteger)index
-                   inSession:(ios_internal::SessionType)session {
+                   inSession:(TabSwitcherSessionType)session {
   return CGSizeZero;
 }
 @end

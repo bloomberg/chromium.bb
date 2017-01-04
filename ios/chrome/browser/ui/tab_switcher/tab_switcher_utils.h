@@ -9,18 +9,17 @@
 
 class GURL;
 @class UIImage;
+
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-namespace ios_internal {
-
-typedef void (^FaviconGetterCompletionBlock)(UIImage*);
+typedef void (^TabSwitcherFaviconGetterCompletionBlock)(UIImage*);
 
 // Favicon for |url|, calls |block| when loaded.
-void GetFavicon(GURL const& url,
-                ios::ChromeBrowserState* browserState,
-                FaviconGetterCompletionBlock block);
+void TabSwitcherGetFavicon(GURL const& url,
+                           ios::ChromeBrowserState* browserState,
+                           TabSwitcherFaviconGetterCompletionBlock block);
 
 // Returns the substitutions/deletions/insertions needed to go from |initial| to
 // |final|.
@@ -34,12 +33,10 @@ void GetFavicon(GURL const& url,
 // For example, AB => BC could be done with 2 substitutions, but doing
 // 1 insertion and 1 deletion is preferable because it better communicates the
 // changes to the user in the UICollectionViews.
-void MinimalReplacementOperations(std::vector<size_t> const& initial,
-                                  std::vector<size_t> const& final,
-                                  std::vector<size_t>* substitutions,
-                                  std::vector<size_t>* deletions,
-                                  std::vector<size_t>* insertions);
-
-}  // namespace ios_internal
+void TabSwitcherMinimalReplacementOperations(std::vector<size_t> const& initial,
+                                             std::vector<size_t> const& final,
+                                             std::vector<size_t>* substitutions,
+                                             std::vector<size_t>* deletions,
+                                             std::vector<size_t>* insertions);
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_SWITCHER_UTILS_H_
