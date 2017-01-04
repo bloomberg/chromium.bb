@@ -361,6 +361,7 @@
 <translation id="4589078953350245614">Anda cuba mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil yang tidak sah. <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Sambungan anda ke <ph name="DOMAIN" /> disulitkan menggunakan suit sifer moden.</translation>
 <translation id="4594403342090139922">&amp;Buat asal Pemadaman</translation>
+<translation id="4619615317237390068">Tab daripada peranti lain</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Anda sedang melihat halaman sambungan.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -408,7 +409,6 @@
 <translation id="5181140330217080051">Memuat turun</translation>
 <translation id="5190835502935405962">Bar Penanda Halaman</translation>
 <translation id="5199729219167945352">Eksperimen</translation>
-<translation id="5199841536747119669">Cadangan anda dipaparkan di sini</translation>
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5277279256032773186">Menggunakan Chrome di tempat kerja? Perniagaan boleh mengurus tetapan Chrome untuk pekerja mereka. Ketahui lebih lanjut</translation>
 <translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
@@ -451,7 +451,6 @@
 <translation id="5694783966845939798">Anda cuba mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil yang ditandatangani menggunakan algoritma tandatangan yang lemah (seperti SHA-1). Ini bermakna bukti kelayakan keselamatan yang diberikan oleh pelayan mungkin dipalsukan dan pelayan tersebut mungkin bukan pelayan yang anda jangkakan (anda mungkin berkomunikasi dengan penyerang). <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Identiti tapak web ini belum disahkan.</translation>
 <translation id="5720705177508910913">Pengguna semasa</translation>
-<translation id="572328651809341494">Tab terbaharu</translation>
 <translation id="5732392974455271431">Ibu bapa anda boleh menyahsekatnya untuk anda</translation>
 <translation id="5784606427469807560">Terdapat masalah mengesahkan kad anda. Semak sambungan Internet anda dan cuba lagi.</translation>
 <translation id="5785756445106461925">Selain itu, halaman ini mengandungi sumber lain yang tidak selamat. Sumber ini boleh dilihat oleh orang lain semasa dalam transit dan boleh diubah oleh penyerang untuk menukar penampilan halaman.</translation>

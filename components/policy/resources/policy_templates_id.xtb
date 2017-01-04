@@ -74,7 +74,7 @@
       perangkat individual.  Kebijakan ini ditujukan sebagai tambahan terhadap
       konfigurasi printer yang diberikan oleh pengguna individu.</translation>
 <translation id="1160939557934457296">Menonaktifkan untuk melanjutkan dari laman peringatan Penjelajahan Aman</translation>
-<translation id="1198465924256827162">Frekuensi unggahan status perangkat dikirimkan, dalam milidetik.
+<translation id="1198465924256827162">Frekuensi upload status perangkat dikirimkan, dalam milidetik.
 
       Jika kebijakan ini tidak disetel, frekuensi defaultnya adalah 3 jam. Frekuensi minimum
       yang diizinkan adalah 60 detik.</translation>
@@ -246,7 +246,7 @@
       Jika kebijakan ini disetel sebagai string yang mewakili nama domain, <ph name="PRODUCT_OS_NAME" /> akan menampilkan opsi pelengkapan otomatis selama proses masuk pengguna, sehingga pengguna dapat mengetikkan nama penggunanya tanpa ekstensi nama domain. Pengguna dapat mengganti ekstensi nama domain ini.</translation>
 <translation id="1865417998205858223">Izin Kunci</translation>
 <translation id="186719019195685253">Kebijakan yang diambil saat penundaan nganggur tercapai ketika dijalankan pada daya AC</translation>
-<translation id="187819629719252111">Memungkinkan akses ke file lokal pada mesin dengan mengizinkan <ph name="PRODUCT_NAME" /> menampilkan dialog pemilihan file. Jika Anda mengaktifkan setelan ini, pengguna dapat membuka dialog pemilihan file seperti biasa. Jika Anda menonaktifkan setelan ini, setiap kali pengguna melakukan tindakan yang akan memicu dialog pemilihan file (seperti mengimpor bookmark, mengunggah file, menyimpan tautan, dll.), yang akan ditampilkan adalah pesan, dan pengguna dianggap telah mengeklik Batal pada dialog pemilihan file. Jika setelan ini tidak disetel, pengguna dapat membuka dialog pemilihan file seperti biasa.</translation>
+<translation id="187819629719252111">Memungkinkan akses ke file lokal pada mesin dengan mengizinkan <ph name="PRODUCT_NAME" /> menampilkan dialog pemilihan file. Jika Anda mengaktifkan setelan ini, pengguna dapat membuka dialog pemilihan file seperti biasa. Jika Anda menonaktifkan setelan ini, setiap kali pengguna melakukan tindakan yang akan memicu dialog pemilihan file (seperti mengimpor bookmark, mengupload file, menyimpan tautan, dll.), yang akan ditampilkan adalah pesan, dan pengguna dianggap telah mengeklik Batal pada dialog pemilihan file. Jika setelan ini tidak disetel, pengguna dapat membuka dialog pemilihan file seperti biasa.</translation>
 <translation id="1879485426724769439">Menentukan zona waktu untuk digunakan pada perangkat. Pengguna dapat mengganti zona waktu yang telah ditentukan untuk sesi aktif. Akan tetapi, saat pengguna keluar, zona waktu akan kembali ke setelan yang telah ditentukan. Jika nilai tidak valid diberikan, kebijakan ini tetap diaktifkan dengan "GMT" sebagai gantinya. Jika string kosong, kebijakan akan diabaikan.
 
       Jika kebijakan ini tidak digunakan, zona waktu yang saat ini sedang aktif akan tetap digunakan, namun pengguna dapat mengubah zona waktu dan perubahan tersebut akan terus digunakan. Oleh karena itu, perubahan yang dilakukan oleh satu pengguna akan memengaruhi layar info masuk dan semua pengguna lain.
@@ -282,7 +282,7 @@
 
       Jika kebijakan ini disetel ke true, <ph name="PRODUCT_OS_NAME" /> akan berupaya mendownload payload pembaruan otomatis via HTTP. Jika kebijakan ini disetel ke false atau tidak disetel, HTTPS akan digunakan untuk mendownload payload pembaruan otomatis.</translation>
 <translation id="2006530844219044261">Pengelolaan daya</translation>
-<translation id="201557587962247231">Frekuensi unggahan laporan status perangkat</translation>
+<translation id="201557587962247231">Frekuensi upload laporan status perangkat</translation>
 <translation id="2018836497795982119">Menjelaskan jangka waktu dalam milidetik terkait layanan pengelolaan perangkat yang ditanyakan untuk informasi kebijakan pengguna.
 
       Menyetel kebijakan ini akan mengganti nilai default 3 jam. Nilai yang valid untuk kebijakan ini adalah rentang mulai 1800000 (30 menit) hingga 86400000 (1 hari). Nilai di luar rentang ini akan dimasukkan ke batas masing-masing. Jika platform mendukung pemberitahuan kebijakan, jeda penyegaran akan disetel menjadi 24 jam karena pemberitahuan kebijakan diperkirakan akan memaksa penyegaran otomatis setiap kali kebijakan berubah.
@@ -986,7 +986,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Menonaktifkan opsi ini atau membiarkannya tidak disetel akan memungkinkan pengguna menggunakan Alat Pengembang dan konsol JavaScript.</translation>
 <translation id="3907986150060929099">Menyetel bahasa yang disarankan untuk sesi publik</translation>
 <translation id="3911737181201537215">Kebijakan ini tidak memengaruhi penyimpanan log yang dilakukan oleh Android.</translation>
-<translation id="391531815696899618">Menonaktifkan sinkronisasi Google Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /> ketika disetel ke True. Dalam kasus ini, tidak ada data yang diunggah ke Google Drive.
+<translation id="391531815696899618">Menonaktifkan sinkronisasi Google Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /> ketika disetel ke True. Dalam kasus ini, tidak ada data yang diupload ke Google Drive.
 
           Jika tidak disetel atau disetel ke False, pengguna akan dapat mentransfer file ke Google Drive.</translation>
 <translation id="3915395663995367577">URL untuk proxy file .pac</translation>
@@ -1543,7 +1543,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, permintaan autentikasi gnubby tidak akan dilakukan melalui proxy.</translation>
 <translation id="5898486742390981550">Ketika beberapa pengguna masuk, hanya pengguna utama yang dapat menggunakan aplikasi Android.</translation>
-<translation id="5921713479449475707">Izinkan pengunduhan pembaruan otomatis melalui HTTP</translation>
+<translation id="5921713479449475707">Izinkan download pembaruan otomatis melalui HTTP</translation>
 <translation id="5921888683953999946">Menyetel status default fitur aksesibilitas kursor besar di layar masuk.
 
           Jika kebijakan ini disetel ke true, kursor besar akan diaktifkan saat layar masuk ditampilkan.
@@ -1779,7 +1779,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika Anda menyetel preferensi ini ke 'selalu', 'tidak pernah', atau 'khusus Wi-Fi', pengguna tidak dapat mengubah atau menimpa setelan ini di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini tidak disetel, prediksi jaringan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
-<translation id="6658245400435704251">Menentukan jumlah waktu (dalam detik) sebuah perangkat dapat menunda pengunduhan pembaruannya secara acak dari saat pembaruan tersebut pertama kali didorong ke server. Perangkat dapat menunggu dengan sebagian dari waktu ini dari segi prediksi waktu penyelesaian tugas dan sisa waktunya dari segi jumlah pemeriksaan pembaruan. Dalam keadaan apa pun, penyebaran dibatasi dengan jumlah waktu yang konstan sehingga perangkat tidak akan terus menunggu pengunduhan pembaruan selamanya.</translation>
+<translation id="6658245400435704251">Menentukan jumlah waktu (dalam detik) sebuah perangkat dapat menunda download pembaruannya secara acak dari saat pembaruan tersebut pertama kali didorong ke server. Perangkat dapat menunggu dengan sebagian dari waktu ini dari segi prediksi waktu penyelesaian tugas dan sisa waktunya dari segi jumlah pemeriksaan pembaruan. Dalam keadaan apa pun, penyebaran dibatasi dengan jumlah waktu yang konstan sehingga perangkat tidak akan terus menunggu download pembaruan selamanya.</translation>
 <translation id="6689792153960219308">Melaporkan status perangkat keras</translation>
 <translation id="6693751878507293182">Jika Anda menyetel setelan ini untuk mengaktifkan penelusuran otomatis, pemasangan plugin yang hilang akan dinonaktifkan dalam <ph name="PRODUCT_NAME" />. Menyetel opsi ini menjadi nonaktif atau membiarkannya tidak disetel akan mengaktifkan pencari plugin.</translation>
 <translation id="6697474194550078937">Membatasi waktu yang dapat digunakan pengguna yang diautentikasi melalui SAML masuk saat offline.
@@ -2155,7 +2155,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Per Profil</translation>
 <translation id="7796141075993499320">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan untuk menjalankan plugin. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
-<translation id="7801886189430766248">Jika kebijakan ini disetel ke true, data aplikasi Android akan diunggah ke server Pencadangan Android dan dipulihkan saat pemasangan ulang aplikasi untuk aplikasi yang kompatibel.
+<translation id="7801886189430766248">Jika kebijakan ini disetel ke true, data aplikasi Android akan diupload ke server Pencadangan Android dan dipulihkan saat pemasangan ulang aplikasi untuk aplikasi yang kompatibel.
 
       Jika kebijakan ini disetel ke false, Android Backup Service akan dinonaktifkan.
 

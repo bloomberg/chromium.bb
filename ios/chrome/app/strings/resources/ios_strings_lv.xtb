@@ -79,7 +79,6 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="2386793615875593361">Atlasīts 1 fotoattēls</translation>
 <translation id="2435457462613246316">Rādīt paroli</translation>
 <translation id="2467815441875554965">Kontekstuālā meklēšana</translation>
-<translation id="2523092375122821828">Atzīmēt visu...</translation>
 <translation id="2572712655377361602">Ierīces politikas dēļ tika bloķēta piekļuve jūsu fotoattēliem.</translation>
 <translation id="2584132361465095047">Pievienot kontu…</translation>
 <translation id="2593774076813182497">Šo lapu nevar drukāt.</translation>
@@ -161,7 +160,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4121993058175073134">Neto eksporta datu sūtīšanai konfigurējiet e-pasta kontu iestatījumos.</translation>
 <translation id="4124987746317609294">Laika periods</translation>
 <translation id="4172051516777682613">Vienmēr rādīt</translation>
-<translation id="4176234027218720244">Atzīmēt...</translation>
 <translation id="424315890655130736">Ieejas frāzes ievade</translation>
 <translation id="4272631900155121838">Lai skenētu QR kodu, iestatījumos iespējojiet kameru.</translation>
 <translation id="4281844954008187215">Google pakalpojumu noteikumi</translation>
@@ -208,7 +206,6 @@ Jūsu dati ir šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi. Lai s�
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5327248766486351172">Nosaukums</translation>
-<translation id="532992759783668360">Dzēst izlasītos</translation>
 <translation id="5388358297987318779">Atvērt attēlu</translation>
 <translation id="5409365236829784218">Nav instalēta neviena lietotne, ar kuru atvērt šo failu.</translation>
 <translation id="54401264925851789">Lapas drošības informācija</translation>
@@ -255,7 +252,6 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 <translation id="6184086493125982861">Rādīt cilnes</translation>
 <translation id="6187302354554850004">Pēdējoreiz sinhr.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Nelasīts</translation>
-<translation id="6194286531716220336">Atcelt</translation>
 <translation id="6196207969502475924">Balss meklēšana</translation>
 <translation id="6254066287920239840">Atvērt saites lietotnē, nevis pārlūkā.</translation>
 <translation id="6255097610484507482">Rediģēt kredītkarti</translation>
@@ -267,7 +263,6 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 <translation id="6344783595350022745">Notīrīt tekstu</translation>
 <translation id="6362362396625799311">Nav inkognito ciļņu</translation>
 <translation id="6380866119319257197">Ja esat aizmirsis ieejas frāzi vai vēlaties mainīt šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāciju<ph name="END_LINK" />.</translation>
-<translation id="6385146967113720558">Atzīmēt kā nelasītu</translation>
 <translation id="6389470377220713856">Vārds un uzvārds uz kartes</translation>
 <translation id="6406506848690869874">Sinhronizācija</translation>
 <translation id="6417838470969808600">Ir pieejamas grāmatzīmes, vēsture, paroles un citi iestatījumi no konta <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7108338896283013870">Slēpt</translation>
 <translation id="7131892264600713844">Tiek rādīta vēsture no šīs ierīces. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Vārds, uzvārds</translation>
-<translation id="713434964320012835">Dzēst</translation>
 <translation id="7136892417564438900">Kamera nav pieejama.</translation>
 <translation id="7167621057293532233">Datu tipi</translation>
 <translation id="7189598951263744875">Kopīgot...</translation>
@@ -365,7 +359,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8428045167754449968">Pilsēta/ciems</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
 <translation id="8433678324664858900">Rādīt ieteikumus</translation>
-<translation id="8458197615157477273">Atzīmēt kā izlasītu</translation>
 <translation id="8458397775385147834">Tika dzēsts 1 vienums.</translation>
 <translation id="8503813439785031346">Lietotājvārds</translation>
 <translation id="8517375800490286174">Atklātā pirmkoda licences</translation>
@@ -388,7 +381,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8840513115188359703">Jūs netiksiet izrakstīts no sava Google konta.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Ziņot par problēmu</translation>
-<translation id="8967427617812342790">Pievienot sarakstam</translation>
 <translation id="8971089644512329999">Labi, sapratu</translation>
 <translation id="8981454092730389528">Google aktivitātes vadīklas</translation>
 <translation id="8985320356172329008">Pierakstījies Google kontā kā</translation>

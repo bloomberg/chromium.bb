@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">Tinangka mong makakonekta sa <ph name="DOMAIN" />, ngunit nagpakita ang server ng di-wastong certificate. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto nang higit pa<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Naka-encrypt ang iyong koneksyon sa <ph name="DOMAIN" /> gamit ang isang makabagong cipher suite.</translation>
 <translation id="4594403342090139922">&amp;I-undo ang Pagtanggal</translation>
+<translation id="4619615317237390068">Mga tab mula sa iba pang mga device</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Isang page ng extension ang iyong tinitingnan.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">Nagda-download</translation>
 <translation id="5190835502935405962">Bar ng Mga Bookmark</translation>
 <translation id="5199729219167945352">Mga Eksperimento</translation>
-<translation id="5199841536747119669">Lalabas dito ang lahat ng iyong suhestyon</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Ginagamit mo ba ang Chrome sa trabaho? Maaaring pamahalaan ng mga negosyo ang mga setting ng Chrome para sa kanilang mga empleyado. Matuto pa</translation>
 <translation id="5299298092464848405">Error sa pag-parse ng patakaran</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">Sinubukan mong makakonekta sa <ph name="DOMAIN" />, ngunit ang certificate na ipinakita ng server ay nilagdaan gamit ang mahinang signature algorithm (gaya ng SHA-1). Nangangahulugan ito na maaaring napeke ang kredensyal na panseguridad na ipinakita ng server, at maaaring ang server ay hindi ang inaasahan mong server (maaaring nakikipag-ugnayan ka sa isang attacker). <ph name="BEGIN_LEARN_MORE_LINK" />Matuto pa<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Ang pagkilala ng website na ito ay hindi natukoy.</translation>
 <translation id="5720705177508910913">Kasalukuyang user</translation>
-<translation id="572328651809341494">Mga kamakailang tab</translation>
 <translation id="5732392974455271431">Maaari itong alisin sa pagkaka-block ng iyong mga magulang para sa iyo</translation>
 <translation id="5784606427469807560">Nagkaroon ng problema sa pagkumpirma ng iyong card. Suriin ang koneksyon sa internet at subukang muli.</translation>
 <translation id="5785756445106461925">Bukod pa rito, ang page na ito ay may iba pang mga mapagkukunang hindi secure. Makikita ng iba ang mga mapagkukunang ito habang ipinadadala, at maaaring baguhin ng isang umaatake upang baguhin ang hitsura ng page.</translation>

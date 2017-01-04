@@ -77,7 +77,6 @@
 <translation id="2386793615875593361">เลือก 1 รูป</translation>
 <translation id="2435457462613246316">แสดงรหัสผ่าน</translation>
 <translation id="2467815441875554965">การค้นหาตามบริบท</translation>
-<translation id="2523092375122821828">ทำเครื่องหมายทั้งหมด…</translation>
 <translation id="2572712655377361602">นโยบายของอุปกรณ์บล็อกการเข้าถึงรูปภาพของคุณ</translation>
 <translation id="2584132361465095047">เพิ่มบัญชี…</translation>
 <translation id="2593774076813182497">หน้านี้ไม่สามารถพิมพ์ได้</translation>
@@ -159,7 +158,6 @@
 <translation id="4121993058175073134">หากต้องการส่งข้อมูล net-export โปรดกำหนดค่าบัญชีอีเมลของคุณในแอปการตั้งค่า</translation>
 <translation id="4124987746317609294">ช่วงเวลา</translation>
 <translation id="4172051516777682613">แสดงทุกครั้ง</translation>
-<translation id="4176234027218720244">ทำเครื่องหมาย…</translation>
 <translation id="424315890655130736">ป้อนรหัสผ่าน</translation>
 <translation id="4272631900155121838">หากต้องการสแกนโค้ด QR ให้เปิดใช้กล้องถ่ายรูปจากการตั้งค่า</translation>
 <translation id="4281844954008187215">ข้อกำหนดในการให้บริการ</translation>
@@ -206,7 +204,6 @@
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5327248766486351172">ชื่อ</translation>
-<translation id="532992759783668360">ลบรายการที่อ่านแล้ว</translation>
 <translation id="5388358297987318779">เปิดภาพ</translation>
 <translation id="5409365236829784218">ไม่ได้ติดตั้งแอปพลิเคชันที่สามารถเปิดไฟล์นี้</translation>
 <translation id="54401264925851789">ข้อมูลเกี่ยวกับการรักษาความปลอดภัยของหน้าเว็บ</translation>
@@ -253,7 +250,6 @@
 <translation id="6184086493125982861">แสดงแท็บ</translation>
 <translation id="6187302354554850004">ซิงค์ครั้งล่าสุด: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">ยังไม่ได้อ่าน</translation>
-<translation id="6194286531716220336">ยกเลิก</translation>
 <translation id="6196207969502475924">การค้นหาด้วยเสียง</translation>
 <translation id="6254066287920239840">เปิดลิงก์ในแอปแทนเบราว์เซอร์</translation>
 <translation id="6255097610484507482">แก้ไขบัตรเครดิต</translation>
@@ -265,7 +261,6 @@
 <translation id="6344783595350022745">ข้อความที่ชัดเจน</translation>
 <translation id="6362362396625799311">ไม่มีแท็บที่ไม่ระบุตัวตน</translation>
 <translation id="6380866119319257197">หากคุณลืมรหัสผ่านหรือต้องการเปลี่ยนการตั้งค่านี้ โปรด<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">ทำเครื่องหมายว่ายังไม่ได้อ่าน</translation>
 <translation id="6389470377220713856">ชื่อบนบัตร</translation>
 <translation id="6406506848690869874">การซิงค์ข้อมูล</translation>
 <translation id="6417838470969808600">คุณมีบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จาก <ph name="USER_EMAIL1" /></translation>
@@ -303,7 +298,6 @@
 <translation id="7108338896283013870">ซ่อน</translation>
 <translation id="7131892264600713844">กำลังแสดงประวัติการเข้าชมจากอุปกรณ์นี้ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">ชื่อและนามสกุล</translation>
-<translation id="713434964320012835">ลบ</translation>
 <translation id="7136892417564438900">กล้องถ่ายรูปไม่พร้อมใช้งาน</translation>
 <translation id="7167621057293532233">ประเภทข้อมูล</translation>
 <translation id="7189598951263744875">แชร์...</translation>
@@ -363,7 +357,6 @@
 <translation id="8428045167754449968">เมือง/จังหวัด</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8433678324664858900">แสดงคำแนะนำ</translation>
-<translation id="8458197615157477273">ทำเครื่องหมายว่าอ่านแล้ว</translation>
 <translation id="8458397775385147834">ลบแล้ว 1 รายการ</translation>
 <translation id="8503813439785031346">ชื่อผู้ใช้</translation>
 <translation id="8517375800490286174">สัญญาอนุญาตโอเพนซอร์ส</translation>
@@ -386,7 +379,6 @@
 <translation id="8840513115188359703">คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="8904976895050290827">การทำข้อมูลให้ตรงกันของ Chrome</translation>
 <translation id="895541991026785598">รายงานปัญหา</translation>
-<translation id="8967427617812342790">เพิ่มไปยังรายการที่จะอ่าน</translation>
 <translation id="8971089644512329999">รับทราบ</translation>
 <translation id="8981454092730389528">ส่วนควบคุมกิจกรรมของ Google</translation>
 <translation id="8985320356172329008">ลงชื่อเข้าใช้ Google ด้วย</translation>

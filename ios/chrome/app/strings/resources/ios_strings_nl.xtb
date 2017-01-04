@@ -79,7 +79,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="2386793615875593361">1 geselecteerd</translation>
 <translation id="2435457462613246316">Wachtwoord weergeven</translation>
 <translation id="2467815441875554965">Contextueel zoeken</translation>
-<translation id="2523092375122821828">Alles markeren…</translation>
 <translation id="2572712655377361602">Een apparaatbeleid blokkeert toegang tot je foto's</translation>
 <translation id="2584132361465095047">Account toevoegen…</translation>
 <translation id="2593774076813182497">Kan pagina niet afdrukken.</translation>
@@ -161,7 +160,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4121993058175073134">Als je netto-exportgegevens wilt verzenden, configureer je je e-mailaccount in de app Instellingen.</translation>
 <translation id="4124987746317609294">Tijdsbereik</translation>
 <translation id="4172051516777682613">Altijd weergeven</translation>
-<translation id="4176234027218720244">Markeren…</translation>
 <translation id="424315890655130736">Wachtwoordzin opgeven</translation>
 <translation id="4272631900155121838">Als je een QR-code wilt scannen, schakel je de camera in via Instellingen</translation>
 <translation id="4281844954008187215">Servicevoorwaarden</translation>
@@ -208,7 +206,6 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5300589172476337783">Weergeven</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5327248766486351172">Naam</translation>
-<translation id="532992759783668360">Gelezen verwijderen</translation>
 <translation id="5388358297987318779">Afbeelding openen</translation>
 <translation id="5409365236829784218">Er zijn geen applicaties geïnstalleerd waarmee dit bestand kan worden geopend.</translation>
 <translation id="54401264925851789">Paginabeveiligingsinfo</translation>
@@ -255,7 +252,6 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6184086493125982861">Tabbladen weergeven</translation>
 <translation id="6187302354554850004">Laatst gesynchroniseerd: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Ongelezen</translation>
-<translation id="6194286531716220336">Annuleren</translation>
 <translation id="6196207969502475924">Gesproken zoekopdrachten</translation>
 <translation id="6254066287920239840">Open links in de app in plaats van in de browser.</translation>
 <translation id="6255097610484507482">Creditcard bewerken</translation>
@@ -267,7 +263,6 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6344783595350022745">Tekst wissen</translation>
 <translation id="6362362396625799311">Geen incognitotabbladen</translation>
 <translation id="6380866119319257197">Als je je wachtwoordzin vergeet of deze instelling wilt wijzigen, <ph name="BEGIN_LINK" />stel je de synchronisatie opnieuw in<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Markeren als ongelezen</translation>
 <translation id="6389470377220713856">Naam op kaart</translation>
 <translation id="6406506848690869874">Synchronisatie</translation>
 <translation id="6417838470969808600">Je hebt bladwijzers, geschiedenis, wachtwoorden en andere instellingen van <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7108338896283013870">Verbergen</translation>
 <translation id="7131892264600713844">Geschiedenis van dit apparaat wordt weergegeven. <ph name="BEGIN_LINK" />Meer informatie.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Volledige naam</translation>
-<translation id="713434964320012835">Verwijderen</translation>
 <translation id="7136892417564438900">Camera is niet beschikbaar</translation>
 <translation id="7167621057293532233">Gegevenstypen</translation>
 <translation id="7189598951263744875">Delen...</translation>
@@ -365,7 +359,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8428045167754449968">Stad/plaats</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8433678324664858900">Suggesties weergeven</translation>
-<translation id="8458197615157477273">Markeren als gelezen</translation>
 <translation id="8458397775385147834">1 item verwijderd</translation>
 <translation id="8503813439785031346">Gebruikersnaam</translation>
 <translation id="8517375800490286174">Open-sourcelicenties</translation>
@@ -388,7 +381,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8840513115188359703">Je wordt niet uitgelogd van je Google-account.</translation>
 <translation id="8904976895050290827">Chrome-synchronisatie</translation>
 <translation id="895541991026785598">Een probleem melden</translation>
-<translation id="8967427617812342790">Toevoegen aan leeslijst</translation>
 <translation id="8971089644512329999">OK</translation>
 <translation id="8981454092730389528">Google-activiteitsopties</translation>
 <translation id="8985320356172329008">Ingelogd bij Google als</translation>

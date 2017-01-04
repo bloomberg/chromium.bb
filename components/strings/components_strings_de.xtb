@@ -359,6 +359,7 @@
 <translation id="4589078953350245614">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat sich jedoch mit einem ungültigen Zertifikat ausgewiesen. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459">Ihre Verbindung zu <ph name="DOMAIN" /> ist mit einer modernen Codier-Suite verschlüsselt.</translation>
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
+<translation id="4619615317237390068">Tabs von anderen Geräten</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Sie sehen sich eine Erweiterungsseite an.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -406,7 +407,6 @@
 <translation id="5181140330217080051">Download wird ausgeführt...</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
 <translation id="5199729219167945352">Experimente</translation>
-<translation id="5199841536747119669">Hier werden Ihre Vorschläge angezeigt</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Nutzen Sie Chrome bei der Arbeit? Unternehmen können Chrome-Einstellungen für ihre Mitarbeiter verwalten. Weitere Informationen</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
@@ -449,7 +449,6 @@
 <translation id="5694783966845939798">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat jedoch ein Zertifikat übermittelt, das einen schwachen Signaturalgorithmus verwendet, zum Beispiel SHA-1. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen gefälscht sein könnten und es sich möglicherweise gar nicht um den erwarteten Server handelt, sondern Sie mit einem Hacker kommunizieren. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="5710435578057952990">Die Identität dieser Website wurde nicht verifiziert.</translation>
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
-<translation id="572328651809341494">Zuletzt geöffnete Tabs</translation>
 <translation id="5732392974455271431">Deine Eltern können die Blockierung aufheben</translation>
 <translation id="5784606427469807560">Beim Bestätigen Ihrer Karte ist ein Problem aufgetreten. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es noch einmal.</translation>
 <translation id="5785756445106461925">Außerdem enthält diese Seite andere, nicht sichere Ressourcen. Diese Ressourcen können während der Übertragung von anderen Nutzern angezeigt und von Angreifern bearbeitet werden, die das Layout der Seite verändern.</translation>

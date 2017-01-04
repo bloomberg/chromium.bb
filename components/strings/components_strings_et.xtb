@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">Püüdsite jõuda domeenile <ph name="DOMAIN" />, ent server esitas kehtetu sertifikaadi. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Teie ühendus domeeniga <ph name="DOMAIN" /> on krüpteeritud tänapäevase šifreerimiskomplektiga.</translation>
 <translation id="4594403342090139922">&amp;Võta kustutamine tagasi</translation>
+<translation id="4619615317237390068">Muudest seadmetest pärinevad vahelehed</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Vaatate laienduste lehte.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">Allalaadimine</translation>
 <translation id="5190835502935405962">Järjehoidjariba</translation>
 <translation id="5199729219167945352">Katsed</translation>
-<translation id="5199841536747119669">Teie soovitused kuvatakse siin</translation>
 <translation id="5251803541071282808">Pilv</translation>
 <translation id="5277279256032773186">Kas kasutate Chrome'i tööl? Ettevõtted võivad hallata töötajate Chrome'i seadeid. Lisateave</translation>
 <translation id="5299298092464848405">Reegli sõelumisel ilmnes viga</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">Püüdsite jõuda domeenile <ph name="DOMAIN" />, kuid server esitas sertifikaadi, mis on allkirjastatud nõrga allkirjaalgoritmiga (nt SHA-1). See tähendab, et serveri esitatud turvamandaadid võivad olla võltsitud ja tegemist ei pruugi olla õige serveriga (võimalik, et suhtlete ründajaga). <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
-<translation id="572328651809341494">Hiljutised vahelehed</translation>
 <translation id="5732392974455271431">Vanemad saavad blokeeringu teie eest tühistada</translation>
 <translation id="5784606427469807560">Kaardi kinnitamisel tekkis probleem. Kontrollige Interneti-ühendust ja proovige uuesti.</translation>
 <translation id="5785756445106461925">Lisaks sisaldab see leht teisi ressursse, mis pole turvalised. Edastamise ajal võivad ressursse vaadata ka teised ja ründajad saavad lehe välimuse muutmiseks ressursse muuta.</translation>

@@ -361,6 +361,7 @@
 <translation id="4589078953350245614">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė netinkamą sertifikatą. <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant modernų šifravimo paketą.</translation>
 <translation id="4594403342090139922">&amp;Anuliuoti ištrynimą</translation>
+<translation id="4619615317237390068">Skirtukai iš kitų įrenginių</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Peržiūrite plėtinio puslapį.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -408,7 +409,6 @@
 <translation id="5181140330217080051">Atsisiunčiama</translation>
 <translation id="5190835502935405962">Žymių juosta</translation>
 <translation id="5199729219167945352">Bandymai</translation>
-<translation id="5199841536747119669">Jūsų pasiūlymai rodomi čia</translation>
 <translation id="5251803541071282808">Debesis</translation>
 <translation id="5277279256032773186">Naudojate „Chrome“ darbe? Įmonės gali tvarkyti darbuotojų „Chrome“ nustatymus. Sužinokite daugiau</translation>
 <translation id="5299298092464848405">Analizuojant politiką įvyko klaida</translation>
@@ -451,7 +451,6 @@
 <translation id="5694783966845939798">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė sertifikatą, kuris pasirašytas naudojant nesudėtingą parašo algoritmą (pvz., SHA-1). Tai reiškia, kad serverio pateikti saugos prisijungimo duomenys galėjo būti suklastoti ir serveris gali būti ne tas, kurio tikėjotės (gali būti, kad bendraujate su užpuoliku). <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Šio tinklalapio tapatybė nenustatyta.</translation>
 <translation id="5720705177508910913">Dabartinis naudotojas</translation>
-<translation id="572328651809341494">Naujausi skirtukai</translation>
 <translation id="5732392974455271431">Jūsų tėvai gali atblokuoti ją už jus</translation>
 <translation id="5784606427469807560">Patvirtinant kortelę kilo problema. Patikrinkite interneto ryšį ir bandykite dar kartą.</translation>
 <translation id="5785756445106461925">Be to, šiame puslapyje yra kitų nesaugių išteklių. Perduodant duomenis šiuos išteklius gali peržiūrėti kiti asmenys ir keisti atakuojanti programa, siekianti pakeisti puslapio išvaizdą.</translation>

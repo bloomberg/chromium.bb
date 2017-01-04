@@ -881,6 +881,7 @@
 <translation id="2150661552845026580">هل تريد إضافة "<ph name="EXTENSION_NAME" />"؟</translation>
 <translation id="2151576029659734873">تم إدخال فهرس علامات تبويب غير صحيح.</translation>
 <translation id="2152580633399033274">عرض جميع الصور (مستحسن)</translation>
+<translation id="2154710561487035718">‏نسخ عنوان URL</translation>
 <translation id="2155931291251286316">السماح بعرض النوافذ المنبثقة من الموقع <ph name="HOST" /> دومًا</translation>
 <translation id="215753907730220065">إنهاء وضع ملء الشاشة</translation>
 <translation id="2157875535253991059">هذه الصفحة في وضع ملء الشاشة الآن.</translation>
@@ -4924,7 +4925,7 @@
 <translation id="7503191893372251637">‏نوع شهادات Netscape</translation>
 <translation id="7503607651407946808">تجري ترجمة هذه الصفحة...</translation>
 <translation id="7503821294401948377">تعذر تحميل رمز '<ph name="ICON" />' لإجراء المتصفح.</translation>
-<translation id="7504676042960447229">يريد <ph name="SITE_NAME" /> أن:</translation>
+<translation id="7504676042960447229">يريد <ph name="SITE_NAME" />:</translation>
 <translation id="750509436279396091">فتح مجلد التنزيلات</translation>
 <translation id="7505167922889582512">إظهار الملفات المخفية</translation>
 <translation id="7506541170099744506">لقد تم تسجيل جهاز <ph name="DEVICE_TYPE" /> بنجاح لإدارة المؤسسة.</translation>

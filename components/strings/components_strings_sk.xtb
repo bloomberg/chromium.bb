@@ -356,6 +356,7 @@
 <translation id="4589078953350245614">Pokúsili ste sa prejsť do domény <ph name="DOMAIN" />, ale server predložil neplatný certifikát. <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459">Vaše pripojenie k doméne <ph name="DOMAIN" /> je šifrované pomocou modernej šifrovacej súpravy.</translation>
 <translation id="4594403342090139922">&amp;Vrátiť späť odstránenie</translation>
+<translation id="4619615317237390068">Karty z iných zariadení</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Prezeráte si stránku s rozšíreniami.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -403,7 +404,6 @@
 <translation id="5181140330217080051">Sťahovanie</translation>
 <translation id="5190835502935405962">Panel so záložkami</translation>
 <translation id="5199729219167945352">Experimenty</translation>
-<translation id="5199841536747119669">Tu sa zobrazia vaše návrhy</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Používate Chrome v práci? Firmy môžu spravovať nastavenia prehliadača Chrome pre svojich zamestnancov. Ďalšie informácie</translation>
 <translation id="5299298092464848405">Pri analýze pravidla sa vyskytla chyba</translation>
@@ -446,7 +446,6 @@
 <translation id="5694783966845939798">Pokúsili ste sa prejsť do domény <ph name="DOMAIN" />, ale server predložil certifikát podpísaný slabým algoritmom podpisu (napr. SHA-1). Znamená to, že predložené bezpečnostné poverenia mohli byť sfalšované a môže ísť o úplne iný server, ako ste očakávali (je možné, že komunikujete s útočníkom). <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="5710435578057952990">Identita tejto webovej stránky nebola overená.</translation>
 <translation id="5720705177508910913">Aktuálny používateľ</translation>
-<translation id="572328651809341494">Nedávne karty</translation>
 <translation id="5732392974455271431">Vaši rodičia ho môžu pre vás odblokovať</translation>
 <translation id="5784606427469807560">Pri overovaní karty sa vyskytol problém. Skontrolujte pripojenie k internetu a skúste to znova.</translation>
 <translation id="5785756445106461925">Táto stránka obsahuje aj iné zdroje, ktoré nie sú zabezpečené. Tieto zdroje môžu pri prenose vidieť ostatní používatelia a útočník ich môže upraviť tak, aby zmenil vzhľad stránky.</translation>

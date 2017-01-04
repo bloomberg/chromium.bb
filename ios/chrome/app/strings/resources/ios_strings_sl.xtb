@@ -79,7 +79,6 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="2386793615875593361">1 izbrana</translation>
 <translation id="2435457462613246316">Pokaži geslo</translation>
 <translation id="2467815441875554965">Kontekstno iskanje</translation>
-<translation id="2523092375122821828">Označi vse …</translation>
 <translation id="2572712655377361602">Pravilnik o napravah je blokiral dostop do fotografij.</translation>
 <translation id="2584132361465095047">Dodajanje računa ...</translation>
 <translation id="2593774076813182497">Te strani ni mogoče natisniti</translation>
@@ -161,7 +160,6 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="4121993058175073134">Če želite pošiljati podatke net-export, v aplikaciji Nastavitve konfigurirajte e-poštni račun.</translation>
 <translation id="4124987746317609294">Časovno obdobje</translation>
 <translation id="4172051516777682613">Vedno pokaži</translation>
-<translation id="4176234027218720244">Označi …</translation>
 <translation id="424315890655130736">Vnos gesla</translation>
 <translation id="4272631900155121838">Če želite optično prebrati kodo QR, v nastavitvah omogočite fotoaparat</translation>
 <translation id="4281844954008187215">Pogoji storitve</translation>
@@ -208,7 +206,6 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5300589172476337783">Pokaži</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5327248766486351172">Ime</translation>
-<translation id="532992759783668360">Izbriši prebrano</translation>
 <translation id="5388358297987318779">Odpri sliko</translation>
 <translation id="5409365236829784218">Nameščena ni nobena apl. za odpiranje te datoteke.</translation>
 <translation id="54401264925851789">Informacije o varnosti strani</translation>
@@ -255,7 +252,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6184086493125982861">Pokaži zavihke</translation>
 <translation id="6187302354554850004">Nazadnje sinhronizirano: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Neprebrano</translation>
-<translation id="6194286531716220336">Prekliči</translation>
 <translation id="6196207969502475924">Glasovno iskanje</translation>
 <translation id="6254066287920239840">Povezave namesto v brskalniku odpri v aplikaciji.</translation>
 <translation id="6255097610484507482">Urejanje kreditne kartice</translation>
@@ -267,7 +263,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6344783595350022745">Izbriši besedilo</translation>
 <translation id="6362362396625799311">No Incognito Tabs</translation>
 <translation id="6380866119319257197">Če pozabite geslo ali želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Označi kot neprebrano</translation>
 <translation id="6389470377220713856">Name on Card</translation>
 <translation id="6406506848690869874">Sinhronizacija</translation>
 <translation id="6417838470969808600">Iz računa <ph name="USER_EMAIL1" /> imate zaznamke, zgodovino, gesla in druge nastavitve.</translation>
@@ -305,7 +300,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7108338896283013870">Skrij</translation>
 <translation id="7131892264600713844">Prikazana je zgodovina iz te naprave. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Polno ime</translation>
-<translation id="713434964320012835">Izbriši</translation>
 <translation id="7136892417564438900">Fotoaparat ni na voljo</translation>
 <translation id="7167621057293532233">Vrste podatkov</translation>
 <translation id="7189598951263744875">Deli z drugimi</translation>
@@ -365,7 +359,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8428045167754449968">Mesto</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8433678324664858900">Prikaži predloge</translation>
-<translation id="8458197615157477273">Označi kot prebrano</translation>
 <translation id="8458397775385147834">1 element izbrisan</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>
 <translation id="8517375800490286174">Odprtokodne licence</translation>
@@ -388,7 +381,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8840513115188359703">Iz Google Računa ne boste odjavljeni.</translation>
 <translation id="8904976895050290827">Sinhronizacija za Chrome</translation>
 <translation id="895541991026785598">Prijavite težavo</translation>
-<translation id="8967427617812342790">Add to reading list</translation>
 <translation id="8971089644512329999">Ok, Got it</translation>
 <translation id="8981454092730389528">Googlovi kontrolniki za dejavnost</translation>
 <translation id="8985320356172329008">Signed In to Google as</translation>

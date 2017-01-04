@@ -360,6 +360,7 @@
 <translation id="4589078953350245614"><ph name="DOMAIN" /> alan adına erişmeyi denediniz, ancak sunucu geçersiz bir sertifika sundu. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi edinin<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> ile olan bağlantınız modern bir şifre seti kullanılarak şifrelendi.</translation>
 <translation id="4594403342090139922">Silmeyi &amp;Geri Al</translation>
+<translation id="4619615317237390068">Diğer cihazlardan sekmeler</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Bir uzantı sayfası görüntülüyorsunuz.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">İndiriliyor</translation>
 <translation id="5190835502935405962">Yer İşareti Çubuğu</translation>
 <translation id="5199729219167945352">Deneyler</translation>
-<translation id="5199841536747119669">Öneriler burada görünür</translation>
 <translation id="5251803541071282808">Bulut</translation>
 <translation id="5277279256032773186">Chrome'u işte mi kullanıyorsunuz? İşletmeler, çalışanları için Chrome ayarlarını yönetebilir. Daha fazla bilgi edinin</translation>
 <translation id="5299298092464848405">Politika ayrıştırma hatası</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798"><ph name="DOMAIN" /> alan adına erişme girişiminde bulundunuz, ancak sunucu zayıf bir imza algoritması kullanılarak imzalanmış bir sertifika sağladı. Bu durum, sunucunun sağladığı güvenlik bilgilerinin sahte olabileceği anlamına gelir ve sunucu sizin beklediğiniz sunucu olmayabilir (bir saldırgan ile irtibat kuruyor olabilirsiniz). <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Bu web sitesinin kimliği doğrulanmadı.</translation>
 <translation id="5720705177508910913">Geçerli kullanıcı</translation>
-<translation id="572328651809341494">Son sekmeler</translation>
 <translation id="5732392974455271431">Ebeveynleriniz engellemeyi kaldırabilir</translation>
 <translation id="5784606427469807560">Kartınız onaylanırken bir sorun oluştu. İnternet bağlantınızı kontrol edip tekrar deneyin.</translation>
 <translation id="5785756445106461925">Ayrıca, bu sayfa güvenli olmayan başka kaynaklar içeriyor. Bu kaynaklar, aktarım sırasında başkaları tarafından görülebilir ve bir saldırgan tarafından sayfanın görünüşünü değiştirmek üzere kullanılabilir.</translation>

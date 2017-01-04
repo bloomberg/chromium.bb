@@ -79,7 +79,6 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2386793615875593361">1 valittu</translation>
 <translation id="2435457462613246316">Näytä salasana</translation>
 <translation id="2467815441875554965">Kontekstihaku</translation>
-<translation id="2523092375122821828">Merkitse kaikki…</translation>
 <translation id="2572712655377361602">Laitekäytäntö esti pääsyn kuviisi.</translation>
 <translation id="2584132361465095047">Lisää tili…</translation>
 <translation id="2593774076813182497">Tätä sivua ei voi tulostaa.</translation>
@@ -161,7 +160,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4121993058175073134">Tee sähköp.tilin määritykset asetuksissa lähettääksesi nettovientitiet.</translation>
 <translation id="4124987746317609294">Aikaväli</translation>
 <translation id="4172051516777682613">Näytä aina</translation>
-<translation id="4176234027218720244">Merkitse…</translation>
 <translation id="424315890655130736">Anna tunnuslause</translation>
 <translation id="4272631900155121838">Jos haluat skannata QR-koodin, ota kamera käyttöön asetuksissa.</translation>
 <translation id="4281844954008187215">Käyttöehdot</translation>
@@ -208,7 +206,6 @@ Tietosi salataan synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antama
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5327248766486351172">Nimi</translation>
-<translation id="532992759783668360">Poista luetut</translation>
 <translation id="5388358297987318779">Avaa kuva</translation>
 <translation id="5409365236829784218">Et ole asentanut sovellusta, jolla tämän tiedoston voi avata.</translation>
 <translation id="54401264925851789">Sivun suojaustiedot</translation>
@@ -255,7 +252,6 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="6184086493125982861">Näytä välilehdet</translation>
 <translation id="6187302354554850004">Viim. synkronoitu: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Lukematon</translation>
-<translation id="6194286531716220336">Peruuta</translation>
 <translation id="6196207969502475924">Puhehaku</translation>
 <translation id="6254066287920239840">Avaa linkit sovelluksessa selaimen sijaan.</translation>
 <translation id="6255097610484507482">Luottokortin muokkaus</translation>
@@ -267,7 +263,6 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="6344783595350022745">Tyhjennä teksti</translation>
 <translation id="6362362396625799311">Ei incognito-välilehtiä</translation>
 <translation id="6380866119319257197">Jos unohdat tunnuslauseesi tai haluat muokata tätä asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
-<translation id="6385146967113720558">Merkitse lukemattomaksi</translation>
 <translation id="6389470377220713856">Nimi kortissa</translation>
 <translation id="6406506848690869874">Synkronointi</translation>
 <translation id="6417838470969808600">Tililläsi <ph name="USER_EMAIL1" /> on kirjanmerkkejä, salasanoja ja muita asetuksia</translation>
@@ -305,7 +300,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7108338896283013870">Piilota</translation>
 <translation id="7131892264600713844">Näytetään tämän laitteen historia. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Koko nimi</translation>
-<translation id="713434964320012835">Poista</translation>
 <translation id="7136892417564438900">Kamera ei ole käytettävissä</translation>
 <translation id="7167621057293532233">Tietotyypit</translation>
 <translation id="7189598951263744875">Jaa...</translation>
@@ -365,7 +359,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8428045167754449968">Kaupunki</translation>
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="8433678324664858900">Näytä ehdotukset</translation>
-<translation id="8458197615157477273">Merkitse luetuksi</translation>
 <translation id="8458397775385147834">1 kohde poistettu</translation>
 <translation id="8503813439785031346">Käyttäjätunnus</translation>
 <translation id="8517375800490286174">Avoimen lähdekoodin käyttöluv.</translation>
@@ -388,7 +381,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8840513115188359703">Sinua ei kirjata ulos Google-tililtäsi.</translation>
 <translation id="8904976895050290827">Chromen synkronointi</translation>
 <translation id="895541991026785598">Ilmoita ongelmasta</translation>
-<translation id="8967427617812342790">Lisää lukulistalle</translation>
 <translation id="8971089644512329999">Selvä</translation>
 <translation id="8981454092730389528">Googlen toimintojen hallinta</translation>
 <translation id="8985320356172329008">Olet kirjautuneena Google-tilille käyttäjänä</translation>

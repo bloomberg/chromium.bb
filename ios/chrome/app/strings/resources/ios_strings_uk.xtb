@@ -79,7 +79,6 @@
 <translation id="2386793615875593361">Вибрано 1</translation>
 <translation id="2435457462613246316">Показати пароль</translation>
 <translation id="2467815441875554965">Контекстний пошук</translation>
-<translation id="2523092375122821828">Позначити всі…</translation>
 <translation id="2572712655377361602">пристрою</translation>
 <translation id="2584132361465095047">Додати обліковий запис…</translation>
 <translation id="2593774076813182497">Не вдається роздрукувати сторінку.</translation>
@@ -161,7 +160,6 @@
 <translation id="4121993058175073134">Щоб надсил. дані про чистий експорт, налашт. обл. запис у програмі Налаштування.</translation>
 <translation id="4124987746317609294">Період часу</translation>
 <translation id="4172051516777682613">Завжди показувати</translation>
-<translation id="4176234027218720244">Позначити…</translation>
 <translation id="424315890655130736">Ввести парольну фразу</translation>
 <translation id="4272631900155121838">Щоб відсканувати QR-код, увімкніть камеру в налаштуваннях</translation>
 <translation id="4281844954008187215">Умови використання</translation>
@@ -208,7 +206,6 @@
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5327248766486351172">Назва</translation>
-<translation id="532992759783668360">Видалити прочитані</translation>
 <translation id="5388358297987318779">Відкрити зображення</translation>
 <translation id="5409365236829784218">Немає встановлених програм, які можуть відкрити цей файл.</translation>
 <translation id="54401264925851789">Відомості про безпеку сторінки</translation>
@@ -255,7 +252,6 @@
 <translation id="6184086493125982861">Показати вкладки</translation>
 <translation id="6187302354554850004">Востаннє синхрон.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Непрочитані</translation>
-<translation id="6194286531716220336">Скасувати</translation>
 <translation id="6196207969502475924">Голосовий пошук</translation>
 <translation id="6254066287920239840">Відкривайте посилання в додатку, а не у веб-переглядачі.</translation>
 <translation id="6255097610484507482">Редагувати дані кредитної картки</translation>
@@ -267,7 +263,6 @@
 <translation id="6344783595350022745">Очистити текст</translation>
 <translation id="6362362396625799311">Немає анонімних вкладок</translation>
 <translation id="6380866119319257197">Якщо ви забули парольну фразу або хочете змінити це налаштування, <ph name="BEGIN_LINK" />скиньте синхронізацію<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Позначити як непрочитані</translation>
 <translation id="6389470377220713856">Ім’я на картці</translation>
 <translation id="6406506848690869874">Синхронізація</translation>
 <translation id="6417838470969808600">У вас є закладки, історія, паролі й інші налаштування з облікового запису <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@
 <translation id="7108338896283013870">Сховати</translation>
 <translation id="7131892264600713844">Показано історію з цього пристрою. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Повне ім’я</translation>
-<translation id="713434964320012835">Видалити</translation>
 <translation id="7136892417564438900">Камера недоступна</translation>
 <translation id="7167621057293532233">Типи даних</translation>
 <translation id="7189598951263744875">Поділитися...</translation>
@@ -365,7 +359,6 @@
 <translation id="8428045167754449968">Місто</translation>
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8433678324664858900">Показ. пропозиції</translation>
-<translation id="8458197615157477273">Позначити як прочитані</translation>
 <translation id="8458397775385147834">Видалено 1 елемент</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>
 <translation id="8517375800490286174">Ліцензії ПЗ з відкритим кодом</translation>
@@ -388,7 +381,6 @@
 <translation id="8840513115188359703">Ви не вийдете з облікового запису Google.</translation>
 <translation id="8904976895050290827">Синхронізація Chrome</translation>
 <translation id="895541991026785598">Повідомити про проблему</translation>
-<translation id="8967427617812342790">Додати в список читання</translation>
 <translation id="8971089644512329999">OK</translation>
 <translation id="8981454092730389528">Елементи керування активністю в продуктах Google</translation>
 <translation id="8985320356172329008">Ви ввійшли в обліковий запис Google як</translation>

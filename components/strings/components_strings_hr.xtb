@@ -359,6 +359,7 @@
 <translation id="4589078953350245614">Pokušali ste otvoriti <ph name="DOMAIN" />, ali poslužitelj je prikazao nevažeći certifikat. <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Vaša veza s domenom <ph name="DOMAIN" /> kriptirana je modernim kriptografskim paketom.</translation>
 <translation id="4594403342090139922">&amp;Poništi brisanje</translation>
+<translation id="4619615317237390068">Kartice s drugih uređaja</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Gledate stranicu proširenja.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -406,7 +407,6 @@
 <translation id="5181140330217080051">Preuzimanje</translation>
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="5199729219167945352">Eksperimenti</translation>
-<translation id="5199841536747119669">Ovdje će se prikazivati prijedlozi za vas</translation>
 <translation id="5251803541071282808">Oblak</translation>
 <translation id="5277279256032773186">Upotrebljavate li Chrome na poslu? Tvrtke mogu upravljati Chromeovim postavkama za svoje zaposlenike. Saznajte više</translation>
 <translation id="5299298092464848405">Pogreška u pravilu analize</translation>
@@ -449,7 +449,6 @@
 <translation id="5694783966845939798">Pokušali ste otvoriti <ph name="DOMAIN" />, ali je poslužitelj pružio certifikat potpisan slabim algoritmom potpisa (kao što je SHA-1). To znači da su sigurnosne vjerodajnice koje je poslužitelj pružio možda krivotvorene, a poslužitelj možda nije onaj koji očekujete (možda komunicirate s napadačem). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Identitet ove web lokacije nije ovjeren.</translation>
 <translation id="5720705177508910913">Trenutačni korisnik:</translation>
-<translation id="572328651809341494">Nedavne kartice</translation>
 <translation id="5732392974455271431">Tvoji je roditelji mogu deblokirati</translation>
 <translation id="5784606427469807560">Pojavio se problem prilikom potvrđivanja kartice. Provjerite internetsku vezu i pokušajte ponovo.</translation>
 <translation id="5785756445106461925">Nadalje, ova stranica sadrži druge resurse koji nisu sigurni. Te resurse mogu vidjeti drugi tijekom prijenosa i napadač ih može izmijeniti kako bi promijenio izgled stranice.</translation>

@@ -79,7 +79,6 @@
 <translation id="2386793615875593361">1 избрана</translation>
 <translation id="2435457462613246316">Показване на паролата</translation>
 <translation id="2467815441875554965">Контекстно търсене</translation>
-<translation id="2523092375122821828">Озн. на всичко…</translation>
 <translation id="2572712655377361602">Достъпът до снимките ви е блокиран от правило за устройства</translation>
 <translation id="2584132361465095047">Добавяне на профил…</translation>
 <translation id="2593774076813182497">Стр. не може да се отпечата.</translation>
@@ -161,7 +160,6 @@
 <translation id="4121993058175073134">За изпращане на експ. данни от мрежата конфиг. имейла си в Настройки.</translation>
 <translation id="4124987746317609294">Период от време</translation>
 <translation id="4172051516777682613">Показване винаги</translation>
-<translation id="4176234027218720244">Означаване…</translation>
 <translation id="424315890655130736">Въвеждане на пропуск</translation>
 <translation id="4272631900155121838">За да сканирате код за бърза реакция, активирайте камерата от настройките</translation>
 <translation id="4281844954008187215">Условия за ползване</translation>
@@ -208,7 +206,6 @@
 <translation id="5300589172476337783">Показване</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5327248766486351172">Име</translation>
-<translation id="532992759783668360">Изтр. на прочет.</translation>
 <translation id="5388358297987318779">Отваряне на изображението</translation>
 <translation id="5409365236829784218">Няма инсталирани приложения, които могат да отворят файла.</translation>
 <translation id="54401264925851789">Информация за сигурността на страницата</translation>
@@ -255,7 +252,6 @@
 <translation id="6184086493125982861">Показване на разделите</translation>
 <translation id="6187302354554850004">Последно синхр.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Непрочетени</translation>
-<translation id="6194286531716220336">Отказ</translation>
 <translation id="6196207969502475924">Гласово търсене</translation>
 <translation id="6254066287920239840">Отваряне на връзките в приложението вместо в браузъра.</translation>
 <translation id="6255097610484507482">Редактиране на кредитната карта</translation>
@@ -267,7 +263,6 @@
 <translation id="6344783595350022745">Изчистване на текста</translation>
 <translation id="6362362396625799311">Няма раздели в режим „инкогнито“</translation>
 <translation id="6380866119319257197">Ако забравите пропуска си или искате да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Непрочетено</translation>
 <translation id="6389470377220713856">Име върху картата</translation>
 <translation id="6406506848690869874">Синхронизиранe</translation>
 <translation id="6417838470969808600">Имате отметки, история, пароли и други настройки от <ph name="USER_EMAIL1" /></translation>
@@ -305,7 +300,6 @@
 <translation id="7108338896283013870">Скриване</translation>
 <translation id="7131892264600713844">Показва се историята от това устройство. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Име и фамилия</translation>
-<translation id="713434964320012835">Изтриване</translation>
 <translation id="7136892417564438900">Няма достъп до камерата</translation>
 <translation id="7167621057293532233">Типове данни</translation>
 <translation id="7189598951263744875">Споделяне...</translation>
@@ -365,7 +359,6 @@
 <translation id="8428045167754449968">Град/селище</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433678324664858900">Предложения</translation>
-<translation id="8458197615157477273">Прочетено</translation>
 <translation id="8458397775385147834">Изтрихте 1 елемент</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="8517375800490286174">Лицензи за отворен код</translation>
@@ -388,7 +381,6 @@
 <translation id="8840513115188359703">Няма да излезете от профила си в Google.</translation>
 <translation id="8904976895050290827">Синхронизиране в Chrome</translation>
 <translation id="895541991026785598">Подаване на сигнал за проблем</translation>
-<translation id="8967427617812342790">Добавяне към списъка за четене</translation>
 <translation id="8971089644512329999">Добре, разбрах</translation>
 <translation id="8981454092730389528">Контроли за активността в Google</translation>
 <translation id="8985320356172329008">Влезли сте в Google като</translation>

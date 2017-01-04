@@ -79,7 +79,6 @@
 <translation id="2386793615875593361">1 fotoğraf seçildi</translation>
 <translation id="2435457462613246316">Şifreyi göster</translation>
 <translation id="2467815441875554965">Bağlama Dayalı Arama</translation>
-<translation id="2523092375122821828">Tümünü İşaretle…</translation>
 <translation id="2572712655377361602">Fotoğraflarınıza erişim bir cihaz politikası tarafından engellendi</translation>
 <translation id="2584132361465095047">Hesap Ekle…</translation>
 <translation id="2593774076813182497">Bu sayfa yazdırılamaz.</translation>
@@ -161,7 +160,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4121993058175073134">Net-export verilerini göndermek için lütfen Ayarlar uygulamasında e-posta hesabınızı yapılandırın.</translation>
 <translation id="4124987746317609294">Zaman Aralığı</translation>
 <translation id="4172051516777682613">Her zaman göster</translation>
-<translation id="4176234027218720244">İşaretle…</translation>
 <translation id="424315890655130736">Parolayı Girin</translation>
 <translation id="4272631900155121838">QR kodu taramak için ayarlardan kamerayı etkinleştirin.</translation>
 <translation id="4281844954008187215">Hizmet Şartları</translation>
@@ -208,7 +206,6 @@ Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak 
 <translation id="5300589172476337783">Göster</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="5327248766486351172">Ad</translation>
-<translation id="532992759783668360">Okunanları Sil</translation>
 <translation id="5388358297987318779">Resmi Aç</translation>
 <translation id="5409365236829784218">Bu dosyayı açabilecek yüklü uygulama yok.</translation>
 <translation id="54401264925851789">Sayfa Güvenlik Bilgileri</translation>
@@ -255,7 +252,6 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="6184086493125982861">Sekmeleri Göster</translation>
 <translation id="6187302354554850004">Son senkronizasyon tarihi: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Okunmamış girişler</translation>
-<translation id="6194286531716220336">İptal</translation>
 <translation id="6196207969502475924">Sesli Arama</translation>
 <translation id="6254066287920239840">Bağlantıları tarayıcı yerine uygulamada açın.</translation>
 <translation id="6255097610484507482">Kredi Kartını Düzenle</translation>
@@ -267,7 +263,6 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="6344783595350022745">Metni Temizle</translation>
 <translation id="6362362396625799311">Gizli Sekme Yok</translation>
 <translation id="6380866119319257197">Parolanızı unutursanız veya bu ayarı değiştirmek isterseniz <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Okunmadı Olarak İşaretle</translation>
 <translation id="6389470377220713856">Karttaki Ad</translation>
 <translation id="6406506848690869874">Senkronizasyon</translation>
 <translation id="6417838470969808600"><ph name="USER_EMAIL1" /> hesabından yer işaretleri, geçmiş, şifreler ve diğer ayarlarınız var.</translation>
@@ -305,7 +300,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7108338896283013870">Gizle</translation>
 <translation id="7131892264600713844">Bu cihazdaki geçmiş bilgileri gösteriliyor. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Tam Ad</translation>
-<translation id="713434964320012835">Sil</translation>
 <translation id="7136892417564438900">Kamera kullanılamıyor</translation>
 <translation id="7167621057293532233">Veri Tipleri</translation>
 <translation id="7189598951263744875">Paylaş...</translation>
@@ -365,7 +359,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="8428045167754449968">İl / İlçe</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433678324664858900">Önerileri Göster</translation>
-<translation id="8458197615157477273">Okundu Olarak İşaretle</translation>
 <translation id="8458397775385147834">1 öğe silindi</translation>
 <translation id="8503813439785031346">Kullanıcı adı</translation>
 <translation id="8517375800490286174">Açık Kaynak Lisansları</translation>
@@ -388,7 +381,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="8840513115188359703">Google Hesaplarınızdaki oturumlarınız kapatılmaz.</translation>
 <translation id="8904976895050290827">Chrome Senkronizasyonu</translation>
 <translation id="895541991026785598">Sorun Bildirin</translation>
-<translation id="8967427617812342790">Okuma listesine ekle</translation>
 <translation id="8971089644512329999">Tamam, Anladım</translation>
 <translation id="8981454092730389528">Google Etkinlik Kontrolleri</translation>
 <translation id="8985320356172329008">Google'da Şu Hesapla Oturum Açıldı:</translation>

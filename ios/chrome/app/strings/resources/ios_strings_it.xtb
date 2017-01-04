@@ -79,7 +79,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="2386793615875593361">Una selezionata</translation>
 <translation id="2435457462613246316">Mostra password</translation>
 <translation id="2467815441875554965">Ricerca contestuale</translation>
-<translation id="2523092375122821828">Segna tutti come...</translation>
 <translation id="2572712655377361602">Una norma relativa ai dispositivi ha impedito l'accesso alle tue foto</translation>
 <translation id="2584132361465095047">Aggiungi account…</translation>
 <translation id="2593774076813182497">Impossibile stampare la pagina.</translation>
@@ -161,7 +160,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4121993058175073134">Per inviare dati net-export, configura il tuo account email nell'app Impostazioni.</translation>
 <translation id="4124987746317609294">Intervallo di tempo</translation>
 <translation id="4172051516777682613">Mostra sempre</translation>
-<translation id="4176234027218720244">Segna come…</translation>
 <translation id="424315890655130736">Inserisci passphrase</translation>
 <translation id="4272631900155121838">Per eseguire la scansione di un codice QR, attiva la videocamera dalle impostazioni</translation>
 <translation id="4281844954008187215">Termini di servizio</translation>
@@ -208,7 +206,6 @@ I tuoi dati vengono crittografati con la tua passphrase di sincronizzazione. Ins
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="5327248766486351172">Nome</translation>
-<translation id="532992759783668360">Elimina voci lette</translation>
 <translation id="5388358297987318779">Apri immagine</translation>
 <translation id="5409365236829784218">Non ci sono applicazioni installate in grado di aprire questo file.</translation>
 <translation id="54401264925851789">Info sicurezza pagina</translation>
@@ -255,7 +252,6 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6184086493125982861">Mostra schede</translation>
 <translation id="6187302354554850004">Ultima sincronizzazione: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Da leggere</translation>
-<translation id="6194286531716220336">Annulla</translation>
 <translation id="6196207969502475924">Ricerca vocale</translation>
 <translation id="6254066287920239840">Apri i link all'interno dell'app invece che nel browser.</translation>
 <translation id="6255097610484507482">Modifica carta di credito</translation>
@@ -267,7 +263,6 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6344783595350022745">Cancella testo</translation>
 <translation id="6362362396625799311">Nessuna scheda in incognito</translation>
 <translation id="6380866119319257197">Se non ricordi la passphrase o vuoi modificare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Segna come da leggere</translation>
 <translation id="6389470377220713856">Nome sulla carta</translation>
 <translation id="6406506848690869874">Sincronizzazione</translation>
 <translation id="6417838470969808600">Sono presenti preferiti, cronologia, password e altre impostazioni di <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ I tuoi dati sono stati crittografati con la tua passphrase di sincronizzazione i
 <translation id="7108338896283013870">Nascondi</translation>
 <translation id="7131892264600713844">È visualizzata la cronologia di questo dispositivo. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nome e cognome</translation>
-<translation id="713434964320012835">Elimina</translation>
 <translation id="7136892417564438900">La videocamera non è disponibile</translation>
 <translation id="7167621057293532233">Tipi di dati</translation>
 <translation id="7189598951263744875">Condividi...</translation>
@@ -365,7 +359,6 @@ I tuoi dati sono stati crittografati con la tua passphrase di sincronizzazione i
 <translation id="8428045167754449968">Città/località</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8433678324664858900">Mostra suggerimenti</translation>
-<translation id="8458197615157477273">Segna come già letti</translation>
 <translation id="8458397775385147834">1 elemento eliminato</translation>
 <translation id="8503813439785031346">Nome utente</translation>
 <translation id="8517375800490286174">Licenze open source</translation>
@@ -388,7 +381,6 @@ I tuoi dati sono stati crittografati con la tua passphrase di sincronizzazione i
 <translation id="8840513115188359703">Non verrai scollegato dal tuo account Google.</translation>
 <translation id="8904976895050290827">Sincronizzazione Google Chrome</translation>
 <translation id="895541991026785598">Segnala un problema</translation>
-<translation id="8967427617812342790">Aggiungi all'elenco di lettura</translation>
 <translation id="8971089644512329999">OK</translation>
 <translation id="8981454092730389528">Gestione attività di Google</translation>
 <translation id="8985320356172329008">Accesso effettuato a Google come</translation>

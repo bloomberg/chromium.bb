@@ -359,6 +359,7 @@
 <translation id="4589078953350245614">ወደ <ph name="DOMAIN" /> ለመድረስ ሞክረው ነበር፣ ነገር ግን አገልጋዩ የማይሠራ የዕውቅና ማረጋገጫ አቅርቧል። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" />።</translation>
 <translation id="4592951414987517459">ወደ የእርስዎ <ph name="DOMAIN" /> ግንኙነት ዘመናዊ የምስጠራ ጥቅል በመጠቀም ተመስጥሯል።</translation>
 <translation id="4594403342090139922">&amp;ሰርዝን ቀልብስ</translation>
+<translation id="4619615317237390068">ከሌሎች መሣሪያዎች የመጡ ትሮች</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">የቅጥያ ገጽ እየተመለከቱ ነው።</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -406,7 +407,6 @@
 <translation id="5181140330217080051">በማውረድ ላይ</translation>
 <translation id="5190835502935405962">የዕልባቶች አሞሌ</translation>
 <translation id="5199729219167945352">ሙከራዎች</translation>
-<translation id="5199841536747119669">የእርስዎ የአስተያየት ጥቆማዎች እዚህ ይመጣሉ</translation>
 <translation id="5251803541071282808">ደመና</translation>
 <translation id="5277279256032773186">በሥራ ላይ Chrome እየተጠቀሙ ነዎት? ንግድ ሥራዎች ለሠራተኞቻቸው የChrome ቅንብሮችን ማስተዳደር ይችላሉ። የበለጠ ይረዱ</translation>
 <translation id="5299298092464848405">መምሪያን መተንተን ላይ ስህተት</translation>
@@ -451,7 +451,6 @@ nil</translation>
 <translation id="5694783966845939798"><ph name="DOMAIN" />ን ለመድረስ ሞክረዋል፣ ነገር ግን አገልጋዩ ደካማ የፊርማ ስልተ-ቀመር (እንደ SHA-1 ያለ) በመጠቀም የተፈረመ የእውቅና ማረጋገጫ ነው ያቀረበው። ይህም ማለት አገልጋዩ ያቀረበው የደህንነት ምስክርነቶች የተጭበረበሩ ሊሆኑ ይችላሉ፣ እናም አገልጋዩ እርስዎ የሚጠብቁት አገልጋይ ላይሆን ይችላል (ከአጥቂ ጋር እየተገናኙ ሊሆን ይችላል)። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" />።</translation>
 <translation id="5710435578057952990">የዚህ ድረ-ገጽ ማንነት አልተረጋገጠም።</translation>
 <translation id="5720705177508910913">የአሁኑ ተጠቃሚ</translation>
-<translation id="572328651809341494">የቅርብ ጊዜ ትሮች</translation>
 <translation id="5732392974455271431">የእርስዎ ወላጆች እገዳውን ሊያነሱልዎ ይችላሉ</translation>
 <translation id="5784606427469807560">የእርስዎን ካርድ ማረጋገጥ ላይ አንድ ችግር ነበር። የበይነመረብ ግንኙነትዎን ይፈትሹት እና እንደገና ይሞክሩ።</translation>
 <translation id="5785756445106461925">በተጨማሪ፣ ይህ ገጽ ደህንነታቸው ያልተጠበቀ ሌሎች ንብረቶችን አካትቷል። እነዚህ ንብረቶች በሽግግር ወቅት በሌሎች ሊታዩ ይችላሉ፣ እናም የገጹን መልክ ለመለወጥ በአጥቂዎች ሊቀየሩ ይችላሉ።</translation>

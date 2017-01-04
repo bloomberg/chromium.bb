@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">Du prøvde å gå til <ph name="DOMAIN" />, men tjeneren presenterte et ugyldig sertifikat. <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Tilkoblingen til <ph name="DOMAIN" /> er kryptert med en moderne chifferserie.</translation>
 <translation id="4594403342090139922">&amp;Angre slettingen</translation>
+<translation id="4619615317237390068">Faner fra andre enheter</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Dette er en utvidelsesside.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">Laster ned</translation>
 <translation id="5190835502935405962">Bokmerkerad</translation>
 <translation id="5199729219167945352">Eksperimenter</translation>
-<translation id="5199841536747119669">Forslagene dine vises her</translation>
 <translation id="5251803541071282808">Nettsky</translation>
 <translation id="5277279256032773186">Bruker du Chrome på jobben? Bedrifter kan administrere Chrome-innstillingene for de ansatte. Finn ut mer</translation>
 <translation id="5299298092464848405">Feil under analysen av enhetsinnstillingene</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">Du prøvde å gå til <ph name="DOMAIN" />, men tjeneren presenterte et sertifikat som er signert med en usikker signaturalgoritme (som SHA-1). Dette betyr at sikkerhetslegitimasjonen tjeneren har presentert, kan være forfalsket. Tjeneren kan med andre ord være en annen tjener enn du tror (og du kommuniserer kanskje med en angriper). <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Identiteten til dette nettstedet er ikke verifisert.</translation>
 <translation id="5720705177508910913">Gjeldende bruker</translation>
-<translation id="572328651809341494">Nylige faner</translation>
 <translation id="5732392974455271431">Foreldrene dine kan oppheve blokkeringen for deg</translation>
 <translation id="5784606427469807560">Det oppsto et problem under forsøket på å bekrefte kortet ditt. Kontrollér Internett-tilkoblingen din, og prøv igjen.</translation>
 <translation id="5785756445106461925">Denne siden inneholder i tillegg andre ressurser som ikke er sikre. Disse ressursene er synlige for andre mens de sendes frem og tilbake, og eventuelle angripere kan modifisere dem for å endre på utseendet til siden.</translation>

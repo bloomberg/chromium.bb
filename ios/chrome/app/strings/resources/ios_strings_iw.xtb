@@ -79,7 +79,6 @@
 <translation id="2386793615875593361">נבחרה תמונה אחת</translation>
 <translation id="2435457462613246316">הצג סיסמה</translation>
 <translation id="2467815441875554965">חיפוש קולי לפי הקשר</translation>
-<translation id="2523092375122821828">סמן הכול…</translation>
 <translation id="2572712655377361602">הגישה לתמונות שלך נחסמה עקב מדיניות שהוגדרה למכשיר</translation>
 <translation id="2584132361465095047">הוסף חשבון…</translation>
 <translation id="2593774076813182497">לא ניתן להדפיס את הדף הזה.</translation>
@@ -161,7 +160,6 @@
 <translation id="4121993058175073134">כדי לשלוח נתוני ייצוא ברשת, הגדר את חשבון האימייל שלך ביישום 'הגדרות'.</translation>
 <translation id="4124987746317609294">טווח זמן</translation>
 <translation id="4172051516777682613">הצג תמיד</translation>
-<translation id="4176234027218720244">סמן…</translation>
 <translation id="424315890655130736">הזנת ביטוי סיסמה</translation>
 <translation id="4272631900155121838">‏כדי לסרוק את קוד ה-QR, הפעל את המצלמה דרך ההגדרות</translation>
 <translation id="4281844954008187215">תנאי שירות</translation>
@@ -208,7 +206,6 @@
 <translation id="5300589172476337783">הצג</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5327248766486351172">שם</translation>
-<translation id="532992759783668360">מחק פריטים שנקראו</translation>
 <translation id="5388358297987318779">פתח תמונה</translation>
 <translation id="5409365236829784218">אין יישומים מותקנים שיכולים לפתוח את הקובץ הזה.</translation>
 <translation id="54401264925851789">פרטי אבטחת דף</translation>
@@ -255,7 +252,6 @@
 <translation id="6184086493125982861">הצג כרטיסיות</translation>
 <translation id="6187302354554850004">סונכרן לאחרונה: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">פריטים שלא נקראו</translation>
-<translation id="6194286531716220336">ביטול</translation>
 <translation id="6196207969502475924">חיפוש קולי</translation>
 <translation id="6254066287920239840">פתח קישורים באפליקציה ולא בדפדפן.</translation>
 <translation id="6255097610484507482">ערוך כרטיס אשראי</translation>
@@ -267,7 +263,6 @@
 <translation id="6344783595350022745">טקסט נקי</translation>
 <translation id="6362362396625799311">אין כרטיסיות של גלישה בסתר</translation>
 <translation id="6380866119319257197">אם תשכח את ביטוי הסיסמה או תרצה לשנות את ההגדרה הזו, <ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">סמן כ'לא נקרא'</translation>
 <translation id="6389470377220713856">שם על הכרטיס</translation>
 <translation id="6406506848690869874">סנכרן</translation>
 <translation id="6417838470969808600">יש לך סימניות, היסטוריה, סיסמאות והגדרות נוספות מ-<ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@
 <translation id="7108338896283013870">הסתר</translation>
 <translation id="7131892264600713844">מציג היסטוריה מהמכשיר הזה. <ph name="BEGIN_LINK" />למידע נוסף.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">שם מלא</translation>
-<translation id="713434964320012835">מחק</translation>
 <translation id="7136892417564438900">המצלמה לא זמינה</translation>
 <translation id="7167621057293532233">סוגי נתונים</translation>
 <translation id="7189598951263744875">שיתוף...</translation>
@@ -365,7 +359,6 @@
 <translation id="8428045167754449968">עיר / יישוב</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8433678324664858900">הצג הצעות</translation>
-<translation id="8458197615157477273">סמן כ'נקרא'</translation>
 <translation id="8458397775385147834">פריט אחד נמחק</translation>
 <translation id="8503813439785031346">שם משתמש</translation>
 <translation id="8517375800490286174">רישיונות קוד פתוח</translation>
@@ -388,7 +381,6 @@
 <translation id="8840513115188359703">‏לא תבוצע יציאה מחשבון Google שלך.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">דווח על בעיה</translation>
-<translation id="8967427617812342790">הוסף לרשימת הקריאה</translation>
 <translation id="8971089644512329999">הבנתי</translation>
 <translation id="8981454092730389528">‏בחירת הפעילויות ב-Google</translation>
 <translation id="8985320356172329008">‏מחובר ל-Google בשם</translation>

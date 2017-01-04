@@ -356,6 +356,7 @@
 <translation id="4589078953350245614">Je probeert <ph name="DOMAIN" /> te bereiken, maar de server heeft een ongeldig certificaat geretourneerd. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Je verbinding met <ph name="DOMAIN" /> is versleuteld via een moderne Cipher Suite.</translation>
 <translation id="4594403342090139922">&amp;Verwijderen ongedaan maken</translation>
+<translation id="4619615317237390068">Tabbladen van andere apparaten</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Je bekijkt nu een extensiepagina.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -403,7 +404,6 @@
 <translation id="5181140330217080051">Downloaden</translation>
 <translation id="5190835502935405962">Bladwijzerbalk</translation>
 <translation id="5199729219167945352">Experimenten</translation>
-<translation id="5199841536747119669">Je suggesties worden hier weergegeven</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Gebruik je Chrome op het werk? Bedrijven kunnen Chrome-instellingen beheren voor hun werknemers. Meer informatie</translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
@@ -446,7 +446,6 @@
 <translation id="5694783966845939798">Je hebt geprobeerd <ph name="DOMAIN" /> te bereiken. De server heeft echter een certificaat geretourneerd dat een zwak ondertekeningsalgoritme gebruikt. Dit houdt in dat de betrouwbaarheidsverklaring van de server kan zijn vervalst. Het is mogelijk dat de server zelf een imitatie is (wellicht een server die je schade probeert te berokkenen). <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">De identiteit van deze website is niet geverifieerd.</translation>
 <translation id="5720705177508910913">Huidige gebruiker</translation>
-<translation id="572328651809341494">Recent gebruikte tabbladen</translation>
 <translation id="5732392974455271431">Je ouders kunnen de blokkering van deze site opheffen</translation>
 <translation id="5784606427469807560">Er is een probleem opgetreden bij het bevestigen van je creditcard. Controleer je internetverbinding en probeer het opnieuw.</translation>
 <translation id="5785756445106461925">Bovendien bevat deze pagina bronnen die niet beveiligd zijn. Deze bronnen kunnen tijdens verzending door anderen worden bekeken en kunnen door een aanvaller worden gewijzigd om het uiterlijk van de pagina aan te passen.</translation>

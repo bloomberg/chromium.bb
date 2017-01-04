@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">ניסית להגיע אל <ph name="DOMAIN" />, אך השרת הציג אישור לא חוקי. <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">החיבור שלך אל <ph name="DOMAIN" /> מוצפן באמצעות חבילת צופן מתקדמת.</translation>
 <translation id="4594403342090139922">&amp;ביטול מחיקה</translation>
+<translation id="4619615317237390068">כרטיסיות ממכשירים אחרים</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">אתה צופה בדף של תוסף.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -411,7 +412,6 @@ Del</translation>
 <translation id="5181140330217080051">מוריד</translation>
 <translation id="5190835502935405962">סרגל הסימניות</translation>
 <translation id="5199729219167945352">ניסויים</translation>
-<translation id="5199841536747119669">הצעות עבורך מופיעות כאן</translation>
 <translation id="5251803541071282808">ענן</translation>
 <translation id="5277279256032773186">‏משתמש ב-Chrome בעבודה? עסקים יכולים לנהל את ההגדרות של Chrome עבור העובדים. למידע נוסף</translation>
 <translation id="5299298092464848405">שגיאה בניתוח המדיניות</translation>
@@ -455,7 +455,6 @@ Del</translation>
 <translation id="5694783966845939798">‏ניסית להיכנס אל <ph name="DOMAIN" />, אבל השרת הציג אישור שנחתם באמצעות אלגוריתם חתימה ברמת אבטחה חלשה (כגון SHA-1). כלומר, ייתכן שאישורי האבטחה שהשרת הציג מזויפים, ושלא מדובר בשרת שציפית לו (ייתכן שאתה מתקשר עם תוקף). <ph name="BEGIN_LEARN_MORE_LINK" />למידע נוסף<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">הזהות של אתר זה לא אומתה.</translation>
 <translation id="5720705177508910913">משתמש נוכחי:</translation>
-<translation id="572328651809341494">כרטיסיות אחרונות</translation>
 <translation id="5732392974455271431">ההורים שלך יכולים לבטל בשבילך את החסימה</translation>
 <translation id="5784606427469807560">הייתה בעיה באישור הכרטיס. בדוק את החיבור לאינטרנט ונסה שוב.</translation>
 <translation id="5785756445106461925">כמו כן, דף זה כולל משאבים נוספים שאינם מאובטחים. גורמים אחרים עלולים לראות את המשאבים האלה במהלך העברתם, ותוקף עלול לשנות אותם באופן שישנה את מראה הדף.</translation>

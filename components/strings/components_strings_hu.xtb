@@ -358,6 +358,7 @@
 <translation id="4589078953350245614">Megpróbálta elérni a(z) <ph name="DOMAIN" /> webhelyet, de a szerver érvénytelen tanúsítványt mutatott be. <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">A(z) <ph name="DOMAIN" /> domainnel való kapcsolata modern kriptográfiával van titkosítva.</translation>
 <translation id="4594403342090139922">&amp;Törlés visszavonása</translation>
+<translation id="4619615317237390068">Más eszközök lapjai</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Egy bővítményoldalt tekint meg.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -405,7 +406,6 @@
 <translation id="5181140330217080051">Letöltés</translation>
 <translation id="5190835502935405962">Könyvjelzősáv</translation>
 <translation id="5199729219167945352">Kísérletek</translation>
-<translation id="5199841536747119669">A javaslatok helye</translation>
 <translation id="5251803541071282808">Felhő</translation>
 <translation id="5277279256032773186">A munkahelyén használja a Chrome-ot? A cégek kezelhetik a Chrome-beállításokat alkalmazottaik számára. További információ.</translation>
 <translation id="5299298092464848405">Irányelv-előfeldolgozási hiba</translation>
@@ -448,7 +448,6 @@
 <translation id="5694783966845939798">Megpróbálta elérni a(z) <ph name="DOMAIN" /> webhelyet, de a szerver gyenge aláírási algoritmust (pl. SHA-1-et) használó tanúsítványt mutatott be. Ez alapján elképzelhető, hogy a szerver által megadott biztonsági tanúsítványt hamisították, és a szerver nem az, amelyikre számított (lehet, hogy éppen a támadóval áll kapcsolatban). <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">A webhely valódiságát nem ellenőriztük.</translation>
 <translation id="5720705177508910913">Jelenlegi felhasználó</translation>
-<translation id="572328651809341494">Nemrég megnyitott lapok</translation>
 <translation id="5732392974455271431">A letiltást a szüleid oldhatják fel</translation>
 <translation id="5784606427469807560">A kártya ellenőrzése során hiba történt. Ellenőrizze az internetkapcsolatot, majd próbálkozzon újra.</translation>
 <translation id="5785756445106461925">Emellett az oldal azonban más forrásokat is tartalmaz, amelyek nem biztonságosak. Ezeket a forrásokat mások is megtekinthetik átvitel közben, és megváltoztatásukkal a támadók módosíthatják az oldal viselkedését.</translation>

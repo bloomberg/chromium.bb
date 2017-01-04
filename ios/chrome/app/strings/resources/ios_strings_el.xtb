@@ -79,7 +79,6 @@
 <translation id="2386793615875593361">Έχει επιλεγεί 1 φωτογραφία</translation>
 <translation id="2435457462613246316">Εμφάνιση κωδικού πρόσβασης</translation>
 <translation id="2467815441875554965">Αναζήτηση με βάση τα συμφραζόμενα</translation>
-<translation id="2523092375122821828">Επισήμανση όλων…</translation>
 <translation id="2572712655377361602">Μια πολιτική συσκευής απέκλεισε την πρόσβαση στις φωτογραφίες σας</translation>
 <translation id="2584132361465095047">Προσθήκη λογαριασμού…</translation>
 <translation id="2593774076813182497">Δεν είναι δυνατή η εκτύπωση αυτής της σελίδας.</translation>
@@ -161,7 +160,6 @@
 <translation id="4121993058175073134">Για αποστ. δεδομ.εξαγ.δικτ.,διαμορφ. το email σας στην εφ. "Ρυθμίσεις"</translation>
 <translation id="4124987746317609294">Χρονικό εύρος</translation>
 <translation id="4172051516777682613">Εμφάνιση πάντα</translation>
-<translation id="4176234027218720244">Επισήμανση…</translation>
 <translation id="424315890655130736">Εισαγωγή φράσης πρόσβασης</translation>
 <translation id="4272631900155121838">Για να σαρώσετε έναν κώδικα QR, ενεργοποιήστε την κάμερα από τις ρυθμίσεις</translation>
 <translation id="4281844954008187215">Όροι Παροχής Υπηρεσιών</translation>
@@ -208,7 +206,6 @@
 <translation id="5300589172476337783">Εμφάνιση</translation>
 <translation id="5317780077021120954">Αποθήκευση</translation>
 <translation id="5327248766486351172">Όνομα</translation>
-<translation id="532992759783668360">Διαγραφή αναγνωσμένων</translation>
 <translation id="5388358297987318779">Άνοιγμα εικόνας</translation>
 <translation id="5409365236829784218">Δεν υπάρχουν εγκατεστ. εφαρμογές για το άνοιγμα του αρχείου</translation>
 <translation id="54401264925851789">Πληροφορίες ασφάλειας σελίδας</translation>
@@ -255,7 +252,6 @@
 <translation id="6184086493125982861">Εμφάνιση καρτελών</translation>
 <translation id="6187302354554850004">Τελευτ. συγχρ.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Μη αναγνωσμένα</translation>
-<translation id="6194286531716220336">Ακύρωση</translation>
 <translation id="6196207969502475924">Φωνητική αναζήτηση</translation>
 <translation id="6254066287920239840">Άνοιγμα συνδέσμων στην εφαρμογή αντί για το πρόγραμμα περιήγησης.</translation>
 <translation id="6255097610484507482">Επεξεργασία πιστωτικής κάρτας</translation>
@@ -267,7 +263,6 @@
 <translation id="6344783595350022745">Διαγραφή κειμένου</translation>
 <translation id="6362362396625799311">Δεν υπάρχουν καρτέλες ανώνυμης περιήγησης</translation>
 <translation id="6380866119319257197">Εάν ξεχάσετε τη φράση πρόσβασής σας ή θέλετε να αλλάξετε αυτήν τη ρύθμιση, <ph name="BEGIN_LINK" />επαναφέρετε το συγχρονισμό<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Επισήμανση ως μη αναγνωσμένων</translation>
 <translation id="6389470377220713856">Όνομα σε κάρτα</translation>
 <translation id="6406506848690869874">Συγχρονισμός</translation>
 <translation id="6417838470969808600">Έχετε σελιδοδείκτες, ιστορικό, κωδικούς πρόσβασης και άλλες ρυθμίσεις από τη διεύθυνση <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@
 <translation id="7108338896283013870">Απόκρυψη</translation>
 <translation id="7131892264600713844">Εμφάνιση ιστορικού από αυτήν τη συσκευή. <ph name="BEGIN_LINK" />Μάθετε περισσότερα.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Ονοματεπώνυμο</translation>
-<translation id="713434964320012835">Διαγραφή</translation>
 <translation id="7136892417564438900">Η κάμερα δεν είναι διαθέσιμη</translation>
 <translation id="7167621057293532233">Τύποι δεδομένων</translation>
 <translation id="7189598951263744875">Κοινή χρήση…</translation>
@@ -365,7 +359,6 @@
 <translation id="8428045167754449968">Πόλη / Κωμόπολη</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="8433678324664858900">Εμφάνιση προτάσεων</translation>
-<translation id="8458197615157477273">Επισήμανση ως αναγνωσμένων</translation>
 <translation id="8458397775385147834">Διαγράφηκε 1 στοιχείο</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>
 <translation id="8517375800490286174">Άδειες λογισμ. ανοικτού κώδικα</translation>
@@ -388,7 +381,6 @@
 <translation id="8840513115188359703">Δεν θα αποσυνδεθείτε από το Λογαριασμό σας Google.</translation>
 <translation id="8904976895050290827">Συγχρονισμός Chrome</translation>
 <translation id="895541991026785598">Αναφορά προβλήματος</translation>
-<translation id="8967427617812342790">Προσθήκη στη λίστα ανάγνωσης</translation>
 <translation id="8971089644512329999">Εντάξει, το κατάλαβα</translation>
 <translation id="8981454092730389528">Στοιχεία ελέγχου δραστηριότητας Google</translation>
 <translation id="8985320356172329008">Έχετε συνδεθεί στο Google ως</translation>

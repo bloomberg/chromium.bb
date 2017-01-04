@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat nevalid. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Conexiunea la <ph name="DOMAIN" /> este criptată folosind o suită de codificare modernă.</translation>
 <translation id="4594403342090139922">&amp;Anulați ștergerea</translation>
+<translation id="4619615317237390068">File de pe alte dispozitive</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Se afișează pagina extensiei.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">Se descarcă</translation>
 <translation id="5190835502935405962">Bară de marcaje</translation>
 <translation id="5199729219167945352">Experimente</translation>
-<translation id="5199841536747119669">Sugestiile apar aici</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Folosești Chrome la serviciu? Companiile pot gestiona setările Chrome pentru angajații lor. Află mai multe</translation>
 <translation id="5299298092464848405">Eroare la analizarea politicii</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat semnat folosind un algoritm de semnare slab (cum ar fi SHA-1). Acest lucru înseamnă că este posibil ca datele de conectare de securitate prezentate de server să fie falsificate sau ca serverul să nu fie cel așteptat (este posibil să comunici cu un atacator). <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Identitatea acestui site nu a fost confirmată.</translation>
 <translation id="5720705177508910913">Utilizator curent</translation>
-<translation id="572328651809341494">File recente</translation>
 <translation id="5732392974455271431">Părinții tăi îl pot debloca pentru tine</translation>
 <translation id="5784606427469807560">A apărut o eroare la confirmarea cardului. Verifică conexiunea la internet și încearcă din nou.</translation>
 <translation id="5785756445106461925">În plus, această pagină include alte resurse care nu sunt securizate. Aceste resurse sunt vizibile pentru alți utilizatori în cursul transferului și pot fi modificate de un atacator pentru a schimba aspectul paginii.</translation>

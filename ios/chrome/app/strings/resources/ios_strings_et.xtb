@@ -79,7 +79,6 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="2386793615875593361">1 on valitud</translation>
 <translation id="2435457462613246316">Kuva parool</translation>
 <translation id="2467815441875554965">Kontekstipõhine otsing</translation>
-<translation id="2523092375122821828">Märgi kõik …</translation>
 <translation id="2572712655377361602">Seadme reegel blokeeris juurdepääsu teie fotodele</translation>
 <translation id="2584132361465095047">Lisa konto …</translation>
 <translation id="2593774076813182497">Lehte ei saa printida.</translation>
@@ -161,7 +160,6 @@ Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamis
 <translation id="4121993058175073134">Netiekspordi andmete saatmiseks seadistage meilikonto rakenduses Seaded.</translation>
 <translation id="4124987746317609294">Ajavahemik</translation>
 <translation id="4172051516777682613">Kuva alati</translation>
-<translation id="4176234027218720244">Märgi …</translation>
 <translation id="424315890655130736">Sisestage parool</translation>
 <translation id="4272631900155121838">QR-koodi skannimiseks lubage seadetes kaamera</translation>
 <translation id="4281844954008187215">Teenusetingimused</translation>
@@ -208,7 +206,6 @@ Teie andmed on krüpteeritud teie sünkroonimisparooliga. Sisestage see sünkroo
 <translation id="5300589172476337783">Kuva</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5327248766486351172">Nimi</translation>
-<translation id="532992759783668360">Kustuta loetud</translation>
 <translation id="5388358297987318779">Ava kujutis</translation>
 <translation id="5409365236829784218">Pole installitud rakendust, mis suudaks selle faili avada.</translation>
 <translation id="54401264925851789">Lehe turvateave</translation>
@@ -255,7 +252,6 @@ Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama s
 <translation id="6184086493125982861">Kuva vahelehed</translation>
 <translation id="6187302354554850004">Viimati sünkr.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Lugemata</translation>
-<translation id="6194286531716220336">Tühista</translation>
 <translation id="6196207969502475924">Häälotsing</translation>
 <translation id="6254066287920239840">Avage lingid brauseri asemel rakenduses.</translation>
 <translation id="6255097610484507482">Muuda krediitkaarti</translation>
@@ -267,7 +263,6 @@ Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama s
 <translation id="6344783595350022745">Lihttekst</translation>
 <translation id="6362362396625799311">Inkognito vahelehti ei ole</translation>
 <translation id="6380866119319257197">Kui unustate parooli või soovite seda seadet muuta, <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Märgi mitteloetuks</translation>
 <translation id="6389470377220713856">Nimi kaardil</translation>
 <translation id="6406506848690869874">Sünkroonimine</translation>
 <translation id="6417838470969808600">Teil on järjehoidjad, ajalugu, paroolid ja muud seaded e-posti aadressilt <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="7108338896283013870">Peida</translation>
 <translation id="7131892264600713844">Kuvatakse ajalugu sellest seadmest. <ph name="BEGIN_LINK" />Lisateave.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Täisnimi</translation>
-<translation id="713434964320012835">Kustuta</translation>
 <translation id="7136892417564438900">Kaamera pole saadaval</translation>
 <translation id="7167621057293532233">Andmetüübid</translation>
 <translation id="7189598951263744875">Jaga ...</translation>
@@ -365,7 +359,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="8428045167754449968">Linn</translation>
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8433678324664858900">Kuva soovitused</translation>
-<translation id="8458197615157477273">Märgi loetuks</translation>
 <translation id="8458397775385147834">1 üksus on kustutatud</translation>
 <translation id="8503813439785031346">Kasutajanimi</translation>
 <translation id="8517375800490286174">Avatud lähtekoodi litsentsid</translation>
@@ -388,7 +381,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="8840513115188359703">Teid ei logita teie Google'i kontolt välja.</translation>
 <translation id="8904976895050290827">Chrome'i sünkroonimine</translation>
 <translation id="895541991026785598">Teavitage probleemist</translation>
-<translation id="8967427617812342790">Lisa lugemisloendisse</translation>
 <translation id="8971089644512329999">Selge, sain aru</translation>
 <translation id="8981454092730389528">Google'i kontotegevuste haldus</translation>
 <translation id="8985320356172329008">Google'isse sisse logitud kasutajana</translation>

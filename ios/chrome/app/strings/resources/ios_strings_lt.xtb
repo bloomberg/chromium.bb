@@ -79,7 +79,6 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="2386793615875593361">Pasirinkta: 1</translation>
 <translation id="2435457462613246316">Rodyti slaptažodį</translation>
 <translation id="2467815441875554965">Kontekstinė paieška</translation>
-<translation id="2523092375122821828">Pažymėti visus...</translation>
 <translation id="2572712655377361602">Pagal įrenginio politiką prieiga prie nuotraukų buvo užblokuota</translation>
 <translation id="2584132361465095047">Pridėti paskyrą...</translation>
 <translation id="2593774076813182497">Šio psl. atsp. negalima.</translation>
@@ -161,7 +160,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4121993058175073134">Jei n. siųsti tinklo eksp. duom., sukonf. el. pšt. pask. nust. progr.</translation>
 <translation id="4124987746317609294">Laikotarpis</translation>
 <translation id="4172051516777682613">Visada rodyti</translation>
-<translation id="4176234027218720244">Pažymėti…</translation>
 <translation id="424315890655130736">Slaptafrazės įvedimas</translation>
 <translation id="4272631900155121838">Jei norite nuskaityti QR kodą, nustatymuose įgalinkite fotoaparatą</translation>
 <translation id="4281844954008187215">Paslaugų teikimo sąlygos</translation>
@@ -208,7 +206,6 @@ Duomenys užšifruoti naudojant slaptafrazę. Įveskite ją, kad pradėtumėte s
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5327248766486351172">Pavadinimas</translation>
-<translation id="532992759783668360">Ištr. skaitytus</translation>
 <translation id="5388358297987318779">Atidaryti vaizdą</translation>
 <translation id="5409365236829784218">Nėra įdiegtų pr., kurias naudojant galima atidaryti failą.</translation>
 <translation id="54401264925851789">Puslapio saugos informacija</translation>
@@ -255,7 +252,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6184086493125982861">Rodyti skirtukus</translation>
 <translation id="6187302354554850004">Pask. k. sinchr.: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Neskaityti</translation>
-<translation id="6194286531716220336">Atšaukti</translation>
 <translation id="6196207969502475924">Paieška balsu</translation>
 <translation id="6254066287920239840">Atidarykite nuorodas programoje, o ne naršyklėje.</translation>
 <translation id="6255097610484507482">Kredito kortelės informacijos redagavimas</translation>
@@ -267,7 +263,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6344783595350022745">Išvalyti tekstą</translation>
 <translation id="6362362396625799311">Nėra inkognito skirtukų</translation>
 <translation id="6380866119319257197">Jei pamiršote slaptafr. arba norite pakeisti šį nust., <ph name="BEGIN_LINK" />iš naujo nust. sinchr.<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Paž. kaip nesk.</translation>
 <translation id="6389470377220713856">Vardas kortel.</translation>
 <translation id="6406506848690869874">Sinchronizavimas</translation>
 <translation id="6417838470969808600">Turite žymių, istorijos duomenų, slaptažodžių ir kitų nustatymų iš <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7108338896283013870">Slėpti</translation>
 <translation id="7131892264600713844">Rodoma šio įrenginio istorija. <ph name="BEGIN_LINK" />Sužinokite daugiau.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Vardas ir pav.</translation>
-<translation id="713434964320012835">Ištrinti</translation>
 <translation id="7136892417564438900">Fotoaparatas nepasiekiamas</translation>
 <translation id="7167621057293532233">Duomenų tipai</translation>
 <translation id="7189598951263744875">Bendrinti...</translation>
@@ -365,7 +359,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8428045167754449968">Didm. / miest.</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8433678324664858900">Rodyti pasiūlymus</translation>
-<translation id="8458197615157477273">Pažym. kaip sk.</translation>
 <translation id="8458397775385147834">Ištrinta elementų: 1</translation>
 <translation id="8503813439785031346">Vartotojo vardas</translation>
 <translation id="8517375800490286174">Atvirojo šaltinio licencijos</translation>
@@ -388,7 +381,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8840513115188359703">Nebūsite atjungti nuo „Google“ paskyros.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Pranešti apie problemą</translation>
-<translation id="8967427617812342790">Prid. prie skait. sąrašo</translation>
 <translation id="8971089644512329999">Gerai, supratau</translation>
 <translation id="8981454092730389528">„Google“ veiklos valdikliai</translation>
 <translation id="8985320356172329008">Prisijungta prie „Google“ kaip</translation>

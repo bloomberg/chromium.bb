@@ -356,6 +356,7 @@
 <translation id="4589078953350245614">Pokusili jste se přejít do domény <ph name="DOMAIN" />, ale server předložil neplatný certifikát. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459">Vaše připojení k doméně <ph name="DOMAIN" /> je šifrováno za použití moderní šifrovací sady.</translation>
 <translation id="4594403342090139922">&amp;Vrátit smazání zpět</translation>
+<translation id="4619615317237390068">Karty z ostatních zařízení</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Prohlížíte si stránku rozšíření.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -403,7 +404,6 @@
 <translation id="5181140330217080051">Stahování</translation>
 <translation id="5190835502935405962">Lišta záložek</translation>
 <translation id="5199729219167945352">Experimenty</translation>
-<translation id="5199841536747119669">Zde se zobrazují vaše návrhy</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Používáte Chrome v práci? Firmy mohou spravovat nastavení prohlížeče Chrome pro své zaměstnance. Další informace</translation>
 <translation id="5299298092464848405">Při analýze zásady došlo k chybě</translation>
@@ -446,7 +446,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5694783966845939798">Pokusili jste se přejít na web <ph name="DOMAIN" />, server však předložil certifikát podepsaný slabým algoritmem (například SHA-1). To znamená, že bezpečnostní identifikační údaje předložené serverem mohou být falešné a může se jednat o úplně jiný server, než předpokládáte (můžete komunikovat s útočníkem). <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="5710435578057952990">Identita těchto webových stránek nebyla ověřena.</translation>
 <translation id="5720705177508910913">Aktuální uživatel</translation>
-<translation id="572328651809341494">Nedávno použité karty</translation>
 <translation id="5732392974455271431">Rodiče ti jej mohou odblokovat.</translation>
 <translation id="5784606427469807560">Při ověřování vaší karty došlo k problému. Zkontrolujte připojení k internetu a zkuste to znovu.</translation>
 <translation id="5785756445106461925">Tato stránka obsahuje ještě další nezabezpečené zdroje. Tyto zdroje budou během přenosu moci zobrazit jiní uživatelé a případní útočníci je mohou upravit a změnit tak vzhled stránky.</translation>

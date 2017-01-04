@@ -80,7 +80,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2386793615875593361">Uma selecionada</translation>
 <translation id="2435457462613246316">Mostrar senha</translation>
 <translation id="2467815441875554965">Pesquisa contextual</translation>
-<translation id="2523092375122821828">Marcar tudo...</translation>
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
 <translation id="2584132361465095047">Adicionar conta…</translation>
 <translation id="2593774076813182497">Não é possível imprimir esta página.</translation>
@@ -161,7 +160,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4121993058175073134">Para enviar dados de exportação líquida, configure sua conta de e-mail no aplicativo "Configurações".</translation>
 <translation id="4124987746317609294">Intervalo de tempo</translation>
 <translation id="4172051516777682613">Sempre mostrar</translation>
-<translation id="4176234027218720244">Marcar...</translation>
 <translation id="424315890655130736">Informar senha longa</translation>
 <translation id="4272631900155121838">Para ler um código QR, ative a câmera nas configurações</translation>
 <translation id="4281844954008187215">Termos de Serviço</translation>
@@ -208,7 +206,6 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5327248766486351172">Nome</translation>
-<translation id="532992759783668360">Excluir lidas</translation>
 <translation id="5388358297987318779">Abrir imagem</translation>
 <translation id="5409365236829784218">Nenhum aplicativo instalado pode abrir este arquivo.</translation>
 <translation id="54401264925851789">Informações de segurança</translation>
@@ -255,7 +252,6 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6184086493125982861">Exibir abas</translation>
 <translation id="6187302354554850004">Última sincronização: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Não lidas</translation>
-<translation id="6194286531716220336">Cancelar</translation>
 <translation id="6196207969502475924">Pesquisa por voz</translation>
 <translation id="6254066287920239840">Abrir links no app em vez de abrir no navegador.</translation>
 <translation id="6255097610484507482">Editar cartão de crédito</translation>
@@ -267,7 +263,6 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6344783595350022745">Limpar texto</translation>
 <translation id="6362362396625799311">Não há guias anônimas</translation>
 <translation id="6380866119319257197">Se você esquecer a senha longa ou desejar alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Marcar como não lidas</translation>
 <translation id="6389470377220713856">Nome no cartão</translation>
 <translation id="6406506848690869874">Sincronizar</translation>
 <translation id="6417838470969808600">Você tem favoritos, histórico, senhas e outras configurações da conta <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7131892264600713844">Exibindo o histórico deste dispositivo. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Nome completo</translation>
-<translation id="713434964320012835">Excluir</translation>
 <translation id="7136892417564438900">A câmera não está disponível</translation>
 <translation id="7167621057293532233">Tipos de dados</translation>
 <translation id="7189598951263744875">Compartilhar...</translation>
@@ -365,7 +359,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8428045167754449968">Cidade</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433678324664858900">Mostrar sugestões</translation>
-<translation id="8458197615157477273">Marcar como lidas</translation>
 <translation id="8458397775385147834">1 item excluído</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="8517375800490286174">Licenças de código aberto</translation>
@@ -388,7 +381,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8840513115188359703">Você não será desconectado da sua Conta do Google.</translation>
 <translation id="8904976895050290827">Sincronização do Google Chrome</translation>
 <translation id="895541991026785598">Informar um problema</translation>
-<translation id="8967427617812342790">Adicionar à lista de leitura</translation>
 <translation id="8971089644512329999">Ok, entendi</translation>
 <translation id="8981454092730389528">Controles de atividades do Google</translation>
 <translation id="8985320356172329008">Conectado(a) ao Google como</translation>

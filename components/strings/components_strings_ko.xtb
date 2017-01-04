@@ -360,6 +360,7 @@
 <translation id="4589078953350245614"><ph name="DOMAIN" />에 접속하려고 시도했지만 서버에서 잘못된 인증서를 제시했습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" />에 대한 연결은 최신 암호화 기술을 사용하여 암호화됩니다.</translation>
 <translation id="4594403342090139922">삭제 실행 취소(&amp;U)</translation>
+<translation id="4619615317237390068">다른 기기의 탭</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">지금 확장 프로그램 페이지를 보고 있습니다.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">다운로드 중</translation>
 <translation id="5190835502935405962">북마크바</translation>
 <translation id="5199729219167945352">실험실 기능</translation>
-<translation id="5199841536747119669">추천 항목이 여기에 표시됩니다.</translation>
 <translation id="5251803541071282808">클라우드</translation>
 <translation id="5277279256032773186">직장에서 Chrome을 사용하시나요? 기업은 직원의 Chrome 설정을 관리할 수 있습니다. 자세히 알아보기</translation>
 <translation id="5299298092464848405">정책을 파싱하는 중 오류 발생</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798"><ph name="DOMAIN" />에 접속하려 했으나 서버에서 안전성이 낮은 서명 알고리즘을 사용하여 서명된 인증서를 제시했습니다. 이는 서버에서 제시한 보안 사용자 인증 정보가 위조되었을 수 있으며 서버를 가장한 공격자와 통신 중일 수 있음을 의미합니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="5710435578057952990">이 웹사이트의 주소가 확인되지 않았습니다.</translation>
 <translation id="5720705177508910913">현재 사용자</translation>
-<translation id="572328651809341494">최근 탭</translation>
 <translation id="5732392974455271431">부모님이 차단 해제할 수 있습니다.</translation>
 <translation id="5784606427469807560">카드 확인 중에 문제가 발생했습니다. 인터넷 연결을 확인하고 다시 시도하세요.</translation>
 <translation id="5785756445106461925">또한 이 페이지에는 안전하지 않은 다른 리소스가 포함되어 있습니다. 이러한 리소스는 전송 중에 다른 사람이 볼 수 있으며 페이지의 모양을 변경하기 위해 공격자가 수정할 수 있습니다.</translation>

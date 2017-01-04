@@ -357,6 +357,7 @@
 <translation id="4589078953350245614">Hai tentato di accedere a <ph name="DOMAIN" />, tuttavia il server ha presentato un certificato non valido. <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">La connessione a <ph name="DOMAIN" /> è crittografata tramite un pacchetto di crittografia moderno.</translation>
 <translation id="4594403342090139922">&amp;Annulla eliminazione</translation>
+<translation id="4619615317237390068">Schede di altri dispositivi</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">È visualizzata la pagina di un'estensione.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -404,7 +405,6 @@
 <translation id="5181140330217080051">Download in corso</translation>
 <translation id="5190835502935405962">Barra dei Preferiti</translation>
 <translation id="5199729219167945352">Esperimenti</translation>
-<translation id="5199841536747119669">I suggerimenti vengono visualizzati qui</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Utilizzi Chrome al lavoro? Le aziende possono gestire le impostazioni di Chrome per conto dei propri dipendenti. Ulteriori informazioni</translation>
 <translation id="5299298092464848405">Errore durante l'analisi del criterio</translation>
@@ -447,7 +447,6 @@
 <translation id="5694783966845939798">Hai tentato di accedere a <ph name="DOMAIN" />, tuttavia il server ha presentato un certificato firmato utilizzando un algoritmo di firma debole (ad esempio, SHA-1). Ciò significa che le credenziali di sicurezza presentate dal server potrebbero essere state falsificate e il server potrebbe non essere quello previsto (è possibile che tu stia comunicando con un malintenzionato). <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">L'identità di questo sito web non è stata verificata.</translation>
 <translation id="5720705177508910913">Utente corrente</translation>
-<translation id="572328651809341494">Schede recenti</translation>
 <translation id="5732392974455271431">I tuoi genitori possono sbloccarlo per te</translation>
 <translation id="5784606427469807560">Si è verificato un problema durante la conferma della carta. Controlla la connessione Internet e riprova.</translation>
 <translation id="5785756445106461925">Inoltre, questa pagina include altre risorse che non sono sicure. Tali risorse possono essere visualizzate da altri durante il transito dei dati e possono essere modificate da un utente malintenzionato al fine di modificare l'aspetto della pagina.</translation>

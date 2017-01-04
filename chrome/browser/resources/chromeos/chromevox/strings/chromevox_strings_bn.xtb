@@ -7,7 +7,7 @@
 <translation id="1023866615269196768">স্প্যান্ড</translation>
 <translation id="1025074108959230262">স্টিকি মোড অক্ষম</translation>
 <translation id="1031961866430398710">তারপর</translation>
-<translation id="1038795173450935438">কোনো পৃষ্ঠায় আইটেমগুলির মধ্যে এগিয়ে যেতে অনুসন্ধান + ডান তীরচিহ্ন, বা  পিছনে ফিরে আসতে অনুসন্ধান + বাম তীরচিহ্ন টিপুন। পরের লাইনে যেতে, অনুসন্ধান + নিম্নমুখী তীরচিহ্ন টিপুন। পূর্ববর্তী লাইনে যেতে, অনুসন্ধান + উর্ধ্বমুখী তীরচিহ্ন ব্যবহার করুন। আপনি যখন আপনি ক্লিক করতে চান এমন আইটেমে পৌঁছান, তখন অনুসন্ধান + স্পেস টিপুন।</translation>
+<translation id="1038795173450935438">কোনো পৃষ্ঠায় আইটেমগুলির মধ্যে এগিয়ে যেতে অনুসন্ধান + ডান তীরচিহ্ন, বা  পিছনে ফিরে আসতে অনুসন্ধান + বাঁ তীরচিহ্ন টিপুন। পরের লাইনে যেতে, অনুসন্ধান + নিম্নমুখী তীরচিহ্ন টিপুন। পূর্ববর্তী লাইনে যেতে, অনুসন্ধান + উর্ধ্বমুখী তীরচিহ্ন ব্যবহার করুন। আপনি যখন আপনি ক্লিক করতে চান এমন আইটেমে পৌঁছান, তখন অনুসন্ধান + স্পেস টিপুন।</translation>
 <translation id="1044777062731150180">কোনো শিরোলেখ নেই</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">অবৈধ ইনপুট</translation>
@@ -49,7 +49,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, পাসওয়ার্ড পাঠ্য বাক্স</translation>
 <translation id="1467432559032391204">বামে</translation>
 <translation id="1474557363159888097">কোনো পূর্ববর্তী অ্যাঙ্কর নেই৷</translation>
-<translation id="1487494366197411587">Chromebook এ বাম Shift কী এর ঠিক উপরেই অনুসন্ধান কী।</translation>
+<translation id="1487494366197411587">Chromebook এ বাঁ Shift কী এর ঠিক উপরেই অনুসন্ধান কী।</translation>
 <translation id="1499041187027566160">ভলিউম বাড়ান</translation>
 <translation id="1502086903961450562">পূর্ববর্তী গ্রাফিক</translation>
 <translation id="1506187449813838456">পিচ বাড়ান</translation>
@@ -96,7 +96,7 @@
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1990932729021763163">সারি শিরোলেখ:</translation>
 <translation id="2002895034995108595">বর্তমান কীম্যাপ পুনরায় সেট করুন</translation>
-<translation id="2007545860310005685">{COUNT,plural, =1{বাম বন্ধনী}one{#টি বাম বন্ধনী}other{#টি বাম বন্ধনী}}</translation>
+<translation id="2007545860310005685">{COUNT,plural, =1{বাঁ বন্ধনী}one{#টি বাঁ বন্ধনী}other{#টি বাঁ বন্ধনী}}</translation>
 <translation id="2010555995361223825">ChromeVox মেনুগুলি</translation>
 <translation id="2045490512405922022">চেক লাগানো হয়নি</translation>
 <translation id="20601713649439366">এর পূর্বে কোনো গাণিতিক অভিব্যক্তি নেই৷</translation>
@@ -150,7 +150,7 @@
 <translation id="267442004702508783">রিফ্রেশ করুন</translation>
 <translation id="2684412629217766642">ChromeVox টিউটোরিয়াল বন্ধ করুন</translation>
 <translation id="2697408785920771974">autoinl</translation>
-<translation id="2704429362613743330">{COUNT,plural, =1{বাম বন্ধনী}one{#টি বাম বন্ধনী}other{# বাম বন্ধনী}}</translation>
+<translation id="2704429362613743330">{COUNT,plural, =1{বাঁ বন্ধনী}one{#টি বাঁ বন্ধনী}other{# বাঁ বন্ধনী}}</translation>
 <translation id="2705875883745373140">টেপা হয়নি</translation>
 <translation id="2706462751667573066">উপরের</translation>
 <translation id="2717271541250958000">tabpnl</translation>
@@ -174,7 +174,7 @@
 <translation id="2873259058405069099">সারণীর শুরুতে যান</translation>
 <translation id="288178314850623291">নির্দিষ্ট ধরনের উপাদানে যাওয়ার জন্য জাম্প কমান্ডগুলি ব্যবহার করুন। শিরোনামের মধ্যে জাম্প করে অগ্রবর্তী হতে অনুসন্ধান + H, পিছনে জাম্প করতে অনুসন্ধান + Shift + H টিপুন।</translation>
 <translation id="2894654529758326923">তথ্য</translation>
-<translation id="2899328121302785497">{COUNT,plural, =1{বাম দ্বিতীয় বন্ধনী}one{#টি বাম দ্বিতীয় বন্ধনী}other{#টি বাম দ্বিতীয় বন্ধনী}}</translation>
+<translation id="2899328121302785497">{COUNT,plural, =1{বাঁ দ্বিতীয় বন্ধনী}one{#টি বাঁ দ্বিতীয় বন্ধনী}other{#টি বাঁ দ্বিতীয় বন্ধনী}}</translation>
 <translation id="2911433807131383493">ChromeVox টিউটোরিয়াল খুলুন</translation>
 <translation id="2932083475399492303">গঠনগত বা লেআউট রেখার প্রকারের মধ্যে টগল করুন</translation>
 <translation id="2964026537669811554">শিরোনাম গোষ্ঠী</translation>
@@ -288,7 +288,7 @@
 <translation id="3466530247399808663">একটি অবৈধ কী টেপা</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" />টি</translation>
 <translation id="3486232535569802404"><ph name="V1" /> থেকে <ph name="V2" /></translation>
-<translation id="3492609944033322585">{COUNT,plural, =1{ডান বন্ধনী}one{#টি বাম বন্ধনী}other{#টি বাম বন্ধনী}}</translation>
+<translation id="3492609944033322585">{COUNT,plural, =1{ডান বন্ধনী}one{#টি বাঁ বন্ধনী}other{#টি বাঁ বন্ধনী}}</translation>
 <translation id="3493915602752813531">কোনো পরবর্তী অ্যাঙ্কর নেই৷</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{প্রশ্নবোধক চিহ্ন}one{#টি প্রশ্নবোধক চিহ্ন}other{#টি প্রশ্নবোধক চিহ্ন}}</translation>

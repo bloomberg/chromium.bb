@@ -879,6 +879,7 @@
 <translation id="2150661552845026580">"<ph name="EXTENSION_NAME" />" जोडायचे ?</translation>
 <translation id="2151576029659734873">अवैध टॅब अनुक्रमणिका प्रविष्ट केली.</translation>
 <translation id="2152580633399033274">सर्व प्रतिमा दर्शवा (शिफारस केलेले)</translation>
+<translation id="2154710561487035718">URL कॉपी करा</translation>
 <translation id="2155931291251286316">नेहमी <ph name="HOST" /> कडील पॉप-अप ना परवानगी द्या</translation>
 <translation id="215753907730220065">पूर्ण स्क्रीनमधून निर्गमन करा</translation>
 <translation id="2157875535253991059">हे पृष्ठ आता फुल स्‍क्रीन असेल.</translation>
@@ -1653,7 +1654,7 @@
 <translation id="3090819949319990166">बाह्य crx फाईल <ph name="TEMP_CRX_FILE" /> वर कॉपी करू शकत नाही.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" जोडले</translation>
 <translation id="3092279154632090732">MHTML पिढी पर्याय</translation>
-<translation id="3095995014811312755">संस्करण</translation>
+<translation id="3095995014811312755">आवृत्ती</translation>
 <translation id="3097628171361913691">झिप फाईल स्थापितकर्ता</translation>
 <translation id="3100609564180505575">मॉड्यूल (<ph name="TOTAL_COUNT" />) - ज्ञात संघर्ष: <ph name="BAD_COUNT" />, संशयित: <ph name="SUSPICIOUS_COUNT" /></translation>
 <translation id="3101709781009526431">तारीख आणि वेळ</translation>

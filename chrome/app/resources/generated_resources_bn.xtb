@@ -280,7 +280,7 @@
 <translation id="1367951781824006909">একটি ফাইল বেছে নিন</translation>
 <translation id="136802136832547685">এই ডিভাইসটিতে যোগ করার মতো কোনো তত্ত্বাবধানে থাকা ব্যবহারকারী নেই৷</translation>
 <translation id="1368265273904755308">সমস্যা অভিযোগ করুন</translation>
-<translation id="1368832886055348810">বাম থেকে ডান</translation>
+<translation id="1368832886055348810">বাঁ থেকে ডান</translation>
 <translation id="1370646789215800222">ব্যক্তিকে সরাবেন?</translation>
 <translation id="1371806038977523515">এই সেটিংস এর দ্বারা নিয়ন্ত্রণ করা হয়:</translation>
 <translation id="1374844444528092021">নেটওয়ার্কের প্রয়োজনীয় শংসাপত্র "<ph name="NETWORK_NAME" />" হয় ইনস্টল করা নেই অথবা তা আর বৈধ নয়৷ অনুগ্রহ করে একটি নতুন শংসাপত্র আনুন আর সংযোগ করতে পুনরায় চেষ্টা করুন৷</translation>
@@ -768,7 +768,7 @@
 <translation id="1984642098429648350">উইন্ডো ডান দিকে রাখুন</translation>
 <translation id="1984960790196889068">HTTP এর জন্য সরল ক্যাশে</translation>
 <translation id="1985136186573666099">নেটওয়ার্কে সংযোগ করর জন্য <ph name="PRODUCT_NAME" /> আপনার কম্পিউটারের সিস্টেম প্রক্সি সেটিংস ব্যবহার করছে৷</translation>
-<translation id="1986281090560408715">স্ক্রিনের উপরে বাম প্রান্তে যাতে স্ক্রিনের টাচ-পয়েন্ট তথ্য সম্বন্ধে তালিকা আছে তাতে একটি হেডস-আপ সক্ষম করুন৷</translation>
+<translation id="1986281090560408715">স্ক্রিনের উপরে বাঁ প্রান্তে যাতে স্ক্রিনের টাচ-পয়েন্ট তথ্য সম্বন্ধে তালিকা আছে তাতে একটি হেডস-আপ সক্ষম করুন৷</translation>
 <translation id="1987139229093034863">একজন আলাদা ব্যবহারকারীতে স্যুইচ করুন৷</translation>
 <translation id="1989112275319619282">ব্রাউজ করুন</translation>
 <translation id="1992397118740194946">সেট করা নেই</translation>
@@ -880,6 +880,7 @@
 <translation id="2150661552845026580">"<ph name="EXTENSION_NAME" />" জুড়বেন?</translation>
 <translation id="2151576029659734873">অবৈধ ট্যাব সূচি প্রবেশ হয়েছে৷</translation>
 <translation id="2152580633399033274">সকল ছবি দেখান (প্রস্তাবিত)</translation>
+<translation id="2154710561487035718">URL কপি করুন</translation>
 <translation id="2155931291251286316">সর্বদা <ph name="HOST" />-এর পপ-আপগুলিকে মঞ্জুর করুন</translation>
 <translation id="215753907730220065">পূর্ণ স্ক্রীণ বন্ধ করুন</translation>
 <translation id="2157875535253991059">পৃষ্ঠাটি এখন পূর্ণ পর্দায় রয়েছে</translation>
@@ -987,7 +988,7 @@
 <translation id="2271088077909873520"><ph name="BEGIN_LINK" />Google ড্যাশবোর্ডে<ph name="END_LINK" /> আপনার সিঙ্ক করা ডেটা পরিচালনা করুন।</translation>
 <translation id="2272570998639520080">মার্টিনি গ্লাস</translation>
 <translation id="2273562597641264981">অপারেটর:</translation>
-<translation id="2275694568175246751">ডান-থেকে-বাম</translation>
+<translation id="2275694568175246751">ডান-থেকে-বাঁ</translation>
 <translation id="2276503375879033601">আরো অ্যাপ্লিকেশন জুডুন</translation>
 <translation id="2277255602909579701">সমস্ত কুকি এবং সাইট ডেটা</translation>
 <translation id="2278098630001018905">ভিন্ন কোনো শিপিং ঠিকানা ব্যবহার করুন</translation>
@@ -1458,7 +1459,7 @@
 <translation id="2853916256216444076">$1 টি ভিডিও</translation>
 <translation id="2856903399071202337">ক্যামেরা ব্যতিক্রমগুলি</translation>
 <translation id="2859369953631715804">একটি মোবাইল নেটওয়ার্ক বেছে নিন</translation>
-<translation id="2859684393368940971">বাম-থেকে-ডান</translation>
+<translation id="2859684393368940971">বাঁ-থেকে-ডান</translation>
 <translation id="2860150991415616761">খুব দীর্ঘ সময় (৪ সে.)</translation>
 <translation id="2861301611394761800">সিস্টেম আপডেট সম্পূর্ণ৷ দয়া করে সিস্টেমটি পুনরায় শুরু করুন৷</translation>
 <translation id="2861941300086904918">নেটিভ ক্লায়েন্ট সুরক্ষা পরিচালক</translation>
@@ -1685,7 +1686,7 @@
 
 এইগুলির এবং আরো নির্দেশাবলীর জন্য দয়া করে <ph name="ACCOUNT_EMAIL" /> এ আপনার ইমেল দেখুন।</translation>
 <translation id="3129140854689651517">পাঠ্য সন্ধান করুন </translation>
-<translation id="3129173833825111527">বাম মার্জিন</translation>
+<translation id="3129173833825111527">বাঁ মার্জিন</translation>
 <translation id="3130528281680948470">আপনার ডিভাইস পুনরায় সেট করা হবে এবং সব ব্যবহারকারীর অ্যাকাউন্ট এবং স্থানীয় তথ্য মুছে ফেলা হবে। এটিকে পূর্বাবস্থায় ফেরানো যাবে না।</translation>
 <translation id="313205617302240621">পাসওয়ার্ড ভুলে গেছেন?</translation>
 <translation id="3133421990448450542">দূরত্ব ফিল্ডের পাঠ্য</translation>
@@ -1952,7 +1953,7 @@
 <translation id="347785443197175480">আপনার ক্যামেরা এবং মাইক্রোফোন অ্যাক্সেস করতে <ph name="HOST" /> এর মঞ্জুরি অবিরত রাখুন</translation>
 <translation id="3478315065074101056">XPS Chrome এর সঙ্গে থাকা মেঘ মুদ্রণের সঙ্গে সংযুক্ত ক্লাসিক মুদ্রণগুলির জন্য উন্নত সেটিংগুলি সক্ষম করে। এই ফ্ল্যাগ পরিবর্তন করার পর মুদ্রণগুলি আবার সংযুক্ত করা আবশ্যক।</translation>
 <translation id="3478685642445675458">কোনো ব্যক্তিকে মুছে ফেলার আগে দয়া করে আপনার প্রোফাইলটি আনলক করুন।</translation>
-<translation id="3480892288821151001">উইন্ডো বাম দিকে রাখুন</translation>
+<translation id="3480892288821151001">উইন্ডো বাঁ দিকে রাখুন</translation>
 <translation id="3481915276125965083">এই পৃষ্ঠাতে নিম্নোক্ত পপ-আপগুলি ব্লক করা হয়েছে:</translation>
 <translation id="3482214069979148937">পূর্ণ স্ক্রীন থেকে বেরিয়ে যেতে |<ph name="ACCELERATOR" />| ধরে থাকুন</translation>
 <translation id="3484869148456018791">নতুন শংসাপত্র আনুন</translation>
@@ -3332,7 +3333,7 @@
 <translation id="5342344590724511265">ট্যাব ক্র্যাশ হওয়ার প্রতিক্রিয়া।</translation>
 <translation id="5342451237681332106"><ph name="PHONE_NAME" /> ব্যবহার করুন</translation>
 <translation id="5344396841163243711">ট্যাবপট্টি পরিবর্তি হলে অল্প সময়ের জন্য পূর্ণস্ক্রীনে সরঞ্জাম দণ্ড প্রকাশিত করে।</translation>
-<translation id="534916491091036097">বাম বন্ধ</translation>
+<translation id="534916491091036097">বাঁ বন্ধ</translation>
 <translation id="5350480486488078311">NaCl সকেট API-টি৷</translation>
 <translation id="5350965906220856151">উহ-ওহ!</translation>
 <translation id="5352033265844765294">Time Stamping</translation>
@@ -4276,7 +4277,7 @@
 <translation id="6596816719288285829">IP ঠিকানা</translation>
 <translation id="6597017209724497268">নমুনাগুলি</translation>
 <translation id="6602513772721163562">হার্ডওয়্যার দ্বারা দ্রুততর করা ভিডিও ডিকোড</translation>
-<translation id="6602956230557165253">নেভিগেট করার জন্য বাম ও ডান তীরগুলি ব্যবহার করুন৷</translation>
+<translation id="6602956230557165253">নেভিগেট করার জন্য বাঁ ও ডান তীরগুলি ব্যবহার করুন৷</translation>
 <translation id="660380282187945520">F9</translation>
 <translation id="660422762767237457">ব্রাউজার ট্যাবের বদলে ডেডিকেটেড উইন্ডোতে সেটিংস দেখানো হবে।</translation>
 <translation id="6606070663386660533">ট্যাব ৮</translation>
@@ -4501,7 +4502,7 @@
 <translation id="6941937518557314510">আপনার শংসাপত্র দিয়ে <ph name="HOST_NAME" />-এ প্রমাণীকরণ করতে দয়া করে <ph name="TOKEN_NAME" />-এ প্রবেশ করুন করুন৷</translation>
 <translation id="6943176775188458830">মুদ্রণ বাতিল করুন</translation>
 <translation id="6943836128787782965">HTTP ব্যর্থ হয়েছে</translation>
-<translation id="6945190755118630152">UI ভাষার ডিফল্ট গতিপথ ওভাররাইড করার মাধ্যমে UI কে সুনির্দিষ্টভাবে বাম-থেকে-ডান (LTR) বা ডান-থেকে-বাম মোডে (RTL) যেতে বাধ্য করে।</translation>
+<translation id="6945190755118630152">UI ভাষার ডিফল্ট গতিপথ ওভাররাইড করার মাধ্যমে UI কে সুনির্দিষ্টভাবে বাঁ-থেকে-ডান (LTR) বা ডান-থেকে-বাঁ মোডে (RTL) যেতে বাধ্য করে।</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>
 <translation id="6948736568813450284">বিকাশকারীদের জন্য: Google Payments API কলগুলির জন্য স্যান্ডবক্স পরিষেবা ব্যবহার করুন।</translation>
 <translation id="6949306908218145636">খোলা পৃষ্ঠাগুলিকে বুকমার্ক করুন...</translation>
@@ -5199,7 +5200,7 @@
 <translation id="7892100671754994880">পরবর্তী ব্যবহারকারী</translation>
 <translation id="7893008570150657497">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্য মিডিয়াতে অ্যাক্সেস করুন</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (ডিফল্ট)</translation>
-<translation id="78957024357676568">বাম</translation>
+<translation id="78957024357676568">বাঁ</translation>
 <translation id="7896906914454843592">মার্কিন প্রসারিত কীবোর্ড</translation>
 <translation id="7897900149154324287">ভবিষ্যতে, আপনার সরানোযোগ্য ডিভাইসটিকে আনপ্লাগ করার আগে ফাইল অ্যাপ্লিকেশান থেকে এটি যে বের করে নেওয়া হয়েছে সেই বিষয়ে নিশ্চিত হয়ে নিন। অন্যথায় আপনি হয়তো ডেটা হারাতে পারেন।</translation>
 <translation id="7898627924844766532">সরঞ্জাম দণ্ডের মধ্যে রাখুন</translation>

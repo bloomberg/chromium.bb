@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">Vous avez tenté d'accéder à <ph name="DOMAIN" />, mais le certificat présenté par le serveur est incorrect. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459">Votre connexion à <ph name="DOMAIN" /> est chiffrée à l'aide d'une méthode de chiffrement récente.</translation>
 <translation id="4594403342090139922">&amp;Annuler la suppression</translation>
+<translation id="4619615317237390068">Onglets d'autres appareils</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Vous consultez actuellement une page d'extension.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">Téléchargement</translation>
 <translation id="5190835502935405962">Barre de favoris</translation>
 <translation id="5199729219167945352">Prototypes</translation>
-<translation id="5199841536747119669">Vos suggestions s'affichent ici</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Vous utilisez Chrome au travail ? Les entreprises peuvent gérer les paramètres Chrome de leurs employés. En savoir plus</translation>
 <translation id="5299298092464848405">Erreur d'analyse de la règle.</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">Vous avez essayé d'accéder à <ph name="DOMAIN" />, mais le serveur a présenté un certificat signé avec un algorithme de signature faible (tel que SHA-1). Il se peut que les identifiants de sécurité présentés par le serveur aient été falsifiés. Le serveur n'est peut-être pas celui auquel vous souhaitez accéder (il peut s'agir d'une tentative de piratage). <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="5710435578057952990">L'identité de ce site Web n'a pas été vérifiée.</translation>
 <translation id="5720705177508910913">Utilisateur actuel</translation>
-<translation id="572328651809341494">Onglets récents</translation>
 <translation id="5732392974455271431">Tes parents peuvent te le débloquer</translation>
 <translation id="5784606427469807560">Un problème est survenu lors de la validation de votre carte. Vérifiez votre connexion Internet, puis réessayez.</translation>
 <translation id="5785756445106461925">De plus, cette page inclut d'autres ressources qui ne sont pas sécurisées. Ces ressources peuvent être consultées par des tiers pendant leur transfert, et modifiées par un pirate informatique dans le but de changer l'aspect de cette page.</translation>

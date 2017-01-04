@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">Umejaribu kufikia <ph name="DOMAIN" />, lakini seva imewasilisha cheti kisicho sahihi. <ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Muunganisho wako kwenye <ph name="DOMAIN" /> umesimbwa kwa njia fiche kwa kutumia mipangilio ya kriptografia ya kisasa.</translation>
 <translation id="4594403342090139922">Tendua Kufuta</translation>
+<translation id="4619615317237390068">Vichupo kutoka kwenye vifaa vingine</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Unaangalia ukurasa wa kiendelezi.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">Inapakua</translation>
 <translation id="5190835502935405962">Sehemu ya Alamisho</translation>
 <translation id="5199729219167945352">Majaribio</translation>
-<translation id="5199841536747119669">Mapendekezo yako yataonekana hapa</translation>
 <translation id="5251803541071282808">Wingu</translation>
 <translation id="5277279256032773186">Je, unatumia Chrome kazini? Kampuni zinaweza kudhibiti mipangilio ya Chrome ya wafanyikazi wao. Pata maelezo zaidi</translation>
 <translation id="5299298092464848405">Hitilafu wakati wa kuchanganua sera</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">Umejaribu kufikia <ph name="DOMAIN" />, lakini seva iliwasilisha cheti kilichowekwa sahihi kwa kutumia algoriti dhaifu. Hii inamaanisha kuwa huenda stakabadhi za usalama za seva zilizowasilishwa ni ghushi, na huenda seva siyo uliyoitarajia (huenda unawasiliana na mvamizi).<ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Utambulisho wa tovuti hii haujathibitishwa.</translation>
 <translation id="5720705177508910913">Mtumiaji wa sasa</translation>
-<translation id="572328651809341494">Vichupo vya hivi majuzi</translation>
 <translation id="5732392974455271431">Wazazi wako wanaweza kukuondolea kizuizi</translation>
 <translation id="5784606427469807560">Kulikuwa na tatizo wakati wa kuthibitisha kadi yako. Angalia muunganisho wako wa intaneti kisha ujaribu tena.</translation>
 <translation id="5785756445106461925">Mbali na hayo, ukurasa huu una rasilimali nyingine zisizo salama. Rasilimali hizi zinaweza kuangaliwa na watu wengine wanaosafiri, na zinaweza kurekebishwa na mvamizi kubadilisha mwonekano wa ukurasa.</translation>

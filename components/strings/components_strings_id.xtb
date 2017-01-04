@@ -35,7 +35,7 @@
 <translation id="1228893227497259893">Pengidentifikasi entitas salah</translation>
 <translation id="1232569758102978740">Tanpa Judul</translation>
 <translation id="1254117744268754948">Pilih Folder</translation>
-<translation id="1264126396475825575">Laporan kerusakan diambil pada pukul <ph name="CRASH_TIME" /> (belum diunggah atau diabaikan)</translation>
+<translation id="1264126396475825575">Laporan kerusakan diambil pada pukul <ph name="CRASH_TIME" /> (belum diupload atau diabaikan)</translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
 <translation id="129553762522093515">Barusan ditutup</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Coba hapus cookie Anda<ph name="END_LINK" /></translation>
@@ -133,7 +133,7 @@
 <translation id="2328300916057834155">Mengabaikan bookmark tidak valid di indeks <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Bookmark lain</translation>
 <translation id="2359808026110333948">Lanjut</translation>
-<translation id="2365563543831475020">Laporan kerusakan yang diambil pada pukul <ph name="CRASH_TIME" /> tidak diunggah</translation>
+<translation id="2365563543831475020">Laporan kerusakan yang diambil pada pukul <ph name="CRASH_TIME" /> tidak diupload</translation>
 <translation id="2367567093518048410">Tingkat</translation>
 <translation id="2371153335857947666">{1,plural, =1{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah berakhir kemarin. Hal ini dapat disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang mencegat sambungan Anda. Jam komputer Anda saat ini disetel ke <ph name="CURRENT_DATE" />. Apakah sudah sesuai? Jika belum sesuai, Anda harus membenarkan jam sistem dan menyegarkan laman ini. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.}other{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah berakhir # hari yang lalu. Hal ini dapat disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang mencegat sambungan Anda. Jam komputer Anda saat ini disetel ke <ph name="CURRENT_DATE" />. Apakah sudah sesuai? Jika belum sesuai, Anda harus membenarkan jam sistem dan menyegarkan laman ini. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.}}</translation>
 <translation id="237718015863234333">Tidak tersedia alternatif UI</translation>
@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi server menunjukkan sertifikat yang tidak valid. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Sambungan Anda ke <ph name="DOMAIN" /> dienkripsi menggunakan cipher suite modern.</translation>
 <translation id="4594403342090139922">&amp;Urungkan Penghapusan</translation>
+<translation id="4619615317237390068">Tab dari perangkat lain</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Anda sedang melihat laman ekstensi.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">Mendownload</translation>
 <translation id="5190835502935405962">Bilah Bookmark</translation>
 <translation id="5199729219167945352">Eksperimen</translation>
-<translation id="5199841536747119669">Saran Anda ditampilkan di sini</translation>
 <translation id="5251803541071282808">Awan</translation>
 <translation id="5277279256032773186">Menggunakan Chrome di kantor? Perusahaan dapat mengelola setelan Chrome untuk karyawan mereka. Pelajari lebih lanjut</translation>
 <translation id="5299298092464848405">Kebijakan kesalahan penguraian</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi server menunjukkan sertifikat yang ditandatangani menggunakan algoritme tanda tangan yang lemah (seperti SHA-1). Artinya, kredensial keamanan yang ditunjukkan server mungkin telah dipalsukan, dan server tersebut mungkin bukan server yang diharapkan (Anda mungkin sedang berkomunikasi dengan penyerang). <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Identitas situs Web ini belum diverifikasi.</translation>
 <translation id="5720705177508910913">Pengguna saat ini</translation>
-<translation id="572328651809341494">Tab baru-baru ini</translation>
 <translation id="5732392974455271431">Orang tua dapat membuka blokirnya untukmu</translation>
 <translation id="5784606427469807560">Terjadi masalah saat mengonfirmasi kartu. Periksa sambungan internet Anda dan coba lagi.</translation>
 <translation id="5785756445106461925">Selain itu, laman ini berisi sumber daya lainnya yang tidak aman. Sumber daya ini dapat dilihat oleh orang lain saat transit dan dapat dimodifikasi oleh penyerang untuk mengubah tampilan perangkat.</translation>
@@ -517,7 +516,7 @@
 <translation id="6462969404041126431">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya mungkin sudah dicabut. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau ada penyerang yang mencegat sambungan Anda. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">Kebijakan perangkat</translation>
 <translation id="6477321094435799029">Chrome mendeteksi kode yang tidak biasa pada halaman ini dan memblokirnya untuk melindungi informasi pribadi Anda (misalnya, sandi, nomor telepon, dan kartu kredit).</translation>
-<translation id="6489534406876378309">Mulai mengunggah kerusakan</translation>
+<translation id="6489534406876378309">Mulai mengupload kerusakan</translation>
 <translation id="6529602333819889595">&amp;Ulangi Penghapusan</translation>
 <translation id="6534179046333460208">Saran Web Fisik</translation>
 <translation id="6550675742724504774">Opsi</translation>

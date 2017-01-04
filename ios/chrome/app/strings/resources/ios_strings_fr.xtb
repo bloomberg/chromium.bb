@@ -79,7 +79,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="2386793615875593361">1 photo sélectionnée</translation>
 <translation id="2435457462613246316">Afficher le mot de passe</translation>
 <translation id="2467815441875554965">Recherche contextuelle</translation>
-<translation id="2523092375122821828">Tout marquer…</translation>
 <translation id="2572712655377361602">Les règles relatives aux appareils ont bloqué l'accès à vos photos.</translation>
 <translation id="2584132361465095047">Ajouter un compte…</translation>
 <translation id="2593774076813182497">Impression impossible.</translation>
@@ -161,7 +160,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4121993058175073134">Configurez compte mess. dans appli Paramètres pour envoyer données net-export.</translation>
 <translation id="4124987746317609294">Période</translation>
 <translation id="4172051516777682613">Toujours afficher</translation>
-<translation id="4176234027218720244">Marquer…</translation>
 <translation id="424315890655130736">Saisir la phrase secrète</translation>
 <translation id="4272631900155121838">Pour scanner un code QR, activez l'appareil photo depuis les paramètres</translation>
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
@@ -208,7 +206,6 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5327248766486351172">Nom</translation>
-<translation id="532992759783668360">Supprimer lus</translation>
 <translation id="5388358297987318779">Ouvrir l'image</translation>
 <translation id="5409365236829784218">Aucune application installée ne peut ouvrir ce fichier.</translation>
 <translation id="54401264925851789">Informations sur la sécurité de cette page</translation>
@@ -255,7 +252,6 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="6184086493125982861">Afficher les onglets</translation>
 <translation id="6187302354554850004">Dernière synchro : <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Non lus</translation>
-<translation id="6194286531716220336">Annuler</translation>
 <translation id="6196207969502475924">Recherche vocale</translation>
 <translation id="6254066287920239840">Ouvrir les liens dans l'application et non dans le navigateur.</translation>
 <translation id="6255097610484507482">Modifier la carte de paiement</translation>
@@ -267,7 +263,6 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="6344783595350022745">Effacer le texte</translation>
 <translation id="6362362396625799311">Aucun onglet de navigation privée</translation>
 <translation id="6380866119319257197">Si vous oubliez votre phrase secrète, ou pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" />.</translation>
-<translation id="6385146967113720558">Marquer non lus</translation>
 <translation id="6389470377220713856">Nom sur la carte</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
 <translation id="6417838470969808600">Vous disposez des favoris, de l'historique, des mots de passe et d'autres paramètres du compte <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7108338896283013870">Masquer</translation>
 <translation id="7131892264600713844">Affichage de l'historique de cet appareil. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nom complet</translation>
-<translation id="713434964320012835">Supprimer</translation>
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
 <translation id="7167621057293532233">Types de données</translation>
 <translation id="7189598951263744875">Partager…</translation>
@@ -365,7 +359,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8428045167754449968">Ville</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433678324664858900">Aff. suggestions</translation>
-<translation id="8458197615157477273">Marquer lus</translation>
 <translation id="8458397775385147834">1 élément supprimé.</translation>
 <translation id="8503813439785031346">Nom d'utilisateur</translation>
 <translation id="8517375800490286174">Licences Open Source</translation>
@@ -388,7 +381,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8840513115188359703">Vous ne serez pas déconnecté de votre compte Google.</translation>
 <translation id="8904976895050290827">Synchronisation Google Chrome</translation>
 <translation id="895541991026785598">Signaler un problème</translation>
-<translation id="8967427617812342790">Ajouter à liste lecture</translation>
 <translation id="8971089644512329999">OK</translation>
 <translation id="8981454092730389528">Commandes Google relatives à l'activité</translation>
 <translation id="8985320356172329008">Connecté à Google en tant que</translation>

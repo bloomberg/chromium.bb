@@ -360,6 +360,7 @@
 <translation id="4589078953350245614"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから無効な証明書が提示されました。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> への接続は新しい暗号スイートにより暗号化されています。</translation>
 <translation id="4594403342090139922">削除の取り消し（&amp;U）</translation>
+<translation id="4619615317237390068">他のデバイスからのタブ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">拡張機能のページを表示しています。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">ダウンロードしています</translation>
 <translation id="5190835502935405962">ブックマーク バー</translation>
 <translation id="5199729219167945352">試験運用機能</translation>
-<translation id="5199841536747119669">おすすめのコンテンツがここに表示されます</translation>
 <translation id="5251803541071282808">クラウド</translation>
 <translation id="5277279256032773186">会社で Chrome を使用する場合は、従業員用に Chrome の設定を管理できます。詳細</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから提示された証明書が脆弱な署名アルゴリズム（SHA-1 など）を使用して署名されています。サーバーから提示されたセキュリティ認証情報は偽装されている可能性があり、アクセスしようとしたサーバーとは異なるサーバーであるおそれがあります（悪意のあるユーザーと通信している可能性があります）。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
-<translation id="572328651809341494">最近使ったタブ</translation>
 <translation id="5732392974455271431">ブロックの解除は保護者が行うことができます</translation>
 <translation id="5784606427469807560">カードの確認中に問題が発生しました。インターネット接続を確認してもう一度お試しください。</translation>
 <translation id="5785756445106461925">加えて、このページには安全でない他のリソースが含まれています。このリソースは送信中に他のユーザーから見られる可能性があります。また、悪意のあるユーザーによって改変されページの見た目が変わる可能性もあります。</translation>

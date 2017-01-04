@@ -79,7 +79,6 @@
 <translation id="2386793615875593361">تم تحديد عنصر واحد</translation>
 <translation id="2435457462613246316">عرض كلمة المرور</translation>
 <translation id="2467815441875554965">البحث السياقي</translation>
-<translation id="2523092375122821828">وضع علامة على الكل...</translation>
 <translation id="2572712655377361602">حظرت سياسة الجهاز الدخول إلى صورك</translation>
 <translation id="2584132361465095047">إضافة حساب...</translation>
 <translation id="2593774076813182497">لا يمكن طباعة هذه الصفحة.</translation>
@@ -161,7 +160,6 @@
 <translation id="4121993058175073134">لإرسال بيانات تصدير الشبكة، الرجاء تهيئة حساب بريدك الإلكتروني في التطبيق "الإعدادات".</translation>
 <translation id="4124987746317609294">النطاق الزمني</translation>
 <translation id="4172051516777682613">الإظهار دائمًا</translation>
-<translation id="4176234027218720244">وضع علامة...</translation>
 <translation id="424315890655130736">إدخال عبارة المرور</translation>
 <translation id="4272631900155121838">لمسح رمز الاستجابة السريعة ضوئيًا، يمكنك تمكين الكاميرا من الإعدادات</translation>
 <translation id="4281844954008187215">شروط الخدمة</translation>
@@ -208,7 +206,6 @@
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5327248766486351172">الاسم</translation>
-<translation id="532992759783668360">حذف المقروءة</translation>
 <translation id="5388358297987318779">فتح الصورة</translation>
 <translation id="5409365236829784218">لا تتوفر تطبيقات مثبتة يمكن من خلالها فتح هذا الملف.</translation>
 <translation id="54401264925851789">معلومات أمان الصفحة</translation>
@@ -255,7 +252,6 @@
 <translation id="6184086493125982861">إظهار علامات التبويب</translation>
 <translation id="6187302354554850004">تاريخ آخر مزامنة: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">غير مقروءة</translation>
-<translation id="6194286531716220336">إلغاء</translation>
 <translation id="6196207969502475924">البحث الصوتي</translation>
 <translation id="6254066287920239840">فتح الروابط في التطبيق بدلاً من المتصفح.</translation>
 <translation id="6255097610484507482">تعديل بطاقة الائتمان</translation>
@@ -267,7 +263,6 @@
 <translation id="6344783595350022745">محو النص</translation>
 <translation id="6362362396625799311">لا توجد علامات تبويب للتصفح المتخفي</translation>
 <translation id="6380866119319257197">إذا كنت قد نسيت عبارة المرور أو ترغب في تغيير هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة تعيين المزامنة<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">وضع علامة كغير مقروءة</translation>
 <translation id="6389470377220713856">الاسم كما في البطاقة</translation>
 <translation id="6406506848690869874">المزامنة</translation>
 <translation id="6417838470969808600">تتوفر لديك الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى من <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@
 <translation id="7108338896283013870">إخفاء</translation>
 <translation id="7131892264600713844">عرض السجل من هذا الجهاز. <ph name="BEGIN_LINK" />مزيد من المعلومات.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">الاسم بالكامل</translation>
-<translation id="713434964320012835">حذف</translation>
 <translation id="7136892417564438900">الكاميرا غير متاحة</translation>
 <translation id="7167621057293532233">أنواع البيانات</translation>
 <translation id="7189598951263744875">مشاركة...</translation>
@@ -365,7 +359,6 @@
 <translation id="8428045167754449968">المدينة/البلدة</translation>
 <translation id="8428213095426709021">إعدادات</translation>
 <translation id="8433678324664858900">عرض الاقتراحات</translation>
-<translation id="8458197615157477273">وضع علامة كمقروءة</translation>
 <translation id="8458397775385147834">تم حذف عنصر واحد</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
 <translation id="8517375800490286174">تراخيص البرامج مفتوحة المصدر</translation>
@@ -388,7 +381,6 @@
 <translation id="8840513115188359703">‏لن يتم تسجيل خروجك من حساب Google.</translation>
 <translation id="8904976895050290827">‏مزامنة Chrome</translation>
 <translation id="895541991026785598">الإبلاغ عن مشكلة</translation>
-<translation id="8967427617812342790">إضافة إلى قائمة القراءة</translation>
 <translation id="8971089644512329999">موافق وأعي ذلك.</translation>
 <translation id="8981454092730389528">‏عناصر التحكم في النشاط على Google</translation>
 <translation id="8985320356172329008">‏تسجيل الدخول إلى Google باسم</translation>

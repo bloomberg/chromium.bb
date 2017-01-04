@@ -79,7 +79,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2386793615875593361">1 selected</translation>
 <translation id="2435457462613246316">Show password</translation>
 <translation id="2467815441875554965">Contextual Search</translation>
-<translation id="2523092375122821828">Mark All…</translation>
 <translation id="2572712655377361602">A device policy blocked access to your photos</translation>
 <translation id="2584132361465095047">Add Account…</translation>
 <translation id="2593774076813182497">This page cannot be printed.</translation>
@@ -161,7 +160,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4121993058175073134">To send net-export data, please configure your email account in the Settings app.</translation>
 <translation id="4124987746317609294">Time Range</translation>
 <translation id="4172051516777682613">Always show</translation>
-<translation id="4176234027218720244">Mark…</translation>
 <translation id="424315890655130736">Enter Passphrase</translation>
 <translation id="4272631900155121838">To scan a QR code, enable the camera from settings</translation>
 <translation id="4281844954008187215">Terms of Service</translation>
@@ -208,7 +206,6 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="5300589172476337783">Show</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5327248766486351172">Name</translation>
-<translation id="532992759783668360">Delete Read</translation>
 <translation id="5388358297987318779">Open Image</translation>
 <translation id="5409365236829784218">There are no applications installed that can open this file.</translation>
 <translation id="54401264925851789">Page Security Info</translation>
@@ -255,7 +252,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6184086493125982861">Show Tabs</translation>
 <translation id="6187302354554850004">Last synced: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Unread</translation>
-<translation id="6194286531716220336">Cancel</translation>
 <translation id="6196207969502475924">Voice Search</translation>
 <translation id="6254066287920239840">Open links in the app instead of the browser.</translation>
 <translation id="6255097610484507482">Edit Credit Card</translation>
@@ -267,7 +263,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6344783595350022745">Clear Text</translation>
 <translation id="6362362396625799311">No Incognito Tabs</translation>
 <translation id="6380866119319257197">If you forget your passphrase or want to change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Mark Unread</translation>
 <translation id="6389470377220713856">Name on Card</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6417838470969808600">You have bookmarks, history, passwords and other settings from <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7108338896283013870">Hide</translation>
 <translation id="7131892264600713844">Showing history from this device. <ph name="BEGIN_LINK" />Find out more.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Full Name</translation>
-<translation id="713434964320012835">Delete</translation>
 <translation id="7136892417564438900">Camera is unavailable</translation>
 <translation id="7167621057293532233">Data Types</translation>
 <translation id="7189598951263744875">Share...</translation>
@@ -365,7 +359,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8428045167754449968">City / Town</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433678324664858900">Show Suggestions</translation>
-<translation id="8458197615157477273">Mark Read</translation>
 <translation id="8458397775385147834">1 item deleted</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="8517375800490286174">Open-Source Licences</translation>
@@ -388,7 +381,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8840513115188359703">You won't be signed out of your Google Account.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Report an Issue</translation>
-<translation id="8967427617812342790">Add to reading list</translation>
 <translation id="8971089644512329999">OK, got it</translation>
 <translation id="8981454092730389528">Google Activity Controls</translation>
 <translation id="8985320356172329008">Signed In to Google as</translation>

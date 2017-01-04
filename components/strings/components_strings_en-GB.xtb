@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">You attempted to reach <ph name="DOMAIN" />, but the server presented an invalid certificate. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Your connection to <ph name="DOMAIN" /> is encrypted using a modern cipher suite.</translation>
 <translation id="4594403342090139922">&amp;Undo Delete</translation>
+<translation id="4619615317237390068">Tabs from other devices</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">You are viewing an extension page.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">Downloading</translation>
 <translation id="5190835502935405962">Bookmarks Bar</translation>
 <translation id="5199729219167945352">Experiments</translation>
-<translation id="5199841536747119669">Your suggestions appear here</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5277279256032773186">Using Chrome at work? Businesses can manage Chrome settings for their employees. Find out more</translation>
 <translation id="5299298092464848405">Error parsing policy</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate signed using a weak signature algorithm (such as SHA-1). This means that the security credentials the server presented could have been forged, and the server may not be the server you expected (you may be communicating with an attacker). <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">The identity of this website has not been verified.</translation>
 <translation id="5720705177508910913">Current user</translation>
-<translation id="572328651809341494">Recent tabs</translation>
 <translation id="5732392974455271431">Your parents can unblock it for you</translation>
 <translation id="5784606427469807560">There was a problem confirming your card. Check your Internet connection and try again.</translation>
 <translation id="5785756445106461925">Further, this page includes other resources which are not secure. These resources can be viewed by others while in transit, and can be modified by an attacker to change the look of the page.</translation>

@@ -79,7 +79,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2386793615875593361">1 foto seleccionada</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
 <translation id="2467815441875554965">Búsqueda contextual</translation>
-<translation id="2523092375122821828">Marcar todo…</translation>
 <translation id="2572712655377361602">Una política de dispositivos ha bloqueado el acceso a tus fotos</translation>
 <translation id="2584132361465095047">Añadir cuenta…</translation>
 <translation id="2593774076813182497">Esta página no se puede imprimir.</translation>
@@ -161,7 +160,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4121993058175073134">Configura tu correo en Ajustes para enviar datos de exportaciones netas.</translation>
 <translation id="4124987746317609294">Intervalo de tiempo</translation>
 <translation id="4172051516777682613">Mostrar siempre</translation>
-<translation id="4176234027218720244">Marcar…</translation>
 <translation id="424315890655130736">Introduce tu frase de contraseña</translation>
 <translation id="4272631900155121838">Para escanear un código QR, habilita la cámara en Ajustes</translation>
 <translation id="4281844954008187215">Condiciones del servicio</translation>
@@ -208,7 +206,6 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
-<translation id="532992759783668360">Quitar entrada</translation>
 <translation id="5388358297987318779">Abrir imagen</translation>
 <translation id="5409365236829784218">Ninguna aplicación instalada puede abrir este archivo.</translation>
 <translation id="54401264925851789">Información de seguridad de la página</translation>
@@ -255,7 +252,6 @@ Handoff también debe estar habilitado en la sección General de Ajustes, y los 
 <translation id="6184086493125982861">Mostrar pestañas</translation>
 <translation id="6187302354554850004">Última sincronización: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">No leídas</translation>
-<translation id="6194286531716220336">Cancelar</translation>
 <translation id="6196207969502475924">Búsqueda por voz</translation>
 <translation id="6254066287920239840">Abrir enlaces en la aplicación en lugar de en el navegador.</translation>
 <translation id="6255097610484507482">Editar tarjeta de crédito</translation>
@@ -267,7 +263,6 @@ Handoff también debe estar habilitado en la sección General de Ajustes, y los 
 <translation id="6344783595350022745">Borrar texto</translation>
 <translation id="6362362396625799311">No hay pestañas de incógnito</translation>
 <translation id="6380866119319257197">Si has olvidado tu frase de contraseña o quieres cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Marcar no leída</translation>
 <translation id="6389470377220713856">Nombre de la tarjeta</translation>
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="6417838470969808600">Tienes los marcadores, el historial, las contraseñas y otras opciones de configuración de <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7131892264600713844">Mostrando historial de este dispositivo. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Nombre completo</translation>
-<translation id="713434964320012835">Eliminar</translation>
 <translation id="7136892417564438900">La cámara no está disponible</translation>
 <translation id="7167621057293532233">Tipos de datos</translation>
 <translation id="7189598951263744875">Compartir...</translation>
@@ -365,7 +359,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8428045167754449968">Ciudad/Localidad</translation>
 <translation id="8428213095426709021">Ajustes</translation>
 <translation id="8433678324664858900">Mostrar sugerencias</translation>
-<translation id="8458197615157477273">Marcar leída</translation>
 <translation id="8458397775385147834">1 elemento eliminado</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="8517375800490286174">Licencias de código abierto</translation>
@@ -388,7 +381,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8840513115188359703">No se cerrará la sesión en tu cuenta de Google.</translation>
 <translation id="8904976895050290827">Sincronización de Chrome</translation>
 <translation id="895541991026785598">Notificar un error</translation>
-<translation id="8967427617812342790">Añadir a lista de lectura</translation>
 <translation id="8971089644512329999">Entendido</translation>
 <translation id="8981454092730389528">Controles de actividad de Google</translation>
 <translation id="8985320356172329008">Has iniciado sesión en Google como</translation>

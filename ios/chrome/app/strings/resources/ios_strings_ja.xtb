@@ -79,7 +79,6 @@
 <translation id="2386793615875593361">1 枚選択されています</translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
 <translation id="2467815441875554965">コンテキスト検索</translation>
-<translation id="2523092375122821828">すべてマーク...</translation>
 <translation id="2572712655377361602">端末ポリシーにより写真へのアクセスがブロックされました</translation>
 <translation id="2584132361465095047">アカウントを追加...</translation>
 <translation id="2593774076813182497">ページを印刷できません。</translation>
@@ -161,7 +160,6 @@
 <translation id="4121993058175073134">エクスポート データのみを送信するには、設定アプリでメール アカウントを設定してください。</translation>
 <translation id="4124987746317609294">期間</translation>
 <translation id="4172051516777682613">常に表示</translation>
-<translation id="4176234027218720244">マーク…</translation>
 <translation id="424315890655130736">パスフレーズの入力</translation>
 <translation id="4272631900155121838">QR コードをスキャンするには、設定でカメラを有効にしてください</translation>
 <translation id="4281844954008187215">利用規約</translation>
@@ -208,7 +206,6 @@
 <translation id="5300589172476337783">表示</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名前</translation>
-<translation id="532992759783668360">既読を削除</translation>
 <translation id="5388358297987318779">画像を開く</translation>
 <translation id="5409365236829784218">このファイルを開くアプリがインストールされていません。</translation>
 <translation id="54401264925851789">ページのセキュリティ情報</translation>
@@ -255,7 +252,6 @@
 <translation id="6184086493125982861">タブを表示</translation>
 <translation id="6187302354554850004">最終同期: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">未読</translation>
-<translation id="6194286531716220336">キャンセル</translation>
 <translation id="6196207969502475924">音声検索</translation>
 <translation id="6254066287920239840">ブラウザの代わりにアプリでリンクを開きます。</translation>
 <translation id="6255097610484507482">クレジットカードの編集</translation>
@@ -267,7 +263,6 @@
 <translation id="6344783595350022745">テキストを消去</translation>
 <translation id="6362362396625799311">シークレット タブはありません</translation>
 <translation id="6380866119319257197">パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
-<translation id="6385146967113720558">未読にする</translation>
 <translation id="6389470377220713856">名義人名</translation>
 <translation id="6406506848690869874">同期</translation>
 <translation id="6417838470969808600"><ph name="USER_EMAIL1" /> のブックマーク、履歴、パスワードとその他の設定を使用できます。</translation>
@@ -305,7 +300,6 @@
 <translation id="7108338896283013870">非表示</translation>
 <translation id="7131892264600713844">この端末の履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">氏名</translation>
-<translation id="713434964320012835">削除</translation>
 <translation id="7136892417564438900">カメラを使用できません</translation>
 <translation id="7167621057293532233">データ タイプ</translation>
 <translation id="7189598951263744875">共有...</translation>
@@ -365,7 +359,6 @@
 <translation id="8428045167754449968">市区町村</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433678324664858900">候補を表示</translation>
-<translation id="8458197615157477273">既読にする</translation>
 <translation id="8458397775385147834">1件の項目を削除しました</translation>
 <translation id="8503813439785031346">ユーザー名</translation>
 <translation id="8517375800490286174">オープンソースライセンス</translation>
@@ -388,7 +381,6 @@
 <translation id="8840513115188359703">Google アカウントへのログイン状態は維持されます。</translation>
 <translation id="8904976895050290827">Chrome の同期</translation>
 <translation id="895541991026785598">問題の報告</translation>
-<translation id="8967427617812342790">リーディング リストに追加</translation>
 <translation id="8971089644512329999">OK</translation>
 <translation id="8981454092730389528">Google アクティビティ管理</translation>
 <translation id="8985320356172329008">次のユーザーとして Google にログインしています:</translation>

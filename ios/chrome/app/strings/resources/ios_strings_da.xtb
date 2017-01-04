@@ -79,7 +79,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2386793615875593361">1 valgt</translation>
 <translation id="2435457462613246316">Vis adgangskode</translation>
 <translation id="2467815441875554965">Kontekstuel søgning</translation>
-<translation id="2523092375122821828">Markér alle…</translation>
 <translation id="2572712655377361602">En enhedspolitik har blokeret adgangen til dine billeder</translation>
 <translation id="2584132361465095047">Tilføj konto...</translation>
 <translation id="2593774076813182497">Denne side kan ikke udskrives.</translation>
@@ -161,7 +160,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4121993058175073134">For at sende oplysninger om nettoeksporten skal du konfigurere din e-mailkonto i appen Indstillinger.</translation>
 <translation id="4124987746317609294">Tidsinterval</translation>
 <translation id="4172051516777682613">Vis altid</translation>
-<translation id="4176234027218720244">Markér…</translation>
 <translation id="424315890655130736">Angiv adgangssætning</translation>
 <translation id="4272631900155121838">Aktivér kameraet i Indstillinger for at scanne en QR-kode</translation>
 <translation id="4281844954008187215">Servicevilkår</translation>
@@ -208,7 +206,6 @@ Dine data er krypteret med din adgangssætning til synkronisering. Indtast den f
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5327248766486351172">Navn</translation>
-<translation id="532992759783668360">Slet læste</translation>
 <translation id="5388358297987318779">Åbn billede</translation>
 <translation id="5409365236829784218">Der er ingen installerede apps, der kan åbne denne fil.</translation>
 <translation id="54401264925851789">Oplysninger om sidesikkerhed</translation>
@@ -255,7 +252,6 @@ Videregivelse skal være aktiveret i afsnittet Generelt i Indstillinger, og dine
 <translation id="6184086493125982861">Vis faner</translation>
 <translation id="6187302354554850004">Sidst synkroniseret: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Ulæst</translation>
-<translation id="6194286531716220336">Annuller</translation>
 <translation id="6196207969502475924">Talesøgning</translation>
 <translation id="6254066287920239840">Åbn links i appen i stedet for i browseren.</translation>
 <translation id="6255097610484507482">Rediger kreditkort</translation>
@@ -267,7 +263,6 @@ Videregivelse skal være aktiveret i afsnittet Generelt i Indstillinger, og dine
 <translation id="6344783595350022745">Ryd tekst</translation>
 <translation id="6362362396625799311">Ingen inkognitofaner</translation>
 <translation id="6380866119319257197">Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Markér som ulæst</translation>
 <translation id="6389470377220713856">Navn på kort</translation>
 <translation id="6406506848690869874">Synkronisering</translation>
 <translation id="6417838470969808600">Du har bogmærker, historik, adgangskoder og andre indstillinger fra <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7108338896283013870">Skjul</translation>
 <translation id="7131892264600713844">Viser historik fra denne enhed. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Fulde navn</translation>
-<translation id="713434964320012835">Slet</translation>
 <translation id="7136892417564438900">Kameraet er ikke tilgængeligt</translation>
 <translation id="7167621057293532233">Datatyper</translation>
 <translation id="7189598951263744875">Del...</translation>
@@ -365,7 +359,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8428045167754449968">By</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8433678324664858900">Vis forslag</translation>
-<translation id="8458197615157477273">Markér som læst</translation>
 <translation id="8458397775385147834">1 bogmærke blev slettet</translation>
 <translation id="8503813439785031346">Brugernavn</translation>
 <translation id="8517375800490286174">Open source-licenser</translation>
@@ -388,7 +381,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8840513115188359703">Du bliver ikke logget ud af din Google-konto.</translation>
 <translation id="8904976895050290827">Chrome-synkronisering</translation>
 <translation id="895541991026785598">Rapportér et problem</translation>
-<translation id="8967427617812342790">Føj til læseliste</translation>
 <translation id="8971089644512329999">OK, det er forstået</translation>
 <translation id="8981454092730389528">Administration af aktivitet på Google</translation>
 <translation id="8985320356172329008">Du er logget ind på Google som</translation>

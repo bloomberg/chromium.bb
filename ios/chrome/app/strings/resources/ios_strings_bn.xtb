@@ -79,7 +79,6 @@
 <translation id="2386793615875593361">১টি নির্বাচিত</translation>
 <translation id="2435457462613246316">পাসওয়ার্ড দেখান</translation>
 <translation id="2467815441875554965">প্রাসঙ্গিক অনুসন্ধান</translation>
-<translation id="2523092375122821828">সবগুলি চিহ্নিত করুন…</translation>
 <translation id="2572712655377361602">একটি ডিভাইস নীতি আপনার ফটোতে অ্যাক্সেস অবরুদ্ধ করেছে</translation>
 <translation id="2584132361465095047">অ্যাকাউন্ট যোগ করুন...</translation>
 <translation id="2593774076813182497">এই পৃষ্ঠাটির প্রিন্ট করা যাবে না৷</translation>
@@ -161,7 +160,6 @@
 <translation id="4121993058175073134">নেট-রপ্তানি ডেটা পাঠানোর জন্য, দয়া করে সিস্টেম অ্যাপ্লিকেশানে আপনার ইমেল অ্যাকাউন্ট কনফিগার করুন৷</translation>
 <translation id="4124987746317609294">সময় সীমা</translation>
 <translation id="4172051516777682613">সর্বদা দেখান</translation>
-<translation id="4176234027218720244">চিহ্নিত করুন…</translation>
 <translation id="424315890655130736">পাসফ্রেজ লিখুন</translation>
 <translation id="4272631900155121838">একটি QR কোড স্ক্যান করতে, সেটিংস থেকে ক্যামেরা সক্ষম করুন</translation>
 <translation id="4281844954008187215">পরিষেবার শর্তাদি</translation>
@@ -208,7 +206,6 @@
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5317780077021120954">সংরক্ষণ করুন</translation>
 <translation id="5327248766486351172">নাম</translation>
-<translation id="532992759783668360">‘পড়া হয়েছে’ মুছুন</translation>
 <translation id="5388358297987318779">চিত্র খুলুন</translation>
 <translation id="5409365236829784218">এই ফাউলটি খুলতে পারে এমন কোনো অ্যাপ্লিকেশন এখানে ডাউনলোড করা নেই৷</translation>
 <translation id="54401264925851789">পৃষ্ঠা নিরাপত্তা তথ্য</translation>
@@ -256,7 +253,6 @@
 <translation id="6184086493125982861">ট্যাব দেখান</translation>
 <translation id="6187302354554850004">শেষে সিঙ্ক হয়েছে: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">অপঠিত</translation>
-<translation id="6194286531716220336">বাতিল করুন</translation>
 <translation id="6196207969502475924">ভয়েস অনুসন্ধান</translation>
 <translation id="6254066287920239840">ব্রাউজারের পরিবর্তে অ্যাপটিতে লিঙ্কগুলি খুলুন।</translation>
 <translation id="6255097610484507482">ক্রেডিট কার্ড সম্পাদনা করুন</translation>
@@ -268,7 +264,6 @@
 <translation id="6344783595350022745">পাঠ্য সাফ করুন</translation>
 <translation id="6362362396625799311">কোনো ছদ্মবেশী ট্যাব নেই</translation>
 <translation id="6380866119319257197">আপনি যদি আপনার পাসফ্রেজ ভুলে যান বা এই সেটিং পরিবর্তন করতে চান, তাহলে <ph name="BEGIN_LINK" />সিঙ্ক পুনরায় সেট করুন<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">অপঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="6389470377220713856">কার্ডে থাকা নাম</translation>
 <translation id="6406506848690869874">সিঙ্ক</translation>
 <translation id="6417838470969808600">আপনার জন্য <ph name="USER_EMAIL1" /> থেকে বুকমার্কস, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস রয়েছে।</translation>
@@ -306,7 +301,6 @@
 <translation id="7108338896283013870">লুকান</translation>
 <translation id="7131892264600713844">এই ডিভাইসটি থেকে ইতিহাস দেখাচ্ছে। <ph name="BEGIN_LINK" />আরো জানুন।<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">সম্পূর্ণ নাম</translation>
-<translation id="713434964320012835">মুছুন</translation>
 <translation id="7136892417564438900">ক্যামেরা অনুপলব্ধ</translation>
 <translation id="7167621057293532233">ডেটা প্রকার</translation>
 <translation id="7189598951263744875">শেয়ার করুন...</translation>
@@ -366,7 +360,6 @@
 <translation id="8428045167754449968">নগর / ছোট শহর</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8433678324664858900">পরামর্শগুলি দেখান</translation>
-<translation id="8458197615157477273">পঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="8458397775385147834">১টি আইটেম মোছা হয়েছে</translation>
 <translation id="8503813439785031346">ব্যবহারকারীর নাম</translation>
 <translation id="8517375800490286174">ওপেন সোর্স লাইসেন্স</translation>
@@ -389,7 +382,6 @@
 <translation id="8840513115188359703">আপনাকে আপনার Google অ্যাকাউন্ট থেকে প্রস্থান করুন করা হবে না।</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">কোনও সমস্যা অভিযোগ করুন</translation>
-<translation id="8967427617812342790">পড়ার তালিকায় যোগ করুন</translation>
 <translation id="8971089644512329999">ঠিক আছে, বুঝেছি!</translation>
 <translation id="8981454092730389528">Google কার্যকলাপের নিয়ন্ত্রণগুলি</translation>
 <translation id="8985320356172329008">এই হিসাবে Google এ প্রবেশ করুন করেছেন</translation>

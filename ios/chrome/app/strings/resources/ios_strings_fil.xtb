@@ -79,7 +79,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="2386793615875593361">1 ang napili</translation>
 <translation id="2435457462613246316">Ipakita ang password</translation>
 <translation id="2467815441875554965">Paghahanap ayon sa Konteksto</translation>
-<translation id="2523092375122821828">Markahan Lahat...</translation>
 <translation id="2572712655377361602">Na-block ng isang patakaran ng device ang access sa iyong mga larawan</translation>
 <translation id="2584132361465095047">Magdagdag ng Account…</translation>
 <translation id="2593774076813182497">Hindi mapi-print ang page na ito.</translation>
@@ -161,7 +160,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4121993058175073134">Upang makapagpadala ng net-export data, paki-configure ang iyong email account sa app ng Mga Setting.</translation>
 <translation id="4124987746317609294">Sakop na Oras</translation>
 <translation id="4172051516777682613">Palaging ipakita</translation>
-<translation id="4176234027218720244">Markahan…</translation>
 <translation id="424315890655130736">Ilagay ang Passphrase</translation>
 <translation id="4272631900155121838">Upang mag-scan ng QR code, i-enable ang camera mula sa mga setting</translation>
 <translation id="4281844954008187215">Mga Tuntunin ng Serbisyo</translation>
@@ -208,7 +206,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upa
 <translation id="5300589172476337783">Ipakita</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5327248766486351172">Pangalan</translation>
-<translation id="532992759783668360">I-delete ang Nabasa Na</translation>
 <translation id="5388358297987318779">Buksan ang Larawan</translation>
 <translation id="5409365236829784218">Walang naka-install na app na makakapagbukas ng file na ito.</translation>
 <translation id="54401264925851789">Impormasyon sa Seguridad ng Pahina</translation>
@@ -255,7 +252,6 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="6184086493125982861">Ipakita ang Mga Tab</translation>
 <translation id="6187302354554850004">Huling na-sync: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Hindi pa nababasa</translation>
-<translation id="6194286531716220336">Kanselahin</translation>
 <translation id="6196207969502475924">Paghahanap gamit ang boses</translation>
 <translation id="6254066287920239840">Buksan ang mga link sa app sa halip na sa browser.</translation>
 <translation id="6255097610484507482">I-edit ang Credit Card</translation>
@@ -267,7 +263,6 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="6344783595350022745">I-clear ang Teksto</translation>
 <translation id="6362362396625799311">Walang Mga Tab na Incognito</translation>
 <translation id="6380866119319257197">Kung makalimutan mo ang iyong passphrase o gusto mong baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Markahan Bilang Hindi pa Nababasa</translation>
 <translation id="6389470377220713856">Pangalan sa Card</translation>
 <translation id="6406506848690869874">Pag-sync</translation>
 <translation id="6417838470969808600">Mayroon kang mga bookmark, history, password at iba pang mga setting mula sa <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7108338896283013870">Itago</translation>
 <translation id="7131892264600713844">Ipinapakita ang history mula sa device na ito. <ph name="BEGIN_LINK" />Matuto nang higit pa.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Buong Pangalan</translation>
-<translation id="713434964320012835">I-delete</translation>
 <translation id="7136892417564438900">Hindi available ang camera</translation>
 <translation id="7167621057293532233">Mga Uri ng Data</translation>
 <translation id="7189598951263744875">Ibahagi...</translation>
@@ -365,7 +359,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8428045167754449968">Lungsod / Bayan</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8433678324664858900">Ipakita Suhestiyon</translation>
-<translation id="8458197615157477273">Markahan Bilang Nabasa Na</translation>
 <translation id="8458397775385147834">1 item ang na-delete</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="8517375800490286174">Mga Lisensya ng Open Source</translation>
@@ -388,7 +381,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8840513115188359703">Hindi ka masa-sign out sa iyong Google Account.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Mag-ulat ng Isyu</translation>
-<translation id="8967427617812342790">Idagdag sa listahan ng babasahin</translation>
 <translation id="8971089644512329999">Ok, nakuha ko</translation>
 <translation id="8981454092730389528">Mga Kontrol ng Aktibidad ng Google</translation>
 <translation id="8985320356172329008">Naka-sign In ka sa Google bilang</translation>

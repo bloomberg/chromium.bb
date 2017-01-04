@@ -79,7 +79,6 @@
 <translation id="2386793615875593361">1 निवडले</translation>
 <translation id="2435457462613246316">संकेतशब्द दर्शवा</translation>
 <translation id="2467815441875554965">संदर्भीय शोध</translation>
-<translation id="2523092375122821828">सर्व चिन्हांकित करा…</translation>
 <translation id="2572712655377361602">डिव्हाइस धोरणाने आपल्या फोटोंंमधील प्रवेश अवरोधित केला</translation>
 <translation id="2584132361465095047">खाते जोडा...</translation>
 <translation id="2593774076813182497">या पृष्ठाचे मुद्रण केले जाऊ शकत नाही.</translation>
@@ -161,7 +160,6 @@
 <translation id="4121993058175073134">निव्वळ-निर्यात डेटा पाठविण्यासाठी, कृपया सेटिंग्ज अॅप मध्ये आपले ईमेल खाते कॉन्फिगर करा.</translation>
 <translation id="4124987746317609294">वेळ श्रेणी</translation>
 <translation id="4172051516777682613">नेहमी दर्शवा</translation>
-<translation id="4176234027218720244">चिन्हांकित करा…</translation>
 <translation id="424315890655130736">सांकेतिक वाक्यांश प्रविष्ट करा</translation>
 <translation id="4272631900155121838">QR कोड स्कॅन करण्‍यासाठी, सेटिंग्ज मधून कॅमेरा सक्षम करा</translation>
 <translation id="4281844954008187215">सेवा अटी</translation>
@@ -209,7 +207,6 @@
 <translation id="5300589172476337783">दर्शवा</translation>
 <translation id="5317780077021120954">जतन करा</translation>
 <translation id="5327248766486351172">नाव</translation>
-<translation id="532992759783668360">वाचलेले हटवा</translation>
 <translation id="5388358297987318779">प्रतिमा उघडा</translation>
 <translation id="5409365236829784218">ही फाईल उघडू शकणारे कोणतेही अनुप्रयोग स्थापित केलेले नाहीत.</translation>
 <translation id="54401264925851789">पृष्‍ठ सुरक्षितता माहिती</translation>
@@ -256,7 +253,6 @@
 <translation id="6184086493125982861">टॅब दर्शवा</translation>
 <translation id="6187302354554850004">अखेरचे संंकालित: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">न वाचलेले</translation>
-<translation id="6194286531716220336">रद्द करा</translation>
 <translation id="6196207969502475924">व्हॉइस शोध</translation>
 <translation id="6254066287920239840">ब्राउझर ऐवजी अॅपमध्ये दुवे उघडा.</translation>
 <translation id="6255097610484507482">क्रेडिट कार्ड संपादित करा</translation>
@@ -268,7 +264,6 @@
 <translation id="6344783595350022745">मजकूर साफ करा</translation>
 <translation id="6362362396625799311">कोणतेही गुप्त टॅब नाहीत</translation>
 <translation id="6380866119319257197">आपण आपला सांकेतिक वाक्यांश विसरल्यास किंवा हे सेटिंग बदलू इच्छित असल्यास, <ph name="BEGIN_LINK" />संकालन रीसेट करा<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">न वाचलेले चिन्हांकित करा</translation>
 <translation id="6389470377220713856">कार्डवरील नाव</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6417838470969808600">आपल्याकडे <ph name="USER_EMAIL1" /> मधील बुकमार्क, इतिहास, संकेतशब्द आणि अन्य सेटिंग्ज आहेत.</translation>
@@ -306,7 +301,6 @@
 <translation id="7108338896283013870">लपवा</translation>
 <translation id="7131892264600713844">या डिव्हाइस वरील इतिहास दर्शवित आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">पूर्ण नाव</translation>
-<translation id="713434964320012835">हटवा</translation>
 <translation id="7136892417564438900">कॅमेरा अनुपलब्ध आहे</translation>
 <translation id="7167621057293532233">डेटा प्रकार</translation>
 <translation id="7189598951263744875">सामयिक करा...</translation>
@@ -366,7 +360,6 @@
 <translation id="8428045167754449968">शहर / नगर</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8433678324664858900">सूचना दर्शवा</translation>
-<translation id="8458197615157477273">वाचले चिन्हांकित करा</translation>
 <translation id="8458397775385147834">1 आयटम हटविला</translation>
 <translation id="8503813439785031346">वापरकर्तानाव</translation>
 <translation id="8517375800490286174">मुक्त स्त्रोत परवाने</translation>
@@ -389,7 +382,6 @@
 <translation id="8840513115188359703">आपल्याला आपल्या Google खात्यामधून साइन आउट केले जाणार नाही.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">समस्या नोंदवणे</translation>
-<translation id="8967427617812342790">वाचन सूचीमध्ये जोडा</translation>
 <translation id="8971089644512329999">ठीक, समजले</translation>
 <translation id="8981454092730389528">Google क्रियाकलाप नियंत्रणे</translation>
 <translation id="8985320356172329008">Google मध्ये हे म्हणून साइन इन केले</translation>

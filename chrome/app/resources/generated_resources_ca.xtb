@@ -709,7 +709,7 @@ SharedArrayBuffer.</translation>
 <translation id="189967228374787259">Empaqueta aplicacions web progressives perquè es puguin integrar millor amb Android. Per empaquetar llocs s'utilitza un servidor de Chrome.
         A Chrome Canary i Chrome Dev, l'opció Orígens desconeguts ha d'estar activada a la configuració de seguretat d'Android.</translation>
 <translation id="1899708097738826574"><ph name="OPTIONS_TITLE" /> - <ph name="SUBPAGE_TITLE" /></translation>
-<translation id="1901094040922407892">Baixada prèvia sense estat</translation>
+<translation id="1901094040922407892">Recuperació prèvia sense estat</translation>
 <translation id="1901303067676059328">Selecciona-ho &amp;tot</translation>
 <translation id="1901769927849168791">S'ha detectat una targeta SD</translation>
 <translation id="1902576642799138955">Període de validesa</translation>
@@ -881,6 +881,7 @@ SharedArrayBuffer.</translation>
 <translation id="2150661552845026580">Voleu afegir "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="2151576029659734873">Heu introduït un índex de pestanya no vàlid.</translation>
 <translation id="2152580633399033274">Mostra totes les imatges (recomanat)</translation>
+<translation id="2154710561487035718">Copia l'URL</translation>
 <translation id="2155931291251286316">Permet sempre les finestres emergents de <ph name="HOST" /></translation>
 <translation id="215753907730220065">Surt de la pantalla completa</translation>
 <translation id="2157875535253991059">Ara aquesta pàgina es mostra a pantalla completa.</translation>
@@ -2092,7 +2093,7 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="363903084947548957">Mètode d'entrada següent</translation>
 <translation id="3640006360782160348">Cancel·la la configuració de la impressora</translation>
 <translation id="3640214691812501263">Voleu afegir l'extensió <ph name="EXTENSION_NAME" /> per a <ph name="USER_NAME" />?</translation>
-<translation id="3643210514497458508">L'opció "Baixada prèvia sense estat" baixa recursos amb antelació per millorar la velocitat de càrrega. "Renderització prèvia" renderitza la pàgina completament amb antelació per millorar encara més la velocitat de càrrega. "Càrrega simple" no fa res i s'assembla a desactivar la funció, però recopila més mètriques per fer comparacions.</translation>
+<translation id="3643210514497458508">L'opció "Recuperació prèvia sense estat" baixa recursos amb antelació per millorar la velocitat de càrrega. "Renderització prèvia" renderitza la pàgina completament amb antelació per millorar encara més la velocitat de càrrega. "Càrrega simple" no fa res i s'assembla a desactivar la funció, però recopila més mètriques per fer comparacions.</translation>
 <translation id="3643454140968246241">S'estan sincronitzant <ph name="COUNT" /> fitxers...</translation>
 <translation id="3644896802912593514">Amplada</translation>
 <translation id="3646789916214779970">Restableix el tema predeterminat</translation>

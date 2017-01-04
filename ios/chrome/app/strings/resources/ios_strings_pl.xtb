@@ -79,7 +79,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2386793615875593361">Wybrano: 1</translation>
 <translation id="2435457462613246316">Pokaż hasło</translation>
 <translation id="2467815441875554965">Wyszukiwanie kontekstowe</translation>
-<translation id="2523092375122821828">Oznacz wszystko…</translation>
 <translation id="2572712655377361602">Zasady dotyczące urządzeń zablokowały dostęp do Twoich zdjęć</translation>
 <translation id="2584132361465095047">Dodaj konto…</translation>
 <translation id="2593774076813182497">Tej strony nie można wydrukować.</translation>
@@ -161,7 +160,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4121993058175073134">Aby wysłać dane net-export, skonfiguruj konto e-mail w aplikacji Ustawienia.</translation>
 <translation id="4124987746317609294">Zakres czasowy</translation>
 <translation id="4172051516777682613">Zawsze pokazuj</translation>
-<translation id="4176234027218720244">Oznacz…</translation>
 <translation id="424315890655130736">Wpisz hasło</translation>
 <translation id="4272631900155121838">Aby zeskanować kod QR, włącz aparat w ustawieniach</translation>
 <translation id="4281844954008187215">Warunki korzystania z usługi</translation>
@@ -208,7 +206,6 @@ Dane zostały zaszyfrowane z użyciem Twojego hasła synchronizacji. Wpisz je, 
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5327248766486351172">Nazwa</translation>
-<translation id="532992759783668360">Usuń przeczytane</translation>
 <translation id="5388358297987318779">Otwórz obraz</translation>
 <translation id="5409365236829784218">Nie masz aplikacji, w których można otworzyć ten plik.</translation>
 <translation id="54401264925851789">Informacje o bezpieczeństwie strony</translation>
@@ -255,7 +252,6 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="6184086493125982861">Pokaż karty</translation>
 <translation id="6187302354554850004">Ostatnia synchronizacja: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Nieprzeczytane</translation>
-<translation id="6194286531716220336">Anuluj</translation>
 <translation id="6196207969502475924">Wyszukiwanie głosowe</translation>
 <translation id="6254066287920239840">Otwieraj linki w aplikacji, a nie w przeglądarce.</translation>
 <translation id="6255097610484507482">Edytuj kartę kredytową</translation>
@@ -267,7 +263,6 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="6344783595350022745">Wyczyść tekst</translation>
 <translation id="6362362396625799311">Brak kart incognito</translation>
 <translation id="6380866119319257197">Jeśli nie pamiętasz hasła lub chcesz zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Oznacz jako nieprzeczytane</translation>
 <translation id="6389470377220713856">Imię i nazwisko na karcie</translation>
 <translation id="6406506848690869874">Synchronizacja</translation>
 <translation id="6417838470969808600">Masz zakładki, historię, hasła i inne ustawienia użytkownika <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7108338896283013870">Ukryj</translation>
 <translation id="7131892264600713844">Wyświetlam historię z tego urządzenia. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Imię i nazwisko</translation>
-<translation id="713434964320012835">Usuń</translation>
 <translation id="7136892417564438900">Aparat jest niedostępny</translation>
 <translation id="7167621057293532233">Typy danych</translation>
 <translation id="7189598951263744875">Udostępnij...</translation>
@@ -365,7 +359,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8428045167754449968">Miejscowość</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8433678324664858900">Pokazuj propozycje</translation>
-<translation id="8458197615157477273">Oznacz jako przeczytane</translation>
 <translation id="8458397775385147834">Usunąłeś 1 element</translation>
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="8517375800490286174">Licencje typu open source</translation>
@@ -388,7 +381,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8840513115188359703">Nie spowoduje to wylogowania z konta Google.</translation>
 <translation id="8904976895050290827">Synchronizacja Chrome</translation>
 <translation id="895541991026785598">Zgłaszanie problemu</translation>
-<translation id="8967427617812342790">Dodaj do listy „Do przeczytania”</translation>
 <translation id="8971089644512329999">OK</translation>
 <translation id="8981454092730389528">Zarządzanie aktywnością Google</translation>
 <translation id="8985320356172329008">Jesteś zalogowany w Google jako</translation>

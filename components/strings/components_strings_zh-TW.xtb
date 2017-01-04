@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">你嘗試連上 <ph name="DOMAIN" />，但伺服器提供的憑證無效。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459">您的 <ph name="DOMAIN" /> 連線使用新型加密套件進行加密。</translation>
 <translation id="4594403342090139922">復原刪除(&amp;U)</translation>
+<translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
 <translation id="4668929960204016307">，</translation>
 <translation id="4670097147947922288">您正在瀏覽擴充功能頁面。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">下載中</translation>
 <translation id="5190835502935405962">書籤列</translation>
 <translation id="5199729219167945352">實驗性功能</translation>
-<translation id="5199841536747119669">這裡會顯示系統建議你瀏覽的內容</translation>
 <translation id="5251803541071282808">雲端</translation>
 <translation id="5277279256032773186">在工作環境使用 Chrome 嗎？企業可以管理員工的 Chrome 設定。瞭解詳情</translation>
 <translation id="5299298092464848405">解析政策時發生錯誤</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">你嘗試連上 <ph name="DOMAIN" />，但伺服器的憑證是以防護力薄弱的簽章演算法 (例如 SHA-1) 進行簽署。這代表伺服器提供的安全性憑證可能遭到偽造，而且這個伺服器可能並不是你的目標伺服器 (你的連線對象可能是攻擊者的電腦)。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="5710435578057952990">此網頁的身分未經驗證。</translation>
 <translation id="5720705177508910913">目前使用者</translation>
-<translation id="572328651809341494">最近開啟的分頁</translation>
 <translation id="5732392974455271431">你的家長可以為你解除封鎖這個網站</translation>
 <translation id="5784606427469807560">驗證您的信用卡時發生問題。請檢查網際網路連線，然後再試一次。</translation>
 <translation id="5785756445106461925">此外，這個網頁含有其他不安全的資源。其他人可能會在資源傳輸期間檢視這些資源，攻擊者也可能會修改這些資源，進而變更網頁外觀。</translation>

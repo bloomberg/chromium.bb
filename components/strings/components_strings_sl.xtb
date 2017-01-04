@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar je strežnik posredoval neveljavno potrdilo. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Povezava z domeno <ph name="DOMAIN" /> je šifrirana s sodobno šifrirno zbirko.</translation>
 <translation id="4594403342090139922">&amp;Razveljavi izbris</translation>
+<translation id="4619615317237390068">Zavihki iz drugih naprav</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Ogledujete si stran z razširitvami.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">Prenos</translation>
 <translation id="5190835502935405962">Vrstica z zaznamki</translation>
 <translation id="5199729219167945352">Poskusi</translation>
-<translation id="5199841536747119669">Tu so prikazani predlogi</translation>
 <translation id="5251803541071282808">Oblak</translation>
 <translation id="5277279256032773186">Uporabljate Chrome v službi? Podjetja lahko upravljajo nastavitve Chroma za zaposlene. Preberite več o tem.</translation>
 <translation id="5299298092464848405">Napaka pri razčlenjevanju pravilnika</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar je strežnik posredoval potrdilo, podpisano s šibkim podpisnim algoritmom (na primer SHA-1). To pomeni, da so varnostne poverilnice, ki jih je posredoval strežnik, morda ponarejene in strežnik morda ni tisti, ki ga pričakujete (morda komunicirate z napadalcem). <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">Identiteta tega spletnega mesta ni bila potrjena.</translation>
 <translation id="5720705177508910913">Trenutni uporabnik</translation>
-<translation id="572328651809341494">Nedavni zavihki</translation>
 <translation id="5732392974455271431">Starši ga lahko odblokirajo</translation>
 <translation id="5784606427469807560">Težava pri potrditvi kartice. Preverite internetno povezavo in poskusite znova.</translation>
 <translation id="5785756445106461925">Poleg tega so na tej strani druga sredstva, ki niso varna. Ta sredstva lahko med prenosom pregledujejo drugi, morebitni napadalec pa jih lahko spremeni, tako da se spremeni videz strani.</translation>

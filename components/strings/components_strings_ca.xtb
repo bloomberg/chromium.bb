@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">Has provat d'accedir a <ph name="DOMAIN" />, però el certificat que ha presentat el servidor no és vàlid. <ph name="BEGIN_LEARN_MORE_LINK" />Obtén més informació<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">La connexió a <ph name="DOMAIN" /> s'ha encriptat amb un sistema de xifratge modern.</translation>
 <translation id="4594403342090139922">&amp;Desfés la supressió</translation>
+<translation id="4619615317237390068">Pestanyes d'altres dispositius</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Esteu consultant una pàgina d'extensions.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">S'està baixant</translation>
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
 <translation id="5199729219167945352">Experiments</translation>
-<translation id="5199841536747119669">Els suggeriments es mostren aquí</translation>
 <translation id="5251803541071282808">Núvol</translation>
 <translation id="5277279256032773186">Fas servir Chrome a la feina? Les empreses poden gestionar la configuració de Chrome dels empleats. Més informació</translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">Has provat d'accedir a <ph name="DOMAIN" />, però el servidor ha proporcionat un certificat signat mitjançant un algoritme de signatura poc segur (com ara SHA-1). Això indica que les credencials de seguretat que ha proporcionat el servidor es podrien haver falsificat i que és possible que el servidor no sigui el que esperaves (sinó un atacant). <ph name="BEGIN_LEARN_MORE_LINK" />Obtén més informació<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">La identitat d'aquest lloc web no ha estat verificada.</translation>
 <translation id="5720705177508910913">Usuari actual</translation>
-<translation id="572328651809341494">Pestanyes recents</translation>
 <translation id="5732392974455271431">Els teus pares te'l poden desbloquejar</translation>
 <translation id="5784606427469807560">S'ha produït un problema en confirmar la targeta. Comprova la connexió a Internet i torna-ho a provar.</translation>
 <translation id="5785756445106461925">A més, aquesta pàgina conté altres recursos que no són segurs. La resta d'usuaris poden visualitzar-los mentre estan en trànsit, i algun atacant podria modificar-los per canviar l'aparença de la pàgina.</translation>

@@ -361,6 +361,7 @@
 <translation id="4589078953350245614">Yritit muodostaa yhteyden verkkotunnukseen <ph name="DOMAIN" />, mutta palvelin esitti virheellisen varmenteen. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459">Yhteytesi kohteeseen <ph name="DOMAIN" /> on salattu nykyaikaisella salaustekniikalla.</translation>
 <translation id="4594403342090139922">K&amp;umoa poisto</translation>
+<translation id="4619615317237390068">Välilehdet muista laitteista</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Katselet laajennussivua.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -408,7 +409,6 @@
 <translation id="5181140330217080051">Ladataan</translation>
 <translation id="5190835502935405962">Kirjanmerkkipalkki</translation>
 <translation id="5199729219167945352">Kokeilut</translation>
-<translation id="5199841536747119669">Ehdotuksesi näkyvät tässä.</translation>
 <translation id="5251803541071282808">Pilvi</translation>
 <translation id="5277279256032773186">Käytätkö Chromea töissä? Yritykset voivat hallita Chromen asetuksia työntekijöidensä puolesta. Lisätietoja</translation>
 <translation id="5299298092464848405">Virhe jäsennettäessä käytäntöä</translation>
@@ -451,7 +451,6 @@
 <translation id="5694783966845939798">Yritit muodostaa yhteyden verkkotunnukseen <ph name="DOMAIN" />, mutta palvelimen esittämä varmenne käyttää heikkoa allekirjoitusalgoritmia (esim. SHA-1). Palvelimen esittämät tunnistetiedot voivat olla väärennettyjä, eikä palvelin välttämättä ole tavoittelemasi palvelin (saatat olla tekemisissä hakkerin kanssa). <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="5710435578057952990">Tämän sivuston identiteettiä ei ole vahvistettu.</translation>
 <translation id="5720705177508910913">Nykyinen käyttäjä</translation>
-<translation id="572328651809341494">Hiljattain suljetut välilehdet</translation>
 <translation id="5732392974455271431">Vanhempasi voivat kumota eston puolestasi.</translation>
 <translation id="5784606427469807560">Korttia vahvistettaessa tapahtui virhe. Tarkista internetyhteys ja yritä uudelleen.</translation>
 <translation id="5785756445106461925">Tällä sivulla on kuitenkin muita osia, jotka eivät ole suojattuja. Muut voivat tarkastella näitä osia siirron aikana, ja hyökkääjä voi muuttaa sivun ulkoasua muokkaamalla näitä osia.</translation>

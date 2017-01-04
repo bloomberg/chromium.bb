@@ -357,6 +357,7 @@
 <translation id="4589078953350245614">您尝试连接到 <ph name="DOMAIN" />，但服务器提供的证书无效。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="4592951414987517459">您与 <ph name="DOMAIN" /> 之间的连接采用新型加密套件进行了加密。</translation>
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
+<translation id="4619615317237390068">从其他设备打开的标签页</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">您正在查看的是扩展程序页面。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /><ph name="SENTENCE2" /></translation>
@@ -404,7 +405,6 @@
 <translation id="5181140330217080051">正在下载</translation>
 <translation id="5190835502935405962">书签栏</translation>
 <translation id="5199729219167945352">实验</translation>
-<translation id="5199841536747119669">为您推荐的内容会显示在此处</translation>
 <translation id="5251803541071282808">云端</translation>
 <translation id="5277279256032773186">使用 Chrome 办公？企业可以为其员工管理 Chrome 设置。了解详情</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
@@ -447,7 +447,6 @@
 <translation id="5694783966845939798">您尝试连接到 <ph name="DOMAIN" />，但相应服务器提供的证书是使用防护力薄弱的签名算法（如 SHA-1）签署的。这意味着该服务器提供的安全凭据可能是伪造的，而且该服务器可能并不是您想访问的服务器（您可能正在与攻击者通信）。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="5710435578057952990">此网站尚未经过身份验证。</translation>
 <translation id="5720705177508910913">当前用户</translation>
-<translation id="572328651809341494">最近打开的标签页</translation>
 <translation id="5732392974455271431">您的父母可为您取消屏蔽此网站</translation>
 <translation id="5784606427469807560">确认您的信用卡时出现问题。请检查您的互联网连接，然后重试。</translation>
 <translation id="5785756445106461925">而且，此页中包含其他不安全的资源。他人能在这些资源传输过程中进行查看，攻击者也可以修改这些资源，从而改变此页的外观。</translation>

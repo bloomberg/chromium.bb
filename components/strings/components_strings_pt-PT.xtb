@@ -360,6 +360,7 @@
 <translation id="4589078953350245614">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado inválido. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">A sua ligação a <ph name="DOMAIN" /> está encriptada através de um conjunto de cifras moderno.</translation>
 <translation id="4594403342090139922">&amp;Anular eliminação</translation>
+<translation id="4619615317237390068">Separadores de outros dispositivos</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Está a ver a página de uma extensão.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -407,7 +408,6 @@
 <translation id="5181140330217080051">A transferir</translation>
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="5199729219167945352">Experiências</translation>
-<translation id="5199841536747119669">As suas sugestões são apresentadas aqui</translation>
 <translation id="5251803541071282808">Nuvem</translation>
 <translation id="5277279256032773186">Utiliza o Chrome no trabalho? As empresas podem gerir as definições do Chrome para os seus funcionários. Saiba mais</translation>
 <translation id="5299298092464848405">Erro ao analisar a política</translation>
@@ -450,7 +450,6 @@
 <translation id="5694783966845939798">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado assinado com um algoritmo de assinatura fraco (como SHA-1). Isto significa que as credenciais de segurança que o servidor apresentou podem ter sido falsificadas e que o servidor pode não ser o servidor esperado (pode estar a comunicar com um utilizador mal-intencionado). <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="5710435578057952990">A identidade deste Web site não foi verificada.</translation>
 <translation id="5720705177508910913">Utilizador atual</translation>
-<translation id="572328651809341494">Separadores recentes</translation>
 <translation id="5732392974455271431">Os teus pais podem desbloquear-te</translation>
 <translation id="5784606427469807560">Ocorreu um erro ao confirmar o cartão. Verifique a sua ligação à Internet e tente novamente.</translation>
 <translation id="5785756445106461925">Além disso, esta página inclui outros recursos que não são seguros. Estes recursos podem ser vistos por outros utilizadores em trânsito e modificados por um utilizador mal intencionado com o intuito de alterar o aspeto da página.</translation>

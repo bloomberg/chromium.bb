@@ -79,7 +79,6 @@ Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados 
 <translation id="2386793615875593361">1 selecionada</translation>
 <translation id="2435457462613246316">Mostrar palavra-passe</translation>
 <translation id="2467815441875554965">Pesquisa contextual</translation>
-<translation id="2523092375122821828">Marcar tudo…</translation>
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
 <translation id="2584132361465095047">Adicionar conta...</translation>
 <translation id="2593774076813182497">Não é pos. impr. página.</translation>
@@ -161,7 +160,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4121993058175073134">P/enviar dados exp. da Int., config. a conta de email na ap. Definiç.</translation>
 <translation id="4124987746317609294">Intervalo de Tempo</translation>
 <translation id="4172051516777682613">Mostrar sempre</translation>
-<translation id="4176234027218720244">Marcar…</translation>
 <translation id="424315890655130736">Introduzir frase de acesso</translation>
 <translation id="4272631900155121838">Para ler um código QR, ative a câmara nas definições</translation>
 <translation id="4281844954008187215">Termos de Utilização</translation>
@@ -208,7 +206,6 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nome</translation>
-<translation id="532992759783668360">Eliminar lidas</translation>
 <translation id="5388358297987318779">Abrir Imagem</translation>
 <translation id="5409365236829784218">Não existem aplicações instaladas que possam abrir este ficheiro.</translation>
 <translation id="54401264925851789">Informações de Segurança da Página</translation>
@@ -255,7 +252,6 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="6184086493125982861">Mostrar Separadores</translation>
 <translation id="6187302354554850004">Última sincronização: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Não lidas</translation>
-<translation id="6194286531716220336">Cancelar</translation>
 <translation id="6196207969502475924">Pesquisa por Voz</translation>
 <translation id="6254066287920239840">Abrir links na aplicação em vez de no navegador.</translation>
 <translation id="6255097610484507482">Editar cartão de crédito</translation>
@@ -267,7 +263,6 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="6344783595350022745">Limpar Texto</translation>
 <translation id="6362362396625799311">Sem separadores de navegação anónima</translation>
 <translation id="6380866119319257197">Se se esquecer da frase de acesso ou pretender alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /></translation>
-<translation id="6385146967113720558">Marc. não lida</translation>
 <translation id="6389470377220713856">Nome no cartão</translation>
 <translation id="6406506848690869874">Sincronização</translation>
 <translation id="6417838470969808600">Tem marcadores, histórico, palavras-passe e outras definições de <ph name="USER_EMAIL1" />.</translation>
@@ -305,7 +300,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7131892264600713844">A mostrar o histórico deste dispositivo. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Nome completo</translation>
-<translation id="713434964320012835">Eliminar</translation>
 <translation id="7136892417564438900">A câmara não está disponível</translation>
 <translation id="7167621057293532233">Tipos de dados</translation>
 <translation id="7189598951263744875">Partilhar...</translation>
@@ -365,7 +359,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8428045167754449968">Cidade/Localidade</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433678324664858900">Mostrar Sugestões</translation>
-<translation id="8458197615157477273">Marc. como lida</translation>
 <translation id="8458397775385147834">1 item eliminado</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="8517375800490286174">Licenças de Código Aberto</translation>
@@ -388,7 +381,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8840513115188359703">A sessão na sua Conta Google não é terminada.</translation>
 <translation id="8904976895050290827">Sincronização do Google Chrome</translation>
 <translation id="895541991026785598">Comunicar um problema</translation>
-<translation id="8967427617812342790">Adicionar à lista de leitura</translation>
 <translation id="8971089644512329999">OK, compreendi</translation>
 <translation id="8981454092730389528">Controlos da atividade Google</translation>
 <translation id="8985320356172329008">Iniciou sessão no Google como</translation>
