@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
@@ -172,6 +173,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(new EmptyBrowserParts());
 
         if (savedInstanceState != null) {
             mFreProperties = savedInstanceState;
@@ -513,7 +516,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     private void ensureBrowserProcessInitialized() {
         if (mNativeSideIsInitialized) return;
         try {
-            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
+            ChromeBrowserInitializer.getInstance(this).handlePostNativeStartup(
+                    false, new EmptyBrowserParts());
             mNativeSideIsInitialized = true;
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);
