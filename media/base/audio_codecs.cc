@@ -52,9 +52,9 @@ std::string GetCodecName(AudioCodec codec) {
 AudioCodec StringToAudioCodec(const std::string& codec_id) {
   if (codec_id == "aac")
     return kCodecAAC;
-  if (codec_id == "ac-3" || codec_id == "mp4a.A5")
+  if (codec_id == "ac-3" || codec_id == "mp4a.A5" || codec_id == "mp4a.a5")
     return kCodecAC3;
-  if (codec_id == "ec-3" || codec_id == "mp4a.A6")
+  if (codec_id == "ec-3" || codec_id == "mp4a.A6" || codec_id == "mp4a.a6")
     return kCodecEAC3;
   if (codec_id == "mp3")
     return kCodecMP3;
