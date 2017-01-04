@@ -5,6 +5,8 @@
 <div class="target">-webkit-perspective-origin-x 10ms</div><br>
 <div class="target">-webkit-perspective-origin-y 10ms</div><br>
 <script>
+'use strict';
+var remaining = 0;
 if (window.testRunner) {
   testRunner.dumpAsText();
   testRunner.waitUntilDone();
@@ -14,11 +16,9 @@ document.addEventListener('transitionend', function(e) {
   var result = document.createElement('div');
   result.textContent = 'fired transitionend with propertyName: ' + e.propertyName;
   e.target.appendChild(result);
-  if (window.testRunner) {
-    // All events should be fired by next frame.
-    requestAnimationFrame(function() {
-      testRunner.notifyDone();
-    });
+  --remaining;
+  if (remaining === 0 && window.testRunner) {
+    testRunner.notifyDone();
   }
 });
 
@@ -30,6 +30,7 @@ onload = function() {
     targets[i].style.webkitPerspectiveOriginX = '10px';
     targets[i].style.webkitPerspectiveOriginY = '10px';
     targets[i].style.perspectiveOrigin = '10px 10px';
+    ++remaining;
   }
 };
 </script>
