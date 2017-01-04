@@ -44,7 +44,7 @@
       log('INFO: Start event fired');
       target.removeEventListener('animationstart', onStart);
       requestAnimationFrame(function() {
-        setTimeout(setDisplayNone, 100);
+        setTimeout(setDisplayNone, 300);
       });
     }
 
@@ -53,7 +53,7 @@
       leftPropertyWhenSetDisplayNone = getComputedStyle(target).left;
       target.style.display = 'none';
       requestAnimationFrame(function() {
-        setTimeout(setDisplayBlock, 100);
+        requestAnimationFrame(setDisplayBlock);
       });
     }
 
