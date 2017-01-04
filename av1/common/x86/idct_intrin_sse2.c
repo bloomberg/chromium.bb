@@ -1013,7 +1013,7 @@ void av1_iht8x4_32_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
       aom_idct8_sse2(in);
       break;
     case DCT_ADST:
-    case ADST_ADST:
+    case ADST_ADST: aom_iadst8_sse2(in); break;
 #if CONFIG_EXT_TX
     case DCT_FLIPADST:
     case FLIPADST_FLIPADST:
