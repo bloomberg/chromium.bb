@@ -101,11 +101,13 @@ class MockClient : public VideoCaptureDevice::Client {
                                 base::TimeDelta timestamp) override {
     frame_cb_.Run(format);
   }
-  void OnIncomingCapturedVideoFrame(
+  void OnIncomingCapturedBufferExt(
       std::unique_ptr<Buffer> buffer,
-      scoped_refptr<media::VideoFrame> frame) override {
-    VideoCaptureFormat format(frame->natural_size(), 30.0,
-                              PIXEL_FORMAT_I420);
+      const VideoCaptureFormat& format,
+      base::TimeTicks reference_time,
+      base::TimeDelta timestamp,
+      gfx::Rect visible_rect,
+      const VideoFrameMetadata& additional_metadata) override {
     frame_cb_.Run(format);
   }
   std::unique_ptr<Buffer> ResurrectLastOutputBuffer(

@@ -270,27 +270,32 @@ class StubClient : public media::VideoCaptureDevice::Client {
     DoOnIncomingCapturedBuffer();
   }
 
-  void OnIncomingCapturedVideoFrame(
-      std::unique_ptr<Buffer> buffer,
-      scoped_refptr<media::VideoFrame> frame) override {
-    EXPECT_FALSE(frame->visible_rect().IsEmpty());
-    EXPECT_EQ(media::PIXEL_FORMAT_I420, frame->format());
-    double frame_rate = 0;
-    EXPECT_TRUE(
-        frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
-                                     &frame_rate));
-    EXPECT_EQ(kTestFramesPerSecond, frame_rate);
+  void OnIncomingCapturedBufferExt(
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+      const media::VideoCaptureFormat& format,
+      base::TimeTicks reference_time,
+      base::TimeDelta timestamp,
+      gfx::Rect visible_rect,
+      const media::VideoFrameMetadata& additional_metadata) override {
+    EXPECT_FALSE(visible_rect.IsEmpty());
+    EXPECT_EQ(media::PIXEL_FORMAT_I420, format.pixel_format);
+    EXPECT_EQ(kTestFramesPerSecond, format.frame_rate);
 
     // TODO(miu): We just look at the center pixel presently, because if the
     // analysis is too slow, the backlog of frames will grow without bound and
     // trouble erupts. http://crbug.com/174519
     using media::VideoFrame;
-    const gfx::Point center = frame->visible_rect().CenterPoint();
+    auto frame = VideoFrame::WrapExternalSharedMemory(
+        media::PIXEL_FORMAT_I420, format.frame_size, visible_rect,
+        format.frame_size, static_cast<uint8_t*>(buffer->data()),
+        buffer->mapped_size(), base::SharedMemory::NULLHandle(), 0u,
+        base::TimeDelta());
+    const gfx::Point center = visible_rect.CenterPoint();
     const int center_offset_y =
         (frame->stride(VideoFrame::kYPlane) * center.y()) + center.x();
     const int center_offset_uv =
         (frame->stride(VideoFrame::kUPlane) * (center.y() / 2)) +
-            (center.x() / 2);
+        (center.x() / 2);
     report_callback_.Run(
         SkColorSetRGB(frame->data(VideoFrame::kYPlane)[center_offset_y],
                       frame->data(VideoFrame::kUPlane)[center_offset_uv],
