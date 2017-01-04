@@ -18,7 +18,7 @@
 #include "remoting/protocol/pairing_client_authenticator.h"
 #include "remoting/protocol/spake2_authenticator.h"
 #include "remoting/protocol/v2_authenticator.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {

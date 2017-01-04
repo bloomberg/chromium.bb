@@ -10,9 +10,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlbuilder.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlparser.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlbuilder.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlparser.h"
 
 namespace remoting {
 

@@ -21,8 +21,8 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webrtc/libjingle/xmpp/prexmppauth.h"
-#include "webrtc/libjingle/xmpp/xmppclientsettings.h"
+#include "third_party/libjingle_xmpp/xmpp/prexmppauth.h"
+#include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 
 namespace buzz {
 class CaptchaChallenge;

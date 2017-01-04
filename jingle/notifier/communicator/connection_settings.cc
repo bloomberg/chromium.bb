@@ -8,10 +8,10 @@
 
 #include "base/logging.h"
 
-#include "webrtc/libjingle/xmpp/xmppclientsettings.h"
 // Ideally we shouldn't include anything from talk/p2p, but we need
 // the definition of ProtocolType.  Don't use any functions from
 // port.h, since it won't link.
+#include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 #include "webrtc/p2p/base/port.h"
 
 namespace notifier {

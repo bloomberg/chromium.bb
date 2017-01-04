@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "jingle/notifier/base/server_information.h"
-#include "webrtc/libjingle/xmpp/xmppclientsettings.h"
+#include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 
 namespace notifier {
 

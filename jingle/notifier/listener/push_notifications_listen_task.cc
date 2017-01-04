@@ -9,12 +9,12 @@
 #include "jingle/notifier/listener/notification_constants.h"
 #include "jingle/notifier/listener/notification_defines.h"
 #include "jingle/notifier/listener/xml_element_util.h"
-#include "third_party/webrtc/libjingle/xmllite/qname.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmllite/qname.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmpp/constants.h"
+#include "third_party/libjingle_xmpp/xmpp/xmppclient.h"
+#include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 #include "webrtc/base/task.h"
-#include "webrtc/libjingle/xmpp/constants.h"
-#include "webrtc/libjingle/xmpp/xmppclient.h"
-#include "webrtc/libjingle/xmpp/xmppengine.h"
 
 namespace notifier {
 

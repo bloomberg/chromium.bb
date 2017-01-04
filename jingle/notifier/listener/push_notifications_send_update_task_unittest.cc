@@ -11,7 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webrtc/libjingle/xmpp/jid.h"
+#include "third_party/libjingle_xmpp/xmpp/jid.h"
 
 namespace buzz {
 class XmlElement;

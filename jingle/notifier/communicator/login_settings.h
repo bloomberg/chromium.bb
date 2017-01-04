@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "jingle/notifier/base/server_information.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "webrtc/libjingle/xmpp/xmppclientsettings.h"
+#include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 
 namespace notifier {
 

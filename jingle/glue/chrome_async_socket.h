@@ -23,7 +23,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "third_party/webrtc/libjingle/xmpp/asyncsocket.h"
+#include "third_party/libjingle_xmpp/xmpp/asyncsocket.h"
 
 namespace net {
 class IOBufferWithSize;

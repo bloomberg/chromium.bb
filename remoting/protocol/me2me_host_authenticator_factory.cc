@@ -15,7 +15,7 @@
 #include "remoting/protocol/rejecting_authenticator.h"
 #include "remoting/protocol/token_validator.h"
 #include "remoting/signaling/jid_util.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {

@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "third_party/libjingle_xmpp/xmpp/constants.h"
+#include "third_party/libjingle_xmpp/xmpp/saslcookiemechanism.h"
 #include "webrtc/base/socketaddress.h"
-#include "webrtc/libjingle/xmpp/constants.h"
-#include "webrtc/libjingle/xmpp/saslcookiemechanism.h"
 
 namespace notifier {
 

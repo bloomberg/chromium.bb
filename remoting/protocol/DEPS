@@ -8,8 +8,8 @@ include_rules = [
   "+remoting/codec",
   "+remoting/signaling",
   "+third_party/boringssl",
-  "+third_party/libjingle",
-  "+third_party/webrtc",
+  "+third_party/libjingle_xmpp/xmpp",
   "+third_party/protobuf/src",
+  "+third_party/webrtc",
   "+ui/events/keycodes/dom",
 ]

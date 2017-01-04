@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "remoting/signaling/xmpp_stream_parser.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 // Undefine SendMessage and ERROR defined in Windows headers.
 #ifdef SendMessage

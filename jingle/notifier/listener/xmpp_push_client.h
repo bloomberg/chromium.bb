@@ -22,7 +22,7 @@
 #include "jingle/notifier/listener/push_notifications_listen_task.h"
 #include "jingle/notifier/listener/push_notifications_subscribe_task.h"
 #include "jingle/notifier/listener/send_ping_task.h"
-#include "webrtc/libjingle/xmpp/xmppclientsettings.h"
+#include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 
 namespace buzz {
 class XmppTaskParentInterface;

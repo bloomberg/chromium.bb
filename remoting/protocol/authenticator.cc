@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "remoting/base/constants.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {

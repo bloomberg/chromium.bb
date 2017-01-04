@@ -16,9 +16,9 @@
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "net/base/host_port_pair.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
-#include "webrtc/libjingle/xmpp/constants.h"
-#include "webrtc/libjingle/xmpp/xmppclientsettings.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmpp/constants.h"
+#include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 
 namespace notifier {
 

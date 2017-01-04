@@ -471,8 +471,7 @@ static_library("test_support") {
   if (enable_webrtc) {
     public_deps += [
       "//third_party/libjingle/webrtc:libjingle_webrtc",
-      "//third_party/webrtc/libjingle/xmllite",
-      "//third_party/webrtc/libjingle/xmpp",
+      "//third_party/libjingle_xmpp",
       "//third_party/webrtc/modules/desktop_capture",
     ]
   }
@@ -625,8 +624,7 @@ if (enable_remoting_host) {
     if (enable_webrtc) {
       deps += [
         "//third_party/libjingle/webrtc:libjingle_webrtc",
-        "//third_party/webrtc/libjingle/xmllite",
-        "//third_party/webrtc/libjingle/xmpp",
+        "//third_party/libjingle_xmpp",
       ]
     }
   }
@@ -742,8 +740,7 @@ if (enable_me2me_host) {
     if (enable_webrtc) {
       deps += [
         "//third_party/libjingle/webrtc:libjingle_webrtc",
-        "//third_party/webrtc/libjingle/xmllite",
-        "//third_party/webrtc/libjingle/xmpp",
+        "//third_party/libjingle_xmpp",
       ]
     }
 

@@ -1,7 +1,7 @@
 include_rules = [
   "+net",
   "+jingle",
-  "+third_party/libjingle",
   "+third_party/webrtc/base",
-  "+third_party/webrtc/libjingle",
+  "+third_party/libjingle_xmpp/xmllite",
+  "+third_party/libjingle_xmpp/xmpp",
 ]

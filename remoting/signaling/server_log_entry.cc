@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "remoting/base/constants.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 using base::SysInfo;
 using buzz::QName;

@@ -15,8 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 #include "webrtc/base/sigslot.h"
-#include "webrtc/libjingle/xmpp/xmppengine.h"
 
 namespace buzz {
 class PreXmppAuth;

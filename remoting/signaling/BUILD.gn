@@ -35,8 +35,7 @@ static_library("signaling") {
   public_deps = [
     "//remoting/proto",
     "//third_party/libjingle",
-    "//third_party/webrtc/libjingle/xmllite",
-    "//third_party/webrtc/libjingle/xmpp",
+    "//third_party/libjingle_xmpp",
   ]
 
   deps = [

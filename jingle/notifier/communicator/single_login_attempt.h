@@ -12,7 +12,7 @@
 #include "jingle/notifier/base/xmpp_connection.h"
 #include "jingle/notifier/communicator/connection_settings.h"
 #include "jingle/notifier/communicator/login_settings.h"
-#include "webrtc/libjingle/xmpp/xmppengine.h"
+#include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 
 namespace buzz {
 class XmppTaskParentInterface;

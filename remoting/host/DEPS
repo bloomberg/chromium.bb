@@ -16,6 +16,7 @@ include_rules = [
   "+third_party/jsoncpp",
   "+third_party/skia",
   "+third_party/webrtc",
+  "+third_party/libjingle_xmpp/xmpp",
   "+ui",
 ]
 

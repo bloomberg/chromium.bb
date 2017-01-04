@@ -14,8 +14,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "jingle/notifier/listener/notification_defines.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
-#include "webrtc/libjingle/xmpp/xmpptask.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmpp/xmpptask.h"
 
 namespace notifier {
 class PushNotificationsSubscribeTask : public buzz::XmppTask {
