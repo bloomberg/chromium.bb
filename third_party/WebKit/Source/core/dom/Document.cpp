@@ -482,7 +482,7 @@ Document::Document(const DocumentInit& initializer,
           this,
           &Document::elementDataCacheClearTimerFired),
       m_timeline(DocumentTimeline::create(this)),
-      m_compositorPendingAnimations(new CompositorPendingAnimations()),
+      m_compositorPendingAnimations(new CompositorPendingAnimations(*this)),
       m_templateDocumentHost(nullptr),
       m_didAssociateFormControlsTimer(
           TaskRunnerHelper::get(TaskType::UnspecedLoading, this),
