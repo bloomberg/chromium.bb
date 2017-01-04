@@ -76,6 +76,7 @@
     {
       'target_name': 'network_proxy',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         '../controls/compiled_resources2.gyp:settings_checkbox',
         '../prefs/compiled_resources2.gyp:prefs_behavior',
         '<(DEPTH)/ui/webui/resources/cr_elements/network/compiled_resources2.gyp:cr_onc_types',

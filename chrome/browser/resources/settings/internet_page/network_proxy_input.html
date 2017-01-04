@@ -19,13 +19,13 @@
     <div class="layout horizontal center">
       <div class="flex">[[label]]</div>
       <paper-input-container no-label-float>
-        <input is="iron-input" bind-value="{{value.Host}}" disabled="[[!editable]]"
-            on-blur="onValueChange_">
+        <input is="iron-input" bind-value="{{value.Host}}"
+            disabled="[[!editable]]" on-change="onValueChange_">
       </paper-input-container>
       <div>$i18n{networkProxyPort}</div>
       <paper-input-container no-label-float id="port">
-        <input is="iron-input" bind-value="{{value.Port}}" disabled="[[!editable]]"
-            on-blur="onValueChange_">
+        <input is="iron-input" bind-value="{{value.Port}}"
+            disabled="[[!editable]]" on-change="onValueChange_">
       </paper-input-container>
     </div>
   </template>

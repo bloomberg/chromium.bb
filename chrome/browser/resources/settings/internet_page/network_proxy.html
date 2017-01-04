@@ -91,8 +91,8 @@
       <div class="start">$i18n{networkProxyConnectionType}</div>
       <div class="md-select-wrapper">
         <select id="proxyType" class="md-select" on-change="onTypeChange_"
-            value="[[proxy.Type]]"
-            disabled="[[!isProxyEditable_(networkProperties, editable,
+            value="[[proxy_.Type]]"
+            disabled="[[!isEditable_('Type', networkProperties, editable,
                 useSharedProxies_)]]">
           <template is="dom-repeat" items="[[proxyTypes_]]">
             <option value="[[item]]">[[getProxyTypeDesc_(item)]]</option>
@@ -104,81 +104,76 @@
 
     <!-- Autoconfiguration (PAC) -->
     <div class="settings-box continuation indent"
-        hidden$="[[!matches_(proxy.Type, ProxySettingsType_.PAC)]]">
+        hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.PAC)]]">
       <div>$i18n{networkProxyAutoConfig}</div>
-      <paper-input no-label-float class="middle" value="{{proxy.PAC}}"
-          disabled="[[!isEditable_(networkProperties.ProxySettings.PAC,
+      <paper-input no-label-float class="middle flex" value="{{proxy_.PAC}}"
+          disabled="[[!isEditable_('PAC', networkProperties, editable,
               useSharedProxies_)]]"
-          on-blur="onProxyInputChange_">
+          on-blur="onPACChange_">
       </paper-input>
     </div>
 
     <!-- Web Proxy Auto Discovery (WPAD) -->
     <div class="settings-box continuation indent"
-        hidden$="[[!matches_(proxy.Type, ProxySettingsType_.WPAD)]]">
+        hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.WPAD)]]">
       <div>$i18n{networkSectionWpad}</div>
-      <div class="middle">[[WPAD]]</div>
+      <div class="middle flex">[[WPAD_]]</div>
     </div>
 
     <!-- Manual -->
     <div id="proxyDiv" class="settings-box continuation single-column indent"
-        hidden$="[[!matches_(proxy.Type, ProxySettingsType_.MANUAL)]]">
+        hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.MANUAL)]]">
       <paper-checkbox checked="{{useSameProxy_}}"
-          disabled="[[!isProxyEditable_(networkProperties, editable,
-                    useSharedProxies_)]]">
+          disabled="[[!isEditable_('Type', networkProperties, editable,
+              useSharedProxies_)]]">
         $i18n{networkProxyUseSame}
       </paper-checkbox>
       <div hidden$="[[!useSameProxy_]]" class="layout vertical">
         <network-proxy-input 
             on-proxy-change="onProxyInputChange_"
-            editable="[[isEditable_(
-                networkProperties.ProxySettings.Manual.HTTPProxy.Host,
+            editable="[[isEditable_('Manual.HTTPProxy.Host', networkProperties,
                 editable, useSharedProxies_)]]"
-            value="{{proxy.Manual.HTTPProxy}}"
+            value="{{proxy_.Manual.HTTPProxy}}"
             label="$i18n{networkProxy}">
         </network-proxy-input>
       </div>
       <div hidden$="[[useSameProxy_]]" class="layout vertical">
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
-            editable="[[isEditable_(
-                networkProperties.ProxySettings.Manual.HTTPProxy.Host,
+            editable="[[isEditable_('Manual.HTTPProxy.Host', networkProperties,
                 editable, useSharedProxies_)]]"
-            value="{{proxy.Manual.HTTPProxy}}"
+            value="{{proxy_.Manual.HTTPProxy}}"
             label="$i18n{networkProxyHttp}">
         </network-proxy-input>
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
-            editable="[[isEditable_(
-                networkProperties.ProxySettings.Manual.SecureHTTPProxy.Host,
-                editable, useSharedProxies_)]]"
-            value="{{proxy.Manual.SecureHTTPProxy}}"
+            editable="[[isEditable_('Manual.SecureHTTPProxy.Host',
+                networkProperties, editable, useSharedProxies_)]]"
+            value="{{proxy_.Manual.SecureHTTPProxy}}"
             label="$i18n{networkProxyShttp}">
         </network-proxy-input>
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
-            editable="[[isEditable_(
-                networkProperties.ProxySettings.Manual.FTPProxy.Host,
+            editable="[[isEditable_('Manual.FTPProxy.Host', networkProperties,
                 editable, useSharedProxies_)]]"
-            value="{{proxy.Manual.FTPProxy}}"
+            value="{{proxy_.Manual.FTPProxy}}"
             label="$i18n{networkProxyFtp}">
         </network-proxy-input>
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
-            editable="[[isEditable_(
-                networkProperties.ProxySettings.Manual.SOCKS.Host,
+            editable="[[isEditable_('Manual.SOCKS.Host', networkProperties,
                 editable, useSharedProxies_)]]"
-            value="{{proxy.Manual.SOCKS}}"
+            value="{{proxy_.Manual.SOCKS}}"
             label="$i18n{networkProxySocks}">
         </network-proxy-input>
       </div>
 
       <div id="exceptionsDiv"
-          hidden="[[!isProxyEditable_(networkProperties, editable,
+          hidden="[[!isEditable_('Type', networkProperties, editable,
               useSharedProxies_)]]">
         <div>$i18n{networkProxyExceptionList}</div>
         <network-proxy-exclusions on-proxy-change="onProxyExclusionsChange_"
-            exclusions="{{proxy.ExcludeDomains}}">
+            exclusions="{{proxy_.ExcludeDomains}}">
         </network-proxy-exclusions>
         <div class="layout horizontal">
           <paper-input-container no-label-float class="flex">
@@ -189,6 +184,13 @@
           </paper-button>
         </div>
       </div>
+
+      <paper-button id="saveManualProxy"
+          on-tap="onSaveProxyTap_" class="action-button"
+          disabled="[[!isSaveManualProxyEnabled_(networkProperties,
+              proxyModified_, proxy_.*)]]">
+        $i18n{save}
+      </paper-button>
     </div>
 
     <!-- Confirm Allow shared proxies dialog -->
