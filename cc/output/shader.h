@@ -113,257 +113,163 @@ CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
     int highp_threshold_min,
     const gfx::Size& max_size);
 
-class VertexShaderPosTex {
+class VertexShaderBase {
  public:
-  VertexShaderPosTex();
-
+  VertexShaderBase();
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
             int* base_uniform_index);
   std::string GetShaderString() const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+  void FillLocations(ShaderLocations* locations) const;
 
-  int matrix_location() const { return matrix_location_; }
+  int tex_transform_location() const { return tex_transform_location_; }
 
- private:
-  int matrix_location_;
+  int vertex_tex_transform_location() const {
+    return vertex_tex_transform_location_;
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTex);
-};
+  int tex_matrix_location() const { return tex_matrix_location_; }
 
-class VertexShaderPosTexYUVStretchOffset {
- public:
-  VertexShaderPosTexYUVStretchOffset();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  std::string GetShaderString() const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
-
-  int matrix_location() const { return matrix_location_; }
   int ya_tex_scale_location() const { return ya_tex_scale_location_; }
   int ya_tex_offset_location() const { return ya_tex_offset_location_; }
   int uv_tex_scale_location() const { return uv_tex_scale_location_; }
   int uv_tex_offset_location() const { return uv_tex_offset_location_; }
 
- private:
-  int matrix_location_;
-  int ya_tex_scale_location_;
-  int ya_tex_offset_location_;
-  int uv_tex_scale_location_;
-  int uv_tex_offset_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTexYUVStretchOffset);
-};
-
-class VertexShaderPos {
- public:
-  VertexShaderPos();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  std::string GetShaderString() const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
-
   int matrix_location() const { return matrix_location_; }
 
- private:
-  int matrix_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderPos);
-};
-
-class VertexShaderPosTexIdentity {
- public:
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index) {}
-  std::string GetShaderString() const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
-};
-
-class VertexShaderPosTexTransform {
- public:
-  VertexShaderPosTexTransform();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  std::string GetShaderString() const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
-  void FillLocations(ShaderLocations* locations) const;
-
-  int matrix_location() const { return matrix_location_; }
-  int tex_transform_location() const { return tex_transform_location_; }
   int vertex_opacity_location() const { return vertex_opacity_location_; }
 
- private:
-  int matrix_location_;
-  int tex_transform_location_;
-  int vertex_opacity_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTexTransform);
-};
-
-class VertexShaderQuad {
- public:
-  VertexShaderQuad();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-           unsigned program,
-           int* base_uniform_index);
-  std::string GetShaderString() const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
-
-  int matrix_location() const { return matrix_location_; }
-  int viewport_location() const { return -1; }
-  int quad_location() const { return quad_location_; }
-  int edge_location() const { return -1; }
-
- private:
-  int matrix_location_;
-  int quad_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderQuad);
-};
-
-class VertexShaderQuadAA {
- public:
-  VertexShaderQuadAA();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-           unsigned program,
-           int* base_uniform_index);
-  std::string GetShaderString() const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
-
-  int matrix_location() const { return matrix_location_; }
   int viewport_location() const { return viewport_location_; }
-  int quad_location() const { return quad_location_; }
   int edge_location() const { return edge_location_; }
 
- private:
-  int matrix_location_;
-  int viewport_location_;
-  int quad_location_;
-  int edge_location_;
+  int quad_location() const { return quad_location_; }
 
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderQuadAA);
+ protected:
+  virtual std::string GetShaderSource() const = 0;
+
+  bool has_tex_transform_ = false;
+  int tex_transform_location_ = -1;
+
+  bool has_vertex_tex_transform_ = false;
+  int vertex_tex_transform_location_ = -1;
+
+  bool has_tex_matrix_ = false;
+  int tex_matrix_location_ = -1;
+
+  bool has_ya_uv_tex_scale_offset_ = false;
+  int ya_tex_scale_location_ = -1;
+  int ya_tex_offset_location_ = -1;
+  int uv_tex_scale_location_ = -1;
+  int uv_tex_offset_location_ = -1;
+
+  bool has_matrix_ = false;
+  int matrix_location_ = -1;
+
+  bool has_vertex_opacity_ = false;
+  int vertex_opacity_location_ = -1;
+
+  bool has_aa_ = false;
+  int viewport_location_ = -1;
+  int edge_location_ = -1;
+
+  bool has_quad_ = false;
+  int quad_location_ = -1;
 };
 
-
-class VertexShaderQuadTexTransformAA {
+class VertexShaderPosTex : public VertexShaderBase {
  public:
-  VertexShaderQuadTexTransformAA();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-           unsigned program,
-           int* base_uniform_index);
-  std::string GetShaderString() const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
-  void FillLocations(ShaderLocations* locations) const;
-
-  int matrix_location() const { return matrix_location_; }
-  int viewport_location() const { return viewport_location_; }
-  int quad_location() const { return quad_location_; }
-  int edge_location() const { return edge_location_; }
-  int tex_transform_location() const { return tex_transform_location_; }
-
- private:
-  int matrix_location_;
-  int viewport_location_;
-  int quad_location_;
-  int edge_location_;
-  int tex_transform_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderQuadTexTransformAA);
+  VertexShaderPosTex() { has_matrix_ = true; }
+  std::string GetShaderSource() const override;
 };
 
-class VertexShaderTile {
+class VertexShaderPosTexYUVStretchOffset : public VertexShaderBase {
  public:
-  VertexShaderTile();
-
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  std::string GetShaderString() const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
-
-  int matrix_location() const { return matrix_location_; }
-  int viewport_location() const { return -1; }
-  int quad_location() const { return quad_location_; }
-  int edge_location() const { return -1; }
-  int vertex_tex_transform_location() const {
-    return vertex_tex_transform_location_;
+  VertexShaderPosTexYUVStretchOffset() {
+    has_matrix_ = true;
+    has_ya_uv_tex_scale_offset_ = true;
   }
-
- private:
-  int matrix_location_;
-  int quad_location_;
-  int vertex_tex_transform_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderTile);
+  std::string GetShaderSource() const override;
 };
 
-class VertexShaderTileAA {
+class VertexShaderPos : public VertexShaderBase {
  public:
-  VertexShaderTileAA();
+  VertexShaderPos() { has_matrix_ = true; }
+  std::string GetShaderSource() const override;
+};
 
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  std::string GetShaderString() const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+class VertexShaderPosTexIdentity : public VertexShaderBase {
+ public:
+  std::string GetShaderSource() const override;
+};
 
-  int matrix_location() const { return matrix_location_; }
-  int viewport_location() const { return viewport_location_; }
-  int quad_location() const { return quad_location_; }
-  int edge_location() const { return edge_location_; }
-  int vertex_tex_transform_location() const {
-    return vertex_tex_transform_location_;
+class VertexShaderPosTexTransform : public VertexShaderBase {
+ public:
+  VertexShaderPosTexTransform() {
+    has_matrix_ = true;
+    has_tex_transform_ = true;
+    has_vertex_opacity_ = true;
   }
-
- private:
-  int matrix_location_;
-  int viewport_location_;
-  int quad_location_;
-  int edge_location_;
-  int vertex_tex_transform_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderTileAA);
+  std::string GetShaderSource() const override;
 };
 
-class VertexShaderVideoTransform {
+class VertexShaderQuad : public VertexShaderBase {
  public:
-  VertexShaderVideoTransform();
+  VertexShaderQuad() {
+    has_matrix_ = true;
+    has_quad_ = true;
+  }
+  std::string GetShaderSource() const override;
+};
 
-  void Init(gpu::gles2::GLES2Interface* context,
-            unsigned program,
-            int* base_uniform_index);
-  std::string GetShaderString() const;
-  static std::string GetShaderHead();
-  static std::string GetShaderBody();
+class VertexShaderQuadAA : public VertexShaderBase {
+ public:
+  VertexShaderQuadAA() {
+    has_matrix_ = true;
+    has_aa_ = true;
+    has_quad_ = true;
+  }
+  std::string GetShaderSource() const override;
+};
 
-  int matrix_location() const { return matrix_location_; }
-  int tex_matrix_location() const { return tex_matrix_location_; }
+class VertexShaderQuadTexTransformAA : public VertexShaderBase {
+ public:
+  VertexShaderQuadTexTransformAA() {
+    has_matrix_ = true;
+    has_aa_ = true;
+    has_quad_ = true;
+    has_tex_transform_ = true;
+  }
+  std::string GetShaderSource() const override;
+};
 
- private:
-  int matrix_location_;
-  int tex_matrix_location_;
+class VertexShaderTile : public VertexShaderBase {
+ public:
+  VertexShaderTile() {
+    has_matrix_ = true;
+    has_quad_ = true;
+    has_vertex_tex_transform_ = true;
+  }
+  std::string GetShaderSource() const override;
+};
 
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderVideoTransform);
+class VertexShaderTileAA : public VertexShaderBase {
+ public:
+  VertexShaderTileAA() {
+    has_matrix_ = true;
+    has_quad_ = true;
+    has_vertex_tex_transform_ = true;
+    has_aa_ = true;
+  }
+  std::string GetShaderSource() const override;
+};
+
+class VertexShaderVideoTransform : public VertexShaderBase {
+ public:
+  VertexShaderVideoTransform() {
+    has_matrix_ = true;
+    has_tex_matrix_ = true;
+  }
+  std::string GetShaderSource() const override;
 };
 
 class FragmentShaderBase {

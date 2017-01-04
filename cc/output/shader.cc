@@ -29,7 +29,6 @@ std::string StripLambda(const char(&shader)[size]) {
 // Shaders are passed in with lambda syntax, which tricks clang-format into
 // handling them correctly. StipLambda removes this.
 #define SHADER0(Src) StripLambda(#Src)
-#define VERTEX_SHADER(Head, Body) SetVertexShaderDefines(Head + Body)
 
 using gpu::gles2::GLES2Interface;
 
@@ -74,18 +73,6 @@ static std::string SetFragmentTexCoordPrecision(
       break;
   }
   return shader_string;
-}
-
-static std::string SetVertexShaderDefines(const std::string& shader_string) {
-  // We unconditionally use highp in the vertex shader since
-  // we are unlikely to be vertex shader bound when drawing large quads.
-  // Also, some vertex shaders mutate the texture coordinate in such a
-  // way that the effective precision might be lower than expected.
-  return base::StringPrintf(
-             "#define TexCoordPrecision highp\n"
-             "#define NUM_STATIC_QUADS %d\n",
-             StaticGeometryBinding::NUM_QUADS) +
-         shader_string;
 }
 
 TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
@@ -173,41 +160,93 @@ TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
                                    max_size.height());
 }
 
-VertexShaderPosTex::VertexShaderPosTex() : matrix_location_(-1) {
+VertexShaderBase::VertexShaderBase() {}
+
+void VertexShaderBase::Init(GLES2Interface* context,
+                            unsigned program,
+                            int* base_uniform_index) {
+  std::vector<const char*> uniforms;
+  std::vector<int> locations;
+
+  if (has_tex_transform_)
+    uniforms.push_back("texTransform");
+  if (has_vertex_tex_transform_)
+    uniforms.push_back("vertexTexTransform");
+  if (has_tex_matrix_)
+    uniforms.push_back("texMatrix");
+  if (has_ya_uv_tex_scale_offset_) {
+    uniforms.push_back("yaTexScale");
+    uniforms.push_back("yaTexOffset");
+    uniforms.push_back("uvTexScale");
+    uniforms.push_back("uvTexOffset");
+  }
+  if (has_matrix_)
+    uniforms.push_back("matrix");
+  if (has_vertex_opacity_)
+    uniforms.push_back("opacity");
+  if (has_aa_) {
+    uniforms.push_back("viewport");
+    uniforms.push_back("edge");
+  }
+  if (has_quad_)
+    uniforms.push_back("quad");
+
+  locations.resize(uniforms.size());
+
+  GetProgramUniformLocations(context, program, uniforms.size(), uniforms.data(),
+                             locations.data(), base_uniform_index);
+
+  size_t index = 0;
+  if (has_tex_transform_)
+    tex_transform_location_ = locations[index++];
+  if (has_vertex_tex_transform_)
+    vertex_tex_transform_location_ = locations[index++];
+  if (has_tex_matrix_)
+    tex_matrix_location_ = locations[index++];
+  if (has_ya_uv_tex_scale_offset_) {
+    ya_tex_scale_location_ = locations[index++];
+    ya_tex_offset_location_ = locations[index++];
+    uv_tex_scale_location_ = locations[index++];
+    uv_tex_offset_location_ = locations[index++];
+  }
+  if (has_matrix_)
+    matrix_location_ = locations[index++];
+  if (has_vertex_opacity_)
+    vertex_opacity_location_ = locations[index++];
+  if (has_aa_) {
+    viewport_location_ = locations[index++];
+    edge_location_ = locations[index++];
+  }
+  if (has_quad_)
+    quad_location_ = locations[index++];
 }
 
-void VertexShaderPosTex::Init(GLES2Interface* context,
-                              unsigned program,
-                              int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "matrix",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  matrix_location_ = locations[0];
+void VertexShaderBase::FillLocations(ShaderLocations* locations) const {
+  locations->quad = quad_location();
+  locations->edge = edge_location();
+  locations->viewport = viewport_location();
+  locations->matrix = matrix_location();
+  locations->tex_transform = tex_transform_location();
 }
 
-std::string VertexShaderPosTex::GetShaderString() const {
-  return VERTEX_SHADER(GetShaderHead(), GetShaderBody());
+std::string VertexShaderBase::GetShaderString() const {
+  // We unconditionally use highp in the vertex shader since
+  // we are unlikely to be vertex shader bound when drawing large quads.
+  // Also, some vertex shaders mutate the texture coordinate in such a
+  // way that the effective precision might be lower than expected.
+  return base::StringPrintf(
+             "#define TexCoordPrecision highp\n"
+             "#define NUM_STATIC_QUADS %d\n",
+             StaticGeometryBinding::NUM_QUADS) +
+         GetShaderSource();
 }
 
-std::string VertexShaderPosTex::GetShaderHead() {
+std::string VertexShaderPosTex::GetShaderSource() const {
   return SHADER0([]() {
     attribute vec4 a_position;
     attribute TexCoordPrecision vec2 a_texCoord;
     uniform mat4 matrix;
     varying TexCoordPrecision vec2 v_texCoord;
-  });
-}
-
-std::string VertexShaderPosTex::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       gl_Position = matrix * a_position;
       v_texCoord = a_texCoord;
@@ -215,40 +254,7 @@ std::string VertexShaderPosTex::GetShaderBody() {
   });
 }
 
-VertexShaderPosTexYUVStretchOffset::VertexShaderPosTexYUVStretchOffset()
-    : matrix_location_(-1),
-      ya_tex_scale_location_(-1),
-      ya_tex_offset_location_(-1),
-      uv_tex_scale_location_(-1),
-      uv_tex_offset_location_(-1) {
-}
-
-void VertexShaderPosTexYUVStretchOffset::Init(GLES2Interface* context,
-                                              unsigned program,
-                                              int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "matrix", "yaTexScale", "yaTexOffset", "uvTexScale", "uvTexOffset",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  matrix_location_ = locations[0];
-  ya_tex_scale_location_ = locations[1];
-  ya_tex_offset_location_ = locations[2];
-  uv_tex_scale_location_ = locations[3];
-  uv_tex_offset_location_ = locations[4];
-}
-
-std::string VertexShaderPosTexYUVStretchOffset::GetShaderString() const {
-  return VERTEX_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string VertexShaderPosTexYUVStretchOffset::GetShaderHead() {
+std::string VertexShaderPosTexYUVStretchOffset::GetShaderSource() const {
   return SHADER0([]() {
     precision mediump float;
     attribute vec4 a_position;
@@ -260,11 +266,6 @@ std::string VertexShaderPosTexYUVStretchOffset::GetShaderHead() {
     uniform TexCoordPrecision vec2 yaTexOffset;
     uniform TexCoordPrecision vec2 uvTexScale;
     uniform TexCoordPrecision vec2 uvTexOffset;
-  });
-}
-
-std::string VertexShaderPosTexYUVStretchOffset::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       gl_Position = matrix * a_position;
       v_yaTexCoord = a_texCoord * yaTexScale + yaTexOffset;
@@ -273,73 +274,15 @@ std::string VertexShaderPosTexYUVStretchOffset::GetShaderBody() {
   });
 }
 
-VertexShaderPos::VertexShaderPos() : matrix_location_(-1) {
-}
-
-void VertexShaderPos::Init(GLES2Interface* context,
-                           unsigned program,
-                           int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "matrix",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  matrix_location_ = locations[0];
-}
-
-std::string VertexShaderPos::GetShaderString() const {
-  return VERTEX_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string VertexShaderPos::GetShaderHead() {
+std::string VertexShaderPos::GetShaderSource() const {
   return SHADER0([]() {
     attribute vec4 a_position;
     uniform mat4 matrix;
-  });
-}
-
-std::string VertexShaderPos::GetShaderBody() {
-  return SHADER0([]() {
     void main() { gl_Position = matrix * a_position; }
   });
 }
 
-VertexShaderPosTexTransform::VertexShaderPosTexTransform()
-    : matrix_location_(-1),
-      tex_transform_location_(-1),
-      vertex_opacity_location_(-1) {
-}
-
-void VertexShaderPosTexTransform::Init(GLES2Interface* context,
-                                       unsigned program,
-                                       int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "matrix", "texTransform", "opacity",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  matrix_location_ = locations[0];
-  tex_transform_location_ = locations[1];
-  vertex_opacity_location_ = locations[2];
-}
-
-std::string VertexShaderPosTexTransform::GetShaderString() const {
-  return VERTEX_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string VertexShaderPosTexTransform::GetShaderHead() {
+std::string VertexShaderPosTexTransform::GetShaderSource() const {
   return SHADER0([]() {
     attribute vec4 a_position;
     attribute TexCoordPrecision vec2 a_texCoord;
@@ -349,11 +292,6 @@ std::string VertexShaderPosTexTransform::GetShaderHead() {
     uniform float opacity[NUM_STATIC_QUADS * 4];
     varying TexCoordPrecision vec2 v_texCoord;
     varying float v_alpha;
-  });
-}
-
-std::string VertexShaderPosTexTransform::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       int quad_index = int(a_index * 0.25);  // NOLINT
       gl_Position = matrix[quad_index] * a_position;
@@ -364,25 +302,10 @@ std::string VertexShaderPosTexTransform::GetShaderBody() {
   });
 }
 
-void VertexShaderPosTexTransform::FillLocations(
-    ShaderLocations* locations) const {
-  locations->matrix = matrix_location();
-  locations->tex_transform = tex_transform_location();
-}
-
-std::string VertexShaderPosTexIdentity::GetShaderString() const {
-  return VERTEX_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string VertexShaderPosTexIdentity::GetShaderHead() {
+std::string VertexShaderPosTexIdentity::GetShaderSource() const {
   return SHADER0([]() {
     attribute vec4 a_position;
     varying TexCoordPrecision vec2 v_texCoord;
-  });
-}
-
-std::string VertexShaderPosTexIdentity::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       gl_Position = a_position;
       v_texCoord = (a_position.xy + vec2(1.0)) * 0.5;
@@ -390,33 +313,7 @@ std::string VertexShaderPosTexIdentity::GetShaderBody() {
   });
 }
 
-VertexShaderQuad::VertexShaderQuad()
-    : matrix_location_(-1), quad_location_(-1) {
-}
-
-void VertexShaderQuad::Init(GLES2Interface* context,
-                            unsigned program,
-                            int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "matrix", "quad",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  matrix_location_ = locations[0];
-  quad_location_ = locations[1];
-}
-
-std::string VertexShaderQuad::GetShaderString() const {
-  return VERTEX_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string VertexShaderQuad::GetShaderHead() {
+std::string VertexShaderQuad::GetShaderSource() const {
 #if defined(OS_ANDROID)
   // TODO(epenner): Find the cause of this 'quad' uniform
   // being missing if we don't add dummy variables.
@@ -428,20 +325,6 @@ std::string VertexShaderQuad::GetShaderHead() {
     uniform TexCoordPrecision vec2 quad[4];
     uniform TexCoordPrecision vec2 dummy_uniform;
     varying TexCoordPrecision vec2 dummy_varying;
-  });
-#else
-  return SHADER0([]() {
-    attribute TexCoordPrecision vec4 a_position;
-    attribute float a_index;
-    uniform mat4 matrix;
-    uniform TexCoordPrecision vec2 quad[4];
-  });
-#endif
-}
-
-std::string VertexShaderQuad::GetShaderBody() {
-#if defined(OS_ANDROID)
-  return SHADER0([]() {
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
       gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
@@ -450,6 +333,10 @@ std::string VertexShaderQuad::GetShaderBody() {
   });
 #else
   return SHADER0([]() {
+    attribute TexCoordPrecision vec4 a_position;
+    attribute float a_index;
+    uniform mat4 matrix;
+    uniform TexCoordPrecision vec2 quad[4];
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
       gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
@@ -458,38 +345,7 @@ std::string VertexShaderQuad::GetShaderBody() {
 #endif
 }
 
-VertexShaderQuadAA::VertexShaderQuadAA()
-    : matrix_location_(-1),
-      viewport_location_(-1),
-      quad_location_(-1),
-      edge_location_(-1) {
-}
-
-void VertexShaderQuadAA::Init(GLES2Interface* context,
-                              unsigned program,
-                              int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "matrix", "viewport", "quad", "edge",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  matrix_location_ = locations[0];
-  viewport_location_ = locations[1];
-  quad_location_ = locations[2];
-  edge_location_ = locations[3];
-}
-
-std::string VertexShaderQuadAA::GetShaderString() const {
-  return VERTEX_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string VertexShaderQuadAA::GetShaderHead() {
+std::string VertexShaderQuadAA::GetShaderSource() const {
   return SHADER0([]() {
     attribute TexCoordPrecision vec4 a_position;
     attribute float a_index;
@@ -498,11 +354,6 @@ std::string VertexShaderQuadAA::GetShaderHead() {
     uniform TexCoordPrecision vec2 quad[4];
     uniform TexCoordPrecision vec3 edge[8];
     varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-  });
-}
-
-std::string VertexShaderQuadAA::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
       gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
@@ -518,40 +369,7 @@ std::string VertexShaderQuadAA::GetShaderBody() {
   });
 }
 
-VertexShaderQuadTexTransformAA::VertexShaderQuadTexTransformAA()
-    : matrix_location_(-1),
-      viewport_location_(-1),
-      quad_location_(-1),
-      edge_location_(-1),
-      tex_transform_location_(-1) {
-}
-
-void VertexShaderQuadTexTransformAA::Init(GLES2Interface* context,
-                                          unsigned program,
-                                          int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "matrix", "viewport", "quad", "edge", "texTrans",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  matrix_location_ = locations[0];
-  viewport_location_ = locations[1];
-  quad_location_ = locations[2];
-  edge_location_ = locations[3];
-  tex_transform_location_ = locations[4];
-}
-
-std::string VertexShaderQuadTexTransformAA::GetShaderString() const {
-  return VERTEX_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string VertexShaderQuadTexTransformAA::GetShaderHead() {
+std::string VertexShaderQuadTexTransformAA::GetShaderSource() const {
   return SHADER0([]() {
     attribute TexCoordPrecision vec4 a_position;
     attribute float a_index;
@@ -559,14 +377,9 @@ std::string VertexShaderQuadTexTransformAA::GetShaderHead() {
     uniform vec4 viewport;
     uniform TexCoordPrecision vec2 quad[4];
     uniform TexCoordPrecision vec3 edge[8];
-    uniform TexCoordPrecision vec4 texTrans;
+    uniform TexCoordPrecision vec4 texTransform;
     varying TexCoordPrecision vec2 v_texCoord;
     varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-  });
-}
-
-std::string VertexShaderQuadTexTransformAA::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
       gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
@@ -578,51 +391,12 @@ std::string VertexShaderQuadTexTransformAA::GetShaderBody() {
       edge_dist[1] = vec4(dot(edge[4], screen_pos), dot(edge[5], screen_pos),
                           dot(edge[6], screen_pos), dot(edge[7], screen_pos)) *
                      gl_Position.w;
-      v_texCoord = (pos.xy + vec2(0.5)) * texTrans.zw + texTrans.xy;
+      v_texCoord = (pos.xy + vec2(0.5)) * texTransform.zw + texTransform.xy;
     }
   });
 }
 
-void VertexShaderQuadTexTransformAA::FillLocations(
-    ShaderLocations* locations) const {
-  locations->quad = quad_location();
-  locations->edge = edge_location();
-  locations->viewport = viewport_location();
-  locations->matrix = matrix_location();
-  locations->tex_transform = tex_transform_location();
-}
-
-
-VertexShaderTile::VertexShaderTile()
-    : matrix_location_(-1),
-      quad_location_(-1),
-      vertex_tex_transform_location_(-1) {
-}
-
-void VertexShaderTile::Init(GLES2Interface* context,
-                            unsigned program,
-                            int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "matrix", "quad", "vertexTexTransform",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  matrix_location_ = locations[0];
-  quad_location_ = locations[1];
-  vertex_tex_transform_location_ = locations[2];
-}
-
-std::string VertexShaderTile::GetShaderString() const {
-  return VERTEX_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string VertexShaderTile::GetShaderHead() {
+std::string VertexShaderTile::GetShaderSource() const {
   return SHADER0([]() {
     attribute TexCoordPrecision vec4 a_position;
     attribute TexCoordPrecision vec2 a_texCoord;
@@ -631,11 +405,6 @@ std::string VertexShaderTile::GetShaderHead() {
     uniform TexCoordPrecision vec2 quad[4];
     uniform TexCoordPrecision vec4 vertexTexTransform;
     varying TexCoordPrecision vec2 v_texCoord;
-  });
-}
-
-std::string VertexShaderTile::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
       gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
@@ -644,40 +413,7 @@ std::string VertexShaderTile::GetShaderBody() {
   });
 }
 
-VertexShaderTileAA::VertexShaderTileAA()
-    : matrix_location_(-1),
-      viewport_location_(-1),
-      quad_location_(-1),
-      edge_location_(-1),
-      vertex_tex_transform_location_(-1) {
-}
-
-void VertexShaderTileAA::Init(GLES2Interface* context,
-                              unsigned program,
-                              int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "matrix", "viewport", "quad", "edge", "vertexTexTransform",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  matrix_location_ = locations[0];
-  viewport_location_ = locations[1];
-  quad_location_ = locations[2];
-  edge_location_ = locations[3];
-  vertex_tex_transform_location_ = locations[4];
-}
-
-std::string VertexShaderTileAA::GetShaderString() const {
-  return VERTEX_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string VertexShaderTileAA::GetShaderHead() {
+std::string VertexShaderTileAA::GetShaderSource() const {
   return SHADER0([]() {
     attribute TexCoordPrecision vec4 a_position;
     attribute float a_index;
@@ -688,11 +424,6 @@ std::string VertexShaderTileAA::GetShaderHead() {
     uniform TexCoordPrecision vec4 vertexTexTransform;
     varying TexCoordPrecision vec2 v_texCoord;
     varying TexCoordPrecision vec4 edge_dist[2];  // 8 edge distances.
-  });
-}
-
-std::string VertexShaderTileAA::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
       gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
@@ -709,44 +440,13 @@ std::string VertexShaderTileAA::GetShaderBody() {
   });
 }
 
-VertexShaderVideoTransform::VertexShaderVideoTransform()
-    : matrix_location_(-1), tex_matrix_location_(-1) {
-}
-
-void VertexShaderVideoTransform::Init(GLES2Interface* context,
-                                      unsigned program,
-                                      int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "matrix", "texMatrix",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context,
-                             program,
-                             arraysize(uniforms),
-                             uniforms,
-                             locations,
-                             base_uniform_index);
-  matrix_location_ = locations[0];
-  tex_matrix_location_ = locations[1];
-}
-
-std::string VertexShaderVideoTransform::GetShaderString() const {
-  return VERTEX_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string VertexShaderVideoTransform::GetShaderHead() {
+std::string VertexShaderVideoTransform::GetShaderSource() const {
   return SHADER0([]() {
     attribute vec4 a_position;
     attribute TexCoordPrecision vec2 a_texCoord;
     uniform mat4 matrix;
     uniform TexCoordPrecision mat4 texMatrix;
     varying TexCoordPrecision vec2 v_texCoord;
-  });
-}
-
-std::string VertexShaderVideoTransform::GetShaderBody() {
-  return SHADER0([]() {
     void main() {
       gl_Position = matrix * a_position;
       v_texCoord = (texMatrix * vec4(a_texCoord.xy, 0.0, 1.0)).xy;
@@ -1319,20 +1019,7 @@ std::string FragmentShaderBase::GetShaderSource() const {
   return header + source;
 }
 
-FragmentShaderYUVVideo::FragmentShaderYUVVideo()
-    : y_texture_location_(-1),
-      u_texture_location_(-1),
-      v_texture_location_(-1),
-      uv_texture_location_(-1),
-      a_texture_location_(-1),
-      lut_texture_location_(-1),
-      alpha_location_(-1),
-      yuv_matrix_location_(-1),
-      yuv_adj_location_(-1),
-      ya_clamp_rect_location_(-1),
-      uv_clamp_rect_location_(-1),
-      resource_multiplier_location_(-1),
-      resource_offset_location_(-1) {}
+FragmentShaderYUVVideo::FragmentShaderYUVVideo() {}
 
 void FragmentShaderYUVVideo::SetFeatures(bool use_alpha_texture,
                                          bool use_nv12,
