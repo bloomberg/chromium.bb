@@ -76,6 +76,8 @@ class ScopedStyleResolver final : public GarbageCollected<ScopedStyleResolver> {
   void setNeedsAppendAllSheets() { m_needsAppendAllSheets = true; }
   static void keyframesRulesAdded(const TreeScope&);
   static ContainerNode& invalidationRootForTreeScope(const TreeScope&);
+  CORE_EXPORT static bool haveSameStyles(const ScopedStyleResolver*,
+                                         const ScopedStyleResolver*);
 
   DECLARE_TRACE();
 

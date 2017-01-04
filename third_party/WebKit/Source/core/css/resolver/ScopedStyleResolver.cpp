@@ -298,6 +298,28 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(
       RuleSubSet::create(parentStyleSheet, sheetIndex, ruleSetForScope));
 }
 
+bool ScopedStyleResolver::haveSameStyles(const ScopedStyleResolver* first,
+                                         const ScopedStyleResolver* second) {
+  // This method will return true if the two resolvers are either both empty, or
+  // if they contain the same active stylesheets by sharing the same
+  // StyleSheetContents. It is used to check if we can share ComputedStyle
+  // between two shadow hosts. This typically works when we have multiple
+  // instantiations of the same web component where the style elements are in
+  // the same order and contain the exact same source string in which case we
+  // will get a cache hit for sharing StyleSheetContents.
+
+  size_t firstCount = first ? first->m_authorStyleSheets.size() : 0;
+  size_t secondCount = second ? second->m_authorStyleSheets.size() : 0;
+  if (firstCount != secondCount)
+    return false;
+  while (firstCount--) {
+    if (first->m_authorStyleSheets[firstCount]->contents() !=
+        second->m_authorStyleSheets[firstCount]->contents())
+      return false;
+  }
+  return true;
+}
+
 DEFINE_TRACE(ScopedStyleResolver::RuleSubSet) {
   visitor->trace(m_parentStyleSheet);
   visitor->trace(m_ruleSet);

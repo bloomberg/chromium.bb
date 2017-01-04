@@ -1063,6 +1063,7 @@ source_set("unit_tests") {
     "css/parser/SizesCalcParserTest.cpp",
     "css/resolver/FontBuilderTest.cpp",
     "css/resolver/MatchResultTest.cpp",
+    "css/resolver/ScopedStyleResolverTest.cpp",
     "css/resolver/SharedStyleFinderTest.cpp",
     "dom/AttrTest.cpp",
     "dom/CSSSelectorWatchTest.cpp",
