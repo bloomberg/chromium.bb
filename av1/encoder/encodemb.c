@@ -92,6 +92,17 @@ static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
     rd_cost1 = RDCOST(rdmult, rddiv, rate1, error1); \
   }
 
+static inline int64_t get_token_bit_costs(
+    unsigned int token_costs[2][COEFF_CONTEXTS][ENTROPY_TOKENS], int skip_eob,
+    int ctx, int token) {
+#if CONFIG_NEW_TOKENSET
+  (void)skip_eob;
+  return token_costs[token == ZERO_TOKEN || token == EOB_TOKEN][ctx][token];
+#else
+  return token_costs[skip_eob][ctx][token];
+#endif
+}
+
 int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
                    TX_SIZE tx_size, int ctx) {
   MACROBLOCKD *const xd = &mb->e_mbd;
@@ -198,8 +209,10 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
         /* Consider both possible successor states. */
         if (next < default_eob) {
           pt = get_coef_context(nb, token_cache, i + 1);
-          rate0 += (*token_costs)[0][pt][tokens[next][0].token];
-          rate1 += (*token_costs)[0][pt][tokens[next][1].token];
+          rate0 +=
+              get_token_bit_costs(*token_costs, 0, pt, tokens[next][0].token);
+          rate1 +=
+              get_token_bit_costs(*token_costs, 0, pt, tokens[next][1].token);
         }
         UPDATE_RD_COST();
         /* And pick the best. */
@@ -207,7 +220,8 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
       } else {
         if (next < default_eob) {
           pt = get_coef_context(nb, token_cache, i + 1);
-          rate0 += (*token_costs)[0][pt][tokens[next][0].token];
+          rate0 +=
+              get_token_bit_costs(*token_costs, 0, pt, tokens[next][0].token);
         }
         best = 0;
       }
@@ -293,12 +307,14 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
           if (t0 != EOB_TOKEN) {
             token_cache[rc] = av1_pt_energy_class[t0];
             pt = get_coef_context(nb, token_cache, i + 1);
-            rate0 += (*token_costs)[!x][pt][tokens[next][0].token];
+            rate0 += get_token_bit_costs(*token_costs, !x, pt,
+                                         tokens[next][0].token);
           }
           if (t1 != EOB_TOKEN) {
             token_cache[rc] = av1_pt_energy_class[t1];
             pt = get_coef_context(nb, token_cache, i + 1);
-            rate1 += (*token_costs)[!x][pt][tokens[next][1].token];
+            rate1 += get_token_bit_costs(*token_costs, !x, pt,
+                                         tokens[next][1].token);
           }
         }
 
@@ -310,7 +326,8 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
         if (next < default_eob && t0 != EOB_TOKEN) {
           token_cache[rc] = av1_pt_energy_class[t0];
           pt = get_coef_context(nb, token_cache, i + 1);
-          rate0 += (*token_costs)[!x][pt][tokens[next][0].token];
+          rate0 +=
+              get_token_bit_costs(*token_costs, !x, pt, tokens[next][0].token);
         }
         best = 0;
       }
@@ -383,11 +400,11 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
       pt = get_coef_context(nb, token_cache, i + 1);
       /* Update the cost of each path if we're past the EOB token. */
       if (t0 != EOB_TOKEN) {
-        tokens[next][0].rate += (*token_costs)[1][pt][t0];
+        tokens[next][0].rate += get_token_bit_costs(*token_costs, 1, pt, t0);
         tokens[next][0].token = ZERO_TOKEN;
       }
       if (t1 != EOB_TOKEN) {
-        tokens[next][1].rate += (*token_costs)[1][pt][t1];
+        tokens[next][1].rate += get_token_bit_costs(*token_costs, 1, pt, t1);
         tokens[next][1].token = ZERO_TOKEN;
       }
       best_index[i][0] = best_index[i][1] = 0;
@@ -409,8 +426,8 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   error1 = tokens[next][1].error;
   t0 = tokens[next][0].token;
   t1 = tokens[next][1].token;
-  rate0 += (*token_costs)[0][ctx][t0];
-  rate1 += (*token_costs)[0][ctx][t1];
+  rate0 += get_token_bit_costs(*token_costs, 0, ctx, t0);
+  rate1 += get_token_bit_costs(*token_costs, 0, ctx, t1);
   UPDATE_RD_COST();
   best = rd_cost1 < rd_cost0;
 
