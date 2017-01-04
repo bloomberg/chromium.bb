@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file_enumerator.h"
 #include "base/location.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_event_observer.h"
 
@@ -43,11 +43,14 @@ void DeviceManagerManual::ScanDevices(DeviceEventObserver* observer) {
     }
   } else {
     std::vector<base::FilePath>* result = new std::vector<base::FilePath>();
-    base::WorkerPool::PostTaskAndReply(
-        FROM_HERE, base::Bind(&ScanDevicesOnWorkerThread, result),
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits()
+                       .WithShutdownBehavior(
+                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                       .MayBlock(),
+        base::Bind(&ScanDevicesOnWorkerThread, result),
         base::Bind(&DeviceManagerManual::OnDevicesScanned,
-                   weak_ptr_factory_.GetWeakPtr(), base::Owned(result)),
-        false /* task_is_slow */);
+                   weak_ptr_factory_.GetWeakPtr(), base::Owned(result)));
     have_scanned_devices_ = true;
   }
 }
