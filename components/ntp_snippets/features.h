@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_FEATURES_H_
 #define COMPONENTS_NTP_SNIPPETS_FEATURES_H_
 
+#include <memory>
 #include <string>
 
 #include "base/feature_list.h"
+#include "components/ntp_snippets/category_rankers/category_ranker.h"
+#include "components/prefs/pref_service.h"
 
 namespace ntp_snippets {
 
@@ -40,6 +43,27 @@ extern const base::Feature kFetchMoreFeature;
 
 // Feature to prefer AMP URLs over regular URLs when available.
 extern const base::Feature kPreferAmpUrlsFeature;
+
+// Feature to choose a category ranker.
+extern const base::Feature kCategoryRanker;
+
+// Parameter for a kCategoryRanker feature flag.
+extern const char kCategoryRankerParameter[];
+// Possible values of the parameter above.
+extern const char kCategoryRankerConstantRanker[];
+extern const char kCategoryRankerClickBasedRanker[];
+
+enum class CategoryRankerChoice {
+  CONSTANT,
+  CLICK_BASED,
+};
+
+// Returns which CategoryRanker to use according to kCategoryRanker feature.
+CategoryRankerChoice GetSelectedCategoryRanker();
+
+// Builds a CategoryRanker according to kCategoryRanker feature.
+std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
+    PrefService* pref_service);
 
 }  // namespace ntp_snippets
 

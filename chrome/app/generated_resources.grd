@@ -13940,7 +13940,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE" desc="Text for the checkbox on the window picker dialog, when checked, audio will be shared, otherwise just video sharing">
         Share audio
-      </message>      
+      </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN" desc="Text for the button on the window picker dialog, clicking which takes one to full screen sharing">
         Your Entire Screen
       </message>
@@ -15143,6 +15143,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     </if>
 
     <if expr="is_android">
+      <message name="IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_NAME" desc="Name for the flag to choose a category ranker for content suggestions, e.g. on the New Tab page." translateable="false">
+        Content suggestions category ranker (e.g. on NTP)
+      </message>
+      <message name="IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_DESCRIPTION" desc="Description for the flag to choose a category ranker for content suggestions, e.g. on the New Tab page." translateable="false">
+        Set category ranker to order sections of content suggestions (e.g. on the NTP).
+      </message>
       <message name="IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME" desc="Name for the flag to enable snippets on the New Tab page." translateable="false">
         Show content snippets on the New Tab page
       </message>

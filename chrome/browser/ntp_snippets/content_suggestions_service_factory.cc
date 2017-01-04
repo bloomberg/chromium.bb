@@ -29,7 +29,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
-#include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
+#include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -76,6 +76,7 @@ using content::BrowserThread;
 using history::HistoryService;
 using image_fetcher::ImageFetcherImpl;
 using ntp_snippets::BookmarkSuggestionsProvider;
+using ntp_snippets::CategoryRanker;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::NTPSnippetsFetcher;
@@ -252,8 +253,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   PrefService* pref_service = profile->GetPrefs();
-  auto category_ranker =
-      base::MakeUnique<ntp_snippets::ConstantCategoryRanker>();
+  std::unique_ptr<CategoryRanker> category_ranker =
+      ntp_snippets::BuildSelectedCategoryRanker(pref_service);
   auto* service =
       new ContentSuggestionsService(state, signin_manager, history_service,
                                     pref_service, std::move(category_ranker));

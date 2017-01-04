@@ -19,6 +19,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
+#include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
@@ -126,7 +127,7 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       ios::HistoryServiceFactory::GetForBrowserState(
           chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   std::unique_ptr<ntp_snippets::CategoryRanker> category_ranker =
-      base::MakeUnique<ntp_snippets::ConstantCategoryRanker>();
+      ntp_snippets::BuildSelectedCategoryRanker(prefs);
   std::unique_ptr<ContentSuggestionsService> service =
       base::MakeUnique<ContentSuggestionsService>(state, signin_manager,
                                                   history_service, prefs,

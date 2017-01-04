@@ -510,6 +510,31 @@ const FeatureEntry::Choice kNtpSwitchToExistingTabChoices[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam
+    kContentSuggestionsCategoryRankerFeatureVariationConstant[] = {
+        {ntp_snippets::kCategoryRankerParameter,
+         ntp_snippets::kCategoryRankerConstantRanker},
+};
+
+const FeatureEntry::FeatureParam
+    kContentSuggestionsCategoryRankerFeatureVariationClickBased[] = {
+        {ntp_snippets::kCategoryRankerParameter,
+         ntp_snippets::kCategoryRankerClickBasedRanker},
+};
+
+const FeatureEntry::FeatureVariation
+    kContentSuggestionsCategoryRankerFeatureVariations[] = {
+        {"(constant)",
+         kContentSuggestionsCategoryRankerFeatureVariationConstant,
+         arraysize(kContentSuggestionsCategoryRankerFeatureVariationConstant),
+         nullptr},
+        {"(click based)",
+         kContentSuggestionsCategoryRankerFeatureVariationClickBased,
+         arraysize(kContentSuggestionsCategoryRankerFeatureVariationClickBased),
+         nullptr}};
+#endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationOnlyPersonal[] = {
     {"fetching_personalization", "personal"},
 };
@@ -1839,6 +1864,13 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(extensions::switches::kDisableTabForDesktopShare)},
 #endif  // ENABLE_EXTENSIONS
 #if defined(OS_ANDROID)
+    {"content-suggestions-category-ranker",
+     IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_NAME,
+     IDS_FLAGS_CONTENT_SUGGESTIONS_CATEGORY_RANKER_DESCRIPTION, kOsAndroid,
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+         ntp_snippets::kCategoryRanker,
+         kContentSuggestionsCategoryRankerFeatureVariations,
+         ntp_snippets::kStudyName)},
     {"enable-ntp-snippets", IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME,
      IDS_FLAGS_ENABLE_NTP_SNIPPETS_DESCRIPTION, kOsAndroid,
      FEATURE_WITH_VARIATIONS_VALUE_TYPE(
@@ -2075,8 +2107,8 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     {"print-pdf-as-image", IDS_FLAGS_PRINT_PDF_AS_IMAGE_NAME,
-      IDS_FLAGS_PRINT_PDF_AS_IMAGE_DESCRIPTION, kOsDesktop,
-      FEATURE_VALUE_TYPE(features::kPrintPdfAsImage)},
+     IDS_FLAGS_PRINT_PDF_AS_IMAGE_DESCRIPTION, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPrintPdfAsImage)},
     {"print-scaling", IDS_FLAGS_PRINT_SCALING_NAME,
      IDS_FLAGS_PRINT_SCALING_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPrintScaling)},
