@@ -218,11 +218,11 @@ ListPicker.prototype._handleKeyDown = function(event) {
 
 ListPicker.prototype._fixWindowSize = function() {
     this._selectElement.style.height = "";
-    var zoom = this._config.zoomFactor;
-    var maxHeight = this._selectElement.offsetHeight * zoom;
-    var noScrollHeight = (this._calculateScrollHeight() + ListPicker.ListboxSelectBorder * 2) * zoom;
-    var scrollbarWidth = getScrollbarWidth() * zoom;
-    var elementOffsetWidth = this._selectElement.offsetWidth * zoom;
+    var scale = this._config.scaleFactor;
+    var maxHeight = this._selectElement.offsetHeight;
+    var noScrollHeight = (this._calculateScrollHeight() + ListPicker.ListboxSelectBorder * 2);
+    var scrollbarWidth = getScrollbarWidth();
+    var elementOffsetWidth = this._selectElement.offsetWidth;
     var desiredWindowHeight = noScrollHeight;
     var desiredWindowWidth = elementOffsetWidth;
     // If we already have a vertical scrollbar, subtract it out, it will get re-added below.
@@ -236,22 +236,24 @@ ListPicker.prototype._fixWindowSize = function() {
         desiredWindowWidth += scrollbarWidth;
         expectingScrollbar = true;
     }
-    desiredWindowWidth = Math.max(this._config.anchorRectInScreen.width, desiredWindowWidth);
-    var windowRect = adjustWindowRect(desiredWindowWidth, desiredWindowHeight, elementOffsetWidth, 0);
+    // Screen coordinate for anchorRectInScreen and windowRect is DIP.
+    desiredWindowWidth = Math.max(this._config.anchorRectInScreen.width * scale, desiredWindowWidth);
+    var windowRect = adjustWindowRect(desiredWindowWidth / scale, desiredWindowHeight / scale, elementOffsetWidth / scale, 0);
     // If the available screen space is smaller than maxHeight, we will get an unexpected scrollbar.
-    if (!expectingScrollbar && windowRect.height < noScrollHeight) {
-        desiredWindowWidth = windowRect.width + scrollbarWidth;
-        windowRect = adjustWindowRect(desiredWindowWidth, windowRect.height, windowRect.width, windowRect.height);
+    if (!expectingScrollbar && windowRect.height < noScrollHeight / scale) {
+        desiredWindowWidth = windowRect.width * scale + scrollbarWidth;
+        windowRect = adjustWindowRect(desiredWindowWidth / scale, windowRect.height, windowRect.width, windowRect.height);
     }
-    this._selectElement.style.width = (windowRect.width / zoom) + "px";
-    this._selectElement.style.height = (windowRect.height / zoom) + "px";
-    this._element.style.height = (windowRect.height / zoom) + "px";
+    this._selectElement.style.width = (windowRect.width * scale) + "px";
+    this._selectElement.style.height = (windowRect.height * scale) + "px";
+    this._element.style.height = (windowRect.height * scale) + "px";
     setWindowRect(windowRect);
 };
 
 ListPicker.prototype._calculateScrollHeight = function() {
     // Element.scrollHeight returns an integer value but this calculate the
     // actual fractional value.
+    // TODO(tkent): This can be too large? crbug.com/579863
     var top = Infinity;
     var bottom = -Infinity;
     for (var i = 0; i < this._selectElement.children.length; i++) {

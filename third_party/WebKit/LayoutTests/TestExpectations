@@ -1640,6 +1640,18 @@ crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/c
 crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
 crbug.com/543369 [ Linux ] fast/forms/select-popup/popup-menu-appearance-tall.html [ Failure ]
+crbug.com/564506 [ Linux Win ] fast/forms/select-popup/popup-menu-appearance-styled.html [ NeedsRebaseline ]
+crbug.com/564506 [ Linux Win ] fast/forms/select-popup/popup-menu-appearance-zoom.html [ NeedsRebaseline ]
+crbug.com/564506 [ Linux Win ] fast/forms/select-popup/popup-menu-appearance-zoom090.html [ NeedsRebaseline ]
+crbug.com/564506 [ Linux Win ] fast/forms/select-popup/popup-menu-appearance-zoom110.html [ NeedsRebaseline ]
+crbug.com/564506 [ Linux Win ] http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
+crbug.com/564506 [ Linux Win ] virtual/mojo-loading/http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
+crbug.com/564506 [ Linux Win ] virtual/scalefactor150/fast/hidpi/static/popup-menu-appearance.html [ NeedsRebaseline ]
+crbug.com/564506 [ Linux Win ] virtual/scalefactor150/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ NeedsRebaseline ]
+crbug.com/564506 [ Linux Win ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ NeedsRebaseline ]
+crbug.com/564506 [ Linux Win ] virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ NeedsRebaseline ]
+crbug.com/564506 [ Linux Win ] virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-appearance.html [ NeedsRebaseline ]
+crbug.com/564506 [ Linux Win ] virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ NeedsRebaseline ]
 
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 

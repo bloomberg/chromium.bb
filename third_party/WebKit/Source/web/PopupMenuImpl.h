@@ -50,6 +50,7 @@ class PopupMenuImpl final : public PopupMenu, public PagePopupClient {
   void setValue(const String&) override;
   void closePopup() override;
   Element& ownerElement() override;
+  float zoomFactor() override { return 1.0; }
   Locale& locale() override;
   void didClosePopup() override;
 

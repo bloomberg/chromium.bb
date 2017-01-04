@@ -58,7 +58,7 @@ class CORE_EXPORT PagePopupClient {
   virtual Element& ownerElement() = 0;
   // Returns effective zoom factor of ownerElement, or the page zoom factor if
   // the effective zoom factor is not available.
-  float zoomFactor();
+  virtual float zoomFactor();
   // Returns a Locale object associated to the client.
   virtual Locale& locale() = 0;
 

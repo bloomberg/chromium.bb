@@ -177,7 +177,7 @@ class PopupMenuImpl::ItemIterationContext {
     addProperty("textTransform",
                 String(textTransformToString(baseStyle().textTransform())),
                 m_buffer);
-    addProperty("fontSize", baseFont().specifiedSize(), m_buffer);
+    addProperty("fontSize", baseFont().computedPixelSize(), m_buffer);
     addProperty("fontStyle", String(fontStyleToString(baseFont().style())),
                 m_buffer);
     addProperty("fontVariant",
@@ -292,14 +292,14 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data) {
   PagePopupClient::addString("],\n", data);
 
   addProperty("anchorRectInScreen", anchorRectInScreen, data);
-  float zoom = zoomFactor();
   float scaleFactor = m_chromeClient->windowToViewportScalar(1.f);
-  addProperty("zoomFactor", zoom / scaleFactor, data);
+  addProperty("zoomFactor", 1, data);
+  addProperty("scaleFactor", scaleFactor, data);
   bool isRTL = !ownerStyle->isLeftToRightDirection();
   addProperty("isRTL", isRTL, data);
   addProperty("paddingStart",
-              isRTL ? ownerElement.clientPaddingRight().toDouble() / zoom
-                    : ownerElement.clientPaddingLeft().toDouble() / zoom,
+              isRTL ? ownerElement.clientPaddingRight().toDouble()
+                    : ownerElement.clientPaddingLeft().toDouble(),
               data);
   PagePopupClient::addString("};\n", data);
   data->append(Platform::current()->loadResource("pickerCommon.js"));
@@ -340,8 +340,7 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context,
   if (baseFont.computedPixelSize() != fontDescription.computedPixelSize()) {
     // We don't use FontDescription::specifiedSize() because this element
     // might have its own zoom level.
-    addProperty("fontSize", fontDescription.computedSize() / zoomFactor(),
-                data);
+    addProperty("fontSize", fontDescription.computedPixelSize(), data);
   }
   // Our UA stylesheet has font-weight:normal for OPTION.
   if (FontWeightNormal != fontDescription.weight())
