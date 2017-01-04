@@ -77,8 +77,7 @@ var vrShellUi = (function() {
       // Pull additional custom properties from CSS.
       let style = window.getComputedStyle(domElement);
       element.setTranslation(
-          getStyleFloat(style, '--tranX'),
-          getStyleFloat(style, '--tranY'),
+          getStyleFloat(style, '--tranX'), getStyleFloat(style, '--tranY'),
           getStyleFloat(style, '--tranZ'));
 
       this.uiElementId = scene.addElement(element);
@@ -122,17 +121,29 @@ var vrShellUi = (function() {
 
   class Controls {
     constructor(contentQuadId) {
+      this.enabled = false;
+      this.reloadUiEnabled = false;
+
       this.buttons = [];
       let descriptors = [
-          ['#back', function() {
+        [
+          '#back',
+          function() {
             api.doAction(api.Action.HISTORY_BACK);
-          }],
-          ['#reload', function() {
+          }
+        ],
+        [
+          '#reload',
+          function() {
             api.doAction(api.Action.RELOAD);
-          }],
-          ['#forward', function() {
+          }
+        ],
+        [
+          '#forward',
+          function() {
             api.doAction(api.Action.HISTORY_FORWARD);
-          }],
+          }
+        ],
       ];
 
       /** @const */ var BUTTON_SPACING = 0.136;
@@ -198,13 +209,17 @@ var vrShellUi = (function() {
       /** @const */ var DISTANCE = 0.7;
       /** @const */ var ANGLE_UP = 16.3 * Math.PI / 180.0;
 
+      this.enabled = false;
+      this.secure = false;
+      this.secureOriginTimer = null;
+
       // Permanent WebVR security warning. This warning is shown near the top of
       // the field of view.
       this.webVrSecureWarning = new DomUiElement('#webvr-not-secure-permanent');
       let update = new api.UiElementUpdate();
       update.setScale(DISTANCE, DISTANCE, 1);
-      update.setTranslation(0, DISTANCE * Math.sin(ANGLE_UP),
-          -DISTANCE * Math.cos(ANGLE_UP));
+      update.setTranslation(
+          0, DISTANCE * Math.sin(ANGLE_UP), -DISTANCE * Math.cos(ANGLE_UP));
       update.setRotation(1.0, 0.0, 0.0, ANGLE_UP);
       update.setHitTestable(false);
       update.setVisible(false);
@@ -213,8 +228,7 @@ var vrShellUi = (function() {
 
       // Temporary WebVR security warning. This warning is shown in the center
       // of the field of view, for a limited period of time.
-      this.transientWarning = new DomUiElement(
-          '#webvr-not-secure-transient');
+      this.transientWarning = new DomUiElement('#webvr-not-secure-transient');
       update = new api.UiElementUpdate();
       update.setScale(DISTANCE, DISTANCE, 1);
       update.setTranslation(0, 0, -DISTANCE);
@@ -243,8 +257,8 @@ var vrShellUi = (function() {
         this.secureOriginTimer = null;
       }
       if (visible) {
-        this.secureOriginTimer = setTimeout(
-            this.onTransientTimer.bind(this), TRANSIENT_TIMEOUT_MS);
+        this.secureOriginTimer =
+            setTimeout(this.onTransientTimer.bind(this), TRANSIENT_TIMEOUT_MS);
       }
       this.showOrHideWarnings(visible);
     }
@@ -271,9 +285,11 @@ var vrShellUi = (function() {
     constructor(contentQuadId) {
       this.domUiElement = new DomUiElement('#omni-container');
       this.enabled = false;
+      this.loading = false;
       this.level = 0;
       this.visibilityTimeout = 0;
       this.visibilityTimer = null;
+      this.visibleAfterTransition = false;
       this.nativeState = {};
 
       // Initially invisible.
@@ -284,22 +300,22 @@ var vrShellUi = (function() {
 
       // Listen to the end of transitions, so that the box can be natively
       // hidden after it finishes hiding itself.
-      document.querySelector('#omni').addEventListener('transitionend',
-          this.onAnimationDone.bind(this));
+      document.querySelector('#omni').addEventListener(
+          'transitionend', this.onAnimationDone.bind(this));
     }
 
     getSecurityIconElementId(level) {
       // See security_state.h and getSecurityIconResource() for this mapping.
       switch (level) {
-        case 0: // NONE
-        case 1: // HTTP_SHOW_WARNING
-        case 4: // SECURITY_WARNING
+        case 0:  // NONE
+        case 1:  // HTTP_SHOW_WARNING
+        case 4:  // SECURITY_WARNING
           return '#omni-info-icon';
-        case 2: // SECURE:
-        case 3: // EV_SECURE:
+        case 2:  // SECURE:
+        case 3:  // EV_SECURE:
           return '#omni-lock-icon';
-        case 5: // SECURE_WITH_POLICY_INSTALLED_CERT (ChromeOS only)
-        case 6: // DANGEROUS
+        case 5:  // SECURE_WITH_POLICY_INSTALLED_CERT (ChromeOS only)
+        case 6:  // DANGEROUS
         default:
           return '#omni-warning-icon';
       }
@@ -344,7 +360,7 @@ var vrShellUi = (function() {
       }
       if (this.enabled && this.visibilityTimeout > 0 && !this.loading) {
         this.visibilityTimer = setTimeout(
-          this.onVisibilityTimer.bind(this), this.visibilityTimeout);
+            this.onVisibilityTimer.bind(this), this.visibilityTimeout);
       }
     }
 
@@ -426,11 +442,12 @@ var vrShellUi = (function() {
       // TODO(amp): Don't show controls in CINEMA mode once MENU mode lands.
       this.omnibox.setVisibilityTimeout(
           mode == api.Mode.STANDARD && !menuMode ?
-          0 : OMNIBOX_VISIBILITY_TIMEOUT_MS);
+              0 :
+              OMNIBOX_VISIBILITY_TIMEOUT_MS);
       this.secureOriginWarnings.setEnabled(mode == api.Mode.WEB_VR);
 
-      api.setUiCssSize(uiRootElement.clientWidth, uiRootElement.clientHeight,
-          UI_DPR);
+      api.setUiCssSize(
+          uiRootElement.clientWidth, uiRootElement.clientHeight, UI_DPR);
     }
 
     setSecurityLevel(level) {
