@@ -287,26 +287,17 @@ public class VideoCaptureCamera
             Log.e(TAG, "allocate: no fps range found");
             return false;
         }
+        final ArrayList<FramerateRange> framerateRanges =
+                new ArrayList<FramerateRange>(listFpsRange.size());
+        for (int[] range : listFpsRange) {
+            framerateRanges.add(new FramerateRange(range[0], range[1]));
+        }
         // API fps ranges are scaled up x1000 to avoid floating point.
         int frameRateScaled = frameRate * 1000;
-        // Use the first range as the default chosen range.
-        int[] chosenFpsRange = listFpsRange.get(0);
-        int frameRateNearest = Math.abs(frameRateScaled - chosenFpsRange[0])
-                        < Math.abs(frameRateScaled - chosenFpsRange[1])
-                ? chosenFpsRange[0]
-                : chosenFpsRange[1];
-        int chosenFrameRate = (frameRateNearest + 999) / 1000;
-        int fpsRangeSize = Integer.MAX_VALUE;
-        for (int[] fpsRange : listFpsRange) {
-            if (fpsRange[0] <= frameRateScaled && frameRateScaled <= fpsRange[1]
-                    && (fpsRange[1] - fpsRange[0]) <= fpsRangeSize) {
-                chosenFpsRange = fpsRange;
-                chosenFrameRate = frameRate;
-                fpsRangeSize = fpsRange[1] - fpsRange[0];
-            }
-        }
-        Log.d(TAG, "allocate: fps set to %d, [%d-%d]", chosenFrameRate, chosenFpsRange[0],
-                chosenFpsRange[1]);
+        final FramerateRange chosenFramerateRange =
+                getClosestFramerateRange(framerateRanges, frameRateScaled);
+        final int[] chosenFpsRange = new int[] {chosenFramerateRange.min, chosenFramerateRange.max};
+        Log.d(TAG, "allocate: fps set to [%d-%d]", chosenFpsRange[0], chosenFpsRange[1]);
 
         // Calculate size.
         List<android.hardware.Camera.Size> listCameraSize = parameters.getSupportedPreviewSizes();
@@ -347,9 +338,8 @@ public class VideoCaptureCamera
             Log.d(TAG, "Continuous focus mode not supported.");
         }
 
-        // Fill the capture format.
-        mCaptureFormat = new VideoCaptureFormat(
-                matchedWidth, matchedHeight, chosenFrameRate, BuggyDeviceHack.getImageFormat());
+        mCaptureFormat = new VideoCaptureFormat(matchedWidth, matchedHeight,
+                chosenFpsRange[1] / 1000, BuggyDeviceHack.getImageFormat());
         parameters.setPictureSize(matchedWidth, matchedHeight);
         parameters.setPreviewSize(matchedWidth, matchedHeight);
         parameters.setPreviewFpsRange(chosenFpsRange[0], chosenFpsRange[1]);

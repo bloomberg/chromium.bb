@@ -13,6 +13,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Video Capture Device base class, defines a set of methods that native code
@@ -21,6 +24,19 @@ import java.nio.ByteBuffer;
  **/
 @JNINamespace("media")
 public abstract class VideoCapture {
+    /**
+     * Common class for storing a framerate range. Values should be multiplied by 1000.
+     */
+    protected static class FramerateRange {
+        public int min;
+        public int max;
+
+        public FramerateRange(int min, int max) {
+            this.min = min;
+            this.max = max;
+        }
+    }
+
     // The angle (0, 90, 180, 270) that the image needs to be rotated to show in
     // the display's native orientation.
     protected int mCameraNativeOrientation;
@@ -58,7 +74,7 @@ public abstract class VideoCapture {
     /**
     * @param zoom Zoom level, should be ignored if 0.
     * @param focusMode Focus mode following AndroidMeteringMode enum.
-    * @param exposureMode Focus mode following AndroidMeteringMode enum.
+    * @param exposureMode Exposure mode following AndroidMeteringMode enum.
     * @param pointsOfInterest2D 2D normalized points of interest, marshalled with
     * x coordinate first followed by the y coordinate.
     * @param hasExposureCompensation Indicates if |exposureCompensation| is set.
@@ -145,6 +161,52 @@ public abstract class VideoCapture {
                 break;
         }
         return orientation;
+    }
+
+    /**
+     * Finds the framerate range matching |targetFramerate|. Tries to find a range with as low of a
+     * minimum value as possible to allow the camera adjust based on the lighting conditions.
+     * Assumes that all framerate values are multiplied by 1000.
+     *
+     * This code is mostly copied from WebRTC:
+     * CameraEnumerationAndroid.getClosestSupportedFramerateRange
+     * in webrtc/api/android/java/src/org/webrtc/CameraEnumerationAndroid.java
+     */
+    protected static FramerateRange getClosestFramerateRange(
+            final List<FramerateRange> framerateRanges, final int targetFramerate) {
+        return Collections.min(framerateRanges, new Comparator<FramerateRange>() {
+            // Threshold and penalty weights if the upper bound is further away than
+            // |MAX_FPS_DIFF_THRESHOLD| from requested.
+            private static final int MAX_FPS_DIFF_THRESHOLD = 5000;
+            private static final int MAX_FPS_LOW_DIFF_WEIGHT = 1;
+            private static final int MAX_FPS_HIGH_DIFF_WEIGHT = 3;
+
+            // Threshold and penalty weights if the lower bound is bigger than |MIN_FPS_THRESHOLD|.
+            private static final int MIN_FPS_THRESHOLD = 8000;
+            private static final int MIN_FPS_LOW_VALUE_WEIGHT = 1;
+            private static final int MIN_FPS_HIGH_VALUE_WEIGHT = 4;
+
+            // Use one weight for small |value| less than |threshold|, and another weight above.
+            private int progressivePenalty(
+                    int value, int threshold, int lowWeight, int highWeight) {
+                return (value < threshold)
+                        ? value * lowWeight
+                        : threshold * lowWeight + (value - threshold) * highWeight;
+            }
+
+            int diff(FramerateRange range) {
+                final int minFpsError = progressivePenalty(range.min, MIN_FPS_THRESHOLD,
+                        MIN_FPS_LOW_VALUE_WEIGHT, MIN_FPS_HIGH_VALUE_WEIGHT);
+                final int maxFpsError = progressivePenalty(Math.abs(targetFramerate - range.max),
+                        MAX_FPS_DIFF_THRESHOLD, MAX_FPS_LOW_DIFF_WEIGHT, MAX_FPS_HIGH_DIFF_WEIGHT);
+                return minFpsError + maxFpsError;
+            }
+
+            @Override
+            public int compare(FramerateRange range1, FramerateRange range2) {
+                return diff(range1) - diff(range2);
+            }
+        });
     }
 
     // Method for VideoCapture implementations to call back native code.
