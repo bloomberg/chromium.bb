@@ -75,7 +75,7 @@ Polymer({
   },
 
   /** @private */
-  prefsChanged_() {
+  prefsChanged_: function() {
     this.noImportDataTypeSelected_ =
         !(this.getPref('import_history').value && this.selected_.history) &&
         !(this.getPref('import_bookmarks').value && this.selected_.favorites) &&

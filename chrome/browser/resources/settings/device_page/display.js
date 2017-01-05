@@ -384,7 +384,7 @@ Polymer({
   },
 
   /** @private */
-  updateDisplayInfo_() {
+  updateDisplayInfo_: function() {
     var displayIds = '';
     var primaryDisplay = undefined;
     var selectedDisplay = undefined;

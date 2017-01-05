@@ -89,7 +89,7 @@ cr.define('settings', function() {
     setHotwordSearchEnabled: function(enabled) {},
 
     /** @return {!Promise<boolean>} */
-    getGoogleNowAvailability() {},
+    getGoogleNowAvailability: function() {},
   };
 
   /**

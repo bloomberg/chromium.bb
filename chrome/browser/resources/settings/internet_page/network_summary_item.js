@@ -155,7 +155,7 @@ Polymer({
    *   before it is expanded.
    * @private
    */
-  networksDomIfIsTrue_() {
+  networksDomIfIsTrue_: function() {
     if (this.expanded_ == this.wasExpanded_)
       return this.expanded_;
     if (this.expanded_) {
@@ -172,7 +172,7 @@ Polymer({
    *   be opened.
    * @private
    */
-  networksIronCollapseIsOpened_() {
+  networksIronCollapseIsOpened_: function() {
     return this.expanded_ && this.wasExpanded_;
   },
 

@@ -80,7 +80,7 @@ var DragBehavior = {
   },
 
   /** @private */
-  addListeners_() {
+  addListeners_: function() {
     let container = this.container_;
     if (!container || this.mouseDownListener_)
       return;
@@ -102,7 +102,7 @@ var DragBehavior = {
   },
 
   /** @private */
-  removeListeners_() {
+  removeListeners_: function() {
     let container = this.container_;
     if (!container || !this.mouseDownListener_)
       return;

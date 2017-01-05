@@ -39,7 +39,7 @@ cr.define('settings', function() {
      * Returns a Promise that's true if the profile manages supervised users.
      * @return {!Promise<boolean>}
      */
-    getProfileManagesSupervisedUsers() {},
+    getProfileManagesSupervisedUsers: function() {},
   };
 
   /**
@@ -61,7 +61,7 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    getProfileManagesSupervisedUsers() {
+    getProfileManagesSupervisedUsers: function() {
       return cr.sendWithPromise('getProfileManagesSupervisedUsers');
     },
   };
