@@ -97,16 +97,15 @@ Synopsis:
 
 ```shell
 tools/clang/scripts/update.py --bootstrap --force-local-build --without-android \
-  --tools blink_gc_plugin plugins rewrite_to_chrome_style
+  --extra-tools rewrite_to_chrome_style
 ```
 
 Running this command builds the [Oilpan plugin](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/blink_gc_plugin/),
 the [Chrome style
 plugin](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/plugins/),
-and the [Blink to Chrome style rewriter](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/rewrite_to_chrome_style/). Additional arguments to `--tools` should be the name of
+and the [Blink to Chrome style rewriter](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/rewrite_to_chrome_style/). Additional arguments to `--extra-tools` should be the name of
 subdirectories in
 [//tools/clang](https://chromium.googlesource.com/chromium/src/+/master/tools/clang).
-Generally, `--tools` should always include `blink_gc_plugin` and `plugins`: otherwise, Chromium won't build.
 
 It is important to use --bootstrap as there appear to be [bugs](https://crbug.com/580745)
 in the clang library this script produces if you build it with gcc, which is the default.
