@@ -340,19 +340,20 @@ void VrShell::AppButtonPressed() {
 #endif
 }
 
-void VrShell::ContentBoundsChanged(JNIEnv* env,
-                                   const JavaParamRef<jobject>& object,
-                                   jint width, jint height, jfloat dpr) {
-  TRACE_EVENT0("gpu", "VrShell::ContentBoundsChanged");
+void VrShell::ContentPhysicalBoundsChanged(JNIEnv* env,
+                                           const JavaParamRef<jobject>& object,
+                                           jint width, jint height,
+                                           jfloat dpr) {
+  TRACE_EVENT0("gpu", "VrShell::ContentPhysicalBoundsChanged");
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::ContentPhysicalBoundsChanged,
                                      thread->GetVrShellGl(), width, height));
   content_compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
-void VrShell::UIBoundsChanged(JNIEnv* env,
-                              const JavaParamRef<jobject>& object,
-                              jint width, jint height, jfloat dpr) {
+void VrShell::UIPhysicalBoundsChanged(JNIEnv* env,
+                                      const JavaParamRef<jobject>& object,
+                                      jint width, jint height, jfloat dpr) {
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::UIPhysicalBoundsChanged,
                                      thread->GetVrShellGl(), width, height));

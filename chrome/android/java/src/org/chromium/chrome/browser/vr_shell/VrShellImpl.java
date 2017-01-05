@@ -188,7 +188,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mUiVirtualDisplay.update(size, size, dpr, null, null, null);
         mUiCVC.onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
         getViewRoot(mUiCVC).onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
-        nativeUIBoundsChanged(mNativeVrShell, surfaceWidth, surfaceHeight, dpr);
+        nativeUIPhysicalBoundsChanged(mNativeVrShell, surfaceWidth, surfaceHeight, dpr);
     }
 
     @CalledByNative
@@ -201,7 +201,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mContentVirtualDisplay.update(size, size, dpr, null, null, null);
         mContentCVC.onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
         getViewRoot(mContentCVC).onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
-        nativeContentBoundsChanged(mNativeVrShell, surfaceWidth, surfaceHeight, dpr);
+        nativeContentPhysicalBoundsChanged(mNativeVrShell, surfaceWidth, surfaceHeight, dpr);
     }
 
     private ViewRoot getViewRoot(ContentViewCore cvc) {
@@ -320,8 +320,9 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private native void nativeOnTriggerEvent(long nativeVrShell);
     private native void nativeOnPause(long nativeVrShell);
     private native void nativeOnResume(long nativeVrShell);
-    private native void nativeContentBoundsChanged(long nativeVrShell, int width, int height,
+    private native void nativeContentPhysicalBoundsChanged(long nativeVrShell, int width,
+            int height, float dpr);
+    private native void nativeUIPhysicalBoundsChanged(long nativeVrShell, int width, int height,
             float dpr);
-    private native void nativeUIBoundsChanged(long nativeVrShell, int width, int height, float dpr);
     private native void nativeSetWebVrMode(long nativeVrShell, boolean enabled);
 }

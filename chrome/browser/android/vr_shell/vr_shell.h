@@ -111,12 +111,12 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void GvrDelegateReady();
   void AppButtonPressed();
 
-  void ContentBoundsChanged(
+  void ContentPhysicalBoundsChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
       jint width, jint height, jfloat dpr);
 
-  void UIBoundsChanged(
+  void UIPhysicalBoundsChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
       jint width, jint height, jfloat dpr);
