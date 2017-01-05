@@ -45,6 +45,14 @@ const SkColor kFootnoteBackgroundColor = SkColorSetRGB(245, 245, 245);
 // Color of the top border of the footnote.
 const SkColor kFootnoteBorderColor = SkColorSetRGB(229, 229, 229);
 
+constexpr int kClosePaddingRight = 7;
+constexpr int kClosePaddingTop = 6;
+
+// The MD spec states that the center of the "x" should be 16x16 from the top
+// right of the dialog.
+constexpr int kClosePaddingRightMd = 4;
+constexpr int kClosePaddingTopMd = 5;
+
 // Get the |vertical| or horizontal amount that |available_bounds| overflows
 // |window_bounds|.
 int GetOffScreenLength(const gfx::Rect& available_bounds,
@@ -314,7 +322,13 @@ void BubbleFrameView::Layout() {
 
   // The close button is positioned somewhat closer to the edge of the bubble.
   gfx::Point close_position = GetContentsBounds().top_right();
-  close_position += gfx::Vector2d(-close_->width() - 7, 6);
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    close_position += gfx::Vector2d(-close_->width() - kClosePaddingRightMd,
+                                    kClosePaddingTopMd);
+  } else {
+    close_position +=
+        gfx::Vector2d(-close_->width() - kClosePaddingRight, kClosePaddingTop);
+  }
   close_->SetPosition(close_position);
 
   gfx::Size title_icon_pref_size(title_icon_->GetPreferredSize());
