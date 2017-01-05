@@ -55,10 +55,6 @@ ShelfMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(
   return NULL;
 }
 
-bool AppListShelfItemDelegate::CanPin() const {
-  return true;
-}
-
 void AppListShelfItemDelegate::Close() {}
 
 }  // namespace ash

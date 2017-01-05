@@ -34,10 +34,6 @@ ShelfMenuModel* TestShelfItemDelegate::CreateApplicationMenu(int event_flags) {
   return nullptr;
 }
 
-bool TestShelfItemDelegate::CanPin() const {
-  return true;
-}
-
 void TestShelfItemDelegate::Close() {}
 
 }  // namespace test

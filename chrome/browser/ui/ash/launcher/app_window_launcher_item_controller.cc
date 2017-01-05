@@ -9,7 +9,6 @@
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -136,11 +135,6 @@ AppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
 base::string16 AppWindowLauncherItemController::GetTitle() {
   return LauncherControllerHelper::GetAppTitle(launcher_controller()->profile(),
                                                app_id());
-}
-
-bool AppWindowLauncherItemController::CanPin() const {
-  return GetPinnableForAppID(app_id(), launcher_controller()->profile()) ==
-         AppListControllerDelegate::PIN_EDITABLE;
 }
 
 void AppWindowLauncherItemController::OnWindowPropertyChanged(

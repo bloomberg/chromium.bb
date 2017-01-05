@@ -226,11 +226,6 @@ ash::ShelfMenuModel* AppShortcutLauncherItemController::CreateApplicationMenu(
   return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }
 
-bool AppShortcutLauncherItemController::CanPin() const {
-  return GetPinnableForAppID(app_id(), launcher_controller()->profile()) ==
-         AppListControllerDelegate::PIN_EDITABLE;
-}
-
 content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
   URLPattern refocus_pattern(URLPattern::SCHEME_ALL);
   refocus_pattern.SetMatchAllURLs(true);

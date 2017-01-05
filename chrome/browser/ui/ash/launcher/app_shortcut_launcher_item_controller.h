@@ -50,7 +50,6 @@ class AppShortcutLauncherItemController : public LauncherItemController {
       const ui::Event& event) override;
   base::string16 GetTitle() override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
-  bool CanPin() const override;
   void Close() override;
 
   // Get the refocus url pattern, which can be used to identify this application

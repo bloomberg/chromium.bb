@@ -14,6 +14,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -27,10 +28,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/context_menu_params.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -74,8 +71,7 @@ LauncherContextMenu::LauncherContextMenu(
   set_delegate(this);
 }
 
-LauncherContextMenu::~LauncherContextMenu() {
-}
+LauncherContextMenu::~LauncherContextMenu() {}
 
 bool LauncherContextMenu::IsItemForCommandIdDynamic(int command_id) const {
   return false;
@@ -98,15 +94,13 @@ bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
 bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case MENU_PIN:
-      return controller_->IsPinnable(item_.id);
+      // Users cannot modify the pinned state of apps pinned by policy.
+      return !item_.pinned_by_policy && (item_.type == ash::TYPE_APP_SHORTCUT ||
+                                         item_.type == ash::TYPE_APP);
     case MENU_CHANGE_WALLPAPER:
-#if defined(OS_CHROMEOS)
       return ash::WmShell::Get()
           ->wallpaper_delegate()
           ->CanOpenSetWallpaperPage();
-#else
-      return false;
-#endif  // defined(OS_CHROMEOS)
     case MENU_AUTO_HIDE:
       return CanUserModifyShelfAutoHideBehavior(controller_->profile());
     default:
@@ -146,9 +140,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case MENU_ALIGNMENT_MENU:
       break;
     case MENU_CHANGE_WALLPAPER:
-#if defined(OS_CHROMEOS)
       chromeos::WallpaperManager::Get()->Open();
-#endif  // defined(OS_CHROMEOS)
       break;
     default:
       NOTREACHED();

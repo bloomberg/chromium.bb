@@ -105,11 +105,6 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
                                        : window_id_to_title_.begin()->second;
   }
 
-  bool CanPin() const override {
-    NOTIMPLEMENTED();
-    return true;
-  }
-
   ShelfMenuModel* CreateApplicationMenu(int event_flags) override {
     return new ShelfMenuModelMus(this);
   }

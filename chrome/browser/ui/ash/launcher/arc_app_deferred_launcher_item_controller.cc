@@ -51,10 +51,6 @@ base::string16 ArcAppDeferredLauncherItemController::GetTitle() {
   return base::UTF8ToUTF16(app_info->name);
 }
 
-bool ArcAppDeferredLauncherItemController::CanPin() const {
-  return true;
-}
-
 ash::ShelfMenuModel*
 ArcAppDeferredLauncherItemController::CreateApplicationMenu(int event_flags) {
   return nullptr;

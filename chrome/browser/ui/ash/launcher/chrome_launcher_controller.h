@@ -115,10 +115,6 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // Pins/unpins the specified id.
   virtual void TogglePinned(ash::ShelfID id) = 0;
 
-  // Returns true if the specified item can be pinned or unpinned. Only apps can
-  // be pinned.
-  virtual bool IsPinnable(ash::ShelfID id) const = 0;
-
   // If there is no item in the shelf for application |app_id|, one is created.
   // The (existing or created) shelf items get then locked against a user's
   // un-pinning removal. Used for V1 apps opened as windows that aren't pinned.

@@ -397,13 +397,6 @@ void ChromeLauncherControllerImpl::TogglePinned(ash::ShelfID id) {
     Pin(id);
 }
 
-bool ChromeLauncherControllerImpl::IsPinnable(ash::ShelfID id) const {
-  const ash::ShelfItem* item = GetItem(id);
-  return (item && (item->type == ash::TYPE_APP_SHORTCUT ||
-                   item->type == ash::TYPE_APP) &&
-          model_->GetShelfItemDelegate(id)->CanPin());
-}
-
 void ChromeLauncherControllerImpl::LockV1AppWithID(const std::string& app_id) {
   ash::ShelfID id = GetShelfIDForAppID(app_id);
   if (id == ash::kInvalidShelfID) {
@@ -1207,6 +1200,20 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
       DCHECK_GE(model_->ItemIndexByID(item.id), index);
     } else {
       LauncherItemClosed(item.id);
+    }
+  }
+
+  UpdatePolicyPinnedAppsFromPrefs();
+}
+
+void ChromeLauncherControllerImpl::UpdatePolicyPinnedAppsFromPrefs() {
+  for (int index = 0; index < model_->item_count(); index++) {
+    ash::ShelfItem item = model_->items()[index];
+    const bool pinned_by_policy = GetPinnableForAppID(item.app_id, profile()) ==
+                                  AppListControllerDelegate::PIN_FIXED;
+    if (item.pinned_by_policy != pinned_by_policy) {
+      item.pinned_by_policy = pinned_by_policy;
+      model_->Set(index, item);
     }
   }
 }

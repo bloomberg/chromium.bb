@@ -113,11 +113,6 @@ void ChromeLauncherControllerMus::TogglePinned(ash::ShelfID id) {
   NOTIMPLEMENTED();
 }
 
-bool ChromeLauncherControllerMus::IsPinnable(ash::ShelfID id) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void ChromeLauncherControllerMus::LockV1AppWithID(const std::string& app_id) {
   NOTIMPLEMENTED();
 }

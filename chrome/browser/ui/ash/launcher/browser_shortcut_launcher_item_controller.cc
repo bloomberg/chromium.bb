@@ -232,10 +232,6 @@ BrowserShortcutLauncherItemController::CreateApplicationMenu(int event_flags) {
   return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }
 
-bool BrowserShortcutLauncherItemController::CanPin() const {
-  return true;
-}
-
 bool BrowserShortcutLauncherItemController::IsListOfActiveBrowserEmpty() {
   return GetListOfActiveBrowsers().empty();
 }

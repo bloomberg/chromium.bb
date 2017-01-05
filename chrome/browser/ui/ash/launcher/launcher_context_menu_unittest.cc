@@ -191,13 +191,14 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
 
   controller()->PinAppWithID(app_id);
 
-  ash::ShelfItem item;
-  item.id = controller()->GetShelfIDForAppID(app_id);
+  const ash::ShelfID item_id = controller()->GetShelfIDForAppID(app_id);
+  const ash::ShelfItem* item = controller()->GetItem(item_id);
+  ASSERT_TRUE(item);
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   ash::WmShelf* wm_shelf = GetWmShelf(primary_id);
 
   std::unique_ptr<LauncherContextMenu> menu(
-      new ArcLauncherContextMenu(controller(), &item, wm_shelf));
+      new ArcLauncherContextMenu(controller(), item, wm_shelf));
 
   // Arc app is pinned but not running.
   EXPECT_TRUE(
@@ -227,7 +228,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   CreateArcWindow(window_app_id1);
   arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0],
                                              std::string());
-  menu.reset(new ArcLauncherContextMenu(controller(), &item, wm_shelf));
+  menu.reset(new ArcLauncherContextMenu(controller(), item, wm_shelf));
 
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
@@ -242,9 +243,10 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   CreateArcWindow(window_app_id2);
   arc_test().app_instance()->SendTaskCreated(2, arc_test().fake_apps()[1],
                                              std::string());
-  item.id = controller()->GetShelfIDForAppID(app_id2);
-  ASSERT_TRUE(item.id);
-  menu.reset(new ArcLauncherContextMenu(controller(), &item, wm_shelf));
+  const ash::ShelfID item_id2 = controller()->GetShelfIDForAppID(app_id2);
+  const ash::ShelfItem* item2 = controller()->GetItem(item_id2);
+  ASSERT_TRUE(item2);
+  menu.reset(new ArcLauncherContextMenu(controller(), item2, wm_shelf));
 
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
@@ -265,9 +267,10 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   CreateArcWindow(window_app_id3);
   arc_test().app_instance()->SendTaskCreated(3, arc_test().fake_apps()[2],
                                              shortcuts[0].intent_uri);
-  item.id = controller()->GetShelfIDForAppID(app_id3);
-  ASSERT_TRUE(item.id);
-  menu.reset(new ArcLauncherContextMenu(controller(), &item, wm_shelf));
+  const ash::ShelfID item_id3 = controller()->GetShelfIDForAppID(app_id3);
+  const ash::ShelfItem* item3 = controller()->GetItem(item_id3);
+  ASSERT_TRUE(item3);
+  menu.reset(new ArcLauncherContextMenu(controller(), item3, wm_shelf));
 
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));

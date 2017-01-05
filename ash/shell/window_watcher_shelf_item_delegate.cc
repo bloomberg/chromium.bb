@@ -40,10 +40,6 @@ ShelfMenuModel* WindowWatcherShelfItemDelegate::CreateApplicationMenu(
   return nullptr;
 }
 
-bool WindowWatcherShelfItemDelegate::CanPin() const {
-  return true;
-}
-
 void WindowWatcherShelfItemDelegate::Close() {}
 
 }  // namespace shell

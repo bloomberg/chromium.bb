@@ -34,7 +34,6 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   void Unpin(ash::ShelfID id) override;
   bool IsPinned(ash::ShelfID id) override;
   void TogglePinned(ash::ShelfID id) override;
-  bool IsPinnable(ash::ShelfID id) const override;
   void LockV1AppWithID(const std::string& app_id) override;
   void UnlockV1AppWithID(const std::string& app_id) override;
   void Launch(ash::ShelfID id, int event_flags) override;

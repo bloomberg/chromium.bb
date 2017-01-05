@@ -64,10 +64,6 @@ ShelfMenuModel* ShelfWindowWatcherItemDelegate::CreateApplicationMenu(
   return nullptr;
 }
 
-bool ShelfWindowWatcherItemDelegate::CanPin() const {
-  return GetShelfItemType(id_) != TYPE_APP_PANEL;
-}
-
 void ShelfWindowWatcherItemDelegate::Close() {
   window_->CloseWidget();
 }

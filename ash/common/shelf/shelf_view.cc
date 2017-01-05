@@ -1351,12 +1351,11 @@ ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) const {
   if (type == TYPE_APP_LIST || type == TYPE_DIALOG)
     return NOT_REMOVABLE;
 
-  std::string app_id = delegate_->GetAppIDForShelfID(model_->items()[index].id);
-  ShelfItemDelegate* item_delegate =
-      model_->GetShelfItemDelegate(model_->items()[index].id);
-  if (!item_delegate->CanPin())
+  if (model_->items()[index].pinned_by_policy)
     return NOT_REMOVABLE;
+
   // Note: Only pinned app shortcuts can be removed!
+  std::string app_id = delegate_->GetAppIDForShelfID(model_->items()[index].id);
   return (type == TYPE_APP_SHORTCUT && delegate_->IsAppPinned(app_id))
              ? REMOVABLE
              : DRAGGABLE;

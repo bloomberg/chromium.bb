@@ -279,10 +279,6 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override {
     return NULL;
   }
-  bool CanPin() const override {
-    return GetPinnableForAppID(app_id(), launcher_controller()->profile()) ==
-           AppListControllerDelegate::PIN_EDITABLE;
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestV2AppLauncherItemController);
