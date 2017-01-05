@@ -10,8 +10,7 @@
 #include "base/location.h"
 #include "base/md5.h"
 #include "base/path_service.h"
-#include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -90,13 +89,14 @@ void FakeAuthPolicyClient::RefreshDevicePolicy(
   CHECK(policy.SerializeToString(&payload));
 
   // Drop file for SessionManagerClientStubImpl to read.
-  if (!base::PostTaskAndReplyWithResult(
-          base::WorkerPool::GetTaskRunner(false /* task_is_slow */).get(),
-          FROM_HERE, base::Bind(&WritePolicyFile, policy_path, payload,
-                                "google/chromeos/device"),
-          callback)) {
-    callback.Run(false);
-  }
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .MayBlock(),
+      Bind(&WritePolicyFile, policy_path, payload, "google/chromeos/device"),
+      callback);
 }
 
 void FakeAuthPolicyClient::RefreshUserPolicy(
@@ -119,13 +119,15 @@ void FakeAuthPolicyClient::RefreshUserPolicy(
   CHECK(policy.SerializeToString(&payload));
 
   // Drop file for SessionManagerClientStubImpl to read.
-  if (!base::PostTaskAndReplyWithResult(
-          base::WorkerPool::GetTaskRunner(false /* task_is_slow */).get(),
-          FROM_HERE, base::Bind(&WritePolicyFile, policy_path, payload,
-                                "google/chromeos/user"),
-          callback)) {
-    callback.Run(false);
-  }
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .MayBlock(),
+      base::Bind(&WritePolicyFile, policy_path, payload,
+                 "google/chromeos/user"),
+      callback);
 }
 
 }  // namespace chromeos
