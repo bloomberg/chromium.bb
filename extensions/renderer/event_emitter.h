@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "extensions/renderer/api_binding_types.h"
 #include "gin/wrappable.h"
 #include "v8/include/v8.h"
 
@@ -23,7 +24,7 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
  public:
   using Listeners = std::vector<v8::Global<v8::Function>>;
 
-  EventEmitter();
+  explicit EventEmitter(const binding::RunJSFunction& run_js);
   ~EventEmitter() override;
 
   static gin::WrapperInfo kWrapperInfo;
@@ -31,6 +32,9 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   // gin::Wrappable:
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) final;
+
+  void Fire(v8::Local<v8::Context> context,
+            std::vector<v8::Local<v8::Value>>* args);
 
   Listeners* listeners() { return &listeners_; }
 
@@ -40,8 +44,11 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   void RemoveListener(v8::Local<v8::Function> function);
   bool HasListener(v8::Local<v8::Function> function);
   bool HasListeners();
+  void Dispatch(gin::Arguments* arguments);
 
   Listeners listeners_;
+
+  binding::RunJSFunction run_js_;
 
   DISALLOW_COPY_AND_ASSIGN(EventEmitter);
 };

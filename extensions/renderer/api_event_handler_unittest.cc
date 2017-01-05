@@ -408,4 +408,43 @@ TEST_F(APIEventHandlerTest, DifferentCallingMethods) {
   EXPECT_EQ(2u, handler.GetNumEventListenersForTesting(kEventName, context));
 }
 
+TEST_F(APIEventHandlerTest, TestDispatchFromJs) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> event = handler.CreateEventInstance("alpha", context);
+  ASSERT_FALSE(event.IsEmpty());
+
+  const char kListenerFunction[] =
+      "(function() {\n"
+      "  this.eventArgs = Array.from(arguments);\n"
+      "});";
+  v8::Local<v8::Function> listener =
+      FunctionFromString(context, kListenerFunction);
+
+  const char kAddListenerFunction[] =
+      "(function(event, listener) { event.addListener(listener); })";
+  v8::Local<v8::Function> add_listener_function =
+      FunctionFromString(context, kAddListenerFunction);
+
+  {
+    v8::Local<v8::Value> argv[] = {event, listener};
+    RunFunctionOnGlobal(add_listener_function, context, arraysize(argv), argv);
+  }
+
+  v8::Local<v8::Function> fire_event_function =
+      FunctionFromString(
+          context,
+          "(function(event) { event.dispatch(42, 'foo', {bar: 'baz'}); })");
+  {
+    v8::Local<v8::Value> argv[] = {event};
+    RunFunctionOnGlobal(fire_event_function, context, arraysize(argv), argv);
+  }
+
+  EXPECT_EQ("[42,\"foo\",{\"bar\":\"baz\"}]",
+            GetStringPropertyFromObject(
+                context->Global(), context, "eventArgs"));
+}
+
 }  // namespace extensions

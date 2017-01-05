@@ -13,7 +13,8 @@ namespace extensions {
 
 gin::WrapperInfo EventEmitter::kWrapperInfo = {gin::kEmbedderNativeGin};
 
-EventEmitter::EventEmitter() {}
+EventEmitter::EventEmitter(const binding::RunJSFunction& run_js)
+    : run_js_(run_js) {}
 
 EventEmitter::~EventEmitter() {}
 
@@ -23,7 +24,20 @@ gin::ObjectTemplateBuilder EventEmitter::GetObjectTemplateBuilder(
       .SetMethod("addListener", &EventEmitter::AddListener)
       .SetMethod("removeListener", &EventEmitter::RemoveListener)
       .SetMethod("hasListener", &EventEmitter::HasListener)
-      .SetMethod("hasListeners", &EventEmitter::HasListeners);
+      .SetMethod("hasListeners", &EventEmitter::HasListeners)
+      // The following methods aren't part of the public API, but are used
+      // by our custom bindings and exposed on the public event object. :(
+      // TODO(devlin): Once we convert all custom bindings that use these,
+      // they can be removed.
+      .SetMethod("dispatch", &EventEmitter::Dispatch);
+}
+
+void EventEmitter::Fire(v8::Local<v8::Context> context,
+                        std::vector<v8::Local<v8::Value>>* args) {
+  for (const auto& listener : listeners_) {
+    run_js_.Run(listener.Get(context->GetIsolate()), context, args->size(),
+                             args->data());
+  }
 }
 
 void EventEmitter::AddListener(gin::Arguments* arguments) {
@@ -56,6 +70,20 @@ bool EventEmitter::HasListener(v8::Local<v8::Function> listener) {
 
 bool EventEmitter::HasListeners() {
   return !listeners_.empty();
+}
+
+void EventEmitter::Dispatch(gin::Arguments* arguments) {
+  if (listeners_.empty())
+    return;
+  v8::HandleScope handle_scope(arguments->isolate());
+  v8::Local<v8::Context> context =
+      arguments->isolate()->GetCurrentContext();
+  std::vector<v8::Local<v8::Value>> v8_args;
+  if (arguments->Length() > 0) {
+    // Converting to v8::Values should never fail.
+    CHECK(arguments->GetRemaining(&v8_args));
+  }
+  Fire(context, &v8_args);
 }
 
 }  // namespace extensions

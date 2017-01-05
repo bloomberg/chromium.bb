@@ -74,7 +74,7 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
   DCHECK(data->event_data.find(event_name) == data->event_data.end());
 
   gin::Handle<EventEmitter> emitter_handle =
-      gin::CreateHandle(context->GetIsolate(), new EventEmitter());
+      gin::CreateHandle(context->GetIsolate(), new EventEmitter(call_js_));
   CHECK(!emitter_handle.IsEmpty());
   v8::Local<v8::Value> emitter_value = emitter_handle.ToV8();
   CHECK(emitter_value->IsObject());
@@ -115,10 +115,7 @@ void APIEventHandler::FireEventInContext(const std::string& event_name,
       context->GetIsolate(), iter->second.Get(context->GetIsolate()), &emitter);
   CHECK(emitter);
 
-  for (const auto& listener : *emitter->listeners()) {
-    call_js_.Run(listener.Get(context->GetIsolate()), context, v8_args.size(),
-                 v8_args.data());
-  }
+  emitter->Fire(context, &v8_args);
 }
 
 size_t APIEventHandler::GetNumEventListenersForTesting(
