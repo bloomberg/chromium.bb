@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Unit tests for the AutofillContact class.
+ * Parametrized unit tests for the AutofillContact class.
  */
 @RunWith(ParameterizedRobolectricTestRunner.class)
 @Config(sdk = 21, manifest = Config.NONE)
@@ -107,8 +107,9 @@ public class AutofillContactTest {
     public void test() {
         AutofillProfile profile = new AutofillProfile();
         AutofillContact contact = new AutofillContact(mContext, profile, mPayerName, mPayerPhone,
-                mPayerEmail,
-                mIsComplete ? ContactEditor.COMPLETE : ContactEditor.INVALID_MULTIPLE_FIELDS);
+                mPayerEmail, mIsComplete ? ContactEditor.COMPLETE
+                                         : ContactEditor.INVALID_NAME | ContactEditor.INVALID_EMAIL,
+                true, true, true);
 
         Assert.assertEquals(
                 mIsComplete ? "Contact should be complete" : "Contact should be incomplete",

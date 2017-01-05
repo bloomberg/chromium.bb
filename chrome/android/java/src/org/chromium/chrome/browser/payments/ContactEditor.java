@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.support.annotation.IntDef;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -17,8 +16,6 @@ import org.chromium.chrome.browser.payments.ui.EditorFieldModel;
 import org.chromium.chrome.browser.payments.ui.EditorFieldModel.EditorFieldValidator;
 import org.chromium.chrome.browser.payments.ui.EditorModel;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,19 +25,15 @@ import javax.annotation.Nullable;
  * Contact information editor.
  */
 public class ContactEditor extends EditorBase<AutofillContact> {
-    @IntDef({INVALID_NAME, INVALID_EMAIL, INVALID_PHONE_NUMBER, INVALID_MULTIPLE_FIELDS})
-    @Retention(RetentionPolicy.SOURCE)
     public @interface CompletionStatus {}
     /** Can be sent to the merchant as-is without editing first. */
     public static final int COMPLETE = 0;
     /** The contact name is missing. */
-    public static final int INVALID_NAME = 1;
+    public static final int INVALID_NAME = 1 << 0;
     /** The contact email is invalid or missing. */
-    public static final int INVALID_EMAIL = 2;
+    public static final int INVALID_EMAIL = 1 << 1;
     /** The contact phone number is invalid or missing. */
-    public static final int INVALID_PHONE_NUMBER = 3;
-    /** Multiple fields are invalid or missing. */
-    public static final int INVALID_MULTIPLE_FIELDS = 4;
+    public static final int INVALID_PHONE_NUMBER = 1 << 2;
 
     private final boolean mRequestPayerName;
     private final boolean mRequestPayerPhone;
@@ -80,26 +73,18 @@ public class ContactEditor extends EditorBase<AutofillContact> {
     @CompletionStatus
     public int checkContactCompletionStatus(
             @Nullable String name, @Nullable String phone, @Nullable String email) {
-        int invalidFieldCount = 0;
         int completionStatus = COMPLETE;
 
         if (mRequestPayerName && TextUtils.isEmpty(name)) {
-            invalidFieldCount++;
-            completionStatus = INVALID_NAME;
+            completionStatus |= INVALID_NAME;
         }
 
         if (mRequestPayerPhone && !getPhoneValidator().isValid(phone)) {
-            invalidFieldCount++;
-            completionStatus = INVALID_PHONE_NUMBER;
+            completionStatus |= INVALID_PHONE_NUMBER;
         }
 
         if (mRequestPayerEmail && !getEmailValidator().isValid(email)) {
-            invalidFieldCount++;
-            completionStatus = INVALID_EMAIL;
-        }
-
-        if (invalidFieldCount > 1) {
-            completionStatus = INVALID_MULTIPLE_FIELDS;
+            completionStatus |= INVALID_EMAIL;
         }
 
         return completionStatus;
@@ -139,7 +124,8 @@ public class ContactEditor extends EditorBase<AutofillContact> {
 
         final AutofillContact contact = toEdit == null
                 ? new AutofillContact(mContext, new AutofillProfile(), null, null, null,
-                          INVALID_MULTIPLE_FIELDS)
+                          INVALID_NAME | INVALID_PHONE_NUMBER | INVALID_EMAIL, mRequestPayerName,
+                          mRequestPayerPhone, mRequestPayerEmail)
                 : toEdit;
 
         final EditorFieldModel nameField = mRequestPayerName

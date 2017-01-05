@@ -16,19 +16,19 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A payment integration test for a merchant that requests email address.
+ * A payment integration test for a merchant that requests email address and a phone number.
  */
-public class PaymentRequestEmailTest extends PaymentRequestTestBase {
-    public PaymentRequestEmailTest() {
-        // This merchant request an email address.
-        super("payment_request_email_test.html");
+public class PaymentRequestEmailAndPhoneTest extends PaymentRequestTestBase {
+    public PaymentRequestEmailAndPhoneTest() {
+        // This merchant request an email address and a phone number.
+        super("payment_request_email_and_phone_test.html");
     }
 
     @Override
     public void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
-        // The user has a valid email address on disk.
+        // The user has a valid email address and phone number on disk.
         helper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "555-555-5555",
                 "jon.doe@google.com", "en-US"));
@@ -40,7 +40,7 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
 
         // Add the same profile but without a phone number.
         helper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
-                "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "" /* phone_number */,
+                "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "" /* phoneNumber */,
                 "jon.doe@google.com", "en-US"));
 
         // Add the same profile but without an email.
@@ -56,16 +56,16 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
     }
 
-    /** Provide the existing valid email address to the merchant. */
+    /** Provide the existing valid email address and phone number to the merchant. */
     @MediumTest
     @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"jon.doe@google.com"});
+        expectResultContains(new String[] {"555-555-5555", "jon.doe@google.com"});
     }
 
-    /** Attempt to add an invalid email address and cancel the transaction. */
+    /** Attempt to add an invalid email address and phone number and cancel the transaction. */
     @MediumTest
     @Feature({"Payments"})
     public void testAddInvalidEmailAndCancel()
@@ -73,26 +73,26 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyToPay);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"jane.jones"}, mEditorTextUpdate);
+        setTextInEditorAndWait(new String[] {"-1-", "jane.jones"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
 
-    /** Add a new email address and provide that to the merchant. */
+    /** Add a new email address and phone number and provide that to the merchant. */
     @MediumTest
     @Feature({"Payments"})
-    public void testAddEmailAndPay()
+    public void testAddEmailAndPhoneAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"jane.jones@google.com"}, mEditorTextUpdate);
+        setTextInEditorAndWait(
+                new String[] {"555-555-5555", "jane.jones@google.com"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"jane.jones@google.com"});
+        expectResultContains(new String[] {"555-555-5555", "jane.jones@google.com"});
     }
 
     /**
@@ -114,14 +114,17 @@ public class PaymentRequestEmailTest extends PaymentRequestTestBase {
      */
     @MediumTest
     @Feature({"Payments"})
-    public void testRequestedInformationMetric() throws InterruptedException, ExecutionException,
-            TimeoutException {
+    public void testRequestedInformationMetric()
+            throws InterruptedException, ExecutionException, TimeoutException {
         // Start the Payment Request.
         triggerUIAndWait(mReadyToPay);
 
+        int appropriateEnumValue = PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
+                | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE;
+
         // Make sure that only the appropriate enum value was logged.
         for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {
-            assertEquals((i == PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL ? 1 : 0),
+            assertEquals((i == (appropriateEnumValue) ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.RequestedInformation", i));
         }

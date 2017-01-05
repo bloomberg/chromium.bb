@@ -363,11 +363,12 @@ public class PaymentRequestImpl
         }
 
         if (requestShipping) {
-            createShippingSection(profiles);
+            createShippingSection(Collections.unmodifiableList(profiles));
         }
 
         if (requestPayerName || requestPayerPhone || requestPayerEmail) {
-            createContactSection(profiles, requestPayerName, requestPayerPhone, requestPayerEmail);
+            createContactSection(Collections.unmodifiableList(profiles), requestPayerName,
+                    requestPayerPhone, requestPayerEmail);
         }
 
         mUI = new PaymentRequestUI(mContext, this, requestShipping,
@@ -391,11 +392,11 @@ public class PaymentRequestImpl
                 requestPayerPhone, requestShipping, requestPayerName);
     }
 
-    private void createShippingSection(List<AutofillProfile> profiles) {
+    private void createShippingSection(List<AutofillProfile> unmodifiableProfiles) {
         List<AutofillAddress> addresses = new ArrayList<>();
 
-        for (int i = 0; i < profiles.size(); i++) {
-            AutofillProfile profile = profiles.get(i);
+        for (int i = 0; i < unmodifiableProfiles.size(); i++) {
+            AutofillProfile profile = unmodifiableProfiles.get(i);
             mAddressEditor.addPhoneNumberIfValid(profile.getPhoneNumber());
 
             // Only suggest addresses that have a street address.
@@ -440,14 +441,16 @@ public class PaymentRequestImpl
                 PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, firstCompleteAddressIndex, addresses);
     }
 
-    private void createContactSection(List<AutofillProfile> profiles, boolean requestName,
-            boolean requestPhone, boolean requestEmail) {
-        Set<String> uniqueContactInfos = new HashSet<>();
-        mContactEditor = new ContactEditor(requestName, requestPhone, requestEmail);
+    private void createContactSection(List<AutofillProfile> unmodifiableProfiles,
+            boolean requestName, boolean requestPhone, boolean requestEmail) {
         List<AutofillContact> contacts = new ArrayList<>();
+        List<AutofillContact> uniqueContacts = new ArrayList<>();
+        mContactEditor = new ContactEditor(requestName, requestPhone, requestEmail);
 
-        for (int i = 0; i < profiles.size(); i++) {
-            AutofillProfile profile = profiles.get(i);
+        // Add the profile's valid request values to the editor's autocomplete list and convert
+        // relevant profiles to AutofillContacts.
+        for (int i = 0; i < unmodifiableProfiles.size(); ++i) {
+            AutofillProfile profile = unmodifiableProfiles.get(i);
             String name = requestName && !TextUtils.isEmpty(profile.getFullName())
                     ? profile.getFullName()
                     : null;
@@ -457,44 +460,62 @@ public class PaymentRequestImpl
             String email = requestEmail && !TextUtils.isEmpty(profile.getEmailAddress())
                     ? profile.getEmailAddress()
                     : null;
+
+            // Add the values to the editor's autocomplete list.
             mContactEditor.addPayerNameIfValid(name);
             mContactEditor.addPhoneNumberIfValid(phone);
             mContactEditor.addEmailAddressIfValid(email);
 
+            // Only create a contact if the profile has relevant information for the merchant.
             if (name != null || phone != null || email != null) {
-                // Different profiles can have identical contact info. Do not add the same
-                // contact info to the list twice.
-                String uniqueContactInfo = name + phone + email;
-                if (!uniqueContactInfos.contains(uniqueContactInfo)) {
-                    uniqueContactInfos.add(uniqueContactInfo);
-
-                    @ContactEditor.CompletionStatus
-                    int completionStatus =
-                            mContactEditor.checkContactCompletionStatus(name, phone, email);
-                    contacts.add(new AutofillContact(
-                            mContext, profile, name, phone, email, completionStatus));
-                }
+                contacts.add(new AutofillContact(mContext, profile, name, phone, email,
+                        mContactEditor.checkContactCompletionStatus(name, phone, email),
+                        requestName, requestPhone, requestEmail));
             }
         }
 
-        // Suggest complete contact infos first.
-        Collections.sort(contacts, COMPLETENESS_COMPARATOR);
+        // Order the contacts so the ones that have most of the required information are put first.
+        // The sort is stable, so contacts with the same relevance score are sorted by frecency.
+        Collections.sort(contacts, new Comparator<AutofillContact>() {
+            @Override
+            public int compare(AutofillContact a, AutofillContact b) {
+                return b.getRelevanceScore() - a.getRelevanceScore();
+            }
+        });
 
-        // Limit the number of suggestions.
-        contacts = contacts.subList(0, Math.min(contacts.size(), SUGGESTIONS_LIMIT));
+        // This algorithm is quadratic, but since the number of contacts is generally very small
+        // ( < 10) a faster but more complicated algorithm would be overkill.
+        for (int i = 0; i < contacts.size(); i++) {
+            AutofillContact contact = contacts.get(i);
+
+            // Different contacts can have identical info. Do not add the same contact info or a
+            // subset of it twice. It's important that the profiles be sorted by the quantity of
+            // required info they have.
+            boolean isNewSuggestion = true;
+            for (int j = 0; j < uniqueContacts.size(); ++j) {
+                if (uniqueContacts.get(j).isEqualOrSupersetOf(contact)) {
+                    isNewSuggestion = false;
+                    break;
+                }
+            }
+            if (isNewSuggestion) uniqueContacts.add(contact);
+
+            // Limit the number of suggestions.
+            if (uniqueContacts.size() == SUGGESTIONS_LIMIT) break;
+        }
 
         // Log the number of suggested contact infos.
         mJourneyLogger.setNumberOfSuggestionsShown(
-                PaymentRequestJourneyLogger.SECTION_CONTACT_INFO, contacts.size());
+                PaymentRequestJourneyLogger.SECTION_CONTACT_INFO, uniqueContacts.size());
 
         // Automatically select the first address if it is complete.
         int firstCompleteContactIndex = SectionInformation.NO_SELECTION;
-        if (!contacts.isEmpty() && contacts.get(0).isComplete()) {
+        if (!uniqueContacts.isEmpty() && uniqueContacts.get(0).isComplete()) {
             firstCompleteContactIndex = 0;
         }
 
         mContactSection = new SectionInformation(
-                PaymentRequestUI.TYPE_CONTACT_DETAILS, firstCompleteContactIndex, contacts);
+                PaymentRequestUI.TYPE_CONTACT_DETAILS, firstCompleteContactIndex, uniqueContacts);
     }
 
     /**
