@@ -35,6 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KURLHash.h"
+#include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
@@ -106,15 +107,15 @@ class CORE_EXPORT FrameSerializer final {
     }
   };
 
-  // Constructs a serializer that will write output to the given vector of
+  // Constructs a serializer that will write output to the given deque of
   // SerializedResources and uses the Delegate for controlling some
   // serialization aspects.  Callers need to ensure that both arguments stay
   // alive until the FrameSerializer gets destroyed.
-  FrameSerializer(Vector<SerializedResource>&, Delegate&);
+  FrameSerializer(Deque<SerializedResource>&, Delegate&);
 
   // Initiates the serialization of the frame. All serialized content and
-  // retrieved resources are added to the Vector passed to the constructor.
-  // The first resource in that vector is the frame's serialized content.
+  // retrieved resources are added to the Deque passed to the constructor.
+  // The first resource in that deque is the frame's serialized content.
   // Subsequent resources are images, css, etc.
   void serializeFrame(const LocalFrame&);
 
@@ -142,7 +143,7 @@ class CORE_EXPORT FrameSerializer final {
   void retrieveResourcesForProperties(const StylePropertySet*, Document&);
   void retrieveResourcesForCSSValue(const CSSValue&, Document&);
 
-  Vector<SerializedResource>* m_resources;
+  Deque<SerializedResource>* m_resources;
   HashSet<KURL> m_resourceURLs;
 
   bool m_isSerializingCss;

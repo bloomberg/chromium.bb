@@ -65,6 +65,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "wtf/Assertions.h"
+#include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -285,7 +286,7 @@ WebThreadSafeData WebFrameSerializer::generateMHTMLParts(
   // Serialize.
   TRACE_EVENT_BEGIN0("page-serialization",
                      "WebFrameSerializer::generateMHTMLParts serializing");
-  Vector<SerializedResource> resources;
+  Deque<SerializedResource> resources;
   {
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
         "PageSerialization.MhtmlGeneration.SerializationTime.SingleFrame");
@@ -298,26 +299,23 @@ WebThreadSafeData WebFrameSerializer::generateMHTMLParts(
                    "resource count",
                    static_cast<unsigned long long>(resources.size()));
 
-  // Get Content-ID for the frame being serialized.
-  String frameContentID = webDelegate->getContentID(webFrame);
-
-  // Encode serializer's output as MHTML.
+  // Encode serialized resources as MHTML.
   RefPtr<RawData> output = RawData::create();
   {
+    DCHECK(!resources.isEmpty());
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
         "PageSerialization.MhtmlGeneration.EncodingTime.SingleFrame");
-    bool isFirstResource = true;
-    for (const SerializedResource& resource : resources) {
+    // Frame is the 1st resource (see FrameSerializer::serializeFrame doc
+    // comment). Frames get a Content-ID header.
+    MHTMLArchive::generateMHTMLPart(
+        boundary, webDelegate->getContentID(webFrame), encodingPolicy,
+        resources.takeFirst(), *output->mutableData());
+    while (!resources.isEmpty()) {
       TRACE_EVENT0("page-serialization",
                    "WebFrameSerializer::generateMHTMLParts encoding");
-      // Frame is the 1st resource (see FrameSerializer::serializeFrame doc
-      // comment). Frames get a Content-ID header.
-      String contentID = isFirstResource ? frameContentID : String();
-
-      MHTMLArchive::generateMHTMLPart(boundary, contentID, encodingPolicy,
-                                      resource, *output->mutableData());
-
-      isFirstResource = false;
+      MHTMLArchive::generateMHTMLPart(boundary, String(), encodingPolicy,
+                                      resources.takeFirst(),
+                                      *output->mutableData());
     }
   }
   return output.release();

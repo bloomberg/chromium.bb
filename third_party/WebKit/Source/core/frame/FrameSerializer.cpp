@@ -269,7 +269,7 @@ void SerializerMarkupAccumulator::appendRewrittenAttribute(
 // "Webpage, Complete" method of saving a page. It will take some work but it
 // needs to be done if we want to continue to support non-MHTML saved pages.
 
-FrameSerializer::FrameSerializer(Vector<SerializedResource>& resources,
+FrameSerializer::FrameSerializer(Deque<SerializedResource>& resources,
                                  Delegate& delegate)
     : m_resources(&resources),
       m_isSerializingCss(false),
@@ -300,7 +300,7 @@ void FrameSerializer::serializeFrame(const LocalFrame& frame) {
 
     CString frameHTML =
         document.encoding().encode(text, WTF::EntitiesForUnencodables);
-    m_resources->push_back(SerializedResource(
+    m_resources->append(SerializedResource(
         url, document.suggestedMIMEType(),
         SharedBuffer::create(frameHTML.data(), frameHTML.length())));
   }
@@ -477,7 +477,7 @@ void FrameSerializer::addToResources(
     return;
   }
 
-  m_resources->push_back(SerializedResource(url, mimeType, std::move(data)));
+  m_resources->append(SerializedResource(url, mimeType, std::move(data)));
   m_resourceURLs.add(url);
 }
 
