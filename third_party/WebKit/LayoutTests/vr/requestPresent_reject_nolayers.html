@@ -16,7 +16,7 @@ vr_test((service) => {
       var asyncTest = async_test(
           "requestPresent rejects and does not present");
       runWithUserGesture( () => {
-        displays[0].requestPresent([{ source : webglCanvas }]).then( () => {
+        displays[0].requestPresent([]).then( () => {
           asyncTest.step( () => {
             assert_unreached();
           }, "Display should not be presenting");
@@ -29,7 +29,7 @@ vr_test((service) => {
         });
       });
     });
-}, [fakeDisplays['FakeMagicWindowOnly']],
-'Test requestPresent rejects if display does not support it');
+}, [fakeDisplays['Pixel']],
+'Test requestPresent rejects if not provided any layers');
 
 </script>

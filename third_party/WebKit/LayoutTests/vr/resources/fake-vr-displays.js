@@ -38,6 +38,7 @@ function fakeVRDisplays(){
         hasPosition : false,
         hasExternalDisplay : false,
         canPresent : true,
+        maxLayers: 1
       },
       stageParameters : null,
       leftEye : {

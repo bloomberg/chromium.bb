@@ -5,6 +5,7 @@
 <script src="resources/fake-vr-displays.js"></script>
 <script src="resources/mock-vr-service.js"></script>
 <canvas id="webgl-canvas"></canvas>
+<canvas id="canvas-2d"></canvas>
 <script src="resources/presentation-setup.js"></script>
 <script>
 let fakeDisplays = fakeVRDisplays();
@@ -13,10 +14,12 @@ vr_test((service) => {
   return navigator.getVRDisplays().then(displays => {
       assert_true(displays != null);
       assert_equals(1, displays.length);
+      var canvas2d = document.getElementById("canvas-2d");
+      var ctx = canvas2d.getContext("2d");
       var asyncTest = async_test(
           "requestPresent rejects and does not present");
       runWithUserGesture( () => {
-        displays[0].requestPresent([{ source : webglCanvas }]).then( () => {
+        displays[0].requestPresent([{ source : canvas2d }]).then( () => {
           asyncTest.step( () => {
             assert_unreached();
           }, "Display should not be presenting");
@@ -29,7 +32,7 @@ vr_test((service) => {
         });
       });
     });
-}, [fakeDisplays['FakeMagicWindowOnly']],
-'Test requestPresent rejects if display does not support it');
+}, [fakeDisplays['Pixel']],
+'Test requestPresent rejects if provided a non-webgl canvas');
 
 </script>

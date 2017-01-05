@@ -13,10 +13,15 @@ vr_test((service) => {
   return navigator.getVRDisplays().then(displays => {
       assert_true(displays != null);
       assert_equals(1, displays.length);
+      var max_layers = displays[0].capabilities.maxLayers;
+      var layers = [];
+      for (var i = 0; i <= max_layers; ++i) {
+        layers.push({ source : webglCanvas });
+      }
       var asyncTest = async_test(
           "requestPresent rejects and does not present");
       runWithUserGesture( () => {
-        displays[0].requestPresent([{ source : webglCanvas }]).then( () => {
+        displays[0].requestPresent(layers).then( () => {
           asyncTest.step( () => {
             assert_unreached();
           }, "Display should not be presenting");
@@ -29,7 +34,7 @@ vr_test((service) => {
         });
       });
     });
-}, [fakeDisplays['FakeMagicWindowOnly']],
-'Test requestPresent rejects if display does not support it');
+}, [fakeDisplays['Pixel']],
+'Test requestPresent rejects if provided too many layers');
 
 </script>
