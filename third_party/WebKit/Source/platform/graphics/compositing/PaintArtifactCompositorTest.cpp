@@ -30,6 +30,14 @@
 
 namespace blink {
 
+#define EXPECT_BLINK_FLOAT_RECT_EQ(expected, actual)         \
+  do {                                                       \
+    EXPECT_FLOAT_EQ((expected).x(), (actual).x());           \
+    EXPECT_FLOAT_EQ((expected).y(), (actual).y());           \
+    EXPECT_FLOAT_EQ((expected).width(), (actual).width());   \
+    EXPECT_FLOAT_EQ((expected).height(), (actual).height()); \
+  } while (false)
+
 using ::blink::testing::createOpacityOnlyEffect;
 using ::testing::Pointee;
 
@@ -1466,7 +1474,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
 
   EXPECT_TRUE(pendingLayer.backfaceHidden);
   EXPECT_TRUE(pendingLayer.knownToBeOpaque);
-  EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 40), pendingLayer.bounds);
+  EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 40), pendingLayer.bounds);
 
   PaintChunk chunk2;
   chunk2.properties.propertyTreeState = chunk1.properties.propertyTreeState;
@@ -1478,7 +1486,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
   EXPECT_TRUE(pendingLayer.backfaceHidden);
   // Bounds not equal to one PaintChunk.
   EXPECT_FALSE(pendingLayer.knownToBeOpaque);
-  EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 40, 60), pendingLayer.bounds);
+  EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 40, 60), pendingLayer.bounds);
 
   PaintChunk chunk3;
   chunk3.properties.propertyTreeState = chunk1.properties.propertyTreeState;
@@ -1489,7 +1497,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
 
   EXPECT_TRUE(pendingLayer.backfaceHidden);
   EXPECT_FALSE(pendingLayer.knownToBeOpaque);
-  EXPECT_FLOAT_RECT_EQ(FloatRect(-5, -25, 45, 85), pendingLayer.bounds);
+  EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(-5, -25, 45, 85), pendingLayer.bounds);
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
@@ -1507,7 +1515,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
 
   PaintArtifactCompositor::PendingLayer pendingLayer(chunk1);
 
-  EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 40), pendingLayer.bounds);
+  EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 40), pendingLayer.bounds);
 
   PaintChunk chunk2;
   chunk2.properties.propertyTreeState = chunk1.properties.propertyTreeState;
@@ -1516,7 +1524,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
   GeometryMapper geometryMapper;
   pendingLayer.add(chunk2, &geometryMapper);
 
-  EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 70, 85), pendingLayer.bounds);
+  EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 70, 85), pendingLayer.bounds);
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerKnownOpaque) {
