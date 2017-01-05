@@ -56,7 +56,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/mount_points.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
@@ -226,14 +225,14 @@ std::vector<em::CPUTempInfo> GetEmptyCPUTempInfo() {
 
 void CallAndroidStatusReceiver(
     const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver,
-    mojo::String status,
-    mojo::String droid_guard_info) {
+    const std::string& status,
+    const std::string& droid_guard_info) {
   receiver.Run(status, droid_guard_info);
 }
 
 bool GetFakeAndroidStatus(
-    mojo::String status,
-    mojo::String droid_guard_info,
+    const std::string& status,
+    const std::string& droid_guard_info,
     const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(

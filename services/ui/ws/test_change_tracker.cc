@@ -13,7 +13,6 @@
 #include "services/ui/common/util.h"
 
 using mojo::Array;
-using mojo::String;
 
 namespace ui {
 
@@ -376,7 +375,7 @@ void TestChangeTracker::OnPointerEventObserved(const ui::Event& event,
 }
 
 void TestChangeTracker::OnWindowSharedPropertyChanged(Id window_id,
-                                                      String name,
+                                                      const std::string& name,
                                                       Array<uint8_t> data) {
   Change change;
   change.type = CHANGE_TYPE_PROPERTY_CHANGED;

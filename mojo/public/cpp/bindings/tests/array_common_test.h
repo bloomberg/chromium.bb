@@ -109,11 +109,11 @@ class ArrayCommonTest {
 
     {
       // Test copyable object.
-      ArrayType<String> array(2);
+      ArrayType<std::string> array(2);
       array[0] = "hello";
       array[1] = "world";
 
-      ArrayType<String> clone_array = array.Clone();
+      ArrayType<std::string> clone_array = array.Clone();
       EXPECT_EQ(array.size(), clone_array.size());
       for (size_t i = 0; i < array.size(); ++i)
         EXPECT_EQ(array[i], clone_array[i]);
@@ -259,10 +259,10 @@ class ArrayCommonTest {
 
   static void Serialization_ArrayOfString() {
     using MojomType = ArrayDataView<StringDataView>;
-    ArrayType<String> array(10);
+    ArrayType<std::string> array(10);
     for (size_t i = 0; i < array.size(); ++i) {
       char c = 'A' + static_cast<char>(i);
-      array[i] = String(&c, 1);
+      array[i] = std::string(&c, 1);
     }
 
     size_t size = mojo::internal::PrepareToSerialize<MojomType>(array, nullptr);
@@ -280,13 +280,13 @@ class ArrayCommonTest {
     mojo::internal::Serialize<MojomType>(array, &buf, &data, &validate_params,
                                          nullptr);
 
-    ArrayType<String> array2;
+    ArrayType<std::string> array2;
     mojo::internal::Deserialize<MojomType>(data, &array2, nullptr);
 
     EXPECT_EQ(10U, array2.size());
     for (size_t i = 0; i < array2.size(); ++i) {
       char c = 'A' + static_cast<char>(i);
-      EXPECT_EQ(String(&c, 1), array2[i]);
+      EXPECT_EQ(std::string(&c, 1), array2[i]);
     }
   }
 

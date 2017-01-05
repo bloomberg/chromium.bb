@@ -279,7 +279,7 @@ mojom::PluginFilePtr PluginsPageHandler::GeneratePluginFile(
   plugin_file->enabled_mode =
       GetPluginEnabledMode(plugin.name, group_name, plugin_enabled);
   plugin_file->name = base::UTF16ToUTF8(plugin.name);
-  plugin_file->path = mojo::String::From(plugin.path.value());
+  plugin_file->path = plugin.path.AsUTF8Unsafe();
   plugin_file->type = base::UTF16ToUTF8(PluginTypeToString(plugin.type));
   plugin_file->version = base::UTF16ToUTF8(plugin.version);
   plugin_file->mime_types = GeneratePluginMimeTypes(plugin);

@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "services/tracing/data_sink.h"
 #include "services/tracing/public/interfaces/tracing.mojom.h"
 

@@ -80,7 +80,7 @@ struct Change {
   gfx::Rect bounds2;
   int32_t event_action;
   bool matches_pointer_watcher;
-  mojo::String embed_url;
+  std::string embed_url;
   mojom::OrderDirection direction;
   bool bool_value;
   float float_value;
@@ -165,7 +165,7 @@ class TestChangeTracker {
   void OnPointerEventObserved(const ui::Event& event,
                               uint32_t window_id);
   void OnWindowSharedPropertyChanged(Id window_id,
-                                     mojo::String name,
+                                     const std::string& name,
                                      mojo::Array<uint8_t> data);
   void OnWindowFocused(Id window_id);
   void OnWindowPredefinedCursorChanged(Id window_id, mojom::Cursor cursor_id);

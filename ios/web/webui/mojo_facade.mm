@@ -115,8 +115,8 @@ std::unique_ptr<base::Value> MojoFacade::HandleInterfaceProviderGetInterface(
   interface_name_as_value->GetAsString(&interface_name_as_string);
 
   mojo::MessagePipe pipe;
-  interface_provider_->GetInterface(
-      mojo::String::From(interface_name_as_string), std::move(pipe.handle0));
+  interface_provider_->GetInterface(interface_name_as_string,
+                                    std::move(pipe.handle0));
 
   return ValueFromInteger(pipe.handle1.release().value());
 }

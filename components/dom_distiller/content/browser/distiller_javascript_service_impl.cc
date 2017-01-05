@@ -10,7 +10,6 @@
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/core/feedback_reporter.h"
 #include "content/public/browser/user_metrics.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace dom_distiller {

@@ -181,7 +181,7 @@ class TestServiceImpl : public mojom::TestService {
   }
 
   void GetRequestorName(const GetRequestorNameCallback& callback) override {
-    callback.Run(mojo::String(""));
+    callback.Run("");
   }
 
   void CreateSharedBuffer(const std::string& message,

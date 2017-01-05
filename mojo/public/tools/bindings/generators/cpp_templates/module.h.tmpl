@@ -65,8 +65,8 @@ namespace {{variant}} {
 {%-   endif %}
 {%- endfor %}
 {%- if not for_blink %}
+#include <string>
 #include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/string.h"
 {%- else %}
 {# hash_util.h includes template specializations that should be present for
    every use of {Inlined}StructPtr. #}

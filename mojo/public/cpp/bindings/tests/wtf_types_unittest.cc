@@ -167,14 +167,14 @@ TEST_F(WTFTypesTest, Serialization_WTFArrayToMojoArray) {
   mojo::internal::Serialize<MojomType>(strs, &buf, &data, &validate_params,
                                        &context);
 
-  Array<mojo::String> strs2;
+  Array<base::Optional<std::string>> strs2;
   mojo::internal::Deserialize<MojomType>(data, &strs2, &context);
 
   ASSERT_EQ(4u, strs2.size());
-  EXPECT_TRUE(strs2[0].is_null());
-  EXPECT_TRUE("" == strs2[1]);
-  EXPECT_TRUE(kHelloWorld == strs2[2]);
-  EXPECT_TRUE(kUTF8HelloWorld == strs2[3]);
+  EXPECT_FALSE(strs2[0]);
+  EXPECT_EQ("", *strs2[1]);
+  EXPECT_EQ(kHelloWorld, *strs2[2]);
+  EXPECT_EQ(kUTF8HelloWorld, *strs2[3]);
 }
 
 TEST_F(WTFTypesTest, Serialization_PublicAPI) {

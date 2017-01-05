@@ -82,7 +82,7 @@ class Service : public service_manager::Service,
       startup_performance_data_collector_bindings_;
   mojom::StartupPerformanceTimes startup_performance_times_;
   bool tracing_active_;
-  mojo::String tracing_categories_;
+  std::string tracing_categories_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

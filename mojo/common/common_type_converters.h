@@ -12,30 +12,9 @@
 #include "base/strings/string_piece.h"
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
-
-template <>
-struct MOJO_COMMON_EXPORT TypeConverter<String, base::StringPiece> {
-  static String Convert(const base::StringPiece& input);
-};
-
-template <>
-struct MOJO_COMMON_EXPORT TypeConverter<base::StringPiece, String> {
-  static base::StringPiece Convert(const String& input);
-};
-
-template <>
-struct MOJO_COMMON_EXPORT TypeConverter<String, base::string16> {
-  static String Convert(const base::string16& input);
-};
-
-template <>
-struct MOJO_COMMON_EXPORT TypeConverter<base::string16, String> {
-  static base::string16 Convert(const String& input);
-};
 
 template <>
 struct MOJO_COMMON_EXPORT TypeConverter<std::string, Array<uint8_t>> {

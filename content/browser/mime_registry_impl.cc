@@ -30,7 +30,7 @@ void MimeRegistryImpl::GetMimeTypeFromExtension(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::string mime_type;
   net::GetMimeTypeFromExtension(
-      mojo::String(extension).To<base::FilePath::StringType>(), &mime_type);
+      base::FilePath::FromUTF8Unsafe(extension).value(), &mime_type);
   callback.Run(mime_type);
 }
 

@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/video_frame.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkMatrix.h"

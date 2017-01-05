@@ -28,7 +28,7 @@ namespace mojo {
 //        wrapper type, or the following alternatives:
 //        - string:
 //          Value or reference of any type that has a StringTraits defined.
-//          Supported by default: base::StringPiece, std::string, mojo::String,
+//          Supported by default: base::StringPiece, std::string,
 //          WTF::String (in blink).
 //
 //        - array:

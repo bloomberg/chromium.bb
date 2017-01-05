@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/string.h"
 
 #if defined(OS_WIN)
 #include "base/strings/utf_string_conversions.h"

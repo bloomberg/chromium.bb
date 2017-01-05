@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "content/public/common/service_manager_connection.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"

@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/interfaces/bindings/tests/serialization_test_structs.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_unions.mojom.h"
@@ -191,7 +190,7 @@ TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
 TEST_F(SerializationWarningTest, ArrayOfStrings) {
   using MojomType = ArrayDataView<StringDataView>;
 
-  Array<String> test_array(3);
+  Array<std::string> test_array(3);
   for (size_t i = 0; i < test_array.size(); ++i)
     test_array[i] = "hello";
 
@@ -201,17 +200,15 @@ TEST_F(SerializationWarningTest, ArrayOfStrings) {
                               mojo::internal::VALIDATION_ERROR_NONE,
                               &validate_params_0);
 
-  test_array = Array<String>(3);
-  for (size_t i = 0; i < test_array.size(); ++i)
-    test_array[i] = nullptr;
+  Array<base::Optional<std::string>> optional_test_array(3);
   ContainerValidateParams validate_params_1(
       0, false, new ContainerValidateParams(0, false, nullptr));
   TestArrayWarning<MojomType>(
-      std::move(test_array),
+      std::move(optional_test_array),
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
       &validate_params_1);
 
-  test_array = Array<String>(2);
+  test_array = Array<std::string>(2);
   ContainerValidateParams validate_params_2(
       3, true, new ContainerValidateParams(0, false, nullptr));
   TestArrayWarning<MojomType>(

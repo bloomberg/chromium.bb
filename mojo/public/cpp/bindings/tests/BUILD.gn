@@ -32,7 +32,6 @@ source_set("tests") {
     "router_test_util.h",
     "sample_service_unittest.cc",
     "serialization_warning_unittest.cc",
-    "string_unittest.cc",
     "struct_unittest.cc",
     "sync_method_unittest.cc",
     "type_conversion_unittest.cc",

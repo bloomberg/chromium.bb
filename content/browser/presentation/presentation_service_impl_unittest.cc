@@ -24,7 +24,6 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;

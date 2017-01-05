@@ -16,7 +16,6 @@
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/lib/validation_context.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
-#include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_unions.mojom.h"
@@ -315,7 +314,7 @@ TEST(UnionTest, UnknownExtensibleEnumValueValidation) {
 TEST(UnionTest, StringGetterSetter) {
   ObjectUnionPtr pod(ObjectUnion::New());
 
-  String hello("hello world");
+  std::string hello("hello world");
   pod->set_f_string(hello);
   EXPECT_EQ(hello, pod->get_f_string());
   EXPECT_TRUE(pod->is_f_string());
@@ -337,7 +336,7 @@ TEST(UnionTest, StringEquals) {
 TEST(UnionTest, StringClone) {
   ObjectUnionPtr pod(ObjectUnion::New());
 
-  String hello("hello world");
+  std::string hello("hello world");
   pod->set_f_string(hello);
   ObjectUnionPtr pod_clone = pod.Clone();
   EXPECT_EQ(hello, pod_clone->get_f_string());
@@ -348,7 +347,7 @@ TEST(UnionTest, StringClone) {
 TEST(UnionTest, StringSerialization) {
   ObjectUnionPtr pod1(ObjectUnion::New());
 
-  String hello("hello world");
+  std::string hello("hello world");
   pod1->set_f_string(hello);
 
   size_t size = mojo::internal::PrepareToSerialize<ObjectUnionDataView>(
@@ -527,8 +526,8 @@ TEST(UnionTest, ObjectUnionInArraySerialization) {
 
   EXPECT_EQ(2U, array2.size());
 
-  EXPECT_EQ(String("hello"), array2[0]->get_f_string());
-  EXPECT_EQ(String("world"), array2[1]->get_f_string());
+  EXPECT_EQ("hello", array2[0]->get_f_string());
+  EXPECT_EQ("world", array2[1]->get_f_string());
 }
 
 // TODO(azani): Move back in struct_unittest.cc when possible.
@@ -568,7 +567,7 @@ TEST(UnionTest, Serialization_UnionOfPods) {
 TEST(UnionTest, Serialization_UnionOfObjects) {
   SmallObjStructPtr obj_struct(SmallObjStruct::New());
   obj_struct->obj_union = ObjectUnion::New();
-  String hello("hello world");
+  std::string hello("hello world");
   obj_struct->obj_union->set_f_string(hello);
 
   size_t size = mojo::internal::PrepareToSerialize<SmallObjStructDataView>(

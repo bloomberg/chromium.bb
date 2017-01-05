@@ -78,7 +78,7 @@ GeolocationServiceImpl::~GeolocationServiceImpl() {
     if (!current_position_.valid) {
       current_position_.error_code = mojom::Geoposition::ErrorCode(
           GEOPOSITION_ERROR_CODE_POSITION_UNAVAILABLE);
-      current_position_.error_message = mojo::String("");
+      current_position_.error_message.clear();
     }
     ReportCurrentPosition();
   }

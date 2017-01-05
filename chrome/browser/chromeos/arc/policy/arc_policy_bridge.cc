@@ -27,7 +27,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/user_manager/user.h"
-#include "mojo/public/cpp/bindings/string.h"
 
 namespace arc {
 

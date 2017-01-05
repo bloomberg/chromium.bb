@@ -65,7 +65,7 @@ CFNumberRef GetCFNumberProperty(io_service_t service, const CFStringRef key) {
 // successful.
 bool GetStringProperty(io_service_t service,
                        const CFStringRef key,
-                       mojo::String* value) {
+                       std::string* value) {
   CFStringRef propValue = GetCFStringProperty(service, key);
   if (propValue) {
     *value = base::SysCFStringRefToUTF8(propValue);
@@ -135,17 +135,17 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
       callout_info->product_id = productId;
     }
 
-    mojo::String displayName;
+    std::string display_name;
     if (GetStringProperty(scoped_device.get(), CFSTR(kUSBProductString),
-                          &displayName)) {
-      callout_info->display_name = displayName.PassStorage();
+                          &display_name)) {
+      callout_info->display_name = std::move(display_name);
     }
 
     // Each serial device has two "paths" in /dev/ associated with it: a
     // "dialin" path starting with "tty" and a "callout" path starting with
     // "cu". Each of these is considered a different device from Chrome's
     // standpoint, but both should share the device's USB properties.
-    mojo::String dialinDevice;
+    std::string dialinDevice;
     if (GetStringProperty(scoped_device.get(), CFSTR(kIODialinDeviceKey),
                           &dialinDevice)) {
       serial::DeviceInfoPtr dialin_info = callout_info.Clone();
@@ -153,7 +153,7 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
       devices.push_back(std::move(dialin_info));
     }
 
-    mojo::String calloutDevice;
+    std::string calloutDevice;
     if (GetStringProperty(scoped_device.get(), CFSTR(kIOCalloutDeviceKey),
                           &calloutDevice)) {
       callout_info->path = calloutDevice;

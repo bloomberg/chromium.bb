@@ -93,47 +93,6 @@ struct TypeConverter<RedmondNamedRegion, test::NamedRegionPtr> {
 namespace test {
 namespace {
 
-TEST(TypeConversionTest, String) {
-  const char kText[6] = "hello";
-
-  String a = std::string(kText);
-  String b(kText);
-  String c(static_cast<const char*>(kText));
-
-  EXPECT_EQ(std::string(kText), a.To<std::string>());
-  EXPECT_EQ(std::string(kText), b.To<std::string>());
-  EXPECT_EQ(std::string(kText), c.To<std::string>());
-}
-
-TEST(TypeConversionTest, String_Null) {
-  String a(nullptr);
-  EXPECT_TRUE(a.is_null());
-  EXPECT_EQ(std::string(), a.To<std::string>());
-
-  String b = String::From(static_cast<const char*>(nullptr));
-  EXPECT_TRUE(b.is_null());
-}
-
-TEST(TypeConversionTest, String_Empty) {
-  String a = "";
-  EXPECT_EQ(std::string(), a.To<std::string>());
-
-  String b = std::string();
-  EXPECT_FALSE(b.is_null());
-  EXPECT_EQ(std::string(), b.To<std::string>());
-}
-
-TEST(TypeConversionTest, StringWithEmbeddedNull) {
-  const std::string kText("hel\0lo", 6);
-
-  String a(kText);
-  EXPECT_EQ(kText, a.To<std::string>());
-
-  // Expect truncation:
-  String b(kText.c_str());
-  EXPECT_EQ(std::string("hel"), b.To<std::string>());
-}
-
 TEST(TypeConversionTest, CustomTypeConverter) {
   RectPtr rect(Rect::New());
   rect->x = 10;
