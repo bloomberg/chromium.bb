@@ -244,7 +244,7 @@ void DocumentMarkerController::addMarker(Node* node,
   DocumentMarker::MarkerTypeIndex markerListIndex =
       MarkerTypeToMarkerIndex(newMarker.type());
   if (!markers->at(markerListIndex)) {
-    markers->insert(markerListIndex, new MarkerList);
+    markers->at(markerListIndex) = new MarkerList;
   }
 
   Member<MarkerList>& list = markers->at(markerListIndex);
