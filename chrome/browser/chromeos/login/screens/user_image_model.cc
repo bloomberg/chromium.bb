@@ -14,14 +14,9 @@ const char UserImageModel::kContextKeyProfilePictureDataURL[] =
 const char UserImageModel::kContextKeySelectedImageURL[] = "selectedImageURL";
 
 UserImageModel::UserImageModel(BaseScreenDelegate* base_screen_delegate)
-    : BaseScreen(base_screen_delegate) {
+    : BaseScreen(base_screen_delegate, WizardController::kUserImageScreenName) {
 }
 
-UserImageModel::~UserImageModel() {
-}
-
-std::string UserImageModel::GetName() const {
-  return WizardController::kUserImageScreenName;
-}
+UserImageModel::~UserImageModel() {}
 
 }  // namespace chromeos

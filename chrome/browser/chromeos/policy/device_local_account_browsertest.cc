@@ -2156,7 +2156,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
   ASSERT_TRUE(wizard_controller);
   ASSERT_TRUE(wizard_controller->current_screen());
   EXPECT_EQ(chromeos::WizardController::kTermsOfServiceScreenName,
-            wizard_controller->current_screen()->GetName());
+            wizard_controller->current_screen()->screen_id());
 
   // Wait for the Terms of Service to finish downloading.
   bool done = false;
@@ -2363,7 +2363,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   ASSERT_TRUE(wizard_controller);
   ASSERT_TRUE(wizard_controller->current_screen());
   EXPECT_EQ(chromeos::WizardController::kTermsOfServiceScreenName,
-            wizard_controller->current_screen()->GetName());
+            wizard_controller->current_screen()->screen_id());
 
   // Wait for the Terms of Service to finish downloading, then get the status of
   // the screen's UI elements.

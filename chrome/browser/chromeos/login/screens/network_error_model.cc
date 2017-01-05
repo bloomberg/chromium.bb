@@ -33,14 +33,8 @@ const char NetworkErrorModel::kUserActionConnectRequested[] =
     "connect-requested";
 
 NetworkErrorModel::NetworkErrorModel(BaseScreenDelegate* base_screen_delegate)
-    : BaseScreen(base_screen_delegate) {
-}
+    : BaseScreen(base_screen_delegate, WizardController::kErrorScreenName) {}
 
-NetworkErrorModel::~NetworkErrorModel() {
-}
-
-std::string NetworkErrorModel::GetName() const {
-  return WizardController::kErrorScreenName;
-}
+NetworkErrorModel::~NetworkErrorModel() {}
 
 }  // namespace chromeos

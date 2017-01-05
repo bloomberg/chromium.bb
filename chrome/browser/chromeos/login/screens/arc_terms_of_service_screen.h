@@ -25,7 +25,6 @@ class ArcTermsOfServiceScreen : public BaseScreen,
   // BaseScreen:
   void Show() override;
   void Hide() override;
-  std::string GetName() const override;
 
   // ArcTermsOfServiceScreenActor::Delegate:
   void OnSkip() override;

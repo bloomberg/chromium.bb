@@ -27,9 +27,6 @@ class UpdateModel : public BaseScreen {
   explicit UpdateModel(BaseScreenDelegate* base_screen_delegate);
   ~UpdateModel() override;
 
-  // BaseScreen implementation:
-  std::string GetName() const override;
-
   // This method is called, when view is being destroyed. Note, if model
   // is destroyed earlier then it has to call Unbind().
   virtual void OnViewDestroyed(UpdateView* view) = 0;

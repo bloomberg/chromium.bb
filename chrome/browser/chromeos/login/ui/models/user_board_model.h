@@ -24,9 +24,6 @@ class UserBoardModel : public BaseScreen {
   virtual void AttemptEasyUnlock(const AccountId& account_id) = 0;
   virtual void RecordClickOnLockIcon(const AccountId& account_id) = 0;
 
-  // BaseScreen implementation:
-  std::string GetName() const override;
-
   // Temorary unused methods:
   void Show() override{};
   void Hide() override{};

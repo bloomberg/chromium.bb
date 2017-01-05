@@ -182,7 +182,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   // Check that OOBE will resume back at this screen.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  EXPECT_EQ(update_screen_->GetName(),
+  EXPECT_EQ(
+      update_screen_->screen_id(),
       g_browser_process->local_state()->GetString(prefs::kOobeScreenPending));
 }
 

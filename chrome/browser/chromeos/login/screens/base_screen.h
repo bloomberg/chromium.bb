@@ -28,7 +28,8 @@ class ModelViewChannel;
 // method called just once.
 class BaseScreen {
  public:
-  explicit BaseScreen(BaseScreenDelegate* base_screen_delegate);
+  explicit BaseScreen(BaseScreenDelegate* base_screen_delegate,
+                      const std::string& screen_id);
   virtual ~BaseScreen();
 
   // ---- Old implementation ----
@@ -38,9 +39,6 @@ class BaseScreen {
 
   // Makes wizard screen invisible.
   virtual void Hide() = 0;
-
-  // Returns the screen name.
-  virtual std::string GetName() const = 0;
 
   // ---- New Implementation ----
 
@@ -65,7 +63,7 @@ class BaseScreen {
   virtual bool IsStatusAreaDisplayed();
 
   // Returns the identifier of the screen.
-  virtual std::string GetID() const;
+  const std::string& screen_id() const { return screen_id_; }
 
   // Called when user action event with |event_id|
   // happened. Notification about this event comes from the JS
@@ -149,9 +147,11 @@ class BaseScreen {
   // counterpart.
   void OnContextChanged(const base::DictionaryValue& diff);
 
-  ModelViewChannel* channel_;
+  ModelViewChannel* channel_ = nullptr;
 
-  BaseScreenDelegate* base_screen_delegate_;
+  BaseScreenDelegate* base_screen_delegate_ = nullptr;
+
+  const std::string screen_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScreen);
 };

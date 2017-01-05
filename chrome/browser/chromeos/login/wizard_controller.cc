@@ -958,8 +958,8 @@ void WizardController::ShowCurrentScreen() {
     return;
 
   // First remember how far have we reached so that we can resume if needed.
-  if (is_out_of_box_ && IsResumableScreen(current_screen_->GetName()))
-    StartupUtils::SaveOobePendingScreen(current_screen_->GetName());
+  if (is_out_of_box_ && IsResumableScreen(current_screen_->screen_id()))
+    StartupUtils::SaveOobePendingScreen(current_screen_->screen_id());
 
   smooth_show_timer_.Stop();
 
@@ -981,7 +981,7 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
   if (current_screen_)
     current_screen_->Hide();
 
-  std::string screen_id = new_current->GetName();
+  const std::string screen_id = new_current->screen_id();
   if (IsOOBEStepToTrack(screen_id))
     screen_show_times_[screen_id] = base::Time::Now();
 
@@ -1085,7 +1085,7 @@ void WizardController::OnExit(BaseScreen& /* screen */,
                               ExitCodes exit_code,
                               const ::login::ScreenContext* /* context */) {
   VLOG(1) << "Wizard screen exit code: " << exit_code;
-  std::string previous_screen_id = current_screen_->GetName();
+  const std::string previous_screen_id = current_screen_->screen_id();
   if (IsOOBEStepToTrack(previous_screen_id)) {
     RecordUMAHistogramForOOBEStepCompletionTime(
         previous_screen_id,

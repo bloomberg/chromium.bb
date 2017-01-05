@@ -23,9 +23,6 @@ class UserImageModel : public BaseScreen {
   explicit UserImageModel(BaseScreenDelegate* base_screen_delegate);
   ~UserImageModel() override;
 
-  // BaseScreen implementation:
-  std::string GetName() const override;
-
   // Called when UI ready to be shown.
   virtual void OnScreenReady() = 0;
 

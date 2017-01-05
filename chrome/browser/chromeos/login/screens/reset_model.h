@@ -33,9 +33,6 @@ class ResetModel : public BaseScreen {
   explicit ResetModel(BaseScreenDelegate* base_screen_delegate);
   ~ResetModel() override;
 
-  // BaseScreen implementation:
-  std::string GetName() const override;
-
   // Called when actor is destroyed so there's no dead reference to it.
   virtual void OnViewDestroyed(ResetView* view) = 0;
 };

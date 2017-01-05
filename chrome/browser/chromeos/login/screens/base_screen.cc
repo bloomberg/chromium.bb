@@ -67,9 +67,9 @@ const BaseScreen::ContextEditor& BaseScreen::ContextEditor::SetString16List(
   return *this;
 }
 
-BaseScreen::BaseScreen(BaseScreenDelegate* base_screen_delegate)
-    : channel_(nullptr), base_screen_delegate_(base_screen_delegate) {
-}
+BaseScreen::BaseScreen(BaseScreenDelegate* base_screen_delegate,
+                       const std::string& screen_id)
+    : base_screen_delegate_(base_screen_delegate), screen_id_(screen_id) {}
 
 BaseScreen::~BaseScreen() {
 }
@@ -92,17 +92,11 @@ bool BaseScreen::IsStatusAreaDisplayed() {
   return true;
 }
 
-std::string BaseScreen::GetID() const {
-  // TODO (ygorshenin, crbug.com/433797): elimitate intermediate
-  // GetName() ASAP.
-  return GetName();
-}
-
 void BaseScreen::CommitContextChanges() {
   if (!context_.HasChanges())
     return;
   if (!channel_) {
-    LOG(ERROR) << "Model-view channel for " << GetID()
+    LOG(ERROR) << "Model-view channel for " << screen_id()
                << " is not ready, context changes are not sent to the view.";
     return;
   }

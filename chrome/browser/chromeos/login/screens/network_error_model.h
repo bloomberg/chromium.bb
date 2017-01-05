@@ -35,9 +35,6 @@ class NetworkErrorModel : public BaseScreen {
   explicit NetworkErrorModel(BaseScreenDelegate* base_screen_delegate);
   ~NetworkErrorModel() override;
 
-  // BaseScreen:
-  std::string GetName() const override;
-
   // Toggles the guest sign-in prompt.
   virtual void AllowGuestSignin(bool allowed) = 0;
 

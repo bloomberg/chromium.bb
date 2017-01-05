@@ -37,7 +37,6 @@ class TermsOfServiceScreen : public BaseScreen,
   // BaseScreen:
   void Show() override;
   void Hide() override;
-  std::string GetName() const override;
 
   // TermsOfServiceScreenActor::Delegate:
   void OnDecline() override;

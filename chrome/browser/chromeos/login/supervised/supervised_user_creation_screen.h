@@ -77,7 +77,6 @@ class SupervisedUserCreationScreen
   // BaseScreen implementation:
   void Show() override;
   void Hide() override;
-  std::string GetName() const override;
 
   // SupervisedUserCreationScreenHandler::Delegate implementation:
   void OnActorDestroyed(SupervisedUserCreationScreenHandler* actor) override;

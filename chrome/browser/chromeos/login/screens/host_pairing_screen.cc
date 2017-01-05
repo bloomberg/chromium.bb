@@ -22,7 +22,8 @@ HostPairingScreen::HostPairingScreen(
     Delegate* delegate,
     HostPairingScreenActor* actor,
     pairing_chromeos::HostPairingController* remora_controller)
-    : BaseScreen(base_screen_delegate),
+    : BaseScreen(base_screen_delegate,
+                 WizardController::kHostPairingScreenName),
       delegate_(delegate),
       actor_(actor),
       remora_controller_(remora_controller),
@@ -56,10 +57,6 @@ void HostPairingScreen::Show() {
 void HostPairingScreen::Hide() {
   if (actor_)
     actor_->Hide();
-}
-
-std::string HostPairingScreen::GetName() const {
-  return WizardController::kHostPairingScreenName;
 }
 
 void HostPairingScreen::PairingStageChanged(Stage new_stage) {

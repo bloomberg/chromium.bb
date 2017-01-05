@@ -16,10 +16,11 @@ namespace chromeos {
 DeviceDisabledScreen::DeviceDisabledScreen(
     BaseScreenDelegate* base_screen_delegate,
     DeviceDisabledScreenActor* actor)
-    : BaseScreen(base_screen_delegate),
+    : BaseScreen(base_screen_delegate,
+                 WizardController::kDeviceDisabledScreenName),
       actor_(actor),
-      device_disabling_manager_(g_browser_process->platform_part()->
-                                    device_disabling_manager()),
+      device_disabling_manager_(
+          g_browser_process->platform_part()->device_disabling_manager()),
       showing_(false) {
   DCHECK(actor_);
   if (actor_)
@@ -48,10 +49,6 @@ void DeviceDisabledScreen::Hide() {
 
   if (actor_)
     actor_->Hide();
-}
-
-std::string DeviceDisabledScreen::GetName() const {
-  return WizardController::kDeviceDisabledScreenName;
 }
 
 void DeviceDisabledScreen::OnActorDestroyed(DeviceDisabledScreenActor* actor) {

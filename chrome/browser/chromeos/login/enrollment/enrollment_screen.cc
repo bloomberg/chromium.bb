@@ -64,7 +64,7 @@ EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
 
 EnrollmentScreen::EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
                                    EnrollmentScreenActor* actor)
-    : BaseScreen(base_screen_delegate),
+    : BaseScreen(base_screen_delegate, WizardController::kEnrollmentScreenName),
       actor_(actor),
       weak_ptr_factory_(this) {}
 
@@ -164,10 +164,6 @@ void EnrollmentScreen::ShowInteractiveScreen() {
 void EnrollmentScreen::Hide() {
   actor_->Hide();
   weak_ptr_factory_.InvalidateWeakPtrs();
-}
-
-std::string EnrollmentScreen::GetName() const {
-  return WizardController::kEnrollmentScreenName;
 }
 
 void EnrollmentScreen::AuthenticateUsingAttestation() {

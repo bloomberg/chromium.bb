@@ -23,9 +23,6 @@ class EulaModel : public BaseScreen {
   explicit EulaModel(BaseScreenDelegate* base_screen_delegate);
   ~EulaModel() override;
 
-  // BaseScreen implementation:
-  std::string GetName() const override;
-
   // Returns URL of the OEM EULA page that should be displayed using current
   // locale and manifest. Returns empty URL otherwise.
   virtual GURL GetOemEulaUrl() const = 0;

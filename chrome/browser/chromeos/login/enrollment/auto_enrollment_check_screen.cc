@@ -47,7 +47,8 @@ AutoEnrollmentCheckScreen* AutoEnrollmentCheckScreen::Get(
 AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
     BaseScreenDelegate* base_screen_delegate,
     AutoEnrollmentCheckScreenActor* actor)
-    : BaseScreen(base_screen_delegate),
+    : BaseScreen(base_screen_delegate,
+                 WizardController::kAutoEnrollmentCheckScreenName),
       actor_(actor),
       auto_enrollment_controller_(nullptr),
       captive_portal_status_(
@@ -118,10 +119,6 @@ void AutoEnrollmentCheckScreen::Show() {
 }
 
 void AutoEnrollmentCheckScreen::Hide() {
-}
-
-std::string AutoEnrollmentCheckScreen::GetName() const {
-  return WizardController::kAutoEnrollmentCheckScreenName;
 }
 
 void AutoEnrollmentCheckScreen::OnActorDestroyed(

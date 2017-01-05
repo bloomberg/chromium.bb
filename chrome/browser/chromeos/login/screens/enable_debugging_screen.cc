@@ -10,10 +10,10 @@
 
 namespace chromeos {
 
-EnableDebuggingScreen::EnableDebuggingScreen(
-    BaseScreenDelegate* delegate,
-    EnableDebuggingScreenActor* actor)
-    : BaseScreen(delegate), actor_(actor) {
+EnableDebuggingScreen::EnableDebuggingScreen(BaseScreenDelegate* delegate,
+                                             EnableDebuggingScreenActor* actor)
+    : BaseScreen(delegate, WizardController::kEnableDebuggingScreenName),
+      actor_(actor) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
@@ -32,10 +32,6 @@ void EnableDebuggingScreen::Show() {
 void EnableDebuggingScreen::Hide() {
   if (actor_)
     actor_->Hide();
-}
-
-std::string EnableDebuggingScreen::GetName() const {
-  return WizardController::kEnableDebuggingScreenName;
 }
 
 void EnableDebuggingScreen::OnExit(bool success) {

@@ -28,9 +28,6 @@ class NetworkModel : public BaseScreen {
   explicit NetworkModel(BaseScreenDelegate* base_screen_delegate);
   ~NetworkModel() override;
 
-  // BaseScreen implementation:
-  std::string GetName() const override;
-
   // This method is called, when view is being destroyed. Note, if model
   // is destroyed earlier then it has to call Unbind().
   virtual void OnViewDestroyed(NetworkView* view) = 0;

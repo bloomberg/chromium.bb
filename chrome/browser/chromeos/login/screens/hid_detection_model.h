@@ -28,9 +28,6 @@ class HIDDetectionModel : public BaseScreen {
   explicit HIDDetectionModel(BaseScreenDelegate* base_screen_delegate);
   ~HIDDetectionModel() override;
 
-  // BaseScreen implementation:
-  std::string GetName() const override;
-
   // Called when continue button was clicked.
   virtual void OnContinueButtonClicked() = 0;
 

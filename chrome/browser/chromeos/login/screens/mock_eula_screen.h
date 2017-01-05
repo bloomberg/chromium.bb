@@ -31,8 +31,6 @@ class MockEulaView : public EulaView {
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
 
-  MOCK_CONST_METHOD0(GetName, std::string());
-
   MOCK_METHOD1(MockBind, void(EulaModel& model));
   MOCK_METHOD0(MockUnbind, void());
   MOCK_METHOD1(OnPasswordFetched, void(const std::string& tpm_password));

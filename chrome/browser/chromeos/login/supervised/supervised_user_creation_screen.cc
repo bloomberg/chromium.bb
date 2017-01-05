@@ -103,7 +103,8 @@ SupervisedUserCreationScreen* SupervisedUserCreationScreen::Get(
 SupervisedUserCreationScreen::SupervisedUserCreationScreen(
     BaseScreenDelegate* base_screen_delegate,
     SupervisedUserCreationScreenHandler* actor)
-    : BaseScreen(base_screen_delegate),
+    : BaseScreen(base_screen_delegate,
+                 WizardController::kSupervisedUserCreationScreenName),
       actor_(actor),
       on_error_screen_(false),
       manager_signin_in_progress_(false),
@@ -190,10 +191,6 @@ void SupervisedUserCreationScreen::Hide() {
     actor_->Hide();
   if (!on_error_screen_)
     network_portal_detector::GetInstance()->RemoveObserver(this);
-}
-
-std::string SupervisedUserCreationScreen::GetName() const {
-  return WizardController::kSupervisedUserCreationScreenName;
 }
 
 void SupervisedUserCreationScreen::AbortFlow() {

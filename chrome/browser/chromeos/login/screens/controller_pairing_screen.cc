@@ -20,7 +20,8 @@ ControllerPairingScreen::ControllerPairingScreen(
     Delegate* delegate,
     ControllerPairingScreenActor* actor,
     ControllerPairingController* shark_controller)
-    : BaseScreen(base_screen_delegate),
+    : BaseScreen(base_screen_delegate,
+                 WizardController::kControllerPairingScreenName),
       delegate_(delegate),
       actor_(actor),
       shark_controller_(shark_controller),
@@ -62,10 +63,6 @@ void ControllerPairingScreen::Show() {
 void ControllerPairingScreen::Hide() {
   if (actor_)
     actor_->Hide();
-}
-
-std::string ControllerPairingScreen::GetName() const {
-  return WizardController::kControllerPairingScreenName;
 }
 
 void ControllerPairingScreen::PairingStageChanged(Stage new_stage) {

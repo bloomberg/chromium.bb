@@ -50,7 +50,6 @@ class AutoEnrollmentCheckScreen
   // BaseScreen implementation:
   void Show() override;
   void Hide() override;
-  std::string GetName() const override;
 
   // AutoEnrollmentCheckScreenActor::Delegate implementation:
   void OnActorDestroyed(AutoEnrollmentCheckScreenActor* actor) override;

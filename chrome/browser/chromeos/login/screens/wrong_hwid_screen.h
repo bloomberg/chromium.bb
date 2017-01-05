@@ -26,7 +26,6 @@ class WrongHWIDScreen : public BaseScreen,
   // BaseScreen implementation:
   void Show() override;
   void Hide() override;
-  std::string GetName() const override;
 
   // WrongHWIDScreenActor::Delegate implementation:
   void OnExit() override;

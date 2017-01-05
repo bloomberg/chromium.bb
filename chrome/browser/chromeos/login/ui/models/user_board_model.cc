@@ -10,12 +10,8 @@ const char kUserBoardScreenName[] = "userBoard";
 
 namespace chromeos {
 
-UserBoardModel::UserBoardModel() : BaseScreen(nullptr) {}
+UserBoardModel::UserBoardModel() : BaseScreen(nullptr, kUserBoardScreenName) {}
 
 UserBoardModel::~UserBoardModel() {}
-
-std::string UserBoardModel::GetName() const {
-  return kUserBoardScreenName;
-}
 
 }  // namespace chromeos
