@@ -16,7 +16,10 @@ class WebContents;
 }
 
 class GURL;
+
+namespace security_interstitials {
 class SecurityInterstitialPage;
+}
 
 namespace chrome_browser_interstitials {
 
@@ -36,7 +39,7 @@ class SecurityInterstitialIDNTest : public InProcessBrowserTest {
   testing::AssertionResult VerifyIDNDecoded() const;
 
  protected:
-  virtual SecurityInterstitialPage* CreateInterstitial(
+  virtual security_interstitials::SecurityInterstitialPage* CreateInterstitial(
       content::WebContents* contents,
       const GURL& request_url) const = 0;
 };

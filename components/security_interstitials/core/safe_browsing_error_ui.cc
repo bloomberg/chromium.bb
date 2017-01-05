@@ -217,6 +217,10 @@ void SafeBrowsingErrorUI::HandleCommand(SecurityInterstitialCommands command) {
   }
 }
 
+bool SafeBrowsingErrorUI::CanShowExtendedReportingOption() {
+  return !is_off_the_record() && is_extended_reporting_opt_in_allowed();
+}
+
 void SafeBrowsingErrorUI::PopulateMalwareLoadTimeData(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("phishing", false);
@@ -284,10 +288,10 @@ void SafeBrowsingErrorUI::PopulatePhishingLoadTimeData(
 
 void SafeBrowsingErrorUI::PopulateExtendedReportingOption(
     base::DictionaryValue* load_time_data) {
-  load_time_data->SetBoolean(
-      security_interstitials::kDisplayCheckBox,
-      display_options_.can_show_extended_reporting_option);
-  if (!display_options_.can_show_extended_reporting_option)
+  bool can_show_extended_reporting_option = CanShowExtendedReportingOption();
+  load_time_data->SetBoolean(security_interstitials::kDisplayCheckBox,
+                             can_show_extended_reporting_option);
+  if (!can_show_extended_reporting_option)
     return;
 
   const std::string privacy_link = base::StringPrintf(

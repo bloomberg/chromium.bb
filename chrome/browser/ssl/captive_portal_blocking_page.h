@@ -10,8 +10,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/common/features.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
@@ -39,7 +39,8 @@ class SSLCertReporter;
 // This class should only be used on the UI thread because its implementation
 // uses captive_portal::CaptivePortalService, which can only be accessed on the
 // UI thread. Only used when ENABLE_CAPTIVE_PORTAL_DETECTION is true.
-class CaptivePortalBlockingPage : public SecurityInterstitialPage {
+class CaptivePortalBlockingPage
+    : public security_interstitials::SecurityInterstitialPage {
  public:
   // Interstitial type, for testing.
   static const void* const kTypeForTesting;

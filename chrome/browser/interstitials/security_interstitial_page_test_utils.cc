@@ -7,12 +7,12 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
@@ -57,7 +57,7 @@ testing::AssertionResult SecurityInterstitialIDNTest::VerifyIDNDecoded() const {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   DCHECK(contents);
-  SecurityInterstitialPage* blocking_page =
+  security_interstitials::SecurityInterstitialPage* blocking_page =
       CreateInterstitial(contents, request_url);
   blocking_page->Show();
 

@@ -187,9 +187,11 @@ SSLBlockingPage::SSLBlockingPage(
     bool overridable,
     std::unique_ptr<ChromeMetricsHelper> metrics_helper,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
-    : SecurityInterstitialPage(web_contents,
-                               request_url,
-                               std::move(metrics_helper)),
+    : SecurityInterstitialPage(
+          web_contents,
+          request_url,
+          base::MakeUnique<ChromeControllerClient>(
+              web_contents, std::move(metrics_helper))),
       callback_(callback),
       ssl_info_(ssl_info),
       overridable_(overridable),

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_H_
-#define CHROME_BROWSER_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_H_
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SECURITY_INTERSTITIAL_PAGE_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SECURITY_INTERSTITIAL_PAGE_H_
 
 #include <memory>
 
@@ -23,17 +23,14 @@ class WebContents;
 
 namespace security_interstitials {
 class MetricsHelper;
-}
-
-class ChromeControllerClient;
-class Profile;
+class SecurityInterstitialControllerClient;
 
 class SecurityInterstitialPage : public content::InterstitialPageDelegate {
  public:
   SecurityInterstitialPage(
       content::WebContents* web_contents,
       const GURL& url,
-      std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper);
+      std::unique_ptr<SecurityInterstitialControllerClient> controller);
   ~SecurityInterstitialPage() override;
 
   // Creates an interstitial and shows it.
@@ -64,16 +61,12 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   content::WebContents* web_contents() const;
   GURL request_url() const;
 
-  // Returns a pointer to the Profile associated with |web_contents_|.
-  Profile* profile();
-
-  // Returns the boolean value of the given |pref| from the PrefService of the
-  // Profile associated with |web_contents_|.
+  // Returns the boolean value of the given |pref|.
   bool IsPrefEnabled(const char* pref);
 
-  ChromeControllerClient* controller();
+  SecurityInterstitialControllerClient* controller();
 
-  security_interstitials::MetricsHelper* metrics_helper();
+  MetricsHelper* metrics_helper();
 
  private:
   // The WebContents with which this interstitial page is
@@ -86,12 +79,14 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   content::InterstitialPage* interstitial_page_;
   // Whether the interstitial should create a view.
   bool create_view_;
-  // For subclasses that don't have their own ChromeControllerClients yet.
-  std::unique_ptr<ChromeControllerClient> controller_;
+  // For subclasses that don't have their own ControllerClients yet.
+  std::unique_ptr<SecurityInterstitialControllerClient> controller_;
 
-  std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper_;
+  std::unique_ptr<MetricsHelper> metrics_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityInterstitialPage);
 };
 
-#endif  // CHROME_BROWSER_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_H_
+}  // security_interstitials
+
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SECURITY_INTERSTITIAL_PAGE_H_

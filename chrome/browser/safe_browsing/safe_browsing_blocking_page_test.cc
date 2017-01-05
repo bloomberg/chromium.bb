@@ -1328,7 +1328,7 @@ class SafeBrowsingBlockingPageIDNTest
       public testing::WithParamInterface<testing::tuple<bool, SBThreatType>> {
  protected:
   // SecurityInterstitialIDNTest implementation
-  SecurityInterstitialPage* CreateInterstitial(
+  security_interstitials::SecurityInterstitialPage* CreateInterstitial(
       content::WebContents* contents,
       const GURL& request_url) const override {
     SafeBrowsingUIManager::CreateWhitelistForTesting(contents);

@@ -38,8 +38,8 @@
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
-#include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/core/safe_browsing_error_ui.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
@@ -49,7 +49,8 @@ namespace safe_browsing {
 class SafeBrowsingBlockingPageFactory;
 class ThreatDetails;
 
-class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
+class SafeBrowsingBlockingPage
+    : public security_interstitials::SecurityInterstitialPage {
  public:
   typedef security_interstitials::UnsafeResource UnsafeResource;
   typedef security_interstitials::SafeBrowsingErrorUI SafeBrowsingErrorUI;
@@ -130,12 +131,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   // milliseconds), in order to get data from the blocked resource itself.
   int64_t threat_details_proceed_delay_ms_;
 
-  // Checks if we should even show the extended reporting option. We don't show
-  // it in incognito mode or if kSafeBrowsingExtendedReportingOptInAllowed
-  // preference is disabled.
-  bool CanShowExtendedReportingOption();
-
-  // Called when the insterstitial is going away. If there is a
+  // Called when the interstitial is going away. If there is a
   // pending threat details object, we look at the user's
   // preferences, and if the option to send threat details is
   // enabled, the report is scheduled to be sent on the |ui_manager_|.
@@ -194,7 +190,8 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   static SafeBrowsingErrorUI::SBInterstitialReason GetInterstitialReason(
       const UnsafeResourceList& unsafe_resources);
 
-  static std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
+  std::unique_ptr<security_interstitials::SecurityInterstitialControllerClient>
+  CreateControllerClient(
       content::WebContents* web_contents,
       const UnsafeResourceList& unsafe_resources);
 

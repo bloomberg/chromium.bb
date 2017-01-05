@@ -26,13 +26,15 @@ class SafeBrowsingErrorUI {
 
   struct SBErrorDisplayOptions {
     SBErrorDisplayOptions(bool is_main_frame_load_blocked,
-                          bool can_show_extended_reporting_option,
+                          bool is_extended_reporting_opt_in_allowed,
+                          bool is_off_the_record,
                           bool is_extended_reporting_enabled,
                           bool is_scout_reporting_enabled,
                           bool is_proceed_anyway_disabled)
         : is_main_frame_load_blocked(is_main_frame_load_blocked),
-          can_show_extended_reporting_option(
-              can_show_extended_reporting_option),
+          is_extended_reporting_opt_in_allowed(
+              is_extended_reporting_opt_in_allowed),
+          is_off_the_record(is_off_the_record),
           is_extended_reporting_enabled(is_extended_reporting_enabled),
           is_scout_reporting_enabled(is_scout_reporting_enabled),
           is_proceed_anyway_disabled(is_proceed_anyway_disabled) {}
@@ -40,8 +42,11 @@ class SafeBrowsingErrorUI {
     // Indicates if this SB interstitial is blocking main frame load.
     bool is_main_frame_load_blocked;
 
-    // Indicates if we can show extended reporting checkbox,
-    bool can_show_extended_reporting_option;
+    // Indicates if user is allowed to opt-in extended reporting preference.
+    bool is_extended_reporting_opt_in_allowed;
+
+    // Indicates if user is in incognito mode.
+    bool is_off_the_record;
 
     // Indicates if user opted in for SB extended reporting.
     bool is_extended_reporting_enabled;
@@ -64,8 +69,34 @@ class SafeBrowsingErrorUI {
 
   void PopulateStringsForHTML(base::DictionaryValue* load_time_data);
   void HandleCommand(SecurityInterstitialCommands command);
-  bool is_main_frame_load_blocked() {
+
+  // Checks if we should even show the extended reporting option. We don't show
+  // it in incognito mode or if kSafeBrowsingExtendedReportingOptInAllowed
+  // preference is disabled.
+  bool CanShowExtendedReportingOption();
+
+  bool is_main_frame_load_blocked() const {
     return display_options_.is_main_frame_load_blocked;
+  }
+
+  bool is_extended_reporting_opt_in_allowed() const {
+    return display_options_.is_extended_reporting_opt_in_allowed;
+  }
+
+  bool is_off_the_record() const {
+    return display_options_.is_off_the_record;
+  }
+
+  bool is_extended_reporting_enabled() const {
+    return display_options_.is_extended_reporting_enabled;
+  }
+
+  bool is_proceed_anyway_disabled() const {
+    return display_options_.is_proceed_anyway_disabled;
+  }
+
+  const std::string app_locale() const {
+    return app_locale_;
   }
 
  private:

@@ -63,7 +63,7 @@ void IOSChromeControllerClient::OpenUrlInCurrentTab(const GURL& url) {
       ui::PAGE_TRANSITION_LINK, false));
 }
 
-const std::string& IOSChromeControllerClient::GetApplicationLocale() {
+const std::string& IOSChromeControllerClient::GetApplicationLocale() const {
   return GetApplicationContext()->GetApplicationLocale();
 }
 
@@ -73,6 +73,7 @@ PrefService* IOSChromeControllerClient::GetPrefService() {
       ->GetPrefs();
 }
 
-const std::string IOSChromeControllerClient::GetExtendedReportingPrefName() {
+const std::string IOSChromeControllerClient::GetExtendedReportingPrefName()
+    const {
   return std::string();
 }

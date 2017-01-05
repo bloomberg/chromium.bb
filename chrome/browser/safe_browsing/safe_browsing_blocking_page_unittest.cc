@@ -637,7 +637,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
-  EXPECT_TRUE(sb_interstitial->CanShowExtendedReportingOption());
+  EXPECT_TRUE(sb_interstitial->sb_error_ui_->CanShowExtendedReportingOption());
 
   base::RunLoop().RunUntilIdle();
 
@@ -671,7 +671,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
   ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
-  EXPECT_TRUE(sb_interstitial->CanShowExtendedReportingOption());
+  EXPECT_TRUE(sb_interstitial->sb_error_ui_->CanShowExtendedReportingOption());
 
   base::RunLoop().RunUntilIdle();
 
@@ -707,7 +707,7 @@ TEST_F(SafeBrowsingBlockingPageTest,
   ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
-  EXPECT_FALSE(sb_interstitial->CanShowExtendedReportingOption());
+  EXPECT_FALSE(sb_interstitial->sb_error_ui_->CanShowExtendedReportingOption());
 
   base::RunLoop().RunUntilIdle();
 
@@ -741,7 +741,7 @@ TEST_F(SafeBrowsingBlockingPageTest,
   ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
-  EXPECT_FALSE(sb_interstitial->CanShowExtendedReportingOption());
+  EXPECT_FALSE(sb_interstitial->sb_error_ui_->CanShowExtendedReportingOption());
 
   base::RunLoop().RunUntilIdle();
 

@@ -14,12 +14,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/referrer.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/intent_helper.h"
@@ -123,16 +120,14 @@ void LaunchDateAndTimeSettingsOnFileThread() {
 ChromeControllerClient::ChromeControllerClient(
     content::WebContents* web_contents,
     std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper)
-    : ControllerClient(std::move(metrics_helper)),
-      web_contents_(web_contents),
-      interstitial_page_(nullptr) {}
+    : SecurityInterstitialControllerClient(
+        web_contents, std::move(metrics_helper),
+        Profile::FromBrowserContext(
+            web_contents->GetBrowserContext())->GetPrefs(),
+        g_browser_process->GetApplicationLocale(),
+        GURL(chrome::kChromeUINewTabURL)) {}
 
 ChromeControllerClient::~ChromeControllerClient() {}
-
-void ChromeControllerClient::set_interstitial_page(
-    content::InterstitialPage* interstitial_page) {
-  interstitial_page_ = interstitial_page;
-}
 
 bool ChromeControllerClient::CanLaunchDateAndTimeSettings() {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
@@ -154,50 +149,4 @@ void ChromeControllerClient::LaunchDateAndTimeSettings() {
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&LaunchDateAndTimeSettingsOnFileThread));
 #endif
-}
-
-void ChromeControllerClient::GoBack() {
-  interstitial_page_->DontProceed();
-}
-
-// If the offending entry has committed, go back or to a safe page without
-// closing the error page. This error page will be closed when the new page
-// commits.
-void ChromeControllerClient::GoBackAfterNavigationCommitted() {
-  if (web_contents_->GetController().CanGoBack()) {
-    web_contents_->GetController().GoBack();
-  } else {
-    web_contents_->GetController().LoadURL(
-        GURL(chrome::kChromeUINewTabURL), content::Referrer(),
-        ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
-  }
-}
-
-void ChromeControllerClient::Proceed() {
-  interstitial_page_->Proceed();
-}
-
-void ChromeControllerClient::Reload() {
-  web_contents_->GetController().Reload(content::ReloadType::NORMAL, true);
-}
-
-void ChromeControllerClient::OpenUrlInCurrentTab(const GURL& url) {
-  content::OpenURLParams params(url, Referrer(),
-                                WindowOpenDisposition::CURRENT_TAB,
-                                ui::PAGE_TRANSITION_LINK, false);
-  web_contents_->OpenURL(params);
-}
-
-const std::string& ChromeControllerClient::GetApplicationLocale() {
-  return g_browser_process->GetApplicationLocale();
-}
-
-PrefService* ChromeControllerClient::GetPrefService() {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  return profile->GetPrefs();
-}
-
-const std::string ChromeControllerClient::GetExtendedReportingPrefName() {
-  return safe_browsing::GetExtendedReportingPrefName(*GetPrefService());
 }

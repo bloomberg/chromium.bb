@@ -13,10 +13,10 @@
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "components/certificate_reporting/error_report.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "extensions/features/features.h"
 #include "net/ssl/ssl_info.h"
@@ -37,7 +37,8 @@ class ChromeMetricsHelper;
 // This class is responsible for showing/hiding the interstitial page that is
 // shown when a certificate error happens.
 // It deletes itself when the interstitial page is closed.
-class SSLBlockingPage : public SecurityInterstitialPage {
+class SSLBlockingPage
+    : public security_interstitials::SecurityInterstitialPage {
  public:
   // Interstitial type, used in tests.
   static InterstitialPageDelegate::TypeID kTypeForTesting;

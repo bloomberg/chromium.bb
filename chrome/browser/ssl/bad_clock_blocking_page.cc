@@ -69,9 +69,12 @@ BadClockBlockingPage::BadClockBlockingPage(
     ssl_errors::ClockState clock_state,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
-    : SecurityInterstitialPage(web_contents,
-                               request_url,
-                               CreateMetricsHelper(web_contents, request_url)),
+    : SecurityInterstitialPage(
+          web_contents,
+          request_url,
+          base::MakeUnique<ChromeControllerClient>(
+              web_contents,
+              CreateMetricsHelper(web_contents, request_url))),
       callback_(callback),
       ssl_info_(ssl_info),
       cert_report_helper_(new CertReportHelper(

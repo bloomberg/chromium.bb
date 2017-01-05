@@ -23,8 +23,10 @@
 #include "chrome/browser/safe_browsing/threat_details.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
+#include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
@@ -36,6 +38,7 @@ using content::BrowserThread;
 using content::InterstitialPage;
 using content::WebContents;
 using security_interstitials::SafeBrowsingErrorUI;
+using security_interstitials::SecurityInterstitialControllerClient;
 
 namespace safe_browsing {
 
@@ -101,7 +104,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     : SecurityInterstitialPage(
           web_contents,
           unsafe_resources[0].url,
-          CreateMetricsHelper(web_contents, unsafe_resources)),
+          CreateControllerClient(web_contents, unsafe_resources)),
       threat_details_proceed_delay_ms_(kThreatDetailsProceedDelayMilliSeconds),
       ui_manager_(ui_manager),
       main_frame_url_(main_frame_url),
@@ -109,11 +112,12 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       proceeded_(false) {
   // Computes display options based on user profile and blocked resource.
   bool is_main_frame_load_blocked = IsMainPageLoadBlocked(unsafe_resources);
-  bool can_show_extended_reporting_option = CanShowExtendedReportingOption();
   SafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
-      is_main_frame_load_blocked, can_show_extended_reporting_option,
-      IsExtendedReportingEnabled(*profile()->GetPrefs()),
-      IsScout(*profile()->GetPrefs()),
+      is_main_frame_load_blocked,
+      IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingOptInAllowed),
+      web_contents->GetBrowserContext()->IsOffTheRecord(),
+      IsExtendedReportingEnabled(*controller()->GetPrefService()),
+      IsScout(*controller()->GetPrefService()),
       IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled));
   sb_error_ui_ = base::MakeUnique<SafeBrowsingErrorUI>(
       unsafe_resources[0].url, main_frame_url_,
@@ -135,7 +139,8 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   // reports.
   if (unsafe_resources.size() == 1 &&
       ShouldReportThreatDetails(unsafe_resources[0].threat_type) &&
-      threat_details_.get() == NULL && can_show_extended_reporting_option) {
+      threat_details_.get() == NULL &&
+      sb_error_ui_->CanShowExtendedReportingOption()) {
     threat_details_ = ThreatDetails::NewThreatDetails(ui_manager_, web_contents,
                                                       unsafe_resources[0]);
   }
@@ -148,11 +153,6 @@ bool SafeBrowsingBlockingPage::ShouldReportThreatDetails(
          threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
          threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
          threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
-}
-
-bool SafeBrowsingBlockingPage::CanShowExtendedReportingOption() {
-  return (!web_contents()->GetBrowserContext()->IsOffTheRecord() &&
-          IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
 }
 
 SafeBrowsingBlockingPage::~SafeBrowsingBlockingPage() {
@@ -229,7 +229,7 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
   if (proceeded_)
     return;
 
-  if (!IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled)) {
+  if (!sb_error_ui_->is_proceed_anyway_disabled()) {
     controller()->metrics_helper()->RecordUserDecision(
         security_interstitials::MetricsHelper::DONT_PROCEED);
   }
@@ -274,8 +274,8 @@ void SafeBrowsingBlockingPage::FinishThreatDetails(int64_t delay_ms,
     return;  // Not all interstitials have threat details (eg., incognito mode).
 
   const bool enabled =
-      IsExtendedReportingEnabled(*profile()->GetPrefs()) &&
-      IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
+      sb_error_ui_->is_extended_reporting_enabled() &&
+      sb_error_ui_->is_extended_reporting_opt_in_allowed();
   if (!enabled)
     return;
 
@@ -443,8 +443,8 @@ SafeBrowsingBlockingPage::GetInterstitialReason(
 }
 
 // static
-std::unique_ptr<ChromeMetricsHelper>
-SafeBrowsingBlockingPage::CreateMetricsHelper(
+std::unique_ptr<security_interstitials::SecurityInterstitialControllerClient>
+SafeBrowsingBlockingPage::CreateControllerClient(
     WebContents* web_contents,
     const UnsafeResourceList& unsafe_resources) {
   SafeBrowsingErrorUI::SBInterstitialReason interstitial_reason =
@@ -454,9 +454,23 @@ SafeBrowsingBlockingPage::CreateMetricsHelper(
   reporting_info.metric_prefix =
       GetMetricPrefix(unsafe_resources, interstitial_reason);
   reporting_info.extra_suffix = GetExtraMetricsSuffix(unsafe_resources);
-  return std::unique_ptr<ChromeMetricsHelper>(
-      new ChromeMetricsHelper(web_contents, request_url, reporting_info,
-                              GetSamplingEventName(interstitial_reason)));
+
+  std::unique_ptr<ChromeMetricsHelper> metrics_helper =
+      base::MakeUnique<ChromeMetricsHelper>(
+          web_contents, request_url, reporting_info,
+          GetSamplingEventName(interstitial_reason));
+
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents->GetBrowserContext());
+  DCHECK(profile);
+
+  return base::MakeUnique<
+      security_interstitials::SecurityInterstitialControllerClient>(
+          web_contents,
+          std::move(metrics_helper),
+          profile->GetPrefs(),
+          g_browser_process->GetApplicationLocale(),
+          GURL(chrome::kChromeUINewTabURL));
 }
 
 void SafeBrowsingBlockingPage::PopulateInterstitialStrings(

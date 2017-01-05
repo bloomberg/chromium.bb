@@ -89,9 +89,10 @@ class ControllerClient {
 
   virtual PrefService* GetPrefService() = 0;
 
+  virtual const std::string& GetApplicationLocale() const = 0;
+
  protected:
-  virtual const std::string& GetApplicationLocale() = 0;
-  virtual const std::string GetExtendedReportingPrefName() = 0;
+  virtual const std::string GetExtendedReportingPrefName() const = 0;
 
  private:
   std::unique_ptr<MetricsHelper> metrics_helper_;

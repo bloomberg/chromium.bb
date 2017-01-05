@@ -6,42 +6,24 @@
 #define CHROME_BROWSER_INTERSTITIALS_CHROME_CONTROLLER_CLIENT_H_
 
 #include "base/macros.h"
-#include "components/security_interstitials/core/controller_client.h"
+#include "components/security_interstitials/content/security_interstitial_controller_client.h"
 
 namespace content {
-class InterstitialPage;
 class WebContents;
 }
 
 // Provides embedder-specific logic for the security error page controller.
-class ChromeControllerClient : public security_interstitials::ControllerClient {
+class ChromeControllerClient
+    : public security_interstitials::SecurityInterstitialControllerClient {
  public:
   ChromeControllerClient(
       content::WebContents* web_contents,
       std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper);
   ~ChromeControllerClient() override;
 
-  void set_interstitial_page(content::InterstitialPage* interstitial_page);
-
   // security_interstitials::ControllerClient overrides
   bool CanLaunchDateAndTimeSettings() override;
   void LaunchDateAndTimeSettings() override;
-  void GoBack() override;
-  void GoBackAfterNavigationCommitted() override;
-  void Proceed() override;
-  void Reload() override;
-  void OpenUrlInCurrentTab(const GURL& url) override;
-
-  PrefService* GetPrefService() override;
-
- protected:
-  // security_interstitials::ControllerClient overrides
-  const std::string& GetApplicationLocale() override;
-  const std::string GetExtendedReportingPrefName() override;
-
- private:
-  content::WebContents* web_contents_;
-  content::InterstitialPage* interstitial_page_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeControllerClient);
 };
