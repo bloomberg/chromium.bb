@@ -135,8 +135,6 @@ class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
   ~ArcContentFileSystemFileStreamReaderTest() override = default;
 
   void SetUp() override {
-    mojo::edk::Init();
-
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     base::FilePath path = temp_dir_.GetPath().AppendASCII("bar");
