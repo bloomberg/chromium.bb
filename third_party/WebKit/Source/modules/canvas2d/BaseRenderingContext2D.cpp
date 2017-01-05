@@ -98,10 +98,11 @@ void BaseRenderingContext2D::restoreMatrixClipStack(SkCanvas* c) const {
   DCHECK(m_stateStack.begin() < m_stateStack.end());
   for (currState = m_stateStack.begin(); currState < m_stateStack.end();
        currState++) {
-    CHECK(currState->get());
     c->setMatrix(SkMatrix::I());
-    currState->get()->playbackClips(c);
-    c->setMatrix(affineTransformToSkMatrix(currState->get()->transform()));
+    if (currState->get()) {
+      currState->get()->playbackClips(c);
+      c->setMatrix(affineTransformToSkMatrix(currState->get()->transform()));
+    }
     c->save();
   }
   c->restore();
