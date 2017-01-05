@@ -422,8 +422,6 @@ crbug.com/635619 virtual/layout_ng/css2.1/20110323/replaced-intrinsic-ratio-001.
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/table-caption-margins-001.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/width-replaced-element-001.htm [ Skip ]
 
-crbug.com/674098 compositing/gestures/gesture-tapHighlight-skew-matrix.html [ NeedsRebaseline ]
-
 #### fast/block/basic
 #### Passed: 12
 #### Skipped: 20
