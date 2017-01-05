@@ -320,11 +320,13 @@ public class SnippetArticleViewHolder
         // Store the bitmap to skip the download task next time we display this snippet.
         snippet.setThumbnailBitmap(scaledThumbnail);
 
-        // Cross-fade between the placeholder and the thumbnail.
+        // Cross-fade between the placeholder and the thumbnail. We cross-fade because the incoming
+        // image may have transparency and we don't want the previous image showing up behind.
         Drawable[] layers = {mThumbnailView.getDrawable(),
                 new BitmapDrawable(mThumbnailView.getResources(), scaledThumbnail)};
         TransitionDrawable transitionDrawable = new TransitionDrawable(layers);
         mThumbnailView.setImageDrawable(transitionDrawable);
+        transitionDrawable.setCrossFadeEnabled(true);
         transitionDrawable.startTransition(FADE_IN_ANIMATION_TIME_MS);
     }
 

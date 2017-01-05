@@ -12,15 +12,18 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/pref_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -94,9 +97,15 @@ void PhysicalWebPageSuggestionsProvider::DismissSuggestion(
 void PhysicalWebPageSuggestionsProvider::FetchSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
     const ImageFetchedCallback& callback) {
-  // TODO(vitaliii): Implement. (crbug.com/667765)
+  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
+  base::StringPiece raw_data = resource_bundle.GetRawDataResourceForScale(
+      IDR_PHYSICAL_WEB_LOGO, resource_bundle.GetMaxScaleFactor());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, gfx::Image()));
+      FROM_HERE,
+      base::Bind(callback,
+                 gfx::Image::CreateFrom1xPNGBytes(
+                     reinterpret_cast<const unsigned char*>(raw_data.data()),
+                     raw_data.size())));
 }
 
 void PhysicalWebPageSuggestionsProvider::Fetch(

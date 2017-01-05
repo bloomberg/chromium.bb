@@ -86,6 +86,7 @@ static_library("ntp_snippets") {
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//components/prefs",
+    "//components/resources",
     "//components/signin/core/browser",
     "//components/sync",
     "//google_apis",
