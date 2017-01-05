@@ -1375,7 +1375,7 @@ const wchar_t* ShellUtil::kAppPathsRegistryPathName = L"Path";
 const wchar_t* ShellUtil::kDefaultFileAssociations[] = {L".htm", L".html",
     L".shtml", L".xht", L".xhtml", NULL};
 const wchar_t* ShellUtil::kPotentialFileAssociations[] = {L".htm", L".html",
-    L".pdf", L".shtml", L".xht", L".xhtml", L".webp", NULL};
+    L".pdf", L".shtml", L".svg", L".xht", L".xhtml", L".webp", NULL};
 const wchar_t* ShellUtil::kBrowserProtocolAssociations[] = {L"ftp", L"http",
     L"https", NULL};
 const wchar_t* ShellUtil::kPotentialProtocolAssociations[] = {L"ftp", L"http",
