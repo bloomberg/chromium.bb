@@ -163,6 +163,18 @@
     "label": "//tools/battor_agent:battor_agent_unittests",
     "type": "console_test_launcher",
   },
+  "blimp_browsertests": {
+    "label": "//blimp:blimp_browsertests",
+    "type": "console_test_launcher",
+  },
+  "blimp_test_apk": {
+    "label": "//blimp/client/app:blimp_test_apk",
+    "type": "console_test_launcher",
+  },
+  "blimp_unittests": {
+    "label": "//blimp:blimp_unittests",
+    "type": "console_test_launcher",
+  },
   "blink_heap_unittests": {
     "label": "//third_party/WebKit/Source/platform/heap:blink_heap_unittests",
     "type": "console_test_launcher",
