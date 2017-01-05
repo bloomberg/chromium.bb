@@ -97,7 +97,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class CustomTabActivityTest extends CustomTabActivityTestBase {
     private static final int MAX_MENU_CUSTOM_ITEMS = 5;
-    private static final int NUM_CHROME_MENU_ITEMS = 2;
+    private static final int NUM_CHROME_MENU_ITEMS = 5;
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
     private static final String GEOLOCATION_PAGE =
@@ -375,13 +375,16 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertNotNull("App menu is not initialized: ", menu);
         assertEquals(expectedMenuSize, actualMenuSize);
         assertNotNull(menu.findItem(R.id.forward_menu_id));
+        assertNotNull(menu.findItem(R.id.bookmark_this_page_id));
+        assertNotNull(menu.findItem(R.id.offline_page_id));
         assertNotNull(menu.findItem(R.id.info_menu_id));
         assertNotNull(menu.findItem(R.id.reload_menu_id));
         assertNotNull(menu.findItem(R.id.open_in_browser_id));
         assertFalse(menu.findItem(R.id.share_row_menu_id).isVisible());
         assertFalse(menu.findItem(R.id.share_row_menu_id).isEnabled());
-        assertNull(menu.findItem(R.id.bookmark_this_page_id));
-        assertNull(menu.findItem(R.id.find_in_page_id));
+        assertNotNull(menu.findItem(R.id.find_in_page_id));
+        assertNotNull(menu.findItem(R.id.add_to_homescreen_id));
+        assertNotNull(menu.findItem(R.id.request_desktop_site_id));
     }
 
     /**

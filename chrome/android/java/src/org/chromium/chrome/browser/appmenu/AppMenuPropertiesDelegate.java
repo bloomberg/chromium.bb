@@ -179,11 +179,7 @@ public class AppMenuPropertiesDelegate {
             // Hide request desktop site on all chrome:// pages except for the NTP. Check request
             // desktop site if it's activated on this page.
             MenuItem requestItem = menu.findItem(R.id.request_desktop_site_id);
-            requestItem.setVisible(!isChromeScheme || currentTab.isNativePage());
-            requestItem.setChecked(currentTab.getUseDesktopUserAgent());
-            requestItem.setTitleCondensed(requestItem.isChecked()
-                    ? mActivity.getString(R.string.menu_request_desktop_site_on)
-                    : mActivity.getString(R.string.menu_request_desktop_site_off));
+            updateRequestDesktopSiteMenuItem(requestItem, currentTab, isChromeScheme);
 
             // Only display reader mode settings menu option if the current page is in reader mode.
             menu.findItem(R.id.reader_mode_prefs_id)
@@ -291,5 +287,22 @@ public class AppMenuPropertiesDelegate {
             bookmarkMenuItem.setChecked(false);
             bookmarkMenuItem.setTitleCondensed(null);
         }
+    }
+
+    /**
+     * Updates the request desktop site item's visibility
+     *
+     * @param requstMenuItem {@link MenuItem} for request desktop site.
+     * @param currentTab      Current tab being displayed.
+     * @param isChromeScheme  whether the url being displayed starts with chrome:// or
+     * chrome-native://.
+     */
+    protected void updateRequestDesktopSiteMenuItem(
+            MenuItem requstMenuItem, Tab currentTab, boolean isChromeScheme) {
+        requstMenuItem.setVisible(!isChromeScheme || currentTab.isNativePage());
+        requstMenuItem.setChecked(currentTab.getUseDesktopUserAgent());
+        requstMenuItem.setTitleCondensed(requstMenuItem.isChecked()
+                        ? mActivity.getString(R.string.menu_request_desktop_site_on)
+                        : mActivity.getString(R.string.menu_request_desktop_site_off));
     }
 }

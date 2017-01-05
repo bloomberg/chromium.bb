@@ -1675,7 +1675,10 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_STARTED" desc="Message to show when download has started [CHAR LIMIT=30]">
         Downloading…
       </message>
-      <message name="IDS_DOWNLOAD_SUCCEEDED_MESSAGE" desc="Transient message shown when a file download has succeeded." meaning="Android">
+      <message name="IDS_DOWNLOAD_SUCCEEDED_MESSAGE" desc="App-based transient message shown when a file download has succeeded." meaning="Android">
+        <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> downloaded in <ph name="PRODUCT_NAME">%2$s<ex>Chrome</ex></ph>
+      </message>
+      <message name="IDS_DOWNLOAD_SUCCEEDED_MESSAGE_DEFAULT" desc="Transient message shown when a file download has succeeded." meaning="Android">
         <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> downloaded
       </message>
       <message name="IDS_REMAINING_DURATION_DAYS" desc="Message to show remaining duration in multiple days">
@@ -2083,7 +2086,10 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_BOOKMARKS_FOLDER_EMPTY" desc="Text explaining that the currently selected bookmarks folder is empty.">
         No bookmarks here
       </message>
-      <message name="IDS_BOOKMARK_PAGE_SAVED" desc="Message shown after user adds a new bookmark. [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_PAGE_SAVED" desc="App-based message shown after user adds a new bookmark. [CHAR-LIMIT=32]">
+        Bookmarked in <ph name="PRODUCT_NAME">%1$s<ex>Chrome</ex></ph>
+      </message>
+      <message name="IDS_BOOKMARK_PAGE_SAVED_DEFAULT" desc="Default message shown after user adds a new bookmark. [CHAR-LIMIT=32]">
         Bookmarked
       </message>
       <message name="IDS_BOOKMARK_PAGE_SAVED_FOLDER" desc="Message shown after user adds a new bookmark. Also specifies in which folder the bookmark was added. [CHAR-LIMIT=32]">

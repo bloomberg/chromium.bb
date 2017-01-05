@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -841,6 +842,20 @@ public class CustomTabActivity extends ChromeActivity {
                 || id == R.id.new_incognito_tab_menu_id || id == R.id.new_tab_menu_id
                 || id == R.id.open_history_menu_id) {
             return true;
+        } else if (id == R.id.bookmark_this_page_id) {
+            addOrEditBookmark(getActivityTab());
+            RecordUserAction.record("MobileMenuAddToBookmarks");
+            return true;
+        } else if (id == R.id.find_in_page_id) {
+            mFindToolbarManager.showToolbar();
+            if (getContextualSearchManager() != null) {
+                getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
+            }
+            if (fromMenu) {
+                RecordUserAction.record("MobileMeanuFindInPage");
+            } else {
+                RecordUserAction.record("MobileShortcutFindInPage");
+            }
         } else if (id == R.id.open_in_browser_id) {
             openCurrentUrlInBrowser(false);
             RecordUserAction.record("CustomTabsMenuOpenInChrome");

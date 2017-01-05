@@ -9,7 +9,9 @@ import android.app.NotificationManager;
 import android.content.Context;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -74,9 +76,17 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
     public void onDownloadSucceeded(
             DownloadInfo downloadInfo, int notificationId, long downloadId, boolean canBeResolved) {
         if (getSnackbarManager() == null) return;
-        Snackbar snackbar = Snackbar.make(
-                mContext.getString(R.string.download_succeeded_message, downloadInfo.getFileName()),
-                this, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_DOWNLOAD_SUCCEEDED);
+        Snackbar snackbar;
+        if (getActivity() instanceof CustomTabActivity) {
+            String packageLabel = BuildInfo.getPackageLabel(getActivity());
+            snackbar = Snackbar.make(mContext.getString(R.string.download_succeeded_message,
+                    downloadInfo.getFileName(), packageLabel),
+                    this, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_DOWNLOAD_SUCCEEDED);
+        } else {
+            snackbar = Snackbar.make(mContext.getString(R.string.download_succeeded_message_default,
+                    downloadInfo.getFileName()),
+                    this, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_DOWNLOAD_SUCCEEDED);
+        }
         // TODO(qinmin): Coalesce snackbars if multiple downloads finish at the same time.
         snackbar.setDuration(SNACKBAR_DURATION_IN_MILLISECONDS).setSingleLine(false);
         ActionDataInfo info = null;
@@ -111,10 +121,17 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         getSnackbarManager().showSnackbar(snackbar);
     }
 
+    private Activity getActivity() {
+        if (ApplicationStatus.hasVisibleActivities()) {
+            return ApplicationStatus.getLastTrackedFocusedActivity();
+        } else {
+            return null;
+        }
+    }
+
     public SnackbarManager getSnackbarManager() {
-        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (activity != null && ApplicationStatus.hasVisibleActivities()
-                && activity instanceof SnackbarManager.SnackbarManageable) {
+        Activity activity = getActivity();
+        if (activity != null && activity instanceof SnackbarManager.SnackbarManageable) {
             return ((SnackbarManager.SnackbarManageable) activity).getSnackbarManager();
         }
         return null;

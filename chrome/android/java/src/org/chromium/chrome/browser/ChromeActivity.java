@@ -1302,9 +1302,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 if (!tabToBookmark.isClosing() && tabToBookmark.isInitialized()) {
                     // The BookmarkModel will be destroyed by BookmarkUtils#addOrEditBookmark() when
                     // done.
-                    BookmarkId newBookmarkId =
-                            BookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel,
-                                    tabToBookmark, getSnackbarManager(), ChromeActivity.this);
+                    BookmarkId newBookmarkId = BookmarkUtils.addOrEditBookmark(bookmarkId,
+                            bookmarkModel, tabToBookmark, getSnackbarManager(), ChromeActivity.this,
+                            isCustomTab());
                     // If a new bookmark was created, try to save an offline page for it.
                     if (newBookmarkId != null && newBookmarkId.getId() != bookmarkId) {
                         OfflinePageUtils.saveBookmarkOffline(newBookmarkId, tabToBookmark);

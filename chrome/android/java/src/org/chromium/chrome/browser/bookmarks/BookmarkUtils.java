@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.provider.Browser;
 import android.text.TextUtils;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -50,11 +51,12 @@ public class BookmarkUtils {
      * @param tab The tab to add or edit a bookmark.
      * @param snackbarManager The SnackbarManager used to show the snackbar.
      * @param activity Current activity.
+     * @param fromCustomTab boolean indicates whether it is called by Custom Tab.
      * @return Bookmark ID of the bookmark. Could be <code>null</code> if bookmark didn't exist
      *   and bookmark model failed to create it.
      */
     public static BookmarkId addOrEditBookmark(long existingBookmarkId, BookmarkModel bookmarkModel,
-            Tab tab, SnackbarManager snackbarManager, Activity activity) {
+            Tab tab, SnackbarManager snackbarManager, Activity activity, boolean fromCustomTab) {
         if (existingBookmarkId != Tab.INVALID_BOOKMARK_ID) {
             BookmarkId bookmarkId = new BookmarkId(existingBookmarkId, BookmarkType.NORMAL);
             startEditActivity(activity, bookmarkId);
@@ -89,8 +91,16 @@ public class BookmarkUtils {
             SnackbarController snackbarController =
                     createSnackbarControllerForEditButton(activity, bookmarkId);
             if (getLastUsedParent(activity) == null) {
-                snackbar = Snackbar.make(activity.getString(R.string.bookmark_page_saved),
-                        snackbarController, Snackbar.TYPE_ACTION, Snackbar.UMA_BOOKMARK_ADDED);
+                if (fromCustomTab) {
+                    String packageLabel = BuildInfo.getPackageLabel(activity);
+                    snackbar = Snackbar.make(
+                            activity.getString(R.string.menu_open_in_product, packageLabel),
+                            snackbarController, Snackbar.TYPE_ACTION, Snackbar.UMA_BOOKMARK_ADDED);
+                } else {
+                    snackbar = Snackbar.make(
+                            activity.getString(R.string.bookmark_page_saved_default),
+                            snackbarController, Snackbar.TYPE_ACTION, Snackbar.UMA_BOOKMARK_ADDED);
+                }
             } else {
                 snackbar = Snackbar.make(folderName, snackbarController, Snackbar.TYPE_ACTION,
                         Snackbar.UMA_BOOKMARK_ADDED)
