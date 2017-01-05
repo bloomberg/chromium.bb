@@ -33,6 +33,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/compositor/compositor.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/event.h"
@@ -1130,6 +1131,42 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsProperties) {
             properties2[kUnknownPropertyKey].size());
   EXPECT_EQ(kUnknownPropertyValue, mojo::ConvertTo<UnknownPropertyType>(
                                        properties2[kUnknownPropertyKey]));
+}
+
+namespace {
+
+class CloseWindowWindowTreeHostObserver : public aura::WindowTreeHostObserver {
+ public:
+  CloseWindowWindowTreeHostObserver() {}
+  ~CloseWindowWindowTreeHostObserver() override {}
+
+  bool root_destroyed() const { return root_destroyed_; }
+
+  // aura::WindowTreeHostObserver::
+  void OnHostCloseRequested(const aura::WindowTreeHost* host) override {
+    root_destroyed_ = true;
+  }
+
+ private:
+  bool root_destroyed_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(CloseWindowWindowTreeHostObserver);
+};
+
+}  // namespace
+
+TEST_F(WindowTreeClientClientTest, CloseWindow) {
+  WindowTreeHostMus window_tree_host(window_tree_client_impl());
+  window_tree_host.InitHost();
+  CloseWindowWindowTreeHostObserver observer;
+  window_tree_host.AddObserver(&observer);
+  Window* top_level = window_tree_host.window();
+
+  // Close a root window should send close request to the observer of its
+  // WindowTreeHost.
+  EXPECT_FALSE(observer.root_destroyed());
+  window_tree_client()->RequestClose(server_id(top_level));
+  EXPECT_TRUE(observer.root_destroyed());
 }
 
 // Tests both SetCapture and ReleaseCapture, to ensure that Window is properly

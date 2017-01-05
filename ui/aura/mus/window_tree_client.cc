@@ -1315,7 +1315,9 @@ void WindowTreeClient::RequestClose(uint32_t window_id) {
   if (!window || !IsRoot(window))
     return;
 
-  window->GetWindow()->delegate()->OnRequestClose();
+  // Since the window is the root window, we send close request to the entire
+  // WindowTreeHost.
+  GetWindowTreeHostMus(window->GetWindow())->OnCloseRequest();
 }
 
 void WindowTreeClient::OnConnect(ClientSpecificId client_id) {
