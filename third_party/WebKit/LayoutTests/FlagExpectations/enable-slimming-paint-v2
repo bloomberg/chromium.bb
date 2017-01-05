@@ -2195,6 +2195,11 @@ crbug.com/675805 fast/text/complex-text-opacity.html [ Failure ]
 
 # Failures due to frame scrollbars not painted
 crbug.com/589279 css3/blending/background-blend-mode-data-uri-svg-image.html [ Failure ]
+ 
+# Need to write SPv2 version of this code.
+crbug.com/157218 compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
+crbug.com/157218 compositing/overflow/siblings-with-border-radius-ancestor.html [ Failure ]
+crbug.com/157218 compositing/overflow/siblings-composited-with-border-radius-ancestor.html [ Failure ]
 
 # Notes about rebaselined tests:
 #

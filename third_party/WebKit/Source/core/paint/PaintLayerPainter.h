@@ -132,6 +132,8 @@ class CORE_EXPORT PaintLayerPainter {
                                           const PaintLayerPaintingInfo&,
                                           PaintLayerFlags);
 
+  void fillMaskingFragment(GraphicsContext&, const ClipRect&);
+
   static bool needsToClip(const PaintLayerPaintingInfo& localPaintingInfo,
                           const ClipRect&);
 

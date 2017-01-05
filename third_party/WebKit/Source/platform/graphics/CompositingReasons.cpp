@@ -128,6 +128,10 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
      "Secondary layer, to contain the mask contents"},
     {CompositingReasonLayerForClippingMask, "layerForClippingMask",
      "Secondary layer, for clipping mask"},
+    {CompositingReasonLayerForAncestorClippingMask,
+     "layerForAncestorClippingMask",
+     "Secondary layer, applies a clipping mask due to a sibling in the "
+     "composited layer tree"},
     {CompositingReasonLayerForScrollingBlockSelection,
      "layerForScrollingBlockSelection",
      "Secondary layer, to house block selection gaps for composited scrolling "
