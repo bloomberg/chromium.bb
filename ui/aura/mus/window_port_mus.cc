@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
-#include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/surface_id_handler.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -256,22 +255,10 @@ void WindowPortMus::SetSurfaceInfoFromServer(
     }
   }
   WindowPortMus* parent = Get(window_->parent());
-  // TODO(mfomitchev): This is unused. We probably don't need this.
   if (parent && parent->surface_id_handler_) {
     parent->surface_id_handler_->OnChildWindowSurfaceChanged(window_,
                                                              surface_info);
   }
-
-  // The fact that SetSurfaceIdFromServer was called means that this window
-  // corresponds to an embedded client.
-  if (!client_surface_embedder && surface_info.id().is_valid())
-    client_surface_embedder = base::MakeUnique<ClientSurfaceEmbedder>(window_);
-
-  if (surface_info.id().is_valid())
-    client_surface_embedder->UpdateSurface(surface_info);
-  else
-    client_surface_embedder.reset();
-
   surface_info_ = surface_info;
 }
 

@@ -26,7 +26,6 @@
 
 namespace aura {
 
-class ClientSurfaceEmbedder;
 class PropertyConverter;
 class SurfaceIdHandler;
 class Window;
@@ -243,9 +242,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   WindowTreeClient* window_tree_client_;
 
   Window* window_ = nullptr;
-
-  // Used when this window is embedding a client.
-  std::unique_ptr<ClientSurfaceEmbedder> client_surface_embedder;
 
   ServerChangeIdType next_server_change_id_ = 0;
   ServerChanges server_changes_;

@@ -109,8 +109,6 @@ class ServerWindowCompositorFrameSinkManager {
 
   TypeToCompositorFrameSinkMap type_to_compositor_frame_sink_map_;
 
-  // TODO(mfomitchev): This is currently always false. Confirm if we still need
-  // this.
   // While true the window is not drawn. This is initially true if the window
   // has the property |kWaitForUnderlay_Property|. This is set to false once
   // the underlay and default surface have been set *and* their size is at

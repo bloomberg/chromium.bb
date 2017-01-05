@@ -166,7 +166,6 @@ class Display : public PlatformDisplayDelegate,
   // PlatformDisplayDelegate:
   display::Display GetDisplay() override;
   ServerWindow* GetRootWindow() override;
-  ServerWindow* GetActiveRootWindow() override;
   void OnAcceleratedWidgetAvailable() override;
   bool IsInHighContrastMode() override;
   void OnEvent(const ui::Event& event) override;
