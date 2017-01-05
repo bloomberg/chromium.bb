@@ -47,6 +47,7 @@ class CORE_EXPORT TextPainter {
   void setCombinedText(LayoutTextCombine* combinedText) {
     m_combinedText = combinedText;
   }
+  void setEllipsisOffset(int offset) { m_ellipsisOffset = offset; }
 
   static void updateGraphicsContext(GraphicsContext&,
                                     const Style&,
@@ -117,6 +118,7 @@ class CORE_EXPORT TextPainter {
   AtomicString m_emphasisMark;
   int m_emphasisMarkOffset;
   LayoutTextCombine* m_combinedText;
+  int m_ellipsisOffset;
 };
 
 inline AffineTransform TextPainter::rotation(

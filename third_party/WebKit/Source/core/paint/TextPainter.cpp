@@ -36,7 +36,8 @@ TextPainter::TextPainter(GraphicsContext& context,
       m_textBounds(textBounds),
       m_horizontal(horizontal),
       m_emphasisMarkOffset(0),
-      m_combinedText(0) {}
+      m_combinedText(0),
+      m_ellipsisOffset(0) {}
 
 TextPainter::~TextPainter() {}
 
@@ -247,7 +248,7 @@ void TextPainter::paintInternal(unsigned startOffset,
     paintInternalRun<Step>(textRunPaintInfo, startOffset, endOffset);
   } else {
     if (endOffset > 0)
-      paintInternalRun<Step>(textRunPaintInfo, 0, endOffset);
+      paintInternalRun<Step>(textRunPaintInfo, m_ellipsisOffset, endOffset);
     if (startOffset < truncationPoint)
       paintInternalRun<Step>(textRunPaintInfo, startOffset, truncationPoint);
   }
