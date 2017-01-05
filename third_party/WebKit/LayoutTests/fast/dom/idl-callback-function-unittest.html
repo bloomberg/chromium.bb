@@ -54,4 +54,8 @@ test(function() {
         callbackFunctionTest.testCallback(1, 'hello', 'world');
     });
 }, 'Passing non-callable values should throw a TypeError');
+
+test(function() {
+  assert_equals(callbackFunctionTest.testNullableCallback(null, 'hello', 'world'), 'Empty callback');
+}, 'Passing null to nullable callback argument');
 </script>

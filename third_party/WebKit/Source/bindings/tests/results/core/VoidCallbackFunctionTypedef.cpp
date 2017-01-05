@@ -21,6 +21,13 @@
 
 namespace blink {
 
+// static
+VoidCallbackFunctionTypedef* VoidCallbackFunctionTypedef::create(ScriptState* scriptState, v8::Local<v8::Value> callback){
+  if (isUndefinedOrNull(callback))
+    return nullptr;
+  return new VoidCallbackFunctionTypedef(scriptState, v8::Local<v8::Function>::Cast(callback));
+}
+
 VoidCallbackFunctionTypedef::VoidCallbackFunctionTypedef(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : m_scriptState(scriptState),
     m_callback(scriptState->isolate(), this, callback) {

@@ -33,6 +33,10 @@ class CallbackFunctionTest final
                       const String&,
                       const String&,
                       ExceptionState&);
+  String testNullableCallback(TestCallback*,
+                              const String&,
+                              const String&,
+                              ExceptionState&);
   void testInterfaceCallback(TestInterfaceCallback*,
                              HTMLDivElement*,
                              ExceptionState&);

@@ -25,9 +25,7 @@ class ScriptState;
 
 class CORE_EXPORT LongCallbackFunction final : public GarbageCollectedFinalized<LongCallbackFunction>, public TraceWrapperBase {
  public:
-  static LongCallbackFunction* create(ScriptState* scriptState, v8::Local<v8::Function> callback)  {
-    return new LongCallbackFunction(scriptState, callback);
-  }
+  static LongCallbackFunction* create(ScriptState* scriptState, v8::Local<v8::Value> callback);
 
   ~LongCallbackFunction() = default;
 

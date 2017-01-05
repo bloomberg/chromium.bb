@@ -25,9 +25,7 @@ class ScriptState;
 
 class MODULES_EXPORT VoidCallbackFunctionModules final : public GarbageCollectedFinalized<VoidCallbackFunctionModules>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunctionModules* create(ScriptState* scriptState, v8::Local<v8::Function> callback)  {
-    return new VoidCallbackFunctionModules(scriptState, callback);
-  }
+  static VoidCallbackFunctionModules* create(ScriptState* scriptState, v8::Local<v8::Value> callback);
 
   ~VoidCallbackFunctionModules() = default;
 

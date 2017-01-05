@@ -29,6 +29,16 @@ String CallbackFunctionTest::testCallback(TestCallback* callback,
   return String("Error!");
 }
 
+String CallbackFunctionTest::testNullableCallback(
+    TestCallback* callback,
+    const String& message1,
+    const String& message2,
+    ExceptionState& exceptionState) {
+  if (!callback)
+    return String("Empty callback");
+  return testCallback(callback, message1, message2, exceptionState);
+}
+
 void CallbackFunctionTest::testInterfaceCallback(
     TestInterfaceCallback* callback,
     HTMLDivElement* divElement,

@@ -25,9 +25,7 @@ class ScriptState;
 
 class CORE_EXPORT VoidCallbackFunctionTypedef final : public GarbageCollectedFinalized<VoidCallbackFunctionTypedef>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunctionTypedef* create(ScriptState* scriptState, v8::Local<v8::Function> callback)  {
-    return new VoidCallbackFunctionTypedef(scriptState, callback);
-  }
+  static VoidCallbackFunctionTypedef* create(ScriptState* scriptState, v8::Local<v8::Value> callback);
 
   ~VoidCallbackFunctionTypedef() = default;
 

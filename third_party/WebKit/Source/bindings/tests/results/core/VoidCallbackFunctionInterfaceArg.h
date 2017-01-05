@@ -26,9 +26,7 @@ class HTMLDivElement;
 
 class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollectedFinalized<VoidCallbackFunctionInterfaceArg>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunctionInterfaceArg* create(ScriptState* scriptState, v8::Local<v8::Function> callback)  {
-    return new VoidCallbackFunctionInterfaceArg(scriptState, callback);
-  }
+  static VoidCallbackFunctionInterfaceArg* create(ScriptState* scriptState, v8::Local<v8::Value> callback);
 
   ~VoidCallbackFunctionInterfaceArg() = default;
 

@@ -581,12 +581,12 @@ static void voidMethodVoidCallbackFunctionModulesArgMethod(const v8::FunctionCal
   }
 
   VoidCallbackFunctionModules* arg;
-  if (!info[0]->IsObject() || !v8::Local<v8::Object>::Cast(info[0])->IsCallable()) {
+  if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidCallbackFunctionModulesArg", "TestInterface5", "The callback provided as parameter 1 is not a function."));
 
     return;
   }
-  arg = VoidCallbackFunctionModules::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
+  arg = VoidCallbackFunctionModules::create(ScriptState::current(info.GetIsolate()), info[0]);
 
   impl->voidMethodVoidCallbackFunctionModulesArg(arg);
 }
@@ -663,7 +663,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   ScriptValue callback;
   ScriptValue thisArg;
-  if (!info[0]->IsObject() || !v8::Local<v8::Object>::Cast(info[0])->IsCallable()) {
+  if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
 
     return;

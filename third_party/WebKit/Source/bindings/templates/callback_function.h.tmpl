@@ -18,9 +18,7 @@ class {{forward_declaration}};
 
 class {{exported}}{{cpp_class}} final : public GarbageCollectedFinalized<{{cpp_class}}>, public TraceWrapperBase {
  public:
-  static {{cpp_class}}* create(ScriptState* scriptState, v8::Local<v8::Function> callback)  {
-    return new {{cpp_class}}(scriptState, callback);
-  }
+  static {{cpp_class}}* create(ScriptState* scriptState, v8::Local<v8::Value> callback);
 
   ~{{cpp_class}}() = default;
 

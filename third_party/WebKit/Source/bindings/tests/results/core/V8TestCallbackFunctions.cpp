@@ -73,7 +73,7 @@ static void voidCallbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> v8
   TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
 
   // Prepare the value to be set.
-  VoidCallbackFunction* cppValue = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(v8Value));
+  VoidCallbackFunction* cppValue = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8Value);
 
   impl->setVoidCallbackFunctionAttribute(cppValue);
 }
@@ -101,7 +101,7 @@ static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8::Local<
   TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
 
   // Prepare the value to be set.
-  AnyCallbackFunctionOptionalAnyArg* cppValue = AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(v8Value));
+  AnyCallbackFunctionOptionalAnyArg* cppValue = AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(info.GetIsolate()), v8Value);
 
   impl->setAnyCallbackFunctionOptionalAnyArgAttribute(cppValue);
 }
@@ -153,12 +153,12 @@ static void voidMethodCallbackFunctionInArgMethod(const v8::FunctionCallbackInfo
   }
 
   VoidCallbackFunction* voidCallbackFunctionArg;
-  if (!info[0]->IsObject() || !v8::Local<v8::Object>::Cast(info[0])->IsCallable()) {
+  if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
 
     return;
   }
-  voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
+  voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), info[0]);
 
   impl->voidMethodCallbackFunctionInArg(voidCallbackFunctionArg);
 }
@@ -176,12 +176,12 @@ static void voidMethodCallbackFunctionInArg2Method(const v8::FunctionCallbackInf
   }
 
   AnyCallbackFunctionOptionalAnyArg* anyCallbackFunctionOptionalAnyArgArg;
-  if (!info[0]->IsObject() || !v8::Local<v8::Object>::Cast(info[0])->IsCallable()) {
+  if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionInArg2", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
 
     return;
   }
-  anyCallbackFunctionOptionalAnyArgArg = AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
+  anyCallbackFunctionOptionalAnyArgArg = AnyCallbackFunctionOptionalAnyArg::create(ScriptState::current(info.GetIsolate()), info[0]);
 
   impl->voidMethodCallbackFunctionInArg2(anyCallbackFunctionOptionalAnyArgArg);
 }
@@ -199,12 +199,12 @@ static void voidMethodCallbackFunctionWithReturnValueInArgMethod(const v8::Funct
   }
 
   LongCallbackFunction* longCallbackFunctionArg;
-  if (!info[0]->IsObject() || !v8::Local<v8::Object>::Cast(info[0])->IsCallable()) {
+  if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodCallbackFunctionWithReturnValueInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
 
     return;
   }
-  longCallbackFunctionArg = LongCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
+  longCallbackFunctionArg = LongCallbackFunction::create(ScriptState::current(info.GetIsolate()), info[0]);
 
   impl->voidMethodCallbackFunctionWithReturnValueInArg(longCallbackFunctionArg);
 }
@@ -227,12 +227,12 @@ static void voidMethodOptionalCallbackFunctionInArgMethod(const v8::FunctionCall
     impl->voidMethodOptionalCallbackFunctionInArg();
     return;
   }
-  if (!info[0]->IsObject() || !v8::Local<v8::Object>::Cast(info[0])->IsCallable()) {
+  if (!(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodOptionalCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
 
     return;
   }
-  voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
+  voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), info[0]);
 
   impl->voidMethodOptionalCallbackFunctionInArg(voidCallbackFunctionArg);
 }
@@ -250,12 +250,12 @@ static void voidMethodNullableCallbackFunctionInArgMethod(const v8::FunctionCall
   }
 
   VoidCallbackFunction* voidCallbackFunctionArg;
-  if (!info[0]->IsObject() || !v8::Local<v8::Object>::Cast(info[0])->IsCallable()) {
+  if (!isUndefinedOrNull(info[0]) && !(info[0]->IsObject() && v8::Local<v8::Object>::Cast(info[0])->IsCallable())) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNullableCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
 
     return;
   }
-  voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info[0]));
+  voidCallbackFunctionArg = VoidCallbackFunction::create(ScriptState::current(info.GetIsolate()), info[0]);
 
   impl->voidMethodNullableCallbackFunctionInArg(voidCallbackFunctionArg);
 }

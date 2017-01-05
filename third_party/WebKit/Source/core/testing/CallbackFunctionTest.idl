@@ -9,6 +9,7 @@
 
 interface CallbackFunctionTest {
     [RaisesException] DOMString testCallback(TestCallback callback, DOMString message1, DOMString message2);
+    [RaisesException] DOMString testNullableCallback(TestCallback? callback, DOMString message1, DOMString message2);
     [RaisesException] void testInterfaceCallback(TestInterfaceCallback callback, HTMLDivElement divElement);
     [RaisesException] void testReceiverObjectCallback(TestReceiverObjectCallback callback);
     [RaisesException] sequence<DOMString> testSequenceCallback(TestSequenceCallback callback, sequence<long> numbers);

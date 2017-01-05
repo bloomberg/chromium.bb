@@ -11,6 +11,13 @@
 
 namespace blink {
 
+// static
+{{cpp_class}}* {{cpp_class}}::create(ScriptState* scriptState, v8::Local<v8::Value> callback){
+  if (isUndefinedOrNull(callback))
+    return nullptr;
+  return new {{cpp_class}}(scriptState, v8::Local<v8::Function>::Cast(callback));
+}
+
 {{cpp_class}}::{{cpp_class}}(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : m_scriptState(scriptState),
     m_callback(scriptState->isolate(), this, callback) {

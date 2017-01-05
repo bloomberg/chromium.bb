@@ -21,6 +21,13 @@
 
 namespace blink {
 
+// static
+LongCallbackFunction* LongCallbackFunction::create(ScriptState* scriptState, v8::Local<v8::Value> callback){
+  if (isUndefinedOrNull(callback))
+    return nullptr;
+  return new LongCallbackFunction(scriptState, v8::Local<v8::Function>::Cast(callback));
+}
+
 LongCallbackFunction::LongCallbackFunction(ScriptState* scriptState, v8::Local<v8::Function> callback)
     : m_scriptState(scriptState),
     m_callback(scriptState->isolate(), this, callback) {

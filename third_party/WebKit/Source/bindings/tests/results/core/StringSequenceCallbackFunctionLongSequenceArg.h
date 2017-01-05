@@ -25,9 +25,7 @@ class ScriptState;
 
 class CORE_EXPORT StringSequenceCallbackFunctionLongSequenceArg final : public GarbageCollectedFinalized<StringSequenceCallbackFunctionLongSequenceArg>, public TraceWrapperBase {
  public:
-  static StringSequenceCallbackFunctionLongSequenceArg* create(ScriptState* scriptState, v8::Local<v8::Function> callback)  {
-    return new StringSequenceCallbackFunctionLongSequenceArg(scriptState, callback);
-  }
+  static StringSequenceCallbackFunctionLongSequenceArg* create(ScriptState* scriptState, v8::Local<v8::Value> callback);
 
   ~StringSequenceCallbackFunctionLongSequenceArg() = default;
 
