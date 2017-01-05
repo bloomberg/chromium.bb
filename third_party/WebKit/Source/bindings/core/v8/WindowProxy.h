@@ -78,7 +78,6 @@ class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
   bool isGlobalInitialized() { return !m_globalProxy.isEmpty(); }
 
   void initializeIfNeeded();
-  void updateDocumentWrapper(v8::Local<v8::Object> wrapper);
 
   void clearForNavigation();
   void clearForClose();
