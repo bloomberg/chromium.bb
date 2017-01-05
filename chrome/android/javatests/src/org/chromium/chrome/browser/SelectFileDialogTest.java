@@ -32,6 +32,8 @@ public class SelectFileDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
             + "content=\"width=device-width, initial-scale=2.0, maximum-scale=2.0\" /></head>"
             + "<body><form action=\"about:blank\">"
             + "<input id=\"input_file\" type=\"file\" /><br/>"
+            + "<input id=\"input_text\" type=\"file\" accept=\"text/plain\" /><br/>"
+            + "<input id=\"input_any\" type=\"file\" accept=\"*/*\" /><br/>"
             + "<input id=\"input_file_multiple\" type=\"file\" multiple /><br />"
             + "<input id=\"input_image\" type=\"file\" accept=\"image/*\" capture /><br/>"
             + "<input id=\"input_audio\" type=\"file\" accept=\"audio/*\" capture />"
@@ -105,21 +107,60 @@ public class SelectFileDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
     @Feature({"TextInput", "Main"})
     @RetryOnFailure
     public void testSelectFileAndCancelRequest() throws Throwable {
-        DOMUtils.clickNode(this, mContentViewCore, "input_file");
-        CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
-        assertEquals(Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
-        resetActivityWindowAndroidForTest();
-
-        DOMUtils.clickNode(this, mContentViewCore, "input_file_multiple");
-        CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
-        assertEquals(Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
-        Intent contentIntent = (Intent)
-                mActivityWindowAndroidForTest.lastIntent.getParcelableExtra(Intent.EXTRA_INTENT);
-        assertNotNull(contentIntent);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            assertTrue(contentIntent.hasExtra(Intent.EXTRA_ALLOW_MULTIPLE));
+        {
+            DOMUtils.clickNode(this, mContentViewCore, "input_file");
+            CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
+            assertEquals(
+                    Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
+            Intent contentIntent =
+                    (Intent) mActivityWindowAndroidForTest.lastIntent.getParcelableExtra(
+                            Intent.EXTRA_INTENT);
+            assertNotNull(contentIntent);
+            assertFalse(contentIntent.hasCategory(Intent.CATEGORY_OPENABLE));
+            resetActivityWindowAndroidForTest();
         }
-        resetActivityWindowAndroidForTest();
+
+        {
+            DOMUtils.clickNode(this, mContentViewCore, "input_text");
+            CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
+            assertEquals(
+                    Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
+            Intent contentIntent =
+                    (Intent) mActivityWindowAndroidForTest.lastIntent.getParcelableExtra(
+                            Intent.EXTRA_INTENT);
+            assertNotNull(contentIntent);
+            assertTrue(contentIntent.hasCategory(Intent.CATEGORY_OPENABLE));
+            resetActivityWindowAndroidForTest();
+        }
+
+        {
+            DOMUtils.clickNode(this, mContentViewCore, "input_any");
+            CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
+            assertEquals(
+                    Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
+            Intent contentIntent =
+                    (Intent) mActivityWindowAndroidForTest.lastIntent.getParcelableExtra(
+                            Intent.EXTRA_INTENT);
+            assertNotNull(contentIntent);
+            assertFalse(contentIntent.hasCategory(Intent.CATEGORY_OPENABLE));
+            resetActivityWindowAndroidForTest();
+        }
+
+        {
+            DOMUtils.clickNode(this, mContentViewCore, "input_file_multiple");
+            CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
+            assertEquals(
+                    Intent.ACTION_CHOOSER, mActivityWindowAndroidForTest.lastIntent.getAction());
+            Intent contentIntent =
+                    (Intent) mActivityWindowAndroidForTest.lastIntent.getParcelableExtra(
+                            Intent.EXTRA_INTENT);
+            assertNotNull(contentIntent);
+            assertFalse(contentIntent.hasCategory(Intent.CATEGORY_OPENABLE));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                assertTrue(contentIntent.hasExtra(Intent.EXTRA_ALLOW_MULTIPLE));
+            }
+            resetActivityWindowAndroidForTest();
+        }
 
         DOMUtils.clickNode(this, mContentViewCore, "input_image");
         CriteriaHelper.pollInstrumentationThread(new IntentSentCriteria());
