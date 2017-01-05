@@ -78,7 +78,7 @@ namespace autofill {
 namespace {
 
 const char kSecurityIndicatorHelpCenterUrl[] =
-    "https://support.google.com/chrome/answer/95617?hl=en";
+    "https://support.google.com/chrome/answer/95617";
 
 }  // anonymous namespace
 
