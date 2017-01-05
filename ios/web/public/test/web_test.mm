@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/active_state_manager.h"
-#import "ios/web/public/test/test_web_client.h"
+#import "ios/web/public/test/fakes/test_web_client.h"
 
 namespace web {
 

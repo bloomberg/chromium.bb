@@ -18,7 +18,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "ios/web/public/test/test_browser_state.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_thread.h"
 #include "net/disk_cache/disk_cache.h"

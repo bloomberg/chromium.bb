@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/test/test_web_client.h"
+#import "ios/web/public/test/fakes/test_web_client.h"
 
 #include "base/logging.h"
 #include "ios/web/test/test_url_constants.h"

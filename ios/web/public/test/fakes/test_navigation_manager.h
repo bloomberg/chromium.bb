@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_TEST_TEST_NAVIGATION_MANAGER_H_
-#define IOS_WEB_PUBLIC_TEST_TEST_NAVIGATION_MANAGER_H_
+#ifndef IOS_WEB_PUBLIC_TEST_FAKES_TEST_NAVIGATION_MANAGER_H_
+#define IOS_WEB_PUBLIC_TEST_FAKES_TEST_NAVIGATION_MANAGER_H_
 
 #import "ios/web/public/navigation_manager.h"
 
@@ -53,4 +53,4 @@ class TestNavigationManager : public web::NavigationManager {
 
 }  // namespace web
 
-#endif
+#endif  // IOS_WEB_PUBLIC_TEST_FAKES_TEST_NAVIGATION_MANAGER_H_

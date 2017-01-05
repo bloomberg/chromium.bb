@@ -5,8 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_TEST_WEB_TEST_H_
 #define IOS_WEB_PUBLIC_TEST_WEB_TEST_H_
 
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
-#include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/platform_test.h"
 

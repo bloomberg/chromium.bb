@@ -6,8 +6,8 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/timer/elapsed_timer.h"
 #include "ios/chrome/test/base/perf_test_ios.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/js_test_util.h"
-#include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/web_state/js/page_script_util.h"
 

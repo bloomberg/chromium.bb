@@ -39,7 +39,7 @@
 #include "ios/public/provider/chrome/browser/user_feedback/test_user_feedback_provider.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/net/request_tracker_impl.h"
-#import "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"

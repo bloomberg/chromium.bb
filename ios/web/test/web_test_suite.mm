@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
-#import "ios/web/public/test/test_web_client.h"
+#import "ios/web/public/test/fakes/test_web_client.h"
 #include "ios/web/public/url_schemes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"

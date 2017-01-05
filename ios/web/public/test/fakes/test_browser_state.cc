@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/test/test_browser_state.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 
 #include "base/files/file_path.h"
 #include "ios/web/public/web_thread.h"
@@ -28,8 +28,8 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
 
   net::URLRequestContext* GetURLRequestContext() override { return &context_; }
 
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetNetworkTaskRunner() const override {
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override {
     return web::WebThread::GetTaskRunnerForThread(web::WebThread::IO);
   }
 
@@ -44,8 +44,7 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
 
 TestBrowserState::TestBrowserState() : is_off_the_record_(false) {}
 
-TestBrowserState::~TestBrowserState() {
-}
+TestBrowserState::~TestBrowserState() {}
 
 bool TestBrowserState::IsOffTheRecord() const {
   return is_off_the_record_;

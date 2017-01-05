@@ -6,12 +6,12 @@
 
 #import "ios/chrome/browser/itunes_links/itunes_links_observer.h"
 
-#import "ios/web/public/test/test_web_state.h"
 #import "ios/chrome/browser/storekit_launcher.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
-#import "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/gtest_support.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

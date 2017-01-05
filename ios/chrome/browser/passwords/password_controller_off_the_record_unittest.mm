@@ -8,7 +8,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
-#import "ios/web/public/test/test_web_state.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

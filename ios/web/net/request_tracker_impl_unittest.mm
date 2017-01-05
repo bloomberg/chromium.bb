@@ -17,7 +17,7 @@
 #include "ios/web/public/cert_policy.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/ssl_status.h"
-#include "ios/web/public/test/test_browser_state.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"

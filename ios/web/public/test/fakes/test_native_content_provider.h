@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_TEST_TEST_NATIVE_CONTENT_PROVIDER_H_
-#define IOS_WEB_PUBLIC_TEST_TEST_NATIVE_CONTENT_PROVIDER_H_
+#ifndef IOS_WEB_PUBLIC_TEST_FAKES_TEST_NATIVE_CONTENT_PROVIDER_H_
+#define IOS_WEB_PUBLIC_TEST_FAKES_TEST_NATIVE_CONTENT_PROVIDER_H_
 
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 
@@ -17,4 +17,4 @@
 
 @end
 
-#endif  // IOS_WEB_PUBLIC_TEST_TEST_NATIVE_CONTENT_PROVIDER_H_
+#endif  // IOS_WEB_PUBLIC_TEST_FAKES_TEST_NATIVE_CONTENT_PROVIDER_H_

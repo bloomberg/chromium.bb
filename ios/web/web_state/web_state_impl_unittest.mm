@@ -17,7 +17,7 @@
 #include "base/values.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/load_committed_details.h"
-#include "ios/web/public/test/test_browser_state.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"

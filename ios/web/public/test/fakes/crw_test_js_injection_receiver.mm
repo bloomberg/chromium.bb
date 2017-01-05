@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/test/crw_test_js_injection_receiver.h"
+#import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
 
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>

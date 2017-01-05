@@ -7,7 +7,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#include "ios/web/public/test/test_web_state.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

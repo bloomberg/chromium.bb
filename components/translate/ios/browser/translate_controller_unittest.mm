@@ -8,7 +8,7 @@
 
 #include "base/values.h"
 #import "components/translate/ios/browser/js_translate_manager.h"
-#include "ios/web/public/test/test_web_state.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "url/gurl.h"

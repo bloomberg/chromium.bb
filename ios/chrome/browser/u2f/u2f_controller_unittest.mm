@@ -9,7 +9,7 @@
 #import "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ios/chrome/browser/chrome_url_util.h"
-#import "ios/web/public/test/test_web_state.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

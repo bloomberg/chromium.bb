@@ -16,7 +16,7 @@
 #import "ios/web/navigation/crw_session_entry.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/public/referrer.h"
-#include "ios/web/public/test/test_browser_state.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"

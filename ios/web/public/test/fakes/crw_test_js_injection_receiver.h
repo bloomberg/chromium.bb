@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_TEST_CRW_TEST_JS_INJECTION_RECEIVER_H_
-#define IOS_WEB_PUBLIC_TEST_CRW_TEST_JS_INJECTION_RECEIVER_H_
+#ifndef IOS_WEB_PUBLIC_TEST_FAKES_CRW_TEST_JS_INJECTION_RECEIVER_H_
+#define IOS_WEB_PUBLIC_TEST_FAKES_CRW_TEST_JS_INJECTION_RECEIVER_H_
 
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
@@ -12,4 +12,4 @@
 @interface CRWTestJSInjectionReceiver : CRWJSInjectionReceiver
 @end
 
-#endif  // IOS_WEB_PUBLIC_TEST_CRW_TEST_JS_INJECTION_RECEIVER_H_
+#endif  // IOS_WEB_PUBLIC_TEST_FAKES_CRW_TEST_JS_INJECTION_RECEIVER_H_

@@ -8,7 +8,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
-#include "ios/web/public/test/test_browser_state.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

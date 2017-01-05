@@ -5,7 +5,7 @@
 #include "ios/web/public/browser_state.h"
 
 #include "base/supports_user_data.h"
-#include "ios/web/public/test/test_browser_state.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/dialogs/javascript_dialog_blocking_util.h"
 
 #include "ios/web/public/load_committed_details.h"
-#include "ios/web/public/test/test_web_state.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

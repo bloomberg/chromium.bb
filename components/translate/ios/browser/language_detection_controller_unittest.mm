@@ -10,7 +10,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #import "components/translate/ios/browser/js_language_detection_manager.h"
-#include "ios/web/public/test/test_web_state.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

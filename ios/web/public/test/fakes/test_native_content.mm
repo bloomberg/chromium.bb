@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/test/test_native_content.h"
+#import "ios/web/public/test/fakes/test_native_content.h"
 
 #import "base/mac/scoped_nsobject.h"
 

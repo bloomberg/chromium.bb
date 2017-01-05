@@ -9,9 +9,9 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
+#import "ios/web/public/test/fakes/test_web_client.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
-#include "ios/web/public/test/test_browser_state.h"
-#import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"

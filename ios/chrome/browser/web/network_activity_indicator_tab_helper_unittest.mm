@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web/public/test/test_web_state.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
