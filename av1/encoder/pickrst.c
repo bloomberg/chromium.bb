@@ -44,6 +44,10 @@ static int64_t sse_restoration_tile(const YV12_BUFFER_CONFIG *src,
                                     int width, int v_start, int height,
                                     int components_pattern) {
   int64_t filt_err = 0;
+  (void)cm;
+  // Y and UV components cannot be mixed
+  assert(components_pattern == 1 || components_pattern == 2 ||
+         components_pattern == 4 || components_pattern == 6);
 #if CONFIG_AOM_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
     if ((components_pattern >> AOM_PLANE_Y) & 1) {
@@ -51,14 +55,12 @@ static int64_t sse_restoration_tile(const YV12_BUFFER_CONFIG *src,
           aom_highbd_get_y_sse_part(src, dst, h_start, width, v_start, height);
     }
     if ((components_pattern >> AOM_PLANE_U) & 1) {
-      filt_err += aom_highbd_get_u_sse_part(
-          src, dst, h_start >> cm->subsampling_x, width >> cm->subsampling_x,
-          v_start >> cm->subsampling_y, height >> cm->subsampling_y);
+      filt_err +=
+          aom_highbd_get_u_sse_part(src, dst, h_start, width, v_start, height);
     }
     if ((components_pattern >> AOM_PLANE_V) & 1) {
-      filt_err += aom_highbd_get_v_sse_part(
-          src, dst, h_start >> cm->subsampling_x, width >> cm->subsampling_x,
-          v_start >> cm->subsampling_y, height >> cm->subsampling_y);
+      filt_err +=
+          aom_highbd_get_v_sse_part(src, dst, h_start, width, v_start, height);
     }
     return filt_err;
   }
@@ -67,14 +69,10 @@ static int64_t sse_restoration_tile(const YV12_BUFFER_CONFIG *src,
     filt_err += aom_get_y_sse_part(src, dst, h_start, width, v_start, height);
   }
   if ((components_pattern >> AOM_PLANE_U) & 1) {
-    filt_err += aom_get_u_sse_part(
-        src, dst, h_start >> cm->subsampling_x, width >> cm->subsampling_x,
-        v_start >> cm->subsampling_y, height >> cm->subsampling_y);
+    filt_err += aom_get_u_sse_part(src, dst, h_start, width, v_start, height);
   }
   if ((components_pattern >> AOM_PLANE_V) & 1) {
-    filt_err += aom_get_u_sse_part(
-        src, dst, h_start >> cm->subsampling_x, width >> cm->subsampling_x,
-        v_start >> cm->subsampling_y, height >> cm->subsampling_y);
+    filt_err += aom_get_v_sse_part(src, dst, h_start, width, v_start, height);
   }
   return filt_err;
 }
@@ -119,16 +117,28 @@ static int64_t try_restoration_tile(const YV12_BUFFER_CONFIG *src,
   int64_t filt_err;
   int tile_width, tile_height, nhtiles, nvtiles;
   int h_start, h_end, v_start, v_end;
-  const int ntiles = av1_get_rest_ntiles(cm->width, cm->height, &tile_width,
-                                         &tile_height, &nhtiles, &nvtiles);
+  int ntiles, width, height;
+
+  // Y and UV components cannot be mixed
+  assert(components_pattern == 1 || components_pattern == 2 ||
+         components_pattern == 4 || components_pattern == 6);
+
+  if (components_pattern == 1) {  // Y only
+    width = src->y_crop_width;
+    height = src->y_crop_height;
+  } else {  // Color
+    width = src->uv_crop_width;
+    height = src->uv_crop_height;
+  }
+  ntiles = av1_get_rest_ntiles(width, height, &tile_width, &tile_height,
+                               &nhtiles, &nvtiles);
   (void)ntiles;
 
   av1_loop_restoration_frame(cm->frame_to_show, cm, rsi, components_pattern,
                              partial_frame, dst_frame);
   av1_get_rest_tile_limits(tile_idx, subtile_idx, subtile_bits, nhtiles,
-                           nvtiles, tile_width, tile_height, cm->width,
-                           cm->height, 0, 0, &h_start, &h_end, &v_start,
-                           &v_end);
+                           nvtiles, tile_width, tile_height, width, height, 0,
+                           0, &h_start, &h_end, &v_start, &v_end);
   filt_err = sse_restoration_tile(src, dst_frame, cm, h_start, h_end - h_start,
                                   v_start, v_end - v_start, components_pattern);
 
@@ -951,7 +961,7 @@ static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   const int dgd_stride = dgd->uv_stride;
   double score;
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
-  const int ntiles = av1_get_rest_ntiles(cm->width, cm->height, &tile_width,
+  const int ntiles = av1_get_rest_ntiles(width, height, &tile_width,
                                          &tile_height, &nhtiles, &nvtiles);
 
   assert(width == dgd->uv_crop_width);
@@ -1361,6 +1371,8 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
          cm->rst_info[0].frame_restoration_type,
          cm->rst_info[1].frame_restoration_type,
          cm->rst_info[2].frame_restoration_type);
+         */
+  /*
   printf("Frame %d/%d frame_restore_type %d : %f %f %f %f %f\n",
          cm->current_video_frame, cm->show_frame,
          cm->rst_info[0].frame_restoration_type, cost_restore[0],

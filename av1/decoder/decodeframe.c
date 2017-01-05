@@ -2358,6 +2358,9 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
   int i, p;
   const int ntiles =
       av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
+  const int ntiles_uv = av1_get_rest_ntiles(cm->width >> cm->subsampling_x,
+                                            cm->height >> cm->subsampling_x,
+                                            NULL, NULL, NULL, NULL);
   RestorationInfo *rsi = &cm->rst_info[0];
   if (rsi->frame_restoration_type != RESTORE_NONE) {
     if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
@@ -2417,7 +2420,7 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
       rsi->restoration_type[0] = RESTORE_WIENER;
       rsi->wiener_info[0].level = 1;
       read_wiener_filter(&rsi->wiener_info[0], rb);
-      for (i = 1; i < ntiles; ++i) {
+      for (i = 1; i < ntiles_uv; ++i) {
         rsi->restoration_type[i] = RESTORE_WIENER;
         memcpy(&rsi->wiener_info[i], &rsi->wiener_info[0],
                sizeof(rsi->wiener_info[0]));

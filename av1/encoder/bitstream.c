@@ -3086,11 +3086,13 @@ static void write_domaintxfmrf_filter(DomaintxfmrfInfo *domaintxfmrf_info,
 
 static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
   int i, p;
+  const int ntiles =
+      av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
   RestorationInfo *rsi = &cm->rst_info[0];
   if (rsi->frame_restoration_type != RESTORE_NONE) {
     if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
       // RESTORE_SWITCHABLE
-      for (i = 0; i < cm->rst_internal.ntiles; ++i) {
+      for (i = 0; i < ntiles; ++i) {
         av1_write_token(
             wb, av1_switchable_restore_tree, cm->fc->switchable_restore_prob,
             &switchable_restore_encodings[rsi->restoration_type[i]]);
@@ -3103,14 +3105,14 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
-      for (i = 0; i < cm->rst_internal.ntiles; ++i) {
+      for (i = 0; i < ntiles; ++i) {
         aom_write(wb, rsi->wiener_info[i].level != 0, RESTORE_NONE_WIENER_PROB);
         if (rsi->wiener_info[i].level) {
           write_wiener_filter(&rsi->wiener_info[i], wb);
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
-      for (i = 0; i < cm->rst_internal.ntiles; ++i) {
+      for (i = 0; i < ntiles; ++i) {
         aom_write(wb, rsi->sgrproj_info[i].level != 0,
                   RESTORE_NONE_SGRPROJ_PROB);
         if (rsi->sgrproj_info[i].level) {
@@ -3118,7 +3120,7 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_DOMAINTXFMRF) {
-      for (i = 0; i < cm->rst_internal.ntiles; ++i) {
+      for (i = 0; i < ntiles; ++i) {
         aom_write(wb, rsi->domaintxfmrf_info[i].level != 0,
                   RESTORE_NONE_DOMAINTXFMRF_PROB);
         if (rsi->domaintxfmrf_info[i].level) {
