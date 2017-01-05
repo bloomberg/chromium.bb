@@ -351,9 +351,8 @@ TEST_F(MostVisitedSitesWithEmptyCacheTest,
   // Constructor sets basic expectations for a suggestions service cache miss.
 }
 
-// TODO(mastiz): This describes the current behavior but it actually is a bug.
 TEST_F(MostVisitedSitesWithEmptyCacheTest,
-       DoesNotIgnoreTopSitesIfSuggestionsServiceFaster) {
+       ShouldIgnoreTopSitesIfSuggestionsServiceFaster) {
   // Reply from suggestions service triggers and update to our observer.
   EXPECT_CALL(
       mock_observer_,
@@ -363,11 +362,7 @@ TEST_F(MostVisitedSitesWithEmptyCacheTest,
       MakeProfile({MakeSuggestion("Site 1", "http://site1/")}));
   VerifyAndClearExpectations();
 
-  // Reply from top sites is currently not ignored (i.e. is actually reported to
-  // observer).
-  EXPECT_CALL(mock_observer_,
-              OnMostVisitedURLsAvailable(ElementsAre(MatchesTile(
-                  "Site 2", "http://site2/", NTPTileSource::TOP_SITES))));
+  // Reply from top sites is ignored (i.e. not reported to observer).
   top_sites_callbacks_.ClearAndNotify(
       {MakeMostVisitedURL("Site 2", "http://site2/")});
   base::RunLoop().RunUntilIdle();

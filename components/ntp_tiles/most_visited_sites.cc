@@ -62,7 +62,7 @@ MostVisitedSites::MostVisitedSites(
       observer_(nullptr),
       num_sites_(0),
       top_sites_observer_(this),
-      mv_source_(NTPTileSource::SUGGESTIONS_SERVICE),
+      mv_source_(NTPTileSource::TOP_SITES),
       weak_ptr_factory_(this) {
   DCHECK(prefs_);
   // top_sites_ can be null in tests.
@@ -187,8 +187,12 @@ base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
 
 void MostVisitedSites::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& visited_list) {
-  // TODO(mastiz): Verify if suggestion service results have been fetched in
-  // the meantime, and if that's the case ignore this event.
+  // Ignore the event if tiles provided by the Suggestions Service, which take
+  // precedence.
+  if (mv_source_ == NTPTileSource::SUGGESTIONS_SERVICE) {
+    return;
+  }
+
   NTPTilesVector tiles;
   size_t num_tiles =
       std::min(visited_list.size(), static_cast<size_t>(num_sites_));
@@ -221,6 +225,7 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
   // With no server suggestions, fall back to local TopSites.
   if (num_tiles == 0 ||
       !base::FeatureList::IsEnabled(kDisplaySuggestionsServiceTiles)) {
+    mv_source_ = NTPTileSource::TOP_SITES;
     InitiateTopSitesQuery();
     return;
   }
