@@ -4,19 +4,7 @@
 
 import("//build/config/ios/rules.gni")
 
-source_set("ui_arc") {
-  sources = [
-    "network_activity_indicator_manager.h",
-    "network_activity_indicator_manager.mm",
-  ]
-  deps = [
-    "//base",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
 source_set("ui") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "UIView+SizeClassSupport.h",
     "UIView+SizeClassSupport.mm",
@@ -32,6 +20,8 @@ source_set("ui") {
     "image_util.mm",
     "native_content_controller.h",
     "native_content_controller.mm",
+    "network_activity_indicator_manager.h",
+    "network_activity_indicator_manager.mm",
     "orientation_limiting_navigation_controller.h",
     "orientation_limiting_navigation_controller.mm",
     "prerender_final_status.h",
@@ -61,18 +51,13 @@ source_set("ui") {
     "//ui/base",
     "//ui/gfx",
   ]
-  public_deps = [
-    ":ui_arc",
-  ]
-  allow_circular_includes_from = [
-    ":ui_arc",
-    "//ios/chrome/browser/ui/commands",
-  ]
+  allow_circular_includes_from = [ "//ios/chrome/browser/ui/commands" ]
   libs = [
     "Accelerate.framework",
     "CoreGraphics.framework",
     "QuartzCore.framework",
   ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests") {
