@@ -173,6 +173,7 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
   bool pushToMarkingDeque(
       void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
       HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
+      void (*missedWriteBarrierCallback)(void),
       const void* object) const override {
     if (!m_tracingInProgress)
       return false;

@@ -91,6 +91,11 @@ class PLATFORM_EXPORT WrapperVisitor {
 
  public:
   template <typename T>
+  static NEVER_INLINE void missedWriteBarrier() {
+    NOTREACHED();
+  }
+
+  template <typename T>
   void traceWrappers(const T* traceable) const {
     static_assert(sizeof(T), "T must be fully defined");
     static_assert(CanTraceWrappers<T>::value,
@@ -164,7 +169,8 @@ class PLATFORM_EXPORT WrapperVisitor {
   template <typename T>
   void markAndPushToMarkingDeque(const T* traceable) const {
     if (pushToMarkingDeque(TraceTrait<T>::traceMarkedWrapper,
-                           TraceTrait<T>::heapObjectHeader, traceable)) {
+                           TraceTrait<T>::heapObjectHeader,
+                           WrapperVisitor::missedWriteBarrier<T>, traceable)) {
       TraceTrait<T>::markWrapperNoTracing(this, traceable);
     }
   }
@@ -174,6 +180,7 @@ class PLATFORM_EXPORT WrapperVisitor {
   virtual bool pushToMarkingDeque(
       void (*traceWrappersCallback)(const WrapperVisitor*, const void*),
       HeapObjectHeader* (*heapObjectHeaderCallback)(const void*),
+      void (*missedWriteBarrierCallback)(void),
       const void*) const = 0;
 };
 
