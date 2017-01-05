@@ -93,6 +93,8 @@ class NativeInitializationController {
     public void startBackgroundTasks(final boolean allocateChildConnection) {
         ThreadUtils.assertOnUiThread();
 
+        // TODO(asvitkine): Consider moving this logic to a singleton, like
+        // ChromeBrowserInitializer.
         if (shouldFetchVariationsSeedBeforeFRE()) {
             Context context = ContextUtils.getApplicationContext();
             Intent initialIntent = mActivityDelegate.getInitialIntent();
@@ -105,6 +107,10 @@ class NativeInitializationController {
                         new BroadcastReceiver() {
                             @Override
                             public void onReceive(Context context, Intent intent) {
+                                // This check is needed because onReceive() can be called multiple
+                                // times even after having unregistered below if two broadcasts
+                                // arrive in rapid succession.
+                                if (!mWaitingForVariationsFetch) return;
                                 mWaitingForVariationsFetch = false;
                                 manager.unregisterReceiver(this);
                                 signalNativeLibraryLoadedIfReady();
