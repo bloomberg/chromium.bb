@@ -13,7 +13,7 @@
 namespace blink {
 
 NavigatorPlugins::NavigatorPlugins(Navigator& navigator)
-    : ContextClient(navigator.frame()) {}
+    : Supplement<Navigator>(navigator) {}
 
 // static
 NavigatorPlugins& NavigatorPlugins::from(Navigator& navigator) {
@@ -67,7 +67,6 @@ DEFINE_TRACE(NavigatorPlugins) {
   visitor->trace(m_plugins);
   visitor->trace(m_mimeTypes);
   Supplement<Navigator>::trace(visitor);
-  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

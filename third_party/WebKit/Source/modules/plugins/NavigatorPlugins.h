@@ -5,7 +5,6 @@
 #ifndef NavigatorPlugins_h
 #define NavigatorPlugins_h
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 
@@ -17,8 +16,7 @@ class LocalFrame;
 class Navigator;
 
 class NavigatorPlugins final : public GarbageCollected<NavigatorPlugins>,
-                               public Supplement<Navigator>,
-                               public ContextClient {
+                               public Supplement<Navigator> {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorPlugins);
 
  public:
