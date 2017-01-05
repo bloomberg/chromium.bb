@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
@@ -67,8 +68,7 @@ MojoResult DrainData::ReadData() {
   if (result != MOJO_RESULT_OK)
     return result;
   const char* p = static_cast<const char*>(buffer);
-  DataBuffer* data_buffer = new DataBuffer(p, p + num_bytes);
-  data_buffers_.push_back(data_buffer);
+  data_buffers_.push_back(base::MakeUnique<DataBuffer>(p, p + num_bytes));
   return EndReadDataRaw(handle_.get(), num_bytes);
 }
 

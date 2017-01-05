@@ -5,7 +5,9 @@
 #ifndef MOJO_EDK_JS_DRAIN_DATA_H_
 #define MOJO_EDK_JS_DRAIN_DATA_H_
 
-#include "base/memory/scoped_vector.h"
+#include <memory>
+#include <vector>
+
 #include "gin/runner.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/watcher.h"
@@ -53,7 +55,7 @@ class DrainData {
   Watcher handle_watcher_;
   base::WeakPtr<gin::Runner> runner_;
   v8::UniquePersistent<v8::Promise::Resolver> resolver_;
-  ScopedVector<DataBuffer> data_buffers_;
+  std::vector<std::unique_ptr<DataBuffer>> data_buffers_;
 };
 
 }  // namespace js
