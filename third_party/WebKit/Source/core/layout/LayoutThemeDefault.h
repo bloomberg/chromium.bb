@@ -159,9 +159,7 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   static unsigned m_inactiveSelectionForegroundColor;
 
   ThemePainterDefault m_painter;
-  // Cached values for crbug.com/673754.
-  mutable float m_cachedMenuListArrowZoomLevel = 0;
-  mutable float m_cachedMenuListArrowPaddingSize = 0;
+  int m_menuListArrowWidthInDIP = 0;
 };
 
 }  // namespace blink
