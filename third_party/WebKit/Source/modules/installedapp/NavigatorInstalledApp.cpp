@@ -22,8 +22,8 @@
 
 namespace blink {
 
-NavigatorInstalledApp::NavigatorInstalledApp(LocalFrame* frame)
-    : ContextClient(frame) {}
+NavigatorInstalledApp::NavigatorInstalledApp(Navigator& navigator)
+    : Supplement<Navigator>(navigator) {}
 
 NavigatorInstalledApp* NavigatorInstalledApp::from(Document& document) {
   if (!document.frame() || !document.frame()->domWindow())
@@ -36,7 +36,7 @@ NavigatorInstalledApp& NavigatorInstalledApp::from(Navigator& navigator) {
   NavigatorInstalledApp* supplement = static_cast<NavigatorInstalledApp*>(
       Supplement<Navigator>::from(navigator, supplementName()));
   if (!supplement) {
-    supplement = new NavigatorInstalledApp(navigator.frame());
+    supplement = new NavigatorInstalledApp(navigator);
     provideTo(navigator, supplementName(), supplement);
   }
   return *supplement;
@@ -71,17 +71,15 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  // Don't crash when called and unattached to document.
-  Document* document = frame() ? frame()->document() : 0;
-
-  if (!document || !controller()) {
+  InstalledAppController* appController = controller();
+  if (!appController) {  // If the associated frame is detached
     DOMException* exception = DOMException::create(
         InvalidStateError, "The object is no longer associated to a document.");
     resolver->reject(exception);
     return promise;
   }
 
-  controller()->getInstalledApps(
+  appController->getInstalledApps(
       WebSecurityOrigin(
           scriptState->getExecutionContext()->getSecurityOrigin()),
       WTF::wrapUnique(
@@ -90,10 +88,10 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
 }
 
 InstalledAppController* NavigatorInstalledApp::controller() {
-  if (!frame())
+  if (!host()->frame())
     return nullptr;
 
-  return InstalledAppController::from(*frame());
+  return InstalledAppController::from(*host()->frame());
 }
 
 const char* NavigatorInstalledApp::supplementName() {
@@ -102,7 +100,6 @@ const char* NavigatorInstalledApp::supplementName() {
 
 DEFINE_TRACE(NavigatorInstalledApp) {
   Supplement<Navigator>::trace(visitor);
-  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

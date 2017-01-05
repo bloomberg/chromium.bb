@@ -5,7 +5,6 @@
 #ifndef NavigatorInstalledApp_h
 #define NavigatorInstalledApp_h
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -21,8 +20,7 @@ class InstalledAppController;
 
 class NavigatorInstalledApp final
     : public GarbageCollected<NavigatorInstalledApp>,
-      public Supplement<Navigator>,
-      public ContextClient {
+      public Supplement<Navigator> {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorInstalledApp);
 
  public:
@@ -37,7 +35,7 @@ class NavigatorInstalledApp final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit NavigatorInstalledApp(LocalFrame*);
+  explicit NavigatorInstalledApp(Navigator&);
   static const char* supplementName();
 };
 
