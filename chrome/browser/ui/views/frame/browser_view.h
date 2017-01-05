@@ -32,6 +32,8 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/common/features.h"
 #include "components/omnibox/browser/omnibox_popup_model_observer.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -465,6 +467,11 @@ class BrowserView : public BrowserWindow,
   // extension::ExtensionKeybindingRegistry::Delegate overrides
   extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()
       override;
+
+  // Creates an accessible tab label for screen readers that includes the tab
+  // status for the given tab index. This takes the form of
+  // "Page title - Tab state".
+  base::string16 GetAccessibleTabLabel(bool include_app_name, int index) const;
 
   // Testing interface:
   views::View* GetContentsContainerForTest() { return contents_container_; }

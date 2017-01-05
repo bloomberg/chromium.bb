@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -34,6 +33,9 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -54,8 +56,17 @@ namespace {
 
 TabRendererData::NetworkState TabContentsNetworkState(
     WebContents* contents) {
-  if (!contents || !contents->IsLoadingToDifferentDocument())
+  if (!contents)
     return TabRendererData::NETWORK_STATE_NONE;
+
+  if (!contents->IsLoadingToDifferentDocument()) {
+    content::NavigationEntry* entry =
+        contents->GetController().GetLastCommittedEntry();
+    if (entry && (entry->GetPageType() == content::PAGE_TYPE_ERROR))
+      return TabRendererData::NETWORK_STATE_ERROR;
+    return TabRendererData::NETWORK_STATE_NONE;
+  }
+
   if (contents->IsWaitingForResponse())
     return TabRendererData::NETWORK_STATE_WAITING;
   return TabRendererData::NETWORK_STATE_LOADING;
@@ -179,11 +190,11 @@ class BrowserTabStripController::TabContextMenuContents
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, public:
 
-BrowserTabStripController::BrowserTabStripController(Browser* browser,
-                                                     TabStripModel* model)
+BrowserTabStripController::BrowserTabStripController(TabStripModel* model,
+                                                     BrowserView* browser_view)
     : model_(model),
       tabstrip_(NULL),
-      browser_(browser),
+      browser_view_(browser_view),
       hover_tab_selector_(model),
       weak_ptr_factory_(this) {
   model_->AddObserver(this);
@@ -337,7 +348,8 @@ void BrowserTabStripController::OnDropIndexUpdate(int index,
 void BrowserTabStripController::PerformDrop(bool drop_before,
                                             int index,
                                             const GURL& url) {
-  chrome::NavigateParams params(browser_, url, ui::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(browser_view_->browser(), url,
+                                ui::PAGE_TRANSITION_LINK);
   params.tabstrip_index = index;
 
   if (drop_before) {
@@ -374,7 +386,8 @@ void BrowserTabStripController::CreateNewTabWithLocation(
 }
 
 bool BrowserTabStripController::IsIncognito() {
-  return browser_->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE;
+  return browser_view_->browser()->profile()->GetProfileType() ==
+      Profile::INCOGNITO_PROFILE;
 }
 
 void BrowserTabStripController::StackedLayoutMaybeChanged() {
@@ -389,14 +402,13 @@ void BrowserTabStripController::StackedLayoutMaybeChanged() {
 }
 
 void BrowserTabStripController::OnStartedDraggingTabs() {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
-  if (browser_view && !immersive_reveal_lock_.get()) {
+  if (!immersive_reveal_lock_.get()) {
     // The top-of-window views should be revealed while the user is dragging
     // tabs in immersive fullscreen. The top-of-window views may not be already
     // revealed if the user is attempting to attach a tab to a tabstrip
     // belonging to an immersive fullscreen window.
     immersive_reveal_lock_.reset(
-        browser_view->immersive_mode_controller()->GetRevealedLock(
+        browser_view_->immersive_mode_controller()->GetRevealedLock(
             ImmersiveModeController::ANIMATE_REVEAL_NO));
   }
 }
@@ -416,8 +428,13 @@ void BrowserTabStripController::CheckFileSupported(const GURL& url) {
 }
 
 SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
-  return BrowserView::GetBrowserViewForBrowser(browser_)->frame()
-      ->GetFrameView()->GetToolbarTopSeparatorColor();
+  return browser_view_->frame()->GetFrameView()->GetToolbarTopSeparatorColor();
+}
+
+base::string16 BrowserTabStripController::GetAccessibleTabName(
+    const Tab* tab) const {
+  return browser_view_->GetAccessibleTabLabel(
+      false /* include_app_name */, tabstrip_->GetModelIndexOfTab(tab));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

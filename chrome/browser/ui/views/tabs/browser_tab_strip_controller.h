@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -33,7 +34,7 @@ class ListSelectionModel;
 class BrowserTabStripController : public TabStripController,
                                   public TabStripModelObserver {
  public:
-  BrowserTabStripController(Browser* browser, TabStripModel* model);
+  BrowserTabStripController(TabStripModel* model, BrowserView* browser_view);
   ~BrowserTabStripController() override;
 
   void InitFromModel(TabStrip* tabstrip);
@@ -76,6 +77,7 @@ class BrowserTabStripController : public TabStripController,
   void OnStoppedDraggingTabs() override;
   void CheckFileSupported(const GURL& url) override;
   SkColor GetToolbarTopSeparatorColor() const override;
+  base::string16 GetAccessibleTabName(const Tab* tab) const override;
 
   // TabStripModelObserver implementation:
   void TabInsertedAt(TabStripModel* tab_strip_model,
@@ -101,6 +103,8 @@ class BrowserTabStripController : public TabStripController,
   void TabBlockedStateChanged(content::WebContents* contents,
                               int model_index) override;
 
+  const Browser* browser() const { return browser_view_->browser(); }
+
  protected:
   // The context in which SetTabRendererDataFromModel is being called.
   enum TabStatus {
@@ -117,8 +121,6 @@ class BrowserTabStripController : public TabStripController,
   Profile* profile() const { return model_->profile(); }
 
   const TabStrip* tabstrip() const { return tabstrip_; }
-
-  const Browser* browser() const { return browser_; }
 
  private:
   class TabContextMenuContents;
@@ -148,8 +150,7 @@ class BrowserTabStripController : public TabStripController,
 
   TabStrip* tabstrip_;
 
-  // Non-owning pointer to the browser which is using this controller.
-  Browser* browser_;
+  BrowserView* browser_view_;
 
   // If non-NULL it means we're showing a menu for the tab.
   std::unique_ptr<TabContextMenuContents> context_menu_contents_;

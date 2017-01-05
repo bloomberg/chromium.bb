@@ -123,6 +123,9 @@ class TabStripController {
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
   virtual SkColor GetToolbarTopSeparatorColor() const = 0;
+
+  // Returns the accessible tab name.
+  virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_

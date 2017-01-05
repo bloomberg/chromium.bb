@@ -55,6 +55,7 @@ class FakeBaseTabStripController : public TabStripController {
   void OnStoppedDraggingTabs() override;
   void CheckFileSupported(const GURL& url) override;
   SkColor GetToolbarTopSeparatorColor() const override;
+  base::string16 GetAccessibleTabName(const Tab* tab) const override;
 
  private:
   TabStrip* tab_strip_;

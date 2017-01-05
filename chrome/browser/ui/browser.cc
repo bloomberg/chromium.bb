@@ -574,7 +574,19 @@ gfx::Image Browser::GetCurrentPageIcon() const {
 
 base::string16 Browser::GetWindowTitleForCurrentTab(
     bool include_app_name) const {
-  WebContents* contents = tab_strip_model_->GetActiveWebContents();
+  return GetWindowTitleFromWebContents(
+      include_app_name, tab_strip_model_->GetActiveWebContents());
+}
+
+base::string16 Browser::GetWindowTitleForTab(bool include_app_name,
+                                             int index) const {
+  return GetWindowTitleFromWebContents(
+      include_app_name, tab_strip_model_->GetWebContentsAt(index));
+}
+
+base::string16 Browser::GetWindowTitleFromWebContents(
+    bool include_app_name,
+    content::WebContents* contents) const {
   base::string16 title;
 
   // |contents| can be NULL because GetWindowTitleForCurrentTab is called by the

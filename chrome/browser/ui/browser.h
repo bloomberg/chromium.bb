@@ -42,6 +42,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/features/features.h"
@@ -298,6 +299,16 @@ class Browser : public TabStripModelObserver,
   // Gets the title of the window based on the selected tab's title.
   // Disables additional formatting when |include_app_name| is false.
   base::string16 GetWindowTitleForCurrentTab(bool include_app_name) const;
+
+  // Gets the window title of the tab at |index|.
+  // Disables additional formatting when |include_app_name| is false.
+  base::string16 GetWindowTitleForTab(bool include_app_name, int index) const;
+
+  // Gets the window title from the provided WebContents.
+  // Disables additional formatting when |include_app_name| is false.
+  base::string16 GetWindowTitleFromWebContents(
+      bool include_app_name,
+      content::WebContents* contents) const;
 
   // Prepares a title string for display (removes embedded newlines, etc).
   static void FormatTitleForDisplay(base::string16* title);

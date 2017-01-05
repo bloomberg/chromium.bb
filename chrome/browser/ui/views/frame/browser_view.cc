@@ -1590,12 +1590,68 @@ base::string16 BrowserView::GetWindowTitle() const {
 
 base::string16 BrowserView::GetAccessibleWindowTitle() const {
   const bool include_app_name = false;
+  int active_index = browser_->tab_strip_model()->active_index();
+  if (active_index > -1) {
+    if (IsIncognito()) {
+      return l10n_util::GetStringFUTF16(
+          IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT,
+          GetAccessibleTabLabel(include_app_name, active_index));
+    }
+    return GetAccessibleTabLabel(include_app_name, active_index);
+  }
   if (IsIncognito()) {
     return l10n_util::GetStringFUTF16(
         IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT,
         browser_->GetWindowTitleForCurrentTab(include_app_name));
   }
   return browser_->GetWindowTitleForCurrentTab(include_app_name);
+}
+
+base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
+                                                  int index) const {
+  // ChromeVox provides an invalid index on browser start up before
+  // any tabs are created.
+  if (index == -1)
+    return base::string16();
+
+  base::string16 window_title =
+      browser_->GetWindowTitleForTab(include_app_name, index);
+  const TabRendererData& data = tabstrip_->tab_at(index)->data();
+
+  // Tab has crashed.
+  if (data.IsCrashed()) {
+    return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_CRASHED_FORMAT,
+                                      window_title);
+  }
+  // Network error interstitial.
+  if (data.network_state == TabRendererData::NETWORK_STATE_ERROR) {
+    return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_NETWORK_ERROR_FORMAT,
+                                      window_title);
+  }
+  // Alert tab states.
+  switch (data.alert_state) {
+    case TabAlertState::AUDIO_PLAYING:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_AUDIO_PLAYING_FORMAT,
+                                        window_title);
+    case TabAlertState::USB_CONNECTED:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_USB_CONNECTED_FORMAT,
+                                        window_title);
+    case TabAlertState::BLUETOOTH_CONNECTED:
+      return l10n_util::GetStringFUTF16(
+          IDS_TAB_AX_LABEL_BLUETOOTH_CONNECTED_FORMAT, window_title);
+    case TabAlertState::MEDIA_RECORDING:
+      return l10n_util::GetStringFUTF16(
+          IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT, window_title);
+    case TabAlertState::AUDIO_MUTING:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_AUDIO_MUTING_FORMAT,
+                                        window_title);
+    case TabAlertState::TAB_CAPTURING:
+      return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_TAB_CAPTURING_FORMAT,
+                                        window_title);
+    case TabAlertState::NONE:
+      return window_title;
+  }
+  return base::string16();
 }
 
 views::View* BrowserView::GetInitiallyFocusedView() {
@@ -2018,8 +2074,7 @@ void BrowserView::InitViews() {
 
   // TabStrip takes ownership of the controller.
   BrowserTabStripController* tabstrip_controller =
-      new BrowserTabStripController(browser_.get(),
-                                    browser_->tab_strip_model());
+      new BrowserTabStripController(browser_->tab_strip_model(), this);
   tabstrip_ = new TabStrip(tabstrip_controller);
   top_container_->AddChildView(tabstrip_);
   tabstrip_controller->InitFromModel(tabstrip_);
