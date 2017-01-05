@@ -112,6 +112,24 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
       testing::WaitUntilConditionOrTimeout(kSyncOperationTimeout, condition),
       @"Expected %d entities of the specified type", entity_count);
 }
+
+// Waits for |entity_count| entities of type |entity_type| with name |name|, and
+// fails with a GREYAssert if the condition is not met, within a short period of
+// time.
+void AssertNumberOfEntitiesWithName(int entity_count,
+                                    syncer::ModelType entity_type,
+                                    std::string name) {
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    BOOL success = chrome_test_util::VerifyNumberOfSyncEntitiesWithName(
+        entity_type, name, entity_count, &error);
+    DCHECK(success || error);
+    return !!success;
+  };
+  GREYAssert(
+      testing::WaitUntilConditionOrTimeout(kSyncOperationTimeout, condition),
+      @"Expected %d entities of the specified type", entity_count);
+}
 }  // namespace
 
 // Hermetic sync tests, which use the fake sync server.
@@ -534,7 +552,7 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
 
 // Test that typed url is deleted from client after server sends tombstone for
 // that typed url.
-- (void)FLAKY_testSyncTypedURLDeleteFromServer {
+- (void)testSyncTypedURLDeleteFromServer {
   const GURL mockURL("http://not-a-real-site/");
 
   chrome_test_util::ClearBrowsingHistory();
@@ -553,17 +571,12 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
   AssertSyncInitialized(YES);
   chrome_test_util::TriggerSyncCycle(syncer::TYPED_URLS);
 
-  NSError* error = nil;
-  BOOL success = chrome_test_util::VerifyNumberOfSyncEntitiesWithName(
-      syncer::TYPED_URLS, mockURL.spec(), 1, &error);
-  DCHECK(success || error);
-  GREYAssertTrue(success, [error localizedDescription]);
+  AssertNumberOfEntitiesWithName(1, syncer::TYPED_URLS, mockURL.spec());
 
   chrome_test_util::DeleteTypedUrlFromClient(mockURL);
 
   // Trigger sync and wait for fake server to be updated.
   chrome_test_util::TriggerSyncCycle(syncer::TYPED_URLS);
-
   __block NSError* blockSafeError = nil;
   GREYCondition* condition = [GREYCondition
       conditionWithName:@"Wait for typed URL to be downloaded."
@@ -574,7 +587,7 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
                     blockSafeError = [error copy];
                     return result;
                   }];
-  success = [condition waitWithTimeout:kSyncOperationTimeout];
+  BOOL success = [condition waitWithTimeout:kSyncOperationTimeout];
   DCHECK(success || blockSafeError);
   if (blockSafeError) {
     [blockSafeError autorelease];
