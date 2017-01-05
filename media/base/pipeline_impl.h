@@ -173,6 +173,11 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   // reported to JavaScript from going backwards in time.
   mutable base::TimeDelta last_media_time_;
 
+  // Set by Seek(), used in place of asking the renderer for current media time
+  // while a seek is pending. Renderer's time cannot be trusted until the seek
+  // has completed.
+  base::TimeDelta seek_time_;
+
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<PipelineImpl> weak_factory_;
 

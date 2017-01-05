@@ -824,6 +824,43 @@ TEST_F(PipelineImplTest, GetMediaTime) {
   EXPECT_EQ(kMediaTime, pipeline_->GetMediaTime());
 }
 
+// Seeking posts a task from main thread to media thread to seek the renderer,
+// resetting its internal clock. Calling GetMediaTime() should be safe even
+// when the renderer has not performed the seek (simulated by its continuing
+// to return the pre-seek time). Verifies fix for http://crbug.com/675556
+TEST_F(PipelineImplTest, GetMediaTimeAfterSeek) {
+  CreateAudioStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(audio_stream());
+  SetDemuxerExpectations(&streams);
+  SetRendererExpectations();
+  StartPipelineAndExpect(PIPELINE_OK);
+
+  // Pipeline should report the same media time returned by the renderer.
+  base::TimeDelta kMediaTime = base::TimeDelta::FromSeconds(2);
+  EXPECT_CALL(*renderer_, GetMediaTime()).WillRepeatedly(Return(kMediaTime));
+  EXPECT_EQ(kMediaTime, pipeline_->GetMediaTime());
+
+  // Seek backward 1 second. Do not run RunLoop to ensure renderer is not yet
+  // notified of the seek (via media thread).
+  base::TimeDelta kSeekTime = kMediaTime - base::TimeDelta::FromSeconds(1);
+  ExpectSeek(kSeekTime, false);
+  pipeline_->Seek(kSeekTime, base::Bind(&CallbackHelper::OnSeek,
+                                        base::Unretained(&callbacks_)));
+
+  // Verify pipeline returns the seek time in spite of renderer returning the
+  // stale media time.
+  EXPECT_EQ(kSeekTime, pipeline_->GetMediaTime());
+  EXPECT_EQ(kMediaTime, renderer_->GetMediaTime());
+
+  // Allow seek task to post to the renderer.
+  base::RunLoop().RunUntilIdle();
+
+  // With seek completed, pipeline should again return the renderer's media time
+  // (as long as media time is moving forward).
+  EXPECT_EQ(kMediaTime, pipeline_->GetMediaTime());
+}
+
 class PipelineTeardownTest : public PipelineImplTest {
  public:
   enum TeardownState {

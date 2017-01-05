@@ -958,6 +958,7 @@ void PipelineImpl::Start(Demuxer* demuxer,
   client_ = client;
   seek_cb_ = seek_cb;
   last_media_time_ = base::TimeDelta();
+  seek_time_ = kNoTimestamp;
 
   std::unique_ptr<TextRenderer> text_renderer;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1039,6 +1040,7 @@ void PipelineImpl::Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) {
 
   DCHECK(seek_cb_.is_null());
   seek_cb_ = seek_cb;
+  seek_time_ = time;
   last_media_time_ = base::TimeDelta();
   media_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RendererWrapper::Seek,
@@ -1069,6 +1071,7 @@ void PipelineImpl::Resume(std::unique_ptr<Renderer> renderer,
   DCHECK(IsRunning());
   DCHECK(seek_cb_.is_null());
   seek_cb_ = seek_cb;
+  seek_time_ = time;
   last_media_time_ = base::TimeDelta();
 
   media_task_runner_->PostTask(
@@ -1122,6 +1125,14 @@ void PipelineImpl::SetVolume(float volume) {
 
 base::TimeDelta PipelineImpl::GetMediaTime() const {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Don't trust renderer time during a pending seek. Renderer may return
+  // pre-seek time which may corrupt |last_media_time_| used for clamping.
+  if (seek_time_ != kNoTimestamp) {
+    DVLOG(3) << __func__ << ": (seeking) " << seek_time_.InMilliseconds()
+             << " ms";
+    return seek_time_;
+  }
 
   base::TimeDelta media_time = renderer_wrapper_->GetMediaTime();
 
@@ -1300,6 +1311,8 @@ void PipelineImpl::OnSeekDone() {
   DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
+
+  seek_time_ = kNoTimestamp;
 
   DCHECK(!seek_cb_.is_null());
   base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
