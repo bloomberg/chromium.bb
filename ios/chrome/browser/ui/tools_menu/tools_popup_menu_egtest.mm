@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -164,6 +165,14 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
       "http://ios/testing/data/http_server_files/"
       "request_desktop_test_page.html");
   [self verifyMobileAndDesktopVersions:scriptLayerTestURL];
+}
+
+// Open tools menu and verify elements are accessible.
+- (void)testAccessibilityOnToolsMenu {
+  [ChromeEarlGreyUI openToolsMenu];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  // Close Tools menu.
+  [ChromeTestCase removeAnyOpenMenusAndInfoBars];
 }
 
 @end
