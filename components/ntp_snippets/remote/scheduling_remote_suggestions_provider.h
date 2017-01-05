@@ -70,7 +70,8 @@ class SchedulingRemoteSuggestionsProvider final
   // RemoteSuggestionsScheduler implementation.
   void RescheduleFetching() override;
   void OnPersistentSchedulerWakeUp() override;
-  void OnBrowserStartup() override;
+  void OnBrowserForegrounded() override;
+  void OnBrowserColdStart() override;
   void OnNTPOpened() override;
 
   // RemoteSuggestionsProvider implementation.

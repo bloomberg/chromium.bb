@@ -180,7 +180,15 @@ void SchedulingRemoteSuggestionsProvider::OnPersistentSchedulerWakeUp() {
   RefetchInTheBackground(/*callback=*/nullptr);
 }
 
-void SchedulingRemoteSuggestionsProvider::OnBrowserStartup() {
+void SchedulingRemoteSuggestionsProvider::OnBrowserForegrounded() {
+  // TODO(jkrcal): Consider that this is called whenever we open or return to an
+  // Activity. Therefore, keep work light for fast start up calls.
+  // TODO(jkrcal): Implement.
+}
+
+void SchedulingRemoteSuggestionsProvider::OnBrowserColdStart() {
+  // TODO(fhorschig|jkrcal): Consider that work here must be kept light for fast
+  // cold start ups.
   // TODO(jkrcal): Implement.
 }
 

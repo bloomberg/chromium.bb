@@ -80,6 +80,8 @@ import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.omaha.OmahaClient;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
@@ -431,6 +433,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         mLocaleManager.setSnackbarManager(getSnackbarManager());
         mLocaleManager.startObservingPhoneChanges();
+
+        if (SnippetsConfig.isEnabled()) {
+            if (isWarmOnResume()) {
+                SnippetsBridge.notifySchedulerAboutWarmResume();
+            } else {
+                SnippetsBridge.notifySchedulerAboutColdStart();
+            }
+        }
     }
 
     @Override

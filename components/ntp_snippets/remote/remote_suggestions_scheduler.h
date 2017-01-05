@@ -13,7 +13,16 @@ namespace ntp_snippets {
 class RemoteSuggestionsScheduler {
  public:
   // External triggers to consider fetching content suggestions.
-  virtual void OnBrowserStartup() = 0;
+
+  // Called whenever chrome is started warm or the user switches to Chrome.
+  virtual void OnBrowserForegrounded() = 0;
+
+  // Called whenever chrome is cold started.
+  // To keep start ups fast, defer any work possible.
+  virtual void OnBrowserColdStart() = 0;
+
+  // Called whenever a new NTP is opened. This may be called on cold starts.
+  // So to keep start ups fast, defer heavy work for cold starts.
   virtual void OnNTPOpened() = 0;
 
   // Fetch content suggestions.

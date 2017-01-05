@@ -63,6 +63,11 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     private long mLastUserInteractionTime;
     private boolean mIsTablet;
     private boolean mHadWarmStart;
+    private boolean mIsWarmOnResume;
+
+    // Stores whether the activity was not resumed yet. Always false after the
+    // first |onResume| call.
+    private boolean mFirstResumePending = true;
 
     public AsyncInitializationActivity() {
         mHandler = new Handler();
@@ -294,6 +299,8 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         super.onResume();
         mNativeInitializationController.onResume();
         if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onResume();
+        mIsWarmOnResume = !mFirstResumePending || hadWarmStart();
+        mFirstResumePending = false;
     }
 
     @Override
@@ -406,6 +413,18 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      */
     public boolean hadWarmStart() {
         return mHadWarmStart;
+    }
+
+    /**
+     * This returns true if the activity was started warm (native library loaded and initialized) or
+     * if a cold starts have been completed by the time onResume is/will be called.
+     * This is useful to distinguish between the case where an already running instance of Chrome is
+     * being brought back to the foreground from the case where Chrome is started, in order to avoid
+     * contention on browser startup
+     * @return Whether the activity is warm in onResume.
+     */
+    public boolean isWarmOnResume() {
+        return mIsWarmOnResume;
     }
 
     @Override

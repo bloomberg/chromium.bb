@@ -130,6 +130,10 @@ class NTPSnippetsBridge
 
   void OnNTPInitialized(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
+  void OnColdStart(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
+  void OnActivityWarmResumed(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& obj);
 
   static bool Register(JNIEnv* env);
 

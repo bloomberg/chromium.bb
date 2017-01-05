@@ -408,6 +408,30 @@ void NTPSnippetsBridge::OnNTPInitialized(
   scheduler->OnNTPOpened();
 }
 
+void NTPSnippetsBridge::OnColdStart(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  ntp_snippets::RemoteSuggestionsScheduler* scheduler =
+      GetRemoteSuggestionsScheduler();
+  // TODO(fhorschig): Remove guard when https://crbug.com/678556 is resolved.
+  if (!scheduler) {
+    return;
+  }
+  scheduler->OnBrowserColdStart();
+}
+
+void NTPSnippetsBridge::OnActivityWarmResumed(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  ntp_snippets::RemoteSuggestionsScheduler* scheduler =
+      GetRemoteSuggestionsScheduler();
+  // TODO(fhorschig): Remove guard when https://crbug.com/678556 is resolved.
+  if (!scheduler) {
+    return;
+  }
+  scheduler->OnBrowserForegrounded();
+}
+
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
 
 void NTPSnippetsBridge::OnNewSuggestions(Category category) {

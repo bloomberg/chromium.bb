@@ -179,6 +179,16 @@ public class SnippetsBridge implements SuggestionsSource {
         nativeOnNTPInitialized(mNativeSnippetsBridge);
     }
 
+    public static void notifySchedulerAboutWarmResume() {
+        SnippetsBridge snippetsBridge = new SnippetsBridge(Profile.getLastUsedProfile());
+        snippetsBridge.onActivityWarmResumed();
+    }
+
+    public static void notifySchedulerAboutColdStart() {
+        SnippetsBridge snippetsBridge = new SnippetsBridge(Profile.getLastUsedProfile());
+        snippetsBridge.onColdStart();
+    }
+
     public static void onSuggestionTargetVisited(int category, long visitTimeMs) {
         nativeOnSuggestionTargetVisited(category, visitTimeMs);
     }
@@ -200,6 +210,16 @@ public class SnippetsBridge implements SuggestionsSource {
     @Override
     public void fetchSuggestions(@CategoryInt int category, String[] displayedSuggestionIds) {
         nativeFetch(mNativeSnippetsBridge, category, displayedSuggestionIds);
+    }
+
+    private void onActivityWarmResumed() {
+        assert mNativeSnippetsBridge != 0;
+        nativeOnActivityWarmResumed(mNativeSnippetsBridge);
+    }
+
+    private void onColdStart() {
+        assert mNativeSnippetsBridge != 0;
+        nativeOnColdStart(mNativeSnippetsBridge);
     }
 
     @CalledByNative
@@ -302,6 +322,8 @@ public class SnippetsBridge implements SuggestionsSource {
             long nativeNTPSnippetsBridge, int category, int position);
     private native void nativeOnMoreButtonClicked(
             long nativeNTPSnippetsBridge, int category, int position);
+    private native void nativeOnActivityWarmResumed(long nativeNTPSnippetsBridge);
+    private native void nativeOnColdStart(long nativeNTPSnippetsBridge);
     private static native void nativeOnSuggestionTargetVisited(int category, long visitTimeMs);
     private static native void nativeOnNTPInitialized(long nativeNTPSnippetsBridge);
 }
