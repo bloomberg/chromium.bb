@@ -1736,7 +1736,6 @@ crbug.com/600248 imported/wpt/web-animations/timing-model/animations/updating-th
 
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/611658 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]
-crbug.com/611658 [ Win7 ] fast/text/emphasis.html [ Failure ]
 crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
 
 crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.html [ Failure ]
@@ -2275,11 +2274,8 @@ crbug.com/663855 fast/text/ellipsis-rtl-text-in-rtl-flow-underline.html [ Pass F
 crbug.com/663855 fast/text/ellipsis-rtl-text-in-ltr-flow-underline.html [ Pass Failure ]
 crbug.com/663855 fast/text/ellipsis-rtl-text-in-ltr-flow-underline-composition.html [ Pass Failure ]
 crbug.com/663855 fast/text/ellipsis-rtl-text-in-rtl-flow-underline-composition.html [ Pass Failure ]
-
-# Possible duplicate of crbug.com/498021
 crbug.com/663855 [ Win ] fast/text/ellipsis-stroked.html [ Pass Failure ]
-# crbug.com/663858 fast/text/emphasis.html [ Pass Failure ]
-
+crbug.com/663858 fast/text/emphasis.html [ Pass Failure ]
 crbug.com/663858 fast/text/emphasis-vertical.html [ Pass Failure ]
 crbug.com/663872 http/tests/fetch/serviceworker-proxied/thorough/cookie-nocors.html [ Pass Failure ]
 crbug.com/663872 http/tests/fetch/serviceworker-proxied/thorough/cors-preflight-other-https.html [ Pass Failure ]
