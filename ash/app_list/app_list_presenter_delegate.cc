@@ -35,12 +35,12 @@
 namespace ash {
 namespace {
 
-// Gets the point at the center of the display that a particular view is on.
+// Gets the point at the center of the display containing the given |window|.
 // This calculation excludes the virtual keyboard area. If the height of the
 // display area is less than |minimum_height|, its bottom will be extended to
 // that height (so that the app list never starts above the top of the screen).
-gfx::Point GetCenterOfDisplayForView(views::View* view, int minimum_height) {
-  WmWindow* window = WmLookup::Get()->GetWindowForWidget(view->GetWidget());
+gfx::Point GetCenterOfDisplayForWindow(WmWindow* window, int minimum_height) {
+  DCHECK(window);
   gfx::Rect bounds = wm::GetDisplayBoundsWithShelf(window);
   bounds = window->GetRootWindow()->ConvertRectToScreen(bounds);
 
@@ -109,10 +109,9 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
   aura::Window* root_window = Shell::GetInstance()
                                   ->window_tree_host_manager()
                                   ->GetRootWindowForDisplayId(display_id);
+  WmWindow* wm_root_window = WmWindowAura::Get(root_window);
   aura::Window* container = GetRootWindowController(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
-  WmShelf* shelf = WmShelf::ForWindow(WmWindowAura::Get(container));
-  AppListButton* applist_button = shelf->shelf_widget()->GetAppListButton();
   bool is_fullscreen = IsFullscreenAppListEnabled() &&
                        WmShell::Get()
                            ->maximize_mode_controller()
@@ -123,11 +122,9 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
         ScreenUtil::GetDisplayWorkAreaBoundsInParent(container));
   } else {
     view->InitAsBubble(container, current_apps_page);
-    // The app list is centered over the display of the app list button that was
-    // pressed (if triggered via keyboard, this is the display with the
-    // currently focused window).
-    view->SetAnchorPoint(GetCenterOfDisplayForView(
-        applist_button, GetMinimumBoundsHeightForAppList(view)));
+    // The app list is centered over the display.
+    view->SetAnchorPoint(GetCenterOfDisplayForWindow(
+        wm_root_window, GetMinimumBoundsHeightForAppList(view)));
   }
 
   keyboard::KeyboardController* keyboard_controller =
@@ -135,8 +132,8 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
   if (keyboard_controller)
     keyboard_controller->AddObserver(this);
   Shell::GetInstance()->AddPreTargetHandler(this);
-  WmWindow* window = WmShell::Get()->GetRootWindowForDisplayId(display_id);
-  window->GetRootWindowController()->GetShelf()->AddObserver(this);
+  WmShelf* shelf = WmShelf::ForWindow(wm_root_window);
+  shelf->AddObserver(this);
 
   // By setting us as DnD recipient, the app list knows that we can
   // handle items.
@@ -148,10 +145,10 @@ void AppListPresenterDelegate::OnShown(int64_t display_id) {
   is_visible_ = true;
   // Update applist button status when app list visibility is changed.
   WmWindow* root_window = WmShell::Get()->GetRootWindowForDisplayId(display_id);
-  WmShelf::ForWindow(root_window)
-      ->shelf_widget()
-      ->GetAppListButton()
-      ->OnAppListShown();
+  AppListButton* app_list_button =
+      WmShelf::ForWindow(root_window)->shelf_widget()->GetAppListButton();
+  if (app_list_button)
+    app_list_button->OnAppListShown();
 }
 
 void AppListPresenterDelegate::OnDismissed() {
@@ -161,9 +158,11 @@ void AppListPresenterDelegate::OnDismissed() {
   is_visible_ = false;
 
   // Update applist button status when app list visibility is changed.
-  WmShelf* shelf = WmShelf::ForWindow(
-      WmLookup::Get()->GetWindowForWidget(view_->GetWidget()));
-  shelf->shelf_widget()->GetAppListButton()->OnAppListDismissed();
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(view_->GetWidget());
+  AppListButton* app_list_button =
+      WmShelf::ForWindow(window)->shelf_widget()->GetAppListButton();
+  if (app_list_button)
+    app_list_button->OnAppListDismissed();
 }
 
 void AppListPresenterDelegate::UpdateBounds() {
@@ -171,8 +170,9 @@ void AppListPresenterDelegate::UpdateBounds() {
     return;
 
   view_->UpdateBounds();
-  view_->SetAnchorPoint(GetCenterOfDisplayForView(
-      view_, GetMinimumBoundsHeightForAppList(view_)));
+  view_->SetAnchorPoint(GetCenterOfDisplayForWindow(
+      WmLookup::Get()->GetWindowForWidget(view_->GetWidget()),
+      GetMinimumBoundsHeightForAppList(view_)));
 }
 
 gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
