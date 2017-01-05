@@ -238,12 +238,6 @@ Parent.detach()
   Child.willHide()
   Parent.willHide()
 
-Running: testAlienParent
-Parent()
-Parent()
-Child()
-Error: Attempt to show under node belonging to alien widget
-
 Running: testReparentWithinWidget
 Parent()
 Parent.show()
