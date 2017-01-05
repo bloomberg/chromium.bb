@@ -907,10 +907,10 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     return;
   }
   identityAccountItem.image = [self userAccountImage];
+  identityAccountItem.text = [_identity userFullName];
 
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(_mainBrowserState);
-
   if (!syncSetupService->HasFinishedInitialSetup()) {
     identityAccountItem.detailText =
         l10n_util::GetNSString(IDS_IOS_SYNC_SETUP_IN_PROGRESS);
@@ -920,7 +920,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   identityAccountItem.shouldDisplayError =
       !ios_internal::sync::IsTransientSyncError(
           syncSetupService->GetSyncServiceState());
-  identityAccountItem.text = [_identity userFullName];
   if (identityAccountItem.shouldDisplayError) {
     identityAccountItem.detailText =
         ios_internal::sync::GetSyncErrorDescriptionForBrowserState(
