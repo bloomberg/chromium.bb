@@ -296,10 +296,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
   DVLOG(1) << "Setting invalidator client ID: " << args->invalidator_client_id;
   allstatus_.SetInvalidatorClientId(args->invalidator_client_id);
 
-  // TODO(crbug.com/658002): Pass in the real USS migrator function once initial
-  // GetUpdates issues are addressed.
   model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
-      args->workers, &share_, this, UssMigrator());
+      args->workers, &share_, this, base::Bind(&MigrateDirectoryData));
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
 
   // Build a SyncCycleContext and store the worker in it.
