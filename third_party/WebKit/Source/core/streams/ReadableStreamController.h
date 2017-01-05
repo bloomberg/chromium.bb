@@ -84,7 +84,7 @@ class CORE_EXPORT ReadableStreamController final
     if (controller.IsEmpty())
       return;
 
-    v8::Local<v8::Value> jsChunk = toV8(chunk, scriptState);
+    v8::Local<v8::Value> jsChunk = ToV8(chunk, scriptState);
     v8::Local<v8::Value> args[] = {controller, jsChunk};
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(
         scriptState, "ReadableStreamDefaultControllerEnqueue", args);
@@ -103,7 +103,7 @@ class CORE_EXPORT ReadableStreamController final
     if (controller.IsEmpty())
       return;
 
-    v8::Local<v8::Value> jsError = toV8(error, scriptState);
+    v8::Local<v8::Value> jsError = ToV8(error, scriptState);
     v8::Local<v8::Value> args[] = {controller, jsError};
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(
         scriptState, "ReadableStreamDefaultControllerError", args);

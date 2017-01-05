@@ -108,16 +108,16 @@ void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Lo
   }
 }
 
-v8::Local<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+v8::Local<v8::Value> ToV8(const StringOrArrayBufferOrArrayBufferView& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.m_type) {
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeNone:
       return v8::Null(isolate);
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeString:
       return v8String(isolate, impl.getAsString());
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeArrayBuffer:
-      return toV8(impl.getAsArrayBuffer(), creationContext, isolate);
+      return ToV8(impl.getAsArrayBuffer(), creationContext, isolate);
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeArrayBufferView:
-      return toV8(impl.getAsArrayBufferView(), creationContext, isolate);
+      return ToV8(impl.getAsArrayBufferView(), creationContext, isolate);
     default:
       NOTREACHED();
   }

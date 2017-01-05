@@ -82,14 +82,14 @@ void V8StringOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
   }
 }
 
-v8::Local<v8::Value> toV8(const StringOrStringSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+v8::Local<v8::Value> ToV8(const StringOrStringSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.m_type) {
     case StringOrStringSequence::SpecificTypeNone:
       return v8::Null(isolate);
     case StringOrStringSequence::SpecificTypeString:
       return v8String(isolate, impl.getAsString());
     case StringOrStringSequence::SpecificTypeStringSequence:
-      return toV8(impl.getAsStringSequence(), creationContext, isolate);
+      return ToV8(impl.getAsStringSequence(), creationContext, isolate);
     default:
       NOTREACHED();
   }

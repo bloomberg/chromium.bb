@@ -486,7 +486,7 @@ String toNFCRecordType(const device::nfc::mojom::blink::NFCRecordType& type) {
   return String();
 }
 
-v8::Local<v8::Value> toV8(
+v8::Local<v8::Value> ToV8(
     ScriptState* scriptState,
     const device::nfc::mojom::blink::NFCRecordPtr& record) {
   switch (record->record_type) {
@@ -522,7 +522,7 @@ v8::Local<v8::Value> toV8(
       if (!record->data.isEmpty()) {
         DOMArrayBuffer* buffer = DOMArrayBuffer::create(
             static_cast<void*>(&record->data.front()), record->data.size());
-        return toV8(buffer, scriptState->context()->Global(),
+        return ToV8(buffer, scriptState->context()->Global(),
                     scriptState->isolate());
       }
 
@@ -542,7 +542,7 @@ NFCRecord toNFCRecord(ScriptState* scriptState,
   NFCRecord nfcRecord;
   nfcRecord.setMediaType(record->media_type);
   nfcRecord.setRecordType(toNFCRecordType(record->record_type));
-  nfcRecord.setData(ScriptValue(scriptState, toV8(scriptState, record)));
+  nfcRecord.setData(ScriptValue(scriptState, ToV8(scriptState, record)));
   return nfcRecord;
 }
 

@@ -82,12 +82,12 @@ void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::L
   }
 }
 
-v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+v8::Local<v8::Value> ToV8(const TestInterfaceGarbageCollectedOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.m_type) {
     case TestInterfaceGarbageCollectedOrString::SpecificTypeNone:
       return v8::Null(isolate);
     case TestInterfaceGarbageCollectedOrString::SpecificTypeTestInterfaceGarbageCollected:
-      return toV8(impl.getAsTestInterfaceGarbageCollected(), creationContext, isolate);
+      return ToV8(impl.getAsTestInterfaceGarbageCollected(), creationContext, isolate);
     case TestInterfaceGarbageCollectedOrString::SpecificTypeString:
       return v8String(isolate, impl.getAsString());
     default:

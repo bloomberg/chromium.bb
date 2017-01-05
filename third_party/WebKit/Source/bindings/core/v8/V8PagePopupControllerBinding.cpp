@@ -24,7 +24,7 @@ void pagePopupControllerAttributeGetter(
   DOMWindow* impl = V8Window::toImpl(holder);
   PagePopupController* cppValue = PagePopupSupplement::pagePopupController(
       *toLocalDOMWindow(impl)->frame());
-  v8SetReturnValue(info, toV8(cppValue, holder, info.GetIsolate()));
+  v8SetReturnValue(info, ToV8(cppValue, holder, info.GetIsolate()));
 }
 
 void pagePopupControllerAttributeGetterCallback(

@@ -194,7 +194,7 @@ bool V0CustomElementConstructorBuilder::createConstructor(
   v8::Local<v8::Object> data = v8::Object::New(isolate);
   V8HiddenValue::setHiddenValue(m_scriptState.get(), data,
                                 V8HiddenValue::customElementDocument(isolate),
-                                toV8(document, context->Global(), isolate));
+                                ToV8(document, context->Global(), isolate));
   V8HiddenValue::setHiddenValue(
       m_scriptState.get(), data,
       V8HiddenValue::customElementNamespaceURI(isolate),

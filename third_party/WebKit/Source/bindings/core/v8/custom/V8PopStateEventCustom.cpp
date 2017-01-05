@@ -89,7 +89,7 @@ void V8PopStateEvent::stateAttributeGetterCustom(
 
   if (isSameState) {
     v8::Local<v8::Value> v8HistoryValue =
-        toV8(history, info.Holder(), info.GetIsolate());
+        ToV8(history, info.Holder(), info.GetIsolate());
     if (v8HistoryValue.IsEmpty())
       return;
     v8::Local<v8::Object> v8History = v8HistoryValue.As<v8::Object>();

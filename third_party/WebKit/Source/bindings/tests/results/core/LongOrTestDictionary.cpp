@@ -103,14 +103,14 @@ void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
   }
 }
 
-v8::Local<v8::Value> toV8(const LongOrTestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+v8::Local<v8::Value> ToV8(const LongOrTestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.m_type) {
     case LongOrTestDictionary::SpecificTypeNone:
       return v8::Null(isolate);
     case LongOrTestDictionary::SpecificTypeLong:
       return v8::Integer::New(isolate, impl.getAsLong());
     case LongOrTestDictionary::SpecificTypeTestDictionary:
-      return toV8(impl.getAsTestDictionary(), creationContext, isolate);
+      return ToV8(impl.getAsTestDictionary(), creationContext, isolate);
     default:
       NOTREACHED();
   }

@@ -26,7 +26,7 @@ v8::Local<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::wrap(
 
   const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
   DOMArrayBufferBase* buffer = this->bufferBase();
-  v8::Local<v8::Value> v8Buffer = toV8(buffer, creationContext, isolate);
+  v8::Local<v8::Value> v8Buffer = ToV8(buffer, creationContext, isolate);
   if (v8Buffer.IsEmpty())
     return v8::Local<v8::Object>();
   DCHECK_EQ(isShared(), v8Buffer->IsSharedArrayBuffer());

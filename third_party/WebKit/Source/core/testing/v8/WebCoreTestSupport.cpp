@@ -51,11 +51,11 @@ v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context) {
   v8::Local<v8::Object> global = scriptState->context()->Global();
   ExecutionContext* executionContext = scriptState->getExecutionContext();
   if (executionContext->isDocument()) {
-    return toV8(Internals::create(executionContext), global,
+    return ToV8(Internals::create(executionContext), global,
                 scriptState->isolate());
   }
   if (executionContext->isWorkerGlobalScope())
-    return toV8(WorkerInternals::create(), global, scriptState->isolate());
+    return ToV8(WorkerInternals::create(), global, scriptState->isolate());
   return v8::Local<v8::Value>();
 }
 }

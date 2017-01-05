@@ -126,7 +126,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
   }
 
   if (impl.hasStringOrDoubleSequenceMember()) {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "stringOrDoubleSequenceMember"), toV8(impl.stringOrDoubleSequenceMember(), creationContext, isolate))))
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "stringOrDoubleSequenceMember"), ToV8(impl.stringOrDoubleSequenceMember(), creationContext, isolate))))
       return false;
   }
 

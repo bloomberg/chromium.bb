@@ -190,7 +190,7 @@ void MIDIPort::open() {
 ScriptPromise MIDIPort::accept(ScriptState* scriptState) {
   return ScriptPromise::cast(
       scriptState,
-      toV8(this, scriptState->context()->Global(), scriptState->isolate()));
+      ToV8(this, scriptState->context()->Global(), scriptState->isolate()));
 }
 
 ScriptPromise MIDIPort::reject(ScriptState* scriptState,

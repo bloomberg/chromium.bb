@@ -45,7 +45,7 @@ class {{exported}}{{cpp_class}} final {
   {{member.cpp_type}} m_{{member.cpp_name}};
   {% endfor %}
 
-  friend {{exported}}v8::Local<v8::Value> toV8(const {{cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
+  friend {{exported}}v8::Local<v8::Value> ToV8(const {{cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class {{v8_class}} final {
@@ -53,11 +53,11 @@ class {{v8_class}} final {
   {{exported}}static void toImpl(v8::Isolate*, v8::Local<v8::Value>, {{cpp_class}}&, UnionTypeConversionMode, ExceptionState&);
 };
 
-{{exported}}v8::Local<v8::Value> toV8(const {{cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
+{{exported}}v8::Local<v8::Value> ToV8(const {{cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}& impl) {
-  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>

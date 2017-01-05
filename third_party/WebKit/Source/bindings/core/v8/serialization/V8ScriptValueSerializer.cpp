@@ -78,7 +78,7 @@ void V8ScriptValueSerializer::prepareTransfer(Transferables* transferables) {
   // Transfer array buffers.
   for (uint32_t i = 0; i < transferables->arrayBuffers.size(); i++) {
     DOMArrayBufferBase* arrayBuffer = transferables->arrayBuffers[i].get();
-    v8::Local<v8::Value> wrapper = toV8(arrayBuffer, m_scriptState.get());
+    v8::Local<v8::Value> wrapper = ToV8(arrayBuffer, m_scriptState.get());
     if (wrapper->IsArrayBuffer()) {
       m_serializer.TransferArrayBuffer(
           i, v8::Local<v8::ArrayBuffer>::Cast(wrapper));

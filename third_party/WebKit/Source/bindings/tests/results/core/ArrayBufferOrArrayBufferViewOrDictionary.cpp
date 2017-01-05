@@ -111,14 +111,14 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8
   exceptionState.throwTypeError("The provided value is not of type '(ArrayBuffer or ArrayBufferView or Dictionary)'");
 }
 
-v8::Local<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+v8::Local<v8::Value> ToV8(const ArrayBufferOrArrayBufferViewOrDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.m_type) {
     case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeNone:
       return v8::Null(isolate);
     case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeArrayBuffer:
-      return toV8(impl.getAsArrayBuffer(), creationContext, isolate);
+      return ToV8(impl.getAsArrayBuffer(), creationContext, isolate);
     case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeArrayBufferView:
-      return toV8(impl.getAsArrayBufferView(), creationContext, isolate);
+      return ToV8(impl.getAsArrayBufferView(), creationContext, isolate);
     case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeDictionary:
       return impl.getAsDictionary().v8Value();
     default:

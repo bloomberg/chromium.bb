@@ -83,7 +83,7 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<Test
   if (!m_scriptState->contextIsValid())
     return;
   ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Value> sequenceArgHandle = toV8(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> sequenceArgHandle = ToV8(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
   v8::Local<v8::Value> argv[] = { sequenceArgHandle };
 
   V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), v8::Undefined(m_scriptState->isolate()), 1, argv, m_scriptState->isolate());
@@ -111,7 +111,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
   if (!m_scriptState->contextIsValid())
     return;
   ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Value> testInterfaceEmptyArgHandle = toV8(testInterfaceEmptyArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> testInterfaceEmptyArgHandle = ToV8(testInterfaceEmptyArg, m_scriptState->context()->Global(), m_scriptState->isolate());
   v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle };
 
   V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), v8::Undefined(m_scriptState->isolate()), 1, argv, m_scriptState->isolate());
@@ -125,7 +125,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
   if (!m_scriptState->contextIsValid())
     return;
   ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Value> testInterfaceEmptyArgHandle = toV8(testInterfaceEmptyArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> testInterfaceEmptyArgHandle = ToV8(testInterfaceEmptyArg, m_scriptState->context()->Global(), m_scriptState->isolate());
   v8::Local<v8::Value> stringArgHandle = v8String(m_scriptState->isolate(), stringArg);
   v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle, stringArgHandle };
 

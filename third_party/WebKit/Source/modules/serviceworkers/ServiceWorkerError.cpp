@@ -141,7 +141,7 @@ v8::Local<v8::Value> ServiceWorkerErrorForUpdate::take(
       return V8ThrowException::createTypeError(scriptState->isolate(),
                                                webError.message);
     default:
-      return toV8(ServiceWorkerError::take(resolver, webError),
+      return ToV8(ServiceWorkerError::take(resolver, webError),
                   scriptState->context()->Global(), scriptState->isolate());
   }
 }

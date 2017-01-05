@@ -159,7 +159,7 @@ void V8V0CustomElementLifecycleCallbacks::created(Element* element) {
   v8::Isolate* isolate = m_scriptState->isolate();
   v8::Local<v8::Context> context = m_scriptState->context();
   v8::Local<v8::Value> receiverValue =
-      toV8(element, context->Global(), isolate);
+      ToV8(element, context->Global(), isolate);
   if (receiverValue.IsEmpty())
     return;
   v8::Local<v8::Object> receiver = receiverValue.As<v8::Object>();
@@ -202,7 +202,7 @@ void V8V0CustomElementLifecycleCallbacks::attributeChanged(
   ScriptState::Scope scope(m_scriptState.get());
   v8::Isolate* isolate = m_scriptState->isolate();
   v8::Local<v8::Context> context = m_scriptState->context();
-  v8::Local<v8::Value> receiver = toV8(element, context->Global(), isolate);
+  v8::Local<v8::Value> receiver = ToV8(element, context->Global(), isolate);
   if (receiver.IsEmpty())
     return;
 
@@ -238,7 +238,7 @@ void V8V0CustomElementLifecycleCallbacks::call(
   if (callback.IsEmpty())
     return;
 
-  v8::Local<v8::Value> receiver = toV8(element, context->Global(), isolate);
+  v8::Local<v8::Value> receiver = ToV8(element, context->Global(), isolate);
   if (receiver.IsEmpty())
     return;
 

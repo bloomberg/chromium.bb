@@ -439,7 +439,7 @@ static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::Fun
   // object is alive in order to save creation time of the wrapper object.
   if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
     return;
-  v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
+  v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
   const char kKeepAliveKey[] = "KeepAlive#TestInterface#staticReadOnlyReturnDOMWrapperAttribute";
   V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), StringView(kKeepAliveKey, sizeof kKeepAliveKey)), v8Value);
 
@@ -2512,7 +2512,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
   impl->namedPropertyEnumerator(names, exceptionState);
   if (exceptionState.hadException())
     return;
-  v8SetReturnValue(info, toV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
+  v8SetReturnValue(info, ToV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
 }
 
 void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {

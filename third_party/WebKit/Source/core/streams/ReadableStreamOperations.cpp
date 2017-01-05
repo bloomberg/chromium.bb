@@ -18,7 +18,7 @@ ScriptValue ReadableStreamOperations::createReadableStream(
     ScriptValue strategy) {
   ScriptState::Scope scope(scriptState);
 
-  v8::Local<v8::Value> jsUnderlyingSource = toV8(underlyingSource, scriptState);
+  v8::Local<v8::Value> jsUnderlyingSource = ToV8(underlyingSource, scriptState);
   v8::Local<v8::Value> jsStrategy = strategy.v8Value();
   v8::Local<v8::Value> args[] = {jsUnderlyingSource, jsStrategy};
   return ScriptValue(

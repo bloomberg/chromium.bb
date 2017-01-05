@@ -83,14 +83,14 @@ void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
   exceptionState.throwTypeError("The provided value is not of type '(TestInterface2 or Uint8Array)'");
 }
 
-v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+v8::Local<v8::Value> ToV8(const TestInterface2OrUint8Array& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.m_type) {
     case TestInterface2OrUint8Array::SpecificTypeNone:
       return v8::Null(isolate);
     case TestInterface2OrUint8Array::SpecificTypeTestInterface2:
-      return toV8(impl.getAsTestInterface2(), creationContext, isolate);
+      return ToV8(impl.getAsTestInterface2(), creationContext, isolate);
     case TestInterface2OrUint8Array::SpecificTypeUint8Array:
-      return toV8(impl.getAsUint8Array(), creationContext, isolate);
+      return ToV8(impl.getAsUint8Array(), creationContext, isolate);
     default:
       NOTREACHED();
   }

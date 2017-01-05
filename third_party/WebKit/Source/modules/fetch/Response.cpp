@@ -187,7 +187,7 @@ Response* Response::create(ScriptState* scriptState,
     // Add a hidden reference so that the weak persistent in the
     // ReadableStreamBytesConsumer will be valid as long as the
     // Response is valid.
-    v8::Local<v8::Value> wrapper = toV8(response, scriptState);
+    v8::Local<v8::Value> wrapper = ToV8(response, scriptState);
     if (wrapper.IsEmpty()) {
       exceptionState.throwTypeError("Cannot create a Response wrapper");
       return nullptr;
@@ -460,8 +460,8 @@ void Response::installBody() {
 }
 
 void Response::refreshBody(ScriptState* scriptState) {
-  v8::Local<v8::Value> bodyBuffer = toV8(internalBodyBuffer(), scriptState);
-  v8::Local<v8::Value> response = toV8(this, scriptState);
+  v8::Local<v8::Value> bodyBuffer = ToV8(internalBodyBuffer(), scriptState);
+  v8::Local<v8::Value> response = ToV8(this, scriptState);
   if (response.IsEmpty()) {
     // |toV8| can return an empty handle when the worker is terminating.
     // We don't want the renderer to crash in such cases.

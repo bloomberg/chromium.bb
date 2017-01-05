@@ -83,7 +83,7 @@ NodeFilter* toNodeFilter(v8::Local<v8::Value> callback,
   NodeFilter* filter = NodeFilter::create();
 
   v8::Local<v8::Value> filterWrapper =
-      toV8(filter, creationContext, scriptState->isolate());
+      ToV8(filter, creationContext, scriptState->isolate());
   if (filterWrapper.IsEmpty())
     return nullptr;
 

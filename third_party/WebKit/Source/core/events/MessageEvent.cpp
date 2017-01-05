@@ -255,7 +255,7 @@ v8::Local<v8::Object> MessageEvent::associateWithWrapper(
     case MessageEvent::DataTypeArrayBuffer:
       V8PrivateProperty::getMessageEventCachedData(isolate).set(
           isolate->GetCurrentContext(), wrapper,
-          toV8(dataAsArrayBuffer(), wrapper, isolate));
+          ToV8(dataAsArrayBuffer(), wrapper, isolate));
       break;
   }
 

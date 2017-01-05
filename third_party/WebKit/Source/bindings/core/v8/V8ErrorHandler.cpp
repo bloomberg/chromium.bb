@@ -103,7 +103,7 @@ void V8ErrorHandler::storeExceptionOnErrorEventWrapper(
     v8::Local<v8::Value> data,
     v8::Local<v8::Object> creationContext) {
   v8::Local<v8::Value> wrappedEvent =
-      toV8(event, creationContext, scriptState->isolate());
+      ToV8(event, creationContext, scriptState->isolate());
   if (wrappedEvent.IsEmpty())
     return;
 
@@ -119,7 +119,7 @@ v8::Local<v8::Value> V8ErrorHandler::loadExceptionFromErrorEventWrapper(
     ErrorEvent* event,
     v8::Local<v8::Object> creationContext) {
   v8::Local<v8::Value> wrappedEvent =
-      toV8(event, creationContext, scriptState->isolate());
+      ToV8(event, creationContext, scriptState->isolate());
   if (wrappedEvent.IsEmpty() || !wrappedEvent->IsObject())
     return v8::Local<v8::Value>();
 

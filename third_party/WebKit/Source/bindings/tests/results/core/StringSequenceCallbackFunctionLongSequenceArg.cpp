@@ -50,9 +50,9 @@ bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* script
   DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(m_scriptState.get());
 
-  v8::Local<v8::Value> argArgument = toV8(arg, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> argArgument = ToV8(arg, m_scriptState->context()->Global(), m_scriptState->isolate());
 
-  v8::Local<v8::Value> thisValue = toV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> thisValue = ToV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
 
   v8::Local<v8::Value> argv[] = { argArgument };
 

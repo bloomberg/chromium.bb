@@ -1335,14 +1335,14 @@ interface HTMLFoo {
 Without `[CachedAttribute]`, the key getter works in the following way:
 
 1. HTMLFoo::key() is called in Blink.
-2. The result of HTMLFoo::key() is passed to toV8(), and is converted to a wrapped object.
+2. The result of HTMLFoo::key() is passed to ToV8(), and is converted to a wrapped object.
 3. The wrapped object is returned.
 
 In case where HTMLFoo::key() or the operation to wrap the result is costly, you can cache the wrapped object onto the DOM object. With CachedAttribute, the key getter works in the following way:
 
 1. If the wrapped object is cached, the cached wrapped object is returned. That's it.
 2. Otherwise, `HTMLFoo::key()` is called in Blink.
-3. The result of `HTMLFoo::key()` is passed to `toV8()`, and is converted to a wrapped object.
+3. The result of `HTMLFoo::key()` is passed to `ToV8()`, and is converted to a wrapped object.
 4. The wrapped object is cached.
 5. The wrapped object is returned.
 
@@ -1350,7 +1350,7 @@ In case where HTMLFoo::key() or the operation to wrap the result is costly, you 
 
 1. `HTMLFoo::serializedValue()` is called in Blink.
 2. The result of `HTMLFoo::serializedValue()` is deserialized.
-3. The deserialized result is passed to `toV8()`, and is converted to a wrapped object.
+3. The deserialized result is passed to `ToV8()`, and is converted to a wrapped object.
 4. The wrapped object is returned.
 
 In case where `HTMLFoo::serializedValue()`, the deserialization or the operation to wrap the result is costly, you can cache the wrapped object onto the DOM object. With `[CachedAttribute]`, the serializedValue getter works in the following way:
@@ -1358,7 +1358,7 @@ In case where `HTMLFoo::serializedValue()`, the deserialization or the operation
 1. If the wrapped object is cached, the cached wrapped object is returned. That's it.
 2. Otherwise, `HTMLFoo::serializedValue()` is called in Blink.
 3. The result of `HTMLFoo::serializedValue()` is deserialized.
-4. The deserialized result is passed to `toJS()` or `toV8()`, and is converted to a wrapped object.
+4. The deserialized result is passed to `toJS()` or `ToV8()`, and is converted to a wrapped object.
 5. The wrapped object is cached.
 6. The wrapped object is returned.
 

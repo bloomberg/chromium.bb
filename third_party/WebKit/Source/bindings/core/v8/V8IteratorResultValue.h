@@ -29,7 +29,7 @@ inline ScriptValue v8IteratorResult(ScriptState* scriptState, const T& value) {
   return ScriptValue(
       scriptState,
       v8IteratorResultValue(scriptState->isolate(), false,
-                            toV8(value, scriptState->context()->Global(),
+                            ToV8(value, scriptState->context()->Global(),
                                  scriptState->isolate())));
 }
 

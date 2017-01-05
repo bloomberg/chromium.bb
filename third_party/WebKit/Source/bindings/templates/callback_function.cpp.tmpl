@@ -44,7 +44,7 @@ bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
   v8::Local<v8::Value> {{argument.argument_name}} = {{argument.cpp_value_to_v8_value}};
   {% endfor %}
 
-  v8::Local<v8::Value> thisValue = toV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> thisValue = ToV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
 
   {% if arguments %}
   v8::Local<v8::Value> argv[] = { {{arguments | join(', ', 'argument_name')}} };

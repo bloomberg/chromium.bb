@@ -66,7 +66,7 @@ static v8::Local<v8::Value> deserializeIDBValueArray(
     v8::Local<v8::Object> creationContext,
     const Vector<RefPtr<IDBValue>>*);
 
-v8::Local<v8::Value> toV8(const IDBKeyPath& value,
+v8::Local<v8::Value> ToV8(const IDBKeyPath& value,
                           v8::Local<v8::Object> creationContext,
                           v8::Isolate* isolate) {
   switch (value.getType()) {
@@ -75,13 +75,13 @@ v8::Local<v8::Value> toV8(const IDBKeyPath& value,
     case IDBKeyPath::StringType:
       return v8String(isolate, value.string());
     case IDBKeyPath::ArrayType:
-      return toV8(value.array(), creationContext, isolate);
+      return ToV8(value.array(), creationContext, isolate);
   }
   ASSERT_NOT_REACHED();
   return v8::Undefined(isolate);
 }
 
-v8::Local<v8::Value> toV8(const IDBKey* key,
+v8::Local<v8::Value> ToV8(const IDBKey* key,
                           v8::Local<v8::Object> creationContext,
                           v8::Isolate* isolate) {
   if (!key) {
@@ -106,7 +106,7 @@ v8::Local<v8::Value> toV8(const IDBKey* key,
     case IDBKey::BinaryType:
       // Experimental feature: binary keys
       // https://w3c.github.io/IndexedDB/#steps-to-convert-a-key-to-a-value
-      return toV8(DOMArrayBuffer::create(reinterpret_cast<const unsigned char*>(
+      return ToV8(DOMArrayBuffer::create(reinterpret_cast<const unsigned char*>(
                                              key->binary()->data()),
                                          key->binary()->size()),
                   creationContext, isolate);
@@ -116,7 +116,7 @@ v8::Local<v8::Value> toV8(const IDBKey* key,
       v8::Local<v8::Array> array = v8::Array::New(isolate, key->array().size());
       for (size_t i = 0; i < key->array().size(); ++i) {
         v8::Local<v8::Value> value =
-            toV8(key->array()[i].get(), creationContext, isolate);
+            ToV8(key->array()[i].get(), creationContext, isolate);
         if (value.IsEmpty())
           value = v8::Undefined(isolate);
         if (!v8CallBoolean(array->CreateDataProperty(context, i, value)))
@@ -135,7 +135,7 @@ v8::Local<v8::Value> toV8(const IDBKey* key,
 // IDBRequest and IDBCursor.
 // TODO(jsbell): Replace the use of IDBAny for |source| attributes (which are
 // ScriptWrappable types) using unions per IDL.
-v8::Local<v8::Value> toV8(const IDBAny* impl,
+v8::Local<v8::Value> ToV8(const IDBAny* impl,
                           v8::Local<v8::Object> creationContext,
                           v8::Isolate* isolate) {
   if (!impl)
@@ -147,17 +147,17 @@ v8::Local<v8::Value> toV8(const IDBAny* impl,
     case IDBAny::NullType:
       return v8::Null(isolate);
     case IDBAny::DOMStringListType:
-      return toV8(impl->domStringList(), creationContext, isolate);
+      return ToV8(impl->domStringList(), creationContext, isolate);
     case IDBAny::IDBCursorType:
-      return toV8(impl->idbCursor(), creationContext, isolate);
+      return ToV8(impl->idbCursor(), creationContext, isolate);
     case IDBAny::IDBCursorWithValueType:
-      return toV8(impl->idbCursorWithValue(), creationContext, isolate);
+      return ToV8(impl->idbCursorWithValue(), creationContext, isolate);
     case IDBAny::IDBDatabaseType:
-      return toV8(impl->idbDatabase(), creationContext, isolate);
+      return ToV8(impl->idbDatabase(), creationContext, isolate);
     case IDBAny::IDBIndexType:
-      return toV8(impl->idbIndex(), creationContext, isolate);
+      return ToV8(impl->idbIndex(), creationContext, isolate);
     case IDBAny::IDBObjectStoreType:
-      return toV8(impl->idbObjectStore(), creationContext, isolate);
+      return ToV8(impl->idbObjectStore(), creationContext, isolate);
     case IDBAny::IDBValueType:
       return deserializeIDBValue(isolate, creationContext, impl->value());
     case IDBAny::IDBValueArrayType:
@@ -165,7 +165,7 @@ v8::Local<v8::Value> toV8(const IDBAny* impl,
     case IDBAny::IntegerType:
       return v8::Number::New(isolate, impl->integer());
     case IDBAny::KeyType:
-      return toV8(impl->key(), creationContext, isolate);
+      return ToV8(impl->key(), creationContext, isolate);
   }
 
   ASSERT_NOT_REACHED();
@@ -412,7 +412,7 @@ static v8::Local<v8::Value> deserializeIDBValue(
   v8::Local<v8::Value> v8Value = deserializeIDBValueData(isolate, value);
   if (value->primaryKey()) {
     v8::Local<v8::Value> key =
-        toV8(value->primaryKey(), creationContext, isolate);
+        ToV8(value->primaryKey(), creationContext, isolate);
     if (key.IsEmpty())
       return v8::Local<v8::Value>();
     bool injected =

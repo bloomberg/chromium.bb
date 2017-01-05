@@ -329,7 +329,7 @@ Vector<v8::Local<v8::Value>> Notification::actions(
     // Both the Action dictionaries themselves and the sequence they'll be
     // returned in are expected to the frozen. This cannot be done with WebIDL.
     actions[i] =
-        freezeV8Object(toV8(action, scriptState), scriptState->isolate());
+        freezeV8Object(ToV8(action, scriptState), scriptState->isolate());
   }
 
   return actions;

@@ -93,9 +93,9 @@ PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject,
       m_nativeInvalidationProperties, m_customInvalidationProperties);
 
   v8::Local<v8::Value> argv[] = {
-      toV8(renderingContext, m_scriptState->context()->Global(), isolate),
-      toV8(paintSize, m_scriptState->context()->Global(), isolate),
-      toV8(styleMap, m_scriptState->context()->Global(), isolate)};
+      ToV8(renderingContext, m_scriptState->context()->Global(), isolate),
+      ToV8(paintSize, m_scriptState->context()->Global(), isolate),
+      ToV8(styleMap, m_scriptState->context()->Global(), isolate)};
 
   v8::Local<v8::Function> paint = m_paint.newLocal(isolate);
 

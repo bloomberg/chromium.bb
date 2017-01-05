@@ -87,8 +87,8 @@ FetchEvent::FetchEvent(ScriptState* scriptState,
   if (initializer.hasRequest()) {
     ScriptState::Scope scope(scriptState);
     m_request = initializer.request();
-    v8::Local<v8::Value> request = toV8(m_request, scriptState);
-    v8::Local<v8::Value> event = toV8(this, scriptState);
+    v8::Local<v8::Value> request = ToV8(m_request, scriptState);
+    v8::Local<v8::Value> event = ToV8(this, scriptState);
     if (event.IsEmpty()) {
       // |toV8| can return an empty handle when the worker is terminating.
       // We don't want the renderer to crash in such cases.

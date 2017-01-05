@@ -82,7 +82,7 @@ v8::Local<v8::Value> WebBlob::toV8Value(v8::Local<v8::Object> creationContext,
   DCHECK(creationContext->CreationContext() == isolate->GetCurrentContext());
   if (!m_private.get())
     return v8::Local<v8::Value>();
-  return toV8(m_private.get(), isolate->GetCurrentContext()->Global(), isolate);
+  return ToV8(m_private.get(), isolate->GetCurrentContext()->Global(), isolate);
 }
 
 WebBlob::WebBlob(Blob* blob) : m_private(blob) {}

@@ -299,7 +299,7 @@ ScriptPromise ScriptPromise::reject(ScriptState* scriptState,
 ScriptPromise ScriptPromise::rejectWithDOMException(ScriptState* scriptState,
                                                     DOMException* exception) {
   ASSERT(scriptState->isolate()->InContext());
-  return reject(scriptState, toV8(exception, scriptState->context()->Global(),
+  return reject(scriptState, ToV8(exception, scriptState->context()->Global(),
                                   scriptState->isolate()));
 }
 

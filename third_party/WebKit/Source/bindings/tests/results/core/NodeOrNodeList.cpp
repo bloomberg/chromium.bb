@@ -88,14 +88,14 @@ void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   exceptionState.throwTypeError("The provided value is not of type '(Node or NodeList)'");
 }
 
-v8::Local<v8::Value> toV8(const NodeOrNodeList& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+v8::Local<v8::Value> ToV8(const NodeOrNodeList& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.m_type) {
     case NodeOrNodeList::SpecificTypeNone:
       return v8::Null(isolate);
     case NodeOrNodeList::SpecificTypeNode:
-      return toV8(impl.getAsNode(), creationContext, isolate);
+      return ToV8(impl.getAsNode(), creationContext, isolate);
     case NodeOrNodeList::SpecificTypeNodeList:
-      return toV8(impl.getAsNodeList(), creationContext, isolate);
+      return ToV8(impl.getAsNodeList(), creationContext, isolate);
     default:
       NOTREACHED();
   }

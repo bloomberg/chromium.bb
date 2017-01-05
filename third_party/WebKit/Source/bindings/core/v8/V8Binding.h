@@ -209,14 +209,14 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Node* impl) {
 template <typename CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo,
                              DOMWindow* impl) {
-  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(),
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
                                       callbackInfo.GetIsolate()));
 }
 
 template <typename CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo,
                              EventTarget* impl) {
-  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(),
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
                                       callbackInfo.GetIsolate()));
 }
 
@@ -224,7 +224,7 @@ template <typename CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo,
                              WorkerGlobalScope* impl) {
   v8SetReturnValue(callbackInfo,
-                   toV8((WorkerOrWorkletGlobalScope*)impl,
+                   ToV8((WorkerOrWorkletGlobalScope*)impl,
                         callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
@@ -279,14 +279,14 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo,
 template <typename CallbackInfo>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo,
                                          DOMWindow* impl) {
-  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(),
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
                                       callbackInfo.GetIsolate()));
 }
 
 template <typename CallbackInfo>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo,
                                          EventTarget* impl) {
-  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(),
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
                                       callbackInfo.GetIsolate()));
 }
 
@@ -294,7 +294,7 @@ template <typename CallbackInfo>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo,
                                          WorkerGlobalScope* impl) {
   v8SetReturnValue(callbackInfo,
-                   toV8((WorkerOrWorkletGlobalScope*)impl,
+                   ToV8((WorkerOrWorkletGlobalScope*)impl,
                         callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
@@ -342,7 +342,7 @@ template <typename CallbackInfo>
 inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo,
                                  DOMWindow* impl,
                                  const ScriptWrappable*) {
-  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(),
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
                                       callbackInfo.GetIsolate()));
 }
 
@@ -350,7 +350,7 @@ template <typename CallbackInfo>
 inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo,
                                  EventTarget* impl,
                                  const ScriptWrappable*) {
-  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(),
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(),
                                       callbackInfo.GetIsolate()));
 }
 
@@ -359,7 +359,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo,
                                  WorkerGlobalScope* impl,
                                  const ScriptWrappable*) {
   v8SetReturnValue(callbackInfo,
-                   toV8((WorkerOrWorkletGlobalScope*)impl,
+                   ToV8((WorkerOrWorkletGlobalScope*)impl,
                         callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
@@ -1161,7 +1161,7 @@ typedef void (*InstallTemplateFunction)(
     v8::Local<v8::FunctionTemplate> interfaceTemplate);
 
 // Freeze a V8 object. The type of the first parameter and the return value is
-// intentionally v8::Value so that this function can wrap toV8().
+// intentionally v8::Value so that this function can wrap ToV8().
 // If the argument isn't an object, this will crash.
 CORE_EXPORT v8::Local<v8::Value> freezeV8Object(v8::Local<v8::Value>,
                                                 v8::Isolate*);

@@ -82,7 +82,7 @@ void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 }
 
-v8::Local<v8::Value> toV8(const DoubleOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+v8::Local<v8::Value> ToV8(const DoubleOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.m_type) {
     case DoubleOrString::SpecificTypeNone:
       return v8::Null(isolate);

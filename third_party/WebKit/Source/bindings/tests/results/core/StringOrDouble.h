@@ -52,7 +52,7 @@ class CORE_EXPORT StringOrDouble final {
   String m_string;
   double m_double;
 
-  friend CORE_EXPORT v8::Local<v8::Value> toV8(const StringOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
+  friend CORE_EXPORT v8::Local<v8::Value> ToV8(const StringOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8StringOrDouble final {
@@ -60,11 +60,11 @@ class V8StringOrDouble final {
   CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrDouble&, UnionTypeConversionMode, ExceptionState&);
 };
 
-CORE_EXPORT v8::Local<v8::Value> toV8(const StringOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> ToV8(const StringOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrDouble& impl) {
-  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>

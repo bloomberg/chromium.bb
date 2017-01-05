@@ -89,14 +89,14 @@ void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Local
   exceptionState.throwTypeError("The provided value is not of type '(TestInterface or TestInterfaceEmpty)'");
 }
 
-v8::Local<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+v8::Local<v8::Value> ToV8(const TestInterfaceOrTestInterfaceEmpty& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.m_type) {
     case TestInterfaceOrTestInterfaceEmpty::SpecificTypeNone:
       return v8::Null(isolate);
     case TestInterfaceOrTestInterfaceEmpty::SpecificTypeTestInterface:
-      return toV8(impl.getAsTestInterface(), creationContext, isolate);
+      return ToV8(impl.getAsTestInterface(), creationContext, isolate);
     case TestInterfaceOrTestInterfaceEmpty::SpecificTypeTestInterfaceEmpty:
-      return toV8(impl.getAsTestInterfaceEmpty(), creationContext, isolate);
+      return ToV8(impl.getAsTestInterfaceEmpty(), creationContext, isolate);
     default:
       NOTREACHED();
   }

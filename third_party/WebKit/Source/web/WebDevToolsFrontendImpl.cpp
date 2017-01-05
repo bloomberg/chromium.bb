@@ -74,7 +74,7 @@ void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame) {
     m_devtoolsHost = DevToolsHost::create(this, m_webFrame->frame());
     v8::Local<v8::Object> global = scriptState->context()->Global();
     v8::Local<v8::Value> devtoolsHostObj =
-        toV8(m_devtoolsHost.get(), global, scriptState->isolate());
+        ToV8(m_devtoolsHost.get(), global, scriptState->isolate());
     DCHECK(!devtoolsHostObj.IsEmpty());
     global->Set(v8AtomicString(isolate, "DevToolsHost"), devtoolsHostObj);
   }

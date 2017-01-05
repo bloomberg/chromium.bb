@@ -48,7 +48,7 @@ class ScriptValue;
 //     // Enter the ScriptState.
 //     ScriptState::Scope scope(m_scriptState.get());
 //     // Do V8 related things.
-//     toV8(...);
+//     ToV8(...);
 //   }
 //   RefPtr<ScriptState> m_scriptState;
 // };

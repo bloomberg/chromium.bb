@@ -38,14 +38,14 @@ void V8IntersectionObserverCallback::handleEvent(
 
   if (m_callback.isEmpty())
     return;
-  v8::Local<v8::Value> observerHandle = toV8(
+  v8::Local<v8::Value> observerHandle = ToV8(
       &observer, m_scriptState->context()->Global(), m_scriptState->isolate());
   if (!observerHandle->IsObject())
     return;
 
   v8::Local<v8::Object> thisObject =
       v8::Local<v8::Object>::Cast(observerHandle);
-  v8::Local<v8::Value> entriesHandle = toV8(
+  v8::Local<v8::Value> entriesHandle = ToV8(
       entries, m_scriptState->context()->Global(), m_scriptState->isolate());
   if (entriesHandle.IsEmpty()) {
     return;

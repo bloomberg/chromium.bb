@@ -118,7 +118,7 @@ v8::Local<v8::Value> WebDOMFileSystem::toV8Value(
   DCHECK(creationContext->CreationContext() == isolate->GetCurrentContext());
   if (!m_private.get())
     return v8::Local<v8::Value>();
-  return toV8(m_private.get(), isolate->GetCurrentContext()->Global(), isolate);
+  return ToV8(m_private.get(), isolate->GetCurrentContext()->Global(), isolate);
 }
 
 v8::Local<v8::Value> WebDOMFileSystem::createV8Entry(
@@ -132,10 +132,10 @@ v8::Local<v8::Value> WebDOMFileSystem::createV8Entry(
   if (!m_private.get())
     return v8::Local<v8::Value>();
   if (entryType == EntryTypeDirectory)
-    return toV8(DirectoryEntry::create(m_private.get(), path),
+    return ToV8(DirectoryEntry::create(m_private.get(), path),
                 isolate->GetCurrentContext()->Global(), isolate);
   DCHECK_EQ(entryType, EntryTypeFile);
-  return toV8(FileEntry::create(m_private.get(), path),
+  return ToV8(FileEntry::create(m_private.get(), path),
               isolate->GetCurrentContext()->Global(), isolate);
 }
 

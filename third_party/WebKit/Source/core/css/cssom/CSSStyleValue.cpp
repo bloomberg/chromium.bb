@@ -48,7 +48,7 @@ ScriptValue CSSStyleValue::parse(ScriptState* scriptState,
   }
 
   v8::Local<v8::Value> wrappedValue =
-      toV8(styleValueVector[0], scriptState->context()->Global(),
+      ToV8(styleValueVector[0], scriptState->context()->Global(),
            scriptState->isolate());
   return ScriptValue(scriptState, wrappedValue);
 }

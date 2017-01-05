@@ -563,7 +563,7 @@ Page* InspectorOverlay::overlayPage() {
   ScriptState::Scope scope(scriptState);
   v8::Local<v8::Object> global = scriptState->context()->Global();
   v8::Local<v8::Value> overlayHostObj =
-      toV8(m_overlayHost.get(), global, isolate);
+      ToV8(m_overlayHost.get(), global, isolate);
   DCHECK(!overlayHostObj.IsEmpty());
   global
       ->Set(scriptState->context(),

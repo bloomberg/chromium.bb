@@ -127,7 +127,7 @@ v8::Local<v8::Object>
 ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::holder(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creationContext) {
-  v8::Local<v8::Value> value = toV8(m_holder, creationContext, isolate);
+  v8::Local<v8::Value> value = ToV8(m_holder, creationContext, isolate);
   if (value.IsEmpty())
     return v8::Local<v8::Object>();
   return value.As<v8::Object>();
@@ -139,7 +139,7 @@ ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolvedValue(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creationContext) {
   ASSERT(getState() == Resolved);
-  return toV8(m_resolved, creationContext, isolate);
+  return ToV8(m_resolved, creationContext, isolate);
 }
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
@@ -148,7 +148,7 @@ ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::rejectedValue(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creationContext) {
   ASSERT(getState() == Rejected);
-  return toV8(m_rejected, creationContext, isolate);
+  return ToV8(m_rejected, creationContext, isolate);
 }
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>

@@ -514,7 +514,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
   impl->namedPropertyEnumerator(names, exceptionState);
   if (exceptionState.hadException())
     return;
-  v8SetReturnValue(info, toV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
+  v8SetReturnValue(info, ToV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
 }
 
 void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {

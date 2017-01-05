@@ -76,14 +76,14 @@ void V8ScriptValueDeserializer::transfer() {
         DOMSharedArrayBuffer* arrayBuffer =
             DOMSharedArrayBuffer::create(contents);
         v8::Local<v8::Value> wrapper =
-            toV8(arrayBuffer, creationContext, isolate);
+            ToV8(arrayBuffer, creationContext, isolate);
         DCHECK(wrapper->IsSharedArrayBuffer());
         m_deserializer.TransferSharedArrayBuffer(
             i, v8::Local<v8::SharedArrayBuffer>::Cast(wrapper));
       } else {
         DOMArrayBuffer* arrayBuffer = DOMArrayBuffer::create(contents);
         v8::Local<v8::Value> wrapper =
-            toV8(arrayBuffer, creationContext, isolate);
+            ToV8(arrayBuffer, creationContext, isolate);
         DCHECK(wrapper->IsArrayBuffer());
         m_deserializer.TransferArrayBuffer(
             i, v8::Local<v8::ArrayBuffer>::Cast(wrapper));
@@ -329,7 +329,7 @@ v8::MaybeLocal<v8::Object> V8ScriptValueDeserializer::ReadHostObject(
     return v8::MaybeLocal<v8::Object>();
   }
   v8::Local<v8::Object> creationContext = m_scriptState->context()->Global();
-  v8::Local<v8::Value> wrapper = toV8(wrappable, creationContext, isolate);
+  v8::Local<v8::Value> wrapper = ToV8(wrappable, creationContext, isolate);
   DCHECK(wrapper->IsObject());
   return wrapper.As<v8::Object>();
 }

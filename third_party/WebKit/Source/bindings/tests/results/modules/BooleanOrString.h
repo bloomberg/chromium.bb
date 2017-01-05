@@ -52,7 +52,7 @@ class MODULES_EXPORT BooleanOrString final {
   bool m_boolean;
   String m_string;
 
-  friend MODULES_EXPORT v8::Local<v8::Value> toV8(const BooleanOrString&, v8::Local<v8::Object>, v8::Isolate*);
+  friend MODULES_EXPORT v8::Local<v8::Value> ToV8(const BooleanOrString&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8BooleanOrString final {
@@ -60,11 +60,11 @@ class V8BooleanOrString final {
   MODULES_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, BooleanOrString&, UnionTypeConversionMode, ExceptionState&);
 };
 
-MODULES_EXPORT v8::Local<v8::Value> toV8(const BooleanOrString&, v8::Local<v8::Object>, v8::Isolate*);
+MODULES_EXPORT v8::Local<v8::Value> ToV8(const BooleanOrString&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrString& impl) {
-  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>

@@ -336,7 +336,7 @@ bool SerializedScriptValueReaderForModules::readDOMFileSystem(
   DOMFileSystem* fs = DOMFileSystem::create(
       getScriptState()->getExecutionContext(), name,
       static_cast<FileSystemType>(type), KURL(ParsedURLString, url));
-  *value = toV8(fs, getScriptState()->context()->Global(), isolate());
+  *value = ToV8(fs, getScriptState()->context()->Global(), isolate());
   return !value->IsEmpty();
 }
 
@@ -393,7 +393,7 @@ bool SerializedScriptValueReaderForModules::readCryptoKey(
     return false;
   }
 
-  *value = toV8(CryptoKey::create(key), getScriptState()->context()->Global(),
+  *value = ToV8(CryptoKey::create(key), getScriptState()->context()->Global(),
                 isolate());
   return !value->IsEmpty();
 }
@@ -417,7 +417,7 @@ bool SerializedScriptValueReaderForModules::readRTCCertificate(
   RTCCertificate* jsCertificate = new RTCCertificate(std::move(certificate));
 
   *value =
-      toV8(jsCertificate, getScriptState()->context()->Global(), isolate());
+      ToV8(jsCertificate, getScriptState()->context()->Global(), isolate());
   return !value->IsEmpty();
 }
 

@@ -718,8 +718,8 @@ String Request::mimeType() const {
 }
 
 void Request::refreshBody(ScriptState* scriptState) {
-  v8::Local<v8::Value> bodyBuffer = toV8(this->bodyBuffer(), scriptState);
-  v8::Local<v8::Value> request = toV8(this, scriptState);
+  v8::Local<v8::Value> bodyBuffer = ToV8(this->bodyBuffer(), scriptState);
+  v8::Local<v8::Value> request = ToV8(this, scriptState);
   if (request.IsEmpty()) {
     // |toV8| can return an empty handle when the worker is terminating.
     // We don't want the renderer to crash in such cases.

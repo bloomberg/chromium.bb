@@ -201,7 +201,7 @@ v8::Local<v8::Object> ImageData::associateWithWrapper(
     // Create a V8 Uint8ClampedArray object and set the "data" property
     // of the ImageData object to the created v8 object, eliminating the
     // C++ callback when accessing the "data" property.
-    v8::Local<v8::Value> pixelArray = toV8(m_data.get(), wrapper, isolate);
+    v8::Local<v8::Value> pixelArray = ToV8(m_data.get(), wrapper, isolate);
     if (pixelArray.IsEmpty() ||
         !v8CallBoolean(wrapper->DefineOwnProperty(
             isolate->GetCurrentContext(), v8AtomicString(isolate, "data"),

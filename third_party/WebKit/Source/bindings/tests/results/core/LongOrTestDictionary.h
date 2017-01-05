@@ -53,7 +53,7 @@ class CORE_EXPORT LongOrTestDictionary final {
   int m_long;
   TestDictionary m_testDictionary;
 
-  friend CORE_EXPORT v8::Local<v8::Value> toV8(const LongOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
+  friend CORE_EXPORT v8::Local<v8::Value> ToV8(const LongOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8LongOrTestDictionary final {
@@ -61,11 +61,11 @@ class V8LongOrTestDictionary final {
   CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, LongOrTestDictionary&, UnionTypeConversionMode, ExceptionState&);
 };
 
-CORE_EXPORT v8::Local<v8::Value> toV8(const LongOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> ToV8(const LongOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, LongOrTestDictionary& impl) {
-  v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+  v8SetReturnValue(callbackInfo, ToV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template <>

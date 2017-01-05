@@ -22,7 +22,7 @@ ScriptValue IDBObserverChanges::records(ScriptState* scriptState) {
   for (const auto& it : m_records) {
     v8::Local<v8::String> key =
         v8String(isolate, m_database->getObjectStoreName(it.key));
-    v8::Local<v8::Value> value = toV8(it.value, context->Global(), isolate);
+    v8::Local<v8::Value> value = ToV8(it.value, context->Global(), isolate);
     map->Set(context, key, value).ToLocalChecked();
   }
   return ScriptValue::from(scriptState, map);

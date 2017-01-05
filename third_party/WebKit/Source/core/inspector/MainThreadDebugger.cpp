@@ -328,7 +328,7 @@ v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(
   ExecutionContext* executionContext = toExecutionContext(context);
   DCHECK(executionContext);
   ASSERT(executionContext->isDocument());
-  return toV8(MemoryInfo::create(), context->Global(), isolate);
+  return ToV8(MemoryInfo::create(), context->Global(), isolate);
 }
 
 void MainThreadDebugger::installAdditionalCommandLineAPI(
@@ -377,7 +377,7 @@ void MainThreadDebugger::querySelectorCallback(
   if (exceptionState.hadException())
     return;
   if (element)
-    info.GetReturnValue().Set(toV8(element, info.Holder(), info.GetIsolate()));
+    info.GetReturnValue().Set(ToV8(element, info.Holder(), info.GetIsolate()));
   else
     info.GetReturnValue().Set(v8::Null(info.GetIsolate()));
 }
@@ -395,7 +395,7 @@ void MainThreadDebugger::querySelectorAllCallback(
   ExceptionState exceptionState(info.GetIsolate(),
                                 ExceptionState::ExecutionContext,
                                 "CommandLineAPI", "$$");
-  // toV8(elementList) doesn't work here, since we need a proper Array instance,
+  // ToV8(elementList) doesn't work here, since we need a proper Array instance,
   // not NodeList.
   StaticElementList* elementList = toContainerNode(node)->querySelectorAll(
       AtomicString(selector), exceptionState);
@@ -407,7 +407,7 @@ void MainThreadDebugger::querySelectorAllCallback(
   for (size_t i = 0; i < elementList->length(); ++i) {
     Element* element = elementList->item(i);
     if (!createDataPropertyInArray(
-             context, nodes, i, toV8(element, info.Holder(), info.GetIsolate()))
+             context, nodes, i, ToV8(element, info.Holder(), info.GetIsolate()))
              .FromMaybe(false))
       return;
   }
@@ -434,13 +434,13 @@ void MainThreadDebugger::xpathSelectorCallback(
   if (exceptionState.hadException() || !result)
     return;
   if (result->resultType() == XPathResult::kNumberType) {
-    info.GetReturnValue().Set(toV8(result->numberValue(exceptionState),
+    info.GetReturnValue().Set(ToV8(result->numberValue(exceptionState),
                                    info.Holder(), info.GetIsolate()));
   } else if (result->resultType() == XPathResult::kStringType) {
-    info.GetReturnValue().Set(toV8(result->stringValue(exceptionState),
+    info.GetReturnValue().Set(ToV8(result->stringValue(exceptionState),
                                    info.Holder(), info.GetIsolate()));
   } else if (result->resultType() == XPathResult::kBooleanType) {
-    info.GetReturnValue().Set(toV8(result->booleanValue(exceptionState),
+    info.GetReturnValue().Set(ToV8(result->booleanValue(exceptionState),
                                    info.Holder(), info.GetIsolate()));
   } else {
     v8::Isolate* isolate = info.GetIsolate();
@@ -452,7 +452,7 @@ void MainThreadDebugger::xpathSelectorCallback(
         return;
       if (!createDataPropertyInArray(
                context, nodes, index++,
-               toV8(node, info.Holder(), info.GetIsolate()))
+               ToV8(node, info.Holder(), info.GetIsolate()))
                .FromMaybe(false))
         return;
     }

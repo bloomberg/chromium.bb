@@ -81,7 +81,7 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState,
       m_scriptState(scriptState),
       m_consumer(consumer),
       m_madeFromReadableStream(false) {
-  v8::Local<v8::Value> bodyValue = toV8(this, scriptState);
+  v8::Local<v8::Value> bodyValue = ToV8(this, scriptState);
   DCHECK(!bodyValue.IsEmpty());
   DCHECK(bodyValue->IsObject());
   v8::Local<v8::Object> body = bodyValue.As<v8::Object>();
@@ -103,7 +103,7 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, ScriptValue stream)
       m_scriptState(scriptState),
       m_madeFromReadableStream(true) {
   DCHECK(ReadableStreamOperations::isReadableStream(scriptState, stream));
-  v8::Local<v8::Value> bodyValue = toV8(this, scriptState);
+  v8::Local<v8::Value> bodyValue = ToV8(this, scriptState);
   DCHECK(!bodyValue.IsEmpty());
   DCHECK(bodyValue->IsObject());
   v8::Local<v8::Object> body = bodyValue.As<v8::Object>();
@@ -116,7 +116,7 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, ScriptValue stream)
 
 ScriptValue BodyStreamBuffer::stream() {
   ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Value> bodyValue = toV8(this, m_scriptState.get());
+  v8::Local<v8::Value> bodyValue = ToV8(this, m_scriptState.get());
   DCHECK(!bodyValue.IsEmpty());
   DCHECK(bodyValue->IsObject());
   v8::Local<v8::Object> body = bodyValue.As<v8::Object>();

@@ -127,7 +127,7 @@ class CORE_EXPORT ScriptPromiseResolver
 
     ScriptState::Scope scope(m_scriptState.get());
     m_value.set(m_scriptState->isolate(),
-                toV8(value, m_scriptState->context()->Global(),
+                ToV8(value, m_scriptState->context()->Global(),
                      m_scriptState->isolate()));
 
     if (getExecutionContext()->isContextSuspended()) {

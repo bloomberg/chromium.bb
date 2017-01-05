@@ -26,7 +26,7 @@ void testToV8(V8TestingScope* scope,
               const char* path,
               int lineNumber) {
   v8::Local<v8::Value> actual =
-      toV8(value, scope->context()->Global(), scope->isolate());
+      ToV8(value, scope->context()->Global(), scope->isolate());
   if (actual.IsEmpty()) {
     ADD_FAILURE_AT(path, lineNumber) << "toV8 returns an empty value.";
     return;
@@ -212,7 +212,7 @@ TEST(ToV8Test, dictionaryVector) {
   TEST_TOV8("[object Object]", dictionary);
   v8::Local<v8::Context> context = scope.getScriptState()->context();
   v8::Local<v8::Object> result =
-      toV8(dictionary, context->Global(), scope.isolate())
+      ToV8(dictionary, context->Global(), scope.isolate())
           ->ToObject(context)
           .ToLocalChecked();
   v8::Local<v8::Value> one =
@@ -238,7 +238,7 @@ TEST(ToV8Test, withScriptState) {
   ScriptValue value(scope.getScriptState(),
                     v8::Number::New(scope.isolate(), 1234.0));
 
-  v8::Local<v8::Value> actual = toV8(value, scope.getScriptState());
+  v8::Local<v8::Value> actual = ToV8(value, scope.getScriptState());
   EXPECT_FALSE(actual.IsEmpty());
 
   double actualAsNumber = actual.As<v8::Number>()->Value();

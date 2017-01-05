@@ -50,9 +50,9 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
   ScriptState::Scope scope(m_scriptState.get());
 
   v8::Local<v8::Value> transactionHandle =
-      toV8(transaction, m_scriptState->context()->Global(), isolate);
+      ToV8(transaction, m_scriptState->context()->Global(), isolate);
   v8::Local<v8::Value> errorHandle =
-      toV8(error, m_scriptState->context()->Global(), isolate);
+      ToV8(error, m_scriptState->context()->Global(), isolate);
   ASSERT(transactionHandle->IsObject());
 
   v8::Local<v8::Value> argv[] = {transactionHandle, errorHandle};

@@ -56,7 +56,7 @@ v8::Local<v8::Object> DOMDataView::wrap(v8::Isolate* isolate,
   DCHECK(!DOMDataStore::containsWrapper(this, isolate));
 
   const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
-  v8::Local<v8::Value> v8Buffer = toV8(buffer(), creationContext, isolate);
+  v8::Local<v8::Value> v8Buffer = ToV8(buffer(), creationContext, isolate);
   if (v8Buffer.IsEmpty())
     return v8::Local<v8::Object>();
   DCHECK(v8Buffer->IsArrayBuffer());

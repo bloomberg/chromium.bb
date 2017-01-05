@@ -31,7 +31,7 @@ static v8::Local<v8::Map> ensureCustomElementRegistryMap(
   CHECK(scriptState->world().isMainWorld());
   v8::Local<v8::String> name =
       V8HiddenValue::customElementsRegistryMap(scriptState->isolate());
-  v8::Local<v8::Object> wrapper = toV8(registry, scriptState).As<v8::Object>();
+  v8::Local<v8::Object> wrapper = ToV8(registry, scriptState).As<v8::Object>();
   v8::Local<v8::Value> map =
       V8HiddenValue::getHiddenValue(scriptState, wrapper, name);
   if (map.IsEmpty()) {
@@ -311,7 +311,7 @@ void ScriptCustomElementDefinition::runCallback(
 
   ExecutionContext* executionContext = m_scriptState->getExecutionContext();
   v8::Local<v8::Value> elementHandle =
-      toV8(element, m_scriptState->context()->Global(), isolate);
+      ToV8(element, m_scriptState->context()->Global(), isolate);
   V8ScriptRunner::callFunction(callback, executionContext, elementHandle, argc,
                                argv, isolate);
 }
@@ -340,8 +340,8 @@ void ScriptCustomElementDefinition::runAdoptedCallback(Element* element,
   ScriptState::Scope scope(m_scriptState.get());
   v8::Isolate* isolate = m_scriptState->isolate();
   v8::Local<v8::Value> argv[] = {
-      toV8(oldOwner, m_scriptState->context()->Global(), isolate),
-      toV8(newOwner, m_scriptState->context()->Global(), isolate)};
+      ToV8(oldOwner, m_scriptState->context()->Global(), isolate),
+      ToV8(newOwner, m_scriptState->context()->Global(), isolate)};
   runCallback(m_adoptedCallback.newLocal(isolate), element,
               WTF_ARRAY_LENGTH(argv), argv);
 }

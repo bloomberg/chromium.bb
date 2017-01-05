@@ -50,7 +50,7 @@ bool VoidCallbackFunctionModules::call(ScriptWrappable* scriptWrappable) {
   DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(m_scriptState.get());
 
-  v8::Local<v8::Value> thisValue = toV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> thisValue = ToV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
 
   v8::Local<v8::Value> *argv = nullptr;
 

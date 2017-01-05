@@ -884,9 +884,9 @@ CPP_VALUE_TO_V8_VALUE = {
     'ScriptValue': '{cpp_value}.v8Value()',
     'SerializedScriptValue': 'v8Deserialize({isolate}, {cpp_value})',
     # General
-    'array': 'toV8({cpp_value}, {creation_context}, {isolate})',
-    'FrozenArray': 'freezeV8Object(toV8({cpp_value}, {creation_context}, {isolate}), {isolate})',
-    'DOMWrapper': 'toV8({cpp_value}, {creation_context}, {isolate})',
+    'array': 'ToV8({cpp_value}, {creation_context}, {isolate})',
+    'FrozenArray': 'freezeV8Object(ToV8({cpp_value}, {creation_context}, {isolate}), {isolate})',
+    'DOMWrapper': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     # Passing nullable dictionaries isn't a pattern currently used
     # anywhere in the web platform, and more work would be needed in
     # the code generator to distinguish between passing null, and
@@ -897,7 +897,7 @@ CPP_VALUE_TO_V8_VALUE = {
     # nullable dictionary type.
     #
     # Union types or dictionaries
-    'DictionaryOrUnion': 'toV8({cpp_value}, {creation_context}, {isolate})',
+    'DictionaryOrUnion': 'ToV8({cpp_value}, {creation_context}, {isolate})',
 }
 
 

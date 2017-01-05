@@ -13,7 +13,7 @@
 
 namespace blink {
 
-v8::Local<v8::Value> toV8(DOMWindow* window,
+v8::Local<v8::Value> ToV8(DOMWindow* window,
                           v8::Local<v8::Object> creationContext,
                           v8::Isolate* isolate) {
   // Notice that we explicitly ignore creationContext because the DOMWindow
@@ -31,18 +31,18 @@ v8::Local<v8::Value> toV8(DOMWindow* window,
       ->globalIfNotDetached();
 }
 
-v8::Local<v8::Value> toV8(EventTarget* impl,
+v8::Local<v8::Value> ToV8(EventTarget* impl,
                           v8::Local<v8::Object> creationContext,
                           v8::Isolate* isolate) {
   if (UNLIKELY(!impl))
     return v8::Null(isolate);
 
   if (impl->interfaceName() == EventTargetNames::DOMWindow)
-    return toV8(static_cast<DOMWindow*>(impl), creationContext, isolate);
-  return toV8(static_cast<ScriptWrappable*>(impl), creationContext, isolate);
+    return ToV8(static_cast<DOMWindow*>(impl), creationContext, isolate);
+  return ToV8(static_cast<ScriptWrappable*>(impl), creationContext, isolate);
 }
 
-v8::Local<v8::Value> toV8(WorkerOrWorkletGlobalScope* impl,
+v8::Local<v8::Value> ToV8(WorkerOrWorkletGlobalScope* impl,
                           v8::Local<v8::Object> creationContext,
                           v8::Isolate* isolate) {
   // Notice that we explicitly ignore creationContext because the

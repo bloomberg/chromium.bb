@@ -43,7 +43,7 @@ v8::Local<v8::Value> WebArrayBufferConverter::toV8Value(
   DCHECK(creationContext->CreationContext() == isolate->GetCurrentContext());
   if (!buffer)
     return v8::Local<v8::Value>();
-  return toV8(*buffer, isolate->GetCurrentContext()->Global(), isolate);
+  return ToV8(*buffer, isolate->GetCurrentContext()->Global(), isolate);
 }
 
 WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(

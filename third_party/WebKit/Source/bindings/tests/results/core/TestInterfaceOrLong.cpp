@@ -95,12 +95,12 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
   }
 }
 
-v8::Local<v8::Value> toV8(const TestInterfaceOrLong& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+v8::Local<v8::Value> ToV8(const TestInterfaceOrLong& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
   switch (impl.m_type) {
     case TestInterfaceOrLong::SpecificTypeNone:
       return v8::Null(isolate);
     case TestInterfaceOrLong::SpecificTypeTestInterface:
-      return toV8(impl.getAsTestInterface(), creationContext, isolate);
+      return ToV8(impl.getAsTestInterface(), creationContext, isolate);
     case TestInterfaceOrLong::SpecificTypeLong:
       return v8::Integer::New(isolate, impl.getAsLong());
     default:

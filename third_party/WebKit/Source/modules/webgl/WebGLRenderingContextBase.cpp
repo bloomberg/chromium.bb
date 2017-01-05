@@ -2841,7 +2841,7 @@ ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* scriptState,
   }
 
   v8::Local<v8::Value> wrappedExtension =
-      toV8(extension, scriptState->context()->Global(), scriptState->isolate());
+      ToV8(extension, scriptState->context()->Global(), scriptState->isolate());
 
   return ScriptValue(scriptState, wrappedExtension);
 }

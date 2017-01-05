@@ -179,7 +179,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate) {
 
   // Round trip test.
   v8::Local<v8::Value> wrapper =
-      toV8(certificate, scope.context()->Global(), scope.isolate());
+      ToV8(certificate, scope.context()->Global(), scope.isolate());
   v8::Local<v8::Value> result = roundTrip(wrapper, scope);
   ASSERT_TRUE(V8RTCCertificate::hasInstance(result, scope.isolate()));
   RTCCertificate* newCertificate =
@@ -411,7 +411,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyAES) {
                       WebCryptoKeyUsageEncrypt | WebCryptoKeyUsageDecrypt);
 
   // Round trip it and check the visible attributes.
-  v8::Local<v8::Value> wrapper = toV8(key, scope.getScriptState());
+  v8::Local<v8::Value> wrapper = ToV8(key, scope.getScriptState());
   v8::Local<v8::Value> result = roundTrip(wrapper, scope);
   ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.isolate()));
   CryptoKey* newKey = V8CryptoKey::toImpl(result.As<v8::Object>());
@@ -484,7 +484,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyHMAC) {
                       WebCryptoKeyUsageSign | WebCryptoKeyUsageVerify);
 
   // Round trip it and check the visible attributes.
-  v8::Local<v8::Value> wrapper = toV8(key, scope.getScriptState());
+  v8::Local<v8::Value> wrapper = ToV8(key, scope.getScriptState());
   v8::Local<v8::Value> result = roundTrip(wrapper, scope);
   ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.isolate()));
   CryptoKey* newKey = V8CryptoKey::toImpl(result.As<v8::Object>());
@@ -560,7 +560,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyRSAHashed) {
                           WebCryptoKeyUsageSign | WebCryptoKeyUsageVerify);
 
   // Round trip the private key and check the visible attributes.
-  v8::Local<v8::Value> wrapper = toV8(privateKey, scope.getScriptState());
+  v8::Local<v8::Value> wrapper = ToV8(privateKey, scope.getScriptState());
   v8::Local<v8::Value> result = roundTrip(wrapper, scope);
   ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.isolate()));
   CryptoKey* newPrivateKey = V8CryptoKey::toImpl(result.As<v8::Object>());
@@ -653,7 +653,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyEC) {
                           WebCryptoKeyUsageSign | WebCryptoKeyUsageVerify);
 
   // Round trip the private key and check the visible attributes.
-  v8::Local<v8::Value> wrapper = toV8(privateKey, scope.getScriptState());
+  v8::Local<v8::Value> wrapper = ToV8(privateKey, scope.getScriptState());
   v8::Local<v8::Value> result = roundTrip(wrapper, scope);
   ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.isolate()));
   CryptoKey* newPrivateKey = V8CryptoKey::toImpl(result.As<v8::Object>());
@@ -731,7 +731,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyNoParams) {
                                  false, WebCryptoKeyUsageDeriveBits);
 
   // Round trip the key and check the visible attributes.
-  v8::Local<v8::Value> wrapper = toV8(key, scope.getScriptState());
+  v8::Local<v8::Value> wrapper = ToV8(key, scope.getScriptState());
   v8::Local<v8::Value> result = roundTrip(wrapper, scope);
   ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.isolate()));
   CryptoKey* newKey = V8CryptoKey::toImpl(result.As<v8::Object>());
@@ -896,7 +896,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
       KURL(ParsedURLString, "filesystem:http://example.com/persistent/"));
   // At time of writing, this can only happen for filesystems from PPAPI.
   fs->makeClonable();
-  v8::Local<v8::Value> wrapper = toV8(fs, scope.getScriptState());
+  v8::Local<v8::Value> wrapper = ToV8(fs, scope.getScriptState());
   v8::Local<v8::Value> result = roundTrip(wrapper, scope);
   ASSERT_FALSE(result.IsEmpty());
   ASSERT_TRUE(V8DOMFileSystem::hasInstance(result, scope.isolate()));
@@ -919,7 +919,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystemNotClonable) {
       FileSystemTypePersistent,
       KURL(ParsedURLString, "filesystem:http://example.com/persistent/0/"));
   ASSERT_FALSE(fs->clonable());
-  v8::Local<v8::Value> wrapper = toV8(fs, scope.getScriptState());
+  v8::Local<v8::Value> wrapper = ToV8(fs, scope.getScriptState());
   EXPECT_FALSE(V8ScriptValueSerializer(scope.getScriptState())
                    .serialize(wrapper, nullptr, exceptionState));
   EXPECT_TRUE(hadDOMException("DataCloneError", scope.getScriptState(),

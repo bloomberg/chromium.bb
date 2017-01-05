@@ -52,7 +52,7 @@ bool VoidCallbackFunctionTypedef::call(ScriptWrappable* scriptWrappable, const S
 
   v8::Local<v8::Value> argArgument = v8String(m_scriptState->isolate(), arg);
 
-  v8::Local<v8::Value> thisValue = toV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> thisValue = ToV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
 
   v8::Local<v8::Value> argv[] = { argArgument };
 

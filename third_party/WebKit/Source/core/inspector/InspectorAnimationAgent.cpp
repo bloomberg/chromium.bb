@@ -423,7 +423,7 @@ Response InspectorAnimationAgent::resolveAnimation(
       toV8InspectorStringView(kAnimationObjectGroup));
   *result = m_v8Session->wrapObject(
       scriptState->context(),
-      toV8(animation, scriptState->context()->Global(), scriptState->isolate()),
+      ToV8(animation, scriptState->context()->Global(), scriptState->isolate()),
       toV8InspectorStringView(kAnimationObjectGroup));
   if (!*result)
     return Response::Error("Element not associated with a document.");

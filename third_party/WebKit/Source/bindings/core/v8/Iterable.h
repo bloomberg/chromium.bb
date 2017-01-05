@@ -65,8 +65,8 @@ class Iterable {
 
       ASSERT(!exceptionState.hadException());
 
-      args[0] = toV8(value, creationContext, isolate);
-      args[1] = toV8(key, creationContext, isolate);
+      args[0] = ToV8(value, creationContext, isolate);
+      args[1] = ToV8(key, creationContext, isolate);
       if (args[0].IsEmpty() || args[1].IsEmpty()) {
         if (tryCatch.HasCaught())
           exceptionState.rethrowV8Exception(tryCatch.Exception());
@@ -124,9 +124,9 @@ class Iterable {
 
       Vector<ScriptValue, 2> entry;
       entry.push_back(
-          ScriptValue(scriptState, toV8(key, creationContext, isolate)));
+          ScriptValue(scriptState, ToV8(key, creationContext, isolate)));
       entry.push_back(
-          ScriptValue(scriptState, toV8(value, creationContext, isolate)));
+          ScriptValue(scriptState, ToV8(value, creationContext, isolate)));
       return entry;
     }
   };

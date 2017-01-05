@@ -100,7 +100,7 @@ unsigned V8NodeFilterCondition::acceptNode(
     receiver = filter;
   }
 
-  v8::Local<v8::Value> nodeWrapper = toV8(node, m_scriptState.get());
+  v8::Local<v8::Value> nodeWrapper = ToV8(node, m_scriptState.get());
   if (nodeWrapper.IsEmpty()) {
     if (exceptionCatcher.HasCaught())
       exceptionState.rethrowV8Exception(exceptionCatcher.Exception());

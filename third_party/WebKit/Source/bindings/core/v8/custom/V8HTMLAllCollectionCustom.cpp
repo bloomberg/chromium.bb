@@ -50,11 +50,11 @@ static v8::Local<v8::Value> getNamedItems(HTMLAllCollection* collection,
     return v8Undefined();
 
   if (namedItems.size() == 1)
-    return toV8(namedItems.at(0).release(), info.Holder(), info.GetIsolate());
+    return ToV8(namedItems.at(0).release(), info.Holder(), info.GetIsolate());
 
   // FIXME: HTML5 specification says this should be a HTMLCollection.
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-  return toV8(StaticElementList::adopt(namedItems), info.Holder(),
+  return ToV8(StaticElementList::adopt(namedItems), info.Holder(),
               info.GetIsolate());
 }
 
@@ -86,7 +86,7 @@ static v8::Local<v8::Value> getItem(
                       indexedWithNonNumberFeature);
   }
   Element* result = collection->item(index->Value());
-  return toV8(result, info.Holder(), info.GetIsolate());
+  return ToV8(result, info.Holder(), info.GetIsolate());
 }
 
 void V8HTMLAllCollection::itemMethodCustom(

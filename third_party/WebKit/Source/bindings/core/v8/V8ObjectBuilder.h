@@ -36,7 +36,7 @@ class CORE_EXPORT V8ObjectBuilder final {
   template <typename T>
   V8ObjectBuilder& add(const StringView& name, const T& value) {
     addInternal(name, v8::Local<v8::Value>(
-                          toV8(value, m_scriptState->context()->Global(),
+                          ToV8(value, m_scriptState->context()->Global(),
                                m_scriptState->isolate())));
     return *this;
   }

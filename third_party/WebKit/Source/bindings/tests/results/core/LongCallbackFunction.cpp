@@ -53,7 +53,7 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int num1, int 
   v8::Local<v8::Value> num1Argument = v8::Integer::New(m_scriptState->isolate(), num1);
   v8::Local<v8::Value> num2Argument = v8::Integer::New(m_scriptState->isolate(), num2);
 
-  v8::Local<v8::Value> thisValue = toV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> thisValue = ToV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
 
   v8::Local<v8::Value> argv[] = { num1Argument, num2Argument };
 

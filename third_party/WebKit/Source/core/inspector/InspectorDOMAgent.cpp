@@ -135,7 +135,7 @@ v8::Local<v8::Value> nodeV8Value(v8::Local<v8::Context> context, Node* node) {
           currentDOMWindow(isolate), node,
           BindingSecurity::ErrorReportOption::DoNotReport))
     return v8::Null(isolate);
-  return toV8(node, context->Global(), isolate);
+  return ToV8(node, context->Global(), isolate);
 }
 
 }  // namespace

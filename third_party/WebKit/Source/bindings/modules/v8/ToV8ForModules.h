@@ -15,7 +15,7 @@ class IDBAny;
 class IDBKey;
 class IDBKeyPath;
 
-inline v8::Local<v8::Value> toV8(const SQLValue& sqlValue,
+inline v8::Local<v8::Value> ToV8(const SQLValue& sqlValue,
                                  v8::Local<v8::Object> creationContext,
                                  v8::Isolate* isolate) {
   switch (sqlValue.getType()) {
@@ -30,13 +30,13 @@ inline v8::Local<v8::Value> toV8(const SQLValue& sqlValue,
   return v8::Local<v8::Value>();
 }
 
-v8::Local<v8::Value> toV8(const IDBKeyPath&,
+v8::Local<v8::Value> ToV8(const IDBKeyPath&,
                           v8::Local<v8::Object> creationContext,
                           v8::Isolate*);
-MODULES_EXPORT v8::Local<v8::Value> toV8(const IDBKey*,
+MODULES_EXPORT v8::Local<v8::Value> ToV8(const IDBKey*,
                                          v8::Local<v8::Object> creationContext,
                                          v8::Isolate*);
-v8::Local<v8::Value> toV8(const IDBAny*,
+v8::Local<v8::Value> ToV8(const IDBAny*,
                           v8::Local<v8::Object> creationContext,
                           v8::Isolate*);
 

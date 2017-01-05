@@ -84,7 +84,7 @@ v8::Local<v8::Value> V8ThrowException::createDOMException(
   DOMException* domException =
       DOMException::create(exceptionCode, sanitizedMessage, unsanitizedMessage);
   v8::Local<v8::Object> exceptionObj =
-      toV8(domException, isolate->GetCurrentContext()->Global(), isolate)
+      ToV8(domException, isolate->GetCurrentContext()->Global(), isolate)
           .As<v8::Object>();
   // Attach an Error object to the DOMException. This is then lazily used to
   // get the stack value.

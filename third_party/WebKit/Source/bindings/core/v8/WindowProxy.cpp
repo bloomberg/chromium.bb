@@ -393,7 +393,7 @@ void WindowProxy::updateDocumentProperty() {
   v8::Local<v8::Context> context = m_scriptState->context();
   LocalFrame* frame = toLocalFrame(m_frame);
   v8::Local<v8::Value> documentWrapper =
-      toV8(frame->document(), context->Global(), m_isolate);
+      ToV8(frame->document(), context->Global(), m_isolate);
   DCHECK(documentWrapper->IsObject());
   // Update the cached accessor for window.document.
   CHECK(V8PrivateProperty::getWindowDocumentCachedAccessor(m_isolate).set(
@@ -487,10 +487,10 @@ static v8::Local<v8::Value> getNamedProperty(
                        ? toHTMLIFrameElement(*element).contentFrame()
                        : 0;
     if (frame)
-      return toV8(frame->domWindow(), creationContext, isolate);
-    return toV8(element, creationContext, isolate);
+      return ToV8(frame->domWindow(), creationContext, isolate);
+    return ToV8(element, creationContext, isolate);
   }
-  return toV8(items, creationContext, isolate);
+  return ToV8(items, creationContext, isolate);
 }
 
 static void getter(v8::Local<v8::Name> property,

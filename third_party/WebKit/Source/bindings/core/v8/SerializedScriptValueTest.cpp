@@ -25,7 +25,7 @@ TEST(SerializedScriptValueTest, UserSelectedFile) {
   ASSERT_EQ(filePath, originalFile->path());
 
   v8::Local<v8::Value> v8OriginalFile =
-      toV8(originalFile, scope.context()->Global(), scope.isolate());
+      ToV8(originalFile, scope.context()->Global(), scope.isolate());
   RefPtr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::serialize(scope.isolate(), v8OriginalFile, nullptr,
                                        nullptr, ASSERT_NO_EXCEPTION);
@@ -48,7 +48,7 @@ TEST(SerializedScriptValueTest, FileConstructorFile) {
   ASSERT_EQ("hello.txt", originalFile->name());
 
   v8::Local<v8::Value> v8OriginalFile =
-      toV8(originalFile, scope.context()->Global(), scope.isolate());
+      ToV8(originalFile, scope.context()->Global(), scope.isolate());
   RefPtr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::serialize(scope.isolate(), v8OriginalFile, nullptr,
                                        nullptr, ASSERT_NO_EXCEPTION);

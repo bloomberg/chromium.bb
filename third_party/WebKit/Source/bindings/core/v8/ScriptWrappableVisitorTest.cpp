@@ -85,7 +85,7 @@ TEST(ScriptWrappableVisitorTest, OilpanCollectObjectsNotReachableFromV8) {
     DeathAwareScriptWrappable::observeDeathsOf(object);
 
     // Creates new V8 wrapper and associates it with global scope
-    toV8(object, scope.context()->Global(), isolate);
+    ToV8(object, scope.context()->Global(), isolate);
   }
 
   runV8Scavenger(isolate);
@@ -106,7 +106,7 @@ TEST(ScriptWrappableVisitorTest, OilpanDoesntCollectObjectsReachableFromV8) {
   DeathAwareScriptWrappable::observeDeathsOf(object);
 
   // Creates new V8 wrapper and associates it with global scope
-  toV8(object, scope.context()->Global(), isolate);
+  ToV8(object, scope.context()->Global(), isolate);
 
   runV8Scavenger(isolate);
   runV8FullGc(isolate);
@@ -126,7 +126,7 @@ TEST(ScriptWrappableVisitorTest, V8ReportsLiveObjectsDuringScavenger) {
   DeathAwareScriptWrappable::observeDeathsOf(object);
 
   v8::Local<v8::Value> wrapper =
-      toV8(object, scope.context()->Global(), isolate);
+      ToV8(object, scope.context()->Global(), isolate);
   EXPECT_TRUE(wrapper->IsObject());
   v8::Local<v8::Object> wrapperObject = wrapper->ToObject();
   // V8 collects wrappers with unmodified maps (as they can be recreated
@@ -151,7 +151,7 @@ TEST(ScriptWrappableVisitorTest, V8ReportsLiveObjectsDuringFullGc) {
   DeathAwareScriptWrappable* object = DeathAwareScriptWrappable::create();
   DeathAwareScriptWrappable::observeDeathsOf(object);
 
-  toV8(object, scope.context()->Global(), isolate);
+  ToV8(object, scope.context()->Global(), isolate);
 
   runV8Scavenger(isolate);
   runV8FullGc(isolate);

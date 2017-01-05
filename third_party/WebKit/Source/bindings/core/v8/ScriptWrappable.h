@@ -51,7 +51,7 @@ class CORE_EXPORT TraceWrapperBase {
 };
 
 // ScriptWrappable provides a way to map from/to C++ DOM implementation to/from
-// JavaScript object (platform object).  toV8() converts a ScriptWrappable to
+// JavaScript object (platform object).  ToV8() converts a ScriptWrappable to
 // a v8::Object and toScriptWrappable() converts a v8::Object back to
 // a ScriptWrappable.  v8::Object as platform object is called "wrapper object".
 // The wrapepr object for the main world is stored in ScriptWrappable.  Wrapper

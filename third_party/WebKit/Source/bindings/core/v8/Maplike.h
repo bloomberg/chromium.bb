@@ -27,7 +27,7 @@ class Maplike : public PairIterable<KeyType, ValueType> {
     ValueType value;
     if (getMapEntry(scriptState, key, value, exceptionState))
       return ScriptValue(scriptState,
-                         toV8(value, scriptState->context()->Global(),
+                         ToV8(value, scriptState->context()->Global(),
                               scriptState->isolate()));
     return ScriptValue(scriptState, v8::Undefined(scriptState->isolate()));
   }

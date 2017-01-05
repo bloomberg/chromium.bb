@@ -62,14 +62,14 @@ void V8MutationCallback::call(
   if (m_callback.isEmpty())
     return;
   v8::Local<v8::Value> observerHandle =
-      toV8(observer, m_scriptState->context()->Global(), isolate);
+      ToV8(observer, m_scriptState->context()->Global(), isolate);
   if (!observerHandle->IsObject())
     return;
 
   v8::Local<v8::Object> thisObject =
       v8::Local<v8::Object>::Cast(observerHandle);
   v8::Local<v8::Value> v8Mutations =
-      toV8(mutations, m_scriptState->context()->Global(), isolate);
+      ToV8(mutations, m_scriptState->context()->Global(), isolate);
   if (v8Mutations.IsEmpty())
     return;
   v8::Local<v8::Value> argv[] = {v8Mutations, observerHandle};

@@ -129,10 +129,10 @@ void V8Window::frameElementAttributeGetterCustom(
   // the frame it's in, rather than its own frame.
   // So, use its containing document as the creation context when wrapping.
   v8::Local<v8::Value> creationContext =
-      toV8(&impl->frameElement()->document(), info.Holder(), info.GetIsolate());
+      ToV8(&impl->frameElement()->document(), info.Holder(), info.GetIsolate());
   RELEASE_ASSERT(!creationContext.IsEmpty());
   v8::Local<v8::Value> wrapper =
-      toV8(impl->frameElement(), v8::Local<v8::Object>::Cast(creationContext),
+      ToV8(impl->frameElement(), v8::Local<v8::Object>::Cast(creationContext),
            info.GetIsolate());
   v8SetReturnValue(info, wrapper);
 }

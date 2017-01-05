@@ -132,7 +132,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   // object is alive in order to save creation time of the wrapper object.
   if ({{attribute.cpp_value}} && DOMDataStore::setReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value}}))
     return;
-  v8::Local<v8::Value> v8Value(toV8({{attribute.cpp_value}}, holder, info.GetIsolate()));
+  v8::Local<v8::Value> v8Value(ToV8({{attribute.cpp_value}}, holder, info.GetIsolate()));
   const char kKeepAliveKey[] = "KeepAlive#{{interface_name}}#{{attribute.name}}";
   V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), StringView(kKeepAliveKey, sizeof kKeepAliveKey)), v8Value);
   {% endif %}

@@ -144,7 +144,7 @@ class ScriptPromisePropertyTestBase {
         ScriptState::from(toV8Context(&document(), world));
     ScriptState::Scope scope(scriptState);
     return ScriptValue(
-        scriptState, toV8(value, scriptState->context()->Global(), isolate()));
+        scriptState, ToV8(value, scriptState->context()->Global(), isolate()));
   }
 
  private:
