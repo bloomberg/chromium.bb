@@ -23,23 +23,36 @@ void HostZoomMapObserver::ReadyToCommitNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  DCHECK(host_zoom_.is_bound());
-  if (!host_zoom_.is_bound())
-    return;
-
   RenderFrameHost* render_frame_host =
       navigation_handle->GetRenderFrameHost();
+  const auto& entry = host_zoom_ptrs_.find(render_frame_host);
+  if (entry == host_zoom_ptrs_.end())
+    return;
+
+  const mojom::HostZoomAssociatedPtr& host_zoom = entry->second;
+  DCHECK(host_zoom.is_bound());
+  if (host_zoom.encountered_error())
+    return;
+
   RenderProcessHost* render_process_host = render_frame_host->GetProcess();
   HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
       render_process_host->GetStoragePartition()->GetHostZoomMap());
   double zoom_level = host_zoom_map->GetZoomLevelForView(
       navigation_handle->GetURL(), render_process_host->GetID(),
       render_frame_host->GetRenderViewHost()->GetRoutingID());
-  host_zoom_->SetHostZoomLevel(navigation_handle->GetURL(), zoom_level);
+  host_zoom->SetHostZoomLevel(navigation_handle->GetURL(), zoom_level);
 }
 
 void HostZoomMapObserver::RenderFrameCreated(RenderFrameHost* rfh) {
-  rfh->GetRemoteAssociatedInterfaces()->GetInterface(&host_zoom_);
+  mojom::HostZoomAssociatedPtr host_zoom;
+  rfh->GetRemoteAssociatedInterfaces()->GetInterface(&host_zoom);
+  host_zoom_ptrs_[rfh] = std::move(host_zoom);
+}
+
+void HostZoomMapObserver::RenderFrameDeleted(RenderFrameHost* rfh) {
+  const auto& entry = host_zoom_ptrs_.find(rfh);
+  DCHECK(entry != host_zoom_ptrs_.end());
+  host_zoom_ptrs_.erase(entry);
 }
 
 }  // namespace content

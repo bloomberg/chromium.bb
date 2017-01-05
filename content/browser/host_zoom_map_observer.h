@@ -21,8 +21,9 @@ class HostZoomMapObserver : private WebContentsObserver {
   // WebContentsObserver implementation:
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
   void RenderFrameCreated(RenderFrameHost* rfh) override;
+  void RenderFrameDeleted(RenderFrameHost* rfh) override;
 
-  mojom::HostZoomAssociatedPtr host_zoom_;
+  std::map<RenderFrameHost*, mojom::HostZoomAssociatedPtr> host_zoom_ptrs_;
 };
 
 }  // namespace content
