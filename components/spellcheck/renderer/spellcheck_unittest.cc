@@ -178,7 +178,13 @@ class MockTextCheckingCompletion : public blink::WebTextCheckingCompletion {
 // A test with a "[ROBUSTNESS]" mark shows it is a robustness test and it uses
 // grammatically incorrect string.
 // TODO(groby): Please feel free to add more tests.
-TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
+#if defined(OS_WIN) && !defined(NDEBUG)
+// Test times out on win dbg. crbug.com/678753.
+#define MAYBE_SpellCheckStrings_EN_US DISABLED_SpellCheckStrings_EN_US
+#else
+#define MAYBE_SpellCheckStrings_EN_US SpellCheckStrings_EN_US
+#endif
+TEST_F(SpellCheckTest, MAYBE_SpellCheckStrings_EN_US) {
   static const struct {
     // A string to be tested.
     const wchar_t* input;
