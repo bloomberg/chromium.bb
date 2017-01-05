@@ -69,10 +69,10 @@ class AddToHomescreenDataFetcher
   // the renderer process. The initialization is asynchronous and
   // OnDidGetWebApplicationInfo is expected to be called when finished.
   AddToHomescreenDataFetcher(content::WebContents* web_contents,
-                             int ideal_icon_size_in_dp,
-                             int minimum_icon_size_in_dp,
-                             int ideal_splash_image_size_in_dp,
-                             int minimum_splash_image_size_in_dp,
+                             int ideal_icon_size_in_px,
+                             int minimum_icon_size_in_px,
+                             int ideal_splash_image_size_in_px,
+                             int minimum_splash_image_size_in_px,
                              bool check_webapk_compatible,
                              Observer* observer);
 
@@ -131,10 +131,10 @@ class AddToHomescreenDataFetcher
   base::CancelableTaskTracker favicon_task_tracker_;
   base::Timer data_timeout_timer_;
 
-  const int ideal_icon_size_in_dp_;
-  const int minimum_icon_size_in_dp_;
-  const int ideal_splash_image_size_in_dp_;
-  const int minimum_splash_image_size_in_dp_;
+  const int ideal_icon_size_in_px_;
+  const int minimum_icon_size_in_px_;
+  const int ideal_splash_image_size_in_px_;
+  const int minimum_splash_image_size_in_px_;
 
   // Indicates whether to check WebAPK compatibility.
   bool check_webapk_compatibility_;

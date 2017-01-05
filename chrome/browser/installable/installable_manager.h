@@ -26,10 +26,10 @@
 // manifest will always be fetched first.
 struct InstallableParams {
   // The ideal icon size to fetch. Used only if |fetch_valid_icon| is true.
-  int ideal_icon_size_in_dp = -1;
+  int ideal_icon_size_in_px = -1;
 
   // The minimum icon size to fetch. Used only if |fetch_valid_icon| is true.
-  int minimum_icon_size_in_dp = -1;
+  int minimum_icon_size_in_px = -1;
 
   // Check whether the site is installable. That is, it has a manifest valid for
   // a web app and a service worker controlling the manifest start URL and the
@@ -82,7 +82,7 @@ class InstallableManager
   ~InstallableManager() override;
 
   // Returns the minimum icon size in pixels for a site to be installable.
-  // TODO(dominickn): consolidate this concept with minimum_icon_size_in_dp
+  // TODO(dominickn): consolidate this concept with minimum_icon_size_in_px
   // across all platforms.
   static int GetMinimumIconSizeInPx();
 

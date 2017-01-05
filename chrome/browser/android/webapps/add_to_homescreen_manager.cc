@@ -83,10 +83,10 @@ void AddToHomescreenManager::Start(content::WebContents* web_contents) {
   }
 
   data_fetcher_ = new AddToHomescreenDataFetcher(
-      web_contents, ShortcutHelper::GetIdealHomescreenIconSizeInDp(),
-      ShortcutHelper::GetMinimumHomescreenIconSizeInDp(),
-      ShortcutHelper::GetIdealSplashImageSizeInDp(),
-      ShortcutHelper::GetMinimumSplashImageSizeInDp(),
+      web_contents, ShortcutHelper::GetIdealHomescreenIconSizeInPx(),
+      ShortcutHelper::GetMinimumHomescreenIconSizeInPx(),
+      ShortcutHelper::GetIdealSplashImageSizeInPx(),
+      ShortcutHelper::GetMinimumSplashImageSizeInPx(),
       check_webapk_compatible, this);
 }
 

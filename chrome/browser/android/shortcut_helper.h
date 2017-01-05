@@ -60,18 +60,18 @@ class ShortcutHelper {
       const SkBitmap& icon_bitmap);
 
   // Returns the ideal size for an icon representing a web app.
-  static int GetIdealHomescreenIconSizeInDp();
+  static int GetIdealHomescreenIconSizeInPx();
 
   // Returns the minimum size for an icon representing a web app.
-  static int GetMinimumHomescreenIconSizeInDp();
+  static int GetMinimumHomescreenIconSizeInPx();
 
   // Returns the ideal size for an image displayed on a web app's splash
   // screen.
-  static int GetIdealSplashImageSizeInDp();
+  static int GetIdealSplashImageSizeInPx();
 
   // Returns the minimum size for an image displayed on a web app's splash
   // screen.
-  static int GetMinimumSplashImageSizeInDp();
+  static int GetMinimumSplashImageSizeInPx();
 
   // Fetches the splash screen image and stores it inside the WebappDataStorage
   // of the webapp. The WebappDataStorage object *must* have been previously

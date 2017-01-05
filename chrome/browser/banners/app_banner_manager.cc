@@ -27,19 +27,11 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/installation/installation.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 
 namespace {
 
 int gCurrentRequestID = -1;
 int gTimeDeltaInDaysForTesting = 0;
-
-// Returns |size_in_px| in dp, i.e. divided by the current device scale factor.
-int ConvertIconSizeFromPxToDp(int size_in_px) {
-  return size_in_px /
-      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
-}
 
 InstallableParams ParamsToGetManifest() {
   return InstallableParams();
@@ -47,11 +39,11 @@ InstallableParams ParamsToGetManifest() {
 
 // Returns an InstallableParams object that requests all checks necessary for
 // a web app banner.
-InstallableParams ParamsToPerformInstallableCheck(int ideal_icon_size_in_dp,
-                                                  int minimum_icon_size_in_dp) {
+InstallableParams ParamsToPerformInstallableCheck(int ideal_icon_size_in_px,
+                                                  int minimum_icon_size_in_px) {
   InstallableParams params;
-  params.ideal_icon_size_in_dp = ideal_icon_size_in_dp;
-  params.minimum_icon_size_in_dp = minimum_icon_size_in_dp;
+  params.ideal_icon_size_in_px = ideal_icon_size_in_px;
+  params.minimum_icon_size_in_px = minimum_icon_size_in_px;
   params.check_installable = true;
   params.fetch_valid_icon = true;
 
@@ -202,14 +194,12 @@ std::string AppBannerManager::GetStatusParam(InstallableStatusCode code) {
   return std::string();
 }
 
-int AppBannerManager::GetIdealIconSizeInDp() {
-  return ConvertIconSizeFromPxToDp(
-      InstallableManager::GetMinimumIconSizeInPx());
+int AppBannerManager::GetIdealIconSizeInPx() {
+  return InstallableManager::GetMinimumIconSizeInPx();
 }
 
-int AppBannerManager::GetMinimumIconSizeInDp() {
-  return ConvertIconSizeFromPxToDp(
-      InstallableManager::GetMinimumIconSizeInPx());
+int AppBannerManager::GetMinimumIconSizeInPx() {
+  return InstallableManager::GetMinimumIconSizeInPx();
 }
 
 base::WeakPtr<AppBannerManager> AppBannerManager::GetWeakPtr() {
@@ -260,8 +250,8 @@ void AppBannerManager::PerformInstallableCheck() {
     return;
 
   // Fetch and verify the other required information.
-  manager_->GetData(ParamsToPerformInstallableCheck(GetIdealIconSizeInDp(),
-                                                    GetMinimumIconSizeInDp()),
+  manager_->GetData(ParamsToPerformInstallableCheck(GetIdealIconSizeInPx(),
+                                                    GetMinimumIconSizeInPx()),
                     base::Bind(&AppBannerManager::OnDidPerformInstallableCheck,
                                GetWeakPtr()));
 }

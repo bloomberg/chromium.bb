@@ -146,25 +146,25 @@ void ShortcutHelper::AddShortcutWithSkBitmap(
                                   info.source);
 }
 
-int ShortcutHelper::GetIdealHomescreenIconSizeInDp() {
+int ShortcutHelper::GetIdealHomescreenIconSizeInPx() {
   if (kIdealHomescreenIconSize == -1)
     GetHomescreenIconAndSplashImageSizes();
   return kIdealHomescreenIconSize;
 }
 
-int ShortcutHelper::GetMinimumHomescreenIconSizeInDp() {
+int ShortcutHelper::GetMinimumHomescreenIconSizeInPx() {
   if (kMinimumHomescreenIconSize == -1)
     GetHomescreenIconAndSplashImageSizes();
   return kMinimumHomescreenIconSize;
 }
 
-int ShortcutHelper::GetIdealSplashImageSizeInDp() {
+int ShortcutHelper::GetIdealSplashImageSizeInPx() {
   if (kIdealSplashImageSize == -1)
     GetHomescreenIconAndSplashImageSizes();
   return kIdealSplashImageSize;
 }
 
-int ShortcutHelper::GetMinimumSplashImageSizeInDp() {
+int ShortcutHelper::GetMinimumSplashImageSizeInPx() {
   if (kMinimumSplashImageSize == -1)
     GetHomescreenIconAndSplashImageSizes();
   return kMinimumSplashImageSize;
@@ -174,14 +174,14 @@ int ShortcutHelper::GetMinimumSplashImageSizeInDp() {
 void ShortcutHelper::FetchSplashScreenImage(
     content::WebContents* web_contents,
     const GURL& image_url,
-    const int ideal_splash_image_size_in_dp,
-    const int minimum_splash_image_size_in_dp,
+    const int ideal_splash_image_size_in_px,
+    const int minimum_splash_image_size_in_px,
     const std::string& webapp_id) {
   // This is a fire and forget task. It is not vital for the splash screen image
   // to be downloaded so if the downloader returns false there is no fallback.
   ManifestIconDownloader::Download(
-      web_contents, image_url, ideal_splash_image_size_in_dp,
-      minimum_splash_image_size_in_dp,
+      web_contents, image_url, ideal_splash_image_size_in_px,
+      minimum_splash_image_size_in_px,
       base::Bind(&ShortcutHelper::StoreWebappSplashImage, webapp_id));
 }
 

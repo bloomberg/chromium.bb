@@ -112,10 +112,10 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
   }
 
   InstallableParams params;
-  params.ideal_icon_size_in_dp =
-      ShortcutHelper::GetIdealHomescreenIconSizeInDp();
-  params.minimum_icon_size_in_dp =
-      ShortcutHelper::GetMinimumHomescreenIconSizeInDp();
+  params.ideal_icon_size_in_px =
+      ShortcutHelper::GetIdealHomescreenIconSizeInPx();
+  params.minimum_icon_size_in_px =
+      ShortcutHelper::GetMinimumHomescreenIconSizeInPx();
   params.check_installable = true;
   params.fetch_valid_icon = true;
   InstallableManager::CreateForWebContents(web_contents());

@@ -15,8 +15,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/console_message_level.h"
 #include "skia/ext/image_operations.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 
 // DevToolsConsoleHelper is a class that holds a WebContents in order to be able
 // to send a message to the WebContents' main frame. It is used so
@@ -49,19 +47,12 @@ void ManifestIconDownloader::DevToolsConsoleHelper::AddMessage(
 bool ManifestIconDownloader::Download(
     content::WebContents* web_contents,
     const GURL& icon_url,
-    int ideal_icon_size_in_dp,
-    int minimum_icon_size_in_dp,
+    int ideal_icon_size_in_px,
+    int minimum_icon_size_in_px,
     const ManifestIconDownloader::IconFetchCallback& callback) {
-  DCHECK(minimum_icon_size_in_dp <= ideal_icon_size_in_dp);
+  DCHECK(minimum_icon_size_in_px <= ideal_icon_size_in_px);
   if (!web_contents || !icon_url.is_valid())
     return false;
-
-  const float device_scale_factor =
-      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
-  const int ideal_icon_size_in_px =
-      static_cast<int>(round(ideal_icon_size_in_dp * device_scale_factor));
-  const int minimum_icon_size_in_px =
-      static_cast<int>(round(minimum_icon_size_in_dp * device_scale_factor));
 
   web_contents->DownloadImage(
       icon_url,

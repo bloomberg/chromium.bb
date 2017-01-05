@@ -25,8 +25,8 @@ InstallableParams GetManifestParams() {
 
 InstallableParams GetWebAppParams() {
   InstallableParams params = GetManifestParams();
-  params.ideal_icon_size_in_dp = 48;
-  params.minimum_icon_size_in_dp = 48;
+  params.ideal_icon_size_in_px = 144;
+  params.minimum_icon_size_in_px = 144;
   params.check_installable = true;
   params.fetch_valid_icon = true;
   return params;
@@ -34,8 +34,8 @@ InstallableParams GetWebAppParams() {
 
 InstallableParams GetIconParams() {
   InstallableParams params = GetManifestParams();
-  params.ideal_icon_size_in_dp = 48;
-  params.minimum_icon_size_in_dp = 48;
+  params.ideal_icon_size_in_px = 144;
+  params.minimum_icon_size_in_px = 144;
   params.fetch_valid_icon = true;
   return params;
 }
@@ -348,8 +348,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
         new CallbackTester(run_loop.QuitClosure()));
 
     InstallableParams params = GetWebAppParams();
-    params.ideal_icon_size_in_dp = 32;
-    params.minimum_icon_size_in_dp = 32;
+    params.ideal_icon_size_in_px = 96;
+    params.minimum_icon_size_in_px = 96;
     RunInstallableManager(tester.get(), params);
     run_loop.Run();
 
@@ -409,11 +409,11 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_FALSE(manager->manifest_url().is_empty());
     EXPECT_TRUE(manager->is_installable());
     EXPECT_EQ(1u, manager->icons_.size());
-    EXPECT_FALSE((manager->icon_url({48,48}).is_empty()));
-    EXPECT_NE(nullptr, (manager->icon({48,48})));
+    EXPECT_FALSE((manager->icon_url({144,144}).is_empty()));
+    EXPECT_NE(nullptr, (manager->icon({144,144})));
     EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->installable_error());
-    EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error({48,48})));
+    EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error({144,144})));
     EXPECT_TRUE(manager->tasks_.empty());
   }
 
@@ -440,11 +440,11 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_FALSE(manager->manifest_url().is_empty());
     EXPECT_TRUE(manager->is_installable());
     EXPECT_EQ(1u, manager->icons_.size());
-    EXPECT_FALSE((manager->icon_url({48,48}).is_empty()));
-    EXPECT_NE(nullptr, (manager->icon({48,48})));
+    EXPECT_FALSE((manager->icon_url({144,144}).is_empty()));
+    EXPECT_NE(nullptr, (manager->icon({144,144})));
     EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->installable_error());
-    EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error({48,48})));
+    EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error({144,144})));
     EXPECT_TRUE(manager->tasks_.empty());
   }
 
@@ -572,8 +572,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     // Dial up the icon size requirements to something that isn't available.
     // This should now fail with NoIconMatchingRequirements.
     InstallableParams params = GetWebAppParams();
-    params.ideal_icon_size_in_dp = 2000;
-    params.minimum_icon_size_in_dp = 2000;
+    params.ideal_icon_size_in_px = 2000;
+    params.minimum_icon_size_in_px = 2000;
     RunInstallableManager(tester.get(), params);
     run_loop.Run();
 
@@ -594,8 +594,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     // This should fail with NoIconMatchingRequirements.
     InstallableParams params = GetWebAppParams();
-    params.ideal_icon_size_in_dp = 2000;
-    params.minimum_icon_size_in_dp = 2000;
+    params.ideal_icon_size_in_px = 2000;
+    params.minimum_icon_size_in_px = 2000;
     NavigateAndRunInstallableManager(tester.get(), params,
                                      "/banners/manifest_test_page.html");
     run_loop.Run();

@@ -68,8 +68,8 @@ class AppBannerManagerAndroid
   // AppBannerManager overrides.
   std::string GetAppIdentifier() override;
   std::string GetBannerType() override;
-  int GetIdealIconSizeInDp() override;
-  int GetMinimumIconSizeInDp() override;
+  int GetIdealIconSizeInPx() override;
+  int GetMinimumIconSizeInPx() override;
   bool IsWebAppInstalled(content::BrowserContext* browser_context,
                          const GURL& start_url) override;
 

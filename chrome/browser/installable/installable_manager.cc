@@ -24,7 +24,7 @@ const char kPngExtension[] = ".png";
 // factor of a Nexus 5 device (3x). For mobile and desktop platforms, a 144px
 // icon is an approximate, appropriate lower bound. It is the currently
 // advertised minimum icon size for triggering banners.
-// TODO(dominickn): consolidate with minimum_icon_size_in_dp across platforms.
+// TODO(dominickn): consolidate with minimum_icon_size_in_px across platforms.
 const int kIconMinimumSizeInPx = 144;
 
 // Returns true if |manifest| specifies a PNG icon >= 144x144px (or size "any").
@@ -115,12 +115,12 @@ void InstallableManager::GetData(const InstallableParams& params,
 
 InstallableManager::IconProperty& InstallableManager::GetIcon(
     const InstallableParams& params) {
-  return icons_[{params.ideal_icon_size_in_dp, params.minimum_icon_size_in_dp}];
+  return icons_[{params.ideal_icon_size_in_px, params.minimum_icon_size_in_px}];
 }
 
 bool InstallableManager::IsIconFetched(const InstallableParams& params) const {
   const auto it = icons_.find(
-      {params.ideal_icon_size_in_dp, params.minimum_icon_size_in_dp});
+      {params.ideal_icon_size_in_px, params.minimum_icon_size_in_px});
   return it != icons_.end() && it->second.fetched;
 }
 
@@ -381,15 +381,15 @@ void InstallableManager::CheckAndFetchBestIcon() {
   icon.fetched = true;
 
   GURL icon_url = ManifestIconSelector::FindBestMatchingIcon(
-      manifest().icons, params.ideal_icon_size_in_dp,
-      params.minimum_icon_size_in_dp);
+      manifest().icons, params.ideal_icon_size_in_px,
+      params.minimum_icon_size_in_px);
 
   if (icon_url.is_empty()) {
     icon.error = NO_ACCEPTABLE_ICON;
   } else {
     bool can_download_icon = ManifestIconDownloader::Download(
-        GetWebContents(), icon_url, params.ideal_icon_size_in_dp,
-        params.minimum_icon_size_in_dp,
+        GetWebContents(), icon_url, params.ideal_icon_size_in_px,
+        params.minimum_icon_size_in_px,
         base::Bind(&InstallableManager::OnAppIconFetched,
                    weak_factory_.GetWeakPtr(), icon_url));
     if (can_download_icon)

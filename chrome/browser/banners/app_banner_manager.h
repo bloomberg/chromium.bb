@@ -116,8 +116,8 @@ class AppBannerManager : public content::WebContentsObserver,
   std::string GetStatusParam(InstallableStatusCode code);
 
   // Returns the ideal and minimum icon sizes required for being installable.
-  virtual int GetIdealIconSizeInDp();
-  virtual int GetMinimumIconSizeInDp();
+  virtual int GetIdealIconSizeInPx();
+  virtual int GetMinimumIconSizeInPx();
 
   // Returns a WeakPtr to this object. Exposed so subclasses/infobars may
   // may bind callbacks without needing their own WeakPtrFactory.

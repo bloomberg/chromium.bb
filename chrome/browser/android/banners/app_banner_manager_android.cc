@@ -71,17 +71,17 @@ base::Closure AppBannerManagerAndroid::FetchWebappSplashScreenImageCallback(
   content::WebContents* contents = web_contents();
   DCHECK(contents);
 
-  int ideal_splash_image_size_in_dp =
-      ShortcutHelper::GetIdealSplashImageSizeInDp();
-  int minimum_splash_image_size_in_dp =
-      ShortcutHelper::GetMinimumSplashImageSizeInDp();
+  int ideal_splash_image_size_in_px =
+      ShortcutHelper::GetIdealSplashImageSizeInPx();
+  int minimum_splash_image_size_in_px =
+      ShortcutHelper::GetMinimumSplashImageSizeInPx();
   GURL image_url = ManifestIconSelector::FindBestMatchingIcon(
-      manifest_.icons, ideal_splash_image_size_in_dp,
-      minimum_splash_image_size_in_dp);
+      manifest_.icons, ideal_splash_image_size_in_px,
+      minimum_splash_image_size_in_px);
 
   return base::Bind(&ShortcutHelper::FetchSplashScreenImage, contents,
-                    image_url, ideal_splash_image_size_in_dp,
-                    minimum_splash_image_size_in_dp, webapp_id);
+                    image_url, ideal_splash_image_size_in_px,
+                    minimum_splash_image_size_in_px, webapp_id);
 }
 
 const base::android::ScopedJavaGlobalRef<jobject>&
@@ -108,8 +108,8 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
   icon_url_ = GURL(ConvertJavaStringToUTF8(env, jicon_url));
 
   return ManifestIconDownloader::Download(
-      web_contents(), icon_url_, GetIdealIconSizeInDp(),
-      GetMinimumIconSizeInDp(),
+      web_contents(), icon_url_, GetIdealIconSizeInPx(),
+      GetMinimumIconSizeInPx(),
       base::Bind(&AppBannerManager::OnAppIconFetched, GetWeakPtr()));
 }
 
@@ -132,12 +132,12 @@ std::string AppBannerManagerAndroid::GetBannerType() {
                                     : "play";
 }
 
-int AppBannerManagerAndroid::GetIdealIconSizeInDp() {
-  return ShortcutHelper::GetIdealHomescreenIconSizeInDp();
+int AppBannerManagerAndroid::GetIdealIconSizeInPx() {
+  return ShortcutHelper::GetIdealHomescreenIconSizeInPx();
 }
 
-int AppBannerManagerAndroid::GetMinimumIconSizeInDp() {
-  return ShortcutHelper::GetMinimumHomescreenIconSizeInDp();
+int AppBannerManagerAndroid::GetMinimumIconSizeInPx() {
+  return ShortcutHelper::GetMinimumHomescreenIconSizeInPx();
 }
 
 bool AppBannerManagerAndroid::IsWebAppInstalled(
@@ -252,7 +252,7 @@ bool AppBannerManagerAndroid::CanHandleNonWebApp(const std::string& platform,
   ScopedJavaLocalRef<jstring> jreferrer(ConvertUTF8ToJavaString(env, referrer));
   Java_AppBannerManager_fetchAppDetails(env, java_banner_manager_, jurl,
                                         jpackage, jreferrer,
-                                        GetIdealIconSizeInDp());
+                                        GetIdealIconSizeInPx());
   return true;
 }
 

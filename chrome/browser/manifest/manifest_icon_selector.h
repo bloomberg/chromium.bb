@@ -21,16 +21,14 @@ class ManifestIconSelector {
   // If/when this class is generalized, it may be a good idea to switch this to
   // taking in pixels, instead.
   //
-  // Any icon returned will be close as possible to |ideal_icon_size_in_dp|
-  // with a size not less than |minimum_icon_size_in_dp|.
+  // Any icon returned will be close as possible to |ideal_icon_size_in_px|
+  // with a size not less than |minimum_icon_size_in_px|.
   //
   // Returns the icon url if a suitable icon is found. An empty URL otherwise.
   static GURL FindBestMatchingIcon(
       const std::vector<content::Manifest::Icon>& icons,
-      int ideal_icon_size_in_dp,
-      int minimum_icon_size_in_dp);
-
-  static int ConvertIconSizeFromDpToPx(int icon_size_in_dp);
+      int ideal_icon_size_in_px,
+      int minimum_icon_size_in_px);
 
  private:
   ManifestIconSelector(int ideal_icon_size_in_px,

@@ -502,8 +502,8 @@ public class ShortcutHelper {
      * @param resources Resources to retrieve the dimension from.
      * @return the dimensions in dp which the icon should have.
      */
-    public static int getIdealHomescreenIconSizeInDp(Context context) {
-        return getIdealSizeFromResourceInDp(context, R.dimen.webapp_home_screen_icon_size);
+    public static int getIdealHomescreenIconSizeInPx(Context context) {
+        return getSizeFromResourceInPx(context, R.dimen.webapp_home_screen_icon_size);
     }
 
     /**
@@ -512,13 +512,12 @@ public class ShortcutHelper {
      * @param resources Resources to retrieve the dimension from.
      * @return the lower bound of the size which the icon should have in dp.
      */
-    public static int getMinimumHomescreenIconSizeInDp(Context context) {
+    public static int getMinimumHomescreenIconSizeInPx(Context context) {
         float sizeInPx = context.getResources().getDimension(R.dimen.webapp_home_screen_icon_size);
         float density = context.getResources().getDisplayMetrics().density;
         float idealIconSizeInDp = sizeInPx / density;
 
-        float minimumIconSizeInPx = idealIconSizeInDp * (density - 1);
-        return Math.round(minimumIconSizeInPx / density);
+        return Math.round(idealIconSizeInDp * (density - 1));
     }
 
     /**
@@ -526,8 +525,8 @@ public class ShortcutHelper {
      * @param resources Resources to retrieve the dimension from.
      * @return the dimensions in dp which the image should have.
      */
-    public static int getIdealSplashImageSizeInDp(Context context) {
-        return getIdealSizeFromResourceInDp(context, R.dimen.webapp_splash_image_size_ideal);
+    public static int getIdealSplashImageSizeInPx(Context context) {
+        return getSizeFromResourceInPx(context, R.dimen.webapp_splash_image_size_ideal);
     }
 
     /**
@@ -535,8 +534,8 @@ public class ShortcutHelper {
      * @param resources Resources to retrieve the dimension from.
      * @return the lower bound of the size which the image should have in dp.
      */
-    public static int getMinimumSplashImageSizeInDp(Context context) {
-        return getIdealSizeFromResourceInDp(context, R.dimen.webapp_splash_image_size_minimum);
+    public static int getMinimumSplashImageSizeInPx(Context context) {
+        return getSizeFromResourceInPx(context, R.dimen.webapp_splash_image_size_minimum);
     }
 
     /**
@@ -593,10 +592,10 @@ public class ShortcutHelper {
         Context context = ContextUtils.getApplicationContext();
         // This ordering must be kept up to date with the C++ ShortcutHelper.
         return new int[] {
-            getIdealHomescreenIconSizeInDp(context),
-            getMinimumHomescreenIconSizeInDp(context),
-            getIdealSplashImageSizeInDp(context),
-            getMinimumSplashImageSizeInDp(context)
+            getIdealHomescreenIconSizeInPx(context),
+            getMinimumHomescreenIconSizeInPx(context),
+            getIdealSplashImageSizeInPx(context),
+            getMinimumSplashImageSizeInPx(context)
         };
     }
 
@@ -617,10 +616,8 @@ public class ShortcutHelper {
         return false;
     }
 
-    private static int getIdealSizeFromResourceInDp(Context context, int resource) {
-        float sizeInPx = context.getResources().getDimension(resource);
-        float density = context.getResources().getDisplayMetrics().density;
-        return Math.round(sizeInPx / density);
+    private static int getSizeFromResourceInPx(Context context, int resource) {
+        return Math.round(context.getResources().getDimension(resource));
     }
 
     private static Bitmap getBitmapFromResourceId(Context context, int id, int density) {
