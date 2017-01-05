@@ -30,10 +30,10 @@
 
 #include "modules/filesystem/DataTransferItemFileSystem.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/DataTransferItem.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystem.h"
@@ -47,9 +47,8 @@
 namespace blink {
 
 // static
-Entry* DataTransferItemFileSystem::webkitGetAsEntry(
-    ExecutionContext* executionContext,
-    DataTransferItem& item) {
+Entry* DataTransferItemFileSystem::webkitGetAsEntry(ScriptState* scriptState,
+                                                    DataTransferItem& item) {
   if (!item.getDataObjectItem()->isFilename())
     return 0;
 
@@ -62,8 +61,8 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(
 
   DOMFileSystem* domFileSystem =
       DraggedIsolatedFileSystemImpl::getDOMFileSystem(
-          item.getDataTransfer()->dataObject(), executionContext,
-          *item.getDataObjectItem());
+          item.getDataTransfer()->dataObject(),
+          scriptState->getExecutionContext(), *item.getDataObjectItem());
   if (!domFileSystem) {
     // IsolatedFileSystem may not be enabled.
     return 0;

@@ -300,19 +300,19 @@ Response* Response::create(ScriptState* scriptState,
   return new Response(scriptState->getExecutionContext(), responseData);
 }
 
-Response* Response::error(ExecutionContext* context) {
+Response* Response::error(ScriptState* scriptState) {
   FetchResponseData* responseData =
       FetchResponseData::createNetworkErrorResponse();
-  Response* r = new Response(context, responseData);
+  Response* r = new Response(scriptState->getExecutionContext(), responseData);
   r->m_headers->setGuard(Headers::ImmutableGuard);
   return r;
 }
 
-Response* Response::redirect(ExecutionContext* context,
+Response* Response::redirect(ScriptState* scriptState,
                              const String& url,
                              unsigned short status,
                              ExceptionState& exceptionState) {
-  KURL parsedURL = context->completeURL(url);
+  KURL parsedURL = scriptState->getExecutionContext()->completeURL(url);
   if (!parsedURL.isValid()) {
     exceptionState.throwTypeError("Failed to parse URL from " + url);
     return nullptr;
@@ -323,7 +323,7 @@ Response* Response::redirect(ExecutionContext* context,
     return nullptr;
   }
 
-  Response* r = new Response(context);
+  Response* r = new Response(scriptState->getExecutionContext());
   r->m_headers->setGuard(Headers::ImmutableGuard);
   r->m_response->setStatus(status);
   r->m_response->headerList()->set("Location", parsedURL);

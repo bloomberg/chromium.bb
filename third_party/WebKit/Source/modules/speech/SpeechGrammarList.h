@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class ExecutionContext;
+class ScriptState;
 
 class MODULES_EXPORT SpeechGrammarList final
     : public GarbageCollected<SpeechGrammarList>,
@@ -46,7 +46,7 @@ class MODULES_EXPORT SpeechGrammarList final
   unsigned length() const { return m_grammars.size(); }
   SpeechGrammar* item(unsigned) const;
 
-  void addFromUri(ExecutionContext*, const String& src, double weight = 1.0);
+  void addFromUri(ScriptState*, const String& src, double weight = 1.0);
   void addFromString(const String&, double weight = 1.0);
 
   DECLARE_TRACE();

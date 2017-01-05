@@ -89,11 +89,11 @@ IDBKeyRange* IDBKeyRange::only(IDBKey* key, ExceptionState& exceptionState) {
   return IDBKeyRange::create(key, key, LowerBoundClosed, UpperBoundClosed);
 }
 
-IDBKeyRange* IDBKeyRange::only(ExecutionContext* context,
+IDBKeyRange* IDBKeyRange::only(ScriptState* scriptState,
                                const ScriptValue& keyValue,
                                ExceptionState& exceptionState) {
-  IDBKey* key =
-      ScriptValue::to<IDBKey*>(toIsolate(context), keyValue, exceptionState);
+  IDBKey* key = ScriptValue::to<IDBKey*>(
+      toIsolate(scriptState->getExecutionContext()), keyValue, exceptionState);
   if (exceptionState.hadException())
     return nullptr;
   if (!key || !key->isValid()) {
@@ -105,12 +105,13 @@ IDBKeyRange* IDBKeyRange::only(ExecutionContext* context,
   return IDBKeyRange::create(key, key, LowerBoundClosed, UpperBoundClosed);
 }
 
-IDBKeyRange* IDBKeyRange::lowerBound(ExecutionContext* context,
+IDBKeyRange* IDBKeyRange::lowerBound(ScriptState* scriptState,
                                      const ScriptValue& boundValue,
                                      bool open,
                                      ExceptionState& exceptionState) {
   IDBKey* bound =
-      ScriptValue::to<IDBKey*>(toIsolate(context), boundValue, exceptionState);
+      ScriptValue::to<IDBKey*>(toIsolate(scriptState->getExecutionContext()),
+                               boundValue, exceptionState);
   if (exceptionState.hadException())
     return nullptr;
   if (!bound || !bound->isValid()) {
@@ -123,12 +124,13 @@ IDBKeyRange* IDBKeyRange::lowerBound(ExecutionContext* context,
       bound, nullptr, open ? LowerBoundOpen : LowerBoundClosed, UpperBoundOpen);
 }
 
-IDBKeyRange* IDBKeyRange::upperBound(ExecutionContext* context,
+IDBKeyRange* IDBKeyRange::upperBound(ScriptState* scriptState,
                                      const ScriptValue& boundValue,
                                      bool open,
                                      ExceptionState& exceptionState) {
   IDBKey* bound =
-      ScriptValue::to<IDBKey*>(toIsolate(context), boundValue, exceptionState);
+      ScriptValue::to<IDBKey*>(toIsolate(scriptState->getExecutionContext()),
+                               boundValue, exceptionState);
   if (exceptionState.hadException())
     return nullptr;
   if (!bound || !bound->isValid()) {
@@ -141,14 +143,15 @@ IDBKeyRange* IDBKeyRange::upperBound(ExecutionContext* context,
                              open ? UpperBoundOpen : UpperBoundClosed);
 }
 
-IDBKeyRange* IDBKeyRange::bound(ExecutionContext* context,
+IDBKeyRange* IDBKeyRange::bound(ScriptState* scriptState,
                                 const ScriptValue& lowerValue,
                                 const ScriptValue& upperValue,
                                 bool lowerOpen,
                                 bool upperOpen,
                                 ExceptionState& exceptionState) {
   IDBKey* lower =
-      ScriptValue::to<IDBKey*>(toIsolate(context), lowerValue, exceptionState);
+      ScriptValue::to<IDBKey*>(toIsolate(scriptState->getExecutionContext()),
+                               lowerValue, exceptionState);
   if (exceptionState.hadException())
     return nullptr;
   if (!lower || !lower->isValid()) {
@@ -158,7 +161,8 @@ IDBKeyRange* IDBKeyRange::bound(ExecutionContext* context,
   }
 
   IDBKey* upper =
-      ScriptValue::to<IDBKey*>(toIsolate(context), upperValue, exceptionState);
+      ScriptValue::to<IDBKey*>(toIsolate(scriptState->getExecutionContext()),
+                               upperValue, exceptionState);
   if (exceptionState.hadException())
     return nullptr;
   if (!upper || !upper->isValid()) {
@@ -184,11 +188,11 @@ IDBKeyRange* IDBKeyRange::bound(ExecutionContext* context,
                              upperOpen ? UpperBoundOpen : UpperBoundClosed);
 }
 
-bool IDBKeyRange::includes(ExecutionContext* context,
+bool IDBKeyRange::includes(ScriptState* scriptState,
                            const ScriptValue& keyValue,
                            ExceptionState& exceptionState) {
-  IDBKey* key =
-      ScriptValue::to<IDBKey*>(toIsolate(context), keyValue, exceptionState);
+  IDBKey* key = ScriptValue::to<IDBKey*>(
+      toIsolate(scriptState->getExecutionContext()), keyValue, exceptionState);
   if (exceptionState.hadException())
     return false;
   if (!key || !key->isValid()) {

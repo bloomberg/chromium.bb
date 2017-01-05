@@ -12,8 +12,8 @@
 
 namespace blink {
 
+class ScriptState;
 class ExceptionState;
-class ExecutionContext;
 class KURL;
 class ArrayBufferViewOrBlobOrStringOrFormData;
 
@@ -26,7 +26,7 @@ class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>,
   static NavigatorBeacon& from(Navigator&);
   virtual ~NavigatorBeacon();
 
-  static bool sendBeacon(ExecutionContext*,
+  static bool sendBeacon(ScriptState*,
                          Navigator&,
                          const String&,
                          const ArrayBufferViewOrBlobOrStringOrFormData&,

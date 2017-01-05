@@ -52,28 +52,28 @@ class MODULES_EXPORT Entry : public EntryBase, public ScriptWrappable {
   DOMFileSystem* filesystem() const {
     return static_cast<DOMFileSystem*>(m_fileSystem.get());
   }
-  DOMFileSystem* filesystem(ExecutionContext*) const;
+  DOMFileSystem* filesystem(ScriptState*) const;
 
-  void getMetadata(ExecutionContext*,
+  void getMetadata(ScriptState*,
                    MetadataCallback* successCallback = nullptr,
                    ErrorCallback* = nullptr);
-  void moveTo(ExecutionContext*,
+  void moveTo(ScriptState*,
               DirectoryEntry* parent,
               const String& name = String(),
               EntryCallback* successCallback = nullptr,
               ErrorCallback* = nullptr) const;
-  void copyTo(ExecutionContext*,
+  void copyTo(ScriptState*,
               DirectoryEntry* parent,
               const String& name = String(),
               EntryCallback* successCallback = nullptr,
               ErrorCallback* = nullptr) const;
-  void remove(ExecutionContext*,
+  void remove(ScriptState*,
               VoidCallback* successCallback = nullptr,
               ErrorCallback* = nullptr) const;
-  void getParent(ExecutionContext*,
+  void getParent(ScriptState*,
                  EntryCallback* successCallback = nullptr,
                  ErrorCallback* = nullptr) const;
-  String toURL(ExecutionContext*) const;
+  String toURL(ScriptState*) const;
 
   DECLARE_VIRTUAL_TRACE();
 

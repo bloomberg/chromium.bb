@@ -38,13 +38,13 @@ namespace blink {
 
 class DataTransferItem;
 class Entry;
-class ExecutionContext;
+class ScriptState;
 
 class DataTransferItemFileSystem {
   STATIC_ONLY(DataTransferItemFileSystem);
 
  public:
-  static Entry* webkitGetAsEntry(ExecutionContext*, DataTransferItem&);
+  static Entry* webkitGetAsEntry(ScriptState*, DataTransferItem&);
 };
 
 }  // namespace blink

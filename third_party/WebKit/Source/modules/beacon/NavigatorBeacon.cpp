@@ -5,6 +5,7 @@
 #include "modules/beacon/NavigatorBeacon.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/modules/v8/ArrayBufferViewOrBlobOrStringOrFormData.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
@@ -94,13 +95,14 @@ void NavigatorBeacon::addTransmittedBytes(int sentBytes) {
 }
 
 bool NavigatorBeacon::sendBeacon(
-    ExecutionContext* context,
+    ScriptState* scriptState,
     Navigator& navigator,
     const String& urlstring,
     const ArrayBufferViewOrBlobOrStringOrFormData& data,
     ExceptionState& exceptionState) {
   NavigatorBeacon& impl = NavigatorBeacon::from(navigator);
 
+  ExecutionContext* context = scriptState->getExecutionContext();
   KURL url = context->completeURL(urlstring);
   if (!impl.canSendBeacon(context, url, exceptionState))
     return false;

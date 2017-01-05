@@ -31,5 +31,5 @@
 // https://wicg.github.io/entries-api/#html-data
 
 partial interface DataTransferItem {
-    [CallWith=ExecutionContext, Measure] Entry? webkitGetAsEntry();
+    [CallWith=ScriptState, Measure] Entry? webkitGetAsEntry();
 };

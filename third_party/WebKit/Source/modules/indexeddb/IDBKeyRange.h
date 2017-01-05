@@ -68,18 +68,18 @@ class MODULES_EXPORT IDBKeyRange final : public GarbageCollected<IDBKeyRange>,
   bool lowerOpen() const { return m_lowerType == LowerBoundOpen; }
   bool upperOpen() const { return m_upperType == UpperBoundOpen; }
 
-  static IDBKeyRange* only(ExecutionContext*,
+  static IDBKeyRange* only(ScriptState*,
                            const ScriptValue& key,
                            ExceptionState&);
-  static IDBKeyRange* lowerBound(ExecutionContext*,
+  static IDBKeyRange* lowerBound(ScriptState*,
                                  const ScriptValue& bound,
                                  bool open,
                                  ExceptionState&);
-  static IDBKeyRange* upperBound(ExecutionContext*,
+  static IDBKeyRange* upperBound(ScriptState*,
                                  const ScriptValue& bound,
                                  bool open,
                                  ExceptionState&);
-  static IDBKeyRange* bound(ExecutionContext*,
+  static IDBKeyRange* bound(ScriptState*,
                             const ScriptValue& lower,
                             const ScriptValue& upper,
                             bool lowerOpen,
@@ -88,7 +88,7 @@ class MODULES_EXPORT IDBKeyRange final : public GarbageCollected<IDBKeyRange>,
 
   static IDBKeyRange* only(IDBKey* value, ExceptionState&);
 
-  bool includes(ExecutionContext*, const ScriptValue& key, ExceptionState&);
+  bool includes(ScriptState*, const ScriptValue& key, ExceptionState&);
 
  private:
   IDBKeyRange(IDBKey* lower,

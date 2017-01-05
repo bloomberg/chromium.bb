@@ -38,8 +38,9 @@ const char* WorkerNavigatorNetworkInformation::supplementName() {
 }
 
 NetworkInformation* WorkerNavigatorNetworkInformation::connection(
-    ExecutionContext* context,
+    ScriptState* scriptState,
     WorkerNavigator& navigator) {
+  ExecutionContext* context = scriptState->getExecutionContext();
   return WorkerNavigatorNetworkInformation::from(navigator, context)
       .connection(context);
 }

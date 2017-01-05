@@ -10,8 +10,8 @@
 
 namespace blink {
 
-class ExecutionContext;
 class NetworkInformation;
+class ScriptState;
 class WorkerNavigator;
 
 class WorkerNavigatorNetworkInformation final
@@ -27,7 +27,7 @@ class WorkerNavigatorNetworkInformation final
       ExecutionContext*);
   static const char* supplementName();
 
-  static NetworkInformation* connection(ExecutionContext*, WorkerNavigator&);
+  static NetworkInformation* connection(ScriptState*, WorkerNavigator&);
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -49,8 +49,8 @@ class MODULES_EXPORT Response final : public Body {
 
   static Response* createClone(const Response&);
 
-  static Response* error(ExecutionContext*);
-  static Response* redirect(ExecutionContext*,
+  static Response* error(ScriptState*);
+  static Response* redirect(ScriptState*,
                             const String& url,
                             unsigned short status,
                             ExceptionState&);

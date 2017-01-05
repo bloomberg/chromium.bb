@@ -6,5 +6,5 @@
     RuntimeEnabled=NetworkInformation,
     Exposed=Worker
 ] partial interface WorkerNavigator {
-    [CallWith=ExecutionContext, MeasureAs=NetInfo] readonly attribute NetworkInformation connection;
+    [CallWith=ScriptState, MeasureAs=NetInfo] readonly attribute NetworkInformation connection;
 };

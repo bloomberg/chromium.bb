@@ -25,6 +25,7 @@
 
 #include "modules/speech/SpeechGrammarList.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
 
 namespace blink {
@@ -40,10 +41,10 @@ SpeechGrammar* SpeechGrammarList::item(unsigned index) const {
   return m_grammars[index];
 }
 
-void SpeechGrammarList::addFromUri(ExecutionContext* executionContext,
+void SpeechGrammarList::addFromUri(ScriptState* scriptState,
                                    const String& src,
                                    double weight) {
-  Document* document = toDocument(executionContext);
+  Document* document = toDocument(scriptState->getExecutionContext());
   m_grammars.append(SpeechGrammar::create(document->completeURL(src), weight));
 }
 
