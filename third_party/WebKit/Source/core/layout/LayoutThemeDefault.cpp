@@ -336,31 +336,36 @@ int LayoutThemeDefault::popupInternalPaddingBottom(
 }
 
 int LayoutThemeDefault::menuListArrowWidthInDIP() const {
-  if (m_menuListArrowWidthInDIP > 0)
-    return m_menuListArrowWidthInDIP;
   int width = Platform::current()
                   ->themeEngine()
                   ->getSize(WebThemeEngine::PartScrollbarUpArrow)
                   .width;
-  const_cast<LayoutThemeDefault*>(this)->m_menuListArrowWidthInDIP =
-      width > 0 ? width : 15;
-  return m_menuListArrowWidthInDIP;
+  return width > 0 ? width : 15;
 }
 
 float LayoutThemeDefault::clampedMenuListArrowPaddingSize(
     const HostWindow* host,
     const ComputedStyle& style) const {
+  if (m_cachedMenuListArrowPaddingSize > 0 &&
+      style.effectiveZoom() == m_cachedMenuListArrowZoomLevel)
+    return m_cachedMenuListArrowPaddingSize;
+  m_cachedMenuListArrowZoomLevel = style.effectiveZoom();
   int originalSize = menuListArrowWidthInDIP();
   int scaledSize =
       host ? host->windowToViewportScalar(originalSize) : originalSize;
   // The result should not be samller than the scrollbar thickness in order to
   // secure space for scrollbar in popup.
   float deviceScale = 1.0f * scaledSize / originalSize;
-  if (style.effectiveZoom() < deviceScale)
-    return scaledSize;
-  // The value should be zoomed though scrollbars aren't scaled by zoom.
-  // crbug.com/432795.
-  return originalSize * style.effectiveZoom();
+  float size;
+  if (m_cachedMenuListArrowZoomLevel < deviceScale) {
+    size = scaledSize;
+  } else {
+    // The value should be zoomed though scrollbars aren't scaled by zoom.
+    // crbug.com/432795.
+    size = originalSize * m_cachedMenuListArrowZoomLevel;
+  }
+  m_cachedMenuListArrowPaddingSize = size;
+  return size;
 }
 
 // static
