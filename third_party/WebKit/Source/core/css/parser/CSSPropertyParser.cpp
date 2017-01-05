@@ -758,26 +758,6 @@ static CSSValueList* consumeScale(CSSParserTokenRange& range) {
   return list;
 }
 
-static CSSValueList* consumeTranslate(CSSParserTokenRange& range,
-                                      CSSParserMode cssParserMode) {
-  ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
-  CSSValue* translate =
-      consumeLengthOrPercent(range, cssParserMode, ValueRangeAll);
-  if (!translate)
-    return nullptr;
-  CSSValueList* list = CSSValueList::createSpaceSeparated();
-  list->append(*translate);
-  translate = consumeLengthOrPercent(range, cssParserMode, ValueRangeAll);
-  if (translate) {
-    list->append(*translate);
-    translate = consumeLength(range, cssParserMode, ValueRangeAll);
-    if (translate)
-      list->append(*translate);
-  }
-
-  return list;
-}
-
 static CSSValue* consumeCounter(CSSParserTokenRange& range, int defaultValue) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
@@ -3469,8 +3449,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeRotation(m_range);
     case CSSPropertyScale:
       return consumeScale(m_range);
-    case CSSPropertyTranslate:
-      return consumeTranslate(m_range, m_context.mode());
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
       return consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
