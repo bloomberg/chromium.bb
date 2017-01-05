@@ -119,14 +119,6 @@ _BASE_FILTER_RULES = [
 # for example, in the test_path_rules_specifier() unit test method of
 # checker_unittest.py.
 _PATH_RULES_SPECIFIER = [
-    # Files in these directories are consumers of the WebKit
-    # API and therefore do not follow the same header including
-    # discipline as WebCore.
-
-    ([  # There is no clean way to avoid "yy_*" names used by flex.
-        "Source/core/css/CSSParser-in.cpp"],
-     ["-readability/naming"]),
-
     # For third-party Python code, keep only the following checks--
     #
     #   No tabs: to avoid having to set the SVN allow-tabs property.

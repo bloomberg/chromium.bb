@@ -207,8 +207,6 @@ class GlobalVariablesTest(unittest.TestCase):
                     "build/include")
         assert_check("random_path.cpp",
                     "readability/naming")
-        assert_no_check("Source/core/css/CSSParser-in.cpp",
-                      "readability/naming")
 
         # Third-party Python code: webkitpy/thirdparty
         path = "Tools/Scripts/webkitpy/thirdparty/mock.py"
