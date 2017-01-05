@@ -143,26 +143,20 @@ void Canvas::SizeStringFloat(const base::string16& text,
   }
 }
 
-void Canvas::DrawStringRectWithShadows(const base::string16& text,
-                                       const FontList& font_list,
-                                       SkColor color,
-                                       const Rect& text_bounds,
-                                       int line_height,
-                                       int flags,
-                                       const ShadowValues& shadows) {
+void Canvas::DrawStringRectWithFlags(const base::string16& text,
+                                     const FontList& font_list,
+                                     SkColor color,
+                                     const Rect& text_bounds,
+                                     int flags) {
   if (!IntersectsClipRect(RectToSkRect(text_bounds)))
     return;
 
-  Rect clip_rect(text_bounds);
-  clip_rect.Inset(ShadowValue::GetMargin(shadows));
-
   canvas_->save();
-  ClipRect(clip_rect);
+  ClipRect(text_bounds);
 
   Rect rect(text_bounds);
 
   std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
-  render_text->set_shadows(shadows);
   render_text->set_halo_effect(!!(flags & HALO_EFFECT));
 
   if (flags & MULTI_LINE) {
@@ -182,10 +176,7 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
       UpdateRenderText(rect, strings[i], font_list, flags, color,
                        render_text.get());
       int line_padding = 0;
-      if (line_height > 0)
-        line_padding = line_height - render_text->GetStringSize().height();
-      else
-        line_height = render_text->GetStringSize().height();
+      const int line_height = render_text->GetStringSize().height();
 
       // TODO(msw|asvitkine): Center Windows multi-line text: crbug.com/107357
 #if !defined(OS_WIN)

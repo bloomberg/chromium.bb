@@ -16,7 +16,6 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/text_constants.h"
 
 namespace gfx {
@@ -28,6 +27,7 @@ class Point;
 class PointF;
 class Size;
 class Transform;
+class Vector2d;
 
 // Canvas is a SkCanvas wrapper that provides a number of methods for
 // common operations used throughout an application built using ui/gfx.
@@ -406,17 +406,6 @@ class GFX_EXPORT Canvas {
                                SkColor color,
                                const Rect& display_rect,
                                int flags);
-
-  // Similar to above DrawStringRect method but with text shadows support.
-  // Currently it's only implemented for canvas skia. Specifying a 0 line_height
-  // will cause the default height to be used.
-  void DrawStringRectWithShadows(const base::string16& text,
-                                 const FontList& font_list,
-                                 SkColor color,
-                                 const Rect& text_bounds,
-                                 int line_height,
-                                 int flags,
-                                 const ShadowValues& shadows);
 
   // Draws a dotted gray rectangle used for focus purposes.
   // DEPRECATED in favor of the RectF version below.

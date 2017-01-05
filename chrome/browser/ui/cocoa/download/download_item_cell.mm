@@ -20,6 +20,7 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/native_theme.h"
 

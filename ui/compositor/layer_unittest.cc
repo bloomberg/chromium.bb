@@ -98,7 +98,6 @@ class DrawStringLayerDelegate : public LayerDelegate {
   enum DrawFunction {
     STRING_WITH_HALO,
     STRING_FADED,
-    STRING_WITH_SHADOWS
   };
 
   DrawStringLayerDelegate(
@@ -127,14 +126,6 @@ class DrawStringLayerDelegate : public LayerDelegate {
         recorder.canvas()->DrawFadedString(
             text, font_list_, SK_ColorRED, bounds, 0);
         break;
-      case STRING_WITH_SHADOWS: {
-        gfx::ShadowValues shadows;
-        shadows.push_back(
-            gfx::ShadowValue(gfx::Vector2d(2, 2), 2, SK_ColorRED));
-        recorder.canvas()->DrawStringRectWithShadows(
-            text, font_list_, SK_ColorRED, bounds, 0, 0, shadows);
-        break;
-      }
       default:
         NOTREACHED();
     }
@@ -1515,41 +1506,6 @@ TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
   float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 80.f;
   int large_error_allowed = 255;
-  int small_error_allowed = 0;
-
-  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img,
-                             cc::FuzzyPixelComparator(
-                                 true,
-                                 percentage_pixels_large_error,
-                                 percentage_pixels_small_error,
-                                 average_error_allowed_in_bad_pixels,
-                                 large_error_allowed,
-                                 small_error_allowed)));
-}
-
-TEST_F(LayerWithRealCompositorTest, CanvasDrawStringRectWithShadows) {
-  gfx::Size size(50, 50);
-  GetCompositor()->SetScaleAndSize(1.0f, size);
-  DrawStringLayerDelegate delegate(
-      SK_ColorBLUE, SK_ColorWHITE,
-      DrawStringLayerDelegate::STRING_WITH_SHADOWS,
-      size);
-  std::unique_ptr<Layer> layer(
-      CreateDrawStringLayer(gfx::Rect(size), &delegate));
-  DrawTree(layer.get());
-
-  SkBitmap bitmap;
-  ReadPixels(&bitmap);
-  ASSERT_FALSE(bitmap.empty());
-
-  base::FilePath ref_img =
-      test_data_directory().AppendASCII("string_with_shadows.png");
-  // WritePNGFile(bitmap, ref_img, true);
-
-  float percentage_pixels_large_error = 7.4f;  // 185px / (50*50)
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 60.f;
-  int large_error_allowed = 246;
   int small_error_allowed = 0;
 
   EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img,

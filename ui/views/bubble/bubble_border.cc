@@ -5,6 +5,7 @@
 #include "ui/views/bubble/bubble_border.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -16,6 +17,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/painter.h"

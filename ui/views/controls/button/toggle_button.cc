@@ -11,6 +11,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
