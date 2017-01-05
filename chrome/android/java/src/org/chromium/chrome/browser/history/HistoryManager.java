@@ -22,6 +22,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -43,6 +45,7 @@ import java.util.List;
 public class HistoryManager implements OnMenuItemClickListener {
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int MEGABYTES_TO_BYTES =  1024 * 1024;
+    private static final String METRICS_PREFIX = "Android.HistoryPage.";
 
     private static HistoryProvider sProviderForTests;
 
@@ -53,6 +56,8 @@ public class HistoryManager implements OnMenuItemClickListener {
     private final HistoryManagerToolbar mToolbar;
     private final TextView mEmptyView;
     private LargeIconBridge mLargeIconBridge;
+
+    private boolean mIsSearching;
 
     /**
      * Creates a new HistoryManager.
@@ -91,6 +96,7 @@ public class HistoryManager implements OnMenuItemClickListener {
                 if (layoutManager.findLastVisibleItemPosition()
                         > (mHistoryAdapter.getItemCount() - 25)) {
                     mHistoryAdapter.loadMoreItems();
+                    recordUserActionWithOptionalSearch("LoadMoreOnScroll");
                 }
             }});
 
@@ -100,6 +106,8 @@ public class HistoryManager implements OnMenuItemClickListener {
         int maxSize = Math.min((activityManager.getMemoryClass() / 4) * MEGABYTES_TO_BYTES,
                 FAVICON_MAX_CACHE_SIZE_BYTES);
         mLargeIconBridge.createCache(maxSize);
+
+        recordUserAction("Show");
     }
 
     @Override
@@ -116,6 +124,9 @@ public class HistoryManager implements OnMenuItemClickListener {
             mSelectionDelegate.clearSelection();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
+            recordSelectionCountHistorgram("Remove");
+            recordUserActionWithOptionalSearch("RemoveSelected");
+
             for (HistoryItem historyItem : mSelectionDelegate.getSelectedItems()) {
                 mHistoryAdapter.markItemForRemoval(historyItem);
             }
@@ -125,6 +136,8 @@ public class HistoryManager implements OnMenuItemClickListener {
         } else if (item.getItemId() == R.id.search_menu_id) {
             mToolbar.showSearchView();
             mSelectableListLayout.setEmptyViewText(R.string.history_manager_no_results);
+            recordUserAction("Search");
+            mIsSearching = true;
             return true;
         }
         return false;
@@ -201,6 +214,7 @@ public class HistoryManager implements OnMenuItemClickListener {
      * Opens the clear browsing data preference.
      */
     public void openClearBrowsingDataPreference() {
+        recordUserAction("ClearBrowsingData");
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(mActivity,
                 ClearBrowsingDataPreferences.class.getName());
         IntentUtils.safeStartActivity(mActivity, intent);
@@ -220,6 +234,7 @@ public class HistoryManager implements OnMenuItemClickListener {
     public void onEndSearch() {
         mHistoryAdapter.onEndSearch();
         mSelectableListLayout.setEmptyViewText(R.string.history_manager_empty);
+        mIsSearching = false;
     }
 
     /**
@@ -230,6 +245,9 @@ public class HistoryManager implements OnMenuItemClickListener {
     }
 
     private void openItemsInNewTabs(List<HistoryItem> items, boolean isIncognito) {
+        recordSelectionCountHistorgram("Open");
+        recordUserActionWithOptionalSearch("OpenSelected" + (isIncognito ? "Incognito" : ""));
+
         for (HistoryItem item : items) {
             openUrl(item.getUrl(), isIncognito, true);
         }
@@ -261,5 +279,30 @@ public class HistoryManager implements OnMenuItemClickListener {
     @VisibleForTesting
     HistoryAdapter getAdapterForTests() {
         return mHistoryAdapter;
+    }
+
+    /**
+     * @param action The user action string to record.
+     */
+    static void recordUserAction(String action) {
+        RecordUserAction.record(METRICS_PREFIX + action);
+    }
+
+    /**
+     * Records the user action with "Search" prepended if the user is currently searching.
+     * @param action The user action string to record.
+     */
+    void recordUserActionWithOptionalSearch(String action) {
+        recordUserAction((mIsSearching ? "Search." : "") + action);
+    }
+
+    /**
+     * Records the number of selected items when a multi-select action is performed.
+     * @param action The multi-select action that was performed.
+     */
+    private void recordSelectionCountHistorgram(String action) {
+        List<HistoryItem> selectedItems = mSelectionDelegate.getSelectedItems();
+        RecordHistogram.recordCount100Histogram(
+                METRICS_PREFIX + action + "Selected", selectedItems.size());
     }
 }

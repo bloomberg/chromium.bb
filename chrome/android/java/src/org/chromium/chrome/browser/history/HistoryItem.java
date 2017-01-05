@@ -85,13 +85,19 @@ public class HistoryItem extends TimedItem {
      * Navigates a tab to this item's URL.
      */
     public void open() {
-        if (mManager != null) mManager.openUrl(mUrl, null, false);
+        if (mManager != null) {
+            mManager.recordUserActionWithOptionalSearch("OpenItem");
+            mManager.openUrl(mUrl, null, false);
+        }
     }
 
     /**
      * Removes this item.
      */
     public void remove() {
-        if (mManager != null) mManager.removeItem(this);
+        if (mManager != null) {
+            mManager.recordUserActionWithOptionalSearch("RemoveItem");
+            mManager.removeItem(this);
+        }
     }
 }

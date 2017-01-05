@@ -117,7 +117,13 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
 
     @Override
     public void onSelectionStateChange(List<HistoryItem> selectedItems) {
+        boolean wasSelectionEnabled = mIsSelectionEnabled;
         super.onSelectionStateChange(selectedItems);
+
+        if (!wasSelectionEnabled && mIsSelectionEnabled) {
+            mManager.recordUserActionWithOptionalSearch("SelectionEstablished");
+        }
+
         if (!mIsSearching) return;
 
         if (mIsSelectionEnabled) {
