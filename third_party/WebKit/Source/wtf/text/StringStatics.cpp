@@ -54,6 +54,8 @@ WTF_EXPORT DEFINE_GLOBAL(AtomicString, starAtom);
 WTF_EXPORT DEFINE_GLOBAL(AtomicString, xmlAtom);
 WTF_EXPORT DEFINE_GLOBAL(AtomicString, xmlnsAtom);
 WTF_EXPORT DEFINE_GLOBAL(AtomicString, xlinkAtom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, httpAtom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, httpsAtom);
 
 // This is not an AtomicString because it is unlikely to be used as an
 // event/element/attribute name, so it shouldn't pollute the AtomicString hash
@@ -93,6 +95,8 @@ void StringStatics::init() {
   new (NotNull, (void*)&xmlnsAtom) AtomicString(addStaticASCIILiteral("xmlns"));
   new (NotNull, (void*)&xlinkAtom) AtomicString(addStaticASCIILiteral("xlink"));
   new (NotNull, (void*)&xmlnsWithColon) String("xmlns:");
+  new (NotNull, (void*)&httpAtom) AtomicString(addStaticASCIILiteral("http"));
+  new (NotNull, (void*)&httpsAtom) AtomicString(addStaticASCIILiteral("https"));
 }
 
 }  // namespace WTF

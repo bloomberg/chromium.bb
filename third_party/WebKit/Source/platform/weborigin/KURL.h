@@ -196,17 +196,24 @@ class PLATFORM_EXPORT KURL {
             const String& relative,
             const WTF::TextEncoding* queryEncoding);
 
+  StringView componentStringView(const url::Component&) const;
   String componentString(const url::Component&) const;
-  String stringForInvalidComponent() const;
+  StringView stringViewForInvalidComponent() const;
 
   template <typename CHAR>
   void replaceComponents(const url::Replacements<CHAR>&);
 
   void initInnerURL();
-  void initProtocolIsInHTTPFamily();
+  void initProtocolMetadata();
 
   bool m_isValid;
   bool m_protocolIsInHTTPFamily;
+
+  // Keep a separate string for the protocol to avoid copious copies for
+  // protocol(). Normally this will be Atomic, except when constructed via
+  // KURL::copy(), which is deep.
+  String m_protocol;
+
   url::Parsed m_parsed;
   String m_string;
   std::unique_ptr<KURL> m_innerURL;

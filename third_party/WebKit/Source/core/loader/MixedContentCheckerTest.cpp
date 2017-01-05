@@ -38,7 +38,6 @@ TEST(MixedContentCheckerTest, IsMixedContent) {
       {"https://example.com/foo", "blob:null/foo", false},
       {"https://example.com/foo", "filesystem:https://example.com/foo", false},
       {"https://example.com/foo", "filesystem:http://example.com/foo", false},
-      {"https://example.com/foo", "filesystem:null/foo", false},
 
       {"https://example.com/foo", "http://example.com/foo", true},
       {"https://example.com/foo", "http://google.com/foo", true},
