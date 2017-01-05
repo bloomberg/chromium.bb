@@ -201,7 +201,7 @@ TEST_P(AV1ConvolveOptimzTest, VerticalBitExactCheck) {
 
 using std::tr1::make_tuple;
 
-#if (HAVE_SSSE3 || HAVE_SSE4_1) && CONFIG_EXT_INTERP
+#if (HAVE_SSSE3 || HAVE_SSE4_1) && CONFIG_DUAL_FILTER
 const BlockDimension kBlockDim[] = {
   make_tuple(2, 2),    make_tuple(2, 4),    make_tuple(4, 4),
   make_tuple(4, 8),    make_tuple(8, 4),    make_tuple(8, 8),
@@ -219,7 +219,7 @@ const int kSubpelQ4[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 const int kAvg[] = { 0, 1 };
 #endif
 
-#if HAVE_SSSE3 && CONFIG_EXT_INTERP
+#if HAVE_SSSE3 && CONFIG_DUAL_FILTER
 INSTANTIATE_TEST_CASE_P(
     SSSE3, AV1ConvolveOptimzTest,
     ::testing::Combine(::testing::Values(av1_convolve_horiz_ssse3),
@@ -228,7 +228,7 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(kFilter),
                        ::testing::ValuesIn(kSubpelQ4),
                        ::testing::ValuesIn(kAvg)));
-#endif  // HAVE_SSSE3 && CONFIG_EXT_INTERP
+#endif  // HAVE_SSSE3 && CONFIG_DUAL_FILTER
 
 #if CONFIG_AOM_HIGHBITDEPTH
 typedef ::testing::TestWithParam<HbdConvParams> TestWithHbdConvParams;
@@ -377,7 +377,7 @@ TEST_P(AV1HbdConvolveOptimzTest, VertBitExactCheck) {
   RunVertFilterBitExactCheck();
 }
 
-#if HAVE_SSE4_1 && CONFIG_EXT_INTERP
+#if HAVE_SSE4_1 && CONFIG_DUAL_FILTER
 
 const int kBitdepth[] = { 10, 12 };
 
@@ -390,6 +390,6 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(kSubpelQ4),
                        ::testing::ValuesIn(kAvg),
                        ::testing::ValuesIn(kBitdepth)));
-#endif  // HAVE_SSE4_1 && CONFIG_EXT_INTERP
+#endif  // HAVE_SSE4_1 && CONFIG_DUAL_FILTER
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 }  // namespace

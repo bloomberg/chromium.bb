@@ -49,12 +49,6 @@ typedef enum {
   FRAME_TYPES,
 } FRAME_TYPE;
 
-#if CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
-#define IsInterpolatingFilter(filter) (av1_is_interpolating_filter(filter))
-#else
-#define IsInterpolatingFilter(filter) (1)
-#endif  // CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
-
 static INLINE int is_inter_mode(PREDICTION_MODE mode) {
 #if CONFIG_EXT_INTER
   return mode >= NEARESTMV && mode <= NEW_NEWMV;

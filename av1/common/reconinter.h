@@ -56,19 +56,8 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
     const int16_t *kernel_y =
         av1_get_interp_filter_subpel_kernel(interp_filter_params, subpel_y);
 #endif
-#if CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
-    if (IsInterpolatingFilter(interp_filter)) {
-      // Interpolating filter
-      sf->predict[subpel_x != 0][subpel_y != 0][ref](
-          src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h);
-    } else {
-      sf->predict_ni[subpel_x != 0][subpel_y != 0][ref](
-          src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h);
-    }
-#else
     sf->predict[subpel_x != 0][subpel_y != 0][ref_idx](
         src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h);
-#endif  // CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
   } else {
     // ref_idx > 0 means this is the second reference frame
     // first reference frame's prediction result is already in dst
@@ -115,21 +104,8 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
     const int16_t *kernel_y =
         av1_get_interp_filter_subpel_kernel(interp_filter_params, subpel_y);
 #endif  // CONFIG_DUAL_FILTER
-#if CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
-    if (IsInterpolatingFilter(interp_filter)) {
-      // Interpolating filter
-      sf->highbd_predict[subpel_x != 0][subpel_y != 0][ref](
-          src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h,
-          bd);
-    } else {
-      sf->highbd_predict_ni[subpel_x != 0][subpel_y != 0][ref](
-          src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h,
-          bd);
-    }
-#else
     sf->highbd_predict[subpel_x != 0][subpel_y != 0][ref](
         src, src_stride, dst, dst_stride, kernel_x, xs, kernel_y, ys, w, h, bd);
-#endif  // CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
   } else {
     // ref > 0 means this is the second reference frame
     // first reference frame's prediction result is already in dst

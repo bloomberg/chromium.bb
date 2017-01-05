@@ -70,22 +70,12 @@ void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
     sf->scale_value_y = unscaled_value;
   }
 
-// TODO(agrange): Investigate the best choice of functions to use here
-// for EIGHTTAP_SMOOTH. Since it is not interpolating, need to choose what
-// to do at full-pel offsets. The current selection, where the filter is
-// applied in one direction only, and not at all for 0,0, seems to give the
-// best quality, but it may be worth trying an additional mode that does
-// do the filtering on full-pel.
-#if CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
-  sf->predict_ni[0][0][0] = aom_convolve8_c;
-  sf->predict_ni[0][0][1] = aom_convolve8_avg_c;
-  sf->predict_ni[0][1][0] = aom_convolve8_c;
-  sf->predict_ni[0][1][1] = aom_convolve8_avg_c;
-  sf->predict_ni[1][0][0] = aom_convolve8_c;
-  sf->predict_ni[1][0][1] = aom_convolve8_avg_c;
-  sf->predict_ni[1][1][0] = aom_convolve8;
-  sf->predict_ni[1][1][1] = aom_convolve8_avg;
-#endif  // CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
+  // TODO(agrange): Investigate the best choice of functions to use here
+  // for EIGHTTAP_SMOOTH. Since it is not interpolating, need to choose what
+  // to do at full-pel offsets. The current selection, where the filter is
+  // applied in one direction only, and not at all for 0,0, seems to give the
+  // best quality, but it may be worth trying an additional mode that does
+  // do the filtering on full-pel.
   if (sf->x_step_q4 == 16) {
     if (sf->y_step_q4 == 16) {
       // No scaling in either direction.
@@ -129,16 +119,6 @@ void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
 
 #if CONFIG_AOM_HIGHBITDEPTH
   if (use_highbd) {
-#if CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
-    sf->highbd_predict_ni[0][0][0] = aom_highbd_convolve8_c;
-    sf->highbd_predict_ni[0][0][1] = aom_highbd_convolve8_avg_c;
-    sf->highbd_predict_ni[0][1][0] = aom_highbd_convolve8_c;
-    sf->highbd_predict_ni[0][1][1] = aom_highbd_convolve8_avg_c;
-    sf->highbd_predict_ni[1][0][0] = aom_highbd_convolve8_c;
-    sf->highbd_predict_ni[1][0][1] = aom_highbd_convolve8_avg_c;
-    sf->highbd_predict_ni[1][1][0] = aom_highbd_convolve8;
-    sf->highbd_predict_ni[1][1][1] = aom_highbd_convolve8_avg;
-#endif  // CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
     if (sf->x_step_q4 == 16) {
       if (sf->y_step_q4 == 16) {
         // No scaling in either direction.

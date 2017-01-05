@@ -1110,12 +1110,6 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
     mbmi->interp_filter[3] = mbmi->interp_filter[1];
   }
 #else  // CONFIG_DUAL_FILTER
-#if CONFIG_EXT_INTERP
-  if (!av1_is_interp_needed(xd)) {
-    mbmi->interp_filter = EIGHTTAP_REGULAR;
-    return;
-  }
-#endif  // CONFIG_EXT_INTERP
   if (cm->interp_filter != SWITCHABLE) {
     mbmi->interp_filter = cm->interp_filter;
   } else {
@@ -1661,9 +1655,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 #endif
 
-#if !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
+#if !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
   read_mb_interp_filter(cm, xd, mbmi, r);
-#endif  // !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
+#endif  // !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
 
   if (bsize < BLOCK_8X8 && !unify_bsize) {
     const int num_4x4_w = 1 << xd->bmode_blocks_wl;
@@ -1903,9 +1897,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_WARPED_MOTION
   if (mbmi->motion_mode != WARPED_CAUSAL) {
 #endif  // CONFIG_WARPED_MOTION
-#if CONFIG_DUAL_FILTER || CONFIG_EXT_INTERP || CONFIG_WARPED_MOTION
+#if CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
     read_mb_interp_filter(cm, xd, mbmi, r);
-#endif  // CONFIG_DUAL_FILTER || CONFIG_EXT_INTERP || CONFIG_WARPED_MOTION
+#endif  // CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
 #if CONFIG_WARPED_MOTION
   } else {
 #if CONFIG_DUAL_FILTER

@@ -1191,7 +1191,7 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
       }
 #endif  // CONFIG_GLOBAL_MOTION
       if (cm->interp_filter == SWITCHABLE
-#if CONFIG_EXT_INTERP
+#if CONFIG_DUAL_FILTER
           && av1_is_interp_needed(xd)
 #endif
 #if CONFIG_WARPED_MOTION
@@ -1371,7 +1371,7 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_GLOBAL_MOTION
 
     if (cm->interp_filter == SWITCHABLE
-#if CONFIG_EXT_INTERP
+#if CONFIG_DUAL_FILTER
         && av1_is_interp_needed(xd)
 #endif
             ) {

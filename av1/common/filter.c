@@ -48,7 +48,7 @@ DECLARE_ALIGNED(16, static const int16_t,
 };
 #endif  // USE_TEMPORALFILTER_12TAP
 
-#if CONFIG_EXT_INTERP
+#if CONFIG_DUAL_FILTER
 DECLARE_ALIGNED(256, static const InterpKernel,
                 sub_pel_filters_8[SUBPEL_SHIFTS]) = {
   // intfilt 0.575
@@ -121,7 +121,7 @@ DECLARE_ALIGNED(256, static const InterpKernel,
   { 0, 1, -12, 49, 90, 5, -7, 2 },  { 1, 1, -12, 43, 92, 9, -8, 2 },
   { 0, 2, -12, 37, 94, 14, -9, 2 }, { 0, 2, -11, 31, 95, 19, -10, 2 },
 };
-#else  // CONFIG_EXT_INTERP
+#else  // CONFIG_DUAL_FILTER
 
 DECLARE_ALIGNED(256, static const InterpKernel,
                 sub_pel_filters_8[SUBPEL_SHIFTS]) = {
@@ -191,7 +191,7 @@ DECLARE_ALIGNED(256, static const InterpKernel,
   { 0, -3, 2, 41, 63, 29, -2, -2 },   { 0, -3, 1, 38, 64, 32, -1, -3 }
 #endif
 };
-#endif  // CONFIG_EXT_INTERP
+#endif  // CONFIG_DUAL_FILTER
 
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP
@@ -204,7 +204,7 @@ const InterpKernel *av1_intra_filter_kernels[INTRA_FILTERS] = {
 #endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
-#if CONFIG_EXT_INTERP
+#if CONFIG_DUAL_FILTER
 static const InterpFilterParams
     av1_interp_filter_params_list[SWITCHABLE_FILTERS + EXTRA_FILTERS] = {
       { (const int16_t *)sub_pel_filters_8, SUBPEL_TAPS, SUBPEL_SHIFTS,
@@ -217,10 +217,8 @@ static const InterpFilterParams
         EIGHTTAP_SMOOTH2 },
       { (const int16_t *)bilinear_filters, SUBPEL_TAPS, SUBPEL_SHIFTS,
         BILINEAR },
-#if CONFIG_DUAL_FILTER
       { (const int16_t *)sub_pel_filters_8sharp, SUBPEL_TAPS, SUBPEL_SHIFTS,
         EIGHTTAP_SHARP },
-#endif
     };
 #else
 static const InterpFilterParams
@@ -234,7 +232,7 @@ static const InterpFilterParams
       { (const int16_t *)bilinear_filters, SUBPEL_TAPS, SUBPEL_SHIFTS,
         BILINEAR }
     };
-#endif  // CONFIG_EXT_INTERP
+#endif  // CONFIG_DUAL_FILTER
 
 #if USE_TEMPORALFILTER_12TAP
 static const InterpFilterParams av1_interp_temporalfilter_12tap = {

@@ -181,7 +181,7 @@ void av1_encode_token_init(void) {
 #endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_EC_MULTISYMBOL
-  /* This hack is necessary when CONFIG_EXT_INTERP is enabled because the five
+  /* This hack is necessary when CONFIG_DUAL_FILTER is enabled because the five
       SWITCHABLE_FILTERS are not consecutive, e.g., 0, 1, 2, 3, 4, when doing
       an in-order traversal of the av1_switchable_interp_tree structure. */
   av1_indices_from_tree(av1_switchable_interp_ind, av1_switchable_interp_inv,
@@ -1076,24 +1076,12 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
   int dir;
 #endif
   if (cm->interp_filter == SWITCHABLE) {
-#if CONFIG_EXT_INTERP
 #if CONFIG_DUAL_FILTER
     if (!av1_is_interp_needed(xd)) {
       assert(mbmi->interp_filter[0] == EIGHTTAP_REGULAR);
-      return;
-    }
-#else
-    if (!av1_is_interp_needed(xd)) {
-#if CONFIG_DUAL_FILTER
-      assert(mbmi->interp_filter[0] == EIGHTTAP_REGULAR);
-      assert(mbmi->interp_filter[1] == EIGHTTAP_REGULAR);
-#else
-      assert(mbmi->interp_filter == EIGHTTAP_REGULAR);
-#endif
       return;
     }
 #endif  // CONFIG_DUAL_FILTER
-#endif  // CONFIG_EXT_INTERP
 #if CONFIG_DUAL_FILTER
     for (dir = 0; dir < 2; ++dir) {
       if (has_subpel_mv_component(xd->mi[0], xd, dir) ||
@@ -1428,9 +1416,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       }
     }
 
-#if !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
+#if !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
     write_mb_interp_filter(cpi, xd, w);
-#endif  // !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
+#endif  // !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
 
     if (bsize < BLOCK_8X8 && !unify_bsize) {
       const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
@@ -1647,9 +1635,9 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #if CONFIG_WARPED_MOTION
     if (mbmi->motion_mode != WARPED_CAUSAL)
 #endif  // CONFIG_WARPED_MOTION
-#if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
+#if CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
       write_mb_interp_filter(cpi, xd, w);
-#endif  // CONFIG_EXT_INTERP || CONFIG_DUAL_FILTE || CONFIG_WARPED_MOTION
+#endif  // CONFIG_DUAL_FILTE || CONFIG_WARPED_MOTION
   }
 
   write_tx_type(cm, mbmi,
@@ -1865,12 +1853,12 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
     xd->left_txfm_context =
         xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 #endif
-#if CONFIG_EXT_INTERP
+#if CONFIG_DUAL_FILTER
     // av1_is_interp_needed needs the ref frame buffers set up to look
     // up if they are scaled. av1_is_interp_needed is in turn needed by
     // write_switchable_interp_filter, which is called by pack_inter_mode_mvs.
     set_ref_ptrs(cm, xd, m->mbmi.ref_frame[0], m->mbmi.ref_frame[1]);
-#endif  // CONFIG_EXT_INTERP
+#endif  // CONFIG_DUAL_FILTER
 #if 0
     // NOTE(zoeliu): For debug
     if (cm->current_video_frame == FRAME_TO_CHECK && cm->show_frame == 1) {

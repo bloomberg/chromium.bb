@@ -639,7 +639,7 @@ TEST(ConvolveTest, FiltersWontSaturateWhenAddedPairwise) {
   for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
     const InterpKernel *filters =
         (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
-#if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER
+#if CONFIG_DUAL_FILTER
     const InterpFilterParams filter_params =
         av1_get_interp_filter_params(filter_bank);
     if (filter_params.taps != SUBPEL_TAPS) continue;
@@ -682,7 +682,7 @@ TEST_P(ConvolveTest, MatchesReferenceSubpixelFilter) {
   for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
     const InterpKernel *filters =
         (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
-#if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER
+#if CONFIG_DUAL_FILTER
     const InterpFilterParams filter_params =
         av1_get_interp_filter_params(filter_bank);
     if (filter_params.taps != SUBPEL_TAPS) continue;
@@ -764,7 +764,7 @@ TEST_P(ConvolveTest, MatchesReferenceAveragingSubpixelFilter) {
   for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
     const InterpKernel *filters =
         (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
-#if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER
+#if CONFIG_DUAL_FILTER
     const InterpFilterParams filter_params =
         av1_get_interp_filter_params(filter_bank);
     if (filter_params.taps != SUBPEL_TAPS) continue;
@@ -866,7 +866,7 @@ TEST_P(ConvolveTest, FilterExtremes) {
       for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
         const InterpKernel *filters =
             (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
-#if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER
+#if CONFIG_DUAL_FILTER
         const InterpFilterParams filter_params =
             av1_get_interp_filter_params(filter_bank);
         if (filter_params.taps != SUBPEL_TAPS) continue;

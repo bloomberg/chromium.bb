@@ -849,15 +849,10 @@ int av1_get_switchable_rate(const AV1_COMP *cpi, const MACROBLOCKD *xd) {
 int av1_get_switchable_rate(const AV1_COMP *cpi, const MACROBLOCKD *xd) {
   const AV1_COMMON *const cm = &cpi->common;
   if (cm->interp_filter == SWITCHABLE) {
-#if CONFIG_EXT_INTERP
-    if (av1_is_interp_needed(xd))
-#endif
-    {
-      const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-      const int ctx = av1_get_pred_context_switchable_interp(xd);
-      return SWITCHABLE_INTERP_RATE_FACTOR *
-             cpi->switchable_interp_costs[ctx][mbmi->interp_filter];
-    }
+    const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+    const int ctx = av1_get_pred_context_switchable_interp(xd);
+    return SWITCHABLE_INTERP_RATE_FACTOR *
+           cpi->switchable_interp_costs[ctx][mbmi->interp_filter];
   }
   return 0;
 }

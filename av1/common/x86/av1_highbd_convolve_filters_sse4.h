@@ -15,7 +15,7 @@
 #include "./aom_config.h"
 
 #if CONFIG_AOM_HIGHBITDEPTH
-#if CONFIG_EXT_INTERP
+#if CONFIG_DUAL_FILTER
 DECLARE_ALIGNED(16, static const int16_t,
                 sub_pel_filters_12sharp_highbd_ver_signal_dir[15][6][8]) = {
   {

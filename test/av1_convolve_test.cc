@@ -137,7 +137,7 @@ TEST(AV1ConvolveTest, av1_convolve) {
   }
 }
 
-#if CONFIG_EXT_INTERP && CONFIG_DUAL_FILTER
+#if CONFIG_DUAL_FILTER
 TEST(AV1ConvolveTest, av1_convolve_vert_first) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   InterpFilter interp_filter[4] = { EIGHTTAP_REGULAR, MULTITAP_SHARP,

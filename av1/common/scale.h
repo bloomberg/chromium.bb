@@ -36,14 +36,6 @@ struct scale_factors {
 #if CONFIG_AOM_HIGHBITDEPTH
   highbd_convolve_fn_t highbd_predict[2][2][2];  // horiz, vert, avg
 #endif                                           // CONFIG_AOM_HIGHBITDEPTH
-
-// Functions for non-interpolating filters (those that filter zero offsets)
-#if CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
-  convolve_fn_t predict_ni[2][2][2];  // horiz, vert, avg
-#if CONFIG_AOM_HIGHBITDEPTH
-  highbd_convolve_fn_t highbd_predict_ni[2][2][2];  // horiz, vert, avg
-#endif                                              // CONFIG_AOM_HIGHBITDEPTH
-#endif  // CONFIG_EXT_INTERP && SUPPORT_NONINTERPOLATING_FILTERS
 };
 
 MV32 av1_scale_mv(const MV *mv, int x, int y, const struct scale_factors *sf);
