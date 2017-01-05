@@ -24,6 +24,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/system/version_loader.h"
 #endif
 
 #if defined(OS_WIN)
@@ -39,6 +40,7 @@ constexpr char kExtensionsListKey[] = "extensions";
 constexpr char kDataReductionProxyKey[] = "data_reduction_proxy";
 constexpr char kChromeVersionTag[] = "CHROME VERSION";
 #if defined(OS_CHROMEOS)
+constexpr char kChromeOsFirmwareVersion[] = "CHROMEOS_FIRMWARE_VERSION";
 constexpr char kChromeEnrollmentTag[] = "ENTERPRISE_ENROLLED";
 constexpr char kHWIDKey[] = "HWID";
 constexpr char kSettingsKey[] = "settings";
@@ -69,20 +71,23 @@ std::string GetEnrollmentStatusString() {
   return std::string();
 }
 
-void GetHWID(SystemLogsResponse* response) {
+void GetEntriesOnBlockingPool(SystemLogsResponse* response) {
   DCHECK(response);
 
   chromeos::system::StatisticsProvider* stats =
       chromeos::system::StatisticsProvider::GetInstance();
   DCHECK(stats);
 
+  // Get the HWID.
   std::string hwid;
-  if (!stats->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid)) {
+  if (!stats->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid))
     VLOG(1) << "Couldn't get machine statistic 'hardware_class'.";
-    return;
-  }
+  else
+    (*response)[kHWIDKey] = hwid;
 
-  (*response)[kHWIDKey] = hwid;
+  // Get the firmware version.
+  (*response)[kChromeOsFirmwareVersion] =
+      chromeos::version_loader::GetFirmware();
 }
 #endif
 
@@ -127,10 +132,11 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
 #if defined(OS_CHROMEOS)
   PopulateLocalStateSettings(response.get());
 
-  // Get the HWID on the blocking pool and invoke the callback later when done.
+  // Get the entries that should be retrieved on the blocking pool and invoke
+  // the callback later when done.
   SystemLogsResponse* response_ptr = response.release();
   content::BrowserThread::PostBlockingPoolTaskAndReply(
-      FROM_HERE, base::Bind(&GetHWID, response_ptr),
+      FROM_HERE, base::Bind(&GetEntriesOnBlockingPool, response_ptr),
       base::Bind(callback, base::Owned(response_ptr)));
 #else
   // On other platforms, we're done. Invoke the callback.
