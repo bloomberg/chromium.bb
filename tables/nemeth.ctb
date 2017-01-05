@@ -85,8 +85,9 @@ math \xf401 0
 math \xf402 0
 math \xf403 0
 # Begin and end equation
-replace \xf32e
-replace \xf32f
+# replace \xf32e
+# replace \xf32f
+grouping math \xf32e\xf32f 12e,15e
 # Sub and superscript
 math \xf320 56
 replace \xf401\xf320
@@ -232,9 +233,13 @@ pass2 $d[]@1456 @456
 pass2 @456-1456!$s3-8[]@3456 @456
 # Put number sign on numbers after spaces
 pass2 @a[]$d @3456
+pass2 [@a-0]$d @a-3456
+pass2 @a-36[]$d @3456
+pass2 [@a-0-36]$d @a-36-3456
 pass2 @0[]$d @3456
-pass2 @1b-12[]$d @3456
+pass2 @0-36[]$d @3456
 pass2 @a-0 @a
+pass2 @0-a @a
 # fix anomaly with superscripts
 pass2 @45-0-5 @45
 pass2 @45-5 @45
@@ -261,4 +266,8 @@ pass2 @1256-4-6-12356 @4-6-12356
 pass2 [@5-6]!$l @6
 pass2 @1b-12[]$d @3456 number sign before digit at beginning
 pass2 @1b-12-36[]$d @3456 number sign before minus before digit at beginning
-
+pass2 [@12e]$d @3456
+pass2 [@12e-36]$d @36-3456
+pass2 [@12e-46]$d @3456-46
+pass2 @12e ?
+pass2 @15e ?
