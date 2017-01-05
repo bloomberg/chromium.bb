@@ -73,12 +73,8 @@ ParsedOptions parseOptions(const ImageBitmapOptions& options,
     if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() ||
         !RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
       DCHECK_EQ(options.colorSpaceConversion(), "default");
-      // TODO(zakerinasab): Replace sRGB with a call to
-      // ImageDecoder::globalTargetColorSpace() when the crash problem on Mac
-      // is fixed. crbug.com/668546.
       if (RuntimeEnabledFeatures::colorCorrectRenderingDefaultModeEnabled()) {
-        parsedOptions.dstColorSpace =
-            SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        parsedOptions.dstColorSpace = ColorBehavior::globalTargetColorSpace();
         parsedOptions.dstColorType = SkColorType::kN32_SkColorType;
       }
     } else {

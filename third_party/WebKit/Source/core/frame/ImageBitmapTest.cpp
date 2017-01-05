@@ -297,10 +297,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
         NOTREACHED();
         break;
       case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
-        // TODO(zakerinasab): Replace sRGB with a call to
-        // ImageDecoder::globalTargetColorSpace() when the crash problem on Mac
-        // is fixed. crbug.com/668546.
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorSpace = ColorBehavior::globalTargetColorSpace();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
@@ -400,10 +397,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
         NOTREACHED();
         break;
       case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
-        // TODO(zakerinasab): Replace sRGB with a call to
-        // ImageDecoder::globalTargetColorSpace() when the crash problem on Mac
-        // is fixed. crbug.com/668546.
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorSpace = ColorBehavior::globalTargetColorSpace();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
@@ -494,10 +488,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
         NOTREACHED();
         break;
       case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
-        // TODO(zakerinasab): Replace sRGB with a call to
-        // ImageDecoder::globalTargetColorSpace() when the crash problem on Mac
-        // is fixed. crbug.com/668546.
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorSpace = ColorBehavior::globalTargetColorSpace();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:

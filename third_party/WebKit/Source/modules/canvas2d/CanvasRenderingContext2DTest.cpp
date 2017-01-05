@@ -1362,10 +1362,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
         NOTREACHED();
         break;
       case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
-        // TODO(zakerinasab): Replace sRGB with a call to
-        // ImageDecoder::globalTargetColorSpace() when the crash problem on Mac
-        // is fixed. crbug.com/668546.
-        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorSpace = ColorBehavior::globalTargetColorSpace();
         colorFormat = colorFormat32;
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
