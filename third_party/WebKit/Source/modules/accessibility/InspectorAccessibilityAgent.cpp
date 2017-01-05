@@ -376,19 +376,6 @@ std::unique_ptr<AXValue> createRoleNameValue(AccessibilityRole role) {
   return roleNameValue;
 }
 
-bool isAncestorOf(AXObject* possibleAncestor, AXObject* descendant) {
-  if (!possibleAncestor || !descendant)
-    return false;
-
-  AXObject* ancestor = descendant;
-  while (ancestor) {
-    if (ancestor == possibleAncestor)
-      return true;
-    ancestor = ancestor->parentObject();
-  }
-  return false;
-}
-
 }  // namespace
 
 InspectorAccessibilityAgent::InspectorAccessibilityAgent(
@@ -474,13 +461,12 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildObjectForIgnoredNode(
   if (axObject && axObject->isAXLayoutObject()) {
     axObject->computeAccessibilityIsIgnored(&ignoredReasons);
 
-    if (fetchRelatives) {
-      populateRelatives(*axObject, axObject, *(ignoredNodeObject.get()), nodes,
-                        cache);
-    }
+    AXObject* parentObject = axObject->parentObjectUnignored();
+    if (parentObject && fetchRelatives)
+      addAncestors(*parentObject, axObject, nodes, cache);
   } else if (domNode && !domNode->layoutObject()) {
     if (fetchRelatives) {
-      populateDOMNodeRelatives(*domNode, *(ignoredNodeObject.get()), nodes,
+      populateDOMNodeAncestors(*domNode, *(ignoredNodeObject.get()), nodes,
                                cache);
     }
     ignoredReasons.append(IgnoredReason(AXNotRendered));
@@ -498,18 +484,11 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildObjectForIgnoredNode(
   return ignoredNodeObject;
 }
 
-void InspectorAccessibilityAgent::populateDOMNodeRelatives(
+void InspectorAccessibilityAgent::populateDOMNodeAncestors(
     Node& inspectedDOMNode,
     AXNode& nodeObject,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
-  // Populate children.
-  std::unique_ptr<protocol::Array<AXNodeId>> childIds =
-      protocol::Array<AXNodeId>::create();
-  findDOMNodeChildren(childIds, inspectedDOMNode, inspectedDOMNode, nodes,
-                      cache);
-  nodeObject.setChildIds(std::move(childIds));
-
   // Walk up parents until an AXObject can be found.
   Node* parentNode = inspectedDOMNode.isShadowRoot()
                          ? &toShadowRoot(inspectedDOMNode).host()
@@ -520,7 +499,7 @@ void InspectorAccessibilityAgent::populateDOMNodeRelatives(
                      ? &toShadowRoot(parentNode)->host()
                      : FlatTreeTraversal::parent(*parentNode);
     parentAXObject = cache.getOrCreate(parentNode);
-  };
+  }
 
   if (!parentAXObject)
     return;
@@ -530,74 +509,18 @@ void InspectorAccessibilityAgent::populateDOMNodeRelatives(
   if (!parentAXObject)
     return;
 
-  // Populate parent, ancestors and siblings.
+  // Populate parent and ancestors.
   std::unique_ptr<AXNode> parentNodeObject =
       buildProtocolAXObject(*parentAXObject, nullptr, true, nodes, cache);
-  std::unique_ptr<protocol::Array<AXNodeId>> siblingIds =
+  std::unique_ptr<protocol::Array<AXNodeId>> childIds =
       protocol::Array<AXNodeId>::create();
-  findDOMNodeChildren(siblingIds, *parentNode, inspectedDOMNode, nodes, cache);
-  parentNodeObject->setChildIds(std::move(siblingIds));
+  childIds->addItem(String::number(kIDForInspectedNodeWithNoAXNode));
+  parentNodeObject->setChildIds(std::move(childIds));
   nodes->addItem(std::move(parentNodeObject));
 
   AXObject* grandparentAXObject = parentAXObject->parentObjectUnignored();
   if (grandparentAXObject)
     addAncestors(*grandparentAXObject, nullptr, nodes, cache);
-}
-
-void InspectorAccessibilityAgent::findDOMNodeChildren(
-    std::unique_ptr<protocol::Array<AXNodeId>>& childIds,
-    Node& parentNode,
-    Node& inspectedDOMNode,
-    std::unique_ptr<protocol::Array<AXNode>>& nodes,
-    AXObjectCacheImpl& cache) const {
-  if (inspectedDOMNode.isShadowRoot() &&
-      &parentNode == toShadowRoot(inspectedDOMNode).host()) {
-    childIds->addItem(String::number(kIDForInspectedNodeWithNoAXNode));
-    return;
-  }
-  NodeList* childNodes = parentNode.childNodes();
-  if (!childNodes->length() && parentNode.isElementNode()) {
-    Element& parentElement = toElement(parentNode);
-    ElementShadow* elementShadow = parentElement.shadow();
-    if (elementShadow) {
-      ShadowRoot& shadowRoot = elementShadow->youngestShadowRoot();
-      childNodes = shadowRoot.childNodes();
-    }
-  }
-  for (size_t i = 0; i < childNodes->length(); ++i) {
-    Node* childNode = childNodes->item(i);
-    if (childNode == &inspectedDOMNode) {
-      childIds->addItem(String::number(kIDForInspectedNodeWithNoAXNode));
-      continue;
-    }
-
-    AXObject* childAXObject = cache.getOrCreate(childNode);
-    if (childAXObject) {
-      if (childAXObject->accessibilityIsIgnored()) {
-        // search for un-ignored descendants
-        findDOMNodeChildren(childIds, *childNode, inspectedDOMNode, nodes,
-                            cache);
-      } else {
-        addChild(childIds, *childAXObject, nullptr, nodes, cache);
-      }
-
-      continue;
-    }
-
-    if (!childAXObject ||
-        childNode->isShadowIncludingInclusiveAncestorOf(&inspectedDOMNode)) {
-      // If the inspected node may be a descendant of this node, keep walking
-      // recursively until we find its actual siblings.
-      findDOMNodeChildren(childIds, *childNode, inspectedDOMNode, nodes, cache);
-      continue;
-    }
-
-    // Otherwise, just add the un-ignored children.
-    const AXObject::AXObjectVector& indirectChildren =
-        childAXObject->children();
-    for (unsigned i = 0; i < indirectChildren.size(); ++i)
-      addChild(childIds, *(indirectChildren[i]), nullptr, nodes, cache);
-  }
 }
 
 std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildProtocolAXObject(
@@ -705,44 +628,11 @@ void InspectorAccessibilityAgent::populateRelatives(
   std::unique_ptr<protocol::Array<AXNodeId>> childIds =
       protocol::Array<AXNodeId>::create();
 
-  if (inspectedAXObject &&
-      &axObject == inspectedAXObject->parentObjectUnignored() &&
-      inspectedAXObject->accessibilityIsIgnored()) {
-    // This is the parent of an ignored object, so search for its siblings.
-    addSiblingsOfIgnored(childIds, axObject, inspectedAXObject, nodes, cache);
-  } else {
+  if (&axObject != inspectedAXObject ||
+      (inspectedAXObject && !inspectedAXObject->accessibilityIsIgnored())) {
     addChildren(axObject, inspectedAXObject, childIds, nodes, cache);
   }
   nodeObject.setChildIds(std::move(childIds));
-}
-
-void InspectorAccessibilityAgent::addSiblingsOfIgnored(
-    std::unique_ptr<protocol::Array<AXNodeId>>& childIds,
-    AXObject& parentAXObject,
-    AXObject* inspectedAXObject,
-    std::unique_ptr<protocol::Array<AXNode>>& nodes,
-    AXObjectCacheImpl& cache) const {
-  for (AXObject* childAXObject = parentAXObject.rawFirstChild(); childAXObject;
-       childAXObject = childAXObject->rawNextSibling()) {
-    if (!childAXObject->accessibilityIsIgnored() ||
-        childAXObject == inspectedAXObject) {
-      addChild(childIds, *childAXObject, inspectedAXObject, nodes, cache);
-      continue;
-    }
-
-    if (isAncestorOf(childAXObject, inspectedAXObject)) {
-      addSiblingsOfIgnored(childIds, *childAXObject, inspectedAXObject, nodes,
-                           cache);
-      continue;
-    }
-
-    const AXObject::AXObjectVector& indirectChildren =
-        childAXObject->children();
-    for (unsigned i = 0; i < indirectChildren.size(); ++i) {
-      addChild(childIds, *(indirectChildren[i]), inspectedAXObject, nodes,
-               cache);
-    }
-  }
 }
 
 void InspectorAccessibilityAgent::addChild(
@@ -764,6 +654,12 @@ void InspectorAccessibilityAgent::addChildren(
     std::unique_ptr<protocol::Array<AXNodeId>>& childIds,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
+  if (inspectedAXObject && inspectedAXObject->accessibilityIsIgnored() &&
+      &axObject == inspectedAXObject->parentObjectUnignored()) {
+    childIds->addItem(String::number(inspectedAXObject->axObjectID()));
+    return;
+  }
+
   const AXObject::AXObjectVector& children = axObject.children();
   for (unsigned i = 0; i < children.size(); i++) {
     AXObject& childAXObject = *children[i].get();

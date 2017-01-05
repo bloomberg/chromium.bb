@@ -43,15 +43,10 @@ class MODULES_EXPORT InspectorAccessibilityAgent
       bool fetchRelatives,
       std::unique_ptr<protocol::Array<AXNode>>& nodes,
       AXObjectCacheImpl&) const;
-  void populateDOMNodeRelatives(Node& inspectedDOMNode,
+  void populateDOMNodeAncestors(Node& inspectedDOMNode,
                                 AXNode&,
                                 std::unique_ptr<protocol::Array<AXNode>>& nodes,
                                 AXObjectCacheImpl&) const;
-  void findDOMNodeChildren(std::unique_ptr<protocol::Array<AXNodeId>>& childIds,
-                           Node& parentNode,
-                           Node& inspectedDOMNode,
-                           std::unique_ptr<protocol::Array<AXNode>>& nodes,
-                           AXObjectCacheImpl&) const;
   std::unique_ptr<AXNode> buildProtocolAXObject(
       AXObject&,
       AXObject* inspectedAXObject,
