@@ -1748,11 +1748,15 @@ camera.views.Camera.prototype.takePictureImmediately_ = function() {
 
 /**
  * Resolutions to be probed on the camera. Format: [[width, height], ...].
+ * TODO(mtomasz): Remove this list and always use the highest available
+ * resolution.
+ *
  * @type {Array.<Array.<number>>}
  * @const
  */
 camera.views.Camera.RESOLUTIONS =
-    [[1920, 1080], [1280, 720], [800, 600], [640, 480]];
+    [[2560, 1920], [2048, 1536], [1920, 1080], [1280, 720], [800, 600],
+     [640, 480]];
 
 /**
  * Synchronizes video size with the window's current size.
