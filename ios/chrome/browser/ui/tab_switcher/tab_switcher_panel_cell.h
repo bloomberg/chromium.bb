@@ -31,6 +31,9 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight();
 // Returns the cell's identifier used for the cell's re-use.
 + (NSString*)identifier;
 
+// The cell delegate.
+@property(nonatomic, assign) id<SessionCellDelegate> delegate;
+
 @end
 
 // Cell showing information about a local session.
@@ -44,8 +47,6 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight();
 - (void)setAppearanceForTab:(Tab*)tab cellSize:(CGSize)cellSize;
 // Sets the cell's appearance depending on |type|.
 - (void)setSessionType:(TabSwitcherSessionType)type;
-// Sets the cell's delegate.
-- (void)setDelegate:(id<SessionCellDelegate>)delegate;
 
 // Returns the current screenshot set on the cell.
 - (UIImage*)screenshot;
@@ -61,8 +62,6 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight();
 // Sets the session's URL to obtain the cell's favicon.
 - (void)setSessionGURL:(GURL const&)gurl
       withBrowserState:(ios::ChromeBrowserState*)browserState;
-// Sets the cell's delegate.
-- (void)setDelegate:(id<SessionCellDelegate>)delegate;
 
 @end
 

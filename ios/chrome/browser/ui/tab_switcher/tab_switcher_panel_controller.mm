@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_controller.h"
 
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -30,6 +31,7 @@ void FillVectorWithHashesUsingDistantSession(
 }  // namespace
 
 @interface TabSwitcherPanelController ()<UICollectionViewDataSource,
+                                         UICollectionViewDelegate,
                                          SessionCellDelegate> {
   ios::ChromeBrowserState* _browserState;  // Weak.
   base::scoped_nsobject<TabSwitcherPanelView> _panelView;
@@ -215,16 +217,16 @@ void FillVectorWithHashesUsingDistantSession(
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell = nil;
+  TabSwitcherSessionCell* cell = nil;
   NSUInteger tabIndex = indexPath.item;
   if (_sessionType == TabSwitcherSessionType::DISTANT_SESSION) {
-    cell = [collectionView
-        dequeueReusableCellWithReuseIdentifier:[TabSwitcherDistantSessionCell
-                                                   identifier]
-                                  forIndexPath:indexPath];
-    DCHECK([cell isKindOfClass:[TabSwitcherDistantSessionCell class]]);
+    NSString* identifier = [TabSwitcherDistantSessionCell identifier];
     TabSwitcherDistantSessionCell* panelCell =
-        static_cast<TabSwitcherDistantSessionCell*>(cell);
+        base::mac::ObjCCastStrict<TabSwitcherDistantSessionCell>([collectionView
+            dequeueReusableCellWithReuseIdentifier:identifier
+                                      forIndexPath:indexPath]);
+    cell = panelCell;
+
     CHECK(_distantSession);
     const std::size_t distantSessionTabCount = _distantSession->tabs.size();
     LOG_ASSERT(tabIndex < distantSessionTabCount)
@@ -235,21 +237,34 @@ void FillVectorWithHashesUsingDistantSession(
     [panelCell setTitle:SysUTF16ToNSString(tab->title)];
     [panelCell setSessionGURL:tab->virtual_url
              withBrowserState:[_model browserState]];
-    [panelCell setDelegate:self];
   } else {
-    cell = [collectionView
-        dequeueReusableCellWithReuseIdentifier:[TabSwitcherLocalSessionCell
-                                                   identifier]
-                                  forIndexPath:indexPath];
-    DCHECK([cell isKindOfClass:[TabSwitcherLocalSessionCell class]]);
+    NSString* identifier = [TabSwitcherLocalSessionCell identifier];
     TabSwitcherLocalSessionCell* panelCell =
-        static_cast<TabSwitcherLocalSessionCell*>(cell);
+        base::mac::ObjCCastStrict<TabSwitcherLocalSessionCell>([collectionView
+            dequeueReusableCellWithReuseIdentifier:identifier
+                                      forIndexPath:indexPath]);
+    cell = panelCell;
+
     Tab* tab = _localSession->tabs()[tabIndex];
-    [panelCell setDelegate:self];
     [panelCell setSessionType:_sessionType];
     [panelCell setAppearanceForTab:tab cellSize:[_panelView cellSize]];
   }
+  DCHECK(cell);
+  cell.delegate = self;
   return cell;
+}
+
+- (void)collectionView:(UICollectionView*)collectionView
+    didEndDisplayingCell:(UICollectionViewCell*)cell
+      forItemAtIndexPath:(NSIndexPath*)indexPath {
+  // When closing the last tab, accessibility does not realize that there is no
+  // elements in the collection view and keep the custom action for the tab. So
+  // reset the delegate of the cell (to avoid crashing if the action is invoked)
+  // and post a notification that the screen changed to force accessibility to
+  // re-inspect the whole screen. See http://crbug.com/677374 for crash log.
+  base::mac::ObjCCastStrict<TabSwitcherSessionCell>(cell).delegate = nil;
+  UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                  nil);
 }
 
 #pragma mark - SessionCellDelegate
@@ -326,6 +341,7 @@ void FillVectorWithHashesUsingDistantSession(
   _panelView.reset(
       [[TabSwitcherPanelView alloc] initWithSessionType:_sessionType]);
   _panelView.get().collectionView.dataSource = self;
+  _panelView.get().collectionView.delegate = self;
 }
 
 - (synced_sessions::DistantSession const*)distantSession {

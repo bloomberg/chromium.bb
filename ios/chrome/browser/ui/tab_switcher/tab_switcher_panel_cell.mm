@@ -31,7 +31,7 @@ const CGFloat kCellCornerRadius = 2;
 const CGFloat kBarHeight = 44;
 const CGFloat kTitleLabelTextAlpha = .54;
 const CGFloat kNewTabIconAlpha = .87;
-}  // Anonymous namespace
+}
 
 CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   return kBarHeight;
@@ -49,6 +49,8 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   base::scoped_nsobject<UIView> _containerView;
   CGSize _cachedShadowSize;
 }
+
+@synthesize delegate = _delegate;
 
 // Returns the cell's identifier used for the cell's re-use.
 + (NSString*)identifier {
@@ -106,7 +108,6 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   base::scoped_nsobject<UIImageView> _snapshot;
   base::scoped_nsobject<TabSwitcherButton> _snapshotButton;
   PendingSnapshotRequest _currentPendingSnapshotRequest;
-  id<SessionCellDelegate> _delegate;  // weak
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -262,16 +263,12 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   [_snapshot setBackgroundColor:snapshotBackgroundColor];
 }
 
-- (void)setDelegate:(id<SessionCellDelegate>)delegate {
-  _delegate = delegate;
-}
-
 - (void)snapshotPressed {
-  [_delegate cellPressed:self];
+  [self.delegate cellPressed:self];
 }
 
 - (void)closeButtonPressed {
-  [_delegate deleteButtonPressedForCell:self];
+  [self.delegate deleteButtonPressedForCell:self];
 }
 
 - (void)prepareForReuse {
@@ -283,7 +280,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 }
 
 - (TabSwitcherCache*)cache {
-  return [_delegate tabSwitcherCache];
+  return [self.delegate tabSwitcherCache];
 }
 
 #pragma mark - UIAccessibilityAction
@@ -309,7 +306,6 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   base::scoped_nsobject<UIView> _verticallyCenteredView;
   base::scoped_nsobject<TabSwitcherButton> _raisedButton;
   base::scoped_nsobject<NSOperation> _faviconObtainer;
-  id<SessionCellDelegate> _delegate;  // weak
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -430,12 +426,8 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
   [operationQueue addOperation:_faviconObtainer];
 }
 
-- (void)setDelegate:(id<SessionCellDelegate>)delegate {
-  _delegate = delegate;
-}
-
 - (void)cellPressed {
-  [_delegate cellPressed:self];
+  [self.delegate cellPressed:self];
 }
 
 - (void)prepareForReuse {
