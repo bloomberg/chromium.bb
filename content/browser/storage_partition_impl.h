@@ -73,9 +73,9 @@ class CONTENT_EXPORT  StoragePartitionImpl
   HostZoomLevelContext* GetHostZoomLevelContext() override;
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
-  PaymentAppContextImpl* GetPaymentAppContext() override;
 
   BackgroundSyncContext* GetBackgroundSyncContext();
+  PaymentAppContextImpl* GetPaymentAppContext();
   BroadcastChannelProvider* GetBroadcastChannelProvider();
 
   // mojom::StoragePartitionService interface.

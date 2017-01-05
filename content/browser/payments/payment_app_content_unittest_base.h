@@ -18,6 +18,7 @@
 
 namespace content {
 
+class BrowserContext;
 class EmbeddedWorkerTestHelper;
 class PaymentAppContextImpl;
 class StoragePartitionImpl;
@@ -28,9 +29,7 @@ class PaymentAppContentUnitTestBase : public testing::Test {
   PaymentAppContentUnitTestBase();
   ~PaymentAppContentUnitTestBase() override;
 
-  PaymentAppContextImpl* payment_app_context() const {
-    return payment_app_context_.get();
-  }
+  BrowserContext* browser_context();
   PaymentAppManager* CreatePaymentAppManager(const GURL& scope_url,
                                              const GURL& sw_script_url);
   void SetManifest(PaymentAppManager* manager,
@@ -43,10 +42,11 @@ class PaymentAppContentUnitTestBase : public testing::Test {
   void UnregisterServiceWorker(const GURL& scope_url);
 
  private:
+  StoragePartitionImpl* storage_partition();
+  PaymentAppContextImpl* payment_app_context();
+
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
-  std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
-  scoped_refptr<PaymentAppContextImpl> payment_app_context_;
   std::vector<payments::mojom::PaymentAppManagerPtr> payment_app_managers_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentAppContentUnitTestBase);

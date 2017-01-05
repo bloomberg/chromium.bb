@@ -13,7 +13,6 @@
 #include "components/payments/payment_app.mojom.h"
 #include "content/browser/payments/payment_app_database.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/payment_app_context.h"
 
 namespace content {
 
@@ -42,8 +41,7 @@ class ServiceWorkerContextWrapper;
 //   4) Shutdown()
 //   5) Destructor
 class CONTENT_EXPORT PaymentAppContextImpl
-    : public base::RefCountedThreadSafe<PaymentAppContextImpl>,
-      NON_EXPORTED_BASE(public PaymentAppContext) {
+    : public base::RefCountedThreadSafe<PaymentAppContextImpl> {
  public:
   PaymentAppContextImpl();
 
@@ -66,14 +64,10 @@ class CONTENT_EXPORT PaymentAppContextImpl
   // Should be accessed only on the IO thread.
   PaymentAppDatabase* payment_app_database() const;
 
-  // PaymentAppContext implementation:
-  // Should be accessed only on the UI thread.
-  void GetAllManifests(const GetAllManifestsCallback& callback) override;
-
  private:
   friend class PaymentAppContentUnitTestBase;
   friend class base::RefCountedThreadSafe<PaymentAppContextImpl>;
-  ~PaymentAppContextImpl() override;
+  ~PaymentAppContextImpl();
 
   void CreatePaymentAppDatabaseOnIO(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
@@ -83,10 +77,6 @@ class CONTENT_EXPORT PaymentAppContextImpl
 
   void ShutdownOnIO();
   void DidShutdown();
-
-  void GetAllManifestsOnIO(const GetAllManifestsCallback& callback);
-  void DidGetAllManifestsOnIO(const GetAllManifestsCallback& callback,
-                              PaymentAppDatabase::Manifests manifests);
 
   // Only accessed on the IO thread.
   std::unique_ptr<PaymentAppDatabase> payment_app_database_;

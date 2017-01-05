@@ -61,14 +61,6 @@ PaymentAppDatabase* PaymentAppContextImpl::payment_app_database() const {
   return payment_app_database_.get();
 }
 
-void PaymentAppContextImpl::GetAllManifests(
-    const GetAllManifestsCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&PaymentAppContextImpl::GetAllManifestsOnIO, this, callback));
-}
-
 PaymentAppContextImpl::~PaymentAppContextImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(is_shutdown_);
@@ -101,23 +93,6 @@ void PaymentAppContextImpl::DidShutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   is_shutdown_ = true;
-}
-
-void PaymentAppContextImpl::GetAllManifestsOnIO(
-    const GetAllManifestsCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  payment_app_database()->ReadAllManifests(base::Bind(
-      &PaymentAppContextImpl::DidGetAllManifestsOnIO, this, callback));
-}
-
-void PaymentAppContextImpl::DidGetAllManifestsOnIO(
-    const GetAllManifestsCallback& callback,
-    Manifests manifests) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, base::Passed(std::move(manifests))));
 }
 
 }  // namespace content

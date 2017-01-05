@@ -44,22 +44,18 @@ void UnregisterServiceWorkerCallback(bool* called,
 PaymentAppContentUnitTestBase::PaymentAppContentUnitTestBase()
     : thread_bundle_(
           new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP)),
-      embedded_worker_helper_(new EmbeddedWorkerTestHelper(base::FilePath())),
-      storage_partition_impl_(
-          new StoragePartitionImpl(
-              embedded_worker_helper_->browser_context(), base::FilePath(),
-              nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-              nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr)),
-      payment_app_context_(new PaymentAppContextImpl()) {
+      embedded_worker_helper_(new EmbeddedWorkerTestHelper(base::FilePath())) {
   embedded_worker_helper_->context_wrapper()->set_storage_partition(
-      storage_partition_impl_.get());
-  payment_app_context_->Init(embedded_worker_helper_->context_wrapper());
+      storage_partition());
+  payment_app_context()->Init(embedded_worker_helper_->context_wrapper());
   base::RunLoop().RunUntilIdle();
 }
 
-PaymentAppContentUnitTestBase::~PaymentAppContentUnitTestBase() {
-  payment_app_context_->Shutdown();
-  base::RunLoop().RunUntilIdle();
+PaymentAppContentUnitTestBase::~PaymentAppContentUnitTestBase() {}
+
+BrowserContext* PaymentAppContentUnitTestBase::browser_context() {
+  DCHECK(embedded_worker_helper_);
+  return embedded_worker_helper_->browser_context();
 }
 
 PaymentAppManager* PaymentAppContentUnitTestBase::CreatePaymentAppManager(
@@ -75,12 +71,12 @@ PaymentAppManager* PaymentAppContentUnitTestBase::CreatePaymentAppManager(
 
   // This function should eventually return created payment app manager
   // but there is no way to get last created payment app manager from
-  // payment_app_context_->payment_app_managers_ because its type is std::map
+  // payment_app_context()->payment_app_managers_ because its type is std::map
   // and can not ensure its order. So, just make a set of existing payment app
   // managers before creating a new manager and then check what is a new thing.
   std::set<PaymentAppManager*> existing_managers;
   for (const auto& existing_manager :
-       payment_app_context_->payment_app_managers_) {
+       payment_app_context()->payment_app_managers_) {
     existing_managers.insert(existing_manager.first);
   }
 
@@ -89,12 +85,12 @@ PaymentAppManager* PaymentAppContentUnitTestBase::CreatePaymentAppManager(
   mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request =
       mojo::MakeRequest(&manager);
   payment_app_managers_.push_back(std::move(manager));
-  payment_app_context_->CreatePaymentAppManager(std::move(request));
+  payment_app_context()->CreatePaymentAppManager(std::move(request));
   base::RunLoop().RunUntilIdle();
 
   // Find a last registered payment app manager.
   for (const auto& candidate_manager :
-       payment_app_context_->payment_app_managers_) {
+       payment_app_context()->payment_app_managers_) {
     if (!base::ContainsKey(existing_managers, candidate_manager.first)) {
       candidate_manager.first->Init(scope_url.spec());
       base::RunLoop().RunUntilIdle();
@@ -150,6 +146,15 @@ void PaymentAppContentUnitTestBase::UnregisterServiceWorker(
       scope_url, base::Bind(&UnregisterServiceWorkerCallback, &called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
+}
+
+StoragePartitionImpl* PaymentAppContentUnitTestBase::storage_partition() {
+  return static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+}
+
+PaymentAppContextImpl* PaymentAppContentUnitTestBase::payment_app_context() {
+  return storage_partition()->GetPaymentAppContext();
 }
 
 }  // namespace content

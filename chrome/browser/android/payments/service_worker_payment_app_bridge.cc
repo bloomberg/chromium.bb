@@ -10,7 +10,7 @@
 #include "components/payments/payment_app.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/payment_app_context.h"
+#include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ServiceWorkerPaymentAppBridge_jni.h"
@@ -26,7 +26,7 @@ namespace {
 
 void OnGotAllManifests(const JavaRef<jobject>& jweb_contents,
                        const JavaRef<jobject>& jcallback,
-                       content::PaymentAppContext::Manifests manifests) {
+                       content::PaymentAppProvider::Manifests manifests) {
   JNIEnv* env = AttachCurrentThread();
 
   for (const auto& entry : manifests) {
@@ -67,17 +67,11 @@ static void GetAllAppManifests(JNIEnv* env,
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-
-  content::StoragePartition* storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(browser_context);
-
-  content::PaymentAppContext* payment_app_context =
-      storage_partition->GetPaymentAppContext();
-
-  payment_app_context->GetAllManifests(base::Bind(
-      &OnGotAllManifests, ScopedJavaGlobalRef<jobject>(env, jweb_contents),
-      ScopedJavaGlobalRef<jobject>(env, jcallback)));
+  content::PaymentAppProvider::GetInstance()->GetAllManifests(
+      web_contents->GetBrowserContext(),
+      base::Bind(&OnGotAllManifests,
+                 ScopedJavaGlobalRef<jobject>(env, jweb_contents),
+                 ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 static void InvokePaymentApp(JNIEnv* env,

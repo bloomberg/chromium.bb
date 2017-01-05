@@ -10,8 +10,7 @@
 #include "base/run_loop.h"
 #include "components/payments/payment_app.mojom.h"
 #include "content/browser/payments/payment_app_content_unittest_base.h"
-#include "content/browser/payments/payment_app_context_impl.h"
-#include "content/public/browser/payment_app_context.h"
+#include "content/browser/payments/payment_app_provider_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -32,21 +31,22 @@ void SetManifestCallback(bool* called,
 }
 
 void GetAllManifestsCallback(bool* called,
-                             PaymentAppContext::Manifests* out_manifests,
-                             PaymentAppContext::Manifests manifests) {
+                             PaymentAppProvider::Manifests* out_manifests,
+                             PaymentAppProvider::Manifests manifests) {
   *called = true;
   *out_manifests = std::move(manifests);
 }
 
 }  // namespace
 
-class PaymentAppContextTest : public PaymentAppContentUnitTestBase {
+class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
  public:
-  PaymentAppContextTest() {}
-  ~PaymentAppContextTest() override {}
+  PaymentAppProviderTest() {}
+  ~PaymentAppProviderTest() override {}
 
-  void GetAllManifests(PaymentAppContext::GetAllManifestsCallback callback) {
-    payment_app_context()->GetAllManifests(callback);
+  void GetAllManifests(PaymentAppProvider::GetAllManifestsCallback callback) {
+    PaymentAppProviderImpl::GetInstance()->GetAllManifests(browser_context(),
+                                                           callback);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -65,10 +65,10 @@ class PaymentAppContextTest : public PaymentAppContentUnitTestBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentAppContextTest);
+  DISALLOW_COPY_AND_ASSIGN(PaymentAppProviderTest);
 };
 
-TEST_F(PaymentAppContextTest, Test) {
+TEST_F(PaymentAppProviderTest, Test) {
   static const struct {
     const char* scopeUrl;
     const char* scriptUrl;
@@ -82,7 +82,7 @@ TEST_F(PaymentAppContextTest, Test) {
                      GURL(kPaymentAppInfo[i].scriptUrl));
   }
 
-  PaymentAppContext::Manifests manifests;
+  PaymentAppProvider::Manifests manifests;
   bool called = false;
   GetAllManifests(base::Bind(&GetAllManifestsCallback, &called, &manifests));
   ASSERT_TRUE(called);

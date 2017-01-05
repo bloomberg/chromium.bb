@@ -172,6 +172,7 @@ source_set("browser_sources") {
     "overscroll_configuration.h",
     "page_navigator.cc",
     "page_navigator.h",
+    "payment_app_provider.h",
     "pepper_flash_settings_helper.h",
     "pepper_vpn_provider_resource_host_proxy.h",
     "permission_manager.h",

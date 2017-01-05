@@ -973,6 +973,8 @@ source_set("browser") {
     "payments/payment_app_database.h",
     "payments/payment_app_manager.cc",
     "payments/payment_app_manager.h",
+    "payments/payment_app_provider_impl.cc",
+    "payments/payment_app_provider_impl.h",
     "permissions/permission_service_context.cc",
     "permissions/permission_service_context.h",
     "permissions/permission_service_impl.cc",
