@@ -53,6 +53,8 @@ static_library("test_support") {
   sources = [
     "test_ruleset_creator.cc",
     "test_ruleset_creator.h",
+    "test_ruleset_utils.cc",
+    "test_ruleset_utils.h",
   ]
   deps = [
     ":common",

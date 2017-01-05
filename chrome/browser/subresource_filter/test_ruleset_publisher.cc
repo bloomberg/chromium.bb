@@ -4,7 +4,9 @@
 
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 
+#include "base/hash.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
@@ -42,17 +44,13 @@ class RulesetDistributionListener {
 TestRulesetPublisher::TestRulesetPublisher() = default;
 TestRulesetPublisher::~TestRulesetPublisher() = default;
 
-void TestRulesetPublisher::SetRulesetToDisallowURLsWithPathSuffix(
-    const std::string& suffix) {
-  const std::string& test_ruleset_content_version(suffix);
-  TestRulesetPair test_ruleset_pair;
-  ASSERT_NO_FATAL_FAILURE(
-      ruleset_creator_.CreateRulesetToDisallowURLsWithPathSuffix(
-          suffix, &test_ruleset_pair))
-      << suffix;
+void TestRulesetPublisher::SetRuleset(const TestRuleset& unindexed_ruleset) {
+  const std::string& test_ruleset_content_version(base::SizeTToString(
+      base::Hash(std::string(unindexed_ruleset.contents.begin(),
+                             unindexed_ruleset.contents.end()))));
   subresource_filter::UnindexedRulesetInfo unindexed_ruleset_info;
   unindexed_ruleset_info.content_version = test_ruleset_content_version;
-  unindexed_ruleset_info.ruleset_path = test_ruleset_pair.unindexed.path;
+  unindexed_ruleset_info.ruleset_path = unindexed_ruleset.path;
   RulesetDistributionListener listener;
   g_browser_process->subresource_filter_ruleset_service()
       ->IndexAndStoreAndPublishRulesetIfNeeded(unindexed_ruleset_info);

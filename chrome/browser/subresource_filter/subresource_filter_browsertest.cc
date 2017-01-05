@@ -31,6 +31,7 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
+#include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -174,6 +175,8 @@ namespace subresource_filter {
 
 using subresource_filter::testing::ScopedSubresourceFilterFeatureToggle;
 using subresource_filter::testing::TestRulesetPublisher;
+using subresource_filter::testing::TestRulesetCreator;
+using subresource_filter::testing::TestRulesetPair;
 
 // SubresourceFilterDisabledBrowserTest ---------------------------------------
 
@@ -228,6 +231,8 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
     host_resolver()->AddSimulatedFailure("host-with-dns-lookup-failure");
+    host_resolver()->AddRule("*", "127.0.0.1");
+    content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
@@ -297,8 +302,18 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
   }
 
   void SetRulesetToDisallowURLsWithPathSuffix(const std::string& suffix) {
+    TestRulesetPair test_ruleset_pair;
+    ruleset_creator_.CreateRulesetToDisallowURLsWithPathSuffix(
+        suffix, &test_ruleset_pair);
     ASSERT_NO_FATAL_FAILURE(
-        test_ruleset_publisher_.SetRulesetToDisallowURLsWithPathSuffix(suffix));
+        test_ruleset_publisher_.SetRuleset(test_ruleset_pair.unindexed));
+  }
+
+  void SetRulesetWithRules(const std::vector<proto::UrlRule>& rules) {
+    TestRulesetPair test_ruleset_pair;
+    ruleset_creator_.CreateRulesetWithRules(rules, &test_ruleset_pair);
+    ASSERT_NO_FATAL_FAILURE(
+        test_ruleset_publisher_.SetRuleset(test_ruleset_pair.unindexed));
   }
 
  private:
@@ -308,6 +323,7 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
   std::unique_ptr<ScopedSubresourceFilterFeatureToggle> scoped_feature_toggle_;
   TestRulesetPublisher test_ruleset_publisher_;
   bool measure_performance_;
+  TestRulesetCreator ruleset_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTestImpl);
 };
@@ -554,6 +570,30 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   // Check that bubble is shown for new navigation.
   ui_test_utils::NavigateToURL(browser(), url);
   tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 2);
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       CrossSiteSubFrameActivationWithoutWhitelist) {
+  GURL a_url(embedded_test_server()->GetURL(
+      "a.com", "/subresource_filter/frame_cross_site_set.html"));
+  ConfigureAsPhishingURL(a_url);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  ExpectParsedScriptElementLoadedStatusInFrames({"b", "c", "d"},
+                                                {false, false, false});
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       CrossSiteSubFrameActivationWithWhitelist) {
+  GURL a_url(embedded_test_server()->GetURL(
+      "a.com", "/subresource_filter/frame_cross_site_set.html"));
+  ConfigureAsPhishingURL(a_url);
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetWithRules({testing::CreateSuffixRule("included_script.js"),
+                           testing::CreateWhitelistRuleForDocument("c.com")}));
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  ExpectParsedScriptElementLoadedStatusInFrames({"b", "d"}, {false, true});
 }
 
 // Tests checking how histograms are recorded. ---------------------------------

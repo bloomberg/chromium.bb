@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "components/subresource_filter/core/common/proto/rules.pb.h"
 
 namespace subresource_filter {
 namespace testing {
@@ -59,6 +60,9 @@ class TestRulesetCreator {
   void CreateRulesetToDisallowURLsWithPathSuffix(
       base::StringPiece suffix,
       TestRulesetPair* test_ruleset_pair);
+
+  void CreateRulesetWithRules(const std::vector<proto::UrlRule>& rules,
+                              TestRulesetPair* test_ruleset_pair);
 
   // Same as above, but only creates an unindexed ruleset.
   void CreateUnindexedRulesetToDisallowURLsWithPathSuffix(

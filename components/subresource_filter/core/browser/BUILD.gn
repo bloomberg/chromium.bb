@@ -52,5 +52,6 @@ source_set("unit_tests") {
     "//components/subresource_filter/core/common:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
   ]
 }
