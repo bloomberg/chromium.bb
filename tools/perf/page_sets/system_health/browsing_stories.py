@@ -392,8 +392,6 @@ class YouTubeMobileStory(_MediaBrowsingStory):
   ITEM_SELECTOR_INDEX = 3
 
 
-# Failing during CQ runs. crbug.com/661775
-@decorators.Disabled('linux', 'win')
 class YouTubeDesktopStory(_MediaBrowsingStory):
   NAME = 'browse:media:youtube'
   URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
