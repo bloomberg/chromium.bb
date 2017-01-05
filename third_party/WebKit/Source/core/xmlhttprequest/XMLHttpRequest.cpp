@@ -78,6 +78,7 @@
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/Assertions.h"
+#include "wtf/AutoReset.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 #include <memory>
@@ -1604,26 +1605,22 @@ void XMLHttpRequest::endLoading() {
                                                 this, m_method, m_url);
 
   if (m_loader) {
-    const bool hasError = m_error;
     // Set |m_error| in order to suppress the cancel notification (see
     // XMLHttpRequest::didFail).
-    m_error = true;
-    m_loader->cancel();
-    m_error = hasError;
-    m_loader = nullptr;
+    AutoReset<bool> scope(&m_error, true);
+    m_loader.release()->cancel();
   }
 
   m_sendFlag = false;
   changeState(kDone);
 
-  if (!getExecutionContext() || !getExecutionContext()->isDocument() ||
-      !document() || !document()->frame() || !document()->frame()->page())
+  if (!getExecutionContext() || !getExecutionContext()->isDocument())
     return;
 
-  if (status() >= 200 && status() < 300) {
+  if (document() && document()->frame() && document()->frame()->page() &&
+      FetchUtils::isOkStatus(status()))
     document()->frame()->page()->chromeClient().ajaxSucceeded(
         document()->frame());
-  }
 }
 
 void XMLHttpRequest::didSendData(unsigned long long bytesSent,

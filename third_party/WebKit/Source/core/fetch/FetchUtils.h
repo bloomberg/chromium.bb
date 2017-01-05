@@ -32,6 +32,11 @@ class CORE_EXPORT FetchUtils {
                                          const HTTPHeaderMap&);
   static AtomicString normalizeMethod(const AtomicString& method);
   static String normalizeHeaderValue(const String& value);
+
+  // https://fetch.spec.whatwg.org/#ok-status aka a successful 2xx status
+  // code, https://tools.ietf.org/html/rfc7231#section-6.3 . We opt to use
+  // the Fetch term in naming the predicate.
+  static bool isOkStatus(int status) { return status >= 200 && status < 300; }
 };
 
 }  // namespace blink

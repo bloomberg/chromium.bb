@@ -281,9 +281,10 @@ bool passesPreflightStatusCheck(const ResourceResponse& response,
   // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch
   // CORS Spec: http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
   // https://crbug.com/452394
-  if (response.httpStatusCode() < 200 || response.httpStatusCode() >= 300) {
+  int statusCode = response.httpStatusCode();
+  if (!FetchUtils::isOkStatus(statusCode)) {
     errorDescription = "Response for preflight has invalid HTTP status code " +
-                       String::number(response.httpStatusCode());
+                       String::number(statusCode);
     return false;
   }
 

@@ -17,6 +17,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/URLSearchParams.h"
+#include "core/fetch/FetchUtils.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/FormData.h"
 #include "core/streams/ReadableStreamOperations.h"
@@ -376,7 +377,7 @@ unsigned short Response::status() const {
 bool Response::ok() const {
   // "The ok attribute's getter must return true
   // if response's status is in the range 200 to 299, and false otherwise."
-  return 200 <= status() && status() <= 299;
+  return FetchUtils::isOkStatus(status());
 }
 
 String Response::statusText() const {

@@ -35,6 +35,7 @@
 #include "core/events/Event.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/FetchUtils.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Deprecation.h"
@@ -504,11 +505,9 @@ void DocumentLoader::responseReceived(
     return;
   }
 
-  if (m_response.isHTTP()) {
-    int status = m_response.httpStatusCode();
-    if ((status < 200 || status >= 300) && m_frame->owner())
-      m_frame->owner()->renderFallbackContent();
-  }
+  if (m_frame->owner() && m_response.isHTTP() &&
+      !FetchUtils::isOkStatus(m_response.httpStatusCode()))
+    m_frame->owner()->renderFallbackContent();
 }
 
 void DocumentLoader::ensureWriter(const AtomicString& mimeType,

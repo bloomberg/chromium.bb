@@ -556,7 +556,7 @@ void FetchManager::Loader::loadSucceeded() {
   m_finished = true;
 
   if (document() && document()->frame() && document()->frame()->page() &&
-      m_responseHttpStatusCode >= 200 && m_responseHttpStatusCode < 300) {
+      FetchUtils::isOkStatus(m_responseHttpStatusCode)) {
     document()->frame()->page()->chromeClient().ajaxSucceeded(
         document()->frame());
   }
