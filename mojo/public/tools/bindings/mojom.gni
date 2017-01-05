@@ -114,6 +114,19 @@ foreach(configuration, _bindings_configurations) {
 #   export_define_blink (optional)
 #   export_header_blink (optional)
 #       These three parameters are the blink variants of the previous 3.
+#
+# The following parameters are used to correct component build dependencies.
+# They are needed so mojom-mojom dependencies follow the rule that dependencies
+# on a source set in another component are replaced by a dependency on the
+# containing component. The first two are for the chromium variant; the other
+# two are for the blink variant.
+#   overridden_deps (optional)
+#       The list of mojom deps to be overridden.
+#   component_deps (optional)
+#       The list of component deps to add to replace overridden_deps.
+#   overridden_deps_blink (optional)
+#   component_deps_blink (optional)
+#       These two parameters are the blink variants of the previous two.
 template("mojom") {
   assert(
       defined(invoker.sources) || defined(invoker.deps) ||
@@ -131,6 +144,16 @@ template("mojom") {
     assert(defined(invoker.export_class_attribute_blink))
     assert(defined(invoker.export_define_blink))
     assert(defined(invoker.export_header_blink))
+  }
+  if (defined(invoker.overridden_deps) || defined(invoker.component_deps)) {
+    assert(defined(invoker.overridden_deps))
+    assert(defined(invoker.component_deps))
+  }
+
+  if (defined(invoker.overridden_deps_blink) ||
+      defined(invoker.component_deps_blink)) {
+    assert(defined(invoker.overridden_deps_blink))
+    assert(defined(invoker.component_deps_blink))
   }
 
   all_deps = []
@@ -453,6 +476,30 @@ template("mojom") {
         # get the cpp dependency name.
         full_name = get_label_info("$d", "label_no_toolchain")
         public_deps += [ "${full_name}${variant_suffix}" ]
+      }
+      if (defined(bindings_configuration.for_blink) &&
+          bindings_configuration.for_blink) {
+        if (defined(invoker.overridden_deps_blink)) {
+          foreach(d, invoker.overridden_deps_blink) {
+            # Resolve the name, so that a target //mojo/something becomes
+            # //mojo/something:something and we can append variant_suffix
+            # to get the cpp dependency name.
+            full_name = get_label_info("$d", "label_no_toolchain")
+            public_deps -= [ "${full_name}${variant_suffix}" ]
+          }
+          public_deps += invoker.component_deps_blink
+        }
+      } else {
+        if (defined(invoker.overridden_deps)) {
+          foreach(d, invoker.overridden_deps) {
+            # Resolve the name, so that a target //mojo/something becomes
+            # //mojo/something:something and we can append variant_suffix
+            # to get the cpp dependency name.
+            full_name = get_label_info("$d", "label_no_toolchain")
+            public_deps -= [ "${full_name}${variant_suffix}" ]
+          }
+          public_deps += invoker.component_deps
+        }
       }
       foreach(typemap, active_typemaps) {
         if (defined(typemap.public_headers)) {

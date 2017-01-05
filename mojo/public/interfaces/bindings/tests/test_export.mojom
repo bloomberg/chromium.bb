@@ -16,3 +16,5 @@ struct StringPair {
 struct StringPairContainer {
   array<StringPair> pairs;
 };
+
+interface ExportedInterface {};

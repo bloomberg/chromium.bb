@@ -38,6 +38,15 @@ component("test_export_component") {
   ]
 }
 
+if (!is_ios) {
+  component("test_export_blink_component") {
+    testonly = true
+    deps = [
+      ":test_export_blink",
+    ]
+  }
+}
+
 mojom("test_export") {
   testonly = true
   sources = [
@@ -46,6 +55,33 @@ mojom("test_export") {
   export_class_attribute = "MOJO_TEST_EXPORT"
   export_define = "MOJO_TEST_IMPLEMENTATION=1"
   export_header = "mojo/public/cpp/bindings/tests/mojo_test_export.h"
+  if (!is_ios) {
+    export_class_attribute_blink = "MOJO_TEST_BLINK_EXPORT"
+    export_define_blink = "MOJO_TEST_BLINK_IMPLEMENTATION=1"
+    export_header_blink =
+        "mojo/public/cpp/bindings/tests/mojo_test_blink_export.h"
+  }
+  visibility = [
+    ":test_export_component",
+    ":test_export_blink_component",
+  ]
+}
+
+mojom("test_exported_import") {
+  testonly = true
+  sources = [
+    "test_import.mojom",
+  ]
+  public_deps = [
+    ":test_export",
+  ]
+
+  overridden_deps = [ ":test_export" ]
+  component_deps = [ ":test_export_component" ]
+  if (!is_ios) {
+    overridden_deps_blink = [ ":test_export" ]
+    component_deps_blink = [ ":test_export_blink_component" ]
+  }
 }
 
 mojom("test_mojom_import") {

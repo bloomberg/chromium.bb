@@ -50,6 +50,7 @@ source_set("tests") {
     "//mojo/public/cpp/test_support:test_utils",
     "//mojo/public/interfaces/bindings/tests:test_associated_interfaces",
     "//mojo/public/interfaces/bindings/tests:test_export_component",
+    "//mojo/public/interfaces/bindings/tests:test_exported_import",
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
     "//mojo/public/interfaces/bindings/tests:test_interfaces_experimental",
     "//mojo/public/interfaces/bindings/tests:test_struct_traits_interfaces",
@@ -89,6 +90,8 @@ if (!is_ios) {
     deps = [
       "//mojo/public/cpp/bindings",
       "//mojo/public/cpp/system",
+      "//mojo/public/interfaces/bindings/tests:test_export_blink_component",
+      "//mojo/public/interfaces/bindings/tests:test_exported_import_blink",
       "//mojo/public/interfaces/bindings/tests:test_interfaces",
       "//mojo/public/interfaces/bindings/tests:test_interfaces_blink",
       "//mojo/public/interfaces/bindings/tests:test_wtf_types",
