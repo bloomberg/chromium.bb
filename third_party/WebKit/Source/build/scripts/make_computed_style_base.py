@@ -87,7 +87,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 self._computed_enums[enum_name] = enum_values
 
         # A list of all the fields to be generated.
-        self._fields = []
+        all_fields = []
         for property in self._properties.values():
             if property['keyword_only']:
                 property_name = property['name_for_methods']
@@ -121,7 +121,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 if property['independent']:
                     field_name_suffix_upper = property_name + 'IsInherited'
                     field_name_suffix_lower = property_name_lower + 'IsInherited'
-                    self._fields.append(Field(
+                    all_fields.append(Field(
                         'inherited_flag',
                         name='m_' + field_name_suffix_lower,
                         property_name=property['name'],
@@ -136,7 +136,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                     ))
 
                 # Add the property itself as a member variable.
-                self._fields.append(Field(
+                all_fields.append(Field(
                     'enum',
                     name=field_name,
                     property_name=property['name'],
@@ -153,9 +153,56 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                     is_inherited_method_name=property_name_lower + 'IsInherited',
                 ))
 
-        # Small optimization: order fields by size, from largest to smallest,
-        # to reduce wasted space from alignment.
-        self._fields.sort(key=lambda f: f.size, reverse=True)
+        # Since fields cannot cross word boundaries, in order to minimize
+        # padding, group fields into buckets so that as many buckets as possible
+        # that are exactly 32 bits. Although this greedy approach may not always
+        # produce the optimal solution, we add a static_assert to the code to
+        # ensure ComputedStyleBase results in the expected size. If that
+        # static_assert fails, this code is falling into the small number of
+        # cases that are suboptimal, and may need to be rethought.
+        # For more details on packing bitfields to reduce padding, see:
+        # http://www.catb.org/esr/structure-packing/#_bitfields
+        field_buckets = []
+        # Consider fields in descending order of size to reduce fragmentation
+        # when they are selected.
+        for field in sorted(all_fields, key=lambda f: f.size, reverse=True):
+            added_to_bucket = False
+            # Go through each bucket and add this field if it will not increase
+            # the bucket's size to larger than 32 bits. Otherwise, make a new
+            # bucket containing only this field.
+            for bucket in field_buckets:
+                if sum(f.size for f in bucket) + field.size <= 32:
+                    bucket.append(field)
+                    added_to_bucket = True
+                    break
+            if not added_to_bucket:
+                field_buckets.append([field])
+
+        # The expected size of ComputedStyleBase is equivalent to as many words
+        # as the total number of buckets.
+        self._expected_total_field_bytes = len(field_buckets)
+
+        # The most optimal size of ComputedStyleBase is the total sum of all the
+        # field sizes, rounded up to the nearest word. If this produces the
+        # incorrect value, either the packing algorithm is not optimal or there
+        # is no way to pack the fields such that excess padding space is not
+        # added.
+        # If this fails, increase extra_padding_bytes by 1, but be aware that
+        # this also increases ComputedStyleBase by 1 word.
+        # We should be able to bring extra_padding_bytes back to 0 from time to
+        # time.
+        extra_padding_bytes = 0
+        optimal_total_field_bytes = int(math.ceil(sum(f.size for f in all_fields) / 32.0))
+        real_total_field_bytes = optimal_total_field_bytes + extra_padding_bytes
+        assert self._expected_total_field_bytes == real_total_field_bytes, \
+            ('The field packing algorithm produced %s bytes, optimal is %s bytes' %
+             (len(field_buckets), self._expected_total_field_bytes))
+
+        # Order the fields so fields in each bucket are adjacent.
+        self._fields = []
+        for bucket in field_buckets:
+            for field in bucket:
+                self._fields.append(field)
 
     @template_expander.use_jinja('ComputedStyleBase.h.tmpl')
     def generate_base_computed_style_h(self):
@@ -163,6 +210,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'properties': self._properties,
             'enums': self._computed_enums,
             'fields': self._fields,
+            'expected_total_field_bytes': self._expected_total_field_bytes,
         }
 
     @template_expander.use_jinja('ComputedStyleBase.cpp.tmpl')
@@ -171,6 +219,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'properties': self._properties,
             'enums': self._computed_enums,
             'fields': self._fields,
+            'expected_total_field_bytes': self._expected_total_field_bytes,
         }
 
     @template_expander.use_jinja('ComputedStyleBaseConstants.h.tmpl')
@@ -179,6 +228,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'properties': self._properties,
             'enums': self._computed_enums,
             'fields': self._fields,
+            'expected_total_field_bytes': self._expected_total_field_bytes,
         }
 
 if __name__ == '__main__':
