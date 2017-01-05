@@ -54,6 +54,9 @@ struct ArcVideoAcceleratorDmabufPlane {
   int32 stride;
 };
 
+// Next MinVersion: 4
+// Deprecated method IDs: 2, 7
+// Next method ID: 10
 interface VideoAcceleratorService {
   enum Result {
     SUCCESS = 0,
@@ -68,14 +71,8 @@ interface VideoAcceleratorService {
   Initialize@8(ArcVideoAcceleratorConfig config,
                VideoAcceleratorServiceClient client) => (Result result);
 
-  [MinVersion=1]
-  DeprecatedInitialize@7(ArcVideoAcceleratorConfig config) => (Result result);
-
   BindSharedMemory@1(PortType port, uint32 index, handle ashmem_fd,
                      uint32 offset, uint32 length);
-
-  DeprecatedBindDmabuf@2(PortType port, uint32 index, handle dmabuf_fd,
-                         int32 stride);
 
   [MinVersion=3]
   BindDmabuf@9(PortType port, uint32 index, handle dmabuf_fd,
@@ -90,9 +87,9 @@ interface VideoAcceleratorService {
   Flush@6();
 };
 
+// Deprecated method IDs: 0
+// Next method ID: 6
 interface VideoAcceleratorServiceClient {
-  DeprecatedInit@0(VideoAcceleratorService service_ptr);
-
   OnError@1(VideoAcceleratorService.Result error);
 
   OnBufferDone@2(PortType port, uint32 index, BufferMetadata metadata);

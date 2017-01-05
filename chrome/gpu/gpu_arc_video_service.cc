@@ -46,12 +46,6 @@ static_assert(
         chromeos::arc::ArcVideoAccelerator::INSUFFICIENT_RESOURCES,
     "enum mismatch");
 
-namespace {
-void OnConnectionError() {
-  DVLOG(2) << "OnConnectionError";
-}
-}  // namespace
-
 namespace mojo {
 
 template <>
@@ -125,25 +119,6 @@ GpuArcVideoService::~GpuArcVideoService() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-// static
-void GpuArcVideoService::DeprecatedConnect(
-    std::unique_ptr<GpuArcVideoService> service,
-    ::arc::mojom::VideoAcceleratorServiceClientRequest client_request) {
-  DVLOG(2) << "Connect";
-
-  service->client_.Bind(::arc::mojom::VideoAcceleratorServiceClientPtrInfo(
-      client_request.PassMessagePipe(), 0u));
-  service->client_.set_connection_error_handler(base::Bind(&OnConnectionError));
-
-  ::arc::mojom::VideoAcceleratorServicePtr service_proxy;
-  ::arc::mojom::VideoAcceleratorServiceRequest request(&service_proxy);
-  service->client_->DeprecatedInit(std::move(service_proxy));
-
-  auto binding = mojo::MakeStrongBinding(std::move(service),
-                                         mojo::MakeRequest(&service_proxy));
-  binding->set_connection_error_handler(base::Bind(&OnConnectionError));
-}
-
 void GpuArcVideoService::OnError(ArcVideoAccelerator::Result error) {
   DVLOG(2) << "OnError " << error;
   DCHECK_NE(error, ArcVideoAccelerator::SUCCESS);
@@ -192,16 +167,6 @@ void GpuArcVideoService::Initialize(
       static_cast<::arc::mojom::VideoAcceleratorService::Result>(result));
 }
 
-void GpuArcVideoService::DeprecatedInitialize(
-    ::arc::mojom::ArcVideoAcceleratorConfigPtr config,
-    const DeprecatedInitializeCallback& callback) {
-  DVLOG(2) << "DeprecatedInitialize";
-  ArcVideoAccelerator::Result result =
-      accelerator_->Initialize(config.To<ArcVideoAccelerator::Config>(), this);
-  callback.Run(
-      static_cast<::arc::mojom::VideoAcceleratorService::Result>(result));
-}
-
 base::ScopedFD GpuArcVideoService::UnwrapFdFromMojoHandle(
     mojo::ScopedHandle handle) {
   DCHECK(client_);
@@ -238,17 +203,6 @@ void GpuArcVideoService::BindSharedMemory(::arc::mojom::PortType port,
     return;
   accelerator_->BindSharedMemory(static_cast<PortType>(port), index,
                                  std::move(fd), offset, length);
-}
-
-void GpuArcVideoService::DeprecatedBindDmabuf(::arc::mojom::PortType port,
-                                              uint32_t index,
-                                              mojo::ScopedHandle dmabuf_handle,
-                                              int32_t stride) {
-  std::vector<::arc::ArcVideoAcceleratorDmabufPlane> planes {
-    {0, stride}
-  };
-
-  BindDmabuf(port, index, std::move(dmabuf_handle), std::move(planes));
 }
 
 void GpuArcVideoService::BindDmabuf(

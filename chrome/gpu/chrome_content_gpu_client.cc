@@ -25,14 +25,6 @@
 namespace {
 
 #if defined(OS_CHROMEOS)
-void DeprecatedCreateGpuArcVideoService(
-    const gpu::GpuPreferences& gpu_preferences,
-    ::arc::mojom::VideoAcceleratorServiceClientRequest client_request) {
-  chromeos::arc::GpuArcVideoService::DeprecatedConnect(
-      base::MakeUnique<chromeos::arc::GpuArcVideoService>(gpu_preferences),
-      std::move(client_request));
-}
-
 void CreateGpuArcVideoService(
     const gpu::GpuPreferences& gpu_preferences,
     ::arc::mojom::VideoAcceleratorServiceRequest request) {
@@ -83,8 +75,6 @@ void ChromeContentGpuClient::ExposeInterfacesToBrowser(
 #if defined(OS_CHROMEOS)
   registry->AddInterface(
       base::Bind(&CreateGpuArcVideoService, gpu_preferences));
-  registry->AddInterface(
-      base::Bind(&DeprecatedCreateGpuArcVideoService, gpu_preferences));
 #endif
 }
 
