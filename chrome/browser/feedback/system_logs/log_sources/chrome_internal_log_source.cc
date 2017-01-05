@@ -8,6 +8,7 @@
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -48,6 +49,7 @@ constexpr char kOsVersionTag[] = "OS VERSION";
 #if defined(OS_WIN)
 constexpr char kUsbKeyboardDetected[] = "usb_keyboard_detected";
 constexpr char kIsEnrolledToDomain[] = "enrolled_to_domain";
+constexpr char kInstallerBrandCode[] = "installer_brand_code";
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -116,6 +118,7 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
 #if defined(OS_WIN)
   PopulateUsbKeyboardDetected(response.get());
   PopulateEnrolledToDomain(response.get());
+  PopulateInstallerBrandCode(response.get());
 #endif
 
   if (ProfileManager::GetLastUsedProfile()->IsChild())
@@ -245,6 +248,14 @@ void ChromeInternalLogSource::PopulateEnrolledToDomain(
   (*response)[kIsEnrolledToDomain] = base::win::IsEnrolledToDomain()
                                          ? "Enrolled to domain"
                                          : "Not enrolled to domain";
+}
+
+void ChromeInternalLogSource::PopulateInstallerBrandCode(
+    SystemLogsResponse* response) {
+  std::string brand;
+  google_brand::GetBrand(&brand);
+  (*response)[kInstallerBrandCode] =
+      brand.empty() ? "Unknown brand code" : brand;
 }
 #endif
 
