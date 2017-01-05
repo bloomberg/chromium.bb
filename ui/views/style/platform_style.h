@@ -46,6 +46,13 @@ class VIEWS_EXPORT PlatformStyle {
   // The menu button's action to show the menu.
   static const CustomButton::NotifyAction kMenuNotifyActivationAction;
 
+  // Whether the Space key clicks a button on key press or key release.
+  static const CustomButton::KeyClickAction kKeyClickActionOnSpace;
+
+  // Whether the Return key clicks the focused control (on key press).
+  // Otherwise, Return does nothing unless it is handled by an accelerator.
+  static const bool kReturnClicksFocusedControl;
+
   // Whether TreeViews get a focus ring on the entire TreeView when focused.
   static const bool kTreeViewHasFocusRing;
 

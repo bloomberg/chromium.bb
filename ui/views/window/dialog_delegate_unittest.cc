@@ -156,17 +156,31 @@ TEST_F(DialogTest, AcceptAndCancel) {
   SimulateKeyEvent(escape_event);
   dialog()->CheckAndResetStates(false, false, true);
 
-  // Check ok and cancel button behavior on a directed return key events.
-  ok_button->OnKeyPressed(return_event);
+// Check ok and cancel button behavior on a directed return key event. Buttons
+// won't respond to a return key event on Mac, since it performs the default
+// action.
+#if defined(OS_MACOSX)
+  EXPECT_FALSE(ok_button->OnKeyPressed(return_event));
+  dialog()->CheckAndResetStates(false, false, false);
+  EXPECT_FALSE(cancel_button->OnKeyPressed(return_event));
+  dialog()->CheckAndResetStates(false, false, false);
+#else
+  EXPECT_TRUE(ok_button->OnKeyPressed(return_event));
   dialog()->CheckAndResetStates(false, true, false);
-  cancel_button->OnKeyPressed(return_event);
+  EXPECT_TRUE(cancel_button->OnKeyPressed(return_event));
   dialog()->CheckAndResetStates(true, false, false);
+#endif
 
-  // Check that return accelerators cancel dialogs if cancel is focused.
+  // Check that return accelerators cancel dialogs if cancel is focused, except
+  // on Mac where return should perform the default action.
   cancel_button->RequestFocus();
   EXPECT_EQ(cancel_button, dialog()->GetFocusManager()->GetFocusedView());
   SimulateKeyEvent(return_event);
+#if defined(OS_MACOSX)
+  dialog()->CheckAndResetStates(false, true, false);
+#else
   dialog()->CheckAndResetStates(true, false, false);
+#endif
 
   // Check that escape can be overridden.
   dialog()->set_should_handle_escape(true);

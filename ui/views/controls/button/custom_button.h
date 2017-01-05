@@ -29,6 +29,14 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
     NOTIFY_ON_RELEASE,
   };
 
+  // An enum describing the events on which a button should be clicked for a
+  // given key event.
+  enum KeyClickAction {
+    CLICK_ON_KEY_PRESS,
+    CLICK_ON_KEY_RELEASE,
+    CLICK_NONE,
+  };
+
   // The menu button's class name.
   static const char kViewClassName[];
 

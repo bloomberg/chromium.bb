@@ -20,6 +20,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/button/toggle_button.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -33,6 +34,16 @@ namespace {
 
 // How long the hover animation takes if uninterrupted.
 const int kHoverFadeDurationMs = 150;
+
+CustomButton::KeyClickAction GetKeyClickActionForEvent(
+    const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_SPACE)
+    return PlatformStyle::kKeyClickActionOnSpace;
+  if (event.key_code() == ui::VKEY_RETURN &&
+      PlatformStyle::kReturnClicksFocusedControl)
+    return CustomButton::CLICK_ON_KEY_PRESS;
+  return CustomButton::CLICK_NONE;
+}
 
 }  // namespace
 
@@ -238,31 +249,36 @@ bool CustomButton::OnKeyPressed(const ui::KeyEvent& event) {
   if (state_ == STATE_DISABLED)
     return false;
 
-  // Space sets button state to pushed. Enter clicks the button. This matches
-  // the Windows native behavior of buttons, where Space clicks the button on
-  // KeyRelease and Enter clicks the button on KeyPressed.
-  if (event.key_code() == ui::VKEY_SPACE) {
-    SetState(STATE_PRESSED);
-    if (GetInkDrop()->GetTargetInkDropState() !=
-        views::InkDropState::ACTION_PENDING) {
-      AnimateInkDrop(views::InkDropState::ACTION_PENDING, nullptr /* event */);
-    }
-  } else if (event.key_code() == ui::VKEY_RETURN) {
-    SetState(STATE_NORMAL);
-    NotifyClick(event);
-  } else {
-    return false;
+  switch (GetKeyClickActionForEvent(event)) {
+    case KeyClickAction::CLICK_ON_KEY_RELEASE:
+      SetState(STATE_PRESSED);
+      if (GetInkDrop()->GetTargetInkDropState() !=
+          InkDropState::ACTION_PENDING) {
+        AnimateInkDrop(InkDropState::ACTION_PENDING, nullptr /* event */);
+      }
+      return true;
+    case KeyClickAction::CLICK_ON_KEY_PRESS:
+      SetState(STATE_NORMAL);
+      NotifyClick(event);
+      return true;
+    case KeyClickAction::CLICK_NONE:
+      return false;
   }
-  return true;
+
+  NOTREACHED();
+  return false;
 }
 
 bool CustomButton::OnKeyReleased(const ui::KeyEvent& event) {
-  if ((state_ == STATE_PRESSED) && (event.key_code() == ui::VKEY_SPACE)) {
-    SetState(STATE_NORMAL);
-    NotifyClick(event);
-    return true;
-  }
-  return false;
+  const bool click_button =
+      state_ == STATE_PRESSED &&
+      GetKeyClickActionForEvent(event) == KeyClickAction::CLICK_ON_KEY_RELEASE;
+  if (!click_button)
+    return false;
+
+  SetState(STATE_NORMAL);
+  NotifyClick(event);
+  return true;
 }
 
 void CustomButton::OnGestureEvent(ui::GestureEvent* event) {
@@ -306,9 +322,9 @@ bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 bool CustomButton::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   // If this button is focused and the user presses space or enter, don't let
-  // that be treated as an accelerator.
-  return (event.key_code() == ui::VKEY_SPACE) ||
-         (event.key_code() == ui::VKEY_RETURN);
+  // that be treated as an accelerator if there is a key click action
+  // corresponding to it.
+  return GetKeyClickActionForEvent(event) != KeyClickAction::CLICK_NONE;
 }
 
 void CustomButton::ShowContextMenu(const gfx::Point& p,

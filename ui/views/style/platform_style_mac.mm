@@ -37,6 +37,13 @@ const bool PlatformStyle::kMirrorBubbleArrowInRTLByDefault =
 const CustomButton::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
     CustomButton::NOTIFY_ON_PRESS;
 
+const CustomButton::KeyClickAction PlatformStyle::kKeyClickActionOnSpace =
+    CustomButton::CLICK_ON_KEY_PRESS;
+
+// On Mac, the Return key is used to perform the default action even when a
+// control is focused.
+const bool PlatformStyle::kReturnClicksFocusedControl = false;
+
 // static
 gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
                                                   Combobox::Style style) {
