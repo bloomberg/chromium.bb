@@ -61,6 +61,10 @@ SK_API void DrawToNativeContext(SkCanvas* canvas,
                                 int x,
                                 int y,
                                 const RECT* src_rect);
+
+// Returns the NativeDrawingContext to use for native platform drawing calls.
+SK_API HDC GetNativeDrawingContext(SkCanvas* canvas);
+
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
       defined(__sun) || defined(ANDROID) || defined(__APPLE__)
   // Construct a canvas from the given memory region. The memory is not cleared
@@ -120,9 +124,6 @@ SK_API SkBitmap ReadPixels(SkCanvas* canvas);
 // pixels can not be retrieved from the canvas. In the latter case resets
 // the pixmap to empty.
 SK_API bool GetWritablePixels(SkCanvas* canvas, SkPixmap* pixmap);
-
-// Returns the NativeDrawingContext to use for native platform drawing calls.
-SK_API NativeDrawingContext GetNativeDrawingContext(SkCanvas* canvas);
 
 // Following routines are used in print preview workflow to mark the
 // preview metafile.

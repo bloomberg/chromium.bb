@@ -48,6 +48,19 @@ void DrawToNativeContext(SkCanvas* canvas, HDC destination_hdc, int x, int y,
                 canvas->getTotalMatrix());
 }
 
+HDC GetNativeDrawingContext(SkCanvas* canvas) {
+  PlatformDevice* platform_device = GetPlatformDevice(canvas->getTopDevice(true));
+  if (!platform_device)
+    return nullptr;
+
+  // Compensate for drawing to a layer rather than the entire canvas
+  SkMatrix ctm;
+  SkIRect clip_bounds;
+  canvas->temporary_internal_describeTopLayer(&ctm, &clip_bounds);
+
+  return platform_device->BeginPlatformPaint(ctm, clip_bounds);
+}
+
 HDC BitmapPlatformDevice::GetBitmapDC(const SkMatrix& transform,
                                       const SkIRect& clip_bounds) {
   if (!hdc_) {

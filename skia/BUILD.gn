@@ -643,7 +643,6 @@ source_set("skia_opts") {
 test("skia_unittests") {
   sources = [
     "ext/analysis_canvas_unittest.cc",
-    "ext/bitmap_platform_device_mac_unittest.cc",
     "ext/convolver_unittest.cc",
     "ext/image_operations_unittest.cc",
     "ext/platform_canvas_unittest.cc",
@@ -653,7 +652,7 @@ test("skia_unittests") {
     "ext/skia_utils_mac_unittest.mm",
   ]
 
-  if (!is_win && !is_mac && !use_cairo) {
+  if (!is_win) {
     sources -= [ "ext/platform_canvas_unittest.cc" ]
   }
 

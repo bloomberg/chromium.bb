@@ -86,17 +86,4 @@ bool IsPreviewMetafile(const SkCanvas& canvas) {
 }
 #endif
 
-NativeDrawingContext GetNativeDrawingContext(SkCanvas* canvas) {
-  PlatformDevice* platform_device = GetPlatformDevice(canvas->getTopDevice(true));
-  if (!platform_device)
-    return nullptr;
-
-  // Compensate for drawing to a layer rather than the entire canvas
-  SkMatrix ctm;
-  SkIRect clip_bounds;
-  canvas->temporary_internal_describeTopLayer(&ctm, &clip_bounds);
-
-  return platform_device->BeginPlatformPaint(ctm, clip_bounds);
-}
-
 }  // namespace skia

@@ -18,21 +18,8 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 
-#if defined(OS_MACOSX)
-#import <ApplicationServices/ApplicationServices.h>
-#endif
-
-#if !defined(OS_WIN)
-#include <unistd.h>
-#endif
-
-#if defined(USE_CAIRO)
-#if defined(OS_OPENBSD)
-#include <cairo.h>
-#else
-#include <cairo/cairo.h>
-#endif  // OS_OPENBSD
-#endif  // USE_CAIRO
+// Native drawing context is only used/supported on Windows.
+#if defined(OS_WIN)
 
 namespace skia {
 
@@ -134,7 +121,6 @@ bool VerifyCanvasColor(const SkCanvas& canvas, uint32_t canvas_color) {
   return VerifyRect(canvas, canvas_color, 0, 0, 0, 0, 0);
 }
 
-#if defined(OS_WIN)
 void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
   HDC dc = skia::GetNativeDrawingContext(&canvas);
 
@@ -145,30 +131,6 @@ void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
   inner_rc.bottom = y + h;
   FillRect(dc, &inner_rc, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
 }
-#elif defined(OS_MACOSX)
-void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
-  CGContextRef context = skia::GetNativeDrawingContext(&canvas);
-
-  CGRect inner_rc = CGRectMake(x, y, w, h);
-  // RGBA opaque black
-  CGColorRef black = CGColorCreateGenericRGB(0.0, 0.0, 0.0, 1.0);
-  CGContextSetFillColorWithColor(context, black);
-  CGColorRelease(black);
-  CGContextFillRect(context, inner_rc);
-}
-#elif defined(USE_CAIRO)
-void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
-  cairo_t* context = skia::GetNativeDrawingContext(&canvas);
-
-  cairo_rectangle(context, x, y, w, h);
-  cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
-  cairo_fill(context);
-}
-#else
-void DrawNativeRect(SkCanvas& canvas, int x, int y, int w, int h) {
-  NOTIMPLEMENTED();
-}
-#endif
 
 // Clips the contents of the canvas to the given rectangle. This will be
 // intersected with any existing clip.
@@ -379,7 +341,7 @@ TEST(PlatformCanvas, TranslateLayer) {
 
 // TODO(dglazkov): Figure out why this fails on Mac (antialiased clipping?),
 // modify test and remove this guard.
-#if !defined(OS_MACOSX) && !defined(USE_AURA)
+#if !defined(USE_AURA)
   // Translate both before and after, and have a path clip.
   canvas->drawColor(SK_ColorWHITE);
   canvas->save();
@@ -407,3 +369,5 @@ TEST(PlatformCanvas, TranslateLayer) {
 }
 
 }  // namespace skia
+
+#endif // defined(OS_WIN)
