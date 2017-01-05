@@ -73,6 +73,7 @@ class RenderingTest : public testing::Test {
   virtual FrameSettingOverrideFunction settingOverrider() const {
     return nullptr;
   }
+  virtual ChromeClient& chromeClient() const;
 
   RenderingTest(FrameLoaderClient* = nullptr);
 

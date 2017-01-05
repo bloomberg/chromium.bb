@@ -11,13 +11,36 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using testing::_;
 
 namespace blink {
+namespace {
+
+class MockChromeClient : public EmptyChromeClient {
+ public:
+  MOCK_METHOD3(mockSetToolTip, void(LocalFrame*, const String&, TextDirection));
+  void setToolTip(LocalFrame& frame,
+                  const String& tooltipText,
+                  TextDirection dir) override {
+    mockSetToolTip(&frame, tooltipText, dir);
+  }
+};
+
+}  // namespace {
 
 class PaintLayerScrollableAreaTest : public RenderingTest {
  public:
   PaintLayerScrollableAreaTest()
-      : RenderingTest(EmptyFrameLoaderClient::create()) {}
+      : RenderingTest(EmptyFrameLoaderClient::create()),
+        m_chromeClient(new MockChromeClient) {}
+
+  ~PaintLayerScrollableAreaTest() {
+    testing::Mock::VerifyAndClearExpectations(&chromeClient());
+  }
+
+  MockChromeClient& chromeClient() const override { return *m_chromeClient; }
 
   BackgroundPaintLocation backgroundPaintLocation(const char* elementId) {
     PaintLayer* paintLayer =
@@ -30,6 +53,8 @@ class PaintLayerScrollableAreaTest : public RenderingTest {
     RenderingTest::SetUp();
     enableCompositing();
   }
+
+  Persistent<MockChromeClient> m_chromeClient;
 };
 
 TEST_F(PaintLayerScrollableAreaTest,
@@ -497,5 +522,30 @@ TEST_F(PaintLayerScrollableAreaTest,
   paintLayer = toLayoutBoxModelObject(scroller->layoutObject())->layer();
   ASSERT_TRUE(paintLayer);
   EXPECT_TRUE(paintLayer->needsCompositedScrolling());
+}
+
+TEST_F(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
+  setBodyInnerHTML(
+      "<style>"
+      "#scroller { width: 100px; height: 100px; overflow: scroll; }"
+      "#scrolled { height: 300px; }"
+      "</style>"
+      "<div id=\"scroller\"><div id=\"scrolled\"></div></div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* scroller = document().getElementById("scroller");
+  PaintLayerScrollableArea* scrollableArea =
+      toLayoutBoxModelObject(scroller->layoutObject())->getScrollableArea();
+  ASSERT_TRUE(scrollableArea);
+
+  EXPECT_CALL(chromeClient(), mockSetToolTip(document().frame(), String(), _))
+      .Times(1);
+  scrollableArea->setScrollOffset(ScrollOffset(1, 1), UserScroll);
+
+  // Programmatic scrolling should not dismiss the tooltip, so setToolTip
+  // should not be called for this invocation.
+  EXPECT_CALL(chromeClient(), mockSetToolTip(document().frame(), String(), _))
+      .Times(0);
+  scrollableArea->setScrollOffset(ScrollOffset(2, 2), ProgrammaticScroll);
 }
 }

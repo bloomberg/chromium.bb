@@ -3816,9 +3816,11 @@ void FrameView::updateScrollOffset(const ScrollOffset& offset,
   document->enqueueScrollEventForNode(document);
 
   m_frame->eventHandler().dispatchFakeMouseMoveEventSoon();
-  Page* page = frame().page();
-  if (page)
-    page->chromeClient().clearToolTip(*m_frame);
+  if (scrollType == UserScroll || scrollType == CompositorScroll) {
+    Page* page = frame().page();
+    if (page)
+      page->chromeClient().clearToolTip(*m_frame);
+  }
 
   LayoutViewItem layoutViewItem = document->layoutViewItem();
   if (!layoutViewItem.isNull()) {

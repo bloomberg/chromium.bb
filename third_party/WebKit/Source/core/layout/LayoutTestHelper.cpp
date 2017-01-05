@@ -31,15 +31,18 @@ void FrameLoaderClientWithParent::detached(FrameDetachType) {
       ->didDetachChild();
 }
 
+ChromeClient& RenderingTest::chromeClient() const {
+  DEFINE_STATIC_LOCAL(EmptyChromeClient, client, (EmptyChromeClient::create()));
+  return client;
+}
+
 RenderingTest::RenderingTest(FrameLoaderClient* frameLoaderClient)
     : m_frameLoaderClient(frameLoaderClient) {}
 
 void RenderingTest::SetUp() {
   Page::PageClients pageClients;
   fillWithEmptyClients(pageClients);
-  DEFINE_STATIC_LOCAL(EmptyChromeClient, chromeClient,
-                      (EmptyChromeClient::create()));
-  pageClients.chromeClient = &chromeClient;
+  pageClients.chromeClient = &chromeClient();
   m_pageHolder = DummyPageHolder::create(
       IntSize(800, 600), &pageClients, m_frameLoaderClient, settingOverrider());
 

@@ -419,9 +419,11 @@ void PaintLayerScrollableArea::updateScrollOffset(const ScrollOffset& newOffset,
   frame->eventHandler().dispatchFakeMouseMoveEventSoonInQuad(
       quadForFakeMouseMoveEvent);
 
-  Page* page = frame->page();
-  if (page)
-    page->chromeClient().clearToolTip(*frame);
+  if (scrollType == UserScroll || scrollType == CompositorScroll) {
+    Page* page = frame->page();
+    if (page)
+      page->chromeClient().clearToolTip(*frame);
+  }
 
   bool requiresPaintInvalidation = true;
 
