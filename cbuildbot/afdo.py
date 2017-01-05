@@ -42,8 +42,6 @@ CHROME_DEBUG_BIN = os.path.join('%(root)s',
 AFDO_GENERATE_GCOV_TOOL = '/usr/bin/create_gcov'
 AFDO_GENERATE_LLVM_PROF = '/usr/bin/create_llvm_prof'
 
-# regex to find AFDO file for specific architecture within the ebuild file.
-CHROME_EBUILD_AFDO_EXP = r'^(?P<bef>AFDO_FILE\["%s"\]=")(?P<name>.*)(?P<aft>")'
 # and corresponding replacement string.
 CHROME_EBUILD_AFDO_REPL = r'\g<bef>%s\g<aft>'
 
@@ -231,7 +229,7 @@ def PatchChromeEbuildAFDOFile(ebuild_file, arch_profiles):
   arch_repls = {}
   arch_markers = {}
   for arch in arch_profiles.keys():
-    arch_patterns[arch] = re.compile(CHROME_EBUILD_AFDO_EXP % arch)
+    arch_patterns[arch] = re.compile(_gsurls['chrome_ebuild_afdo_exp'] % arch)
     arch_repls[arch] = CHROME_EBUILD_AFDO_REPL % arch_profiles[arch]
     arch_markers[arch] = False
 
@@ -507,15 +505,20 @@ def CanGenerateAFDOData(board):
   return (board in AFDO_DATA_GENERATORS_GCC or
           board in AFDO_DATA_GENERATORS_LLVM)
 
-def InitGSUrls(board):
+def InitGSUrls(board, reset=False):
   """Chrome binaries built by gcc and clang go to differrent GS directory."""
-  if len(_gsurls) > 0:
+  if len(_gsurls) > 0 and not reset:
     return
 
   if board in AFDO_DATA_GENERATORS_LLVM:
     dest = 'llvm'
+    # regex to find AFDO file for specific architecture within the ebuild file.
+    _gsurls['chrome_ebuild_afdo_exp'] = (
+        r'^(?P<bef>AFDO_FILE_LLVM\["%s"\]=")(?P<name>.*)(?P<aft>")')
   else:
     dest = 'canonicals'
+    _gsurls['chrome_ebuild_afdo_exp'] = (
+        r'^(?P<bef>AFDO_FILE\["%s"\]=")(?P<name>.*)(?P<aft>")')
 
   _gsurls['prod'] = 'gs://chromeos-prebuilt/afdo-job/%s/' % dest
   _gsurls['test'] = '%s/afdo-job/%s/' % (constants.TRASH_BUCKET, dest)
