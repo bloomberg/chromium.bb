@@ -6,9 +6,8 @@
 #define CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK3_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/native_theme/native_theme_base.h"
-
-typedef struct _GtkWidget GtkWidget;
 
 namespace libgtkui {
 
@@ -16,6 +15,9 @@ namespace libgtkui {
 class NativeThemeGtk3 : public ui::NativeThemeBase {
  public:
   static NativeThemeGtk3* instance();
+
+  // Called when gtk theme changes.
+  void ResetColorCache();
 
   // Overridden from ui::NativeThemeBase:
   SkColor GetSystemColor(ColorId color_id) const override;
@@ -33,19 +35,7 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
   NativeThemeGtk3();
   ~NativeThemeGtk3() override;
 
-  SkColor LookupGtkThemeColor(ColorId color_id) const;
-
-  // Returns various widgets for theming use.
-  // TODO(thomasanderson): Remove all of these.
-  GtkWidget* GetWindow() const;
-  GtkWidget* GetEntry() const;
-  GtkWidget* GetLabel() const;
-  GtkWidget* GetButton() const;
-  GtkWidget* GetBlueButton() const;
-  GtkWidget* GetTree() const;
-  GtkWidget* GetTooltip() const;
-  GtkWidget* GetMenu() const;
-  GtkWidget* GetMenuItem() const;
+  mutable base::Optional<SkColor> color_cache_[kColorId_NumColors];
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeGtk3);
 };

@@ -242,11 +242,9 @@ const char* kUnknownContentType = "application/octet-stream";
 //
 // Default tints.
 const color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2f, 0.35f};
+#if GTK_MAJOR_VERSION == 2
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3f, 0.6f};
-
-#if GTK_MAJOR_VERSION == 3
-const color_utils::HSL kDefaultTintFrameInactive = {-1, -1, 0.75f};
-#endif  // GTK_MAJOR_VERSION == 3
+#endif
 
 // Picks a button tint from a set of background colors. While
 // |accent_color| will usually be the same color through a theme, this
@@ -879,6 +877,12 @@ void Gtk2UI::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_TAB_THROBBER_WAITING] =
       native_theme_->GetSystemColor(
           ui::NativeTheme::kColorId_ThrobberWaitingColor);
+
+#if GTK_MAJOR_VERSION > 2
+  colors_[ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR] =
+      colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR] =
+          GetBorderColor("GtkToolbar.primary-toolbar.toolbar");
+#endif
 }
 
 void Gtk2UI::LoadCursorTheme() {
@@ -921,58 +925,16 @@ void Gtk2UI::BuildFrameColors() {
   GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
 #else
-  auto set_frame_color = [this](int color_id) {
-    // Render a GtkHeaderBar as our title bar, cropping out any curved edges
-    // on the left and right sides. Also remove the bottom border for good
-    // measure.
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(1, 1);
-    bitmap.eraseColor(0);
-
-    static GtkWidget* menu = nullptr;
-    if (!menu) {
-      menu = gtk_menu_bar_new();
-      gtk_widget_set_size_request(menu, 1, 1);
-
-      GtkWidget* window = gtk_offscreen_window_new();
-      gtk_container_add(GTK_CONTAINER(window), menu);
-
-      gtk_widget_show_all(window);
-    }
-
-    cairo_surface_t* surface = cairo_image_surface_create_for_data(
-        static_cast<unsigned char*>(bitmap.getAddr(0, 0)), CAIRO_FORMAT_ARGB32,
-        bitmap.width(), bitmap.height(),
-        cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, 1));
-    cairo_t* cr = cairo_create(surface);
-    gtk_widget_draw(menu, cr);
-    cairo_destroy(cr);
-    cairo_surface_destroy(surface);
-
-    switch (color_id) {
-      case ThemeProperties::COLOR_FRAME_INACTIVE:
-        bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(
-            bitmap, kDefaultTintFrameInactive);
-        break;
-      case ThemeProperties::COLOR_FRAME_INCOGNITO:
-        bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(
-            bitmap, kDefaultTintFrameIncognito);
-        break;
-      case ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE:
-        bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(
-            bitmap, kDefaultTintFrameIncognitoInactive);
-        break;
-    }
-
-    bitmap.lockPixels();
-    colors_[color_id] = bitmap.getColor(0, 0);
-    bitmap.unlockPixels();
-  };
-
-  set_frame_color(ThemeProperties::COLOR_FRAME);
-  set_frame_color(ThemeProperties::COLOR_FRAME_INACTIVE);
-  set_frame_color(ThemeProperties::COLOR_FRAME_INCOGNITO);
-  set_frame_color(ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE);
+  // TODO(thomasanderson): Render a GtkHeaderBar directly.
+  SkColor color_frame = GetBGColor(".headerbar.header-bar.titlebar");
+  SkColor color_frame_inactive =
+      GetBGColor(".headerbar.header-bar.titlebar:backdrop");
+  colors_[ThemeProperties::COLOR_FRAME] = color_frame;
+  colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = color_frame_inactive;
+  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] =
+      color_utils::HSLShift(color_frame, kDefaultTintFrameIncognito);
+  colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] =
+      color_utils::HSLShift(color_frame_inactive, kDefaultTintFrameIncognito);
 #endif
 }
 

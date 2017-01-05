@@ -67,6 +67,74 @@ aura::Window* GetAuraTransientParent(GtkWidget* dialog);
 // Clears the transient parent for |dialog|.
 void ClearAuraTransientParent(GtkWidget* dialog);
 
+#if GTK_MAJOR_VERSION > 2
+template <typename T>
+class ScopedGObject {
+ public:
+  explicit ScopedGObject(T* obj) : obj_(obj) {
+    // Increase the reference count of |obj_|, removing the floating
+    // reference if it has one.
+    g_object_ref_sink(obj_);
+  }
+
+  ScopedGObject(const ScopedGObject<T>& other) : obj_(other.obj_) {
+    g_object_ref(obj_);
+  }
+
+  ScopedGObject(ScopedGObject<T>&& other) : obj_(other.obj_) {
+    other.obj_ = nullptr;
+  }
+
+  ~ScopedGObject() {
+    if (obj_)
+      g_object_unref(obj_);
+  }
+
+  ScopedGObject<T>& operator=(const ScopedGObject<T>& other) {
+    g_object_ref(other.obj_);
+    g_object_unref(obj_);
+    obj_ = other.obj_;
+    return *this;
+  }
+
+  ScopedGObject<T>& operator=(ScopedGObject<T>&& other) {
+    g_object_unref(obj_);
+    obj_ = other.obj_;
+    other.obj_ = nullptr;
+    return *this;
+  }
+
+  operator T*() { return obj_; }
+
+ private:
+  T* obj_;
+};
+
+typedef ScopedGObject<GtkStyleContext> ScopedStyleContext;
+
+// Parses |css_selector| into a GtkStyleContext.  The format is a
+// sequence of whitespace-separated objects.  Each object may have at
+// most one object name at the beginning of the string, and any number
+// of '.'-prefixed classes and ':'-prefixed pseudoclasses.  An example
+// is "GtkButton.button.suggested-action:hover:active".  The caller
+// must g_object_unref() the returned context.
+ScopedStyleContext GetStyleContextFromCss(const char* css_selector);
+
+// Get the 'color' property from the style context created by
+// GetStyleContextFromCss(|css_selector|).
+SkColor GetFGColor(const char* css_selector);
+
+// Renders a background from the style context created by
+// GetStyleContextFromCss(|css_selector|) into a single pixel and
+// returns the color.
+SkColor GetBGColor(const char* css_selector);
+
+// If there is a border, renders the border from the style context
+// created by GetStyleContextFromCss(|css_selector|) into a single
+// pixel and returns the color.  Otherwise returns kInvalidColor.
+SkColor GetBorderColor(const char* css_selector);
+#endif
+
 }  // namespace libgtkui
 
 #endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_UTIL_H_
