@@ -7,30 +7,28 @@
 #include "base/memory/ptr_util.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
+#include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_provider_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
-// static
-void OffscreenCanvasCompositorFrameSink::Create(
-    const cc::FrameSinkId& frame_sink_id,
-    cc::SurfaceManager* surface_manager,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client,
-    cc::mojom::MojoCompositorFrameSinkRequest request) {
-  std::unique_ptr<OffscreenCanvasCompositorFrameSink> impl =
-      base::MakeUnique<OffscreenCanvasCompositorFrameSink>(
-          frame_sink_id, surface_manager, std::move(client));
-  OffscreenCanvasCompositorFrameSink* compositor_frame_sink = impl.get();
-  compositor_frame_sink->binding_ =
-      mojo::MakeStrongBinding(std::move(impl), std::move(request));
-}
-
 OffscreenCanvasCompositorFrameSink::OffscreenCanvasCompositorFrameSink(
+    OffscreenCanvasCompositorFrameSinkProviderImpl* provider,
     const cc::FrameSinkId& frame_sink_id,
-    cc::SurfaceManager* surface_manager,
+    cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
-    : support_(this, surface_manager, frame_sink_id, nullptr, nullptr),
-      client_(std::move(client)) {}
+    : provider_(provider),
+      support_(this,
+               provider->GetSurfaceManager(),
+               frame_sink_id,
+               nullptr,
+               nullptr),
+      client_(std::move(client)),
+      binding_(this, std::move(request)) {
+  binding_.set_connection_error_handler(
+      base::Bind(&OffscreenCanvasCompositorFrameSink::OnClientConnectionLost,
+                 base::Unretained(this)));
+}
 
 OffscreenCanvasCompositorFrameSink::~OffscreenCanvasCompositorFrameSink() {}
 
@@ -92,6 +90,11 @@ void OffscreenCanvasCompositorFrameSink::ReclaimResources(
 void OffscreenCanvasCompositorFrameSink::WillDrawSurface() {
   if (client_)
     client_->WillDrawSurface();
+}
+
+void OffscreenCanvasCompositorFrameSink::OnClientConnectionLost() {
+  provider_->OnCompositorFrameSinkClientConnectionLost(
+      support_.frame_sink_id());
 }
 
 }  // namespace content

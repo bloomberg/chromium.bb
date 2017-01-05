@@ -1218,7 +1218,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::Bind(&OffscreenCanvasCompositorFrameSinkProviderImpl::Create));
+      base::Bind(&RenderProcessHostImpl::
+                     CreateOffscreenCanvasCompositorFrameSinkProvider,
+                 base::Unretained(this)));
+
   AddUIThreadInterface(registry.get(),
                        base::Bind(&OffscreenCanvasSurfaceFactoryImpl::Create));
   AddUIThreadInterface(
@@ -1339,6 +1342,16 @@ void RenderProcessHostImpl::CreateMusGpuRequest(ui::mojom::GpuRequest request) {
   if (!gpu_client_)
     gpu_client_.reset(new GpuClient(GetID()));
   gpu_client_->Add(std::move(request));
+}
+
+void RenderProcessHostImpl::CreateOffscreenCanvasCompositorFrameSinkProvider(
+    blink::mojom::OffscreenCanvasCompositorFrameSinkProviderRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!offscreen_canvas_provider_) {
+    offscreen_canvas_provider_.reset(
+        new OffscreenCanvasCompositorFrameSinkProviderImpl());
+  }
+  offscreen_canvas_provider_->Add(std::move(request));
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(

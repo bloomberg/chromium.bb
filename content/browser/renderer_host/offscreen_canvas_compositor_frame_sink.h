@@ -14,18 +14,16 @@
 
 namespace content {
 
+class OffscreenCanvasCompositorFrameSinkProviderImpl;
+
 class OffscreenCanvasCompositorFrameSink
     : public cc::CompositorFrameSinkSupportClient,
       public cc::mojom::MojoCompositorFrameSink {
  public:
-  static void Create(const cc::FrameSinkId& frame_sink_id,
-                     cc::SurfaceManager* surface_manager,
-                     cc::mojom::MojoCompositorFrameSinkClientPtr client,
-                     cc::mojom::MojoCompositorFrameSinkRequest request);
-
   OffscreenCanvasCompositorFrameSink(
+      OffscreenCanvasCompositorFrameSinkProviderImpl* provider,
       const cc::FrameSinkId& frame_sink_id,
-      cc::SurfaceManager* surface_manager,
+      cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   ~OffscreenCanvasCompositorFrameSink() override;
@@ -50,10 +48,14 @@ class OffscreenCanvasCompositorFrameSink
   void WillDrawSurface() override;
 
  private:
+  void OnClientConnectionLost();
+
+  OffscreenCanvasCompositorFrameSinkProviderImpl* const provider_;
+
   cc::CompositorFrameSinkSupport support_;
   cc::mojom::MojoCompositorFrameSinkClientPtr client_;
   cc::ReturnedResourceArray surface_returned_resources_;
-  mojo::StrongBindingPtr<cc::mojom::MojoCompositorFrameSink> binding_;
+  mojo::Binding<cc::mojom::MojoCompositorFrameSink> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasCompositorFrameSink);
 };
