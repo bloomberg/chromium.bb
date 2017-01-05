@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 define("mojo/public/js/bindings", [
-  "mojo/public/js/connection",
   "mojo/public/js/core",
   "mojo/public/js/interface_types",
-], function(connection, core, types) {
+  "mojo/public/js/router",
+], function(core, types, router) {
 
   // ---------------------------------------------------------------------------
 
@@ -25,9 +25,11 @@ define("mojo/public/js/bindings", [
     this.version = 0;
 
     this.interfaceType_ = interfaceType;
-    this.connection_ = null;
-    // |connection_| is lazily initialized. |handle_| is valid between bind()
-    // and the initialization of |connection_|.
+    this.router_ = null;
+    this.proxy_ = null;
+
+    // |router_| is lazily initialized. |handle_| is valid between bind() and
+    // the initialization of |router_|.
     this.handle_ = null;
 
     if (ptrInfoOrHandle)
@@ -46,16 +48,18 @@ define("mojo/public/js/bindings", [
   };
 
   InterfacePtrController.prototype.isBound = function() {
-    return this.connection_ !== null || this.handle_ !== null;
+    return this.router_ !== null || this.handle_ !== null;
   };
 
   // Although users could just discard the object, reset() closes the pipe
   // immediately.
   InterfacePtrController.prototype.reset = function() {
     this.version = 0;
-    if (this.connection_) {
-      this.connection_.close();
-      this.connection_ = null;
+    if (this.router_) {
+      this.router_.close();
+      this.router_ = null;
+
+      this.proxy_ = null;
     }
     if (this.handle_) {
       core.close(this.handle_);
@@ -69,15 +73,16 @@ define("mojo/public/js/bindings", [
       throw new Error("Cannot set connection error handler if not bound.");
 
     this.configureProxyIfNecessary_();
-    this.connection_.router_.setErrorHandler(callback);
+    this.router_.setErrorHandler(callback);
   };
 
   InterfacePtrController.prototype.passInterface = function() {
     var result;
-    if (this.connection_) {
+    if (this.router_) {
+      // TODO(yzshen): Fix Router interface to support extracting handle.
       result = new types.InterfacePtrInfo(
-          this.connection_.router_.connector_.handle_, this.version);
-      this.connection_.router_.connector_.handle_ = null;
+          this.router_.connector_.handle_, this.version);
+      this.router_.connector_.handle_ = null;
     } else {
       // This also handles the case when this object is not bound.
       result = new types.InterfacePtrInfo(this.handle_, this.version);
@@ -90,16 +95,23 @@ define("mojo/public/js/bindings", [
 
   InterfacePtrController.prototype.getProxy = function() {
     this.configureProxyIfNecessary_();
-    return this.connection_.remote;
+    return this.proxy_;
+  };
+
+  InterfacePtrController.prototype.enableTestingMode = function() {
+    this.configureProxyIfNecessary_();
+    return this.router_.enableTestingMode();
   };
 
   InterfacePtrController.prototype.configureProxyIfNecessary_ = function() {
     if (!this.handle_)
       return;
 
-    this.connection_ = new connection.Connection(
-        this.handle_, undefined, this.interfaceType_.proxyClass);
+    this.router_ = new router.Router(this.handle_);
     this.handle_ = null;
+    this.router_ .setPayloadValidators([this.interfaceType_.validateResponse]);
+
+    this.proxy_ = new this.interfaceType_.proxyClass(this.router_);
   };
 
   // TODO(yzshen): Implement the following methods.
@@ -124,6 +136,7 @@ define("mojo/public/js/bindings", [
   function Binding(interfaceType, impl, requestOrHandle) {
     this.interfaceType_ = interfaceType;
     this.impl_ = impl;
+    this.router_ = null;
     this.stub_ = null;
 
     if (requestOrHandle)
@@ -131,7 +144,7 @@ define("mojo/public/js/bindings", [
   }
 
   Binding.prototype.isBound = function() {
-    return this.stub_ !== null;
+    return this.router_ !== null;
   };
 
   Binding.prototype.createInterfacePtrAndBind = function() {
@@ -146,16 +159,21 @@ define("mojo/public/js/bindings", [
 
     var handle = requestOrHandle instanceof types.InterfaceRequest ?
         requestOrHandle.handle : requestOrHandle;
-    if (core.isHandle(handle)) {
-      this.stub_ = connection.bindHandleToStub(handle, this.interfaceType_);
-      connection.StubBindings(this.stub_).delegate = this.impl_;
-    }
+    if (!core.isHandle(handle))
+      return;
+
+    this.stub_ = new this.interfaceType_.stubClass(this.impl_);
+    this.router_ = new router.Router(handle);
+    this.router_.setIncomingReceiver(this.stub_);
+    this.router_ .setPayloadValidators([this.interfaceType_.validateRequest]);
   };
 
   Binding.prototype.close = function() {
     if (!this.isBound())
       return;
-    connection.StubBindings(this.stub_).close();
+
+    this.router_.close();
+    this.router_ = null;
     this.stub_ = null;
   };
 
@@ -163,21 +181,21 @@ define("mojo/public/js/bindings", [
       = function(callback) {
     if (!this.isBound())
       throw new Error("Cannot set connection error handler if not bound.");
-    connection.StubBindings(this.stub_).connection.router_.setErrorHandler(
-        callback);
+    this.router_.setErrorHandler(callback);
   };
 
   Binding.prototype.unbind = function() {
     if (!this.isBound())
       return new types.InterfaceRequest(null);
 
-    var result = new types.InterfaceRequest(
-        connection.StubBindings(this.stub_).connection.router_.connector_
-            .handle_);
-    connection.StubBindings(this.stub_).connection.router_.connector_.handle_ =
-        null;
+    var result = new types.InterfaceRequest(this.router_.connector_.handle_);
+    this.router_.connector_.handle_ = null;
     this.close();
     return result;
+  };
+
+  Binding.prototype.enableTestingMode = function() {
+    return this.router_.enableTestingMode();
   };
 
   // ---------------------------------------------------------------------------
@@ -240,14 +258,6 @@ define("mojo/public/js/bindings", [
   exports.InterfacePtrController = InterfacePtrController;
   exports.Binding = Binding;
   exports.BindingSet = BindingSet;
-
-  // TODO(yzshen): Remove the following exports.
-  exports.EmptyProxy = connection.EmptyProxy;
-  exports.EmptyStub = connection.EmptyStub;
-  exports.ProxyBase = connection.ProxyBase;
-  exports.ProxyBindings = connection.ProxyBindings;
-  exports.StubBase = connection.StubBase;
-  exports.StubBindings = connection.StubBindings;
 
   return exports;
 });

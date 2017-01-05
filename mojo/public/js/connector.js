@@ -82,6 +82,12 @@ define("mojo/public/js/connector", [
     return this.error_;
   };
 
+  Connector.prototype.waitForNextMessageForTesting = function() {
+    var wait = core.wait(this.handle_, core.HANDLE_SIGNAL_READABLE,
+                         core.DEADLINE_INDEFINITE);
+    this.readMore_(wait.result);
+  };
+
   Connector.prototype.readMore_ = function(result) {
     for (;;) {
       var read = core.readMessage(this.handle_,
@@ -98,29 +104,12 @@ define("mojo/public/js/connector", [
       }
       var messageBuffer = new buffer.Buffer(read.buffer);
       var message = new codec.Message(messageBuffer, read.handles);
-      if (this.incomingReceiver_) {
-          this.incomingReceiver_.accept(message);
-      }
+      if (this.incomingReceiver_)
+        this.incomingReceiver_.accept(message);
     }
   };
 
-  // The TestConnector subclass is only intended to be used in unit tests. It
-  // doesn't automatically listen for input messages. Instead, you need to
-  // call waitForNextMessage to block and wait for the next incoming message.
-  function TestConnector(handle) {
-    Connector.call(this, handle);
-  }
-
-  TestConnector.prototype = Object.create(Connector.prototype);
-
-  TestConnector.prototype.waitForNextMessage = function() {
-    var wait = core.wait(this.handle_, core.HANDLE_SIGNAL_READABLE,
-                         core.DEADLINE_INDEFINITE);
-    this.readMore_(wait.result);
-  }
-
   var exports = {};
   exports.Connector = Connector;
-  exports.TestConnector = TestConnector;
   return exports;
 });

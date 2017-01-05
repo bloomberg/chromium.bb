@@ -5,13 +5,12 @@
 define("{{module.path}}", [
     "mojo/public/js/bindings",
     "mojo/public/js/codec",
-    "mojo/public/js/connection",
     "mojo/public/js/core",
     "mojo/public/js/validator",
 {%- for import in imports %}
     "{{import.module.path}}",
 {%- endfor %}
-], function(bindings, codec, connection, core, validator
+], function(bindings, codec, core, validator
 {%- for import in imports -%}
     , {{import.unique_name}}
 {%- endfor -%}
