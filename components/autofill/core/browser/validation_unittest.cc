@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/validation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,6 +24,11 @@ struct ExpirationDate {
 struct IntExpirationDate {
   const int year;
   const int month;
+};
+
+struct SecurityCodeCardTypePair {
+  const char* security_code;
+  const char* card_type;
 };
 
 // From https://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
@@ -64,14 +70,16 @@ const IntExpirationDate kInvalidCreditCardIntExpirationDate[] = {
   { 2015, 13 },  // Not a real month.
   { 2015, 0 },  // Zero is legal in the CC class but is not a valid date.
 };
-const char* const kValidCreditCardSecurityCode[] = {
-  "323",  // 3-digit CSC.
-  "3234",  // 4-digit CSC.
+const SecurityCodeCardTypePair kValidSecurityCodeCardTypePairs[] = {
+  { "323",  kGenericCard }, // 3-digit CSC.
+  { "3234", kAmericanExpressCard }, // 4-digit CSC.
 };
-const char* const kInvalidCreditCardSecurityCode[] = {
-  "32",  // CSC too short.
-  "12345",  // CSC too long.
-  "asd",  // non-numeric CSC.
+const SecurityCodeCardTypePair kInvalidSecurityCodeCardTypePairs[] = {
+  { "32", kGenericCard }, // CSC too short.
+  { "323", kAmericanExpressCard }, // CSC too short.
+  { "3234", kGenericCard }, // CSC too long.
+  { "12345", kAmericanExpressCard }, // CSC too long.
+  { "asd", kGenericCard }, // non-numeric CSC.
 };
 const char* const kValidEmailAddress[] = {
   "user@example",
@@ -85,10 +93,6 @@ const char* const kInvalidEmailAddress[] = {
   "user@",
   "user@=example.com"
 };
-const char kAmericanExpressCard[] = "341111111111111";
-const char kVisaCard[] = "4111111111111111";
-const char kAmericanExpressCVC[] = "1234";
-const char kVisaCVC[] = "123";
 }  // namespace
 
 TEST(AutofillValidation, IsValidCreditCardNumber) {
@@ -117,14 +121,19 @@ TEST(AutofillValidation, IsValidCreditCardIntExpirationDate) {
     EXPECT_TRUE(!IsValidCreditCardExpirationDate(data.year, data.month, now));
   }
 }
+
 TEST(AutofillValidation, IsValidCreditCardSecurityCode) {
-  for (const char* valid_code : kValidCreditCardSecurityCode) {
-    SCOPED_TRACE(valid_code);
-    EXPECT_TRUE(IsValidCreditCardSecurityCode(ASCIIToUTF16(valid_code)));
+  for (const auto data : kValidSecurityCodeCardTypePairs) {
+    SCOPED_TRACE(data.security_code);
+    SCOPED_TRACE(data.card_type);
+    EXPECT_TRUE(IsValidCreditCardSecurityCode(ASCIIToUTF16(data.security_code),
+                                              data.card_type));
   }
-  for (const char* invalid_code : kInvalidCreditCardSecurityCode) {
-    SCOPED_TRACE(invalid_code);
-    EXPECT_FALSE(IsValidCreditCardSecurityCode(ASCIIToUTF16(invalid_code)));
+  for (const auto data : kInvalidSecurityCodeCardTypePairs) {
+    SCOPED_TRACE(data.security_code);
+    SCOPED_TRACE(data.card_type);
+    EXPECT_FALSE(IsValidCreditCardSecurityCode(ASCIIToUTF16(data.security_code),
+                                               data.card_type));
   }
 }
 
@@ -137,21 +146,6 @@ TEST(AutofillValidation, IsValidEmailAddress) {
     SCOPED_TRACE(invalid_email);
     EXPECT_FALSE(IsValidEmailAddress(ASCIIToUTF16(invalid_email)));
   }
-}
-
-TEST(AutofillValidation, IsValidCreditCardSecurityCodeWithNumber) {
-  EXPECT_TRUE(IsValidCreditCardSecurityCode(
-      ASCIIToUTF16(kAmericanExpressCVC), ASCIIToUTF16(kAmericanExpressCard)));
-  EXPECT_TRUE(IsValidCreditCardSecurityCode(
-      ASCIIToUTF16(kVisaCVC), ASCIIToUTF16(kVisaCard)));
-  EXPECT_FALSE(IsValidCreditCardSecurityCode(
-      ASCIIToUTF16(kVisaCVC), ASCIIToUTF16(kAmericanExpressCard)));
-  EXPECT_FALSE(IsValidCreditCardSecurityCode(
-      ASCIIToUTF16(kAmericanExpressCVC), ASCIIToUTF16(kVisaCard)));
-  EXPECT_TRUE(IsValidCreditCardSecurityCode(
-      ASCIIToUTF16(kVisaCVC), ASCIIToUTF16(kInvalidNumbers[0])));
-  EXPECT_FALSE(IsValidCreditCardSecurityCode(
-      ASCIIToUTF16(kAmericanExpressCVC), ASCIIToUTF16(kInvalidNumbers[0])));
 }
 
 }  // namespace autofill

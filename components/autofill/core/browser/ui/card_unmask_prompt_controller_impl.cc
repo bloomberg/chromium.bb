@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "grit/components_scaled_resources.h"
@@ -279,10 +280,7 @@ bool CardUnmaskPromptControllerImpl::InputCvcIsValid(
     const base::string16& input_text) const {
   base::string16 trimmed_text;
   base::TrimWhitespace(input_text, base::TRIM_ALL, &trimmed_text);
-  size_t input_size = card_.type() == kAmericanExpressCard ? 4 : 3;
-  return trimmed_text.size() == input_size &&
-         base::ContainsOnlyChars(trimmed_text,
-                                 base::ASCIIToUTF16("0123456789"));
+  return IsValidCreditCardSecurityCode(trimmed_text, card_.type());
 }
 
 bool CardUnmaskPromptControllerImpl::InputExpirationIsValid(
@@ -299,23 +297,15 @@ bool CardUnmaskPromptControllerImpl::InputExpirationIsValid(
     return false;
   }
 
-  if (month_value < 1 || month_value > 12)
-    return false;
-
-  base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
-
   // Convert 2 digit year to 4 digit year.
-  if (year_value < 100)
+  if (year_value < 100) {
+    base::Time::Exploded now;
+    base::Time::Now().LocalExplode(&now);
     year_value += (now.year / 100) * 100;
+  }
 
-  if (year_value < now.year)
-    return false;
-
-  if (year_value > now.year)
-    return true;
-
-  return month_value >= now.month;
+  return IsValidCreditCardExpirationDate(year_value, month_value,
+                                         base::Time::Now());
 }
 
 base::TimeDelta CardUnmaskPromptControllerImpl::GetSuccessMessageDuration()

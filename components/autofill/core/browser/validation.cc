@@ -87,25 +87,11 @@ bool IsValidCreditCardNumber(const base::string16& text) {
   return (sum % 10) == 0;
 }
 
-bool IsValidCreditCardSecurityCode(const base::string16& text) {
-  if (text.size() < 3U || text.size() > 4U)
-    return false;
-
-  for (const base::char16& it : text) {
-    if (!base::IsAsciiDigit(it))
-      return false;
-  }
-  return true;
-}
-
 bool IsValidCreditCardSecurityCode(const base::string16& code,
-                                   const base::string16& number) {
-  const char* const type = CreditCard::GetCreditCardType(number);
-  size_t required_length = 3;
-  if (type == kAmericanExpressCard)
-    required_length = 4;
-
-  return code.length() == required_length;
+                                   const base::StringPiece card_type) {
+  size_t required_length = card_type == kAmericanExpressCard ? 4 : 3;
+  return code.length() == required_length &&
+         base::ContainsOnlyChars(code, base::ASCIIToUTF16("0123456789"));
 }
 
 bool IsValidEmailAddress(const base::string16& text) {
