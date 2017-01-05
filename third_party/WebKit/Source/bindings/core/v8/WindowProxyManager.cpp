@@ -50,11 +50,8 @@ void WindowProxyManager::clearForNavigation() {
 
 void WindowProxyManager::updateSecurityOrigin(SecurityOrigin* securityOrigin) {
   m_windowProxy->updateSecurityOrigin(securityOrigin);
-
   for (auto& entry : m_isolatedWorlds) {
     WindowProxy* isolatedWindowProxy = entry.value.get();
-    if (!isolatedWindowProxy->isContextInitialized())
-      continue;
     SecurityOrigin* isolatedSecurityOrigin =
         isolatedWindowProxy->world().isolatedWorldSecurityOrigin();
     isolatedWindowProxy->updateSecurityOrigin(isolatedSecurityOrigin);
