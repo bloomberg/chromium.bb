@@ -16,7 +16,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

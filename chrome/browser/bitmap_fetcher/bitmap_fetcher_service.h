@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/mru_cache.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"

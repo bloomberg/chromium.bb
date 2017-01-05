@@ -14,7 +14,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"

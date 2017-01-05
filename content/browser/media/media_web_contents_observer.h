@@ -11,7 +11,6 @@
 #include <memory>
 #include <set>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "content/browser/media/session/media_session_controllers_manager.h"
 #include "content/common/content_export.h"

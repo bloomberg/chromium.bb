@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/mac/scoped_nsobject.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 

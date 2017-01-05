@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"

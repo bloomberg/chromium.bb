@@ -611,11 +611,6 @@ namespace ui {
 namespace internal {
 
 // Struct holding properties of a device.
-//
-// Note that we can't define it in GesturePropertyProvider as a nested class
-// because ScopedPtrHashMap will require us to expose the GestureProp's
-// destructor so that it can instantiate the object. This is something we
-// don't want to do.
 struct GestureDevicePropertyData {
   GestureDevicePropertyData() {}
 

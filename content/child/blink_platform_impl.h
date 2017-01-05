@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"

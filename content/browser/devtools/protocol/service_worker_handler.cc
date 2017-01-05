@@ -5,7 +5,6 @@
 #include "content/browser/devtools/protocol/service_worker_handler.h"
 
 #include "base/bind.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/background_sync/background_sync_context.h"

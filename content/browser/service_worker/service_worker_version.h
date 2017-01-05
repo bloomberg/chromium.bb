@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/macros.h"
