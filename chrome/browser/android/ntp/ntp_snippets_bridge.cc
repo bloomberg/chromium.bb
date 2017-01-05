@@ -399,7 +399,15 @@ void NTPSnippetsBridge::OnMoreButtonClicked(JNIEnv* env,
 void NTPSnippetsBridge::OnNTPInitialized(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  content_suggestions_service_->remote_suggestions_scheduler()->OnNTPOpened();
+  ntp_snippets::RemoteSuggestionsScheduler* scheduler =
+      GetRemoteSuggestionsScheduler();
+  // Can be null if the feature has been disabled but the scheduler has not been
+  // unregistered yet. The next start should unregister it.
+  if (!scheduler) {
+    return;
+  }
+
+  scheduler->OnNTPOpened();
 }
 
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
