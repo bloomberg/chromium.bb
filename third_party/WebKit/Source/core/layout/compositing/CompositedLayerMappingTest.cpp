@@ -143,9 +143,8 @@ TEST_P(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument) {
   // A scroll by -5000px is equivalent to a scroll by (10000 - 5000 - 800)px =
   // 4200px in non-RTL mode. Expanding the resulting rect by 4000px in each
   // direction yields this result.
-  EXPECT_RECT_EQ(
-      IntRect(200, 0, 8800, 600),
-      recomputeInterestRect(paintLayer->graphicsLayerBackingForScrolling()));
+  EXPECT_RECT_EQ(IntRect(200, 0, 8800, 600),
+                 recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_P(CompositedLayerMappingTest, RotatedInterestRect) {
@@ -286,9 +285,8 @@ TEST_P(CompositedLayerMappingTest, ScrollingLayerInterestRect) {
   ASSERT_TRUE(paintLayer->graphicsLayerBacking());
   // Offscreen layers are painted as usual.
   ASSERT_TRUE(paintLayer->compositedLayerMapping()->scrollingLayer());
-  EXPECT_RECT_EQ(
-      IntRect(0, 0, 195, 4592),
-      recomputeInterestRect(paintLayer->graphicsLayerBackingForScrolling()));
+  EXPECT_RECT_EQ(IntRect(0, 0, 195, 4592),
+                 recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_P(CompositedLayerMappingTest, ClippedBigLayer) {
@@ -463,7 +461,7 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
 
   document().view()->updateAllLifecyclePhases();
   GraphicsLayer* rootScrollingLayer =
-      document().layoutViewItem().layer()->graphicsLayerBackingForScrolling();
+      document().layoutViewItem().layer()->graphicsLayerBacking();
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 4600),
                  previousInterestRect(rootScrollingLayer));
 
@@ -524,7 +522,7 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangeOnShrunkenViewport) {
 
   document().view()->updateAllLifecyclePhases();
   GraphicsLayer* rootScrollingLayer =
-      document().layoutViewItem().layer()->graphicsLayerBackingForScrolling();
+      document().layoutViewItem().layer()->graphicsLayerBacking();
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 4600),
                  previousInterestRect(rootScrollingLayer));
 
@@ -553,7 +551,7 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangeOnScroll) {
   document().view()->updateAllLifecyclePhases();
   Element* scroller = document().getElementById("scroller");
   GraphicsLayer* scrollingLayer =
-      scroller->layoutBox()->layer()->graphicsLayerBackingForScrolling();
+      scroller->layoutBox()->layer()->graphicsLayerBacking();
   EXPECT_RECT_EQ(IntRect(0, 0, 400, 4600),
                  previousInterestRect(scrollingLayer));
 
@@ -616,7 +614,7 @@ TEST_P(CompositedLayerMappingTest,
   document().view()->updateAllLifecyclePhases();
   Element* scroller = document().getElementById("scroller");
   GraphicsLayer* scrollingLayer =
-      scroller->layoutBox()->layer()->graphicsLayerBackingForScrolling();
+      scroller->layoutBox()->layer()->graphicsLayerBacking();
 
   scroller->setScrollTop(5400);
   document().view()->updateAllLifecyclePhases();
@@ -744,13 +742,12 @@ TEST_P(CompositedLayerMappingTest, InterestRectOfScrolledIframe) {
   document().view()->updateAllLifecyclePhases();
 
   ASSERT_TRUE(childDocument().view()->layoutViewItem().hasLayer());
-  EXPECT_RECT_EQ(
-      IntRect(0, 3500, 500, 4500),
-      recomputeInterestRect(childDocument()
-                                .view()
-                                ->layoutViewItem()
-                                .enclosingLayer()
-                                ->graphicsLayerBackingForScrolling()));
+  EXPECT_RECT_EQ(IntRect(0, 3500, 500, 4500),
+                 recomputeInterestRect(childDocument()
+                                           .view()
+                                           ->layoutViewItem()
+                                           .enclosingLayer()
+                                           ->graphicsLayerBacking()));
 }
 
 TEST_P(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
@@ -778,13 +775,12 @@ TEST_P(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
 
   ASSERT_TRUE(childDocument().view()->layoutViewItem().hasLayer());
   // The width is 485 pixels due to the size of the scrollbar.
-  EXPECT_RECT_EQ(
-      IntRect(0, 0, 500, 7500),
-      recomputeInterestRect(childDocument()
-                                .view()
-                                ->layoutViewItem()
-                                .enclosingLayer()
-                                ->graphicsLayerBackingForScrolling()));
+  EXPECT_RECT_EQ(IntRect(0, 0, 500, 7500),
+                 recomputeInterestRect(childDocument()
+                                           .view()
+                                           ->layoutViewItem()
+                                           .enclosingLayer()
+                                           ->graphicsLayerBacking()));
 }
 
 TEST_P(CompositedLayerMappingTest,

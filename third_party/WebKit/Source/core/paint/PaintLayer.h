@@ -494,12 +494,16 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Don't null check this.
   // FIXME: Rename.
   CompositedLayerMapping* compositedLayerMapping() const;
-  GraphicsLayer* graphicsLayerBacking() const;
-  GraphicsLayer* graphicsLayerBackingForScrolling() const;
-  // Returns which GraphicsLayers backgrounds should be painted into for
-  // overflow scrolling boxes. When the background can paint into the scrolling
-  // contents and is also opaque this allows us to composite the scroller even
-  // on low DPI as we can draw with subpixel anti-aliasing.
+
+  // Returns the GraphicsLayer owned by this PaintLayer's
+  // CompositedLayerMapping (or groupedMapping()'s, if squashed),
+  // into which the given LayoutObject paints. If null, assumes the
+  // LayoutObject is *not* layoutObject().
+  // Assumes that the given LayoutObject paints into one of the GraphicsLayers
+  // associated with this PaintLayer.
+  // Returns nullptr if this PaintLayer is not composited.
+  GraphicsLayer* graphicsLayerBacking(const LayoutObject* = nullptr) const;
+
   BackgroundPaintLocation backgroundPaintLocation() const;
   // NOTE: If you are using hasCompositedLayerMapping to determine the state of
   // compositing for this layer, (and not just to do bookkeeping related to the
@@ -527,6 +531,16 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return m_scrollableArea && m_scrollableArea->needsCompositedScrolling();
   }
 
+  // Paint invalidation containers can be self-composited or squashed.
+  // In the former case, these methods do nothing.
+  // In the latter case, they adjust from the space of the squashed PaintLayer
+  // to the space of the PaintLayer into which it squashes.
+  //
+  // Note that this method does *not* adjust rects into the space of any
+  // particular GraphicsLayer. To do that requires adjusting for the
+  // offsetFromLayoutObject of the desired GraphicsLayer (which can differ
+  // for different GraphicsLayers belonging to the same
+  // CompositedLayerMapping).
   static void mapPointInPaintInvalidationContainerToBacking(
       const LayoutBoxModelObject& paintInvalidationContainer,
       FloatPoint&);

@@ -438,9 +438,8 @@ LayoutPoint PaintInvalidationState::computeLocationInBacking(
     }
   }
 
-  if (m_paintInvalidationContainer->layer()->groupedMapping())
-    PaintLayer::mapPointInPaintInvalidationContainerToBacking(
-        *m_paintInvalidationContainer, point);
+  PaintLayer::mapPointInPaintInvalidationContainerToBacking(
+      *m_paintInvalidationContainer, point);
 
   return LayoutPoint(point);
 }
@@ -480,9 +479,9 @@ LayoutRect PaintInvalidationState::computeVisualRectInBackingForSVG() const {
         m_currentObject, *m_paintInvalidationContainer);
   }
 
-  if (m_paintInvalidationContainer->layer()->groupedMapping())
-    PaintLayer::mapRectInPaintInvalidationContainerToBacking(
-        *m_paintInvalidationContainer, rect);
+  PaintLayer::mapRectInPaintInvalidationContainerToBacking(
+      *m_paintInvalidationContainer, rect);
+
   return rect;
 }
 
@@ -532,9 +531,8 @@ void PaintInvalidationState::mapLocalRectToPaintInvalidationBacking(
     LayoutRect& rect) const {
   mapLocalRectToPaintInvalidationContainer(rect);
 
-  if (m_paintInvalidationContainer->layer()->groupedMapping())
-    PaintLayer::mapRectInPaintInvalidationContainerToBacking(
-        *m_paintInvalidationContainer, rect);
+  PaintLayer::mapRectInPaintInvalidationContainerToBacking(
+      *m_paintInvalidationContainer, rect);
 }
 
 void PaintInvalidationState::addClipRectRelativeToPaintOffset(

@@ -26,7 +26,7 @@ class BoxPaintInvalidatorTest : public ::testing::WithParamInterface<bool>,
     // TODO(wangxianzhu): Test SPv2.
     return layoutView()
         .layer()
-        ->graphicsLayerBackingForScrolling()
+        ->graphicsLayerBacking()
         ->getRasterInvalidationTracking();
   }
 
@@ -280,7 +280,7 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewGradientResize) {
     // background-attachment: local. crbug.com/568847.
     const auto& rasterInvalidations = layoutView()
                                           .layer()
-                                          ->graphicsLayerBacking()
+                                          ->graphicsLayerBacking(&layoutView())
                                           ->getRasterInvalidationTracking()
                                           ->trackedRasterInvalidations;
     ASSERT_EQ(1u, rasterInvalidations.size());
@@ -441,12 +441,11 @@ TEST_P(BoxPaintInvalidatorTest, CompositedBackgroundAttachmentLocalResize) {
   document().view()->setTracksPaintInvalidations(true);
   child->setAttribute(HTMLNames::styleAttr, "width: 500px; height: 1000px");
   document().view()->updateAllLifecyclePhases();
-  GraphicsLayer* containerLayer = toLayoutBoxModelObject(target->layoutObject())
-                                      ->layer()
-                                      ->graphicsLayerBacking();
-  GraphicsLayer* contentsLayer = toLayoutBoxModelObject(target->layoutObject())
-                                     ->layer()
-                                     ->graphicsLayerBackingForScrolling();
+  LayoutBoxModelObject* targetObj =
+      toLayoutBoxModelObject(target->layoutObject());
+  GraphicsLayer* containerLayer =
+      targetObj->layer()->graphicsLayerBacking(targetObj);
+  GraphicsLayer* contentsLayer = targetObj->layer()->graphicsLayerBacking();
   // No invalidation on the container layer.
   EXPECT_FALSE(containerLayer->getRasterInvalidationTracking());
   // Incremental invalidation of background on contents layer.
@@ -499,12 +498,11 @@ TEST_P(BoxPaintInvalidatorTest,
   document().view()->setTracksPaintInvalidations(true);
   child->setAttribute(HTMLNames::styleAttr, "width: 500px; height: 1000px");
   document().view()->updateAllLifecyclePhases();
-  GraphicsLayer* containerLayer = toLayoutBoxModelObject(target->layoutObject())
-                                      ->layer()
-                                      ->graphicsLayerBacking();
-  GraphicsLayer* contentsLayer = toLayoutBoxModelObject(target->layoutObject())
-                                     ->layer()
-                                     ->graphicsLayerBackingForScrolling();
+  LayoutBoxModelObject* targetObj =
+      toLayoutBoxModelObject(target->layoutObject());
+  GraphicsLayer* containerLayer =
+      targetObj->layer()->graphicsLayerBacking(targetObj);
+  GraphicsLayer* contentsLayer = targetObj->layer()->graphicsLayerBacking();
   // No invalidation on the container layer.
   EXPECT_FALSE(containerLayer->getRasterInvalidationTracking());
   // Full invalidation of background on contents layer because the gradient

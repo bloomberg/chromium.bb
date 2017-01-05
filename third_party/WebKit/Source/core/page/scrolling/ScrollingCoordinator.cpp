@@ -550,7 +550,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
 
     // Find the appropriate GraphicsLayer for the composited Layer.
     GraphicsLayer* graphicsLayer =
-        compositedLayer->graphicsLayerBackingForScrolling();
+        compositedLayer->graphicsLayerBacking(curLayer->layoutObject());
 
     GraphicsLayerHitTestRects::iterator glIter =
         graphicsRects.find(graphicsLayer);
@@ -576,6 +576,8 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
       }
       PaintLayer::mapRectInPaintInvalidationContainerToBacking(
           *compositedLayer->layoutObject(), rect);
+      rect.move(-graphicsLayer->offsetFromLayoutObject());
+
       glRects->append(rect);
     }
   }

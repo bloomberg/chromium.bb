@@ -225,8 +225,8 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
   ASSERT_TRUE(paintLayer);
   EXPECT_TRUE(paintLayer->needsCompositedScrolling());
   EXPECT_TRUE(paintLayer->graphicsLayerBacking());
-  ASSERT_TRUE(paintLayer->graphicsLayerBackingForScrolling());
-  EXPECT_TRUE(paintLayer->graphicsLayerBackingForScrolling()->contentsOpaque());
+  ASSERT_TRUE(paintLayer->graphicsLayerBacking());
+  EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
 }
 
 // Tests that we don't promote scrolling content which would not be contained.
@@ -256,7 +256,7 @@ TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
   ASSERT_TRUE(paintLayer);
   EXPECT_FALSE(paintLayer->needsCompositedScrolling());
   EXPECT_FALSE(paintLayer->graphicsLayerBacking());
-  EXPECT_FALSE(paintLayer->graphicsLayerBackingForScrolling());
+  EXPECT_FALSE(paintLayer->graphicsLayerBacking());
 }
 
 TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
@@ -279,7 +279,7 @@ TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
   ASSERT_TRUE(paintLayer);
   EXPECT_FALSE(paintLayer->needsCompositedScrolling());
   EXPECT_FALSE(paintLayer->graphicsLayerBacking());
-  EXPECT_FALSE(paintLayer->graphicsLayerBackingForScrolling());
+  EXPECT_FALSE(paintLayer->graphicsLayerBacking());
 }
 
 TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
@@ -310,7 +310,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
   ASSERT_TRUE(paintLayer);
   EXPECT_FALSE(paintLayer->needsCompositedScrolling());
   EXPECT_FALSE(paintLayer->graphicsLayerBacking());
-  EXPECT_FALSE(paintLayer->graphicsLayerBackingForScrolling());
+  EXPECT_FALSE(paintLayer->graphicsLayerBacking());
 }
 
 TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
@@ -340,8 +340,8 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
   ASSERT_TRUE(paintLayer);
   EXPECT_TRUE(paintLayer->needsCompositedScrolling());
   EXPECT_TRUE(paintLayer->graphicsLayerBacking());
-  ASSERT_TRUE(paintLayer->graphicsLayerBackingForScrolling());
-  EXPECT_TRUE(paintLayer->graphicsLayerBackingForScrolling()->contentsOpaque());
+  ASSERT_TRUE(paintLayer->graphicsLayerBacking());
+  EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
 }
 
 // Tests that a transform on the scroller or an ancestor will prevent promotion
@@ -369,8 +369,8 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   ASSERT_TRUE(paintLayer);
   EXPECT_TRUE(paintLayer->needsCompositedScrolling());
   EXPECT_TRUE(paintLayer->graphicsLayerBacking());
-  ASSERT_TRUE(paintLayer->graphicsLayerBackingForScrolling());
-  EXPECT_TRUE(paintLayer->graphicsLayerBackingForScrolling()->contentsOpaque());
+  ASSERT_TRUE(paintLayer->graphicsLayerBacking());
+  EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
 
   // Change the parent to have a transform.
   parent->setAttribute(HTMLNames::styleAttr, "transform: translate(1px, 0);");
@@ -387,8 +387,8 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   ASSERT_TRUE(paintLayer);
   EXPECT_TRUE(paintLayer->needsCompositedScrolling());
   EXPECT_TRUE(paintLayer->graphicsLayerBacking());
-  ASSERT_TRUE(paintLayer->graphicsLayerBackingForScrolling());
-  EXPECT_TRUE(paintLayer->graphicsLayerBackingForScrolling()->contentsOpaque());
+  ASSERT_TRUE(paintLayer->graphicsLayerBacking());
+  EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
 
   // Apply a transform to the scroller directly.
   scroller->setAttribute(HTMLNames::styleAttr, "transform: translate(1px, 0);");
@@ -423,8 +423,8 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   ASSERT_TRUE(paintLayer);
   EXPECT_TRUE(paintLayer->needsCompositedScrolling());
   EXPECT_TRUE(paintLayer->graphicsLayerBacking());
-  ASSERT_TRUE(paintLayer->graphicsLayerBackingForScrolling());
-  EXPECT_TRUE(paintLayer->graphicsLayerBackingForScrolling()->contentsOpaque());
+  ASSERT_TRUE(paintLayer->graphicsLayerBacking());
+  EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
 
   // Change the parent to be partially translucent.
   parent->setAttribute(HTMLNames::styleAttr, "opacity: 0.5;");
@@ -441,8 +441,8 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   ASSERT_TRUE(paintLayer);
   EXPECT_TRUE(paintLayer->needsCompositedScrolling());
   EXPECT_TRUE(paintLayer->graphicsLayerBacking());
-  ASSERT_TRUE(paintLayer->graphicsLayerBackingForScrolling());
-  EXPECT_TRUE(paintLayer->graphicsLayerBackingForScrolling()->contentsOpaque());
+  ASSERT_TRUE(paintLayer->graphicsLayerBacking());
+  EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
 
   // Make the scroller translucent.
   scroller->setAttribute(HTMLNames::styleAttr, "opacity: 0.5");

@@ -1576,6 +1576,9 @@ static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot,
     LayoutRect rect;
     PaintLayer::mapRectInPaintInvalidationContainerToBacking(
         *searchRoot->layoutObject(), rect);
+    rect.move(searchRoot->compositedLayerMapping()
+                  ->contentOffsetInCompositingLayer());
+
     *layerOffset = IntSize(rect.x().toInt(), rect.y().toInt());
     return searchRoot;
   }

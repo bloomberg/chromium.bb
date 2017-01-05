@@ -76,7 +76,7 @@ class FrameThrottlingTest : public SimTest {
         ->frame()
         ->contentLayoutItem()
         .layer()
-        ->graphicsLayerBackingForScrolling()
+        ->graphicsLayerBacking()
         ->platformLayer()
         ->touchEventHandlerRegion()
         .size();

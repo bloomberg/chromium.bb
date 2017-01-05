@@ -121,10 +121,9 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
 
   object.adjustVisualRectForRasterEffects(result);
 
-  if (context.paintInvalidationContainer->layer()->groupedMapping()) {
-    PaintLayer::mapRectInPaintInvalidationContainerToBacking(
-        *context.paintInvalidationContainer, result);
-  }
+  PaintLayer::mapRectInPaintInvalidationContainerToBacking(
+      *context.paintInvalidationContainer, result);
+
   return result;
 }
 
@@ -190,9 +189,8 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
     point.moveBy(-containerContentsProperties.paintOffset);
   }
 
-  if (context.paintInvalidationContainer->layer()->groupedMapping())
-    PaintLayer::mapPointInPaintInvalidationContainerToBacking(
-        *context.paintInvalidationContainer, point);
+  PaintLayer::mapPointInPaintInvalidationContainerToBacking(
+      *context.paintInvalidationContainer, point);
 
   return LayoutPoint(point);
 }

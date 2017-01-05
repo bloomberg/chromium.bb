@@ -547,11 +547,8 @@ void PaintLayer::mapPointInPaintInvalidationContainerToBacking(
     const LayoutBoxModelObject& paintInvalidationContainer,
     FloatPoint& point) {
   PaintLayer* paintInvalidationLayer = paintInvalidationContainer.layer();
-  if (!paintInvalidationLayer->groupedMapping()) {
-    point.move(paintInvalidationLayer->compositedLayerMapping()
-                   ->contentOffsetInCompositingLayer());
+  if (!paintInvalidationLayer->groupedMapping())
     return;
-  }
 
   LayoutBoxModelObject* transformedAncestor =
       paintInvalidationLayer->enclosingTransformedAncestor()->layoutObject();
@@ -571,11 +568,8 @@ void PaintLayer::mapRectInPaintInvalidationContainerToBacking(
     const LayoutBoxModelObject& paintInvalidationContainer,
     LayoutRect& rect) {
   PaintLayer* paintInvalidationLayer = paintInvalidationContainer.layer();
-  if (!paintInvalidationLayer->groupedMapping()) {
-    rect.move(paintInvalidationLayer->compositedLayerMapping()
-                  ->contentOffsetInCompositingLayer());
+  if (!paintInvalidationLayer->groupedMapping())
     return;
-  }
 
   LayoutBoxModelObject* transformedAncestor =
       paintInvalidationLayer->enclosingTransformedAncestor()->layoutObject();
@@ -2597,25 +2591,15 @@ CompositedLayerMapping* PaintLayer::compositedLayerMapping() const {
   return m_rareData ? m_rareData->compositedLayerMapping.get() : nullptr;
 }
 
-GraphicsLayer* PaintLayer::graphicsLayerBacking() const {
+GraphicsLayer* PaintLayer::graphicsLayerBacking(const LayoutObject* obj) const {
   switch (compositingState()) {
     case NotComposited:
-      return 0;
+      return nullptr;
     case PaintsIntoGroupedBacking:
       return groupedMapping()->squashingLayer();
     default:
-      return compositedLayerMapping()->mainGraphicsLayer();
-  }
-}
-
-GraphicsLayer* PaintLayer::graphicsLayerBackingForScrolling() const {
-  switch (compositingState()) {
-    case NotComposited:
-      return 0;
-    case PaintsIntoGroupedBacking:
-      return groupedMapping()->squashingLayer();
-    default:
-      return compositedLayerMapping()->scrollingContentsLayer()
+      return (obj != layoutObject() &&
+              compositedLayerMapping()->scrollingContentsLayer())
                  ? compositedLayerMapping()->scrollingContentsLayer()
                  : compositedLayerMapping()->mainGraphicsLayer();
   }

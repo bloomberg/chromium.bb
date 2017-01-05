@@ -2267,7 +2267,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   const RasterInvalidationTracking* invalidationTracking =
       document->layoutView()
           ->layer()
-          ->graphicsLayerBacking()
+          ->graphicsLayerBacking(document->layoutView())
           ->getRasterInvalidationTracking();
   // If no invalidations occured, this will be a nullptr.
   ASSERT_TRUE(invalidationTracking);
@@ -2290,7 +2290,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
 
   invalidationTracking = document->layoutView()
                              ->layer()
-                             ->graphicsLayerBacking()
+                             ->graphicsLayerBacking(document->layoutView())
                              ->getRasterInvalidationTracking();
   ASSERT_FALSE(invalidationTracking);
 
@@ -2300,7 +2300,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
 
   invalidationTracking = document->layoutView()
                              ->layer()
-                             ->graphicsLayerBacking()
+                             ->graphicsLayerBacking(document->layoutView())
                              ->getRasterInvalidationTracking();
   ASSERT_TRUE(invalidationTracking);
   rasterInvalidations = &invalidationTracking->trackedRasterInvalidations;
@@ -2384,7 +2384,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
   const RasterInvalidationTracking* invalidationTracking =
       document->layoutView()
           ->layer()
-          ->graphicsLayerBacking()
+          ->graphicsLayerBacking(document->layoutView())
           ->getRasterInvalidationTracking();
 
   // No invalidations should have occured in FrameView scrolling. If

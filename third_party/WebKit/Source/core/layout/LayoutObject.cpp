@@ -80,6 +80,7 @@
 #include "platform/InstanceCounters.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/StringBuilder.h"
@@ -2301,7 +2302,7 @@ FloatPoint LayoutObject::localToInvalidationBackingPoint(
     PaintLayer** backingLayer) {
   const LayoutBoxModelObject& paintInvalidationContainer =
       containerForPaintInvalidation();
-  ASSERT(paintInvalidationContainer.layer());
+  DCHECK(paintInvalidationContainer.layer());
 
   if (backingLayer)
     *backingLayer = paintInvalidationContainer.layer();
@@ -2316,6 +2317,12 @@ FloatPoint LayoutObject::localToInvalidationBackingPoint(
 
   PaintLayer::mapPointInPaintInvalidationContainerToBacking(
       paintInvalidationContainer, containerPoint);
+
+  if (GraphicsLayer* backingLayer =
+          paintInvalidationContainer.layer()->graphicsLayerBacking(this)) {
+    containerPoint.move(-backingLayer->offsetFromLayoutObject());
+  }
+
   return containerPoint;
 }
 

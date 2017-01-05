@@ -134,13 +134,12 @@ void LinkHighlightImpl::releaseResources() {
 void LinkHighlightImpl::attachLinkHighlightToCompositingLayer(
     const LayoutBoxModelObject& paintInvalidationContainer) {
   GraphicsLayer* newGraphicsLayer =
-      paintInvalidationContainer.layer()->graphicsLayerBacking();
+      paintInvalidationContainer.layer()->graphicsLayerBacking(
+          m_node->layoutObject());
   m_isScrollingGraphicsLayer = false;
   // FIXME: There should always be a GraphicsLayer. See crbug.com/431961.
   if (paintInvalidationContainer.layer()->needsCompositedScrolling() &&
       m_node->layoutObject() != &paintInvalidationContainer) {
-    newGraphicsLayer =
-        paintInvalidationContainer.layer()->graphicsLayerBackingForScrolling();
     m_isScrollingGraphicsLayer = true;
   }
   if (!newGraphicsLayer)
@@ -228,11 +227,8 @@ bool LinkHighlightImpl::computeHighlightLayerPathAndPosition(
         absoluteQuad, UseTransforms | TraverseDocumentBoundaries);
     FloatPoint offsetToBacking;
 
-    // Adjust for squashing.
-    if (paintInvalidationContainer.layer()->groupedMapping()) {
-      PaintLayer::mapPointInPaintInvalidationContainerToBacking(
-          paintInvalidationContainer, offsetToBacking);
-    }
+    PaintLayer::mapPointInPaintInvalidationContainerToBacking(
+        paintInvalidationContainer, offsetToBacking);
 
     // Adjust for offset from LayoutObject.
     offsetToBacking.move(-m_currentGraphicsLayer->offsetFromLayoutObject());
