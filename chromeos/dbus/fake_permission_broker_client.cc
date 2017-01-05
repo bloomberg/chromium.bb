@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 
 namespace chromeos {
 
@@ -62,10 +62,13 @@ void FakePermissionBrokerClient::CheckPathAccess(
 void FakePermissionBrokerClient::OpenPath(const std::string& path,
                                           const OpenPathCallback& callback,
                                           const ErrorCallback& error_callback) {
-  base::WorkerPool::PostTask(
-      FROM_HERE, base::Bind(&chromeos::OpenPath, path, callback, error_callback,
-                            base::ThreadTaskRunnerHandle::Get()),
-      false);
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .MayBlock(),
+      base::Bind(&chromeos::OpenPath, path, callback, error_callback,
+                 base::ThreadTaskRunnerHandle::Get()));
 }
 
 void FakePermissionBrokerClient::RequestTcpPortAccess(
