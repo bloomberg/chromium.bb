@@ -285,5 +285,36 @@ TEST_F(DisplayCompositorTest, AddSurfacesSkipReference) {
   EXPECT_EQ(0u, CountTempReferences());
 }
 
+TEST_F(DisplayCompositorTest, RemoveFirstTempRefOnly) {
+  const cc::SurfaceId parent_id = MakeSurfaceId(1, 1, 1);
+  const cc::SurfaceId surface_id1 = MakeSurfaceId(2, 1, 1);
+  const cc::SurfaceId surface_id2 = MakeSurfaceId(2, 1, 2);
+
+  // Add two surfaces that have the same FrameSinkId. This would happen when a
+  // client submits two CFs before parent submits a new CF.
+  surface_observer()->OnSurfaceCreated(
+      cc::SurfaceInfo(surface_id1, 1.0f, gfx::Size(1, 1)));
+  surface_observer()->OnSurfaceCreated(
+      cc::SurfaceInfo(surface_id2, 1.0f, gfx::Size(1, 1)));
+  RunUntilIdle();
+
+  // Client should get OnSurfaceCreated call and temporary reference added for
+  // both surfaces.
+  EXPECT_EQ("OnSurfaceCreated(2:1:1);OnSurfaceCreated(2:1:2)",
+            client_.events());
+  EXPECT_EQ("Add(0:0:0-2:1:1);Add(0:0:0-2:1:2)", reference_manager_.events());
+  EXPECT_EQ(2u, CountTempReferences());
+
+  // Add a reference to the surface with the earlier LocalFrameId.
+  AddSurfaceReference(parent_id, surface_id1);
+  RunUntilIdle();
+
+  // The real reference should be added for 2:1:1 and temporary reference
+  // should be removed. The temporary reference for 2:1:2 should remain.
+  EXPECT_EQ("Add(1:1:1-2:1:1);Remove(0:0:0-2:1:1)",
+            reference_manager_.events());
+  EXPECT_EQ(1u, CountTempReferences());
+}
+
 }  // namespace test
 }  // namespace ui

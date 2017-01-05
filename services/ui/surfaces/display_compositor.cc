@@ -169,13 +169,13 @@ void DisplayCompositor::AddSurfaceReference(const cc::SurfaceReference& ref) {
   }
 
   // Remove markers for temporary references up to |child_id|, as the temporary
-  // references they correspond to were removed above. If |ref_iter| is the last
-  // element in |refs| then we are removing all temporary references for the
-  // FrameSinkId and can remove the map entry entirely.
+  // references they correspond to were removed above. If |temp_ref_iter| points
+  // at the last element in |refs| then we are removing all temporary references
+  // for the FrameSinkId and can remove the map entry entirely.
   if (++temp_ref_iter == refs.end())
     temp_references_.erase(child_id.frame_sink_id());
   else
-    refs.erase(refs.begin(), ++temp_ref_iter);
+    refs.erase(refs.begin(), temp_ref_iter);
 }
 
 void DisplayCompositor::RemoveSurfaceReference(
