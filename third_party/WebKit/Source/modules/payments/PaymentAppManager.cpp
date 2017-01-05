@@ -28,7 +28,10 @@ struct TypeConverter<PaymentAppOptionPtr, blink::PaymentAppOption> {
     output->name = input.hasName() ? input.name() : WTF::emptyString();
     output->icon = input.hasIcon() ? input.icon() : WTF::String();
     output->id = input.hasId() ? input.id() : WTF::emptyString();
-    output->enabled_methods = WTF::Vector<WTF::String>(input.enabledMethods());
+    if (input.hasEnabledMethods()) {
+      output->enabled_methods =
+          WTF::Vector<WTF::String>(input.enabledMethods());
+    }
     return output;
   }
 };
