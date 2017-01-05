@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/gl_cursor_feedback.h"
+#include "remoting/client/display/gl_cursor_feedback.h"
 
 #include <math.h>
 
 #include <array>
 
 #include "base/logging.h"
-#include "remoting/client/gl_canvas.h"
-#include "remoting/client/gl_cursor_feedback_texture.h"
-#include "remoting/client/gl_math.h"
-#include "remoting/client/gl_render_layer.h"
-#include "remoting/client/gl_texture_ids.h"
+#include "remoting/client/display/gl_canvas.h"
+#include "remoting/client/display/gl_cursor_feedback_texture.h"
+#include "remoting/client/display/gl_math.h"
+#include "remoting/client/display/gl_render_layer.h"
+#include "remoting/client/display/gl_texture_ids.h"
 
 namespace {
 
@@ -80,8 +80,8 @@ bool GlCursorFeedback::Draw() {
   float diameter = GetExpansionCoefficient(progress) * max_diameter_;
   std::array<float, 8> positions;
   FillRectangleVertexPositions(cursor_x_ - diameter / 2,
-                               cursor_y_ - diameter / 2,
-                               diameter, diameter, &positions);
+                               cursor_y_ - diameter / 2, diameter, diameter,
+                               &positions);
   layer_->SetVertexPositions(positions);
 
   // Linear fade-out.

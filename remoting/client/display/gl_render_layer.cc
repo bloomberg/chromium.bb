@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/gl_render_layer.h"
+#include "remoting/client/display/gl_render_layer.h"
 
 #include "base/logging.h"
-#include "remoting/client/gl_canvas.h"
-#include "remoting/client/gl_helpers.h"
-
+#include "remoting/client/display/gl_canvas.h"
+#include "remoting/client/display/gl_helpers.h"
 
 namespace remoting {
 

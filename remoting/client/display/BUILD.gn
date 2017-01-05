@@ -1,0 +1,81 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("display") {
+  sources = [
+    "gl_canvas.cc",
+    "gl_canvas.h",
+    "gl_cursor.cc",
+    "gl_cursor.h",
+    "gl_cursor_feedback.cc",
+    "gl_cursor_feedback.h",
+    "gl_cursor_feedback_texture.cc",
+    "gl_cursor_feedback_texture.h",
+    "gl_desktop.cc",
+    "gl_desktop.h",
+    "gl_helpers.cc",
+    "gl_helpers.h",
+    "gl_math.cc",
+    "gl_math.h",
+    "gl_render_layer.cc",
+    "gl_render_layer.h",
+    "gl_renderer.cc",
+    "gl_renderer.h",
+  ]
+
+  deps = [
+    "//remoting/proto",
+    "//third_party/libyuv",
+    "//third_party/webrtc/base:rtc_base",
+  ]
+
+  configs += [ "//third_party/khronos:khronos_headers" ]
+
+  if (is_linux) {
+    libs = [ "GL" ]
+  }
+
+  if (is_mac) {
+    libs = [ "OpenGL.framework" ]
+  }
+
+  if (is_ios) {
+    libs = [
+      "GLKit.framework",
+      "OpenGLES.framework",
+    ]
+  }
+
+  if (is_win) {
+    deps += [ "//third_party/angle:libGLESv2" ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "gl_renderer_unittest.cc",
+  ]
+
+  configs += [
+    "//remoting/build/config:version",
+    "//remoting/build/config:enable_webrtc_remoting_client",
+  ]
+
+  deps = [
+    ":display",
+    "//remoting/proto",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/webrtc/base:rtc_base",
+  ]
+
+  if (is_win) {
+    # Windows clang builder fails to link the test binary with ANGLE GLESv2.
+    # crbug.com/642027
+    sources -= [ "gl_renderer_unittest.cc" ]
+    deps -= [ ":display" ]
+  }
+}

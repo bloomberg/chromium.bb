@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_GL_CURSOR_FEEDBACK_TEXTURE_H_
-#define REMOTING_CLIENT_GL_CURSOR_FEEDBACK_TEXTURE_H_
+#ifndef REMOTING_CLIENT_DISPLAY_GL_CURSOR_FEEDBACK_TEXTURE_H_
+#define REMOTING_CLIENT_DISPLAY_GL_CURSOR_FEEDBACK_TEXTURE_H_
 
 #include <vector>
 
@@ -34,4 +34,4 @@ class GlCursorFeedbackTexture {
 };
 
 }  // namespace remoting
-#endif  // REMOTING_CLIENT_GL_CURSOR_FEEDBACK_TEXTURE_H_
+#endif  // REMOTING_CLIENT_DISPLAY_GL_CURSOR_FEEDBACK_TEXTURE_H_

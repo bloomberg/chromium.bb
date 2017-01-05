@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/gl_renderer.h"
+#include "remoting/client/display/gl_renderer.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "remoting/client/gl_renderer_delegate.h"
+#include "remoting/client/display/gl_renderer_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -42,29 +42,19 @@ class FakeGlRendererDelegate : public GlRendererDelegate {
     on_frame_rendered_callback_ = callback;
   }
 
-  int canvas_width() {
-    return canvas_width_;
-  }
+  int canvas_width() { return canvas_width_; }
 
-  int canvas_height() {
-    return canvas_height_;
-  }
+  int canvas_height() { return canvas_height_; }
 
   base::WeakPtr<FakeGlRendererDelegate> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
-  int can_render_frame_call_count() {
-    return can_render_frame_call_count_;
-  }
+  int can_render_frame_call_count() { return can_render_frame_call_count_; }
 
-  int on_frame_rendered_call_count() {
-    return on_frame_rendered_call_count_;
-  }
+  int on_frame_rendered_call_count() { return on_frame_rendered_call_count_; }
 
-  int on_size_changed_call_count() {
-    return on_size_changed_call_count_;
-  }
+  int on_size_changed_call_count() { return on_size_changed_call_count_; }
 
   bool can_render_frame_ = false;
 
@@ -120,8 +110,8 @@ void GlRendererTest::SetDesktopFrameWithSize(const webrtc::DesktopSize& size) {
                  base::Unretained(this)));
 }
 
-void GlRendererTest::PostSetDesktopFrameTasks(
-    const webrtc::DesktopSize& size, int count) {
+void GlRendererTest::PostSetDesktopFrameTasks(const webrtc::DesktopSize& size,
+                                              int count) {
   for (int i = 0; i < count; i++) {
     message_loop_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&GlRendererTest::SetDesktopFrameWithSize,
@@ -144,7 +134,6 @@ void GlRendererTest::RunUntilRendered() {
   delegate_.SetOnFrameRenderedCallback(run_loop.QuitClosure());
   run_loop.Run();
 }
-
 
 TEST_F(GlRendererTest, TestDelegateCanRenderFrame) {
   delegate_.can_render_frame_ = true;

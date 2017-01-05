@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_OPENGL_GL_RENDER_LAYER_H_
-#define REMOTING_CLIENT_OPENGL_GL_RENDER_LAYER_H_
+#ifndef REMOTING_CLIENT_DISPLAY_GL_RENDER_LAYER_H_
+#define REMOTING_CLIENT_DISPLAY_GL_RENDER_LAYER_H_
 
 #include <array>
 #include <memory>
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "remoting/client/sys_opengl.h"
+#include "remoting/client/display/sys_opengl.h"
 
 namespace remoting {
 class GlCanvas;
@@ -97,4 +97,4 @@ class GlRenderLayer {
 };
 
 }  // namespace remoting
-#endif  // REMOTING_CLIENT_OPENGL_GL_RENDER_LAYER_H_
+#endif  // REMOTING_CLIENT_DISPLAY_GL_RENDER_LAYER_H_

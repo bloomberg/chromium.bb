@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/gl_cursor.h"
+#include "remoting/client/display/gl_cursor.h"
 
 #include "remoting/base/util.h"
-#include "remoting/client/gl_canvas.h"
-#include "remoting/client/gl_math.h"
-#include "remoting/client/gl_render_layer.h"
-#include "remoting/client/gl_texture_ids.h"
+#include "remoting/client/display/gl_canvas.h"
+#include "remoting/client/display/gl_math.h"
+#include "remoting/client/display/gl_render_layer.h"
+#include "remoting/client/display/gl_texture_ids.h"
 #include "remoting/proto/control.pb.h"
 #include "third_party/libyuv/include/libyuv/convert_argb.h"
 
@@ -24,7 +24,7 @@ GlCursor::~GlCursor() {}
 
 void GlCursor::SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) {
   int data_size = cursor_shape.width() * cursor_shape.height() *
-      GlRenderLayer::kBytesPerPixel;
+                  GlRenderLayer::kBytesPerPixel;
   if (current_cursor_data_size_ < data_size) {
     current_cursor_data_size_ =
         kDefaultCursorDataSize > data_size ? kDefaultCursorDataSize : data_size;

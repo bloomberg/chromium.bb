@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/gl_cursor_feedback_texture.h"
+#include "remoting/client/display/gl_cursor_feedback_texture.h"
 
-#include "remoting/client/gl_render_layer.h"
+#include "remoting/client/display/gl_render_layer.h"
 
 namespace remoting {
 
@@ -17,15 +17,15 @@ const int kFeedbackTexturePixelRadius = kFeedbackTexturePixelDiameter / 2;
 // RGBA8888 colors. From inside to outside.
 const uint8_t kFeedbackRingColors[kColorRingsCount]
                                  [GlRenderLayer::kBytesPerPixel] = {
-                                     {0x0, 0x0, 0x0, 0x7f},  // Black
-                                     {0x0, 0x0, 0x0, 0x7f},  // Black
+                                     {0x0, 0x0, 0x0, 0x7f},     // Black
+                                     {0x0, 0x0, 0x0, 0x7f},     // Black
                                      {0xff, 0xff, 0xff, 0x7f},  // White
                                      {0xff, 0xff, 0xff, 0x7f},  // White
                                      {0xff, 0xff, 0xff, 0}  // Transparent White
 };
 
-const float kFeedbackRadiusStops[kColorRingsCount] =
-    {0.0f, 0.85f, 0.9f, 0.95f, 1.0f};
+const float kFeedbackRadiusStops[kColorRingsCount] = {0.0f, 0.85f, 0.9f, 0.95f,
+                                                      1.0f};
 
 uint32_t GetColorByRadius(float radius) {
   int ring_index = kColorRingsCount - 1;

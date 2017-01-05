@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/gl_math.h"
+#include "remoting/client/display/gl_math.h"
 
 #include <sstream>
 

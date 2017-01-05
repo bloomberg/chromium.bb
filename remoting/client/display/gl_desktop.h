@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_OPENGL_GL_DESKTOP_H_
-#define REMOTING_CLIENT_OPENGL_GL_DESKTOP_H_
+#ifndef REMOTING_CLIENT_DISPLAY_GL_DESKTOP_H_
+#define REMOTING_CLIENT_DISPLAY_GL_DESKTOP_H_
 
 #include <memory>
 #include <vector>
@@ -52,4 +52,4 @@ class GlDesktop {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_OPENGL_GL_DESKTOP_H_
+#endif  // REMOTING_CLIENT_DISPLAY_GL_DESKTOP_H_

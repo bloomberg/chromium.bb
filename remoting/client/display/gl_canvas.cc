@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/gl_canvas.h"
+#include "remoting/client/display/gl_canvas.h"
 
 #include "base/logging.h"
-#include "remoting/client/gl_helpers.h"
-#include "remoting/client/gl_math.h"
+#include "remoting/client/display/gl_helpers.h"
+#include "remoting/client/display/gl_math.h"
 
 namespace {
 
@@ -37,15 +37,15 @@ const char kTexCoordToViewVert[] =
     "void main() {\n"
     "  v_texCoord = a_texCoord;\n"
 
-       // Transforms coordinates related to the canvas to coordinates
-       // related to the view.
+    // Transforms coordinates related to the canvas to coordinates
+    // related to the view.
     "  vec3 trans_position = u_transform * vec3(a_position, 1.0);\n"
 
-       // Normalize the position by the size of the view.
+    // Normalize the position by the size of the view.
     "  trans_position.xy /= u_viewSize;\n"
 
-       // Transforms texture coordinates to view coordinates and adds
-       // projection component 1.
+    // Transforms texture coordinates to view coordinates and adds
+    // projection component 1.
     "  gl_Position = vec4(tex_to_view * trans_position, 1.0);\n"
     "}";
 
@@ -108,7 +108,7 @@ void GlCanvas::SetTransformationMatrix(const std::array<float, 9>& matrix) {
 void GlCanvas::SetViewSize(int width, int height) {
   DCHECK(width > 0 && height > 0);
   glViewport(0, 0, width, height);
-  float view_size[2] {width, height};
+  float view_size[2]{width, height};
   glUniform2fv(view_size_location_, 1, view_size);
   view_size_set_ = true;
 }

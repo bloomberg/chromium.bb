@@ -11,8 +11,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "remoting/client/gl_renderer.h"
-#include "remoting/client/gl_renderer_delegate.h"
+#include "remoting/client/display/gl_renderer.h"
+#include "remoting/client/display/gl_renderer_delegate.h"
 #include "remoting/client/queued_task_poster.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 

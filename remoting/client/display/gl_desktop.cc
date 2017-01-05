@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/gl_desktop.h"
+#include "remoting/client/display/gl_desktop.h"
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "remoting/client/gl_canvas.h"
-#include "remoting/client/gl_math.h"
-#include "remoting/client/gl_render_layer.h"
-#include "remoting/client/gl_texture_ids.h"
+#include "remoting/client/display/gl_canvas.h"
+#include "remoting/client/display/gl_math.h"
+#include "remoting/client/display/gl_render_layer.h"
+#include "remoting/client/display/gl_texture_ids.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 

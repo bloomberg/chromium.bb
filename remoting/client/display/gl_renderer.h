@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_GL_RENDERER_H_
-#define REMOTING_CLIENT_GL_RENDERER_H_
+#ifndef REMOTING_CLIENT_DISPLAY_GL_RENDERER_H_
+#define REMOTING_CLIENT_DISPLAY_GL_RENDERER_H_
 
 #include <queue>
 
@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "remoting/client/gl_cursor.h"
-#include "remoting/client/gl_cursor_feedback.h"
-#include "remoting/client/gl_desktop.h"
+#include "remoting/client/display/gl_cursor.h"
+#include "remoting/client/display/gl_cursor_feedback.h"
+#include "remoting/client/display/gl_desktop.h"
 #include "remoting/proto/control.pb.h"
 
 namespace webrtc {
@@ -134,4 +134,4 @@ class GlRenderer {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_GL_RENDERER_H_
+#endif  // REMOTING_CLIENT_DISPLAY_GL_RENDERER_H_
