@@ -116,10 +116,6 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       base::Time remove_begin,
       base::Time remove_end) = 0;
 
-  // Remove all downloads will delete all downloads. The number of downloads
-  // deleted is returned back to the caller.
-  virtual int RemoveAllDownloads() = 0;
-
   // See DownloadUrlParameters for details about controlling the download.
   virtual void DownloadUrl(
       std::unique_ptr<DownloadUrlParameters> parameters) = 0;

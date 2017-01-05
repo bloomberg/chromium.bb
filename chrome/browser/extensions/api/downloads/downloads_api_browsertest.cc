@@ -320,7 +320,6 @@ class DownloadExtensionTest : public ExtensionApiTest {
     CreateAndSetDownloadsDirectory();
     current_browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kPromptForDownload, false);
-    GetOnRecordManager()->RemoveAllDownloads();
     events_listener_.reset(new DownloadsEventsListener());
     // Disable file chooser for current profile.
     DownloadTestFileActivityObserver observer(current_browser()->profile());
@@ -332,7 +331,6 @@ class DownloadExtensionTest : public ExtensionApiTest {
   void GoOffTheRecord() {
     if (!incognito_browser_) {
       incognito_browser_ = CreateIncognitoBrowser();
-      GetOffRecordManager()->RemoveAllDownloads();
       // Disable file chooser for incognito profile.
       DownloadTestFileActivityObserver observer(incognito_browser_->profile());
       observer.EnableFileChooser(false);

@@ -104,7 +104,6 @@ class MockDownloadManager : public DownloadManager {
                int(const base::Callback<bool(const GURL&)>& url_filter,
                    base::Time remove_begin,
                    base::Time remove_end));
-  MOCK_METHOD0(RemoveAllDownloads, int());
   MOCK_METHOD1(DownloadUrlMock, void(DownloadUrlParameters*));
   void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override {
     DownloadUrlMock(params.get());

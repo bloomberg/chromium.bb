@@ -163,7 +163,6 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
 
     DownloadManager* manager = GetDownloadManager();
     DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
-    manager->RemoveAllDownloads();
   }
 
   // Sends onExecuteContentHandler event with the MIME type "test/done" to the

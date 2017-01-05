@@ -704,41 +704,6 @@ TEST_F(DownloadManagerTest, DetermineDownloadTarget_False) {
   EXPECT_EQ(path, intermediate_path_);
 }
 
-// Confirm the DownloadManagerImpl::RemoveAllDownloads() functionality
-TEST_F(DownloadManagerTest, RemoveAllDownloads) {
-  base::Time now(base::Time::Now());
-  for (uint32_t i = 0; i < 4; ++i) {
-    MockDownloadItemImpl& item(AddItemToManager());
-    EXPECT_EQ(i, item.GetId());
-    EXPECT_CALL(item, GetStartTime())
-        .WillRepeatedly(Return(now));
-  }
-
-  // Specify states for each.
-  EXPECT_CALL(GetMockDownloadItem(0), GetState())
-      .WillRepeatedly(Return(DownloadItem::COMPLETE));
-  EXPECT_CALL(GetMockDownloadItem(1), GetState())
-      .WillRepeatedly(Return(DownloadItem::CANCELLED));
-  EXPECT_CALL(GetMockDownloadItem(2), GetState())
-      .WillRepeatedly(Return(DownloadItem::INTERRUPTED));
-  EXPECT_CALL(GetMockDownloadItem(3), GetState())
-      .WillRepeatedly(Return(DownloadItem::IN_PROGRESS));
-
-  // Expectations for whether or not they'll actually be removed.
-  EXPECT_CALL(GetMockDownloadItem(0), Remove())
-      .WillOnce(Return());
-  EXPECT_CALL(GetMockDownloadItem(1), Remove())
-      .WillOnce(Return());
-  EXPECT_CALL(GetMockDownloadItem(2), Remove())
-      .WillOnce(Return());
-  EXPECT_CALL(GetMockDownloadItem(3), Remove())
-      .Times(0);
-
-  download_manager_->RemoveAllDownloads();
-  // Because we're mocking the download item, the Remove call doesn't
-  // result in them being removed from the DownloadManager list.
-}
-
 TEST_F(DownloadManagerTest, GetDownloadByGuid) {
   for (uint32_t i = 0; i < 4; ++i)
     AddItemToManager();

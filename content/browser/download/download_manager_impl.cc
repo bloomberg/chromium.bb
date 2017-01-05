@@ -588,25 +588,10 @@ DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
   return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
-namespace {
-
-bool EmptyFilter(const GURL& url) {
-  return true;
-}
-
-bool RemoveDownloadByURLAndTime(
+int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
     const base::Callback<bool(const GURL&)>& url_filter,
-          base::Time remove_begin,
-          base::Time remove_end,
-          const DownloadItemImpl* download_item) {
-  return url_filter.Run(download_item->GetURL()) &&
-         download_item->GetStartTime() >= remove_begin &&
-         (remove_end.is_null() || download_item->GetStartTime() < remove_end);
-}
-
-}  // namespace
-
-int DownloadManagerImpl::RemoveDownloads(const DownloadRemover& remover) {
+    base::Time remove_begin,
+    base::Time remove_end) {
   int count = 0;
   auto it = downloads_.begin();
   while (it != downloads_.end()) {
@@ -616,31 +601,14 @@ int DownloadManagerImpl::RemoveDownloads(const DownloadRemover& remover) {
     ++it;
 
     if (download->GetState() != DownloadItem::IN_PROGRESS &&
-        remover.Run(download)) {
+        url_filter.Run(download->GetURL()) &&
+        download->GetStartTime() >= remove_begin &&
+        (remove_end.is_null() || download->GetStartTime() < remove_end)) {
       download->Remove();
       count++;
     }
   }
   return count;
-}
-
-int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
-    const base::Callback<bool(const GURL&)>& url_filter,
-    base::Time remove_begin,
-    base::Time remove_end) {
-  return RemoveDownloads(base::Bind(&RemoveDownloadByURLAndTime,
-                                    url_filter,
-                                    remove_begin, remove_end));
-}
-
-int DownloadManagerImpl::RemoveAllDownloads() {
-  const base::Callback<bool(const GURL&)> empty_filter =
-      base::Bind(&EmptyFilter);
-  // The null times make the date range unbounded.
-  int num_deleted = RemoveDownloadsByURLAndTime(
-      empty_filter, base::Time(), base::Time());
-  RecordClearAllSize(num_deleted);
-  return num_deleted;
 }
 
 void DownloadManagerImpl::DownloadUrl(

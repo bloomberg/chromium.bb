@@ -437,7 +437,7 @@ class DownloadTest : public InProcessBrowserTest {
 
   // Returning false indicates a failure of the setup, and should be asserted
   // in the caller.
-  virtual bool InitialSetup() {
+  bool InitialSetup() {
     bool have_test_dir = PathService::Get(chrome::DIR_TEST_DATA, &test_dir_);
     EXPECT_TRUE(have_test_dir);
     if (!have_test_dir)
@@ -458,7 +458,6 @@ class DownloadTest : public InProcessBrowserTest {
 
     DownloadManager* manager = DownloadManagerForBrowser(browser());
     DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
-    manager->RemoveAllDownloads();
 
     file_activity_observer_.reset(
         new DownloadTestFileActivityObserver(browser()->profile()));

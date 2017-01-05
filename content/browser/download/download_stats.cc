@@ -693,14 +693,6 @@ void RecordOpen(const base::Time& end, bool first) {
   }
 }
 
-void RecordClearAllSize(int size) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.ClearAllSize",
-                              size,
-                              1/*min*/,
-                              (1 << 10)/*max*/,
-                              32/*num_buckets*/);
-}
-
 void RecordOpensOutstanding(int size) {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Download.OpensOutstanding",
                               size,

@@ -1511,7 +1511,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromFinalRenameError) {
   scoped_refptr<TestFileErrorInjector> injector(
       TestFileErrorInjector::Create(DownloadManagerForShell(shell())));
 
-  DownloadManagerForShell(shell())->RemoveAllDownloads();
   TestFileErrorInjector::FileErrorInfo err = {
       TestFileErrorInjector::FILE_OPERATION_RENAME_ANNOTATE, 0,
       DOWNLOAD_INTERRUPT_REASON_FILE_FAILED};

@@ -192,9 +192,6 @@ void RecordAcceptsRanges(const std::string& accepts_ranges,
                          int64_t download_len,
                          bool has_strong_validator);
 
-// Record the number of downloads removed by ClearAll.
-void RecordClearAllSize(int size);
-
 // Record the number of completed unopened downloads when a download is opened.
 void RecordOpensOutstanding(int size);
 

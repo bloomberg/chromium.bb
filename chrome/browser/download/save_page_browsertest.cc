@@ -654,10 +654,9 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
   std::vector<DownloadItem*> downloads;
   manager->GetAllDownloads(&downloads);
   ASSERT_EQ(1UL, downloads.size());
+
   DownloadRemovedObserver removed(browser()->profile(), downloads[0]->GetId());
-
-  EXPECT_EQ(manager->RemoveAllDownloads(), 1);
-
+  downloads[0]->Remove();
   removed.WaitForRemoved();
 
   EXPECT_TRUE(base::PathExists(full_file_name));
@@ -800,7 +799,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveDownloadableIFrame) {
 
     ASSERT_TRUE(VerifySavePackageExpectations(browser(), download_url));
     persisted.WaitForPersisted();
-    GetDownloadManager()->RemoveAllDownloads();
+    std::vector<content::DownloadItem*> downloads;
+    GetDownloadManager()->GetAllDownloads(&downloads);
+    for (auto download : downloads)
+      download->Remove();
   }
 
   base::FilePath full_file_name, dir;
