@@ -42,7 +42,10 @@ instrumentation_test_apk("webview_ui_test_app_test_apk") {
   android_manifest = "javatests/AndroidManifest.xml"
   java_files = [
     "javatests/src/org/chromium/webview_ui_test/test/ActionModeTest.java",
+    "javatests/src/org/chromium/webview_ui_test/test/DropDownListTest.java",
     "javatests/src/org/chromium/webview_ui_test/test/WebViewJSTest.java",
+    "javatests/src/org/chromium/webview_ui_test/test/util/Actions.java",
+    "javatests/src/org/chromium/webview_ui_test/test/util/Atoms.java",
     "javatests/src/org/chromium/webview_ui_test/test/util/UseLayout.java",
     "javatests/src/org/chromium/webview_ui_test/test/util/WebViewUiTestRule.java",
     "javatests/src/org/chromium/webview_ui_test/test/util/WebViewSyncWrapper.java",
@@ -54,6 +57,7 @@ instrumentation_test_apk("webview_ui_test_app_test_apk") {
     "//base:base_java_test_support",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_tools:android_support_annotations_java",
     "//third_party/espresso:espresso_all_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
