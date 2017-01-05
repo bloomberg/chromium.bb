@@ -90,7 +90,6 @@ class LayoutTestResultsTest(unittest.TestCase):
     "layout_tests_dir": "/b/build/slave/Webkit_Mac10_5/build/src/third_party/WebKit/LayoutTests",
     "version": 3,
     "num_passes": 77,
-    "has_pretty_patch": false,
     "fixable": 1220,
     "num_flaky": 0,
     "chromium_revision": "1234",

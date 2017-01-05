@@ -979,7 +979,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         full_results_text = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         full_results = json.loads(full_results_text.replace("ADD_RESULTS(", "").replace(");", ""))
         self.assertEqual(full_results['has_wdiff'], False)
-        self.assertEqual(full_results['has_pretty_patch'], True)
 
     def test_unsupported_platform(self):
         stdout = StringIO.StringIO()

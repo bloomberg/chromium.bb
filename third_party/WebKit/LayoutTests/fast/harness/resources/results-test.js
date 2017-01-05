@@ -27,7 +27,6 @@ function mockResults()
         "fixable": 0,
         "num_flaky": 0,
         "layout_tests_dir": "/WEBKITROOT",
-        "has_pretty_patch": false,
         "has_wdiff": false,
         "chromium_revision": 12345,
         "pixel_tests_enabled": true
@@ -93,7 +92,7 @@ function runTest(results, assertions, opt_localStorageValue)
     } catch (e) {
         logFail("FAIL: uncaught exception " + e.toString());
     }
-    
+
     try {
         assertions();
     } catch (e) {
@@ -126,7 +125,7 @@ function runSingleRowTest(results, isExpected, textResults, imageResults)
         assertTrue(document.querySelector('tbody td:nth-child(4)').textContent == actual);
         assertTrue(document.querySelector('tbody td:nth-child(5)').textContent == expected);
     });
-    
+
 }
 
 function runTests()
@@ -176,14 +175,14 @@ function runTests()
         assertTrue(testLinks[0].textContent == 'foo/bar.html');
         assertTrue(testLinks[1].textContent == 'foo/bar1.html');
         assertTrue(testLinks[2].textContent == 'foo/bar2.html');
-        
+
         assertTrue(!document.querySelector('#passes-table .expand-button'));
 
         var expectationTypes = document.querySelectorAll('#passes-table td:last-of-type');
         assertTrue(expectationTypes[0].textContent == 'TEXT');
         assertTrue(expectationTypes[1].textContent == 'CRASH');
         assertTrue(expectationTypes[2].textContent == 'IMAGE');
-        
+
         assertTrue(document.getElementById('crash-tests-table'));
         assertTrue(document.getElementById('crash-tests-table').textContent.indexOf('crash log') != -1);
         assertTrue(document.getElementById('timeout-tests-table'));
@@ -216,14 +215,14 @@ function runTests()
         var expandLinks = document.querySelectorAll('.expand-button-text');
         for (var i = 0; i < expandLinks.length; i++)
             assertTrue(isExpanded(expandLinks[i]));
-        
+
         collapseAllExpectations();
         // Collapsed expectations stay in the dom, but are display:none.
         assertTrue(document.querySelectorAll('tbody tr').length == 8);
         var expandLinks = document.querySelectorAll('.expand-button-text');
         for (var i = 0; i < expandLinks.length; i++)
             assertTrue(isCollapsed(expandLinks[i]));
-            
+
         expandExpectations(expandLinks[1]);
         assertTrue(isCollapsed(expandLinks[0]));
         assertTrue(isExpanded(expandLinks[1]));
@@ -246,19 +245,19 @@ function runTests()
         assertTrue(visibleExpandLinks().length == 1);
         assertTrue(document.querySelectorAll('.results-row').length == 1);
         assertTrue(window.getComputedStyle(document.querySelectorAll('tbody')[0], null)['display'] == 'none');
-        
+
         document.getElementById('show-expected-failures').checked = true;
         document.getElementById('show-expected-failures').onchange();
 
         assertTrue(visibleExpandLinks().length == 2);
         assertTrue(document.querySelectorAll('.results-row').length == 1);
         assertTrue(window.getComputedStyle(document.querySelectorAll('tbody')[0], null)['display'] != 'none');
-        
+
         expandAllExpectations();
         assertTrue(document.querySelectorAll('.results-row').length == 2);
         assertTrue(window.getComputedStyle(document.querySelectorAll('tbody')[0], null)['display'] != 'none');
     });
-    
+
     results = mockResults();
     results.tests['only-expected-fail.html'] = mockExpectation('TEXT', 'TEXT');
     runTest(results, function() {
@@ -266,16 +265,16 @@ function runTests()
     });
 
     runDefaultSingleRowTest('bar-skip.html', 'TEXT', 'SKIP', true, '', '');
-    runDefaultSingleRowTest('bar-flaky-fail.html', 'PASS FAIL', 'TEXT', true, 'expected actual diff ', '');
+    runDefaultSingleRowTest('bar-flaky-fail.html', 'PASS FAIL', 'TEXT', true, 'expected actual diff pretty diff ', '');
     runDefaultSingleRowTest('bar-flaky-fail-unexpected.html', 'PASS TEXT', 'IMAGE', false, '', 'images diff ');
     runDefaultSingleRowTest('bar-audio.html', 'TEXT', 'AUDIO', false, 'expected audio actual audio ', '');
     runDefaultSingleRowTest('bar-image.html', 'TEXT', 'IMAGE', false, '', 'images diff ');
-    runDefaultSingleRowTest('bar-image-plus-text.html', 'TEXT', 'IMAGE+TEXT', false, 'expected actual diff ', 'images diff ');
+    runDefaultSingleRowTest('bar-image-plus-text.html', 'TEXT', 'IMAGE+TEXT', false, 'expected actual diff pretty diff ', 'images diff ');
 
-    // test the mapping for FAIL onto only ['TEXT', 'IMAGE+TEXT', 'AUDIO']
-    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'IMAGE+TEXT', true, 'expected actual diff ', 'images diff ');
+    // Test the mapping for FAIL onto only ['IMAGE+TEXT', 'AUDIO', 'TEXT', 'IMAGE'].
+    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'IMAGE+TEXT', true, 'expected actual diff pretty diff ', 'images diff ');
     runDefaultSingleRowTest('bar-image.html', 'FAIL', 'AUDIO', true, 'expected audio actual audio ', '');
-    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'TEXT', true, 'expected actual diff ', '');
+    runDefaultSingleRowTest('bar-image.html', 'FAIL', 'TEXT', true, 'expected actual diff pretty diff ', '');
     runDefaultSingleRowTest('bar-image.html', 'FAIL', 'IMAGE', false, '', 'images diff ');
 
     results = mockResults();
@@ -346,10 +345,8 @@ function runTests()
     results = mockResults();
     var subtree = results.tests['foo'] = {}
     subtree['bar.html'] = mockExpectation('TEXT', 'TEXT');
-    results.has_pretty_patch = true;
     runTest(results, function() {
         assertTrue(document.querySelector('tbody td:nth-child(2)').textContent.indexOf('pretty diff') != -1);
-        assertTrue(document.querySelector('tbody td:nth-child(2)').textContent.indexOf('wdiff') == -1);
     });
 
     results = mockResults();
@@ -358,9 +355,9 @@ function runTests()
     results.has_wdiff = true;
     runTest(results, function() {
         assertTrue(document.querySelector('tbody td:nth-child(2)').textContent.indexOf('wdiff') != -1);
-        assertTrue(document.querySelector('tbody td:nth-child(2)').textContent.indexOf('pretty diff') == -1);
+
     });
-    
+
     results = mockResults();
     var subtree = results.tests['foo'] = {}
     subtree['bar.html'] = mockExpectation('TEXT', 'PASS');
@@ -404,7 +401,7 @@ function runTests()
         assertTrue(!!document.querySelector('.pixel-zoom-container'));
         assertTrue(document.querySelectorAll('.zoom-image-container').length == 3);
     });
-    
+
     results = mockResults();
     var subtree = results.tests['fullscreen'] = {}
     subtree['full-screen-api.html'] = mockExpectation('TEXT', 'IMAGE+TEXT');
@@ -416,7 +413,7 @@ function runTests()
 
     var oldShouldUseTracLinks = shouldUseTracLinks;
     shouldUseTracLinks = function() { return true; };
-    
+
     results = mockResults();
     var subtree = results.tests['fullscreen'] = {}
     subtree['full-screen-api.html'] = mockExpectation('TEXT', 'IMAGE+TEXT');
@@ -446,12 +443,12 @@ function runTests()
         updateTogglingImages();
         // FIXME: We get extra spaces in the DOM every time we enable/disable image toggling.
         assertTrue(document.querySelector('tbody td:nth-child(3)').textContent == 'expected actual  diff ');
-        
+
         document.getElementById('toggle-images').checked = true;
         updateTogglingImages();
         assertTrue(document.querySelector('tbody td:nth-child(3)').textContent == ' images   diff ');
     });
-    
+
     results = mockResults();
     results.tests['reading-options-from-localstorage.html'] = mockExpectation('IMAGE+TEXT', 'IMAGE+TEXT');
     runTest(results, function() {
@@ -555,7 +552,7 @@ function runTests()
         expandAllExpectations();
         assertTrue(visibleExpandLinks().length == 2);
     });
-    
+
 
     results = mockResults();
     var subtree = results.tests['foo'] = {}
@@ -594,7 +591,7 @@ function runTests()
     runTest(results, function() {
         assertTrue(document.getElementById('results-table'));
         assertTrue(visibleExpandLinks().length == 3);
-        
+
         if (window.eventSender) {
             eventSender.keyDown('i', ["metaKey"]);
             eventSender.keyDown('i', ["shiftKey"]);

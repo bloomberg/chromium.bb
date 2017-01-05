@@ -329,7 +329,6 @@ def summarize_results(port_obj, expectations, initial_results,
     results['interrupted'] = initial_results.interrupted
     results['layout_tests_dir'] = port_obj.layout_tests_dir()
     results['has_wdiff'] = port_obj.wdiff_available()
-    results['has_pretty_patch'] = True
     results['pixel_tests_enabled'] = port_obj.get_option('pixel_tests')
     results['seconds_since_epoch'] = int(time.time())
     results['build_number'] = port_obj.get_option('build_number')
@@ -337,9 +336,6 @@ def summarize_results(port_obj, expectations, initial_results,
     if port_obj.get_option('order') == 'random':
         results['random_order_seed'] = port_obj.get_option('seed')
     results['path_delimiter'] = '/'
-    # The pretty-diff.html files should always be available.
-    # TODO(qyearsley): Change this key since PrettyPatch.rb has been removed.
-    results['has_pretty_patch'] = True
 
     # Don't do this by default since it takes >100ms.
     # It's only used for rebaselining and uploading data to the flakiness dashboard.

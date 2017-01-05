@@ -539,10 +539,8 @@ function textResultLinks(test, prefix)
 {
     var html = resultLink(prefix, '-expected.txt', 'expected') +
         resultLink(prefix, '-actual.txt', 'actual') +
-        resultLink(prefix, '-diff.txt', 'diff');
-
-    if (globalState().results.has_pretty_patch)
-        html += resultLink(prefix, '-pretty-diff.html', 'pretty diff');
+        resultLink(prefix, '-diff.txt', 'diff') +
+        resultLink(prefix, '-pretty-diff.html', 'pretty diff');
 
     if (globalState().results.has_wdiff)
         html += resultLink(prefix, '-wdiff.html', 'wdiff');
