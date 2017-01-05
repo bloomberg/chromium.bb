@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_android.h"
+#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
 #include "chrome/app/android/chrome_jni_onload.h"
 
@@ -16,13 +17,17 @@ bool Init() {
   return true;
 }
 
+bool NativeInit() {
+  return android::OnJNIOnLoadInit(base::Bind(&Init));
+}
+
 }  // namespace
 
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  if (!android::OnJNIOnLoadRegisterJNI(vm, base::Bind(&RegisterJNI)) ||
-      !android::OnJNIOnLoadInit(base::Bind(&Init))) {
+  if (!android::OnJNIOnLoadRegisterJNI(vm, base::Bind(&RegisterJNI))) {
     return -1;
   }
+  base::android::SetNativeInitializationHook(NativeInit);
   return JNI_VERSION_1_4;
 }

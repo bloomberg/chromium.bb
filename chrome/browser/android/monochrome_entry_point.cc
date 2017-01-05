@@ -10,29 +10,34 @@
 
 namespace {
 
-bool RegisterJNI(JNIEnv* env) {
+bool Init() {
   return true;
 }
 
-bool Init() {
-  return true;
+bool NativeInit() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  int library_process_type = base::android::GetLibraryProcessType(env);
+  switch (library_process_type) {
+    case base::android::PROCESS_WEBVIEW:
+    case base::android::PROCESS_WEBVIEW_CHILD:
+      return android_webview::OnJNIOnLoadInit();
+      break;
+    case base::android::PROCESS_BROWSER:
+    case base::android::PROCESS_CHILD:
+      return android::OnJNIOnLoadInit(base::Bind(&Init));
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 }  // namespace
 
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
+  base::android::DisableManualJniRegistration();
   base::android::InitVM(vm);
-  JNIEnv* env = base::android::AttachCurrentThread();
-  bool ret;
-  int library_process_type = base::android::GetLibraryProcessType(env);
-  if (library_process_type == base::android::PROCESS_WEBVIEW ||
-      library_process_type == base::android::PROCESS_WEBVIEW_CHILD) {
-    base::android::DisableManualJniRegistration();
-    ret = android_webview::OnJNIOnLoadInit();
-  } else {
-    ret = android::OnJNIOnLoadRegisterJNI(vm, base::Bind(&RegisterJNI)) &&
-          android::OnJNIOnLoadInit(base::Bind(&Init));
-  }
-  return ret ? JNI_VERSION_1_4 : -1;
+  base::android::SetNativeInitializationHook(NativeInit);
+  return JNI_VERSION_1_4;
 }
