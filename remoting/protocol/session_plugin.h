@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session.h"
-#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {
