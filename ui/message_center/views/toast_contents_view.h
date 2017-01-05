@@ -117,10 +117,9 @@ class ToastContentsView : public views::WidgetDelegateView,
   // Immediately moves the toast without any sort of delay or animation.
   void SetBoundsInstantly(gfx::Rect new_bounds);
 
-  // Given the bounds of a toast on the screen, compute the bouds for that
+  // Given the bounds of a toast on the screen, compute the bounds for that
   // toast in 'closed' node_data. The 'closed' node_data is used as
-  // origin/destination
-  // in reveal/closing animations.
+  // origin/destination in reveal/closing animations.
   gfx::Rect GetClosedToastBounds(gfx::Rect bounds);
 
   void StartFadeIn();

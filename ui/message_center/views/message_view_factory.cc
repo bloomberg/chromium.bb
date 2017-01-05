@@ -43,8 +43,8 @@ MessageView* MessageViewFactory::Create(MessageCenterController* controller,
       notification_view = new NotificationView(controller, notification);
   }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // Don't create shadows for notification toasts on linux wih aura.
+#if defined(OS_LINUX)
+  // Don't create shadows for notification toasts on Linux or CrOS.
   if (top_level)
     return notification_view;
 #endif

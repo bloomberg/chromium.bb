@@ -245,13 +245,11 @@ std::unique_ptr<Border> CreateSolidSidedBorder(int top,
       gfx::Insets(top, left, bottom, right), color);
 }
 
-// static
 std::unique_ptr<Border> CreatePaddedBorder(std::unique_ptr<Border> border,
                                            const gfx::Insets& insets) {
   return base::MakeUnique<ExtraInsetsBorder>(std::move(border), insets);
 }
 
-// static
 std::unique_ptr<Border> CreateBorderPainter(std::unique_ptr<Painter> painter,
                                             const gfx::Insets& insets) {
   return base::WrapUnique(new BorderPainter(std::move(painter), insets));

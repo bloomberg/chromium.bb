@@ -4,12 +4,11 @@
 
 #include "ui/wm/core/shadow.h"
 
-#include "base/lazy_instance.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/shadow_util.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace wm {
@@ -22,45 +21,6 @@ const int kRoundedCornerRadius = 2;
 
 // Duration for opacity animation in milliseconds.
 const int kShadowAnimationDurationMs = 100;
-
-struct ShadowDetails {
-  // Description of the shadows.
-  gfx::ShadowValues values;
-  // Cached ninebox image based on |values|.
-  gfx::ImageSkia ninebox_image;
-};
-
-// Map from elevation to a cached shadow.
-using ShadowDetailsMap = std::map<int, ShadowDetails>;
-base::LazyInstance<ShadowDetailsMap> g_shadow_cache = LAZY_INSTANCE_INITIALIZER;
-
-const ShadowDetails& GetDetailsForElevation(int elevation) {
-  auto iter = g_shadow_cache.Get().find(elevation);
-  if (iter != g_shadow_cache.Get().end())
-    return iter->second;
-
-  auto insertion =
-      g_shadow_cache.Get().insert(std::make_pair(elevation, ShadowDetails()));
-  DCHECK(insertion.second);
-  ShadowDetails* shadow = &insertion.first->second;
-  // To match the CSS notion of blur (spread outside the bounding box) to the
-  // Skia notion of blur (spread outside and inside the bounding box), we have
-  // to double the designer-provided blur values.
-  const int kBlurCorrection = 2;
-  // "Key shadow": y offset is elevation and blur is twice the elevation.
-  shadow->values.emplace_back(gfx::Vector2d(0, elevation),
-                              kBlurCorrection * elevation * 2,
-                              SkColorSetA(SK_ColorBLACK, 0x3d));
-  // "Ambient shadow": no offset and blur matches the elevation.
-  shadow->values.emplace_back(gfx::Vector2d(), kBlurCorrection * elevation,
-                              SkColorSetA(SK_ColorBLACK, 0x1f));
-  // To see what this looks like for elevation 24, try this CSS:
-  //   box-shadow: 0 24px 48px rgba(0, 0, 0, .24),
-  //               0 0 24px rgba(0, 0, 0, .12);
-  shadow->ninebox_image = gfx::ImageSkiaOperations::CreateShadowNinebox(
-      shadow->values, kRoundedCornerRadius);
-  return *shadow;
-}
 
 }  // namespace
 
@@ -140,14 +100,14 @@ void Shadow::UpdateLayerBounds() {
 
   // The ninebox assumption breaks down when the window is too small for the
   // desired elevation. The height/width of |blur_region| will be 4 * elevation
-  // (see GetDetailsForElevation), so cap elevation at the most we can handle.
+  // (see ShadowDetails::Get), so cap elevation at the most we can handle.
   const int smaller_dimension =
       std::min(content_bounds_.width(), content_bounds_.height());
   const int size_adjusted_elevation =
       std::min((smaller_dimension - 2 * kRoundedCornerRadius) / 4,
                static_cast<int>(desired_elevation_));
-  const ShadowDetails& details =
-      GetDetailsForElevation(size_adjusted_elevation);
+  const auto& details =
+      gfx::ShadowDetails::Get(size_adjusted_elevation, kRoundedCornerRadius);
   gfx::Insets blur_region = gfx::ShadowValue::GetBlurRegion(details.values) +
                             gfx::Insets(kRoundedCornerRadius);
   if (size_adjusted_elevation != effective_elevation_) {

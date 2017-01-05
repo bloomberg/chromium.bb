@@ -167,6 +167,8 @@ component("gfx") {
     "selection_model.h",
     "sequential_id_generator.cc",
     "sequential_id_generator.h",
+    "shadow_util.cc",
+    "shadow_util.h",
     "shadow_value.cc",
     "shadow_value.h",
     "skbitmap_operations.cc",

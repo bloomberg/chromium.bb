@@ -90,12 +90,6 @@ class GFX_EXPORT ImageSkiaOperations {
   static ImageSkia CreateImageWithDropShadow(const ImageSkia& source,
                                              const ShadowValues& shadows);
 
-  // Creates an image with the given shadows painted around a round rect with
-  // the given corner radius. The image will be just large enough to paint the
-  // shadows appropriately with a 1px square region reserved for "content".
-  static ImageSkia CreateShadowNinebox(const ShadowValues& shadows,
-                                       float corner_radius);
-
   // Creates an image that is 1dp wide, suitable for tiling horizontally to
   // create a drop shadow effect. The purpose of tiling a static image is to
   // avoid repeatedly asking Skia to draw a shadow.

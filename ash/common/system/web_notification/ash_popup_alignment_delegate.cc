@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/message_popup_collection.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace ash {
 
@@ -113,6 +114,8 @@ void AshPopupAlignmentDelegate::RecomputeAlignment(
 void AshPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
     views::Widget* widget,
     views::Widget::InitParams* init_params) {
+  init_params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
+  init_params->shadow_elevation = ::wm::ShadowElevation::MEDIUM;
   // On ash, popups go in the status container.
   shelf_->GetWindow()
       ->GetRootWindowController()

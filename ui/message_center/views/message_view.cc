@@ -10,6 +10,8 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/shadow_util.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
@@ -17,17 +19,21 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/painter.h"
-#include "ui/views/shadow_border.h"
 
 namespace {
 
-constexpr int kShadowOffset = 1;
-constexpr int kShadowBlur = 4;
+#if defined(OS_CHROMEOS)
+const int kShadowCornerRadius = 2;
+#else
+const int kShadowCornerRadius = 0;
+#endif
+const int kShadowElevation = 2;
 
 // Creates a text for spoken feedback from the data contained in the
 // notification.
@@ -93,16 +99,19 @@ void MessageView::UpdateWithNotification(const Notification& notification) {
 
 // static
 gfx::Insets MessageView::GetShadowInsets() {
-  return gfx::Insets(kShadowBlur / 2 - kShadowOffset,
-                     kShadowBlur / 2,
-                     kShadowBlur / 2 + kShadowOffset,
-                     kShadowBlur / 2);
+  return -gfx::ShadowValue::GetMargin(
+      gfx::ShadowDetails::Get(kShadowElevation, kShadowCornerRadius).values);
 }
 
 void MessageView::CreateShadowBorder() {
-  SetBorder(std::unique_ptr<views::Border>(new views::ShadowBorder(
-      gfx::ShadowValue(gfx::Vector2d(0, kShadowOffset), kShadowBlur,
-                       message_center::kShadowColor))));
+  const auto& shadow =
+      gfx::ShadowDetails::Get(kShadowElevation, kShadowCornerRadius);
+  gfx::Insets ninebox_insets = gfx::ShadowValue::GetBlurRegion(shadow.values) +
+                               gfx::Insets(kShadowCornerRadius);
+  SetBorder(views::CreateBorderPainter(
+      std::unique_ptr<views::Painter>(views::Painter::CreateImagePainter(
+          shadow.ninebox_image, ninebox_insets)),
+      -gfx::ShadowValue::GetMargin(shadow.values)));
 }
 
 void MessageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -167,6 +176,15 @@ void MessageView::Layout() {
 
   // Background.
   background_view_->SetBoundsRect(content_bounds);
+#if defined(OS_CHROMEOS)
+  // ChromeOS rounds the corners of the message view. TODO(estade): should we do
+  // this for all platforms?
+  gfx::Path path;
+  constexpr SkScalar kCornerRadius = SkIntToScalar(2);
+  path.addRoundRect(gfx::RectToSkRect(background_view_->GetLocalBounds()),
+                    kCornerRadius, kCornerRadius);
+  background_view_->set_clip_path(path);
+#endif
 
   gfx::Size small_image_size(small_image_view_->GetPreferredSize());
   gfx::Rect small_image_rect(small_image_size);
