@@ -38,8 +38,9 @@ extern "C" {
 #define DOMAINTXFMRF_VTABLE_PREC (1 << DOMAINTXFMRF_VTABLE_PRECBITS)
 #define DOMAINTXFMRF_MULT \
   sqrt(((1 << (DOMAINTXFMRF_ITERS * 2)) - 1) * 2.0 / 3.0)
-// A single 32 bit buffer needed for the filter
-#define DOMAINTXFMRF_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX * sizeof(int32_t))
+// 1 32-bit and 2 8-bit buffers needed for the filter
+#define DOMAINTXFMRF_TMPBUF_SIZE \
+  (RESTORATION_TILEPELS_MAX * (sizeof(int32_t) + 2 * sizeof(uint8_t)))
 // One extra buffer needed in encoder, which is either 8-bit or 16-bit
 // depending on the video bit depth.
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -49,10 +50,10 @@ extern "C" {
 #endif
 #define DOMAINTXFMRF_BITS (DOMAINTXFMRF_PARAMS_BITS)
 
-// 5 32-bit buffers needed for the filter:
+// 4 32-bit buffers needed for the filter:
 // 2 for the restored versions of the frame and
-// 3 for each restoration operation
-#define SGRPROJ_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX * 5 * sizeof(int32_t))
+// 2 for each restoration operation
+#define SGRPROJ_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX * 4 * sizeof(int32_t))
 #define SGRPROJ_EXTBUF_SIZE (0)
 #define SGRPROJ_PARAMS_BITS 3
 #define SGRPROJ_PARAMS (1 << SGRPROJ_PARAMS_BITS)

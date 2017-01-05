@@ -193,77 +193,197 @@ static void loop_wiener_filter(uint8_t *data, int width, int height, int stride,
   }
 }
 
-static void boxsum(int32_t *src, int width, int height, int src_stride, int r,
-                   int sqr, int32_t *dst, int dst_stride, int32_t *tmp,
-                   int tmp_stride) {
-  int i, j;
+/* Calculate windowed sums (if sqr=0) or sums of squares (if sqr=1)
+   over the input. The window is of size (2r + 1)x(2r + 1), and we
+   only ever have r = 1 or r = 2. So we specialise to these two sizes.
 
-  if (sqr) {
-    for (j = 0; j < width; ++j) tmp[j] = src[j] * src[j];
-    for (j = 0; j < width; ++j)
-      for (i = 1; i < height; ++i)
-        tmp[i * tmp_stride + j] =
-            tmp[(i - 1) * tmp_stride + j] +
-            src[i * src_stride + j] * src[i * src_stride + j];
+   Each loop follows the same format: We keep a window's worth of input
+   in individual variables and select data out of that as appropriate.
+*/
+static void boxsum1(int32_t *src, int width, int height, int src_stride,
+                    int sqr, int32_t *dst, int dst_stride) {
+  int i, j, a, b, c;
+
+  // Vertical sum over 3-pixel regions, from src into dst.
+  if (!sqr) {
+    for (j = 0; j < width; ++j) {
+      a = src[j];
+      b = src[src_stride + j];
+      c = src[2 * src_stride + j];
+
+      dst[j] = a + b;
+      for (i = 1; i < height - 2; ++i) {
+        // Loop invariant: At the start of each iteration,
+        // a = src[(i - 1) * src_stride + j]
+        // b = src[(i    ) * src_stride + j]
+        // c = src[(i + 1) * src_stride + j]
+        dst[i * dst_stride + j] = a + b + c;
+        a = b;
+        b = c;
+        c = src[(i + 2) * src_stride + j];
+      }
+      dst[i * dst_stride + j] = a + b + c;
+      dst[(i + 1) * dst_stride + j] = b + c;
+    }
   } else {
-    memcpy(tmp, src, sizeof(*tmp) * width);
-    for (j = 0; j < width; ++j)
-      for (i = 1; i < height; ++i)
-        tmp[i * tmp_stride + j] =
-            tmp[(i - 1) * tmp_stride + j] + src[i * src_stride + j];
+    for (j = 0; j < width; ++j) {
+      a = src[j] * src[j];
+      b = src[src_stride + j] * src[src_stride + j];
+      c = src[2 * src_stride + j] * src[2 * src_stride + j];
+
+      dst[j] = a + b;
+      for (i = 1; i < height - 2; ++i) {
+        dst[i * dst_stride + j] = a + b + c;
+        a = b;
+        b = c;
+        c = src[(i + 2) * src_stride + j] * src[(i + 2) * src_stride + j];
+      }
+      dst[i * dst_stride + j] = a + b + c;
+      dst[(i + 1) * dst_stride + j] = b + c;
+    }
   }
-  for (i = 0; i <= r; ++i)
-    memcpy(&dst[i * dst_stride], &tmp[(i + r) * tmp_stride],
-           sizeof(*tmp) * width);
-  for (i = r + 1; i < height - r; ++i)
-    for (j = 0; j < width; ++j)
-      dst[i * dst_stride + j] =
-          tmp[(i + r) * tmp_stride + j] - tmp[(i - r - 1) * tmp_stride + j];
-  for (i = height - r; i < height; ++i)
-    for (j = 0; j < width; ++j)
-      dst[i * dst_stride + j] = tmp[(height - 1) * tmp_stride + j] -
-                                tmp[(i - r - 1) * tmp_stride + j];
 
-  for (i = 0; i < height; ++i) tmp[i * tmp_stride] = dst[i * dst_stride];
-  for (i = 0; i < height; ++i)
-    for (j = 1; j < width; ++j)
-      tmp[i * tmp_stride + j] =
-          tmp[i * tmp_stride + j - 1] + dst[i * src_stride + j];
+  // Horizontal sum over 3-pixel regions of dst
+  for (i = 0; i < height; ++i) {
+    a = dst[i * dst_stride];
+    b = dst[i * dst_stride + 1];
+    c = dst[i * dst_stride + 2];
 
-  for (j = 0; j <= r; ++j)
-    for (i = 0; i < height; ++i)
-      dst[i * dst_stride + j] = tmp[i * tmp_stride + j + r];
-  for (j = r + 1; j < width - r; ++j)
-    for (i = 0; i < height; ++i)
-      dst[i * dst_stride + j] =
-          tmp[i * tmp_stride + j + r] - tmp[i * tmp_stride + j - r - 1];
-  for (j = width - r; j < width; ++j)
-    for (i = 0; i < height; ++i)
-      dst[i * dst_stride + j] =
-          tmp[i * tmp_stride + width - 1] - tmp[i * tmp_stride + j - r - 1];
+    dst[i * dst_stride] = a + b;
+    for (j = 1; j < width - 2; ++j) {
+      // Loop invariant: At the start of each iteration,
+      // a = src[i * src_stride + (j - 1)]
+      // b = src[i * src_stride + (j    )]
+      // c = src[i * src_stride + (j + 1)]
+      dst[i * dst_stride + j] = a + b + c;
+      a = b;
+      b = c;
+      c = dst[i * dst_stride + (j + 2)];
+    }
+    dst[i * dst_stride + j] = a + b + c;
+    dst[i * dst_stride + (j + 1)] = b + c;
+  }
+}
+
+static void boxsum2(int32_t *src, int width, int height, int src_stride,
+                    int sqr, int32_t *dst, int dst_stride) {
+  int i, j, a, b, c, d, e;
+
+  // Vertical sum over 5-pixel regions, from src into dst.
+  if (!sqr) {
+    for (j = 0; j < width; ++j) {
+      a = src[j];
+      b = src[src_stride + j];
+      c = src[2 * src_stride + j];
+      d = src[3 * src_stride + j];
+      e = src[4 * src_stride + j];
+
+      dst[j] = a + b + c;
+      dst[dst_stride + j] = a + b + c + d;
+      for (i = 2; i < height - 3; ++i) {
+        // Loop invariant: At the start of each iteration,
+        // a = src[(i - 2) * src_stride + j]
+        // b = src[(i - 1) * src_stride + j]
+        // c = src[(i    ) * src_stride + j]
+        // d = src[(i + 1) * src_stride + j]
+        // e = src[(i + 2) * src_stride + j]
+        dst[i * dst_stride + j] = a + b + c + d + e;
+        a = b;
+        b = c;
+        c = d;
+        d = e;
+        e = src[(i + 3) * src_stride + j];
+      }
+      dst[i * dst_stride + j] = a + b + c + d + e;
+      dst[(i + 1) * dst_stride + j] = b + c + d + e;
+      dst[(i + 2) * dst_stride + j] = c + d + e;
+    }
+  } else {
+    for (j = 0; j < width; ++j) {
+      a = src[j] * src[j];
+      b = src[src_stride + j] * src[src_stride + j];
+      c = src[2 * src_stride + j] * src[2 * src_stride + j];
+      d = src[3 * src_stride + j] * src[3 * src_stride + j];
+      e = src[4 * src_stride + j] * src[4 * src_stride + j];
+
+      dst[j] = a + b + c;
+      dst[dst_stride + j] = a + b + c + d;
+      for (i = 2; i < height - 3; ++i) {
+        dst[i * dst_stride + j] = a + b + c + d + e;
+        a = b;
+        b = c;
+        c = d;
+        d = e;
+        e = src[(i + 3) * src_stride + j] * src[(i + 3) * src_stride + j];
+      }
+      dst[i * dst_stride + j] = a + b + c + d + e;
+      dst[(i + 1) * dst_stride + j] = b + c + d + e;
+      dst[(i + 2) * dst_stride + j] = c + d + e;
+    }
+  }
+
+  // Horizontal sum over 5-pixel regions of dst
+  for (i = 0; i < height; ++i) {
+    a = dst[i * dst_stride];
+    b = dst[i * dst_stride + 1];
+    c = dst[i * dst_stride + 2];
+    d = dst[i * dst_stride + 3];
+    e = dst[i * dst_stride + 4];
+
+    dst[i * dst_stride] = a + b + c;
+    dst[i * dst_stride + 1] = a + b + c + d;
+    for (j = 2; j < width - 3; ++j) {
+      // Loop invariant: At the start of each iteration,
+      // a = src[i * src_stride + (j - 2)]
+      // b = src[i * src_stride + (j - 1)]
+      // c = src[i * src_stride + (j    )]
+      // d = src[i * src_stride + (j + 1)]
+      // e = src[i * src_stride + (j + 2)]
+      dst[i * dst_stride + j] = a + b + c + d + e;
+      a = b;
+      b = c;
+      c = d;
+      d = e;
+      e = dst[i * dst_stride + (j + 3)];
+    }
+    dst[i * dst_stride + j] = a + b + c + d + e;
+    dst[i * dst_stride + (j + 1)] = b + c + d + e;
+    dst[i * dst_stride + (j + 2)] = c + d + e;
+  }
+}
+
+static void boxsum(int32_t *src, int width, int height, int src_stride, int r,
+                   int sqr, int32_t *dst, int dst_stride) {
+  if (r == 1)
+    boxsum1(src, width, height, src_stride, sqr, dst, dst_stride);
+  else if (r == 2)
+    boxsum2(src, width, height, src_stride, sqr, dst, dst_stride);
+  else {
+    assert(0 && "boxsum no longer supports r > 2");
+    return;
+  }
 }
 
 static void boxnum(int width, int height, int r, int8_t *num, int num_stride) {
   int i, j;
-  for (i = 0; i <= AOMMIN(r, height - 1); ++i) {
-    for (j = 0; j <= AOMMIN(r, width - 1); ++j) {
-      num[i * num_stride + j] =
-          AOMMIN(r + 1 + i, height) * AOMMIN(r + 1 + j, width);
+  for (i = 0; i <= r; ++i) {
+    for (j = 0; j <= r; ++j) {
+      num[i * num_stride + j] = (r + 1 + i) * (r + 1 + j);
       num[i * num_stride + (width - 1 - j)] = num[i * num_stride + j];
       num[(height - 1 - i) * num_stride + j] = num[i * num_stride + j];
       num[(height - 1 - i) * num_stride + (width - 1 - j)] =
           num[i * num_stride + j];
     }
   }
-  for (j = 0; j <= AOMMIN(r, width - 1); ++j) {
-    const int val = AOMMIN(2 * r + 1, height) * AOMMIN(r + 1 + j, width);
+  for (j = 0; j <= r; ++j) {
+    const int val = (2 * r + 1) * (r + 1 + j);
     for (i = r + 1; i < height - r; ++i) {
       num[i * num_stride + j] = val;
       num[i * num_stride + (width - 1 - j)] = val;
     }
   }
-  for (i = 0; i <= AOMMIN(r, height - 1); ++i) {
-    const int val = AOMMIN(2 * r + 1, width) * AOMMIN(r + 1 + i, height);
+  for (i = 0; i <= r; ++i) {
+    const int val = (2 * r + 1) * (r + 1 + i);
     for (j = r + 1; j < width - r; ++j) {
       num[i * num_stride + j] = val;
       num[(height - 1 - i) * num_stride + j] = val;
@@ -271,8 +391,7 @@ static void boxnum(int width, int height, int r, int8_t *num, int num_stride) {
   }
   for (i = r + 1; i < height - r; ++i) {
     for (j = r + 1; j < width - r; ++j) {
-      num[i * num_stride + j] =
-          AOMMIN(2 * r + 1, height) * AOMMIN(2 * r + 1, width);
+      num[i * num_stride + j] = (2 * r + 1) * (2 * r + 1);
     }
   }
 }
@@ -288,21 +407,40 @@ void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
                                 int32_t *tmpbuf) {
   int32_t *A = tmpbuf;
   int32_t *B = A + RESTORATION_TILEPELS_MAX;
-  int32_t *T = B + RESTORATION_TILEPELS_MAX;
   int8_t num[RESTORATION_TILEPELS_MAX];
   int i, j;
   eps <<= 2 * (bit_depth - 8);
 
-  boxsum(dgd, width, height, stride, r, 0, B, width, T, width);
-  boxsum(dgd, width, height, stride, r, 1, A, width, T, width);
+  // Don't filter tiles with dimensions < 5 on any axis
+  if ((width < 5) || (height < 5)) return;
+
+  boxsum(dgd, width, height, stride, r, 0, B, width);
+  boxsum(dgd, width, height, stride, r, 1, A, width);
   boxnum(width, height, r, num, width);
+  // The following loop is optimized assuming r <= 2. If we allow
+  // r > 2, then the loop will need modifying.
+  assert(r <= 2);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
       const int k = i * width + j;
       const int n = num[k];
-      const int64_t p = A[k] * n - B[k] * B[k];
-      const int64_t q = p + n * n * eps;
-      A[k] = (int32_t)((p << SGRPROJ_SGR_BITS) + (q >> 1)) / q;
+      // Assuming that we only allow up to 12-bit depth and r <= 2,
+      // we calculate p = n^2 * Var(n-pixel block of original image)
+      // (where n = 2 * r + 1 <= 5).
+      //
+      // There is an inequality which gives a bound on the variance:
+      // https://en.wikipedia.org/wiki/Popoviciu's_inequality_on_variances
+      // In this case, since each pixel is in the range [0, 2^12),
+      // the variance is at most 1/4 * (2^12)^2 = 2^22.
+      // Then p <= 25^2 * 2^22 < 2^32, and also q <= p + 25^2 * 68 < 2^32.
+      //
+      // The point of all this is to guarantee that q < 2^32, so that
+      // platforms with a 64-bit by 32-bit divide unit (eg, x86)
+      // can do the division by q more efficiently.
+      const uint32_t p = (uint32_t)((uint64_t)A[k] * n - (uint64_t)B[k] * B[k]);
+      const uint32_t q = (uint32_t)(p + n * n * eps);
+      assert((uint64_t)A[k] * n - (uint64_t)B[k] * B[k] < (25 * 25U << 22));
+      A[k] = (int32_t)(((uint64_t)p << SGRPROJ_SGR_BITS) + (q >> 1)) / q;
       B[k] = ((SGRPROJ_SGR - A[k]) * B[k] + (n >> 1)) / n;
     }
   }
@@ -437,8 +575,8 @@ void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
   }
 #else
   if (r > 1) boxnum(width, height, r = 1, num, width);
-  boxsum(A, width, height, width, r, 0, A, width, T, width);
-  boxsum(B, width, height, width, r, 0, B, width, T, width);
+  boxsum(A, width, height, width, r, 0, A, width);
+  boxsum(B, width, height, width, r, 0, B, width);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
       const int k = i * width + j;
@@ -524,72 +662,85 @@ static void loop_sgrproj_filter(uint8_t *data, int width, int height,
   }
 }
 
-static void apply_domaintxfmrf_hor(int iter, int param, uint8_t *img, int width,
-                                   int height, int img_stride, int32_t *dat,
-                                   int dat_stride) {
-  int i, j;
-  for (i = 0; i < height; ++i) {
-    uint8_t *ip = &img[i * img_stride];
-    int32_t *dp = &dat[i * dat_stride];
-    *dp *= DOMAINTXFMRF_VTABLE_PREC;
-    dp++;
-    ip++;
+static void apply_domaintxfmrf(int iter, int param, uint8_t *diff_right,
+                               uint8_t *diff_down, int width, int height,
+                               int32_t *dat, int dat_stride) {
+  int i, j, acc;
+  // Do first row separately, to initialize the top to bottom filter
+  i = 0;
+  {
     // left to right
-    for (j = 1; j < width; ++j, dp++, ip++) {
-      const int v = domaintxfmrf_vtable[iter][param][abs(ip[0] - ip[-1])];
-      dp[0] = dp[0] * (DOMAINTXFMRF_VTABLE_PREC - v) +
-              ((v * dp[-1] + DOMAINTXFMRF_VTABLE_PREC / 2) >>
-               DOMAINTXFMRF_VTABLE_PRECBITS);
+    acc = dat[i * dat_stride] * DOMAINTXFMRF_VTABLE_PREC;
+    dat[i * dat_stride] = acc;
+    for (j = 1; j < width; ++j) {
+      const int in = dat[i * dat_stride + j];
+      const int diff =
+          diff_right[i * width + j - 1];  // Left absolute difference
+      const int v = domaintxfmrf_vtable[iter][param][diff];
+      acc = in * (DOMAINTXFMRF_VTABLE_PREC - v) +
+            ROUND_POWER_OF_TWO(v * acc, DOMAINTXFMRF_VTABLE_PRECBITS);
+      dat[i * dat_stride + j] = acc;
     }
     // right to left
-    dp -= 2;
-    ip -= 2;
-    for (j = width - 2; j >= 0; --j, dp--, ip--) {
-      const int v = domaintxfmrf_vtable[iter][param][abs(ip[1] - ip[0])];
-      dp[0] = (dp[0] * (DOMAINTXFMRF_VTABLE_PREC - v) + v * dp[1] +
-               DOMAINTXFMRF_VTABLE_PREC / 2) >>
-              DOMAINTXFMRF_VTABLE_PRECBITS;
+    for (j = width - 2; j >= 0; --j) {
+      const int in = dat[i * dat_stride + j];
+      const int diff = diff_right[i * width + j];  // Right absolute difference
+      const int v = domaintxfmrf_vtable[iter][param][diff];
+      acc = ROUND_POWER_OF_TWO(in * (DOMAINTXFMRF_VTABLE_PREC - v) + acc * v,
+                               DOMAINTXFMRF_VTABLE_PRECBITS);
+      dat[i * dat_stride + j] = acc;
     }
   }
-}
 
-static void apply_domaintxfmrf_ver(int iter, int param, uint8_t *img, int width,
-                                   int height, int img_stride, int32_t *dat,
-                                   int dat_stride) {
-  int i, j;
-  for (j = 0; j < width; ++j) {
-    uint8_t *ip = &img[j];
-    int32_t *dp = &dat[j];
-    dp += dat_stride;
-    ip += img_stride;
+  for (i = 1; i < height; ++i) {
+    // left to right
+    acc = dat[i * dat_stride] * DOMAINTXFMRF_VTABLE_PREC;
+    dat[i * dat_stride] = acc;
+    for (j = 1; j < width; ++j) {
+      const int in = dat[i * dat_stride + j];
+      const int diff =
+          diff_right[i * width + j - 1];  // Left absolute difference
+      const int v = domaintxfmrf_vtable[iter][param][diff];
+      acc = in * (DOMAINTXFMRF_VTABLE_PREC - v) +
+            ROUND_POWER_OF_TWO(v * acc, DOMAINTXFMRF_VTABLE_PRECBITS);
+      dat[i * dat_stride + j] = acc;
+    }
+    // right to left
+    for (j = width - 2; j >= 0; --j) {
+      const int in = dat[i * dat_stride + j];
+      const int diff = diff_right[i * width + j];  // Right absolute difference
+      const int v = domaintxfmrf_vtable[iter][param][diff];
+      acc = ROUND_POWER_OF_TWO(in * (DOMAINTXFMRF_VTABLE_PREC - v) + acc * v,
+                               DOMAINTXFMRF_VTABLE_PRECBITS);
+      dat[i * dat_stride + j] = acc;
+    }
     // top to bottom
-    for (i = 1; i < height; ++i, dp += dat_stride, ip += img_stride) {
-      const int v =
-          domaintxfmrf_vtable[iter][param][abs(ip[0] - ip[-img_stride])];
-      dp[0] = (dp[0] * (DOMAINTXFMRF_VTABLE_PREC - v) +
-               (dp[-dat_stride] * v + DOMAINTXFMRF_VTABLE_PREC / 2)) >>
-              DOMAINTXFMRF_VTABLE_PRECBITS;
-    }
-    // bottom to top
-    dp -= 2 * dat_stride;
-    ip -= 2 * img_stride;
-    for (i = height - 2; i >= 0; --i, dp -= dat_stride, ip -= img_stride) {
-      const int v =
-          domaintxfmrf_vtable[iter][param][abs(ip[img_stride] - ip[0])];
-      dp[0] = (dp[0] * (DOMAINTXFMRF_VTABLE_PREC - v) + dp[dat_stride] * v +
-               DOMAINTXFMRF_VTABLE_PREC / 2) >>
-              DOMAINTXFMRF_VTABLE_PRECBITS;
+    for (j = 0; j < width; ++j) {
+      const int in = dat[i * dat_stride + j];
+      const int in_above = dat[(i - 1) * dat_stride + j];
+      const int diff =
+          diff_down[(i - 1) * width + j];  // Upward absolute difference
+      const int v = domaintxfmrf_vtable[iter][param][diff];
+      acc =
+          ROUND_POWER_OF_TWO(in * (DOMAINTXFMRF_VTABLE_PREC - v) + in_above * v,
+                             DOMAINTXFMRF_VTABLE_PRECBITS);
+      dat[i * dat_stride + j] = acc;
     }
   }
-}
-
-static void apply_domaintxfmrf_reduce_prec(int32_t *dat, int width, int height,
-                                           int dat_stride) {
-  int i, j;
-  for (i = 0; i < height; ++i) {
-    for (j = 0; j < width; ++j) {
-      dat[i * dat_stride + j] = ROUND_POWER_OF_TWO_SIGNED(
-          dat[i * dat_stride + j], DOMAINTXFMRF_VTABLE_PRECBITS);
+  for (j = 0; j < width; ++j) {
+    // bottom to top + output rounding
+    acc = dat[(height - 1) * dat_stride + j];
+    dat[(height - 1) * dat_stride + j] =
+        ROUND_POWER_OF_TWO(acc, DOMAINTXFMRF_VTABLE_PRECBITS);
+    for (i = height - 2; i >= 0; --i) {
+      const int in = dat[i * dat_stride + j];
+      const int diff =
+          diff_down[i * width + j];  // Downward absolute difference
+      const int v = domaintxfmrf_vtable[iter][param][diff];
+      acc = ROUND_POWER_OF_TWO(in * (DOMAINTXFMRF_VTABLE_PREC - v) + acc * v,
+                               DOMAINTXFMRF_VTABLE_PRECBITS);
+      dat[i * dat_stride + j] =
+          ROUND_POWER_OF_TWO(acc, DOMAINTXFMRF_VTABLE_PRECBITS);
     }
   }
 }
@@ -598,16 +749,35 @@ void av1_domaintxfmrf_restoration(uint8_t *dgd, int width, int height,
                                   int stride, int param, uint8_t *dst,
                                   int dst_stride, int32_t *tmpbuf) {
   int32_t *dat = tmpbuf;
+  uint8_t *diff_right = (uint8_t *)(tmpbuf + RESTORATION_TILEPELS_MAX);
+  uint8_t *diff_down = diff_right + RESTORATION_TILEPELS_MAX;
   int i, j, t;
+
+  for (i = 0; i < height; ++i) {
+    int cur_px = dgd[i * stride];
+    for (j = 0; j < width - 1; ++j) {
+      const int next_px = dgd[i * stride + j + 1];
+      diff_right[i * width + j] = abs(cur_px - next_px);
+      cur_px = next_px;
+    }
+  }
+  for (j = 0; j < width; ++j) {
+    int cur_px = dgd[j];
+    for (i = 0; i < height - 1; ++i) {
+      const int next_px = dgd[(i + 1) * stride + j];
+      diff_down[i * width + j] = abs(cur_px - next_px);
+      cur_px = next_px;
+    }
+  }
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
       dat[i * width + j] = dgd[i * stride + j];
     }
   }
+
   for (t = 0; t < DOMAINTXFMRF_ITERS; ++t) {
-    apply_domaintxfmrf_hor(t, param, dgd, width, height, stride, dat, width);
-    apply_domaintxfmrf_ver(t, param, dgd, width, height, stride, dat, width);
-    apply_domaintxfmrf_reduce_prec(dat, width, height, width);
+    apply_domaintxfmrf(t, param, diff_right, diff_down, width, height, dat,
+                       width);
   }
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
@@ -848,32 +1018,30 @@ static void apply_domaintxfmrf_hor_highbd(int iter, int param, uint16_t *img,
                                           int32_t *dat, int dat_stride,
                                           int bd) {
   const int shift = (bd - 8);
-  int i, j;
+  int i, j, acc, old_px;
   for (i = 0; i < height; ++i) {
-    uint16_t *ip = &img[i * img_stride];
-    int32_t *dp = &dat[i * dat_stride];
-    *dp *= DOMAINTXFMRF_VTABLE_PREC;
-    dp++;
-    ip++;
     // left to right
-    for (j = 1; j < width; ++j, dp++, ip++) {
-      const int v =
-          domaintxfmrf_vtable[iter][param]
-                             [abs((ip[0] >> shift) - (ip[-1] >> shift))];
-      dp[0] = dp[0] * (DOMAINTXFMRF_VTABLE_PREC - v) +
-              ((v * dp[-1] + DOMAINTXFMRF_VTABLE_PREC / 2) >>
-               DOMAINTXFMRF_VTABLE_PRECBITS);
+    acc = dat[i * dat_stride] * DOMAINTXFMRF_VTABLE_PREC;
+    dat[i * dat_stride] = acc;
+    old_px = img[i * img_stride] >> shift;
+    for (j = 1; j < width; ++j) {
+      const int cur_px = img[i * img_stride + j] >> shift;
+      const int v = domaintxfmrf_vtable[iter][param][abs(cur_px - old_px)];
+      acc = dat[i * dat_stride + j] * (DOMAINTXFMRF_VTABLE_PREC - v) +
+            ((v * acc + DOMAINTXFMRF_VTABLE_PREC / 2) >>
+             DOMAINTXFMRF_VTABLE_PRECBITS);
+      dat[i * dat_stride + j] = acc;
+      old_px = cur_px;
     }
     // right to left
-    dp -= 2;
-    ip -= 2;
-    for (j = width - 2; j >= 0; --j, dp--, ip--) {
-      const int v =
-          domaintxfmrf_vtable[iter][param]
-                             [abs((ip[1] >> shift) - (ip[0] >> shift))];
-      dp[0] = (dp[0] * (DOMAINTXFMRF_VTABLE_PREC - v) + v * dp[1] +
-               DOMAINTXFMRF_VTABLE_PREC / 2) >>
-              DOMAINTXFMRF_VTABLE_PRECBITS;
+    for (j = width - 2; j >= 0; --j) {
+      const int cur_px = img[i * img_stride + j] >> shift;
+      const int v = domaintxfmrf_vtable[iter][param][abs(cur_px - old_px)];
+      acc = (dat[i * dat_stride + j] * (DOMAINTXFMRF_VTABLE_PREC - v) +
+             v * acc + DOMAINTXFMRF_VTABLE_PREC / 2) >>
+            DOMAINTXFMRF_VTABLE_PRECBITS;
+      dat[i * dat_stride + j] = acc;
+      old_px = cur_px;
     }
   }
 }
@@ -882,30 +1050,33 @@ static void apply_domaintxfmrf_ver_highbd(int iter, int param, uint16_t *img,
                                           int width, int height, int img_stride,
                                           int32_t *dat, int dat_stride,
                                           int bd) {
-  int i, j;
   const int shift = (bd - 8);
+  int i, j, old_px;
   for (j = 0; j < width; ++j) {
-    uint16_t *ip = &img[j];
-    int32_t *dp = &dat[j];
-    dp += dat_stride;
-    ip += img_stride;
     // top to bottom
-    for (i = 1; i < height; ++i, dp += dat_stride, ip += img_stride) {
-      const int v = domaintxfmrf_vtable[iter][param][abs(
-          (ip[0] >> shift) - (ip[-img_stride] >> shift))];
-      dp[0] = (dp[0] * (DOMAINTXFMRF_VTABLE_PREC - v) +
-               (dp[-dat_stride] * v + DOMAINTXFMRF_VTABLE_PREC / 2)) >>
-              DOMAINTXFMRF_VTABLE_PRECBITS;
+    acc = dat[j];
+    old_px = img[j] >> shift;
+    for (i = 1; i < height; ++i) {
+      const int cur_px = img[i * img_stride + j] >> shift;
+      const int v = domaintxfmrf_vtable[iter][param][abs(cur_px - old_px)];
+      acc = (dat[i * dat_stride + j] * (DOMAINTXFMRF_VTABLE_PREC - v) +
+             (acc * v + DOMAINTXFMRF_VTABLE_PREC / 2)) >>
+            DOMAINTXFMRF_VTABLE_PRECBITS;
+      dat[i * dat_stride + j] = acc;
+      old_px = cur_px;
     }
     // bottom to top
-    dp -= 2 * dat_stride;
-    ip -= 2 * img_stride;
-    for (i = height - 2; i >= 0; --i, dp -= dat_stride, ip -= img_stride) {
-      const int v = domaintxfmrf_vtable[iter][param][abs(
-          (ip[img_stride] >> shift) - (ip[0] >> shift))];
-      dp[0] = (dp[0] * (DOMAINTXFMRF_VTABLE_PREC - v) + dp[dat_stride] * v +
-               DOMAINTXFMRF_VTABLE_PREC / 2) >>
-              DOMAINTXFMRF_VTABLE_PRECBITS;
+    dat[(height - 1) * dat_stride + j] =
+        ROUND_POWER_OF_TWO(acc, DOMAINTXFMRF_VTABLE_PRECBITS);
+    for (i = height - 2; i >= 0; --i) {
+      const int cur_px = img[i * img_stride + j] >> shift;
+      const int v = domaintxfmrf_vtable[iter][param][abs(old_px - cur_px)];
+      acc = (dat[i * dat_stride + j] * (DOMAINTXFMRF_VTABLE_PREC - v) +
+             acc * v + DOMAINTXFMRF_VTABLE_PREC / 2) >>
+            DOMAINTXFMRF_VTABLE_PRECBITS;
+      dat[i * dat_stride + j] =
+          ROUND_POWER_OF_TWO(acc, DOMAINTXFMRF_VTABLE_PRECBITS);
+      old_px = cur_px;
     }
   }
 }
@@ -926,7 +1097,6 @@ void av1_domaintxfmrf_restoration_highbd(uint16_t *dgd, int width, int height,
                                   width, bit_depth);
     apply_domaintxfmrf_ver_highbd(t, param, dgd, width, height, stride, dat,
                                   width, bit_depth);
-    apply_domaintxfmrf_reduce_prec(dat, width, height, width);
   }
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
