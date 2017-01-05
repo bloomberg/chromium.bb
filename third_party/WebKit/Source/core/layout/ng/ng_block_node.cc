@@ -300,12 +300,23 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
 NGPhysicalFragment* NGBlockNode::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
-  // TODO(layout-ng): If fixedSize is true, set the override width/height too
-  NGLogicalSize available_size = constraint_space.AvailableSize();
+  NGLogicalSize available_size = constraint_space.PercentageResolutionSize();
   layout_box_->setOverrideContainingBlockContentLogicalWidth(
       available_size.inline_size);
   layout_box_->setOverrideContainingBlockContentLogicalHeight(
       available_size.block_size);
+  // TODO(layout-ng): Does this handle scrollbars correctly?
+  if (constraint_space.IsFixedSizeInline()) {
+    layout_box_->setOverrideLogicalContentWidth(
+        constraint_space.AvailableSize().inline_size -
+        layout_box_->borderAndPaddingLogicalWidth());
+  }
+  if (constraint_space.IsFixedSizeBlock()) {
+    layout_box_->setOverrideLogicalContentHeight(
+        constraint_space.AvailableSize().block_size -
+        layout_box_->borderAndPaddingLogicalHeight());
+  }
+
   if (layout_box_->isLayoutNGBlockFlow() && layout_box_->needsLayout()) {
     toLayoutNGBlockFlow(layout_box_)->LayoutBlockFlow::layoutBlock(true);
   } else {
