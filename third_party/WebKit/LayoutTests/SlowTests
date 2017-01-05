@@ -8,7 +8,7 @@
 # can see a 3x variance or more in test times on the bots. In practice, this means that any test that takes longer
 # than 2 seconds in Release mode or 6 seconds in Debug mode should be listed here.
 
-crbug.com/24182 [ Debug ] storage/indexeddb/objectstore-cursor.html [ Slow ]
+crbug.com/24182 storage/indexeddb/objectstore-cursor.html [ Slow ]
 crbug.com/24182 storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Slow ]
 crbug.com/24182 editing/selection/modify_move/move-by-word-visually-mac.html [ Slow ]
 crbug.com/24182 editing/selection/modify_move/move-by-word-visually-multi-line.html [ Slow ]
