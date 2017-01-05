@@ -432,6 +432,8 @@ TEST_F(PnaclHostTest, ClearTranslationCache) {
   // queues, because the backend will be freed once it is.
   EXPECT_EQ(0, GetCacheSize());
   EXPECT_EQ(0, cb.GetResult(net::ERR_IO_PENDING));
+  // Call posted PnaclHost::CopyFileToBuffer() tasks.
+  base::RunLoop().RunUntilIdle();
   // Now check that the backend has been freed.
   EXPECT_FALSE(CacheIsInitialized());
 }
