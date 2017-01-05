@@ -77,6 +77,10 @@ class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
         possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'):
       return True
 
+    # http://crbug.com/667470
+    if 'Nexus 7' in possible_browser.platform.GetDeviceTypeName():
+      return True
+
     return possible_browser.platform.GetDeviceTypeName() == 'Desktop'
 
 
