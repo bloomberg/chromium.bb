@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/values.h"
 #include "net/base/escape.h"
 
 namespace {
@@ -17,6 +18,19 @@ const char kKeyClose = '}';
 }  // namespace
 
 namespace ui {
+
+void TemplateReplacementsFromDictionaryValue(
+    const base::DictionaryValue& dictionary,
+    TemplateReplacements* replacements) {
+  for (base::DictionaryValue::Iterator it(dictionary); !it.IsAtEnd();
+       it.Advance()) {
+    if (it.value().IsType(base::Value::Type::STRING)) {
+      std::string str_value;
+      if (it.value().GetAsString(&str_value))
+        (*replacements)[it.key()] = str_value;
+    }
+  }
+}
 
 std::string ReplaceTemplateExpressions(
     base::StringPiece source,

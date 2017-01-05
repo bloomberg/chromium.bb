@@ -175,7 +175,6 @@ class OptionsUIHTMLSource : public content::URLDataSource {
  private:
   ~OptionsUIHTMLSource() override;
   void CreateDataSourceMap();
-  void AddReplacements(base::DictionaryValue* localized_strings);
 
   // Localized strings collection.
   std::unique_ptr<base::DictionaryValue> localized_strings_;
@@ -188,7 +187,6 @@ class OptionsUIHTMLSource : public content::URLDataSource {
 OptionsUIHTMLSource::OptionsUIHTMLSource(
     base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  AddReplacements(localized_strings);
   localized_strings_.reset(localized_strings);
   CreateDataSourceMap();
 }
@@ -204,6 +202,8 @@ void OptionsUIHTMLSource::StartDataRequest(
   scoped_refptr<base::RefCountedMemory> response_bytes;
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings_.get());
+  ui::TemplateReplacementsFromDictionaryValue(*localized_strings_,
+                                              &replacements_);
 
   std::map<std::string, int>::iterator result;
   result = path_to_idr_map_.find(path);
@@ -285,18 +285,6 @@ void OptionsUIHTMLSource::CreateDataSourceMap() {
   path_to_idr_map_[kSettingsPrefsTypesJSPath] = IDR_SETTINGS_PREFS_TYPES_JS;
   path_to_idr_map_[kOptionsPolymerHTMLPath] = IDR_OPTIONS_POLYMER_ELEMENTS_HTML;
 #endif
-}
-
-void OptionsUIHTMLSource::AddReplacements(
-    base::DictionaryValue* localized_strings) {
-  for (auto it = base::DictionaryValue::Iterator(*localized_strings);
-       !it.IsAtEnd(); it.Advance()) {
-    std::string str_value;
-    if (!it.value().GetAsString(&str_value)) {
-      continue;
-    }
-    replacements_[it.key()] = str_value;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/template_expressions.h"
 #include "ui/resources/grit/webui_resources.h"
 
 namespace webui {
@@ -101,10 +102,19 @@ void AppendI18nTemplateSourceHtml(std::string* output) {
 
 std::string GetI18nTemplateHtml(const base::StringPiece& html_template,
                                 const base::DictionaryValue* json) {
-  std::string output(html_template.data(), html_template.size());
+  ui::TemplateReplacements replacements;
+  ui::TemplateReplacementsFromDictionaryValue(*json, &replacements);
+  std::string output =
+      ui::ReplaceTemplateExpressions(html_template, replacements);
+
+  // TODO(dschuyler): After the i18n-content and i18n-values are replaced with
+  // $i18n{} replacements, we will be able to return output at this point.
+  // Remove Append*() lines that builds up the i18n replacement work to be done
+  // in JavaScript.
   AppendLoadTimeData(&output);
   AppendJsonHtml(json, &output);
   AppendI18nTemplateSourceHtml(&output);
+
   return output;
 }
 

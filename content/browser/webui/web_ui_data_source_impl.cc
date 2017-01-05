@@ -136,15 +136,8 @@ void WebUIDataSourceImpl::AddLocalizedString(const std::string& name,
 void WebUIDataSourceImpl::AddLocalizedStrings(
     const base::DictionaryValue& localized_strings) {
   localized_strings_.MergeDictionary(&localized_strings);
-
-  for (base::DictionaryValue::Iterator it(localized_strings); !it.IsAtEnd();
-       it.Advance()) {
-    if (it.value().IsType(base::Value::Type::STRING)) {
-      std::string value;
-      it.value().GetAsString(&value);
-      replacements_[it.key()] = value;
-    }
-  }
+  ui::TemplateReplacementsFromDictionaryValue(localized_strings,
+                                              &replacements_);
 }
 
 void WebUIDataSourceImpl::AddBoolean(const std::string& name, bool value) {
