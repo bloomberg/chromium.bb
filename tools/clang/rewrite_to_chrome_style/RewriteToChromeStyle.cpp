@@ -121,6 +121,13 @@ AST_MATCHER_P(clang::OverloadExpr,
   return true;
 }
 
+void PrintForDiagnostics(clang::raw_ostream& os,
+                         const clang::FunctionDecl& decl) {
+  decl.getLocStart().print(os, decl.getASTContext().getSourceManager());
+  os << ": ";
+  decl.getNameForDiagnostic(os, decl.getASTContext().getPrintingPolicy(), true);
+}
+
 template <typename T>
 bool MatchAllOverriddenMethods(
     const clang::CXXMethodDecl& decl,
@@ -145,13 +152,54 @@ bool MatchAllOverriddenMethods(
   // one we did not rename which creates a behaviour change. So assert and
   // demand the user to fix the code first (or add the method to our
   // blacklist T_T).
-  if (override_matches || override_not_matches)
-    assert(override_matches != override_not_matches);
+  if (override_matches && override_not_matches) {
+    // blink::InternalSettings::trace method overrides
+    // 1) blink::InternalSettingsGenerated::trace
+    //    (won't be renamed because it is in generated code)
+    // 2) blink::Supplement<blink::Page>::trace
+    //    (will be renamed).
+    // It is safe to rename blink::InternalSettings::trace, because
+    // both 1 and 2 will both be renamed (#1 via manual changes of the code
+    // generator for DOM bindings and #2 via the clang tool).
+    auto internal_settings_class_decl = cxxRecordDecl(
+        hasName("InternalSettings"),
+        hasParent(namespaceDecl(hasName("blink"),
+                                hasParent(translationUnitDecl()))));
+    auto is_method_safe_to_rename = cxxMethodDecl(
+        hasName("trace"),
+        anyOf(hasParent(internal_settings_class_decl),  // in .h file
+              has(nestedNameSpecifier(specifiesType(    // in .cpp file
+                  hasDeclaration(internal_settings_class_decl))))));
+    if (IsMatching(is_method_safe_to_rename, decl, decl.getASTContext()))
+      return true;
+
+    // For previously unknown conflicts, error out and require a human to
+    // analyse the problem (rather than falling back to a potentially unsafe /
+    // code semantics changing rename).
+    llvm::errs() << "ERROR: ";
+    PrintForDiagnostics(llvm::errs(), decl);
+    llvm::errs() << " method overrides "
+                 << "some virtual methods that will be automatically renamed "
+                 << "and some that won't be renamed.";
+    llvm::errs() << "\n";
+    for (auto it = decl.begin_overridden_methods();
+         it != decl.end_overridden_methods(); ++it) {
+      if (MatchAllOverriddenMethods(**it, inner_matcher, finder, builder))
+        llvm::errs() << "Overriden method that will be renamed: ";
+      else
+        llvm::errs() << "Overriden method that will not be renamed: ";
+      PrintForDiagnostics(llvm::errs(), **it);
+      llvm::errs() << "\n";
+    }
+    llvm::errs() << "\n";
+    assert(false);
+  }
 
   // If the method overrides something that doesn't match, so the method itself
   // doesn't match.
   if (override_not_matches)
     return false;
+
   // If the method overrides something that matches, so the method ifself
   // matches.
   if (override_matches)
