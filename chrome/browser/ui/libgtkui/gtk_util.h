@@ -122,12 +122,12 @@ ScopedStyleContext GetStyleContextFromCss(const char* css_selector);
 
 // Get the 'color' property from the style context created by
 // GetStyleContextFromCss(|css_selector|).
-SkColor GetFGColor(const char* css_selector);
+SkColor GetFgColor(const char* css_selector);
 
 // Renders a background from the style context created by
 // GetStyleContextFromCss(|css_selector|) into a single pixel and
 // returns the color.
-SkColor GetBGColor(const char* css_selector);
+SkColor GetBgColor(const char* css_selector);
 
 // If there is a border, renders the border from the style context
 // created by GetStyleContextFromCss(|css_selector|) into a single

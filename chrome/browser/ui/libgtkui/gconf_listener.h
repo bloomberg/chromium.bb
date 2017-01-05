@@ -16,15 +16,15 @@
 #include "chrome/browser/ui/libgtkui/gtk_signal.h"
 
 namespace libgtkui {
-class Gtk2UI;
+class GtkUi;
 
 // On GNOME desktops, subscribes to the gconf key which controlls button order.
 // Everywhere else, SetTiltebarButtons() just calls back into BrowserTitlebar
 // with the default ordering.
 class GConfListener {
  public:
-  // Sends data to the Gtk2UI when available.
-  explicit GConfListener(Gtk2UI* delegate);
+  // Sends data to the GtkUi when available.
+  explicit GConfListener(GtkUi* delegate);
   ~GConfListener();
 
  private:
@@ -44,7 +44,7 @@ class GConfListener {
   void ParseAndStoreButtonValue(GConfValue* gconf_value);
   void ParseAndStoreMiddleClickValue(GConfValue* gconf_value);
 
-  Gtk2UI* delegate_;
+  GtkUi* delegate_;
 
   // Pointer to our gconf context. NULL if we aren't on a desktop that uses
   // gconf.

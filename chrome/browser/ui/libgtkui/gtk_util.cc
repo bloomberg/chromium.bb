@@ -294,7 +294,7 @@ SkColor GdkRgbaToSkColor(const GdkRGBA& color) {
                         color.blue * 255);
 }
 
-SkColor GetFGColor(const char* css_selector) {
+SkColor GetFgColor(const char* css_selector) {
   auto context = GetStyleContextFromCss(css_selector);
   GdkRGBA color;
   gtk_style_context_get_color(context, gtk_style_context_get_state(context),
@@ -368,7 +368,7 @@ class PixelSurface {
   cairo_t* cairo_;
 };
 
-SkColor GetBGColor(const char* css_selector) {
+SkColor GetBgColor(const char* css_selector) {
   // Backgrounds are more general than solid colors (eg. gradients),
   // but chromium requires us to boil this down to one color.  We
   // cannot use the background-color here because some themes leave it

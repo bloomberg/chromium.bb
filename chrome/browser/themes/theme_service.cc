@@ -434,7 +434,7 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
           gfx::kChromeIconGrey,
           GetTint(ThemeProperties::TINT_BUTTONS, incognito));
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE:
-      // The active color is overridden in Gtk2UI.
+      // The active color is overridden in GtkUi.
       return SkColorSetA(
           GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
           0x33);

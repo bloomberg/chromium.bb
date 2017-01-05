@@ -411,7 +411,7 @@ views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
 
 }  // namespace
 
-Gtk2UI::Gtk2UI() : middle_click_action_(GetDefaultMiddleClickAction()) {
+GtkUi::GtkUi() : middle_click_action_(GetDefaultMiddleClickAction()) {
   GtkInitFromCommandLine(*base::CommandLine::ForCurrentProcess());
 #if GTK_MAJOR_VERSION == 2
   native_theme_ = NativeThemeGtk2::instance();
@@ -424,17 +424,17 @@ Gtk2UI::Gtk2UI() : middle_click_action_(GetDefaultMiddleClickAction()) {
 #endif
 }
 
-Gtk2UI::~Gtk2UI() {
+GtkUi::~GtkUi() {
 #if GTK_MAJOR_VERSION == 2
   gtk_widget_destroy(fake_window_);
 #endif
 }
 
-void OnThemeChanged(GObject* obj, GParamSpec* param, Gtk2UI* gtkui) {
+void OnThemeChanged(GObject* obj, GParamSpec* param, GtkUi* gtkui) {
   gtkui->ResetStyle();
 }
 
-void Gtk2UI::Initialize() {
+void GtkUi::Initialize() {
   GtkSettings* settings = gtk_settings_get_default();
   g_signal_connect_after(settings, "notify::gtk-theme-name",
                          G_CALLBACK(OnThemeChanged), this);
@@ -463,7 +463,7 @@ void Gtk2UI::Initialize() {
   Gtk2EventLoop::GetInstance();
 }
 
-bool Gtk2UI::GetTint(int id, color_utils::HSL* tint) const {
+bool GtkUi::GetTint(int id, color_utils::HSL* tint) const {
   switch (id) {
     // Tints for which the cross-platform default is fine. Before adding new
     // values here, specifically verify they work well on Linux.
@@ -481,7 +481,7 @@ bool Gtk2UI::GetTint(int id, color_utils::HSL* tint) const {
   return false;
 }
 
-bool Gtk2UI::GetColor(int id, SkColor* color) const {
+bool GtkUi::GetColor(int id, SkColor* color) const {
   ColorMap::const_iterator it = colors_.find(id);
   if (it != colors_.end()) {
     *color = it->second;
@@ -491,39 +491,39 @@ bool Gtk2UI::GetColor(int id, SkColor* color) const {
   return false;
 }
 
-SkColor Gtk2UI::GetFocusRingColor() const {
+SkColor GtkUi::GetFocusRingColor() const {
   return focus_ring_color_;
 }
 
-SkColor Gtk2UI::GetThumbActiveColor() const {
+SkColor GtkUi::GetThumbActiveColor() const {
   return thumb_active_color_;
 }
 
-SkColor Gtk2UI::GetThumbInactiveColor() const {
+SkColor GtkUi::GetThumbInactiveColor() const {
   return thumb_inactive_color_;
 }
 
-SkColor Gtk2UI::GetTrackColor() const {
+SkColor GtkUi::GetTrackColor() const {
   return track_color_;
 }
 
-SkColor Gtk2UI::GetActiveSelectionBgColor() const {
+SkColor GtkUi::GetActiveSelectionBgColor() const {
   return active_selection_bg_color_;
 }
 
-SkColor Gtk2UI::GetActiveSelectionFgColor() const {
+SkColor GtkUi::GetActiveSelectionFgColor() const {
   return active_selection_fg_color_;
 }
 
-SkColor Gtk2UI::GetInactiveSelectionBgColor() const {
+SkColor GtkUi::GetInactiveSelectionBgColor() const {
   return inactive_selection_bg_color_;
 }
 
-SkColor Gtk2UI::GetInactiveSelectionFgColor() const {
+SkColor GtkUi::GetInactiveSelectionFgColor() const {
   return inactive_selection_fg_color_;
 }
 
-double Gtk2UI::GetCursorBlinkInterval() const {
+double GtkUi::GetCursorBlinkInterval() const {
   // From http://library.gnome.org/devel/gtk/unstable/GtkSettings.html, this is
   // the default value for gtk-cursor-blink-time.
   static const gint kGtkDefaultCursorBlinkTime = 1200;
@@ -541,7 +541,7 @@ double Gtk2UI::GetCursorBlinkInterval() const {
   return cursor_blink ? (cursor_blink_time / kGtkCursorBlinkCycleFactor) : 0.0;
 }
 
-ui::NativeTheme* Gtk2UI::GetNativeTheme(aura::Window* window) const {
+ui::NativeTheme* GtkUi::GetNativeTheme(aura::Window* window) const {
   ui::NativeTheme* native_theme_override = NULL;
   if (!native_theme_overrider_.is_null())
     native_theme_override = native_theme_overrider_.Run(window);
@@ -552,11 +552,11 @@ ui::NativeTheme* Gtk2UI::GetNativeTheme(aura::Window* window) const {
   return native_theme_;
 }
 
-void Gtk2UI::SetNativeThemeOverride(const NativeThemeGetter& callback) {
+void GtkUi::SetNativeThemeOverride(const NativeThemeGetter& callback) {
   native_theme_overrider_ = callback;
 }
 
-bool Gtk2UI::GetDefaultUsesSystemTheme() const {
+bool GtkUi::GetDefaultUsesSystemTheme() const {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   switch (base::nix::GetDesktopEnvironment(env.get())) {
@@ -575,21 +575,21 @@ bool Gtk2UI::GetDefaultUsesSystemTheme() const {
   return false;
 }
 
-void Gtk2UI::SetDownloadCount(int count) const {
+void GtkUi::SetDownloadCount(int count) const {
   if (unity::IsRunning())
     unity::SetDownloadCount(count);
 }
 
-void Gtk2UI::SetProgressFraction(float percentage) const {
+void GtkUi::SetProgressFraction(float percentage) const {
   if (unity::IsRunning())
     unity::SetProgressFraction(percentage);
 }
 
-bool Gtk2UI::IsStatusIconSupported() const {
+bool GtkUi::IsStatusIconSupported() const {
   return true;
 }
 
-std::unique_ptr<views::StatusIconLinux> Gtk2UI::CreateLinuxStatusIcon(
+std::unique_ptr<views::StatusIconLinux> GtkUi::CreateLinuxStatusIcon(
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) const {
   if (AppIndicatorIcon::CouldOpen()) {
@@ -603,8 +603,8 @@ std::unique_ptr<views::StatusIconLinux> Gtk2UI::CreateLinuxStatusIcon(
   }
 }
 
-gfx::Image Gtk2UI::GetIconForContentType(const std::string& content_type,
-                                         int size) const {
+gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,
+                                        int size) const {
   // This call doesn't take a reference.
   GtkIconTheme* theme = gtk_icon_theme_get_default();
 
@@ -631,7 +631,7 @@ gfx::Image Gtk2UI::GetIconForContentType(const std::string& content_type,
   return gfx::Image();
 }
 
-std::unique_ptr<views::Border> Gtk2UI::CreateNativeBorder(
+std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
     views::LabelButton* owning_button,
     std::unique_ptr<views::LabelButtonBorder> border) {
   if (owning_button->GetNativeTheme() != native_theme_)
@@ -700,7 +700,7 @@ std::unique_ptr<views::Border> Gtk2UI::CreateNativeBorder(
   return std::move(gtk_border);
 }
 
-void Gtk2UI::AddWindowButtonOrderObserver(
+void GtkUi::AddWindowButtonOrderObserver(
     views::WindowButtonOrderObserver* observer) {
   if (!leading_buttons_.empty() || !trailing_buttons_.empty()) {
     observer->OnWindowButtonOrderingChange(leading_buttons_, trailing_buttons_);
@@ -709,12 +709,12 @@ void Gtk2UI::AddWindowButtonOrderObserver(
   observer_list_.AddObserver(observer);
 }
 
-void Gtk2UI::RemoveWindowButtonOrderObserver(
+void GtkUi::RemoveWindowButtonOrderObserver(
     views::WindowButtonOrderObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void Gtk2UI::SetWindowButtonOrdering(
+void GtkUi::SetWindowButtonOrdering(
     const std::vector<views::FrameButton>& leading_buttons,
     const std::vector<views::FrameButton>& trailing_buttons) {
   leading_buttons_ = leading_buttons;
@@ -724,28 +724,27 @@ void Gtk2UI::SetWindowButtonOrdering(
     observer.OnWindowButtonOrderingChange(leading_buttons_, trailing_buttons_);
 }
 
-void Gtk2UI::SetNonClientMiddleClickAction(NonClientMiddleClickAction action) {
+void GtkUi::SetNonClientMiddleClickAction(NonClientMiddleClickAction action) {
   middle_click_action_ = action;
 }
 
-std::unique_ptr<ui::LinuxInputMethodContext> Gtk2UI::CreateInputMethodContext(
+std::unique_ptr<ui::LinuxInputMethodContext> GtkUi::CreateInputMethodContext(
     ui::LinuxInputMethodContextDelegate* delegate,
     bool is_simple) const {
   return std::unique_ptr<ui::LinuxInputMethodContext>(
       new X11InputMethodContextImplGtk2(delegate, is_simple));
 }
 
-gfx::FontRenderParams Gtk2UI::GetDefaultFontRenderParams() const {
+gfx::FontRenderParams GtkUi::GetDefaultFontRenderParams() const {
   static gfx::FontRenderParams params = GetGtkFontRenderParams();
   return params;
 }
 
-void Gtk2UI::GetDefaultFontDescription(
-    std::string* family_out,
-    int* size_pixels_out,
-    int* style_out,
-    gfx::Font::Weight* weight_out,
-    gfx::FontRenderParams* params_out) const {
+void GtkUi::GetDefaultFontDescription(std::string* family_out,
+                                      int* size_pixels_out,
+                                      int* style_out,
+                                      gfx::Font::Weight* weight_out,
+                                      gfx::FontRenderParams* params_out) const {
   *family_out = default_font_family_;
   *size_pixels_out = default_font_size_pixels_;
   *style_out = default_font_style_;
@@ -753,29 +752,29 @@ void Gtk2UI::GetDefaultFontDescription(
   *params_out = default_font_render_params_;
 }
 
-ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(
+ui::SelectFileDialog* GtkUi::CreateSelectFileDialog(
     ui::SelectFileDialog::Listener* listener,
     ui::SelectFilePolicy* policy) const {
   return SelectFileDialogImpl::Create(listener, policy);
 }
 
-bool Gtk2UI::UnityIsRunning() {
+bool GtkUi::UnityIsRunning() {
   return unity::IsRunning();
 }
 
 views::LinuxUI::NonClientMiddleClickAction
-Gtk2UI::GetNonClientMiddleClickAction() {
+GtkUi::GetNonClientMiddleClickAction() {
   return middle_click_action_;
 }
 
-void Gtk2UI::NotifyWindowManagerStartupComplete() {
+void GtkUi::NotifyWindowManagerStartupComplete() {
   // TODO(port) Implement this using _NET_STARTUP_INFO_BEGIN/_NET_STARTUP_INFO
   // from http://standards.freedesktop.org/startup-notification-spec/ instead.
   gdk_notify_startup_complete();
 }
 
-bool Gtk2UI::MatchEvent(const ui::Event& event,
-                        std::vector<ui::TextEditCommandAuraLinux>* commands) {
+bool GtkUi::MatchEvent(const ui::Event& event,
+                       std::vector<ui::TextEditCommandAuraLinux>* commands) {
   // Ensure that we have a keyboard handler.
   if (!key_bindings_handler_)
     key_bindings_handler_.reset(new Gtk2KeyBindingsHandler);
@@ -783,7 +782,7 @@ bool Gtk2UI::MatchEvent(const ui::Event& event,
   return key_bindings_handler_->MatchEvent(event, commands);
 }
 
-void Gtk2UI::SetScrollbarColors() {
+void GtkUi::SetScrollbarColors() {
   thumb_active_color_ = SkColorSetRGB(244, 244, 244);
   thumb_inactive_color_ = SkColorSetRGB(234, 234, 234);
   track_color_ = SkColorSetRGB(211, 211, 211);
@@ -793,7 +792,7 @@ void Gtk2UI::SetScrollbarColors() {
   GetChromeStyleColor("scrollbar-trough-color", &track_color_);
 }
 
-void Gtk2UI::LoadGtkValues() {
+void GtkUi::LoadGtkValues() {
   // TODO(erg): GtkThemeService had a comment here about having to muck with
   // the raw Prefs object to remove prefs::kCurrentThemeImages or else we'd
   // regress startup time. Figure out how to do that when we can't access the
@@ -885,7 +884,7 @@ void Gtk2UI::LoadGtkValues() {
 #endif
 }
 
-void Gtk2UI::LoadCursorTheme() {
+void GtkUi::LoadCursorTheme() {
   GtkSettings* settings = gtk_settings_get_default();
 
   gchar* theme = nullptr;
@@ -901,7 +900,7 @@ void Gtk2UI::LoadCursorTheme() {
   g_free(theme);
 }
 
-void Gtk2UI::BuildFrameColors() {
+void GtkUi::BuildFrameColors() {
 #if GTK_MAJOR_VERSION == 2
   color_utils::HSL kDefaultFrameShift = {-1, -1, 0.4};
   SkColor frame_color =
@@ -926,9 +925,9 @@ void Gtk2UI::BuildFrameColors() {
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
 #else
   // TODO(thomasanderson): Render a GtkHeaderBar directly.
-  SkColor color_frame = GetBGColor(".headerbar.header-bar.titlebar");
+  SkColor color_frame = GetBgColor(".headerbar.header-bar.titlebar");
   SkColor color_frame_inactive =
-      GetBGColor(".headerbar.header-bar.titlebar:backdrop");
+      GetBgColor(".headerbar.header-bar.titlebar:backdrop");
   colors_[ThemeProperties::COLOR_FRAME] = color_frame;
   colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = color_frame_inactive;
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] =
@@ -938,7 +937,7 @@ void Gtk2UI::BuildFrameColors() {
 #endif
 }
 
-void Gtk2UI::GetNormalButtonTintHSL(color_utils::HSL* tint) const {
+void GtkUi::GetNormalButtonTintHSL(color_utils::HSL* tint) const {
   SkColor accent_color = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_ProminentButtonColor);
   SkColor text_color = native_theme_->GetSystemColor(
@@ -949,7 +948,7 @@ void Gtk2UI::GetNormalButtonTintHSL(color_utils::HSL* tint) const {
   PickButtonTintFromColors(accent_color, text_color, base_color, tint);
 }
 
-void Gtk2UI::GetNormalEntryForegroundHSL(color_utils::HSL* tint) const {
+void GtkUi::GetNormalEntryForegroundHSL(color_utils::HSL* tint) const {
   SkColor accent_color = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_ProminentButtonColor);
   SkColor text_color = native_theme_->GetSystemColor(
@@ -960,7 +959,7 @@ void Gtk2UI::GetNormalEntryForegroundHSL(color_utils::HSL* tint) const {
   PickButtonTintFromColors(accent_color, text_color, base_color, tint);
 }
 
-void Gtk2UI::GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const {
+void GtkUi::GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const {
   // The simplest of all the tints. We just use the selected text in the entry
   // since the icons tinted this way will only be displayed against
   // base[GTK_STATE_SELECTED].
@@ -970,7 +969,7 @@ void Gtk2UI::GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const {
   color_utils::SkColorToHSL(color, tint);
 }
 
-void Gtk2UI::UpdateDefaultFont() {
+void GtkUi::UpdateDefaultFont() {
   GtkWidget* fake_label = gtk_label_new(nullptr);
   g_object_ref_sink(fake_label);  // Remove the floating reference.
   PangoContext* pc = gtk_widget_get_pango_context(fake_label);
@@ -1014,8 +1013,8 @@ void Gtk2UI::UpdateDefaultFont() {
   g_object_unref(fake_label);
 }
 
-bool Gtk2UI::GetChromeStyleColor(const char* style_property,
-                                 SkColor* ret_color) const {
+bool GtkUi::GetChromeStyleColor(const char* style_property,
+                                SkColor* ret_color) const {
 #if GTK_MAJOR_VERSION == 2
   GdkColor* style_color = nullptr;
   gtk_widget_style_get(fake_window_, style_property, &style_color, nullptr);
@@ -1029,12 +1028,12 @@ bool Gtk2UI::GetChromeStyleColor(const char* style_property,
   return false;
 }
 
-void Gtk2UI::ResetStyle() {
+void GtkUi::ResetStyle() {
   LoadGtkValues();
   native_theme_->NotifyObservers();
 }
 
-void Gtk2UI::UpdateDeviceScaleFactor() {
+void GtkUi::UpdateDeviceScaleFactor() {
   // Note: Linux chrome currently does not support dynamic DPI
   // changes.  This is to allow flags to override the DPI settings
   // during startup.
@@ -1045,12 +1044,12 @@ void Gtk2UI::UpdateDeviceScaleFactor() {
   UpdateDefaultFont();
 }
 
-float Gtk2UI::GetDeviceScaleFactor() const {
+float GtkUi::GetDeviceScaleFactor() const {
   return device_scale_factor_;
 }
 
 }  // namespace libgtkui
 
-views::LinuxUI* BuildGtk2UI() {
-  return new libgtkui::Gtk2UI;
+views::LinuxUI* BuildGtkUi() {
+  return new libgtkui::GtkUi;
 }

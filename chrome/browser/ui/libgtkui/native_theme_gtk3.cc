@@ -70,7 +70,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     // Dialogs
     case ui::NativeTheme::kColorId_DialogBackground:
     case ui::NativeTheme::kColorId_BubbleBackground:
-      return GetBGColor("");
+      return GetBgColor("");
 
     // FocusableBorder
     case ui::NativeTheme::kColorId_FocusedBorderColor:
@@ -80,38 +80,38 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // Menu
     case ui::NativeTheme::kColorId_MenuBackgroundColor:
-      return GetBGColor("GtkMenu.menu");
+      return GetBgColor("GtkMenu.menu");
     case ui::NativeTheme::kColorId_MenuBorderColor:
       return GetBorderColor("GtkMenu.menu");
     case ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
-      return GetBGColor("GtkMenu.menu GtkMenuItem.menuitem:focus");
+      return GetBgColor("GtkMenu.menu GtkMenuItem.menuitem:focus");
     case ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor:
-      return GetFGColor("GtkMenu.menu GtkMenuItem.menuitem GtkLabel.label");
+      return GetFgColor("GtkMenu.menu GtkMenuItem.menuitem GtkLabel.label");
     case ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor:
-      return GetFGColor(
+      return GetFgColor(
           "GtkMenu.menu GtkMenuItem.menuitem:selected GtkLabel.label");
     case ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor:
-      return GetFGColor(
+      return GetFgColor(
           "GtkMenu.menu GtkMenuItem.menuitem:disabled GtkLabel.label");
     case ui::NativeTheme::kColorId_MenuItemSubtitleColor:
-      return GetFGColor(
+      return GetFgColor(
           "GtkMenu.menu GtkMenuItem.menuitem GtkLabel.label.accelerator");
     case ui::NativeTheme::kColorId_MenuSeparatorColor:
     // MenuButton borders are used the same way as menu separators in Chrome.
     case ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor:
     case ui::NativeTheme::kColorId_FocusedMenuButtonBorderColor:
     case ui::NativeTheme::kColorId_HoverMenuButtonBorderColor:
-      return GetFGColor("GtkMenu.menu GtkMenuItem.menuitem.separator:disabled");
+      return GetFgColor("GtkMenu.menu GtkMenuItem.menuitem.separator:disabled");
 
     // Label
     case ui::NativeTheme::kColorId_LabelEnabledColor:
-      return GetFGColor("GtkLabel.label");
+      return GetFgColor("GtkLabel.label");
     case ui::NativeTheme::kColorId_LabelDisabledColor:
-      return GetFGColor("GtkLabel.label:disabled");
+      return GetFgColor("GtkLabel.label:disabled");
     case ui::NativeTheme::kColorId_LabelTextSelectionColor:
-      return GetFGColor("GtkLabel.label .selection:selected");
+      return GetFgColor("GtkLabel.label .selection:selected");
     case ui::NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
-      return GetBGColor("GtkLabel.label .selection:selected");
+      return GetBgColor("GtkLabel.label .selection:selected");
 
     // Link
     case ui::NativeTheme::kColorId_LinkDisabled:
@@ -137,143 +137,143 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // Button
     case ui::NativeTheme::kColorId_ButtonEnabledColor:
-      return GetFGColor("GtkButton.button.text-button GtkLabel.label");
+      return GetFgColor("GtkButton.button.text-button GtkLabel.label");
     case ui::NativeTheme::kColorId_ButtonDisabledColor:
-      return GetFGColor("GtkButton.button.text-button:disabled GtkLabel.label");
+      return GetFgColor("GtkButton.button.text-button:disabled GtkLabel.label");
     case ui::NativeTheme::kColorId_ButtonHoverColor:
-      return GetFGColor("GtkButton.button.text-button:hover GtkLabel.label");
+      return GetFgColor("GtkButton.button.text-button:hover GtkLabel.label");
     case ui::NativeTheme::kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;
 
     case ui::NativeTheme::kColorId_BlueButtonEnabledColor:
-      return GetFGColor(
+      return GetFgColor(
           "GtkButton.button.text-button.suggested-action GtkLabel.label");
     case ui::NativeTheme::kColorId_BlueButtonDisabledColor:
-      return GetFGColor(
+      return GetFgColor(
           "GtkButton.button.text-button.suggested-action:disabled "
           "GtkLabel.label");
     case ui::NativeTheme::kColorId_BlueButtonHoverColor:
-      return GetFGColor(
+      return GetFgColor(
           "GtkButton.button.text-button.suggested-action:hover GtkLabel.label");
     case ui::NativeTheme::kColorId_BlueButtonPressedColor:
-      return GetFGColor(
+      return GetFgColor(
           "GtkButton.button.text-button.suggested-action:hover:active "
           "GtkLabel.label");
     case ui::NativeTheme::kColorId_BlueButtonShadowColor:
       return SK_ColorTRANSPARENT;
 
     case ui::NativeTheme::kColorId_ProminentButtonColor:
-      return GetBGColor("GtkButton.button.text-button.destructive-action");
+      return GetBgColor("GtkButton.button.text-button.destructive-action");
     case ui::NativeTheme::kColorId_TextOnProminentButtonColor:
-      return GetFGColor(
+      return GetFgColor(
           "GtkButton.button.text-button.destructive-action GtkLabel.label");
 
     // Textfield
     case ui::NativeTheme::kColorId_TextfieldDefaultColor:
-      return GetFGColor("GtkEntry.entry");
+      return GetFgColor("GtkEntry.entry");
     case ui::NativeTheme::kColorId_TextfieldDefaultBackground:
-      return GetBGColor("GtkEntry.entry");
+      return GetBgColor("GtkEntry.entry");
     case ui::NativeTheme::kColorId_TextfieldReadOnlyColor:
-      return GetFGColor("GtkEntry.entry:disabled");
+      return GetFgColor("GtkEntry.entry:disabled");
     case ui::NativeTheme::kColorId_TextfieldReadOnlyBackground:
-      return GetBGColor("GtkEntry.entry:disabled");
+      return GetBgColor("GtkEntry.entry:disabled");
     case ui::NativeTheme::kColorId_TextfieldSelectionColor:
-      return GetFGColor("GtkEntry.entry .selection:selected");
+      return GetFgColor("GtkEntry.entry .selection:selected");
     case ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
-      return GetBGColor("GtkEntry.entry .selection:selected");
+      return GetBgColor("GtkEntry.entry .selection:selected");
 
     // Tooltips
     case ui::NativeTheme::kColorId_TooltipBackground:
-      return GetBGColor("GtkTooltip.tooltip");
+      return GetBgColor("GtkTooltip.tooltip");
     case ui::NativeTheme::kColorId_TooltipText:
-      return color_utils::GetReadableColor(GetFGColor("GtkTooltip.tooltip"),
-                                           GetBGColor("GtkTooltip.tooltip"));
+      return color_utils::GetReadableColor(GetFgColor("GtkTooltip.tooltip"),
+                                           GetBgColor("GtkTooltip.tooltip"));
 
     // Trees and Tables (implemented on GTK using the same class)
     case ui::NativeTheme::kColorId_TableBackground:
     case ui::NativeTheme::kColorId_TreeBackground:
-      return GetBGColor("GtkTreeView.view");
+      return GetBgColor("GtkTreeView.view");
     case ui::NativeTheme::kColorId_TableText:
     case ui::NativeTheme::kColorId_TreeText:
     case ui::NativeTheme::kColorId_TreeArrow:
     case ui::NativeTheme::kColorId_TableGroupingIndicatorColor:
-      return GetFGColor("GtkTreeView.view .cell");
+      return GetFgColor("GtkTreeView.view .cell");
     case ui::NativeTheme::kColorId_TableSelectedText:
     case ui::NativeTheme::kColorId_TableSelectedTextUnfocused:
     case ui::NativeTheme::kColorId_TreeSelectedText:
     case ui::NativeTheme::kColorId_TreeSelectedTextUnfocused:
-      return GetFGColor("GtkTreeView.view .cell:selected");
+      return GetFgColor("GtkTreeView.view .cell:selected");
     case ui::NativeTheme::kColorId_TableSelectionBackgroundFocused:
     case ui::NativeTheme::kColorId_TableSelectionBackgroundUnfocused:
     case ui::NativeTheme::kColorId_TreeSelectionBackgroundFocused:
     case ui::NativeTheme::kColorId_TreeSelectionBackgroundUnfocused:
-      return GetBGColor("GtkTreeView.view .cell:selected");
+      return GetBgColor("GtkTreeView.view .cell:selected");
 
     // Results Table
     // TODO(thomasanderson): The GtkEntry selectors was how the gtk2 theme got
     // these colors.  Update this code to use a different widget.
     case ui::NativeTheme::kColorId_ResultsTableNormalBackground:
-      return GetBGColor("GtkEntry.entry");
+      return GetBgColor("GtkEntry.entry");
     case ui::NativeTheme::kColorId_ResultsTableHoveredBackground:
       return color_utils::AlphaBlend(
-          GetBGColor("GtkEntry.entry"),
-          GetBGColor("GtkEntry.entry .selection:selected"), 0x80);
+          GetBgColor("GtkEntry.entry"),
+          GetBgColor("GtkEntry.entry .selection:selected"), 0x80);
     case ui::NativeTheme::kColorId_ResultsTableSelectedBackground:
-      return GetBGColor("GtkEntry.entry .selection:selected");
+      return GetBgColor("GtkEntry.entry .selection:selected");
     case ui::NativeTheme::kColorId_ResultsTableNormalText:
     case ui::NativeTheme::kColorId_ResultsTableHoveredText:
-      return GetFGColor("GtkEntry.entry");
+      return GetFgColor("GtkEntry.entry");
     case ui::NativeTheme::kColorId_ResultsTableSelectedText:
-      return GetFGColor("GtkEntry.entry .selection:selected");
+      return GetFgColor("GtkEntry.entry .selection:selected");
     case ui::NativeTheme::kColorId_ResultsTableNormalDimmedText:
     case ui::NativeTheme::kColorId_ResultsTableHoveredDimmedText:
-      return color_utils::AlphaBlend(GetFGColor("GtkEntry.entry"),
-                                     GetBGColor("GtkEntry.entry"), 0x80);
+      return color_utils::AlphaBlend(GetFgColor("GtkEntry.entry"),
+                                     GetBgColor("GtkEntry.entry"), 0x80);
     case ui::NativeTheme::kColorId_ResultsTableSelectedDimmedText:
       return color_utils::AlphaBlend(
-          GetFGColor("GtkEntry.entry .selection:selected"),
-          GetBGColor("GtkEntry.entry"), 0x80);
+          GetFgColor("GtkEntry.entry .selection:selected"),
+          GetBgColor("GtkEntry.entry"), 0x80);
     case ui::NativeTheme::kColorId_ResultsTableNormalUrl:
     case ui::NativeTheme::kColorId_ResultsTableHoveredUrl:
-      return NormalURLColor(GetFGColor("GtkEntry.entry"));
+      return NormalURLColor(GetFgColor("GtkEntry.entry"));
     case ui::NativeTheme::kColorId_ResultsTableSelectedUrl:
-      return SelectedURLColor(GetFGColor("GtkEntry.entry .selection:selected"),
-                              GetBGColor("GtkEntry.entry .selection:selected"));
+      return SelectedURLColor(GetFgColor("GtkEntry.entry .selection:selected"),
+                              GetBgColor("GtkEntry.entry .selection:selected"));
 
     case ui::NativeTheme::kColorId_ResultsTablePositiveText:
       return color_utils::GetReadableColor(kPositiveTextColor,
-                                           GetBGColor("GtkEntry.entry"));
+                                           GetBgColor("GtkEntry.entry"));
     case ui::NativeTheme::kColorId_ResultsTablePositiveHoveredText:
       return color_utils::GetReadableColor(kPositiveTextColor,
-                                           GetBGColor("GtkEntry.entry:hover"));
+                                           GetBgColor("GtkEntry.entry:hover"));
     case ui::NativeTheme::kColorId_ResultsTablePositiveSelectedText:
       return color_utils::GetReadableColor(
-          kPositiveTextColor, GetBGColor("GtkEntry.entry:selected"));
+          kPositiveTextColor, GetBgColor("GtkEntry.entry:selected"));
     case ui::NativeTheme::kColorId_ResultsTableNegativeText:
       return color_utils::GetReadableColor(kNegativeTextColor,
-                                           GetBGColor("GtkEntry.entry"));
+                                           GetBgColor("GtkEntry.entry"));
     case ui::NativeTheme::kColorId_ResultsTableNegativeHoveredText:
       return color_utils::GetReadableColor(kNegativeTextColor,
-                                           GetBGColor("GtkEntry.entry:hover"));
+                                           GetBgColor("GtkEntry.entry:hover"));
     case ui::NativeTheme::kColorId_ResultsTableNegativeSelectedText:
       return color_utils::GetReadableColor(
-          kNegativeTextColor, GetBGColor("GtkEntry.entry:selected"));
+          kNegativeTextColor, GetBgColor("GtkEntry.entry:selected"));
 
     // Throbber
     // TODO(thomasanderson): Render GtkSpinner directly.
     case ui::NativeTheme::kColorId_ThrobberSpinningColor:
     case ui::NativeTheme::kColorId_ThrobberWaitingColor:
-      return GetFGColor("GtkMenu.menu GtkSpinner.spinner");
+      return GetFgColor("GtkMenu.menu GtkSpinner.spinner");
     case ui::NativeTheme::kColorId_ThrobberLightColor:
-      return GetFGColor("GtkMenu.menu GtkSpinner.spinner:disabled");
+      return GetFgColor("GtkMenu.menu GtkSpinner.spinner:disabled");
 
     // Alert icons
     case ui::NativeTheme::kColorId_AlertSeverityLow:
-      return GetBGColor("GtkInfoBar.infobar.info");
+      return GetBgColor("GtkInfoBar.infobar.info");
     case ui::NativeTheme::kColorId_AlertSeverityMedium:
-      return GetBGColor("GtkInfoBar.infobar.warning");
+      return GetBgColor("GtkInfoBar.infobar.warning");
     case ui::NativeTheme::kColorId_AlertSeverityHigh:
-      return GetBGColor("GtkInfoBar.infobar.error");
+      return GetBgColor("GtkInfoBar.infobar.error");
 
     case ui::NativeTheme::kColorId_NumColors:
       NOTREACHED();

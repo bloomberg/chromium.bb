@@ -40,10 +40,10 @@ const GtkStateType stateMap[] = {
     GTK_STATE_SELECTED, GTK_STATE_INSENSITIVE,
 };
 
-SkColor GetFGColor(GtkWidget* widget, WidgetState state) {
+SkColor GetFgColor(GtkWidget* widget, WidgetState state) {
   return GdkColorToSkColor(gtk_rc_get_style(widget)->fg[stateMap[state]]);
 }
-SkColor GetBGColor(GtkWidget* widget, WidgetState state) {
+SkColor GetBgColor(GtkWidget* widget, WidgetState state) {
   return GdkColorToSkColor(gtk_rc_get_style(widget)->bg[stateMap[state]]);
 }
 
@@ -132,16 +132,16 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
   switch (color_id) {
     // Windows
     case kColorId_WindowBackground:
-      return GetBGColor(GetWindow(), SELECTED);
+      return GetBgColor(GetWindow(), SELECTED);
 
     // Dialogs
     case kColorId_DialogBackground:
     case kColorId_BubbleBackground:
-      return GetBGColor(GetWindow(), NORMAL);
+      return GetBgColor(GetWindow(), NORMAL);
 
     // FocusableBorder
     case kColorId_FocusedBorderColor:
-      return GetBGColor(GetEntry(), SELECTED);
+      return GetBgColor(GetEntry(), SELECTED);
     case kColorId_UnfocusedBorderColor:
       return GetTextAAColor(GetEntry(), NORMAL);
 
@@ -149,7 +149,7 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_SelectedMenuItemForegroundColor:
       return GetTextColor(GetMenuItem(), SELECTED);
     case kColorId_FocusedMenuItemBackgroundColor:
-      return GetBGColor(GetMenuItem(), SELECTED);
+      return GetBgColor(GetMenuItem(), SELECTED);
 
     case kColorId_EnabledMenuItemForegroundColor:
       return GetTextColor(GetMenuItem(), NORMAL);
@@ -157,7 +157,7 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_DisabledMenuItemForegroundColor:
       return GetTextColor(GetMenuItem(), INSENSITIVE);
     case kColorId_FocusedMenuButtonBorderColor:
-      return GetBGColor(GetEntry(), NORMAL);
+      return GetBgColor(GetEntry(), NORMAL);
     case kColorId_HoverMenuButtonBorderColor:
       return GetTextAAColor(GetEntry(), PRELIGHT);
     case kColorId_MenuBorderColor:
@@ -166,7 +166,7 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetTextColor(GetMenuItem(), INSENSITIVE);
     }
     case kColorId_MenuBackgroundColor:
-      return GetBGColor(GetMenu(), NORMAL);
+      return GetBgColor(GetMenu(), NORMAL);
 
     // Label
     case kColorId_LabelEnabledColor:
@@ -238,14 +238,14 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
 
     // Tooltips
     case kColorId_TooltipBackground:
-      return GetBGColor(GetTooltip(), NORMAL);
+      return GetBgColor(GetTooltip(), NORMAL);
     case kColorId_TooltipText:
-      return GetFGColor(GetTooltip(), NORMAL);
+      return GetFgColor(GetTooltip(), NORMAL);
 
     // Trees and Tables (implemented on GTK using the same class)
     case kColorId_TableBackground:
     case kColorId_TreeBackground:
-      return GetBGColor(GetTree(), NORMAL);
+      return GetBgColor(GetTree(), NORMAL);
     case kColorId_TableText:
     case kColorId_TreeText:
       return GetTextColor(GetTree(), NORMAL);
@@ -258,9 +258,9 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_TableSelectionBackgroundUnfocused:
     case kColorId_TreeSelectionBackgroundFocused:
     case kColorId_TreeSelectionBackgroundUnfocused:
-      return GetBGColor(GetTree(), SELECTED);
+      return GetBgColor(GetTree(), SELECTED);
     case kColorId_TreeArrow:
-      return GetFGColor(GetTree(), NORMAL);
+      return GetFgColor(GetTree(), NORMAL);
     case kColorId_TableGroupingIndicatorColor:
       return GetTextAAColor(GetTree(), NORMAL);
 
@@ -329,7 +329,7 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_ThrobberWaitingColor:
       return color_utils::AlphaBlend(
           GetSystemColor(kColorId_TextfieldSelectionBackgroundFocused),
-          GetBGColor(GetWindow(), NORMAL), 0x80);
+          GetBgColor(GetWindow(), NORMAL), 0x80);
 
     // Alert icons
     // Just fall back to the same colors as Aura.

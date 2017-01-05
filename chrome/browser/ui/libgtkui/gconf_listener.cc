@@ -42,9 +42,8 @@ namespace libgtkui {
 
 // Public interface:
 
-GConfListener::GConfListener(Gtk2UI* delegate)
-    : delegate_(delegate),
-      client_(NULL) {
+GConfListener::GConfListener(GtkUi* delegate)
+    : delegate_(delegate), client_(NULL) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment de =
       base::nix::GetDesktopEnvironment(env.get());
@@ -161,7 +160,7 @@ void GConfListener::ParseAndStoreButtonValue(GConfValue* gconf_value) {
 }
 
 void GConfListener::ParseAndStoreMiddleClickValue(GConfValue* gconf_value) {
-  Gtk2UI::NonClientMiddleClickAction action =
+  GtkUi::NonClientMiddleClickAction action =
       views::LinuxUI::MIDDLE_CLICK_ACTION_LOWER;
   if (gconf_value) {
     const char* value = gconf_value_get_string(gconf_value);
