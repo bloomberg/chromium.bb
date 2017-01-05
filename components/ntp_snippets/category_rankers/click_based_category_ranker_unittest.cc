@@ -471,4 +471,27 @@ TEST_F(ClickBasedCategoryRankerTest,
   CompareCategories(first, second);
 }
 
+TEST_F(ClickBasedCategoryRankerTest, ShouldIgnorePartialClearHistory) {
+  Category first = AddUnusedRemoteCategory();
+  Category second = AddUnusedRemoteCategory();
+
+  ASSERT_TRUE(CompareCategories(first, second));
+
+  // Change the order.
+  while (CompareCategories(first, second)) {
+    NotifyOnSuggestionOpened(
+        /*times=*/ClickBasedCategoryRanker::GetPassingMargin(), second);
+  }
+
+  ASSERT_FALSE(CompareCategories(first, second));
+
+  // The user partially clears history.
+  base::Time begin = base::Time::Now() - base::TimeDelta::FromHours(1),
+             end = base::Time::Max();
+  ranker()->ClearHistory(begin, end);
+
+  // The order should not be cleared.
+  EXPECT_FALSE(CompareCategories(first, second));
+}
+
 }  // namespace ntp_snippets

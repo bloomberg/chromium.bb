@@ -583,12 +583,28 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRemoveCategoryWhenNotProvided) {
   service()->RemoveObserver(&observer);
 }
 
-TEST_F(ContentSuggestionsServiceTest, ShouldForwardClearHistory) {
+TEST_F(ContentSuggestionsServiceTest, ShouldForwardClearHistoryToProviders) {
   Category category = Category::FromKnownCategory(KnownCategories::DOWNLOADS);
   MockProvider* provider = RegisterProvider(category);
   base::Time begin = base::Time::FromTimeT(123),
              end = base::Time::FromTimeT(456);
   EXPECT_CALL(*provider, ClearHistory(begin, end, _));
+  base::Callback<bool(const GURL& url)> filter;
+  service()->ClearHistory(begin, end, filter);
+}
+
+TEST_F(ContentSuggestionsServiceTest,
+       ShouldForwardClearHistoryToCategoryRanker) {
+  auto mock_ranker = base::MakeUnique<MockCategoryRanker>();
+  MockCategoryRanker* raw_mock_ranker = mock_ranker.get();
+  SetCategoryRanker(std::move(mock_ranker));
+
+  // The service is recreated to pick up the new ranker.
+  ResetService();
+
+  base::Time begin = base::Time::FromTimeT(123),
+             end = base::Time::FromTimeT(456);
+  EXPECT_CALL(*raw_mock_ranker, ClearHistory(begin, end));
   base::Callback<bool(const GURL& url)> filter;
   service()->ClearHistory(begin, end, filter);
 }

@@ -109,6 +109,12 @@ bool ClickBasedCategoryRanker::Compare(Category left, Category right) const {
 }
 
 void ClickBasedCategoryRanker::ClearHistory(base::Time begin, base::Time end) {
+  // Ignore all partial removals and react only to "entire" history removal.
+  bool is_entire_history = (begin == base::Time() && end == base::Time::Max());
+  if (!is_entire_history) {
+    return;
+  }
+
   StoreLastDecayTimeToPrefs(base::Time::FromInternalValue(0));
 
   // The categories added through |AppendCategoryIfNecessary| cannot be
