@@ -483,7 +483,7 @@
             ],
             "experiments": [
                 {
-                    "name": "DisableFirstRunAutoImport",
+                    "name": "AutoImportDisabled",
                     "enable_features": [
                         "DisableFirstRunAutoImport"
                     ]
