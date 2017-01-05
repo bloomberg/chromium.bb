@@ -218,7 +218,6 @@ const char kScriptCommandPrefix[] = "webui";
       {mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS},
       {mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS},
       {mojo::kCodecModuleName, IDR_MOJO_CODEC_JS},
-      {mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS},
       {mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS},
       {mojo::kInterfaceTypesModuleName, IDR_MOJO_INTERFACE_TYPES_JS},
       {mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS},

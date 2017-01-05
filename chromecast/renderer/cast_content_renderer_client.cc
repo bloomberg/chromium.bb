@@ -176,7 +176,6 @@ void CastContentRendererClient::RunScriptsAtDocumentStart(
       IDR_MOJO_VALIDATOR_JS,
       IDR_MOJO_ROUTER_JS,
       IDR_MOJO_BINDINGS_JS,
-      IDR_MOJO_CONNECTION_JS,
   };
   for (size_t i = 0; i < arraysize(mojo_resource_ids); i++) {
     ExecuteJavaScript(render_frame, mojo_resource_ids[i]);

@@ -12,7 +12,6 @@
       <include name="IDR_MOJO_BINDINGS_JS" file="../../mojo/public/js/bindings.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MOJO_BUFFER_JS" file="../../mojo/public/js/buffer.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MOJO_CODEC_JS" file="../../mojo/public/js/codec.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_MOJO_CONNECTION_JS" file="../../mojo/public/js/connection.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MOJO_CONNECTOR_JS" file="../../mojo/public/js/connector.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MOJO_INTERFACE_TYPES_JS" file="../../mojo/public/js/interface_types.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MOJO_ROUTER_JS" file="../../mojo/public/js/router.js" flattenhtml="true" type="BINDATA" />

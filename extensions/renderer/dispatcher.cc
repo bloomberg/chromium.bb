@@ -736,8 +736,6 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(
       std::make_pair(mojo::kCodecModuleName, IDR_MOJO_CODEC_JS));
   resources.push_back(
-      std::make_pair(mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS));
-  resources.push_back(
       std::make_pair(mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS));
   resources.push_back(std::make_pair(mojo::kInterfaceTypesModuleName,
                                      IDR_MOJO_INTERFACE_TYPES_JS));
