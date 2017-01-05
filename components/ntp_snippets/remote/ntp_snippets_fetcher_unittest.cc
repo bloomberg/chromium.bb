@@ -382,19 +382,19 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
 class ChromeReaderSnippetsFetcherTest : public NTPSnippetsFetcherTestBase {
  public:
   ChromeReaderSnippetsFetcherTest()
-      : NTPSnippetsFetcherTestBase(GURL(kTestChromeReaderUrl)) {}
+      : NTPSnippetsFetcherTestBase(GURL(kTestChromeReaderUrl)) {
+    default_variation_params_["content_suggestions_backend"] =
+        kChromeReaderServer;
+    SetVariationParam("content_suggestions_backend", kChromeReaderServer);
+    ResetSnippetsFetcher();
+  }
 };
 
 class NTPSnippetsContentSuggestionsFetcherTest
     : public NTPSnippetsFetcherTestBase {
  public:
   NTPSnippetsContentSuggestionsFetcherTest()
-      : NTPSnippetsFetcherTestBase(GURL(kTestChromeContentSuggestionsUrl)) {
-    default_variation_params_["content_suggestions_backend"] =
-        kContentSuggestionsServer;
-    SetVariationParam("content_suggestions_backend", kContentSuggestionsServer);
-    ResetSnippetsFetcher();
-  }
+      : NTPSnippetsFetcherTestBase(GURL(kTestChromeContentSuggestionsUrl)) {}
 };
 
 TEST_F(ChromeReaderSnippetsFetcherTest, ShouldNotFetchOnCreation) {

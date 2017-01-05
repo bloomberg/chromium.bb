@@ -121,7 +121,7 @@ Status FetchResultToStatus(FetchResult result) {
 std::string GetFetchEndpoint() {
   std::string endpoint = variations::GetVariationParamValue(
       ntp_snippets::kStudyName, kContentSuggestionsBackend);
-  return endpoint.empty() ? kChromeReaderServer : endpoint;
+  return endpoint.empty() ? kContentSuggestionsServer : endpoint;
 }
 
 bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
