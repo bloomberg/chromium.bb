@@ -114,7 +114,6 @@ component("aura") {
     "scoped_window_targeter.h",
     "window.cc",
     "window.h",
-    "window_delegate.cc",
     "window_delegate.h",
     "window_event_dispatcher.cc",
     "window_event_dispatcher.h",
