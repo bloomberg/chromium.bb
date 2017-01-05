@@ -1074,8 +1074,8 @@ int main(int argc, const char* argv[]) {
   auto field_decl_matcher = id("decl", fieldDecl(in_blink_namespace));
   auto is_type_trait_value =
       varDecl(hasName("value"), hasStaticStorageDuration(), isPublic(),
-              hasType(isConstQualified()), hasType(type(anyOf(
-                  booleanType(), enumType()))),
+              hasType(isConstQualified()),
+              hasType(type(anyOf(builtinType(), enumType()))),
               unless(hasAncestor(recordDecl(
                   has(cxxMethodDecl(isUserProvided(), isInstanceMethod()))))));
   auto var_decl_matcher =
