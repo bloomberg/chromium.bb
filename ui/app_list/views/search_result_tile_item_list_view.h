@@ -38,7 +38,7 @@ class APP_LIST_EXPORT SearchResultTileItemListView
 
  private:
   // Overridden from SearchResultContainerView:
-  int Update() override;
+  int DoUpdate() override;
   void UpdateSelectedIndex(int old_selected, int new_selected) override;
 
   std::vector<SearchResultTileItemView*> tile_views_;

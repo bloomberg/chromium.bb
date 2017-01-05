@@ -153,7 +153,7 @@ int SearchResultListView::GetYSize() {
   return num_results();
 }
 
-int SearchResultListView::Update() {
+int SearchResultListView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
           results(),

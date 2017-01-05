@@ -33,7 +33,7 @@ void SearchResultContainerView::SetResults(
   if (results_)
     results_->AddObserver(this);
 
-  DoUpdate();
+  Update();
 }
 
 void SearchResultContainerView::SetSelectedIndex(int selected_index) {
@@ -53,14 +53,12 @@ bool SearchResultContainerView::IsValidSelectionIndex(int index) const {
   return index >= 0 && index <= num_results() - 1;
 }
 
-void SearchResultContainerView::ScheduleUpdate() {
-  // When search results are added one by one, each addition generates an update
-  // request. Consolidates those update requests into one Update call.
-  if (!update_factory_.HasWeakPtrs()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SearchResultContainerView::DoUpdate,
-                              update_factory_.GetWeakPtr()));
-  }
+void SearchResultContainerView::Update() {
+  update_factory_.InvalidateWeakPtrs();
+  num_results_ = DoUpdate();
+  Layout();
+  if (delegate_)
+    delegate_->OnSearchResultContainerResultsChanged();
 }
 
 bool SearchResultContainerView::UpdateScheduled() {
@@ -84,12 +82,14 @@ void SearchResultContainerView::ListItemsChanged(size_t start, size_t count) {
   ScheduleUpdate();
 }
 
-void SearchResultContainerView::DoUpdate() {
-  update_factory_.InvalidateWeakPtrs();
-  num_results_ = Update();
-  Layout();
-  if (delegate_)
-    delegate_->OnSearchResultContainerResultsChanged();
+void SearchResultContainerView::ScheduleUpdate() {
+  // When search results are added one by one, each addition generates an update
+  // request. Consolidates those update requests into one Update call.
+  if (!update_factory_.HasWeakPtrs()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&SearchResultContainerView::Update,
+                              update_factory_.GetWeakPtr()));
+  }
 }
 
 }  // namespace app_list

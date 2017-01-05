@@ -126,7 +126,7 @@ class StartPageView::StartPageTilesContainer
   AllAppsTileItemView* all_apps_button() { return all_apps_button_; }
 
   // Overridden from SearchResultContainerView:
-  int Update() override;
+  int DoUpdate() override;
   void UpdateSelectedIndex(int old_selected, int new_selected) override;
   void OnContainerSelected(bool from_bottom,
                            bool directional_movement) override;
@@ -171,7 +171,7 @@ TileItemView* StartPageView::StartPageTilesContainer::GetTileItemView(
   return search_result_tile_views_[index];
 }
 
-int StartPageView::StartPageTilesContainer::Update() {
+int StartPageView::StartPageTilesContainer::DoUpdate() {
   // Ignore updates and disable buttons when transitioning to a different
   // state.
   if (contents_view_->GetActiveState() != AppListModel::STATE_START) {
@@ -211,10 +211,10 @@ int StartPageView::StartPageTilesContainer::Update() {
 void StartPageView::StartPageTilesContainer::UpdateSelectedIndex(
     int old_selected,
     int new_selected) {
-  if (old_selected >= 0)
+  if (old_selected >= 0 && old_selected < num_results())
     GetTileItemView(old_selected)->SetSelected(false);
 
-  if (new_selected >= 0)
+  if (new_selected >= 0 && new_selected < num_results())
     GetTileItemView(new_selected)->SetSelected(true);
 }
 
@@ -360,8 +360,8 @@ void StartPageView::OnShown() {
     custom_page_view->SetVisible(
         app_list_main_view_->ShouldShowCustomLauncherPage());
   }
-  tiles_container_->Update();
   tiles_container_->ClearSelectedIndex();
+  tiles_container_->Update();
   custom_launcher_page_background_->SetSelected(false);
 }
 

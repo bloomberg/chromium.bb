@@ -72,7 +72,7 @@ int SearchResultTileItemListView::GetYSize() {
   return num_results() ? 1 : 0;
 }
 
-int SearchResultTileItemListView::Update() {
+int SearchResultTileItemListView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
           results(), SearchResult::DISPLAY_TILE, kNumSearchResultTiles);

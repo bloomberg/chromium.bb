@@ -64,7 +64,7 @@ class APP_LIST_EXPORT SearchResultListView : public gfx::AnimationDelegate,
   friend class test::SearchResultListViewTest;
 
   // Overridden from SearchResultContainerView:
-  int Update() override;
+  int DoUpdate() override;
   void UpdateSelectedIndex(int old_selected, int new_selected) override;
 
   // Updates the auto launch states.
