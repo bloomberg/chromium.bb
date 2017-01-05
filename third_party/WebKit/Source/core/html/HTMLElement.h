@@ -78,7 +78,7 @@ class CORE_EXPORT HTMLElement : public Element {
   const AtomicString& dir();
   void setDir(const AtomicString&);
 
-  void clickForBindings();
+  void click();
 
   void accessKeyAction(bool sendMouseEvents) override;
 

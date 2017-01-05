@@ -30,7 +30,7 @@ interface HTMLElement : Element {
 
     // user interaction
     [CEReactions, Reflect] attribute boolean hidden;
-    [ImplementedAs=clickForBindings] void click();
+    void click();
     [CEReactions, CustomElementCallbacks] attribute long tabIndex;
     void focus();
     void blur();

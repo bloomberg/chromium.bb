@@ -705,7 +705,7 @@ void HTMLElement::setSpellcheck(bool enable) {
   setAttribute(spellcheckAttr, enable ? "true" : "false");
 }
 
-void HTMLElement::clickForBindings() {
+void HTMLElement::click() {
   dispatchSimulatedClick(0, SendNoEvents,
                          SimulatedClickCreationScope::FromScript);
 }
