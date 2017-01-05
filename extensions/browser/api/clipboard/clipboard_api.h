@@ -7,6 +7,7 @@
 
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/common/api/clipboard.h"
 #include "ui/base/clipboard/clipboard_observer.h"
 
 namespace extensions {
@@ -30,6 +31,18 @@ class ClipboardAPI : public BrowserContextKeyedAPI,
   static const char* service_name() { return "ClipboardAPI"; }
 
   content::BrowserContext* const browser_context_;
+};
+
+class ClipboardSetImageDataFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("clipboard.setImageData", CLIPBOARD_SETIMAGEDATA);
+
+ protected:
+  ~ClipboardSetImageDataFunction() override;
+  ResponseAction Run() override;
+
+  void OnSaveImageDataSuccess();
+  void OnSaveImageDataError(const std::string& error);
 };
 
 }  // namespace extensions

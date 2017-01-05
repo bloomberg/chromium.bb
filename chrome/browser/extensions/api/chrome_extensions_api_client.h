@@ -12,6 +12,7 @@
 namespace extensions {
 
 class ChromeMetricsPrivateDelegate;
+class ClipboardExtensionHelper;
 
 // Extra support for extensions APIs in Chrome.
 class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
@@ -54,8 +55,20 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   ManagementAPIDelegate* CreateManagementAPIDelegate() const override;
   MetricsPrivateDelegate* GetMetricsPrivateDelegate() override;
 
+#if defined(OS_CHROMEOS)
+  void SaveImageDataToClipboard(
+      const std::vector<char>& image_data,
+      api::clipboard::ImageType type,
+      const base::Closure& success_callback,
+      const base::Callback<void(const std::string&)>& error_callback) override;
+#endif
+
  private:
   std::unique_ptr<ChromeMetricsPrivateDelegate> metrics_private_delegate_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<ClipboardExtensionHelper> clipboard_extension_helper_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClient);
 };

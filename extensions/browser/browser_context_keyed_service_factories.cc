@@ -56,8 +56,8 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   AudioAPI::GetFactoryInstance();
   BluetoothAPI::GetFactoryInstance();
   BluetoothPrivateAPI::GetFactoryInstance();
-  ClipboardAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
+  ClipboardAPI::GetFactoryInstance();
   chromeos::VpnServiceFactory::GetInstance();
 #endif
   api::BluetoothSocketEventDispatcher::GetFactoryInstance();

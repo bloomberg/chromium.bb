@@ -35,7 +35,6 @@ source_set("api") {
     "//extensions/browser/api/bluetooth_low_energy",
     "//extensions/browser/api/bluetooth_socket",
     "//extensions/browser/api/cast_channel",
-    "//extensions/browser/api/clipboard",
     "//extensions/browser/api/declarative",
     "//extensions/browser/api/declarative_content",
     "//extensions/browser/api/declarative_webrequest",
@@ -83,6 +82,7 @@ source_set("api") {
 
   if (is_chromeos) {
     public_deps += [
+      "//extensions/browser/api/clipboard",
       "//extensions/browser/api/diagnostics",
       "//extensions/browser/api/networking_config",
       "//extensions/browser/api/vpn_provider",

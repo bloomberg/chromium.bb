@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
@@ -1160,6 +1161,30 @@ TEST_F(PermissionMessageCombinationsUnittest, PluginPermission) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions());
+}
+
+TEST_F(PermissionMessageCombinationsUnittest, ClipboardPermissionMessages) {
+  const char kManifest[] =
+      "{"
+      "  'app': {"
+      "    'background': {"
+      "      'scripts': ['background.js']"
+      "    }"
+      "  },"
+      "  'permissions': [%s]"
+      "}";
+
+  CreateAndInstall(base::StringPrintf(kManifest, "'clipboardRead'"));
+  ASSERT_TRUE(CheckManifestProducesPermissions("Read data you copy and paste"));
+
+  CreateAndInstall(
+      base::StringPrintf(kManifest, "'clipboardRead', 'clipboardWrite'"));
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Read and modify data you copy and paste"));
+
+  CreateAndInstall(base::StringPrintf(kManifest, "'clipboardWrite'"));
+  ASSERT_TRUE(
+      CheckManifestProducesPermissions("Modify data you copy and paste"));
 }
 
 // TODO(sashab): Add a test that checks that messages are generated correctly

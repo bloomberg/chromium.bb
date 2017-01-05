@@ -1,11 +1,17 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // The <code>chrome.clipboard</code> API is provided to allow users to
-// access data of the clipboard. This API is currently only implemented for
-// ChromeOS.
+// access data of the clipboard. This is a temporary solution for
+// chromeos platform apps until open-web alternative is available. It will be
+// deprecated once open-web solution is available, which could be in 2017 Q2.
+[platforms=("chromeos"),
+ implemented_in="extensions/browser/api/clipboard/clipboard_api.h"]
 namespace clipboard {
+  // Supported image types.
+  enum ImageType {png, jpeg};
+  
   interface Events {
     // Fired when clipboard data changes.
     // Requires clipboard and clipboardRead permissions for adding listener to
@@ -13,5 +19,20 @@ namespace clipboard {
     // After this event fires, the clipboard data is available by calling
     // document.execCommand('paste').
     static void onClipboardDataChanged();
+  };
+
+  callback SetImageDataCallback = void();
+
+  interface Functions {
+    // Sets image data to clipboard.
+    //
+    // |image_data|: The encoded image data.
+    // |type|: The type of image being passed.
+    // The callback is called with <code>chrome.runtime.lastError</code>
+    // set to error code if there is an error.
+    // Requires clipboard and clipboardWrite permissions.
+    static void setImageData(ArrayBuffer image_data,
+                             ImageType type,
+                             SetImageDataCallback callback);
   };
 };

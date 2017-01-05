@@ -504,6 +504,8 @@ static_library("extensions") {
     "chrome_requirements_checker.h",
     "chrome_url_request_util.cc",
     "chrome_url_request_util.h",
+    "clipboard_extension_helper_chromeos.cc",
+    "clipboard_extension_helper_chromeos.h",
     "component_extensions_whitelist/whitelist.cc",
     "component_extensions_whitelist/whitelist.h",
     "component_loader.cc",

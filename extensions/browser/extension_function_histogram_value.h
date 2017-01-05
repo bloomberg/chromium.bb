@@ -1214,6 +1214,7 @@ enum HistogramValue {
   CERTIFICATEPROVIDER_STOPPINREQUEST,
   QUICKUNLOCKPRIVATE_CHECKCREDENTIAL,
   QUICKUNLOCKPRIVATE_GETCREDENTIALREQUIREMENTS,
+  CLIPBOARD_SETIMAGEDATA,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

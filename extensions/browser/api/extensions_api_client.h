@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "extensions/browser/api/declarative_content/content_rules_registry.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
+#include "extensions/common/api/clipboard.h"
 
 namespace base {
 template <class T>
@@ -129,6 +130,15 @@ class ExtensionsAPIClient {
   // If supported by the embedder, returns a delegate for embedder-dependent
   // MetricsPrivateAPI behavior.
   virtual MetricsPrivateDelegate* GetMetricsPrivateDelegate();
+
+#if defined(OS_CHROMEOS)
+  // Saves image data on clipboard.
+  virtual void SaveImageDataToClipboard(
+      const std::vector<char>& image_data,
+      api::clipboard::ImageType type,
+      const base::Closure& success_callback,
+      const base::Callback<void(const std::string&)>& error_callback);
+#endif
 
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.

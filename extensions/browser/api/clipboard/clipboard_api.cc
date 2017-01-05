@@ -9,8 +9,8 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/common/api/clipboard.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 
 namespace extensions {
@@ -45,6 +45,28 @@ void ClipboardAPI::OnClipboardDataChanged() {
                   base::MakeUnique<base::ListValue>()));
     router->BroadcastEvent(std::move(event));
   }
+}
+
+ClipboardSetImageDataFunction::~ClipboardSetImageDataFunction() {}
+
+ExtensionFunction::ResponseAction ClipboardSetImageDataFunction::Run() {
+  std::unique_ptr<clipboard::SetImageData::Params> params(
+      clipboard::SetImageData::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  ExtensionsAPIClient::Get()->SaveImageDataToClipboard(
+      params->image_data, params->type,
+      base::Bind(&ClipboardSetImageDataFunction::OnSaveImageDataSuccess, this),
+      base::Bind(&ClipboardSetImageDataFunction::OnSaveImageDataError, this));
+  return RespondLater();
+}
+
+void ClipboardSetImageDataFunction::OnSaveImageDataSuccess() {
+  Respond(NoArguments());
+}
+
+void ClipboardSetImageDataFunction::OnSaveImageDataError(
+    const std::string& error) {
+  Respond(Error(error));
 }
 
 }  // namespace extensions

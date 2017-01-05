@@ -36,6 +36,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
+#include "chrome/browser/extensions/clipboard_extension_helper_chromeos.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -165,5 +166,18 @@ MetricsPrivateDelegate* ChromeExtensionsAPIClient::GetMetricsPrivateDelegate() {
     metrics_private_delegate_.reset(new ChromeMetricsPrivateDelegate());
   return metrics_private_delegate_.get();
 }
+
+#if defined(OS_CHROMEOS)
+void ChromeExtensionsAPIClient::SaveImageDataToClipboard(
+    const std::vector<char>& image_data,
+    api::clipboard::ImageType type,
+    const base::Closure& success_callback,
+    const base::Callback<void(const std::string&)>& error_callback) {
+  if (!clipboard_extension_helper_)
+    clipboard_extension_helper_ = base::MakeUnique<ClipboardExtensionHelper>();
+  clipboard_extension_helper_->DecodeAndSaveImageData(
+      image_data, type, success_callback, error_callback);
+}
+#endif
 
 }  // namespace extensions

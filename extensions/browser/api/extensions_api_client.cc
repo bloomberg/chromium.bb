@@ -103,4 +103,12 @@ MetricsPrivateDelegate* ExtensionsAPIClient::GetMetricsPrivateDelegate() {
   return nullptr;
 }
 
+#if defined(OS_CHROMEOS)
+void ExtensionsAPIClient::SaveImageDataToClipboard(
+    const std::vector<char>& image_data,
+    api::clipboard::ImageType type,
+    const base::Closure& success_callback,
+    const base::Callback<void(const std::string&)>& error_callback) {}
+#endif
+
 }  // namespace extensions

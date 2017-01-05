@@ -3888,6 +3888,12 @@ Data associated with this app will be removed from this device.
         <message name="IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD" desc="Permission string for access to clipboard.">
           Read data you copy and paste
         </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD_READWRITE" desc="Permission string for access to clipboard for read and write permission.">
+          Read and modify data you copy and paste
+        </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD_WRITE" desc="Permission string for acess to clipboard for write permission.">
+          Modify data you copy and paste
+        </message>        
         <message name="IDS_EXTENSION_PROMPT_WARNING_DEBUGGER" desc="Permission string for access to debugger.">
           Access the page debugger backend
         </message>

@@ -113,8 +113,14 @@
     "contexts": ["blessed_extension"]
   },
   "clipboard": {
-    "dependencies": ["permission:clipboard", "permission:clipboardRead"],
-    "contexts": ["blessed_extension"]       
+    "dependencies": ["permission:clipboard"],
+    "contexts": ["blessed_extension"]
+  },
+  "clipboard.onClipboardDataChanged": {
+    "dependencies": ["permission:clipboardRead"]
+  },
+  "clipboard.setImageData": {
+    "dependencies": ["permission:clipboardWrite"]
   },
   "declarativeWebRequest": {
     "dependencies": ["permission:declarativeWebRequest"],

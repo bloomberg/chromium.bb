@@ -17,3 +17,12 @@ IN_PROC_BROWSER_TEST_F(ClipboardExtensionApiTest, ClipboardDataChanged) {
       << message_;
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
 }
+
+IN_PROC_BROWSER_TEST_F(ClipboardExtensionApiTest, SetImageData) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ExtensionTestMessageListener clipboard_change_listener(
+      "clipboard data changed 2", false);
+  ASSERT_TRUE(RunPlatformAppTest("clipboard/set_image_data"))
+      << message_;
+  ASSERT_TRUE(clipboard_change_listener.WaitUntilSatisfied());
+}
