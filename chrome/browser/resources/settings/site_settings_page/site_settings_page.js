@@ -35,6 +35,7 @@ Polymer({
     },
   },
 
+  /** @override */
   ready: function() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
     this.ALL_SITES = settings.ALL_SITES;
@@ -52,6 +53,10 @@ Polymer({
     this.addWebUIListener(
         'contentSettingCategoryChanged',
         this.updateDefaultValueLabel_.bind(this));
+    this.addWebUIListener(
+        'setHandlersEnabled',
+        this.updateHandlersEnabled_.bind(this));
+    this.browserProxy.observeProtocolHandlersEnabledState();
   },
 
   /**
@@ -61,15 +66,30 @@ Polymer({
   updateDefaultValueLabel_: function(category) {
     this.browserProxy.getDefaultValueForContentType(
         category).then(function(defaultValue) {
-          var labelVar =
-              'default_.' + Polymer.CaseMap.dashToCamelCase(category);
           this.set(
-              labelVar,
+              'default_.' + Polymer.CaseMap.dashToCamelCase(category),
               this.computeCategoryDesc(
                   category,
                   defaultValue.setting,
                   /*showRecommendation=*/false));
         }.bind(this));
+  },
+
+  /**
+   * The protocol handlers have a separate enabled/disabled notifier.
+   * @param {boolean} enabled
+   * @private
+   */
+  updateHandlersEnabled_: function(enabled) {
+    var category = settings.ContentSettingsTypes.PROTOCOL_HANDLERS;
+    this.set(
+        'default_.' + Polymer.CaseMap.dashToCamelCase(category),
+        this.computeCategoryDesc(
+            category,
+            enabled ?
+                settings.PermissionValues.ALLOW :
+                settings.PermissionValues.BLOCK,
+            /*showRecommendation=*/false));
   },
 
   /**
