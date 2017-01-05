@@ -25,6 +25,7 @@
 #include "base/win/message_window.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
+#include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -611,16 +612,21 @@ SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
   const void* bitmap_bits = reinterpret_cast<const char*>(bitmap)
       + bitmap->bmiHeader.biSize + color_table_length * sizeof(RGBQUAD);
 
-  gfx::Canvas canvas(gfx::Size(bitmap->bmiHeader.biWidth,
-                               bitmap->bmiHeader.biHeight),
-                     1.0f,
-                     false);
+  void* dst_bits;
+  // dst_hbitmap is freed by the release_proc in skia_bitmap (below)
+  HBITMAP dst_hbitmap =
+      skia::CreateHBitmap(bitmap->bmiHeader.biWidth, bitmap->bmiHeader.biHeight,
+                          false, 0, &dst_bits);
+
   {
-    HDC dc = skia::GetNativeDrawingContext(canvas.sk_canvas());
-    ::SetDIBitsToDevice(dc, 0, 0, bitmap->bmiHeader.biWidth,
+    base::win::ScopedCreateDC hdc(CreateCompatibleDC(NULL));
+    HBITMAP old_hbitmap =
+        static_cast<HBITMAP>(SelectObject(hdc.Get(), dst_hbitmap));
+    ::SetDIBitsToDevice(hdc.Get(), 0, 0, bitmap->bmiHeader.biWidth,
                         bitmap->bmiHeader.biHeight, 0, 0, 0,
                         bitmap->bmiHeader.biHeight, bitmap_bits, bitmap,
                         DIB_RGB_COLORS);
+    SelectObject(hdc.Get(), old_hbitmap);
   }
   // Windows doesn't really handle alpha channels well in many situations. When
   // the source image is < 32 bpp, we force the bitmap to be opaque. When the
@@ -630,8 +636,10 @@ SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
   // we assume the alpha channel contains garbage and force the bitmap to be
   // opaque as well. Note that this  heuristic will fail on a transparent bitmap
   // containing only black pixels...
-  SkPixmap device_pixels;
-  skia::GetWritablePixels(canvas.sk_canvas(), &device_pixels);
+  SkPixmap device_pixels(SkImageInfo::MakeN32Premul(bitmap->bmiHeader.biWidth,
+                                                    bitmap->bmiHeader.biHeight),
+                         dst_bits, bitmap->bmiHeader.biWidth * 4);
+
   {
     bool has_invalid_alpha_channel = bitmap->bmiHeader.biBitCount < 32 ||
         BitmapHasInvalidPremultipliedColors(device_pixels);
@@ -640,7 +648,14 @@ SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
     }
   }
 
-  return canvas.ExtractImageRep().sk_bitmap();
+  SkBitmap skia_bitmap;
+  skia_bitmap.installPixels(device_pixels.info(), device_pixels.writable_addr(),
+                            device_pixels.rowBytes(), nullptr,
+                            [](void* pixels, void* hbitmap) {
+                              DeleteObject(static_cast<HBITMAP>(hbitmap));
+                            },
+                            dst_hbitmap);
+  return skia_bitmap;
 }
 
 void ClipboardWin::ReadCustomData(ClipboardType clipboard_type,
