@@ -411,11 +411,6 @@ void Textfield::UseDefaultSelectionTextColor() {
   SchedulePaint();
 }
 
-void Textfield::SetShadows(const gfx::ShadowValues& shadows) {
-  GetRenderText()->set_shadows(shadows);
-  SchedulePaint();
-}
-
 SkColor Textfield::GetSelectionBackgroundColor() const {
   return use_default_selection_background_color_ ?
       GetNativeTheme()->GetSystemColor(
