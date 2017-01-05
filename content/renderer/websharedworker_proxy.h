@@ -28,7 +28,6 @@ namespace content {
 class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
                              private IPC::Listener {
  public:
-  // If the worker not loaded yet, route_id == MSG_ROUTING_NONE
   WebSharedWorkerProxy(IPC::MessageRouter* router, int route_id);
   ~WebSharedWorkerProxy() override;
 
@@ -39,9 +38,6 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
  private:
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-
-  // Disconnects the worker (stops listening for incoming messages).
-  void Disconnect();
 
   // Sends a message to the worker thread (forwarded via the RenderViewHost).
   // If WorkerStarted() has not yet been called, message is queued.
@@ -58,7 +54,7 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
   // worker, and also to route messages to the worker (WorkerService contains
   // a map that maps between these renderer-side route IDs and worker-side
   // routing ids).
-  int route_id_;
+  const int route_id_;
 
   IPC::MessageRouter* const router_;
 

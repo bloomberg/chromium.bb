@@ -21,30 +21,17 @@ WebSharedWorkerProxy::WebSharedWorkerProxy(IPC::MessageRouter* router,
       router_(router),
       connect_listener_(nullptr),
       created_(false) {
+  DCHECK_NE(MSG_ROUTING_NONE, route_id_);
   router_->AddRoute(route_id_, this);
 }
 
 WebSharedWorkerProxy::~WebSharedWorkerProxy() {
-  Disconnect();
-}
-
-void WebSharedWorkerProxy::Disconnect() {
-  if (route_id_ == MSG_ROUTING_NONE)
-    return;
-
-  // So the messages from WorkerContext (like WorkerContextDestroyed) do not
-  // come after nobody is listening. Since Worker and WorkerContext can
-  // terminate independently, already sent messages may still be in the pipe.
   router_->RemoveRoute(route_id_);
-
-  route_id_ = MSG_ROUTING_NONE;
 }
 
 bool WebSharedWorkerProxy::Send(std::unique_ptr<IPC::Message> message) {
-  // It's possible that messages will be sent before the worker is created, in
-  // which case route_id_ will be none.  Or the worker object can be interacted
-  // with before the browser process told us that it started, in which case we
-  // also want to queue the message.
+  // The worker object can be interacted with before the browser process told us
+  // that it started, in which case we want to queue the message.
   if (!created_) {
     queued_messages_.push_back(std::move(message));
     return true;
@@ -96,8 +83,7 @@ bool WebSharedWorkerProxy::OnMessageReceived(const IPC::Message& message) {
 
 void WebSharedWorkerProxy::OnWorkerCreated() {
   created_ = true;
-  // The worker is created - now send off the WorkerMsg_Connect message and
-  // any other queued messages
+  // The worker is created - now send off the WorkerMsg_Connect message.
   SendQueuedMessages();
 }
 
