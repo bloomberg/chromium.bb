@@ -103,6 +103,10 @@ class CC_EXPORT LayerTreeSettings {
   bool use_cached_picture_raster = true;
   bool enable_color_correct_rendering = false;
 
+  // If set to true, this causes TileManager to verify that all required and NOW
+  // tiles come before lower priority tiles.
+  bool check_tile_priority_inversion = false;
+
   LayerTreeDebugState initial_debug_state;
 };
 

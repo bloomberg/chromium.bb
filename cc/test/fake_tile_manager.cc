@@ -34,7 +34,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
                   base::ThreadTaskRunnerHandle::Get().get(),
                   std::numeric_limits<size_t>::max(),
-                  false /* use_partial_raster */),
+                  false /* use_partial_raster */,
+                  false /* check_tile_priority_inversion */),
       image_decode_cache_(
           ResourceFormat::RGBA_8888,
           LayerTreeSettings().software_decoded_image_budget_bytes) {
@@ -50,7 +51,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
     : TileManager(client,
                   base::ThreadTaskRunnerHandle::Get().get(),
                   std::numeric_limits<size_t>::max(),
-                  false /* use_partial_raster */),
+                  false /* use_partial_raster */,
+                  false /* check_tile_priority_inversion */),
       image_decode_cache_(
           ResourceFormat::RGBA_8888,
           LayerTreeSettings().software_decoded_image_budget_bytes) {

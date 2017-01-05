@@ -100,7 +100,8 @@ class CC_EXPORT TileManager {
   TileManager(TileManagerClient* client,
               base::SequencedTaskRunner* task_runner,
               size_t scheduled_raster_task_limit,
-              bool use_partial_raster);
+              bool use_partial_raster,
+              bool check_tile_priority_inversion);
   virtual ~TileManager();
 
   // Assigns tile memory and schedules work to prepare tiles for drawing.
@@ -342,6 +343,7 @@ class CC_EXPORT TileManager {
 
   std::unordered_map<Tile::Id, std::vector<DrawImage>> scheduled_draw_images_;
   std::vector<scoped_refptr<TileTask>> locked_image_tasks_;
+  const bool check_tile_priority_inversion_;
 
   base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_;
 
