@@ -271,6 +271,13 @@ ServerWindow* Display::GetRootWindow() {
   return root_.get();
 }
 
+ServerWindow* Display::GetActiveRootWindow() {
+  WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
+  if (display_root)
+    return display_root->root();
+  return nullptr;
+}
+
 void Display::OnAcceleratedWidgetAvailable() {
   display_manager()->OnDisplayAcceleratedWidgetAvailable(this);
   InitWindowManagerDisplayRoots();
