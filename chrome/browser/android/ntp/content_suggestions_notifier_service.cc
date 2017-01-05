@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/android/application_status_listener.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/ntp/content_suggestions_notification_helper.h"
 #include "chrome/browser/notifications/notification.h"
@@ -42,6 +43,20 @@ gfx::Image CropSquare(const gfx::Image& image) {
       *skimage, bounds.x(), bounds.y(), bounds.width(), bounds.height()));
 }
 
+bool ShouldNotifyInState(base::android::ApplicationState state) {
+  switch (state) {
+    case base::android::APPLICATION_STATE_UNKNOWN:
+    case base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES:
+      return false;
+    case base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES:
+    case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
+    case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 class ContentSuggestionsNotifierService::NotifyingObserver
@@ -50,10 +65,15 @@ class ContentSuggestionsNotifierService::NotifyingObserver
   NotifyingObserver(ContentSuggestionsService* service,
                     Profile* profile,
                     PrefService* prefs)
-      : service_(service), prefs_(prefs), weak_ptr_factory_(this) {}
+      : service_(service),
+        prefs_(prefs),
+        app_status_listener_(base::Bind(&NotifyingObserver::AppStatusChanged,
+                                        base::Unretained(this))),
+        weak_ptr_factory_(this) {}
 
   void OnNewSuggestions(Category category) override {
-    if (!category.IsKnownCategory(KnownCategories::ARTICLES)) {
+    if (!ShouldNotifyInState(app_status_listener_.GetState()) ||
+        !category.IsKnownCategory(KnownCategories::ARTICLES)) {
       return;
     }
     const auto& suggestions = service_->GetSuggestionsForCategory(category);
@@ -106,11 +126,20 @@ class ContentSuggestionsNotifierService::NotifyingObserver
   }
 
  private:
+  void AppStatusChanged(base::android::ApplicationState state) {
+    if (!ShouldNotifyInState(state)) {
+      ContentSuggestionsNotificationHelper::HideNotification();
+    }
+  }
+
   void ImageFetched(const ContentSuggestion::ID& id,
                     const GURL& url,
                     const base::string16& title,
                     const base::string16& publisher,
                     const gfx::Image& image) {
+    if (!ShouldNotifyInState(app_status_listener_.GetState())) {
+      return;  // Became foreground while we were fetching the image; forget it.
+    }
     // check if suggestion is still valid.
     DVLOG(1) << "Fetched " << image.Size().width() << "x"
              << image.Size().height() << " image for " << url.spec();
@@ -121,6 +150,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
 
   ContentSuggestionsService* const service_;
   PrefService* const prefs_;
+  base::android::ApplicationStatusListener app_status_listener_;
 
   base::WeakPtrFactory<NotifyingObserver> weak_ptr_factory_;
 
