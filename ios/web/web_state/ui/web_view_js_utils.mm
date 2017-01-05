@@ -78,7 +78,7 @@ std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result,
 namespace web {
 
 NSString* const kJSEvaluationErrorDomain = @"JSEvaluationError";
-int const kMaximumParsingRecursionDepth = 6;
+int const kMaximumParsingRecursionDepth = 8;
 
 std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result) {
   return ::ValueResultFromWKResult(wk_result, kMaximumParsingRecursionDepth);
