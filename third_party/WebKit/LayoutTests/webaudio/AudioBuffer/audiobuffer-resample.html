@@ -1,140 +1,115 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!doctype>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
-    <div id="description"></div>
-    <div id="console"></div>
-
     <script>
+      let audit = Audit.createTaskRunner();
+
       // These are global to make debugging a little easier.
-      var context;
-      var buffer;
-      var source;
-      var renderedData;
-      var trueData;
-      var signalEnergy;
-      var noiseEnergy;
-      var maxError;
+      let context;
+      let buffer;
+      let source;
+      let renderedData;
+      let trueData;
+      let signalEnergy;
+      let noiseEnergy;
+      let maxError;
 
       // Context sample rate.
-      var sampleRate = 48000;
+      let sampleRate = 48000;
       // The sample rate of the buffer.
-      var bufferRate = 3000;
+      let bufferRate = 3000;
       // The audio buffer is a sine wave of this frequency.
-      var toneFrequency = 440;
+      let toneFrequency = 440;
       // How long test is
-      var lengthInSeconds = 0.5;
-      // The maximum allowed peak error between the actual and true output. This value was
-      // experimentally determined for the given bufferRate.
-      var peakThreshold = 0.11;
+      let lengthInSeconds = 0.5;
+      // The maximum allowed peak error between the actual and true output. This
+      // value was experimentally determined for the given bufferRate.
+      let peakThreshold = 0.11;
       // The minimum SNR allowed between the actual and true output.
-      var snrThreshold = 22.35;
+      let snrThreshold = 22.35;
 
-      description("Test resampling of an AudioBuffer at " + bufferRate + " Hz");
 
-      function log10(x) {
-          return Math.log(x)/Math.LN10;
-      }
-      
-      // Generate a sine wave in an AudioBuffer using the given |freq|. The AudioBuffer has the
-      // sample rate of |rate|.
+      // Generate a sine wave in an AudioBuffer using the given |freq|. The
+      // AudioBuffer has the sample rate of |rate|.
       function createSineBuffer(context, freq, rate) {
-          var buf = context.createBuffer(1, lengthInSeconds * rate, rate);
-          var omega = 2 * Math.PI * freq / rate;
-          var signal = buf.getChannelData(0);
-          var length = signal.length;
-          for (var k = 0; k < length; ++k)
-            signal[k] = Math.sin(omega * k);
+        let buf = context.createBuffer(1, lengthInSeconds * rate, rate);
+        let omega = 2 * Math.PI * freq / rate;
+        let signal = buf.getChannelData(0);
+        let length = signal.length;
+        for (let k = 0; k < length; ++k)
+          signal[k] = Math.sin(omega * k);
 
-          return buf;
+        return buf;
       }
 
       // Check the output against the expected output.
-      function checkResult(event) {
-          renderedData = event.renderedBuffer.getChannelData(0);
-          var length = renderedData.length;
-          // Generate a reference sine wave at the context rate
-          var trueReference = createSineBuffer(context, toneFrequency, context.sampleRate);
-          trueData = trueReference.getChannelData(0);
+      function checkResult(buffer, should) {
+        renderedData = buffer.getChannelData(0);
+        let length = renderedData.length;
+        // Generate a reference sine wave at the context rate
+        let trueReference = createSineBuffer(context, toneFrequency, context.sampleRate);
+        trueData = trueReference.getChannelData(0);
 
-          // To compare the actual output against the reference, we compute the peak error and the
-          // SNR between the two.
-          signalEnergy = 0;
-          noiseEnergy = 0;
-          maxError = -1;
+        // To compare the actual output against the reference, we compute the
+        // peak error and the SNR between the two.
+        signalEnergy = 0;
+        noiseEnergy = 0;
+        maxError = -1;
 
-          var success = true;
+        let success = true;
 
-          // Compute the peak error and the SNR.
-          for (var k = 0; k < length / 2; ++k) {
-              var diff = renderedData[k] - trueData[k];
-              noiseEnergy += diff * diff;
-              signalEnergy += trueData[k] * trueData[k];
-              if (Math.abs(diff) > maxError)
-                  maxError = Math.abs(diff);
-          }
+        // Compute the peak error and the SNR.
+        for (let k = 0; k < length / 2; ++k) {
+          let diff = renderedData[k] - trueData[k];
+          noiseEnergy += diff * diff;
+          signalEnergy += trueData[k] * trueData[k];
+          if (Math.abs(diff) > maxError)
+            maxError = Math.abs(diff);
+        }
 
-          var snr;
+        let snr;
 
-          if (noiseEnergy == 0)
-              snr = 1000;
-          else
-              snr = 10 * log10(signalEnergy / noiseEnergy);
-      
-          if (maxError < peakThreshold) {
-              testPassed("Peak error between actual and reference data below threshold of " +
-                         peakThreshold + ".");
-          } else {
-              testFailed("Peak error of " + maxError + " exceeds threshold of " +
-                         peakThreshold + ".");
-              success = false;
-          }
+        if (noiseEnergy == 0)
+          snr = 1000;
+        else
+          snr = 10 * Math.log10(signalEnergy / noiseEnergy);
 
-          if (snr > snrThreshold) {
-              testPassed("SNR exceeds threshold of " + snrThreshold + " dB.");
-          } else {
-              testFailed("SNR of " + snr + " is below the threshold of " + snrThreshold + ".");
-              success = false;
-          }
-      
-          if (success)
-              testPassed("AudioBuffer resampling is accurate for buffer rate of " +
-                         bufferRate + " Hz.");
-          else
-              testFailed("AudioBuffer resampling is not accurate enough for buffer rate of " +
-                         bufferRate + " Hz.");
+        should(maxError, "Peak error between actual and reference data")
+          .beLessThan(peakThreshold);
 
-          finishJSTest();
+        should(snr, "SNR")
+          .beGreaterThan(snrThreshold);
       }
 
-      function runTest() {
-          if (window.testRunner) {
-              testRunner.dumpAsText();
-              testRunner.waitUntilDone();
-          }
+      audit.define("Test resampling of an AudioBuffer",
+        function(task, should) {
+          context = new OfflineAudioContext(1, lengthInSeconds *
+            sampleRate,
+            sampleRate);
 
-          window.jsTestIsAsync = true;
-
-          context = new OfflineAudioContext(1, lengthInSeconds * sampleRate, sampleRate);
-
-          // Create a sine wave in a buffer that's different from the context rate to test
-          // resampling.
+          // Create a sine wave in a buffer that's different from the context rate
+          // to test resampling.
           buffer = createSineBuffer(context, toneFrequency, bufferRate);
           source = context.createBufferSource();
           source.buffer = buffer;
           source.connect(context.destination);
           source.start();
 
-          context.oncomplete = checkResult;
-          context.startRendering();
-      }
-      runTest();
-      successfullyParsed = true;
+          context.startRendering()
+            .then(function(buffer) {
+              checkResult(buffer, should);
+            })
+            .then(task.done.bind(task));
+        });
+
+      audit.run();
     </script>
   </body>
 </html>
