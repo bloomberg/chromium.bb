@@ -97,10 +97,6 @@ CSSValue* CSSValue::create(const Length& value, float zoom) {
   return nullptr;
 }
 
-bool CSSValue::isImplicitInitialValue() const {
-  return m_classType == InitialClass && toCSSInitialValue(this)->isImplicit();
-}
-
 bool CSSValue::hasFailedOrCanceledSubresources() const {
   if (isValueList())
     return toCSSValueList(this)->hasFailedOrCanceledSubresources();

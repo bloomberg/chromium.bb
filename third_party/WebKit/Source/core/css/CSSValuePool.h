@@ -63,8 +63,7 @@ class CORE_EXPORT CSSValuePool
   CSSColorValue* whiteColor() { return m_colorWhite; }
   CSSColorValue* blackColor() { return m_colorBlack; }
   CSSInheritedValue* inheritedValue() { return m_inheritedValue; }
-  CSSInitialValue* implicitInitialValue() { return m_implicitInitialValue; }
-  CSSInitialValue* explicitInitialValue() { return m_explicitInitialValue; }
+  CSSInitialValue* initialValue() { return m_initialValue; }
   CSSUnsetValue* unsetValue() { return m_unsetValue; }
 
   // Vector caches.
@@ -123,8 +122,7 @@ class CORE_EXPORT CSSValuePool
 
   // Cached individual values.
   Member<CSSInheritedValue> m_inheritedValue;
-  Member<CSSInitialValue> m_implicitInitialValue;
-  Member<CSSInitialValue> m_explicitInitialValue;
+  Member<CSSInitialValue> m_initialValue;
   Member<CSSUnsetValue> m_unsetValue;
   Member<CSSColorValue> m_colorTransparent;
   Member<CSSColorValue> m_colorWhite;

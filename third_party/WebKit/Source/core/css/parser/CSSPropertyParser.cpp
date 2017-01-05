@@ -1332,7 +1332,7 @@ bool CSSPropertyParser::consumeAnimationShorthand(
     // TODO(timloh): This will make invalid longhands, see crbug.com/386459
     for (size_t i = 0; i < longhandCount; ++i) {
       if (!parsedLonghand[i])
-        longhands[i]->append(*CSSInitialValue::createLegacyImplicit());
+        longhands[i]->append(*CSSInitialValue::create());
       parsedLonghand[i] = false;
     }
   } while (consumeCommaIncludingWhitespace(m_range));
@@ -4358,7 +4358,7 @@ bool CSSPropertyParser::consumeShorthandGreedily(
                   important);
     else
       addProperty(shorthandProperties[i], shorthand.id(),
-                  *CSSInitialValue::createLegacyImplicit(), important);
+                  *CSSInitialValue::create(), important);
   }
   return true;
 }
@@ -4456,18 +4456,17 @@ bool CSSPropertyParser::consumeBorder(bool important) {
     return false;
 
   if (!width)
-    width = CSSInitialValue::createLegacyImplicit();
+    width = CSSInitialValue::create();
   if (!style)
-    style = CSSInitialValue::createLegacyImplicit();
+    style = CSSInitialValue::create();
   if (!color)
-    color = CSSInitialValue::createLegacyImplicit();
+    color = CSSInitialValue::create();
 
   addExpandedPropertyForValue(CSSPropertyBorderWidth, *width, important);
   addExpandedPropertyForValue(CSSPropertyBorderStyle, *style, important);
   addExpandedPropertyForValue(CSSPropertyBorderColor, *color, important);
   addExpandedPropertyForValue(CSSPropertyBorderImage,
-                              *CSSInitialValue::createLegacyImplicit(),
-                              important);
+                              *CSSInitialValue::create(), important);
 
   return m_range.atEnd();
 }
@@ -4517,41 +4516,31 @@ bool CSSPropertyParser::consumeBorderImage(CSSPropertyID property,
       case CSSPropertyWebkitMaskBoxImage:
         addProperty(CSSPropertyWebkitMaskBoxImageSource,
                     CSSPropertyWebkitMaskBoxImage,
-                    source ? *source : *CSSInitialValue::createLegacyImplicit(),
-                    important);
+                    source ? *source : *CSSInitialValue::create(), important);
         addProperty(CSSPropertyWebkitMaskBoxImageSlice,
                     CSSPropertyWebkitMaskBoxImage,
-                    slice ? *slice : *CSSInitialValue::createLegacyImplicit(),
-                    important);
+                    slice ? *slice : *CSSInitialValue::create(), important);
         addProperty(CSSPropertyWebkitMaskBoxImageWidth,
                     CSSPropertyWebkitMaskBoxImage,
-                    width ? *width : *CSSInitialValue::createLegacyImplicit(),
-                    important);
+                    width ? *width : *CSSInitialValue::create(), important);
         addProperty(CSSPropertyWebkitMaskBoxImageOutset,
                     CSSPropertyWebkitMaskBoxImage,
-                    outset ? *outset : *CSSInitialValue::createLegacyImplicit(),
-                    important);
+                    outset ? *outset : *CSSInitialValue::create(), important);
         addProperty(CSSPropertyWebkitMaskBoxImageRepeat,
                     CSSPropertyWebkitMaskBoxImage,
-                    repeat ? *repeat : *CSSInitialValue::createLegacyImplicit(),
-                    important);
+                    repeat ? *repeat : *CSSInitialValue::create(), important);
         return true;
       case CSSPropertyBorderImage:
         addProperty(CSSPropertyBorderImageSource, CSSPropertyBorderImage,
-                    source ? *source : *CSSInitialValue::createLegacyImplicit(),
-                    important);
+                    source ? *source : *CSSInitialValue::create(), important);
         addProperty(CSSPropertyBorderImageSlice, CSSPropertyBorderImage,
-                    slice ? *slice : *CSSInitialValue::createLegacyImplicit(),
-                    important);
+                    slice ? *slice : *CSSInitialValue::create(), important);
         addProperty(CSSPropertyBorderImageWidth, CSSPropertyBorderImage,
-                    width ? *width : *CSSInitialValue::createLegacyImplicit(),
-                    important);
+                    width ? *width : *CSSInitialValue::create(), important);
         addProperty(CSSPropertyBorderImageOutset, CSSPropertyBorderImage,
-                    outset ? *outset : *CSSInitialValue::createLegacyImplicit(),
-                    important);
+                    outset ? *outset : *CSSInitialValue::create(), important);
         addProperty(CSSPropertyBorderImageRepeat, CSSPropertyBorderImage,
-                    repeat ? *repeat : *CSSInitialValue::createLegacyImplicit(),
-                    important);
+                    repeat ? *repeat : *CSSInitialValue::create(), important);
         return true;
       default:
         ASSERT_NOT_REACHED();
@@ -4772,8 +4761,7 @@ bool CSSPropertyParser::consumeBackgroundShorthand(
         continue;
       }
       if (!parsedLonghand[i])
-        addBackgroundValue(longhands[i],
-                           CSSInitialValue::createLegacyImplicit());
+        addBackgroundValue(longhands[i], CSSInitialValue::create());
     }
   } while (consumeCommaIncludingWhitespace(m_range));
   if (!m_range.atEnd())
@@ -5010,15 +4998,15 @@ bool CSSPropertyParser::consumeGridShorthand(bool important) {
     // a single grid declaration. The sub-properties not specified are set to
     // their initial value, as normal for shorthands.
     addProperty(CSSPropertyGridAutoFlow, CSSPropertyGrid,
-                *CSSInitialValue::createLegacyImplicit(), important);
+                *CSSInitialValue::create(), important);
     addProperty(CSSPropertyGridAutoColumns, CSSPropertyGrid,
-                *CSSInitialValue::createLegacyImplicit(), important);
+                *CSSInitialValue::create(), important);
     addProperty(CSSPropertyGridAutoRows, CSSPropertyGrid,
-                *CSSInitialValue::createLegacyImplicit(), important);
+                *CSSInitialValue::create(), important);
     addProperty(CSSPropertyGridColumnGap, CSSPropertyGrid,
-                *CSSInitialValue::createLegacyImplicit(), important);
+                *CSSInitialValue::create(), important);
     addProperty(CSSPropertyGridRowGap, CSSPropertyGrid,
-                *CSSInitialValue::createLegacyImplicit(), important);
+                *CSSInitialValue::create(), important);
     return true;
   }
 
@@ -5036,7 +5024,7 @@ bool CSSPropertyParser::consumeGridShorthand(bool important) {
     if (!gridAutoFlow)
       return false;
     if (consumeSlashIncludingWhitespace(m_range)) {
-      autoRowsValue = CSSInitialValue::createLegacyImplicit();
+      autoRowsValue = CSSInitialValue::create();
     } else {
       autoRowsValue = consumeGridTrackList(m_range, m_context.mode(), GridAuto);
       if (!autoRowsValue)
@@ -5047,8 +5035,8 @@ bool CSSPropertyParser::consumeGridShorthand(bool important) {
     if (!(templateColumns =
               consumeGridTemplatesRowsOrColumns(m_range, m_context.mode())))
       return false;
-    templateRows = CSSInitialValue::createLegacyImplicit();
-    autoColumnsValue = CSSInitialValue::createLegacyImplicit();
+    templateRows = CSSInitialValue::create();
+    autoColumnsValue = CSSInitialValue::create();
   } else {
     // 3- <grid-template-rows> / [ auto-flow && dense? ] <grid-auto-columns>?
     templateRows = consumeGridTemplatesRowsOrColumns(m_range, m_context.mode());
@@ -5061,15 +5049,15 @@ bool CSSPropertyParser::consumeGridShorthand(bool important) {
     if (!gridAutoFlow)
       return false;
     if (m_range.atEnd()) {
-      autoColumnsValue = CSSInitialValue::createLegacyImplicit();
+      autoColumnsValue = CSSInitialValue::create();
     } else {
       autoColumnsValue =
           consumeGridTrackList(m_range, m_context.mode(), GridAuto);
       if (!autoColumnsValue)
         return false;
     }
-    templateColumns = CSSInitialValue::createLegacyImplicit();
-    autoRowsValue = CSSInitialValue::createLegacyImplicit();
+    templateColumns = CSSInitialValue::create();
+    autoRowsValue = CSSInitialValue::create();
   }
 
   if (!m_range.atEnd())
@@ -5083,7 +5071,7 @@ bool CSSPropertyParser::consumeGridShorthand(bool important) {
   addProperty(CSSPropertyGridTemplateRows, CSSPropertyGrid, *templateRows,
               important);
   addProperty(CSSPropertyGridTemplateAreas, CSSPropertyGrid,
-              *CSSInitialValue::createLegacyImplicit(), important);
+              *CSSInitialValue::create(), important);
   addProperty(CSSPropertyGridAutoFlow, CSSPropertyGrid, *gridAutoFlow,
               important);
   addProperty(CSSPropertyGridAutoColumns, CSSPropertyGrid, *autoColumnsValue,
@@ -5091,9 +5079,9 @@ bool CSSPropertyParser::consumeGridShorthand(bool important) {
   addProperty(CSSPropertyGridAutoRows, CSSPropertyGrid, *autoRowsValue,
               important);
   addProperty(CSSPropertyGridColumnGap, CSSPropertyGrid,
-              *CSSInitialValue::createLegacyImplicit(), important);
+              *CSSInitialValue::create(), important);
   addProperty(CSSPropertyGridRowGap, CSSPropertyGrid,
-              *CSSInitialValue::createLegacyImplicit(), important);
+              *CSSInitialValue::create(), important);
   return true;
 }
 

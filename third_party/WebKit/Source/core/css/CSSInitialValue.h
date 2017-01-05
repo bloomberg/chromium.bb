@@ -29,11 +29,8 @@ namespace blink {
 class CSSInitialValue : public CSSValue {
  public:
   static CSSInitialValue* create();
-  static CSSInitialValue* createLegacyImplicit();  // crbug.com/471917
 
   String customCSSText() const;
-
-  bool isImplicit() const { return m_isImplicit; }
 
   bool equals(const CSSInitialValue&) const { return true; }
 
@@ -44,10 +41,7 @@ class CSSInitialValue : public CSSValue {
  private:
   friend class CSSValuePool;
 
-  explicit CSSInitialValue(bool implicit)
-      : CSSValue(InitialClass), m_isImplicit(implicit) {}
-
-  bool m_isImplicit;
+  CSSInitialValue() : CSSValue(InitialClass) {}
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSInitialValue, isInitialValue());

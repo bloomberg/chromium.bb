@@ -26,11 +26,7 @@
 namespace blink {
 
 CSSInitialValue* CSSInitialValue::create() {
-  return cssValuePool().explicitInitialValue();
-}
-
-CSSInitialValue* CSSInitialValue::createLegacyImplicit() {
-  return cssValuePool().implicitInitialValue();
+  return cssValuePool().initialValue();
 }
 
 String CSSInitialValue::customCSSText() const {

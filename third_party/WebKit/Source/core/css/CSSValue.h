@@ -99,7 +99,6 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   }
   bool isImageSetValue() const { return m_classType == ImageSetClass; }
   bool isImageValue() const { return m_classType == ImageClass; }
-  bool isImplicitInitialValue() const;
   bool isInheritedValue() const { return m_classType == InheritedClass; }
   bool isInitialValue() const { return m_classType == InitialClass; }
   bool isUnsetValue() const { return m_classType == UnsetClass; }
