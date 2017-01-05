@@ -12,8 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
-#include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -33,7 +32,6 @@ constexpr char kNotifierId[] = "ARC_NOTIFICATION";
 constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
 
 SkBitmap DecodeImage(const std::vector<uint8_t>& data) {
-  DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());
   DCHECK(!data.empty());  // empty string should be handled in caller.
 
   // We may decode an image in the browser process since it has been generated
@@ -237,8 +235,9 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
   }
 
   // TODO(yoshiki): Remove decoding by passing a bitmap directly from Android.
-  base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits().WithShutdownBehavior(
+                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
       base::Bind(&DecodeImage, data->icon_data),
       base::Bind(&ArcNotificationItem::OnImageDecoded,
                  weak_ptr_factory_.GetWeakPtr()));
