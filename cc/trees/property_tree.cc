@@ -179,7 +179,8 @@ void TransformTree::OnTransformAnimated(const gfx::Transform& transform,
                                         int id,
                                         LayerTreeImpl* layer_tree_impl) {
   TransformNode* node = Node(id);
-  layer_tree_impl->AddToTransformAnimationsMap(node->owner_id, transform);
+  layer_tree_impl->AddToTransformAnimationsMap(node->owning_layer_id,
+                                               transform);
   if (node->local == transform) {
     return;
   }
@@ -350,7 +351,7 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
       tree->property_trees()->scroll_tree.Node(sticky_data->scroll_ancestor);
   gfx::ScrollOffset scroll_offset =
       tree->property_trees()->scroll_tree.current_scroll_offset(
-          scroll_node->owner_id);
+          scroll_node->owning_layer_id);
   gfx::PointF scroll_position(scroll_offset.x(), scroll_offset.y());
   TransformNode* scroll_ancestor_transform_node =
       tree->Node(scroll_node->transform_id);
@@ -836,7 +837,7 @@ void EffectTree::OnOpacityAnimated(float opacity,
                                    int id,
                                    LayerTreeImpl* layer_tree_impl) {
   EffectNode* node = Node(id);
-  layer_tree_impl->AddToOpacityAnimationsMap(node->owner_id, opacity);
+  layer_tree_impl->AddToOpacityAnimationsMap(node->owning_layer_id, opacity);
   if (node->opacity == opacity)
     return;
   node->opacity = opacity;
@@ -850,7 +851,7 @@ void EffectTree::OnFilterAnimated(const FilterOperations& filters,
                                   int id,
                                   LayerTreeImpl* layer_tree_impl) {
   EffectNode* node = Node(id);
-  layer_tree_impl->AddToFilterAnimationsMap(node->owner_id, filters);
+  layer_tree_impl->AddToFilterAnimationsMap(node->owning_layer_id, filters);
   if (node->filters == filters)
     return;
   node->filters = filters;
@@ -1411,11 +1412,12 @@ gfx::Vector2dF ScrollTree::ScrollBy(ScrollNode* scroll_node,
   if (!scroll_node->user_scrollable_vertical)
     adjusted_scroll.set_y(0);
   DCHECK(scroll_node->scrollable);
-  gfx::ScrollOffset old_offset = current_scroll_offset(scroll_node->owner_id);
+  gfx::ScrollOffset old_offset =
+      current_scroll_offset(scroll_node->owning_layer_id);
   gfx::ScrollOffset new_offset =
       ClampScrollOffsetToLimits(old_offset + adjusted_scroll, scroll_node);
-  if (SetScrollOffset(scroll_node->owner_id, new_offset))
-    layer_tree_impl->DidUpdateScrollOffset(scroll_node->owner_id);
+  if (SetScrollOffset(scroll_node->owning_layer_id, new_offset))
+    layer_tree_impl->DidUpdateScrollOffset(scroll_node->owning_layer_id);
 
   gfx::ScrollOffset unscrolled =
       old_offset + gfx::ScrollOffset(scroll) - new_offset;
@@ -1762,7 +1764,7 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
     } else {
       // TODO(sunxd): make LayerTreeImpl::MaximumTargetScale take layer id as
       // parameter.
-      LayerImpl* layer_impl = layer_tree_impl->LayerById(node->owner_id);
+      LayerImpl* layer_impl = layer_tree_impl->LayerById(node->owning_layer_id);
       layer_impl->GetMutatorHost()->MaximumTargetScale(
           layer_impl->element_id(), layer_impl->GetElementTypeForAnimation(),
           &cached_data_.animation_scales[transform_node_id]

@@ -9613,7 +9613,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
       root->layer_tree_impl()->property_trees()->transform_tree;
   TransformNode* transform_node =
       transform_tree.Node(significant_transform->transform_tree_index());
-  EXPECT_EQ(transform_node->owner_id, significant_transform->id());
+  EXPECT_EQ(transform_node->owning_layer_id, significant_transform->id());
 
   EXPECT_TRUE(root->has_render_surface());
   EXPECT_FALSE(significant_transform->has_render_surface());
@@ -10487,7 +10487,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   ScrollNode* property_tree_root = expected_scroll_tree.Node(0);
   property_tree_root->id = kRootPropertyTreeNodeId;
   property_tree_root->parent_id = kInvalidPropertyTreeNodeId;
-  property_tree_root->owner_id = kInvalidPropertyTreeNodeId;
+  property_tree_root->owning_layer_id = kInvalidPropertyTreeNodeId;
   property_tree_root->scrollable = false;
   property_tree_root->main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
@@ -10497,7 +10497,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   // The node owned by root1
   ScrollNode scroll_root1;
   scroll_root1.id = 1;
-  scroll_root1.owner_id = root1->id();
+  scroll_root1.owning_layer_id = root1->id();
   scroll_root1.user_scrollable_horizontal = true;
   scroll_root1.user_scrollable_vertical = true;
   scroll_root1.transform_id = root1->transform_tree_index();
@@ -10506,7 +10506,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   // The node owned by parent2
   ScrollNode scroll_parent2;
   scroll_parent2.id = 2;
-  scroll_parent2.owner_id = parent2->id();
+  scroll_parent2.owning_layer_id = parent2->id();
   scroll_parent2.scrollable = true;
   scroll_parent2.main_thread_scrolling_reasons =
       parent2->main_thread_scrolling_reasons();
@@ -10522,7 +10522,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   // The node owned by child6
   ScrollNode scroll_child6;
   scroll_child6.id = 3;
-  scroll_child6.owner_id = child6->id();
+  scroll_child6.owning_layer_id = child6->id();
   scroll_child6.main_thread_scrolling_reasons =
       child6->main_thread_scrolling_reasons();
   scroll_child6.should_flatten = true;
@@ -10534,7 +10534,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   // The node owned by child7, child7 also owns a transform node
   ScrollNode scroll_child7;
   scroll_child7.id = 4;
-  scroll_child7.owner_id = child7->id();
+  scroll_child7.owning_layer_id = child7->id();
   scroll_child7.scrollable = true;
   scroll_child7.scroll_clip_layer_bounds = parent3->bounds();
   scroll_child7.bounds = child7->bounds();
@@ -10546,7 +10546,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   // The node owned by grand_child11, grand_child11 also owns a transform node
   ScrollNode scroll_grand_child11;
   scroll_grand_child11.id = 5;
-  scroll_grand_child11.owner_id = grand_child11->id();
+  scroll_grand_child11.owning_layer_id = grand_child11->id();
   scroll_grand_child11.scrollable = true;
   scroll_grand_child11.user_scrollable_horizontal = true;
   scroll_grand_child11.user_scrollable_vertical = true;
@@ -10556,7 +10556,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   // The node owned by parent5
   ScrollNode scroll_parent5;
   scroll_parent5.id = 8;
-  scroll_parent5.owner_id = parent5->id();
+  scroll_parent5.owning_layer_id = parent5->id();
   scroll_parent5.contains_non_fast_scrollable_region = true;
   scroll_parent5.bounds = gfx::Size(10, 10);
   scroll_parent5.should_flatten = true;

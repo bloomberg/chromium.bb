@@ -30,7 +30,7 @@ void ScrollState::DistributeToScrollChainDescendant() {
   if (!scroll_chain_.empty()) {
     const ScrollNode* next = scroll_chain_.front();
     scroll_chain_.pop_front();
-    layer_tree_impl_->LayerById(next->owner_id)->DistributeScroll(this);
+    layer_tree_impl_->LayerById(next->owning_layer_id)->DistributeScroll(this);
   }
 }
 

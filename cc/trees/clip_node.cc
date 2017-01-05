@@ -13,7 +13,7 @@ namespace cc {
 ClipNode::ClipNode()
     : id(-1),
       parent_id(-1),
-      owner_id(-1),
+      owning_layer_id(-1),
       clip_type(ClipType::NONE),
       transform_id(-1),
       target_transform_id(-1),
@@ -27,8 +27,8 @@ ClipNode::ClipNode(const ClipNode& other) = default;
 
 bool ClipNode::operator==(const ClipNode& other) const {
   return id == other.id && parent_id == other.parent_id &&
-         owner_id == other.owner_id && clip_type == other.clip_type &&
-         clip == other.clip &&
+         owning_layer_id == other.owning_layer_id &&
+         clip_type == other.clip_type && clip == other.clip &&
          combined_clip_in_target_space == other.combined_clip_in_target_space &&
          clip_in_target_space == other.clip_in_target_space &&
          transform_id == other.transform_id &&
@@ -45,7 +45,7 @@ bool ClipNode::operator==(const ClipNode& other) const {
 void ClipNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("id", id);
   value->SetInteger("parent_id", parent_id);
-  value->SetInteger("owner_id", owner_id);
+  value->SetInteger("owning_layer_id", owning_layer_id);
   value->SetInteger("clip_type", static_cast<int>(clip_type));
   MathUtil::AddToTracedValue("clip", clip, value);
   value->SetInteger("transform_id", transform_id);

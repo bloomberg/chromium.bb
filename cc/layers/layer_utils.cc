@@ -87,7 +87,7 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
   for (; transform_tree.parent(transform_node);
        transform_node = transform_tree.parent(transform_node)) {
     LayerImpl* layer =
-        layer_in.layer_tree_impl()->LayerById(transform_node->owner_id);
+        layer_in.layer_tree_impl()->LayerById(transform_node->owning_layer_id);
 
     // Filter animation bounds are unimplemented, see function
     // HasAncestorFilterAnimation() for reference.

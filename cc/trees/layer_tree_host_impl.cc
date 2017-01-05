@@ -165,7 +165,7 @@ bool IsScrolledBy(LayerImpl* child, LayerImpl* ancestor) {
       child->layer_tree_impl()->property_trees()->scroll_tree;
   for (ScrollNode* scroll_node = scroll_tree.Node(child->scroll_tree_index());
        scroll_node; scroll_node = scroll_tree.parent(scroll_node)) {
-    if (scroll_node->owner_id == ancestor->id())
+    if (scroll_node->owning_layer_id == ancestor->id())
       return true;
   }
   return false;
@@ -2463,7 +2463,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
         inverse_screen_space_transform, screen_space_point, &clipped);
     if (!clipped &&
         active_tree()
-            ->LayerById(scroll_node->owner_id)
+            ->LayerById(scroll_node->owning_layer_id)
             ->non_fast_scrollable_region()
             .Contains(gfx::ToRoundedPoint(hit_test_point_in_layer_space))) {
       TRACE_EVENT0("cc",
@@ -2545,7 +2545,7 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
       if (status.thread == InputHandler::SCROLL_ON_IMPL_THREAD &&
           !potentially_scrolling_layer_impl) {
         potentially_scrolling_layer_impl =
-            active_tree_->LayerById(scroll_node->owner_id);
+            active_tree_->LayerById(scroll_node->owning_layer_id);
       }
     }
   }
@@ -2586,7 +2586,7 @@ static bool IsClosestScrollAncestor(LayerImpl* child,
   for (; scroll_tree.parent(scroll_node);
        scroll_node = scroll_tree.parent(scroll_node)) {
     if (scroll_node->scrollable)
-      return scroll_node->owner_id == scroll_ancestor->id();
+      return scroll_node->owning_layer_id == scroll_ancestor->id();
   }
   return false;
 }
@@ -2747,7 +2747,7 @@ gfx::Vector2dF LayerTreeHostImpl::ComputeScrollDelta(
     adjusted_scroll.set_y(0);
 
   gfx::ScrollOffset old_offset =
-      scroll_tree.current_scroll_offset(scroll_node->owner_id);
+      scroll_tree.current_scroll_offset(scroll_node->owning_layer_id);
   gfx::ScrollOffset new_offset = scroll_tree.ClampScrollOffsetToLimits(
       old_offset + gfx::ScrollOffset(adjusted_scroll), scroll_node);
 
@@ -2771,11 +2771,12 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
   scroll_tree.set_currently_scrolling_node(scroll_node->id);
 
   gfx::ScrollOffset current_offset =
-      scroll_tree.current_scroll_offset(scroll_node->owner_id);
+      scroll_tree.current_scroll_offset(scroll_node->owning_layer_id);
   gfx::ScrollOffset target_offset = scroll_tree.ClampScrollOffsetToLimits(
       current_offset + gfx::ScrollOffset(delta), scroll_node);
   DCHECK_EQ(
-      ElementId(active_tree()->LayerById(scroll_node->owner_id)->element_id()),
+      ElementId(
+          active_tree()->LayerById(scroll_node->owning_layer_id)->element_id()),
       scroll_node->element_id);
 
   mutator_host_->ImplOnlyScrollAnimationCreate(
@@ -2832,7 +2833,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
           continue;
 
         if (viewport()->MainScrollLayer() &&
-            scroll_node->owner_id == viewport()->MainScrollLayer()->id()) {
+            scroll_node->owning_layer_id ==
+                viewport()->MainScrollLayer()->id()) {
           gfx::Vector2dF scrolled =
               viewport()->ScrollAnimated(pending_delta, delayed_by);
           // Viewport::ScrollAnimated returns pending_delta as long as it
@@ -2899,11 +2901,11 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
 
   // Apply the scroll delta.
   gfx::ScrollOffset previous_offset =
-      scroll_tree->current_scroll_offset(scroll_node->owner_id);
+      scroll_tree->current_scroll_offset(scroll_node->owning_layer_id);
   scroll_tree->ScrollBy(scroll_node, local_end_point - local_start_point,
                         active_tree());
   gfx::ScrollOffset scrolled =
-      scroll_tree->current_scroll_offset(scroll_node->owner_id) -
+      scroll_tree->current_scroll_offset(scroll_node->owning_layer_id) -
       previous_offset;
 
   // Get the end point in the layer's content space so we can apply its
@@ -2929,12 +2931,12 @@ static gfx::Vector2dF ScrollNodeWithLocalDelta(
     LayerTreeImpl* layer_tree_impl) {
   ScrollTree& scroll_tree = layer_tree_impl->property_trees()->scroll_tree;
   gfx::ScrollOffset previous_offset =
-      scroll_tree.current_scroll_offset(scroll_node->owner_id);
+      scroll_tree.current_scroll_offset(scroll_node->owning_layer_id);
   gfx::Vector2dF delta = local_delta;
   delta.Scale(1.f / page_scale_factor);
   scroll_tree.ScrollBy(scroll_node, delta, layer_tree_impl);
   gfx::ScrollOffset scrolled =
-      scroll_tree.current_scroll_offset(scroll_node->owner_id) -
+      scroll_tree.current_scroll_offset(scroll_node->owning_layer_id) -
       previous_offset;
   gfx::Vector2dF consumed_scroll(scrolled.x(), scrolled.y());
   consumed_scroll.Scale(page_scale_factor);
@@ -2980,7 +2982,7 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
 
   bool is_viewport_scroll_layer =
       viewport()->MainScrollLayer() &&
-      scroll_node->owner_id == viewport()->MainScrollLayer()->id();
+      scroll_node->owning_layer_id == viewport()->MainScrollLayer()->id();
 
   // This is needed if the scroll chains up to the viewport without going
   // through the outer viewport scroll layer. This can happen if we scroll an
@@ -2988,7 +2990,7 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   // we want to scroll the inner viewport -- to allow panning while zoomed --
   // but also move browser controls if needed.
   bool is_inner_viewport_scroll_layer =
-      scroll_node->owner_id == InnerViewportScrollLayer()->id();
+      scroll_node->owning_layer_id == InnerViewportScrollLayer()->id();
 
   if (is_viewport_scroll_layer || is_inner_viewport_scroll_layer) {
     Viewport::ScrollResult result = viewport()->ScrollBy(
@@ -3097,7 +3099,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   DistributeScrollDelta(scroll_state);
 
   active_tree_->SetCurrentlyScrollingLayer(active_tree_->LayerById(
-      scroll_state->current_native_scrolling_node()->owner_id));
+      scroll_state->current_native_scrolling_node()->owning_layer_id));
   did_lock_scrolling_layer_ =
       scroll_state->delta_consumed_for_scroll_sequence();
 
@@ -3853,7 +3855,8 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
     const gfx::Vector2dF& scroll_delta,
     base::TimeDelta delayed_by) {
   DCHECK_EQ(
-      ElementId(active_tree()->LayerById(scroll_node->owner_id)->element_id()),
+      ElementId(
+          active_tree()->LayerById(scroll_node->owning_layer_id)->element_id()),
       scroll_node->element_id);
 
   return mutator_host_->ImplOnlyScrollAnimationUpdateTarget(

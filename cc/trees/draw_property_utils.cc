@@ -46,7 +46,7 @@ static void ValidateRenderSurfaceForLayer(LayerImpl* layer) {
   EffectNode* effect_node =
       layer->layer_tree_impl()->property_trees()->effect_tree.Node(
           layer->effect_tree_index());
-  if (effect_node->owner_id != layer->id())
+  if (effect_node->owning_layer_id != layer->id())
     return;
   DCHECK_EQ(effect_node->mask_layer_id, EffectTree::kInvalidNodeId)
       << "layer: " << layer->id();
@@ -519,7 +519,8 @@ static int TransformTreeIndexForBackfaceVisibility(LayerType* layer,
   if (!layer->use_parent_backface_visibility())
     return layer->transform_tree_index();
   const TransformNode* node = tree.Node(layer->transform_tree_index());
-  return layer->id() == node->owner_id ? tree.parent(node)->id : node->id;
+  return layer->id() == node->owning_layer_id ? tree.parent(node)->id
+                                              : node->id;
 }
 
 static bool IsTargetSpaceTransformBackFaceVisible(
@@ -639,7 +640,7 @@ void UpdateRenderSurfaceForLayer(EffectTree* effect_tree,
 
   EffectNode* node = effect_tree->Node(layer->effect_tree_index());
 
-  if (node->owner_id == layer->id() && node->has_render_surface)
+  if (node->owning_layer_id == layer->id() && node->has_render_surface)
     layer->SetHasRenderSurface(true);
   else
     layer->SetHasRenderSurface(false);
@@ -1071,7 +1072,7 @@ void ComputeVisibleRects(LayerImpl* root_layer,
                                 can_render_to_separate_surface, layer);
     EffectNode* node =
         property_trees->effect_tree.Node(layer->effect_tree_index());
-    if (node->owner_id == layer->id())
+    if (node->owning_layer_id == layer->id())
       node->render_surface = layer->render_surface();
 #if DCHECK_IS_ON()
     if (can_render_to_separate_surface)

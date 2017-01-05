@@ -22,9 +22,12 @@ struct CC_EXPORT TransformNode {
   TransformNode();
   TransformNode(const TransformNode&);
 
+  // The node index of this node in the transform tree node vector.
   int id;
+  // The node index of the parent node in the transform tree node vector.
   int parent_id;
-  int owner_id;
+  // The layer id of the layer that owns this node.
+  int owning_layer_id;
 
   // The local transform information is combined to form to_parent (ignoring
   // snapping) as follows:

@@ -338,7 +338,7 @@ static void SetSurfaceIsClipped(DataForRecursion<LayerType>* data_for_children,
   // ancestor clip.
   EffectNode* effect_node = data_for_children->property_trees->effect_tree.Node(
       data_for_children->render_target);
-  DCHECK_EQ(effect_node->owner_id, layer->id());
+  DCHECK_EQ(effect_node->owning_layer_id, layer->id());
   effect_node->surface_is_clipped =
       apply_ancestor_clip && !NumUnclippedDescendants(layer);
   // The ancestor clip should propagate to children only if the surface doesn't
@@ -423,7 +423,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     node.target_transform_id = data_for_children->property_trees->effect_tree
                                    .Node(data_for_children->render_target)
                                    ->transform_id;
-    node.owner_id = layer->id();
+    node.owning_layer_id = layer->id();
 
     if (apply_ancestor_clip || layer_clips_subtree) {
       // Surfaces reset the rect used for layer clipping. At other nodes, layer
@@ -740,7 +740,7 @@ bool AddTransformNodeIfNeeded(
   // Flattening (if needed) will be handled by |node|.
   layer->set_should_flatten_transform_from_property_tree(false);
 
-  node->owner_id = layer->id();
+  node->owning_layer_id = layer->id();
 
   return true;
 }
@@ -1025,10 +1025,10 @@ bool AddEffectNodeIfNeeded(
   }
 
   EffectNode node;
-  node.owner_id = layer->id();
+  node.owning_layer_id = layer->id();
   if (AlwaysUseActiveTreeOpacity(layer)) {
     data_for_children->property_trees->always_use_active_tree_opacity_effect_ids
-        .push_back(node.owner_id);
+        .push_back(node.owning_layer_id);
   }
 
   node.opacity = Opacity(layer);
@@ -1126,7 +1126,7 @@ void AddScrollNodeIfNeeded(
     data_for_children->scroll_tree_parent = parent_id;
   } else {
     ScrollNode node;
-    node.owner_id = layer->id();
+    node.owning_layer_id = layer->id();
     node.scrollable = scrollable;
     node.main_thread_scrolling_reasons = main_thread_scrolling_reasons;
     node.contains_non_fast_scrollable_region =
@@ -1309,7 +1309,7 @@ void BuildPropertyTreesInternal(
   EffectNode* effect_node = data_for_children.property_trees->effect_tree.Node(
       data_for_children.effect_tree_parent);
 
-  if (effect_node->owner_id == layer->id()) {
+  if (effect_node->owning_layer_id == layer->id()) {
     if (effect_node->has_copy_request)
       data_to_parent->num_copy_requests_in_subtree++;
     effect_node->num_copy_requests_in_subtree =

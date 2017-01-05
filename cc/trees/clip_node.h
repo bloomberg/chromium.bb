@@ -20,9 +20,12 @@ struct CC_EXPORT ClipNode {
   ClipNode();
   ClipNode(const ClipNode& other);
 
+  // The node index of this node in the clip tree node vector.
   int id;
+  // The node index of the parent node in the clip tree node vector.
   int parent_id;
-  int owner_id;
+  // The layer id of the layer that owns this node.
+  int owning_layer_id;
 
   enum class ClipType {
     // The node doesn't contribute a new clip. It exists only for caching clips

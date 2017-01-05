@@ -21,13 +21,15 @@ struct CC_EXPORT ScrollNode {
   ScrollNode();
   ScrollNode(const ScrollNode& other);
 
+  // The node index of this node in the scroll tree node vector.
   int id;
+  // The node index of the parent node in the scroll tree node vector.
   int parent_id;
 
   // The layer id that corresponds to the layer contents that are scrolled.
   // Unlike |id|, this id is stable across frames that don't change the
   // composited layer list.
-  int owner_id;
+  int owning_layer_id;
 
   // This is used for subtrees that should not be scrolled independently. For
   // example, when there is a layer that is not scrollable itself but is inside

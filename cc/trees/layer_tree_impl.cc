@@ -368,7 +368,7 @@ static void UpdateClipTreeForBoundsDeltaOnLayer(LayerImpl* layer,
   if (layer && layer->masks_to_bounds()) {
     ClipNode* clip_node = clip_tree->Node(layer->clip_tree_index());
     if (clip_node) {
-      DCHECK_EQ(layer->id(), clip_node->owner_id);
+      DCHECK_EQ(layer->id(), clip_node->owning_layer_id);
       gfx::SizeF bounds = gfx::SizeF(layer->bounds());
       if (clip_node->clip.size() != bounds) {
         clip_node->clip.set_size(bounds);
@@ -599,7 +599,8 @@ LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() const {
   DCHECK(IsActiveTree());
   const ScrollNode* scroll_node =
       property_trees_.scroll_tree.CurrentlyScrollingNode();
-  return LayerById(scroll_node ? scroll_node->owner_id : Layer::INVALID_ID);
+  return LayerById(scroll_node ? scroll_node->owning_layer_id
+                               : Layer::INVALID_ID);
 }
 
 int LayerTreeImpl::LastScrolledLayerId() const {
@@ -609,7 +610,7 @@ int LayerTreeImpl::LastScrolledLayerId() const {
 void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
   ScrollTree& scroll_tree = property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
-  int old_id = scroll_node ? scroll_node->owner_id : Layer::INVALID_ID;
+  int old_id = scroll_node ? scroll_node->owning_layer_id : Layer::INVALID_ID;
   int new_id = layer ? layer->id() : Layer::INVALID_ID;
   int new_scroll_node_id = layer ? layer->scroll_tree_index() : -1;
   if (layer)
@@ -1793,7 +1794,7 @@ static bool PointIsClippedByAncestorClipNode(
           gfx::ToEnclosingRect(clip_node->combined_clip_in_target_space);
 
       const LayerImpl* target_layer =
-          layer->layer_tree_impl()->LayerById(transform_node->owner_id);
+          layer->layer_tree_impl()->LayerById(transform_node->owning_layer_id);
       DCHECK(transform_node->id == 0 || target_layer->render_surface() ||
              layer->layer_tree_impl()->is_in_resourceless_software_draw_mode());
       gfx::Transform surface_screen_space_transform =
@@ -1808,7 +1809,7 @@ static bool PointIsClippedByAncestorClipNode(
       }
     }
     const LayerImpl* clip_node_owner =
-        layer->layer_tree_impl()->LayerById(clip_node->owner_id);
+        layer->layer_tree_impl()->LayerById(clip_node->owning_layer_id);
     if (clip_node_owner->render_surface() &&
         !PointHitsRect(
             screen_space_point, SurfaceScreenSpaceTransform(clip_node_owner),

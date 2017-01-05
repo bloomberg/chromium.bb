@@ -25,9 +25,12 @@ struct CC_EXPORT EffectNode {
   EffectNode();
   EffectNode(const EffectNode& other);
 
+  // The node index of this node in the effect tree node vector.
   int id;
+  // The node index of the parent node in the effect tree node vector.
   int parent_id;
-  int owner_id;
+  // The layer id of the layer that owns this node.
+  int owning_layer_id;
 
   float opacity;
   float screen_space_opacity;

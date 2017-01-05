@@ -722,14 +722,14 @@ void PropertyTreeManager::setupRootClipNode() {
   DCHECK_EQ(clipNode.id, kSecondaryRootNodeId);
 
   clipNode.resets_clip = true;
-  clipNode.owner_id = m_rootLayer->id();
+  clipNode.owning_layer_id = m_rootLayer->id();
   clipNode.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
   clipNode.clip = gfx::RectF(
       gfx::SizeF(m_rootLayer->GetLayerTree()->device_viewport_size()));
   clipNode.transform_id = kRealRootNodeId;
   clipNode.target_transform_id = kRealRootNodeId;
   clipNode.target_effect_id = kSecondaryRootNodeId;
-  m_propertyTrees.clip_id_to_index_map[clipNode.owner_id] = clipNode.id;
+  m_propertyTrees.clip_id_to_index_map[clipNode.owning_layer_id] = clipNode.id;
 
   m_clipNodeMap.set(ClipPaintPropertyNode::root(), clipNode.id);
   m_rootLayer->SetClipTreeIndex(clipNode.id);
@@ -743,11 +743,12 @@ void PropertyTreeManager::setupRootEffectNode() {
   cc::EffectNode& effectNode =
       *effectTree.Node(effectTree.Insert(cc::EffectNode(), kInvalidNodeId));
   DCHECK_EQ(effectNode.id, kSecondaryRootNodeId);
-  effectNode.owner_id = m_rootLayer->id();
+  effectNode.owning_layer_id = m_rootLayer->id();
   effectNode.transform_id = kRealRootNodeId;
   effectNode.clip_id = kSecondaryRootNodeId;
   effectNode.has_render_surface = true;
-  m_propertyTrees.effect_id_to_index_map[effectNode.owner_id] = effectNode.id;
+  m_propertyTrees.effect_id_to_index_map[effectNode.owning_layer_id] =
+      effectNode.id;
 
   m_effectStack.append(
       BlinkEffectAndCcIdPair{EffectPaintPropertyNode::root(), effectNode.id});
@@ -761,9 +762,10 @@ void PropertyTreeManager::setupRootScrollNode() {
   cc::ScrollNode& scrollNode =
       *scrollTree.Node(scrollTree.Insert(cc::ScrollNode(), kRealRootNodeId));
   DCHECK_EQ(scrollNode.id, kSecondaryRootNodeId);
-  scrollNode.owner_id = m_rootLayer->id();
+  scrollNode.owning_layer_id = m_rootLayer->id();
   scrollNode.transform_id = kSecondaryRootNodeId;
-  m_propertyTrees.scroll_id_to_index_map[scrollNode.owner_id] = scrollNode.id;
+  m_propertyTrees.scroll_id_to_index_map[scrollNode.owning_layer_id] =
+      scrollNode.id;
 
   m_scrollNodeMap.set(ScrollPaintPropertyNode::root(), scrollNode.id);
   m_rootLayer->SetScrollTreeIndex(scrollNode.id);
@@ -830,8 +832,8 @@ int PropertyTreeManager::compositorIdForClipNode(
   int id = clipTree().Insert(cc::ClipNode(), parentId);
 
   cc::ClipNode& compositorNode = *clipTree().Node(id);
-  compositorNode.owner_id = dummyLayer->id();
-  m_propertyTrees.clip_id_to_index_map[compositorNode.owner_id] = id;
+  compositorNode.owning_layer_id = dummyLayer->id();
+  m_propertyTrees.clip_id_to_index_map[compositorNode.owning_layer_id] = id;
 
   // TODO(jbroman): Don't discard rounded corners.
   compositorNode.clip = clipNode->clipRect().rect();
@@ -871,8 +873,8 @@ int PropertyTreeManager::compositorIdForScrollNode(
   int id = scrollTree().Insert(cc::ScrollNode(), parentId);
 
   cc::ScrollNode& compositorNode = *scrollTree().Node(id);
-  compositorNode.owner_id = parentId;
-  m_propertyTrees.scroll_id_to_index_map[compositorNode.owner_id] = id;
+  compositorNode.owning_layer_id = parentId;
+  m_propertyTrees.scroll_id_to_index_map[compositorNode.owning_layer_id] = id;
 
   compositorNode.scrollable = true;
 
@@ -1008,7 +1010,7 @@ void PropertyTreeManager::buildEffectNodesRecursively(
 
   cc::EffectNode& effectNode = *effectTree().Node(effectTree().Insert(
       cc::EffectNode(), compositorIdForCurrentEffectNode()));
-  effectNode.owner_id = dummyLayer->id();
+  effectNode.owning_layer_id = dummyLayer->id();
   effectNode.clip_id = outputClipId;
   // Every effect is supposed to have render surface enabled for grouping,
   // but we can get away without one if the effect is opacity-only and has only
@@ -1026,7 +1028,8 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   effectNode.opacity = nextEffect->opacity();
   effectNode.filters = nextEffect->filter().asCcFilterOperations();
   effectNode.blend_mode = nextEffect->blendMode();
-  m_propertyTrees.effect_id_to_index_map[effectNode.owner_id] = effectNode.id;
+  m_propertyTrees.effect_id_to_index_map[effectNode.owning_layer_id] =
+      effectNode.id;
   m_effectStack.append(BlinkEffectAndCcIdPair{nextEffect, effectNode.id});
 
   dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
