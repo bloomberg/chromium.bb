@@ -1911,8 +1911,9 @@ class ShelfAppBrowserTestWithMultiMonitor
 
 // Do basic drag and drop interaction tests between the application list and
 // the launcher in the secondary monitor.
+// TODO(msw): fix, http://crbug.com/678622.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
-    BasicDragAndDrop) {
+                       DISABLED_BasicDragAndDrop) {
   // Get a number of interfaces we need.
   DCHECK_EQ(ash::Shell::GetAllRootWindows().size(), 2U);
   aura::Window* secondary_root_window = ash::Shell::GetAllRootWindows()[1];
