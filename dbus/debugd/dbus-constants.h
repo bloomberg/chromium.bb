@@ -11,7 +11,10 @@ const char kDebugdServicePath[] = "/org/chromium/debugd";
 const char kDebugdServiceName[] = "org.chromium.debugd";
 
 // Methods.
-const char kCupsAddPrinter[] = "CupsAddPrinter";
+const char kCupsAddPrinter[] = "CupsAddPrinter";  // DEPRECATED
+const char kCupsAddManuallyConfiguredPrinter[] =
+    "CupsAddManuallyConfiguredPrinter";
+const char kCupsAddAutoConfiguredPrinter[] = "CupsAddAutoConfiguredPrinter";
 const char kCupsRemovePrinter[] = "CupsRemovePrinter";
 const char kDumpDebugLogs[] = "DumpDebugLogs";
 const char kGetDebugLogs[] = "GetDebugLogs";
