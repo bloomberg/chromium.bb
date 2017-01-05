@@ -447,4 +447,63 @@ TEST_F(APIEventHandlerTest, TestDispatchFromJs) {
                 context->Global(), context, "eventArgs"));
 }
 
+// Test listeners that remove themselves in their handling of the event.
+TEST_F(APIEventHandlerTest, RemovingListenersWhileHandlingEvent) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  const char kEventName[] = "alpha";
+  v8::Local<v8::Object> event =
+      handler.CreateEventInstance(kEventName, context);
+  ASSERT_FALSE(event.IsEmpty());
+
+  {
+    // Cache the event object on the global in order to allow for easy removal.
+    v8::Local<v8::Function> set_event_on_global =
+        FunctionFromString(
+            context,
+           "(function(event) { this.testEvent = event; })");
+    v8::Local<v8::Value> args[] = {event};
+    RunFunctionOnGlobal(set_event_on_global, context, arraysize(args), args);
+    EXPECT_EQ(event,
+              GetPropertyFromObject(context->Global(), context, "testEvent"));
+  }
+
+  // A listener function that removes itself as a listener.
+  const char kListenerFunction[] =
+      "(function() {\n"
+      "  return function listener() {\n"
+      "    this.testEvent.removeListener(listener);\n"
+      "  };\n"
+      "})();";
+
+  // Create and add a bunch of listeners.
+  std::vector<v8::Local<v8::Function>> listeners;
+  const size_t kNumListeners = 20u;
+  listeners.reserve(kNumListeners);
+  for (size_t i = 0; i < kNumListeners; ++i)
+    listeners.push_back(FunctionFromString(context, kListenerFunction));
+
+  const char kAddListenerFunction[] =
+      "(function(event, listener) { event.addListener(listener); })";
+  v8::Local<v8::Function> add_listener_function =
+      FunctionFromString(context, kAddListenerFunction);
+
+  for (const auto& listener : listeners) {
+    v8::Local<v8::Value> argv[] = {event, listener};
+    RunFunctionOnGlobal(add_listener_function, context, arraysize(argv), argv);
+  }
+
+  // Fire the event. All listeners should be removed (and we shouldn't crash).
+  EXPECT_EQ(kNumListeners,
+            handler.GetNumEventListenersForTesting(kEventName, context));
+  handler.FireEventInContext(kEventName, context, base::ListValue());
+  EXPECT_EQ(0u, handler.GetNumEventListenersForTesting(kEventName, context));
+
+  // TODO(devlin): Another possible test: register listener a and listener b,
+  // where a removes b and b removes a. Theoretically, only one should be
+  // notified. Investigate what we currently do in JS-style bindings.
+}
+
 }  // namespace extensions

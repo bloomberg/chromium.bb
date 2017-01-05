@@ -34,10 +34,15 @@ gin::ObjectTemplateBuilder EventEmitter::GetObjectTemplateBuilder(
 
 void EventEmitter::Fire(v8::Local<v8::Context> context,
                         std::vector<v8::Local<v8::Value>>* args) {
-  for (const auto& listener : listeners_) {
-    run_js_.Run(listener.Get(context->GetIsolate()), context, args->size(),
-                             args->data());
-  }
+  // We create a local copy of listeners_ since the array can be modified during
+  // handling.
+  std::vector<v8::Local<v8::Function>> listeners;
+  listeners.reserve(listeners_.size());
+  for (const auto& listener : listeners_)
+    listeners.push_back(listener.Get(context->GetIsolate()));
+
+  for (const auto& listener : listeners)
+    run_js_.Run(listener, context, args->size(), args->data());
 }
 
 void EventEmitter::AddListener(gin::Arguments* arguments) {
