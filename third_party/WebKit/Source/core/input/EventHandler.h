@@ -70,12 +70,12 @@ class LocalFrame;
 class Node;
 class OptionalCursor;
 class PlatformTouchEvent;
-class PlatformWheelEvent;
 class ScrollableArea;
 class Scrollbar;
 class SelectionController;
 class TextEvent;
 class WebGestureEvent;
+class WebMouseWheelEvent;
 
 class CORE_EXPORT EventHandler final
     : public GarbageCollectedFinalized<EventHandler> {
@@ -149,7 +149,7 @@ class CORE_EXPORT EventHandler final
 
   WebInputEventResult handleMousePressEvent(const PlatformMouseEvent&);
   WebInputEventResult handleMouseReleaseEvent(const PlatformMouseEvent&);
-  WebInputEventResult handleWheelEvent(const PlatformWheelEvent&);
+  WebInputEventResult handleWheelEvent(const WebMouseWheelEvent&);
 
   // Called on the local root frame exactly once per gesture event.
   WebInputEventResult handleGestureEvent(const WebGestureEvent&);

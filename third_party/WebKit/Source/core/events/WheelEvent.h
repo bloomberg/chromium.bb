@@ -30,22 +30,9 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/WheelEventInit.h"
 #include "platform/geometry/FloatPoint.h"
+#include "public/platform/WebMouseWheelEvent.h"
 
 namespace blink {
-
-class PlatformWheelEvent;
-
-#if OS(MACOSX)
-enum WheelEventPhase {
-  WheelEventPhaseNone = 0,
-  WheelEventPhaseBegan = 1 << 0,
-  WheelEventPhaseStationary = 1 << 1,
-  WheelEventPhaseChanged = 1 << 2,
-  WheelEventPhaseEnded = 1 << 3,
-  WheelEventPhaseCancelled = 1 << 4,
-  WheelEventPhaseMayBegin = 1 << 5,
-};
-#endif
 
 class CORE_EXPORT WheelEvent final : public MouseEvent {
   DEFINE_WRAPPERTYPEINFO();
@@ -57,42 +44,12 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
 
   static WheelEvent* create() { return new WheelEvent; }
 
-  static WheelEvent* create(const PlatformWheelEvent& platformEvent,
+  static WheelEvent* create(const WebMouseWheelEvent& nativeEvent,
                             AbstractView*);
 
   static WheelEvent* create(const AtomicString& type,
                             const WheelEventInit& initializer) {
     return new WheelEvent(type, initializer);
-  }
-
-  static WheelEvent* create(const FloatPoint& wheelTicks,
-                            const FloatPoint& rawDelta,
-                            unsigned deltaMode,
-                            AbstractView* view,
-                            const IntPoint& screenLocation,
-                            const IntPoint& windowLocation,
-                            PlatformEvent::Modifiers modifiers,
-                            unsigned short buttons,
-                            TimeTicks platformTimeStamp,
-                            int resendingPluginId,
-                            bool hasPreciseScrollingDeltas,
-                            RailsMode railsMode,
-                            bool cancelable
-#if OS(MACOSX)
-                            ,
-                            WheelEventPhase phase,
-                            WheelEventPhase momentumPhase
-#endif
-                            ) {
-    return new WheelEvent(wheelTicks, rawDelta, deltaMode, view, screenLocation,
-                          windowLocation, modifiers, buttons, platformTimeStamp,
-                          resendingPluginId, hasPreciseScrollingDeltas,
-                          railsMode, cancelable
-#if OS(MACOSX)
-                          ,
-                          phase, momentumPhase
-#endif
-                          );
   }
 
   double deltaX() const { return m_deltaX; }  // Positive when scrolling right.
@@ -108,15 +65,6 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
     return m_wheelDelta.y();
   }  // Deprecated, negative when scrolling down.
   unsigned deltaMode() const { return m_deltaMode; }
-  float ticksX() const {
-    return static_cast<float>(m_wheelDelta.x()) / TickMultiplier;
-  }
-  float ticksY() const {
-    return static_cast<float>(m_wheelDelta.y()) / TickMultiplier;
-  }
-  int resendingPluginId() const { return m_resendingPluginId; }
-  bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
-  RailsMode getRailsMode() const { return m_railsMode; }
 
   const AtomicString& interfaceName() const override;
   bool isMouseEvent() const override;
@@ -124,59 +72,21 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
 
   EventDispatchMediator* createMediator() override;
 
-#if OS(MACOSX)
-  WheelEventPhase phase() const { return m_phase; }
-  WheelEventPhase momentumPhase() const { return m_momentumPhase; }
-#endif
+  const WebMouseWheelEvent& nativeEvent() const { return m_nativeEvent; }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   WheelEvent();
   WheelEvent(const AtomicString&, const WheelEventInit&);
-  WheelEvent(const FloatPoint& wheelTicks,
-             const FloatPoint& rawDelta,
-             unsigned,
-             AbstractView*,
-             const IntPoint& screenLocation,
-             const IntPoint& windowLocation,
-             PlatformEvent::Modifiers,
-             unsigned short buttons,
-             TimeTicks platformTimeStamp,
-             int resendingPluginId,
-             bool hasPreciseScrollingDeltas,
-             RailsMode,
-             bool cancelable);
-#if OS(MACOSX)
-  WheelEvent(const FloatPoint& wheelTicks,
-             const FloatPoint& rawDelta,
-             unsigned,
-             AbstractView*,
-             const IntPoint& screenLocation,
-             const IntPoint& windowLocation,
-             PlatformEvent::Modifiers,
-             unsigned short buttons,
-             TimeTicks platformTimeStamp,
-             int resendingPluginId,
-             bool hasPreciseScrollingDeltas,
-             RailsMode,
-             bool cancelable,
-             WheelEventPhase phase,
-             WheelEventPhase momentumPhase);
-#endif
+  WheelEvent(const WebMouseWheelEvent&, AbstractView*);
 
   IntPoint m_wheelDelta;
   double m_deltaX;
   double m_deltaY;
   double m_deltaZ;
   unsigned m_deltaMode;
-  int m_resendingPluginId;
-  bool m_hasPreciseScrollingDeltas;
-  RailsMode m_railsMode;
-#if OS(MACOSX)
-  WheelEventPhase m_phase;
-  WheelEventPhase m_momentumPhase;
-#endif
+  WebMouseWheelEvent m_nativeEvent;
 };
 
 DEFINE_EVENT_TYPE_CASTS(WheelEvent);

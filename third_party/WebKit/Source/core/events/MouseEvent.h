@@ -199,6 +199,14 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
              bool canBubble,
              bool cancelable,
              AbstractView*,
+             PlatformMouseEvent::SyntheticEventType,
+             const String& region,
+             const WebMouseEvent&);
+
+  MouseEvent(const AtomicString& type,
+             bool canBubble,
+             bool cancelable,
+             AbstractView*,
              int detail,
              int screenX,
              int screenY,
@@ -239,6 +247,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
                               unsigned short buttons = 0);
 
   void initCoordinates(const double clientX, const double clientY);
+  void initCoordinatesFromRootFrame(int windowX, int windowY);
   void receivedTarget() final;
 
   void computePageLocation();

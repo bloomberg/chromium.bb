@@ -237,14 +237,14 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
   if (WebInputEvent::isGestureEventType(inputEvent.type) &&
       inputEvent.type == WebInputEvent::GestureTap) {
     // We only have a use for gesture tap.
-    WebGestureEvent scaledEvent = TransformWebGestureEvent(
+    WebGestureEvent transformedEvent = TransformWebGestureEvent(
         m_frameImpl->frameView(),
         static_cast<const WebGestureEvent&>(inputEvent));
-    handled = handleGestureEvent(scaledEvent);
+    handled = handleGestureEvent(transformedEvent);
     if (handled)
       return true;
 
-    overlayMainFrame()->eventHandler().handleGestureEvent(scaledEvent);
+    overlayMainFrame()->eventHandler().handleGestureEvent(transformedEvent);
   }
   if (WebInputEvent::isMouseEventType(inputEvent.type) &&
       inputEvent.type != WebInputEvent::MouseEnter) {
@@ -295,11 +295,11 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
   }
 
   if (inputEvent.type == WebInputEvent::MouseWheel) {
-    PlatformWheelEvent wheelEvent = PlatformWheelEventBuilder(
+    WebMouseWheelEvent transformedEvent = TransformWebMouseWheelEvent(
         m_frameImpl->frameView(),
         static_cast<const WebMouseWheelEvent&>(inputEvent));
-    handled = overlayMainFrame()->eventHandler().handleWheelEvent(wheelEvent) !=
-              WebInputEventResult::NotHandled;
+    handled = overlayMainFrame()->eventHandler().handleWheelEvent(
+                  transformedEvent) != WebInputEventResult::NotHandled;
   }
 
   return handled;

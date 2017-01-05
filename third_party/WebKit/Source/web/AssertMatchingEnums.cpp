@@ -574,32 +574,6 @@ STATIC_ASSERT_ENUM(WebMediaPlayer::ReadyStateHaveFutureData,
 STATIC_ASSERT_ENUM(WebMediaPlayer::ReadyStateHaveEnoughData,
                    HTMLMediaElement::kHaveEnoughData);
 
-#if OS(MACOSX)
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseNone, PlatformWheelEventPhaseNone);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseBegan,
-                   PlatformWheelEventPhaseBegan);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseStationary,
-                   PlatformWheelEventPhaseStationary);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseChanged,
-                   PlatformWheelEventPhaseChanged);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseEnded,
-                   PlatformWheelEventPhaseEnded);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseCancelled,
-                   PlatformWheelEventPhaseCancelled);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseMayBegin,
-                   PlatformWheelEventPhaseMayBegin);
-
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseNone, WheelEventPhaseNone);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseBegan, WheelEventPhaseBegan);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseStationary,
-                   WheelEventPhaseStationary);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseChanged, WheelEventPhaseChanged);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseEnded, WheelEventPhaseEnded);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseCancelled,
-                   WheelEventPhaseCancelled);
-STATIC_ASSERT_ENUM(WebMouseWheelEvent::PhaseMayBegin, WheelEventPhaseMayBegin);
-#endif
-
 STATIC_ASSERT_ENUM(WebScrollbar::Horizontal, HorizontalScrollbar);
 STATIC_ASSERT_ENUM(WebScrollbar::Vertical, VerticalScrollbar);
 

@@ -43,9 +43,6 @@ class PlatformEvent {
     MouseReleased,
     MouseScroll,
 
-    // PlatformWheelEvent
-    Wheel,
-
     // PlatformTouchEvent
     TouchStart,
     TouchMove,

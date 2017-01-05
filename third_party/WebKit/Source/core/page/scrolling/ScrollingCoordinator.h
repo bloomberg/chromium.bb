@@ -28,7 +28,6 @@
 
 #include "core/CoreExport.h"
 #include "core/paint/LayerHitTestRects.h"
-#include "platform/PlatformWheelEvent.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/MainThreadScrollingReason.h"

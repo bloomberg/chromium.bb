@@ -27,6 +27,7 @@
 #include "core/CoreExport.h"
 #include "core/events/EventModifierInit.h"
 #include "core/events/UIEvent.h"
+#include "platform/PlatformEvent.h"
 
 namespace blink {
 

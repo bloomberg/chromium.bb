@@ -88,7 +88,6 @@
 #include "core/style/CursorData.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/PlatformTouchEvent.h"
-#include "platform/PlatformWheelEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WindowsKeyboardCodes.h"
 #include "platform/geometry/FloatPoint.h"
@@ -98,6 +97,7 @@
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/Scrollbar.h"
 #include "public/platform/WebInputEvent.h"
+#include "public/platform/WebMouseWheelEvent.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
@@ -1270,17 +1270,18 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(
 }
 
 WebInputEventResult EventHandler::handleWheelEvent(
-    const PlatformWheelEvent& event) {
+    const WebMouseWheelEvent& event) {
 #if OS(MACOSX)
   // Filter Mac OS specific phases, usually with a zero-delta.
   // https://crbug.com/553732
-  // TODO(chongz): EventSender sends events with |PlatformWheelEventPhaseNone|,
+  // TODO(chongz): EventSender sends events with
+  // |WebMouseWheelEvent::PhaseNone|,
   // but it shouldn't.
-  const int kPlatformWheelEventPhaseNoEventMask =
-      PlatformWheelEventPhaseEnded | PlatformWheelEventPhaseCancelled |
-      PlatformWheelEventPhaseMayBegin;
-  if ((event.phase() & kPlatformWheelEventPhaseNoEventMask) ||
-      (event.momentumPhase() & kPlatformWheelEventPhaseNoEventMask))
+  const int kWheelEventPhaseNoEventMask = WebMouseWheelEvent::PhaseEnded |
+                                          WebMouseWheelEvent::PhaseCancelled |
+                                          WebMouseWheelEvent::PhaseMayBegin;
+  if ((event.phase & kWheelEventPhaseNoEventMask) ||
+      (event.momentumPhase & kWheelEventPhaseNoEventMask))
     return WebInputEventResult::NotHandled;
 #endif
   Document* doc = m_frame->document();
@@ -1292,7 +1293,8 @@ WebInputEventResult EventHandler::handleWheelEvent(
   if (!view)
     return WebInputEventResult::NotHandled;
 
-  LayoutPoint vPoint = view->rootFrameToContents(event.position());
+  LayoutPoint vPoint =
+      view->rootFrameToContents(flooredIntPoint(event.positionInRootFrame()));
 
   HitTestRequest request(HitTestRequest::ReadOnly);
   HitTestResult result(request, vPoint);

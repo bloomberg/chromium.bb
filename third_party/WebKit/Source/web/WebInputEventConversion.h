@@ -33,7 +33,6 @@
 
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformTouchEvent.h"
-#include "platform/PlatformWheelEvent.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebMouseWheelEvent.h"
@@ -51,7 +50,6 @@ class WebGestureEvent;
 class WebMouseEvent;
 class WebKeyboardEvent;
 class WebTouchEvent;
-class WheelEvent;
 class Widget;
 
 // These classes are used to convert from WebInputEvent subclasses to
@@ -61,12 +59,6 @@ class WEB_EXPORT PlatformMouseEventBuilder
     : NON_EXPORTED_BASE(public PlatformMouseEvent) {
  public:
   PlatformMouseEventBuilder(Widget*, const WebMouseEvent&);
-};
-
-class WEB_EXPORT PlatformWheelEventBuilder
-    : NON_EXPORTED_BASE(public PlatformWheelEvent) {
- public:
-  PlatformWheelEventBuilder(Widget*, const WebMouseWheelEvent&);
 };
 
 // Converts a WebTouchPoint to a PlatformTouchPoint.
@@ -94,14 +86,6 @@ class WEB_EXPORT WebMouseEventBuilder
   WebMouseEventBuilder(const Widget*, const LayoutItem, const TouchEvent&);
 };
 
-// Converts a WheelEvent to a corresponding WebMouseWheelEvent.
-// If the event mapping fails, the event type will be set to Undefined.
-class WEB_EXPORT WebMouseWheelEventBuilder
-    : NON_EXPORTED_BASE(public WebMouseWheelEvent) {
- public:
-  WebMouseWheelEventBuilder(const Widget*, const LayoutItem, const WheelEvent&);
-};
-
 // Converts a KeyboardEvent to a corresponding WebKeyboardEvent.
 // NOTE: For KeyboardEvent, this is only implemented for keydown,
 // keyup, and keypress. If the event mapping fails, the event type will be set
@@ -125,6 +109,8 @@ class WEB_EXPORT WebTouchEventBuilder
 // and translation.
 WEB_EXPORT WebGestureEvent TransformWebGestureEvent(Widget*,
                                                     const WebGestureEvent&);
+WEB_EXPORT WebMouseWheelEvent
+TransformWebMouseWheelEvent(Widget*, const WebMouseWheelEvent&);
 
 Vector<PlatformMouseEvent> WEB_EXPORT
 createPlatformMouseEventVector(Widget*,

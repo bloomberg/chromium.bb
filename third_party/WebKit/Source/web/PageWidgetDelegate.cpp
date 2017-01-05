@@ -250,8 +250,9 @@ void PageWidgetEventHandler::handleMouseUp(LocalFrame& mainFrame,
 WebInputEventResult PageWidgetEventHandler::handleMouseWheel(
     LocalFrame& mainFrame,
     const WebMouseWheelEvent& event) {
-  return mainFrame.eventHandler().handleWheelEvent(
-      PlatformWheelEventBuilder(mainFrame.view(), event));
+  WebMouseWheelEvent transformedEvent =
+      TransformWebMouseWheelEvent(mainFrame.view(), event);
+  return mainFrame.eventHandler().handleWheelEvent(transformedEvent);
 }
 
 WebInputEventResult PageWidgetEventHandler::handleTouchEvent(

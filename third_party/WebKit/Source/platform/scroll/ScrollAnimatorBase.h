@@ -32,7 +32,6 @@
 #define ScrollAnimatorBase_h
 
 #include "platform/PlatformExport.h"
-#include "platform/PlatformWheelEvent.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollAnimatorCompositorCoordinator.h"
 #include "platform/scroll/ScrollTypes.h"

@@ -429,6 +429,11 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   WebMouseEvent()
       : WebInputEvent(sizeof(WebMouseEvent)), WebPointerProperties() {}
 
+#if INSIDE_BLINK
+  BLINK_PLATFORM_EXPORT WebFloatPoint movementInRootFrame() const;
+  BLINK_PLATFORM_EXPORT WebFloatPoint positionInRootFrame() const;
+#endif
+
  protected:
   explicit WebMouseEvent(unsigned sizeParam)
       : WebInputEvent(sizeParam), WebPointerProperties() {}
@@ -439,6 +444,7 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
                 double timeStampSeconds)
       : WebInputEvent(sizeParam, type, modifiers, timeStampSeconds),
         WebPointerProperties() {}
+  void flattenTransformSelf();
 };
 
 // WebTouchEvent --------------------------------------------------------------

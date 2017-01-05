@@ -210,37 +210,14 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget,
   }
 }
 
-// PlatformWheelEventBuilder --------------------------------------------------
-
-PlatformWheelEventBuilder::PlatformWheelEventBuilder(
+WebMouseWheelEvent TransformWebMouseWheelEvent(
     Widget* widget,
-    const WebMouseWheelEvent& e) {
-  m_position = widget->convertFromRootFrame(flooredIntPoint(
-      convertHitPointToRootFrame(widget, FloatPoint(e.x, e.y))));
-  m_globalPosition = IntPoint(e.globalX, e.globalY);
-  m_deltaX = scaleDeltaToWindow(widget, e.deltaX);
-  m_deltaY = scaleDeltaToWindow(widget, e.deltaY);
-  m_wheelTicksX = e.wheelTicksX;
-  m_wheelTicksY = e.wheelTicksY;
-  m_granularity =
-      e.scrollByPage ? ScrollByPageWheelEvent : ScrollByPixelWheelEvent;
-
-  m_type = PlatformEvent::Wheel;
-
-  m_timestamp = TimeTicks::FromSeconds(e.timeStampSeconds);
-  m_modifiers = e.modifiers;
-  m_dispatchType = toPlatformDispatchType(e.dispatchType);
-
-  m_hasPreciseScrollingDeltas = e.hasPreciseScrollingDeltas;
-  m_resendingPluginId = e.resendingPluginId;
-  m_railsMode = static_cast<PlatformEvent::RailsMode>(e.railsMode);
-#if OS(MACOSX)
-  m_phase = static_cast<PlatformWheelEventPhase>(e.phase);
-  m_momentumPhase = static_cast<PlatformWheelEventPhase>(e.momentumPhase);
-#endif
+    const WebMouseWheelEvent& event) {
+  WebMouseWheelEvent result = event;
+  result.setFrameScale(frameScale(widget));
+  result.setFrameTranslate(frameTranslation(widget));
+  return result;
 }
-
-// PlatformGestureEventBuilder -----------------------------------------------
 
 WebGestureEvent TransformWebGestureEvent(Widget* widget,
                                          const WebGestureEvent& event) {
@@ -482,31 +459,6 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget,
   y = localPoint.y();
 
   pointerType = WebPointerProperties::PointerType::Touch;
-}
-
-WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(
-    const Widget* widget,
-    const LayoutItem layoutItem,
-    const WheelEvent& event) {
-  if (event.type() != EventTypeNames::wheel &&
-      event.type() != EventTypeNames::mousewheel)
-    return;
-  type = WebInputEvent::MouseWheel;
-  updateWebMouseEventFromCoreMouseEvent(event, widget, layoutItem, *this);
-  deltaX = -event.deltaX();
-  deltaY = -event.deltaY();
-  wheelTicksX = event.ticksX();
-  wheelTicksY = event.ticksY();
-  scrollByPage = event.deltaMode() == WheelEvent::kDomDeltaPage;
-  resendingPluginId = event.resendingPluginId();
-  railsMode = static_cast<RailsMode>(event.getRailsMode());
-  hasPreciseScrollingDeltas = event.hasPreciseScrollingDeltas();
-  dispatchType = event.cancelable() ? WebInputEvent::Blocking
-                                    : WebInputEvent::EventNonBlocking;
-#if OS(MACOSX)
-  phase = static_cast<Phase>(event.phase());
-  momentumPhase = static_cast<Phase>(event.momentumPhase());
-#endif
 }
 
 WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {

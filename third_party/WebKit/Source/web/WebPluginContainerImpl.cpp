@@ -758,13 +758,17 @@ void WebPluginContainerImpl::handleDragEvent(MouseEvent* event) {
 }
 
 void WebPluginContainerImpl::handleWheelEvent(WheelEvent* event) {
-  WebMouseWheelEventBuilder webEvent(
-      this, LayoutItem(m_element->layoutObject()), *event);
-  if (webEvent.type == WebInputEvent::Undefined)
-    return;
+  WebFloatPoint absoluteRootFrameLocation =
+      event->nativeEvent().positionInRootFrame();
+  IntPoint localPoint =
+      roundedIntPoint(m_element->layoutObject()->absoluteToLocal(
+          absoluteRootFrameLocation, UseTransforms));
+  WebMouseWheelEvent translatedEvent = event->nativeEvent().flattenTransform();
+  translatedEvent.x = localPoint.x();
+  translatedEvent.y = localPoint.y();
 
   WebCursorInfo cursorInfo;
-  if (m_webPlugin->handleInputEvent(webEvent, cursorInfo) !=
+  if (m_webPlugin->handleInputEvent(translatedEvent, cursorInfo) !=
       WebInputEventResult::NotHandled)
     event->setDefaultHandled();
 }

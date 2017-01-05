@@ -85,6 +85,17 @@ class WebMouseWheelEvent : public WebMouseEvent {
         momentumPhase(PhaseNone),
         railsMode(RailsModeFree),
         dispatchType(Blocking) {}
+
+#if INSIDE_BLINK
+  BLINK_PLATFORM_EXPORT float deltaXInRootFrame() const;
+  BLINK_PLATFORM_EXPORT float deltaYInRootFrame() const;
+
+  // Sets any scaled values to be their computed values and sets |frameScale|
+  // back to 1 and |translateX|, |translateY| back to 0.
+  BLINK_PLATFORM_EXPORT WebMouseWheelEvent flattenTransform() const;
+
+  bool isCancelable() const { return dispatchType == Blocking; }
+#endif
 };
 #pragma pack(pop)
 

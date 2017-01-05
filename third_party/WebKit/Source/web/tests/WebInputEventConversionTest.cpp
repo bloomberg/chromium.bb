@@ -937,11 +937,14 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
     webMouseWheelEvent.globalX = 10;
     webMouseWheelEvent.globalY = 10;
 
-    PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
-    EXPECT_EQ(5 + visualOffset.x(), platformWheelBuilder.position().x());
-    EXPECT_EQ(5 + visualOffset.y(), platformWheelBuilder.position().y());
-    EXPECT_EQ(10, platformWheelBuilder.globalPosition().x());
-    EXPECT_EQ(10, platformWheelBuilder.globalPosition().y());
+    WebMouseWheelEvent scaledMouseWheelEvent =
+        TransformWebMouseWheelEvent(view, webMouseWheelEvent);
+    IntPoint position =
+        flooredIntPoint(scaledMouseWheelEvent.positionInRootFrame());
+    EXPECT_EQ(5 + visualOffset.x(), position.x());
+    EXPECT_EQ(5 + visualOffset.y(), position.y());
+    EXPECT_EQ(10, scaledMouseWheelEvent.globalX);
+    EXPECT_EQ(10, scaledMouseWheelEvent.globalY);
   }
 
   {
@@ -1105,180 +1108,6 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
               platformMouseBuilder.position().y());
     EXPECT_EQ(webMouseEvent.globalX, platformMouseBuilder.globalPosition().x());
     EXPECT_EQ(webMouseEvent.globalY, platformMouseBuilder.globalPosition().y());
-  }
-}
-
-TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder) {
-  const std::string baseURL("http://www.test7.com/");
-  const std::string fileName("fixed_layout.html");
-
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(baseURL.c_str()),
-      WebString::fromUTF8("fixed_layout.html"));
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  WebViewImpl* webViewImpl =
-      webViewHelper.initializeAndLoad(baseURL + fileName, true);
-  int pageWidth = 640;
-  int pageHeight = 480;
-  webViewImpl->resize(WebSize(pageWidth, pageHeight));
-  webViewImpl->updateAllLifecyclePhases();
-
-  Document* document =
-      toLocalFrame(webViewImpl->page()->mainFrame())->document();
-  {
-    WheelEvent* event = WheelEvent::create(
-        FloatPoint(1, 3), FloatPoint(5, 10), WheelEvent::kDomDeltaPage,
-        document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
-        PlatformEvent::CtrlKey, 0, TimeTicks(), -1 /* null plugin id */,
-        true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal,
-        true /*cancelable*/
-#if OS(MACOSX)
-        ,
-        WheelEventPhaseBegan, WheelEventPhaseChanged
-#endif
-        );
-    WebMouseWheelEventBuilder webMouseWheel(
-        toLocalFrame(webViewImpl->page()->mainFrame())->view(),
-        document->layoutViewItem(), *event);
-    EXPECT_EQ(1, webMouseWheel.wheelTicksX);
-    EXPECT_EQ(3, webMouseWheel.wheelTicksY);
-    EXPECT_EQ(5, webMouseWheel.deltaX);
-    EXPECT_EQ(10, webMouseWheel.deltaY);
-    EXPECT_EQ(2, webMouseWheel.globalX);
-    EXPECT_EQ(6, webMouseWheel.globalY);
-    EXPECT_EQ(10, webMouseWheel.windowX);
-    EXPECT_EQ(30, webMouseWheel.windowY);
-    EXPECT_TRUE(webMouseWheel.scrollByPage);
-    EXPECT_EQ(WebInputEvent::ControlKey, webMouseWheel.modifiers);
-    EXPECT_EQ(WebInputEvent::RailsModeHorizontal, webMouseWheel.railsMode);
-    EXPECT_TRUE(webMouseWheel.hasPreciseScrollingDeltas);
-    EXPECT_EQ(WebInputEvent::Blocking, webMouseWheel.dispatchType);
-#if OS(MACOSX)
-    EXPECT_EQ(WebMouseWheelEvent::PhaseBegan, webMouseWheel.phase);
-    EXPECT_EQ(WebMouseWheelEvent::PhaseChanged, webMouseWheel.momentumPhase);
-#endif
-  }
-
-  {
-    WheelEvent* event = WheelEvent::create(
-        FloatPoint(1, 3), FloatPoint(5, 10), WheelEvent::kDomDeltaPage,
-        document->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
-        PlatformEvent::CtrlKey, 0, TimeTicks(), -1 /* null plugin id */,
-        true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal, false
-#if OS(MACOSX)
-        ,
-        WheelEventPhaseNone, WheelEventPhaseNone
-#endif
-        );
-    WebMouseWheelEventBuilder webMouseWheel(
-        toLocalFrame(webViewImpl->page()->mainFrame())->view(),
-        document->layoutViewItem(), *event);
-    EXPECT_EQ(WebInputEvent::EventNonBlocking, webMouseWheel.dispatchType);
-  }
-}
-
-TEST(WebInputEventConversionTest, PlatformWheelEventBuilder) {
-  const std::string baseURL("http://www.test8.com/");
-  const std::string fileName("fixed_layout.html");
-
-  URLTestHelpers::registerMockedURLFromBaseURL(
-      WebString::fromUTF8(baseURL.c_str()),
-      WebString::fromUTF8("fixed_layout.html"));
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  WebViewImpl* webViewImpl =
-      webViewHelper.initializeAndLoad(baseURL + fileName, true);
-  int pageWidth = 640;
-  int pageHeight = 480;
-  webViewImpl->resize(WebSize(pageWidth, pageHeight));
-  webViewImpl->updateAllLifecyclePhases();
-
-  FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
-
-  {
-    WebMouseWheelEvent webMouseWheelEvent(WebInputEvent::MouseWheel,
-                                          WebInputEvent::ControlKey,
-                                          WebInputEvent::TimeStampForTesting);
-    webMouseWheelEvent.x = 0;
-    webMouseWheelEvent.y = 5;
-    webMouseWheelEvent.deltaX = 10;
-    webMouseWheelEvent.deltaY = 15;
-    webMouseWheelEvent.hasPreciseScrollingDeltas = true;
-    webMouseWheelEvent.railsMode = WebInputEvent::RailsModeHorizontal;
-    webMouseWheelEvent.phase = WebMouseWheelEvent::PhaseBegan;
-    webMouseWheelEvent.momentumPhase = WebMouseWheelEvent::PhaseChanged;
-
-    PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
-    EXPECT_EQ(0, platformWheelBuilder.position().x());
-    EXPECT_EQ(5, platformWheelBuilder.position().y());
-    EXPECT_EQ(10, platformWheelBuilder.deltaX());
-    EXPECT_EQ(15, platformWheelBuilder.deltaY());
-    EXPECT_EQ(PlatformEvent::CtrlKey, platformWheelBuilder.getModifiers());
-    EXPECT_TRUE(platformWheelBuilder.hasPreciseScrollingDeltas());
-    EXPECT_EQ(platformWheelBuilder.getRailsMode(),
-              PlatformEvent::RailsModeHorizontal);
-#if OS(MACOSX)
-    EXPECT_EQ(PlatformWheelEventPhaseBegan, platformWheelBuilder.phase());
-    EXPECT_EQ(PlatformWheelEventPhaseChanged,
-              platformWheelBuilder.momentumPhase());
-#endif
-  }
-
-  {
-    WebMouseWheelEvent webMouseWheelEvent(WebInputEvent::MouseWheel,
-                                          WebInputEvent::ShiftKey,
-                                          WebInputEvent::TimeStampForTesting);
-    webMouseWheelEvent.x = 5;
-    webMouseWheelEvent.y = 0;
-    webMouseWheelEvent.deltaX = 15;
-    webMouseWheelEvent.deltaY = 10;
-    webMouseWheelEvent.hasPreciseScrollingDeltas = false;
-    webMouseWheelEvent.railsMode = WebInputEvent::RailsModeFree;
-    webMouseWheelEvent.phase = WebMouseWheelEvent::PhaseNone;
-    webMouseWheelEvent.momentumPhase = WebMouseWheelEvent::PhaseNone;
-
-    PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
-    EXPECT_EQ(5, platformWheelBuilder.position().x());
-    EXPECT_EQ(0, platformWheelBuilder.position().y());
-    EXPECT_EQ(15, platformWheelBuilder.deltaX());
-    EXPECT_EQ(10, platformWheelBuilder.deltaY());
-    EXPECT_EQ(PlatformEvent::ShiftKey, platformWheelBuilder.getModifiers());
-    EXPECT_FALSE(platformWheelBuilder.hasPreciseScrollingDeltas());
-    EXPECT_EQ(platformWheelBuilder.getRailsMode(),
-              PlatformEvent::RailsModeFree);
-#if OS(MACOSX)
-    EXPECT_EQ(PlatformWheelEventPhaseNone, platformWheelBuilder.phase());
-    EXPECT_EQ(PlatformWheelEventPhaseNone,
-              platformWheelBuilder.momentumPhase());
-#endif
-  }
-
-  {
-    WebMouseWheelEvent webMouseWheelEvent(WebInputEvent::MouseWheel,
-                                          WebInputEvent::AltKey,
-                                          WebInputEvent::TimeStampForTesting);
-    webMouseWheelEvent.x = 5;
-    webMouseWheelEvent.y = 0;
-    webMouseWheelEvent.deltaX = 15;
-    webMouseWheelEvent.deltaY = 10;
-    webMouseWheelEvent.hasPreciseScrollingDeltas = true;
-    webMouseWheelEvent.railsMode = WebInputEvent::RailsModeVertical;
-    webMouseWheelEvent.phase = WebMouseWheelEvent::PhaseNone;
-    webMouseWheelEvent.momentumPhase = WebMouseWheelEvent::PhaseNone;
-
-    PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
-    EXPECT_EQ(5, platformWheelBuilder.position().x());
-    EXPECT_EQ(0, platformWheelBuilder.position().y());
-    EXPECT_EQ(15, platformWheelBuilder.deltaX());
-    EXPECT_EQ(10, platformWheelBuilder.deltaY());
-    EXPECT_EQ(PlatformEvent::AltKey, platformWheelBuilder.getModifiers());
-    EXPECT_TRUE(platformWheelBuilder.hasPreciseScrollingDeltas());
-    EXPECT_EQ(platformWheelBuilder.getRailsMode(),
-              PlatformEvent::RailsModeVertical);
-#if OS(MACOSX)
-    EXPECT_EQ(PlatformWheelEventPhaseNone, platformWheelBuilder.phase());
-    EXPECT_EQ(PlatformWheelEventPhaseNone,
-              platformWheelBuilder.momentumPhase());
-#endif
   }
 }
 

@@ -186,6 +186,40 @@ MouseEvent::MouseEvent(
     bool canBubble,
     bool cancelable,
     AbstractView* abstractView,
+    PlatformMouseEvent::SyntheticEventType syntheticEventType,
+    const String& region,
+    const WebMouseEvent& event)
+    : UIEventWithKeyState(
+          eventType,
+          canBubble,
+          cancelable,
+          abstractView,
+          0,
+          static_cast<PlatformEvent::Modifiers>(event.modifiers),
+          TimeTicks::FromSeconds(event.timeStampSeconds),
+          syntheticEventType == PlatformMouseEvent::FromTouch
+              ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities()
+              : InputDeviceCapabilities::
+                    doesntFireTouchEventsSourceCapabilities()),
+      m_screenLocation(event.globalX, event.globalY),
+      m_movementDelta(flooredIntPoint(event.movementInRootFrame())),
+      m_positionType(syntheticEventType == PlatformMouseEvent::Positionless
+                         ? PositionType::Positionless
+                         : PositionType::Position),
+      m_button(0),
+      m_buttons(platformModifiersToButtons(event.modifiers)),
+      m_syntheticEventType(syntheticEventType),
+      m_region(region) {
+  IntPoint rootFrameCoordinates = flooredIntPoint(event.positionInRootFrame());
+  initCoordinatesFromRootFrame(rootFrameCoordinates.x(),
+                               rootFrameCoordinates.y());
+}
+
+MouseEvent::MouseEvent(
+    const AtomicString& eventType,
+    bool canBubble,
+    bool cancelable,
+    AbstractView* abstractView,
     int detail,
     int screenX,
     int screenY,
@@ -225,36 +259,7 @@ MouseEvent::MouseEvent(
       m_region(region) {
   if (mouseEvent)
     m_mouseEvent.reset(new PlatformMouseEvent(*mouseEvent));
-
-  DoublePoint adjustedPageLocation;
-  DoubleSize scrollOffset;
-
-  LocalFrame* frame = view() && view()->isLocalDOMWindow()
-                          ? toLocalDOMWindow(view())->frame()
-                          : nullptr;
-  if (frame && hasPosition()) {
-    if (FrameView* frameView = frame->view()) {
-      adjustedPageLocation =
-          frameView->rootFrameToContents(IntPoint(windowX, windowY));
-      scrollOffset = frameView->scrollOffsetInt();
-      float scaleFactor = 1 / frame->pageZoomFactor();
-      if (scaleFactor != 1.0f) {
-        adjustedPageLocation.scale(scaleFactor, scaleFactor);
-        scrollOffset.scale(scaleFactor, scaleFactor);
-      }
-    }
-  }
-
-  m_clientLocation = adjustedPageLocation - scrollOffset;
-  m_pageLocation = adjustedPageLocation;
-
-  // Set up initial values for coordinates.
-  // Correct values are computed lazily, see computeRelativePosition.
-  m_layerLocation = m_pageLocation;
-  m_offsetLocation = m_pageLocation;
-
-  computePageLocation();
-  m_hasCachedRelativePosition = false;
+  initCoordinatesFromRootFrame(windowX, windowY);
 }
 
 MouseEvent::MouseEvent(const AtomicString& eventType,
@@ -279,6 +284,38 @@ void MouseEvent::initCoordinates(const double clientX, const double clientY) {
   m_clientLocation = DoublePoint(clientX, clientY);
   m_pageLocation = m_clientLocation + DoubleSize(contentsScrollOffset(view()));
 
+  m_layerLocation = m_pageLocation;
+  m_offsetLocation = m_pageLocation;
+
+  computePageLocation();
+  m_hasCachedRelativePosition = false;
+}
+
+void MouseEvent::initCoordinatesFromRootFrame(int windowX, int windowY) {
+  DoublePoint adjustedPageLocation;
+  DoubleSize scrollOffset;
+
+  LocalFrame* frame = view() && view()->isLocalDOMWindow()
+                          ? toLocalDOMWindow(view())->frame()
+                          : nullptr;
+  if (frame && hasPosition()) {
+    if (FrameView* frameView = frame->view()) {
+      adjustedPageLocation =
+          frameView->rootFrameToContents(IntPoint(windowX, windowY));
+      scrollOffset = frameView->scrollOffsetInt();
+      float scaleFactor = 1 / frame->pageZoomFactor();
+      if (scaleFactor != 1.0f) {
+        adjustedPageLocation.scale(scaleFactor, scaleFactor);
+        scrollOffset.scale(scaleFactor, scaleFactor);
+      }
+    }
+  }
+
+  m_clientLocation = adjustedPageLocation - scrollOffset;
+  m_pageLocation = adjustedPageLocation;
+
+  // Set up initial values for coordinates.
+  // Correct values are computed lazily, see computeRelativePosition.
   m_layerLocation = m_pageLocation;
   m_offsetLocation = m_pageLocation;
 
