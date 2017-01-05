@@ -53,17 +53,10 @@ HIDDetectionScreen::HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
                                        HIDDetectionView* view)
     : HIDDetectionModel(base_screen_delegate),
       view_(view),
-      mouse_is_pairing_(false),
-      pointing_device_connect_type_(InputDeviceInfo::TYPE_UNKNOWN),
-      keyboard_is_pairing_(false),
-      keyboard_device_connect_type_(InputDeviceInfo::TYPE_UNKNOWN),
-      switch_on_adapter_when_ready_(false),
-      showing_(false),
       weak_ptr_factory_(this) {
   DCHECK(view_);
   if (view_)
     view_->Bind(*this);
-
 }
 
 HIDDetectionScreen::~HIDDetectionScreen() {
@@ -126,19 +119,13 @@ void HIDDetectionScreen::OnContinueButtonClicked() {
 
   // Switch off BT adapter if it was off before the screen and no BT device
   // connected.
-  bool adapter_is_powered =
+  const bool adapter_is_powered =
       adapter_.get() && adapter_->IsPresent() && adapter_->IsPowered();
-  bool use_bluetooth =
-      pointing_device_connect_type_ == InputDeviceInfo::TYPE_BLUETOOTH ||
-      keyboard_device_connect_type_ == InputDeviceInfo::TYPE_BLUETOOTH;
-  bool need_switching_off = adapter_initially_powered_ &&
-                            !(*adapter_initially_powered_);
-  if (adapter_is_powered && !use_bluetooth && need_switching_off) {
-    VLOG(1) << "Switching off BT adapter after HID OOBE screen as unused.";
-    adapter_->SetPowered(
-        false,
-        base::Bind(&base::DoNothing),
-        base::Bind(&HIDDetectionScreen::SetPoweredOffError,
+  const bool need_switching_off =
+      adapter_initially_powered_ && !(*adapter_initially_powered_);
+  if (adapter_is_powered && need_switching_off) {
+    input_service_proxy_.GetDevices(
+        base::Bind(&HIDDetectionScreen::OnGetInputDevicesForPowerOff,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -532,6 +519,23 @@ void HIDDetectionScreen::OnStartDiscoverySession(
   UpdateDevices();
 }
 
+void HIDDetectionScreen::OnGetInputDevicesForPowerOff(
+    const std::vector<InputDeviceInfo>& devices) {
+  bool use_bluetooth = false;
+  for (const auto& device : devices) {
+    if (device.type == InputDeviceInfo::TYPE_BLUETOOTH) {
+      use_bluetooth = true;
+      break;
+    }
+  }
+  if (!use_bluetooth) {
+    VLOG(1) << "Switching off BT adapter after HID OOBE screen as unused.";
+    adapter_->SetPowered(false, base::Bind(&base::DoNothing),
+                         base::Bind(&HIDDetectionScreen::SetPoweredOffError,
+                                    weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
 void HIDDetectionScreen::SetPoweredError() {
   LOG(ERROR) << "Failed to power BT adapter";
 }
@@ -544,5 +548,13 @@ void HIDDetectionScreen::FindDevicesError() {
   VLOG(1) << "Failed to start Bluetooth discovery.";
 }
 
+scoped_refptr<device::BluetoothAdapter>
+HIDDetectionScreen::GetAdapterForTesting() {
+  return adapter_;
+}
+
+void HIDDetectionScreen::SetAdapterInitialPoweredForTesting(bool powered) {
+  adapter_initially_powered_.reset(new bool(powered));
+}
 
 }  // namespace chromeos

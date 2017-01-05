@@ -6,6 +6,7 @@
 #include "chrome/browser/chromeos/device/input_service_test_helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
@@ -30,6 +31,7 @@ class HIDDetectionScreenTest : public WizardInProcessBrowserTest {
               hid_detection_screen_);
     ASSERT_TRUE(hid_detection_screen_->view_);
 
+    hid_detection_screen()->SetAdapterInitialPoweredForTesting(false);
     helper_->SetProxy(&hid_detection_screen_->input_service_proxy_);
   }
 
@@ -39,6 +41,12 @@ class HIDDetectionScreenTest : public WizardInProcessBrowserTest {
   }
 
   InputServiceTestHelper* helper() { return helper_.get(); }
+
+  HIDDetectionScreen* hid_detection_screen() { return hid_detection_screen_; }
+
+  scoped_refptr<device::BluetoothAdapter> adapter() {
+    return hid_detection_screen_->GetAdapterForTesting();
+  }
 
   const ::login::ScreenContext* context() const {
     return &hid_detection_screen_->context_;
@@ -104,6 +112,46 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, MouseKeyboardStates) {
             context()->GetString(HIDDetectionModel::kContextKeyKeyboardState));
   EXPECT_TRUE(context()->GetBoolean(
       HIDDetectionModel::kContextKeyContinueButtonEnabled));
+}
+
+// Test that if there is any Bluetooth device connected on HID screen, the
+// Bluetooth adapter should not be disabled after advancing to the next screen.
+IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, BluetoothDeviceConnected) {
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_HID_DETECTION).Wait();
+  EXPECT_TRUE(adapter()->IsPowered());
+
+  // Add a pair of USB mouse/keyboard so that |pointing_device_connect_type_|
+  // and |keyboard_device_connect_type_| are InputDeviceInfo::TYPE_USB.
+  helper()->AddDeviceToService(true, InputDeviceInfo::TYPE_USB);
+  helper()->AddDeviceToService(false, InputDeviceInfo::TYPE_USB);
+
+  // Add another pair of Bluetooth mouse/keyboard.
+  helper()->AddDeviceToService(true, InputDeviceInfo::TYPE_BLUETOOTH);
+  helper()->AddDeviceToService(false, InputDeviceInfo::TYPE_BLUETOOTH);
+
+  // Simulate the user's click on "Continue" button.
+  hid_detection_screen()->OnContinueButtonClicked();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+
+  // The adapter should not be powered off at this moment.
+  EXPECT_TRUE(adapter()->IsPowered());
+}
+
+// Test that if there is no Bluetooth device connected on HID screen, the
+// Bluetooth adapter should be disabled after advancing to the next screen.
+IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, NoBluetoothDeviceConnected) {
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_HID_DETECTION).Wait();
+  EXPECT_TRUE(adapter()->IsPowered());
+
+  helper()->AddDeviceToService(true, InputDeviceInfo::TYPE_USB);
+  helper()->AddDeviceToService(false, InputDeviceInfo::TYPE_USB);
+
+  // Simulate the user's click on "Continue" button.
+  hid_detection_screen()->OnContinueButtonClicked();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+
+  // The adapter should be powered off at this moment.
+  EXPECT_FALSE(adapter()->IsPowered());
 }
 
 }  // namespace chromeos
