@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/memory/memory_coordinator_client.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 
@@ -49,6 +50,9 @@ class TaskManagerTester {
   // If |row| is associated with a WebContents, return its SessionID. Otherwise,
   // return -1.
   int32_t GetTabId(int row);
+
+  // Return the memory state of the process which is associated with |row|.
+  base::MemoryState GetMemoryState(int row);
 
   // Kill the process of |row|.
   void Kill(int row);

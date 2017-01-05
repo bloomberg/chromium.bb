@@ -39,6 +39,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "extensions/browser/extension_system.h"
@@ -174,6 +176,21 @@ class TaskManagerUtilityProcessBrowserTest : public TaskManagerBrowserTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskManagerUtilityProcessBrowserTest);
+};
+
+class TaskManagerMemoryCoordinatorBrowserTest : public TaskManagerBrowserTest {
+ public:
+  TaskManagerMemoryCoordinatorBrowserTest() {}
+  ~TaskManagerMemoryCoordinatorBrowserTest() override {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    features::kMemoryCoordinator.name);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerMemoryCoordinatorBrowserTest);
 };
 
 // Parameterized variant of TaskManagerBrowserTest which runs with/without
@@ -703,6 +720,32 @@ IN_PROC_BROWSER_TEST_F(TaskManagerUtilityProcessBrowserTest,
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyUtility()));
   ASSERT_NO_FATAL_FAILURE(
       WaitForTaskManagerRows(1, MatchUtility(proxy_resolver_name)));
+}
+
+// Memory coordinator is not available on macos. crbug.com/617492
+#if defined(OS_MACOSX)
+#define MAYBE_MemoryState DISABLED_MemoryState
+#else
+#define MAYBE_MemoryState MemoryState
+#endif  // defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TaskManagerMemoryCoordinatorBrowserTest,
+                       MAYBE_MemoryState) {
+  ShowTaskManager();
+  model()->ToggleColumnVisibility(ColumnSpecifier::MEMORY_STATE);
+  model()->ToggleColumnVisibility(ColumnSpecifier::V8_MEMORY_USED);
+
+  ui_test_utils::NavigateToURL(browser(), GetTestURL());
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
+
+  // Wait until the tab consumes some memory so that memory state is refreshed.
+  size_t minimal_heap_size = 1024;
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchTab("title1.html"), ColumnSpecifier::V8_MEMORY_USED,
+      minimal_heap_size));
+
+  int row = FindResourceIndex(MatchTab("title1.html"));
+  ASSERT_NE(-1, row);
+  ASSERT_NE(base::MemoryState::UNKNOWN, model()->GetMemoryState(row));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewDockedWindow) {

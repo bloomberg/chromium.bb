@@ -109,6 +109,9 @@ void TaskManagerTester::ToggleColumnVisibility(ColumnSpecifier column) {
     case ColumnSpecifier::IDLE_WAKEUPS:
       column_id = IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN;
       break;
+    case ColumnSpecifier::MEMORY_STATE:
+      column_id = IDS_TASK_MANAGER_MEMORY_STATE_COLUMN;
+      break;
   }
   model_->ToggleColumnVisibility(column_id);
 }
@@ -121,6 +124,7 @@ int64_t TaskManagerTester::GetColumnValue(ColumnSpecifier column, int row) {
 
   switch (column) {
     case ColumnSpecifier::COLUMN_NONE:
+    case ColumnSpecifier::MEMORY_STATE:
       break;
     case ColumnSpecifier::V8_MEMORY:
       success = task_manager()->GetV8Memory(task_id, &value, &ignored);
@@ -145,6 +149,11 @@ int64_t TaskManagerTester::GetColumnValue(ColumnSpecifier column, int row) {
 int32_t TaskManagerTester::GetTabId(int row) {
   TaskId task_id = model_->tasks_[row];
   return task_manager()->GetTabId(task_id);
+}
+
+base::MemoryState TaskManagerTester::GetMemoryState(int row) {
+  TaskId task_id = model_->tasks_[row];
+  return task_manager()->GetMemoryState(task_id);
 }
 
 void TaskManagerTester::Kill(int row) {

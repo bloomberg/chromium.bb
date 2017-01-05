@@ -25,6 +25,7 @@ enum class ColumnSpecifier {
   V8_MEMORY_USED,
   SQLITE_MEMORY_USED,
   IDLE_WAKEUPS,
+  MEMORY_STATE,
 
   COLUMN_NONE,  // Default value.
 };

@@ -121,6 +121,10 @@ int64_t TaskManagerImpl::GetGpuMemoryUsage(TaskId task_id,
   return task_group->gpu_memory();
 }
 
+base::MemoryState TaskManagerImpl::GetMemoryState(TaskId task_id) const {
+  return GetTaskGroupByTaskId(task_id)->memory_state();
+}
+
 int TaskManagerImpl::GetIdleWakeupsPerSecond(TaskId task_id) const {
   return GetTaskGroupByTaskId(task_id)->idle_wakeups_per_second();
 }

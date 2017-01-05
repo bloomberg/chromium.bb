@@ -3390,6 +3390,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           <message name="IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN" desc="Task manager JavaScript memory allocated column.  Shows the amount of memory used by JavaScript within a process">
             JavaScript memory
           </message>
+          <message name="IDS_TASK_MANAGER_MEMORY_STATE_COLUMN" desc="Task manager memory state column.  Shows the memory coordinator's state of a process">
+            Memory state
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
@@ -3458,6 +3461,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           <message name="IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN" desc="Task manager JavaScript memory allocated column.  Shows the amount of memory used by JavaScript within a process">
             JavaScript Memory
           </message>
+          <message name="IDS_TASK_MANAGER_MEMORY_STATE_COLUMN" desc="Task manager memory state column.  Shows the memory coordinator's state of a process">
+            Memory State
+          </message>
         </if>
         <message name="IDS_TASK_MANAGER_MEM_CELL_TEXT" desc="The value displayed in the memory usage cells.">
           <ph name="NUM_KILOBYTES">$1<ex>5,000</ex></ph>K
@@ -3479,6 +3485,15 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         </message>
         <message name="IDS_TASK_MANAGER_DISABLED_NACL_DBG_TEXT" desc="The value displayed for NaCl debug stub port in the task manager when the flag #enable-nacl-debug is disabled.">
           Disabled
+        </message>
+        <message name="IDS_TASK_MANAGER_MEMORY_STATE_NORMAL_TEXT" desc="The value displayed for a process with memory state 'normal'.">
+          Normal
+        </message>
+        <message name="IDS_TASK_MANAGER_MEMORY_STATE_THROTTLED_TEXT" desc="The value displayed for a process with memory state 'throttled'.">
+          Throttled
+        </message>
+        <message name="IDS_TASK_MANAGER_MEMORY_STATE_SUSPENDED_TEXT" desc="The value displayed for a process with memory state 'suspended'.">
+          Suspended
         </message>
         <message name="IDS_TASK_MANAGER_HANDLES_CELL_TEXT" desc="The value displayed in the user/gdi cells.">
           <ph name="NUM_HANDLES">$1<ex>300</ex></ph> (<ph name="NUM_KILOBYTES_LIVE">$2<ex>500</ex></ph> peak)

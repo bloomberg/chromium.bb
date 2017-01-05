@@ -46,6 +46,8 @@ enum RefreshType {
   REFRESH_TYPE_FD_COUNT          = 1 << 12,
 #endif  // defined(OS_LINUX)
 
+  REFRESH_TYPE_MEMORY_STATE      = 1 << 13,
+
   REFRESH_TYPE_MEMORY            = REFRESH_TYPE_PHYSICAL_MEMORY |
                                    REFRESH_TYPE_MEMORY_DETAILS,
 };

@@ -14,6 +14,8 @@
 #include "chrome/browser/task_manager/task_manager_observer.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/memory_coordinator.h"
+#include "content/public/common/content_features.h"
 #include "gpu/ipc/common/memory_stats.h"
 
 namespace task_manager {
@@ -77,6 +79,7 @@ TaskGroup::TaskGroup(
       current_on_bg_done_flags_(0),
       cpu_usage_(0.0),
       gpu_memory_(-1),
+      memory_state_(base::MemoryState::UNKNOWN),
       per_process_network_usage_(-1),
 #if defined(OS_WIN)
       gdi_current_handles_(-1),
@@ -188,13 +191,22 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
     refresh_flags &= ~shared_refresh_flags;
   }
 
+  // 6- Refresh memory state when memory coordinator is enabled.
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_MEMORY_STATE,
+                                                    refresh_flags) &&
+      base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
+    memory_state_ =
+        content::MemoryCoordinator::GetInstance()->GetStateForProcess(
+            process_handle_);
+  }
+
   // The remaining resource refreshes are time consuming and cannot be done on
   // the UI thread. Do them all on the worker thread using the TaskGroupSampler.
-  // 6-  CPU usage.
-  // 7-  Memory usage.
-  // 8-  Idle Wakeups per second.
-  // 9-  (Linux and ChromeOS only) The number of file descriptors current open.
-  // 10- Process priority (foreground vs. background).
+  // 7-  CPU usage.
+  // 8-  Memory usage.
+  // 9-  Idle Wakeups per second.
+  // 10-  (Linux and ChromeOS only) The number of file descriptors current open.
+  // 11- Process priority (foreground vs. background).
   worker_thread_sampler_->Refresh(refresh_flags);
 }
 

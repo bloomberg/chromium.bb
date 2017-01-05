@@ -80,6 +80,8 @@ const TableColumnData kColumns[] = {
 #endif  // defined(OS_LINUX)
   { IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN, ui::TableColumn::LEFT, -1, 0,
     arraysize("background") * kCharWidth, -1, true, true, false },
+  { IDS_TASK_MANAGER_MEMORY_STATE_COLUMN, ui::TableColumn::LEFT, -1, 0,
+    arraysize("throttled") * kCharWidth, -1, true, false, false },
 };
 
 const size_t kColumnsSize = arraysize(kColumns);
@@ -114,7 +116,8 @@ const char kSortIsAscendingKey[] = "sort_is_ascending";
   def(IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN) \
   def(IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN) \
   def(IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN) \
-  def(IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN)
+  def(IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN) \
+  def(IDS_TASK_MANAGER_MEMORY_STATE_COLUMN)
 // Add to the above list in the macro any new IDs added in the future. Also
 // remove the removed ones.
 

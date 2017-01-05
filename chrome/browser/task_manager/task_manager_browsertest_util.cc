@@ -114,6 +114,8 @@ class ResourceChangeObserver {
         return "SQLite Memory Used";
       case ColumnSpecifier::IDLE_WAKEUPS:
         return "Idle wake ups";
+      case ColumnSpecifier::MEMORY_STATE:
+        return "Memory State";
     }
     return "N/A";
   }

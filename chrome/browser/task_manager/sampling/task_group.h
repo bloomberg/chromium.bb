@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
@@ -75,6 +76,7 @@ class TaskGroup {
 #endif
   int64_t gpu_memory() const { return gpu_memory_; }
   bool gpu_memory_has_duplicates() const { return gpu_memory_has_duplicates_; }
+  base::MemoryState memory_state() const { return memory_state_; }
   int64_t per_process_network_usage() const {
     return per_process_network_usage_;
   }
@@ -145,6 +147,7 @@ class TaskGroup {
   double cpu_usage_;
   MemoryUsageStats memory_usage_;
   int64_t gpu_memory_;
+  base::MemoryState memory_state_;
   // The network usage in bytes per second as the sum of all network usages of
   // the individual tasks sharing the same process.
   int64_t per_process_network_usage_;
