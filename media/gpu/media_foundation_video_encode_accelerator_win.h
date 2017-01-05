@@ -76,6 +76,10 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Initializes encoder parameters for real-time use.
   bool SetEncoderModes();
 
+  // Returns true if we can initialize input and output samples with the given
+  // frame size, otherwise false.
+  bool IsResolutionSupported(const gfx::Size& size);
+
   // Helper function to notify the client of an error on
   // |main_client_task_runner_|.
   void NotifyError(VideoEncodeAccelerator::Error error);

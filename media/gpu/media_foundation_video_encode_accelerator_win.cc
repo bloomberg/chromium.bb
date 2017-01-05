@@ -34,8 +34,8 @@ namespace {
 const int32_t kDefaultTargetBitrate = 5000000;
 const size_t kMaxFrameRateNumerator = 30;
 const size_t kMaxFrameRateDenominator = 1;
-const size_t kMaxResolutionWidth = 3840;
-const size_t kMaxResolutionHeight = 2176;
+const size_t kMaxResolutionWidth = 1920;
+const size_t kMaxResolutionHeight = 1088;
 const size_t kNumInputBuffers = 3;
 // Media Foundation uses 100 nanosecond units for time, see
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms697282(v=vs.85).aspx
@@ -45,6 +45,9 @@ const size_t kOutputSampleBufferSizeRatio = 4;
 constexpr const wchar_t* const kMediaFoundationVideoEncoderDLLs[] = {
     L"mf.dll", L"mfplat.dll",
 };
+
+// Resolutions that some platforms support, should be listed in ascending order.
+constexpr const gfx::Size kOptionalMaxResolutions[] = {gfx::Size(3840, 2176)};
 
 }  // namespace
 
@@ -101,7 +104,6 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
   DCHECK(main_client_task_runner_->BelongsToCurrentThread());
 
   SupportedProfiles profiles;
-
   target_bitrate_ = kDefaultTargetBitrate;
   frame_rate_ = kMaxFrameRateNumerator / kMaxFrameRateDenominator;
   input_visible_size_ = gfx::Size(kMaxResolutionWidth, kMaxResolutionHeight);
@@ -112,6 +114,14 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
         << "Hardware encode acceleration is not available on this platform.";
     return profiles;
   }
+
+  gfx::Size highest_supported_resolution = input_visible_size_;
+  for (const auto& resolution : kOptionalMaxResolutions) {
+    DCHECK_GT(resolution.GetArea(), highest_supported_resolution.GetArea());
+    if (!IsResolutionSupported(resolution))
+      break;
+    highest_supported_resolution = resolution;
+  }
   ReleaseEncoderResources();
 
   SupportedProfile profile;
@@ -120,7 +130,7 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
   profile.profile = H264PROFILE_BASELINE;
   profile.max_framerate_numerator = kMaxFrameRateNumerator;
   profile.max_framerate_denominator = kMaxFrameRateDenominator;
-  profile.max_resolution = gfx::Size(kMaxResolutionWidth, kMaxResolutionHeight);
+  profile.max_resolution = highest_supported_resolution;
   profiles.push_back(profile);
   return profiles;
 }
@@ -447,6 +457,28 @@ bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
   hr = codec_api_->SetValue(&CODECAPI_AVLowLatencyMode, &var);
   RETURN_ON_HR_FAILURE(hr, "Couldn't set LowLatencyMode", false);
   return SUCCEEDED(hr);
+}
+
+bool MediaFoundationVideoEncodeAccelerator::IsResolutionSupported(
+    const gfx::Size& resolution) {
+  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK(encoder_);
+
+  HRESULT hr =
+      MFSetAttributeSize(imf_output_media_type_.get(), MF_MT_FRAME_SIZE,
+                         resolution.width(), resolution.height());
+  RETURN_ON_HR_FAILURE(hr, "Couldn't set frame size", false);
+  hr = encoder_->SetOutputType(output_stream_id_, imf_output_media_type_.get(),
+                               0);
+  RETURN_ON_HR_FAILURE(hr, "Couldn't set output media type", false);
+
+  hr = MFSetAttributeSize(imf_input_media_type_.get(), MF_MT_FRAME_SIZE,
+                          resolution.width(), resolution.height());
+  RETURN_ON_HR_FAILURE(hr, "Couldn't set frame size", false);
+  hr = encoder_->SetInputType(input_stream_id_, imf_input_media_type_.get(), 0);
+  RETURN_ON_HR_FAILURE(hr, "Couldn't set input media type", false);
+
+  return true;
 }
 
 void MediaFoundationVideoEncodeAccelerator::NotifyError(
