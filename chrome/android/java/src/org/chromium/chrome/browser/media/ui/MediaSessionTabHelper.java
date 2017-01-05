@@ -219,10 +219,9 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             @Override
             public void mediaSessionMetadataChanged(MediaMetadata metadata) {
                 mPageMetadata = metadata;
-                if (mPageMetadata != null) {
-                    mMediaImageManager.downloadImage(mPageMetadata.getArtwork(),
-                            MediaSessionTabHelper.this);
-                }
+                mMediaImageManager.downloadImage(
+                        (mPageMetadata != null) ? mPageMetadata.getArtwork() : null,
+                        MediaSessionTabHelper.this);
                 updateNotificationMetadata();
             }
 

@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.text.TextUtils;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.WebContents;
 
@@ -54,7 +55,8 @@ public class MediaImageManager implements ImageDownloadCallback {
     private static final double TYPE_SCORE_XICON = 0.4;
     private static final double TYPE_SCORE_GIF = 0.3;
 
-    private static final int MAX_BITMAP_SIZE_FOR_DOWNLOAD = 2048;
+    @VisibleForTesting
+    static final int MAX_BITMAP_SIZE_FOR_DOWNLOAD = 2048;
 
     private static final Object LOCK = new Object();
 
@@ -117,7 +119,7 @@ public class MediaImageManager implements ImageDownloadCallback {
 
     /**
      * Select the best image from |images| and start download.
-     * @param images The list of images to choose from.
+     * @param images The list of images to choose from. Null is equivalent to empty list.
      * @param callback The callback when image download completes.
      */
     public void downloadImage(List<MediaImage> images, MediaImageCallback callback) {
@@ -144,14 +146,6 @@ public class MediaImageManager implements ImageDownloadCallback {
     }
 
     /**
-     * Clear previous requests.
-     */
-    public void clearRequests() {
-        mRequestId = -1;
-        mCallback = null;
-    }
-
-    /**
      * ImageDownloadCallback implementation. This method is called when an download image request is
      * completed. The class will only keep the latest request. If some call to this method is
      * corresponding to a previous request, it will be ignored.
@@ -160,7 +154,11 @@ public class MediaImageManager implements ImageDownloadCallback {
     public void onFinishDownloadImage(int id, int httpStatusCode, String imageUrl,
             List<Bitmap> bitmaps, List<Rect> originalImageSizes) {
         if (id != mRequestId) return;
-        if (httpStatusCode < 200 || httpStatusCode >= 300) return;
+        if (httpStatusCode < 200 || httpStatusCode >= 300) {
+            mCallback.onImageDownloaded(null);
+            clearRequests();
+            return;
+        }
 
         Iterator<Bitmap> iterBitmap = bitmaps.iterator();
         Iterator<Rect> iterSize = originalImageSizes.iterator();
@@ -182,9 +180,11 @@ public class MediaImageManager implements ImageDownloadCallback {
 
     /**
      * Select the best image from the |images|.
-     * @param images The list of images to select from.
+     * @param images The list of images to select from. Null is equivalent to empty list.
      */
     private MediaImage selectImage(List<MediaImage> images) {
+        if (images == null) return null;
+
         MediaImage selectedImage = null;
         double bestScore = 0;
         for (MediaImage image : images) {
@@ -195,6 +195,11 @@ public class MediaImageManager implements ImageDownloadCallback {
             }
         }
         return selectedImage;
+    }
+
+    private void clearRequests() {
+        mRequestId = -1;
+        mCallback = null;
     }
 
     private double getImageScore(MediaImage image) {
@@ -216,7 +221,6 @@ public class MediaImageManager implements ImageDownloadCallback {
 
     private double getImageDominantSizeScore(int width, int height) {
         int dominantSize = Math.max(width, height);
-
         // When the size is "any".
         if (dominantSize == 0) return 0.8;
         // Ignore images that are too small.
