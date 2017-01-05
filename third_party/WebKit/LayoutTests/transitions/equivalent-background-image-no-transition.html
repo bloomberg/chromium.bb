@@ -1,8 +1,12 @@
+<!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
     <style>
     #foo {
-        -webkit-transition: all 0.05s linear, top 0.1s linear;
+        transition: all 0.05s linear, top 0.1s linear;
         position: absolute;
         top: 30px;
         left: 10px;
@@ -14,40 +18,22 @@
         top: 40px;
     }
     </style>
-    <script>
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-    </script>
 </head>
 <body>
     <div id="foo">This should not fire a background-image transition.</div>
+    <script>
+    'use strict';
 
-    <script type="text/javascript" charset="utf-8">
+    async_test(t => {
+        foo.addEventListener('transitionend', t.step_func_done((evt) => {
+            assert_equals(evt.propertyName, 'top');
+        }));
 
-    var finished = false;
+        // Force a layout so that changing the classname below causes an animation.
+        document.body.offsetHeight;
 
-    // Force a layout so that changing the classname below causes an animation.
-    document.body.offsetHeight;
-
-    document.getElementById('foo').addEventListener('webkitTransitionEnd', function(evt) {
-        if(evt.propertyName == "background-image" && !finished) {
-            document.getElementById('result').innerHTML = ("FAIL: saw a background-image transition");
-            if (window.testRunner)
-                testRunner.notifyDone();
-            finished = true;
-        } else if(evt.propertyName == "top" && !finished) {
-            document.getElementById('result').innerHTML = ("PASS: no background-image transition");
-            if (window.testRunner)
-                testRunner.notifyDone();
-        }
+        foo.className = 'trans';
     });
-
-    document.getElementById("foo").className="trans";
     </script>
-
-    <div id="result">
-    </div>
 </body>
 </html>
