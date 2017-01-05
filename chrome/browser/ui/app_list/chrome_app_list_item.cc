@@ -62,10 +62,16 @@ void ChromeAppListItem::UpdateFromSync(
 void ChromeAppListItem::SetDefaultPositionIfApplicable() {
   syncer::StringOrdinal page_ordinal;
   syncer::StringOrdinal launch_ordinal;
-  if (GetAppSorting()->GetDefaultOrdinals(id(), &page_ordinal,
-                                          &launch_ordinal) &&
-      page_ordinal.IsValid() && launch_ordinal.IsValid()) {
-    set_position(syncer::StringOrdinal(page_ordinal.ToInternalValue() +
-                                       launch_ordinal.ToInternalValue()));
+  extensions::AppSorting* app_sorting = GetAppSorting();
+  if (!app_sorting->GetDefaultOrdinals(id(), &page_ordinal,
+                                       &launch_ordinal) ||
+      !page_ordinal.IsValid() || !launch_ordinal.IsValid()) {
+    app_sorting->EnsureValidOrdinals(id(), syncer::StringOrdinal());
+    page_ordinal = app_sorting->GetPageOrdinal(id());
+    launch_ordinal = app_sorting->GetAppLaunchOrdinal(id());
   }
+  DCHECK(page_ordinal.IsValid());
+  DCHECK(launch_ordinal.IsValid());
+  set_position(syncer::StringOrdinal(page_ordinal.ToInternalValue() +
+                                     launch_ordinal.ToInternalValue()));
 }
