@@ -18,8 +18,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/blocking_method_caller.h"
@@ -822,16 +821,20 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     }
     base::FilePath device_policy_path =
         owner_key_path.DirName().AppendASCII("stub_device_policy");
-    base::PostTaskAndReplyWithResult(
-        base::WorkerPool::GetTaskRunner(false).get(),
-        FROM_HERE,
-        base::Bind(&GetFileContent, device_policy_path),
-        callback);
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, base::TaskTraits()
+                       .WithShutdownBehavior(
+                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                       .MayBlock(),
+        base::Bind(&GetFileContent, device_policy_path), callback);
   }
   void RetrievePolicyForUser(const cryptohome::Identification& cryptohome_id,
                              const RetrievePolicyCallback& callback) override {
-    base::PostTaskAndReplyWithResult(
-        base::WorkerPool::GetTaskRunner(false).get(), FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, base::TaskTraits()
+                       .WithShutdownBehavior(
+                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                       .MayBlock(),
         base::Bind(&GetFileContent,
                    GetUserFilePath(cryptohome_id, "stub_policy")),
         callback);
@@ -857,10 +860,12 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     }
 
     if (response.has_new_public_key()) {
-      base::WorkerPool::PostTask(
-          FROM_HERE,
-          base::Bind(&StoreFile, owner_key_path, response.new_public_key()),
-          false);
+      base::PostTaskWithTraits(
+          FROM_HERE, base::TaskTraits()
+                         .WithShutdownBehavior(
+                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                         .MayBlock(),
+          base::Bind(&StoreFile, owner_key_path, response.new_public_key()));
     }
 
     // Chrome will attempt to retrieve the device policy right after storing
@@ -870,11 +875,13 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     // if it was present in the blob.
     base::FilePath device_policy_path =
         owner_key_path.DirName().AppendASCII("stub_device_policy");
-    base::WorkerPool::PostTaskAndReply(
-        FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits()
+                       .WithShutdownBehavior(
+                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                       .MayBlock(),
         base::Bind(&StoreFile, device_policy_path, policy_blob),
-        base::Bind(callback, true),
-        false);
+        base::Bind(callback, true));
   }
   void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
                           const std::string& policy_blob,
@@ -890,21 +897,25 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
 
     if (response.has_new_public_key()) {
       base::FilePath key_path = GetUserFilePath(cryptohome_id, "policy.pub");
-      base::WorkerPool::PostTask(
-          FROM_HERE,
-          base::Bind(&StoreFile, key_path, response.new_public_key()),
-          false);
+      base::PostTaskWithTraits(
+          FROM_HERE, base::TaskTraits()
+                         .WithShutdownBehavior(
+                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                         .MayBlock(),
+          base::Bind(&StoreFile, key_path, response.new_public_key()));
     }
 
     // This file isn't read directly by Chrome, but is used by this class to
     // reload the user policy across restarts.
     base::FilePath stub_policy_path =
         GetUserFilePath(cryptohome_id, "stub_policy");
-    base::WorkerPool::PostTaskAndReply(
-        FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits()
+                       .WithShutdownBehavior(
+                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                       .MayBlock(),
         base::Bind(&StoreFile, stub_policy_path, policy_blob),
-        base::Bind(callback, true),
-        false);
+        base::Bind(callback, true));
   }
   void StoreDeviceLocalAccountPolicy(
       const std::string& account_id,
