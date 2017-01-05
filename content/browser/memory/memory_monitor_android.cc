@@ -65,9 +65,9 @@ static void GetMemoryInfoCallback(
 }
 
 // The maximum level of onTrimMemory (TRIM_MEMORY_COMPLETE).
-const int kTrimMemoryLevelMax = 0x80;
-const int kTrimMemoryRunningLow = 0x10;
-const int kTrimMemoryRunningCritical = 0x15;
+const int kTrimMemoryLevelMax = 80;
+const int kTrimMemoryRunningLow = 10;
+const int kTrimMemoryRunningCritical = 15;
 
 // Called by JNI.
 static void OnTrimMemory(JNIEnv* env,
