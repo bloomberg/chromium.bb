@@ -295,7 +295,7 @@ void MediaStream::trackEnded() {
 }
 
 void MediaStream::streamEnded() {
-  if (m_executionContext->isContextDestroyed())
+  if (!m_executionContext || m_executionContext->isContextDestroyed())
     return;
 
   if (active()) {
@@ -323,7 +323,7 @@ const AtomicString& MediaStream::interfaceName() const {
 
 void MediaStream::addRemoteTrack(MediaStreamComponent* component) {
   DCHECK(component);
-  if (m_executionContext->isContextDestroyed())
+  if (!m_executionContext || m_executionContext->isContextDestroyed())
     return;
 
   MediaStreamTrack* track =
@@ -350,7 +350,7 @@ void MediaStream::addRemoteTrack(MediaStreamComponent* component) {
 
 void MediaStream::removeRemoteTrack(MediaStreamComponent* component) {
   DCHECK(component);
-  if (m_executionContext->isContextDestroyed())
+  if (!m_executionContext || m_executionContext->isContextDestroyed())
     return;
 
   MediaStreamTrackVector* tracks = 0;
@@ -395,7 +395,7 @@ void MediaStream::scheduleDispatchEvent(Event* event) {
 }
 
 void MediaStream::scheduledEventTimerFired(TimerBase*) {
-  if (m_executionContext->isContextDestroyed())
+  if (!m_executionContext || m_executionContext->isContextDestroyed())
     return;
 
   HeapVector<Member<Event>> events;
