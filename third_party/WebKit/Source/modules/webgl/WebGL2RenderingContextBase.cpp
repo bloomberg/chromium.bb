@@ -1851,6 +1851,21 @@ void WebGL2RenderingContextBase::compressedTexImage2D(
       static_cast<uint8_t*>(data->baseAddress()) + srcOffset);
 }
 
+void WebGL2RenderingContextBase::compressedTexImage2D(GLenum target,
+                                                      GLint level,
+                                                      GLenum internalformat,
+                                                      GLsizei width,
+                                                      GLsizei height,
+                                                      GLint border,
+                                                      GLsizei imageSize,
+                                                      GLintptr offset) {
+  if (isContextLost())
+    return;
+  contextGL()->CompressedTexImage2D(target, level, internalformat, width,
+                                    height, border, imageSize,
+                                    reinterpret_cast<uint8_t*>(offset));
+}
+
 void WebGL2RenderingContextBase::compressedTexSubImage2D(
     GLenum target,
     GLint level,
@@ -1898,6 +1913,22 @@ void WebGL2RenderingContextBase::compressedTexSubImage2D(
       static_cast<uint8_t*>(data->baseAddress()) + srcOffset);
 }
 
+void WebGL2RenderingContextBase::compressedTexSubImage2D(GLenum target,
+                                                         GLint level,
+                                                         GLint xoffset,
+                                                         GLint yoffset,
+                                                         GLsizei width,
+                                                         GLsizei height,
+                                                         GLenum format,
+                                                         GLsizei imageSize,
+                                                         GLintptr offset) {
+  if (isContextLost())
+    return;
+  contextGL()->CompressedTexSubImage2D(target, level, xoffset, yoffset, width,
+                                       height, format, imageSize,
+                                       reinterpret_cast<uint8_t*>(offset));
+}
+
 void WebGL2RenderingContextBase::compressedTexImage3D(
     GLenum target,
     GLint level,
@@ -1931,6 +1962,22 @@ void WebGL2RenderingContextBase::compressedTexImage3D(
       target, level, internalformat, width, height, depth, border,
       srcLengthOverride,
       static_cast<uint8_t*>(data->baseAddress()) + srcOffset);
+}
+
+void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target,
+                                                      GLint level,
+                                                      GLenum internalformat,
+                                                      GLsizei width,
+                                                      GLsizei height,
+                                                      GLsizei depth,
+                                                      GLint border,
+                                                      GLsizei imageSize,
+                                                      GLintptr offset) {
+  if (isContextLost())
+    return;
+  contextGL()->CompressedTexImage3D(target, level, internalformat, width,
+                                    height, depth, border, imageSize,
+                                    reinterpret_cast<uint8_t*>(offset));
 }
 
 void WebGL2RenderingContextBase::compressedTexSubImage3D(
@@ -1968,6 +2015,24 @@ void WebGL2RenderingContextBase::compressedTexSubImage3D(
       target, level, xoffset, yoffset, zoffset, width, height, depth, format,
       srcLengthOverride,
       static_cast<uint8_t*>(data->baseAddress()) + srcOffset);
+}
+
+void WebGL2RenderingContextBase::compressedTexSubImage3D(GLenum target,
+                                                         GLint level,
+                                                         GLint xoffset,
+                                                         GLint yoffset,
+                                                         GLint zoffset,
+                                                         GLsizei width,
+                                                         GLsizei height,
+                                                         GLsizei depth,
+                                                         GLenum format,
+                                                         GLsizei imageSize,
+                                                         GLintptr offset) {
+  if (isContextLost())
+    return;
+  contextGL()->CompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset,
+                                       width, height, depth, format, imageSize,
+                                       reinterpret_cast<uint8_t*>(offset));
 }
 
 GLint WebGL2RenderingContextBase::getFragDataLocation(WebGLProgram* program,
