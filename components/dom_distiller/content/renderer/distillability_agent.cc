@@ -203,6 +203,7 @@ void DistillabilityAgent::DidMeaningfulLayout(
   render_frame()->GetRemoteInterfaces()->GetInterface(
       &distillability_service);
   DCHECK(distillability_service);
+  if (!distillability_service.is_bound()) return;
   distillability_service->NotifyIsDistillable(
       IsDistillablePage(doc, is_last), is_last);
 }
