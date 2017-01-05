@@ -7,7 +7,6 @@
 
 __version__ = '0.8.0'
 
-import base64
 import errno
 import functools
 import io
@@ -20,9 +19,7 @@ import stat
 import sys
 import tarfile
 import tempfile
-import threading
 import time
-import types
 import zlib
 
 from third_party import colorama
@@ -348,11 +345,17 @@ def create_symlinks(base_directory, files):
 def is_valid_file(path, size):
   """Determines if the given files appears valid.
 
-  Currently it just checks the file's size.
+  Currently it just checks the file exists and its size matches the expectation.
   """
   if size == UNKNOWN_FILE_SIZE:
     return fs.isfile(path)
-  actual_size = fs.stat(path).st_size
+  try:
+    actual_size = fs.stat(path).st_size
+  except OSError as e:
+    logging.warning(
+        'Can\'t read item %s, assuming it\'s invalid: %s',
+        os.path.basename(path), e)
+    return False
   if size != actual_size:
     logging.warning(
         'Found invalid item %s; %d != %d',
@@ -1170,7 +1173,10 @@ class DiskCache(LocalCache):
     #      logging.info('Deleted corrupted item: %s', digest)
 
   def touch(self, digest, size):
-    """Verifies an actual file is valid.
+    """Verifies an actual file is valid and bumps its LRU position.
+
+    Returns False if the file is missing or invalid. Doesn't kick it from LRU
+    though (call 'evict' explicitly).
 
     Note that is doesn't compute the hash so it could still be corrupted if the
     file size didn't change.
@@ -1343,11 +1349,11 @@ class DiskCache(LocalCache):
     try:
       digest, (size, _) = self._lru.get_oldest()
       if not allow_protected and digest == self._protected:
-        raise Error('Not enough space to map the whole isolated tree')
+        raise Error('Not enough space to fetch the whole isolated tree')
     except KeyError:
       raise Error('Nothing to remove')
     digest, (size, _) = self._lru.pop_oldest()
-    logging.debug("Removing LRU file %s", digest)
+    logging.debug('Removing LRU file %s', digest)
     self._delete_file(digest, size)
     return size
 
@@ -1376,12 +1382,16 @@ class DiskCache(LocalCache):
     self._lock.assert_locked()
     try:
       if size == UNKNOWN_FILE_SIZE:
-        size = fs.stat(self._path(digest)).st_size
+        try:
+          size = fs.stat(self._path(digest)).st_size
+        except OSError:
+          size = 0
       file_path.try_remove(self._path(digest))
       self._evicted.append(size)
       self._free_disk += size
     except OSError as e:
-      logging.error('Error attempting to delete a file %s:\n%s' % (digest, e))
+      if e.errno != errno.ENOENT:
+        logging.error('Error attempting to delete a file %s:\n%s' % (digest, e))
 
 
 class IsolatedBundle(object):

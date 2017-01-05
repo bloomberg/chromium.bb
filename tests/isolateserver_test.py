@@ -6,7 +6,6 @@
 # pylint: disable=W0212,W0223,W0231,W0613
 
 import base64
-import collections
 import hashlib
 import json
 import logging
@@ -17,7 +16,6 @@ import sys
 import tarfile
 import tempfile
 import unittest
-import urllib
 import zlib
 
 # net_utils adjusts sys.path.
@@ -28,7 +26,6 @@ import isolated_format
 import isolateserver
 import isolate_storage
 import test_utils
-from depot_tools import auto_stub
 from depot_tools import fix_encoding
 from utils import file_path
 from utils import fs
@@ -1445,6 +1442,27 @@ class DiskCacheTest(TestCase):
       self.assertEqual(1101, cache._free_disk)
       self.assertEqual(2, cache.initial_number_items)
       self.assertEqual(100, cache.initial_size)
+
+  def test_some_file_brutally_deleted(self):
+    h_a = self.to_hash('a')[0]
+
+    self._free_disk = 1100
+    with self.get_cache() as cache:
+      cache.write(h_a, 'a')
+      self.assertTrue(cache.touch(h_a, isolateserver.UNKNOWN_FILE_SIZE))
+      self.assertTrue(cache.touch(h_a, 1))
+
+    os.remove(os.path.join(self.tempdir, h_a))
+
+    with self.get_cache() as cache:
+      # 'Ghost' entry loaded with state.json is still there.
+      self.assertEqual({h_a}, cache.cached_set())
+      # 'touch' detects the file is missing by returning False.
+      self.assertFalse(cache.touch(h_a, isolateserver.UNKNOWN_FILE_SIZE))
+      self.assertFalse(cache.touch(h_a, 1))
+      # Evicting it still works, kills the 'ghost' entry.
+      cache.evict(h_a)
+      self.assertEqual(set(), cache.cached_set())
 
 
 def clear_env_vars():
