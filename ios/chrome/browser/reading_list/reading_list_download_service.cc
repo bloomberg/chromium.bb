@@ -192,6 +192,8 @@ void ReadingListDownloadService::OnDownloadEnd(
        success == URLDownloader::DOWNLOAD_EXISTS) &&
       !distilled_path.empty()) {
     reading_list_model_->SetEntryDistilledPath(url, distilled_path);
+    if (!title.empty())
+      reading_list_model_->SetEntryTitle(url, title);
 
     const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
     if (entry)
