@@ -167,6 +167,14 @@ public class ResourceManager implements ResourceLoaderCallback {
                 aperture.left, aperture.top, aperture.right, aperture.bottom);
     }
 
+    @Override
+    public void onResourceUnregistered(int resType, int resId) {
+        // Only remove dynamic bitmaps that were unregistered.
+        if (resType != AndroidResourceType.DYNAMIC_BITMAP) return;
+
+        nativeRemoveResource(mNativeResourceManagerPtr, resType, resId);
+    }
+
     /**
      * Clear the cache of tinted assets that the native manager holds.
      */
@@ -234,6 +242,8 @@ public class ResourceManager implements ResourceLoaderCallback {
             int unscaledSpriteHeight, float scaledSpriteWidth, float scaledSpriteHeight);
     private native void nativeOnCrushedSpriteResourceReloaded(long nativeResourceManagerImpl,
             int bitmapResId, Bitmap bitmap);
+    private native void nativeRemoveResource(long nativeResourceManagerImpl, int resType,
+            int resId);
     private native void nativeClearTintedResourceCache(long nativeResourceManagerImpl);
 
 }

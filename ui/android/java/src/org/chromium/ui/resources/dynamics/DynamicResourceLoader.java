@@ -43,6 +43,7 @@ public class DynamicResourceLoader extends ResourceLoader {
      */
     public void unregisterResource(int resId) {
         mDynamicResources.remove(resId);
+        notifyResourceUnregistered(resId);
     }
 
     /**

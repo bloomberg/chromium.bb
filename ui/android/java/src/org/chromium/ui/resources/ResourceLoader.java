@@ -22,6 +22,16 @@ public abstract class ResourceLoader {
          *                 not be loaded.
          */
         void onResourceLoaded(int resType, int resId, Resource resource);
+
+        /**
+         * Called when a resource is unregistered (unneeded). This should only be called for
+         * dynamic bitmap resources since they change constantly and are replaced with new bitmaps.
+         * Other resource types should not need this since thay are static for the lifetime of the
+         * application.
+         * @param resType The {@link ResourceType} of resource that was removed.
+         * @param redId The Android id of the removed resource.
+         */
+        void onResourceUnregistered(int resType, int resId);
     }
 
     private final int mResourceType;
@@ -67,5 +77,14 @@ public abstract class ResourceLoader {
      */
     protected void notifyLoadFinished(int resId, Resource resource) {
         if (mCallback != null) mCallback.onResourceLoaded(getResourceType(), resId, resource);
+    }
+
+    /**
+     * A helper method for subclasses to notify the manager that a {@link Resource} is no longer
+     * being used.
+     * @param resId The id of the {@link Resource} being unloaded.
+     */
+    protected void notifyResourceUnregistered(int resId) {
+        if (mCallback != null) mCallback.onResourceUnregistered(getResourceType(), resId);
     }
 }

@@ -220,6 +220,14 @@ void ResourceManagerImpl::OnResourceReady(JNIEnv* env,
       ui_resource_manager_, cc::UIResourceBitmap(skbitmap));
 }
 
+void ResourceManagerImpl::RemoveResource(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jobj,
+    jint res_type,
+    jint res_id) {
+  resources_[res_type].erase(res_id);
+}
+
 CrushedSpriteResource* ResourceManagerImpl::GetCrushedSpriteResource(
     int bitmap_res_id, int metadata_res_id) {
 

@@ -74,6 +74,11 @@ class UI_ANDROID_EXPORT ResourceManagerImpl
       const base::android::JavaRef<jobject>& jobj,
       jint bitmap_res_id,
       const base::android::JavaRef<jobject>& bitmap);
+  void RemoveResource(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj,
+      jint res_type,
+      jint res_id);
   void ClearTintedResourceCache(JNIEnv* env,
       const base::android::JavaRef<jobject>& jobj);
 
