@@ -66,6 +66,8 @@ source_set("contextual_search") {
     "window_gesture_observer.mm",
   ]
   deps = [
+    ":injected_js",
+    ":resources",
     "//base",
     "//components/google/core/browser",
     "//components/prefs",
@@ -83,8 +85,6 @@ source_set("contextual_search") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/contextual_search:injected_js",
-    "//ios/chrome/browser/ui/contextual_search:resources",
     "//ios/chrome/browser/ui/contextual_search/protos",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web",
@@ -120,6 +120,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":contextual_search",
+    ":resources_unit_tests",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -131,7 +132,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/sync:test_support",
-    "//ios/chrome/browser/ui/contextual_search:resources_unit_tests",
     "//ios/chrome/browser/web:test_support",
     "//ios/web",
     "//ios/web:test_support",

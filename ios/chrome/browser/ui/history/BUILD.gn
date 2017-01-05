@@ -154,6 +154,7 @@ source_set("eg_tests") {
     "tab_history_popup_controller_egtest.mm",
   ]
   deps = [
+    ":history",
     "//base",
     "//components/browsing_data/core",
     "//components/prefs",
@@ -161,14 +162,13 @@ source_set("eg_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
-    "//ios/public/provider/chrome/browser/signin:signin",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/testing:ios_test_support",
     "//ios/third_party/earl_grey",

@@ -263,10 +263,10 @@ source_set("downstream_provider") {
     "downstream_chromium_browser_provider.mm",
   ]
   deps = [
+    ":browser",
     "//base",
     "//components/pref_registry",
     "//components/prefs",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/autofill:autofill_internal",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:browser_state_impl",
@@ -303,8 +303,8 @@ source_set("browser_clean_skeleton") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":browser",
     "//base",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
   ]
 }

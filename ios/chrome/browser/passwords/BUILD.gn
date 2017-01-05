@@ -151,11 +151,11 @@ source_set("passwords_internal") {
     "passwords_ui_delegate_impl.mm",
   ]
   deps = [
+    ":passwords",
     "//base",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
-    "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui",
     "//ios/chrome/common",
     "//ios/third_party/material_components_ios",

@@ -58,6 +58,8 @@ source_set("omnibox_internal") {
     "truncating_attributed_label.mm",
   ]
   deps = [
+    ":omnibox",
+    ":resources",
     "//base",
     "//base:i18n",
     "//components/favicon/ios",
@@ -81,8 +83,6 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fancy_ui",
-    "//ios/chrome/browser/ui/omnibox",
-    "//ios/chrome/browser/ui/omnibox:resources",
     "//ios/chrome/browser/ui/popup_menu",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",

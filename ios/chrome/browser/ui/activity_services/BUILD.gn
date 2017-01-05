@@ -47,14 +47,14 @@ source_set("activity_services") {
     "share_to_data.mm",
   ]
   deps = [
+    ":assets",
+    ":resources",
     "//base",
     "//components/reading_list/core",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/activity_services:assets",
-    "//ios/chrome/browser/ui/activity_services:resources",
     "//ios/chrome/browser/ui/commands",
     "//net",
     "//ui/base",

@@ -37,6 +37,7 @@ source_set("first_run") {
     "welcome_to_chrome_view_controller.mm",
   ]
   deps = [
+    ":assets",
     "//base",
     "//base:i18n",
     "//components/metrics",
@@ -53,7 +54,6 @@ source_set("first_run") {
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fancy_ui",
-    "//ios/chrome/browser/ui/first_run:assets",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/promos",
     "//ios/chrome/browser/ui/settings",
@@ -101,6 +101,7 @@ source_set("eg_tests") {
     "first_run_egtest.mm",
   ]
   deps = [
+    ":first_run",
     "//base",
     "//components/metrics",
     "//components/prefs",
@@ -112,7 +113,6 @@ source_set("eg_tests") {
     "//ios/chrome/browser/geolocation:test_support",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
-    "//ios/chrome/browser/ui/first_run",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",

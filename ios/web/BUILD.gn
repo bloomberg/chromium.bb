@@ -31,7 +31,7 @@ source_set("web_arc") {
     "//services/service_manager/public/cpp",
     "//ui/base",
     "//ui/gfx",
-    "//ui/gfx/geometry:geometry",
+    "//ui/gfx/geometry",
     "//ui/resources",
     "//url",
   ]
@@ -259,7 +259,7 @@ source_set("web") {
     "//services/service_manager/public/cpp",
     "//ui/base",
     "//ui/gfx",
-    "//ui/gfx/geometry:geometry",
+    "//ui/gfx/geometry",
     "//ui/resources",
     "//url",
   ]
@@ -346,7 +346,7 @@ source_set("earl_grey_test_support") {
     "//ios/testing:ios_test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey",
-    "//net:net",
+    "//net",
   ]
 
   sources = [
@@ -375,7 +375,7 @@ source_set("test_support") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
-    "//ui/base:base",
+    "//ui/base",
   ]
 
   sources = [

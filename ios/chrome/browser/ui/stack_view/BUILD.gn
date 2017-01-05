@@ -76,6 +76,7 @@ source_set("stack_view") {
     "title_label.mm",
   ]
   deps = [
+    ":resources",
     "//base",
     "//components/strings",
     "//ios/chrome/app/strings",
@@ -86,7 +87,6 @@ source_set("stack_view") {
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
-    "//ios/chrome/browser/ui/stack_view:resources",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/browser/ui/tabs",
     "//ios/chrome/browser/ui/toolbar",
@@ -131,13 +131,13 @@ source_set("eg_tests") {
     "stack_view_egtest.mm",
   ]
   deps = [
+    ":stack_view",
     "//base",
     "//base/test:test_support",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:ui_internal",
-    "//ios/chrome/browser/ui/stack_view",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/test/app:test_support",
@@ -153,6 +153,7 @@ source_set("perf_tests") {
     "stack_view_controller_perftest.mm",
   ]
   deps = [
+    ":stack_view",
     "//base",
     "//base/test:test_support",
     "//ios/chrome/browser/snapshots",
@@ -160,7 +161,6 @@ source_set("perf_tests") {
     "//ios/chrome/browser/test:perf_test_support",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui:ui_internal",
-    "//ios/chrome/browser/ui/stack_view",
     "//ios/web",
     "//net",
   ]

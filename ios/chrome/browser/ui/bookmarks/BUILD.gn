@@ -65,6 +65,7 @@ source_set("bookmarks") {
     "undo_manager_wrapper.mm",
   ]
   deps = [
+    ":resources",
     "//base",
     "//base:i18n",
     "//components/bookmarks/browser",
@@ -90,7 +91,6 @@ source_set("bookmarks") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator",
-    "//ios/chrome/browser/ui/bookmarks:resources",
     "//ios/chrome/browser/ui/bookmarks/bars",
     "//ios/chrome/browser/ui/bookmarks/cells",
     "//ios/chrome/browser/ui/collection_view",

@@ -20,6 +20,6 @@ source_set("test_support") {
     "test_branded_image_provider.mm",
   ]
   deps = [
-    "//ios/public/provider/chrome/browser/images",
+    ":images",
   ]
 }

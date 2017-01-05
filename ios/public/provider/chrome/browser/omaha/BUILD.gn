@@ -21,6 +21,6 @@ source_set("test_support") {
     "test_omaha_service_provider.mm",
   ]
   deps = [
-    "//ios/public/provider/chrome/browser/omaha",
+    ":omaha",
   ]
 }

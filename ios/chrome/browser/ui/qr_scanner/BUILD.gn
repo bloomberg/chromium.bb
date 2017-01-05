@@ -36,13 +36,13 @@ source_set("qr_scanner") {
     "qr_scanner_view_controller.mm",
   ]
   deps = [
+    ":assets",
     "//base",
     "//components/version_info",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/icons",
-    "//ios/chrome/browser/ui/qr_scanner:assets",
     "//ios/chrome/common:ios_app_bundle_id_prefix_header",
     "//ios/third_party/material_components_ios",
     "//ui/base",
@@ -59,6 +59,7 @@ source_set("eg_tests") {
     "qr_scanner_view_controller_egtest.mm",
   ]
   deps = [
+    ":qr_scanner",
     "//base",
     "//base/test:test_support",
     "//components/strings",
@@ -69,7 +70,6 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/icons",
-    "//ios/chrome/browser/ui/qr_scanner",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/base",

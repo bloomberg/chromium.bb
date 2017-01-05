@@ -56,11 +56,11 @@ source_set("native_app_launcher_internal") {
     "native_app_navigation_controller.mm",
   ]
   deps = [
+    ":native_app_launcher",
     "//base",
     "//components/infobars/core",
     "//ios/chrome/browser",
     "//ios/chrome/browser/infobars",
-    "//ios/chrome/browser/native_app_launcher",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/tabs",
     "//ios/public/provider/chrome/browser",
@@ -81,12 +81,12 @@ source_set("unit_tests_internal") {
     "native_app_navigation_controller_unittest.mm",
   ]
   deps = [
+    ":native_app_launcher",
     ":native_app_launcher_internal",
     "//base",
     "//base/test:test_support",
     "//components/infobars/core",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/native_app_launcher",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",

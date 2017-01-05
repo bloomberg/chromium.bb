@@ -19,7 +19,7 @@ source_set("test_support") {
     "test_user_feedback_provider.mm",
   ]
   deps = [
+    ":user_feedback",
     "//base",
-    "//ios/public/provider/chrome/browser/user_feedback",
   ]
 }

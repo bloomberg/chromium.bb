@@ -38,6 +38,7 @@ source_set("crash_report_internal") {
     "crash_restore_helper.mm",
   ]
   deps = [
+    ":crash_report",
     "//base",
     "//components/infobars/core",
     "//components/sessions",
@@ -46,7 +47,6 @@ source_set("crash_report_internal") {
     "//ios/chrome/app/theme",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/tabs",
     "//ios/web",
@@ -62,12 +62,12 @@ source_set("unit_tests") {
     "crash_restore_helper_unittest.mm",
   ]
   deps = [
+    ":crash_report",
     ":crash_report_internal",
     "//base",
     "//breakpad:client",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
-    "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/test/base",
     "//ios/chrome/test/ocmock",

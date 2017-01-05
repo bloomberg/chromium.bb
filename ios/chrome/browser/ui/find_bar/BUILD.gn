@@ -67,6 +67,7 @@ source_set("find_bar") {
     "find_bar_view.mm",
   ]
   deps = [
+    ":resources",
     "//base",
     "//base:i18n",
     "//components/strings",
@@ -74,7 +75,6 @@ source_set("find_bar") {
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/find_bar:resources",
     "//ios/third_party/material_components_ios",
     "//ui/base",
     "//ui/gfx",
@@ -88,11 +88,11 @@ source_set("eg_tests") {
     "find_in_page_egtest.mm",
   ]
   deps = [
+    ":find_bar",
     "//base",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/find_in_page",
-    "//ios/chrome/browser/ui/find_bar",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",

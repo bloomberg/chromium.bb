@@ -59,13 +59,13 @@ source_set("eg_tests") {
     "tools_popup_menu_egtest.mm",
   ]
   deps = [
+    ":tools_menu",
     "//base",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/ui/toolbar",
-    "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/third_party/earl_grey",
     "//ios/web:test_support",

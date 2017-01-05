@@ -81,8 +81,8 @@ source_set("unit_tests") {
 test("ios_chrome_perftests") {
   deps = [
     # Ensure that all perf tests are run, use fake hooks and pack resources.
+    ":run_all_unittests",
     "//ios/chrome/app:tests_fake_hook",
-    "//ios/chrome/test:run_all_unittests",
     ios_packed_resources_target,
 
     # Add perf_tests target here.
@@ -98,8 +98,8 @@ test("ios_chrome_perftests") {
 test("ios_chrome_unittests") {
   deps = [
     # Ensure that all unit tests are run, use fake hooks and pack resources.
+    ":run_all_unittests",
     "//ios/chrome/app:tests_fake_hook",
-    "//ios/chrome/test:run_all_unittests",
     ios_packed_resources_target,
 
     # Add unit_tests target here.

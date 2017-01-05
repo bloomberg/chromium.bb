@@ -103,6 +103,7 @@ source_set("settings") {
     "voicesearch_collection_view_controller.mm",
   ]
   deps = [
+    ":resources",
     "//base",
     "//base:i18n",
     "//components/autofill/core/browser",
@@ -160,7 +161,6 @@ source_set("settings") {
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/material_components",
-    "//ios/chrome/browser/ui/settings:resources",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/sync",
@@ -334,6 +334,7 @@ source_set("eg_tests") {
   ]
 
   deps = [
+    ":settings",
     "//base",
     "//components/browsing_data/core",
     "//components/content_settings/core/browser",
@@ -350,7 +351,6 @@ source_set("eg_tests") {
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",

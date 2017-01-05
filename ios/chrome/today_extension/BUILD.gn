@@ -57,6 +57,7 @@ ios_appex_bundle("today_extension") {
   ]
 
   deps = [
+    ":packed_resources",
     ":resources",
     "//base",
     "//base:i18n",
@@ -70,7 +71,6 @@ ios_appex_bundle("today_extension") {
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/app_group:client",
     "//ios/chrome/common/physical_web",
-    "//ios/chrome/today_extension:packed_resources",
     "//ios/chrome/today_extension/strings",
     "//ios/third_party/material_components_ios",
     "//net",

@@ -9,13 +9,13 @@ source_set("infobars") {
     "infobar_view_delegate.h",
   ]
   deps = [
+    ":resources",
     "//base",
     "//base:i18n",
     "//components/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/fancy_ui",
-    "//ios/chrome/browser/ui/infobars:resources",
     "//ios/chrome/browser/ui/util",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/third_party/material_components_ios",

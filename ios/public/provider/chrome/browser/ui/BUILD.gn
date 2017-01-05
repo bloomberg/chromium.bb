@@ -24,6 +24,6 @@ source_set("test_support") {
     "test_styled_text_field.mm",
   ]
   deps = [
-    "//ios/public/provider/chrome/browser/ui",
+    ":ui",
   ]
 }

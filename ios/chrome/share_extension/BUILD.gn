@@ -76,7 +76,7 @@ ios_appex_bundle("share_extension") {
 
 generate_localizable_strings("system_strings") {
   visibility = [ ":*" ]
-  _packed_resources_target = "//ios/chrome/share_extension:packed_resources"
+  _packed_resources_target = ":packed_resources"
   config_file = "share_extension_localize_strings_config.plist"
   datapack_dir = get_label_info(_packed_resources_target, "target_gen_dir")
   packed_locales = ios_packed_locales_as_mac_outputs

@@ -14,10 +14,10 @@ assert(!is_component_build, "CrNet requires static library build.")
 
 source_set("crnet_sources") {
   deps = [
-    "//base:base",
-    "//components/metrics:metrics",
-    "//components/metrics/proto:proto",
-    "//components/prefs:prefs",
+    "//base",
+    "//components/metrics",
+    "//components/metrics/proto",
+    "//components/prefs",
     "//ios/net",
     "//ios/web:user_agent",
     "//net",
@@ -117,7 +117,7 @@ ios_framework_bundle("crnet_framework") {
     ":crnet_framework_resources",
     ":crnet_sources",
     "//base",
-    "//net:net",
+    "//net",
   ]
 
   libs = [ "UIKit.Framework" ]

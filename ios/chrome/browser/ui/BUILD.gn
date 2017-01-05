@@ -115,7 +115,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/activity_services",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/commands",
@@ -250,6 +249,8 @@ source_set("ui_internal") {
   ]
   deps = [
     ":browser_list",
+    ":resources",
+    ":ui",
     "//base",
     "//base:i18n",
     "//components/bookmarks/browser",
@@ -284,8 +285,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/snapshots:snapshots_internal",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui:resources",
     "//ios/chrome/browser/ui/activity_services",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication",
@@ -405,11 +404,11 @@ source_set("eg_tests") {
     "keyboard_commands_egtest.mm",
   ]
   deps = [
+    ":ui",
+    ":ui_internal",
     "//base",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
     "//ios/chrome/browser/ui/toolbar",

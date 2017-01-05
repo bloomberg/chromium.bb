@@ -73,13 +73,13 @@ source_set("eg_tests") {
     "translate_egtest.mm",
   ]
   deps = [
+    ":translate",
     "//base",
     "//components/strings",
     "//components/translate/core/browser",
     "//components/translate/core/common",
     "//components/translate/ios/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/translate",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing:ios_test_support",

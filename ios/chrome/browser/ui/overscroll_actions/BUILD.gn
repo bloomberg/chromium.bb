@@ -36,10 +36,10 @@ source_set("overscroll_actions") {
     "overscroll_actions_view.mm",
   ]
   deps = [
+    ":resources",
     "//base",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/overscroll_actions:resources",
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/util",

@@ -38,6 +38,7 @@ source_set("payments") {
     "shipping_address_selection_view_controller.mm",
   ]
   deps = [
+    ":injected_js",
     "//base",
     "//components/autofill/core/browser",
     "//components/strings",
@@ -45,7 +46,6 @@ source_set("payments") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/payments:injected_js",
     "//ios/chrome/browser/payments/cells",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",

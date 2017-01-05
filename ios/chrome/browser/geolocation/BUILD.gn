@@ -72,11 +72,11 @@ source_set("geolocation_internal") {
     "omnibox_geolocation_controller.mm",
   ]
   deps = [
+    ":geolocation",
     "//base",
     "//components/google/core/browser",
     "//components/version_info",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/geolocation",
     "//ios/chrome/browser/tabs",
     "//ios/web",
     "//ui/base",

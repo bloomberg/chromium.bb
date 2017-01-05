@@ -38,7 +38,6 @@ source_set("unit_tests") {
     "//components/metrics",
     "//ios/chrome/app",
     "//ios/chrome/app:app_internal",
-    "//ios/chrome/app/application_delegate",
     "//ios/chrome/app/safe_mode",
     "//ios/chrome/app/spotlight",
     "//ios/chrome/browser",
@@ -92,13 +91,13 @@ source_set("application_delegate_internal") {
     "user_activity_handler.mm",
   ]
   deps = [
+    ":application_delegate",
     "//base",
     "//components/crash/core/common",
     "//components/handoff",
     "//components/metrics",
     "//components/prefs",
     "//ios/chrome/app",
-    "//ios/chrome/app/application_delegate",
     "//ios/chrome/app/safe_mode",
     "//ios/chrome/app/spotlight",
     "//ios/chrome/browser",

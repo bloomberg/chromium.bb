@@ -89,6 +89,7 @@ source_set("tab_switcher") {
     "tab_switcher_view.mm",
   ]
   deps = [
+    ":resources",
     ":utils",
     "//base",
     "//components/browser_sync",
@@ -113,7 +114,6 @@ source_set("tab_switcher") {
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/ntp/recent_tabs/views",
     "//ios/chrome/browser/ui/sync",
-    "//ios/chrome/browser/ui/tab_switcher:resources",
     "//ios/chrome/browser/ui/tabs",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/common:ios_app_bundle_id_prefix_header",

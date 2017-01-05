@@ -79,13 +79,13 @@ source_set("browsing_data_internal") {
     "browsing_data_removal_controller.mm",
   ]
   deps = [
+    ":browsing_data",
     "//base",
     "//components/browsing_data/core",
     "//components/open_from_clipboard",
     "//components/signin/ios/browser",
     "//ios/chrome/browser:browser_internal",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/native_app_launcher:native_app_launcher_internal",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/signin",

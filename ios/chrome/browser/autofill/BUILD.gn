@@ -50,6 +50,7 @@ source_set("autofill_internal") {
     "autofill_controller.mm",
   ]
   deps = [
+    ":autofill",
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
@@ -60,7 +61,6 @@ source_set("autofill_internal") {
     "//components/signin/core/browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/signin",
@@ -84,6 +84,7 @@ source_set("unit_tests") {
     "js_suggestion_manager_unittest.mm",
   ]
   deps = [
+    ":autofill",
     ":autofill_internal",
     "//base",
     "//base/test:test_support",
@@ -94,7 +95,6 @@ source_set("unit_tests") {
     "//components/infobars/core",
     "//components/keyed_service/core",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/ui",
@@ -115,10 +115,10 @@ source_set("eg_tests") {
     "form_input_egtest.mm",
   ]
   deps = [
+    ":autofill",
     "//base",
     "//base/test:test_support",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/ui",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",

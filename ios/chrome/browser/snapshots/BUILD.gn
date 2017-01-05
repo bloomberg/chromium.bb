@@ -49,8 +49,8 @@ source_set("snapshots_internal") {
     "web_controller_snapshot_helper.mm",
   ]
   deps = [
+    ":snapshots",
     "//base",
-    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/web",

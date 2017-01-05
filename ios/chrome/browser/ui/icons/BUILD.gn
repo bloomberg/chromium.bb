@@ -8,9 +8,9 @@ source_set("icons") {
     "chrome_icon.mm",
   ]
   deps = [
+    ":assets",
     "//base",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui/icons:assets",
     "//ui/base",
   ]
   libs = [

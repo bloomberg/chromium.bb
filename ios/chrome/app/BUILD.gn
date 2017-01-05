@@ -132,6 +132,8 @@ source_set("app_internal") {
   ]
 
   deps = [
+    ":app",
+    ":tests_hook",
     "//base",
     "//components/bookmarks/browser",
     "//components/browser_sync",
@@ -155,8 +157,6 @@ source_set("app_internal") {
     "//components/sync",
     "//components/url_formatter",
     "//components/web_resource",
-    "//ios/chrome/app",
-    "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/application_delegate",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/app/safe_mode",
@@ -268,7 +268,7 @@ ios_app_bundle("chrome") {
 
   deps = [
     ":main",
-    "//ios/chrome/app:tests_fake_hook",
+    ":tests_fake_hook",
   ]
 
   bundle_deps = [ "//ios/chrome/app/resources" ]
@@ -335,7 +335,7 @@ ios_app_bundle("chrome_clean_skeleton") {
 
   deps = [
     ":main_clean_skeleton",
-    "//ios/chrome/app:tests_fake_hook",
+    ":tests_fake_hook",
   ]
 
   bundle_deps = [ "//ios/chrome/app/resources" ]
@@ -362,9 +362,9 @@ source_set("main_clean_skeleton") {
 
   deps = [
     ":app_clean_skeleton",
+    ":app_internal",
     "//base",
     "//components/crash/core/common",
-    "//ios/chrome/app:app_internal",
     "//ios/chrome/app/startup",
     "//ios/chrome/browser",
     "//ios/chrome/browser:browser_internal",

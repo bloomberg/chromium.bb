@@ -94,16 +94,16 @@ source_set("metrics_internal") {
     "tab_usage_recorder_delegate.h",
   ]
   deps = [
+    ":metrics",
     "//base",
     "//components/google/core/browser",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui:browser_list",
     "//ios/web",
-    "//ui/base:base",
+    "//ui/base",
     "//url",
   ]
   libs = [ "UIKit.framework" ]
@@ -117,10 +117,10 @@ source_set("unit_tests_internal") {
     "tab_usage_recorder_unittest.mm",
   ]
   deps = [
+    ":metrics",
     ":metrics_internal",
     "//base",
     "//base/test:test_support",
-    "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/testing:ocmock_support",
@@ -137,12 +137,12 @@ source_set("eg_tests") {
     "tab_usage_recorder_egtest.mm",
   ]
   deps = [
+    ":metrics_internal",
     "//base",
     "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/toolbar",

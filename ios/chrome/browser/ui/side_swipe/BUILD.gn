@@ -30,6 +30,7 @@ source_set("side_swipe") {
     "side_swipe_util.mm",
   ]
   deps = [
+    ":resources",
     "//base",
     "//components/reading_list/core",
     "//components/reading_list/ios",
@@ -41,7 +42,6 @@ source_set("side_swipe") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/ntp",
-    "//ios/chrome/browser/ui/side_swipe:resources",
     "//ios/chrome/browser/ui/tabs",
     "//ios/chrome/common",
     "//ios/web",

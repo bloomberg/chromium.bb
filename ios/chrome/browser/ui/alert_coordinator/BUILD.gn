@@ -62,9 +62,9 @@ source_set("eg_tests") {
     "alert_coordinator_egtest.mm",
   ]
   deps = [
+    ":alert_coordinator",
     "//base",
     "//components/strings",
-    "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey",

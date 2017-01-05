@@ -155,6 +155,8 @@ source_set("web_internal") {
     "print_observer.mm",
   ]
   deps = [
+    ":injected_js",
+    ":resources",
     "//base",
     "//components/content_settings/core/browser",
     "//components/dom_distiller/core",
@@ -175,8 +177,6 @@ source_set("web_internal") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/static_content",
-    "//ios/chrome/browser/web:injected_js",
-    "//ios/chrome/browser/web:resources",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",

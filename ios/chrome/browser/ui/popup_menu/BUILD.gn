@@ -21,10 +21,10 @@ source_set("popup_menu") {
     "popup_menu_view.mm",
   ]
   deps = [
+    ":resources",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/popup_menu:resources",
     "//ios/chrome/common",
     "//ui/base",
   ]

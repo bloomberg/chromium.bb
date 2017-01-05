@@ -34,10 +34,10 @@ source_set("test_support") {
     "test_signin_resources_provider.mm",
   ]
   deps = [
+    ":signin",
     "//base",
     "//google_apis",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/signin",
   ]
   public_deps = [
     "//testing/gmock",

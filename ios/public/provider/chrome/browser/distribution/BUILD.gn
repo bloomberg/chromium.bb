@@ -19,7 +19,7 @@ source_set("test_support") {
     "test_app_distribution_provider.mm",
   ]
   deps = [
+    ":distribution",
     "//base",
-    "//ios/public/provider/chrome/browser/distribution",
   ]
 }

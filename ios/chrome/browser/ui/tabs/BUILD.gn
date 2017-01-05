@@ -55,6 +55,7 @@ source_set("tabs") {
     "target_frame_cache.mm",
   ]
   deps = [
+    ":resources",
     "//base",
     "//base:i18n",
     "//ios/chrome/app/strings",
@@ -64,7 +65,6 @@ source_set("tabs") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/tabs:resources",
     "//ios/chrome/browser/ui/util",
     "//ios/third_party/material_components_ios",
     "//ios/web",
@@ -99,10 +99,10 @@ source_set("eg_tests") {
     "tab_strip_egtest.mm",
   ]
   deps = [
+    ":tabs",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/tabs",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/third_party/earl_grey",

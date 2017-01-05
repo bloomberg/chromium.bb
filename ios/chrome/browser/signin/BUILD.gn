@@ -141,9 +141,9 @@ source_set("signin_internal") {
     "signin_capability.h",
   ]
   deps = [
+    ":signin",
     "//base",
     "//components/signin/core/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/signin",
   ]
 }

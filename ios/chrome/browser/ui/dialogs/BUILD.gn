@@ -5,7 +5,7 @@
 source_set("dialogs") {
   deps = [
     "//base",
-    "//ios/web:web",
+    "//ios/web",
   ]
 
   sources = [
@@ -25,8 +25,8 @@ source_set("unit_tests") {
 
   deps = [
     ":dialogs",
+    "//ios/web",
     "//ios/web:test_support",
-    "//ios/web:web",
     "//testing/gtest",
   ]
 
@@ -43,13 +43,13 @@ source_set("dialogs_internal") {
     "nsurl_protection_space_util.mm",
   ]
   deps = [
+    ":dialogs",
     "//base",
     "//components/strings",
     "//components/url_formatter",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator",
-    "//ios/chrome/browser/ui/dialogs",
     "//ios/web",
     "//ui/base",
     "//url",
@@ -69,8 +69,8 @@ source_set("unit_tests_internal") {
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/web",
     "//ios/web:test_support",
-    "//ios/web:web",
     "//testing/gtest",
     "//ui/base",
     "//url",
@@ -84,11 +84,11 @@ source_set("eg_tests") {
     "javascript_dialog_egtest.mm",
   ]
   deps = [
+    ":dialogs_internal",
     "//base",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/dialogs:dialogs_internal",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
