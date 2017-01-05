@@ -43,7 +43,7 @@ class MockPrerenderingLoader : public PrerenderingLoader {
   ~MockPrerenderingLoader() override {}
 
   bool LoadPage(const GURL& url, const LoadPageCallback& callback) override {
-    mock_loading_ = true;
+    mock_loading_ = can_prerender_;
     load_page_callback_ = callback;
     return mock_loading_;
   }
@@ -53,7 +53,6 @@ class MockPrerenderingLoader : public PrerenderingLoader {
     mock_loaded_ = false;
   }
 
-  bool CanPrerender() override { return can_prerender_; }
   bool IsIdle() override { return !mock_loading_ && !mock_loaded_; }
   bool IsLoaded() override { return mock_loaded_; }
 

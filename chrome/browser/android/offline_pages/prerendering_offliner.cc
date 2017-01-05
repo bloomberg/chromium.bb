@@ -148,11 +148,6 @@ bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
     return false;
   }
 
-  if (!GetOrCreateLoader()->CanPrerender()) {
-    DVLOG(1) << "Prerendering not allowed/configured";
-    return false;
-  }
-
   // Do not allow loading for custom tabs clients if 3rd party cookies blocked.
   // TODO(dewittj): Revise api to specify policy rather than hard code to
   // name_space.

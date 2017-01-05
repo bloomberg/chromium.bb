@@ -25,14 +25,12 @@ class TestAdapter : public PrerenderAdapter {
   explicit TestAdapter(PrerenderAdapter::Observer* observer)
       : PrerenderAdapter(observer),
         active_(false),
-        disabled_(false),
         fail_start_(false),
         observer_(observer),
         final_status_(prerender::FINAL_STATUS_MAX) {}
   ~TestAdapter() override {}
 
   // PrerenderAdapter implementation.
-  bool CanPrerender() const override;
   bool StartPrerender(
       content::BrowserContext* browser_context,
       const GURL& url,
@@ -42,10 +40,6 @@ class TestAdapter : public PrerenderAdapter {
   prerender::FinalStatus GetFinalStatus() const override;
   bool IsActive() const override;
   void DestroyActive() override;
-
-  // Sets prerendering to be disabled. This will cause the CanPrerender()
-  // to return false.
-  void Disable();
 
   // Sets prerendering to fail start prerender requests.
   void FailStart();
@@ -59,7 +53,6 @@ class TestAdapter : public PrerenderAdapter {
 
  private:
   bool active_;
-  bool disabled_;
   bool fail_start_;
   PrerenderAdapter::Observer* observer_;
   std::unique_ptr<content::WebContents> web_contents_;
@@ -67,10 +60,6 @@ class TestAdapter : public PrerenderAdapter {
 
   DISALLOW_COPY_AND_ASSIGN(TestAdapter);
 };
-
-void TestAdapter::Disable() {
-  disabled_ = true;
-}
 
 void TestAdapter::FailStart() {
   fail_start_ = true;
@@ -80,10 +69,6 @@ void TestAdapter::Configure(content::WebContents* web_contents,
                             prerender::FinalStatus final_status) {
   web_contents_ = base::WrapUnique(web_contents);
   final_status_ = final_status;
-}
-
-bool TestAdapter::CanPrerender() const {
-  return !disabled_;
 }
 
 bool TestAdapter::StartPrerender(
@@ -166,14 +151,6 @@ void PrerenderingLoaderTest::OnLoadDone(Offliner::RequestStatus load_status,
                                         content::WebContents* web_contents) {
   callback_called_ = true;
   callback_load_status_ = load_status;
-}
-
-TEST_F(PrerenderingLoaderTest, CanPrerender) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  EXPECT_TRUE(loader()->CanPrerender());
-
-  test_adapter()->Disable();
-  EXPECT_FALSE(loader()->CanPrerender());
 }
 
 TEST_F(PrerenderingLoaderTest, StopLoadingWhenIdle) {
@@ -388,16 +365,6 @@ TEST_F(PrerenderingLoaderTest, LoadPageNotAcceptedWhenNotIdle) {
       gurl,
       base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
   EXPECT_FALSE(loader()->IsIdle());
-}
-
-TEST_F(PrerenderingLoaderTest, LoadPageNotAcceptedWhenPrerenderingDisabled) {
-  test_adapter()->Disable();
-  GURL gurl("http://testit.sea");
-  EXPECT_TRUE(loader()->IsIdle());
-  EXPECT_FALSE(loader()->LoadPage(
-      gurl,
-      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
-  EXPECT_TRUE(loader()->IsIdle());
 }
 
 TEST_F(PrerenderingLoaderTest, LoadPageNotAcceptedWhenStartPrerenderFalse) {

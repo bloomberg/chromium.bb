@@ -48,9 +48,6 @@ class PrerenderAdapter : public prerender::PrerenderHandle::Observer {
   explicit PrerenderAdapter(PrerenderAdapter::Observer* observer);
   ~PrerenderAdapter() override;
 
-  // Returns whether prerendering is enabled and configured.
-  virtual bool CanPrerender() const;
-
   // Starts prerendering |url| for offlining. There must be no active
   // prerender request when calling this. Returns whether it was able
   // to start the prerendering operation.

@@ -95,8 +95,6 @@ bool PrerenderingLoader::LoadPage(const GURL& url,
         << "WARNING: Existing request in progress or waiting for StopLoading()";
     return false;
   }
-  if (!CanPrerender())
-    return false;
 
   // Create a WebContents instance to define and hold a SessionStorageNamespace
   // for this load request.
@@ -126,11 +124,6 @@ bool PrerenderingLoader::LoadPage(const GURL& url,
 void PrerenderingLoader::StopLoading() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CancelPrerender();
-}
-
-bool PrerenderingLoader::CanPrerender() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return adapter_->CanPrerender();
 }
 
 bool PrerenderingLoader::IsIdle() {

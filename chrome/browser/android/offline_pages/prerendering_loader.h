@@ -53,10 +53,6 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
   // prerenders when Chrome is transitioned to foreground.
   virtual void StopLoading();
 
-  // Returns whether prerendering is possible for this device's configuration
-  // and the browser context.
-  virtual bool CanPrerender();
-
   // Returns whether the loader is idle and able to accept new LoadPage
   // request.
   virtual bool IsIdle();

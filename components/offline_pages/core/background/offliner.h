@@ -40,13 +40,19 @@ class Offliner {
     FOREGROUND_CANCELED = 7,
     // RequestCoordinator canceled request attempt per time limit.
     REQUEST_COORDINATOR_TIMED_OUT = 8,
-    // The loader did not accept/start the request.
-    LOADING_NOT_STARTED = 9,
+    // Deprecated. The RequestCoordinator did not start loading the request.
+    DEPRECATED_LOADING_NOT_STARTED = 9,
     // Loader failed with hard error so should not retry the request.
     LOADING_FAILED_NO_RETRY = 10,
     // Loader failed with some error that suggests we should not continue
     // processing another request at this time.
     LOADING_FAILED_NO_NEXT = 11,
+    // The RequestCoordinator tried to start loading the request but the
+    // loading request was not accepted.
+    LOADING_NOT_ACCEPTED = 12,
+    // The RequestCoordinator did not start loading the request because
+    // updating the status in the request queue failed.
+    QUEUE_UPDATE_FAILED = 13,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

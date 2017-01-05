@@ -25,17 +25,12 @@ PrerenderAdapter::~PrerenderAdapter() {
     DestroyActive();
 }
 
-bool PrerenderAdapter::CanPrerender() const {
-  return prerender::PrerenderManager::IsPrerenderingPossible();
-}
-
 bool PrerenderAdapter::StartPrerender(
     content::BrowserContext* browser_context,
     const GURL& url,
     content::SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
   DCHECK(!IsActive());
-  DCHECK(CanPrerender());
 
   prerender::PrerenderManager* manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(browser_context);

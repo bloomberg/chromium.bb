@@ -806,8 +806,7 @@ void RequestCoordinator::StartOffliner(
       update_result->item_statuses.at(0).first != request_id ||
       update_result->item_statuses.at(0).second != ItemActionStatus::SUCCESS) {
     is_busy_ = false;
-    // TODO(fgorski): what is the best result? Do we create a new status?
-    StopProcessing(Offliner::LOADING_NOT_STARTED);
+    StopProcessing(Offliner::QUEUE_UPDATE_FAILED);
     DVLOG(1) << "Failed to mark attempt started: " << request_id;
     UpdateRequestResult request_result =
         update_result->store_state != StoreState::LOADED
@@ -846,7 +845,7 @@ void RequestCoordinator::StartOffliner(
   } else {
     is_busy_ = false;
     DVLOG(0) << "Unable to start LoadAndSave";
-    StopProcessing(Offliner::LOADING_NOT_STARTED);
+    StopProcessing(Offliner::LOADING_NOT_ACCEPTED);
 
     // We need to undo the MarkAttemptStarted that brought us to this
     // method since we didn't success in starting after all.

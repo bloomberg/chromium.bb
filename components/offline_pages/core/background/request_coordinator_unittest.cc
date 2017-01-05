@@ -321,6 +321,8 @@ void RequestCoordinatorTest::SetUp() {
   waiting_callback_ = base::Bind(
       &RequestCoordinatorTest::WaitingCallbackFunction, base::Unretained(this));
   SetDeviceConditionsForTest(device_conditions_);
+  // Ensure not low-end device so immediate start can happen for most tests.
+  SetIsLowEndDeviceForTest(false);
   EnableOfflinerCallback(true);
 }
 
@@ -398,6 +400,9 @@ SavePageRequest RequestCoordinatorTest::AddRequest2() {
 }
 
 TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithNoRequests) {
+  // Set low-end device status to actual status.
+  SetIsLowEndDeviceForTest(base::SysInfo::IsLowEndDevice());
+
   EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
                                                       processing_callback()));
   PumpLoop();
@@ -441,9 +446,6 @@ TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithRequestInProgress) {
 }
 
 TEST_F(RequestCoordinatorTest, StartImmediateProcessingWithNoRequests) {
-  // Ensure not low-end device so immediate start can happen.
-  SetIsLowEndDeviceForTest(false);
-
   EXPECT_TRUE(coordinator()->StartImmediateProcessing(device_conditions(),
                                                       processing_callback()));
   PumpLoop();
@@ -465,9 +467,6 @@ TEST_F(RequestCoordinatorTest, StartImmediateProcessingOnSvelte) {
 }
 
 TEST_F(RequestCoordinatorTest, StartImmediateProcessingWhenDisconnected) {
-  // Ensure not low-end device so immediate start can happen.
-  SetIsLowEndDeviceForTest(false);
-
   DeviceConditions disconnected_conditions(
       !kPowerRequired, kBatteryPercentageHigh,
       net::NetworkChangeNotifier::CONNECTION_NONE);
@@ -478,9 +477,6 @@ TEST_F(RequestCoordinatorTest, StartImmediateProcessingWhenDisconnected) {
 }
 
 TEST_F(RequestCoordinatorTest, StartImmediateProcessingWithRequestInProgress) {
-  // Ensure not low-end device so immediate start can happen.
-  SetIsLowEndDeviceForTest(false);
-
   // Start processing for this request.
   EXPECT_NE(coordinator()->SavePageLater(
                 kUrl1, kClientId1, kUserRequested,
@@ -544,17 +540,14 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   EXPECT_TRUE(observer().added_called());
 
   // Verify queue depth UMA for starting immediate processing.
-  if (base::SysInfo::IsLowEndDevice()) {
-    histograms().ExpectBucketCount(
-        "OfflinePages.Background.ImmediateStart.AvailableRequestCount.Svelte",
-        1, 1);
-  } else {
-    histograms().ExpectBucketCount(
-        "OfflinePages.Background.ImmediateStart.AvailableRequestCount", 1, 1);
-  }
+  histograms().ExpectBucketCount(
+      "OfflinePages.Background.ImmediateStart.AvailableRequestCount", 1, 1);
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLaterFailed) {
+  // Set low-end device status to actual status.
+  SetIsLowEndDeviceForTest(base::SysInfo::IsLowEndDevice());
+
   // The user-requested request which gets processed by SavePageLater
   // would invoke user request callback.
   coordinator()->SetInternalStartProcessingCallbackForTest(
@@ -909,8 +902,10 @@ TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithLoadingDisabled) {
   EXPECT_TRUE(processing_callback_called());
 
   EXPECT_FALSE(is_starting());
-  EXPECT_EQ(Offliner::LOADING_NOT_STARTED, last_offlining_status());
+  EXPECT_EQ(Offliner::LOADING_NOT_ACCEPTED, last_offlining_status());
 }
+
+// TODO(dougarnett): Add StartScheduledProcessing test for QUEUE_UPDATE_FAILED.
 
 // This tests a StopProcessing call before we have actually started the
 // offliner.
@@ -1113,9 +1108,6 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeoutForScheduledProcessing) {
 }
 
 TEST_F(RequestCoordinatorTest, WatchdogTimeoutForImmediateProcessing) {
-  // If low end device, pretend it is not so that immediate start happens.
-  SetIsLowEndDeviceForTest(false);
-
   // Ensure that the new request does not finish - we simulate it being
   // in progress by asking it to skip making the completion callback.
   EnableOfflinerCallback(false);
@@ -1249,6 +1241,9 @@ TEST_F(RequestCoordinatorTest, GetAllRequests) {
 #define MAYBE_PauseAndResumeObserver PauseAndResumeObserver
 #endif
 TEST_F(RequestCoordinatorTest, MAYBE_PauseAndResumeObserver) {
+  // Set low-end device status to actual status.
+  SetIsLowEndDeviceForTest(base::SysInfo::IsLowEndDevice());
+
   // Add a request to the queue.
   AddRequest1();
   PumpLoop();
@@ -1314,13 +1309,7 @@ TEST_F(RequestCoordinatorTest,
             0);
   PumpLoop();
 
-  // Now whether processing triggered immediately depends on whether test
-  // is run on svelte device or not.
-  if (base::SysInfo::IsLowEndDevice()) {
-    EXPECT_FALSE(is_busy());
-  } else {
-    EXPECT_TRUE(is_busy());
-  }
+  EXPECT_TRUE(is_busy());
 }
 
 TEST_F(RequestCoordinatorTest,
@@ -1361,9 +1350,6 @@ TEST_F(RequestCoordinatorTest,
 }
 
 TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
-  // If low end device, pretend it is not so that immediate start allowed.
-  SetIsLowEndDeviceForTest(false);
-
   SetNetworkConnected(false);
   EnableOfflinerCallback(false);
   EXPECT_NE(
@@ -1437,13 +1423,7 @@ TEST_F(RequestCoordinatorTest,
   EXPECT_FALSE(is_busy());
   PumpLoop();
 
-  // Now whether processing triggered immediately depends on whether test
-  // is run on svelte device or not.
-  if (base::SysInfo::IsLowEndDevice()) {
-    EXPECT_FALSE(is_busy());
-  } else {
-    EXPECT_TRUE(is_busy());
-  }
+  EXPECT_TRUE(is_busy());
 }
 
 }  // namespace offline_pages

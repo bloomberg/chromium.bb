@@ -29,12 +29,16 @@ static std::string OfflinerRequestStatusToString(
       return "FOREGROUND_CANCELED";
     case Offliner::REQUEST_COORDINATOR_TIMED_OUT:
       return "REQUEST_COORDINATOR_TIMED_OUT";
-    case Offliner::LOADING_NOT_STARTED:
-      return "LOADING_NOT_STARTED";
+    case Offliner::DEPRECATED_LOADING_NOT_STARTED:
+      return "DEPRECATED_LOADING_NOT_STARTED";
     case Offliner::LOADING_FAILED_NO_RETRY:
       return "LOADING_FAILED_NO_RETRY";
     case Offliner::LOADING_FAILED_NO_NEXT:
       return "LOADING_FAILED_NO_NEXT";
+    case Offliner::LOADING_NOT_ACCEPTED:
+      return "LOADING_NOT_ACCEPTED";
+    case Offliner::QUEUE_UPDATE_FAILED:
+      return "QUEUE_UPDATE_FAILED";
     default:
       NOTREACHED();
       return std::to_string(static_cast<int>(request_status));
