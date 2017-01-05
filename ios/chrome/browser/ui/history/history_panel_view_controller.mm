@@ -47,6 +47,10 @@ CGFloat kShadowOpacity = 0.2f;
   base::scoped_nsobject<UIView> _containerView;
   // The header view.
   base::scoped_nsobject<MDCAppBar> _appBar;
+  // Left bar button item for Search.
+  base::scoped_nsobject<UIBarButtonItem> _leftBarButtonItem;
+  // Right bar button item for Dismiss history action.
+  base::scoped_nsobject<UIBarButtonItem> _rightBarButtonItem;
 }
 // Closes history.
 - (void)closeHistory;
@@ -147,15 +151,17 @@ CGFloat kShadowOpacity = 0.2f;
   [_appBar addSubviewsToParent];
 
   // Add navigation bar buttons.
-  self.navigationItem.leftBarButtonItem =
-      [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon searchIcon]
-                                          target:self
-                                          action:@selector(enterSearchMode)];
-  self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]
+  _leftBarButtonItem.reset([[ChromeIcon
+      templateBarButtonItemWithImage:[ChromeIcon searchIcon]
+                              target:self
+                              action:@selector(enterSearchMode)] retain]);
+  self.navigationItem.leftBarButtonItem = _leftBarButtonItem;
+  _rightBarButtonItem.reset([[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)
               style:UIBarButtonItemStylePlain
              target:self
-             action:@selector(closeHistory)] autorelease];
+             action:@selector(closeHistory)]);
+  self.navigationItem.rightBarButtonItem = _rightBarButtonItem;
   [self configureNavigationBar];
 }
 
@@ -353,10 +359,20 @@ CGFloat kShadowOpacity = 0.2f;
     [[searchBarView widthAnchor] constraintEqualToAnchor:headerView.widthAnchor]
   ];
   [NSLayoutConstraint activateConstraints:constraints];
+  // Workaround so navigationItems are not voice-over selectable while hidden by
+  // the search view. We might have to re factor the view hierarchy in order to
+  // properly solve this issue. See: https://codereview.chromium.org/2605023002/
+  self.navigationItem.leftBarButtonItem = nil;
+  self.navigationItem.rightBarButtonItem = nil;
 }
 
 - (void)exitSearchMode {
   if (_historyCollectionController.get().searching) {
+    // Resets the navigation items to their initial state.
+    self.navigationItem.leftBarButtonItem = _leftBarButtonItem;
+    self.navigationItem.rightBarButtonItem = _rightBarButtonItem;
+    [self configureNavigationBar];
+
     [[_searchViewController view] removeFromSuperview];
     [_searchViewController removeFromParentViewController];
     _historyCollectionController.get().searching = NO;
