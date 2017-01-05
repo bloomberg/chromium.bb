@@ -714,34 +714,34 @@ ImageBitmap* WebGLRenderingContextBase::transferToImageBitmapBase(
   return ImageBitmap::create(drawingBuffer()->transferToStaticBitmapImage());
 }
 
-void WebGLRenderingContextBase::commit(ScriptState* scriptState,
-                                       ExceptionState& exceptionState) {
+ScriptPromise WebGLRenderingContextBase::commit(
+    ScriptState* scriptState,
+    ExceptionState& exceptionState) {
   UseCounter::Feature feature = UseCounter::OffscreenCanvasCommitWebGL;
   UseCounter::count(scriptState->getExecutionContext(), feature);
-  if (!getOffscreenCanvas()) {
+  if (!offscreenCanvas()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "Commit() was called on a rendering "
                                      "context that was not created from an "
                                      "OffscreenCanvas.");
-    return;
+    return exceptionState.reject(scriptState);
   }
   // no HTMLCanvas associated, thrown InvalidStateError
-  if (!getOffscreenCanvas()->hasPlaceholderCanvas()) {
+  if (!offscreenCanvas()->hasPlaceholderCanvas()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "Commit() was called on a context whose "
                                      "OffscreenCanvas is not associated with a "
                                      "canvas element.");
-    return;
+    return exceptionState.reject(scriptState);
   }
-  if (!drawingBuffer())
-    return;
-  double commitStartTime = WTF::monotonicallyIncreasingTime();
+  if (!drawingBuffer()) {
+    return offscreenCanvas()->commit(nullptr, false, scriptState);
+  }
   // TODO(crbug.com/646864): Make commit() work correctly with
   // { preserveDrawingBuffer : true }.
-  getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame(
+  return offscreenCanvas()->commit(
       std::move(drawingBuffer()->transferToStaticBitmapImage()),
-      commitStartTime,
-      drawingBuffer()->contextProvider()->isSoftwareRendering());
+      drawingBuffer()->contextProvider()->isSoftwareRendering(), scriptState);
 }
 
 PassRefPtr<Image> WebGLRenderingContextBase::getImage(
@@ -7406,8 +7406,8 @@ bool WebGLRenderingContextBase::validateDrawElements(const char* functionName,
 void WebGLRenderingContextBase::dispatchContextLostEvent(TimerBase*) {
   WebGLContextEvent* event = WebGLContextEvent::create(
       EventTypeNames::webglcontextlost, false, true, "");
-  if (getOffscreenCanvas())
-    getOffscreenCanvas()->dispatchEvent(event);
+  if (offscreenCanvas())
+    offscreenCanvas()->dispatchEvent(event);
   else
     canvas()->dispatchEvent(event);
   m_restoreAllowed = event->defaultPrevented();
@@ -7453,9 +7453,8 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*) {
       toPlatformContextAttributes(creationAttributes(), version());
   Platform::GraphicsInfo glInfo;
   std::unique_ptr<WebGraphicsContext3DProvider> contextProvider;
-  const auto& url = canvas()
-                        ? canvas()->document().topDocument().url()
-                        : getOffscreenCanvas()->getExecutionContext()->url();
+  const auto& url = canvas() ? canvas()->document().topDocument().url()
+                             : offscreenCanvas()->getExecutionContext()->url();
   if (isMainThread()) {
     contextProvider = WTF::wrapUnique(
         Platform::current()->createOffscreenGraphicsContext3DProvider(
@@ -7510,7 +7509,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*) {
   if (canvas())
     canvas()->dispatchEvent(event);
   else
-    getOffscreenCanvas()->dispatchEvent(event);
+    offscreenCanvas()->dispatchEvent(event);
 }
 
 String WebGLRenderingContextBase::ensureNotNull(const String& text) const {
@@ -7636,8 +7635,8 @@ IntSize WebGLRenderingContextBase::clampedCanvasSize() const {
     width = canvas()->width();
     height = canvas()->height();
   } else {
-    width = getOffscreenCanvas()->width();
-    height = getOffscreenCanvas()->height();
+    width = offscreenCanvas()->width();
+    height = offscreenCanvas()->height();
   }
   return IntSize(clamp(width, 1, m_maxViewportDims[0]),
                  clamp(height, 1, m_maxViewportDims[1]));
@@ -7799,7 +7798,7 @@ void WebGLRenderingContextBase::getHTMLOrOffscreenCanvas(
   if (canvas())
     result.setHTMLCanvasElement(canvas());
   else
-    result.setOffscreenCanvas(getOffscreenCanvas());
+    result.setOffscreenCanvas(offscreenCanvas());
 }
 
 }  // namespace blink

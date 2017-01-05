@@ -9,9 +9,9 @@
     RuntimeEnabled=ExperimentalCanvasFeatures,
 ] interface OffscreenCanvasRenderingContext2D {
     // back-reference to the canvas
-    [ImplementedAs=getOffscreenCanvas] readonly attribute OffscreenCanvas canvas;
+    [ImplementedAs=offscreenCanvas] readonly attribute OffscreenCanvas canvas;
 
-    [CallWith=ScriptState, RaisesException] void commit();
+    [CallWith=ScriptState, RaisesException] Promise commit();
 
     // state
     void save(); // push state on state stack

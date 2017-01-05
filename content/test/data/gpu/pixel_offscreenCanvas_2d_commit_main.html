@@ -14,29 +14,49 @@ that the baseline images are regenerated on the next run.
   margin: 0px auto;
 }
 </style>
+</head>
+<body onload="main()">
+<div style="position:relative; width:300px; height:300px; background-color:white">
+</div>
+<div id="container" style="position:absolute; top:0px; left:0px">
+<canvas id="c" width="200" height="200" class="nomargin"></canvas>
+</div>
 <script>
 var g_swapsBeforeAck = 15;
 
 function main()
 {
-  draw();
-  waitForFinish();
+  drawLoop();
 }
 
-function draw()
+var g_animationFrameNumber = 0;
+var canvas = document.getElementById("c");
+var offscreenCanvas = canvas.transferControlToOffscreen();
+var offscreen2d = offscreenCanvas.getContext("2d");
+
+function drawLoop()
 {
-  var canvas = document.getElementById("c");
-  var offscreenCanvas = canvas.transferControlToOffscreen();
-  var offscreen2d = offscreenCanvas.getContext("2d");
-  offscreen2d.fillStyle = "red";
-  offscreen2d.fillRect(0, 0, 100, 100);
-  offscreen2d.fillStyle = "green";
-  offscreen2d.fillRect(100, 0, 100, 100);
-  offscreen2d.fillStyle = "blue";
-  offscreen2d.fillRect(0, 100, 100, 100);
-  offscreen2d.fillStyle = "black";
-  offscreen2d.fillRect(100, 100, 100, 100);
-  offscreen2d.commit();
+  if (g_animationFrameNumber < 3) {
+    offscreen2d.fillStyle = "red";
+    offscreen2d.fillRect(0, 0, 200, 200);
+    g_animationFrameNumber++;
+    offscreen2d.commit().then(drawLoop);
+  } else {
+    offscreen2d.fillStyle = "red";
+    offscreen2d.fillRect(0, 0, 100, 100);
+    offscreen2d.fillStyle = "green";
+    offscreen2d.fillRect(100, 0, 100, 100);
+    offscreen2d.fillStyle = "blue";
+    offscreen2d.fillRect(0, 100, 100, 100);
+    offscreen2d.fillStyle = "black";
+    offscreen2d.fillRect(100, 100, 100, 100);
+    offscreen2d.commit();
+
+    // The following fill is never committed
+    offscreen2d.fillStyle = "blue";
+    offscreen2d.fillRect(0, 0, 200, 200);
+    waitForFinish();
+  }
 }
 
 function waitForFinish()
@@ -47,16 +67,9 @@ function waitForFinish()
   } else {
     g_swapsBeforeAck--;
     document.getElementById('container').style.zIndex = g_swapsBeforeAck + 1;
-    window.webkitRequestAnimationFrame(waitForFinish);
+    window.requestAnimationFrame(waitForFinish);
   }
 }
 </script>
-</head>
-<body onload="main()">
-<div style="position:relative; width:300px; height:300px; background-color:white">
-</div>
-<div id="container" style="position:absolute; top:0px; left:0px">
-<canvas id="c" width="200" height="200" class="nomargin"></canvas>
-</div>
 </body>
 </html>

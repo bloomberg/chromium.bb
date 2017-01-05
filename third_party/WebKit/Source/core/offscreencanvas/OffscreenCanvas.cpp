@@ -22,12 +22,26 @@
 
 namespace blink {
 
-OffscreenCanvas::OffscreenCanvas(const IntSize& size)
-    : m_size(size), m_originClean(true) {}
+OffscreenCanvas::OffscreenCanvas(const IntSize& size) : m_size(size) {}
 
 OffscreenCanvas* OffscreenCanvas::create(unsigned width, unsigned height) {
   return new OffscreenCanvas(
       IntSize(clampTo<int>(width), clampTo<int>(height)));
+}
+
+OffscreenCanvas::~OffscreenCanvas() {}
+
+void OffscreenCanvas::dispose() {
+  if (m_context) {
+    m_context->detachOffscreenCanvas();
+    m_context = nullptr;
+  }
+  if (m_commitPromiseResolver) {
+    // keepAliveWhilePending() guarantees the promise resolver is never
+    // GC-ed before the OffscreenCanvas
+    m_commitPromiseResolver->reject();
+    m_commitPromiseResolver.clear();
+  }
 }
 
 void OffscreenCanvas::setWidth(unsigned width) {
@@ -213,10 +227,46 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::getOrCreateFrameDispatcher() {
     // (either main or worker) to the browser process and remains unchanged
     // throughout the lifetime of this OffscreenCanvas.
     m_frameDispatcher = WTF::wrapUnique(new OffscreenCanvasFrameDispatcherImpl(
-        m_clientId, m_sinkId, m_placeholderCanvasId, m_size.width(),
+        this, m_clientId, m_sinkId, m_placeholderCanvasId, m_size.width(),
         m_size.height()));
   }
   return m_frameDispatcher.get();
+}
+
+ScriptPromise OffscreenCanvas::commit(RefPtr<StaticBitmapImage> image,
+                                      bool isWebGLSoftwareRendering,
+                                      ScriptState* scriptState) {
+  if (m_commitPromiseResolver) {
+    if (image) {
+      m_overdrawFrame = std::move(image);
+      m_overdrawFrameIsWebGLSoftwareRendering = isWebGLSoftwareRendering;
+    }
+  } else {
+    m_overdrawFrame = nullptr;
+    m_commitPromiseResolver = ScriptPromiseResolver::create(scriptState);
+    m_commitPromiseResolver->keepAliveWhilePending();
+    doCommit(std::move(image), isWebGLSoftwareRendering);
+  }
+  return m_commitPromiseResolver->promise();
+}
+
+void OffscreenCanvas::doCommit(RefPtr<StaticBitmapImage> image,
+                               bool isWebGLSoftwareRendering) {
+  double commitStartTime = WTF::monotonicallyIncreasingTime();
+  getOrCreateFrameDispatcher()->dispatchFrame(std::move(image), commitStartTime,
+                                              isWebGLSoftwareRendering);
+}
+
+void OffscreenCanvas::beginFrame() {
+  if (m_overdrawFrame) {
+    // if we have an overdraw backlog, push the frame from the backlog
+    // first and save the promise resolution for later.
+    doCommit(std::move(m_overdrawFrame),
+             m_overdrawFrameIsWebGLSoftwareRendering);
+  } else if (m_commitPromiseResolver) {
+    m_commitPromiseResolver->resolve();
+    m_commitPromiseResolver.clear();
+  }
 }
 
 ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* scriptState,
@@ -271,6 +321,7 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* scriptState,
 DEFINE_TRACE(OffscreenCanvas) {
   visitor->trace(m_context);
   visitor->trace(m_executionContext);
+  visitor->trace(m_commitPromiseResolver);
   EventTargetWithInlineData::trace(visitor);
 }
 

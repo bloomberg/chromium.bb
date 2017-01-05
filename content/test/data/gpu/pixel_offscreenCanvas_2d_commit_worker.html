@@ -15,20 +15,40 @@ that the baseline images are regenerated on the next run.
 }
 </style>
 <script id="myWorker" type="text/worker">
+
+var g_offscreen2d;
+var g_animationFrameNumber = 0;
+
 self.onmessage = function(e) {
-    var transferredCanvas = e.data;
-    var offscreen2d = transferredCanvas.getContext("2d");
-    offscreen2d.fillStyle = "red";
-    offscreen2d.fillRect(0, 0, 100, 100);
-    offscreen2d.fillStyle = "green";
-    offscreen2d.fillRect(100, 0, 100, 100);
-    offscreen2d.fillStyle = "blue";
-    offscreen2d.fillRect(0, 100, 100, 100);
-    offscreen2d.fillStyle = "black";
-    offscreen2d.fillRect(100, 100, 100, 100);
-    offscreen2d.commit();
+  var transferredCanvas = e.data;
+  g_offscreen2d = transferredCanvas.getContext("2d");
+  drawLoop();
+}  
+
+function drawLoop()
+{
+  if (g_animationFrameNumber < 3) {
+    g_offscreen2d.fillStyle = "red";
+    g_offscreen2d.fillRect(0, 0, 200, 200);
+    g_animationFrameNumber++;
+    g_offscreen2d.commit().then(drawLoop);
+  } else {
+    g_offscreen2d.fillStyle = "red";
+    g_offscreen2d.fillRect(0, 0, 100, 100);
+    g_offscreen2d.fillStyle = "green";
+    g_offscreen2d.fillRect(100, 0, 100, 100);
+    g_offscreen2d.fillStyle = "blue";
+    g_offscreen2d.fillRect(0, 100, 100, 100);
+    g_offscreen2d.fillStyle = "black";
+    g_offscreen2d.fillRect(100, 100, 100, 100);
+    g_offscreen2d.commit()
+
+    // The following fill is never committed
+    g_offscreen2d.fillStyle = "blue";
+    g_offscreen2d.fillRect(0, 0, 200, 200);    
     self.postMessage("");
-};
+  }
+}
 </script>
 <script>
 var g_swapsBeforeAck = 15;
@@ -47,7 +67,7 @@ function waitForFinish()
   } else {
     g_swapsBeforeAck--;
     document.getElementById('container').style.zIndex = g_swapsBeforeAck + 1;
-    window.webkitRequestAnimationFrame(waitForFinish);
+    window.requestAnimationFrame(waitForFinish);
   }
 }
 

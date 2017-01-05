@@ -6,6 +6,7 @@
 #define OffscreenCanvasFrameDispatcher_h
 
 #include "platform/PlatformExport.h"
+#include "platform/WebTaskRunner.h"
 #include "wtf/RefPtr.h"
 #include "wtf/WeakPtr.h"
 
@@ -13,13 +14,17 @@ namespace blink {
 
 class StaticBitmapImage;
 
+class OffscreenCanvasFrameDispatcherClient {
+ public:
+  virtual void beginFrame() = 0;
+};
+
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
  public:
-  OffscreenCanvasFrameDispatcher() : m_weakPtrFactory(this) {}
   virtual ~OffscreenCanvasFrameDispatcher() {}
   virtual void dispatchFrame(RefPtr<StaticBitmapImage>,
                              double commitStartTime,
-                             bool isWebGLSoftwareRendering = false) = 0;
+                             bool isWebGLSoftwareRendering) = 0;
   virtual void reclaimResource(unsigned resourceId) = 0;
 
   virtual void reshape(int width, int height) = 0;
@@ -28,8 +33,15 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
     return m_weakPtrFactory.createWeakPtr();
   }
 
+  OffscreenCanvasFrameDispatcherClient* client() { return m_client; }
+
+ protected:
+  OffscreenCanvasFrameDispatcher(OffscreenCanvasFrameDispatcherClient* client)
+      : m_weakPtrFactory(this), m_client(client) {}
+
  private:
   WeakPtrFactory<OffscreenCanvasFrameDispatcher> m_weakPtrFactory;
+  OffscreenCanvasFrameDispatcherClient* m_client;
 };
 
 }  // namespace blink

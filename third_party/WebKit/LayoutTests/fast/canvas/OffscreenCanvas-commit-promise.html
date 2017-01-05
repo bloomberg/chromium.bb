@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+promise_test(t => {
+  var canvas = document.createElement('canvas');
+  var offscreen = canvas.transferControlToOffscreen();
+  var ctx = offscreen.getContext('2d');
+  return ctx.commit();
+}, "Verify that the promise returned by a 2d context's commit() gets resolved.");
+
+promise_test(t => {
+  var canvas = document.createElement('canvas');
+  var offscreen = canvas.transferControlToOffscreen();
+  var ctx = offscreen.getContext('webgl');
+  return ctx.commit();
+}, "Verify that the promise returned by a webgl context's commit gets resolved.");
+
+</script>

@@ -37,7 +37,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
     }
   };
 
-  void commit(ScriptState*, ExceptionState&);
+  ScriptPromise commit(ScriptState*, ExceptionState&);
 
   // CanvasRenderingContext implementation
   ~OffscreenCanvasRenderingContext2D() override;
@@ -106,8 +106,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 DEFINE_TYPE_CASTS(OffscreenCanvasRenderingContext2D,
                   CanvasRenderingContext,
                   context,
-                  context->is2d() && context->getOffscreenCanvas(),
-                  context.is2d() && context.getOffscreenCanvas());
+                  context->is2d() && context->offscreenCanvas(),
+                  context.is2d() && context.offscreenCanvas());
 
 }  // namespace blink
 

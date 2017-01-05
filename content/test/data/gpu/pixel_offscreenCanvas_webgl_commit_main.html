@@ -16,16 +16,19 @@ that the baseline images are regenerated on the next run.
 </style>
 <script>
 var g_swapsBeforeAck = 15;
+var g_frameNumber = 0;
+var gl;
 
 function main()
 {
-  draw();
-  waitForFinish();
+  var canvas = document.getElementById("c");
+  var offscreenCanvas = canvas.transferControlToOffscreen();
+  gl = offscreenCanvas.getContext("webgl");
+  drawLoop();
 }
 
-function drawTriangle(canvas)
+function drawTriangle()
 {
-  var gl = canvas.getContext("webgl");
   gl.clearColor(0, 1, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -64,15 +67,25 @@ function drawTriangle(canvas)
   gl.vertexAttribPointer(attr, 2, gl.FLOAT, false, 0, 0);
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
-
-  gl.commit();
 }
 
-function draw()
+function drawLoop()
 {
-  var canvas = document.getElementById("c");
-  var offscreenCanvas = canvas.transferControlToOffscreen();
-  drawTriangle(offscreenCanvas);
+  if (g_frameNumber < 3) {
+    gl.clearColor(1, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    g_frameNumber++;
+    gl.commit().then(drawLoop);
+  } else {
+    drawTriangle();
+    gl.commit();
+
+    // The following clear is never committed
+    gl.clearColor(0, 0, 1, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    waitForFinish();
+  }
 }
 
 function waitForFinish()
@@ -83,7 +96,7 @@ function waitForFinish()
   } else {
     g_swapsBeforeAck--;
     document.getElementById('container').style.zIndex = g_swapsBeforeAck + 1;
-    window.webkitRequestAnimationFrame(waitForFinish);
+    window.requestAnimationFrame(waitForFinish);
   }
 }
 </script>

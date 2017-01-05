@@ -27,13 +27,21 @@
 
 namespace blink {
 
+// This constant specifies the maximum number of pixel buffer that are allowed
+// to co-exist at a given time. The minimum number is 2 (double buffered).
+// larger numbers can help maintain a steadier frame rates, but they increase
+// latency.
+const int kMaximumOffscreenCanvasBufferCount = 3;
+
 OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
+    OffscreenCanvasFrameDispatcherClient* client,
     uint32_t clientId,
     uint32_t sinkId,
     int canvasId,
     int width,
     int height)
-    : m_frameSinkId(cc::FrameSinkId(clientId, sinkId)),
+    : OffscreenCanvasFrameDispatcher(client),
+      m_frameSinkId(cc::FrameSinkId(clientId, sinkId)),
       m_width(width),
       m_height(height),
       m_changeSizeForNextCommit(false),
@@ -48,6 +56,10 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
   provider->CreateCompositorFrameSink(m_frameSinkId,
                                       m_binding.CreateInterfacePtrAndBind(),
                                       mojo::MakeRequest(&m_sink));
+}
+
+OffscreenCanvasFrameDispatcherImpl::~OffscreenCanvasFrameDispatcherImpl() {
+  m_syntheticBeginFrameTask.cancel();
 }
 
 void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceToSharedBitmap(
@@ -178,9 +190,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
     double commitStartTime,
     bool isWebGLSoftwareRendering /* This flag is true when WebGL's commit is
     called on SwiftShader. */) {
-  if (!image)
-    return;
-  if (!verifyImageSize(image->size()))
+  if (!image || !verifyImageSize(image->size()))
     return;
   cc::CompositorFrame frame;
   // TODO(crbug.com/652931): update the device_scale_factor
@@ -363,6 +373,21 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
     m_changeSizeForNextCommit = false;
   }
   m_sink->SubmitCompositorFrame(m_currentLocalFrameId, std::move(frame));
+
+  // TODO(crbug.com/674744): Get BeginFrame to fire on its own.
+  scheduleSyntheticBeginFrame();
+}
+
+void OffscreenCanvasFrameDispatcherImpl::scheduleSyntheticBeginFrame() {
+  m_syntheticBeginFrameTask =
+      Platform::current()
+          ->currentThread()
+          ->getWebTaskRunner()
+          ->postDelayedCancellableTask(
+              BLINK_FROM_HERE,
+              WTF::bind(&OffscreenCanvasFrameDispatcherImpl::OnBeginFrame,
+                        WTF::unretained(this), cc::BeginFrameArgs()),
+              16);
 }
 
 void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck() {
@@ -370,7 +395,22 @@ void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck() {
 }
 
 void OffscreenCanvasFrameDispatcherImpl::OnBeginFrame(
-    const cc::BeginFrameArgs& beginFrameArgs) {}
+    const cc::BeginFrameArgs& beginFrameArgs) {
+  if (!client())
+    return;
+  unsigned framesInFlight = m_cachedImages.size() + m_sharedBitmaps.size() +
+                            m_cachedTextureIds.size();
+
+  // Limit the rate of compositor commits.
+  if (framesInFlight < kMaximumOffscreenCanvasBufferCount) {
+    client()->beginFrame();
+  } else {
+    // TODO(crbug.com/674744): Get BeginFrame to fire on its own.
+    // The following call is to reschedule the frame in cases where we encounter
+    // a backlog.
+    scheduleSyntheticBeginFrame();
+  }
+}
 
 void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
@@ -384,7 +424,6 @@ void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
 
 void OffscreenCanvasFrameDispatcherImpl::WillDrawSurface() {
   // TODO(fsamuel, staraz): Implement this.
-  NOTIMPLEMENTED();
 }
 
 void OffscreenCanvasFrameDispatcherImpl::reclaimResource(unsigned resourceId) {

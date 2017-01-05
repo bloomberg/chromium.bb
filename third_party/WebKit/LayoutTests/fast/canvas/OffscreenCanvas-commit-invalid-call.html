@@ -5,12 +5,11 @@
 self.onmessage = function(e) {
     var offscreenCanvas = new OffscreenCanvas(50, 50);
     var offscreen2d = offscreenCanvas.getContext("2d");
-    try {
-        offscreen2d.commit();
-        self.postMessage("NoError");
-    } catch (ex) {
+    offscreen2d.commit().then(function() {
+        self.postMessage("NoError");    
+    }, ex => {
         self.postMessage(ex.name);
-    }
+    });
 };
 </script>
 <script>
@@ -19,35 +18,29 @@ function makeWorker(script) {
    return new Worker(URL.createObjectURL(blob));
 }
 
-test(function() {
+promise_test(t => {
     var offscreenCanvas = new OffscreenCanvas(50, 50);
     var offscreen2d = offscreenCanvas.getContext("2d");
-    assert_throws("InvalidStateError", function () {
-        offscreen2d.commit();
-    });
-}, "Calling OffscreenCanvas.commit() on main without transferControlToOffscreen throws exception.");
+    return promise_rejects(t, new DOMException("", "InvalidStateError"), offscreen2d.commit());
+}, "Calling OffscreenCanvas.commit() on main without transferControlToOffscreen rejects promise with an exception.");
 
-test(function() {
+promise_test(t => {
     var offscreenCanvas = new OffscreenCanvas(50, 50);
     var gl = offscreenCanvas.getContext("webgl");
     gl.clearColor(1.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    assert_throws("InvalidStateError", function() {
-        gl.commit();
-    });
-}, "Calling WebGL's commit() on main without transferControlToOffscreen throws exception.");
+    return promise_rejects(t, new DOMException("", "InvalidStateError"), gl.commit());
+}, "Calling WebGL's commit() on main without transferControlToOffscreen rejects promise with an exception.");
 
-test(function() {
+promise_test(t => {
     var canvas = document.createElement('canvas');
     canvas.width = 50;
     canvas.height = 50;
     var gl = canvas.getContext("webgl");
     gl.clearColor(1.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    assert_throws("InvalidStateError", function() {
-        gl.commit();
-    });
-}, "Calling WebGL's commit() on main without a OffscreenCanvas throws exception.");
+    return promise_rejects(t, new DOMException("", "InvalidStateError"), gl.commit());
+}, "Calling WebGL's commit() on main without an OffscreenCanvas rejects promise with an exception.");
 
 async_test(function() {
     var worker = makeWorker(document.getElementById("myWorker").textContent);
@@ -56,7 +49,7 @@ async_test(function() {
         this.done();
     });
     worker.postMessage("");
-}, "Calling OffscreenCanvas.commit() on worker without transferControlToOffscreen throws exception.");
+}, "Calling OffscreenCanvas.commit() on worker without transferControlToOffscreen rejects promise with an exception.");
 
 
 

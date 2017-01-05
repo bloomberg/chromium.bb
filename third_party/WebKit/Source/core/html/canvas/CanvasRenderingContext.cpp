@@ -118,6 +118,10 @@ void CanvasRenderingContext::dispose() {
     canvas()->detachContext();
     m_canvas = nullptr;
   }
+  if (offscreenCanvas()) {
+    offscreenCanvas()->detachContext();
+    m_offscreenCanvas = nullptr;
+  }
 }
 
 CanvasRenderingContext::ContextType CanvasRenderingContext::contextTypeFromId(

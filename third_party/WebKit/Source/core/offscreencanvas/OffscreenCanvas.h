@@ -26,14 +26,18 @@ class
 typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext
     OffscreenRenderingContext;
 
-class CORE_EXPORT OffscreenCanvas final : public EventTargetWithInlineData,
-                                          public CanvasImageSource,
-                                          public ImageBitmapSource {
+class CORE_EXPORT OffscreenCanvas final
+    : public EventTargetWithInlineData,
+      public CanvasImageSource,
+      public ImageBitmapSource,
+      public OffscreenCanvasFrameDispatcherClient {
   DEFINE_WRAPPERTYPEINFO();
+  USING_PRE_FINALIZER(OffscreenCanvas, dispose);
 
  public:
   static OffscreenCanvas* create(unsigned width, unsigned height);
-  ~OffscreenCanvas() override {}
+  ~OffscreenCanvas() override;
+  void dispose();
 
   // IDL attributes
   unsigned width() const { return m_size.width(); }
@@ -73,8 +77,6 @@ class CORE_EXPORT OffscreenCanvas final : public EventTargetWithInlineData,
   // TODO(crbug.com/630356): apply the flag to WebGL context as well
   void setDisableReadingFromCanvasTrue() { m_disableReadingFromCanvas = true; }
 
-  OffscreenCanvasFrameDispatcher* getOrCreateFrameDispatcher();
-
   void setFrameSinkId(uint32_t clientId, uint32_t sinkId) {
     m_clientId = clientId;
     m_sinkId = sinkId;
@@ -85,6 +87,15 @@ class CORE_EXPORT OffscreenCanvas final : public EventTargetWithInlineData,
   void setExecutionContext(ExecutionContext* context) {
     m_executionContext = context;
   }
+
+  ScriptPromise commit(RefPtr<StaticBitmapImage>,
+                       bool isWebGLSoftwareRendering,
+                       ScriptState*);
+
+  void detachContext() { m_context = nullptr; }
+
+  // OffscreenCanvasFrameDispatcherClient implementation
+  void beginFrame() final;
 
   // EventTarget implementation
   const AtomicString& interfaceName() const final {
@@ -121,7 +132,8 @@ class CORE_EXPORT OffscreenCanvas final : public EventTargetWithInlineData,
 
  private:
   explicit OffscreenCanvas(const IntSize&);
-
+  OffscreenCanvasFrameDispatcher* getOrCreateFrameDispatcher();
+  void doCommit(RefPtr<StaticBitmapImage>, bool isWebGLSoftwareRendering);
   using ContextFactoryVector =
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
   static ContextFactoryVector& renderingContextFactories();
@@ -139,12 +151,15 @@ class CORE_EXPORT OffscreenCanvas final : public EventTargetWithInlineData,
   IntSize m_size;
   bool m_isNeutered = false;
 
-  bool m_originClean;
+  bool m_originClean = true;
   bool m_disableReadingFromCanvas = false;
 
   bool isPaintable() const;
 
   std::unique_ptr<OffscreenCanvasFrameDispatcher> m_frameDispatcher;
+  Member<ScriptPromiseResolver> m_commitPromiseResolver;
+  RefPtr<StaticBitmapImage> m_overdrawFrame;
+  bool m_overdrawFrameIsWebGLSoftwareRendering = false;
   // cc::FrameSinkId is broken into two integer components as this can be used
   // in transfer of OffscreenCanvas across threads
   // If this object is not created via

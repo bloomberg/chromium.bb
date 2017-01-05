@@ -164,13 +164,14 @@ class CORE_EXPORT CanvasRenderingContext
   virtual bool paint(GraphicsContext&, const IntRect&) { return false; }
 
   // OffscreenCanvas-specific methods
-  OffscreenCanvas* getOffscreenCanvas() const { return m_offscreenCanvas; }
+  OffscreenCanvas* offscreenCanvas() const { return m_offscreenCanvas; }
   virtual ImageBitmap* transferToImageBitmap(ScriptState*) { return nullptr; }
 
   bool wouldTaintOrigin(CanvasImageSource*, SecurityOrigin* = nullptr);
   void didMoveToNewDocument(Document*);
 
   void detachCanvas() { m_canvas = nullptr; }
+  void detachOffscreenCanvas() { m_offscreenCanvas = nullptr; }
 
   const CanvasContextCreationAttributes& creationAttributes() const {
     return m_creationAttributes;

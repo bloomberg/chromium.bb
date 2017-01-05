@@ -23,24 +23,26 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
       NON_EXPORTED_BASE(
           public cc::mojom::blink::MojoCompositorFrameSinkClient) {
  public:
-  OffscreenCanvasFrameDispatcherImpl(uint32_t clientId,
+  OffscreenCanvasFrameDispatcherImpl(OffscreenCanvasFrameDispatcherClient*,
+                                     uint32_t clientId,
                                      uint32_t sinkId,
                                      int canvasId,
                                      int width,
                                      int height);
 
   // OffscreenCanvasFrameDispatcher implementation.
-  ~OffscreenCanvasFrameDispatcherImpl() override {}
+  ~OffscreenCanvasFrameDispatcherImpl() final;
   void dispatchFrame(RefPtr<StaticBitmapImage>,
                      double commitStartTime,
-                     bool isWebGLSoftwareRendering = false) override;
-  void reclaimResource(unsigned resourceId) override;
+                     bool isWebGLSoftwareRendering = false) final;
+  void reclaimResource(unsigned resourceId) final;
+  void reshape(int width, int height) final;
 
   // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
-  void DidReceiveCompositorFrameAck() override;
-  void OnBeginFrame(const cc::BeginFrameArgs&) override;
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface() override;
+  void DidReceiveCompositorFrameAck() final;
+  void OnBeginFrame(const cc::BeginFrameArgs&) final;
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) final;
+  void WillDrawSurface() final;
 
   // This enum is used in histogram, so it should be append-only.
   enum OffscreenCanvasCommitType {
@@ -51,11 +53,12 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
     OffscreenCanvasCommitTypeCount,
   };
 
-  void reshape(int width, int height) override;
-
  private:
   // Surface-related
   cc::SurfaceIdAllocator m_surfaceIdAllocator;
+  void scheduleSyntheticBeginFrame();  // To be removed (crbug.com/674744)
+
+  TaskHandle m_syntheticBeginFrameTask;  // To be removed (crbug.com/674744)
   const cc::FrameSinkId m_frameSinkId;
   cc::LocalFrameId m_currentLocalFrameId;
 
