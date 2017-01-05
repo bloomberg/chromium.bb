@@ -4,42 +4,45 @@
 
 #include "chromecast/media/cma/backend/audio_decoder_default.h"
 
-#include <limits>
-
-#include "base/bind.h"
-#include "base/location.h"
-#include "base/logging.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "chromecast/public/media/cast_decoder_buffer.h"
+#include "base/memory/ptr_util.h"
+#include "chromecast/media/cma/backend/media_sink_default.h"
 
 namespace chromecast {
 namespace media {
 
-AudioDecoderDefault::AudioDecoderDefault()
-    : delegate_(nullptr),
-      last_push_pts_(std::numeric_limits<int64_t>::min()),
-      weak_factory_(this) {}
+AudioDecoderDefault::AudioDecoderDefault() : delegate_(nullptr) {}
 
 AudioDecoderDefault::~AudioDecoderDefault() {}
 
+void AudioDecoderDefault::Start(base::TimeDelta start_pts) {
+  DCHECK(!sink_);
+  sink_ = base::MakeUnique<MediaSinkDefault>(delegate_, start_pts);
+}
+
+void AudioDecoderDefault::Stop() {
+  DCHECK(sink_);
+  sink_.reset();
+}
+
+void AudioDecoderDefault::SetPlaybackRate(float rate) {
+  DCHECK(sink_);
+  sink_->SetPlaybackRate(rate);
+}
+
+base::TimeDelta AudioDecoderDefault::GetCurrentPts() {
+  DCHECK(sink_);
+  return sink_->GetCurrentPts();
+}
+
 void AudioDecoderDefault::SetDelegate(Delegate* delegate) {
-  DCHECK(delegate);
+  DCHECK(!sink_);
   delegate_ = delegate;
 }
 
 MediaPipelineBackend::BufferStatus AudioDecoderDefault::PushBuffer(
     CastDecoderBuffer* buffer) {
-  DCHECK(delegate_);
-  DCHECK(buffer);
-
-  if (buffer->end_of_stream()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AudioDecoderDefault::OnEndOfStream,
-                              weak_factory_.GetWeakPtr()));
-  } else {
-    last_push_pts_ = buffer->timestamp();
-  }
-  return MediaPipelineBackend::kBufferSuccess;
+  DCHECK(sink_);
+  return sink_->PushBuffer(buffer);
 }
 
 void AudioDecoderDefault::GetStatistics(Statistics* statistics) {
@@ -55,10 +58,6 @@ bool AudioDecoderDefault::SetVolume(float multiplier) {
 
 AudioDecoderDefault::RenderingDelay AudioDecoderDefault::GetRenderingDelay() {
   return RenderingDelay();
-}
-
-void AudioDecoderDefault::OnEndOfStream() {
-  delegate_->OnEndOfStream();
 }
 
 }  // namespace media

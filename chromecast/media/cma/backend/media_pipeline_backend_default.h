@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
 namespace chromecast {
@@ -24,7 +23,6 @@ class MediaPipelineBackendDefault : public MediaPipelineBackend {
   MediaPipelineBackendDefault();
   ~MediaPipelineBackendDefault() override;
 
-  bool running() const { return running_; }
   const AudioDecoderDefault* audio_decoder() const {
     return audio_decoder_.get();
   }
@@ -44,11 +42,14 @@ class MediaPipelineBackendDefault : public MediaPipelineBackend {
   bool SetPlaybackRate(float rate) override;
 
  private:
-  int64_t start_pts_;
-  base::TimeTicks start_clock_;
-  bool running_;
+  enum State {
+    kStateUninitialized,
+    kStateInitialized,
+    kStatePlaying,
+    kStatePaused,
+  };
+  State state_;
   float rate_;
-
   std::unique_ptr<AudioDecoderDefault> audio_decoder_;
   std::unique_ptr<VideoDecoderDefault> video_decoder_;
 

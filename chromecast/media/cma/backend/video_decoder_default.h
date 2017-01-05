@@ -5,21 +5,26 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_DECODER_DEFAULT_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_DECODER_DEFAULT_H_
 
-#include <stdint.h>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
 namespace chromecast {
 namespace media {
+
+class MediaSinkDefault;
 
 class VideoDecoderDefault : public MediaPipelineBackend::VideoDecoder {
  public:
   VideoDecoderDefault();
   ~VideoDecoderDefault() override;
 
-  int64_t last_push_pts() const { return last_push_pts_; }
+  void Start(base::TimeDelta start_pts);
+  void Stop();
+  void SetPlaybackRate(float rate);
+  base::TimeDelta GetCurrentPts();
 
   // MediaPipelineBackend::VideoDecoder implementation:
   void SetDelegate(Delegate* delegate) override;
@@ -29,12 +34,8 @@ class VideoDecoderDefault : public MediaPipelineBackend::VideoDecoder {
   bool SetConfig(const VideoConfig& config) override;
 
  private:
-  void OnEndOfStream();
-
   Delegate* delegate_;
-  int64_t last_push_pts_;
-  base::WeakPtrFactory<VideoDecoderDefault> weak_factory_;
-
+  std::unique_ptr<MediaSinkDefault> sink_;
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderDefault);
 };
 

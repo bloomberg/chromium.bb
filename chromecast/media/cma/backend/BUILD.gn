@@ -54,6 +54,8 @@ source_set("default") {
     "cast_media_default.cc",
     "media_pipeline_backend_default.cc",
     "media_pipeline_backend_default.h",
+    "media_sink_default.cc",
+    "media_sink_default.h",
     "video_decoder_default.cc",
     "video_decoder_default.h",
   ]
@@ -62,6 +64,7 @@ source_set("default") {
     "//base",
     "//chromecast/base",
     "//chromecast/public/media",
+    "//media",
   ]
 }
 
