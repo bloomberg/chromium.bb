@@ -880,7 +880,7 @@ void GtkUi::LoadGtkValues() {
 #if GTK_MAJOR_VERSION > 2
   colors_[ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR] =
       colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR] =
-          GetBorderColor("GtkToolbar.primary-toolbar.toolbar");
+          GetBorderColor("GtkToolbar#toolbar.primary-toolbar");
 #endif
 }
 
@@ -925,9 +925,9 @@ void GtkUi::BuildFrameColors() {
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
 #else
   // TODO(thomasanderson): Render a GtkHeaderBar directly.
-  SkColor color_frame = GetBgColor(".headerbar.header-bar.titlebar");
+  SkColor color_frame = GetBgColor("#headerbar.header-bar.titlebar");
   SkColor color_frame_inactive =
-      GetBgColor(".headerbar.header-bar.titlebar:backdrop");
+      GetBgColor("#headerbar.header-bar.titlebar:backdrop");
   colors_[ThemeProperties::COLOR_FRAME] = color_frame;
   colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = color_frame_inactive;
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] =

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 
+#include <dlfcn.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
@@ -51,6 +52,14 @@ void CommonInitFromCommandLine(const base::CommandLine& command_line,
     free(argv[i]);
   }
 }
+
+#if GTK_MAJOR_VERSION == 3
+void* GetGtk3SharedLibrary() {
+  static void* gtk3lib = dlopen("libgtk-3.so.0", RTLD_LAZY);
+  DCHECK(gtk3lib);
+  return gtk3lib;
+}
+#endif
 
 }  // namespace
 
@@ -199,8 +208,8 @@ ScopedStyleContext AppendNode(GtkStyleContext* context,
               : gtk_widget_path_new();
 
   enum {
-    // TODO(thomasanderson): Add CSS_NAME here to handle the Gtk3.20 case.
     CSS_TYPE,
+    CSS_NAME,
     CSS_CLASS,
     CSS_PSEUDOCLASS,
   } part_type = CSS_TYPE;
@@ -224,7 +233,7 @@ ScopedStyleContext AppendNode(GtkStyleContext* context,
   };
   GtkStateFlags state =
       context ? gtk_style_context_get_state(context) : GTK_STATE_FLAG_NORMAL;
-  base::StringTokenizer t(css_node, ".:");
+  base::StringTokenizer t(css_node, ".:#");
   t.set_options(base::StringTokenizer::RETURN_DELIMS);
   while (t.GetNext()) {
     if (t.token_is_delim()) {
@@ -233,6 +242,9 @@ ScopedStyleContext AppendNode(GtkStyleContext* context,
         gtk_widget_path_append_type(path, G_TYPE_NONE);
       }
       switch (*t.token_begin()) {
+        case '#':
+          part_type = CSS_NAME;
+          break;
         case '.':
           part_type = CSS_CLASS;
           break;
@@ -244,6 +256,20 @@ ScopedStyleContext AppendNode(GtkStyleContext* context,
       }
     } else {
       switch (part_type) {
+        case CSS_NAME: {
+          if (gtk_get_major_version() > 3 ||
+              (gtk_get_major_version() == 3 && gtk_get_minor_version() >= 20)) {
+            static auto* _gtk_widget_path_iter_set_object_name =
+                reinterpret_cast<void (*)(GtkWidgetPath*, gint, const char*)>(
+                    dlsym(GetGtk3SharedLibrary(),
+                          "gtk_widget_path_iter_set_object_name"));
+            DCHECK(_gtk_widget_path_iter_set_object_name);
+            _gtk_widget_path_iter_set_object_name(path, -1, t.token().c_str());
+          } else {
+            gtk_widget_path_iter_add_class(path, -1, t.token().c_str());
+          }
+          break;
+        }
         case CSS_TYPE: {
           GType type = g_type_from_name(t.token().c_str());
           DCHECK(type);
