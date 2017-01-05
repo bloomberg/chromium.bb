@@ -4,6 +4,7 @@
 
 #import "chrome/browser/mac/exception_processor.h"
 
+#include <dlfcn.h>
 #import <Foundation/Foundation.h>
 #include <libunwind.h>
 #include <objc/objc-exception.h>
@@ -129,6 +130,14 @@ static id ObjcExceptionPreprocessor(id exception) {
   unw_cursor_t cursor;
   unw_init_local(&cursor, &context);
 
+  // Get the base address for the image that contains this function.
+  Dl_info dl_info;
+  const void* this_base_address = 0;
+  if (dladdr(reinterpret_cast<const void*>(&ObjcExceptionPreprocessor),
+             &dl_info) != 0) {
+    this_base_address = dl_info.dli_fbase;
+  }
+
   while (unw_step(&cursor) > 0) {
     unw_proc_info_t frame_info;
     if (unw_get_proc_info(&cursor, &frame_info) != UNW_ESUCCESS) {
@@ -141,6 +150,17 @@ static id ObjcExceptionPreprocessor(id exception) {
       unw_word_t offset;
       if (unw_get_proc_name(&cursor, proc_name, sizeof(proc_name),
                             &offset) != UNW_ESUCCESS) {
+        // The symbol has no name, so see if it belongs to the same image as
+        // this function.
+        if (dladdr(reinterpret_cast<const void*>(frame_info.start_ip),
+                   &dl_info) != 0) {
+          if (dl_info.dli_fbase == this_base_address) {
+            // This is a handler in our image, so allow it to run.
+            break;
+          }
+        }
+
+        // This handler does not belong to us, so continue the search.
         continue;
       }
 
