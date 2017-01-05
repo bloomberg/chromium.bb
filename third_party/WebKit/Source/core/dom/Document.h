@@ -407,7 +407,6 @@ class CORE_EXPORT Document : public ContainerNode,
   HTMLCollection* forms();
   HTMLCollection* anchors();
   HTMLCollection* scripts();
-  HTMLAllCollection* allForBinding();
   HTMLAllCollection* all();
 
   HTMLCollection* windowNamedItems(const AtomicString& name);

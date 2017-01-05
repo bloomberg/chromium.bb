@@ -5260,11 +5260,6 @@ HTMLCollection* Document::anchors() {
   return ensureCachedCollection<HTMLCollection>(DocAnchors);
 }
 
-HTMLAllCollection* Document::allForBinding() {
-  UseCounter::count(*this, UseCounter::DocumentAll);
-  return all();
-}
-
 HTMLAllCollection* Document::all() {
   return ensureCachedCollection<HTMLAllCollection>(DocAll);
 }

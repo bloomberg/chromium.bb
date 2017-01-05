@@ -37,5 +37,5 @@ interface HTMLDocument : Document {
     [MeasureAs=DocumentReleaseEvents] void releaseEvents();
 
     // FIXME: all should not be [Replaceable].
-    [Replaceable, ImplementedAs=allForBinding] readonly attribute HTMLAllCollection all;
+    [Replaceable, MeasureAs=DocumentAll] readonly attribute HTMLAllCollection all;
 };
