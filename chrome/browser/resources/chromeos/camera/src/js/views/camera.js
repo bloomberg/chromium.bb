@@ -39,6 +39,13 @@ camera.views.Camera = function(context, router) {
   this.video_ = document.createElement('video');
 
   /**
+   * Current camera stream.
+   * @type {MediaStream}
+   * @private
+   */
+  this.stream_ = null;
+
+  /**
    * MediaRecorder object to record motion pictures.
    * @type {MediaRecorder}
    * @private
@@ -482,7 +489,21 @@ camera.views.Camera = function(context, router) {
   this.videoDeviceId_ = null;
 
   /**
-   * Legacy mirroring set per all devices.
+   * Whether list of video devices is being refreshed now.
+   * @type {boolean}
+   * @private
+   */
+  this.refreshingVideoDeviceIds_ = false;
+
+  /**
+   * List of available video device ids.
+   * @type {Promise<!Array<string>>}
+   * @private
+   */
+  this.videoDeviceIds_ = null;
+
+  /**
+   last* Legacy mirroring set per all devices.
    * @type {boolean}
    * @private
    */
@@ -535,6 +556,8 @@ camera.views.Camera = function(context, router) {
       'keypress', this.onToggleMultiKeyPress_.bind(this));
   document.querySelector('#toggle-multi').addEventListener(
       'click', this.onToggleMultiClicked_.bind(this));
+  document.querySelector('#toggle-camera').addEventListener(
+      'click', this.onToggleCameraClicked_.bind(this));
   document.querySelector('#toggle-mirror').addEventListener(
       'keypress', this.onToggleMirrorKeyPress_.bind(this));
   document.querySelector('#toggle-mirror').addEventListener(
@@ -708,6 +731,10 @@ camera.views.Camera.prototype.initialize = function(callback) {
             this.start_();
           }.bind(this));
     }
+
+    // TODO: Replace with "devicechanged" event once it's implemented in Chrome.
+    this.maybeRefreshVideoDeviceIds_();
+    setInterval(this.maybeRefreshVideoDeviceIds_.bind(this), 1000);
 
     // Monitor the locked state to avoid retrying camera connection when locked.
     chrome.idle.onStateChanged.addListener(function(newState) {
@@ -931,6 +958,37 @@ camera.views.Camera.prototype.onToggleMultiClicked_ = function(event) {
       chrome.i18n.getMessage(enabled ? 'toggleMultiActiveMessage' :
                                        'toggleMultiInactiveMessage'));
   chrome.storage.local.set({toggleMulti: enabled});
+};
+
+/**
+ * Handles clicking on the toggle camera switch.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Camera.prototype.onToggleCameraClicked_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
+
+  this.videoDeviceIds_.then(function(deviceIds) {
+    var index = deviceIds.indexOf(this.videoDeviceId_);
+    if (index == -1)
+      index = 0;
+
+    if (deviceIds.length > 0) {
+      index = (index + 1) % deviceIds.length;
+      this.videoDeviceId_ = deviceIds[index];
+    }
+
+    // Add the initialization layer (if it's not there yet).
+    document.body.classList.add('initializing');
+
+    // Stop the camera stream to kick retrying opening the camera stream on the
+    // new device.
+
+    // TODO(mtomasz): Prevent blink. Clear somehow the video tag.
+    if (this.stream_)
+      this.stream_.getVideoTracks()[0].stop();
+  }.bind(this));
 };
 
 /**
@@ -1798,9 +1856,6 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
  */
  camera.views.Camera.prototype.startWithConstraints_ =
      function(constraints, onSuccess, onFailure, onDisconnected) {
-  if (this.running_)
-    this.stop();
-
   // Convert the constraints to legacy ones, as the new format is not well
   // supported yet and it's buggy.
   var legacyConstraints = {
@@ -1819,6 +1874,7 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
     // Mute to avoid echo from the captured audio.
     this.video_.muted = true;
     this.video_.src = window.URL.createObjectURL(stream);
+    this.stream_ = stream;
     var onLoadedMetadata = function() {
       this.video_.removeEventListener('loadedmetadata', onLoadedMetadata);
       this.running_ = true;
@@ -1834,7 +1890,7 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
           clearInterval(this.watchdog_);
           this.watchdog_ = null;
         }
-      }.bind(this), 1000);
+      }.bind(this), 100);
       this.mediaRecorder_ = this.createMediaRecorder_(stream);
       this.capturing_ = true;
       var onAnimationFrame = function() {
@@ -1859,21 +1915,6 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
 };
 
 /**
- * Stops capturing the camera.
- */
-camera.views.Camera.prototype.stop = function() {
-  this.running_ = false;
-  this.capturing_ = false;
-  this.endTakePicture_();
-  this.video_.pause();
-  this.video_.src = '';
-  if (this.watchdog_) {
-    clearTimeout(this.watchdog_);
-    this.watchdog_ = null;
-  }
-};
-
-/**
  * Sets the window size to the default dimensions.
  * @return {boolean} Whether the window has been resized.
  * @private
@@ -1891,7 +1932,47 @@ camera.views.Camera.prototype.setDefaultGeometry_ = function() {
 };
 
 /**
+ * Updates list of available video devices when changed, including the UI.
+ * Does nothing if refreshing is already in progress.
+ * @private
+ */
+camera.views.Camera.prototype.maybeRefreshVideoDeviceIds_ = function() {
+  if (this.refreshingVideoDeviceIds_)
+    return;
+
+  this.refreshingVideoDeviceIds_ = true;
+  this.videoDeviceIds_ = this.collectVideoDevices_();
+
+  // Update the UI.
+  this.videoDeviceIds_.then(function(devices) {
+    document.querySelector('#toggle-camera').hidden = devices.length < 2;
+  }, function() {
+    document.querySelector('#toggle-camera').hidden = true;
+  }).then(function() {
+    this.refreshingVideoDeviceIds_ = false;
+  }.bind(this));
+};
+
+/**
+ * Collects all of the available video input devices.
+ * @return {!Promise<!Array<string>}
+ * @private
+ */
+camera.views.Camera.prototype.collectVideoDevices_ = function() {
+  return navigator.mediaDevices.enumerateDevices().then(function(devices) {
+      var availableVideoDevices = [];
+      devices.forEach(function(device) {
+        if (device.kind != 'videoinput')
+          return;
+        availableVideoDevices.push(device.deviceId);
+      });
+      return availableVideoDevices;
+    });
+};
+
+/**
  * Starts capturing the camera with the highest possible resolution.
+ * Can be called only once.
  * @private
  */
 camera.views.Camera.prototype.start_ = function() {
@@ -1956,7 +2037,7 @@ camera.views.Camera.prototype.start_ = function() {
         constraintsCandidates[index],
         function() {
           this.videoDeviceId_ = constraintsCandidates[index].video.deviceId;
-          chrome.storage.local.set({deviceId: this.videoDeviceId_});
+          chrome.storage.local.set({videoDeviceId: this.videoDeviceId_});
           this.updateMirroring_();
           onSuccess();
         }.bind(this),
@@ -1967,17 +2048,29 @@ camera.views.Camera.prototype.start_ = function() {
         scheduleRetry);  // onDisconnected
   }.bind(this);
 
-  // TODO(mtomasz): Remove this when support for advanced (multiple)
-  // constraints is added to Chrome. For now try to obtain stream with
-  // each candidate separately.
-  navigator.mediaDevices.enumerateDevices().then(function(devices) {
-    devices.forEach(function(device) {
-      if (device.kind != 'videoinput')
-        return;
+  this.videoDeviceIds_.then(function(deviceIds) {
+    if (deviceIds.length == 0) {
+      return Promise.reject("Device list empty.");
+    }
+
+    // Put the preferred camera first.
+    var sortedDeviceIds = deviceIds.slice(0).sort(function(a, b) {
+      if (a == b)
+        return 0;
+      if (a == this.videoDeviceId_)
+        return -1;
+      else
+        return 1;
+    }.bind(this));
+
+    // TODO(mtomasz): Remove this when support for advanced (multiple)
+    // constraints is added to Chrome. For now try to obtain stream with
+    // each candidate separately.
+    sortedDeviceIds.forEach(function(deviceId) {
       camera.views.Camera.RESOLUTIONS.forEach(function(resolution) {
         constraintsCandidates.push({
           video: {
-            deviceId: device.deviceId,
+            deviceId: deviceId,
             width: resolution[0],
             height: resolution[1]
           }
@@ -1985,18 +2078,11 @@ camera.views.Camera.prototype.start_ = function() {
       });
     });
 
-    // Put the last used camera first.
-    constraintsCandidates.sort(function(a, b) {
-      if (a.video.deviceId == b.video.deviceId)
-        return 0;
-      if (a.video.deviceId == this.videoDeviceId_)
-        return 1;
-      else
-        return -1;
-    }.bind(this));
-
     tryStartWithConstraints(0);
-  }.bind(this));
+  }.bind(this)).catch(function(error) {
+    console.error('Failed to initialize camera.', error);
+    onFailure();
+  });
 };
 
 /**
