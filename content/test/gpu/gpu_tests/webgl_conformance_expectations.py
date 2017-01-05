@@ -142,6 +142,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               'copy-tex-image-and-sub-image-2d.html',
               ['win7', 'intel', 'no_passthrough'])
 
+    # Win / Intel failures
+    self.Flaky('conformance/uniforms/gl-uniform-arrays.html',
+        ['win', 'debug', 'intel'], bug=678382)
+
     # Win / AMD flakiness seen on new tryservers.
     # It's unfortunate that this suppression needs to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
