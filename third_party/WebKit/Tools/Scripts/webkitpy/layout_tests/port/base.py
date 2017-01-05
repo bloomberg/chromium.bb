@@ -800,7 +800,9 @@ class Port(object):
             path_in_wpt = match.group(1)
             manifest_items = self._manifest_items_for_path(path_in_wpt)
             assert manifest_items is not None
-            if len(manifest_items) != 1 or manifest_items[0]['url'][1:] != path_in_wpt:
+            # For most testharness tests, manifest_items looks like:
+            # [["/some/test/path.html", {}]]
+            if len(manifest_items) != 1 or manifest_items[0][0][1:] != path_in_wpt:
                 # TODO(tkent): foo.any.js and bar.worker.js should be accessed
                 # as foo.any.html, foo.any.worker, and bar.worker with WPTServe.
                 continue
@@ -813,16 +815,14 @@ class Port(object):
         return json.loads(self._filesystem.read_text_file(path))
 
     def _manifest_items_for_path(self, path_in_wpt):
-        """Returns a list of a dict representing ManifestItem for the specified
-        path, or None if MANIFEST.json has no items for the specified path.
+        """Returns a manifest item for the given WPT path, or None if not found.
 
-        A ManifestItem has 'path', 'url', and optional 'timeout' fields. Also,
-        it has "references" list for reference tests. It's defined in
-        web-platform-tests/tools/manifest/item.py.
+        The format of a manifest item depends on
+        https://github.com/w3c/wpt-tools/blob/master/manifest/item.py
+        and is assumed to be a list of the format [url, extras],
+        or [url, references, extras] for reftests, or None if not found.
         """
-        # Because we generate MANIFEST.json before finishing import, all
-        # entries are in 'local_changes'.
-        items = self._wpt_manifest()['local_changes']['items']
+        items = self._wpt_manifest()['items']
         if path_in_wpt in items['manual']:
             return items['manual'][path_in_wpt]
         elif path_in_wpt in items['reftest']:

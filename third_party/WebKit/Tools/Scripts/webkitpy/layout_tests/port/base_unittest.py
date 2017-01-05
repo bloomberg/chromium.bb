@@ -305,26 +305,19 @@ class PortTest(unittest.TestCase):
     @staticmethod
     def _add_manifest_to_mock_file_system(filesystem):
         filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/MANIFEST.json', json.dumps({
-            "local_changes": {
-                "items": {
-                    'testharness': {
-                        'dom/ranges/Range-attributes.html': [{
-                            'path': 'dom/ranges/Range-attributes.html',
-                            'url': '/dom/ranges/Range-attributes.html'
-                        }],
-                        'console/console-is-a-namespace.any.js': [
-                            {
-                                'path': 'console/console-is-a-namespace.any.js',
-                                'url': '/console/console-is-a-namespace.any.html'
-                            },
-                            {
-                                'path': 'console/console-is-a-namespace.any.js',
-                                'url': '/console/console-is-a-namespace.any.worker'
-                            }
-                        ]},
-                    'manual': {},
-                    'reftest': {}
-                }}}))
+            'items': {
+                'testharness': {
+                    'dom/ranges/Range-attributes.html': [
+                        ['/dom/ranges/Range-attributes.html', {}]
+                    ],
+                    'console/console-is-a-namespace.any.js': [
+                        ['/console/console-is-a-namespace.any.html', {}],
+                        ['/console/console-is-a-namespace.any.worker.html', {}],
+                    ],
+                },
+                'manual': {},
+                'reftest': {},
+            }}))
         filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/dom/ranges/Range-attributes.html', '')
         filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/console/console-is-a-namespace.any.js', '')
         filesystem.write_text_file(LAYOUT_TEST_DIR + '/imported/wpt/common/blank.html', 'foo')

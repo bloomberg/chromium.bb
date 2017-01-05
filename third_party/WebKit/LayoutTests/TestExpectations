@@ -1698,7 +1698,6 @@ crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/oncancel.html 
 crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/onfinish.html [ Pass Failure ]
 crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/playbackRate.html [ Pass Failure ]
 
-crbug.com/600248 imported/wpt/web-animations/animation-model/animation-types/type-per-property.html [ Failure Timeout ]
 crbug.com/600248 imported/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
 
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
