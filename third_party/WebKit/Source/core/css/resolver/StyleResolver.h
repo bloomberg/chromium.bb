@@ -134,7 +134,8 @@ class CORE_EXPORT StyleResolver final
   // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
   void invalidateMatchedPropertiesCache();
 
-  void notifyResizeForViewportUnits();
+  void setResizedForViewportUnits();
+  void clearResizedForViewportUnits();
 
   // Exposed for ComputedStyle::isStyleAvilable().
   static ComputedStyle* styleNotYetAvailable() {
@@ -299,6 +300,8 @@ class CORE_EXPORT StyleResolver final
 
   Document& document() const { return *m_document; }
 
+  bool wasViewportResized() const { return m_wasViewportResized; }
+
   static ComputedStyle* s_styleNotYetAvailable;
 
   MatchedPropertiesCache m_matchedPropertiesCache;
@@ -308,6 +311,7 @@ class CORE_EXPORT StyleResolver final
   Member<StyleRuleUsageTracker> m_tracker;
 
   bool m_printMediaType = false;
+  bool m_wasViewportResized = false;
 
   unsigned m_styleSharingDepth = 0;
   HeapVector<Member<StyleSharingList>, styleSharingMaxDepth>

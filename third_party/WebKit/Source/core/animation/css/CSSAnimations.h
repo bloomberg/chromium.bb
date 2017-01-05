@@ -71,12 +71,16 @@ class CSSAnimations final {
                                        const ComputedStyle&,
                                        ComputedStyle* parentStyle,
                                        StyleResolver*);
-  static void calculateCompositorAndTransitionUpdate(
+  static void calculateCompositorAnimationUpdate(
+      CSSAnimationUpdate&,
       const Element* animatingElement,
       Element&,
       const ComputedStyle&,
-      ComputedStyle* parentStyle,
-      CSSAnimationUpdate&);
+      const ComputedStyle* parentStyle,
+      bool wasViewportChanged);
+  static void calculateTransitionUpdate(CSSAnimationUpdate&,
+                                        const Element* animatingElement,
+                                        const ComputedStyle&);
   static void snapshotCompositorKeyframes(Element&,
                                           CSSAnimationUpdate&,
                                           const ComputedStyle&,
@@ -150,15 +154,6 @@ class CSSAnimations final {
 
   ActiveInterpolationsMap m_previousActiveInterpolationsForAnimations;
 
-  static void calculateCompositorAnimationUpdate(
-      CSSAnimationUpdate&,
-      const Element* animatingElement,
-      Element&,
-      const ComputedStyle&,
-      const ComputedStyle* parentStyle);
-  static void calculateTransitionUpdate(CSSAnimationUpdate&,
-                                        const Element* animatingElement,
-                                        const ComputedStyle&);
   static void calculateTransitionUpdateForProperty(
       CSSPropertyID,
       const CSSTransitionData&,

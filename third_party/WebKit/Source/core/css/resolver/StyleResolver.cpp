@@ -1102,9 +1102,11 @@ bool StyleResolver::applyAnimatedStandardProperties(
     return false;
   }
 
-  CSSAnimations::calculateCompositorAndTransitionUpdate(
-      animatingElement, *element, *state.style(), state.parentStyle(),
-      state.animationUpdate());
+  CSSAnimations::calculateCompositorAnimationUpdate(
+      state.animationUpdate(), animatingElement, *element, *state.style(),
+      state.parentStyle(), wasViewportResized());
+  CSSAnimations::calculateTransitionUpdate(state.animationUpdate(),
+                                           animatingElement, *state.style());
 
   CSSAnimations::snapshotCompositorKeyframes(
       *element, state.animationUpdate(), *state.style(), state.parentStyle());
@@ -1576,9 +1578,15 @@ void StyleResolver::invalidateMatchedPropertiesCache() {
   m_matchedPropertiesCache.clear();
 }
 
-void StyleResolver::notifyResizeForViewportUnits() {
+void StyleResolver::setResizedForViewportUnits() {
+  DCHECK(!m_wasViewportResized);
+  m_wasViewportResized = true;
   document().styleEngine().updateActiveStyle();
   m_matchedPropertiesCache.clearViewportDependent();
+}
+
+void StyleResolver::clearResizedForViewportUnits() {
+  m_wasViewportResized = false;
 }
 
 void StyleResolver::applyMatchedPropertiesAndCustomPropertyAnimations(

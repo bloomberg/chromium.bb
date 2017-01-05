@@ -950,7 +950,7 @@ void FrameView::performPreLayoutTasks() {
   bool wasResized = wasViewportResized();
   Document* document = m_frame->document();
   if (wasResized)
-    document->notifyResizeForViewportUnits();
+    document->setResizedForViewportUnits();
 
   // Viewport-dependent or device-dependent media queries may cause us to need
   // completely different style information.
@@ -968,6 +968,9 @@ void FrameView::performPreLayoutTasks() {
 
   document->updateStyleAndLayoutTree();
   lifecycle().advanceTo(DocumentLifecycle::StyleClean);
+
+  if (wasResized)
+    document->clearResizedForViewportUnits();
 
   if (shouldPerformScrollAnchoring())
     m_scrollAnchor.notifyBeforeLayout();

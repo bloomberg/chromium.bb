@@ -231,17 +231,6 @@ bool CSSAnimations::isTransitionAnimationForInspector(
   return false;
 }
 
-void CSSAnimations::calculateCompositorAndTransitionUpdate(
-    const Element* animatingElement,
-    Element& element,
-    const ComputedStyle& style,
-    ComputedStyle* parentStyle,
-    CSSAnimationUpdate& animationUpdate) {
-  calculateCompositorAnimationUpdate(animationUpdate, animatingElement, element,
-                                     style, parentStyle);
-  calculateTransitionUpdate(animationUpdate, animatingElement, style);
-}
-
 static const KeyframeEffectModelBase* getKeyframeEffectModelBase(
     const AnimationEffectReadOnly* effect) {
   if (!effect)
@@ -261,7 +250,8 @@ void CSSAnimations::calculateCompositorAnimationUpdate(
     const Element* animatingElement,
     Element& element,
     const ComputedStyle& style,
-    const ComputedStyle* parentStyle) {
+    const ComputedStyle* parentStyle,
+    bool wasViewportResized) {
   ElementAnimations* elementAnimations =
       animatingElement ? animatingElement->elementAnimations() : nullptr;
 
@@ -288,7 +278,7 @@ void CSSAnimations::calculateCompositorAnimationUpdate(
       continue;
 
     bool updateCompositorKeyframes = false;
-    if (transformZoomChanged &&
+    if ((transformZoomChanged || wasViewportResized) &&
         keyframeEffect->affects(PropertyHandle(CSSPropertyTransform)) &&
         keyframeEffect->snapshotAllCompositorKeyframes(element, style,
                                                        parentStyle)) {

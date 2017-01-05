@@ -3774,13 +3774,17 @@ void Document::evaluateMediaQueryList() {
     m_mediaQueryMatcher->mediaFeaturesChanged();
 }
 
-void Document::notifyResizeForViewportUnits() {
+void Document::setResizedForViewportUnits() {
   if (m_mediaQueryMatcher)
     m_mediaQueryMatcher->viewportChanged();
   if (!hasViewportUnits())
     return;
-  ensureStyleResolver().notifyResizeForViewportUnits();
+  ensureStyleResolver().setResizedForViewportUnits();
   setNeedsStyleRecalcForViewportUnits();
+}
+
+void Document::clearResizedForViewportUnits() {
+  ensureStyleResolver().clearResizedForViewportUnits();
 }
 
 void Document::styleResolverMayHaveChanged() {
