@@ -218,16 +218,7 @@ BluetoothInternalsTest.prototype = {
   },
 };
 
-// Fails on Win/Mac. https://crbug.com/676227
-GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
-GEN('#define MAYBE_Startup_BluetoothInternals \\');
-GEN('    DISABLED_Startup_BluetoothInternals');
-GEN('#else');
-GEN('#define MAYBE_Startup_BluetoothInternals Startup_BluetoothInternals');
-GEN('#endif');
-
-TEST_F('BluetoothInternalsTest',
-       'MAYBE_Startup_BluetoothInternals', function() {
+TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
   var adapterFactory = null;
   var deviceTable = null;
   var sidebarNode = null;
@@ -470,13 +461,36 @@ TEST_F('BluetoothInternalsTest',
     });
 
     /* Snackbar Tests */
-    function finishSnackbarTest(done) {
-      // Let event queue finish.
-      setTimeout(function() {
-        expectEquals(0, $('snackbar-container').children.length);
-        expectFalse(!!snackbar.Snackbar.current_);
-        done();
-      }, 10);
+
+    /**
+     * Checks snackbar showing status and returns a Promise that resolves when
+     * |pendingSnackbar| is shown. If the snackbar is already showing, the
+     * Promise resolves immediately.
+     * @param {!snackbar.Snackbar} pendingSnackbar
+     * @return {!Promise}
+     */
+    function whenSnackbarShows(pendingSnackbar) {
+      return new Promise(function(resolve) {
+        if (pendingSnackbar.classList.contains('open'))
+          resolve();
+        else
+          pendingSnackbar.addEventListener('showed', resolve);
+      });
+    }
+
+    /**
+     * Performs final checks for snackbar tests.
+     * @return {!Promise} Promise is fulfilled when the checks finish.
+     */
+    function finishSnackbarTest() {
+      return new Promise(function(resolve) {
+        // Let event queue finish.
+        setTimeout(function() {
+          expectEquals(0, $('snackbar-container').children.length);
+          expectFalse(!!snackbar.Snackbar.current_);
+          resolve();
+        }, 50);
+      });
     }
 
     test('Snackbar_ShowTimeout', function(done) {
@@ -484,21 +498,20 @@ TEST_F('BluetoothInternalsTest',
       assertEquals(1, $('snackbar-container').children.length);
 
       snackbar1.addEventListener('dismissed', function() {
-        finishSnackbarTest(done);
+        finishSnackbarTest().then(done);
       });
     });
 
-    test('Snackbar_ShowDismiss', function(done) {
+    test('Snackbar_ShowDismiss', function() {
       var snackbar1 = snackbar.Snackbar.show('Message 1');
       assertEquals(1, $('snackbar-container').children.length);
-      snackbar1.addEventListener('dismissed', function() {
-        finishSnackbarTest(done);
-      });
 
-      snackbar.Snackbar.dismiss();
+      return whenSnackbarShows(snackbar1).then(function() {
+        return snackbar.Snackbar.dismiss();
+      }).then(finishSnackbarTest);
     });
 
-    test('Snackbar_QueueThreeDismiss', function(done) {
+    test('Snackbar_QueueThreeDismiss', function() {
       var expectedCalls = 3;
       var actualCalls = 0;
 
@@ -511,21 +524,17 @@ TEST_F('BluetoothInternalsTest',
 
       function next() {
         actualCalls++;
-        snackbar.Snackbar.dismiss();
+        return snackbar.Snackbar.dismiss();
       }
 
-      snackbar1.addEventListener('dismissed', next);
-      snackbar2.addEventListener('dismissed', next);
-      snackbar3.addEventListener('dismissed', function() {
-        next();
+      whenSnackbarShows(snackbar1).then(next);
+      whenSnackbarShows(snackbar2).then(next);
+      return whenSnackbarShows(snackbar3).then(next).then(function() {
         expectEquals(expectedCalls, actualCalls);
-        finishSnackbarTest(done);
-      });
-
-      snackbar.Snackbar.dismiss();
+      }).then(finishSnackbarTest);
     });
 
-    test('Snackbar_QueueThreeDismissAll', function(done) {
+    test('Snackbar_QueueThreeDismissAll', function() {
       var expectedCalls = 1;
       var actualCalls = 0;
 
@@ -540,17 +549,17 @@ TEST_F('BluetoothInternalsTest',
         assertTrue(false);
       }
 
-      snackbar1.addEventListener('dismissed', function() {
-        expectEquals(0, snackbar.Snackbar.queue_.length);
-        expectFalse(!!snackbar.Snackbar.current_);
-        snackbar.Snackbar.dismiss();
-
-        finishSnackbarTest(done);
-      });
+      whenSnackbarShows(snackbar2).then(next);
       snackbar2.addEventListener('dismissed', next);
+      whenSnackbarShows(snackbar3).then(next);
       snackbar3.addEventListener('dismissed', next);
 
-      snackbar.Snackbar.dismiss(true);
+      whenSnackbarShows(snackbar1).then(function() {
+        return snackbar.Snackbar.dismiss(true);
+      }).then(function() {
+        expectEquals(0, snackbar.Snackbar.queue_.length);
+        expectFalse(!!snackbar.Snackbar.current_);
+      }).then(finishSnackbarTest);
     });
   });
 

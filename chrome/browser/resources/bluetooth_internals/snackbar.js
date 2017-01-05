@@ -17,6 +17,7 @@ cr.define('snackbar', function() {
   var SnackbarOptions;
 
   /** @const {number} */ var SHOW_DURATION = 5000;
+  /** @const {number} */ var TRANSITION_DURATION = 225;
 
   /**
    * Enum of Snackbar types. Used by Snackbar to determine the styling for the
@@ -77,7 +78,7 @@ cr.define('snackbar', function() {
     },
 
     /**
-     * Shows the Snackbar.
+     * Shows the Snackbar and dispatches the 'showed' event.
      */
     show: function() {
       this.classList.add('open');
@@ -86,23 +87,33 @@ cr.define('snackbar', function() {
 
       document.addEventListener('contentfocus', this.boundStartTimeout_);
       document.addEventListener('contentblur', this.boundStopTimeout_);
+      this.dispatchEvent(new CustomEvent('showed'));
     },
 
     /**
      * Dismisses the Snackbar. Once the Snackbar is completely hidden, the
-     * 'dismissed' event is fired.
+     * 'dismissed' event is fired and the returned Promise is resolved. If the
+     * snackbar is already hidden, a resolved Promise is returned.
+     * @return {!Promise}
      */
     dismiss: function() {
-      this.addEventListener('webkitTransitionEnd', function(event) {
-        if (event.propertyName === 'transform')
+      this.stopTimeout_();
+
+      if (!this.classList.contains('open'))
+        return Promise.resolve();
+
+      return new Promise(function(resolve) {
+        listenOnce(this, 'webkitTransitionEnd', function() {
           this.dispatchEvent(new CustomEvent('dismissed'));
+          resolve();
+        }.bind(this));
+
+        ensureTransitionEndEvent(this, TRANSITION_DURATION);
+        this.classList.remove('open');
+
+        document.removeEventListener('contentfocus', this.boundStartTimeout_);
+        document.removeEventListener('contentblur', this.boundStopTimeout_);
       }.bind(this));
-
-      ensureTransitionEndEvent(this, SHOW_DURATION);
-      this.classList.remove('open');
-
-      document.removeEventListener('contentfocus', this.boundStartTimeout_);
-      document.removeEventListener('contentblur', this.boundStopTimeout_);
     },
 
     /**
@@ -214,7 +225,8 @@ cr.define('snackbar', function() {
    */
   Snackbar.dismiss = function(clearQueue) {
     if (clearQueue) Snackbar.queue_ = [];
-    if (Snackbar.current_) Snackbar.current_.dismiss();
+    if (Snackbar.current_) return Snackbar.current_.dismiss();
+    return Promise.resolve();
   };
 
 
