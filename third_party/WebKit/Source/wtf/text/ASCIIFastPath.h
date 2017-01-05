@@ -78,6 +78,7 @@ inline bool isAllASCII(MachineWord word) {
 template <typename CharacterType>
 inline bool charactersAreAllASCII(const CharacterType* characters,
                                   size_t length) {
+  DCHECK_GT(length, 0u);
   MachineWord allCharBits = 0;
   const CharacterType* end = characters + length;
 

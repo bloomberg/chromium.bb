@@ -30,6 +30,7 @@
 #include "wtf/StringHasher.h"
 #include "wtf/Vector.h"
 #include "wtf/WTFExport.h"
+#include "wtf/text/ASCIIFastPath.h"
 #include "wtf/text/Unicode.h"
 #include <limits.h>
 #include <string.h>
@@ -133,6 +134,8 @@ class WTF_EXPORT StringImpl {
       : m_refCount(1),
         m_length(0),
         m_hash(0),
+        m_containsOnlyASCII(true),
+        m_needsASCIICheck(false),
         m_isAtomic(false),
         m_is8Bit(true),
         m_isStatic(true) {
@@ -149,6 +152,8 @@ class WTF_EXPORT StringImpl {
       : m_refCount(1),
         m_length(0),
         m_hash(0),
+        m_containsOnlyASCII(true),
+        m_needsASCIICheck(false),
         m_isAtomic(false),
         m_is8Bit(false),
         m_isStatic(true) {
@@ -162,6 +167,8 @@ class WTF_EXPORT StringImpl {
       : m_refCount(1),
         m_length(length),
         m_hash(0),
+        m_containsOnlyASCII(!length),
+        m_needsASCIICheck(static_cast<bool>(length)),
         m_isAtomic(false),
         m_is8Bit(true),
         m_isStatic(false) {
@@ -173,6 +180,8 @@ class WTF_EXPORT StringImpl {
       : m_refCount(1),
         m_length(length),
         m_hash(0),
+        m_containsOnlyASCII(!length),
+        m_needsASCIICheck(static_cast<bool>(length)),
         m_isAtomic(false),
         m_is8Bit(false),
         m_isStatic(false) {
@@ -185,6 +194,8 @@ class WTF_EXPORT StringImpl {
       : m_refCount(1),
         m_length(length),
         m_hash(hash),
+        m_containsOnlyASCII(!length),
+        m_needsASCIICheck(static_cast<bool>(length)),
         m_isAtomic(false),
         m_is8Bit(true),
         m_isStatic(true) {}
@@ -252,6 +263,8 @@ class WTF_EXPORT StringImpl {
   void setIsAtomic(bool isAtomic) { m_isAtomic = isAtomic; }
 
   bool isStatic() const { return m_isStatic; }
+
+  bool containsOnlyASCII() const;
 
   bool isSafeToSendToAnotherThread() const;
 
@@ -475,6 +488,7 @@ class WTF_EXPORT StringImpl {
   NEVER_INLINE unsigned hashSlowCase() const;
 
   void destroyIfNotStatic();
+  void updateContainsOnlyASCII() const;
 
 #ifdef STRING_STATS
   static StringStats m_stringStats;
@@ -494,6 +508,8 @@ class WTF_EXPORT StringImpl {
   unsigned m_refCount;
   const unsigned m_length;
   mutable unsigned m_hash : 24;
+  mutable unsigned m_containsOnlyASCII : 1;
+  mutable unsigned m_needsASCIICheck : 1;
   unsigned m_isAtomic : 1;
   const unsigned m_is8Bit : 1;
   const unsigned m_isStatic : 1;
@@ -526,6 +542,12 @@ inline bool equal(const char* a, StringImpl* b) {
   return equal(b, reinterpret_cast<const LChar*>(a));
 }
 WTF_EXPORT bool equalNonNull(const StringImpl* a, const StringImpl* b);
+
+ALWAYS_INLINE bool StringImpl::containsOnlyASCII() const {
+  if (m_needsASCIICheck)
+    updateContainsOnlyASCII();
+  return m_containsOnlyASCII;
+}
 
 template <typename CharType>
 ALWAYS_INLINE bool equal(const CharType* a,

@@ -305,6 +305,13 @@ void StringImpl::destroyIfNotStatic() {
     delete this;
 }
 
+void StringImpl::updateContainsOnlyASCII() const {
+  m_containsOnlyASCII = is8Bit()
+                            ? charactersAreAllASCII(characters8(), length())
+                            : charactersAreAllASCII(characters16(), length());
+  m_needsASCIICheck = false;
+}
+
 bool StringImpl::isSafeToSendToAnotherThread() const {
   if (isStatic())
     return true;

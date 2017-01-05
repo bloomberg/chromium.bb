@@ -405,7 +405,9 @@ class WTF_EXPORT String {
                                       length);
   }
 
-  bool containsOnlyASCII() const;
+  bool containsOnlyASCII() const {
+    return !m_impl || m_impl->containsOnlyASCII();
+  }
   bool containsOnlyLatin1() const;
   bool containsOnlyWhitespace() const {
     return !m_impl || m_impl->containsOnlyWhitespace();
@@ -552,16 +554,6 @@ inline NSString* nsStringNilIfEmpty(const String& str) {
   return str.isEmpty() ? nil : (NSString*)str;
 }
 #endif
-
-inline bool String::containsOnlyASCII() const {
-  if (isEmpty())
-    return true;
-
-  if (is8Bit())
-    return charactersAreAllASCII(characters8(), m_impl->length());
-
-  return charactersAreAllASCII(characters16(), m_impl->length());
-}
 
 WTF_EXPORT int codePointCompare(const String&, const String&);
 
