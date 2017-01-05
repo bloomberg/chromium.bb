@@ -20,6 +20,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/native_cursor.h"
+#include "ui/views/style/platform_style.h"
 
 namespace views {
 
@@ -90,7 +91,8 @@ void Link::OnMouseCaptureLost() {
 bool Link::OnKeyPressed(const ui::KeyEvent& event) {
   bool activate = (((event.key_code() == ui::VKEY_SPACE) &&
                     (event.flags() & ui::EF_ALT_DOWN) == 0) ||
-                   (event.key_code() == ui::VKEY_RETURN));
+                   (event.key_code() == ui::VKEY_RETURN &&
+                    PlatformStyle::kReturnClicksFocusedControl));
   if (!activate)
     return false;
 
@@ -123,9 +125,11 @@ void Link::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 bool Link::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
-  // Make sure we don't process space or enter as accelerators.
-  return (event.key_code() == ui::VKEY_SPACE) ||
-      (event.key_code() == ui::VKEY_RETURN);
+  // Don't process Space and Return (depending on the platform) as an
+  // accelerator.
+  return event.key_code() == ui::VKEY_SPACE ||
+         (event.key_code() == ui::VKEY_RETURN &&
+          PlatformStyle::kReturnClicksFocusedControl);
 }
 
 void Link::GetAccessibleNodeData(ui::AXNodeData* node_data) {
