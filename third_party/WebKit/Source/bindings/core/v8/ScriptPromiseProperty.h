@@ -60,6 +60,8 @@ class ScriptPromiseProperty : public ScriptPromisePropertyBase {
   template <typename PassResolvedType>
   void resolve(PassResolvedType);
 
+  void resolveWithUndefined();
+
   template <typename PassRejectedType>
   void reject(PassRejectedType);
 
@@ -84,6 +86,7 @@ class ScriptPromiseProperty : public ScriptPromisePropertyBase {
   HolderType m_holder;
   ResolvedType m_resolved;
   RejectedType m_rejected;
+  bool m_resolvedWithUndefined = false;
 };
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
@@ -99,7 +102,7 @@ template <typename PassResolvedType>
 void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolve(
     PassResolvedType value) {
   if (getState() != Pending) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
   if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
@@ -109,11 +112,24 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolve(
 }
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
+void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::
+    resolveWithUndefined() {
+  if (getState() != Pending) {
+    NOTREACHED();
+    return;
+  }
+  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
+    return;
+  m_resolvedWithUndefined = true;
+  resolveOrReject(Resolved);
+}
+
+template <typename HolderType, typename ResolvedType, typename RejectedType>
 template <typename PassRejectedType>
 void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reject(
     PassRejectedType value) {
   if (getState() != Pending) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
   if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
@@ -139,7 +155,9 @@ ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolvedValue(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creationContext) {
   ASSERT(getState() == Resolved);
-  return ToV8(m_resolved, creationContext, isolate);
+  if (!m_resolvedWithUndefined)
+    return ToV8(m_resolved, creationContext, isolate);
+  return v8::Undefined(isolate);
 }
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>
@@ -156,6 +174,7 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reset() {
   resetBase();
   m_resolved = ResolvedType();
   m_rejected = RejectedType();
+  m_resolvedWithUndefined = false;
 }
 
 template <typename HolderType, typename ResolvedType, typename RejectedType>

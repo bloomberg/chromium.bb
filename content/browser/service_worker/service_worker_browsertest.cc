@@ -1764,7 +1764,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, SetHeaderValue) {
   NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl1));
   EXPECT_EQ(title1, title_watcher1.WaitAndGetTitle());
   // When the navigation started, the navigation preload was not enabled yet.
-  EXPECT_EQ("null", GetTextContent());
+  EXPECT_EQ("undefined", GetTextContent());
   ASSERT_EQ(0, GetRequestCount(kPageUrl1));
 
   const std::string kPageUrl2 = kPageUrl + "?change";
@@ -1799,7 +1799,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, SetHeaderValue) {
   NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl4));
   EXPECT_EQ(title4, title_watcher4.WaitAndGetTitle());
   // When the navigation started, the navigation preload must be disabled.
-  EXPECT_EQ("null", GetTextContent());
+  EXPECT_EQ("undefined", GetTextContent());
   ASSERT_EQ(0, GetRequestCount(kPageUrl4));
 }
 
@@ -2051,7 +2051,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, NotEnabled) {
   // The page request must not be sent, since the worker responded with a
   // generated Response and the navigation preload isn't enabled.
   EXPECT_EQ(0, GetRequestCount(kPageUrl));
-  EXPECT_EQ("Resolved with null.", GetTextContent());
+  EXPECT_EQ("Resolved with undefined.", GetTextContent());
 }
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest,

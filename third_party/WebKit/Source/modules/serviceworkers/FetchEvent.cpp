@@ -76,11 +76,8 @@ FetchEvent::FetchEvent(ScriptState* scriptState,
           scriptState->getExecutionContext(),
           this,
           PreloadResponseProperty::PreloadResponse)) {
-  if (!navigationPreloadSent) {
-    // TODO(horo): This behavior is still under the spec discussion.
-    // https://github.com/w3c/ServiceWorker/issues/920#issuecomment-255874864
-    m_preloadResponseProperty->resolve(nullptr);
-  }
+  if (!navigationPreloadSent)
+    m_preloadResponseProperty->resolveWithUndefined();
 
   m_clientId = initializer.clientId();
   m_isReload = initializer.isReload();
