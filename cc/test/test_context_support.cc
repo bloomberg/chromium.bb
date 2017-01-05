@@ -27,7 +27,8 @@ void TestContextSupport::SignalSyncToken(const gpu::SyncToken& sync_token,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-bool TestContextSupport::IsFenceSyncReleased(uint64_t release) {
+bool TestContextSupport::IsSyncTokenSignalled(
+    const gpu::SyncToken& sync_token) {
   return true;
 }
 
@@ -40,8 +41,7 @@ void TestContextSupport::SignalQuery(uint32_t query,
 }
 
 void TestContextSupport::SetAggressivelyFreeResources(
-    bool aggressively_free_resources) {
-}
+    bool aggressively_free_resources) {}
 
 void TestContextSupport::CallAllSyncPointCallbacks() {
   size_t size = sync_point_callbacks_.size();
@@ -64,13 +64,11 @@ void TestContextSupport::SetScheduleOverlayPlaneCallback(
   schedule_overlay_plane_callback_ = schedule_overlay_plane_callback;
 }
 
-void TestContextSupport::Swap() {
-}
+void TestContextSupport::Swap() {}
 
 void TestContextSupport::SwapWithDamage(const gfx::Rect& damage) {}
 
-void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
-}
+void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer) {}
 
 void TestContextSupport::CommitOverlayPlanes() {}
 
@@ -81,10 +79,8 @@ void TestContextSupport::ScheduleOverlayPlane(
     const gfx::Rect& display_bounds,
     const gfx::RectF& uv_rect) {
   if (!schedule_overlay_plane_callback_.is_null()) {
-    schedule_overlay_plane_callback_.Run(plane_z_order,
-                                         plane_transform,
-                                         overlay_texture_id,
-                                         display_bounds,
+    schedule_overlay_plane_callback_.Run(plane_z_order, plane_transform,
+                                         overlay_texture_id, display_bounds,
                                          uv_rect);
   }
 }

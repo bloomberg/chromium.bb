@@ -21,13 +21,14 @@ struct SyncToken;
 
 class ContextSupport {
  public:
-  // Runs |callback| when a sync token is signalled.
+  // Runs |callback| when the given sync token is signalled. The sync token may
+  // belong to any context.
   virtual void SignalSyncToken(const SyncToken& sync_token,
                                const base::Closure& callback) = 0;
 
-  // Returns true if the given fence sync has been released (executed) by the
-  // command buffer. This may be called from any thread.
-  virtual bool IsFenceSyncReleased(uint64_t release_count) = 0;
+  // Returns true if the given sync token has been signalled. The sync token
+  // must belong to this context. This may be called from any thread.
+  virtual bool IsSyncTokenSignalled(const SyncToken& sync_token) = 0;
 
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared
   // passed the glEndQueryEXT() point.

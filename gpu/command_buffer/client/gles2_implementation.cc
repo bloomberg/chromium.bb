@@ -394,10 +394,14 @@ void GLES2Implementation::SignalSyncToken(const gpu::SyncToken& sync_token,
   }
 }
 
-// For some command buffer implementations this can be called from any thread.
-// It's safe to access gpu_control_ without the lock because it is const.
-bool GLES2Implementation::IsFenceSyncReleased(uint64_t release_count) {
-  return gpu_control_->IsFenceSyncReleased(release_count);
+// This may be called from any thread. It's safe to access gpu_control_ without
+// the lock because it is const.
+bool GLES2Implementation::IsSyncTokenSignalled(
+    const gpu::SyncToken& sync_token) {
+  // Check that the sync token belongs to this context.
+  DCHECK_EQ(gpu_control_->GetNamespaceID(), sync_token.namespace_id());
+  DCHECK_EQ(gpu_control_->GetCommandBufferID(), sync_token.command_buffer_id());
+  return gpu_control_->IsFenceSyncReleased(sync_token.release_count());
 }
 
 void GLES2Implementation::SignalQuery(uint32_t query,
