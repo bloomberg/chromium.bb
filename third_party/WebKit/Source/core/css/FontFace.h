@@ -58,7 +58,7 @@ class StyleRuleFontFace;
 class FontFace : public GarbageCollectedFinalized<FontFace>,
                  public ScriptWrappable,
                  public ActiveScriptWrappable<FontFace>,
-                 public ContextClient {
+                 public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FontFace);
   WTF_MAKE_NONCOPYABLE(FontFace);

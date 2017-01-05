@@ -97,7 +97,7 @@ IDBTransaction::IDBTransaction(ScriptState* scriptState,
                                const HashSet<String>& scope,
                                WebIDBTransactionMode mode,
                                IDBDatabase* db)
-    : ContextClient(scriptState->getExecutionContext()),
+    : ContextLifecycleObserver(scriptState->getExecutionContext()),
       m_id(id),
       m_database(db),
       m_mode(mode),
@@ -121,7 +121,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* executionContext,
                                IDBDatabase* db,
                                IDBOpenDBRequest* openDBRequest,
                                const IDBDatabaseMetadata& oldMetadata)
-    : ContextClient(executionContext),
+    : ContextLifecycleObserver(executionContext),
       m_id(id),
       m_database(db),
       m_openDBRequest(openDBRequest),
@@ -149,7 +149,7 @@ DEFINE_TRACE(IDBTransaction) {
   visitor->trace(m_oldStoreMetadata);
   visitor->trace(m_deletedIndexes);
   EventTargetWithInlineData::trace(visitor);
-  ContextClient::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
 }
 
 void IDBTransaction::setError(DOMException* error) {
@@ -452,7 +452,7 @@ const AtomicString& IDBTransaction::interfaceName() const {
 }
 
 ExecutionContext* IDBTransaction::getExecutionContext() const {
-  return ContextClient::getExecutionContext();
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
 DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event) {

@@ -22,7 +22,7 @@ namespace blink {
 class MODULES_EXPORT PresentationRequest final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<PresentationRequest>,
-      public ContextClient {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationRequest);
   DEFINE_WRAPPERTYPEINFO();
 
