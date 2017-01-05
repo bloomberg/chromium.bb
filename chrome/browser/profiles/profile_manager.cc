@@ -110,6 +110,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/ntp_snippets/content_suggestions_notifier_service_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #endif
 
@@ -1201,8 +1202,11 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
       ->InitializeMigration(ProfileSyncServiceFactory::GetForProfile(profile));
 
 #if defined(OS_ANDROID)
+  // TODO(b/678590): create services during profile startup.
   // Service is responsible for fetching content snippets for the NTP.
   ContentSuggestionsServiceFactory::GetForProfile(profile);
+  // Generates notifications from the above, if experiment is enabled.
+  ContentSuggestionsNotifierServiceFactory::GetForProfile(profile);
 #endif
 }
 
