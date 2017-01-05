@@ -6,7 +6,7 @@
 #import <LocalAuthentication/LocalAuthentication.h>
 
 #import "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 
 @implementation ReauthenticationModule {
   // Authentication context on which the authentication policy is evaluated.

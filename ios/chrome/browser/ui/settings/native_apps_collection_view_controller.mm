@@ -7,10 +7,10 @@
 
 #import <StoreKit/StoreKit.h>
 
-#include "base/ios/weak_nsobject.h"
+#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -22,9 +22,9 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/settings/cells/native_app_item.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
-#include "ios/chrome/common/string_util.h"
+#import "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_metadata.h"
 #import "ios/public/provider/chrome/browser/native_app_launcher/native_app_whitelist_manager.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"

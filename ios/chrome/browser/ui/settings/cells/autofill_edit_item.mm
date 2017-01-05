@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/settings/cells/autofill_edit_item.h"
 
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 

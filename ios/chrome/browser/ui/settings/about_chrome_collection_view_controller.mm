@@ -4,10 +4,10 @@
 
 #import "ios/chrome/browser/ui/settings/about_chrome_collection_view_controller.h"
 
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/version_info/version_info.h"

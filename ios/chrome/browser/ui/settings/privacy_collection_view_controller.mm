@@ -5,10 +5,10 @@
 #import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
 
 #include "base/ios/ios_util.h"
-#include "base/ios/weak_nsobject.h"
+#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/handoff/pref_names_ios.h"
 #include "components/metrics/metrics_pref_names.h"

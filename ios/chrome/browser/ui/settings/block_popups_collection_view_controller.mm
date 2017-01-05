@@ -4,10 +4,10 @@
 
 #import "ios/chrome/browser/ui/settings/block_popups_collection_view_controller.h"
 
-#include "base/ios/weak_nsobject.h"
+#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"

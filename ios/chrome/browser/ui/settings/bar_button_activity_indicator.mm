@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/settings/bar_button_activity_indicator.h"
+#import "ios/chrome/browser/ui/settings/bar_button_activity_indicator.h"
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
 @implementation BarButtonActivityIndicator {

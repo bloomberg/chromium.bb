@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 
-#include "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/ios/weak_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"

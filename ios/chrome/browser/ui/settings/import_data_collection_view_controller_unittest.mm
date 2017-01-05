@@ -12,7 +12,7 @@
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

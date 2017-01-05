@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/procedural_block_types.h"
+#import "ios/chrome/browser/procedural_block_types.h"
 
 namespace ios_internal_settings {
 

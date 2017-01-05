@@ -4,14 +4,14 @@
 
 #import "ios/chrome/browser/ui/settings/autofill_collection_view_controller.h"
 
-#include "base/ios/weak_nsobject.h"
+#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/objc_property_releaser.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/autofill/ios/browser/credit_card_util.h"
+#import "components/autofill/ios/browser/credit_card_util.h"
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/application_context.h"

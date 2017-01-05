@@ -7,11 +7,11 @@
 #include <memory>
 
 #include "base/ios/ios_util.h"
-#include "base/ios/weak_nsobject.h"
+#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/objc_property_releaser.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_vector.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"

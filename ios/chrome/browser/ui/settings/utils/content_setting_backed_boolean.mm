@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
 
-#include "base/ios/weak_nsobject.h"
+#import "base/ios/weak_nsobject.h"
 #include "base/scoped_observer.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"

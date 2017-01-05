@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/settings/passphrase_collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/settings/passphrase_collection_view_controller_test.h"
 
 #import <UIKit/UIKit.h>
 
@@ -25,8 +25,8 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#include "testing/gtest_mac.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 using testing::DefaultValue;

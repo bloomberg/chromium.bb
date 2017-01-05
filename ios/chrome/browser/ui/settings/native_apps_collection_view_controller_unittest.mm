@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/ios/block_types.h"
+#import "base/ios/block_types.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
@@ -18,7 +18,7 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/l10n/l10n_util.h"
 

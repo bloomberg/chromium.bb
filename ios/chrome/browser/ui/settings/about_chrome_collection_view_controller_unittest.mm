@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"

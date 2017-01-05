@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/settings/contextual_search_collection_view_controller.h"
 
 #import "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"

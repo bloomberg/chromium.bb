@@ -27,7 +27,7 @@
 #import "ios/chrome/browser/ui/sync/sync_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 
 @interface SyncSettingsCollectionViewController (ExposedForTesting)

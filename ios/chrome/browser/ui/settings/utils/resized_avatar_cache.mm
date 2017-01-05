@@ -4,12 +4,12 @@
 
 #import "ios/chrome/browser/ui/settings/utils/resized_avatar_cache.h"
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
-#include "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
+#import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 
 namespace {
 const CGFloat kAccountProfilePhotoDimension = 40.0f;

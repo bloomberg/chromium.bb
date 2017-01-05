@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/settings/bandwidth_management_collection_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

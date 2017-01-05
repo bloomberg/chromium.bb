@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
@@ -15,7 +15,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 
 @interface MockReauthenticationModule : NSObject<ReauthenticationProtocol>

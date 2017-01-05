@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"

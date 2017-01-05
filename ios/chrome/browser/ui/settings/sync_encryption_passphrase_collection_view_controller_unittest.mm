@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -23,9 +23,9 @@
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/settings/cells/byo_textfield_item.h"
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
-#include "ios/chrome/browser/ui/settings/passphrase_collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/settings/passphrase_collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/sync/sync_util.h"
-#include "testing/gtest_mac.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
