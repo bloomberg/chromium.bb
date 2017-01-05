@@ -7,11 +7,11 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/mus/bridge/wm_window_mus_test_api.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/test/wm_test_helper.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
+#include "ash/test/wm_window_aura_test_api.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "ui/aura/mus/property_converter.h"
@@ -162,7 +162,7 @@ void WmTestBase::SetUp() {
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   // Most tests expect a minimum size of 0x0.
   minimum_size_lock_ =
-      base::MakeUnique<WmWindowMusTestApi::GlobalMinimumSizeLock>();
+      base::MakeUnique<WmWindowAuraTestApi::GlobalMinimumSizeLock>();
   test_helper_.reset(new WmTestHelper);
   test_helper_->Init();
 }

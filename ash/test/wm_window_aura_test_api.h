@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_BRIDGE_WM_WINDOW_MUS_TEST_API_H_
-#define ASH_MUS_BRIDGE_WM_WINDOW_MUS_TEST_API_H_
+#ifndef ASH_TEST_WM_WINDOW_AURA_TEST_API_H_
+#define ASH_TEST_WM_WINDOW_AURA_TEST_API_H_
 
-#include "ash/mus/bridge/wm_window_mus.h"
+#include "ash/aura/wm_window_aura.h"
 
 namespace ash {
-namespace mus {
 
-class WmWindowMusTestApi {
+class WmWindowAuraTestApi {
  public:
   // Used by tests to set the default value of
   // |WmWindowMus::default_use_empty_minimum_size_for_testing_|. This is needed
@@ -28,10 +27,10 @@ class WmWindowMusTestApi {
     DISALLOW_COPY_AND_ASSIGN(GlobalMinimumSizeLock);
   };
 
-  explicit WmWindowMusTestApi(WmWindow* window)
-      : WmWindowMusTestApi(WmWindowMus::AsWmWindowMus(window)) {}
-  explicit WmWindowMusTestApi(WmWindowMus* window) : window_(window) {}
-  ~WmWindowMusTestApi() {}
+  explicit WmWindowAuraTestApi(WmWindow* window)
+      : WmWindowAuraTestApi(static_cast<WmWindowAura*>(window)) {}
+  explicit WmWindowAuraTestApi(WmWindowAura* window) : window_(window) {}
+  ~WmWindowAuraTestApi() {}
 
   void set_use_empty_minimum_size(bool value) {
     window_->use_empty_minimum_size_for_testing_ = true;
@@ -40,12 +39,11 @@ class WmWindowMusTestApi {
  private:
   static void SetDefaultUseEmptyMinimumSizeForTesting(bool value);
 
-  WmWindowMus* window_;
+  WmWindowAura* window_;
 
-  DISALLOW_COPY_AND_ASSIGN(WmWindowMusTestApi);
+  DISALLOW_COPY_AND_ASSIGN(WmWindowAuraTestApi);
 };
 
-}  // namespace mus
 }  // namespace ash
 
-#endif  // ASH_MUS_BRIDGE_WM_WINDOW_MUS_TEST_API_H_
+#endif  // ASH_TEST_WM_WINDOW_AURA_TEST_API_H_

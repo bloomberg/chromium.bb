@@ -86,6 +86,9 @@ class BoundsSetter : public aura::LayoutManager {
 
 }  // namespace
 
+// static
+bool WmWindowAura::default_use_empty_minimum_size_for_testing_ = false;
+
 WmWindowAura::~WmWindowAura() {
   if (added_transient_observer_)
     ::wm::TransientWindowManager::Get(window_)->RemoveObserver(this);
@@ -129,6 +132,13 @@ std::vector<aura::Window*> WmWindowAura::ToAuraWindows(
 const aura::Window* WmWindowAura::GetAuraWindow(const WmWindow* wm_window) {
   return wm_window ? static_cast<const WmWindowAura*>(wm_window)->aura_window()
                    : nullptr;
+}
+
+bool WmWindowAura::ShouldUseExtendedHitRegion() const {
+  const WmWindow* parent = Get(window_->parent());
+  return parent &&
+         static_cast<const WmWindowAura*>(parent)
+             ->children_use_extended_hit_region_;
 }
 
 void WmWindowAura::Destroy() {
@@ -185,11 +195,6 @@ void WmWindowAura::SetAppType(int app_type) const {
   window_->SetProperty(aura::client::kAppType, app_type);
 }
 
-bool WmWindowAura::IsBubble() {
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(window_);
-  return widget->widget_delegate()->AsBubbleDialogDelegate() != nullptr;
-}
-
 ui::Layer* WmWindowAura::GetLayer() {
   return window_->layer();
 }
@@ -244,8 +249,9 @@ gfx::Rect WmWindowAura::ConvertRectFromScreen(const gfx::Rect& rect) const {
 }
 
 gfx::Size WmWindowAura::GetMinimumSize() const {
-  return window_->delegate() ? window_->delegate()->GetMinimumSize()
-                             : gfx::Size();
+  return window_->delegate() && !use_empty_minimum_size_for_testing_
+             ? window_->delegate()->GetMinimumSize()
+             : gfx::Size();
 }
 
 gfx::Size WmWindowAura::GetMaximumSize() const {
@@ -694,7 +700,10 @@ void WmWindowAura::Show() {
 }
 
 views::Widget* WmWindowAura::GetInternalWidget() {
-  return views::Widget::GetWidgetForNativeView(window_);
+  return window_->GetProperty(kWidgetCreationTypeKey) ==
+                 WidgetCreationType::INTERNAL
+             ? views::Widget::GetWidgetForNativeView(window_)
+             : nullptr;
 }
 
 void WmWindowAura::CloseWidget() {
@@ -785,6 +794,10 @@ void WmWindowAura::SnapToPixelBoundaryIfNecessary() {
 }
 
 void WmWindowAura::SetChildrenUseExtendedHitRegion() {
+  children_use_extended_hit_region_ = true;
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
+    return;
+
   gfx::Insets mouse_extend(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize,
                            -kResizeOutsideBoundsSize,
                            -kResizeOutsideBoundsSize);
@@ -841,7 +854,9 @@ void WmWindowAura::RemoveLimitedPreTargetHandler(ui::EventHandler* handler) {
 WmWindowAura::WmWindowAura(aura::Window* window)
     : window_(window),
       // Mirrors that of aura::Window.
-      observers_(base::ObserverList<WmWindowObserver>::NOTIFY_EXISTING_ONLY) {
+      observers_(base::ObserverList<WmWindowObserver>::NOTIFY_EXISTING_ONLY),
+      use_empty_minimum_size_for_testing_(
+          default_use_empty_minimum_size_for_testing_) {
   window_->AddObserver(this);
   window_->SetProperty(kWmWindowKey, this);
 }

@@ -23,6 +23,7 @@
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_properties.h"
 #include "ash/shared/immersive_fullscreen_controller_delegate.h"
+#include "ash/wm/window_properties.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -307,8 +308,7 @@ NonClientFrameController::NonClientFrameController(
       widget_, window_manager_client_, ShouldRemoveStandardFrame(*properties),
       ShouldEnableImmersive(*properties));
   window_ = native_widget->GetNativeView();
-  WmWindowMus* wm_window = WmWindowMus::Get(window_);
-  wm_window->set_widget(widget_, WmWindowMus::WidgetCreationType::FOR_CLIENT);
+  window_->SetProperty(kWidgetCreationTypeKey, WidgetCreationType::FOR_CLIENT);
   window_->AddObserver(this);
   params.native_widget = native_widget;
   aura::SetWindowType(window_, window_type);
@@ -329,6 +329,7 @@ NonClientFrameController::NonClientFrameController(
 
   const int shadow_inset =
       Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
+  WmWindowMus* wm_window = WmWindowMus::Get(window_);
   const gfx::Insets extended_hit_region =
       wm_window->ShouldUseExtendedHitRegion() ? GetExtendedHitRegion()
                                               : gfx::Insets();

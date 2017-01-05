@@ -32,7 +32,6 @@ class ImmersiveHandlerFactoryMus;
 class WindowManager;
 class WmRootWindowControllerMus;
 class WmShellMusTestApi;
-class WmWindowMus;
 
 // WmShell implementation for mus.
 class WmShellMus : public WmShell,
@@ -47,10 +46,6 @@ class WmShellMus : public WmShell,
 
   void AddRootWindowController(WmRootWindowControllerMus* controller);
   void RemoveRootWindowController(WmRootWindowControllerMus* controller);
-
-  // Returns the ancestor of |window| (including |window|) that is considered
-  // toplevel. |window| may be null.
-  static WmWindowMus* GetToplevelAncestor(aura::Window* window);
 
   WmRootWindowControllerMus* GetRootWindowControllerWithDisplayId(int64_t id);
 
@@ -122,9 +117,6 @@ class WmShellMus : public WmShell,
 
  private:
   friend class WmShellMusTestApi;
-
-  // Returns true if |window| is a window that can have active children.
-  static bool IsActivationParent(aura::Window* window);
 
   // aura::client::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,

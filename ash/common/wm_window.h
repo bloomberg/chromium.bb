@@ -93,8 +93,6 @@ class ASH_EXPORT WmWindow {
   virtual int GetAppType() const = 0;
   virtual void SetAppType(int app_type) const = 0;
 
-  virtual bool IsBubble() = 0;
-
   virtual ui::Layer* GetLayer() = 0;
 
   // TODO(sky): these are temporary until GetLayer() always returns non-null.

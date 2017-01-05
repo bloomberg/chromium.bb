@@ -14,6 +14,8 @@
 
 namespace ash {
 
+class WmWindowAuraTestApi;
+
 // WmWindowAura is tied to the life of the underlying aura::Window. Use the
 // static Get() function to obtain a WmWindowAura from an aura::Window.
 class ASH_EXPORT WmWindowAura : public WmWindow,
@@ -45,6 +47,9 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   aura::Window* aura_window() { return window_; }
   const aura::Window* aura_window() const { return window_; }
 
+  // See description of |children_use_extended_hit_region_|.
+  bool ShouldUseExtendedHitRegion() const;
+
   // WmWindow:
   void Destroy() override;
   const WmWindow* GetRootWindow() const override;
@@ -60,7 +65,6 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   ui::wm::WindowType GetType() const override;
   int GetAppType() const override;
   void SetAppType(int app_type) const override;
-  bool IsBubble() override;
   ui::Layer* GetLayer() override;
   bool GetLayerTargetVisibility() override;
   bool GetLayerVisible() override;
@@ -219,12 +223,24 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
                                aura::Window* transient) override;
 
  private:
+  friend class WmWindowAuraTestApi;
+
   aura::Window* window_;
 
   base::ObserverList<WmWindowObserver> observers_;
 
   bool added_transient_observer_ = false;
   base::ObserverList<WmTransientWindowObserver> transient_observers_;
+
+  // If true child windows should get a slightly larger hit region to make
+  // resizing easier.
+  bool children_use_extended_hit_region_ = false;
+
+  // Default value for |use_empty_minimum_size_for_testing_|.
+  static bool default_use_empty_minimum_size_for_testing_;
+
+  // If true the minimum size is 0x0, default is minimum size comes from widget.
+  bool use_empty_minimum_size_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(WmWindowAura);
 };

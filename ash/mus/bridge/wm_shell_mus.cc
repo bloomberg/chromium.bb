@@ -29,7 +29,6 @@
 #include "ash/mus/keyboard_ui_mus.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/window_manager.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "base/memory/ptr_util.h"
 #include "components/user_manager/user_info_impl.h"
@@ -179,16 +178,6 @@ void WmShellMus::RemoveRootWindowController(
                         root_window_controllers_.end(), controller);
   DCHECK(iter != root_window_controllers_.end());
   root_window_controllers_.erase(iter);
-}
-
-// static
-WmWindowMus* WmShellMus::GetToplevelAncestor(aura::Window* window) {
-  while (window) {
-    if (IsActivationParent(window->parent()))
-      return WmWindowMus::Get(window);
-    window = window->parent();
-  }
-  return nullptr;
 }
 
 WmRootWindowControllerMus* WmShellMus::GetRootWindowControllerWithDisplayId(
@@ -443,12 +432,6 @@ void WmShellMus::SetLaserPointerEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
 #endif  // defined(OS_CHROMEOS)
-
-// static
-bool WmShellMus::IsActivationParent(aura::Window* window) {
-  return window && IsActivatableShellWindowId(
-                       WmWindowMus::Get(window)->GetShellWindowId());
-}
 
 // TODO: support OnAttemptToReactivateWindow, http://crbug.com/615114.
 // TODO: Nuke and let client code use ActivationChangeObserver directly.

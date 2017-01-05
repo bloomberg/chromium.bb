@@ -35,13 +35,7 @@
 namespace ash {
 namespace mus {
 
-// static
-bool WmWindowMus::default_use_empty_minimum_size_for_testing_ = false;
-
-WmWindowMus::WmWindowMus(aura::Window* window)
-    : WmWindowAura(window),
-      use_empty_minimum_size_for_testing_(
-          default_use_empty_minimum_size_for_testing_) {}
+WmWindowMus::WmWindowMus(aura::Window* window) : WmWindowAura(window) {}
 
 WmWindowMus::~WmWindowMus() {}
 
@@ -68,17 +62,8 @@ const WmRootWindowControllerMus* WmWindowMus::GetRootWindowControllerMus()
   return WmRootWindowControllerMus::Get(aura_window()->GetRootWindow());
 }
 
-bool WmWindowMus::ShouldUseExtendedHitRegion() const {
-  const WmWindowMus* parent = Get(aura_window()->parent());
-  return parent && parent->children_use_extended_hit_region_;
-}
-
 bool WmWindowMus::IsContainer() const {
   return GetShellWindowId() != kShellWindowId_Invalid;
-}
-
-const WmWindow* WmWindowMus::GetRootWindow() const {
-  return Get(aura_window()->GetRootWindow());
 }
 
 WmRootWindowController* WmWindowMus::GetRootWindowController() {
@@ -87,52 +72,6 @@ WmRootWindowController* WmWindowMus::GetRootWindowController() {
 
 WmShell* WmWindowMus::GetShell() const {
   return WmShellMus::Get();
-}
-
-bool WmWindowMus::IsBubble() {
-  return aura_window()->GetProperty(aura::client::kWindowTypeKey) ==
-         ui::mojom::WindowType::BUBBLE;
-}
-
-bool WmWindowMus::HasNonClientArea() {
-  return widget_ ? true : false;
-}
-
-int WmWindowMus::GetNonClientComponent(const gfx::Point& location) {
-  return widget_ ? widget_->GetNonClientComponent(location) : HTNOWHERE;
-}
-
-gfx::Size WmWindowMus::GetMinimumSize() const {
-  return widget_ && !use_empty_minimum_size_for_testing_
-             ? widget_->GetMinimumSize()
-             : gfx::Size();
-}
-
-gfx::Size WmWindowMus::GetMaximumSize() const {
-  return widget_ ? widget_->GetMaximumSize() : gfx::Size();
-}
-
-gfx::Rect WmWindowMus::GetMinimizeAnimationTargetBoundsInScreen() const {
-  // TODO: need animation support: http://crbug.com/615087.
-  NOTIMPLEMENTED();
-  return GetBoundsInScreen();
-}
-
-bool WmWindowMus::IsSystemModal() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool WmWindowMus::GetBoolProperty(WmWindowProperty key) {
-  switch (key) {
-    case WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY:
-      return snap_children_to_pixel_boundary_;
-
-    default:
-      break;
-  }
-
-  return WmWindowAura::GetBoolProperty(key);
 }
 
 int WmWindowMus::GetIntProperty(WmWindowProperty key) {
@@ -145,16 +84,6 @@ int WmWindowMus::GetIntProperty(WmWindowProperty key) {
   }
 
   return WmWindowAura::GetIntProperty(key);
-}
-
-WmWindow* WmWindowMus::GetToplevelWindow() {
-  return WmShellMus::GetToplevelAncestor(aura_window());
-}
-
-WmWindow* WmWindowMus::GetToplevelWindowForFocus() {
-  // TODO(sky): resolve if we really need two notions of top-level. In the mus
-  // world they are the same.
-  return WmShellMus::GetToplevelAncestor(aura_window());
 }
 
 // TODO(sky): investigate if needed.
@@ -191,22 +120,16 @@ void WmWindowMus::SetPinned(bool trusted) {
   NOTIMPLEMENTED();
 }
 
-views::Widget* WmWindowMus::GetInternalWidget() {
-  // Don't return the window frame widget for an embedded client window.
-  if (widget_creation_type_ == WidgetCreationType::FOR_CLIENT)
-    return nullptr;
-
-  return widget_;
-}
-
 void WmWindowMus::CloseWidget() {
-  DCHECK(widget_);
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(aura_window());
+  DCHECK(widget);
   // Allow the client to service the close request for remote widgets.
-  if (widget_creation_type_ == WidgetCreationType::FOR_CLIENT) {
+  if (aura_window()->GetProperty(kWidgetCreationTypeKey) ==
+      WidgetCreationType::FOR_CLIENT) {
     WmShellMus::Get()->window_manager()->window_manager_client()->RequestClose(
         aura_window());
   } else {
-    widget_->Close();
+    widget->Close();
   }
 }
 
@@ -214,7 +137,10 @@ void WmWindowMus::CloseWidget() {
 bool WmWindowMus::CanActivate() const {
   // TODO(sky): this isn't quite right. Should key off CanFocus(), which is not
   // replicated.
-  return WmWindowAura::CanActivate() && widget_ != nullptr;
+  // TODO(sky): fix const cast (most likely remove this override entirely).
+  return WmWindowAura::CanActivate() &&
+         views::Widget::GetWidgetForNativeView(
+             const_cast<aura::Window*>(aura_window())) != nullptr;
 }
 
 void WmWindowMus::ShowResizeShadow(int component) {
@@ -238,29 +164,6 @@ void WmWindowMus::InstallResizeHandleWindowTargeter(
 void WmWindowMus::SetBoundsInScreenBehaviorForChildren(
     WmWindow::BoundsInScreenBehavior behavior) {
   child_bounds_in_screen_behavior_ = behavior;
-}
-
-void WmWindowMus::SetSnapsChildrenToPhysicalPixelBoundary() {
-  if (snap_children_to_pixel_boundary_)
-    return;
-
-  snap_children_to_pixel_boundary_ = true;
-  for (auto& observer : observers()) {
-    observer.OnWindowPropertyChanged(
-        this, WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY);
-  }
-}
-
-void WmWindowMus::SnapToPixelBoundaryIfNecessary() {
-  WmWindowMus* parent = Get(aura_window()->parent());
-  if (parent && parent->snap_children_to_pixel_boundary_) {
-    // TODO: implement snap to pixel: http://crbug.com/615554.
-    NOTIMPLEMENTED();
-  }
-}
-
-void WmWindowMus::SetChildrenUseExtendedHitRegion() {
-  children_use_extended_hit_region_ = true;
 }
 
 void WmWindowMus::AddLimitedPreTargetHandler(ui::EventHandler* handler) {

@@ -14,7 +14,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/display/display.h"
-#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::WmRootWindowControllerMus*);
@@ -103,11 +102,6 @@ void WmRootWindowControllerMus::ConfigureWidgetInitParamsForContainer(
       WmWindowMus::Get(root_window_controller_->root())
           ->GetChildByShellWindowId(shell_container_id));
   DCHECK(init_params->parent);
-  views::NativeWidgetAura* native_widget_aura =
-      new views::NativeWidgetAura(widget);
-  init_params->native_widget = native_widget_aura;
-  WmWindowMus::Get(native_widget_aura->GetNativeView())
-      ->set_widget(widget, WmWindowMus::WidgetCreationType::INTERNAL);
 }
 
 WmWindow* WmRootWindowControllerMus::FindEventTarget(
