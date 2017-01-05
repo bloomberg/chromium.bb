@@ -1869,7 +1869,6 @@ crbug.com/626703 imported/wpt/workers/opaque-origin.html [ Timeout Crash ]
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 imported/wpt/dom/events/Event-dispatch-click.html [ Timeout Crash ]
 crbug.com/626703 imported/wpt/domparsing/innerhtml-05.xhtml [ Timeout Crash ]
-crbug.com/626703 imported/wpt/domxpath/xml_xpath_runner.html [ Timeout ]
 crbug.com/626703 imported/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Timeout ]
 crbug.com/626703 imported/wpt/html/browsers/windows/nested-browsing-contexts/frameElement.html [ Timeout Failure ]
 crbug.com/626703 imported/wpt/html/browsers/windows/targeting-cross-origin-nested-browsing-contexts.html [ Timeout Failure ]
