@@ -37,7 +37,7 @@
 
 namespace blink {
 
-void ExceptionState::throwDOMException(const ExceptionCode& ec,
+void ExceptionState::throwDOMException(ExceptionCode ec,
                                        const String& message) {
   // SecurityError is thrown via ::throwSecurityError, and _careful_
   // consideration must be given to the data exposed to JavaScript via the
@@ -144,7 +144,7 @@ String ExceptionState::addExceptionContext(const String& message) const {
   return processedMessage;
 }
 
-void NonThrowableExceptionState::throwDOMException(const ExceptionCode& ec,
+void NonThrowableExceptionState::throwDOMException(ExceptionCode ec,
                                                    const String& message) {
   NOTREACHED();
 }
@@ -167,7 +167,7 @@ void NonThrowableExceptionState::rethrowV8Exception(v8::Local<v8::Value>) {
   NOTREACHED();
 }
 
-void DummyExceptionStateForTesting::throwDOMException(const ExceptionCode& ec,
+void DummyExceptionStateForTesting::throwDOMException(ExceptionCode ec,
                                                       const String& message) {
   setException(ec, message, v8::Local<v8::Value>());
 }

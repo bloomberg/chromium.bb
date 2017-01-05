@@ -50,8 +50,7 @@ class IgnorableExceptionState final : public ExceptionState {
 
   ExceptionState& returnThis() { return *this; }
 
-  void throwDOMException(const ExceptionCode&, const String& message) override {
-  }
+  void throwDOMException(ExceptionCode, const String& message) override {}
   void throwRangeError(const String& message) override{};
   void throwSecurityError(const String& sanitizedMessage,
                           const String& unsanitizedMessage) override {}
@@ -72,7 +71,7 @@ class CORE_EXPORT NoExceptionStateAssertionChecker final
 
   ExceptionState& returnThis() { return *this; }
 
-  void throwDOMException(const ExceptionCode&, const String& message) override;
+  void throwDOMException(ExceptionCode, const String& message) override;
   void throwRangeError(const String& message) override;
   void throwSecurityError(const String& sanitizedMessage,
                           const String& unsanitizedMessage) override;

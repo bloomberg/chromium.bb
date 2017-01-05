@@ -130,7 +130,7 @@ MediaSource::~MediaSource() {
 }
 
 void MediaSource::logAndThrowDOMException(ExceptionState& exceptionState,
-                                          const ExceptionCode& error,
+                                          ExceptionCode error,
                                           const String& message) {
   BLINK_MSLOG << __func__ << " (error=" << error << ", message=" << message
               << ")";

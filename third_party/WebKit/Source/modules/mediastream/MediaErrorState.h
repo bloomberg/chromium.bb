@@ -44,7 +44,7 @@ class MediaErrorState {
  public:
   MediaErrorState();
   void throwTypeError(const String& message);
-  void throwDOMException(const ExceptionCode&, const String& message);
+  void throwDOMException(ExceptionCode, const String& message);
   void throwConstraintError(const String& message, const String& constraint);
   void reset();
 

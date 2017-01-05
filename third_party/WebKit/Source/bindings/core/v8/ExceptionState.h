@@ -104,7 +104,7 @@ class CORE_EXPORT ExceptionState {
     }
   }
 
-  virtual void throwDOMException(const ExceptionCode&, const String& message);
+  virtual void throwDOMException(ExceptionCode, const String& message);
   virtual void throwRangeError(const String& message);
   virtual void throwSecurityError(const String& sanitizedMessage,
                                   const String& unsanitizedMessage = String());
@@ -162,7 +162,7 @@ class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
                        nullptr,
                        nullptr) {}
 
-  void throwDOMException(const ExceptionCode&, const String& message) override;
+  void throwDOMException(ExceptionCode, const String& message) override;
   void throwTypeError(const String& message) override;
   void throwSecurityError(const String& sanitizedMessage,
                           const String& unsanitizedMessage) override;
@@ -188,7 +188,7 @@ class CORE_EXPORT DummyExceptionStateForTesting final : public ExceptionState {
     }
   }
 
-  void throwDOMException(const ExceptionCode&, const String& message) override;
+  void throwDOMException(ExceptionCode, const String& message) override;
   void throwTypeError(const String& message) override;
   void throwSecurityError(const String& sanitizedMessage,
                           const String& unsanitizedMessage) override;

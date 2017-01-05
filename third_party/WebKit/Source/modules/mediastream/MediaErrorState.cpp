@@ -42,7 +42,7 @@ void MediaErrorState::throwTypeError(const String& message) {
   m_message = message;
 }
 
-void MediaErrorState::throwDOMException(const ExceptionCode& code,
+void MediaErrorState::throwDOMException(ExceptionCode code,
                                         const String& message) {
   m_errorType = DOMException;
   m_code = code;

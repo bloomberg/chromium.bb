@@ -41,7 +41,7 @@ NoExceptionStateAssertionChecker::NoExceptionStateAssertionChecker(
       m_file(file),
       m_line(line) {}
 
-void NoExceptionStateAssertionChecker::throwDOMException(const ExceptionCode&,
+void NoExceptionStateAssertionChecker::throwDOMException(ExceptionCode,
                                                          const String&) {
   DCHECK_AT(false, m_file, m_line) << "DOMExeption should not be thrown.";
 }

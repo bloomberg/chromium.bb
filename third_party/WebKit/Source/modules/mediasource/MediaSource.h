@@ -65,7 +65,7 @@ class MediaSource final : public EventTargetWithInlineData,
   ~MediaSource() override;
 
   static void logAndThrowDOMException(ExceptionState&,
-                                      const ExceptionCode& error,
+                                      ExceptionCode error,
                                       const String& message);
   static void logAndThrowTypeError(ExceptionState&, const String&);
 
