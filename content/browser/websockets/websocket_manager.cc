@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
+#include "content/public/browser/storage_partition.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace content {
@@ -43,6 +44,7 @@ class WebSocketManager::Handle : public base::SupportsUserData::Data,
   // The network stack could be shutdown after this notification, so be sure to
   // stop using it before then.
   void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, manager_);
     manager_ = nullptr;
   }
@@ -91,10 +93,27 @@ WebSocketManager::WebSocketManager(int process_id,
       num_current_succeeded_connections_(0),
       num_previous_succeeded_connections_(0),
       num_current_failed_connections_(0),
-      num_previous_failed_connections_(0) {}
+      num_previous_failed_connections_(0),
+      context_destroyed_(false) {
+  if (storage_partition_) {
+    url_request_context_getter_ = storage_partition_->GetURLRequestContext();
+    // This unretained pointer is safe because we destruct a WebSocketManager
+    // only via WebSocketManager::Handle::RenderProcessHostDestroyed which
+    // posts a deletion task to the IO thread.
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(
+            &WebSocketManager::ObserveURLRequestContextGetter,
+            base::Unretained(this)));
+  }
+}
 
 WebSocketManager::~WebSocketManager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!context_destroyed_ && url_request_context_getter_)
+    url_request_context_getter_->RemoveObserver(this);
 
   for (auto impl : impls_) {
     impl->GoAway();
@@ -112,6 +131,12 @@ void WebSocketManager::DoCreateWebSocket(
     request.ResetWithReason(
         blink::mojom::WebSocket::kInsufficientResources,
         "Error in connection establishment: net::ERR_INSUFFICIENT_RESOURCES");
+    return;
+  }
+  if (context_destroyed_) {
+    request.ResetWithReason(
+        blink::mojom::WebSocket::kInsufficientResources,
+        "Error in connection establishment: net::ERR_UNEXPECTED");
     return;
   }
 
@@ -195,6 +220,26 @@ void WebSocketManager::OnLostConnectionToClient(WebSocketImpl* impl) {
   impl->GoAway();
   impls_.erase(impl);
   delete impl;
+}
+
+void WebSocketManager::OnContextShuttingDown() {
+  context_destroyed_ = true;
+  url_request_context_getter_ = nullptr;
+  for (const auto& impl : impls_) {
+    impl->GoAway();
+    delete impl;
+  }
+  impls_.clear();
+}
+
+void WebSocketManager::ObserveURLRequestContextGetter() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!url_request_context_getter_->GetURLRequestContext()) {
+    context_destroyed_ = true;
+    url_request_context_getter_ = nullptr;
+    return;
+  }
+  url_request_context_getter_->AddObserver(this);
 }
 
 }  // namespace content
