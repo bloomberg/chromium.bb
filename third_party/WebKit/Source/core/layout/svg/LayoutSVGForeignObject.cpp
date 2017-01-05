@@ -38,7 +38,7 @@ bool LayoutSVGForeignObject::isChildAllowed(LayoutObject* child,
                                             const ComputedStyle& style) const {
   // Disallow arbitary SVG content. Only allow proper <svg xmlns="svgNS">
   // subdocuments.
-  return !child->isSVG() || child->isSVGRoot();
+  return !child->isSVGChild();
 }
 
 void LayoutSVGForeignObject::paint(const PaintInfo& paintInfo,

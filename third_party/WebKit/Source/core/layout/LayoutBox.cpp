@@ -5227,7 +5227,7 @@ LayoutPoint LayoutBox::flipForWritingModeForChild(
 LayoutBox* LayoutBox::locationContainer() const {
   // Location of a non-root SVG object derived from LayoutBox should not be
   // affected by writing-mode of the containing box (SVGRoot).
-  if (isSVG() && !isSVGRoot())
+  if (isSVGChild())
     return nullptr;
 
   // Normally the box's location is relative to its containing box.

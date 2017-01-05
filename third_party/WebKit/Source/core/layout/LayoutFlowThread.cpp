@@ -44,7 +44,7 @@ LayoutFlowThread* LayoutFlowThread::locateFlowThreadContainingBlockOf(
   ASSERT(descendant.isInsideFlowThread());
   LayoutObject* curr = const_cast<LayoutObject*>(&descendant);
   while (curr) {
-    if (curr->isSVG() && !curr->isSVGRoot())
+    if (curr->isSVGChild())
       return nullptr;
     if (curr->isLayoutFlowThread())
       return toLayoutFlowThread(curr);

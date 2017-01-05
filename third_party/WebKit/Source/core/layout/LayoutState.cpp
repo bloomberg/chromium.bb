@@ -65,7 +65,7 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
   // overflow:scroll/auto, inline blocks and writing mode roots. Additionally,
   // pagination inside SVG is not allowed.
   if (layoutObject.getPaginationBreakability() == LayoutBox::ForbidBreaks ||
-      (m_layoutObject.isSVG() && !m_layoutObject.isSVGRoot())) {
+      m_layoutObject.isSVGChild()) {
     m_flowThread = nullptr;
     m_isPaginated = false;
     return;

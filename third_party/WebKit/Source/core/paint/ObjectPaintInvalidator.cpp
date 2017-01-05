@@ -556,7 +556,7 @@ ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
         } else {
           // For SPv1, we conservatively assume the object changed paint offset
           // except for non-root SVG whose paint offset is always zero.
-          if (!m_object.isSVG() || m_object.isSVGRoot()) {
+          if (!m_object.isSVGChild()) {
             reason = PaintInvalidationLocationChange;
             break;
           }

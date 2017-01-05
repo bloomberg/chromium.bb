@@ -918,7 +918,7 @@ void LayoutMultiColumnFlowThread::skipColumnSpanner(
 static bool shouldSkipInsertedOrRemovedChild(
     LayoutMultiColumnFlowThread* flowThread,
     const LayoutObject& child) {
-  if (child.isSVG() && !child.isSVGRoot()) {
+  if (child.isSVGChild()) {
     // Don't descend into SVG objects. What's in there is of no interest, and
     // there might even be a foreignObject there with column-span:all, which
     // doesn't apply to us.

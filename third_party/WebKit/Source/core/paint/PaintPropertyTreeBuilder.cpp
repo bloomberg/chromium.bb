@@ -271,7 +271,7 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
 void PaintPropertyTreeBuilder::updateTransformForNonRootSVG(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
-  DCHECK(object.isSVG() && !object.isSVGRoot());
+  DCHECK(object.isSVGChild());
   // SVG does not use paint offset internally, except for SVGForeignObject which
   // has different SVG and HTML coordinate spaces.
   DCHECK(object.isSVGForeignObject() ||
@@ -350,7 +350,7 @@ CompositorElementId createDomNodeBasedCompositorElementId(
 void PaintPropertyTreeBuilder::updateTransform(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
-  if (object.isSVG() && !object.isSVGRoot()) {
+  if (object.isSVGChild()) {
     updateTransformForNonRootSVG(object, context);
     return;
   }
@@ -427,8 +427,7 @@ void PaintPropertyTreeBuilder::updateEffect(
 
   const bool isCSSIsolatedGroup =
       object.isBoxModelObject() && style.isStackingContext();
-  const bool isSVGExceptRoot = object.isSVG() && !object.isSVGRoot();
-  if (!isCSSIsolatedGroup && !isSVGExceptRoot) {
+  if (!isCSSIsolatedGroup && !object.isSVGChild()) {
     if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
       if (auto* properties = object.getMutableForPainting().paintProperties())
         context.forceSubtreeUpdate |= properties->clearEffect();
@@ -464,7 +463,7 @@ void PaintPropertyTreeBuilder::updateEffect(
       effectNodeNeeded = true;
 
     CompositorFilterOperations filter;
-    if (object.isSVG() && !object.isSVGRoot()) {
+    if (object.isSVGChild()) {
       // TODO(trchen): SVG caches filters in SVGResources. Implement it.
     } else if (PaintLayer* layer = toLayoutBoxModelObject(object).layer()) {
       // TODO(trchen): Eliminate PaintLayer dependency.

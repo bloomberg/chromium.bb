@@ -98,7 +98,7 @@ LayoutRect SVGLayoutSupport::transformVisualRect(
 static const LayoutSVGRoot& computeTransformToSVGRoot(
     const LayoutObject& object,
     AffineTransform& rootBorderBoxTransform) {
-  ASSERT(object.isSVG() && !object.isSVGRoot());
+  DCHECK(object.isSVGChild());
 
   const LayoutObject* parent;
   for (parent = &object; !parent->isSVGRoot(); parent = parent->parent())

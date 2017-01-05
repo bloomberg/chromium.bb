@@ -24,7 +24,7 @@ static LayoutRect slowMapToVisualRectInAncestorSpace(
     const LayoutObject& object,
     const LayoutBoxModelObject& ancestor,
     const FloatRect& rect) {
-  if (object.isSVG() && !object.isSVGRoot()) {
+  if (object.isSVGChild()) {
     LayoutRect result;
     SVGLayoutSupport::mapToVisualRectInAncestorSpace(object, &ancestor, rect,
                                                      result);
@@ -54,7 +54,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
   // coordinates.
   FloatRect rect = localRect;
   // Writing-mode flipping doesn't apply to non-root SVG.
-  if (!object.isSVG() || object.isSVGRoot()) {
+  if (!object.isSVGChild()) {
     if (object.isBox()) {
       toLayoutBox(object).flipForWritingMode(rect);
     } else if (!(context.forcedSubtreeInvalidationFlags &
@@ -73,7 +73,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
     // In SPv2, visual rects are in the space of their local transform node.
     // For SVG, the input rect is in local SVG coordinates in which paint
     // offset doesn't apply.
-    if (!object.isSVG() || object.isSVGRoot())
+    if (!object.isSVGChild())
       rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
     // Use enclosingIntRect to ensure the final visual rect will cover the
     // rect in source coordinates no matter if the painting will use pixel
@@ -91,7 +91,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
   } else {
     // For non-root SVG, the input rect is in local SVG coordinates in which
     // paint offset doesn't apply.
-    if (!object.isSVG() || object.isSVGRoot()) {
+    if (!object.isSVGChild()) {
       rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
       // Use enclosingIntRect to ensure the final visual rect will cover the
       // rect in source coordinates no matter if the painting will use pixel
@@ -148,7 +148,7 @@ LayoutRect PaintInvalidator::computeVisualRectInBacking(
     const LayoutObject& object,
     const PaintInvalidatorContext& context) {
   FloatRect localRect;
-  if (object.isSVG() && !object.isSVGRoot())
+  if (object.isSVGChild())
     localRect = SVGLayoutSupport::localVisualRect(object);
   else
     localRect = FloatRect(object.localVisualRect());

@@ -424,7 +424,7 @@ LayoutPoint PaintInvalidationState::computeLocationInBacking(
   FloatPoint point;
   if (m_paintInvalidationContainer != &m_currentObject) {
     if (m_cachedOffsetsEnabled) {
-      if (m_currentObject.isSVG() && !m_currentObject.isSVGRoot())
+      if (m_currentObject.isSVGChild())
         point = m_svgTransform.mapPoint(point);
       point += FloatPoint(m_paintOffset);
 #ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY
@@ -450,7 +450,7 @@ LayoutRect PaintInvalidationState::computeVisualRectInBacking() const {
   DCHECK(!m_didUpdateForChildren);
 #endif
 
-  if (m_currentObject.isSVG() && !m_currentObject.isSVGRoot())
+  if (m_currentObject.isSVGChild())
     return computeVisualRectInBackingForSVG();
 
   LayoutRect rect = m_currentObject.localVisualRect();

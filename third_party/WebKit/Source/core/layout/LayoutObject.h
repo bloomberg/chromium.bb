@@ -606,6 +606,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // LayoutObject with an ASSERT_NOT_REACHED() default implementation.
   bool isSVG() const { return isOfType(LayoutObjectSVG); }
   bool isSVGRoot() const { return isOfType(LayoutObjectSVGRoot); }
+  bool isSVGChild() const { return isSVG() && !isSVGRoot(); }
   bool isSVGContainer() const { return isOfType(LayoutObjectSVGContainer); }
   bool isSVGTransformableContainer() const {
     return isOfType(LayoutObjectSVGTransformableContainer);
@@ -2053,9 +2054,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void checkBlockPositionedObjectsNeedLayout();
 #endif
 
-  bool isTextOrSVGChild() const {
-    return isText() || (isSVG() && !isSVGRoot());
-  }
+  bool isTextOrSVGChild() const { return isText() || isSVGChild(); }
 
   static bool isAllowedToModifyLayoutTreeStructure(Document&);
 
