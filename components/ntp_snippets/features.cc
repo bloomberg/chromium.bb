@@ -61,7 +61,7 @@ CategoryRankerChoice GetSelectedCategoryRanker() {
 
   if (category_ranker_value.empty()) {
     // Default, Enabled or Disabled.
-    return CategoryRankerChoice::CONSTANT;
+    return CategoryRankerChoice::CLICK_BASED;
   }
   if (category_ranker_value == kCategoryRankerConstantRanker) {
     return CategoryRankerChoice::CONSTANT;
