@@ -183,6 +183,10 @@ const CGFloat kHorizontalSwitchPadding = 10;
 }
 
 - (NSString*)accessibilityLabel {
+  if (_detailTextLabel.text) {
+    return [NSString
+        stringWithFormat:@"%@, %@", _textLabel.text, _detailTextLabel.text];
+  }
   return _textLabel.text;
 }
 
