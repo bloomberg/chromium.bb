@@ -38,6 +38,8 @@ const char kValidResponse[] =
 }  // namespace
 
 namespace extensions {
+namespace api {
+namespace dial {
 
 class MockObserver : public DialService::Observer {
  public:
@@ -232,4 +234,6 @@ TEST_F(DialServiceTest, TestResponseParsing) {
       now, &not_parsed));
 }
 
+}  // namespace dial
+}  // namespace api
 }  // namespace extensions

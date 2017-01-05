@@ -13,12 +13,10 @@
 #include "url/gurl.h"
 
 namespace extensions {
-
 namespace api {
 namespace dial {
+
 struct DialDevice;
-}  // namespace api
-}  // namespace dial
 
 // Dial device information that is used within the DialService and Registry on
 // the IO thread. It is updated as new information arrives and a list of
@@ -94,6 +92,8 @@ class DialDeviceData {
   int config_id_;
 };
 
+}  // namespace dial
+}  // namespace api
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_DEVICE_DATA_H_

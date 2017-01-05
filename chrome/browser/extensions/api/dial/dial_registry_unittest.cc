@@ -22,6 +22,8 @@ using ::testing::Return;
 using ::testing::InSequence;
 
 namespace extensions {
+namespace api {
+namespace dial {
 
 class MockDialObserver : public DialRegistry::Observer {
  public:
@@ -376,4 +378,6 @@ TEST_F(DialRegistryTest, TestNetworkEventConnectionRestored) {
   registry_->OnListenerRemoved();
 }
 
+}  // namespace dial
+}  // namespace api
 }  // namespace extensions

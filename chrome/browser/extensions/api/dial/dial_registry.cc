@@ -25,6 +25,8 @@ using content::BrowserThread;
 using net::NetworkChangeNotifier;
 
 namespace extensions {
+namespace api {
+namespace dial {
 
 DialRegistry::DialRegistry(Observer* dial_api,
                            const base::TimeDelta& refresh_interval,
@@ -334,4 +336,6 @@ void DialRegistry::OnNetworkChanged(
   }
 }
 
+}  // namespace dial
+}  // namespace api
 }  // namespace extensions

@@ -55,6 +55,8 @@ using net::StringIOBuffer;
 using net::UDPSocket;
 
 namespace extensions {
+namespace api {
+namespace dial {
 
 namespace {
 
@@ -619,4 +621,6 @@ bool DialServiceImpl::HasOpenSockets() {
   return false;
 }
 
+}  // namespace dial
+}  // namespace api
 }  // namespace extensions

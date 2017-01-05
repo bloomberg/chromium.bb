@@ -7,6 +7,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
+namespace api {
+namespace dial {
 
 namespace {
 
@@ -101,4 +103,6 @@ TEST(DialDeviceDataTest, TestIsDeviceDescriptionUrl) {
       DialDeviceData::IsDeviceDescriptionUrl(GURL("file://path/to/file")));
 }
 
+}  // namespace dial
+}  // namespace api
 }  // namespace extensions

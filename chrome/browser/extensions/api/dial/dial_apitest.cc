@@ -15,10 +15,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
-using extensions::DialDeviceData;
 using extensions::Extension;
+using extensions::ResultCatcher;
 
-namespace api = extensions::api;
+namespace dial = extensions::api::dial;
 
 namespace {
 
@@ -52,11 +52,11 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
       extensions::DialAPIFactory::GetInstance()->GetForBrowserContext(
           profile());
   ASSERT_TRUE(api.get());
-  extensions::DialRegistry::DeviceList devices;
+  dial::DialRegistry::DeviceList devices;
 
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
-  DialDeviceData device1;
+  dial::DialDeviceData device1;
   device1.set_device_id("1");
   device1.set_label("1");
   device1.set_device_description_url(GURL("http://127.0.0.1/dd.xml"));
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
   devices.push_back(device1);
   api->SendEventOnUIThread(devices);
 
-  DialDeviceData device2;
+  dial::DialDeviceData device2;
   device2.set_device_id("2");
   device2.set_label("2");
   device2.set_device_description_url(GURL("http://127.0.0.2/dd.xml"));
@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
   devices.push_back(device2);
   api->SendEventOnUIThread(devices);
 
-  DialDeviceData device3;
+  dial::DialDeviceData device3;
   device3.set_device_id("3");
   device3.set_label("3");
   device3.set_device_description_url(GURL("http://127.0.0.3/dd.xml"));
@@ -96,13 +96,13 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, DiscoveryNoListeners) {
 
 // Make sure this API is only accessible to whitelisted extensions.
 IN_PROC_BROWSER_TEST_F(DialAPITest, NonWhitelistedExtension) {
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
 
   ExtensionTestMessageListener listener("ready", true);
-  const extensions::Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII("dial/whitelist"),
-      ExtensionBrowserTest::kFlagIgnoreManifestWarnings);
+  const Extension* extension =
+      LoadExtensionWithFlags(test_data_dir_.AppendASCII("dial/whitelist"),
+                             ExtensionBrowserTest::kFlagIgnoreManifestWarnings);
   // We should have a DIAL API not available warning.
   ASSERT_FALSE(extension->install_warnings().empty());
 

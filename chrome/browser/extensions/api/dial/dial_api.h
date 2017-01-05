@@ -16,7 +16,11 @@
 
 namespace extensions {
 
+namespace api {
+namespace dial {
 class DialRegistry;
+}  // namespace dial
+}  // namespace api
 
 // Dial API which is a ref-counted KeyedService that manages
 // the DIAL registry. It takes care of creating the registry on the IO thread
@@ -28,18 +32,18 @@ class DialRegistry;
 // RefcountedKeyedService.
 class DialAPI : public RefcountedKeyedService,
                 public EventRouter::Observer,
-                public DialRegistry::Observer {
+                public api::dial::DialRegistry::Observer {
  public:
   explicit DialAPI(Profile* profile);
 
   // The DialRegistry for the API. This must always be used only from the IO
   // thread.
-  DialRegistry* dial_registry();
+  api::dial::DialRegistry* dial_registry();
 
   // Called by the DialRegistry on the IO thread so that the DialAPI dispatches
   // the event to listeners on the UI thread.
-  void SendEventOnUIThread(const DialRegistry::DeviceList& devices);
-  void SendErrorOnUIThread(const DialRegistry::DialErrorCode type);
+  void SendEventOnUIThread(const api::dial::DialRegistry::DeviceList& devices);
+  void SendErrorOnUIThread(const api::dial::DialRegistry::DialErrorCode type);
 
  private:
   ~DialAPI() override;
@@ -52,8 +56,9 @@ class DialAPI : public RefcountedKeyedService,
   void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // DialRegistry::Observer:
-  void OnDialDeviceEvent(const DialRegistry::DeviceList& devices) override;
-  void OnDialError(DialRegistry::DialErrorCode type) override;
+  void OnDialDeviceEvent(
+      const api::dial::DialRegistry::DeviceList& devices) override;
+  void OnDialError(api::dial::DialRegistry::DialErrorCode type) override;
 
   // Methods to notify the DialRegistry on the correct thread of new/removed
   // listeners.
@@ -63,12 +68,10 @@ class DialAPI : public RefcountedKeyedService,
   Profile* profile_;
 
   // Created lazily on first access on the IO thread.
-  std::unique_ptr<DialRegistry> dial_registry_;
+  std::unique_ptr<api::dial::DialRegistry> dial_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(DialAPI);
 };
-
-namespace api {
 
 // DiscoverNow function. This function needs a round-trip from the IO thread
 // because it needs to grab a pointer to the DIAL API in order to get a
@@ -99,8 +102,6 @@ class DialDiscoverNowFunction : public AsyncApiFunction {
 
   DISALLOW_COPY_AND_ASSIGN(DialDiscoverNowFunction);
 };
-
-}  // namespace api
 
 }  // namespace extensions
 

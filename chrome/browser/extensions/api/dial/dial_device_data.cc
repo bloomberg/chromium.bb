@@ -7,6 +7,8 @@
 #include "chrome/common/extensions/api/dial.h"
 
 namespace extensions {
+namespace api {
+namespace dial {
 
 DialDeviceData::DialDeviceData() : max_age_(-1), config_id_(-1) { }
 
@@ -55,4 +57,6 @@ void DialDeviceData::FillDialDevice(api::dial::DialDevice* device) const {
     device->config_id.reset(new int(config_id_));
 }
 
+}  // namespace dial
+}  // namespace api
 }  // namespace extensions

@@ -19,6 +19,10 @@
 
 using base::TimeDelta;
 using content::BrowserThread;
+using extensions::api::dial::DialDeviceData;
+using extensions::api::dial::DialRegistry;
+
+namespace extensions {
 
 namespace {
 
@@ -33,16 +37,12 @@ const size_t kDialMaxDevices = 256;
 
 }  // namespace
 
-namespace extensions {
-
-namespace dial = api::dial;
-
 DialAPI::DialAPI(Profile* profile)
     : RefcountedKeyedService(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
       profile_(profile) {
-  EventRouter::Get(profile)
-      ->RegisterObserver(this, dial::OnDeviceList::kEventName);
+  EventRouter::Get(profile)->RegisterObserver(
+      this, api::dial::OnDeviceList::kEventName);
 }
 
 DialAPI::~DialAPI() {}
@@ -108,7 +108,7 @@ void DialAPI::SendEventOnUIThread(const DialRegistry::DeviceList& devices) {
   std::unique_ptr<base::ListValue> results =
       api::dial::OnDeviceList::Create(args);
   std::unique_ptr<Event> event(new Event(events::DIAL_ON_DEVICE_LIST,
-                                         dial::OnDeviceList::kEventName,
+                                         api::dial::OnDeviceList::kEventName,
                                          std::move(results)));
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
 }
@@ -140,14 +140,13 @@ void DialAPI::SendErrorOnUIThread(const DialRegistry::DialErrorCode code) {
 
   std::unique_ptr<base::ListValue> results =
       api::dial::OnError::Create(dial_error);
-  std::unique_ptr<Event> event(new Event(
-      events::DIAL_ON_ERROR, dial::OnError::kEventName, std::move(results)));
+  std::unique_ptr<Event> event(new Event(events::DIAL_ON_ERROR,
+                                         api::dial::OnError::kEventName,
+                                         std::move(results)));
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
 }
 
 void DialAPI::ShutdownOnUIThread() {}
-
-namespace api {
 
 DialDiscoverNowFunction::DialDiscoverNowFunction()
     : dial_(NULL), result_(false) {
@@ -170,7 +169,5 @@ bool DialDiscoverNowFunction::Respond() {
   SetResult(base::MakeUnique<base::FundamentalValue>(result_));
   return true;
 }
-
-}  // namespace api
 
 }  // namespace extensions
