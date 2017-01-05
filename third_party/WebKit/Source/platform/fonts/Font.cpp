@@ -257,18 +257,29 @@ class GlyphBufferBloberizer {
         m_deviceScaleFactor(deviceScaleFactor),
         m_hasVerticalOffsets(buffer.hasVerticalOffsets()),
         m_index(0),
+        m_endIndex(m_buffer.size()),
         m_blobCount(0),
         m_rotation(buffer.isEmpty() ? NoRotation : computeBlobRotation(
-                                                       buffer.fontDataAt(0))) {}
+                                                       buffer.fontDataAt(0))) {
+    if (m_buffer.hasSkipInkExceptions()) {
+      while (m_endIndex > 0 && m_buffer.isSkipInkException(m_endIndex - 1))
+        m_endIndex--;
+    }
+  }
 
-  bool done() const { return m_index >= m_buffer.size(); }
+  bool done() const { return m_index >= m_endIndex; }
   unsigned blobCount() const { return m_blobCount; }
 
   std::pair<sk_sp<SkTextBlob>, BlobRotation> next() {
     ASSERT(!done());
     const BlobRotation currentRotation = m_rotation;
 
-    while (m_index < m_buffer.size()) {
+    while (m_index < m_endIndex) {
+      if (m_buffer.hasSkipInkExceptions()) {
+        while (m_index < m_endIndex && m_buffer.isSkipInkException(m_index))
+          m_index++;
+      }
+
       const SimpleFontData* fontData = m_buffer.fontDataAt(m_index);
       ASSERT(fontData);
 
@@ -282,8 +293,8 @@ class GlyphBufferBloberizer {
       }
 
       const unsigned start = m_index++;
-      while (m_index < m_buffer.size() &&
-             m_buffer.fontDataAt(m_index) == fontData)
+      while (m_index < m_endIndex && m_buffer.fontDataAt(m_index) == fontData &&
+             !m_buffer.isSkipInkException(m_index))
         m_index++;
 
       appendRun(start, m_index - start, fontData);
@@ -343,6 +354,7 @@ class GlyphBufferBloberizer {
 
   SkTextBlobBuilder m_builder;
   unsigned m_index;
+  unsigned m_endIndex;
   unsigned m_blobCount;
   BlobRotation m_rotation;
 };
@@ -439,6 +451,10 @@ void Font::getTextIntercepts(const TextRunPaintInfo& runInfo,
   }
 
   GlyphBuffer glyphBuffer;
+  // Compute skip-ink exceptions in the GlyphBuffer.
+  // Skip the computation if 8Bit(), no such characters in Latin-1.
+  if (!runInfo.run.is8Bit())
+    glyphBuffer.saveSkipInkExceptions();
   buildGlyphBuffer(runInfo, glyphBuffer);
 
   // Get the number of intervals, without copying the actual values by

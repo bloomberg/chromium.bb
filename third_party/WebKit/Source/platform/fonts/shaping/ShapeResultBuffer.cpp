@@ -17,15 +17,30 @@ namespace blink {
 
 namespace {
 
+inline void addIsSkipInkException(GlyphBuffer* glyphBuffer,
+                                  const TextRun& run,
+                                  unsigned characterIndex) {
+  // We want to skip descenders in general, but it is undesirable renderings for
+  // CJK characters.
+  DCHECK(!run.is8Bit()) << "8Bit() is always false, better to avoid to call";
+  UChar32 baseCharacter = run.codepointAt(characterIndex);
+  glyphBuffer->addIsSkipInkException(
+      Character::isCJKIdeographOrSymbol(baseCharacter));
+}
+
 inline void addGlyphToBuffer(GlyphBuffer* glyphBuffer,
                              float advance,
                              hb_direction_t direction,
                              const SimpleFontData* fontData,
-                             const HarfBuzzRunGlyphData& glyphData) {
+                             const HarfBuzzRunGlyphData& glyphData,
+                             const TextRun& run,
+                             unsigned characterIndex) {
   FloatPoint startOffset = HB_DIRECTION_IS_HORIZONTAL(direction)
                                ? FloatPoint(advance, 0)
                                : FloatPoint(0, advance);
   glyphBuffer->add(glyphData.glyph, fontData, startOffset + glyphData.offset);
+  if (glyphBuffer->hasSkipInkExceptions())
+    addIsSkipInkException(glyphBuffer, run, characterIndex);
 }
 
 inline void addEmphasisMark(GlyphBuffer* buffer,
@@ -78,6 +93,7 @@ inline unsigned countGraphemesInCluster(const UChar* str,
 template <TextDirection direction>
 float ShapeResultBuffer::fillGlyphBufferForRun(GlyphBuffer* glyphBuffer,
                                                const ShapeResult::RunInfo* run,
+                                               const TextRun& textRun,
                                                float initialAdvance,
                                                unsigned from,
                                                unsigned to,
@@ -98,7 +114,8 @@ float ShapeResultBuffer::fillGlyphBufferForRun(GlyphBuffer* glyphBuffer,
                (direction == TextDirection::Ltr &&
                 currentCharacterIndex < to)) {
       addGlyphToBuffer(glyphBuffer, advanceSoFar, run->m_direction,
-                       run->m_fontData.get(), glyphData);
+                       run->m_fontData.get(), glyphData, textRun,
+                       currentCharacterIndex);
       advanceSoFar += glyphData.advance;
     }
   }
@@ -197,13 +214,14 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
 
 float ShapeResultBuffer::fillFastHorizontalGlyphBuffer(
     GlyphBuffer* glyphBuffer,
-    TextDirection dir) const {
+    const TextRun& textRun) const {
   ASSERT(!hasVerticalOffsets());
 
   float advance = 0;
 
+  unsigned characterIndex = 0;
   for (unsigned i = 0; i < m_results.size(); ++i) {
-    const auto& wordResult = isLeftToRightDirection(dir)
+    const auto& wordResult = isLeftToRightDirection(textRun.direction())
                                  ? m_results[i]
                                  : m_results[m_results.size() - 1 - i];
     ASSERT(!wordResult->hasVerticalOffsets());
@@ -217,9 +235,15 @@ float ShapeResultBuffer::fillFastHorizontalGlyphBuffer(
 
         glyphBuffer->add(glyphData.glyph, run->m_fontData.get(),
                          advance + glyphData.offset.width());
+        if (glyphBuffer->hasSkipInkExceptions()) {
+          addIsSkipInkException(glyphBuffer, textRun,
+                                characterIndex + glyphData.characterIndex);
+        }
+
         advance += glyphData.advance;
       }
     }
+    characterIndex += wordResult->m_numCharacters;
   }
 
   ASSERT(!glyphBuffer->hasVerticalOffsets());
@@ -233,7 +257,7 @@ float ShapeResultBuffer::fillGlyphBuffer(GlyphBuffer* glyphBuffer,
                                          unsigned to) const {
   // Fast path: full run with no vertical offsets
   if (!from && to == textRun.length() && !hasVerticalOffsets())
-    return fillFastHorizontalGlyphBuffer(glyphBuffer, textRun.direction());
+    return fillFastHorizontalGlyphBuffer(glyphBuffer, textRun);
 
   float advance = 0;
 
@@ -244,8 +268,8 @@ float ShapeResultBuffer::fillGlyphBuffer(GlyphBuffer* glyphBuffer,
       const RefPtr<const ShapeResult>& wordResult = m_results[resolvedIndex];
       for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
         advance += fillGlyphBufferForRun<TextDirection::Rtl>(
-            glyphBuffer, wordResult->m_runs[i].get(), advance, from, to,
-            wordOffset - wordResult->numCharacters());
+            glyphBuffer, wordResult->m_runs[i].get(), textRun, advance, from,
+            to, wordOffset - wordResult->numCharacters());
       }
       wordOffset -= wordResult->numCharacters();
     }
@@ -255,8 +279,8 @@ float ShapeResultBuffer::fillGlyphBuffer(GlyphBuffer* glyphBuffer,
       const RefPtr<const ShapeResult>& wordResult = m_results[j];
       for (unsigned i = 0; i < wordResult->m_runs.size(); i++) {
         advance += fillGlyphBufferForRun<TextDirection::Ltr>(
-            glyphBuffer, wordResult->m_runs[i].get(), advance, from, to,
-            wordOffset);
+            glyphBuffer, wordResult->m_runs[i].get(), textRun, advance, from,
+            to, wordOffset);
       }
       wordOffset += wordResult->numCharacters();
     }

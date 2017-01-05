@@ -182,6 +182,15 @@ class PLATFORM_EXPORT TextRun final {
     return m_data.characters16;
   }
 
+  UChar32 codepointAt(unsigned i) const {
+    if (is8Bit())
+      return (*this)[i];
+    UChar32 codepoint;
+    SECURITY_DCHECK(i < m_len);
+    U16_GET(characters16(), 0, i, m_len, codepoint);
+    return codepoint;
+  }
+
   UChar32 codepointAtAndNext(unsigned& i) const {
     if (is8Bit())
       return (*this)[i++];

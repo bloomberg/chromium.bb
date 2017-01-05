@@ -141,6 +141,25 @@ class GlyphBuffer {
     m_offsets.reverse();
   }
 
+  void saveSkipInkExceptions() {
+    m_skipInkExceptions = WTF::makeUnique<Vector<bool, 2048>>();
+  }
+
+  bool hasSkipInkExceptions() const { return !!m_skipInkExceptions; }
+
+  bool isSkipInkException(unsigned index) const {
+    if (!m_skipInkExceptions)
+      return false;
+    DCHECK_EQ(m_skipInkExceptions->size(), m_offsets.size());
+    return (*m_skipInkExceptions)[index];
+  }
+
+  void addIsSkipInkException(bool value) {
+    DCHECK(hasSkipInkExceptions());
+    DCHECK_EQ(m_skipInkExceptions->size(), m_offsets.size() - 1);
+    m_skipInkExceptions->append(value);
+  }
+
  protected:
   Vector<const SimpleFontData*, 2048> m_fontData;
   Vector<Glyph, 2048> m_glyphs;
@@ -149,6 +168,10 @@ class GlyphBuffer {
   // (depending on the buffer-wide positioning mode). This matches the
   // glyph positioning format used by Skia.
   Vector<float, 2048> m_offsets;
+
+  // Flag vector of identical size to m_offset, true when glyph is to be
+  // exempted from ink skipping, false otherwise.
+  std::unique_ptr<Vector<bool, 2048>> m_skipInkExceptions;
 };
 
 }  // namespace blink

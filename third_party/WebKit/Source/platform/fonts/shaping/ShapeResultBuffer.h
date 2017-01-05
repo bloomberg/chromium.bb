@@ -51,11 +51,12 @@ class ShapeResultBuffer {
                                                    float totalWidth) const;
 
  private:
-  float fillFastHorizontalGlyphBuffer(GlyphBuffer*, TextDirection) const;
+  float fillFastHorizontalGlyphBuffer(GlyphBuffer*, const TextRun&) const;
 
   template <TextDirection>
   static float fillGlyphBufferForRun(GlyphBuffer*,
                                      const ShapeResult::RunInfo*,
+                                     const TextRun&,
                                      float initialAdvance,
                                      unsigned from,
                                      unsigned to,
