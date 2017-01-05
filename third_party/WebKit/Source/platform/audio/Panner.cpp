@@ -45,7 +45,7 @@ std::unique_ptr<Panner> Panner::create(PanningModel model,
       return WTF::makeUnique<HRTFPanner>(sampleRate, databaseLoader);
 
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
   }
 }

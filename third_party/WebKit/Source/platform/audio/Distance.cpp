@@ -53,7 +53,7 @@ double DistanceEffect::gain(double distance) {
     case ModelExponential:
       return exponentialGain(distance);
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0.0;
 }
 

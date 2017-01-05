@@ -73,7 +73,7 @@ bool AudioDelayDSPKernel::hasSampleAccurateValues() {
 }
 
 void AudioDelayDSPKernel::calculateSampleAccurateValues(float*, size_t) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 double AudioDelayDSPKernel::delayTime(float sampleRate) {

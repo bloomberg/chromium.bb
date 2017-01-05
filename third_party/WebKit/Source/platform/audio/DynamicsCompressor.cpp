@@ -121,7 +121,7 @@ void DynamicsCompressor::process(const AudioBus* sourceBus,
       break;
     default:
       // FIXME : support other number of channels.
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       destinationBus->zero();
       return;
   }
