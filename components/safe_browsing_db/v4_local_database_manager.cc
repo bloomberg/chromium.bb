@@ -535,6 +535,7 @@ bool V4LocalDatabaseManager::HandleCheck(std::unique_ptr<PendingCheck> check) {
   }
 
   // Post on the IO thread to enforce async behavior.
+  pending_clients_.insert(check->client);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&V4LocalDatabaseManager::PerformFullHashCheck, this,
@@ -603,8 +604,6 @@ void V4LocalDatabaseManager::PerformFullHashCheck(
   DCHECK(enabled_);
   DCHECK(!full_hash_to_store_and_hash_prefixes.empty());
 
-  pending_clients_.insert(check->client);
-
   v4_get_hash_protocol_manager_->GetFullHashes(
       full_hash_to_store_and_hash_prefixes,
       base::Bind(&V4LocalDatabaseManager::OnFullHashResponse,
@@ -613,23 +612,32 @@ void V4LocalDatabaseManager::PerformFullHashCheck(
 
 void V4LocalDatabaseManager::ProcessQueuedChecks() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (auto& it : queued_checks_) {
+
+  // Steal the queue to protect against reentrant CancelCheck() calls.
+  QueuedChecks checks;
+  checks.swap(queued_checks_);
+
+  for (auto& it : checks) {
     FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
     if (!GetPrefixMatches(it, &full_hash_to_store_and_hash_prefixes)) {
       RespondToClient(std::move(it));
     } else {
+      pending_clients_.insert(it->client);
       PerformFullHashCheck(std::move(it), full_hash_to_store_and_hash_prefixes);
     }
   }
-  queued_checks_.clear();
 }
 
 void V4LocalDatabaseManager::RespondSafeToQueuedChecks() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (std::unique_ptr<PendingCheck>& it : queued_checks_) {
+
+  // Steal the queue to protect against reentrant CancelCheck() calls.
+  QueuedChecks checks;
+  checks.swap(queued_checks_);
+
+  for (std::unique_ptr<PendingCheck>& it : checks) {
     RespondToClient(std::move(it));
   }
-  queued_checks_.clear();
 }
 
 void V4LocalDatabaseManager::RespondToClient(

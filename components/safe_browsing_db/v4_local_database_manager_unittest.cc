@@ -6,6 +6,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/safe_browsing_db/v4_database.h"
 #include "components/safe_browsing_db/v4_local_database_manager.h"
@@ -25,6 +26,16 @@ FullHash HashForUrl(const GURL& url) {
   V4ProtocolManagerUtil::UrlToFullHashes(url, &full_hashes);
   // ASSERT_GE(full_hashes.size(), 1u);
   return full_hashes[0];
+}
+
+// A fullhash response containing no matches.
+std::string GetEmptyV4HashResponse() {
+  FindFullHashesResponse res;
+  res.mutable_negative_cache_duration()->set_seconds(600);
+
+  std::string res_data;
+  res.SerializeToString(&res_data);
+  return res_data;
 }
 
 }  // namespace
@@ -96,18 +107,29 @@ class FakeV4Database : public V4Database {
 
 class TestClient : public SafeBrowsingDatabaseManager::Client {
  public:
-  TestClient(SBThreatType sb_threat_type, const GURL& url)
-      : expected_sb_threat_type(sb_threat_type), expected_url(url) {}
+  TestClient(SBThreatType sb_threat_type,
+             const GURL& url,
+             V4LocalDatabaseManager* manager_to_cancel = nullptr)
+      : expected_sb_threat_type(sb_threat_type),
+        expected_url(url),
+        result_received_(false),
+        manager_to_cancel_(manager_to_cancel) {}
 
   void OnCheckBrowseUrlResult(const GURL& url,
                               SBThreatType threat_type,
                               const ThreatMetadata& metadata) override {
     DCHECK_EQ(expected_url, url);
     DCHECK_EQ(expected_sb_threat_type, threat_type);
+    result_received_ = true;
+    if (manager_to_cancel_) {
+      manager_to_cancel_->CancelCheck(this);
+    }
   }
 
   SBThreatType expected_sb_threat_type;
   GURL expected_url;
+  bool result_received_;
+  V4LocalDatabaseManager* manager_to_cancel_;
 };
 
 class FakeV4LocalDatabaseManager : public V4LocalDatabaseManager {
@@ -346,6 +368,80 @@ TEST_F(V4LocalDatabaseManagerTest, TestChecksAreQueued) {
 
   StopLocalDatabaseManager();
   EXPECT_TRUE(GetQueuedChecks().empty());
+}
+
+// Verify that a window where checks cannot be cancelled is closed.
+TEST_F(V4LocalDatabaseManagerTest, CancelPending) {
+  WaitForTasksOnTaskRunner();
+  net::FakeURLFetcherFactory factory(NULL);
+  // TODO(shess): Modify this to use a mock protocol manager instead
+  // of faking the requests.
+  const char* kReqs[] = {
+      // OSX
+      "Cg8KCHVuaXR0ZXN0EgMxLjAaJwgBCAIIAwgGCAcICAgJCAoQBBAIGgcKBWVXGg-"
+      "pIAEgAyAEIAUgBg==",
+
+      // Linux
+      "Cg8KCHVuaXR0ZXN0EgMxLjAaJwgBCAIIAwgGCAcICAgJCAoQAhAIGgcKBWVXGg-"
+      "pIAEgAyAEIAUgBg==",
+
+      // Windows
+      "Cg8KCHVuaXR0ZXN0EgMxLjAaJwgBCAIIAwgGCAcICAgJCAoQARAIGgcKBWVXGg-"
+      "pIAEgAyAEIAUgBg==",
+  };
+  for (const char* req : kReqs) {
+    const GURL url(
+        base::StringPrintf("https://safebrowsing.googleapis.com/v4/"
+                           "fullHashes:find?$req=%s"
+                           "&$ct=application/x-protobuf&key=test_key_param",
+                           req));
+    factory.SetFakeResponse(url, GetEmptyV4HashResponse(), net::HTTP_OK,
+                            net::URLRequestStatus::SUCCESS);
+  }
+
+  const GURL url("http://example.com/a/");
+  const HashPrefix hash_prefix("eW\x1A\xF\xA9");
+
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(), hash_prefix);
+  ReplaceV4Database(store_and_hash_prefixes);
+
+  // Test that a request flows through to the callback.
+  {
+    TestClient client(SB_THREAT_TYPE_SAFE, url);
+    EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(url, &client));
+    EXPECT_FALSE(client.result_received_);
+    WaitForTasksOnTaskRunner();
+    EXPECT_TRUE(client.result_received_);
+  }
+
+  // Test that cancel prevents the callback from being called.
+  {
+    TestClient client(SB_THREAT_TYPE_SAFE, url);
+    EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(url, &client));
+    v4_local_database_manager_->CancelCheck(&client);
+    EXPECT_FALSE(client.result_received_);
+    WaitForTasksOnTaskRunner();
+    EXPECT_FALSE(client.result_received_);
+  }
+}
+
+// When the database load flushes the queued requests, make sure that
+// CancelCheck() is not fatal in the client callback.
+TEST_F(V4LocalDatabaseManagerTest, CancelQueued) {
+  const GURL url("http://example.com/a/");
+
+  TestClient client1(SB_THREAT_TYPE_SAFE, url,
+                     v4_local_database_manager_.get());
+  TestClient client2(SB_THREAT_TYPE_SAFE, url);
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(url, &client1));
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(url, &client2));
+  EXPECT_EQ(2ul, GetQueuedChecks().size());
+  EXPECT_FALSE(client1.result_received_);
+  EXPECT_FALSE(client2.result_received_);
+  WaitForTasksOnTaskRunner();
+  EXPECT_TRUE(client1.result_received_);
+  EXPECT_TRUE(client2.result_received_);
 }
 
 // This test is somewhat similar to TestCheckBrowseUrlWithFakeDbReturnsMatch but
