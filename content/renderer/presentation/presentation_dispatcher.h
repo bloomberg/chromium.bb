@@ -36,6 +36,8 @@ class WebVector;
 
 namespace content {
 
+class TestPresentationDispatcher;
+
 // PresentationDispatcher is a delegate for Presentation API messages used by
 // Blink. It forwards the calls to the Mojo PresentationService.
 class CONTENT_EXPORT PresentationDispatcher
@@ -47,6 +49,21 @@ class CONTENT_EXPORT PresentationDispatcher
   ~PresentationDispatcher() override;
 
  private:
+  friend class TestPresentationDispatcher;
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestStartSession);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestStartSessionError);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestJoinSession);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestJoinSessionError);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestSendString);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestSendArrayBuffer);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestSendBlobData);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestCloseSession);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest, TestTerminateSession);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest,
+                           TestListenForScreenAvailability);
+  FRIEND_TEST_ALL_PREFIXES(PresentationDispatcherTest,
+                           TestSetDefaultPresentationUrls);
+
   struct SendMessageRequest {
     SendMessageRequest(blink::mojom::PresentationSessionInfoPtr session_info,
                        blink::mojom::ConnectionMessagePtr message);
@@ -137,7 +154,7 @@ class CONTENT_EXPORT PresentationDispatcher
   void DoSendMessage(SendMessageRequest* request);
   void HandleSendMessageRequests(bool success);
 
-  void ConnectToPresentationServiceIfNeeded();
+  virtual void ConnectToPresentationServiceIfNeeded();
 
   void UpdateListeningState();
 
