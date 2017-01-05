@@ -302,6 +302,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "audio_input_controller_unittest.cc",
+    "audio_input_device_unittest.cc",
     "audio_input_unittest.cc",
     "audio_manager_unittest.cc",
     "audio_output_controller_unittest.cc",
