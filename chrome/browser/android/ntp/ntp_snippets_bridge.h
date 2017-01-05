@@ -31,12 +31,9 @@ class NTPSnippetsBridge
     : public ntp_snippets::ContentSuggestionsService::Observer {
  public:
   NTPSnippetsBridge(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& j_bridge,
                     const base::android::JavaParamRef<jobject>& j_profile);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-
-  void SetObserver(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj,
-                   const base::android::JavaParamRef<jobject>& j_observer);
 
   base::android::ScopedJavaLocalRef<jintArray> GetCategories(
       JNIEnv* env,
@@ -164,8 +161,8 @@ class NTPSnippetsBridge
                  ntp_snippets::ContentSuggestionsService::Observer>
       content_suggestions_service_observer_;
 
-  // Used to notify the Java side when new snippets have been fetched.
-  base::android::ScopedJavaGlobalRef<jobject> observer_;
+  // The Java SnippetsBridge.
+  base::android::ScopedJavaGlobalRef<jobject> bridge_;
 
   base::WeakPtrFactory<NTPSnippetsBridge> weak_ptr_factory_;
 

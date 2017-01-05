@@ -110,9 +110,10 @@ ntp_snippets::RemoteSuggestionsScheduler* GetRemoteSuggestionsScheduler() {
 }  // namespace
 
 static jlong Init(JNIEnv* env,
-                  const JavaParamRef<jobject>& obj,
+                  const JavaParamRef<jobject>& j_bridge,
                   const JavaParamRef<jobject>& j_profile) {
-  NTPSnippetsBridge* snippets_bridge = new NTPSnippetsBridge(env, j_profile);
+  NTPSnippetsBridge* snippets_bridge =
+      new NTPSnippetsBridge(env, j_bridge, j_profile);
   return reinterpret_cast<intptr_t>(snippets_bridge);
 }
 
@@ -155,8 +156,11 @@ static void OnSuggestionTargetVisited(JNIEnv* env,
 }
 
 NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
+                                     const JavaParamRef<jobject>& j_bridge,
                                      const JavaParamRef<jobject>& j_profile)
-    : content_suggestions_service_observer_(this), weak_ptr_factory_(this) {
+    : content_suggestions_service_observer_(this),
+      bridge_(env, j_bridge),
+      weak_ptr_factory_(this) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   content_suggestions_service_ =
       ContentSuggestionsServiceFactory::GetForProfile(profile);
@@ -168,12 +172,6 @@ NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
 
 void NTPSnippetsBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
-}
-
-void NTPSnippetsBridge::SetObserver(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj,
-                                    const JavaParamRef<jobject>& j_observer) {
-  observer_.Reset(env, j_observer);
 }
 
 ScopedJavaLocalRef<jintArray> NTPSnippetsBridge::GetCategories(
@@ -413,50 +411,34 @@ void NTPSnippetsBridge::OnNTPInitialized(
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
 
 void NTPSnippetsBridge::OnNewSuggestions(Category category) {
-  if (observer_.is_null()) {
-    return;
-  }
-
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SnippetsBridge_onNewSuggestions(env, observer_,
+  Java_SnippetsBridge_onNewSuggestions(env, bridge_,
                                        static_cast<int>(category.id()));
 }
 
 void NTPSnippetsBridge::OnCategoryStatusChanged(Category category,
                                                 CategoryStatus new_status) {
-  if (observer_.is_null()) {
-    return;
-  }
-
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SnippetsBridge_onCategoryStatusChanged(env, observer_,
+  Java_SnippetsBridge_onCategoryStatusChanged(env, bridge_,
                                               static_cast<int>(category.id()),
                                               static_cast<int>(new_status));
 }
 
 void NTPSnippetsBridge::OnSuggestionInvalidated(
     const ContentSuggestion::ID& suggestion_id) {
-  if (observer_.is_null()) {
-    return;
-  }
-
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SnippetsBridge_onSuggestionInvalidated(
-      env, observer_.obj(), static_cast<int>(suggestion_id.category().id()),
+      env, bridge_.obj(), static_cast<int>(suggestion_id.category().id()),
       ConvertUTF8ToJavaString(env, suggestion_id.id_within_category()).obj());
 }
 
 void NTPSnippetsBridge::OnFullRefreshRequired() {
-  if (observer_.is_null()) {
-    return;
-  }
-
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SnippetsBridge_onFullRefreshRequired(env, observer_.obj());
+  Java_SnippetsBridge_onFullRefreshRequired(env, bridge_.obj());
 }
 
 void NTPSnippetsBridge::ContentSuggestionsServiceShutdown() {
-  observer_.Reset();
+  bridge_.Reset();
   content_suggestions_service_observer_.Remove(content_suggestions_service_);
 }
 
@@ -476,7 +458,7 @@ void NTPSnippetsBridge::OnSuggestionsFetched(
   // TODO(fhorschig, dgn): Allow refetch or show notification acc. to status.
   JNIEnv* env = AttachCurrentThread();
   Java_SnippetsBridge_onMoreSuggestions(
-      env, observer_, category.id(),
+      env, bridge_, category.id(),
       ToJavaSuggestionList(env, category, suggestions));
 }
 

@@ -189,22 +189,16 @@ public class SnippetsBridge implements SuggestionsSource {
      * An observer needs to be set before the native code attempts to transmit snippets them to
      * java. Upon registration, the observer will be notified of already fetched snippets.
      *
-     * @param observer object to notify when snippets are received, or {@code null} if we want to
-     *                 stop observing.
+     * @param observer object to notify when snippets are received.
      */
     @Override
     public void setObserver(SuggestionsSource.Observer observer) {
-        assert mObserver == null || mObserver == observer;
-
+        assert observer != null;
         mObserver = observer;
-        nativeSetObserver(mNativeSnippetsBridge, observer == null ? null : this);
     }
 
     @Override
     public void fetchSuggestions(@CategoryInt int category, String[] displayedSuggestionIds) {
-        assert mNativeSnippetsBridge != 0;
-        assert mObserver != null;
-
         nativeFetch(mNativeSnippetsBridge, category, displayedSuggestionIds);
     }
 
@@ -251,16 +245,12 @@ public class SnippetsBridge implements SuggestionsSource {
 
     @CalledByNative
     private void onNewSuggestions(@CategoryInt int category) {
-        assert mNativeSnippetsBridge != 0;
-        assert mObserver != null;
-        mObserver.onNewSuggestions(category);
+        if (mObserver != null) mObserver.onNewSuggestions(category);
     }
 
     @CalledByNative
     private void onMoreSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions) {
-        assert mNativeSnippetsBridge != 0;
-        assert mObserver != null;
-        mObserver.onMoreSuggestions(category, suggestions);
+        if (mObserver != null) mObserver.onMoreSuggestions(category, suggestions);
     }
 
     @CalledByNative
@@ -314,5 +304,4 @@ public class SnippetsBridge implements SuggestionsSource {
             long nativeNTPSnippetsBridge, int category, int position);
     private static native void nativeOnSuggestionTargetVisited(int category, long visitTimeMs);
     private static native void nativeOnNTPInitialized(long nativeNTPSnippetsBridge);
-    private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsBridge bridge);
 }
