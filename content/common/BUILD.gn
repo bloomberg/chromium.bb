@@ -349,9 +349,6 @@ source_set("common") {
     "//third_party/WebKit/public:blink_headers",
   ]
   deps = [
-    # This looks needless as we have :mojo_bindings in public_deps, but it's
-    # needed because of allow_circular_includes_from.
-    ":mojo_bindings_cpp_sources",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//build/util:webkit_version",
@@ -384,7 +381,7 @@ source_set("common") {
     "//media/gpu/ipc/client",
     "//media/gpu/ipc/common",
     "//media/midi",
-    "//media/midi:mojo_cpp_sources",
+    "//media/midi:mojo",
     "//mojo/common:common_base",
     "//mojo/edk/system",
     "//net",
@@ -427,7 +424,7 @@ source_set("common") {
   libs = []
   ldflags = []
 
-  allow_circular_includes_from = [ ":mojo_bindings_cpp_sources" ]
+  allow_circular_includes_from = [ ":mojo_bindings" ]
 
   if (is_android && use_seccomp_bpf) {
     set_sources_assignment_filter([])

@@ -241,9 +241,6 @@ template("mojom") {
     type_mappings_path =
         "$target_gen_dir/${target_name}${variant_suffix}__type_mappings"
     active_typemaps = []
-    cpp_sources_suffix = "cpp_sources"
-    cpp_sources_target_name =
-        "${target_name}${variant_suffix}_${cpp_sources_suffix}"
     enabled_sources = []
     if (defined(invoker.sources)) {
       generator_cpp_outputs = []
@@ -424,37 +421,6 @@ template("mojom") {
       if (defined(invoker.sources) && !defined(bindings_configuration.variant)) {
         data = process_file_template(enabled_sources, generator_js_outputs)
       }
-
-      public_deps = [
-        ":${cpp_sources_target_name}",
-        "//mojo/public/cpp/bindings",
-      ]
-      if (defined(invoker.deps)) {
-        foreach(dep, invoker.deps) {
-          public_deps +=
-              [ get_label_info(dep, "label_no_toolchain") + variant_suffix ]
-        }
-      }
-      if (defined(invoker.public_deps)) {
-        foreach(dep, invoker.public_deps) {
-          public_deps +=
-              [ get_label_info(dep, "label_no_toolchain") + variant_suffix ]
-        }
-      }
-
-      deps = []
-      if (defined(invoker.sources)) {
-        public_deps += [ ":$generator_target_name" ]
-      }
-    }
-
-    # The generated C++ source files. The main reason to introduce this target
-    # is so that mojo/public/cpp/bindings can depend on mojom interfaces without
-    # circular dependencies. It means that the target is missing the dependency
-    # on mojo/public/cpp/bindings. No external targets should depend directly on
-    # this target *except* mojo/public/cpp/bindings and other *_cpp_sources
-    # targets.
-    source_set(cpp_sources_target_name) {
       defines = []
       if (defined(invoker.testonly)) {
         testonly = invoker.testonly
@@ -473,19 +439,20 @@ template("mojom") {
         "//mojo/public/interfaces/bindings:bindings__generator",
         "//mojo/public/interfaces/bindings:bindings_shared__generator",
       ]
-      if (enabled_sources != []) {
-        deps += [ ":$generator_target_name" ]
-      }
       public_deps = [
         ":$shared_cpp_sources_target_name",
         "//base",
+        "//mojo/public/cpp/bindings",
       ]
+      if (enabled_sources != []) {
+        public_deps += [ ":$generator_target_name" ]
+      }
       foreach(d, all_deps) {
         # Resolve the name, so that a target //mojo/something becomes
-        # //mojo/something:something and we can append cpp_sources_suffix to
+        # //mojo/something:something and we can append variant_suffix to
         # get the cpp dependency name.
         full_name = get_label_info("$d", "label_no_toolchain")
-        public_deps += [ "${full_name}${variant_suffix}_${cpp_sources_suffix}" ]
+        public_deps += [ "${full_name}${variant_suffix}" ]
       }
       foreach(typemap, active_typemaps) {
         if (defined(typemap.public_headers)) {

@@ -33,6 +33,6 @@ blink_modules_sources("webmidi") {
   ]
 
   deps = [
-    "//media/midi:mojo_blink_cpp_sources",
+    "//media/midi:mojo_blink",
   ]
 }

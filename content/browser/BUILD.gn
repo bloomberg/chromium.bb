@@ -93,7 +93,7 @@ source_set("browser") {
     "//media/capture/mojo:image_capture",
     "//media/gpu/ipc/client",
     "//media/midi",
-    "//media/midi:mojo_cpp_sources",
+    "//media/midi:mojo",
     "//media/mojo/interfaces",
     "//mojo/common",
     "//mojo/edk/system",

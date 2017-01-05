@@ -87,7 +87,7 @@ if (!is_ios) {
       "//mojo/public/cpp/bindings",
       "//mojo/public/cpp/system",
       "//services/service_manager/background:lib",
-      "//services/service_manager/public/interfaces:interfaces_cpp_sources",
+      "//services/service_manager/public/interfaces",
     ]
 
     data_deps = []

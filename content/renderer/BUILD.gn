@@ -431,7 +431,7 @@ target(link_target_type, "renderer") {
     "//media/gpu/ipc/client",
     "//media/gpu/ipc/common",
     "//media/midi",
-    "//media/midi:mojo_cpp_sources",
+    "//media/midi:mojo",
     "//media/mojo/interfaces:remoting",
     "//mojo/common",
     "//mojo/edk/js",

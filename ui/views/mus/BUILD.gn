@@ -72,7 +72,7 @@ component("mus") {
     "//ui/native_theme",
     "//ui/platform_window",
     "//ui/platform_window/mojo",
-    "//ui/platform_window/mojo:interfaces_cpp_sources",
+    "//ui/platform_window/mojo:interfaces",
     "//ui/platform_window/stub",
     "//ui/views",
     "//ui/wm",

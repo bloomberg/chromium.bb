@@ -238,8 +238,8 @@ component("platform") {
   visibility = []  # Allow re-assignment of list.
   visibility = [
     "//third_party/WebKit/*",
-    "//url/mojo:url_mojom_origin_blink_cpp_sources",
-    "//url/mojo:url_mojom_gurl_blink_cpp_sources",
+    "//url/mojo:url_mojom_origin_blink",
+    "//url/mojo:url_mojom_gurl_blink",
   ]
   output_name = "blink_platform"
 
