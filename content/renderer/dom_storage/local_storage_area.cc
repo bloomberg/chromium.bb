@@ -29,17 +29,17 @@ unsigned LocalStorageArea::length() {
 }
 
 WebString LocalStorageArea::key(unsigned index) {
-  return cached_area_->GetKey(index);
+  return WebString::fromUTF16(cached_area_->GetKey(index));
 }
 
 WebString LocalStorageArea::getItem(const WebString& key) {
-  return cached_area_->GetItem(key);
+  return WebString::fromUTF16(cached_area_->GetItem(key.utf16()));
 }
 
 void LocalStorageArea::setItem(
     const WebString& key, const WebString& value, const WebURL& page_url,
     WebStorageArea::Result& result) {
-  if (!cached_area_->SetItem(key, value, page_url, id_))
+  if (!cached_area_->SetItem(key.utf16(), value.utf16(), page_url, id_))
     result = ResultBlockedByQuota;
   else
     result = ResultOK;
@@ -47,7 +47,7 @@ void LocalStorageArea::setItem(
 
 void LocalStorageArea::removeItem(
     const WebString& key, const WebURL& page_url) {
-  cached_area_->RemoveItem(key, page_url, id_);
+  cached_area_->RemoveItem(key.utf16(), page_url, id_);
 }
 
 void LocalStorageArea::clear(const WebURL& page_url) {

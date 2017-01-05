@@ -85,7 +85,8 @@ CacheStorageCacheQueryParams QueryParamsFromWebQueryParams(
   query_params.ignore_search = web_query_params.ignoreSearch;
   query_params.ignore_method = web_query_params.ignoreMethod;
   query_params.ignore_vary = web_query_params.ignoreVary;
-  query_params.cache_name = web_query_params.cacheName;
+  query_params.cache_name =
+      blink::WebString::toNullableString16(web_query_params.cacheName);
   return query_params;
 }
 
@@ -311,15 +312,15 @@ void CacheStorageDispatcher::OnCacheStorageKeysSuccess(
     int request_id,
     const std::vector<base::string16>& keys) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
-  blink::WebVector<blink::WebString> webKeys(keys.size());
-  for (size_t i = 0; i < keys.size(); ++i)
-    webKeys[i] = keys[i];
-
+  blink::WebVector<blink::WebString> web_keys(keys.size());
+  std::transform(
+      keys.begin(), keys.end(), web_keys.begin(),
+      [](const base::string16& s) { return WebString::fromUTF16(s); });
   UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Keys",
                       TimeTicks::Now() - keys_times_[request_id]);
   WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks* callbacks =
       keys_callbacks_.Lookup(request_id);
-  callbacks->onSuccess(webKeys);
+  callbacks->onSuccess(web_keys);
   keys_callbacks_.Remove(request_id);
   keys_times_.erase(request_id);
 }
@@ -506,7 +507,7 @@ void CacheStorageDispatcher::dispatchHas(
   int request_id = has_callbacks_.Add(std::move(callbacks));
   has_times_[request_id] = base::TimeTicks::Now();
   Send(new CacheStorageHostMsg_CacheStorageHas(CurrentWorkerId(), request_id,
-                                               origin, cacheName));
+                                               origin, cacheName.utf16()));
 }
 
 void CacheStorageDispatcher::dispatchOpen(
@@ -517,7 +518,7 @@ void CacheStorageDispatcher::dispatchOpen(
   int request_id = open_callbacks_.Add(std::move(callbacks));
   open_times_[request_id] = base::TimeTicks::Now();
   Send(new CacheStorageHostMsg_CacheStorageOpen(CurrentWorkerId(), request_id,
-                                                origin, cacheName));
+                                                origin, cacheName.utf16()));
 }
 
 void CacheStorageDispatcher::dispatchDelete(
@@ -528,7 +529,7 @@ void CacheStorageDispatcher::dispatchDelete(
   int request_id = delete_callbacks_.Add(std::move(callbacks));
   delete_times_[request_id] = base::TimeTicks::Now();
   Send(new CacheStorageHostMsg_CacheStorageDelete(CurrentWorkerId(), request_id,
-                                                  origin, cacheName));
+                                                  origin, cacheName.utf16()));
 }
 
 void CacheStorageDispatcher::dispatchKeys(
@@ -639,10 +640,9 @@ void CacheStorageDispatcher::PopulateWebResponseFromResponse(
           : blink::WebString());
   blink::WebVector<blink::WebString> headers(
       response.cors_exposed_header_names.size());
-  std::transform(
-      response.cors_exposed_header_names.begin(),
-      response.cors_exposed_header_names.end(), headers.begin(),
-      [](const std::string& h) { return blink::WebString::fromLatin1(h); });
+  std::transform(response.cors_exposed_header_names.begin(),
+                 response.cors_exposed_header_names.end(), headers.begin(),
+                 [](const std::string& s) { return WebString::fromLatin1(s); });
   web_response->setCorsExposedHeaderNames(headers);
 
   for (const auto& i : response.headers) {

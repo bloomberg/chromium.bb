@@ -51,17 +51,19 @@ unsigned WebStorageAreaImpl::length() {
 }
 
 WebString WebStorageAreaImpl::key(unsigned index) {
-  return cached_area_->GetKey(connection_id_, index);
+  return WebString::fromUTF16(cached_area_->GetKey(connection_id_, index));
 }
 
 WebString WebStorageAreaImpl::getItem(const WebString& key) {
-  return cached_area_->GetItem(connection_id_, key);
+  return WebString::fromUTF16(
+      cached_area_->GetItem(connection_id_, key.utf16()));
 }
 
 void WebStorageAreaImpl::setItem(
     const WebString& key, const WebString& value, const WebURL& page_url,
     WebStorageArea::Result& result) {
-  if (!cached_area_->SetItem(connection_id_, key, value, page_url))
+  if (!cached_area_->SetItem(connection_id_, key.utf16(), value.utf16(),
+                             page_url))
     result = ResultBlockedByQuota;
   else
     result = ResultOK;
@@ -69,7 +71,7 @@ void WebStorageAreaImpl::setItem(
 
 void WebStorageAreaImpl::removeItem(
     const WebString& key, const WebURL& page_url) {
-  cached_area_->RemoveItem(connection_id_, key, page_url);
+  cached_area_->RemoveItem(connection_id_, key.utf16(), page_url);
 }
 
 void WebStorageAreaImpl::clear(const WebURL& page_url) {

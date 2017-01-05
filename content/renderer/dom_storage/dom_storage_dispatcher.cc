@@ -312,22 +312,18 @@ void DomStorageDispatcher::OnStorageEvent(
 
   if (params.namespace_id == kLocalStorageNamespaceId) {
     blink::WebStorageEventDispatcher::dispatchLocalStorageEvent(
-        params.key,
-        params.old_value,
-        params.new_value,
-        params.origin,
-        params.page_url,
-        originating_area);
+        blink::WebString::fromUTF16(params.key),
+        blink::WebString::fromUTF16(params.old_value),
+        blink::WebString::fromUTF16(params.new_value), params.origin,
+        params.page_url, originating_area);
   } else {
     WebStorageNamespaceImpl
         session_namespace_for_event_dispatch(params.namespace_id);
     blink::WebStorageEventDispatcher::dispatchSessionStorageEvent(
-        params.key,
-        params.old_value,
-        params.new_value,
-        params.origin,
-        params.page_url,
-        session_namespace_for_event_dispatch,
+        blink::WebString::fromUTF16(params.key),
+        blink::WebString::fromUTF16(params.old_value),
+        blink::WebString::fromUTF16(params.new_value), params.origin,
+        params.page_url, session_namespace_for_event_dispatch,
         originating_area);
   }
 }
