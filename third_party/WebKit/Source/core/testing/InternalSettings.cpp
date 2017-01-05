@@ -64,23 +64,23 @@ InternalSettings::Backup::Backup(Settings* settings)
           RuntimeEnabledFeatures::cssStickyPositionEnabled()),
       m_originalOverlayScrollbarsEnabled(
           RuntimeEnabledFeatures::overlayScrollbarsEnabled()),
-      m_originalEditingBehavior(settings->editingBehaviorType()),
+      m_originalEditingBehavior(settings->getEditingBehaviorType()),
       m_originalTextAutosizingEnabled(settings->textAutosizingEnabled()),
       m_originalTextAutosizingWindowSizeOverride(
           settings->textAutosizingWindowSizeOverride()),
       m_originalAccessibilityFontScaleFactor(
-          settings->accessibilityFontScaleFactor()),
-      m_originalMediaTypeOverride(settings->mediaTypeOverride()),
-      m_originalDisplayModeOverride(settings->displayModeOverride()),
+          settings->getAccessibilityFontScaleFactor()),
+      m_originalMediaTypeOverride(settings->getMediaTypeOverride()),
+      m_originalDisplayModeOverride(settings->getDisplayModeOverride()),
       m_originalMockScrollbarsEnabled(settings->mockScrollbarsEnabled()),
       m_originalMockGestureTapHighlightsEnabled(
-          settings->mockGestureTapHighlightsEnabled()),
+          settings->getMockGestureTapHighlightsEnabled()),
       m_langAttributeAwareFormControlUIEnabled(
           RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled()),
-      m_imagesEnabled(settings->imagesEnabled()),
-      m_defaultVideoPosterURL(settings->defaultVideoPosterURL()),
-      m_originalLayerSquashingEnabled(settings->layerSquashingEnabled()),
-      m_originalImageAnimationPolicy(settings->imageAnimationPolicy()),
+      m_imagesEnabled(settings->getImagesEnabled()),
+      m_defaultVideoPosterURL(settings->getDefaultVideoPosterURL()),
+      m_originalLayerSquashingEnabled(settings->getLayerSquashingEnabled()),
+      m_originalImageAnimationPolicy(settings->getImageAnimationPolicy()),
       m_originalScrollTopLeftInteropEnabled(
           RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()),
       m_originalCompositorWorkerEnabled(

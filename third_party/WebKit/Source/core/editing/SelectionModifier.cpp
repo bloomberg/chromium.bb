@@ -130,7 +130,7 @@ void SelectionModifier::willBeModified(EAlteration alter,
 
 VisiblePosition SelectionModifier::positionForPlatform(bool isGetStart) const {
   Settings* settings = frame() ? frame()->settings() : nullptr;
-  if (settings && settings->editingBehaviorType() == EditingMacBehavior)
+  if (settings && settings->getEditingBehaviorType() == EditingMacBehavior)
     return isGetStart ? m_selection.visibleStart() : m_selection.visibleEnd();
   // Linux and Windows always extend selections from the extent endpoint.
   // FIXME: VisibleSelection should be fixed to ensure as an invariant that

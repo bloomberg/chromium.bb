@@ -831,14 +831,20 @@ void HTMLDocumentParser::startBackgroundParser() {
   config->decoder = takeDecoder();
   config->tokenizedChunkQueue = m_tokenizedChunkQueue.get();
   if (document()->settings()) {
-    if (document()->settings()->backgroundHtmlParserOutstandingTokenLimit())
+    if (document()
+            ->settings()
+            ->getBackgroundHtmlParserOutstandingTokenLimit()) {
       config->outstandingTokenLimit =
-          document()->settings()->backgroundHtmlParserOutstandingTokenLimit();
-    if (document()->settings()->backgroundHtmlParserPendingTokenLimit())
+          document()
+              ->settings()
+              ->getBackgroundHtmlParserOutstandingTokenLimit();
+    }
+    if (document()->settings()->getBackgroundHtmlParserPendingTokenLimit()) {
       config->pendingTokenLimit =
-          document()->settings()->backgroundHtmlParserPendingTokenLimit();
+          document()->settings()->getBackgroundHtmlParserPendingTokenLimit();
+    }
     config->shouldCoalesceChunks =
-        document()->settings()->parseHTMLOnMainThreadCoalesceChunks();
+        document()->settings()->getParseHTMLOnMainThreadCoalesceChunks();
   }
 
   ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
@@ -1156,7 +1162,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length) {
 
     LookaheadParserTaskSynchrony policy =
         document()->settings() &&
-                document()->settings()->parseHTMLOnMainThreadSyncTokenize()
+                document()->settings()->getParseHTMLOnMainThreadSyncTokenize()
             ? Synchronous
             : Asynchronous;
     postTaskToLookaheadParser(

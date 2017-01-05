@@ -618,7 +618,8 @@ bool FrameView::shouldUseCustomScrollbars(
   customScrollbarFrame = nullptr;
 
   if (Settings* settings = m_frame->settings()) {
-    if (!settings->allowCustomScrollbarInMainFrame() && m_frame->isMainFrame())
+    if (!settings->getAllowCustomScrollbarInMainFrame() &&
+        m_frame->isMainFrame())
       return false;
   }
 
@@ -831,7 +832,7 @@ bool FrameView::usesCompositedScrolling() const {
   if (layoutView.isNull())
     return false;
   if (m_frame->settings() &&
-      m_frame->settings()->preferCompositingToLCDTextEnabled())
+      m_frame->settings()->getPreferCompositingToLCDTextEnabled())
     return layoutView.compositor()->inCompositingMode();
   return false;
 }
@@ -955,7 +956,7 @@ void FrameView::performPreLayoutTasks() {
   // completely different style information.
   bool mainFrameRotation =
       m_frame->isMainFrame() && m_frame->settings() &&
-      m_frame->settings()->mainFrameResizesAreOrientationChanges();
+      m_frame->settings()->getMainFrameResizesAreOrientationChanges();
   if ((wasResized &&
        document->styleEngine().mediaQueryAffectedByViewportChange()) ||
       (wasResized && mainFrameRotation &&
@@ -1480,8 +1481,8 @@ void FrameView::setMediaType(const AtomicString& mediaType) {
 AtomicString FrameView::mediaType() const {
   // See if we have an override type.
   if (m_frame->settings() &&
-      !m_frame->settings()->mediaTypeOverride().isEmpty())
-    return AtomicString(m_frame->settings()->mediaTypeOverride());
+      !m_frame->settings()->getMediaTypeOverride().isEmpty())
+    return AtomicString(m_frame->settings()->getMediaTypeOverride());
   return m_mediaType;
 }
 
@@ -2498,7 +2499,7 @@ void FrameView::updateCounters() {
 
 bool FrameView::shouldUseIntegerScrollOffset() const {
   if (m_frame->settings() &&
-      !m_frame->settings()->preferCompositingToLCDTextEnabled())
+      !m_frame->settings()->getPreferCompositingToLCDTextEnabled())
     return true;
 
   return ScrollableArea::shouldUseIntegerScrollOffset();
@@ -2648,7 +2649,7 @@ void FrameView::notifyPageThatContentAreaWillPaint() const {
 }
 
 bool FrameView::scrollAnimatorEnabled() const {
-  return m_frame->settings() && m_frame->settings()->scrollAnimatorEnabled();
+  return m_frame->settings() && m_frame->settings()->getScrollAnimatorEnabled();
 }
 
 void FrameView::updateDocumentAnnotatedRegions() const {
@@ -2753,7 +2754,7 @@ FrameView* FrameView::parentFrameView() const {
 }
 
 void FrameView::didChangeGlobalRootScroller() {
-  if (!m_frame->settings() || !m_frame->settings()->viewportEnabled())
+  if (!m_frame->settings() || !m_frame->settings()->getViewportEnabled())
     return;
 
   // Avoid drawing two sets of scrollbars when visual viewport is enabled.
@@ -3599,7 +3600,7 @@ void FrameView::removeChild(Widget* child) {
 
 bool FrameView::visualViewportSuppliesScrollbars() {
   // On desktop, we always use the layout viewport's scrollbars.
-  if (!m_frame->settings() || !m_frame->settings()->viewportEnabled() ||
+  if (!m_frame->settings() || !m_frame->settings()->getViewportEnabled() ||
       !m_frame->document() || !m_frame->host())
     return false;
 
@@ -3751,7 +3752,7 @@ IntSize FrameView::contentsSize() const {
 void FrameView::clipPaintRect(FloatRect* paintRect) const {
   // Paint the whole rect if "mainFrameClipsContent" is false, meaning that
   // WebPreferences::record_whole_document is true.
-  if (!m_frame->settings()->mainFrameClipsContent())
+  if (!m_frame->settings()->getMainFrameClipsContent())
     return;
 
   paintRect->intersect(
@@ -3870,7 +3871,7 @@ void FrameView::computeScrollbarExistence(
     bool& newHasVerticalScrollbar,
     const IntSize& docSize,
     ComputeScrollbarExistenceOption option) {
-  if ((m_frame->settings() && m_frame->settings()->hideScrollbars()) ||
+  if ((m_frame->settings() && m_frame->settings()->getHideScrollbars()) ||
       visualViewportSuppliesScrollbars()) {
     newHasHorizontalScrollbar = false;
     newHasVerticalScrollbar = false;
@@ -4023,7 +4024,7 @@ bool FrameView::needsScrollbarReconstruction() const {
 }
 
 bool FrameView::shouldIgnoreOverflowHidden() const {
-  return m_frame->settings()->ignoreMainFrameOverflowHiddenQuirk() &&
+  return m_frame->settings()->getIgnoreMainFrameOverflowHiddenQuirk() &&
          m_frame->isMainFrame();
 }
 
@@ -4786,7 +4787,7 @@ void FrameView::updateSubFrameScrollOnMainReason(
     MainThreadScrollingReasons parentReason) {
   MainThreadScrollingReasons reasons = parentReason;
 
-  if (!page()->settings().threadedScrollingEnabled())
+  if (!page()->settings().getThreadedScrollingEnabled())
     reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
 
   if (!frame.isLocalFrame())
@@ -4853,7 +4854,7 @@ MainThreadScrollingReasons FrameView::mainThreadScrollingReasons() const {
   MainThreadScrollingReasons reasons =
       static_cast<MainThreadScrollingReasons>(0);
 
-  if (!page()->settings().threadedScrollingEnabled())
+  if (!page()->settings().getThreadedScrollingEnabled())
     reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
 
   if (!page()->mainFrame()->isLocalFrame())

@@ -181,7 +181,7 @@ bool ImageQualityController::shouldPaintAtLowQuality(
 
   if (LocalFrame* frame = object.frame()) {
     if (frame->settings() &&
-        frame->settings()->useDefaultImageInterpolationQuality())
+        frame->settings()->getUseDefaultImageInterpolationQuality())
       return false;
   }
 

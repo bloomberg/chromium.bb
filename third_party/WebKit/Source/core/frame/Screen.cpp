@@ -46,7 +46,7 @@ int Screen::height() const {
   FrameHost* host = frame()->host();
   if (!host)
     return 0;
-  if (host->settings().reportScreenSizeInPhysicalPixelsQuirk()) {
+  if (host->settings().getReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screenInfo = host->chromeClient().screenInfo();
     return lroundf(screenInfo.rect.height * screenInfo.deviceScaleFactor);
   }
@@ -59,7 +59,7 @@ int Screen::width() const {
   FrameHost* host = frame()->host();
   if (!host)
     return 0;
-  if (host->settings().reportScreenSizeInPhysicalPixelsQuirk()) {
+  if (host->settings().getReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screenInfo = host->chromeClient().screenInfo();
     return lroundf(screenInfo.rect.width * screenInfo.deviceScaleFactor);
   }
@@ -86,7 +86,7 @@ int Screen::availLeft() const {
   FrameHost* host = frame()->host();
   if (!host)
     return 0;
-  if (host->settings().reportScreenSizeInPhysicalPixelsQuirk()) {
+  if (host->settings().getReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screenInfo = host->chromeClient().screenInfo();
     return lroundf(screenInfo.availableRect.x * screenInfo.deviceScaleFactor);
   }
@@ -99,7 +99,7 @@ int Screen::availTop() const {
   FrameHost* host = frame()->host();
   if (!host)
     return 0;
-  if (host->settings().reportScreenSizeInPhysicalPixelsQuirk()) {
+  if (host->settings().getReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screenInfo = host->chromeClient().screenInfo();
     return lroundf(screenInfo.availableRect.y * screenInfo.deviceScaleFactor);
   }
@@ -112,7 +112,7 @@ int Screen::availHeight() const {
   FrameHost* host = frame()->host();
   if (!host)
     return 0;
-  if (host->settings().reportScreenSizeInPhysicalPixelsQuirk()) {
+  if (host->settings().getReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screenInfo = host->chromeClient().screenInfo();
     return lroundf(screenInfo.availableRect.height *
                    screenInfo.deviceScaleFactor);
@@ -126,7 +126,7 @@ int Screen::availWidth() const {
   FrameHost* host = frame()->host();
   if (!host)
     return 0;
-  if (host->settings().reportScreenSizeInPhysicalPixelsQuirk()) {
+  if (host->settings().getReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screenInfo = host->chromeClient().screenInfo();
     return lroundf(screenInfo.availableRect.width *
                    screenInfo.deviceScaleFactor);

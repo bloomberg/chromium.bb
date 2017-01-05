@@ -305,7 +305,7 @@ bool ApplicationCacheHost::isApplicationCacheEnabled() {
   return m_documentLoader->frame()->settings() &&
          m_documentLoader->frame()
              ->settings()
-             ->offlineWebApplicationCacheEnabled();
+             ->getOfflineWebApplicationCacheEnabled();
 }
 
 void ApplicationCacheHost::didChangeCacheAssociation() {

@@ -586,7 +586,7 @@ void WebSettingsImpl::setEnableTouchAdjustment(bool enabled) {
 }
 
 bool WebSettingsImpl::multiTargetTapNotificationEnabled() {
-  return m_settings->multiTargetTapNotificationEnabled();
+  return m_settings->getMultiTargetTapNotificationEnabled();
 }
 
 void WebSettingsImpl::setMultiTargetTapNotificationEnabled(bool enabled) {
@@ -594,11 +594,11 @@ void WebSettingsImpl::setMultiTargetTapNotificationEnabled(bool enabled) {
 }
 
 bool WebSettingsImpl::viewportEnabled() const {
-  return m_settings->viewportEnabled();
+  return m_settings->getViewportEnabled();
 }
 
 bool WebSettingsImpl::viewportMetaEnabled() const {
-  return m_settings->viewportMetaEnabled();
+  return m_settings->getViewportMetaEnabled();
 }
 
 bool WebSettingsImpl::doubleTapToZoomEnabled() const {
@@ -606,7 +606,7 @@ bool WebSettingsImpl::doubleTapToZoomEnabled() const {
 }
 
 bool WebSettingsImpl::mockGestureTapHighlightsEnabled() const {
-  return m_settings->mockGestureTapHighlightsEnabled();
+  return m_settings->getMockGestureTapHighlightsEnabled();
 }
 
 bool WebSettingsImpl::shrinksViewportContentToFit() const {

@@ -6,7 +6,7 @@
 
 #define SETTINGS_GETTERS_AND_SETTERS \
     {% for setting in settings %}
-    {{setting.type|to_passing_type}} {{setting.name}}() const { return m_{{setting.name}}; } \
+    {{setting.type|to_passing_type}} get{{setting.name|upper_first}}() const { return m_{{setting.name}}; } \
     void set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}}); \
     {% endfor %}
     void setFromStrings(const String& name, const String& value);

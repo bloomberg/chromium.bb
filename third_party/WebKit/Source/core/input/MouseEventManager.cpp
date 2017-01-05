@@ -638,7 +638,7 @@ void MouseEventManager::updateSelectionForMouseDrag() {
 
 bool MouseEventManager::handleDragDropIfPossible(
     const GestureEventWithHitTestResults& targetedEvent) {
-  if (m_frame->settings() && m_frame->settings()->touchDragDropEnabled() &&
+  if (m_frame->settings() && m_frame->settings()->getTouchDragDropEnabled() &&
       m_frame->view()) {
     const WebGestureEvent& gestureEvent = targetedEvent.event();
     unsigned modifiers = gestureEvent.modifiers;

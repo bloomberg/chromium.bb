@@ -138,7 +138,7 @@ static String selectMisspellingAsync(LocalFrame* selectedFrame,
 
 bool ContextMenuClientImpl::shouldShowContextMenuFromTouch(
     const WebContextMenuData& data) {
-  return m_webView->page()->settings().alwaysShowContextMenuOnTouch() ||
+  return m_webView->page()->settings().getAlwaysShowContextMenuOnTouch() ||
          !data.linkURL.isEmpty() ||
          data.mediaType == WebContextMenuData::MediaTypeImage ||
          data.mediaType == WebContextMenuData::MediaTypeVideo ||

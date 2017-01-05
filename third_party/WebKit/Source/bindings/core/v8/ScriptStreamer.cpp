@@ -615,7 +615,7 @@ bool ScriptStreamer::startStreamingInternal(PendingScript* script,
   // produce parser cache if the non-streaming compile takes advantage of it.
   v8::ScriptCompiler::CompileOptions compileOption =
       v8::ScriptCompiler::kNoCompileOptions;
-  if (settings->v8CacheOptions() == V8CacheOptionsParse)
+  if (settings->getV8CacheOptions() == V8CacheOptionsParse)
     compileOption = v8::ScriptCompiler::kProduceParserCache;
 
   // The Resource might go out of scope if the script is no longer

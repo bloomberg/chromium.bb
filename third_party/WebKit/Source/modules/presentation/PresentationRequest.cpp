@@ -111,7 +111,7 @@ bool PresentationRequest::hasPendingActivity() const {
 ScriptPromise PresentationRequest::start(ScriptState* scriptState) {
   Settings* contextSettings = settings(getExecutionContext());
   bool isUserGestureRequired =
-      !contextSettings || contextSettings->presentationRequiresUserGesture();
+      !contextSettings || contextSettings->getPresentationRequiresUserGesture();
 
   if (isUserGestureRequired && !UserGestureIndicator::utilizeUserGesture())
     return ScriptPromise::rejectWithDOMException(

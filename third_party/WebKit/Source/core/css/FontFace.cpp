@@ -582,7 +582,7 @@ void FontFace::initCSSFontFace(Document* document, const CSSValue* src) {
     if (!item.isLocal()) {
       const Settings* settings = document ? document->settings() : nullptr;
       bool allowDownloading =
-          settings && settings->downloadableBinaryFontsEnabled();
+          settings && settings->getDownloadableBinaryFontsEnabled();
       if (allowDownloading && item.isSupportedFormat() && document) {
         FontResource* fetched = item.fetch(document);
         if (fetched) {

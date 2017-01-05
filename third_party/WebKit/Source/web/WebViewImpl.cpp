@@ -529,7 +529,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame,
   }
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.
-  if (!page()->settings().showContextMenuOnMouseUp()) {
+  if (!page()->settings().getShowContextMenuOnMouseUp()) {
 #if OS(MACOSX)
     if (event.button == WebMouseEvent::Button::Right ||
         (event.button == WebMouseEvent::Button::Left &&
@@ -587,7 +587,7 @@ void WebViewImpl::handleMouseUp(LocalFrame& mainFrame,
                                 const WebMouseEvent& event) {
   PageWidgetEventHandler::handleMouseUp(mainFrame, event);
 
-  if (page()->settings().showContextMenuOnMouseUp()) {
+  if (page()->settings().getShowContextMenuOnMouseUp()) {
     // Dispatch the contextmenu event regardless of if the click was swallowed.
     // On Mac/Linux, we handle it on mouse down, not up.
     if (event.button == WebMouseEvent::Button::Right)
@@ -1312,9 +1312,10 @@ float WebViewImpl::maximumLegiblePageScale() const {
   // need to zoom in further when automatically determining zoom level
   // (after double tap, find in page, etc), though the user should still
   // be allowed to manually pinch zoom in further if they desire.
-  if (page())
+  if (page()) {
     return m_maximumLegibleScale *
-           page()->settings().accessibilityFontScaleFactor();
+           page()->settings().getAccessibilityFontScaleFactor();
+  }
   return m_maximumLegibleScale;
 }
 
@@ -1900,7 +1901,7 @@ void WebViewImpl::resizeWithBrowserControls(const WebSize& newSize,
   VisualViewport& visualViewport = page()->frameHost().visualViewport();
 
   bool isRotation =
-      page()->settings().mainFrameResizesAreOrientationChanges() &&
+      page()->settings().getMainFrameResizesAreOrientationChanges() &&
       m_size.width && contentsSize().width() && newSize.width != m_size.width &&
       !m_fullscreenController->isFullscreen();
   m_size = newSize;
@@ -3198,8 +3199,8 @@ void WebViewImpl::updatePageDefinedViewportConstraints(
   pageScaleConstraintsSet().adjustForAndroidWebViewQuirks(
       adjustedDescription, defaultMinWidth.intValue(), deviceScaleFactor(),
       settingsImpl()->supportDeprecatedTargetDensityDPI(),
-      pageSettings.wideViewportQuirkEnabled(), pageSettings.useWideViewport(),
-      pageSettings.loadWithOverviewMode(),
+      pageSettings.getWideViewportQuirkEnabled(),
+      pageSettings.getUseWideViewport(), pageSettings.getLoadWithOverviewMode(),
       settingsImpl()->viewportMetaNonUserScalableQuirk());
   float newInitialScale =
       pageScaleConstraintsSet().pageDefinedConstraints().initialScale;
@@ -3230,7 +3231,7 @@ void WebViewImpl::updateMainFrameLayoutSize() {
   if (settings()->viewportEnabled())
     layoutSize = pageScaleConstraintsSet().layoutSize();
 
-  if (page()->settings().forceZeroLayoutHeight())
+  if (page()->settings().getForceZeroLayoutHeight())
     layoutSize.height = 0;
 
   view->setLayoutSize(layoutSize);

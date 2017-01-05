@@ -88,8 +88,8 @@ void HTMLResourcePreloader::preload(
   if (resource && !resource->isLoaded() &&
       preload->resourceType() == Resource::CSSStyleSheet) {
     Settings* settings = m_document->settings();
-    if (settings && (settings->cssExternalScannerNoPreload() ||
-                     settings->cssExternalScannerPreload()))
+    if (settings && (settings->getCSSExternalScannerNoPreload() ||
+                     settings->getCSSExternalScannerPreload()))
       m_cssPreloaders.add(new CSSPreloaderResourceClient(resource, this));
   }
 }

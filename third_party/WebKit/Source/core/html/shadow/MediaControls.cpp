@@ -76,7 +76,7 @@ static bool shouldShowCastButton(HTMLMediaElement& mediaElement) {
 
 static bool preferHiddenVolumeControls(const Document& document) {
   return !document.settings() ||
-         document.settings()->preferHiddenVolumeControls();
+         document.settings()->getPreferHiddenVolumeControls();
 }
 
 class MediaControls::BatchedControlUpdate {
@@ -210,7 +210,7 @@ void MediaControls::initializeControls() {
       MediaControlOverlayEnclosureElement::create(*this);
 
   if (document().settings() &&
-      document().settings()->mediaControlsOverlayPlayButtonEnabled()) {
+      document().settings()->getMediaControlsOverlayPlayButtonEnabled()) {
     MediaControlOverlayPlayButtonElement* overlayPlayButton =
         MediaControlOverlayPlayButtonElement::create(*this);
     m_overlayPlayButton = overlayPlayButton;

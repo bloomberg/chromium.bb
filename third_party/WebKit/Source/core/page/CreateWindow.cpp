@@ -158,7 +158,7 @@ static Frame* createWindowHelper(LocalFrame& openerFrame,
     }
 
     if (openerFrame.settings() &&
-        !openerFrame.settings()->supportsMultipleWindows())
+        !openerFrame.settings()->getSupportsMultipleWindows())
       window = openerFrame.tree().top();
   }
 

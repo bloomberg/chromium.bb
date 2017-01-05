@@ -83,12 +83,12 @@ FocusCandidate::FocusCandidate(Node* node, WebFocusType type)
 
 bool isSpatialNavigationEnabled(const LocalFrame* frame) {
   return (frame && frame->settings() &&
-          frame->settings()->spatialNavigationEnabled());
+          frame->settings()->getSpatialNavigationEnabled());
 }
 
 bool spatialNavigationIgnoresEventHandlers(const LocalFrame* frame) {
   return (frame && frame->settings() &&
-          frame->settings()->deviceSupportsTouch());
+          frame->settings()->getDeviceSupportsTouch());
 }
 
 static bool rectsIntersectOnOrthogonalAxis(WebFocusType type,

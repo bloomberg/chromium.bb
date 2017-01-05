@@ -177,7 +177,7 @@ Resource* DocumentLoader::startPreload(Resource::Type type,
   switch (type) {
     case Resource::Image:
       if (m_frame && m_frame->settings() &&
-          m_frame->settings()->fetchImagePlaceholders()) {
+          m_frame->settings()->getFetchImagePlaceholders()) {
         request.setAllowImagePlaceholder();
       }
       resource = ImageResource::fetch(request, fetcher());
@@ -714,7 +714,7 @@ void DocumentLoader::startLoadingMainResource() {
 
   // PlzNavigate:
   // The fetch has already started in the browser. Don't mark it again.
-  if (!m_frame->settings()->browserSideNavigationEnabled()) {
+  if (!m_frame->settings()->getBrowserSideNavigationEnabled()) {
     DCHECK(!timing().fetchStart());
     timing().markFetchStart();
   }
@@ -732,8 +732,9 @@ void DocumentLoader::startLoadingMainResource() {
   // The final access checks are still performed here, potentially rejecting
   // the "provisional" load, but the browser side already expects the renderer
   // to be able to unconditionally commit.
-  if (!m_mainResource || (m_frame->settings()->browserSideNavigationEnabled() &&
-                          m_mainResource->errorOccurred())) {
+  if (!m_mainResource ||
+      (m_frame->settings()->getBrowserSideNavigationEnabled() &&
+       m_mainResource->errorOccurred())) {
     m_request = ResourceRequest(blankURL());
     maybeLoadEmpty();
     return;

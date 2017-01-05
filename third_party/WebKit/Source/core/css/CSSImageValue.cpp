@@ -64,7 +64,7 @@ StyleImage* CSSImageValue::cacheImage(const Document& document,
     if (crossOrigin != CrossOriginAttributeNotSet)
       request.setCrossOriginAccessControl(document.getSecurityOrigin(),
                                           crossOrigin);
-    if (document.settings() && document.settings()->fetchImagePlaceholders())
+    if (document.settings() && document.settings()->getFetchImagePlaceholders())
       request.setAllowImagePlaceholder();
 
     if (ImageResourceContent* cachedImage =

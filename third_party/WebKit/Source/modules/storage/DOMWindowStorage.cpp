@@ -129,7 +129,7 @@ Storage* DOMWindowStorage::localStorage(ExceptionState& exceptionState) const {
   }
   // FIXME: Seems this check should be much higher?
   FrameHost* host = document->frameHost();
-  if (!host || !host->settings().localStorageEnabled())
+  if (!host || !host->settings().getLocalStorageEnabled())
     return nullptr;
   StorageArea* storageArea =
       StorageNamespace::localStorageArea(document->getSecurityOrigin());

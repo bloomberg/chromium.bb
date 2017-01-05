@@ -417,7 +417,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(
       Settings* settings = m_page->mainFrame()->settings();
 
       std::unique_ptr<WebScrollbarLayer> webScrollbarLayer;
-      if (settings->useSolidColorScrollbars()) {
+      if (settings->getUseSolidColorScrollbars()) {
         DCHECK(RuntimeEnabledFeatures::overlayScrollbarsEnabled());
         webScrollbarLayer = createSolidColorScrollbarLayer(
             orientation, scrollbar.theme().thumbThickness(scrollbar),

@@ -276,7 +276,7 @@ bool DragController::performDrag(DragData* dragData, LocalFrame& localRoot) {
   if (operationForLoad(dragData, localRoot) == DragOperationNone)
     return false;
 
-  if (m_page->settings().navigateOnDragDrop()) {
+  if (m_page->settings().getNavigateOnDragDrop()) {
     m_page->mainFrame()->navigate(
         FrameLoadRequest(nullptr, ResourceRequest(dragData->asURL())));
   }
@@ -777,7 +777,7 @@ Node* DragController::draggableNode(const LocalFrame* src,
       // Even if the image is part of a selection, we always only drag the image
       // in this case.
       if (layoutObject->isImage() && src->settings() &&
-          src->settings()->loadsImagesAutomatically()) {
+          src->settings()->getLoadsImagesAutomatically()) {
         dragType = DragSourceActionImage;
         return node;
       }

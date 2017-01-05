@@ -244,7 +244,7 @@ GraphicsLayer* PaintLayerScrollableArea::layerForScrollCorner() const {
 bool PaintLayerScrollableArea::shouldUseIntegerScrollOffset() const {
   Frame* frame = box().frame();
   if (frame->settings() &&
-      !frame->settings()->preferCompositingToLCDTextEnabled())
+      !frame->settings()->getPreferCompositingToLCDTextEnabled())
     return true;
 
   return ScrollableArea::shouldUseIntegerScrollOffset();
@@ -561,7 +561,7 @@ IntPoint PaintLayerScrollableArea::lastKnownMousePosition() const {
 
 bool PaintLayerScrollableArea::scrollAnimatorEnabled() const {
   if (Settings* settings = box().frame()->settings())
-    return settings->scrollAnimatorEnabled();
+    return settings->getScrollAnimatorEnabled();
   return false;
 }
 
@@ -843,7 +843,7 @@ void PaintLayerScrollableArea::didChangeGlobalRootScroller() {
   // that can cause layout but this should only ever apply with overlay
   // scrollbars.
   if (!box().frame()->settings() ||
-      !box().frame()->settings()->viewportEnabled())
+      !box().frame()->settings()->getViewportEnabled())
     return;
 
   bool needsHorizontalScrollbar;
@@ -1094,7 +1094,7 @@ static inline const LayoutObject& layoutObjectForScrollbar(
     if (layoutObject.isLayoutView()) {
       Document& doc = node->document();
       if (Settings* settings = doc.settings()) {
-        if (!settings->allowCustomScrollbarInMainFrame() &&
+        if (!settings->getAllowCustomScrollbarInMainFrame() &&
             layoutObject.frame() && layoutObject.frame()->isMainFrame())
           return layoutObject;
       }
@@ -1161,7 +1161,7 @@ void PaintLayerScrollableArea::computeScrollbarExistence(
   // Scrollbars may be hidden or provided by visual viewport or frame instead.
   DCHECK(box().frame()->settings());
   if (visualViewportSuppliesScrollbars() || !canHaveOverflowScrollbars(box()) ||
-      box().frame()->settings()->hideScrollbars()) {
+      box().frame()->settings()->getHideScrollbars()) {
     needsHorizontalScrollbar = false;
     needsVerticalScrollbar = false;
     return;
@@ -1837,7 +1837,7 @@ bool PaintLayerScrollableArea::visualViewportSuppliesScrollbars() const {
     return false;
 
   // On desktop, we always use the layout viewport's scrollbars.
-  if (!frame->settings()->viewportEnabled())
+  if (!frame->settings()->getViewportEnabled())
     return false;
 
   const TopDocumentRootScrollerController& controller =

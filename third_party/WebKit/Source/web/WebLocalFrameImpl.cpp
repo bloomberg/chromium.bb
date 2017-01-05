@@ -733,7 +733,7 @@ void WebLocalFrameImpl::addMessageToConsole(const WebConsoleMessage& message) {
 void WebLocalFrameImpl::collectGarbage() {
   if (!frame())
     return;
-  if (!frame()->settings()->scriptEnabled())
+  if (!frame()->settings()->getScriptEnabled())
     return;
   V8GCController::collectGarbage(v8::Isolate::GetCurrent());
 }
@@ -1562,7 +1562,7 @@ void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host,
   if (frame()) {
     if (frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() &&
         !parent() && !opener() &&
-        frame()->settings()->shouldReuseGlobalForUnownedMainFrame()) {
+        frame()->settings()->getShouldReuseGlobalForUnownedMainFrame()) {
       frame()->document()->getSecurityOrigin()->grantUniversalAccess();
     }
 

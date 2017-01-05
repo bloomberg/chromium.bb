@@ -51,7 +51,10 @@ void DeviceOrientationAbsoluteController::didAddEventListener(
           UseCounter::DeviceOrientationAbsoluteInsecureOrigin);
       // TODO: add rappor logging of insecure origins as in
       // DeviceOrientationController.
-      if (document().frame()->settings()->strictPowerfulFeatureRestrictions())
+      if (document()
+              .frame()
+              ->settings()
+              ->getStrictPowerfulFeatureRestrictions())
         return;
     }
   }

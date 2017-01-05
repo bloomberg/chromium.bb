@@ -14,7 +14,7 @@ WorkerSettings::WorkerSettings(Settings* settings) {
 }
 
 void WorkerSettings::copyFlagValuesFromSettings(Settings* settings) {
-  m_disableReadingFromCanvas = settings->disableReadingFromCanvas();
+  m_disableReadingFromCanvas = settings->getDisableReadingFromCanvas();
 }
 
 void WorkerSettings::setDefaultValues() {

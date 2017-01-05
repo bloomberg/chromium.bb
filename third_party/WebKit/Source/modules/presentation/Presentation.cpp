@@ -52,7 +52,7 @@ PresentationReceiver* Presentation::receiver() {
   if (!frame() || !frame()->settings())
     return nullptr;
 
-  if (!frame()->settings()->presentationReceiver())
+  if (!frame()->settings()->getPresentationReceiver())
     return nullptr;
 
   if (!m_receiver) {

@@ -80,7 +80,7 @@ int NavigatorBeacon::maxAllowance() const {
   DCHECK(frame());
   const Settings* settings = frame()->settings();
   if (settings) {
-    int maxAllowed = settings->maxBeaconTransmission();
+    int maxAllowed = settings->getMaxBeaconTransmission();
     if (maxAllowed < m_transmittedBytes)
       return 0;
     return maxAllowed - m_transmittedBytes;

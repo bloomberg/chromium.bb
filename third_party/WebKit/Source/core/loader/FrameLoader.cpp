@@ -549,9 +549,10 @@ void FrameLoader::didBeginDocument() {
 
   Settings* settings = m_frame->document()->settings();
   if (settings) {
-    m_frame->document()->fetcher()->setImagesEnabled(settings->imagesEnabled());
+    m_frame->document()->fetcher()->setImagesEnabled(
+        settings->getImagesEnabled());
     m_frame->document()->fetcher()->setAutoLoadImages(
-        settings->loadsImagesAutomatically());
+        settings->getLoadsImagesAutomatically());
   }
 
   if (m_documentLoader) {
@@ -782,7 +783,8 @@ bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason) {
   if (!client())
     return false;
   Settings* settings = m_frame->settings();
-  bool allowed = client()->allowPlugins(settings && settings->pluginsEnabled());
+  bool allowed =
+      client()->allowPlugins(settings && settings->getPluginsEnabled());
   if (!allowed && reason == AboutToInstantiatePlugin)
     client()->didNotAllowPlugins();
   return allowed;
@@ -813,7 +815,7 @@ void FrameLoader::updateForSameDocumentNavigation(
   HistoryCommitType historyCommitType = loadTypeToCommitType(type);
   if (!m_currentItem)
     historyCommitType = HistoryInertCommit;
-  if (m_frame->settings()->historyEntryRequiresUserGesture() &&
+  if (m_frame->settings()->getHistoryEntryRequiresUserGesture() &&
       initiatingDocument && !initiatingDocument->hasReceivedUserGesture()) {
     historyCommitType = HistoryInertCommit;
   }
@@ -958,7 +960,7 @@ FrameLoadType FrameLoader::determineFrameLoadType(
       m_loadType == FrameLoadTypeReload)
     return FrameLoadTypeReload;
 
-  if (m_frame->settings()->historyEntryRequiresUserGesture() &&
+  if (m_frame->settings()->getHistoryEntryRequiresUserGesture() &&
       request.originDocument() &&
       !request.originDocument()->hasReceivedUserGesture())
     return FrameLoadTypeReplaceCurrentItem;
@@ -1751,7 +1753,7 @@ void FrameLoader::dispatchDidClearDocumentOfWindowObject() {
     return;
 
   Settings* settings = m_frame->settings();
-  if (settings && settings->forceMainWorldInitialization())
+  if (settings && settings->getForceMainWorldInitialization())
     m_frame->script().initializeMainWorld();
   InspectorInstrumentation::didClearDocumentOfWindowObject(m_frame);
 

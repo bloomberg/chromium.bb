@@ -531,8 +531,9 @@ Page* InspectorOverlay::overlayPage() {
       settings.genericFontFamilySettings().fantasy());
   overlaySettings.genericFontFamilySettings().updatePictograph(
       settings.genericFontFamilySettings().pictograph());
-  overlaySettings.setMinimumFontSize(settings.minimumFontSize());
-  overlaySettings.setMinimumLogicalFontSize(settings.minimumLogicalFontSize());
+  overlaySettings.setMinimumFontSize(settings.getMinimumFontSize());
+  overlaySettings.setMinimumLogicalFontSize(
+      settings.getMinimumLogicalFontSize());
   overlaySettings.setScriptEnabled(true);
   overlaySettings.setPluginsEnabled(false);
   overlaySettings.setLoadsImagesAutomatically(true);

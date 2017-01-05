@@ -315,7 +315,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
                      document.clientHintsPreferences());
 
     if (updateBehavior != UpdateForcedReload && document.settings() &&
-        document.settings()->fetchImagePlaceholders()) {
+        document.settings()->getFetchImagePlaceholders()) {
       request.setAllowImagePlaceholder();
     }
 
@@ -621,7 +621,7 @@ bool ImageLoader::getImageAnimationPolicy(ImageAnimationPolicy& policy) {
   if (!element()->document().settings())
     return false;
 
-  policy = element()->document().settings()->imageAnimationPolicy();
+  policy = element()->document().settings()->getImageAnimationPolicy();
   return true;
 }
 

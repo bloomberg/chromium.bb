@@ -680,7 +680,7 @@ WebGLRenderingContextBase::createWebGraphicsContext3DProvider(
   // the page settings; in particular, if WebGL contexts were lost one or more
   // times via the GL_ARB_robustness extension.
   if (!frame->loader().client()->allowWebGL(settings &&
-                                            settings->webGLEnabled())) {
+                                            settings->getWebGLEnabled())) {
     canvas->dispatchEvent(WebGLContextEvent::create(
         EventTypeNames::webglcontextcreationerror, false, true,
         "Web page was not allowed to create a WebGL context."));
@@ -1294,7 +1294,7 @@ void WebGLRenderingContextBase::setupFlags() {
   if (canvas()) {
     if (Page* p = canvas()->document().page()) {
       m_synthesizedErrorsToConsole =
-          p->settings().webGLErrorsToConsoleEnabled();
+          p->settings().getWebGLErrorsToConsoleEnabled();
     }
   }
 
@@ -7437,7 +7437,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*) {
     Settings* settings = frame->settings();
 
     if (!frame->loader().client()->allowWebGL(settings &&
-                                              settings->webGLEnabled()))
+                                              settings->getWebGLEnabled()))
       return;
   }
 

@@ -425,7 +425,7 @@ void HTMLMetaElement::processViewportContentAttribute(
   getViewportDescriptionFromContentAttribute(
       content, descriptionFromLegacyTag, &document(),
       document().settings() &&
-          document().settings()->viewportMetaZeroValuesQuirk());
+          document().settings()->getViewportMetaZeroValuesQuirk());
 
   document().setViewportDescription(descriptionFromLegacyTag);
 }

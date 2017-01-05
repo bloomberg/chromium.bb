@@ -106,7 +106,7 @@ TextResourceDecoderBuilder::createDecoderInstance(Document* document) {
       return TextResourceDecoder::create(
           m_mimeType,
           encodingFromDomain.isValid() ? encodingFromDomain
-                                       : settings->defaultTextEncodingName(),
+                                       : settings->getDefaultTextEncodingName(),
           !DOMImplementation::isXMLMIMEType(m_mimeType));
     }
   }

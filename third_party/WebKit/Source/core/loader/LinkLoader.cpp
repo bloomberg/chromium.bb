@@ -140,9 +140,9 @@ static void dnsPrefetchIfNeeded(
     // FIXME: The href attribute of the link element can be in "//hostname"
     // form, and we shouldn't attempt to complete that as URL
     // <https://bugs.webkit.org/show_bug.cgi?id=48857>.
-    if (settings && settings->dnsPrefetchingEnabled() && href.isValid() &&
+    if (settings && settings->getDNSPrefetchingEnabled() && href.isValid() &&
         !href.isEmpty()) {
-      if (settings->logDnsPrefetchAndPreconnect()) {
+      if (settings->getLogDnsPrefetchAndPreconnect()) {
         document.addConsoleMessage(ConsoleMessage::create(
             OtherMessageSource, DebugMessageLevel,
             String("DNS prefetch triggered for " + href.host())));
@@ -165,7 +165,7 @@ static void preconnectIfNeeded(
     if (caller == LinkCalledFromHeader)
       UseCounter::count(document, UseCounter::LinkHeaderPreconnect);
     Settings* settings = document.settings();
-    if (settings && settings->logDnsPrefetchAndPreconnect()) {
+    if (settings && settings->getLogDnsPrefetchAndPreconnect()) {
       document.addConsoleMessage(ConsoleMessage::create(
           OtherMessageSource, DebugMessageLevel,
           String("Preconnect triggered for ") + href.getString()));
@@ -332,7 +332,7 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute,
                                             crossOrigin);
   }
   Settings* settings = document.settings();
-  if (settings && settings->logPreload()) {
+  if (settings && settings->getLogPreload()) {
     document.addConsoleMessage(ConsoleMessage::create(
         OtherMessageSource, DebugMessageLevel,
         String("Preload triggered for " + href.host() + href.path())));

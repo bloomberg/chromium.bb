@@ -886,15 +886,15 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   ASSERT(isMainThread());
   ASSERT(document);
   doHtmlPreloadScanning =
-      !document->settings() || document->settings()->doHtmlPreloadScanning();
+      !document->settings() || document->settings()->getDoHtmlPreloadScanning();
   doDocumentWritePreloadScanning = doHtmlPreloadScanning && document->frame() &&
                                    document->frame()->isMainFrame();
   defaultViewportMinWidth = document->viewportDefaultMinWidth();
   viewportMetaZeroValuesQuirk =
       document->settings() &&
-      document->settings()->viewportMetaZeroValuesQuirk();
+      document->settings()->getViewportMetaZeroValuesQuirk();
   viewportMetaEnabled =
-      document->settings() && document->settings()->viewportMetaEnabled();
+      document->settings() && document->settings()->getViewportMetaEnabled();
   referrerPolicy = document->getReferrerPolicy();
 }
 

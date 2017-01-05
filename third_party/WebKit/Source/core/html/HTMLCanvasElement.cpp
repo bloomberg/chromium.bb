@@ -786,7 +786,7 @@ SecurityOrigin* HTMLCanvasElement::getSecurityOrigin() const {
 
 bool HTMLCanvasElement::originClean() const {
   if (document().settings() &&
-      document().settings()->disableReadingFromCanvas())
+      document().settings()->getDisableReadingFromCanvas())
     return false;
   if (placeholderFrame())
     return placeholderFrame()->originClean();
@@ -834,7 +834,7 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const {
   // Do not use acceleration for small canvas.
   Settings* settings = document().settings();
   if (!settings ||
-      canvasPixelCount < settings->minimumAccelerated2dCanvasSize())
+      canvasPixelCount < settings->getMinimumAccelerated2dCanvasSize())
     return false;
 
   // When GPU allocated memory runs low (due to having created too many
@@ -909,9 +909,10 @@ HTMLCanvasElement::createAcceleratedImageBufferSurface(
   if (!shouldAccelerate(deviceSize))
     return nullptr;
 
-  if (document().settings())
+  if (document().settings()) {
     *msaaSampleCount =
-        document().settings()->accelerated2dCanvasMSAASampleCount();
+        document().settings()->getAccelerated2dCanvasMSAASampleCount();
+  }
 
   // Avoid creating |contextProvider| until we're sure we want to try use it,
   // since it costs us GPU memory.
@@ -1029,7 +1030,7 @@ void HTMLCanvasElement::createImageBufferInternal(
   // consistency, we don't want to apply AA in accelerated canvases but not in
   // unaccelerated canvases.
   if (!msaaSampleCount && document().settings() &&
-      !document().settings()->antialiased2dCanvasEnabled())
+      !document().settings()->getAntialiased2dCanvasEnabled())
     m_context->setShouldAntialias(false);
 
   if (m_context)

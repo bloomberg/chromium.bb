@@ -283,10 +283,10 @@ void FontBuilder::checkForGenericFamilyChange(
   } else {
     Settings* settings = m_document->settings();
     float fixedScaleFactor =
-        (settings && settings->defaultFixedFontSize() &&
-         settings->defaultFontSize())
-            ? static_cast<float>(settings->defaultFixedFontSize()) /
-                  settings->defaultFontSize()
+        (settings && settings->getDefaultFixedFontSize() &&
+         settings->getDefaultFontSize())
+            ? static_cast<float>(settings->getDefaultFixedFontSize()) /
+                  settings->getDefaultFontSize()
             : 1;
     size = oldDescription.isMonospace()
                ? newDescription.specifiedSize() / fixedScaleFactor

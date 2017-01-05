@@ -67,8 +67,8 @@ float FontSize::getComputedSizeFromSpecifiedSize(
 
   float zoomedSize = specifiedSize * zoomFactor;
   if (applyMinimumFontSize) {
-    int minSize = settings->minimumFontSize();
-    int minLogicalSize = settings->minimumLogicalFontSize();
+    int minSize = settings->getMinimumFontSize();
+    int minLogicalSize = settings->getMinimumLogicalFontSize();
 
     // Apply the hard minimum first. We only apply the hard minimum if after
     // zooming we're still too small.
@@ -131,8 +131,8 @@ static int inline rowFromMediumFontSizeInRange(const Settings* settings,
                                                bool quirksMode,
                                                bool isMonospace,
                                                int& mediumSize) {
-  mediumSize = isMonospace ? settings->defaultFixedFontSize()
-                           : settings->defaultFontSize();
+  mediumSize = isMonospace ? settings->getDefaultFixedFontSize()
+                           : settings->getDefaultFontSize();
   if (mediumSize >= fontSizeTableMin && mediumSize <= fontSizeTableMax)
     return mediumSize - fontSizeTableMin;
   return -1;
@@ -157,7 +157,7 @@ float FontSize::fontSizeForKeyword(const Document* document,
   }
 
   // Value is outside the range of the table. Apply the scale factor instead.
-  float minLogicalSize = std::max(settings->minimumLogicalFontSize(), 1);
+  float minLogicalSize = std::max(settings->getMinimumLogicalFontSize(), 1);
   return std::max(fontSizeFactors[keyword - 1] * mediumSize, minLogicalSize);
 }
 

@@ -100,9 +100,9 @@ V8CacheOptions cacheOptions(const ScriptResource* resource,
                             const Settings* settings) {
   V8CacheOptions v8CacheOptions(V8CacheOptionsDefault);
   if (settings)
-    v8CacheOptions = settings->v8CacheOptions();
+    v8CacheOptions = settings->getV8CacheOptions();
   if (resource && !resource->response().cacheStorageCacheName().isNull()) {
-    switch (settings->v8CacheStrategiesForCacheStorage()) {
+    switch (settings->getV8CacheStrategiesForCacheStorage()) {
       case V8CacheStrategiesForCacheStorage::None:
         v8CacheOptions = V8CacheOptionsNone;
         break;
@@ -348,7 +348,7 @@ bool ScriptController::canExecuteScripts(
     return false;
   Settings* settings = frame()->settings();
   const bool allowed =
-      client->allowScript(settings && settings->scriptEnabled());
+      client->allowScript(settings && settings->getScriptEnabled());
   if (!allowed && reason == AboutToExecuteScript)
     client->didNotAllowScript();
   return allowed;

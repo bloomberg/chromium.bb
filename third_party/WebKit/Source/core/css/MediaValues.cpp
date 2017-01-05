@@ -48,7 +48,7 @@ int MediaValues::calculateDeviceWidth(LocalFrame* frame) {
   ASSERT(frame && frame->view() && frame->settings() && frame->host());
   blink::WebScreenInfo screenInfo = frame->host()->chromeClient().screenInfo();
   int deviceWidth = screenInfo.rect.width;
-  if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
+  if (frame->settings()->getReportScreenSizeInPhysicalPixelsQuirk())
     deviceWidth = lroundf(deviceWidth * screenInfo.deviceScaleFactor);
   return deviceWidth;
 }
@@ -57,7 +57,7 @@ int MediaValues::calculateDeviceHeight(LocalFrame* frame) {
   ASSERT(frame && frame->view() && frame->settings() && frame->host());
   blink::WebScreenInfo screenInfo = frame->host()->chromeClient().screenInfo();
   int deviceHeight = screenInfo.rect.height;
-  if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
+  if (frame->settings()->getReportScreenSizeInPhysicalPixelsQuirk())
     deviceHeight = lroundf(deviceHeight * screenInfo.deviceScaleFactor);
   return deviceHeight;
 }
@@ -88,7 +88,7 @@ int MediaValues::calculateMonochromeBitsPerComponent(LocalFrame* frame) {
 }
 
 int MediaValues::calculateDefaultFontSize(LocalFrame* frame) {
-  return frame->host()->settings().defaultFontSize();
+  return frame->host()->settings().getDefaultFontSize();
 }
 
 const String MediaValues::calculateMediaType(LocalFrame* frame) {
@@ -100,7 +100,7 @@ const String MediaValues::calculateMediaType(LocalFrame* frame) {
 
 WebDisplayMode MediaValues::calculateDisplayMode(LocalFrame* frame) {
   ASSERT(frame);
-  WebDisplayMode mode = frame->host()->settings().displayModeOverride();
+  WebDisplayMode mode = frame->host()->settings().getDisplayModeOverride();
 
   if (mode != WebDisplayModeUndefined)
     return mode;
@@ -122,22 +122,22 @@ bool MediaValues::calculateThreeDEnabled(LocalFrame* frame) {
 
 PointerType MediaValues::calculatePrimaryPointerType(LocalFrame* frame) {
   ASSERT(frame && frame->settings());
-  return frame->settings()->primaryPointerType();
+  return frame->settings()->getPrimaryPointerType();
 }
 
 int MediaValues::calculateAvailablePointerTypes(LocalFrame* frame) {
   ASSERT(frame && frame->settings());
-  return frame->settings()->availablePointerTypes();
+  return frame->settings()->getAvailablePointerTypes();
 }
 
 HoverType MediaValues::calculatePrimaryHoverType(LocalFrame* frame) {
   ASSERT(frame && frame->settings());
-  return frame->settings()->primaryHoverType();
+  return frame->settings()->getPrimaryHoverType();
 }
 
 int MediaValues::calculateAvailableHoverTypes(LocalFrame* frame) {
   ASSERT(frame && frame->settings());
-  return frame->settings()->availableHoverTypes();
+  return frame->settings()->getAvailableHoverTypes();
 }
 
 DisplayShape MediaValues::calculateDisplayShape(LocalFrame* frame) {

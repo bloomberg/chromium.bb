@@ -137,7 +137,7 @@ void Geolocation::recordOriginTypeAccess() const {
     UseCounter::count(document, UseCounter::GeolocationSecureOrigin);
     UseCounter::countCrossOriginIframe(
         *document, UseCounter::GeolocationSecureOriginIframe);
-  } else if (frame()->settings()->allowGeolocationOnInsecureOrigins()) {
+  } else if (frame()->settings()->getAllowGeolocationOnInsecureOrigins()) {
     // TODO(jww): This should be removed after WebView is fixed so that it
     // disallows geolocation in insecure contexts.
     //
@@ -194,7 +194,7 @@ int Geolocation::watchPosition(PositionCallback* successCallback,
 void Geolocation::startRequest(GeoNotifier* notifier) {
   recordOriginTypeAccess();
   String errorMessage;
-  if (!frame()->settings()->allowGeolocationOnInsecureOrigins() &&
+  if (!frame()->settings()->getAllowGeolocationOnInsecureOrigins() &&
       !getExecutionContext()->isSecureContext(errorMessage)) {
     notifier->setFatalError(
         PositionError::create(PositionError::kPermissionDenied, errorMessage));

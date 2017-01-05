@@ -309,7 +309,7 @@ ImageAnimationPolicy SMILTimeContainer::animationPolicy() const {
   if (!settings)
     return ImageAnimationPolicyAllowed;
 
-  return settings->imageAnimationPolicy();
+  return settings->getImageAnimationPolicy();
 }
 
 bool SMILTimeContainer::handleAnimationPolicy(

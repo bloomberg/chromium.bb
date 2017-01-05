@@ -326,7 +326,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyResize(
   EResize r = RESIZE_NONE;
   if (identifierValue.getValueID() == CSSValueAuto) {
     if (Settings* settings = state.document().settings())
-      r = settings->textAreasAreResizable() ? RESIZE_BOTH : RESIZE_NONE;
+      r = settings->getTextAreasAreResizable() ? RESIZE_BOTH : RESIZE_NONE;
   } else {
     r = identifierValue.convertTo<EResize>();
   }

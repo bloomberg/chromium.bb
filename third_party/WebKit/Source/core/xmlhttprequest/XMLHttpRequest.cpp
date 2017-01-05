@@ -621,7 +621,7 @@ void XMLHttpRequest::open(const AtomicString& method,
 
   if (!async && getExecutionContext()->isDocument()) {
     if (document()->settings() &&
-        !document()->settings()->syncXHRInDocumentsEnabled()) {
+        !document()->settings()->getSyncXHRInDocumentsEnabled()) {
       exceptionState.throwDOMException(
           InvalidAccessError,
           "Synchronous requests are disabled for this page.");

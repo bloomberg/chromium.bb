@@ -126,11 +126,12 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
   ResourceResponse response2;
   WebURLRequest::RequestContext requestContext =
       WebURLRequest::RequestContextImage;
-  ASSERT_EQ(WebMixedContent::ContextType::OptionallyBlockable,
-            WebMixedContent::contextTypeFromRequestContext(
-                requestContext, dummyPageHolder->frame()
-                                    .settings()
-                                    ->strictMixedContentCheckingForPlugin()));
+  ASSERT_EQ(
+      WebMixedContent::ContextType::OptionallyBlockable,
+      WebMixedContent::contextTypeFromRequestContext(
+          requestContext, dummyPageHolder->frame()
+                              .settings()
+                              ->getStrictMixedContentCheckingForPlugin()));
   response2.setURL(displayedUrl);
   EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(displayedUrl));
   MixedContentChecker::handleCertificateError(

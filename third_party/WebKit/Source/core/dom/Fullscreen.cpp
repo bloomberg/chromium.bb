@@ -114,7 +114,7 @@ bool fullscreenIsSupported(Document& document) {
   // Fullscreen is supported if there is no previously-established user
   // preference, security risk, or platform limitation.
   bool fullscreenSupported =
-      !document.settings() || document.settings()->fullscreenSupported();
+      !document.settings() || document.settings()->getFullscreenSupported();
 
   if (!RuntimeEnabledFeatures::featurePolicyEnabled()) {
     return fullscreenSupported;

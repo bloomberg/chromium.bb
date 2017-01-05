@@ -69,7 +69,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
   bool shouldClearCanvas =
       paintsBaseBackground &&
       (document.settings() &&
-       document.settings()->shouldClearDocumentBackground());
+       document.settings()->getShouldClearDocumentBackground());
   Color baseBackgroundColor =
       paintsBaseBackground ? frameView.baseBackgroundColor() : Color();
   Color rootBackgroundColor =

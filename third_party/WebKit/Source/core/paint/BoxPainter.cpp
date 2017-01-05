@@ -1086,7 +1086,7 @@ bool BoxPainter::shouldForceWhiteBackgroundForPrintEconomy(
   return document.printing() &&
          style.printColorAdjust() == EPrintColorAdjust::Economy &&
          (!document.settings() ||
-          !document.settings()->shouldPrintBackgrounds());
+          !document.settings()->getShouldPrintBackgrounds());
 }
 
 }  // namespace blink

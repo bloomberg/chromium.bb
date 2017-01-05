@@ -27,7 +27,7 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
     : CanvasRenderingContext(nullptr, canvas, attrs) {
   ExecutionContext* executionContext = scriptState->getExecutionContext();
   if (executionContext->isDocument()) {
-    if (toDocument(executionContext)->settings()->disableReadingFromCanvas())
+    if (toDocument(executionContext)->settings()->getDisableReadingFromCanvas())
       canvas->setDisableReadingFromCanvasTrue();
     return;
   }

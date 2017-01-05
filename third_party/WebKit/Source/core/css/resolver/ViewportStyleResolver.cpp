@@ -68,9 +68,9 @@ void ViewportStyleResolver::reset() {
 
 void ViewportStyleResolver::collectViewportRulesFromUASheets() {
   CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
-  WebViewportStyle viewportStyle = m_document->settings()
-                                       ? m_document->settings()->viewportStyle()
-                                       : WebViewportStyle::Default;
+  WebViewportStyle viewportStyle =
+      m_document->settings() ? m_document->settings()->getViewportStyle()
+                             : WebViewportStyle::Default;
   StyleSheetContents* viewportContents = nullptr;
   switch (viewportStyle) {
     case WebViewportStyle::Default:

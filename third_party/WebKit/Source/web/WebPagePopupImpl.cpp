@@ -285,15 +285,16 @@ bool WebPagePopupImpl::initializePage() {
   m_page = Page::create(pageClients);
   m_page->settings().setScriptEnabled(true);
   m_page->settings().setAllowScriptsToCloseWindows(true);
-  m_page->settings().setDeviceSupportsTouch(mainSettings.deviceSupportsTouch());
-  m_page->settings().setMinimumFontSize(mainSettings.minimumFontSize());
+  m_page->settings().setDeviceSupportsTouch(
+      mainSettings.getDeviceSupportsTouch());
+  m_page->settings().setMinimumFontSize(mainSettings.getMinimumFontSize());
   m_page->settings().setMinimumLogicalFontSize(
-      mainSettings.minimumLogicalFontSize());
+      mainSettings.getMinimumLogicalFontSize());
   // FIXME: Should we support enabling a11y while a popup is shown?
   m_page->settings().setAccessibilityEnabled(
-      mainSettings.accessibilityEnabled());
+      mainSettings.getAccessibilityEnabled());
   m_page->settings().setScrollAnimatorEnabled(
-      mainSettings.scrollAnimatorEnabled());
+      mainSettings.getScrollAnimatorEnabled());
 
   provideContextFeaturesTo(*m_page, WTF::makeUnique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(FrameLoaderClient, emptyFrameLoaderClient,

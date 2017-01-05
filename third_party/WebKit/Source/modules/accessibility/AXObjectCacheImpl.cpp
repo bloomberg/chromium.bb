@@ -1046,14 +1046,14 @@ bool AXObjectCacheImpl::accessibilityEnabled() {
   Settings* settings = this->settings();
   if (!settings)
     return false;
-  return settings->accessibilityEnabled();
+  return settings->getAccessibilityEnabled();
 }
 
 bool AXObjectCacheImpl::inlineTextBoxAccessibilityEnabled() {
   Settings* settings = this->settings();
   if (!settings)
     return false;
-  return settings->inlineTextBoxAccessibilityEnabled();
+  return settings->getInlineTextBoxAccessibilityEnabled();
 }
 
 const Element* AXObjectCacheImpl::rootAXEditableElement(const Node* node) {

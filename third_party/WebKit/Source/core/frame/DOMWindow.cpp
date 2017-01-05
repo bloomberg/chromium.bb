@@ -377,7 +377,7 @@ void DOMWindow::close(ExecutionContext* context) {
 
   Settings* settings = frame()->settings();
   bool allowScriptsToCloseWindows =
-      settings && settings->allowScriptsToCloseWindows();
+      settings && settings->getAllowScriptsToCloseWindows();
 
   if (!page->openedByDOM() && frame()->client()->backForwardLength() > 1 &&
       !allowScriptsToCloseWindows) {

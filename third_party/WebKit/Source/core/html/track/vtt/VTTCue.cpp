@@ -1113,19 +1113,19 @@ void VTTCue::applyUserOverrideCSSProperties() {
 
   setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox,
                                    CSSPropertyBackgroundColor,
-                                   settings->textTrackBackgroundColor());
+                                   settings->getTextTrackBackgroundColor());
   setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox, CSSPropertyFontFamily,
-                                   settings->textTrackFontFamily());
+                                   settings->getTextTrackFontFamily());
   setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox, CSSPropertyFontStyle,
-                                   settings->textTrackFontStyle());
+                                   settings->getTextTrackFontStyle());
   setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox, CSSPropertyFontVariant,
-                                   settings->textTrackFontVariant());
+                                   settings->getTextTrackFontVariant());
   setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox, CSSPropertyColor,
-                                   settings->textTrackTextColor());
+                                   settings->getTextTrackTextColor());
   setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox, CSSPropertyTextShadow,
-                                   settings->textTrackTextShadow());
+                                   settings->getTextTrackTextShadow());
   setInlineStylePropertyIfNotEmpty(*m_cueBackgroundBox, CSSPropertyFontSize,
-                                   settings->textTrackTextSize());
+                                   settings->getTextTrackTextSize());
 }
 
 ExecutionContext* VTTCue::getExecutionContext() const {

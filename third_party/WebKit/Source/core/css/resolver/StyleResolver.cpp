@@ -1373,13 +1373,13 @@ static bool shouldIgnoreTextTrackAuthorStyle(const Document& document) {
     return false;
   // Ignore author specified settings for text tracks when any of the user
   // settings are present.
-  if (!settings->textTrackBackgroundColor().isEmpty() ||
-      !settings->textTrackFontFamily().isEmpty() ||
-      !settings->textTrackFontStyle().isEmpty() ||
-      !settings->textTrackFontVariant().isEmpty() ||
-      !settings->textTrackTextColor().isEmpty() ||
-      !settings->textTrackTextShadow().isEmpty() ||
-      !settings->textTrackTextSize().isEmpty())
+  if (!settings->getTextTrackBackgroundColor().isEmpty() ||
+      !settings->getTextTrackFontFamily().isEmpty() ||
+      !settings->getTextTrackFontStyle().isEmpty() ||
+      !settings->getTextTrackFontVariant().isEmpty() ||
+      !settings->getTextTrackTextColor().isEmpty() ||
+      !settings->getTextTrackTextShadow().isEmpty() ||
+      !settings->getTextTrackTextSize().isEmpty())
     return true;
   return false;
 }

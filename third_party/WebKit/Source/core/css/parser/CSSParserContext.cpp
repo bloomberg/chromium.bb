@@ -35,7 +35,8 @@ CSSParserContext::CSSParserContext(const Document& document,
       m_isHTMLDocument(document.isHTMLDocument()),
       m_useLegacyBackgroundSizeShorthandBehavior(
           document.settings()
-              ? document.settings()->useLegacyBackgroundSizeShorthandBehavior()
+              ? document.settings()
+                    ->getUseLegacyBackgroundSizeShorthandBehavior()
               : false),
       m_shouldCheckContentSecurityPolicy(DoNotCheckContentSecurityPolicy),
       m_useCounter(useCounter) {

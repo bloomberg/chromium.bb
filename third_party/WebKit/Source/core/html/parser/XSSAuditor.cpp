@@ -342,7 +342,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate) {
   m_state = FilteringTokens;
 
   if (Settings* settings = document->settings())
-    m_isEnabled = settings->xssAuditorEnabled();
+    m_isEnabled = settings->getXSSAuditorEnabled();
 
   if (!m_isEnabled)
     return;

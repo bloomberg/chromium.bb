@@ -1112,7 +1112,7 @@ String FrameSelection::selectedText(TextIteratorBehavior behavior) const {
 
 String FrameSelection::selectedTextForClipboard() const {
   if (m_frame->settings() &&
-      m_frame->settings()->selectionIncludesAltImageText())
+      m_frame->settings()->getSelectionIncludesAltImageText())
     return extractSelectedText(*this, TextIteratorEmitsImageAltText);
   return extractSelectedText(*this, TextIteratorDefaultBehavior);
 }
@@ -1315,7 +1315,8 @@ GranularityStrategy* FrameSelection::granularityStrategy() {
   // set yet.
   SelectionStrategy strategyType = SelectionStrategy::Character;
   Settings* settings = m_frame ? m_frame->settings() : 0;
-  if (settings && settings->selectionStrategy() == SelectionStrategy::Direction)
+  if (settings &&
+      settings->getSelectionStrategy() == SelectionStrategy::Direction)
     strategyType = SelectionStrategy::Direction;
 
   if (m_granularityStrategy && m_granularityStrategy->GetType() == strategyType)

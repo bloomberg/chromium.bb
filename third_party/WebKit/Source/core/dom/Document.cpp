@@ -2569,7 +2569,7 @@ AXObjectCache* Document::existingAXObjectCache() const {
 
 AXObjectCache* Document::axObjectCache() const {
   Settings* settings = this->settings();
-  if (!settings || !settings->accessibilityEnabled())
+  if (!settings || !settings->getAccessibilityEnabled())
     return 0;
 
   // The only document that actually has a AXObjectCache is the top-level
@@ -2944,7 +2944,7 @@ void Document::implicitClose() {
   m_loadEventProgress = LoadEventCompleted;
 
   if (frame() && !layoutViewItem().isNull() &&
-      settings()->accessibilityEnabled()) {
+      settings()->getAccessibilityEnabled()) {
     if (AXObjectCache* cache = axObjectCache()) {
       if (this == &axObjectCacheOwner())
         cache->handleLoadComplete(this);
@@ -3434,7 +3434,7 @@ void Document::maybeHandleHttpRefresh(const String& content,
 
 bool Document::shouldMergeWithLegacyDescription(
     ViewportDescription::Type origin) const {
-  return settings() && settings()->viewportMetaMergeContentQuirk() &&
+  return settings() && settings()->getViewportMetaMergeContentQuirk() &&
          m_legacyViewportDescription.isMetaViewportType() &&
          m_legacyViewportDescription.type == origin;
 }
@@ -3461,7 +3461,7 @@ void Document::setViewportDescription(
 
 ViewportDescription Document::viewportDescription() const {
   ViewportDescription appliedViewportDescription = m_viewportDescription;
-  bool viewportMetaEnabled = settings() && settings()->viewportMetaEnabled();
+  bool viewportMetaEnabled = settings() && settings()->getViewportMetaEnabled();
   if (m_legacyViewportDescription.type !=
           ViewportDescription::UserAgentStyleSheet &&
       viewportMetaEnabled)
@@ -4494,7 +4494,7 @@ bool Document::isInInvisibleSubframe() const {
 }
 
 String Document::cookie(ExceptionState& exceptionState) const {
-  if (settings() && !settings()->cookieEnabled())
+  if (settings() && !settings()->getCookieEnabled())
     return String();
 
   // FIXME: The HTML5 DOM spec states that this attribute can raise an
@@ -4528,7 +4528,7 @@ String Document::cookie(ExceptionState& exceptionState) const {
 }
 
 void Document::setCookie(const String& value, ExceptionState& exceptionState) {
-  if (settings() && !settings()->cookieEnabled())
+  if (settings() && !settings()->getCookieEnabled())
     return;
 
   // FIXME: The HTML5 DOM spec states that this attribute can raise an
@@ -5515,17 +5515,17 @@ void Document::initSecurityContext(const DocumentInit& initializer) {
     enforceSuborigin(*getSecurityOrigin()->suborigin());
 
   if (Settings* settings = initializer.settings()) {
-    if (!settings->webSecurityEnabled()) {
+    if (!settings->getWebSecurityEnabled()) {
       // Web security is turned off. We should let this document access every
       // other document. This is used primary by testing harnesses for web
       // sites.
       getSecurityOrigin()->grantUniversalAccess();
     } else if (getSecurityOrigin()->isLocal()) {
-      if (settings->allowUniversalAccessFromFileURLs()) {
+      if (settings->getAllowUniversalAccessFromFileURLs()) {
         // Some clients want local URLs to have universal access, but that
         // setting is dangerous for other clients.
         getSecurityOrigin()->grantUniversalAccess();
-      } else if (!settings->allowFileAccessFromFileURLs()) {
+      } else if (!settings->getAllowFileAccessFromFileURLs()) {
         // Some clients do not want local URLs to have access to other local
         // URLs.
         getSecurityOrigin()->blockLocalAccessFromLocalOrigin();
@@ -5691,7 +5691,7 @@ void Document::initDNSPrefetch() {
   Settings* settings = this->settings();
 
   m_haveExplicitlyDisabledDNSPrefetch = false;
-  m_isDNSPrefetchEnabled = settings && settings->dnsPrefetchingEnabled() &&
+  m_isDNSPrefetchEnabled = settings && settings->getDNSPrefetchingEnabled() &&
                            getSecurityOrigin()->protocol() == "http";
 
   // Inherit DNS prefetch opt-out from parent frame

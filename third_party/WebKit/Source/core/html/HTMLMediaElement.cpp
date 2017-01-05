@@ -300,12 +300,12 @@ bool computeLockedPendingUserGesture(Document& document) {
   if (!document.settings())
     return false;
 
-  if (document.settings()->crossOriginMediaPlaybackRequiresUserGesture() &&
+  if (document.settings()->getCrossOriginMediaPlaybackRequiresUserGesture() &&
       isDocumentCrossOrigin(document)) {
     return true;
   }
 
-  return document.settings()->mediaPlaybackRequiresUserGesture();
+  return document.settings()->getMediaPlaybackRequiresUserGesture();
 }
 
 }  // anonymous namespace
@@ -2131,8 +2131,8 @@ WebMediaPlayer::Preload HTMLMediaElement::preloadType() const {
   // If the source scheme is requires network, force preload to 'none' on Data
   // Saver and for low end devices.
   if (document().settings() &&
-      (document().settings()->dataSaverEnabled() ||
-       document().settings()->forcePreloadNoneForMediaElements()) &&
+      (document().settings()->getDataSaverEnabled() ||
+       document().settings()->getForcePreloadNoneForMediaElements()) &&
       (m_currentSrc.protocol() != "blob" && m_currentSrc.protocol() != "data" &&
        m_currentSrc.protocol() != "file")) {
     UseCounter::count(document(),
@@ -2814,9 +2814,10 @@ void HTMLMediaElement::honorUserPreferencesForAutomaticTextTrackSelection() {
     configuration.forceEnableSubtitleOrCaptionTrack = true;
 
   Settings* settings = document().settings();
-  if (settings)
+  if (settings) {
     configuration.textTrackKindUserPreference =
-        settings->textTrackKindUserPreference();
+        settings->getTextTrackKindUserPreference();
+  }
 
   AutomaticTrackSelection trackSelection(configuration);
   trackSelection.perform(*m_textTracks);
@@ -3859,9 +3860,10 @@ bool HTMLMediaElement::isGestureNeededForPlaybackIfPendingUserGestureIsLocked()
   // - Autoplay is enabled in settings;
   if (isHTMLVideoElement() && muted() &&
       RuntimeEnabledFeatures::autoplayMutedVideosEnabled() &&
-      !(document().settings() && document().settings()->dataSaverEnabled()) &&
       !(document().settings() &&
-        document().settings()->forcePreloadNoneForMediaElements()) &&
+        document().settings()->getDataSaverEnabled()) &&
+      !(document().settings() &&
+        document().settings()->getForcePreloadNoneForMediaElements()) &&
       isAutoplayAllowedPerSettings()) {
     return false;
   }

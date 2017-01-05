@@ -107,7 +107,7 @@ BaseAudioContext::BaseAudioContext(Document* document)
   // If mediaPlaybackRequiresUserGesture is enabled, cross origin iframes will
   // require user gesture for the AudioContext to produce sound.
   if (document->settings() &&
-      document->settings()->mediaPlaybackRequiresUserGesture() &&
+      document->settings()->getMediaPlaybackRequiresUserGesture() &&
       document->frame() && document->frame()->isCrossOriginSubframe()) {
     m_autoplayStatus = AutoplayStatus::AutoplayStatusFailed;
     m_userGestureRequired = true;

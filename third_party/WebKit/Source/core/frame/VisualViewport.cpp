@@ -269,7 +269,7 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
             frameHost().page().scrollingCoordinator())
       coordinator->scrollableAreaScrollLayerDidChange(this);
 
-    if (!frameHost().settings().inertVisualViewport()) {
+    if (!frameHost().settings().getInertVisualViewport()) {
       if (Document* document = mainFrame()->document())
         document->enqueueScrollEventForNode(document);
     }
@@ -376,7 +376,7 @@ void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot) {
     // Set masks to bounds so the compositor doesn't clobber a manually
     // set inner viewport container layer size.
     m_innerViewportContainerLayer->setMasksToBounds(
-        frameHost().settings().mainFrameClipsContent());
+        frameHost().settings().getMainFrameClipsContent());
     m_innerViewportContainerLayer->setSize(FloatSize(m_size));
 
     m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
@@ -410,7 +410,7 @@ void VisualViewport::initializeScrollbars() {
     return;
 
   if (visualViewportSuppliesScrollbars() &&
-      !frameHost().settings().hideScrollbars()) {
+      !frameHost().settings().getHideScrollbars()) {
     if (!m_overlayScrollbarHorizontal->parent())
       m_innerViewportContainerLayer->addChild(
           m_overlayScrollbarHorizontal.get());
@@ -486,11 +486,11 @@ void VisualViewport::setScrollLayerOnScrollbars(WebLayer* scrollLayer) const {
 }
 
 bool VisualViewport::visualViewportSuppliesScrollbars() const {
-  return frameHost().settings().viewportEnabled();
+  return frameHost().settings().getViewportEnabled();
 }
 
 bool VisualViewport::scrollAnimatorEnabled() const {
-  return frameHost().settings().scrollAnimatorEnabled();
+  return frameHost().settings().getScrollAnimatorEnabled();
 }
 
 HostWindow* VisualViewport::getHostWindow() const {
@@ -500,7 +500,7 @@ HostWindow* VisualViewport::getHostWindow() const {
 bool VisualViewport::shouldUseIntegerScrollOffset() const {
   LocalFrame* frame = mainFrame();
   if (frame && frame->settings() &&
-      !frame->settings()->preferCompositingToLCDTextEnabled())
+      !frame->settings()->getPreferCompositingToLCDTextEnabled())
     return true;
 
   return ScrollableArea::shouldUseIntegerScrollOffset();
@@ -780,7 +780,7 @@ bool VisualViewport::shouldDisableDesktopWorkarounds() const {
   if (!mainFrame() || !mainFrame()->view())
     return false;
 
-  if (!mainFrame()->settings()->viewportEnabled())
+  if (!mainFrame()->settings()->getViewportEnabled())
     return false;
 
   // A document is considered adapted to small screen UAs if one of these holds:

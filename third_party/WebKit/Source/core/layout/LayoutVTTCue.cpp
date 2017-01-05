@@ -42,7 +42,7 @@ class SnapToLinesLayouter {
   SnapToLinesLayouter(LayoutVTTCue& cueBox, const IntRect& controlsRect)
       : m_cueBox(cueBox), m_controlsRect(controlsRect), m_margin(0.0) {
     if (Settings* settings = m_cueBox.document().settings())
-      m_margin = settings->textTrackMarginPercentage() / 100.0;
+      m_margin = settings->getTextTrackMarginPercentage() / 100.0;
   }
 
   void layout();

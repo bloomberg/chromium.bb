@@ -145,7 +145,7 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length) {
   LocalFrame* frame = document()->frame();
   Settings* settings = frame->settings();
   if (!frame->loader().client()->allowImage(
-          !settings || settings->imagesEnabled(), document()->url()))
+          !settings || settings->getImagesEnabled(), document()->url()))
     return;
 
   if (document()->cachedImageResourceDeprecated()) {
@@ -206,8 +206,8 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
       m_imageIsLoaded(false),
       m_styleCheckerSize(0),
       m_styleMouseCursorMode(Default),
-      m_shrinkToFitMode(frame()->settings()->viewportEnabled() ? Viewport
-                                                               : Desktop) {
+      m_shrinkToFitMode(frame()->settings()->getViewportEnabled() ? Viewport
+                                                                  : Desktop) {
   setCompatibilityMode(QuirksMode);
   lockCompatibilityMode();
   UseCounter::count(*this, UseCounter::ImageDocument);

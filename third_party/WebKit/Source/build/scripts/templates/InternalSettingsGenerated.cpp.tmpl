@@ -11,7 +11,7 @@ namespace blink {
 InternalSettingsGenerated::InternalSettingsGenerated(Page* page)
     : m_page(page)
     {% for setting in settings if setting.type|to_idl_type %}
-    , m_{{setting.name}}(page->settings().{{setting.name}}())
+    , m_{{setting.name}}(page->settings().get{{setting.name|upper_first}}())
     {% endfor %}
 {
 }

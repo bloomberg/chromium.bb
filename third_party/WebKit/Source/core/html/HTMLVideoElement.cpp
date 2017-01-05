@@ -54,9 +54,10 @@ using namespace HTMLNames;
 
 inline HTMLVideoElement::HTMLVideoElement(Document& document)
     : HTMLMediaElement(videoTag, document) {
-  if (document.settings())
+  if (document.settings()) {
     m_defaultPosterURL =
-        AtomicString(document.settings()->defaultVideoPosterURL());
+        AtomicString(document.settings()->getDefaultVideoPosterURL());
+  }
 }
 
 HTMLVideoElement* HTMLVideoElement::create(Document& document) {

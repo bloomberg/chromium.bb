@@ -129,7 +129,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
           &CanvasRenderingContext2D::tryRestoreContextEvent),
       m_pruneLocalFontCacheScheduled(false) {
   if (document.settings() &&
-      document.settings()->antialiasedClips2dCanvasEnabled())
+      document.settings()->getAntialiasedClips2dCanvasEnabled())
     m_clipAntialiasing = AntiAliased;
   setShouldAntialias(true);
   validateStateStack();

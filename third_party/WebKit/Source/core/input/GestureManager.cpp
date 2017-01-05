@@ -375,7 +375,7 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
   }
 
   PlatformEvent::EventType eventType = PlatformEvent::MousePressed;
-  if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
+  if (m_frame->settings() && m_frame->settings()->getShowContextMenuOnMouseUp())
     eventType = PlatformEvent::MouseReleased;
 
   PlatformMouseEvent mouseEvent(

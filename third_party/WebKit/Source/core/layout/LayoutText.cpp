@@ -84,8 +84,10 @@ class SecureTextTimer final : public TimerBase {
 
   void restartWithNewText(unsigned lastTypedCharacterOffset) {
     m_lastTypedCharacterOffset = lastTypedCharacterOffset;
-    if (Settings* settings = m_layoutText->document().settings())
-      startOneShot(settings->passwordEchoDurationInSeconds(), BLINK_FROM_HERE);
+    if (Settings* settings = m_layoutText->document().settings()) {
+      startOneShot(settings->getPasswordEchoDurationInSeconds(),
+                   BLINK_FROM_HERE);
+    }
   }
   void invalidate() { m_lastTypedCharacterOffset = -1; }
   unsigned lastTypedCharacterOffset() { return m_lastTypedCharacterOffset; }

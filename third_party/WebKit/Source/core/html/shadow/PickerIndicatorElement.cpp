@@ -159,7 +159,8 @@ Node::InsertionNotificationRequest PickerIndicatorElement::insertedInto(
 }
 
 void PickerIndicatorElement::didNotifySubtreeInsertionsToDocument() {
-  if (!document().settings() || !document().settings()->accessibilityEnabled())
+  if (!document().settings() ||
+      !document().settings()->getAccessibilityEnabled())
     return;
   // Don't make this focusable if we are in layout tests in order to avoid to
   // break existing tests.

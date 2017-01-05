@@ -51,7 +51,10 @@ void DeviceMotionController::didAddEventListener(
                                     UseCounter::DeviceMotionInsecureOrigin);
       HostsUsingFeatures::countAnyWorld(
           document(), HostsUsingFeatures::Feature::DeviceMotionInsecureHost);
-      if (document().frame()->settings()->strictPowerfulFeatureRestrictions())
+      if (document()
+              .frame()
+              ->settings()
+              ->getStrictPowerfulFeatureRestrictions())
         return;
     }
   }

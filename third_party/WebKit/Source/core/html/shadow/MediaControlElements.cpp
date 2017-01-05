@@ -665,7 +665,7 @@ bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton() {
   const KURL& url = mediaElement().currentSrc();
 
   // Check page settings to see if download is disabled.
-  if (document().page() && document().page()->settings().hideDownloadUI())
+  if (document().page() && document().page()->settings().getHideDownloadUI())
     return false;
 
   // URLs that lead to nowhere are ignored.

@@ -61,7 +61,10 @@ void DeviceOrientationController::didAddEventListener(
       HostsUsingFeatures::countAnyWorld(
           document(),
           HostsUsingFeatures::Feature::DeviceOrientationInsecureHost);
-      if (document().frame()->settings()->strictPowerfulFeatureRestrictions())
+      if (document()
+              .frame()
+              ->settings()
+              ->getStrictPowerfulFeatureRestrictions())
         return;
     }
   }

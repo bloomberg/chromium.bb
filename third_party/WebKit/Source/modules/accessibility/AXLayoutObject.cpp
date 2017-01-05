@@ -2085,7 +2085,7 @@ void AXLayoutObject::textChanged() {
     return;
 
   Settings* settings = getDocument()->settings();
-  if (settings && settings->inlineTextBoxAccessibilityEnabled() &&
+  if (settings && settings->getInlineTextBoxAccessibilityEnabled() &&
       roleValue() == StaticTextRole)
     childrenChanged();
 
@@ -2138,7 +2138,8 @@ VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const {
 
 void AXLayoutObject::addInlineTextBoxChildren(bool force) {
   Settings* settings = getDocument()->settings();
-  if (!force && (!settings || !settings->inlineTextBoxAccessibilityEnabled()))
+  if (!force &&
+      (!settings || !settings->getInlineTextBoxAccessibilityEnabled()))
     return;
 
   if (!getLayoutObject() || !getLayoutObject()->isText())

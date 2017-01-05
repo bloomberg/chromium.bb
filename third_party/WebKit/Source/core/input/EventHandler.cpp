@@ -1407,7 +1407,7 @@ bool EventHandler::isScrollbarHandlingGestures() const {
 
 bool EventHandler::shouldApplyTouchAdjustment(
     const WebGestureEvent& event) const {
-  if (m_frame->settings() && !m_frame->settings()->touchAdjustmentEnabled())
+  if (m_frame->settings() && !m_frame->settings()->getTouchAdjustmentEnabled())
     return false;
   return !event.tapAreaInRootFrame().isEmpty();
 }
@@ -1883,7 +1883,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
   // The contextmenu event is a mouse event even when invoked using the
   // keyboard.  This is required for web compatibility.
   PlatformEvent::EventType eventType = PlatformEvent::MousePressed;
-  if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
+  if (m_frame->settings() && m_frame->settings()->getShowContextMenuOnMouseUp())
     eventType = PlatformEvent::MouseReleased;
 
   PlatformMouseEvent mouseEvent(

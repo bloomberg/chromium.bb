@@ -435,7 +435,7 @@ void Element::scrollIntoView(bool alignToTop) {
     return;
 
   bool makeVisibleInVisualViewport =
-      !document().page()->settings().inertVisualViewport();
+      !document().page()->settings().getInertVisualViewport();
 
   LayoutRect bounds = boundingBox();
   // Align to the top / bottom and to the closest edge.
@@ -460,7 +460,7 @@ void Element::scrollIntoViewIfNeeded(bool centerIfNeeded) {
     return;
 
   bool makeVisibleInVisualViewport =
-      !document().page()->settings().inertVisualViewport();
+      !document().page()->settings().getInertVisualViewport();
 
   LayoutRect bounds = boundingBox();
   if (centerIfNeeded)
@@ -715,7 +715,7 @@ int Element::clientWidth() {
       if (!RuntimeEnabledFeatures::overlayScrollbarsEnabled() ||
           !document().frame()->isLocalRoot())
         document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
-      if (document().page()->settings().forceZeroLayoutHeight())
+      if (document().page()->settings().getForceZeroLayoutHeight())
         return adjustLayoutUnitForAbsoluteZoom(
                    layoutView.overflowClipRect(LayoutPoint()).width(),
                    layoutView.styleRef())
@@ -751,7 +751,7 @@ int Element::clientHeight() {
       if (!RuntimeEnabledFeatures::overlayScrollbarsEnabled() ||
           !document().frame()->isLocalRoot())
         document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
-      if (document().page()->settings().forceZeroLayoutHeight())
+      if (document().page()->settings().getForceZeroLayoutHeight())
         return adjustLayoutUnitForAbsoluteZoom(
                    layoutView.overflowClipRect(LayoutPoint()).height(),
                    layoutView.styleRef())
@@ -3451,7 +3451,7 @@ bool Element::isSpellCheckingEnabled() const {
   if (!document().page())
     return true;
 
-  return document().page()->settings().spellCheckEnabledByDefault();
+  return document().page()->settings().getSpellCheckEnabledByDefault();
 }
 
 #if DCHECK_IS_ON()

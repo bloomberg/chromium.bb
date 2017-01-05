@@ -223,7 +223,7 @@ void EventTarget::setDefaultAddEventListenerOptions(
   }
 
   if (Settings* settings = windowSettings(executingWindow())) {
-    switch (settings->passiveListenerDefault()) {
+    switch (settings->getPassiveListenerDefault()) {
       case PassiveListenerDefault::False:
         if (!options.hasPassive())
           options.setPassive(false);

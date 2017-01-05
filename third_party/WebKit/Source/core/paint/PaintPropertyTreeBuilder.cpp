@@ -157,7 +157,7 @@ void PaintPropertyTreeBuilder::updateProperties(
           frameView.userInputScrollable(VerticalScrollbar);
 
       MainThreadScrollingReasons reasons = 0;
-      if (!frameView.frame().settings()->threadedScrollingEnabled())
+      if (!frameView.frame().settings()->getThreadedScrollingEnabled())
         reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
       if (frameView.hasBackgroundAttachmentFixedObjects()) {
         reasons |=
@@ -736,7 +736,7 @@ void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(
 
 MainThreadScrollingReasons mainScrollingReasons(const LayoutObject& object) {
   MainThreadScrollingReasons reasons = 0;
-  if (!object.document().settings()->threadedScrollingEnabled())
+  if (!object.document().settings()->getThreadedScrollingEnabled())
     reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
   // Checking for descendants in the layout tree has two downsides:
   // 1) There can be more descendants in layout order than in paint order (e.g.,

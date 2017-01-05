@@ -107,7 +107,7 @@ Response InspectorRenderingAgent::setShowViewportSizeOnResize(bool show) {
 }
 
 Response InspectorRenderingAgent::compositingEnabled() {
-  if (!webViewImpl()->page()->settings().acceleratedCompositingEnabled())
+  if (!webViewImpl()->page()->settings().getAcceleratedCompositingEnabled())
     return Response::Error("Compositing mode is not supported");
   return Response::OK();
 }

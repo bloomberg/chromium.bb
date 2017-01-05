@@ -171,7 +171,7 @@ void MixedContentChecker::count(Frame* frame,
   WebMixedContent::ContextType contextType =
       WebMixedContent::contextTypeFromRequestContext(
           requestContext,
-          frame->settings()->strictMixedContentCheckingForPlugin());
+          frame->settings()->getStrictMixedContentCheckingForPlugin());
   if (contextType == WebMixedContent::ContextType::Blockable) {
     UseCounter::count(frame, UseCounter::MixedContentBlockable);
     return;
@@ -243,11 +243,11 @@ bool MixedContentChecker::shouldBlockFetch(
   // site's security UI.
   bool strictMode = mixedFrame->securityContext()->getInsecureRequestPolicy() &
                         kBlockAllMixedContent ||
-                    settings->strictMixedContentChecking();
+                    settings->getStrictMixedContentChecking();
 
   WebMixedContent::ContextType contextType =
       WebMixedContent::contextTypeFromRequestContext(
-          requestContext, settings->strictMixedContentCheckingForPlugin());
+          requestContext, settings->getStrictMixedContentCheckingForPlugin());
 
   // If we're loading the main resource of a subframe, we need to take a close
   // look at the loaded URL. If we're dealing with a CORS-enabled scheme, then
@@ -278,7 +278,7 @@ bool MixedContentChecker::shouldBlockFetch(
       // thinking that they are allowing an insecure script to run on
       // https://a.com and not realizing that they are in fact allowing an
       // insecure script on https://b.com.
-      if (!settings->allowRunningOfInsecureContent() &&
+      if (!settings->getAllowRunningOfInsecureContent() &&
           requestIsSubframeSubresource(effectiveFrame, frameType) &&
           isMixedContent(frame->securityContext()->getSecurityOrigin(), url)) {
         UseCounter::count(mixedFrame,
@@ -289,11 +289,11 @@ bool MixedContentChecker::shouldBlockFetch(
 
       bool shouldAskEmbedder =
           !strictMode && settings &&
-          (!settings->strictlyBlockBlockableMixedContent() ||
-           settings->allowRunningOfInsecureContent());
+          (!settings->getStrictlyBlockBlockableMixedContent() ||
+           settings->getAllowRunningOfInsecureContent());
       allowed = shouldAskEmbedder &&
                 client->allowRunningInsecureContent(
-                    settings && settings->allowRunningOfInsecureContent(),
+                    settings && settings->getAllowRunningOfInsecureContent(),
                     securityOrigin, url);
       if (allowed) {
         client->didRunInsecureContent(securityOrigin, url);
@@ -370,10 +370,10 @@ bool MixedContentChecker::shouldBlockWebSocket(
   // site's security UI.
   bool strictMode = mixedFrame->securityContext()->getInsecureRequestPolicy() &
                         kBlockAllMixedContent ||
-                    settings->strictMixedContentChecking();
+                    settings->getStrictMixedContentChecking();
   if (!strictMode) {
     bool allowedPerSettings =
-        settings && settings->allowRunningOfInsecureContent();
+        settings && settings->getAllowRunningOfInsecureContent();
     allowed = client->allowRunningInsecureContent(allowedPerSettings,
                                                   securityOrigin, url);
   }
@@ -474,7 +474,7 @@ void MixedContentChecker::handleCertificateError(
   FrameLoaderClient* client = frame->loader().client();
   bool strictMixedContentCheckingForPlugin =
       effectiveFrame->settings() &&
-      effectiveFrame->settings()->strictMixedContentCheckingForPlugin();
+      effectiveFrame->settings()->getStrictMixedContentCheckingForPlugin();
   WebMixedContent::ContextType contextType =
       WebMixedContent::contextTypeFromRequestContext(
           requestContext, strictMixedContentCheckingForPlugin);
@@ -509,7 +509,7 @@ WebMixedContent::ContextType MixedContentChecker::contextTypeForInspector(
 
   bool strictMixedContentCheckingForPlugin =
       mixedFrame->settings() &&
-      mixedFrame->settings()->strictMixedContentCheckingForPlugin();
+      mixedFrame->settings()->getStrictMixedContentCheckingForPlugin();
   return WebMixedContent::contextTypeFromRequestContext(
       request.requestContext(), strictMixedContentCheckingForPlugin);
 }

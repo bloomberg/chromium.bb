@@ -381,7 +381,7 @@ bool HTMLAnchorElement::isLiveLink() const {
 void HTMLAnchorElement::sendPings(const KURL& destinationURL) const {
   const AtomicString& pingValue = getAttribute(pingAttr);
   if (pingValue.isNull() || !document().settings() ||
-      !document().settings()->hyperlinkAuditingEnabled())
+      !document().settings()->getHyperlinkAuditingEnabled())
     return;
 
   UseCounter::count(document(), UseCounter::HTMLAnchorElementPingAttribute);

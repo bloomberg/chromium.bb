@@ -187,7 +187,7 @@ EditingBehavior Editor::behavior() const {
   if (!frame().settings())
     return EditingBehavior(EditingMacBehavior);
 
-  return EditingBehavior(frame().settings()->editingBehaviorType());
+  return EditingBehavior(frame().settings()->getEditingBehaviorType());
 }
 
 static EditorClient& emptyEditorClient() {
@@ -303,7 +303,7 @@ bool Editor::canDelete() const {
 
 bool Editor::smartInsertDeleteEnabled() const {
   if (Settings* settings = frame().settings())
-    return settings->smartInsertDeleteEnabled();
+    return settings->getSmartInsertDeleteEnabled();
   return false;
 }
 
@@ -314,7 +314,7 @@ bool Editor::canSmartCopyOrDelete() const {
 
 bool Editor::isSelectTrailingWhitespaceEnabled() const {
   if (Settings* settings = frame().settings())
-    return settings->selectTrailingWhitespaceEnabled();
+    return settings->getSelectTrailingWhitespaceEnabled();
   return false;
 }
 
@@ -697,7 +697,7 @@ bool Editor::canDeleteRange(const EphemeralRange& range) const {
 }
 
 void Editor::respondToChangedContents(const VisibleSelection& endingSelection) {
-  if (frame().settings() && frame().settings()->accessibilityEnabled()) {
+  if (frame().settings() && frame().settings()->getAccessibilityEnabled()) {
     Node* node = endingSelection.start().anchorNode();
     if (AXObjectCache* cache = frame().document()->existingAXObjectCache())
       cache->handleEditableTextContentChanged(node);

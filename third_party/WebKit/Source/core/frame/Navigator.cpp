@@ -67,7 +67,7 @@ bool Navigator::cookieEnabled() const {
     return false;
 
   Settings* settings = frame()->settings();
-  if (!settings || !settings->cookieEnabled())
+  if (!settings || !settings->getCookieEnabled())
     return false;
 
   return cookiesEnabled(frame()->document());

@@ -25,7 +25,7 @@ void CompositingReasonFinder::updateTriggers() {
   m_compositingTriggers = 0;
 
   Settings& settings = m_layoutView.document().page()->settings();
-  if (settings.preferCompositingToLCDTextEnabled()) {
+  if (settings.getPreferCompositingToLCDTextEnabled()) {
     m_compositingTriggers |= ScrollableInnerFrameTrigger;
     m_compositingTriggers |= OverflowScrollTrigger;
     m_compositingTriggers |= ViewportConstrainedPositionedTrigger;

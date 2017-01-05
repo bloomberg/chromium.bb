@@ -71,30 +71,34 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
       m_embedderTextAutosizingEnabled(
           webViewImpl->page()->settings().textAutosizingEnabled()),
       m_embedderDeviceScaleAdjustment(
-          webViewImpl->page()->settings().deviceScaleAdjustment()),
+          webViewImpl->page()->settings().getDeviceScaleAdjustment()),
       m_embedderPreferCompositingToLCDTextEnabled(
-          webViewImpl->page()->settings().preferCompositingToLCDTextEnabled()),
-      m_embedderViewportStyle(webViewImpl->page()->settings().viewportStyle()),
+          webViewImpl->page()
+              ->settings()
+              .getPreferCompositingToLCDTextEnabled()),
+      m_embedderViewportStyle(
+          webViewImpl->page()->settings().getViewportStyle()),
       m_embedderPluginsEnabled(
-          webViewImpl->page()->settings().pluginsEnabled()),
+          webViewImpl->page()->settings().getPluginsEnabled()),
       m_embedderAvailablePointerTypes(
-          webViewImpl->page()->settings().availablePointerTypes()),
+          webViewImpl->page()->settings().getAvailablePointerTypes()),
       m_embedderPrimaryPointerType(
-          webViewImpl->page()->settings().primaryPointerType()),
+          webViewImpl->page()->settings().getPrimaryPointerType()),
       m_embedderAvailableHoverTypes(
-          webViewImpl->page()->settings().availableHoverTypes()),
+          webViewImpl->page()->settings().getAvailableHoverTypes()),
       m_embedderPrimaryHoverType(
-          webViewImpl->page()->settings().primaryHoverType()),
+          webViewImpl->page()->settings().getPrimaryHoverType()),
       m_embedderMainFrameResizesAreOrientationChanges(
           webViewImpl->page()
               ->settings()
-              .mainFrameResizesAreOrientationChanges()),
+              .getMainFrameResizesAreOrientationChanges()),
       m_touchEventEmulationEnabled(false),
       m_doubleTapToZoomEnabled(false),
       m_originalTouchEventFeatureDetectionEnabled(false),
       m_originalDeviceSupportsTouch(false),
       m_originalMaxTouchPoints(0),
-      m_embedderScriptEnabled(webViewImpl->page()->settings().scriptEnabled()),
+      m_embedderScriptEnabled(
+          webViewImpl->page()->settings().getScriptEnabled()),
       m_scriptExecutionDisabled(false) {}
 
 DevToolsEmulator::~DevToolsEmulator() {}
@@ -454,9 +458,9 @@ void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled) {
     m_originalTouchEventFeatureDetectionEnabled =
         RuntimeEnabledFeatures::touchEventFeatureDetectionEnabled();
     m_originalDeviceSupportsTouch =
-        m_webViewImpl->page()->settings().deviceSupportsTouch();
+        m_webViewImpl->page()->settings().getDeviceSupportsTouch();
     m_originalMaxTouchPoints =
-        m_webViewImpl->page()->settings().maxTouchPoints();
+        m_webViewImpl->page()->settings().getMaxTouchPoints();
   }
   RuntimeEnabledFeatures::setTouchEventFeatureDetectionEnabled(
       enabled ? true : m_originalTouchEventFeatureDetectionEnabled);

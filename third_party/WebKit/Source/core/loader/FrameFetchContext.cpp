@@ -188,12 +188,13 @@ bool shouldDisallowFetchForMainFrameScript(ResourceRequest& request,
   const bool is2GOrLike2G =
       is2G || isConnectionEffectively2G(effectiveConnection);
 
-  return document.settings()->disallowFetchForDocWrittenScriptsInMainFrame() ||
+  return document.settings()
+             ->getDisallowFetchForDocWrittenScriptsInMainFrame() ||
          (document.settings()
-              ->disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections() &&
+              ->getDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections() &&
           is2G) ||
          (document.settings()
-              ->disallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G() &&
+              ->getDisallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G() &&
           is2GOrLike2G);
 }
 
@@ -259,7 +260,7 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request,
   if (frame()->loader().loadType() == FrameLoadTypeReload)
     request.clearHTTPHeaderField("Save-Data");
 
-  if (frame()->settings() && frame()->settings()->dataSaverEnabled())
+  if (frame()->settings() && frame()->settings()->getDataSaverEnabled())
     request.setHTTPHeaderField("Save-Data", "on");
 }
 
@@ -731,7 +732,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
   if (type == Resource::Script || type == Resource::ImportResource) {
     DCHECK(frame());
     if (!frame()->loader().client()->allowScriptFromSource(
-            !frame()->settings() || frame()->settings()->scriptEnabled(),
+            !frame()->settings() || frame()->settings()->getScriptEnabled(),
             url)) {
       frame()->loader().client()->didNotAllowScript();
       // TODO(estark): Use a different ResourceRequestBlockedReason here, since
@@ -986,7 +987,7 @@ ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(
     return priority;
 
   // If enabled, drop the priority of all resources in a subframe.
-  if (frame()->settings()->lowPriorityIframes() && !frame()->isMainFrame())
+  if (frame()->settings()->getLowPriorityIframes() && !frame()->isMainFrame())
     return ResourceLoadPriorityVeryLow;
 
   return priority;

@@ -48,7 +48,7 @@ InsertIntoTextNodeCommand::InsertIntoTextNodeCommand(Text* node,
 
 void InsertIntoTextNodeCommand::doApply(EditingState*) {
   bool passwordEchoEnabled =
-      document().settings() && document().settings()->passwordEchoEnabled();
+      document().settings() && document().settings()->getPasswordEchoEnabled();
   if (passwordEchoEnabled)
     document().updateStyleAndLayoutIgnorePendingStylesheets();
 

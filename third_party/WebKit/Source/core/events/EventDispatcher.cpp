@@ -287,7 +287,7 @@ inline void EventDispatcher::dispatchEventPostProcess(
       m_event->type() == EventTypeNames::mousedown &&
       isHTMLSelectElement(*m_node)) {
     if (Settings* settings = m_node->document().settings()) {
-      isTrustedOrClick = settings->wideViewportQuirkEnabled();
+      isTrustedOrClick = settings->getWideViewportQuirkEnabled();
     }
   }
 

@@ -252,7 +252,7 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source) {
 CSSPreloaderResourceClient::CSSPreloaderResourceClient(
     Resource* resource,
     HTMLResourcePreloader* preloader)
-    : m_policy(preloader->document()->settings()->cssExternalScannerPreload()
+    : m_policy(preloader->document()->settings()->getCSSExternalScannerPreload()
                    ? ScanAndPreload
                    : ScanOnly),
       m_preloader(preloader),

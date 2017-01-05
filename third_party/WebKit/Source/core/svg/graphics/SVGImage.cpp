@@ -584,12 +584,14 @@ Image::SizeAvailability SVGImage::dataChanged(bool allDataReceived) {
             (*Page::ordinaryPages().begin())->settings();
         page->settings().genericFontFamilySettings() =
             defaultSettings.genericFontFamilySettings();
-        page->settings().setMinimumFontSize(defaultSettings.minimumFontSize());
+        page->settings().setMinimumFontSize(
+            defaultSettings.getMinimumFontSize());
         page->settings().setMinimumLogicalFontSize(
-            defaultSettings.minimumLogicalFontSize());
-        page->settings().setDefaultFontSize(defaultSettings.defaultFontSize());
+            defaultSettings.getMinimumLogicalFontSize());
+        page->settings().setDefaultFontSize(
+            defaultSettings.getDefaultFontSize());
         page->settings().setDefaultFixedFontSize(
-            defaultSettings.defaultFixedFontSize());
+            defaultSettings.getDefaultFixedFontSize());
       }
     }
 

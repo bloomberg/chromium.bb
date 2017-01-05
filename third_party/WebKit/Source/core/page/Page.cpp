@@ -169,7 +169,7 @@ ViewportDescription Page::viewportDescription() const {
 }
 
 ScrollingCoordinator* Page::scrollingCoordinator() {
-  if (!m_scrollingCoordinator && m_settings->acceleratedCompositingEnabled())
+  if (!m_scrollingCoordinator && m_settings->getAcceleratedCompositingEnabled())
     m_scrollingCoordinator = ScrollingCoordinator::create(this);
 
   return m_scrollingCoordinator.get();
@@ -368,9 +368,9 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType) {
            frame = frame->tree().traverseNext()) {
         if (frame->isLocalFrame()) {
           toLocalFrame(frame)->document()->fetcher()->setImagesEnabled(
-              settings().imagesEnabled());
+              settings().getImagesEnabled());
           toLocalFrame(frame)->document()->fetcher()->setAutoLoadImages(
-              settings().loadsImagesAutomatically());
+              settings().getLoadsImagesAutomatically());
         }
       }
       break;
@@ -427,7 +427,7 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType) {
       }
       break;
     case SettingsDelegate::DOMWorldsChange: {
-      if (!settings().forceMainWorldInitialization())
+      if (!settings().getForceMainWorldInitialization())
         break;
       for (Frame* frame = mainFrame(); frame;
            frame = frame->tree().traverseNext()) {

@@ -631,15 +631,16 @@ void TextAutosizer::updatePageInfo() {
     // TODO(pdr): Accessibility should be moved out of the text autosizer. See:
     // crbug.com/645717.
     m_pageInfo.m_accessibilityFontScaleFactor =
-        m_document->settings()->accessibilityFontScaleFactor();
+        m_document->settings()->getAccessibilityFontScaleFactor();
 
     // If the page has a meta viewport or @viewport, don't apply the device
     // scale adjustment.
-    if (!mainFrame->document()->viewportDescription().isSpecifiedByAuthor())
+    if (!mainFrame->document()->viewportDescription().isSpecifiedByAuthor()) {
       m_pageInfo.m_deviceScaleAdjustment =
-          m_document->settings()->deviceScaleAdjustment();
-    else
+          m_document->settings()->getDeviceScaleAdjustment();
+    } else {
       m_pageInfo.m_deviceScaleAdjustment = 1.0f;
+    }
 
     // TODO(pdr): pageNeedsAutosizing should take into account whether
     // text-size-adjust is used anywhere on the page because that also needs to

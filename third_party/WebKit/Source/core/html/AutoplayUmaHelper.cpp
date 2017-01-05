@@ -79,7 +79,7 @@ void AutoplayUmaHelper::onAutoplayInitiated(AutoplaySource source) {
       RuntimeEnabledFeatures::autoplayMutedVideosEnabled()) {
     bool dataSaverEnabled =
         m_element->document().settings() &&
-        m_element->document().settings()->dataSaverEnabled();
+        m_element->document().settings()->getDataSaverEnabled();
     bool blockedBySetting = !m_element->isAutoplayAllowedPerSettings();
 
     if (dataSaverEnabled && blockedBySetting) {

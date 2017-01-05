@@ -2472,7 +2472,7 @@ RespectImageOrientationEnum LayoutObject::shouldRespectImageOrientation(
     return DoNotRespectImageOrientation;
 
   if (layoutObject->document().settings() &&
-      layoutObject->document().settings()->shouldRespectImageOrientation())
+      layoutObject->document().settings()->getShouldRespectImageOrientation())
     return RespectImageOrientation;
 
   if (layoutObject->style() &&
@@ -3126,7 +3126,7 @@ bool LayoutObject::willRenderImage() {
 bool LayoutObject::getImageAnimationPolicy(ImageAnimationPolicy& policy) {
   if (!document().settings())
     return false;
-  policy = document().settings()->imageAnimationPolicy();
+  policy = document().settings()->getImageAnimationPolicy();
   return true;
 }
 

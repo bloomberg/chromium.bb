@@ -147,7 +147,7 @@ bool PaintLayerCompositor::rootShouldAlwaysComposite() const {
 void PaintLayerCompositor::updateAcceleratedCompositingSettings() {
   m_compositingReasonFinder.updateTriggers();
   m_hasAcceleratedCompositing =
-      m_layoutView.document().settings()->acceleratedCompositingEnabled();
+      m_layoutView.document().settings()->getAcceleratedCompositingEnabled();
   m_rootShouldAlwaysCompositeDirty = true;
   if (m_rootLayerAttachment != RootLayerUnattached)
     rootLayer()->setNeedsCompositingInputsUpdate();
@@ -156,7 +156,7 @@ void PaintLayerCompositor::updateAcceleratedCompositingSettings() {
 bool PaintLayerCompositor::preferCompositingToLCDTextEnabled() const {
   return m_layoutView.document()
       .settings()
-      ->preferCompositingToLCDTextEnabled();
+      ->getPreferCompositingToLCDTextEnabled();
 }
 
 static LayoutVideo* findFullscreenVideoLayoutObject(Document& document) {
@@ -950,7 +950,7 @@ Scrollbar* PaintLayerCompositor::graphicsLayerToScrollbar(
 
 bool PaintLayerCompositor::supportsFixedRootBackgroundCompositing() const {
   if (Settings* settings = m_layoutView.document().settings())
-    return settings->preferCompositingToLCDTextEnabled();
+    return settings->getPreferCompositingToLCDTextEnabled();
   return false;
 }
 

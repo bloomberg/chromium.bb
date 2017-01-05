@@ -137,7 +137,7 @@ void ProgressTracker::willStartLoading(unsigned long identifier,
   // on parsing completion, which corresponds to finishing parsing. For those
   // policies, don't consider resource load that start after DOMContentLoaded
   // finishes.
-  if (m_frame->settings()->progressBarCompletion() !=
+  if (m_frame->settings()->getProgressBarCompletion() !=
           ProgressBarCompletion::LoadEvent &&
       (m_finishedParsing || priority < ResourceLoadPriorityHigh))
     return;
@@ -187,12 +187,12 @@ void ProgressTracker::maybeSendProgress() {
   DCHECK_GE(estimatedBytesForPendingRequests, bytesReceived);
 
   if (m_finishedParsing) {
-    if (m_frame->settings()->progressBarCompletion() ==
+    if (m_frame->settings()->getProgressBarCompletion() ==
         ProgressBarCompletion::DOMContentLoaded) {
       sendFinalProgress();
       return;
     }
-    if (m_frame->settings()->progressBarCompletion() !=
+    if (m_frame->settings()->getProgressBarCompletion() !=
             ProgressBarCompletion::LoadEvent &&
         estimatedBytesForPendingRequests == bytesReceived) {
       sendFinalProgress();

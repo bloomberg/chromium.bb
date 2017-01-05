@@ -759,7 +759,7 @@ void WebFrameWidgetImpl::handleMouseDown(LocalFrame& mainFrame,
         mainFrame.eventHandler().takeLastMouseDownGestureToken();
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.
-  if (!page()->settings().showContextMenuOnMouseUp()) {
+  if (!page()->settings().getShowContextMenuOnMouseUp()) {
 #if OS(MACOSX)
     if (event.button == WebMouseEvent::Button::Right ||
         (event.button == WebMouseEvent::Button::Left &&
@@ -810,7 +810,7 @@ void WebFrameWidgetImpl::handleMouseUp(LocalFrame& mainFrame,
                                        const WebMouseEvent& event) {
   PageWidgetEventHandler::handleMouseUp(mainFrame, event);
 
-  if (page()->settings().showContextMenuOnMouseUp()) {
+  if (page()->settings().getShowContextMenuOnMouseUp()) {
     // Dispatch the contextmenu event regardless of if the click was swallowed.
     // On Mac/Linux, we handle it on mouse down, not up.
     if (event.button == WebMouseEvent::Button::Right)
