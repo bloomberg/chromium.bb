@@ -1216,7 +1216,3 @@ void WebsiteSettingsUIBridge::SetPermissionInfo(
   [bubble_controller_ setPermissionInfo:permission_info_list
                        andChosenObjects:std::move(chosen_object_info_list)];
 }
-
-void WebsiteSettingsUIBridge::SetSelectedTab(TabId tab_id) {
-  // TODO(lgarron): Remove this from the interface. (crbug.com/571533)
-}

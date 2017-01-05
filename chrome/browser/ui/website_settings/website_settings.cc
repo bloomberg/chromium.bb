@@ -666,32 +666,6 @@ void WebsiteSettings::Init(const GURL& url,
   // Only show an SSL decision revoke button if the user has chosen to bypass
   // SSL host errors for this host in the past.
   show_ssl_decision_revoke_button_ = delegate->HasAllowException(url.host());
-
-  // By default select the Permissions Tab that displays all the site
-  // permissions. In case of a connection error or an issue with the certificate
-  // presented by the website, select the Connection Tab to draw the user's
-  // attention to the issue. If the site does not provide a certificate because
-  // it was loaded over an unencrypted connection, don't select the Connection
-  // Tab.
-  WebsiteSettingsUI::TabId tab_id = WebsiteSettingsUI::TAB_ID_PERMISSIONS;
-  if (site_connection_status_ == SITE_CONNECTION_STATUS_ENCRYPTED_ERROR ||
-      site_connection_status_ ==
-          SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE ||
-      site_connection_status_ ==
-          SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE ||
-      site_identity_status_ == SITE_IDENTITY_STATUS_ERROR ||
-      site_identity_status_ == SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN ||
-      site_identity_status_ == SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT ||
-      site_identity_status_ ==
-          SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR ||
-      site_identity_status_ ==
-          SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR) {
-    tab_id = WebsiteSettingsUI::TAB_ID_CONNECTION;
-    RecordWebsiteSettingsAction(
-      WEBSITE_SETTINGS_CONNECTION_TAB_SHOWN_IMMEDIATELY);
-  }
-
-  ui_->SetSelectedTab(tab_id);
 }
 
 void WebsiteSettings::PresentSitePermissions() {

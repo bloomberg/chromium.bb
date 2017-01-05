@@ -141,7 +141,6 @@ class WebsiteSettingsUIBridge : public content::WebContentsObserver,
   void SetPermissionInfo(const PermissionInfoList& permission_info_list,
                          ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
-  void SetSelectedTab(TabId tab_id) override;
 
  private:
   // The WebContents the bubble UI is attached to.

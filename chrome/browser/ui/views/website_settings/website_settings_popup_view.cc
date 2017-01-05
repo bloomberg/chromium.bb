@@ -717,10 +717,6 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   SizeToContents();
 }
 
-void WebsiteSettingsPopupView::SetSelectedTab(TabId tab_id) {
-  // TODO(lgarron): Remove this method. (https://crbug.com/571533)
-}
-
 views::View* WebsiteSettingsPopupView::CreateSiteSettingsView() {
   views::View* site_settings_view = new views::View();
   views::BoxLayout* box_layout =

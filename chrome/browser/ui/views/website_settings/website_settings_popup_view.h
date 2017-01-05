@@ -129,8 +129,6 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   void SetPermissionInfo(const PermissionInfoList& permission_info_list,
                          ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
-  // TODO(lgarron): Remove SetSelectedTab() with https://crbug.com/571533
-  void SetSelectedTab(TabId tab_id) override;
 
   // Creates the contents of the |site_settings_view_|. The ownership of the
   // returned view is transferred to the caller.

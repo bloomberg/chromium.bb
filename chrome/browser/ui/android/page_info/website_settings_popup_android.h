@@ -46,7 +46,6 @@ class WebsiteSettingsPopupAndroid : public WebsiteSettingsUI {
   void SetPermissionInfo(const PermissionInfoList& permission_info_list,
                          ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
-  void SetSelectedTab(WebsiteSettingsUI::TabId tab_id) override;
 
   static bool RegisterWebsiteSettingsPopupAndroid(JNIEnv* env);
 

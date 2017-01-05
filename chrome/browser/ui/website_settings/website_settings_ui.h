@@ -196,9 +196,6 @@ class WebsiteSettingsUI {
 
   // Sets site identity information.
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) = 0;
-
-  // Selects the tab with the given |tab_id|.
-  virtual void SetSelectedTab(TabId tab_id) = 0;
 };
 
 typedef WebsiteSettingsUI::CookieInfoList CookieInfoList;

@@ -148,12 +148,6 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
   Java_WebsiteSettingsPopup_updatePermissionDisplay(env, popup_jobject_);
 }
 
-void WebsiteSettingsPopupAndroid::SetSelectedTab(
-    WebsiteSettingsUI::TabId tab_id) {
-  // There's no tab UI on Android - only connection info is shown.
-  NOTIMPLEMENTED();
-}
-
 // static
 bool WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid(
     JNIEnv* env) {

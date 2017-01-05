@@ -74,7 +74,6 @@ class MockWebsiteSettingsUI : public WebsiteSettingsUI {
   MOCK_METHOD1(SetCookieInfo, void(const CookieInfoList& cookie_info_list));
   MOCK_METHOD0(SetPermissionInfoStub, void());
   MOCK_METHOD1(SetIdentityInfo, void(const IdentityInfo& identity_info));
-  MOCK_METHOD1(SetSelectedTab, void(TabId tab_id));
 
   void SetPermissionInfo(
       const PermissionInfoList& permission_info_list,
@@ -226,8 +225,6 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
 #else
   EXPECT_CALL(*mock_ui(), SetPermissionInfoStub()).Times(7);
 #endif
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(
-      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   // Execute code under tests.
   website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_POPUPS,
@@ -272,8 +269,6 @@ TEST_F(WebsiteSettingsTest, OnSiteDataAccessed) {
   EXPECT_CALL(*mock_ui(), SetPermissionInfoStub());
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_)).Times(2);
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(
-      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   website_settings()->OnSiteDataAccessed();
 }
@@ -287,8 +282,6 @@ TEST_F(WebsiteSettingsTest, OnChosenObjectDeleted) {
 
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
-  EXPECT_CALL(*mock_ui(),
-              SetSelectedTab(WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   // Access WebsiteSettings so that SetPermissionInfo is called once to populate
   // |last_chosen_object_info_|. It will be called again by
@@ -310,8 +303,6 @@ TEST_F(WebsiteSettingsTest, Malware) {
   security_info_.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(),
-              SetSelectedTab(WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED,
             website_settings()->site_connection_status());
@@ -324,8 +315,6 @@ TEST_F(WebsiteSettingsTest, SocialEngineering) {
   security_info_.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(),
-              SetSelectedTab(WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED,
             website_settings()->site_connection_status());
@@ -338,8 +327,6 @@ TEST_F(WebsiteSettingsTest, UnwantedSoftware) {
   security_info_.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE;
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(),
-              SetSelectedTab(WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED,
             website_settings()->site_connection_status());
@@ -349,8 +336,6 @@ TEST_F(WebsiteSettingsTest, UnwantedSoftware) {
 
 TEST_F(WebsiteSettingsTest, HTTPConnection) {
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(
-      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED,
             website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT,
@@ -370,8 +355,6 @@ TEST_F(WebsiteSettingsTest, HTTPSConnection) {
   security_info_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(
-      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
             website_settings()->site_connection_status());
@@ -508,8 +491,6 @@ TEST_F(WebsiteSettingsTest, InsecureContent) {
     security_info_.connection_status = status;
 
     SetDefaultUIExpectations(mock_ui());
-    EXPECT_CALL(*mock_ui(),
-                SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
     EXPECT_EQ(test.expected_site_connection_status,
               website_settings()->site_connection_status());
@@ -541,7 +522,6 @@ TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
   security_info_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
   EXPECT_EQ(
       WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
@@ -564,7 +544,6 @@ TEST_F(WebsiteSettingsTest, HTTPSRevocationError) {
   security_info_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
             website_settings()->site_connection_status());
@@ -585,7 +564,6 @@ TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
   security_info_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED_ERROR,
             website_settings()->site_connection_status());
@@ -607,7 +585,6 @@ TEST_F(WebsiteSettingsTest, HTTPSPolicyCertConnection) {
   security_info_.connection_status = status;
 
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
             website_settings()->site_connection_status());
@@ -630,7 +607,6 @@ TEST_F(WebsiteSettingsTest, HTTPSSHA1Minor) {
       security_state::DEPRECATED_SHA1_MINOR;
 
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
             website_settings()->site_connection_status());
@@ -657,7 +633,6 @@ TEST_F(WebsiteSettingsTest, HTTPSSHA1Major) {
       security_state::DEPRECATED_SHA1_MAJOR;
 
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION));
 
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
             website_settings()->site_connection_status());
@@ -673,8 +648,6 @@ TEST_F(WebsiteSettingsTest, HTTPSSHA1Major) {
 #if !defined(OS_ANDROID)
 TEST_F(WebsiteSettingsTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(
-      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
   EXPECT_EQ(0u, infobar_service()->infobar_count());
   website_settings()->OnUIClosing();
   EXPECT_EQ(0u, infobar_service()->infobar_count());
@@ -686,8 +659,6 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
 
   EXPECT_CALL(*mock_ui(), SetPermissionInfoStub()).Times(2);
 
-  EXPECT_CALL(*mock_ui(), SetSelectedTab(
-      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
   EXPECT_EQ(0u, infobar_service()->infobar_count());
   website_settings()->OnSitePermissionChanged(
       CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
@@ -762,7 +733,7 @@ TEST_F(WebsiteSettingsTest, SecurityLevelMetrics) {
 
     website_settings()->RecordWebsiteSettingsAction(
         WebsiteSettings::WebsiteSettingsAction::
-            WEBSITE_SETTINGS_PERMISSIONS_TAB_SELECTED);
+            WEBSITE_SETTINGS_OPENED);
 
     // RecordWebsiteSettingsAction() is called during WebsiteSettings
     // creation in addition to the explicit RecordWebsiteSettingsAction()
@@ -770,19 +741,11 @@ TEST_F(WebsiteSettingsTest, SecurityLevelMetrics) {
     histograms.ExpectTotalCount(kGenericHistogram, 2);
     histograms.ExpectBucketCount(
         kGenericHistogram,
-        WebsiteSettings::WebsiteSettingsAction::WEBSITE_SETTINGS_OPENED, 1);
-    histograms.ExpectBucketCount(kGenericHistogram,
-                                 WebsiteSettings::WebsiteSettingsAction::
-                                     WEBSITE_SETTINGS_PERMISSIONS_TAB_SELECTED,
-                                 1);
+        WebsiteSettings::WebsiteSettingsAction::WEBSITE_SETTINGS_OPENED, 2);
 
     histograms.ExpectTotalCount(test.histogram_name, 2);
     histograms.ExpectBucketCount(
         test.histogram_name,
-        WebsiteSettings::WebsiteSettingsAction::WEBSITE_SETTINGS_OPENED, 1);
-    histograms.ExpectBucketCount(test.histogram_name,
-                                 WebsiteSettings::WebsiteSettingsAction::
-                                     WEBSITE_SETTINGS_PERMISSIONS_TAB_SELECTED,
-                                 1);
+        WebsiteSettings::WebsiteSettingsAction::WEBSITE_SETTINGS_OPENED, 2);
   }
 }

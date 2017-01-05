@@ -156,12 +156,6 @@ void ConnectionInfoPopupAndroid::SetPermissionInfo(
   NOTIMPLEMENTED();
 }
 
-void ConnectionInfoPopupAndroid::SetSelectedTab(
-    WebsiteSettingsUI::TabId tab_id) {
-  // There's no tab UI on Android - only connection info is shown.
-  NOTIMPLEMENTED();
-}
-
 // static
 bool
 ConnectionInfoPopupAndroid::RegisterConnectionInfoPopupAndroid(
