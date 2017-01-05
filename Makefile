@@ -67,6 +67,7 @@ SRC_RESOURCES= \
 	src/images/2x/camera_button_multi.png \
 	src/images/2x/camera_button_picture.png \
 	src/images/2x/camera_button_timer.png \
+	src/images/2x/camera_button_toggle.png \
 	src/images/2x/camera_button_video.png \
 	src/images/2x/gallery_button_back.png \
 	src/images/2x/gallery_button_delete.png \
@@ -87,6 +88,7 @@ SRC_RESOURCES= \
 	src/images/camera_button_multi.png \
 	src/images/camera_button_picture.png \
 	src/images/camera_button_timer.png \
+	src/images/camera_button_toggle.png \
 	src/images/camera_button_video.png \
 	src/images/gallery_button_back.png \
 	src/images/gallery_button_delete.png \

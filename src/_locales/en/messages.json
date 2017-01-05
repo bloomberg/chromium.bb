@@ -181,6 +181,10 @@
     "message": "Toggle multi-shot",
     "description": "Label for the button to toggle the multi-shot feature."
   },
+  "toggleCameraButton": {
+    "message": "Toggle camera",
+    "description": "Label for the button to toggle the camera."
+  },
   "toggleMirrorButton": {
     "message": "Toggle mirroring",
     "description": "Label for the button to toggle the preview mirroring."
