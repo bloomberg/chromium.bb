@@ -17,7 +17,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -27,7 +26,6 @@
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
-#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/switches.h"
@@ -147,18 +145,7 @@ std::vector<ContentSuggestion> ConvertToContentSuggestions(
     if (!snippet->is_complete()) {
       continue;
     }
-    GURL url = snippet->url();
-    if (base::FeatureList::IsEnabled(kPreferAmpUrlsFeature) &&
-        !snippet->amp_url().is_empty()) {
-      url = snippet->amp_url();
-    }
-    ContentSuggestion suggestion(category, snippet->id(), url);
-    suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
-    suggestion.set_snippet_text(base::UTF8ToUTF16(snippet->snippet()));
-    suggestion.set_publish_date(snippet->publish_date());
-    suggestion.set_publisher_name(base::UTF8ToUTF16(snippet->publisher_name()));
-    suggestion.set_score(snippet->score());
-    result.emplace_back(std::move(suggestion));
+    result.emplace_back(snippet->ToContentSuggestion(category));
   }
   return result;
 }

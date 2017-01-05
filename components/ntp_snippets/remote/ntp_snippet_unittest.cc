@@ -8,6 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,6 +18,7 @@ namespace ntp_snippets {
 namespace {
 
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::IsNull;
 using ::testing::NotNull;
 
@@ -44,7 +46,11 @@ TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {
       "  \"imageUrl\" : \"http://localhost/foobar.jpg\","
       "  \"ampUrl\" : \"http://localhost/amp\","
       "  \"faviconUrl\" : \"http://localhost/favicon.ico\", "
-      "  \"score\": 9001\n"
+      "  \"score\": 9001,\n"
+      "  \"notificationInfo\": {\n"
+      "    \"shouldNotify\": true,"
+      "    \"deadline\": \"2016-06-30T13:01:37.000Z\"\n"
+      "  }\n"
       "}";
   auto snippet = SnippetFromContentSuggestionJSON(kJsonStr);
   ASSERT_THAT(snippet, NotNull());
@@ -62,6 +68,11 @@ TEST(NTPSnippetTest, FromChromeContentSuggestionsDictionary) {
   EXPECT_EQ(snippet->publisher_name(), "Foo News");
   EXPECT_EQ(snippet->url(), GURL("http://localhost/foobar"));
   EXPECT_EQ(snippet->amp_url(), GURL("http://localhost/amp"));
+
+  EXPECT_TRUE(snippet->should_notify());
+  auto notification_duration =
+      snippet->notification_deadline() - snippet->publish_date();
+  EXPECT_EQ(7200.0f, notification_duration.InSecondsF());
 }
 
 std::unique_ptr<NTPSnippet> SnippetFromChromeReaderDict(
@@ -75,7 +86,8 @@ std::unique_ptr<NTPSnippet> SnippetFromChromeReaderDict(
 const char kChromeReaderCreationTimestamp[] = "1234567890";
 const char kChromeReaderExpiryTimestamp[] = "2345678901";
 
-std::unique_ptr<base::DictionaryValue> SnippetWithTwoSources() {
+// Old form, from chromereader-pa.googleapis.com. Two sources.
+std::unique_ptr<base::DictionaryValue> ChromeReaderSnippetWithTwoSources() {
   const std::string kJsonStr = base::StringPrintf(
       "{\n"
       "  \"contentInfo\": {\n"
@@ -112,7 +124,8 @@ std::unique_ptr<base::DictionaryValue> SnippetWithTwoSources() {
 }
 
 TEST(NTPSnippetTest, TestMultipleSources) {
-  auto snippet = SnippetFromChromeReaderDict(SnippetWithTwoSources());
+  auto snippet =
+      SnippetFromChromeReaderDict(ChromeReaderSnippetWithTwoSources());
   ASSERT_THAT(snippet, NotNull());
 
   // Expect the first source to be chosen.
@@ -125,7 +138,7 @@ TEST(NTPSnippetTest, TestMultipleSources) {
 TEST(NTPSnippetTest, TestMultipleIncompleteSources1) {
   // Set Source 2 to have no AMP url, and Source 1 to have no publisher name
   // Source 2 should win since we favor publisher name over amp url
-  auto dict = SnippetWithTwoSources();
+  auto dict = ChromeReaderSnippetWithTwoSources();
   base::ListValue* sources;
   ASSERT_TRUE(dict->GetList("contentInfo.sourceCorpusInfo", &sources));
   base::DictionaryValue* source;
@@ -146,7 +159,7 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources1) {
 TEST(NTPSnippetTest, TestMultipleIncompleteSources2) {
   // Set Source 1 to have no AMP url, and Source 2 to have no publisher name
   // Source 1 should win in this case since we prefer publisher name to AMP url
-  auto dict = SnippetWithTwoSources();
+  auto dict = ChromeReaderSnippetWithTwoSources();
   base::ListValue* sources;
   ASSERT_TRUE(dict->GetList("contentInfo.sourceCorpusInfo", &sources));
   base::DictionaryValue* source;
@@ -168,7 +181,7 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources3) {
   // Set source 1 to have no AMP url and no source, and source 2 to only have
   // amp url. There should be no snippets since we only add sources we consider
   // complete
-  auto dict = SnippetWithTwoSources();
+  auto dict = ChromeReaderSnippetWithTwoSources();
   base::ListValue* sources;
   ASSERT_TRUE(dict->GetList("contentInfo.sourceCorpusInfo", &sources));
   base::DictionaryValue* source;
@@ -184,7 +197,7 @@ TEST(NTPSnippetTest, TestMultipleIncompleteSources3) {
 }
 
 TEST(NTPSnippetTest, ShouldFillInCreation) {
-  auto dict = SnippetWithTwoSources();
+  auto dict = ChromeReaderSnippetWithTwoSources();
   ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
   ASSERT_THAT(snippet, NotNull());
@@ -203,7 +216,7 @@ TEST(NTPSnippetTest, ShouldFillInCreation) {
 }
 
 TEST(NTPSnippetTest, ShouldFillInExpiry) {
-  auto dict = SnippetWithTwoSources();
+  auto dict = ChromeReaderSnippetWithTwoSources();
   ASSERT_TRUE(dict->Remove("contentInfo.expiryTimestampSec", nullptr));
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
   ASSERT_THAT(snippet, NotNull());
@@ -219,7 +232,7 @@ TEST(NTPSnippetTest, ShouldFillInExpiry) {
 }
 
 TEST(NTPSnippetTest, ShouldFillInCreationAndExpiry) {
-  auto dict = SnippetWithTwoSources();
+  auto dict = ChromeReaderSnippetWithTwoSources();
   ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
   ASSERT_TRUE(dict->Remove("contentInfo.expiryTimestampSec", nullptr));
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
@@ -240,7 +253,7 @@ TEST(NTPSnippetTest, ShouldFillInCreationAndExpiry) {
 }
 
 TEST(NTPSnippetTest, ShouldNotOverwriteExpiry) {
-  auto dict = SnippetWithTwoSources();
+  auto dict = ChromeReaderSnippetWithTwoSources();
   ASSERT_TRUE(dict->Remove("contentInfo.creationTimestampSec", nullptr));
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
   ASSERT_THAT(snippet, NotNull());
@@ -252,7 +265,8 @@ TEST(NTPSnippetTest, ShouldNotOverwriteExpiry) {
             NTPSnippet::TimeFromJsonString(kChromeReaderExpiryTimestamp));
 }
 
-std::unique_ptr<base::DictionaryValue> SnippetWithThreeSources() {
+// Old form, from chromereader-pa.googleapis.com. Three sources.
+std::unique_ptr<base::DictionaryValue> ChromeReaderSnippetWithThreeSources() {
   const std::string kJsonStr = base::StringPrintf(
       "{\n"
       "  \"contentInfo\": {\n"
@@ -296,7 +310,7 @@ std::unique_ptr<base::DictionaryValue> SnippetWithThreeSources() {
 
 TEST(NTPSnippetTest, TestMultipleCompleteSources1) {
   // Test 2 complete sources, we should choose the first complete source
-  auto dict = SnippetWithThreeSources();
+  auto dict = ChromeReaderSnippetWithThreeSources();
   base::ListValue* sources;
   ASSERT_TRUE(dict->GetList("contentInfo.sourceCorpusInfo", &sources));
   base::DictionaryValue* source;
@@ -317,7 +331,7 @@ TEST(NTPSnippetTest, TestMultipleCompleteSources1) {
 
 TEST(NTPSnippetTest, TestMultipleCompleteSources2) {
   // Test 2 complete sources, we should choose the first complete source
-  auto dict = SnippetWithThreeSources();
+  auto dict = ChromeReaderSnippetWithThreeSources();
   base::ListValue* sources;
   ASSERT_TRUE(dict->GetList("contentInfo.sourceCorpusInfo", &sources));
   base::DictionaryValue* source;
@@ -335,7 +349,7 @@ TEST(NTPSnippetTest, TestMultipleCompleteSources2) {
 
 TEST(NTPSnippetTest, TestMultipleCompleteSources3) {
   // Test 3 complete sources, we should choose the first complete source
-  auto dict = SnippetWithThreeSources();
+  auto dict = ChromeReaderSnippetWithThreeSources();
   auto snippet = SnippetFromChromeReaderDict(std::move(dict));
   ASSERT_THAT(snippet, NotNull());
 
@@ -397,6 +411,115 @@ TEST(NTPSnippetTest, CreateFromProtoToProtoRoundtrip) {
   proto.SerializeToString(&proto_serialized);
   snippet->ToProto().SerializeToString(&round_tripped_serialized);
   EXPECT_EQ(proto_serialized, round_tripped_serialized);
+}
+
+// New form, from chromecontentsuggestions-pa.googleapis.com.
+std::unique_ptr<base::DictionaryValue> ContentSuggestionSnippet() {
+  const std::string kJsonStr =
+      "{"
+      "  \"ids\" : [\"http://localhost/foobar\"],"
+      "  \"title\" : \"Foo Barred from Baz\","
+      "  \"snippet\" : \"...\","
+      "  \"fullPageUrl\" : \"http://localhost/foobar\","
+      "  \"creationTime\" : \"2016-06-30T11:01:37.000Z\","
+      "  \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
+      "  \"attribution\" : \"Foo News\","
+      "  \"imageUrl\" : \"http://localhost/foobar.jpg\","
+      "  \"ampUrl\" : \"http://localhost/amp\","
+      "  \"faviconUrl\" : \"http://localhost/favicon.ico\", "
+      "  \"score\": 9001\n"
+      "}";
+  auto json_value = base::JSONReader::Read(kJsonStr);
+  base::DictionaryValue* json_dict;
+  CHECK(json_value->GetAsDictionary(&json_dict));
+  return json_dict->CreateDeepCopy();
+}
+
+TEST(NTPSnippetTest, NotifcationInfoAllSpecified) {
+  auto json = ContentSuggestionSnippet();
+  json->SetBoolean("notificationInfo.shouldNotify", true);
+  json->SetString("notificationInfo.deadline", "2016-06-30T13:01:37.000Z");
+  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  EXPECT_TRUE(snippet->should_notify());
+  EXPECT_EQ(7200.0f,
+            (snippet->notification_deadline() - snippet->publish_date())
+                .InSecondsF());
+}
+
+TEST(NTPSnippetTest, NotificationInfoDeadlineInvalid) {
+  auto json = ContentSuggestionSnippet();
+  json->SetBoolean("notificationInfo.shouldNotify", true);
+  json->SetInteger("notificationInfo.notificationDeadline", 0);
+  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  EXPECT_TRUE(snippet->should_notify());
+  EXPECT_EQ(base::Time::Max(), snippet->notification_deadline());
+}
+
+TEST(NTPSnippetTest, NotificationInfoDeadlineAbsent) {
+  auto json = ContentSuggestionSnippet();
+  json->SetBoolean("notificationInfo.shouldNotify", true);
+  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  EXPECT_TRUE(snippet->should_notify());
+  EXPECT_EQ(base::Time::Max(), snippet->notification_deadline());
+}
+
+TEST(NTPSnippetTest, NotificationInfoShouldNotifyInvalid) {
+  auto json = ContentSuggestionSnippet();
+  json->SetString("notificationInfo.shouldNotify", "non-bool");
+  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  EXPECT_FALSE(snippet->should_notify());
+}
+
+TEST(NTPSnippetTest, NotificationInfoAbsent) {
+  auto json = ContentSuggestionSnippet();
+  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  EXPECT_FALSE(snippet->should_notify());
+}
+
+TEST(NTPSnippetTest, ToContentSuggestion) {
+  auto json = ContentSuggestionSnippet();
+  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  ASSERT_THAT(snippet, NotNull());
+  ContentSuggestion sugg = snippet->ToContentSuggestion(
+      Category::FromKnownCategory(KnownCategories::ARTICLES));
+
+  EXPECT_THAT(sugg.id().category(),
+              Eq(Category::FromKnownCategory(KnownCategories::ARTICLES)));
+  EXPECT_THAT(sugg.id().id_within_category(), Eq("http://localhost/foobar"));
+  EXPECT_THAT(sugg.url(), Eq(GURL("http://localhost/amp")));
+  EXPECT_THAT(sugg.title(), Eq(base::UTF8ToUTF16("Foo Barred from Baz")));
+  EXPECT_THAT(sugg.snippet_text(), Eq(base::UTF8ToUTF16("...")));
+  EXPECT_THAT(sugg.publish_date().ToJavaTime(), Eq(1467284497000));
+  EXPECT_THAT(sugg.publisher_name(), Eq(base::UTF8ToUTF16("Foo News")));
+  EXPECT_THAT(sugg.score(), Eq(9001));
+  EXPECT_THAT(sugg.download_suggestion_extra(), IsNull());
+  EXPECT_THAT(sugg.recent_tab_suggestion_extra(), IsNull());
+  EXPECT_THAT(sugg.notification_extra(), IsNull());
+}
+
+TEST(NTPSnippetTest, ToContentSuggestionWithNotificationInfo) {
+  auto json = ContentSuggestionSnippet();
+  json->SetBoolean("notificationInfo.shouldNotify", true);
+  json->SetString("notificationInfo.deadline", "2016-06-30T13:01:37.000Z");
+  auto snippet = NTPSnippet::CreateFromContentSuggestionsDictionary(*json, 0);
+  ASSERT_THAT(snippet, NotNull());
+  ContentSuggestion sugg = snippet->ToContentSuggestion(
+      Category::FromKnownCategory(KnownCategories::ARTICLES));
+
+  EXPECT_THAT(sugg.id().category(),
+              Eq(Category::FromKnownCategory(KnownCategories::ARTICLES)));
+  EXPECT_THAT(sugg.id().id_within_category(), Eq("http://localhost/foobar"));
+  EXPECT_THAT(sugg.url(), Eq(GURL("http://localhost/amp")));
+  EXPECT_THAT(sugg.title(), Eq(base::UTF8ToUTF16("Foo Barred from Baz")));
+  EXPECT_THAT(sugg.snippet_text(), Eq(base::UTF8ToUTF16("...")));
+  EXPECT_THAT(sugg.publish_date().ToJavaTime(), Eq(1467284497000));
+  EXPECT_THAT(sugg.publisher_name(), Eq(base::UTF8ToUTF16("Foo News")));
+  EXPECT_THAT(sugg.score(), Eq(9001));
+  EXPECT_THAT(sugg.download_suggestion_extra(), IsNull());
+  EXPECT_THAT(sugg.recent_tab_suggestion_extra(), IsNull());
+  ASSERT_THAT(sugg.notification_extra(), NotNull());
+  EXPECT_THAT(sugg.notification_extra()->deadline.ToJavaTime(),
+              Eq(1467291697000));
 }
 
 }  // namespace

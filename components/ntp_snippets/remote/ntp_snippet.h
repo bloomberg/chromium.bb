@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/ntp_snippets/content_suggestion.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -61,6 +62,9 @@ class NTPSnippet {
   // Creates a protocol buffer corresponding to this snippet, for persisting.
   SnippetProto ToProto() const;
 
+  // Coverts to general content suggestion form
+  ContentSuggestion ToContentSuggestion(Category category) const;
+
   // Returns all ids of the snippet.
   const std::vector<std::string>& GetAllIDs() const { return ids_; }
 
@@ -105,6 +109,9 @@ class NTPSnippet {
 
   float score() const { return score_; }
 
+  bool should_notify() const { return should_notify_; }
+  base::Time notification_deadline() const { return notification_deadline_; }
+
   bool is_dismissed() const { return is_dismissed_; }
   void set_dismissed(bool dismissed) { is_dismissed_ = dismissed; }
 
@@ -139,6 +146,9 @@ class NTPSnippet {
   float score_;
   bool is_dismissed_;
   int remote_category_id_;
+
+  bool should_notify_;
+  base::Time notification_deadline_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippet);
 };

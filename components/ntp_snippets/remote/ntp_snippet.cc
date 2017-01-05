@@ -4,11 +4,14 @@
 
 #include "components/ntp_snippets/remote/ntp_snippet.h"
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/ntp_snippets/category.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 
 namespace {
@@ -85,7 +88,8 @@ NTPSnippet::NTPSnippet(const std::vector<std::string>& ids,
     : ids_(ids),
       score_(0),
       is_dismissed_(false),
-      remote_category_id_(remote_category_id) {}
+      remote_category_id_(remote_category_id),
+      should_notify_(false) {}
 
 NTPSnippet::~NTPSnippet() = default;
 
@@ -246,6 +250,18 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
     snippet->score_ = score;
   }
 
+  const base::DictionaryValue* notification_info = nullptr;
+  if (dict.GetDictionary("notificationInfo", &notification_info)) {
+    if (notification_info->GetBoolean("shouldNotify",
+                                      &snippet->should_notify_) &&
+        snippet->should_notify_) {
+      if (!GetTimeValue(*notification_info, "deadline",
+                        &snippet->notification_deadline_)) {
+        snippet->notification_deadline_ = base::Time::Max();
+      }
+    }
+  }
+
   return snippet;
 }
 
@@ -353,6 +369,27 @@ SnippetProto NTPSnippet::ToProto() const {
   }
 
   return result;
+}
+
+ContentSuggestion NTPSnippet::ToContentSuggestion(Category category) const {
+  GURL url = url_;
+  if (base::FeatureList::IsEnabled(kPreferAmpUrlsFeature) &&
+      !amp_url_.is_empty()) {
+    url = amp_url_;
+  }
+  ContentSuggestion suggestion(category, id(), url);
+  suggestion.set_title(base::UTF8ToUTF16(title_));
+  suggestion.set_snippet_text(base::UTF8ToUTF16(snippet_));
+  suggestion.set_publish_date(publish_date_);
+  suggestion.set_publisher_name(base::UTF8ToUTF16(publisher_name_));
+  suggestion.set_score(score_);
+  if (should_notify_) {
+    NotificationExtra extra;
+    extra.deadline = notification_deadline_;
+    suggestion.set_notification_extra(
+        base::MakeUnique<NotificationExtra>(extra));
+  }
+  return suggestion;
 }
 
 // static

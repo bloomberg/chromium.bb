@@ -43,6 +43,14 @@ struct RecentTabSuggestionExtra {
   int64_t offline_page_id = 0;
 };
 
+// Contains additional data for notification-worthy suggestions.
+struct NotificationExtra {
+  // Deadline for showing notification. If the deadline is past, the
+  // notification is no longer fresh and no notification should be sent. If the
+  // deadline passes while a notification is up, it should be canceled.
+  base::Time deadline;
+};
+
 // A content suggestion for the new tab page, which can be an article or an
 // offline page, for example.
 class ContentSuggestion {
@@ -133,6 +141,16 @@ class ContentSuggestion {
   void set_recent_tab_suggestion_extra(
       std::unique_ptr<RecentTabSuggestionExtra> recent_tab_suggestion_extra);
 
+  // Extra information for notifications. When absent, no notification should be
+  // sent for this suggestion. When present, a notification should be sent,
+  // unless other factors disallow it (examples: the extra parameters say to;
+  // notifications are disabled; Chrome is in the foreground).
+  NotificationExtra* notification_extra() const {
+    return notification_extra_.get();
+  }
+  void set_notification_extra(
+      std::unique_ptr<NotificationExtra> notification_extra);
+
  private:
   ID id_;
   GURL url_;
@@ -143,6 +161,7 @@ class ContentSuggestion {
   float score_;
   std::unique_ptr<DownloadSuggestionExtra> download_suggestion_extra_;
   std::unique_ptr<RecentTabSuggestionExtra> recent_tab_suggestion_extra_;
+  std::unique_ptr<NotificationExtra> notification_extra_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestion);
 };

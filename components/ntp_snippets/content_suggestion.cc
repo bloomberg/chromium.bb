@@ -52,4 +52,9 @@ void ContentSuggestion::set_recent_tab_suggestion_extra(
   recent_tab_suggestion_extra_ = std::move(recent_tab_suggestion_extra);
 }
 
+void ContentSuggestion::set_notification_extra(
+    std::unique_ptr<NotificationExtra> notification_extra) {
+  notification_extra_ = std::move(notification_extra);
+}
+
 }  // namespace ntp_snippets
