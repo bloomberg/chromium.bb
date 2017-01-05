@@ -106,15 +106,19 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
   bool IsRecoveringFromFailure() const;
 
   // Returns a list of all remote devices that have been synced.
-  std::vector<cryptauth::ExternalDeviceInfo> GetSyncedDevices() const;
+  virtual std::vector<cryptauth::ExternalDeviceInfo> GetSyncedDevices() const;
 
   // Returns a list of remote devices that can unlock the user's other devices.
-  std::vector<cryptauth::ExternalDeviceInfo> GetUnlockKeys() const;
+  virtual std::vector<cryptauth::ExternalDeviceInfo> GetUnlockKeys() const;
 
   // Returns a list of remote devices that can host tether hotspots.
-  std::vector<cryptauth::ExternalDeviceInfo> GetTetherHosts() const;
+  virtual std::vector<cryptauth::ExternalDeviceInfo> GetTetherHosts() const;
 
  protected:
+  // Empty constructor, to be used by tests to mock the device manager. Do not
+  // use this constructor outside of tests.
+  CryptAuthDeviceManager();
+
   // Creates a new SyncScheduler instance. Exposed for testing.
   virtual std::unique_ptr<SyncScheduler> CreateSyncScheduler();
 

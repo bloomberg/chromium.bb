@@ -312,8 +312,18 @@ CryptAuthDeviceManager::CryptAuthDeviceManager(
   UpdateUnlockKeysFromPrefs();
 }
 
+// Test-only constructor.
+CryptAuthDeviceManager::CryptAuthDeviceManager()
+    : clock_(nullptr),
+      client_factory_(nullptr),
+      gcm_manager_(nullptr),
+      pref_service_(nullptr),
+      weak_ptr_factory_(this) {}
+
 CryptAuthDeviceManager::~CryptAuthDeviceManager() {
-  gcm_manager_->RemoveObserver(this);
+  if (gcm_manager_) {
+    gcm_manager_->RemoveObserver(this);
+  }
 }
 
 // static
