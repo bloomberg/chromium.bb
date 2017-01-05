@@ -19,7 +19,12 @@ row2 col1 rowspan=3 height=200px
 row2 col1 rowspan=3 height=200px
 row2 col1 rowspan=3 height=200px
 row2 col1 rowspan=3 height=200px
-PASS
+FAIL:
+Expected 261 for height, but got 262. 
+
+<tr data-expected-height="261">
+      <td rowspan="3" style="height:200px">row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br>row2 col1 rowspan=3 height=200px<br></td>
+    </tr>
 row3 col2
 PASS
 row4 col2
@@ -31,29 +36,18 @@ PASS
 Test 2 - One row spanning cell present under the boundries of other row spanning cell and inner row spanning cell have its own height.
 
 row0 col0 rowspan=6 height=600px	row0 col1
-FAIL:
-Expected 23 for height, but got 20. 
-
-<tr data-expected-height="23">
-      <td rowspan="6" style="height:600px">row0 col0 rowspan=6 height=600px</td>
-      <td>row0 col1</td>
-    </tr>
-row1 col1
-FAIL:
-Expected 24 for height, but got 20. 
-
-<tr data-expected-height="24">
-	  <td>row1 col1</td>
-	</tr>
-row2 col1 rowspan=3 height=400px
 PASS
-row3 col2
+row1 col1
+PASS
+row2 col1 rowspan=3 height=400px
 FAIL:
-Expected 247 for height, but got 248. 
+Expected 461 for height, but got 462. 
 
-<tr data-expected-height="247">
-      <td>row3 col2</td>
+<tr data-expected-height="461">
+      <td rowspan="3" style="height:400px">row2 col1 rowspan=3 height=400px</td>
     </tr>
+row3 col2
+PASS
 row4 col2
 PASS
 row5 col1
@@ -63,21 +57,17 @@ PASS
 Test 3 - 2 same row spanning cells with different heights.
 
 row0 col0 rowspan=6 height=300px	row0 col1 rowspan=6 height=500px
-PASS
-row1 col1
 FAIL:
-Expected 90 for height, but got 43. 
+Expected 308 for height, but got 310. 
 
-<tr data-expected-height="90">
-	  <td>row1 col1</td>
-	</tr>
-row2 col1
-FAIL:
-Expected 94 for height, but got 95. 
-
-<tr data-expected-height="94">
-      <td>row2 col1</td>
+<tr data-expected-height="308">
+      <td rowspan="6" style="height:300px">row0 col0 rowspan=6 height=300px</td>
+      <td rowspan="6" style="height:500px">row0 col1 rowspan=6 height=500px</td>
     </tr>
+row1 col1
+PASS
+row2 col1
+PASS
 row3 col1
 PASS
 row4 col1
@@ -89,36 +79,20 @@ PASS
 Test 4 - some rows are common between 2 row spanning cells.
 
 row0 col0 rowspan=6 height=400px	row0 col1
-FAIL:
-Expected 43 for height, but got 34. 
-
-<tr data-expected-height="43">
-        <td rowspan="6" style="height:400px">row0 col0 rowspan=6 height=400px</td>
-        <td>row0 col1</td>
-    </tr>
-row1 col1 rowspan=6 height=800px
 PASS
+row1 col1 rowspan=6 height=800px
+FAIL:
+Expected 623 for height, but got 625. 
+
+<tr data-expected-height="623">
+        <td rowspan="6" style="height:800px">row1 col1 rowspan=6 height=800px</td>
+    </tr>
 row2 col2
-FAIL:
-Expected 168 for height, but got 65. 
-
-<tr data-expected-height="168">
-        <td>row2 col2</td>
-    </tr>
+PASS
 row3 col2
-FAIL:
-Expected 177 for height, but got 83. 
-
-<tr data-expected-height="177">
-        <td>row3 col2</td>
-    </tr>
+PASS
 row4 col2
-FAIL:
-Expected 176 for height, but got 177. 
-
-<tr data-expected-height="176">
-        <td>row4 col2</td>
-    </tr>
+PASS
 row5 col2
 PASS
 row6 col2
@@ -130,14 +104,14 @@ Test 5 - 2 spanning cells starts at different row index but end at same row inde
 row0 col0 rowspan=6 height=400px	row0 col1
 PASS
 row1 col1 rowspan=6 height=800px
-PASS
-row2 col2
 FAIL:
-Expected 130 for height, but got 132. 
+Expected 423 for height, but got 425. 
 
-<tr data-expected-height="130">
-        <td>row2 col2</td>
+<tr data-expected-height="423">
+        <td rowspan="5" style="height:300px">row1 col1 rowspan=6 height=800px</td>
     </tr>
+row2 col2
+PASS
 row3 col2
 PASS
 row4 col2
@@ -213,7 +187,7 @@ Expected 21 for height, but got 19.
     </tr>
 row1 col1	row1 col2	row1 col3
 FAIL:
-Expected 87 for height, but got 59. 
+Expected 87 for height, but got 52. 
 
 <tr data-expected-height="87">
         <td rowspan="3" style="height:200px">row1 col1</td>
@@ -222,26 +196,46 @@ Expected 87 for height, but got 59.
     </tr>
 row2 col3
 FAIL:
-Expected 96 for height, but got 95. 
+Expected 96 for height, but got 84. 
 
 <tr data-expected-height="96">
         <td>row2 col3</td>
     </tr>
 row3 col2
-PASS
-row4 col1	row4 col2	row4 col3
-PASS
-row5 col0	row5 col1	row5 col2
-PASS
-row6 col0	row6 col1
-PASS
-row7 col1
 FAIL:
-Expected 37 for height, but got 38. 
+Expected 40 for height, but got 35. 
 
-<tr data-expected-height="37">
-        <td>row7 col1</td>
+<tr data-expected-height="40">
+        <td>row3 col2</td>
     </tr>
+row4 col1	row4 col2	row4 col3
+FAIL:
+Expected 24 for height, but got 38. 
+
+<tr data-expected-height="24">
+        <td>row4 col1</td>
+        <td>row4 col2</td>
+        <td>row4 col3</td>
+    </tr>
+row5 col0	row5 col1	row5 col2
+FAIL:
+Expected 19 for height, but got 34. 
+
+<tr data-expected-height="19">
+        <td>row5 col0</td>
+        <td>row5 col1</td>
+        <td>row5 col2</td>
+    </tr>
+row6 col0	row6 col1
+FAIL:
+Expected 74 for height, but got 76. 
+
+<tr data-expected-height="74">
+        <td rowspan="5" style="height:200px">row6 col0</td>
+        <td rowspan="5" style="height:100px">row6 col1</td>
+    </tr>
+row7 col1
+PASS
 row8 col1
 PASS
 row9 col1

@@ -55,6 +55,8 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol) {
       LayoutTableSection* section = toLayoutTableSection(child);
       unsigned numRows = section->numRows();
       for (unsigned i = 0; i < numRows; i++) {
+        if (effCol >= section->numCols(i))
+          continue;
         LayoutTableSection::CellStruct current = section->cellAt(i, effCol);
         LayoutTableCell* cell = current.primaryCell();
 

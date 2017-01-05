@@ -218,6 +218,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     return m_grid[row].row[effectiveColumn];
   }
   LayoutTableCell* primaryCellAt(unsigned row, unsigned effectiveColumn) {
+    if (effectiveColumn >= numCols(row))
+      return nullptr;
     CellStruct& c = m_grid[row].row[effectiveColumn];
     return c.primaryCell();
   }
@@ -226,6 +228,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     return const_cast<LayoutTableSection*>(this)->primaryCellAt(
         row, effectiveColumn);
   }
+
+  unsigned numCols(unsigned row) const { return m_grid[row].row.size(); }
 
   // Returns null for cells with a rowspan that exceed the last row. Possibly
   // others.
@@ -345,7 +349,15 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     return m_grid[row].rowLayoutObject ? table()->vBorderSpacing() : 0;
   }
 
-  void ensureRows(unsigned);
+  void ensureRows(unsigned numRows) {
+    if (numRows > m_grid.size())
+      m_grid.grow(numRows);
+  }
+
+  void ensureCols(unsigned rowIndex, unsigned numCols) {
+    if (numCols > this->numCols(rowIndex))
+      m_grid[rowIndex].row.grow(numCols);
+  }
 
   bool rowHasOnlySpanningCells(unsigned);
   unsigned calcRowHeightHavingOnlySpanningCells(unsigned,

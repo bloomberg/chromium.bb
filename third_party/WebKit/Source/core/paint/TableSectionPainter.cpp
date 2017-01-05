@@ -191,9 +191,8 @@ void TableSectionPainter::paintCollapsedSectionBorders(
     unsigned row = r - 1;
     for (unsigned c = dirtiedColumns.end(); c > dirtiedColumns.start(); c--) {
       unsigned col = c - 1;
-      const LayoutTableSection::CellStruct& current =
-          m_layoutTableSection.cellAt(row, col);
-      const LayoutTableCell* cell = current.primaryCell();
+      const LayoutTableCell* cell =
+          m_layoutTableSection.primaryCellAt(row, col);
       if (!cell || (row > dirtiedRows.start() &&
                     m_layoutTableSection.primaryCellAt(row - 1, col) == cell) ||
           (col > dirtiedColumns.start() &&
@@ -304,6 +303,8 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
         TableRowPainter(*row).paintOutline(paintInfoForDescendants,
                                            paintOffset);
       for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
+        if (c >= m_layoutTableSection.numCols(r))
+          break;
         const LayoutTableSection::CellStruct& current =
             m_layoutTableSection.cellAt(r, c);
         for (LayoutTableCell* cell : current.cells) {

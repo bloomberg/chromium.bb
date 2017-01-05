@@ -1445,8 +1445,7 @@ LayoutTableCell* LayoutTable::cellAbove(const LayoutTableCell* cell) const {
   if (section) {
     unsigned effCol =
         absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex());
-    LayoutTableSection::CellStruct& aboveCell = section->cellAt(rAbove, effCol);
-    return aboveCell.primaryCell();
+    return section->primaryCellAt(rAbove, effCol);
   }
   return nullptr;
 }
@@ -1472,8 +1471,7 @@ LayoutTableCell* LayoutTable::cellBelow(const LayoutTableCell* cell) const {
   if (section) {
     unsigned effCol =
         absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex());
-    LayoutTableSection::CellStruct& belowCell = section->cellAt(rBelow, effCol);
-    return belowCell.primaryCell();
+    return section->primaryCellAt(rBelow, effCol);
   }
   return nullptr;
 }
@@ -1498,8 +1496,6 @@ LayoutTableCell* LayoutTable::cellAfter(const LayoutTableCell* cell) const {
 
   unsigned effCol = absoluteColumnToEffectiveColumn(
       cell->absoluteColumnIndex() + cell->colSpan());
-  if (effCol >= numEffectiveColumns())
-    return nullptr;
   return cell->section()->primaryCellAt(cell->rowIndex(), effCol);
 }
 
