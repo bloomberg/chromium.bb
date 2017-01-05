@@ -18,6 +18,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/transform.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/views/custom_notification_view.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -179,6 +180,8 @@ ArcCustomNotificationView::ArcCustomNotificationView(
     : item_(item),
       notification_key_(item->notification_key()),
       event_forwarder_(new EventForwarder(this)) {
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+
   item_->IncrementWindowRefCount();
   item_->AddObserver(this);
 
@@ -441,6 +444,18 @@ void ArcCustomNotificationView::OnMouseEntered(const ui::MouseEvent&) {
 
 void ArcCustomNotificationView::OnMouseExited(const ui::MouseEvent&) {
   UpdateCloseButtonVisiblity();
+}
+
+void ArcCustomNotificationView::OnFocus() {
+  NativeViewHost::OnFocus();
+  static_cast<message_center::CustomNotificationView*>(parent())
+      ->OnContentFocused();
+}
+
+void ArcCustomNotificationView::OnBlur() {
+  NativeViewHost::OnBlur();
+  static_cast<message_center::CustomNotificationView*>(parent())
+      ->OnContentBlured();
 }
 
 void ArcCustomNotificationView::ButtonPressed(views::Button* sender,

@@ -9,6 +9,10 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
 
+namespace views {
+class Painter;
+}
+
 namespace message_center {
 
 // View for notification with NOTIFICATION_TYPE_CUSTOM that hosts the custom
@@ -19,6 +23,11 @@ class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
                          const Notification& notification);
   ~CustomNotificationView() override;
 
+  // These method are called by the content view when focus handling is defered
+  // to the content.
+  void OnContentFocused();
+  void OnContentBlured();
+
   // Overidden from MessageView:
   void SetDrawBackgroundAsActive(bool active) override;
   bool IsCloseButtonFocused() const override;
@@ -28,6 +37,9 @@ class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
+  bool HasFocus() const override;
+  void RequestFocus() override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   friend class CustomNotificationViewTest;
@@ -36,6 +48,8 @@ class MESSAGE_CENTER_EXPORT CustomNotificationView : public MessageView {
   views::View* contents_view_ = nullptr;
   std::unique_ptr<CustomNotificationContentViewDelegate>
       contents_view_delegate_;
+
+  std::unique_ptr<views::Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomNotificationView);
 };

@@ -343,8 +343,7 @@ void MessageCenterView::OnNotificationRemoved(const std::string& id,
     // Moves the keyboard focus to the next notification if the removed
     // notification is focused so that the user can dismiss notifications
     // without re-focusing by tab key.
-    if (view->IsCloseButtonFocused() ||
-        view == GetFocusManager()->GetFocusedView()) {
+    if (view->IsCloseButtonFocused() || view->HasFocus()) {
       views::View* next_focused_view = NULL;
       if (message_list_view_->child_count() > index + 1)
         next_focused_view = message_list_view_->child_at(index + 1);

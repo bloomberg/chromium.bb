@@ -62,6 +62,8 @@ class ArcCustomNotificationView
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

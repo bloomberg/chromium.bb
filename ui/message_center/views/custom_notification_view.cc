@@ -11,6 +11,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/painter.h"
 
 namespace message_center {
 
@@ -35,9 +36,20 @@ CustomNotificationView::CustomNotificationView(
   }
 
   AddChildView(small_image());
+
+  focus_painter_ = views::Painter::CreateSolidFocusPainter(
+      kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
 }
 
 CustomNotificationView::~CustomNotificationView() {}
+
+void CustomNotificationView::OnContentFocused() {
+  SchedulePaint();
+}
+
+void CustomNotificationView::OnContentBlured() {
+  SchedulePaint();
+}
 
 void CustomNotificationView::SetDrawBackgroundAsActive(bool active) {
   // Do nothing if |contents_view_| has a background.
@@ -81,6 +93,33 @@ void CustomNotificationView::Layout() {
   MessageView::Layout();
 
   contents_view_->SetBoundsRect(GetContentsBounds());
+
+  // If the content view claims focus, defer focus handling to the content view.
+  if (contents_view_->IsFocusable())
+    SetFocusBehavior(FocusBehavior::NEVER);
+}
+
+bool CustomNotificationView::HasFocus() const {
+  // In case that focus handling is defered to the content view, asking the
+  // content view about focus.
+  if (contents_view_ && contents_view_->IsFocusable())
+    return contents_view_->HasFocus();
+  else
+    return MessageView::HasFocus();
+}
+
+void CustomNotificationView::RequestFocus() {
+  if (contents_view_ && contents_view_->IsFocusable())
+    contents_view_->RequestFocus();
+  else
+    MessageView::RequestFocus();
+}
+
+void CustomNotificationView::OnPaint(gfx::Canvas* canvas) {
+  MessageView::OnPaint(canvas);
+  if (contents_view_ && contents_view_->IsFocusable())
+    views::Painter::PaintFocusPainter(contents_view_, canvas,
+                                      focus_painter_.get());
 }
 
 }  // namespace message_center
