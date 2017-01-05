@@ -28,7 +28,7 @@
 
 include en-ueb-chardefs.uti UEB specific char defs.
 #   some dots are undefined now
-#include en-ueb-math.ctb UEB math from common linear format
+include en-ueb-math.ctb UEB math from common linear format
 
 numsign 3456  number sign, just a dots operand
 numericmodechars .,
