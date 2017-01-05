@@ -89,6 +89,7 @@
 #include "public/web/WebFrameContentDumper.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebInputMethodController.h"
+#include "public/web/WebPrintParams.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebTreeScopeType.h"
@@ -4297,6 +4298,35 @@ TEST_P(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   // visibleContentRect doesn't change.
   EXPECT_EQ(IntRect(50, 55, 50, 75),
             *devToolsEmulator->visibleContentRectForPainting());
+}
+
+TEST_P(WebViewTest, ResizeForPrintingViewportUnits) {
+  WebViewImpl* webView = m_webViewHelper.initialize();
+  webView->resize(WebSize(800, 600));
+
+  WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
+  FrameTestHelpers::loadHTMLString(webView->mainFrame(),
+                                   "<style>#vw { width: 100vw }</style>"
+                                   "<div id=vw></div>",
+                                   baseURL);
+
+  WebLocalFrameImpl* frame = webView->mainFrameImpl();
+  Document* document = frame->frame()->document();
+  Element* vwElement = document->getElementById("vw");
+
+  EXPECT_EQ(800, vwElement->offsetWidth());
+
+  WebPrintParams printParams;
+  printParams.printContentArea.width = 500;
+  printParams.printContentArea.height = 500;
+
+  frame->printBegin(printParams, WebNode());
+  webView->resize(WebSize(500, 500));
+  EXPECT_EQ(500, vwElement->offsetWidth());
+
+  webView->resize(WebSize(800, 600));
+  frame->printEnd();
+  EXPECT_EQ(800, vwElement->offsetWidth());
 }
 
 }  // namespace blink

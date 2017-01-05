@@ -1925,8 +1925,11 @@ void StyleResolver::computeFont(ComputedStyle* style,
 
 void StyleResolver::updateMediaType() {
   if (FrameView* view = document().view()) {
+    bool wasPrint = m_printMediaType;
     m_printMediaType =
         equalIgnoringCase(view->mediaType(), MediaTypeNames::print);
+    if (wasPrint != m_printMediaType)
+      m_matchedPropertiesCache.clearViewportDependent();
   }
 }
 
