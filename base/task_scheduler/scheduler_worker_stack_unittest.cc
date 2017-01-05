@@ -27,7 +27,7 @@ class MockSchedulerWorkerDelegate : public SchedulerWorker::Delegate {
     return nullptr;
   }
   void DidRunTaskWithPriority(TaskPriority task_priority,
-                              const TimeDelta& task_latency) override {
+                              TimeDelta task_latency) override {
     ADD_FAILURE() << "Unexpected call to DidRunTaskWithPriority()";
   }
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {

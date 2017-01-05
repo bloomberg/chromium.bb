@@ -25,7 +25,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time/time.h"
 
 namespace base {
 namespace internal {
@@ -240,7 +239,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   void OnMainEntry(SchedulerWorker* worker) override;
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override;
   void DidRunTaskWithPriority(TaskPriority task_priority,
-                              const TimeDelta& task_latency) override;
+                              TimeDelta task_latency) override;
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override;
   TimeDelta GetSleepTimeout() override;
   bool CanDetach(SchedulerWorker* worker) override;
@@ -601,8 +600,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
-    DidRunTaskWithPriority(TaskPriority task_priority,
-                           const TimeDelta& task_latency) {
+    DidRunTaskWithPriority(TaskPriority task_priority, TimeDelta task_latency) {
   ++num_tasks_since_last_wait_;
   ++num_tasks_since_last_detach_;
 
@@ -670,7 +668,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnDetach() {
 
 SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
     StringPiece name,
-    const TimeDelta& suggested_reclaim_time,
+    TimeDelta suggested_reclaim_time,
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager)
     : name_(name.as_string()),

@@ -46,7 +46,7 @@ class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
     return nullptr;
   }
   void DidRunTaskWithPriority(TaskPriority task_priority,
-                              const TimeDelta& task_latency) override {
+                              TimeDelta task_latency) override {
     ADD_FAILURE() << "Unexpected call to DidRunTaskWithPriority()";
   }
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override {
@@ -186,7 +186,7 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
     }
 
     void DidRunTaskWithPriority(TaskPriority task_priority,
-                                const TimeDelta& task_latency) override {
+                                TimeDelta task_latency) override {
       AutoSchedulerLock auto_lock(expect_did_run_task_with_priority_lock_);
       EXPECT_TRUE(expect_did_run_task_with_priority_);
       EXPECT_EQ(expected_task_priority_, task_priority);
@@ -391,7 +391,7 @@ class ControllableDetachDelegate : public SchedulerWorkerDefaultDelegate {
   }
 
   void DidRunTaskWithPriority(TaskPriority task,
-                              const TimeDelta& task_latency) override {}
+                              TimeDelta task_latency) override {}
 
   bool CanDetach(SchedulerWorker* worker) override {
     detach_requested_.Signal();

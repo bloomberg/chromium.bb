@@ -30,11 +30,11 @@
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 
 namespace base {
 
 class HistogramBase;
-class TimeDelta;
 
 namespace internal {
 
@@ -115,7 +115,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   class SchedulerWorkerDelegateImpl;
 
   SchedulerWorkerPoolImpl(StringPiece name,
-                          const TimeDelta& suggested_reclaim_time,
+                          TimeDelta suggested_reclaim_time,
                           TaskTracker* task_tracker,
                           DelayedTaskManager* delayed_task_manager);
 
