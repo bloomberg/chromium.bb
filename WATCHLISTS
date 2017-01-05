@@ -1200,7 +1200,7 @@
     },
     'blink_heap': {
       'filepath': 'third_party/WebKit/Source/platform/heap' \
-                  '|third_party/WebKit/Source/wtf/Partition.*'
+                  '|base/allocator/partition_allocator/'
     },
     'blink_html': {
       'filepath': 'third_party/WebKit/Source/core/html/'
