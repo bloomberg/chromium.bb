@@ -193,7 +193,7 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
   auto scheduling_provider =
       base::MakeUnique<SchedulingRemoteSuggestionsProvider>(
           service, std::move(provider), scheduler, service->user_classifier(),
-          pref_service);
+          pref_service, base::MakeUnique<base::DefaultClock>());
   service->set_remote_suggestions_provider(scheduling_provider.get());
   service->set_remote_suggestions_scheduler(scheduling_provider.get());
   service->RegisterProvider(std::move(scheduling_provider));

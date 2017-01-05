@@ -11,10 +11,16 @@ const char kEnableSnippets[] = "ntp_snippets.enable";
 
 const char kRemoteSuggestionCategories[] = "ntp_snippets.remote_categories";
 
-const char kSnippetBackgroundFetchingIntervalWifi[] =
+const char kSnippetLastFetchAttempt[] =
+    "ntp_snippets.last_fetch_attempt";
+
+const char kSnippetSoftFetchingIntervalOnUsageEvent[] =
+    "ntp_snippets.soft_fetching_interval_on_usage_event";
+
+const char kSnippetPersistentFetchingIntervalWifi[] =
     "ntp_snippets.fetching_interval_wifi";
 
-const char kSnippetBackgroundFetchingIntervalFallback[] =
+const char kSnippetPersistentFetchingIntervalFallback[] =
     "ntp_snippets.fetching_interval_fallback";
 
 const char kSnippetFetcherRequestCount[] =

@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -19,6 +20,10 @@
 
 class PrefRegistrySimple;
 class PrefService;
+
+namespace base {
+class Clock;
+}
 
 namespace ntp_snippets {
 
@@ -55,7 +60,8 @@ class SchedulingRemoteSuggestionsProvider final
       std::unique_ptr<RemoteSuggestionsProvider> provider,
       PersistentScheduler* persistent_scheduler,
       const UserClassifier* user_classifier,
-      PrefService* pref_service);
+      PrefService* pref_service,
+      std::unique_ptr<base::Clock> clock);
 
   ~SchedulingRemoteSuggestionsProvider() override;
 
@@ -98,7 +104,16 @@ class SchedulingRemoteSuggestionsProvider final
 
  private:
   // Abstract description of the fetching schedule.
-  struct FetchingSchedule;
+  struct FetchingSchedule {
+      static FetchingSchedule Empty();
+      bool operator==(const FetchingSchedule& other) const;
+      bool operator!=(const FetchingSchedule& other) const;
+      bool is_empty() const;
+
+      base::TimeDelta interval_persistent_wifi;
+      base::TimeDelta interval_persistent_fallback;
+      base::TimeDelta interval_soft_on_usage_event;
+  };
 
   // Callback that is notified whenever the status of |provider_| changes.
   void OnProviderStatusChanged(
@@ -114,20 +129,32 @@ class SchedulingRemoteSuggestionsProvider final
   // schedule.
   void StopScheduling();
 
+  // Checks whether it is time to perform a soft background fetch, according to
+  // |schedule|.
+  bool ShouldRefetchInTheBackgroundNow();
+
   // Callback after Fetch is completed.
   void FetchFinished(const FetchDoneCallback& callback,
-                     Status status_code,
+                     Status fetch_status,
                      std::vector<ContentSuggestion> suggestions);
 
+  // Callback after RefetchInTheBackground is completed.
+  void RefetchInTheBackgroundFinished(
+      std::unique_ptr<FetchStatusCallback> callback,
+      Status fetch_status);
+
+  // Common function to call after a fetch of any type is finished.
+  void OnFetchCompleted(Status fetch_status);
+
   FetchingSchedule GetDesiredFetchingSchedule() const;
-  FetchingSchedule GetLastFetchingSchedule() const;
-  void StoreLastFetchingSchedule(const FetchingSchedule& schedule);
 
-  // Common function to call after each fetch.
-  void OnFetchCompleted(Status status);
+  // Load and store |schedule_|.
+  void LoadLastFetchingSchedule();
+  void StoreFetchingSchedule();
+  bool BackgroundFetchesDisabled() const;
 
-  // Applies the provided |schedule|.
-  void ApplyFetchingSchedule(const FetchingSchedule& schedule);
+  // Applies the persistent schedule given by |schedule_|.
+  void ApplyPersistentFetchingSchedule();
 
   // Interface for doing all the actual work (apart from scheduling).
   std::unique_ptr<RemoteSuggestionsProvider> provider_;
@@ -136,10 +163,14 @@ class SchedulingRemoteSuggestionsProvider final
   // null.
   PersistentScheduler* persistent_scheduler_;
 
+  FetchingSchedule schedule_;
+  bool background_fetch_in_progress_;
+
   // Used to adapt the schedule based on usage activity of the user. Not owned.
   const UserClassifier* user_classifier_;
 
   PrefService* pref_service_;
+  std::unique_ptr<base::Clock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulingRemoteSuggestionsProvider);
 };

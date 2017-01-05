@@ -181,8 +181,8 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     auto scheduling_provider =
         base::MakeUnique<SchedulingRemoteSuggestionsProvider>(
             service.get(), std::move(provider),
-            /*persistent_scheduler=*/nullptr, service->user_classifier(),
-            prefs);
+            /*persistent_scheduler=*/nullptr, service->user_classifier(), prefs,
+            base::MakeUnique<base::DefaultClock>());
     service->set_remote_suggestions_provider(scheduling_provider.get());
     service->set_remote_suggestions_scheduler(scheduling_provider.get());
     service->RegisterProvider(std::move(scheduling_provider));

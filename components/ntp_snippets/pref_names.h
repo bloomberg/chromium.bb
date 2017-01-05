@@ -16,12 +16,19 @@ extern const char kEnableSnippets[];
 // and title) are stored.
 extern const char kRemoteSuggestionCategories[];
 
+// The pref name for the last time when a background fetch was attempted.
+extern const char kSnippetLastFetchAttempt[];
+// The pref name for the currently applied minimal interval between two
+// successive soft background fetches that react to user activity (such as
+// opening an NTP).
+extern const char kSnippetSoftFetchingIntervalOnUsageEvent[];
+
 // The pref name for the currently-scheduled background fetching interval when
 // there is WiFi connectivity.
-extern const char kSnippetBackgroundFetchingIntervalWifi[];
+extern const char kSnippetPersistentFetchingIntervalWifi[];
 // The pref name for the currently-scheduled background fetching interval when
 // there is no WiFi connectivity.
-extern const char kSnippetBackgroundFetchingIntervalFallback[];
+extern const char kSnippetPersistentFetchingIntervalFallback[];
 
 // The pref name for today's count of NTPSnippetsFetcher requests, so far.
 extern const char kSnippetFetcherRequestCount[];
