@@ -1376,8 +1376,6 @@ void BuildPropertyTreesTopLevelInternal(
     return;
   }
 
-  property_trees->sequence_number++;
-
   DataForRecursion<LayerType> data_for_recursion;
   data_for_recursion.property_trees = property_trees;
   data_for_recursion.transform_tree_parent = nullptr;

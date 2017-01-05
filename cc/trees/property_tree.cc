@@ -991,6 +991,79 @@ void EffectTree::ResetChangeTracking() {
   }
 }
 
+EffectTree::StableIdRenderSurfaceList
+EffectTree::CreateStableIdRenderSurfaceList() const {
+  StableIdRenderSurfaceList stable_id_render_surface_list;
+  for (int id = kContentsRootNodeId; id < static_cast<int>(size()); ++id) {
+    const EffectNode* node = Node(id);
+    if (node->render_surface) {
+      stable_id_render_surface_list.push_back(
+          std::make_pair(node->owning_layer_id, node->render_surface));
+    }
+  }
+  std::sort(stable_id_render_surface_list.begin(),
+            stable_id_render_surface_list.end());
+  return stable_id_render_surface_list;
+}
+
+void EffectTree::UpdateRenderSurfaceEffectIds(
+    const EffectTree::StableIdRenderSurfaceList& stable_id_render_surface_list,
+    LayerTreeImpl* layer_tree_impl) {
+  // Make a list of {stable id, node id} pairs for nodes that are supposed to
+  // have surfaces.
+  std::vector<std::pair<int, int>> stable_id_node_id_list;
+  for (int id = kContentsRootNodeId; id < static_cast<int>(size()); ++id) {
+    const EffectNode* node = Node(id);
+    if (node->has_render_surface) {
+      stable_id_node_id_list.push_back(
+          std::make_pair(node->owning_layer_id, node->id));
+    }
+  }
+
+  // Sort by stable id so that we can process the two lists cosequentially.
+  std::sort(stable_id_node_id_list.begin(), stable_id_node_id_list.end());
+
+  auto surface_list_it = stable_id_render_surface_list.begin();
+  auto node_id_list_it = stable_id_node_id_list.begin();
+  while (surface_list_it != stable_id_render_surface_list.end() &&
+         node_id_list_it != stable_id_node_id_list.end()) {
+    if (surface_list_it->first == node_id_list_it->first) {
+      RenderSurfaceImpl* surface = surface_list_it->second;
+      int node_id = node_id_list_it->second;
+      Node(node_id)->render_surface = surface;
+      surface->set_effect_tree_index(node_id);
+      surface_list_it++;
+      node_id_list_it++;
+      continue;
+    }
+
+    if (surface_list_it->first > node_id_list_it->first) {
+      node_id_list_it++;
+      continue;
+    }
+
+    // If we reach here, there's no longer an effect node with stable id
+    // |surface_list_it->first| that has a render surface. If there's no longer
+    // any corresponding layer either, there's nothing more to do since the
+    // surface owned by that layer would have been destroyed when the layer was
+    // destroyed. But if the layer still exists, we need to destroy the surface
+    // since it now has an invalid effect node id.
+    if (LayerImpl* layer_impl =
+            layer_tree_impl->LayerById(surface_list_it->first)) {
+      layer_impl->SetHasRenderSurface(false);
+    }
+    surface_list_it++;
+  }
+
+  while (surface_list_it != stable_id_render_surface_list.end()) {
+    if (LayerImpl* layer_impl =
+            layer_tree_impl->LayerById(surface_list_it->first)) {
+      layer_impl->SetHasRenderSurface(false);
+    }
+    surface_list_it++;
+  }
+}
+
 void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(
     TransformNode* node,
     TransformNode* parent_node) {
@@ -1520,6 +1593,7 @@ void PropertyTrees::clear() {
   full_tree_damaged = false;
   changed = false;
   non_root_surfaces_enabled = true;
+  sequence_number++;
 
 #if DCHECK_IS_ON()
   PropertyTrees tree;

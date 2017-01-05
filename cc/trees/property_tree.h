@@ -30,6 +30,7 @@ namespace cc {
 
 class CopyOutputRequest;
 class LayerTreeImpl;
+class RenderSurfaceImpl;
 class ScrollState;
 struct ClipNode;
 struct EffectNode;
@@ -330,6 +331,14 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   bool ContributesToDrawnSurface(int id);
 
   void ResetChangeTracking();
+
+  // A list of pairs of stable id and render surface, sorted by stable id.
+  using StableIdRenderSurfaceList =
+      std::vector<std::pair<int, RenderSurfaceImpl*>>;
+  StableIdRenderSurfaceList CreateStableIdRenderSurfaceList() const;
+  void UpdateRenderSurfaceEffectIds(
+      const StableIdRenderSurfaceList& stable_id_render_surface_list,
+      LayerTreeImpl* layer_tree_impl);
 
  private:
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);

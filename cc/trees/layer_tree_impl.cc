@@ -379,7 +379,11 @@ static void UpdateClipTreeForBoundsDeltaOnLayer(LayerImpl* layer,
 }
 
 void LayerTreeImpl::SetPropertyTrees(PropertyTrees* property_trees) {
+  EffectTree::StableIdRenderSurfaceList stable_id_render_surface_list =
+      property_trees_.effect_tree.CreateStableIdRenderSurfaceList();
   property_trees_ = *property_trees;
+  property_trees_.effect_tree.UpdateRenderSurfaceEffectIds(
+      stable_id_render_surface_list, this);
   property_trees->effect_tree.PushCopyRequestsTo(&property_trees_.effect_tree);
   property_trees_.is_main_thread = false;
   property_trees_.is_active = IsActiveTree();

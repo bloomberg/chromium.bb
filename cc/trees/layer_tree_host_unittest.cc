@@ -5616,6 +5616,82 @@ class LayerTreeHostTestActivateOnInvisible : public LayerTreeHostTest {
 // This test blocks activation which is not supported for single thread mode.
 MULTI_THREAD_BLOCKNOTIFY_TEST_F(LayerTreeHostTestActivateOnInvisible);
 
+class LayerTreeHostTestRenderSurfaceEffectTreeIndex : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestRenderSurfaceEffectTreeIndex() = default;
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void SetupTree() override {
+    root_ = Layer::Create();
+    child_ = Layer::Create();
+    grand_child_ = Layer::Create();
+
+    layer_tree()->SetRootLayer(root_);
+    root_->AddChild(child_);
+    child_->AddChild(grand_child_);
+
+    root_->SetBounds(gfx::Size(50, 50));
+    child_->SetBounds(gfx::Size(50, 50));
+    grand_child_->SetBounds(gfx::Size(50, 50));
+    child_->SetForceRenderSurfaceForTesting(true);
+    grand_child_->SetForceRenderSurfaceForTesting(true);
+
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->sync_tree()->source_frame_number() >= 1) {
+      LayerImpl* grand_child_impl =
+          host_impl->sync_tree()->LayerById(grand_child_->id());
+      EXPECT_EQ(grand_child_impl->effect_tree_index(),
+                grand_child_impl->render_surface()->EffectTreeIndex());
+    }
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    LayerImpl* grand_child_impl =
+        host_impl->active_tree()->LayerById(grand_child_->id());
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+      case 2:
+        EXPECT_EQ(grand_child_impl->effect_tree_index(),
+                  grand_child_impl->render_surface()->EffectTreeIndex());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 3:
+        EXPECT_EQ(grand_child_impl->effect_tree_index(),
+                  grand_child_impl->render_surface()->EffectTreeIndex());
+        EndTest();
+    }
+  }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 2:
+        // Setting an empty viewport causes draws to get skipped, so the active
+        // tree won't update draw properties.
+        layer_tree()->SetViewportSize(gfx::Size());
+        child_->SetForceRenderSurfaceForTesting(false);
+        break;
+      case 3:
+        layer_tree()->SetViewportSize(root_->bounds());
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  scoped_refptr<Layer> root_;
+  scoped_refptr<Layer> child_;
+  scoped_refptr<Layer> grand_child_;
+};
+
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestRenderSurfaceEffectTreeIndex);
+
 // Do a synchronous composite and assert that the swap promise succeeds.
 class LayerTreeHostTestSynchronousCompositeSwapPromise
     : public LayerTreeHostTest {

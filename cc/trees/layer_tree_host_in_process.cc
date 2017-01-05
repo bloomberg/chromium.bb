@@ -600,8 +600,10 @@ static int GetLayersUpdateTimeHistogramBucket(size_t numLayers) {
 }
 
 bool LayerTreeHostInProcess::UpdateLayers() {
-  if (!layer_tree_->root_layer())
+  if (!layer_tree_->root_layer()) {
+    layer_tree_->property_trees()->clear();
     return false;
+  }
   DCHECK(!layer_tree_->root_layer()->parent());
   base::ElapsedTimer timer;
 
