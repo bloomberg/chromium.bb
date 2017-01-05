@@ -1,6 +1,6 @@
 # Checking out and building Chromium for Android
 
-There are instructions for other platforms linked from the 
+There are instructions for other platforms linked from the
 [get the code](get_the_code.md) page.
 
 ## Instructions for Google Employees
@@ -311,11 +311,12 @@ For information on running tests, see [android\_test\_instructions.md](https://c
 ### Faster Edit/Deploy (GN only)
 
 GN's "incremental install" uses reflection and side-loading to speed up the edit
-& deploy cycle (normally < 10 seconds).
+& deploy cycle (normally < 10 seconds). The initial launch of the apk will be
+a little slower since updated dex files are installed manually.
 
 *   Make sure to set` is_component_build = true `in your GN args
 *   All apk targets have \*`_incremental` targets defined (e.g.
-    `chrome_public_apk_incremental`)
+    `chrome_public_apk_incremental`) except for Webview and Monochrome
 
 Here's an example:
 
@@ -344,6 +345,27 @@ To uninstall:
 ```shell
 out/Default/bin/install_chrome_public_apk_incremental -v --uninstall
 ```
+
+A subtly erroneous flow arises when you build a regular apk but install an
+incremental apk (e.g.
+`ninja -C out/Default foo_apk && out/Default/bin/install_foo_apk_incremental`).
+Setting `incremental_apk_by_default = true` in your GN args aliases regular
+targets as their incremental counterparts. With this arg set, the commands
+above become:
+
+```shell
+ninja -C out/Default chrome_public_apk
+out/Default/bin/install_chrome_public_apk
+
+ninja -C out/Default base_unittests
+out/Default/bin/run_base_unittests
+
+ninja -C out/Default chrome_public_test_apk
+out/Default/bin/run_chrome_public_test_apk
+```
+
+If you want to build a non-incremental apk you'll need to remove
+`incremental_apk_by_default` from your GN args.
 
 ## Tips, tricks, and troubleshooting
 
