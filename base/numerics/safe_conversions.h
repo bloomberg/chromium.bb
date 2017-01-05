@@ -84,20 +84,20 @@ constexpr Dst checked_cast(Src value) {
 
 // Default boundaries for integral/float: max/infinity, lowest/-infinity, 0/NaN.
 template <typename T>
-struct SaturatedCastDefaultHandler {
-  static constexpr T HandleNaN() {
+struct SaturationDefaultHandler {
+  static constexpr T NaN() {
     return std::numeric_limits<T>::has_quiet_NaN
                ? std::numeric_limits<T>::quiet_NaN()
                : T();
   }
   static constexpr T max() { return std::numeric_limits<T>::max(); }
-  static constexpr T HandleOverflow() {
+  static constexpr T Overflow() {
     return std::numeric_limits<T>::has_infinity
                ? std::numeric_limits<T>::infinity()
                : std::numeric_limits<T>::max();
   }
   static constexpr T lowest() { return std::numeric_limits<T>::lowest(); }
-  static constexpr T HandleUnderflow() {
+  static constexpr T Underflow() {
     return std::numeric_limits<T>::has_infinity
                ? std::numeric_limits<T>::infinity() * -1
                : std::numeric_limits<T>::lowest();
@@ -105,24 +105,50 @@ struct SaturatedCastDefaultHandler {
 };
 
 namespace internal {
-// saturated_cast<> is analogous to static_cast<> for numeric types, except
-// that the specified numeric conversion will saturate by default rather than
-// overflow or underflow, and NaN assignment to an integral will return 0.
-// All boundary condition behaviors can be overriden with a custom handler.
-template <template <typename>
-          class SaturationHandler = SaturatedCastDefaultHandler,
-          typename Dst,
-          typename Src>
-constexpr Dst saturated_cast_impl(const Src value,
-                                  const RangeCheck constraint) {
+
+template <typename T, template <typename> class S>
+struct IsDefaultIntegralBounds {
+  static const bool value =
+      std::is_integral<T>::value &&
+      S<T>::max() == SaturationDefaultHandler<T>::max() &&
+      S<T>::lowest() == SaturationDefaultHandler<T>::lowest();
+};
+
+// Integral to integral conversions have a special optimization for the
+// standard bounds.
+template <typename Dst,
+          template <typename> class S,
+          typename Src,
+          typename std::enable_if<
+              std::is_integral<Src>::value &&
+              IsDefaultIntegralBounds<Dst, S>::value>::type* = nullptr>
+constexpr Dst saturated_cast_impl(Src value, RangeCheck constraint) {
+  using UnsignedDst = typename std::make_unsigned<Dst>::type;
+  // The member fields in this class are lined up such that the compiler
+  // can saturate without branching in this case by adding the register
+  // with the bitfields directly to the integral max.
   return constraint.IsValid()
              ? static_cast<Dst>(value)
-             : (constraint.IsOverflow()
-                    ? SaturationHandler<Dst>::HandleOverflow()
-                    // Skip this check for integral Src, which cannot be NaN.
-                    : (std::is_integral<Src>::value || constraint.IsUnderflow()
-                           ? SaturationHandler<Dst>::HandleUnderflow()
-                           : SaturationHandler<Dst>::HandleNaN()));
+             : static_cast<Dst>(UnsignedDst(constraint.IsUnderflowFlagSet()) +
+                                std::numeric_limits<Dst>::max());
+}
+
+template <typename Dst,
+          template <typename> class S,
+          typename Src,
+          typename std::enable_if<
+              !std::is_integral<Src>::value ||
+              !IsDefaultIntegralBounds<Dst, S>::value>::type* = nullptr>
+constexpr Dst saturated_cast_impl(Src value, RangeCheck constraint) {
+  // For some reason clang generates much better code when the branch is
+  // structured exactly this way, rather than a sequence of checks.
+  return !constraint.IsOverflowFlagSet()
+             ? (!constraint.IsUnderflowFlagSet() ? static_cast<Dst>(value)
+                                                 : S<Dst>::Underflow())
+             // Skip this check for integral Src, which cannot be NaN.
+             : (std::is_integral<Src>::value || !constraint.IsUnderflowFlagSet()
+                    ? S<Dst>::Overflow()
+                    : S<Dst>::NaN());
 }
 
 // saturated_cast<> is analogous to static_cast<> for numeric types, except
@@ -131,12 +157,12 @@ constexpr Dst saturated_cast_impl(const Src value,
 // All boundary condition behaviors can be overriden with a custom handler.
 template <typename Dst,
           template <typename>
-          class SaturationHandler = SaturatedCastDefaultHandler,
+          class SaturationHandler = SaturationDefaultHandler,
           typename Src>
 constexpr Dst saturated_cast(Src value) {
   using SrcType = typename UnderlyingType<Src>::type;
-  return saturated_cast_impl<SaturationHandler, Dst>(
-      static_cast<SrcType>(value),
+  return saturated_cast_impl<Dst, SaturationHandler, SrcType>(
+      value,
       DstRangeRelationToSrcRange<Dst, SaturationHandler, SrcType>(value));
 }
 

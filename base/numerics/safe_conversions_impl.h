@@ -148,12 +148,14 @@ enum RangeConstraint {
 class RangeCheck {
  public:
   constexpr RangeCheck(bool is_in_upper_bound, bool is_in_lower_bound)
-      : is_overflow_(!is_in_upper_bound), is_underflow_(!is_in_lower_bound) {}
-  constexpr RangeCheck() : is_overflow_(0), is_underflow_(0) {}
+      : is_underflow_(!is_in_lower_bound), is_overflow_(!is_in_upper_bound) {}
+  constexpr RangeCheck() : is_underflow_(0), is_overflow_(0) {}
   constexpr bool IsValid() const { return !is_overflow_ && !is_underflow_; }
   constexpr bool IsInvalid() const { return is_overflow_ && is_underflow_; }
   constexpr bool IsOverflow() const { return is_overflow_ && !is_underflow_; }
   constexpr bool IsUnderflow() const { return !is_overflow_ && is_underflow_; }
+  constexpr bool IsOverflowFlagSet() const { return is_overflow_; }
+  constexpr bool IsUnderflowFlagSet() const { return is_underflow_; }
 
   // These are some wrappers to make the tests a bit cleaner.
   constexpr operator RangeConstraint() const {
@@ -165,8 +167,10 @@ class RangeCheck {
   }
 
  private:
-  const bool is_overflow_;
-  const bool is_underflow_;
+  // Do not change the order of these member variables. The integral conversion
+  // optimization depends on this exact order.
+  const bool is_underflow_ : 1;
+  const bool is_overflow_ : 1;
 };
 
 // The following helper template addresses a corner case in range checks for
