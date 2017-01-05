@@ -1079,14 +1079,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         view.setMovementMethod(LinkMovementMethod.getInstance());
         ApiCompatibilityUtils.setTextAppearance(view, R.style.PaymentsUiSectionDescriptiveText);
 
-        LinearLayout.LayoutParams layoutParams =
-                new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-        int marginSize = mContext.getResources().getDimensionPixelSize(
+        // Add paddings instead of margin to let getMeasuredHeight return correct value for section
+        // resize animation.
+        int paddingSize = mContext.getResources().getDimensionPixelSize(
                 R.dimen.payments_section_large_spacing);
-        layoutParams.topMargin = marginSize;
-        ApiCompatibilityUtils.setMarginStart(layoutParams, marginSize);
-        ApiCompatibilityUtils.setMarginEnd(layoutParams, marginSize);
-        parent.addView(view, layoutParams);
+        ApiCompatibilityUtils.setPaddingRelative(
+                view, paddingSize, paddingSize, paddingSize, paddingSize);
+        parent.addView(view);
     }
 
     private Callback<SectionInformation> createUpdateSectionCallback(@DataType final int type) {
