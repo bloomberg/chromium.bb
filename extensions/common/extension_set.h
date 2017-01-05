@@ -26,8 +26,6 @@ class ExtensionSet {
  public:
   typedef std::pair<base::FilePath, std::string> ExtensionPathAndDefaultLocale;
   typedef std::map<std::string, scoped_refptr<const Extension> > ExtensionMap;
-  typedef base::Callback<void(const ExtensionIdSet&)>
-      ModificationCallback;
 
   // Iteration over the values of the map (given that it's an ExtensionSet,
   // it should iterate like a set iterator).
@@ -132,21 +130,8 @@ class ExtensionSet {
   // permissions the given extension has been granted.
   bool ExtensionBindingsAllowed(const GURL& url) const;
 
-  void set_modification_callback(
-      const ModificationCallback& modification_callback) {
-    modification_callback_ = modification_callback;
-  }
-
  private:
-  FRIEND_TEST_ALL_PREFIXES(ExtensionSetTest, ExtensionSet);
-
   ExtensionMap extensions_;
-
-  // If non-null, called with the extension ids in this set after a modification
-  // occurred. This is not called on Clear() which is typically used when
-  // discarding the set (e.g., on shutdown) and we do not want to track that as
-  // a real modification.
-  ModificationCallback modification_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSet);
 };
