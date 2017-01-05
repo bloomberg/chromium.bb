@@ -773,7 +773,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -981,10 +980,6 @@ bool RenderViewHostImpl::IsFocusedElementEditable() {
   return delegate_ && delegate_->IsFocusedElementEditable();
 }
 
-void RenderViewHostImpl::Zoom(PageZoom zoom) {
-  Send(new ViewMsg_Zoom(GetRoutingID(), zoom));
-}
-
 void RenderViewHostImpl::DisableScrollbarsForThreshold(const gfx::Size& size) {
   Send(new ViewMsg_DisableScrollbarsForSmallWindows(GetRoutingID(), size));
 }
@@ -1018,17 +1013,6 @@ void RenderViewHostImpl::ExecutePluginActionAtLocation(
 
 void RenderViewHostImpl::NotifyMoveOrResizeStarted() {
   Send(new ViewMsg_MoveOrResizeStarted(GetRoutingID()));
-}
-
-void RenderViewHostImpl::OnDidZoomURL(double zoom_level,
-                                      const GURL& url) {
-  HostZoomMapImpl* host_zoom_map =
-      static_cast<HostZoomMapImpl*>(HostZoomMap::Get(GetSiteInstance()));
-
-  host_zoom_map->SetZoomLevelForView(GetProcess()->GetID(),
-                                     GetRoutingID(),
-                                     zoom_level,
-                                     net::GetHostOrSpecFromURL(url));
 }
 
 void RenderViewHostImpl::SelectWordAroundCaret() {

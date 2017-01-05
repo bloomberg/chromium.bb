@@ -147,9 +147,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   virtual void SetWebUIProperty(const std::string& name,
                                 const std::string& value) = 0;
 
-  // Changes the zoom level for the current main frame.
-  virtual void Zoom(PageZoom zoom) = 0;
-
   // Send the renderer process the current preferences supplied by the
   // RenderViewHostDelegate.
   virtual void SyncRendererPrefs() = 0;

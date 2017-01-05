@@ -199,8 +199,7 @@ class CONTENT_EXPORT RenderViewImpl
   void FrameDidStartLoading(blink::WebFrame* frame);
   void FrameDidStopLoading(blink::WebFrame* frame);
 
-  // Sets the zoom level and notifies observers. Doesn't call zoomLevelChanged,
-  // as that is only for changes that aren't initiated by the client.
+  // Sets the zoom level and notifies observers.
   void SetZoomLevel(double zoom_level);
 
   double page_zoom_level() {
@@ -343,7 +342,6 @@ class CONTENT_EXPORT RenderViewImpl
   int historyForwardListCount() override;
   blink::WebSpeechRecognizer* speechRecognizer() override;
   void zoomLimitsChanged(double minimum_level, double maximum_level) override;
-  virtual void zoomLevelChanged();
   void pageScaleFactorChanged() override;
   virtual double zoomLevelToZoomFactor(double zoom_level) const;
   virtual double zoomFactorToZoomLevel(double factor) const;
@@ -565,7 +563,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnSetPageScale(float page_scale_factor);
-  void OnZoom(PageZoom zoom);
   void OnForceRedraw(const ui::LatencyInfo& latency_info);
   void OnSelectWordAroundCaret();
   void OnAudioStateChanged(bool is_audio_playing);

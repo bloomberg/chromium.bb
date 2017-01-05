@@ -449,12 +449,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
 // Sets the page scale for the current main frame to the given page scale.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetPageScale, float /* page_scale_factor */)
 
-// Change the zoom level for the current main frame.  If the level actually
-// changes, a ViewHostMsg_DidZoomURL message will be sent back to the browser
-// telling it what url got zoomed and what its current zoom level is.
-IPC_MESSAGE_ROUTED1(ViewMsg_Zoom,
-                    content::PageZoom /* function */)
-
 // Used to tell a render view whether it should expose various bindings
 // that allow JS content extended privileges.  See BindingsPolicy for valid
 // flag values.
@@ -790,14 +784,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_OpenDateTimeDialog,
 // Required for updating text input state.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,
                     content::TextInputState /* text_input_state */)
-
-// Sent when the renderer changes the zoom level for a particular url, so the
-// browser can update its records.  If the view is a plugin doc, then url is
-// used to update the zoom level for all pages in that site.  Otherwise, the
-// render view's id is used so that only the menu is updated.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DidZoomURL,
-                    double /* zoom_level */,
-                    GURL /* url */)
 
 // Sent when the renderer changes its page scale factor.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_PageScaleFactorChanged,

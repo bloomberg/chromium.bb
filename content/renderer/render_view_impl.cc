@@ -1211,7 +1211,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_ScrollFocusedEditableNodeIntoRect,
                         OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageScale, OnSetPageScale)
-    IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_AllowBindings, OnAllowBindings)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
@@ -2066,36 +2065,6 @@ void RenderViewImpl::OnSetPageScale(float page_scale_factor) {
   webview()->setPageScaleFactor(page_scale_factor);
 }
 
-void RenderViewImpl::OnZoom(PageZoom zoom) {
-  if (!webview())  // Not sure if this can happen, but no harm in being safe.
-    return;
-
-  webview()->hidePopups();
-
-  double old_zoom_level = webview()->zoomLevel();
-  double zoom_level;
-  if (zoom == PAGE_ZOOM_RESET) {
-    zoom_level = 0;
-  } else if (static_cast<int>(old_zoom_level) == old_zoom_level) {
-    // Previous zoom level is a whole number, so just increment/decrement.
-    zoom_level = old_zoom_level + zoom;
-  } else {
-    // Either the user hit the zoom factor limit and thus the zoom level is now
-    // not a whole number, or a plugin changed it to a custom value.  We want
-    // to go to the next whole number so that the user can always get back to
-    // 100% with the keyboard/menu.
-    if ((old_zoom_level > 1 && zoom > 0) ||
-        (old_zoom_level < 1 && zoom < 0)) {
-      zoom_level = static_cast<int>(old_zoom_level + zoom);
-    } else {
-      // We're going towards 100%, so first go to the next whole number.
-      zoom_level = static_cast<int>(old_zoom_level);
-    }
-  }
-  SetZoomLevel(zoom_level);
-  zoomLevelChanged();
-}
-
 void RenderViewImpl::OnSetZoomLevel(
     PageMsg_SetZoomLevel_Command command,
     double zoom_level) {
@@ -2454,20 +2423,6 @@ void RenderViewImpl::zoomLimitsChanged(double minimum_level,
 
   Send(new ViewHostMsg_UpdateZoomLimits(GetRoutingID(), minimum_percent,
                                         maximum_percent));
-}
-
-void RenderViewImpl::zoomLevelChanged() {
-  double zoom_level = webview()->zoomLevel();
-
-  // Do not send empty URLs to the browser when we are just setting the default
-  // zoom level (from RendererPreferences) before the first navigation.
-  if (!webview()->mainFrame()->document().url().isEmpty()) {
-    // Tell the browser which url got zoomed so it can update the menu and the
-    // saved values if necessary
-    Send(new ViewHostMsg_DidZoomURL(
-        GetRoutingID(), zoom_level,
-        GURL(webview()->mainFrame()->document().url())));
-  }
 }
 
 void RenderViewImpl::pageScaleFactorChanged() {
