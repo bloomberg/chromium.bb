@@ -41,7 +41,7 @@ public class LauncherShortcutActivity extends Activity {
         newIntent.putExtra(IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, true);
         newIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
         newIntent.putExtra(Browser.EXTRA_APPLICATION_ID, getPackageName());
-        IntentHandler.addTrustedIntentExtras(newIntent, this);
+        IntentHandler.addTrustedIntentExtras(newIntent);
 
         if (intentAction.equals(ACTION_OPEN_NEW_INCOGNITO_TAB)) {
             newIntent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);

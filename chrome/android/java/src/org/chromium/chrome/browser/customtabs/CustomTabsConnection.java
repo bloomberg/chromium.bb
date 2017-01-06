@@ -938,8 +938,7 @@ public class CustomTabsConnection {
             mExternalPrerenderHandler = new ExternalPrerenderHandler();
         }
         Rect contentBounds = ExternalPrerenderHandler.estimateContentSize(mApplication, true);
-        Context context = mApplication.getApplicationContext();
-        String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(extrasIntent, context);
+        String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(extrasIntent);
         if (referrer == null && getReferrerForSession(session) != null) {
             referrer = getReferrerForSession(session).getUrl();
         }

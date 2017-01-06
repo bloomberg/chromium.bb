@@ -104,7 +104,7 @@ public class InstantAppsHandlerTest extends ChromeActivityTestCaseBase<ChromeAct
 
         Intent signedIntent = createViewIntent();
         signedIntent.setPackage(mContext.getPackageName());
-        IntentHandler.addTrustedIntentExtras(signedIntent, mContext);
+        IntentHandler.addTrustedIntentExtras(signedIntent);
 
         assertFalse(mHandler.handleIncomingIntent(mContext, signedIntent, false));
     }

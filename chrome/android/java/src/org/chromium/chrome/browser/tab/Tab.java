@@ -1507,7 +1507,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     ContextUtils.getApplicationContext().getPackageName());
             intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
         }
-        IntentHandler.addTrustedIntentExtras(intent, activity);
+        IntentHandler.addTrustedIntentExtras(intent);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_REPARENTING)) {
             TabModelSelector tabModelSelector = getTabModelSelector();

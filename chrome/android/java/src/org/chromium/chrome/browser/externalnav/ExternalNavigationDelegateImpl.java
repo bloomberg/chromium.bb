@@ -484,7 +484,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             intent.addCategory(Intent.CATEGORY_BROWSABLE);
             intent.setClassName(getPackageName(), ChromeLauncherActivity.class.getName());
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            IntentHandler.addTrustedIntentExtras(intent, mApplicationContext);
+            IntentHandler.addTrustedIntentExtras(intent);
             startActivity(intent, false);
 
             if (needsToCloseTab) closeTab(tab);

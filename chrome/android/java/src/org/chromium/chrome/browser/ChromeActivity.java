@@ -788,9 +788,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void onNewIntentWithNative(Intent intent) {
         super.onNewIntentWithNative(intent);
-        if (mIntentHandler.shouldIgnoreIntent(this, intent)) return;
+        if (mIntentHandler.shouldIgnoreIntent(intent)) return;
 
-        mIntentHandler.onNewIntent(this, intent);
+        mIntentHandler.onNewIntent(intent);
     }
 
     /**

@@ -207,7 +207,7 @@ public class HistoryManager implements OnMenuItemClickListener {
         if (createNewTab) viewIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
 
         // Send intent.
-        IntentHandler.startActivityForTrustedIntent(viewIntent, mActivity);
+        IntentHandler.startActivityForTrustedIntent(viewIntent);
     }
 
     /**

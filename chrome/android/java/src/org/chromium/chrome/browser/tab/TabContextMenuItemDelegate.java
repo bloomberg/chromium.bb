@@ -147,8 +147,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
             try {
                 URI pageUri = URI.create(pageUrl);
                 if (UrlUtilities.isInternalScheme(pageUri)) {
-                    IntentHandler.startChromeLauncherActivityForTrustedIntent(
-                            chromeIntent, mTab.getApplicationContext());
+                    IntentHandler.startChromeLauncherActivityForTrustedIntent(chromeIntent);
                     activityStarted = true;
                 }
             } catch (IllegalArgumentException ex) {

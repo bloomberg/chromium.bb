@@ -663,9 +663,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     // TODO(mthiesse): Improve startup when started from a VR intent. Right now
                     // we launch out of VR, partially load out of VR, then switch into VR.
                     mVrShellDelegate.enterVRIfNecessary();
-                } else if (!mIntentHandler.shouldIgnoreIntent(ChromeTabbedActivity.this, intent)) {
-                    mIntentWithEffect = mIntentHandler.onNewIntent(ChromeTabbedActivity.this,
-                            intent);
+                } else if (!mIntentHandler.shouldIgnoreIntent(intent)) {
+                    mIntentWithEffect = mIntentHandler.onNewIntent(intent);
                 }
             }
 
@@ -831,7 +830,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                         loadUrlParams.setIntentReceivedTimestamp(mIntentHandlingTimeMs);
                         loadUrlParams.setHasUserGesture(hasUserGesture);
                         loadUrlParams.setTransitionType(IntentHandler.getTransitionTypeFromIntent(
-                                getApplicationContext(), intent, transitionType));
+                                intent, transitionType));
                         if (referer != null) {
                             loadUrlParams.setReferrer(
                                     new Referrer(referer, Referrer.REFERRER_POLICY_DEFAULT));

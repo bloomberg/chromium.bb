@@ -275,7 +275,7 @@ public class BookmarkUtils {
             intent.setClass(activity, ChromeLauncherActivity.class);
         }
 
-        IntentHandler.startActivityForTrustedIntent(intent, activity);
+        IntentHandler.startActivityForTrustedIntent(intent);
     }
 
     /**

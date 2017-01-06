@@ -41,7 +41,7 @@ public class ContentSuggestionsNotificationHelper {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
         intent.putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
-        IntentHandler.addTrustedIntentExtras(intent, context);
+        IntentHandler.addTrustedIntentExtras(intent);
         context.startActivity(intent);
     }
 

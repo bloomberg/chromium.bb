@@ -444,7 +444,7 @@ public class CustomTabActivity extends ChromeActivity {
 
             @Override
             public boolean shouldIgnoreIntent(Intent intent) {
-                return mIntentHandler.shouldIgnoreIntent(CustomTabActivity.this, intent);
+                return mIntentHandler.shouldIgnoreIntent(intent);
             }
 
             @Override
@@ -498,7 +498,7 @@ public class CustomTabActivity extends ChromeActivity {
                 CustomTabsConnection.getInstance(getApplication());
         String url = getUrlToLoad();
         // Get any referrer that has been explicitly set by the app.
-        String referrerUrl = IntentHandler.getReferrerUrlIncludingExtraHeaders(getIntent(), this);
+        String referrerUrl = IntentHandler.getReferrerUrlIncludingExtraHeaders(getIntent());
         if (referrerUrl == null) {
             Referrer referrer = customTabsConnection.getReferrerForSession(mSession);
             if (referrer != null) referrerUrl = referrer.getUrl();
@@ -638,19 +638,19 @@ public class CustomTabActivity extends ChromeActivity {
         if (mHasPrerendered && UrlUtilities.urlsFragmentsDiffer(mPrerenderedUrl, url)) {
             mHasPrerendered = false;
             LoadUrlParams temporaryParams = new LoadUrlParams(mPrerenderedUrl);
-            IntentHandler.addReferrerAndHeaders(temporaryParams, intent, this);
+            IntentHandler.addReferrerAndHeaders(temporaryParams, intent);
             tab.loadUrl(temporaryParams);
             params.setShouldReplaceCurrentEntry(true);
         }
 
-        IntentHandler.addReferrerAndHeaders(params, intent, this);
+        IntentHandler.addReferrerAndHeaders(params, intent);
         if (params.getReferrer() == null) {
             params.setReferrer(CustomTabsConnection.getInstance(getApplication())
                     .getReferrerForSession(mSession));
         }
         // See ChromeTabCreator#getTransitionType(). This marks the navigation chain as starting
         // from an external intent (unless otherwise specified by an extra in the intent).
-        params.setTransitionType(IntentHandler.getTransitionTypeFromIntent(this, intent,
+        params.setTransitionType(IntentHandler.getTransitionTypeFromIntent(intent,
                 PageTransition.LINK | PageTransition.FROM_API));
         mTabObserver.trackNextPageLoadFromTimestamp(timeStamp);
         tab.loadUrl(params);
@@ -956,7 +956,7 @@ public class CustomTabActivity extends ChromeActivity {
             StrictMode.allowThreadDiskWrites();
             try {
                 if (mIntentDataProvider.isInfoPage()) {
-                    IntentHandler.startChromeLauncherActivityForTrustedIntent(intent, this);
+                    IntentHandler.startChromeLauncherActivityForTrustedIntent(intent);
                 } else {
                     startActivity(intent, startActivityOptions);
                 }
@@ -981,7 +981,7 @@ public class CustomTabActivity extends ChromeActivity {
 
     /** Sets the initial background color for the Tab, shown before the page content is ready. */
     private void prepareTabBackground(final Tab tab) {
-        if (!IntentHandler.isIntentChromeOrFirstParty(getIntent(), this)) return;
+        if (!IntentHandler.isIntentChromeOrFirstParty(getIntent())) return;
 
         int backgroundColor = mIntentDataProvider.getInitialBackgroundColor();
         if (backgroundColor == Color.TRANSPARENT) return;
@@ -1036,7 +1036,7 @@ public class CustomTabActivity extends ChromeActivity {
         intent.setPackage(context.getPackageName());
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_INFO_PAGE, true);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-        IntentHandler.addTrustedIntentExtras(intent, context);
+        IntentHandler.addTrustedIntentExtras(intent);
 
         context.startActivity(intent);
     }

@@ -89,7 +89,7 @@ public class TabDelegate extends TabCreator {
         if (targetActivity == null) return;
 
         MultiWindowUtils.setOpenInOtherWindowIntentExtras(intent, activity, targetActivity);
-        IntentHandler.addTrustedIntentExtras(intent, activity);
+        IntentHandler.addTrustedIntentExtras(intent);
         MultiWindowUtils.onMultiInstanceModeStarted();
         activity.startActivity(intent);
     }
@@ -122,7 +122,7 @@ public class TabDelegate extends TabCreator {
 
         Intent intent = createNewTabIntent(
                 asyncParams, parentId, type == TabLaunchType.FROM_CHROME_UI);
-        IntentHandler.startActivityForTrustedIntent(intent, ContextUtils.getApplicationContext());
+        IntentHandler.startActivityForTrustedIntent(intent);
     }
 
     private Intent createNewTabIntent(
@@ -182,7 +182,6 @@ public class TabDelegate extends TabCreator {
         assert intent != null;
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | ApiCompatibilityUtils.getActivityNewDocumentFlag());
-        IntentHandler.startActivityForTrustedIntent(intent,
-                ContextUtils.getApplicationContext());
+        IntentHandler.startActivityForTrustedIntent(intent);
     }
 }

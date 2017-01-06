@@ -313,7 +313,7 @@ public class InstantAppsHandler {
         return context.getPackageName().equals(IntentUtils.safeGetStringExtra(
                 intent, Browser.EXTRA_APPLICATION_ID))
                 // We shouldn't leak internal intents with authentication tokens
-                || IntentHandler.wasIntentSenderChrome(intent, context);
+                || IntentHandler.wasIntentSenderChrome(intent);
     }
 
     /** @return Whether Chrome is the default browser on the device. */

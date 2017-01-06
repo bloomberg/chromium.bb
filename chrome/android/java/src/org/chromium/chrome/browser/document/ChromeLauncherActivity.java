@@ -295,7 +295,7 @@ public class ChromeLauncherActivity extends Activity
         Context context = ContextUtils.getApplicationContext();
         if (TextUtils.equals(context.getPackageName(),
                 IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID))
-                || IntentHandler.wasIntentSenderChrome(intent, context)) {
+                || IntentHandler.wasIntentSenderChrome(intent)) {
             return false;
         }
 

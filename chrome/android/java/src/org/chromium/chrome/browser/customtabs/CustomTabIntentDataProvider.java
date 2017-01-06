@@ -113,7 +113,7 @@ public class CustomTabIntentDataProvider {
     public CustomTabIntentDataProvider(Intent intent, Context context) {
         if (intent == null) assert false;
         mSession = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        mIsTrustedIntent = IntentHandler.isIntentChromeOrFirstParty(intent, context);
+        mIsTrustedIntent = IntentHandler.isIntentChromeOrFirstParty(intent);
 
         retrieveCustomButtons(intent, context);
         retrieveToolbarColor(intent, context);

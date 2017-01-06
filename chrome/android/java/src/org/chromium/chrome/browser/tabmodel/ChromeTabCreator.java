@@ -310,8 +310,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 break;
         }
 
-        return IntentHandler.getTransitionTypeFromIntent(mActivity.getApplicationContext(),
-                intent, transition);
+        return IntentHandler.getTransitionTypeFromIntent(intent, transition);
     }
 
     /**

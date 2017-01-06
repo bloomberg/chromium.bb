@@ -199,7 +199,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         if (firstParty) {
             Context context = getInstrumentation().getTargetContext();
             intent.setPackage(context.getPackageName());
-            IntentHandler.addTrustedIntentExtras(intent, context);
+            IntentHandler.addTrustedIntentExtras(intent);
         }
 
         final Tab originalTab = getActivity().getActivityTab();

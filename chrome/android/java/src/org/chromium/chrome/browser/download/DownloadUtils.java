@@ -411,7 +411,7 @@ public class DownloadUtils {
         intent.putExtra(
                 CustomTabsIntent.EXTRA_TOOLBAR_COLOR, mediaColor);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-        IntentHandler.addTrustedIntentExtras(intent, context);
+        IntentHandler.addTrustedIntentExtras(intent);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setClass(context, ChromeLauncherActivity.class);
@@ -468,7 +468,7 @@ public class DownloadUtils {
 
             Intent intent =
                     getMediaViewerIntentForDownloadItem(fileUri, shareUri, normalizedMimeType);
-            IntentHandler.startActivityForTrustedIntent(intent, context);
+            IntentHandler.startActivityForTrustedIntent(intent);
             return true;
         }
 
@@ -502,7 +502,7 @@ public class DownloadUtils {
     static boolean fireOpenIntentForDownload(Context context, Intent intent) {
         try {
             if (TextUtils.equals(intent.getPackage(), context.getPackageName())) {
-                IntentHandler.startActivityForTrustedIntent(intent, context);
+                IntentHandler.startActivityForTrustedIntent(intent);
             } else {
                 context.startActivity(intent);
             }
