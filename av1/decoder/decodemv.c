@@ -415,7 +415,11 @@ static TX_SIZE read_tx_size_inter(AV1_COMMON *cm, MACROBLOCKD *xd,
   TX_MODE tx_mode = cm->tx_mode;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   if (xd->lossless[xd->mi[0]->mbmi.segment_id]) return TX_4X4;
+#if CONFIG_CB4X4 && CONFIG_VAR_TX
+  if (bsize > BLOCK_4X4) {
+#else
   if (bsize >= BLOCK_8X8) {
+#endif
     if (allow_select && tx_mode == TX_MODE_SELECT) {
       const TX_SIZE coded_tx_size =
           read_selected_tx_size(cm, xd, inter_tx_size_cat_lookup[bsize], r);
