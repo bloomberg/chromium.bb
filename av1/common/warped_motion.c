@@ -676,6 +676,8 @@ static void highbd_warp_plane_old(WarpedMotionParams *wm, uint8_t *ref8,
   }
 }
 
+// Note: For an explanation of the warp algorithm, see the comment
+// above warp_plane()
 static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
                               int height, int stride, uint8_t *pred8, int p_col,
                               int p_row, int p_width, int p_height,
@@ -690,19 +692,29 @@ static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
     int32_t tmp[15 * 8];
     int i, j, k, l, m;
     int32_t *mat = wm->wmmat;
+    int32_t alpha, beta, gamma, delta;
 
-    int32_t alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
-    int32_t beta = mat[3];
-    int32_t gamma = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2];
-    int32_t delta = mat[5] -
-                    (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
-                    (1 << WARPEDMODEL_PREC_BITS);
+    if (mat[2] == 0) {
+      // assert(0 &&
+      //   "Warped motion model is incompatible with new warp filter");
+      warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row,
+                     p_width, p_height, p_stride, subsampling_x, subsampling_y,
+                     x_scale, y_scale, ref_frm);
+      return;
+    }
+
+    alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
+    beta = mat[3];
+    gamma = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2];
+    delta = mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
+            (1 << WARPEDMODEL_PREC_BITS);
     uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
     uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
 
     if ((4 * abs(alpha) + 7 * abs(beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
         (4 * abs(gamma) + 7 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
-      assert(0 && "Warped motion model is incompatible with new warp filter");
+      // assert(0 &&
+      //   "Warped motion model is incompatible with new warp filter");
       highbd_warp_plane_old(wm, ref8, width, height, stride, pred8, p_col,
                             p_row, p_width, p_height, p_stride, subsampling_x,
                             subsampling_y, x_scale, y_scale, bd, ref_frm);
@@ -893,17 +905,27 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
     int32_t tmp[15 * 8];
     int i, j, k, l, m;
     int32_t *mat = wm->wmmat;
+    int32_t alpha, beta, gamma, delta;
 
-    int32_t alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
-    int32_t beta = mat[3];
-    int32_t gamma = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2];
-    int32_t delta = mat[5] -
-                    (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
-                    (1 << WARPEDMODEL_PREC_BITS);
+    if (mat[2] == 0) {
+      // assert(0 &&
+      //   "Warped motion model is incompatible with new warp filter");
+      warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row,
+                     p_width, p_height, p_stride, subsampling_x, subsampling_y,
+                     x_scale, y_scale, ref_frm);
+      return;
+    }
+
+    alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
+    beta = mat[3];
+    gamma = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2];
+    delta = mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
+            (1 << WARPEDMODEL_PREC_BITS);
 
     if ((4 * abs(alpha) + 7 * abs(beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
         (4 * abs(gamma) + 7 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
-      assert(0 && "Warped motion model is incompatible with new warp filter");
+      // assert(0 &&
+      //   "Warped motion model is incompatible with new warp filter");
       warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row,
                      p_width, p_height, p_stride, subsampling_x, subsampling_y,
                      x_scale, y_scale, ref_frm);
