@@ -6,7 +6,6 @@
 #define DOMWindowPerformance_h
 
 #include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -15,13 +14,11 @@
 namespace blink {
 
 class DOMWindow;
-class LocalDOMWindow;
 class Performance;
 
 class CORE_EXPORT DOMWindowPerformance final
     : public GarbageCollected<DOMWindowPerformance>,
-      public Supplement<LocalDOMWindow>,
-      public ContextClient {
+      public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowPerformance);
   WTF_MAKE_NONCOPYABLE(DOMWindowPerformance);
 
@@ -37,8 +34,6 @@ class CORE_EXPORT DOMWindowPerformance final
 
   Performance* performance();
 
-  // TODO(sof): try to move this direct reference and instead rely on frame().
-  Member<LocalDOMWindow> m_window;
   Member<Performance> m_performance;
 };
 
