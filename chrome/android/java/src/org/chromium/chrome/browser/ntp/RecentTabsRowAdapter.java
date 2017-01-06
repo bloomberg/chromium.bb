@@ -28,13 +28,13 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow;
-import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninAndSyncView;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Row adapter for presenting recently closed tabs, synced tabs from other devices, the sync or
@@ -65,7 +65,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     }
 
     private final Activity mActivity;
-    private final ArrayList<Group> mGroups;
+    private final List<Group> mGroups;
     private final Drawable mDefaultFavicon;
     private final RecentTabsManager mRecentTabsManager;
     private final RecentlyClosedTabsGroup mRecentlyClosedTabsGroup = new RecentlyClosedTabsGroup();
@@ -349,8 +349,8 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
      * page.
      */
     class RecentlyClosedTabsGroup extends Group {
-        private static final int ID_OPEN_IN_NEW_TAB = 1;
-        private static final int ID_REMOVE_ALL = 2;
+        static final int ID_OPEN_IN_NEW_TAB = 1;
+        static final int ID_REMOVE_ALL = 2;
 
         @Override
         public GroupType getGroupType() {
@@ -629,7 +629,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     public RecentTabsRowAdapter(Activity activity, RecentTabsManager recentTabsManager) {
         mActivity = activity;
         mRecentTabsManager = recentTabsManager;
-        mGroups = new ArrayList<Group>();
+        mGroups = new ArrayList<>();
         mFaviconCache = buildFaviconCache(MAX_NUM_FAVICONS_TO_CACHE);
 
         Resources resources = activity.getResources();

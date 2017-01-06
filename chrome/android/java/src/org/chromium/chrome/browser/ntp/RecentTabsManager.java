@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
@@ -18,8 +19,6 @@ import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionCallback;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
-import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedCallback;
-import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
@@ -51,6 +50,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     private static final String PREF_SIGNIN_PROMO_DECLINED =
             "recent_tabs_signin_promo_declined";
 
+    private static RecentlyClosedTabManager sRecentlyClosedTabManagerForTests;
+
     private final Profile mProfile;
     private final Tab mTab;
     private final Context mContext;
@@ -60,7 +61,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     private List<ForeignSession> mForeignSessions;
     private List<RecentlyClosedTab> mRecentlyClosedTabs;
     private RecentTabsPagePrefs mPrefs;
-    private RecentlyClosedBridge mRecentlyClosedBridge;
+    private RecentlyClosedTabManager mRecentlyClosedTabManager;
     private SigninManager mSignInManager;
     private UpdatedCallback mUpdatedCallback;
     private boolean mIsDestroyed;
@@ -75,12 +76,22 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     public RecentTabsManager(Tab tab, Profile profile, Context context) {
         mProfile = profile;
         mTab = tab;
-        mForeignSessionHelper = buildForeignSessionHelper(mProfile);
-        mPrefs = new RecentTabsPagePrefs(mProfile);
-        mFaviconHelper = buildFaviconHelper();
-        mRecentlyClosedBridge = buildRecentlyClosedBridge(mProfile);
+        mForeignSessionHelper = new ForeignSessionHelper(profile);
+        mPrefs = new RecentTabsPagePrefs(profile);
+        mFaviconHelper = new FaviconHelper();
+        mRecentlyClosedTabManager = sRecentlyClosedTabManagerForTests != null
+                ? sRecentlyClosedTabManagerForTests
+                : new RecentlyClosedBridge(profile);
         mSignInManager = SigninManager.get(context);
         mContext = context;
+
+        mRecentlyClosedTabManager.setTabsUpdatedRunnable(new Runnable() {
+            @Override
+            public void run() {
+                updateRecentlyClosedTabs();
+                postUpdate();
+            }
+        });
 
         updateRecentlyClosedTabs();
         registerForForeignSessionUpdates();
@@ -104,8 +115,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mFaviconHelper.destroy();
         mFaviconHelper = null;
 
-        mRecentlyClosedBridge.destroy();
-        mRecentlyClosedBridge = null;
+        mRecentlyClosedTabManager.destroy();
+        mRecentlyClosedTabManager = null;
 
         mForeignSessionHelper.destroy();
         mForeignSessionHelper = null;
@@ -116,33 +127,6 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mPrefs = null;
 
         InvalidationController.get(mContext).onRecentTabsPageClosed();
-    }
-
-    /**
-     * Returns true if destroy() has been called.
-     */
-    public boolean isDestroyed() {
-        return mIsDestroyed;
-    }
-
-    private static ForeignSessionHelper buildForeignSessionHelper(Profile profile) {
-        return new ForeignSessionHelper(profile);
-    }
-
-    private static FaviconHelper buildFaviconHelper() {
-        return new FaviconHelper();
-    }
-
-    private RecentlyClosedBridge buildRecentlyClosedBridge(Profile profile) {
-        RecentlyClosedBridge bridge = new RecentlyClosedBridge(profile);
-        bridge.setRecentlyClosedCallback(new RecentlyClosedCallback() {
-            @Override
-            public void onUpdated() {
-                updateRecentlyClosedTabs();
-                postUpdate();
-            }
-        });
-        return bridge;
     }
 
     private void registerForForeignSessionUpdates() {
@@ -161,8 +145,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     }
 
     private void updateRecentlyClosedTabs() {
-        mRecentlyClosedTabs = mRecentlyClosedBridge.getRecentlyClosedTabs(
-                RECENTLY_CLOSED_MAX_TAB_COUNT);
+        mRecentlyClosedTabs =
+                mRecentlyClosedTabManager.getRecentlyClosedTabs(RECENTLY_CLOSED_MAX_TAB_COUNT);
     }
 
     private void updateForeignSessions() {
@@ -210,7 +194,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     public void openRecentlyClosedTab(RecentlyClosedTab tab, int windowDisposition) {
         if (mIsDestroyed) return;
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
-        mRecentlyClosedBridge.openRecentlyClosedTab(mTab, tab, windowDisposition);
+        mRecentlyClosedTabManager.openRecentlyClosedTab(mTab, tab, windowDisposition);
     }
 
     /**
@@ -297,7 +281,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         return mPrefs.getRecentlyClosedTabsCollapsed();
     }
 
-   /**
+    /**
      * Remove Foreign session to display. Note that it might reappear during the next sync if the
      * session is not orphaned.
      *
@@ -314,7 +298,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void clearRecentlyClosedTabs() {
         if (mIsDestroyed) return;
-        mRecentlyClosedBridge.clearRecentlyClosedTabs();
+        mRecentlyClosedTabManager.clearRecentlyClosedTabs();
     }
 
     /**
@@ -365,7 +349,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         return mPrefs.getSyncPromoCollapsed();
     }
 
-    protected void postUpdate() {
+    private void postUpdate() {
         if (mUpdatedCallback != null) {
             mUpdatedCallback.onUpdated();
         }
@@ -397,5 +381,10 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
     public boolean isSignedIn() {
         return ChromeSigninController.get(mContext).isSignedIn();
+    }
+
+    @VisibleForTesting
+    public static void setRecentlyClosedTabManagerForTests(RecentlyClosedTabManager manager) {
+        sRecentlyClosedTabManagerForTests = manager;
     }
 }

@@ -20,7 +20,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
-using base::android::ScopedJavaLocalRef;
+using base::android::ScopedJavaGlobalRef;
 
 namespace {
 
@@ -53,10 +53,12 @@ void AddTabsToList(JNIEnv* env,
 
 }  // namespace
 
-RecentlyClosedTabsBridge::RecentlyClosedTabsBridge(Profile* profile)
-    : profile_(profile),
-      tab_restore_service_(NULL) {
-}
+RecentlyClosedTabsBridge::RecentlyClosedTabsBridge(
+    ScopedJavaGlobalRef<jobject> jbridge,
+    Profile* profile)
+    : bridge_(std::move(jbridge)),
+      profile_(profile),
+      tab_restore_service_(nullptr) {}
 
 RecentlyClosedTabsBridge::~RecentlyClosedTabsBridge() {
   if (tab_restore_service_)
@@ -66,13 +68,6 @@ RecentlyClosedTabsBridge::~RecentlyClosedTabsBridge() {
 void RecentlyClosedTabsBridge::Destroy(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
   delete this;
-}
-
-void RecentlyClosedTabsBridge::SetRecentlyClosedCallback(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jcallback) {
-  callback_.Reset(env, jcallback);
 }
 
 jboolean RecentlyClosedTabsBridge::GetRecentlyClosedTabs(
@@ -152,10 +147,7 @@ void RecentlyClosedTabsBridge::ClearRecentlyClosedTabs(
 
 void RecentlyClosedTabsBridge::TabRestoreServiceChanged(
     sessions::TabRestoreService* service) {
-  if (callback_.is_null())
-    return;
-  JNIEnv* env = AttachCurrentThread();
-  Java_RecentlyClosedCallback_onUpdated(env, callback_);
+  Java_RecentlyClosedBridge_onUpdated(AttachCurrentThread(), bridge_);
 }
 
 void RecentlyClosedTabsBridge::TabRestoreServiceDestroyed(
@@ -180,9 +172,10 @@ void RecentlyClosedTabsBridge::EnsureTabRestoreService() {
 }
 
 static jlong Init(JNIEnv* env,
-                  const JavaParamRef<jobject>& obj,
+                  const JavaParamRef<jobject>& jbridge,
                   const JavaParamRef<jobject>& jprofile) {
   RecentlyClosedTabsBridge* bridge = new RecentlyClosedTabsBridge(
+      ScopedJavaGlobalRef<jobject>(env, jbridge.obj()),
       ProfileAndroid::FromProfileAndroid(jprofile));
   return reinterpret_cast<intptr_t>(bridge);
 }

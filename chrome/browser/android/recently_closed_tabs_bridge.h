@@ -17,13 +17,10 @@ class Profile;
 // Provides the list of recently closed tabs to Java.
 class RecentlyClosedTabsBridge : public sessions::TabRestoreServiceObserver {
  public:
-  explicit RecentlyClosedTabsBridge(Profile* profile);
+  RecentlyClosedTabsBridge(base::android::ScopedJavaGlobalRef<jobject> jbridge,
+                           Profile* profile);
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void SetRecentlyClosedCallback(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& jcallback);
   jboolean GetRecentlyClosedTabs(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -41,8 +38,8 @@ class RecentlyClosedTabsBridge : public sessions::TabRestoreServiceObserver {
   void ClearRecentlyClosedTabs(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
 
-  // Observer callback for TabRestoreServiceObserver. Notifies the registered
-  // callback that the recently closed tabs list has changed.
+  // Observer callback for TabRestoreServiceObserver. Notifies the Java bridge
+  // that the recently closed tabs list has changed.
   void TabRestoreServiceChanged(sessions::TabRestoreService* service) override;
 
   // Observer callback when our associated TabRestoreService is destroyed.
@@ -59,8 +56,8 @@ class RecentlyClosedTabsBridge : public sessions::TabRestoreServiceObserver {
   // tab_restore_service_ may still be NULL, however, in incognito mode.
   void EnsureTabRestoreService();
 
-  // The callback to be notified when the list of recently closed tabs changes.
-  base::android::ScopedJavaGlobalRef<jobject> callback_;
+  // The Java RecentlyClosedBridge.
+  base::android::ScopedJavaGlobalRef<jobject> bridge_;
 
   // The profile whose recently closed tabs are being monitored.
   Profile* profile_;
