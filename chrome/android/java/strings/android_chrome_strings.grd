@@ -2880,11 +2880,6 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_KEYBOARD_SHORTCUT_WEBPAGE_GROUP_HEADER" desc="A text label that appears above a list of shortcuts that are related to manipulation of the current tab window. This group is part of several groups of keyboard shortcuts all shown in a dialog.">
         Webpage shortcuts
       </message>
-
-      <!-- Content suggestion strings -->
-      <message name="IDS_CONTENT_SUGGESTIONS_STANDALONE_UI" desc="A text label for the menu item to open the content suggestions standalone UI." translateable="false">
-        🔰🆕👌
-      </message>
     </messages>
   </release>
 </grit>

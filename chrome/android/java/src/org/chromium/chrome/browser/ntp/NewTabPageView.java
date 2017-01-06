@@ -361,15 +361,8 @@ public class NewTabPageView extends FrameLayout
             mScrollView.enableBottomShadow(SHADOW_COLOR);
             mNewTabPageLayout = (NewTabPageLayout) findViewById(R.id.ntp_content);
         }
-        mContextMenuManager = new ContextMenuManager(mActivity, mManager,
-                mUseCardsUi ? mRecyclerView : mScrollView);
-        mActivity.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
-        manager.addDestructionObserver(new DestructionObserver() {
-            @Override
-            public void onDestroy() {
-                mActivity.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
-            }
-        });
+        mContextMenuManager =
+                new ContextMenuManager(mManager, tab, mUseCardsUi ? mRecyclerView : mScrollView);
 
         mMostVisitedDesign = new MostVisitedDesign(getContext());
         mMostVisitedLayout =

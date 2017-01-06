@@ -29,7 +29,6 @@ import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.
 import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
-import android.view.View;
 
 import org.junit.After;
 import org.junit.Before;
@@ -972,8 +971,7 @@ public class NewTabPageAdapterTest {
     }
 
     private void reloadNtp() {
-        mAdapter = new NewTabPageAdapter(mNewTabPageManager, mock(View.class), null,
-                mOfflinePageBridge);
+        mAdapter = new NewTabPageAdapter(mNewTabPageManager, null, null, mOfflinePageBridge);
     }
 
     private void assertArticlesEqual(List<SnippetArticle> articles, int start, int end) {

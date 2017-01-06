@@ -17,6 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -42,10 +43,9 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
     public static final int ID_SAVE_FOR_OFFLINE = 3;
     public static final int ID_REMOVE = 4;
 
-    private final Activity mActivity;
     private final NewTabPageManager mManager;
+    private final Tab mTab;
     private final TouchDisableableView mOuterView;
-    private boolean mContextMenuOpen;
 
     /** Defines callback to configure the context menu and respond to user interaction. */
     public interface Delegate {
@@ -65,10 +65,10 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
     /** Interface for a view that can be set to stop responding to touches. */
     public interface TouchDisableableView { void setTouchEnabled(boolean enabled); }
 
-    public ContextMenuManager(Activity activity, NewTabPageManager newTabPageManager,
-            TouchDisableableView outerView) {
-        mActivity = activity;
+    public ContextMenuManager(
+            NewTabPageManager newTabPageManager, Tab tab, TouchDisableableView outerView) {
         mManager = newTabPageManager;
+        mTab = tab;
         mOuterView = outerView;
     }
 
@@ -111,19 +111,22 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         // or swiping to dismiss an item (eg. https://crbug.com/638854, https://crbug.com/638555,
         // https://crbug.com/636296)
         mOuterView.setTouchEnabled(false);
-        mContextMenuOpen = true;
+
+        mTab.getWindowAndroid().addContextMenuCloseListener(this);
     }
 
     @Override
     public void onContextMenuClosed() {
-        if (!mContextMenuOpen) return;
         mOuterView.setTouchEnabled(true);
-        mContextMenuOpen = false;
+        mTab.getWindowAndroid().removeContextMenuCloseListener(this);
     }
 
     /** Closes the context menu, if open. */
     public void closeContextMenu() {
-        mActivity.closeContextMenu();
+        Activity activity = mTab.getWindowAndroid().getActivity().get();
+        if (activity == null) return;
+
+        activity.closeContextMenu();
     }
 
     private boolean shouldShowItem(@ContextMenuItemId int itemId, Delegate delegate) {

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -28,34 +27,32 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
  */
 public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements NodeParent {
     private final NewTabPageManager mNewTabPageManager;
-    @Nullable
     private final View mAboveTheFoldView;
     private final UiConfig mUiConfig;
     private NewTabPageRecyclerView mRecyclerView;
 
     private final InnerNode mRoot;
 
-    @Nullable
-    private final AboveTheFoldItem mAboveTheFold;
+    private final AboveTheFoldItem mAboveTheFold = new AboveTheFoldItem();
     private final SectionList mSections;
     private final SignInPromo mSigninPromo;
     private final AllDismissedItem mAllDismissed;
     private final Footer mFooter;
-    private final SpacingItem mBottomSpacer;
+    private final SpacingItem mBottomSpacer = new SpacingItem();
 
     /**
      * Creates the adapter that will manage all the cards to display on the NTP.
      *
      * @param manager the NewTabPageManager to use to interact with the rest of the system.
      * @param aboveTheFoldView the layout encapsulating all the above-the-fold elements
-     *         (logo, search box, most visited tiles), or null if only suggestions should
-     *         be displayed.
+     *                         (logo, search box, most visited tiles)
      * @param uiConfig the NTP UI configuration, to be passed to created views.
      * @param offlinePageBridge the OfflinePageBridge used to determine if articles are available
-     *         offline.
+     *                              offline.
+     *
      */
-    public NewTabPageAdapter(NewTabPageManager manager, @Nullable View aboveTheFoldView,
-            UiConfig uiConfig, OfflinePageBridge offlinePageBridge) {
+    public NewTabPageAdapter(NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig,
+            OfflinePageBridge offlinePageBridge) {
         mNewTabPageManager = manager;
         mAboveTheFoldView = aboveTheFoldView;
         mUiConfig = uiConfig;
@@ -66,19 +63,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mAllDismissed = new AllDismissedItem();
         mFooter = new Footer();
 
-        if (mAboveTheFoldView == null) {
-            mAboveTheFold = null;
-        } else {
-            mAboveTheFold = new AboveTheFoldItem();
-            mRoot.addChild(mAboveTheFold);
-        }
-        mRoot.addChildren(mSections, mSigninPromo, mAllDismissed, mFooter);
-        if (mAboveTheFoldView == null) {
-            mBottomSpacer = null;
-        } else {
-            mBottomSpacer = new SpacingItem();
-            mRoot.addChild(mBottomSpacer);
-        }
+        mRoot.addChildren(
+                mAboveTheFold, mSections, mSigninPromo, mAllDismissed, mFooter, mBottomSpacer);
 
         updateAllDismissedVisibility();
         mRoot.setParent(this);
@@ -141,8 +127,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     public int getAboveTheFoldPosition() {
-        if (mAboveTheFoldView == null) return RecyclerView.NO_POSITION;
-
         return getChildPositionOffset(mAboveTheFold);
     }
 
@@ -162,8 +146,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     int getBottomSpacerPosition() {
-        if (mBottomSpacer == null) return RecyclerView.NO_POSITION;
-
         return getChildPositionOffset(mBottomSpacer);
     }
 
@@ -183,7 +165,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     public void onItemRangeInserted(TreeNode child, int itemPosition, int itemCount) {
         assert child == mRoot;
         notifyItemRangeInserted(itemPosition, itemCount);
-        if (mBottomSpacer != null) mBottomSpacer.refresh();
+        mBottomSpacer.refresh();
 
         updateAllDismissedVisibility();
     }
@@ -192,7 +174,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     public void onItemRangeRemoved(TreeNode child, int itemPosition, int itemCount) {
         assert child == mRoot;
         notifyItemRangeRemoved(itemPosition, itemCount);
-        if (mBottomSpacer != null) mBottomSpacer.refresh();
+        mBottomSpacer.refresh();
 
         updateAllDismissedVisibility();
     }
