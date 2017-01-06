@@ -85,6 +85,11 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   AlertCoordinator* _actionSheet;
   std::unique_ptr<ReadingListModelBridge> _modelBridge;
   UIView* _emptyCollectionBackground;
+
+  // Whether the model modifications should be taken into account.
+  BOOL _shouldMonitorModel;
+  // Whether the model has pending modifications.
+  BOOL _modelHasBeenModified;
 }
 
 // Lazily instantiated.
@@ -101,9 +106,21 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 // of the map key.
 - (void)loadItemsFromMap:(const ItemsMapByDate&)map
                toSection:(SectionIdentifier)sectionIdentifier;
+// Whether the model has changed.
+- (BOOL)hasModelChanged;
+// Returns whether there is a difference between the elements contained in the
+// |sectionIdentifier| and those in the |map|.
+- (BOOL)section:(SectionIdentifier)sectionIdentifier
+    isDifferentOfMap:(ItemsMapByDate&)map;
+// Reloads the data if a changed occured during editing
+- (void)applyPendingUpdates;
 // Convenience method to create cell items for reading list entries.
 - (ReadingListCollectionViewItem*)cellItemForReadingListEntry:
     (const ReadingListEntry&)entry;
+// Fills the |unread_map| and the |read_map| with the corresponding
+// ReadingListCollectionViewItem from the readingListModel.
+- (void)fillUnreadMap:(ItemsMapByDate&)unread_map
+              readMap:(ItemsMapByDate&)read_map;
 // Returns whether there are elements in the section identified by
 // |sectionIdentifier|.
 - (BOOL)hasItemInSection:(SectionIdentifier)sectionIdentifier;
@@ -135,7 +152,8 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 // Applies |action| to every cell in the section |identifier|.
 - (void)updateItemsInSectionIdentifier:(SectionIdentifier)identifier
                      usingEntryUpdater:(EntryUpdater)updater;
-// Applies |action| to every selected element of collection view.
+// Applies |action| to every selected element of collection view. The monitoring
+// of the model updates is stopped during this time.
 - (void)updateSelectedItemsWithEntryUpdater:(EntryUpdater)updater;
 // Logs the deletions histograms for the entry with |url|.
 - (void)logDeletionHistogramsForEntry:(const GURL&)url;
@@ -186,6 +204,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     _largeIconService = largeIconService;
     _readingListDownloadService = readingListDownloadService;
     _emptyCollectionBackground = [self emptyCollectionBackground];
+
+    _shouldMonitorModel = YES;
+    _modelHasBeenModified = NO;
 
     _modelBridge.reset(new ReadingListModelBridge(self, model));
   }
@@ -312,22 +333,33 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 - (void)readingListModelDidApplyChanges:(const ReadingListModel*)model {
-  // Ignore model updates when the view controller is being edited or  doing
-  // batch updates.
-  if (model->IsPerformingBatchUpdates() || [self.editor isEditing]) {
+  if (!_shouldMonitorModel) {
     return;
   }
 
-  [self reloadData];
+  // If we are editing and monitoring the model updates, set a flag to reload
+  // the data at the end of the editing.
+  if ([self.editor isEditing]) {
+    _modelHasBeenModified = YES;
+    return;
+  }
+
+  // Ignore model updates when the view controller is doing batch updates.
+  if (model->IsPerformingBatchUpdates()) {
+    return;
+  }
+
+  if ([self hasModelChanged])
+    [self reloadData];
 }
 
 - (void)readingListModelCompletedBatchUpdates:(const ReadingListModel*)model {
-  // Ignore model updates when the view controller is being edited.
-  if ([self.editor isEditing]) {
+  if (!_shouldMonitorModel) {
     return;
   }
 
-  [self reloadData];
+  if ([self hasModelChanged])
+    [self reloadData];
 }
 
 #pragma mark - private methods
@@ -483,6 +515,16 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 - (void)loadItems {
   ItemsMapByDate read_map;
   ItemsMapByDate unread_map;
+  [self fillUnreadMap:unread_map readMap:read_map];
+  [self loadItemsFromMap:unread_map toSection:SectionIdentifierUnread];
+  [self loadItemsFromMap:read_map toSection:SectionIdentifierRead];
+
+  BOOL hasRead = read_map.size() > 0;
+  [_toolbar setHasReadItem:hasRead];
+}
+
+- (void)fillUnreadMap:(ItemsMapByDate&)unread_map
+              readMap:(ItemsMapByDate&)read_map {
   for (const auto& url : self.readingListModel->Keys()) {
     const ReadingListEntry* entry = self.readingListModel->GetEntryByURL(url);
     ReadingListCollectionViewItem* item =
@@ -493,11 +535,6 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
       unread_map.insert(std::make_pair(entry->UpdateTime(), item));
     }
   }
-  [self loadItemsFromMap:unread_map toSection:SectionIdentifierUnread];
-  [self loadItemsFromMap:read_map toSection:SectionIdentifierRead];
-
-  BOOL hasRead = read_map.size() > 0;
-  [_toolbar setHasReadItem:hasRead];
 }
 
 - (void)reloadData {
@@ -505,6 +542,55 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   if ([self isViewLoaded]) {
     [self.collectionView reloadData];
   }
+}
+
+- (void)applyPendingUpdates {
+  if (_modelHasBeenModified) {
+    [self reloadData];
+  }
+}
+
+- (BOOL)hasModelChanged {
+  ItemsMapByDate read_map;
+  ItemsMapByDate unread_map;
+  [self fillUnreadMap:unread_map readMap:read_map];
+
+  if ([self section:SectionIdentifierRead isDifferentOfMap:read_map])
+    return YES;
+  if ([self section:SectionIdentifierUnread isDifferentOfMap:unread_map])
+    return YES;
+
+  return NO;
+}
+
+- (BOOL)section:(SectionIdentifier)sectionIdentifier
+    isDifferentOfMap:(ItemsMapByDate&)map {
+  if (![self.collectionViewModel
+          hasSectionForSectionIdentifier:sectionIdentifier]) {
+    return !map.empty();
+  }
+
+  NSArray* items =
+      [self.collectionViewModel itemsInSectionWithIdentifier:sectionIdentifier];
+  if ([items count] != map.size())
+    return NO;
+
+  NSInteger index = 0;
+  ItemsMapByDate::const_reverse_iterator iterator = map.rbegin();
+  for (; iterator != map.rend(); iterator++) {
+    ReadingListCollectionViewItem* oldItem =
+        base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(items[index]);
+    ReadingListCollectionViewItem* newItem = iterator->second;
+    if (oldItem.url == newItem.url) {
+      oldItem.text = newItem.text;
+      oldItem.distillationState = newItem.distillationState;
+    }
+    if (![oldItem isEqual:newItem]) {
+      return YES;
+    }
+    index++;
+  }
+  return NO;
 }
 
 - (ReadingListCollectionViewItem*)cellItemForReadingListEntry:
@@ -759,7 +845,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   }
       completion:^(BOOL) {
         // Reload data to take into account possible sync events.
-        [self reloadData];
+        [self applyPendingUpdates];
       }];
   // As we modified the section in the batch update block, remove the section in
   // another block.
@@ -783,7 +869,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   }
       completion:^(BOOL) {
         // Reload data to take into account possible sync events.
-        [self reloadData];
+        [self applyPendingUpdates];
       }];
   // As we modified the section in the batch update block, remove the section in
   // another block.
@@ -804,6 +890,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 - (void)updateSelectedItemsWithEntryUpdater:(EntryUpdater)updater {
+  _shouldMonitorModel = NO;
   auto token = self.readingListModel->BeginBatchUpdates();
   for (NSIndexPath* index in self.collectionView.indexPathsForSelectedItems) {
     CollectionViewItem* cell = [self.collectionViewModel itemAtIndexPath:index];
@@ -812,6 +899,9 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     if (updater)
       updater(readingListItem.url);
   }
+  // Leave the batch update while it is not monitored.
+  token.reset();
+  _shouldMonitorModel = YES;
 }
 
 - (void)logDeletionHistogramsForEntry:(const GURL&)url {
@@ -871,7 +961,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   }
       completion:^(BOOL) {
         // Reload data to take into account possible sync events.
-        [self reloadData];
+        [self applyPendingUpdates];
       }];
   // As we modified the section in the batch update block, remove the section in
   // another block.
@@ -918,7 +1008,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   }
       completion:^(BOOL) {
         // Reload data to take into account possible sync events.
-        [self reloadData];
+        [self applyPendingUpdates];
       }];
   // As we modified the section in the batch update block, remove the section in
   // another block.

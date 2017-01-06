@@ -21,6 +21,9 @@ class GURL;
 @property(nonatomic, copy) NSString* detailText;
 // The URL of the Reading List entry.
 @property(nonatomic, readonly) const GURL& url;
+// Status of the offline version.
+@property(nonatomic, assign)
+    ReadingListEntry::DistillationState distillationState;
 
 // Designated initializer. The |provider| will be used for loading favicon
 // attributes. The |delegate| is used to inform about changes to this item. The

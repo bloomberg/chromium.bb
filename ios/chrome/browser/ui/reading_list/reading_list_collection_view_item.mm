@@ -47,7 +47,6 @@ const CGFloat kDistillationIndicatorSize = 18;
 
 @interface ReadingListCollectionViewItem ()<ReadingListCellDelegate> {
   GURL _url;
-  ReadingListEntry::DistillationState _distillationState;
 }
 // Attributes provider used to retrieve favicons.
 @property(nonatomic, strong)
@@ -66,6 +65,7 @@ const CGFloat kDistillationIndicatorSize = 18;
 @synthesize detailText = _detailText;
 @synthesize url = _url;
 @synthesize displayedCell = _displayedCell;
+@synthesize distillationState = _distillationState;
 
 - (instancetype)initWithType:(NSInteger)type
           attributesProvider:(FaviconAttributesProvider*)provider
@@ -94,6 +94,14 @@ const CGFloat kDistillationIndicatorSize = 18;
                         }];
 
   return self;
+}
+
+#pragma mark - property
+
+- (void)setDistillationState:
+    (ReadingListEntry::DistillationState)distillationState {
+  self.displayedCell.distillationState = distillationState;
+  _distillationState = distillationState;
 }
 
 #pragma mark - CollectionViewTextItem
@@ -126,6 +134,18 @@ const CGFloat kDistillationIndicatorSize = 18;
 - (NSString*)description {
   return [NSString stringWithFormat:@"Reading List item \"%@\" for url %@",
                                     self.text, self.detailText];
+}
+
+- (BOOL)isEqual:(id)other {
+  if (other == self)
+    return YES;
+  if (!other || ![other isKindOfClass:[self class]])
+    return NO;
+  ReadingListCollectionViewItem* otherItem =
+      static_cast<ReadingListCollectionViewItem*>(other);
+  return [self.text isEqualToString:otherItem.text] &&
+         [self.detailText isEqualToString:otherItem.detailText] &&
+         self.distillationState == otherItem.distillationState;
 }
 
 @end
@@ -220,7 +240,7 @@ const CGFloat kDistillationIndicatorSize = 18;
   }
 }
 
-#pragma mark UICollectionViewCell
+#pragma mark - UICollectionViewCell
 
 - (void)prepareForReuse {
   [self.delegate readingListCellWillPrepareForReload:self];
