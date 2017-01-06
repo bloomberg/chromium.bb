@@ -2,30 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_MANAGER_H_
-
-#include <stddef.h>
+#ifndef UI_BASE_IME_CHROMEOS_MOCK_INPUT_METHOD_MANAGER_H_
+#define UI_BASE_IME_CHROMEOS_MOCK_INPUT_METHOD_MANAGER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
-#include "ui/base/ime/chromeos/fake_ime_keyboard.h"
-#include "ui/base/ime/chromeos/fake_input_method_delegate.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/input_method_whitelist.h"
 
 namespace chromeos {
 namespace input_method {
+class InputMethodUtil;
+class ImeKeyboard;
 
-// The mock implementation of InputMethodManager for testing.
-class MockInputMethodManager : public InputMethodManager {
+// The mock InputMethodManager for testing.
+class UI_BASE_IME_EXPORT MockInputMethodManager : public InputMethodManager {
+ public:
  public:
   class State : public InputMethodManager::State {
    public:
-    explicit State(MockInputMethodManager* manager);
+    State();
 
-    scoped_refptr<InputMethodManager::State> Clone() const override;
     void AddInputMethodExtension(
         const std::string& extension_id,
         const InputMethodDescriptors& descriptors,
@@ -59,23 +54,21 @@ class MockInputMethodManager : public InputMethodManager {
     bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_active_input_method_ids) override;
 
-    // The value GetCurrentInputMethod().id() will return.
-    std::string current_input_method_id;
-
     // The active input method ids cache (actually default only)
     std::vector<std::string> active_input_method_ids;
 
    protected:
-    friend base::RefCounted<chromeos::input_method::InputMethodManager::State>;
+    friend base::RefCounted<InputMethodManager::State>;
     ~State() override;
 
-    MockInputMethodManager* const manager_;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(State);
   };
 
   MockInputMethodManager();
   ~MockInputMethodManager() override;
 
-  // InputMethodManager override:
+  // InputMethodManager:
   UISessionState GetUISessionState() override;
   void AddObserver(InputMethodManager::Observer* observer) override;
   void AddCandidateWindowObserver(
@@ -109,36 +102,11 @@ class MockInputMethodManager : public InputMethodManager {
   void OverrideKeyboardUrlRef(const std::string& keyset) override;
   bool IsEmojiHandwritingVoiceOnImeMenuEnabled() override;
 
-  // Sets an input method ID which will be returned by GetCurrentInputMethod().
-  void SetCurrentInputMethodId(const std::string& input_method_id);
-
-  void SetComponentExtensionIMEManager(
-      std::unique_ptr<ComponentExtensionIMEManager> comp_ime_manager);
-
-  // Set values that will be provided to the InputMethodUtil.
-  void set_application_locale(const std::string& value);
-
-  // Set the value returned by IsISOLevel5ShiftUsedByCurrentInputMethod
-  void set_mod3_used(bool value) { mod3_used_ = value; }
-
-  // TODO(yusukes): Add more variables for counting the numbers of the API calls
-  int add_observer_count_;
-  int remove_observer_count_;
-
- protected:
-  scoped_refptr<State> state_;
-
  private:
-  FakeInputMethodDelegate delegate_;  // used by util_
-  InputMethodUtil util_;
-  FakeImeKeyboard keyboard_;
-  bool mod3_used_;
-  std::unique_ptr<ComponentExtensionIMEManager> comp_ime_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(MockInputMethodManager);
 };
 
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_MANAGER_H_
+#endif  // UI_BASE_IME_CHROMEOS_MOCK_INPUT_METHOD_MANAGER_H_

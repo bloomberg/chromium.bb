@@ -673,6 +673,13 @@ static_library("test_support") {
     sources += [ "test/user_interactive_test_case.cc" ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "ime/chromeos/mock_input_method_manager.cc",
+      "ime/chromeos/mock_input_method_manager.h",
+    ]
+  }
+
   public_deps = [
     ":base",
   ]

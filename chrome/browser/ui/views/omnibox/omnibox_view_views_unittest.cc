@@ -22,7 +22,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #endif
 
 namespace {
@@ -102,7 +102,7 @@ class OmniboxViewViewsTest : public testing::Test {
   void SetUp() override {
 #if defined(OS_CHROMEOS)
     chromeos::input_method::InitializeForTesting(
-        new chromeos::input_method::MockInputMethodManager);
+        new chromeos::input_method::MockInputMethodManagerImpl);
 #endif
     omnibox_view_.reset(new TestingOmniboxViewViews(
         &omnibox_edit_controller_, &profile_, &command_updater_));

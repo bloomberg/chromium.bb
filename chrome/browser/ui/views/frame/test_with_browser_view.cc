@@ -29,7 +29,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #endif
 
 namespace {
@@ -78,7 +78,7 @@ void TestWithBrowserView::SetUp() {
       new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InitializeForTesting(
-      new chromeos::input_method::MockInputMethodManager);
+      new chromeos::input_method::MockInputMethodManagerImpl);
 #endif
   testing_io_thread_state_.reset(new chrome::TestingIOThreadState());
   BrowserWithTestWindowTest::SetUp();

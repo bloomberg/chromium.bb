@@ -11,18 +11,18 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 
 namespace chromeos {
 
 class MockInputMethodManagerWithInputMethods
-    : public input_method::MockInputMethodManager {
+    : public input_method::MockInputMethodManagerImpl {
  public:
   MockInputMethodManagerWithInputMethods();
   ~MockInputMethodManagerWithInputMethods() override;
 
-  // input_method::MockInputMethodManager:
+  // input_method::MockInputMethodManagerImpl:
   std::unique_ptr<input_method::InputMethodDescriptors>
   GetSupportedInputMethods() const override;
 

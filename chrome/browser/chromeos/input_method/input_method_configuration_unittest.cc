@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -23,7 +23,7 @@ TEST(InputMethodConfigurationTest, TestInitializeForTesting) {
   InputMethodManager* manager = InputMethodManager::Get();
   EXPECT_FALSE(manager);
 
-  InitializeForTesting(new MockInputMethodManager);
+  InitializeForTesting(new MockInputMethodManagerImpl);
   manager = InputMethodManager::Get();
   EXPECT_TRUE(manager);
   Shutdown();

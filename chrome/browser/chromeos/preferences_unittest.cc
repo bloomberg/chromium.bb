@@ -11,7 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -74,12 +74,12 @@ CreatePrefSyncData(const std::string& name, const base::Value& value) {
 namespace input_method {
 namespace {
 
-class MyMockInputMethodManager : public MockInputMethodManager {
+class MyMockInputMethodManager : public MockInputMethodManagerImpl {
  public:
-  class State : public MockInputMethodManager::State {
+  class State : public MockInputMethodManagerImpl::State {
    public:
     explicit State(MyMockInputMethodManager* manager)
-        : MockInputMethodManager::State(manager), manager_(manager) {
+        : MockInputMethodManagerImpl::State(manager), manager_(manager) {
       input_method_extensions_.reset(new InputMethodDescriptors);
     }
 

@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/preferences.h"
@@ -121,13 +121,11 @@ class EventRewriterTest : public ash::test::AshTestBase {
  public:
   EventRewriterTest()
       : fake_user_manager_(new chromeos::FakeChromeUserManager),
-        user_manager_enabler_(fake_user_manager_),
-        input_method_manager_mock_(NULL) {}
+        user_manager_enabler_(fake_user_manager_) {}
   ~EventRewriterTest() override {}
 
   void SetUp() override {
-    input_method_manager_mock_ =
-        new chromeos::input_method::MockInputMethodManager;
+    input_method_manager_mock_ = new input_method::MockInputMethodManagerImpl;
     chromeos::input_method::InitializeForTesting(
         input_method_manager_mock_);  // pass ownership
 
@@ -152,9 +150,9 @@ class EventRewriterTest : public ash::test::AshTestBase {
     return *new_event ? new_event->get()->AsMouseEvent() : &event;
   }
 
-  chromeos::FakeChromeUserManager* fake_user_manager_;  // Not owned.
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
-  chromeos::input_method::MockInputMethodManager* input_method_manager_mock_;
+  FakeChromeUserManager* fake_user_manager_;  // Not owned.
+  ScopedUserManagerEnabler user_manager_enabler_;
+  input_method::MockInputMethodManagerImpl* input_method_manager_mock_;
 };
 
 TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
