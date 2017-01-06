@@ -81,12 +81,15 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     if (!suggestion) {
       return;
     }
+    base::Time timeout_at = suggestion->notification_extra()
+                                ? suggestion->notification_extra()->deadline
+                                : base::Time::Max();
     service_->FetchSuggestionImage(
         suggestion->id(),
         base::Bind(&NotifyingObserver::ImageFetched,
                    weak_ptr_factory_.GetWeakPtr(), suggestion->id(),
                    suggestion->url(), suggestion->title(),
-                   suggestion->publisher_name()));
+                   suggestion->publisher_name(), timeout_at));
   }
 
   void OnCategoryStatusChanged(Category category,
@@ -104,7 +107,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
       case CategoryStatus::LOADING_ERROR:
       case CategoryStatus::NOT_PROVIDED:
       case CategoryStatus::SIGNED_OUT:
-        ContentSuggestionsNotificationHelper::HideNotification();
+        ContentSuggestionsNotificationHelper::HideAllNotifications();
         break;
     }
   }
@@ -114,16 +117,16 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     if (suggestion_id.category().IsKnownCategory(KnownCategories::ARTICLES) &&
         (suggestion_id.id_within_category() ==
          prefs_->GetString(kNotificationIDWithinCategory))) {
-      ContentSuggestionsNotificationHelper::HideNotification();
+      ContentSuggestionsNotificationHelper::HideAllNotifications();
     }
   }
 
   void OnFullRefreshRequired() override {
-    ContentSuggestionsNotificationHelper::HideNotification();
+    ContentSuggestionsNotificationHelper::HideAllNotifications();
   }
 
   void ContentSuggestionsServiceShutdown() override {
-    ContentSuggestionsNotificationHelper::HideNotification();
+    ContentSuggestionsNotificationHelper::HideAllNotifications();
   }
 
  private:
@@ -150,7 +153,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
 
   void AppStatusChanged(base::android::ApplicationState state) {
     if (!ShouldNotifyInState(state)) {
-      ContentSuggestionsNotificationHelper::HideNotification();
+      ContentSuggestionsNotificationHelper::HideAllNotifications();
     }
   }
 
@@ -158,6 +161,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
                     const GURL& url,
                     const base::string16& title,
                     const base::string16& publisher,
+                    base::Time timeout_at,
                     const gfx::Image& image) {
     if (!ShouldNotifyInState(app_status_listener_.GetState())) {
       return;  // Became foreground while we were fetching the image; forget it.
@@ -167,7 +171,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
              << image.Size().height() << " image for " << url.spec();
     prefs_->SetString(kNotificationIDWithinCategory, id.id_within_category());
     ContentSuggestionsNotificationHelper::SendNotification(
-        url, title, publisher, CropSquare(image));
+        url, title, publisher, CropSquare(image), timeout_at);
   }
 
   ContentSuggestionsService* const service_;

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace gfx {
@@ -23,8 +24,9 @@ class ContentSuggestionsNotificationHelper {
   static void SendNotification(const GURL& url,
                                const base::string16& title,
                                const base::string16& text,
-                               const gfx::Image& image);
-  static void HideNotification();
+                               const gfx::Image& image,
+                               base::Time timeout_at);
+  static void HideAllNotifications();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSuggestionsNotificationHelper);

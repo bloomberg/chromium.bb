@@ -875,6 +875,9 @@ android:value="true" />
             </intent-filter>
         </receiver>
 
+        <receiver android:name="org.chromium.chrome.browser.ntp.ContentSuggestionsNotificationHelper$TimeoutReceiver"
+            android:exported="false"/>
+
         <receiver android:name="org.chromium.base.PowerStatusReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
