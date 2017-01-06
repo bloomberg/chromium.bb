@@ -62,6 +62,7 @@ public class ContentSuggestionsNotificationHelper {
                         .setContentIntent(PendingIntent.getActivity(context, 0, intent, 0))
                         .setContentTitle(title)
                         .setContentText(text)
+                        .setGroup(NOTIFICATION_TAG)
                         .setLargeIcon(image)
                         .setSmallIcon(R.drawable.ic_chrome);
         manager.notify(NOTIFICATION_TAG, NOTIFICATION_ID, builder.build());
