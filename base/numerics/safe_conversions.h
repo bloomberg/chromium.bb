@@ -106,39 +106,7 @@ struct SaturationDefaultHandler {
 
 namespace internal {
 
-template <typename T, template <typename> class S>
-struct IsDefaultIntegralBounds {
-  static const bool value =
-      std::is_integral<T>::value &&
-      S<T>::max() == SaturationDefaultHandler<T>::max() &&
-      S<T>::lowest() == SaturationDefaultHandler<T>::lowest();
-};
-
-// Integral to integral conversions have a special optimization for the
-// standard bounds.
-template <typename Dst,
-          template <typename> class S,
-          typename Src,
-          typename std::enable_if<
-              std::is_integral<Src>::value &&
-              IsDefaultIntegralBounds<Dst, S>::value>::type* = nullptr>
-constexpr Dst saturated_cast_impl(Src value, RangeCheck constraint) {
-  using UnsignedDst = typename std::make_unsigned<Dst>::type;
-  // The member fields in this class are lined up such that the compiler
-  // can saturate without branching in this case by adding the register
-  // with the bitfields directly to the integral max.
-  return constraint.IsValid()
-             ? static_cast<Dst>(value)
-             : static_cast<Dst>(UnsignedDst(constraint.IsUnderflowFlagSet()) +
-                                std::numeric_limits<Dst>::max());
-}
-
-template <typename Dst,
-          template <typename> class S,
-          typename Src,
-          typename std::enable_if<
-              !std::is_integral<Src>::value ||
-              !IsDefaultIntegralBounds<Dst, S>::value>::type* = nullptr>
+template <typename Dst, template <typename> class S, typename Src>
 constexpr Dst saturated_cast_impl(Src value, RangeCheck constraint) {
   // For some reason clang generates much better code when the branch is
   // structured exactly this way, rather than a sequence of checks.

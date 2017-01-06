@@ -45,10 +45,7 @@ using base::saturated_cast;
 using base::strict_cast;
 using base::internal::MaxExponent;
 using base::internal::IntegerBitsPlusSign;
-using base::internal::RANGE_VALID;
-using base::internal::RANGE_INVALID;
-using base::internal::RANGE_OVERFLOW;
-using base::internal::RANGE_UNDERFLOW;
+using base::internal::RangeCheck;
 
 // These tests deliberately cause arithmetic boundary errors. If the compiler is
 // aggressive enough, it can const detect these errors, so we disable warnings.
@@ -516,10 +513,26 @@ enum NumericConversionType {
 template <typename Dst, typename Src, NumericConversionType conversion>
 struct TestNumericConversion {};
 
+enum RangeConstraint {
+  RANGE_VALID = 0x0,      // Value can be represented by the destination type.
+  RANGE_UNDERFLOW = 0x1,  // Value would underflow.
+  RANGE_OVERFLOW = 0x2,   // Value would overflow.
+  RANGE_INVALID = RANGE_UNDERFLOW | RANGE_OVERFLOW  // Invalid (i.e. NaN).
+};
+
+// These are some wrappers to make the tests a bit cleaner.
+constexpr RangeConstraint RangeCheckToEnum(const RangeCheck constraint) {
+  return static_cast<RangeConstraint>(
+      static_cast<int>(constraint.IsOverflowFlagSet()) << 1 |
+      static_cast<int>(constraint.IsUnderflowFlagSet()));
+}
+
 // EXPECT_EQ wrappers providing specific detail on test failures.
-#define TEST_EXPECTED_RANGE(expected, actual)                                  \
-  EXPECT_EQ(expected, base::internal::DstRangeRelationToSrcRange<Dst>(actual)) \
-      << "Conversion test: " << src << " value " << actual << " to " << dst    \
+#define TEST_EXPECTED_RANGE(expected, actual)                               \
+  EXPECT_EQ(expected,                                                       \
+            RangeCheckToEnum(                                               \
+                base::internal::DstRangeRelationToSrcRange<Dst>(actual)))   \
+      << "Conversion test: " << src << " value " << actual << " to " << dst \
       << " on line " << line
 
 template <typename Dst, typename Src>
