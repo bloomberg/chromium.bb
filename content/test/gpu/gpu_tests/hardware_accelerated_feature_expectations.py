@@ -9,5 +9,5 @@ from gpu_tests.gpu_test_expectations import GpuTestExpectations
 class HardwareAcceleratedFeatureExpectations(GpuTestExpectations):
   def SetExpectations(self):
     # Accelerated 2D canvas is not available on Linux due to driver instability
-    self.Fail('HardwareAcceleratedFeature.canvas_accelerated',
+    self.Fail('HardwareAcceleratedFeature_canvas_accelerated',
         ['linux'], bug=254724)

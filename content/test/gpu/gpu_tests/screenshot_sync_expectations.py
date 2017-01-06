@@ -11,13 +11,13 @@ class ScreenshotSyncExpectations(GpuTestExpectations):
     super(ScreenshotSyncExpectations, self).__init__(*args, **kwargs)
 
   def SetExpectations(self):
-    self.Flaky('ScreenshotSync.GPURasterWithCanvas', ['win', 'amd'],
+    self.Flaky('ScreenshotSync_GPURasterWithCanvas', ['win', 'amd'],
                bug=599776)
-    self.Flaky('ScreenshotSync.GPURasterWithCanvas', ['mac', 'intel'],
+    self.Flaky('ScreenshotSync_GPURasterWithCanvas', ['mac', 'intel'],
                bug=599776)
-    self.Flaky('ScreenshotSync.GPURasterWithDivs', ['mac', 'intel'],
+    self.Flaky('ScreenshotSync_GPURasterWithDivs', ['mac', 'intel'],
                bug=599776)
-    self.Fail('ScreenshotSync.GPURasterWithDivs', ['win', ('amd', 0x6613)],
+    self.Fail('ScreenshotSync_GPURasterWithDivs', ['win', ('amd', 0x6613)],
                bug=639489)
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)

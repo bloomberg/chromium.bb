@@ -1115,13 +1115,6 @@ NON_SWARMED_GTESTS = {
 }
 
 TELEMETRY_TESTS = {
-  'hardware_accelerated_feature': {
-    'tester_configs': [
-      {
-        'allow_on_android': True,
-      },
-    ],
-  },
   'maps_pixel_test': {
     'target_name': 'maps',
     'args': [
@@ -1132,13 +1125,6 @@ TELEMETRY_TESTS = {
       '--test-machine-name',
       '${buildername}',
     ],
-    'tester_configs': [
-      {
-        'allow_on_android': True,
-      },
-    ],
-  },
-  'screenshot_sync': {
     'tester_configs': [
       {
         'allow_on_android': True,
@@ -1173,6 +1159,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         }
       ],
   },
+  'hardware_accelerated_feature': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ],
+  },
   'pixel_test': {
     'target_name': 'pixel',
     'args': [
@@ -1191,6 +1184,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'precommit_args': [
       '--download-refimg-from-cloud-storage',
     ],
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ],
+  },
+  'screenshot_sync': {
     'tester_configs': [
       {
         'allow_on_android': True,
