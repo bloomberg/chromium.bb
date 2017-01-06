@@ -947,15 +947,18 @@ static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   assert(height == dgd->uv_crop_height);
 
   //  Make a copy of the unfiltered / processed recon buffer
-  aom_yv12_copy_frame(cm->frame_to_show, &cpi->last_frame_uf);
+  aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_uf);
+  aom_yv12_copy_u(cm->frame_to_show, &cpi->last_frame_uf);
+  aom_yv12_copy_v(cm->frame_to_show, &cpi->last_frame_uf);
   av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, filter_level,
                         0, partial_frame);
-  aom_yv12_copy_frame(cm->frame_to_show, &cpi->last_frame_db);
+  aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_db);
+  aom_yv12_copy_u(cm->frame_to_show, &cpi->last_frame_db);
+  aom_yv12_copy_v(cm->frame_to_show, &cpi->last_frame_db);
 
   rsi[plane].frame_restoration_type = RESTORE_NONE;
 
-  err = try_restoration_frame(src, cpi, rsi, (1 << plane), partial_frame,
-                              dst_frame);
+  err = sse_restoration_frame(src, cm->frame_to_show, (1 << plane));
   bits = 0;
   cost_norestore = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
 
@@ -986,7 +989,9 @@ static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   }
   if (!wiener_decompose_sep_sym(M, H, vfilterd, hfilterd)) {
     info->frame_restoration_type = RESTORE_NONE;
-    aom_yv12_copy_frame(&cpi->last_frame_uf, cm->frame_to_show);
+    aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
+    aom_yv12_copy_u(&cpi->last_frame_uf, cm->frame_to_show);
+    aom_yv12_copy_v(&cpi->last_frame_uf, cm->frame_to_show);
     return cost_norestore;
   }
   quantize_sym_filter(vfilterd, rsi[plane].wiener_info[0].vfilter);
@@ -999,7 +1004,9 @@ static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                         rsi[plane].wiener_info[0].hfilter);
   if (score > 0.0) {
     info->frame_restoration_type = RESTORE_NONE;
-    aom_yv12_copy_frame(&cpi->last_frame_uf, cm->frame_to_show);
+    aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
+    aom_yv12_copy_u(&cpi->last_frame_uf, cm->frame_to_show);
+    aom_yv12_copy_v(&cpi->last_frame_uf, cm->frame_to_show);
     return cost_norestore;
   }
 
@@ -1020,11 +1027,15 @@ static double search_wiener_uv(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   cost_wiener = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
   if (cost_wiener > cost_norestore) {
     info->frame_restoration_type = RESTORE_NONE;
-    aom_yv12_copy_frame(&cpi->last_frame_uf, cm->frame_to_show);
+    aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
+    aom_yv12_copy_u(&cpi->last_frame_uf, cm->frame_to_show);
+    aom_yv12_copy_v(&cpi->last_frame_uf, cm->frame_to_show);
     return cost_norestore;
   }
 
-  aom_yv12_copy_frame(&cpi->last_frame_uf, cm->frame_to_show);
+  aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
+  aom_yv12_copy_u(&cpi->last_frame_uf, cm->frame_to_show);
+  aom_yv12_copy_v(&cpi->last_frame_uf, cm->frame_to_show);
   return cost_wiener;
 }
 
@@ -1317,7 +1328,8 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                    AOM_PLANE_V, &cm->rst_info[AOM_PLANE_V],
                    &cpi->trial_frame_rst);
   /*
-  printf("restore types: %d %d %d\n",
+  printf("Frame %d/%d restore types: %d %d %d\n",
+         cm->current_video_frame, cm->show_frame,
          cm->rst_info[0].frame_restoration_type,
          cm->rst_info[1].frame_restoration_type,
          cm->rst_info[2].frame_restoration_type);
