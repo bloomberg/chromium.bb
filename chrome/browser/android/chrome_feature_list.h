@@ -26,6 +26,7 @@ extern const base::Feature kNativeAndroidHistoryManager;
 extern const base::Feature kNoCreditCardAbort;
 extern const base::Feature kNTPFakeOmniboxTextFeature;
 extern const base::Feature kNTPOfflinePagesFeature;
+extern const base::Feature kNTPSuggestionsStandaloneUIFeature;
 extern const base::Feature kPhysicalWebFeature;
 extern const base::Feature kPhysicalWebIgnoreOtherClientsFeature;
 extern const base::Feature kSpecialLocaleFeature;

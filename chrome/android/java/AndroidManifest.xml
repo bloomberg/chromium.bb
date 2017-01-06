@@ -413,6 +413,12 @@ by a child template that "extends" this file.
             android:hardwareAccelerated="false">
         </activity>
 
+        <activity android:name="org.chromium.chrome.browser.suggestions.ContentSuggestionsActivity"
+            android:theme="@style/FullscreenWhiteActivityTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:windowSoftInputMode="stateAlwaysHidden">
+        </activity>
+
         <activity android:name="org.chromium.chrome.browser.sync.ui.PassphraseActivity"
             android:theme="@style/MainTheme"
             android:autoRemoveFromRecents="true">

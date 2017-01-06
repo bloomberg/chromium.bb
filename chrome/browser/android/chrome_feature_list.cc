@@ -51,6 +51,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNoCreditCardAbort,
     &kNTPFakeOmniboxTextFeature,
     &kNTPOfflinePagesFeature,
+    &kNTPSuggestionsStandaloneUIFeature,
     &kPhysicalWebFeature,
     &kPhysicalWebIgnoreOtherClientsFeature,
     &kSpecialLocaleFeature,
@@ -112,6 +113,9 @@ const base::Feature kNTPFakeOmniboxTextFeature{
 
 const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kNTPSuggestionsStandaloneUIFeature{
+    "NTPSuggestionsStandaloneUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPhysicalWebFeature{"PhysicalWeb",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

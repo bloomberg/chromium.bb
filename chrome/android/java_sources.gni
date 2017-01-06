@@ -919,6 +919,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/snackbar/smartlockautosignin/AutoSigninSnackbarController.java",
   "java/src/org/chromium/chrome/browser/snackbar/undo/UndoBarController.java",
   "java/src/org/chromium/chrome/browser/ssl/SecurityStateModel.java",
+  "java/src/org/chromium/chrome/browser/suggestions/ContentSuggestionsActivity.java",
   "java/src/org/chromium/chrome/browser/superviseduser/SupervisedUserContentProvider.java",
   "java/src/org/chromium/chrome/browser/sync/GmsCoreSyncListener.java",
   "java/src/org/chromium/chrome/browser/sync/GoogleServiceAuthError.java",

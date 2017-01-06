@@ -210,7 +210,8 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
      */
     private class MockNewTabPageManager implements NewTabPageManager {
         // TODO(dgn): provide a RecyclerView if we need to test the context menu.
-        private ContextMenuManager mContextMenuManager = new ContextMenuManager(this, null, null);
+        private ContextMenuManager mContextMenuManager =
+                new ContextMenuManager(getActivity(), this, null);
 
         @Override
         public void getLocalFaviconImageForURL(
