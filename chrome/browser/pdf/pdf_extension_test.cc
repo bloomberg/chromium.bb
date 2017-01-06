@@ -48,6 +48,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/test/result_catcher.h"
@@ -931,4 +932,68 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
 
   EXPECT_TRUE(web_contents->GetController().GetPendingEntry());
   EXPECT_FALSE(active_web_contents->GetController().GetPendingEntry());
+}
+
+// This test opens a PDF by clicking a link via javascript and verifies that
+// the PDF is loaded and functional by clicking a link in the PDF. The link
+// click in the PDF opens a new tab. The main page handles the pageShow event
+// and updates the history state.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenPDFOnLinkClickWithReplaceState) {
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+
+  // Navigate to the main page.
+  GURL test_url(
+      embedded_test_server()->GetURL("/pdf/pdf_href_replace_state.html"));
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+
+  // Click on the link which opens the PDF via JS.
+  content::TestNavigationObserver navigation_observer(web_contents);
+  const char kPdfLinkClick[] = "document.getElementById('link').click();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents->GetRenderViewHost(),
+                                     kPdfLinkClick));
+  navigation_observer.Wait();
+  const GURL& current_url = web_contents->GetURL();
+  ASSERT_TRUE(current_url.path() == "/pdf/test-link.pdf");
+
+  ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(web_contents));
+
+  // Now click on the link to example.com in the PDF. This should open up a new
+  // tab.
+  content::BrowserPluginGuestManager* guest_manager =
+      web_contents->GetBrowserContext()->GetGuestManager();
+  content::WebContents* guest_contents =
+      guest_manager->GetFullPageGuest(web_contents);
+  ASSERT_TRUE(guest_contents);
+  // The link position of the test-link.pdf in page coordinates is (110, 110).
+  // Convert the link position from page coordinates to screen coordinates.
+  gfx::Point link_position(110, 110);
+  ConvertPageCoordToScreenCoord(guest_contents, &link_position);
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, kDefaultKeyModifier,
+                                blink::WebMouseEvent::Button::Left,
+                                link_position);
+  observer.Wait();
+
+  // We should have two tabs now. One with the PDF and the second for
+  // example.com
+  int tab_count = browser()->tab_strip_model()->count();
+  ASSERT_EQ(2, tab_count);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(web_contents, active_web_contents);
+
+  content::WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  ASSERT_TRUE(new_web_contents);
+  ASSERT_NE(web_contents, new_web_contents);
+
+  const GURL& url = new_web_contents->GetURL();
+  ASSERT_EQ(GURL("http://www.example.com"), url);
 }

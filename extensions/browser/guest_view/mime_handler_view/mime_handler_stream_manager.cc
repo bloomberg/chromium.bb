@@ -223,7 +223,7 @@ void MimeHandlerStreamManager::EmbedderObserver::
 void MimeHandlerStreamManager::EmbedderObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // If the top level frame is navigating away, clean up the stream.
-  if (navigation_handle->IsInMainFrame())
+  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage())
     AbortStream();
 }
 
