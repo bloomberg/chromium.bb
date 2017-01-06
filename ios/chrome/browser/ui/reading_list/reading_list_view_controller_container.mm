@@ -84,6 +84,10 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
   constraint.active = YES;
 }
 
+- (BOOL)prefersStatusBarHidden {
+  return NO;
+}
+
 #pragma mark - ReadingListViewControllerAudience
 
 - (void)setCollectionHasItems:(BOOL)hasItems {
