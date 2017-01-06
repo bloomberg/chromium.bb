@@ -25,13 +25,13 @@ class TestActivityLogger : public V8DOMActivityLogger {
   ~TestActivityLogger() override {}
 
   void logGetter(const String& apiName) override {
-    m_loggedActivities.append(apiName);
+    m_loggedActivities.push_back(apiName);
   }
 
   void logSetter(const String& apiName,
                  const v8::Local<v8::Value>& newValue) override {
-    m_loggedActivities.append(apiName + " | " +
-                              toCoreStringWithUndefinedOrNullCheck(newValue));
+    m_loggedActivities.push_back(
+        apiName + " | " + toCoreStringWithUndefinedOrNullCheck(newValue));
   }
 
   void logMethod(const String& apiName,
@@ -41,7 +41,7 @@ class TestActivityLogger : public V8DOMActivityLogger {
     for (int i = 0; i < argc; i++)
       activityString = activityString + " | " +
                        toCoreStringWithUndefinedOrNullCheck(argv[i]);
-    m_loggedActivities.append(activityString);
+    m_loggedActivities.push_back(activityString);
   }
 
   void logEvent(const String& eventName,
@@ -51,7 +51,7 @@ class TestActivityLogger : public V8DOMActivityLogger {
     for (int i = 0; i < argc; i++) {
       activityString = activityString + " | " + argv[i];
     }
-    m_loggedActivities.append(activityString);
+    m_loggedActivities.push_back(activityString);
   }
 
   void clear() { m_loggedActivities.clear(); }
@@ -93,7 +93,7 @@ class ActivityLoggerTest : public testing::Test {
   void executeScriptInIsolatedWorld(const String& script) const {
     v8::HandleScope scope(v8::Isolate::GetCurrent());
     HeapVector<ScriptSourceCode> sources;
-    sources.append(ScriptSourceCode(script));
+    sources.push_back(ScriptSourceCode(script));
     Vector<v8::Local<v8::Value>> results;
     m_scriptController->executeScriptInIsolatedWorld(isolatedWorldId, sources,
                                                      extensionGroup, 0);

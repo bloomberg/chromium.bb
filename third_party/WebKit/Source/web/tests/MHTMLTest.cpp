@@ -115,7 +115,7 @@ class MHTMLTest : public ::testing::Test {
                    const char* mime,
                    PassRefPtr<SharedBuffer> data) {
     SerializedResource resource(toKURL(url), mime, data);
-    m_resources.append(resource);
+    m_resources.push_back(resource);
   }
 
   void addResource(const char* url, const char* mime, const char* fileName) {

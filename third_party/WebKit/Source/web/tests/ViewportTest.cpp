@@ -3029,7 +3029,7 @@ class ConsoleMessageWebFrameClient
                                       const WebString& sourceName,
                                       unsigned sourceLine,
                                       const WebString& stackTrace) {
-    messages.append(msg);
+    messages.push_back(msg);
   }
 
   Vector<WebConsoleMessage> messages;

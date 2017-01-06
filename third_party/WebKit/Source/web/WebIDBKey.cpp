@@ -87,22 +87,22 @@ static IDBKey* convertFromWebIDBKeyArray(const WebVector<WebIDBKey>& array) {
   for (size_t i = 0; i < array.size(); ++i) {
     switch (array[i].keyType()) {
       case WebIDBKeyTypeArray:
-        keys.append(convertFromWebIDBKeyArray(array[i].array()));
+        keys.push_back(convertFromWebIDBKeyArray(array[i].array()));
         break;
       case WebIDBKeyTypeBinary:
-        keys.append(IDBKey::createBinary(array[i].binary()));
+        keys.push_back(IDBKey::createBinary(array[i].binary()));
         break;
       case WebIDBKeyTypeString:
-        keys.append(IDBKey::createString(array[i].string()));
+        keys.push_back(IDBKey::createString(array[i].string()));
         break;
       case WebIDBKeyTypeDate:
-        keys.append(IDBKey::createDate(array[i].date()));
+        keys.push_back(IDBKey::createDate(array[i].date()));
         break;
       case WebIDBKeyTypeNumber:
-        keys.append(IDBKey::createNumber(array[i].number()));
+        keys.push_back(IDBKey::createNumber(array[i].number()));
         break;
       case WebIDBKeyTypeInvalid:
-        keys.append(IDBKey::createInvalid());
+        keys.push_back(IDBKey::createInvalid());
         break;
       case WebIDBKeyTypeNull:
       case WebIDBKeyTypeMin:

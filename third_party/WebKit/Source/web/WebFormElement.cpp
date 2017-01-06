@@ -67,7 +67,7 @@ void WebFormElement::getFormControlElements(
   for (ListedElement::List::const_iterator it = listedElements.begin();
        it != listedElements.end(); ++it) {
     if ((*it)->isFormControlElement())
-      formControlElements.append(toHTMLFormControlElement(*it));
+      formControlElements.push_back(toHTMLFormControlElement(*it));
   }
   result.assign(formControlElements);
 }

@@ -39,7 +39,7 @@ CompositionUnderlineVectorBuilder::CompositionUnderlineVectorBuilder(
   size_t size = underlines.size();
   reserveCapacity(size);
   for (size_t i = 0; i < size; ++i)
-    append(CompositionUnderlineBuilder(underlines[i]));
+    push_back(CompositionUnderlineBuilder(underlines[i]));
 }
 
 }  // namespace blink

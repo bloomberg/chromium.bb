@@ -121,7 +121,7 @@ void WebHistoryItem::setDocumentState(const WebVector<WebString>& state) {
   // FIXME: would be nice to avoid the intermediate copy
   Vector<String> ds;
   for (size_t i = 0; i < state.size(); ++i)
-    ds.append(state[i]);
+    ds.push_back(state[i]);
   m_private->setDocumentState(ds);
 }
 

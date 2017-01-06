@@ -416,7 +416,7 @@ class ChromePrintContext : public PrintContext {
     for (Frame* currentFrame = frame(); currentFrame;
          currentFrame = currentFrame->tree().traverseNext(frame())) {
       if (currentFrame->isLocalFrame())
-        documents.append(toLocalFrame(currentFrame)->document());
+        documents.push_back(toLocalFrame(currentFrame)->document());
     }
 
     for (auto& doc : documents)

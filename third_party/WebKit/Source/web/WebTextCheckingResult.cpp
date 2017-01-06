@@ -46,7 +46,7 @@ WebTextCheckingResult::operator TextCheckingResult() const {
     detail.location = 0;
     detail.length = length;
     detail.userDescription = replacement;
-    result.details.append(detail);
+    result.details.push_back(detail);
   }
 
   return result;

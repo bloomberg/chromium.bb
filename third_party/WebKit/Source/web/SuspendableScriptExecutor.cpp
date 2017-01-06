@@ -69,7 +69,7 @@ Vector<v8::Local<v8::Value>> WebScriptExecutor::execute(LocalFrame* frame) {
     v8::Local<v8::Value> scriptValue =
         frame->script().executeScriptInMainWorldAndReturnValue(
             m_sources.front());
-    results.append(scriptValue);
+    results.push_back(scriptValue);
   }
 
   return results;
@@ -113,7 +113,7 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::execute(LocalFrame* frame) {
   Vector<v8::Local<v8::Value>> args;
   args.reserveCapacity(m_args.Size());
   for (size_t i = 0; i < m_args.Size(); ++i)
-    args.append(m_args.Get(i));
+    args.push_back(m_args.Get(i));
   {
     std::unique_ptr<UserGestureIndicator> gestureIndicator;
     if (m_gestureToken) {
@@ -125,7 +125,7 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::execute(LocalFrame* frame) {
                                      m_receiver.newLocal(isolate), args.size(),
                                      args.data(), toIsolate(frame))
             .ToLocal(&singleResult))
-      results.append(singleResult);
+      results.push_back(singleResult);
   }
   return results;
 }

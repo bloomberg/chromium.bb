@@ -199,7 +199,7 @@ Vector<Attribute> MHTMLFrameSerializerDelegate::getCustomAttributes(
   if (element.isFormControlElement() &&
       !element.fastHasAttribute(HTMLNames::disabledAttr)) {
     Attribute disabledAttribute(HTMLNames::disabledAttr, "");
-    attributes.append(disabledAttribute);
+    attributes.push_back(disabledAttribute);
   }
 
   return attributes;

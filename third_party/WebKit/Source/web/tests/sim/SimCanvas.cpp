@@ -25,7 +25,7 @@ void SimCanvas::addCommand(CommandType type, RGBA32 color) {
   if (s_depth > 1)
     return;
   Command command = {type, color};
-  m_commands.append(command);
+  m_commands.push_back(command);
 }
 
 void SimCanvas::onDrawRect(const SkRect& rect, const SkPaint& paint) {

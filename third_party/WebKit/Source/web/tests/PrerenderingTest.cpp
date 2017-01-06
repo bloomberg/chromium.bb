@@ -138,15 +138,15 @@ class TestPrerenderingSupport : public WebPrerenderingSupport {
  private:
   // From WebPrerenderingSupport:
   void add(const WebPrerender& prerender) override {
-    m_addedPrerenders.append(prerender);
+    m_addedPrerenders.push_back(prerender);
   }
 
   void cancel(const WebPrerender& prerender) override {
-    m_canceledPrerenders.append(prerender);
+    m_canceledPrerenders.push_back(prerender);
   }
 
   void abandon(const WebPrerender& prerender) override {
-    m_abandonedPrerenders.append(prerender);
+    m_abandonedPrerenders.push_back(prerender);
   }
 
   void prefetchFinished() override {}

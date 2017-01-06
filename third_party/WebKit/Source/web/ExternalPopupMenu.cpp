@@ -214,7 +214,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices) {
     Vector<int> listIndices;
     listIndices.reserveCapacity(indices.size());
     for (size_t i = 0; i < indices.size(); ++i)
-      listIndices.append(toPopupMenuItemIndex(indices[i], *ownerElement));
+      listIndices.push_back(toPopupMenuItemIndex(indices[i], *ownerElement));
     ownerElement->selectMultipleOptionsByPopup(listIndices);
   }
 

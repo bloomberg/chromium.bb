@@ -200,7 +200,7 @@ TEST_F(RootScrollerTest, defaultEffectiveRootScrollerIsDocumentNode) {
   // should remain the same.
   NonThrowableExceptionState nonThrow;
   HeapVector<NodeOrString> nodes;
-  nodes.append(NodeOrString::fromNode(iframe));
+  nodes.push_back(NodeOrString::fromNode(iframe));
   document->documentElement()->replaceWith(nodes, nonThrow);
 
   mainFrameView()->updateAllLifecyclePhases();

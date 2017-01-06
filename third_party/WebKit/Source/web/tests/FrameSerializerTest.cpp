@@ -111,7 +111,7 @@ class FrameSerializerTest : public testing::Test,
   }
 
   void registerSkipURL(const char* url) {
-    m_skipURLs.append(KURL(m_baseUrl, url));
+    m_skipURLs.push_back(KURL(m_baseUrl, url));
   }
 
   void serialize(const char* url) {

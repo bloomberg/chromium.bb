@@ -176,11 +176,11 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data) {
     Vector<String> localizedSuggestionValues;
     Vector<String> suggestionLabels;
     for (unsigned i = 0; i < m_parameters.suggestions.size(); i++) {
-      suggestionValues.append(valueToDateTimeString(
+      suggestionValues.push_back(valueToDateTimeString(
           m_parameters.suggestions[i].value, m_parameters.type));
-      localizedSuggestionValues.append(
+      localizedSuggestionValues.push_back(
           m_parameters.suggestions[i].localizedValue);
-      suggestionLabels.append(m_parameters.suggestions[i].label);
+      suggestionLabels.push_back(m_parameters.suggestions[i].label);
     }
     addProperty("suggestionValues", suggestionValues, data);
     addProperty("localizedSuggestionValues", localizedSuggestionValues, data);

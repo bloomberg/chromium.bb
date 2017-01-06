@@ -777,7 +777,7 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet) {
       "<div class=\"initial_off\"></div>");
 
   Vector<WebString> selectors;
-  selectors.append(WebString::fromUTF8("div.initial_on"));
+  selectors.push_back(WebString::fromUTF8("div.initial_on"));
   m_frame->document().watchCSSSelectors(WebVector<WebString>(selectors));
   m_frame->view()->updateAllLifecyclePhases();
   runPendingTasks();
@@ -785,7 +785,7 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet) {
   EXPECT_THAT(matchedSelectors(), ElementsAre("div.initial_on"));
 
   // Check that adding a watched selector calls back for already-present nodes.
-  selectors.append(WebString::fromUTF8("div.initial_off"));
+  selectors.push_back(WebString::fromUTF8("div.initial_off"));
   doc().watchCSSSelectors(WebVector<WebString>(selectors));
   m_frame->view()->updateAllLifecyclePhases();
   runPendingTasks();
@@ -804,7 +804,7 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet) {
 TEST_F(WebFrameCSSCallbackTest, SharedComputedStyle) {
   // Check that adding an element calls back when it matches an existing rule.
   Vector<WebString> selectors;
-  selectors.append(WebString::fromUTF8("span"));
+  selectors.push_back(WebString::fromUTF8("span"));
   doc().watchCSSSelectors(WebVector<WebString>(selectors));
 
   executeScript(
@@ -844,7 +844,7 @@ TEST_F(WebFrameCSSCallbackTest, CatchesAttributeChange) {
   loadHTML("<span></span>");
 
   Vector<WebString> selectors;
-  selectors.append(WebString::fromUTF8("span[attr=\"value\"]"));
+  selectors.push_back(WebString::fromUTF8("span[attr=\"value\"]"));
   doc().watchCSSSelectors(WebVector<WebString>(selectors));
   runPendingTasks();
 
@@ -861,7 +861,7 @@ TEST_F(WebFrameCSSCallbackTest, DisplayNone) {
   loadHTML("<div style='display:none'><span></span></div>");
 
   Vector<WebString> selectors;
-  selectors.append(WebString::fromUTF8("span"));
+  selectors.push_back(WebString::fromUTF8("span"));
   doc().watchCSSSelectors(WebVector<WebString>(selectors));
   runPendingTasks();
 
@@ -913,7 +913,7 @@ TEST_F(WebFrameCSSCallbackTest, Reparenting) {
       "<div id='d2'></div>");
 
   Vector<WebString> selectors;
-  selectors.append(WebString::fromUTF8("span"));
+  selectors.push_back(WebString::fromUTF8("span"));
   doc().watchCSSSelectors(WebVector<WebString>(selectors));
   m_frame->view()->updateAllLifecyclePhases();
   runPendingTasks();
@@ -936,8 +936,8 @@ TEST_F(WebFrameCSSCallbackTest, MultiSelector) {
   // Check that selector lists match as the whole list, not as each element
   // independently.
   Vector<WebString> selectors;
-  selectors.append(WebString::fromUTF8("span"));
-  selectors.append(WebString::fromUTF8("span,p"));
+  selectors.push_back(WebString::fromUTF8("span"));
+  selectors.push_back(WebString::fromUTF8("span,p"));
   doc().watchCSSSelectors(WebVector<WebString>(selectors));
   m_frame->view()->updateAllLifecyclePhases();
   runPendingTasks();
@@ -951,9 +951,9 @@ TEST_F(WebFrameCSSCallbackTest, InvalidSelector) {
 
   // Build a list with one valid selector and one invalid.
   Vector<WebString> selectors;
-  selectors.append(WebString::fromUTF8("span"));
-  selectors.append(WebString::fromUTF8("["));       // Invalid.
-  selectors.append(WebString::fromUTF8("p span"));  // Not compound.
+  selectors.push_back(WebString::fromUTF8("span"));
+  selectors.push_back(WebString::fromUTF8("["));       // Invalid.
+  selectors.push_back(WebString::fromUTF8("p span"));  // Not compound.
   doc().watchCSSSelectors(WebVector<WebString>(selectors));
   m_frame->view()->updateAllLifecyclePhases();
   runPendingTasks();
@@ -4279,14 +4279,14 @@ class ContextLifetimeTestWebFrameClient
                               v8::Local<v8::Context> context,
                               int extensionGroup,
                               int worldId) override {
-    createNotifications.append(
+    createNotifications.push_back(
         WTF::makeUnique<Notification>(frame, context, worldId));
   }
 
   void willReleaseScriptContext(WebLocalFrame* frame,
                                 v8::Local<v8::Context> context,
                                 int worldId) override {
-    releaseNotifications.append(
+    releaseNotifications.push_back(
         WTF::makeUnique<Notification>(frame, context, worldId));
   }
 };
@@ -4937,9 +4937,9 @@ TEST_P(ParameterizedWebFrameTest, SetTickmarks) {
 
   // Override the tickmarks.
   Vector<IntRect> overridingTickmarksExpected;
-  overridingTickmarksExpected.append(IntRect(0, 0, 100, 100));
-  overridingTickmarksExpected.append(IntRect(0, 20, 100, 100));
-  overridingTickmarksExpected.append(IntRect(0, 30, 100, 100));
+  overridingTickmarksExpected.push_back(IntRect(0, 0, 100, 100));
+  overridingTickmarksExpected.push_back(IntRect(0, 20, 100, 100));
+  overridingTickmarksExpected.push_back(IntRect(0, 30, 100, 100));
   mainFrame->setTickmarks(overridingTickmarksExpected);
 
   // Check the tickmarks are overriden correctly.
@@ -6280,7 +6280,7 @@ class SpellCheckClient : public WebSpellCheckClient {
     Vector<WebTextCheckingResult> results;
     const int misspellingStartOffset = 1;
     const int misspellingLength = 8;
-    results.append(WebTextCheckingResult(
+    results.push_back(WebTextCheckingResult(
         WebTextDecorationTypeSpelling, misspellingStartOffset,
         misspellingLength, WebString(), m_hash));
     completion->didFinishCheckingText(results);
@@ -6385,7 +6385,7 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
   EXPECT_EQ(1U, documentMarkers1.size());
 
   Vector<String> words;
-  words.append("wellcome");
+  words.push_back("wellcome");
   frame->removeSpellingMarkersUnderWords(words);
 
   WebVector<uint32_t> documentMarkers2;
@@ -6458,8 +6458,8 @@ class StubbornSpellCheckClient : public WebSpellCheckClient {
       return;
     Vector<WebTextCheckingResult> results;
     if (misspellingStartOffset >= 0 && misspellingLength > 0)
-      results.append(WebTextCheckingResult(type, misspellingStartOffset,
-                                           misspellingLength));
+      results.push_back(WebTextCheckingResult(type, misspellingStartOffset,
+                                              misspellingLength));
     m_completion->didFinishCheckingText(results);
     m_completion = 0;
   }
@@ -9402,7 +9402,7 @@ class TestConsoleMessageWebFrameClient
                                       const WebString& sourceName,
                                       unsigned sourceLine,
                                       const WebString& stackTrace) {
-    messages.append(message);
+    messages.push_back(message);
   }
 
   Vector<WebConsoleMessage> messages;

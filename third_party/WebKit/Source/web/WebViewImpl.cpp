@@ -301,7 +301,7 @@ void WebView::resetVisitedLinkState(bool invalidateVisitedLinkHashes) {
 }
 
 void WebView::willEnterModalLoop() {
-  pageSuspenderStack().append(WTF::makeUnique<ScopedPageSuspender>());
+  pageSuspenderStack().push_back(WTF::makeUnique<ScopedPageSuspender>());
 }
 
 void WebView::didExitModalLoop() {
@@ -1466,7 +1466,7 @@ void WebViewImpl::enableTapHighlightAtPoint(
   Node* touchNode = bestTapNode(targetedTapEvent);
 
   HeapVector<Member<Node>> highlightNodes;
-  highlightNodes.append(touchNode);
+  highlightNodes.push_back(touchNode);
 
   enableTapHighlights(highlightNodes);
 }
@@ -1493,7 +1493,7 @@ void WebViewImpl::enableTapHighlights(
     if (!highlightColor.alpha())
       continue;
 
-    m_linkHighlights.append(LinkHighlightImpl::create(node, this));
+    m_linkHighlights.push_back(LinkHighlightImpl::create(node, this));
   }
 
   updateAllLifecyclePhases();
@@ -3374,7 +3374,7 @@ void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers) {
     const DocumentMarkerVector& documentMarkers =
         toLocalFrame(frame)->document()->markers().markers();
     for (size_t i = 0; i < documentMarkers.size(); ++i)
-      result.append(documentMarkers[i]->hash());
+      result.push_back(documentMarkers[i]->hash());
   }
   markers->assign(result);
 }

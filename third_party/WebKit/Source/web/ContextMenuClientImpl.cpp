@@ -442,7 +442,7 @@ static void populateSubMenuItems(const Vector<ContextMenuItem>& inputMenu,
                              outputItem.subMenuItems);
         break;
     }
-    subItems.append(outputItem);
+    subItems.push_back(outputItem);
   }
 
   WebVector<WebMenuItemInfo> outputItems(subItems.size());

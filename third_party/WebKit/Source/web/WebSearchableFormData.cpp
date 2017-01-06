@@ -197,10 +197,10 @@ bool buildSearchString(const HTMLFormElement& form,
 
     for (const auto& entry : formData->entries()) {
       if (!encodedString->isEmpty())
-        encodedString->append('&');
+        encodedString->push_back('&');
       FormDataEncoder::encodeStringAsFormData(*encodedString, entry->name(),
                                               FormDataEncoder::NormalizeCRLF);
-      encodedString->append('=');
+      encodedString->push_back('=');
       if (&control == textElement) {
         encodedString->append("{searchTerms}", 13);
         isElementFound = true;

@@ -392,7 +392,7 @@ void TextFinder::scopeStringMatches(int identifier,
     ownerFrame().frame()->document()->markers().addTextMatchMarker(
         EphemeralRange(resultRange), foundActiveMatch);
 
-    m_findMatchesCache.append(
+    m_findMatchesCache.push_back(
         FindMatch(resultRange, m_lastMatchCount + matchCount));
 
     // Set the new start for the search range to be the end of the previous
@@ -535,7 +535,7 @@ void TextFinder::updateFindMatchRects() {
 
     for (const FindMatch& match : m_findMatchesCache) {
       if (!match.m_rect.isEmpty())
-        filteredMatches.append(match);
+        filteredMatches.push_back(match);
     }
 
     m_findMatchesCache.swap(filteredMatches);
@@ -566,7 +566,7 @@ void TextFinder::findMatchRects(WebVector<WebFloatRect>& outputRects) {
   matchRects.reserveCapacity(matchRects.size() + m_findMatchesCache.size());
   for (const FindMatch& match : m_findMatchesCache) {
     DCHECK(!match.m_rect.isEmpty());
-    matchRects.append(match.m_rect);
+    matchRects.push_back(match.m_rect);
   }
 
   outputRects = matchRects;

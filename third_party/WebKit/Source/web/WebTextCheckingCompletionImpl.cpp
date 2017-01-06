@@ -42,7 +42,7 @@ static Vector<TextCheckingResult> toCoreResults(
     const WebVector<WebTextCheckingResult>& results) {
   Vector<TextCheckingResult> coreResults;
   for (size_t i = 0; i < results.size(); ++i)
-    coreResults.append(results[i]);
+    coreResults.push_back(results[i]);
   return coreResults;
 }
 

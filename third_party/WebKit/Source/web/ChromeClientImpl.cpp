@@ -1100,7 +1100,7 @@ CompositorProxyClient* ChromeClientImpl::createCompositorProxyClient(
 void ChromeClientImpl::registerPopupOpeningObserver(
     PopupOpeningObserver* observer) {
   DCHECK(observer);
-  m_popupOpeningObservers.append(observer);
+  m_popupOpeningObservers.push_back(observer);
 }
 
 void ChromeClientImpl::unregisterPopupOpeningObserver(
