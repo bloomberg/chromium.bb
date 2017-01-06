@@ -725,7 +725,7 @@ action("make_core_generated_html_entity_table") {
   script = "html/parser/create-html-entity-table"
 
   inputs = [
-    "html/parser/HTMLEntityNames.in",
+    "html/parser/HTMLEntityNames.csv",
   ]
   outputs = [
     "$blink_core_output_dir/HTMLEntityTable.cpp",
