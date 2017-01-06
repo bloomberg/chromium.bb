@@ -163,7 +163,7 @@ static const uint64_t size_mask[BLOCK_SIZES] = {
   0xffffffffffffffffULL,  // BLOCK_64X64
 };
 
-// These are used for masking the left and above borders.
+// These are used for masking the left and above 32x32 borders.
 static const uint64_t left_border = 0x1111111111111111ULL;
 static const uint64_t above_border = 0x000000ff000000ffULL;
 
