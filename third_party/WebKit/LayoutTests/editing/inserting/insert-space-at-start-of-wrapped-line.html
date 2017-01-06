@@ -1,0 +1,50 @@
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+#textarea, #plaintext, #richedit {
+  font-family: 'Courier', monospace;
+  width: 10ch;
+}
+#plaintext, #richedit {
+  border: 1px solid black;
+  white-space: pre-wrap;
+}
+</style>
+<textarea id="textarea">12345     67</textarea>
+<div id="plaintext" contenteditable="plaintext-only">12345     67</div>
+<div id="richedit" contenteditable>12345     67</div>
+<script>
+(function () {
+  if (!window.eventSender) {
+    test(function () {
+      assert_unreached();
+    }, 'This test requires eventSender');
+    return;
+  }
+
+  test(function () {
+    let textarea = document.getElementById('textarea');
+    textarea.focus();
+    textarea.setSelectionRange(10, 10);
+    eventSender.keyDown(' ');
+    assert_equals(textarea.value, '12345     \n 67', 'Line break should be inserted automatically');
+  }, 'Typing space at the start of wrapped line in textarea');
+
+  test(function () {
+    let editor = document.getElementById('plaintext');
+    let textNode = editor.firstChild;
+    window.getSelection().setBaseAndExtent(textNode, 10, textNode, 10);
+    eventSender.keyDown(' ');
+    assert_equals(editor.textContent, '12345     \n 67', 'Line break should be inserted automatically');
+  }, 'Typing space at the start of wrapped line in plaintext-only');
+
+  test(function () {
+    let editor = document.getElementById('richedit');
+    let textNode = editor.firstChild;
+    window.getSelection().setBaseAndExtent(textNode, 10, textNode, 10);
+    eventSender.keyDown(' ');
+    assert_equals(editor.textContent, '12345      67', 'Line break should NOT be inserted automatically');
+  }, 'Typing space at the start of wrapped line in contenteditable');
+})();
+</script>

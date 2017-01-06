@@ -201,6 +201,16 @@ EditorClient& Editor::client() const {
   return emptyEditorClient();
 }
 
+static bool isCaretAtStartOfWrappedLine(const FrameSelection& selection) {
+  if (!selection.isCaret())
+    return false;
+  if (selection.affinity() != TextAffinity::Downstream)
+    return false;
+  const Position& position = selection.start();
+  return !inSameLine(PositionWithAffinity(position, TextAffinity::Upstream),
+                     PositionWithAffinity(position, TextAffinity::Downstream));
+}
+
 bool Editor::handleTextEvent(TextEvent* event) {
   // Default event handling for Drag and Drop will be handled by DragController
   // so we leave the event for it.
@@ -235,6 +245,17 @@ bool Editor::handleTextEvent(TextEvent* event) {
     if (event->isLineBreak())
       return insertLineBreak();
     return insertParagraphSeparator();
+  }
+
+  // Typing spaces at the beginning of wrapped line is confusing, because
+  // inserted spaces would appear in the previous line.
+  // Insert a line break automatically so that the spaces appear at the caret.
+  // TODO(kojii): rich editing has the same issue, but has more options and
+  // needs coordination with JS. Enable for plaintext only for now and collect
+  // feedback.
+  if (data == " " && !canEditRichly() &&
+      isCaretAtStartOfWrappedLine(frame().selection())) {
+    insertLineBreak();
   }
 
   return insertTextWithoutSendingTextEvent(EditCommandSource::kMenuOrKeyBinding,
