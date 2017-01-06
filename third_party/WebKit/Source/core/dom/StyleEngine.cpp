@@ -278,12 +278,13 @@ void StyleEngine::mediaQueryAffectingValueChanged() {
 }
 
 void StyleEngine::updateStyleSheetsInImport(
+    StyleEngine& masterEngine,
     DocumentStyleSheetCollector& parentCollector) {
   DCHECK(!isMaster());
   HeapVector<Member<StyleSheet>> sheetsForList;
   ImportedDocumentStyleSheetCollector subcollector(parentCollector,
                                                    sheetsForList);
-  documentStyleSheetCollection().collectStyleSheets(subcollector);
+  documentStyleSheetCollection().collectStyleSheets(masterEngine, subcollector);
   documentStyleSheetCollection().swapSheetsForSheetList(sheetsForList);
 }
 
@@ -294,7 +295,7 @@ void StyleEngine::updateActiveStyleSheetsInShadow(
   ShadowTreeStyleSheetCollection* collection =
       toShadowTreeStyleSheetCollection(styleSheetCollectionFor(*treeScope));
   DCHECK(collection);
-  collection->updateActiveStyleSheets();
+  collection->updateActiveStyleSheets(*this);
   if (!collection->hasStyleSheetCandidateNodes()) {
     treeScopesRemoved.add(treeScope);
     // When removing TreeScope from ActiveTreeScopes,
@@ -314,7 +315,7 @@ void StyleEngine::updateActiveStyleSheets() {
   TRACE_EVENT0("blink,blink_style", "StyleEngine::updateActiveStyleSheets");
 
   if (shouldUpdateDocumentStyleSheetCollection())
-    documentStyleSheetCollection().updateActiveStyleSheets();
+    documentStyleSheetCollection().updateActiveStyleSheets(*this);
 
   if (shouldUpdateShadowTreeStyleSheetCollection()) {
     UnorderedTreeScopeSet treeScopesRemoved;

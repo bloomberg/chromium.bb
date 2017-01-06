@@ -120,7 +120,8 @@ class CORE_EXPORT StyleEngine final
 
   RuleSet* ruleSetForSheet(CSSStyleSheet&);
   void mediaQueryAffectingValueChanged();
-  void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
+  void updateStyleSheetsInImport(StyleEngine& masterEngine,
+                                 DocumentStyleSheetCollector& parentCollector);
   void updateActiveStyle();
   void markAllTreeScopesDirty() { m_allTreeScopesDirty = true; }
 

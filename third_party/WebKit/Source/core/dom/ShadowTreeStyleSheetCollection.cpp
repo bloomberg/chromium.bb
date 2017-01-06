@@ -47,6 +47,7 @@ ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(
     : TreeScopeStyleSheetCollection(shadowRoot) {}
 
 void ShadowTreeStyleSheetCollection::collectStyleSheets(
+    StyleEngine& masterEngine,
     StyleSheetCollection& collection) {
   for (Node* n : m_styleSheetCandidateNodes) {
     StyleSheetCandidate candidate(*n);
@@ -59,16 +60,17 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(
     collection.appendSheetForList(sheet);
     if (candidate.canBeActivated(nullAtom)) {
       CSSStyleSheet* cssSheet = toCSSStyleSheet(sheet);
-      collection.appendActiveStyleSheet(std::make_pair(
-          cssSheet, document().styleEngine().ruleSetForSheet(*cssSheet)));
+      collection.appendActiveStyleSheet(
+          std::make_pair(cssSheet, masterEngine.ruleSetForSheet(*cssSheet)));
     }
   }
 }
 
-void ShadowTreeStyleSheetCollection::updateActiveStyleSheets() {
+void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(
+    StyleEngine& masterEngine) {
   // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
   StyleSheetCollection* collection = StyleSheetCollection::create();
-  collectStyleSheets(*collection);
+  collectStyleSheets(masterEngine, *collection);
   applyActiveStyleSheetChanges(*collection);
 }
 

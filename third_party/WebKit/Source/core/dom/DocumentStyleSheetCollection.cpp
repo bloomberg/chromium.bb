@@ -45,6 +45,7 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
 }
 
 void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(
+    StyleEngine& masterEngine,
     DocumentStyleSheetCollector& collector) {
   for (Node* n : m_styleSheetCandidateNodes) {
     StyleSheetCandidate candidate(*n);
@@ -57,7 +58,9 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(
       if (collector.hasVisited(document))
         continue;
       collector.willVisit(document);
-      document->styleEngine().updateStyleSheetsInImport(collector);
+
+      document->styleEngine().updateStyleSheetsInImport(masterEngine,
+                                                        collector);
       continue;
     }
 
@@ -74,18 +77,19 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(
       continue;
 
     CSSStyleSheet* cssSheet = toCSSStyleSheet(sheet);
-    collector.appendActiveStyleSheet(std::make_pair(
-        cssSheet, document().styleEngine().ruleSetForSheet(*cssSheet)));
+    collector.appendActiveStyleSheet(
+        std::make_pair(cssSheet, masterEngine.ruleSetForSheet(*cssSheet)));
   }
 }
 
 void DocumentStyleSheetCollection::collectStyleSheets(
+    StyleEngine& masterEngine,
     DocumentStyleSheetCollector& collector) {
   for (auto& sheet : document().styleEngine().injectedAuthorStyleSheets()) {
     collector.appendActiveStyleSheet(std::make_pair(
         sheet, document().styleEngine().ruleSetForSheet(*sheet)));
   }
-  collectStyleSheetsFromCandidates(collector);
+  collectStyleSheetsFromCandidates(masterEngine, collector);
   if (CSSStyleSheet* inspectorSheet =
           document().styleEngine().inspectorStyleSheet()) {
     collector.appendActiveStyleSheet(std::make_pair(
@@ -94,11 +98,12 @@ void DocumentStyleSheetCollection::collectStyleSheets(
   }
 }
 
-void DocumentStyleSheetCollection::updateActiveStyleSheets() {
+void DocumentStyleSheetCollection::updateActiveStyleSheets(
+    StyleEngine& masterEngine) {
   // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
   StyleSheetCollection* collection = StyleSheetCollection::create();
   ActiveDocumentStyleSheetCollector collector(*collection);
-  collectStyleSheets(collector);
+  collectStyleSheets(masterEngine, collector);
   applyActiveStyleSheetChanges(*collection);
 }
 
