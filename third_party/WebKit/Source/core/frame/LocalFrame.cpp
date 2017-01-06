@@ -94,6 +94,7 @@
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/WebViewScheduler.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include <memory>
@@ -143,10 +144,15 @@ class DragImageBuilder {
     // TODO(fmalita): endRecording() should return a non-const SKP.
     sk_sp<SkPicture> recording(
         const_cast<SkPicture*>(m_pictureBuilder->endRecording().release()));
-    sk_sp<SkImage> skImage = SkImage::MakeFromPicture(
-        std::move(recording),
-        SkISize::Make(m_bounds.width(), m_bounds.height()), nullptr, nullptr);
-    RefPtr<Image> image = StaticBitmapImage::create(std::move(skImage));
+
+    // Rasterize upfront, since DragImage::create() is going to do it anyway
+    // (SkImage::asLegacyBitmap).
+    sk_sp<SkSurface> surface =
+        SkSurface::MakeRasterN32Premul(m_bounds.width(), m_bounds.height());
+    surface->getCanvas()->drawPicture(recording);
+    RefPtr<Image> image =
+        StaticBitmapImage::create(surface->makeImageSnapshot());
+
     float screenDeviceScaleFactor =
         m_localFrame->page()->chromeClient().screenInfo().deviceScaleFactor;
 
