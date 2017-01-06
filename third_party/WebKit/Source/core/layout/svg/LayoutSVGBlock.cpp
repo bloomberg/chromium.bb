@@ -70,6 +70,11 @@ void LayoutSVGBlock::willBeDestroyed() {
   LayoutBlockFlow::willBeDestroyed();
 }
 
+void LayoutSVGBlock::updateFromStyle() {
+  LayoutBlockFlow::updateFromStyle();
+  setFloating(false);
+}
+
 void LayoutSVGBlock::styleDidChange(StyleDifference diff,
                                     const ComputedStyle* oldStyle) {
   if (diff.needsFullLayout()) {

@@ -674,4 +674,30 @@ TEST_F(VisualRectMappingTest, ContainPaint) {
   EXPECT_EQ(rect, target->visualRect());
 }
 
+TEST_F(VisualRectMappingTest, FloatUnderInline) {
+  setBodyInnerHTML(
+      "<div style='position: absolute; top: 55px; left: 66px'>"
+      "  <span id='span' style='position: relative; top: 100px; left: 200px'>"
+      "    <div id='target' style='float: left; width: 33px; height: 44px'>"
+      "    </div>"
+      "  </span>"
+      "</div>");
+
+  LayoutBoxModelObject* span =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("span"));
+  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
+
+  LayoutRect targetVisualRect = target->localVisualRect();
+  EXPECT_EQ(LayoutRect(0, 0, 33, 44), targetVisualRect);
+
+  LayoutRect rect = targetVisualRect;
+  EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+  EXPECT_EQ(LayoutRect(66, 55, 33, 44), rect);
+  EXPECT_EQ(rect, target->visualRect());
+
+  rect = targetVisualRect;
+  EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(span, rect));
+  EXPECT_EQ(LayoutRect(-200, -100, 33, 44), rect);
+}
+
 }  // namespace blink

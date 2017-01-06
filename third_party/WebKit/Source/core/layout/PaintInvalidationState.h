@@ -108,6 +108,8 @@ class CORE_EXPORT PaintInvalidationState {
   friend class VisualRectMappingTest;
   friend class PaintInvalidatorContextAdapter;
 
+  inline PaintLayer& childPaintingLayer(const LayoutObject& child) const;
+
   void mapLocalRectToPaintInvalidationContainer(LayoutRect&) const;
 
   void updateForCurrentObject(const PaintInvalidationState& parentState);

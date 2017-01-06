@@ -803,6 +803,9 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(
 void PaintPropertyTreeBuilder::updateOutOfFlowContext(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
+  if (object.isLayoutBlock())
+    context.paintOffsetForFloat = context.current.paintOffset;
+
   if (object.canContainAbsolutePositionObjects()) {
     context.absolutePosition = context.current;
     context.containerForAbsolutePosition = &object;
@@ -897,6 +900,10 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
     return;
 
   const LayoutBoxModelObject& boxModelObject = toLayoutBoxModelObject(object);
+
+  if (boxModelObject.isFloating())
+    context.current.paintOffset = context.paintOffsetForFloat;
+
   switch (object.styleRef().position()) {
     case StaticPosition:
       break;

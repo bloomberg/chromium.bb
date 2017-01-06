@@ -613,7 +613,11 @@ PaintLayer* LayoutObject::enclosingLayer() const {
 
 PaintLayer* LayoutObject::paintingLayer() const {
   for (const LayoutObject* current = this; current;
-       current = current->paintInvalidationParent()) {
+       // Use containingBlock instead of paintInvalidationParent for floating
+       // object to omit any self-painting layers of inline objects that don't
+       // paint the floating object.
+       current = current->isFloating() ? current->containingBlock()
+                                       : current->paintInvalidationParent()) {
     if (current->hasLayer() &&
         toLayoutBoxModelObject(current)->layer()->isSelfPaintingLayer())
       return toLayoutBoxModelObject(current)->layer();
@@ -893,53 +897,69 @@ LayoutBlock* LayoutObject::containerForFixedPosition(
   return toLayoutBlock(object);
 }
 
-LayoutBlock* LayoutObject::containingBlockForAbsolutePosition() const {
-  LayoutObject* o = containerForAbsolutePosition();
+LayoutBlock* LayoutObject::containingBlockForAbsolutePosition(
+    const LayoutBoxModelObject* ancestor,
+    bool* ancestorSkipped,
+    bool* filterSkipped) const {
+  LayoutObject* object =
+      containerForAbsolutePosition(ancestor, ancestorSkipped, filterSkipped);
 
   // For relpositioned inlines, we return the nearest non-anonymous enclosing
   // block. We don't try to return the inline itself. This allows us to avoid
   // having a positioned objects list in all LayoutInlines and lets us return a
   // strongly-typed LayoutBlock* result from this method. The container() method
   // can actually be used to obtain the inline directly.
-  if (o && o->isInline() && !o->isAtomicInlineLevel()) {
-    ASSERT(o->style()->hasInFlowPosition());
-    o = o->containingBlock();
+  if (object && object->isInline() && !object->isAtomicInlineLevel()) {
+    DCHECK(object->style()->hasInFlowPosition());
+    object = object->containingBlock(ancestor, ancestorSkipped, filterSkipped);
   }
 
-  if (o && !o->isLayoutBlock())
-    o = o->containingBlock();
+  if (object && !object->isLayoutBlock())
+    object = object->containingBlock(ancestor, ancestorSkipped, filterSkipped);
 
-  while (o && o->isAnonymousBlock())
-    o = o->containingBlock();
+  while (object && object->isAnonymousBlock())
+    object = object->containingBlock(ancestor, ancestorSkipped, filterSkipped);
 
-  if (!o || !o->isLayoutBlock())
+  if (!object || !object->isLayoutBlock())
     return nullptr;  // This can still happen in case of an orphaned tree
 
-  return toLayoutBlock(o);
+  return toLayoutBlock(object);
 }
 
-LayoutBlock* LayoutObject::containingBlock() const {
-  LayoutObject* o = parent();
-  if (!o && isLayoutScrollbarPart())
-    o = toLayoutScrollbarPart(this)->layoutObjectOwningScrollbar();
+LayoutBlock* LayoutObject::containingBlock(const LayoutBoxModelObject* ancestor,
+                                           bool* ancestorSkipped,
+                                           bool* filterSkipped) const {
+  LayoutObject* object = parent();
+  if (!object && isLayoutScrollbarPart())
+    object = toLayoutScrollbarPart(this)->layoutObjectOwningScrollbar();
   if (!isTextOrSVGChild()) {
-    if (m_style->position() == FixedPosition)
-      return containerForFixedPosition();
-    if (m_style->position() == AbsolutePosition)
-      return containingBlockForAbsolutePosition();
+    if (m_style->position() == FixedPosition) {
+      return containerForFixedPosition(ancestor, ancestorSkipped,
+                                       filterSkipped);
+    }
+    if (m_style->position() == AbsolutePosition) {
+      return containingBlockForAbsolutePosition(ancestor, ancestorSkipped,
+                                                filterSkipped);
+    }
   }
   if (isColumnSpanAll()) {
-    o = spannerPlaceholder()->containingBlock();
+    object = spannerPlaceholder()->containingBlock();
   } else {
-    while (o && ((o->isInline() && !o->isAtomicInlineLevel()) ||
-                 !o->isLayoutBlock()))
-      o = o->parent();
+    while (object && ((object->isInline() && !object->isAtomicInlineLevel()) ||
+                      !object->isLayoutBlock())) {
+      if (ancestorSkipped && object == ancestor)
+        *ancestorSkipped = true;
+
+      if (filterSkipped && object->hasFilterInducingProperty())
+        *filterSkipped = true;
+      object = object->parent();
+    }
   }
 
-  if (!o || !o->isLayoutBlock())
+  if (!object || !object->isLayoutBlock())
     return nullptr;  // This can still happen in case of an orphaned tree
 
-  return toLayoutBlock(o);
+  return toLayoutBlock(object);
 }
 
 FloatRect LayoutObject::absoluteBoundingBoxFloatRect() const {
@@ -1030,7 +1050,7 @@ void LayoutObject::paint(const PaintInfo&, const LayoutPoint&) const {}
 
 const LayoutBoxModelObject& LayoutObject::containerForPaintInvalidation()
     const {
-  RELEASE_ASSERT(isRooted());
+  CHECK(isRooted());
 
   if (const LayoutBoxModelObject* paintInvalidationContainer =
           enclosingCompositedContainer())
@@ -1039,12 +1059,11 @@ const LayoutBoxModelObject& LayoutObject::containerForPaintInvalidation()
   // If the current frame is not composited, we send just return the main
   // frame's LayoutView so that we generate invalidations on the window.
   const LayoutView* layoutView = view();
-  while (
-      LayoutAPIShim::layoutObjectFrom(layoutView->frame()->ownerLayoutItem()))
-    layoutView =
-        LayoutAPIShim::layoutObjectFrom(layoutView->frame()->ownerLayoutItem())
-            ->view();
-  ASSERT(layoutView);
+  while (const LayoutObject* ownerObject = LayoutAPIShim::constLayoutObjectFrom(
+             layoutView->frame()->ownerLayoutItem()))
+    layoutView = ownerObject->view();
+
+  DCHECK(layoutView);
   return *layoutView;
 }
 
@@ -2498,18 +2517,17 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor,
   if (filterSkipped)
     *filterSkipped = false;
 
-  LayoutObject* o = parent();
-
   if (isTextOrSVGChild())
-    return o;
+    return parent();
 
   EPosition pos = m_style->position();
   if (pos == FixedPosition)
     return containerForFixedPosition(ancestor, ancestorSkipped, filterSkipped);
 
-  if (pos == AbsolutePosition)
+  if (pos == AbsolutePosition) {
     return containerForAbsolutePosition(ancestor, ancestorSkipped,
                                         filterSkipped);
+  }
 
   if (isColumnSpanAll()) {
     LayoutObject* multicolContainer = spannerPlaceholder()->container();
@@ -2527,7 +2545,10 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor,
     return multicolContainer;
   }
 
-  return o;
+  if (isFloating())
+    return containingBlock(ancestor, ancestorSkipped, filterSkipped);
+
+  return parent();
 }
 
 inline LayoutObject* LayoutObject::paintInvalidationParent() const {

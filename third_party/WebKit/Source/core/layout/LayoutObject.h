@@ -901,14 +901,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   //
   // This method is extremely similar to containingBlock(), but with a few
   // notable exceptions.
-  // (1) It can be used on orphaned subtrees, i.e., it can be called safely
-  //     even when the object is not part of the primary document subtree yet.
-  // (2) For normal flow elements, it just returns the parent.
-  // (3) For absolute positioned elements, it will return a relative
+  // (1) For normal flow elements, it just returns the parent.
+  // (2) For absolute positioned elements, it will return a relative
   //     positioned inline. containingBlock() simply skips relpositioned inlines
   //     and lets an enclosing block handle the layout of the positioned object.
   //     This does mean that computePositionedLogicalWidth and
   //     computePositionedLogicalHeight have to use container().
+  //
+  // Note that floating objects don't belong to either of the above exceptions.
   //
   // This function should be used for any invalidation as it would correctly
   // walk the containing block chain. See e.g. markContainerChainForLayout.
@@ -927,7 +927,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       bool* ancestorSkipped = nullptr,
       bool* filterSkipped = nullptr) const;
   // Finds the containing block as if this object is absolute-position.
-  LayoutBlock* containingBlockForAbsolutePosition() const;
+  LayoutBlock* containingBlockForAbsolutePosition(
+      const LayoutBoxModelObject* ancestor = nullptr,
+      bool* ancestorSkipped = nullptr,
+      bool* filterSkipped = nullptr) const;
 
   virtual LayoutObject* hoverAncestor() const { return parent(); }
 
@@ -1116,7 +1119,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   //
   // See container() for the function that returns the containing block.
   // See LayoutBlock.h for some extra explanations on containing blocks.
-  LayoutBlock* containingBlock() const;
+  LayoutBlock* containingBlock(const LayoutBoxModelObject* ancestor = nullptr,
+                               bool* ancestorSkipped = nullptr,
+                               bool* filterSkipped = nullptr) const;
 
   bool canContainAbsolutePositionObjects() const {
     return m_style->canContainAbsolutePositionObjects() ||

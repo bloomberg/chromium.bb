@@ -198,8 +198,12 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
 void PaintInvalidator::updatePaintingLayer(const LayoutObject& object,
                                            PaintInvalidatorContext& context) {
   if (object.hasLayer() &&
-      toLayoutBoxModelObject(object).hasSelfPaintingLayer())
+      toLayoutBoxModelObject(object).hasSelfPaintingLayer()) {
     context.paintingLayer = toLayoutBoxModelObject(object).layer();
+  } else if (object.isFloating() && !object.parent()->isLayoutBlock()) {
+    // See LayoutObject::paintingLayer() for specialty of floating objects.
+    context.paintingLayer = object.paintingLayer();
+  }
 
   if (object.isLayoutBlockFlow() && toLayoutBlockFlow(object).containsFloats())
     context.paintingLayer->setNeedsPaintPhaseFloat();
@@ -281,6 +285,10 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
       undoFrameViewContentClipAndScroll.emplace(
           *toLayoutView(object).frameView(), context);
+  } else if (object.isFloating() && !object.parent()->isLayoutBlock()) {
+    // See LayoutObject::paintingLayer() for specialty of floating objects.
+    context.paintInvalidationContainer =
+        &object.containerForPaintInvalidation();
   } else if (object.styleRef().isStacked() &&
              // This is to exclude some objects (e.g. LayoutText) inheriting
              // stacked style from parent but aren't actually stacked.

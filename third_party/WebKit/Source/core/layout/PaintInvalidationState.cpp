@@ -98,11 +98,7 @@ PaintInvalidationState::PaintInvalidationState(
       m_svgTransform(parentState.m_svgTransform),
       m_pendingDelayedPaintInvalidations(
           parentState.m_pendingDelayedPaintInvalidations),
-      m_paintingLayer(
-          currentObject.hasLayer() &&
-                  toLayoutBoxModelObject(currentObject).hasSelfPaintingLayer()
-              ? *toLayoutBoxModelObject(currentObject).layer()
-              : parentState.m_paintingLayer)
+      m_paintingLayer(parentState.childPaintingLayer(currentObject))
 #if ENABLE(ASSERT)
       ,
       m_didUpdateForChildren(false)
@@ -145,6 +141,12 @@ PaintInvalidationState::PaintInvalidationState(
     // paintInvalidationContainer.
     m_paintInvalidationContainerForStackedContents =
         m_paintInvalidationContainer;
+  } else if (currentObject.isFloating() &&
+             !currentObject.parent()->isLayoutBlock()) {
+    // See LayoutObject::paintingLayer() for specialty of floating objects.
+    m_paintInvalidationContainer =
+        &currentObject.containerForPaintInvalidation();
+    m_cachedOffsetsEnabled = false;
   } else if (currentObject.styleRef().isStacked() &&
              // This is to exclude some objects (e.g. LayoutText) inheriting
              // stacked style from parent but aren't actually stacked.
@@ -228,6 +230,16 @@ PaintInvalidationState::PaintInvalidationState(
   }
 
   updateForCurrentObject(parentState);
+}
+
+PaintLayer& PaintInvalidationState::childPaintingLayer(
+    const LayoutObject& child) const {
+  if (child.hasLayer() && toLayoutBoxModelObject(child).hasSelfPaintingLayer())
+    return *toLayoutBoxModelObject(child).layer();
+  // See LayoutObject::paintingLayer() for specialty of floating objects.
+  if (child.isFloating() && !m_currentObject.isLayoutBlock())
+    return *child.paintingLayer();
+  return m_paintingLayer;
 }
 
 void PaintInvalidationState::updateForCurrentObject(

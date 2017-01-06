@@ -65,6 +65,11 @@ struct PaintPropertyTreeBuilderContext {
 
   ContainingBlockContext fixedPosition;
 
+  // This is the same as current.paintOffset except when a floating object has
+  // non-block ancestors under its containing block. Paint offsets of the
+  // non-block ancestors should not be accumulated for the floating object.
+  LayoutPoint paintOffsetForFloat;
+
   // The effect hierarchy is applied by the stacking context tree. It is
   // guaranteed that every DOM descendant is also a stacking context descendant.
   // Therefore, we don't need extra bookkeeping for effect nodes and can

@@ -3196,4 +3196,27 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodeAnimatedHasCompositorElementId) {
   EXPECT_NE(CompositorElementId(), properties->effect()->compositorElementId());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, FloatUnderInline) {
+  setBodyInnerHTML(
+      "<div style='position: absolute; top: 55px; left: 66px'>"
+      "  <span id='span'"
+      "      style='position: relative; top: 100px; left: 200px; opacity: 0.5'>"
+      "    <div id='target' style='float: left; width: 33px; height: 44px'>"
+      "    </div>"
+      "  </span"
+      "</div>");
+
+  LayoutObject* span = getLayoutObjectByElementId("span");
+  const auto* effect = span->paintProperties()->effect();
+  ASSERT_TRUE(effect);
+  EXPECT_EQ(0.5f, effect->opacity());
+
+  LayoutObject* target = getLayoutObjectByElementId("target");
+  const auto* localBorderBoxProperties =
+      target->paintProperties()->localBorderBoxProperties();
+  ASSERT_TRUE(localBorderBoxProperties);
+  EXPECT_EQ(LayoutPoint(66, 55), localBorderBoxProperties->paintOffset);
+  EXPECT_EQ(effect, localBorderBoxProperties->propertyTreeState.effect());
+}
+
 }  // namespace blink

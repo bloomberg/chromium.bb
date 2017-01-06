@@ -125,6 +125,59 @@ TEST_F(LayoutObjectTest, PaintingLayerOfOverflowClipLayerUnderColumnSpanAll) {
   EXPECT_EQ(columns->layer(), overflowClipObject->paintingLayer());
 }
 
+TEST_F(LayoutObjectTest, FloatUnderBlock) {
+  setBodyInnerHTML(
+      "<div id='layered-div' style='position: absolute'>"
+      "  <div id='container'>"
+      "    <div id='floating' style='float: left'>FLOAT</div>"
+      "  </div>"
+      "</div>");
+
+  LayoutBoxModelObject* layeredDiv =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("layered-div"));
+  LayoutBoxModelObject* container =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("container"));
+  LayoutObject* floating = getLayoutObjectByElementId("floating");
+
+  EXPECT_EQ(layeredDiv->layer(), layeredDiv->paintingLayer());
+  EXPECT_EQ(layeredDiv->layer(), floating->paintingLayer());
+  EXPECT_EQ(container, floating->container());
+  EXPECT_EQ(container, floating->containingBlock());
+}
+
+TEST_F(LayoutObjectTest, FloatUnderInline) {
+  setBodyInnerHTML(
+      "<div id='layered-div' style='position: absolute'>"
+      "  <div id='container'>"
+      "    <span id='layered-span' style='position: relative'>"
+      "      <div id='floating' style='float: left'>FLOAT</div>"
+      "    </span>"
+      "  </div>"
+      "</div>");
+
+  LayoutBoxModelObject* layeredDiv =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("layered-div"));
+  LayoutBoxModelObject* container =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("container"));
+  LayoutBoxModelObject* layeredSpan =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("layered-span"));
+  LayoutObject* floating = getLayoutObjectByElementId("floating");
+
+  EXPECT_EQ(layeredDiv->layer(), layeredDiv->paintingLayer());
+  EXPECT_EQ(layeredSpan->layer(), layeredSpan->paintingLayer());
+  EXPECT_EQ(layeredDiv->layer(), floating->paintingLayer());
+  EXPECT_EQ(container, floating->container());
+  EXPECT_EQ(container, floating->containingBlock());
+
+  bool ancestorSkipped = false;
+  EXPECT_EQ(container, floating->container(layeredSpan, &ancestorSkipped));
+  EXPECT_TRUE(ancestorSkipped);
+
+  ancestorSkipped = false;
+  EXPECT_EQ(container, floating->container(container, &ancestorSkipped));
+  EXPECT_FALSE(ancestorSkipped);
+}
+
 TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   LayoutObject* object = document().body()->layoutObject();
   object->setShouldDoFullPaintInvalidation();
