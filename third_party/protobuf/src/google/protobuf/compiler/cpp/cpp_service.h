@@ -105,11 +105,8 @@ class ServiceGenerator {
   void GenerateStubMethods(io::Printer* printer);
 
   const ServiceDescriptor* descriptor_;
-  std::map<string, string> vars_;
+  map<string, string> vars_;
 
-  int index_in_metadata_;
-
-  friend class FileGenerator;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ServiceGenerator);
 };
 

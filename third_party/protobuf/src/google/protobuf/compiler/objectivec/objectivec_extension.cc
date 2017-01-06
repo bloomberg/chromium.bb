@@ -63,16 +63,13 @@ void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
   vars["method_name"] = method_name_;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
-    vars["comments"] = BuildCommentsString(location, true);
+    vars["comments"] = BuildCommentsString(location);
   } else {
     vars["comments"] = "";
   }
-  // Unlike normal message fields, check if the file for the extension was
-  // deprecated.
-  vars["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file());
   printer->Print(vars,
                  "$comments$"
-                 "+ (GPBExtensionDescriptor *)$method_name$$deprecated_attribute$;\n");
+                 "+ (GPBExtensionDescriptor *)$method_name$;\n");
 }
 
 void ExtensionGenerator::GenerateStaticVariablesInitialization(
@@ -88,7 +85,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   if (descriptor_->containing_type()->options().message_set_wire_format())
     options.push_back("GPBExtensionSetWireFormat");
 
-  vars["options"] = BuildFlagsString(FLAGTYPE_EXTENSION, options);
+  vars["options"] = BuildFlagsString(options);
 
   ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
   string singular_type;

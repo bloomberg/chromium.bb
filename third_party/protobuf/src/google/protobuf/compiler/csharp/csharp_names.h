@@ -39,7 +39,6 @@
 #define GOOGLE_PROTOBUF_COMPILER_CSHARP_NAMES_H__
 
 #include <string>
-#include <google/protobuf/stubs/port.h>
 
 namespace google {
 namespace protobuf {
@@ -57,14 +56,14 @@ namespace csharp {
 //
 // Returns:
 //   The namespace to use for given file descriptor.
-string LIBPROTOC_EXPORT GetFileNamespace(const FileDescriptor* descriptor);
+string GetFileNamespace(const FileDescriptor* descriptor);
 
 // Requires:
 //   descriptor != NULL
 //
 // Returns:
 //   The fully-qualified C# class name.
-string LIBPROTOC_EXPORT GetClassName(const Descriptor* descriptor);
+string GetClassName(const Descriptor* descriptor);
 
 // Requires:
 //   descriptor != NULL
@@ -73,7 +72,7 @@ string LIBPROTOC_EXPORT GetClassName(const Descriptor* descriptor);
 //   The fully-qualified name of the C# class that provides
 //   access to the file descriptor. Proto compiler generates
 //   such class for each .proto file processed.
-string LIBPROTOC_EXPORT GetReflectionClassName(const FileDescriptor* descriptor);
+string GetReflectionClassName(const FileDescriptor* descriptor);
 
 // Generates output file name for given file descriptor. If generate_directories
 // is true, the output file will be put under directory corresponding to file's
@@ -89,7 +88,7 @@ string LIBPROTOC_EXPORT GetReflectionClassName(const FileDescriptor* descriptor)
 //    The file name to use as output file for given file descriptor. In case
 //    of failure, this function will return empty string and error parameter
 //    will contain the error message.
-string LIBPROTOC_EXPORT GetOutputFile(
+string GetOutputFile(
     const google::protobuf::FileDescriptor* descriptor,
     const string file_extension,
     const bool generate_directories,

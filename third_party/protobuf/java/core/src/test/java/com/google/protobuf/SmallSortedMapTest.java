@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import junit.framework.TestCase;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import junit.framework.TestCase;
 
 /**
  * @author darick@google.com Darick Tong

@@ -70,6 +70,7 @@
 #endif
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/scoped_ptr.h>
 
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/descriptor.h>
@@ -88,11 +89,11 @@
 namespace google {
 namespace protobuf {
 
-using internal::DynamicMapField;
+using internal::WireFormat;
 using internal::ExtensionSet;
 using internal::GeneratedMessageReflection;
-using internal::InternalMetadataWithArena;
 using internal::MapField;
+using internal::DynamicMapField;
 
 
 using internal::ArenaStringPtr;
@@ -221,8 +222,9 @@ class DynamicMessage : public Message {
     int size;
     int has_bits_offset;
     int oneof_case_offset;
-    int internal_metadata_offset;
+    int unknown_fields_offset;
     int extensions_offset;
+    int is_default_instance_offset;
 
     // Not owned by the TypeInfo.
     DynamicMessageFactory* factory;  // The factory that created this object.
@@ -231,8 +233,7 @@ class DynamicMessage : public Message {
 
     // Warning:  The order in which the following pointers are defined is
     //   important (the prototype must be deleted *before* the offsets).
-    google::protobuf::scoped_array<uint32> offsets;
-    google::protobuf::scoped_array<uint32> has_bits_indices;
+    google::protobuf::scoped_array<int> offsets;
     google::protobuf::scoped_ptr<const GeneratedMessageReflection> reflection;
     // Don't use a scoped_ptr to hold the prototype: the destructor for
     // DynamicMessage needs to know whether it is the prototype, and does so by
@@ -328,15 +329,19 @@ void DynamicMessage::SharedCtor() {
 
   // Initialize oneof cases.
   for (int i = 0 ; i < descriptor->oneof_decl_count(); ++i) {
-    new (OffsetToPointer(type_info_->oneof_case_offset + sizeof(uint32) * i))
+    new(OffsetToPointer(type_info_->oneof_case_offset + sizeof(uint32) * i))
         uint32(0);
   }
 
-  new (OffsetToPointer(type_info_->internal_metadata_offset))
-      InternalMetadataWithArena;
+  if (type_info_->is_default_instance_offset != -1) {
+    *reinterpret_cast<bool*>(
+        OffsetToPointer(type_info_->is_default_instance_offset)) = false;
+  }
+
+  new(OffsetToPointer(type_info_->unknown_fields_offset)) UnknownFieldSet;
 
   if (type_info_->extensions_offset != -1) {
-    new (OffsetToPointer(type_info_->extensions_offset)) ExtensionSet;
+    new(OffsetToPointer(type_info_->extensions_offset)) ExtensionSet;
   }
 
   for (int i = 0; i < descriptor->field_count(); i++) {
@@ -381,10 +386,10 @@ void DynamicMessage::SharedCtor() {
               if (is_prototype()) {
                 default_value = &field->default_value_string();
               } else {
-                default_value = &(reinterpret_cast<const ArenaStringPtr*>(
-                                      type_info_->prototype->OffsetToPointer(
-                                          type_info_->offsets[i]))
-                                      ->Get());
+                default_value =
+                  &(reinterpret_cast<const ArenaStringPtr*>(
+                    type_info_->prototype->OffsetToPointer(
+                      type_info_->offsets[i]))->Get(NULL));
               }
               ArenaStringPtr* asp = new(field_ptr) ArenaStringPtr();
               asp->UnsafeSetDefault(default_value);
@@ -415,9 +420,8 @@ void DynamicMessage::SharedCtor() {
 DynamicMessage::~DynamicMessage() {
   const Descriptor* descriptor = type_info_->type;
 
-  reinterpret_cast<InternalMetadataWithArena*>(
-      OffsetToPointer(type_info_->internal_metadata_offset))
-      ->~InternalMetadataWithArena();
+  reinterpret_cast<UnknownFieldSet*>(
+    OffsetToPointer(type_info_->unknown_fields_offset))->~UnknownFieldSet();
 
   if (type_info_->extensions_offset != -1) {
     reinterpret_cast<ExtensionSet*>(
@@ -448,10 +452,10 @@ DynamicMessage::~DynamicMessage() {
             case FieldOptions::STRING: {
               const ::std::string* default_value =
                   &(reinterpret_cast<const ArenaStringPtr*>(
-                        reinterpret_cast<uint8*>(
-                            type_info_->default_oneof_instance) +
-                        type_info_->offsets[i])
-                        ->Get());
+                      reinterpret_cast<uint8*>(
+                          type_info_->default_oneof_instance)
+                      + type_info_->offsets[i])
+                    ->Get(NULL));
               reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(
                   default_value, NULL);
               break;
@@ -509,9 +513,8 @@ DynamicMessage::~DynamicMessage() {
         case FieldOptions::STRING: {
           const ::std::string* default_value =
               &(reinterpret_cast<const ArenaStringPtr*>(
-                    type_info_->prototype->OffsetToPointer(
-                        type_info_->offsets[i]))
-                    ->Get());
+                  type_info_->prototype->OffsetToPointer(
+                      type_info_->offsets[i]))->Get(NULL));
           reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(
               default_value, NULL);
           break;
@@ -553,6 +556,14 @@ void DynamicMessage::CrossLinkPrototypes() {
       *reinterpret_cast<const Message**>(field_ptr) =
         factory->GetPrototypeNoLock(field->message_type());
     }
+  }
+
+  // Set as the default instance -- this affects field-presence semantics for
+  // proto3.
+  if (type_info_->is_default_instance_offset != -1) {
+    void* is_default_instance_ptr =
+        OffsetToPointer(type_info_->is_default_instance_offset);
+    *reinterpret_cast<bool*>(is_default_instance_ptr) = true;
   }
 }
 
@@ -653,8 +664,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   //   or not that field is set.
 
   // Compute size and offsets.
-  uint32* offsets =
-      new uint32[type->field_count() + type->oneof_decl_count()];
+  int* offsets = new int[type->field_count() + type->oneof_decl_count()];
   type_info->offsets.reset(offsets);
 
   // Decide all field offsets by packing in order.
@@ -672,12 +682,15 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       DivideRoundingUp(type->field_count(), bitsizeof(uint32));
     size += has_bits_array_size * sizeof(uint32);
     size = AlignOffset(size);
+  }
 
-    uint32* has_bits_indices = new uint32[type->field_count()];
-    for (int i = 0; i < type->field_count(); i++) {
-      has_bits_indices[i] = i;
-    }
-    type_info->has_bits_indices.reset(has_bits_indices);
+  // The is_default_instance member, if any.
+  if (type->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+    type_info->is_default_instance_offset = size;
+    size += sizeof(bool);
+    size = AlignOffset(size);
+  } else {
+    type_info->is_default_instance_offset = -1;
   }
 
   // The oneof_case, if any. It is an array of uint32s.
@@ -698,8 +711,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   }
 
   // All the fields.
-  //
-  // TODO(b/31226269):  Optimize the order of fields to minimize padding.
   for (int i = 0; i < type->field_count(); i++) {
     // Make sure field is aligned to avoid bus errors.
     // Oneof fields do not use any space.
@@ -718,10 +729,10 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     size += kMaxOneofUnionSize;
   }
 
-  // Add the InternalMetadataWithArena to the end.
+  // Add the UnknownFieldSet to the end.
   size = AlignOffset(size);
-  type_info->internal_metadata_offset = size;
-  size += sizeof(InternalMetadataWithArena);
+  type_info->unknown_fields_offset = size;
+  size += sizeof(UnknownFieldSet);
 
   // Align the final size to make sure no clever allocators think that
   // alignment is not necessary.
@@ -741,10 +752,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   DynamicMessage* prototype = new(base) DynamicMessage(type_info);
 
   // Construct the reflection object.
-
-  void* default_oneof_instance = NULL;
-  int oneof_case_offset = -1;
-
   if (type->oneof_decl_count() > 0) {
     // Compute the size of default oneof instance and offsets of default
     // oneof fields.
@@ -763,24 +770,36 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     ConstructDefaultOneofInstance(type_info->type,
                                   type_info->offsets.get(),
                                   type_info->default_oneof_instance);
-    default_oneof_instance = type_info->default_oneof_instance;
-    oneof_case_offset = type_info->oneof_case_offset;
+    type_info->reflection.reset(
+        new GeneratedMessageReflection(
+            type_info->type,
+            type_info->prototype,
+            type_info->offsets.get(),
+            type_info->has_bits_offset,
+            type_info->unknown_fields_offset,
+            type_info->extensions_offset,
+            type_info->default_oneof_instance,
+            type_info->oneof_case_offset,
+            type_info->pool,
+            this,
+            type_info->size,
+            -1 /* arena_offset */,
+            type_info->is_default_instance_offset));
+  } else {
+    type_info->reflection.reset(
+        new GeneratedMessageReflection(
+            type_info->type,
+            type_info->prototype,
+            type_info->offsets.get(),
+            type_info->has_bits_offset,
+            type_info->unknown_fields_offset,
+            type_info->extensions_offset,
+            type_info->pool,
+            this,
+            type_info->size,
+            -1 /* arena_offset */,
+            type_info->is_default_instance_offset));
   }
-
-  internal::ReflectionSchema schema = {
-      type_info->prototype,
-      type_info->offsets.get(),
-      type_info->has_bits_indices.get(),
-      type_info->has_bits_offset,
-      type_info->internal_metadata_offset,
-      type_info->extensions_offset,
-      default_oneof_instance,
-      oneof_case_offset,
-      type_info->size};
-
-  type_info->reflection.reset(new GeneratedMessageReflection(
-      type_info->type, schema, type_info->pool, this));
-
   // Cross link prototypes.
   prototype->CrossLinkPrototypes();
 
@@ -789,7 +808,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
 void DynamicMessageFactory::ConstructDefaultOneofInstance(
     const Descriptor* type,
-    const uint32 offsets[],
+    const int offsets[],
     void* default_oneof_instance) {
   for (int i = 0; i < type->oneof_decl_count(); i++) {
     for (int j = 0; j < type->oneof_decl(i)->field_count(); j++) {
@@ -835,7 +854,7 @@ void DynamicMessageFactory::ConstructDefaultOneofInstance(
 
 void DynamicMessageFactory::DeleteDefaultOneofInstance(
     const Descriptor* type,
-    const uint32 offsets[],
+    const int offsets[],
     void* default_oneof_instance) {
   for (int i = 0; i < type->oneof_decl_count(); i++) {
     for (int j = 0; j < type->oneof_decl(i)->field_count(); j++) {

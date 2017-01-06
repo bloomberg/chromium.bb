@@ -79,22 +79,6 @@ public class ExtensionRegistryLite {
   // applications. Need to support this feature on smaller granularity.
   private static volatile boolean eagerlyParseMessageSets = false;
 
-  // Visible for testing.
-  static final String EXTENSION_CLASS_NAME = "com.google.protobuf.Extension";
-
-  /* @Nullable */
-  static Class<?> resolveExtensionClass() {
-    try {
-      return Class.forName(EXTENSION_CLASS_NAME);
-    } catch (ClassNotFoundException e) {
-      // See comment in ExtensionRegistryFactory on the potential expense of this.
-      return null;
-    }
-  }
-
-  /* @Nullable */
-  private static final Class<?> extensionClass = resolveExtensionClass();
-
   public static boolean isEagerlyParseMessageSets() {
     return eagerlyParseMessageSets;
   }
@@ -103,24 +87,15 @@ public class ExtensionRegistryLite {
     eagerlyParseMessageSets = isEagerlyParse;
   }
 
-  /**
-   * Construct a new, empty instance.
-   *
-   * <p>This may be an {@code ExtensionRegistry} if the full (non-Lite) proto libraries are
-   * available.
-   */
+  /** Construct a new, empty instance. */
   public static ExtensionRegistryLite newInstance() {
-    return ExtensionRegistryFactory.create();
+    return new ExtensionRegistryLite();
   }
 
-  /**
-   * Get the unmodifiable singleton empty instance of either ExtensionRegistryLite or
-   * {@code ExtensionRegistry} (if the full (non-Lite) proto libraries are available).
-   */
+  /** Get the unmodifiable singleton empty instance. */
   public static ExtensionRegistryLite getEmptyRegistry() {
-    return ExtensionRegistryFactory.createEmpty();
+    return EMPTY;
   }
-
 
   /** Returns an unmodifiable view of the registry. */
   public ExtensionRegistryLite getUnmodifiable() {
@@ -153,23 +128,6 @@ public class ExtensionRegistryLite {
       extension);
   }
 
-  /**
-   * Add an extension from a lite generated file to the registry only if it is
-   * a non-lite extension i.e. {@link GeneratedMessageLite.GeneratedExtension}. */
-  public final void add(ExtensionLite<?, ?> extension) {
-    if (GeneratedMessageLite.GeneratedExtension.class.isAssignableFrom(extension.getClass())) {
-      add((GeneratedMessageLite.GeneratedExtension<?, ?>) extension);
-    }
-    if (ExtensionRegistryFactory.isFullRegistry(this)) {
-      try {
-        this.getClass().getMethod("add", extensionClass).invoke(this, extension);
-      } catch (Exception e) {
-        throw new IllegalArgumentException(
-            String.format("Could not invoke ExtensionRegistry#add for %s", extension), e);
-      }
-    }
-  }
-
   // =================================================================
   // Private stuff.
 
@@ -181,11 +139,9 @@ public class ExtensionRegistryLite {
         new HashMap<ObjectIntPair,
                     GeneratedMessageLite.GeneratedExtension<?, ?>>();
   }
-  static final ExtensionRegistryLite EMPTY_REGISTRY_LITE =
-      new ExtensionRegistryLite(true);
 
   ExtensionRegistryLite(ExtensionRegistryLite other) {
-    if (other == EMPTY_REGISTRY_LITE) {
+    if (other == EMPTY) {
       this.extensionsByNumber = Collections.emptyMap();
     } else {
       this.extensionsByNumber =
@@ -197,9 +153,11 @@ public class ExtensionRegistryLite {
                     GeneratedMessageLite.GeneratedExtension<?, ?>>
       extensionsByNumber;
 
-  ExtensionRegistryLite(boolean empty) {
+  private ExtensionRegistryLite(boolean empty) {
     this.extensionsByNumber = Collections.emptyMap();
   }
+  private static final ExtensionRegistryLite EMPTY =
+    new ExtensionRegistryLite(true);
 
   /** A (Object, int) pair, used as a map key. */
   private static final class ObjectIntPair {

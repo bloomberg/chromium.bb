@@ -10,6 +10,7 @@ using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.TestProtos {
 
   /// <summary>Holder for reflection information generated from google/protobuf/unittest_import_proto3.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestImportProto3Reflection {
 
     #region Descriptor
@@ -50,34 +51,29 @@ namespace Google.Protobuf.TestProtos {
   #endregion
 
   #region Messages
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class ImportMessage : pb::IMessage<ImportMessage> {
     private static readonly pb::MessageParser<ImportMessage> _parser = new pb::MessageParser<ImportMessage>(() => new ImportMessage());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ImportMessage> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.Descriptor.MessageTypes[0]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ImportMessage() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ImportMessage(ImportMessage other) : this() {
       d_ = other.d_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ImportMessage Clone() {
       return new ImportMessage(this);
     }
@@ -85,7 +81,6 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "d" field.</summary>
     public const int DFieldNumber = 1;
     private int d_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int D {
       get { return d_; }
       set {
@@ -93,12 +88,10 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ImportMessage);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(ImportMessage other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -110,19 +103,16 @@ namespace Google.Protobuf.TestProtos {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (D != 0) hash ^= D.GetHashCode();
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (D != 0) {
         output.WriteRawTag(8);
@@ -130,7 +120,6 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (D != 0) {
@@ -139,7 +128,6 @@ namespace Google.Protobuf.TestProtos {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(ImportMessage other) {
       if (other == null) {
         return;
@@ -149,7 +137,6 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {

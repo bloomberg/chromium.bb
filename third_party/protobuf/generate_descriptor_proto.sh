@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Run this script to regenerate descriptor.pb.{h,cc} after the protocol
 # compiler changes.  Since these files are compiled into the protocol compiler

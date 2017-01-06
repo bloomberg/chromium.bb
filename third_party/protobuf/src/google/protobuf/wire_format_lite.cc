@@ -61,7 +61,7 @@ const int WireFormatLite::kMessageSetMessageTag;
 #endif
 
 // IBM xlC requires prefixing constants with WireFormatLite::
-const size_t WireFormatLite::kMessageSetItemTagsSize =
+const int WireFormatLite::kMessageSetItemTagsSize =
   io::CodedOutputStream::StaticVarintSize32<
       WireFormatLite::kMessageSetItemStartTag>::value +
   io::CodedOutputStream::StaticVarintSize32<
@@ -466,8 +466,7 @@ void WireFormatLite::WriteGroupMaybeToArray(int field_number,
   const int size = value.GetCachedSize();
   uint8* target = output->GetDirectBufferForNBytesAndAdvance(size);
   if (target != NULL) {
-    uint8* end = value.InternalSerializeWithCachedSizesToArray(
-        output->IsSerializationDeterministic(), target);
+    uint8* end = value.SerializeWithCachedSizesToArray(target);
     GOOGLE_DCHECK_EQ(end - target, size);
   } else {
     value.SerializeWithCachedSizes(output);
@@ -483,8 +482,7 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
   output->WriteVarint32(size);
   uint8* target = output->GetDirectBufferForNBytesAndAdvance(size);
   if (target != NULL) {
-    uint8* end = value.InternalSerializeWithCachedSizesToArray(
-        output->IsSerializationDeterministic(), target);
+    uint8* end = value.SerializeWithCachedSizesToArray(target);
     GOOGLE_DCHECK_EQ(end - target, size);
   } else {
     value.SerializeWithCachedSizes(output);

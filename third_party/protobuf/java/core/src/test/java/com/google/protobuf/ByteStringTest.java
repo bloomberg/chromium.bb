@@ -31,6 +31,9 @@
 package com.google.protobuf;
 
 import com.google.protobuf.ByteString.Output;
+
+import junit.framework.TestCase;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -45,7 +48,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
-import junit.framework.TestCase;
 
 /**
  * Test methods with implementations in {@link ByteString}, plus do some top-level "integration"

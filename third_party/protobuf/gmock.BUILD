@@ -1,19 +1,19 @@
 cc_library(
     name = "gtest",
     srcs = [
-        "googletest/src/gtest-all.cc",
-        "googlemock/src/gmock-all.cc",
+        "gmock-1.7.0/gtest/src/gtest-all.cc",
+        "gmock-1.7.0/src/gmock-all.cc",
     ],
     hdrs = glob([
-        "**/*.h",
-        "googletest/src/*.cc",
-        "googlemock/src/*.cc",
+        "gmock-1.7.0/**/*.h",
+        "gmock-1.7.0/gtest/src/*.cc",
+        "gmock-1.7.0/src/*.cc",
     ]),
     includes = [
-        "googlemock",
-        "googletest",
-        "googletest/include",
-        "googlemock/include",
+        "gmock-1.7.0",
+        "gmock-1.7.0/gtest",
+        "gmock-1.7.0/gtest/include",
+        "gmock-1.7.0/include",
     ],
     linkopts = ["-pthread"],
     visibility = ["//visibility:public"],
@@ -21,7 +21,7 @@ cc_library(
 
 cc_library(
     name = "gtest_main",
-    srcs = ["googlemock/src/gmock_main.cc"],
+    srcs = ["gmock-1.7.0/src/gmock_main.cc"],
     linkopts = ["-pthread"],
     visibility = ["//visibility:public"],
     deps = [":gtest"],

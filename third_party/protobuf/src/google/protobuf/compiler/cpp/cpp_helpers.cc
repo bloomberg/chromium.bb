@@ -371,9 +371,9 @@ string DefaultValue(const FieldDescriptor* field) {
       return "GOOGLE_ULONGLONG(" + SimpleItoa(field->default_value_uint64())+ ")";
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
-      if (value == std::numeric_limits<double>::infinity()) {
+      if (value == numeric_limits<double>::infinity()) {
         return "::google::protobuf::internal::Infinity()";
-      } else if (value == -std::numeric_limits<double>::infinity()) {
+      } else if (value == -numeric_limits<double>::infinity()) {
         return "-::google::protobuf::internal::Infinity()";
       } else if (value != value) {
         return "::google::protobuf::internal::NaN()";
@@ -384,9 +384,9 @@ string DefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_FLOAT:
       {
         float value = field->default_value_float();
-        if (value == std::numeric_limits<float>::infinity()) {
+        if (value == numeric_limits<float>::infinity()) {
           return "static_cast<float>(::google::protobuf::internal::Infinity())";
-        } else if (value == -std::numeric_limits<float>::infinity()) {
+        } else if (value == -numeric_limits<float>::infinity()) {
           return "static_cast<float>(-::google::protobuf::internal::Infinity())";
         } else if (value != value) {
           return "static_cast<float>(::google::protobuf::internal::NaN())";
@@ -415,8 +415,7 @@ string DefaultValue(const FieldDescriptor* field) {
         CEscape(field->default_value_string())) +
         "\"";
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return "*" + FieldMessageTypeName(field) +
-             "::internal_default_instance()";
+      return FieldMessageTypeName(field) + "::default_instance()";
   }
   // Can't actually get here; make compiler happy.  (We could add a default
   // case above but then we wouldn't get the nice compiler warning when a
@@ -445,13 +444,9 @@ string GlobalAddDescriptorsName(const string& filename) {
   return "protobuf_AddDesc_" + FilenameIdentifier(filename);
 }
 
-string GlobalInitDefaultsName(const string& filename) {
-  return "protobuf_InitDefaults_" + FilenameIdentifier(filename);
-}
-
 // Return the name of the AssignDescriptors() function for a given file.
-string GlobalOffsetTableName(const string& filename) {
-  return "protobuf_Offsets_" + FilenameIdentifier(filename);
+string GlobalAssignDescriptorsName(const string& filename) {
+  return "protobuf_AssignDesc_" + FilenameIdentifier(filename);
 }
 
 // Return the name of the ShutdownFile() function for a given file.
@@ -503,6 +498,40 @@ bool StaticInitializersForced(const FileDescriptor* file,
     }
   }
   return false;
+}
+
+void PrintHandlingOptionalStaticInitializers(
+    const FileDescriptor* file, const Options& options, io::Printer* printer,
+    const char* with_static_init, const char* without_static_init,
+    const char* var1, const string& val1, const char* var2,
+    const string& val2) {
+  map<string, string> vars;
+  if (var1) {
+    vars[var1] = val1;
+  }
+  if (var2) {
+    vars[var2] = val2;
+  }
+  PrintHandlingOptionalStaticInitializers(
+      vars, file, options, printer, with_static_init, without_static_init);
+}
+
+void PrintHandlingOptionalStaticInitializers(const map<string, string>& vars,
+                                             const FileDescriptor* file,
+                                             const Options& options,
+                                             io::Printer* printer,
+                                             const char* with_static_init,
+                                             const char* without_static_init) {
+  if (StaticInitializersForced(file, options)) {
+    printer->Print(vars, with_static_init);
+  } else {
+    printer->Print(vars, (string(
+      "#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n") +
+      without_static_init +
+      "#else\n" +
+      with_static_init +
+      "#endif\n").c_str());
+  }
 }
 
 
@@ -602,7 +631,7 @@ static Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
 
 static void GenerateUtf8CheckCode(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  const std::map<string, string>& variables,
+                                  const map<string, string>& variables,
                                   const char* parameters,
                                   const char* strict_function,
                                   const char* verify_function,
@@ -652,7 +681,7 @@ static void GenerateUtf8CheckCode(const FieldDescriptor* field,
 
 void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
-                                    const std::map<string, string>& variables,
+                                    const map<string, string>& variables,
                                     const char* parameters,
                                     io::Printer* printer) {
   GenerateUtf8CheckCode(field, options, for_parse, variables, parameters,
@@ -662,7 +691,7 @@ void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
 
 void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  const std::map<string, string>& variables,
+                                  const map<string, string>& variables,
                                   const char* parameters,
                                   io::Printer* printer) {
   GenerateUtf8CheckCode(field, options, for_parse, variables, parameters,

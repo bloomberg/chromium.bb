@@ -65,6 +65,9 @@ import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
 import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
+
+import junit.framework.TestCase;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -73,7 +76,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import junit.framework.TestCase;
 
 /**
  * Unit test for generated messages and generated code.  See also
@@ -970,7 +972,7 @@ public class GeneratedMessageTest extends TestCase {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
 
     TestAllTypes.Builder builder = (TestAllTypes.Builder)
-        ((AbstractMessage) TestAllTypes.getDefaultInstance()).
+        ((GeneratedMessage) TestAllTypes.getDefaultInstance()).
             newBuilderForType(mockParent);
     builder.setOptionalInt32(1);
     builder.setOptionalNestedEnum(TestAllTypes.NestedEnum.BAR);
@@ -1025,7 +1027,7 @@ public class GeneratedMessageTest extends TestCase {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
 
     TestAllExtensions.Builder builder = (TestAllExtensions.Builder)
-        ((AbstractMessage) TestAllExtensions.getDefaultInstance()).
+        ((GeneratedMessage) TestAllExtensions.getDefaultInstance()).
             newBuilderForType(mockParent);
 
     builder.addExtension(UnittestProto.repeatedInt32Extension, 1);

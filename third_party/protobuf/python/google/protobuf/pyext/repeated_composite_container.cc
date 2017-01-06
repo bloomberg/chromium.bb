@@ -146,7 +146,7 @@ static PyObject* AddToAttached(RepeatedCompositeContainer* self,
   cmsg->owner = self->owner;
   cmsg->message = sub_message;
   cmsg->parent = self->parent;
-  if (cmessage::InitAttributes(cmsg, args, kwargs) < 0) {
+  if (cmessage::InitAttributes(cmsg, kwargs) < 0) {
     Py_DECREF(cmsg);
     return NULL;
   }
@@ -166,7 +166,7 @@ static PyObject* AddToReleased(RepeatedCompositeContainer* self,
 
   // Create a new Message detached from the rest.
   PyObject* py_cmsg = PyEval_CallObjectWithKeywords(
-      self->child_message_class->AsPyObject(), args, kwargs);
+      self->child_message_class->AsPyObject(), NULL, kwargs);
   if (py_cmsg == NULL)
     return NULL;
 
@@ -364,7 +364,7 @@ static int SortPythonMessages(RepeatedCompositeContainer* self,
   ScopedPyObjectPtr m(PyObject_GetAttrString(self->child_messages, "sort"));
   if (m == NULL)
     return -1;
-  if (ScopedPyObjectPtr(PyObject_Call(m.get(), args, kwds)) == NULL)
+  if (PyObject_Call(m.get(), args, kwds) == NULL)
     return -1;
   if (self->message != NULL) {
     ReorderAttached(self);

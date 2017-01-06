@@ -112,7 +112,7 @@ string ConvertFieldMaskPath(const StringPiece path,
 
 util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
                                            PathSinkCallback path_sink) {
-  std::stack<string> prefix;
+  stack<string> prefix;
   int length = paths.length();
   int previous_position = 0;
   bool in_map_key = false;

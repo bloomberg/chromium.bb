@@ -39,12 +39,11 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/message.h>
-#include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/message.h>
-#include <google/protobuf/pyext/repeated_composite_container.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
 #if PY_MAJOR_VERSION >= 3
@@ -330,15 +329,6 @@ PyObject* Clear(PyObject* _self) {
   Py_RETURN_NONE;
 }
 
-PyObject* GetEntryClass(PyObject* _self) {
-  MapContainer* self = GetMap(_self);
-  CMessageClass* message_class = message_factory::GetMessageClass(
-      cmessage::GetFactoryForMessage(self->parent),
-      self->parent_field_descriptor->message_type());
-  Py_XINCREF(message_class);
-  return reinterpret_cast<PyObject*>(message_class);
-}
-
 PyObject* MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
   MapContainer* self = GetMap(_self);
 
@@ -359,10 +349,9 @@ PyObject* MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
 }
 
 // Initializes the underlying Message object of "to" so it becomes a new parent
-// map container, and copies all the values from "from" to it. A child map
+// repeated scalar, and copies all the values from "from" to it. A child scalar
 // container can be released by passing it as both from and to (e.g. making it
 // the recipient of the new parent message and copying the values from itself).
-// In fact, this is the only supported use at the moment.
 static int InitializeAndCopyToParentContainer(MapContainer* from,
                                               MapContainer* to) {
   // For now we require from == to, re-evaluate if we want to support deep copy
@@ -374,7 +363,7 @@ static int InitializeAndCopyToParentContainer(MapContainer* from,
     // A somewhat roundabout way of copying just one field from old_message to
     // new_message.  This is the best we can do with what Reflection gives us.
     Message* mutable_old = from->GetMutableMessage();
-    std::vector<const FieldDescriptor*> fields;
+    vector<const FieldDescriptor*> fields;
     fields.push_back(from->parent_field_descriptor);
 
     // Move the map field into the new message.
@@ -411,7 +400,12 @@ PyObject *NewScalarMapContainer(
     return NULL;
   }
 
-  ScopedPyObjectPtr obj(PyType_GenericAlloc(ScalarMapContainer_Type, 0));
+#if PY_MAJOR_VERSION >= 3
+  ScopedPyObjectPtr obj(PyType_GenericAlloc(
+        reinterpret_cast<PyTypeObject *>(ScalarMapContainer_Type), 0));
+#else
+  ScopedPyObjectPtr obj(PyType_GenericAlloc(&ScalarMapContainer_Type, 0));
+#endif
   if (obj.get() == NULL) {
     return PyErr_Format(PyExc_RuntimeError,
                         "Could not allocate new container.");
@@ -533,8 +527,6 @@ static PyMethodDef ScalarMapMethods[] = {
     "Removes all elements from the map." },
   { "get", ScalarMapGet, METH_VARARGS,
     "Gets the value for the given key if present, or otherwise a default" },
-  { "GetEntryClass", (PyCFunction)GetEntryClass, METH_NOARGS,
-    "Return the class used to build Entries of (key, value) pairs." },
   /*
   { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
     "Makes a deep copy of the class." },
@@ -544,7 +536,6 @@ static PyMethodDef ScalarMapMethods[] = {
   {NULL, NULL},
 };
 
-PyTypeObject *ScalarMapContainer_Type;
 #if PY_MAJOR_VERSION >= 3
   static PyType_Slot ScalarMapContainer_Type_slots[] = {
       {Py_tp_dealloc, (void *)ScalarMapDealloc},
@@ -563,6 +554,7 @@ PyTypeObject *ScalarMapContainer_Type;
       Py_TPFLAGS_DEFAULT,
       ScalarMapContainer_Type_slots
   };
+  PyObject *ScalarMapContainer_Type;
 #else
   static PyMappingMethods ScalarMapMappingMethods = {
     MapReflectionFriend::Length,             // mp_length
@@ -570,7 +562,7 @@ PyTypeObject *ScalarMapContainer_Type;
     MapReflectionFriend::ScalarMapSetItem,   // mp_ass_subscript
   };
 
-  PyTypeObject _ScalarMapContainer_Type = {
+  PyTypeObject ScalarMapContainer_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
     FULL_MODULE_NAME ".ScalarMapContainer",  //  tp_name
     sizeof(MapContainer),                //  tp_basicsize
@@ -651,7 +643,12 @@ PyObject* NewMessageMapContainer(
     return NULL;
   }
 
-  PyObject* obj = PyType_GenericAlloc(MessageMapContainer_Type, 0);
+#if PY_MAJOR_VERSION >= 3
+  PyObject* obj = PyType_GenericAlloc(
+        reinterpret_cast<PyTypeObject *>(MessageMapContainer_Type), 0);
+#else
+  PyObject* obj = PyType_GenericAlloc(&MessageMapContainer_Type, 0);
+#endif
   if (obj == NULL) {
     return PyErr_Format(PyExc_RuntimeError,
                         "Could not allocate new container.");
@@ -783,8 +780,6 @@ static PyMethodDef MessageMapMethods[] = {
     "Gets the value for the given key if present, or otherwise a default" },
   { "get_or_create", MapReflectionFriend::MessageMapGetItem, METH_O,
     "Alias for getitem, useful to make explicit that the map is mutated." },
-  { "GetEntryClass", (PyCFunction)GetEntryClass, METH_NOARGS,
-    "Return the class used to build Entries of (key, value) pairs." },
   /*
   { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
     "Makes a deep copy of the class." },
@@ -794,7 +789,6 @@ static PyMethodDef MessageMapMethods[] = {
   {NULL, NULL},
 };
 
-PyTypeObject *MessageMapContainer_Type;
 #if PY_MAJOR_VERSION >= 3
   static PyType_Slot MessageMapContainer_Type_slots[] = {
       {Py_tp_dealloc, (void *)MessageMapDealloc},
@@ -813,6 +807,8 @@ PyTypeObject *MessageMapContainer_Type;
       Py_TPFLAGS_DEFAULT,
       MessageMapContainer_Type_slots
   };
+
+  PyObject *MessageMapContainer_Type;
 #else
   static PyMappingMethods MessageMapMappingMethods = {
     MapReflectionFriend::Length,              // mp_length
@@ -820,7 +816,7 @@ PyTypeObject *MessageMapContainer_Type;
     MapReflectionFriend::MessageMapSetItem,   // mp_ass_subscript
   };
 
-  PyTypeObject _MessageMapContainer_Type = {
+  PyTypeObject MessageMapContainer_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
     FULL_MODULE_NAME ".MessageMapContainer",  //  tp_name
     sizeof(MessageMapContainer),         //  tp_basicsize
@@ -968,63 +964,6 @@ PyTypeObject MapIterator_Type = {
   0,                                   //  tp_dictoffset
   0,                                   //  tp_init
 };
-
-bool InitMapContainers() {
-  // ScalarMapContainer_Type derives from our MutableMapping type.
-  ScopedPyObjectPtr containers(PyImport_ImportModule(
-      "google.protobuf.internal.containers"));
-  if (containers == NULL) {
-    return false;
-  }
-
-  ScopedPyObjectPtr mutable_mapping(
-      PyObject_GetAttrString(containers.get(), "MutableMapping"));
-  if (mutable_mapping == NULL) {
-    return false;
-  }
-
-  if (!PyObject_TypeCheck(mutable_mapping.get(), &PyType_Type)) {
-    return false;
-  }
-
-  Py_INCREF(mutable_mapping.get());
-#if PY_MAJOR_VERSION >= 3
-  PyObject* bases = PyTuple_New(1);
-  PyTuple_SET_ITEM(bases, 0, mutable_mapping.get());
-
-  ScalarMapContainer_Type = reinterpret_cast<PyTypeObject*>(
-      PyType_FromSpecWithBases(&ScalarMapContainer_Type_spec, bases));
-#else
-  _ScalarMapContainer_Type.tp_base =
-      reinterpret_cast<PyTypeObject*>(mutable_mapping.get());
-
-  if (PyType_Ready(&_ScalarMapContainer_Type) < 0) {
-    return false;
-  }
-
-  ScalarMapContainer_Type = &_ScalarMapContainer_Type;
-#endif
-
-  if (PyType_Ready(&MapIterator_Type) < 0) {
-    return false;
-  }
-
-#if PY_MAJOR_VERSION >= 3
-  MessageMapContainer_Type = reinterpret_cast<PyTypeObject*>(
-      PyType_FromSpecWithBases(&MessageMapContainer_Type_spec, bases));
-#else
-  Py_INCREF(mutable_mapping.get());
-  _MessageMapContainer_Type.tp_base =
-      reinterpret_cast<PyTypeObject*>(mutable_mapping.get());
-
-  if (PyType_Ready(&_MessageMapContainer_Type) < 0) {
-    return false;
-  }
-
-  MessageMapContainer_Type = &_MessageMapContainer_Type;
-#endif
-  return true;
-}
 
 }  // namespace python
 }  // namespace protobuf

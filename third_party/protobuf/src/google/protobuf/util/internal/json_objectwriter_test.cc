@@ -299,11 +299,11 @@ TEST_F(JsonObjectWriterTest, TestWebsafeByteEncoding) {
   ow_ = new JsonObjectWriter("", out_stream_);
   ow_->set_use_websafe_base64_for_bytes(true);
   ow_->StartObject("")
-      ->RenderBytes("bytes", "\x03\xef\xc0\x10")
+      ->RenderBytes("bytes", "\x03\xef\xc0")
       ->EndObject();
 
   // Test that we get websafe base64 encoding when explicitly asked.
-  EXPECT_EQ("{\"bytes\":\"A-_AEA==\"}",
+  EXPECT_EQ("{\"bytes\":\"A-_A\"}",
             output_.substr(0, out_stream_->ByteCount()));
 }
 

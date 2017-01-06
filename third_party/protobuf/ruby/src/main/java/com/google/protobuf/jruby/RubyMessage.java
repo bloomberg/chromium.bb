@@ -41,8 +41,6 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -166,21 +164,8 @@ public class RubyMessage extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject hash(ThreadContext context) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            for (RubyMap map : maps.values()) {
-                digest.update((byte) map.hashCode());
-            }
-            for (RubyRepeatedField repeatedField : repeatedFields.values()) {
-                digest.update((byte) repeatedFields.hashCode());
-            }
-            for (IRubyObject field : fields.values()) {
-                digest.update((byte) field.hashCode());
-            }
-            return context.runtime.newString(new ByteList(digest.digest()));
-        } catch (NoSuchAlgorithmException ignore) {
-            return context.runtime.newFixnum(System.identityHashCode(this));
-        }
+        int hashCode = System.identityHashCode(this);
+        return context.runtime.newFixnum(hashCode);
     }
 
     /*
@@ -519,7 +504,7 @@ public class RubyMessage extends RubyObject {
                 break;
             case BYTES:
             case STRING:
-                Utils.validateStringEncoding(context, fieldDescriptor.getType(), value);
+                Utils.validateStringEncoding(context.runtime, fieldDescriptor.getType(), value);
                 RubyString str = (RubyString) value;
                 switch (fieldDescriptor.getType()) {
                     case BYTES:
@@ -607,17 +592,13 @@ public class RubyMessage extends RubyObject {
     protected IRubyObject getField(ThreadContext context, Descriptors.FieldDescriptor fieldDescriptor) {
         Descriptors.OneofDescriptor oneofDescriptor = fieldDescriptor.getContainingOneof();
         if (oneofDescriptor != null) {
-            if (oneofCases.get(oneofDescriptor) == fieldDescriptor) {
+            if (oneofCases.containsKey(oneofDescriptor)) {
+                if (oneofCases.get(oneofDescriptor) != fieldDescriptor)
+                    return context.runtime.getNil();
                 return fields.get(fieldDescriptor);
             } else {
                 Descriptors.FieldDescriptor oneofCase = builder.getOneofFieldDescriptor(oneofDescriptor);
-                if (oneofCase != fieldDescriptor) {
-                  if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
-                    return context.runtime.getNil();
-                  } else {
-                    return wrapField(context, fieldDescriptor, fieldDescriptor.getDefaultValue());
-                  }
-                }
+                if (oneofCase != fieldDescriptor) return context.runtime.getNil();
                 IRubyObject value = wrapField(context, oneofCase, builder.getField(oneofCase));
                 fields.put(fieldDescriptor, value);
                 return value;
@@ -710,7 +691,7 @@ public class RubyMessage extends RubyObject {
                     }
                 }
                 if (addValue) {
-                    value = Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+                    Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
                     this.fields.put(fieldDescriptor, value);
                 } else {
                     this.fields.remove(fieldDescriptor);

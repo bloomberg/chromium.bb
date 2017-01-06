@@ -79,7 +79,7 @@ class ExtensionGenerator {
                                const string& scope,
                                bool immutable,
                                ClassNameResolver* name_resolver,
-                               std::map<string, string>* vars_pointer);
+                               map<string, string>* vars_pointer);
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);

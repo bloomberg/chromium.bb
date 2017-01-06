@@ -58,7 +58,13 @@ else:
   from google.protobuf.internal import python_message as message_impl
 
 # The type of all Message classes.
-# Part of the public interface, but normally only used by message factories.
+# Part of the public interface.
+#
+# Used by generated files, but clients can also use it at runtime:
+#   mydescriptor = pool.FindDescriptor(.....)
+#   class MyProtoClass(Message):
+#     __metaclass__ = GeneratedProtocolMessageType
+#     DESCRIPTOR = mydescriptor
 GeneratedProtocolMessageType = message_impl.GeneratedProtocolMessageType
 
 

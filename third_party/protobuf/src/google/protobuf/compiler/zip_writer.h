@@ -85,7 +85,7 @@ class ZipWriter {
   };
 
   io::ZeroCopyOutputStream* raw_output_;
-  std::vector<FileInfo> files_;
+  vector<FileInfo> files_;
 };
 
 }  // namespace compiler

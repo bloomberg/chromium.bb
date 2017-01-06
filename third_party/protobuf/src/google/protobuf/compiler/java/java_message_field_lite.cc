@@ -56,7 +56,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          int builderBitIndex,
                          const FieldGeneratorInfo* info,
                          ClassNameResolver* name_resolver,
-                         std::map<string, string>* variables) {
+                         map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -145,7 +145,6 @@ GenerateInterfaceMembers(io::Printer* printer) const {
 
 void ImmutableMessageFieldLiteGenerator::
 GenerateMembers(io::Printer* printer) const {
-
   printer->Print(variables_,
     "private $type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);

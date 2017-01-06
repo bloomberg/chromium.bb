@@ -52,7 +52,6 @@ namespace protobuf {
     class ZeroCopyInputStream;      // zero_copy_stream.h
   }
   namespace internal {
-    class InternalMetadataWithArena;  // metadata.h
     class WireFormat;               // wire_format.h
     class MessageSetFieldSkipperUsingCord;
                                     // extension_set_heavy.cc
@@ -92,13 +91,6 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
 
   // Similar to above, but this function will destroy the contents of other.
   void MergeFromAndDestroy(UnknownFieldSet* other);
-
-  // Merge the contents an UnknownFieldSet with the UnknownFieldSet in
-  // *metadata, if there is one.  If *metadata doesn't have an UnknownFieldSet
-  // then add one to it and make it be a copy of the first arg.
-  static void MergeToInternalMetdata(
-      const UnknownFieldSet& other,
-      internal::InternalMetadataWithArena* metadata);
 
   // Swaps the contents of some other UnknownFieldSet with this one.
   inline void Swap(UnknownFieldSet* x);
@@ -183,7 +175,7 @@ class LIBPROTOBUF_EXPORT UnknownField {
     TYPE_GROUP
   };
 
-  // The field's field number, as seen on the wire.
+  // The field's tag number, as seen on the wire.
   inline int number() const;
 
   // The field type.
@@ -212,7 +204,7 @@ class LIBPROTOBUF_EXPORT UnknownField {
   void SerializeLengthDelimitedNoTag(io::CodedOutputStream* output) const;
   uint8* SerializeLengthDelimitedNoTagToArray(uint8* target) const;
 
-  inline size_t GetLengthDelimitedSize() const;
+  inline int GetLengthDelimitedSize() const;
 
  private:
   friend class UnknownFieldSet;
@@ -249,14 +241,8 @@ class LIBPROTOBUF_EXPORT UnknownField {
 // ===================================================================
 // inline implementations
 
-inline UnknownFieldSet::UnknownFieldSet() : fields_(NULL) {}
-
-inline UnknownFieldSet::~UnknownFieldSet() { Clear(); }
-
-inline void UnknownFieldSet::ClearAndFreeMemory() { Clear(); }
-
 inline void UnknownFieldSet::Clear() {
-  if (fields_ != NULL) {
+  if (fields_) {
     ClearFallback();
   }
 }
@@ -338,9 +324,9 @@ inline UnknownFieldSet* UnknownField::mutable_group() {
   return group_;
 }
 
-inline size_t UnknownField::GetLengthDelimitedSize() const {
+inline int UnknownField::GetLengthDelimitedSize() const {
   GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  return length_delimited_.string_value_->size();
+  return static_cast<int>(length_delimited_.string_value_->size());
 }
 
 inline void UnknownField::SetType(Type type) {

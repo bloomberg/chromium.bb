@@ -3,8 +3,7 @@
 # generated_code.rb is in the same directory as this test.
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
-require 'generated_code_pb'
-require 'test_import_pb'
+require 'generated_code'
 require 'test/unit'
 
 class GeneratedCodeTest < Test::Unit::TestCase
@@ -14,6 +13,5 @@ class GeneratedCodeTest < Test::Unit::TestCase
     # successfully creates message definitions and classes, not to test every
     # aspect of the extension (basic.rb is for that).
     m = A::B::C::TestMessage.new()
-    m2 = FooBar::TestImportedMessage.new()
   end
 end

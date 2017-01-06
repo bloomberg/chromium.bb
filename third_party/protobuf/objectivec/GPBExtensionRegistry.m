@@ -34,6 +34,8 @@
 #import "GPBDescriptor.h"
 
 @implementation GPBExtensionRegistry {
+  // TODO(dmaclach): Reimplement with CFDictionaries that don't use
+  // objects as keys.
   NSMutableDictionary *mutableClassMap_;
 }
 
@@ -49,12 +51,6 @@
   [super dealloc];
 }
 
-// Direct access is use for speed, to avoid even internally declaring things
-// read/write, etc. The warning is enabled in the project to ensure code calling
-// protos can turn on -Wdirect-ivar-access without issues.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdirect-ivar-access"
-
 - (instancetype)copyWithZone:(NSZone *)zone {
   GPBExtensionRegistry *result = [[[self class] allocWithZone:zone] init];
   if (result && mutableClassMap_.count) {
@@ -63,16 +59,13 @@
   return result;
 }
 
-- (CFMutableDictionaryRef)extensionMapForContainingMessageClass:
+- (NSMutableDictionary *)extensionMapForContainingMessageClass:
         (Class)containingMessageClass {
-  CFMutableDictionaryRef extensionMap = (CFMutableDictionaryRef)
+  NSMutableDictionary *extensionMap =
       [mutableClassMap_ objectForKey:containingMessageClass];
   if (extensionMap == nil) {
-    // Use a custom dictionary here because the keys are numbers and conversion
-    // back and forth from NSNumber isn't worth the cost.
-    extensionMap = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL,
-                                             &kCFTypeDictionaryValueCallBacks);
-    [mutableClassMap_ setObject:(id)extensionMap
+    extensionMap = [NSMutableDictionary dictionary];
+    [mutableClassMap_ setObject:extensionMap
                          forKey:(id<NSCopying>)containingMessageClass];
   }
   return extensionMap;
@@ -84,28 +77,17 @@
   }
 
   Class containingMessageClass = extension.containingMessageClass;
-  CFMutableDictionaryRef extensionMap =
+  NSMutableDictionary *extensionMap =
       [self extensionMapForContainingMessageClass:containingMessageClass];
-  ssize_t key = extension.fieldNumber;
-  CFDictionarySetValue(extensionMap, (const void *)key, extension);
+  [extensionMap setObject:extension forKey:@(extension.fieldNumber)];
 }
 
 - (GPBExtensionDescriptor *)extensionForDescriptor:(GPBDescriptor *)descriptor
                                        fieldNumber:(NSInteger)fieldNumber {
   Class messageClass = descriptor.messageClass;
-  CFMutableDictionaryRef extensionMap = (CFMutableDictionaryRef)
+  NSDictionary *extensionMap =
       [mutableClassMap_ objectForKey:messageClass];
-  ssize_t key = fieldNumber;
-  GPBExtensionDescriptor *result =
-      (extensionMap
-       ? CFDictionaryGetValue(extensionMap, (const void *)key)
-       : nil);
-  return result;
-}
-
-static void CopyKeyValue(const void *key, const void *value, void *context) {
-  CFMutableDictionaryRef extensionMap = (CFMutableDictionaryRef)context;
-  CFDictionarySetValue(extensionMap, key, value);
+  return [extensionMap objectForKey:@(fieldNumber)];
 }
 
 - (void)addExtensions:(GPBExtensionRegistry *)registry {
@@ -114,18 +96,13 @@ static void CopyKeyValue(const void *key, const void *value, void *context) {
     return;
   }
   NSMutableDictionary *otherClassMap = registry->mutableClassMap_;
-  [otherClassMap enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL * stop) {
-#pragma unused(stop)
-    Class containingMessageClass = key;
-    CFMutableDictionaryRef otherExtensionMap = (CFMutableDictionaryRef)value;
-
-    CFMutableDictionaryRef extensionMap =
+  for (Class containingMessageClass in otherClassMap) {
+    NSMutableDictionary *extensionMap =
         [self extensionMapForContainingMessageClass:containingMessageClass];
-
-    CFDictionaryApplyFunction(otherExtensionMap, CopyKeyValue, extensionMap);
-  }];
+    NSMutableDictionary *otherExtensionMap =
+        [registry extensionMapForContainingMessageClass:containingMessageClass];
+    [extensionMap addEntriesFromDictionary:otherExtensionMap];
+  }
 }
-
-#pragma clang diagnostic pop
 
 @end

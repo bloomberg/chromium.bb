@@ -53,7 +53,7 @@ OneofGenerator::OneofGenerator(const OneofDescriptor* descriptor)
   string comments;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
-    comments = BuildCommentsString(location, true);
+    comments = BuildCommentsString(location);
   } else {
     comments = "";
   }
@@ -104,9 +104,7 @@ void OneofGenerator::GeneratePublicCasePropertyDeclaration(
 void OneofGenerator::GenerateClearFunctionDeclaration(io::Printer* printer) {
   printer->Print(
       variables_,
-      "/**\n"
-      " * Clears whatever value was set for the oneof '$name$'.\n"
-      " **/\n"
+      "/// Clears whatever value was set for the oneof '$name$'.\n"
       "void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message);\n");
 }
 
@@ -121,7 +119,7 @@ void OneofGenerator::GenerateClearFunctionImplementation(io::Printer* printer) {
       variables_,
       "void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message) {\n"
       "  GPBDescriptor *descriptor = [message descriptor];\n"
-      "  GPBOneofDescriptor *oneof = [descriptor.oneofs objectAtIndex:$raw_index$];\n"
+      "  GPBOneofDescriptor *oneof = descriptor->oneofs_[$raw_index$];\n"
       "  GPBMaybeClearOneof(message, oneof, $index$, 0);\n"
       "}\n");
 }

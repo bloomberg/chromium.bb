@@ -28,12 +28,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// This file defines the map container and its helpers to support protobuf maps.
-//
-// The Map and MapIterator types are provided by this header file.
-// Please avoid using other types defined here, unless they are public
-// types within Map or MapIterator, such as Map::value_type.
-
 #ifndef GOOGLE_PROTOBUF_MAP_H__
 #define GOOGLE_PROTOBUF_MAP_H__
 
@@ -56,6 +50,9 @@
 namespace google {
 namespace protobuf {
 
+// The Map and MapIterator types are provided by this header file.
+// Please avoid using other types defined here, unless they are public
+// types within Map or MapIterator, such as Map::value_type.
 template <typename Key, typename T>
 class Map;
 
@@ -523,13 +520,13 @@ class Map {
   typedef size_t size_type;
   typedef hash<Key> hasher;
 
-  explicit Map(bool old_style = false)
+  Map(bool old_style = true)
       : arena_(NULL),
         default_enum_value_(0),
         old_style_(old_style) {
     Init();
   }
-  explicit Map(Arena* arena, bool old_style = false)
+  explicit Map(Arena* arena, bool old_style = true)
       : arena_(arena),
         default_enum_value_(0),
         old_style_(old_style) {
@@ -543,7 +540,7 @@ class Map {
     insert(other.begin(), other.end());
   }
   template <class InputIt>
-  Map(const InputIt& first, const InputIt& last, bool old_style = false)
+  Map(const InputIt& first, const InputIt& last, bool old_style = true)
       : arena_(NULL),
         default_enum_value_(0),
         old_style_(old_style) {
@@ -565,7 +562,7 @@ class Map {
   void Init() {
     if (old_style_)
       deprecated_elements_ = Arena::Create<DeprecatedInnerMap>(
-          arena_, 0, hasher(), std::equal_to<Key>(),
+          arena_, 0, hasher(), equal_to<Key>(),
           MapAllocator<std::pair<const Key, MapPair<Key, T>*> >(arena_));
     else
       elements_ =
@@ -590,13 +587,13 @@ class Map {
     explicit MapAllocator(Arena* arena) : arena_(arena) {}
     template <typename X>
     MapAllocator(const MapAllocator<X>& allocator)
-        : arena_(allocator.arena()) {}
+        : arena_(allocator.arena_) {}
 
     pointer allocate(size_type n, const_pointer hint = 0) {
       // If arena is not given, malloc needs to be called which doesn't
       // construct element object.
       if (arena_ == NULL) {
-        return static_cast<pointer>(::operator new(n * sizeof(value_type)));
+        return reinterpret_cast<pointer>(malloc(n * sizeof(value_type)));
       } else {
         return reinterpret_cast<pointer>(
             Arena::CreateArray<uint8>(arena_, n * sizeof(value_type)));
@@ -605,16 +602,13 @@ class Map {
 
     void deallocate(pointer p, size_type n) {
       if (arena_ == NULL) {
-#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
-        ::operator delete(p, n * sizeof(value_type));
-#else
-        ::operator delete(p);
-#endif
+        free(p);
       }
     }
 
 #if __cplusplus >= 201103L && !defined(GOOGLE_PROTOBUF_OS_APPLE) && \
     !defined(GOOGLE_PROTOBUF_OS_NACL) &&                            \
+    !defined(GOOGLE_PROTOBUF_OS_ANDROID) &&                         \
     !defined(GOOGLE_PROTOBUF_OS_EMSCRIPTEN)
     template<class NodeType, class... Args>
     void construct(NodeType* p, Args&&... args) {
@@ -653,19 +647,15 @@ class Map {
 
     // To support Visual Studio 2008
     size_type max_size() const {
-      // parentheses around (std::...:max) prevents macro warning of max()
-      return (std::numeric_limits<size_type>::max)();
-    }
-
-    // To support gcc-4.4, which does not properly
-    // support templated friend classes
-    Arena* arena() const {
-      return arena_;
+      return std::numeric_limits<size_type>::max();
     }
 
    private:
     typedef void DestructorSkippable_;
     Arena* const arena_;
+
+    template <typename X>
+    friend class MapAllocator;
   };
 
   // InnerMap's key type is Key and its value type is value_type*.  We use a
@@ -1084,9 +1074,8 @@ class Map {
         // index_of_first_non_null_, so we skip the code to update it.
         return InsertUniqueInTree(b, node);
       }
-      // parentheses around (std::min) prevents macro expansion of min(...)
       index_of_first_non_null_ =
-          (std::min)(index_of_first_non_null_, result.bucket_index_);
+          std::min(index_of_first_non_null_, result.bucket_index_);
       return result;
     }
 
@@ -1258,7 +1247,7 @@ class Map {
     // Return whether table_[b] is a linked list that seems awfully long.
     // Requires table_[b] to point to a non-empty linked list.
     bool TableEntryIsTooLong(size_type b) {
-      const size_type kMaxLength = 8;
+      const int kMaxLength = 8;
       size_type count = 0;
       Node* node = static_cast<Node*>(table_[b]);
       do {
@@ -1356,7 +1345,7 @@ class Map {
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(InnerMap);
   };  // end of class InnerMap
 
-  typedef hash_map<Key, value_type*, hash<Key>, std::equal_to<Key>,
+  typedef hash_map<Key, value_type*, hash<Key>, equal_to<Key>,
                    MapAllocator<std::pair<const Key, MapPair<Key, T>*> > >
       DeprecatedInnerMap;
 
@@ -1627,24 +1616,6 @@ class Map {
       insert(other.begin(), other.end());
     }
     return *this;
-  }
-
-  void swap(Map& other) {
-    if (arena_ == other.arena_ && old_style_ == other.old_style_) {
-      std::swap(default_enum_value_, other.default_enum_value_);
-      if (old_style_) {
-        std::swap(deprecated_elements_, other.deprecated_elements_);
-      } else {
-        std::swap(elements_, other.elements_);
-      }
-    } else {
-      // TODO(zuguang): optimize this. The temporary copy can be allocated
-      // in the same arena as the other message, and the "other = copy" can
-      // be replaced with the fast-path swap above.
-      Map copy = *this;
-      *this = other;
-      other = copy;
-    }
   }
 
   // Access to hasher.  Currently this returns a copy, but it may

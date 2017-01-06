@@ -248,26 +248,80 @@ namespace Google.Protobuf
             return !first;
         }
 
-        // Converted from java/core/src/main/java/com/google/protobuf/Descriptors.java
-        internal static string ToJsonName(string name)
+        /// <summary>
+        /// Camel-case converter with added strictness for field mask formatting.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The field mask is invalid for JSON representation</exception>
+        private static string ToCamelCaseForFieldMask(string input)
         {
-            StringBuilder result = new StringBuilder(name.Length);
-            bool isNextUpperCase = false;
-            foreach (char ch in name)
+            for (int i = 0; i < input.Length; i++)
             {
-                if (ch == '_')
+                char c = input[i];
+                if (c >= 'A' && c <= 'Z')
                 {
-                    isNextUpperCase = true;
+                    throw new InvalidOperationException($"Invalid field mask to be converted to JSON: {input}");
                 }
-                else if (isNextUpperCase)
+                if (c == '_' && i < input.Length - 1)
                 {
-                    result.Append(char.ToUpperInvariant(ch));
-                    isNextUpperCase = false;
+                    char next = input[i + 1];
+                    if (next < 'a' || next > 'z')
+                    {
+                        throw new InvalidOperationException($"Invalid field mask to be converted to JSON: {input}");
+                    }
                 }
-                else
+            }
+            return ToCamelCase(input);
+        }
+
+        // Converted from src/google/protobuf/util/internal/utility.cc ToCamelCase
+        // TODO: Use the new field in FieldDescriptor.
+        internal static string ToCamelCase(string input)
+        {
+            bool capitalizeNext = false;
+            bool wasCap = true;
+            bool isCap = false;
+            bool firstWord = true;
+            StringBuilder result = new StringBuilder(input.Length);
+
+            for (int i = 0; i < input.Length; i++, wasCap = isCap)
+            {
+                isCap = char.IsUpper(input[i]);
+                if (input[i] == '_')
                 {
-                    result.Append(ch);
+                    capitalizeNext = true;
+                    if (result.Length != 0)
+                    {
+                        firstWord = false;
+                    }
+                    continue;
                 }
+                else if (firstWord)
+                {
+                    // Consider when the current character B is capitalized,
+                    // first word ends when:
+                    // 1) following a lowercase:   "...aB..."
+                    // 2) followed by a lowercase: "...ABc..."
+                    if (result.Length != 0 && isCap &&
+                        (!wasCap || (i + 1 < input.Length && char.IsLower(input[i + 1]))))
+                    {
+                        firstWord = false;
+                    }
+                    else
+                    {
+                        result.Append(char.ToLowerInvariant(input[i]));
+                        continue;
+                    }
+                }
+                else if (capitalizeNext)
+                {
+                    capitalizeNext = false;
+                    if (char.IsLower(input[i]))
+                    {
+                        result.Append(char.ToUpperInvariant(input[i]));
+                        continue;
+                    }
+                }
+                result.Append(input[i]);
             }
             return result.ToString();
         }
@@ -323,16 +377,8 @@ namespace Google.Protobuf
                     throw new ArgumentException("Invalid field type");
             }
         }
-
-        /// <summary>
-        /// Writes a single value to the given writer as JSON. Only types understood by
-        /// Protocol Buffers can be written in this way. This method is only exposed for
-        /// advanced use cases; most users should be using <see cref="Format(IMessage)"/>
-        /// or <see cref="Format(IMessage, TextWriter)"/>.
-        /// </summary>
-        /// <param name="writer">The writer to write the value to. Must not be null.</param>
-        /// <param name="value">The value to write. May be null.</param>
-        public void WriteValue(TextWriter writer, object value)
+        
+        private void WriteValue(TextWriter writer, object value)
         {
             if (value == null)
             {
@@ -401,7 +447,15 @@ namespace Google.Protobuf
             }
             else if (value is IMessage)
             {
-                Format((IMessage)value, writer);
+                IMessage message = (IMessage) value;
+                if (message.Descriptor.IsWellKnownType)
+                {
+                    WriteWellKnownTypeValue(writer, message.Descriptor, value);
+                }
+                else
+                {
+                    WriteMessage(writer, (IMessage)value);
+                }
             }
             else
             {
@@ -670,6 +724,20 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Returns whether or not a singular value can be represented in JSON.
+        /// Currently only relevant for enums, where unknown values can't be represented.
+        /// For repeated/map fields, this always returns true.
+        /// </summary>
+        private bool CanWriteSingleValue(object value)
+        {
+            if (value is System.Enum)
+            {
+                return System.Enum.IsDefined(value.GetType(), value);
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Writes a string (including leading and trailing double quotes) to a builder, escaping as required.
         /// </summary>
         /// <remarks>
@@ -831,16 +899,6 @@ namespace Google.Protobuf
                 return originalName;
             }
 
-#if DOTNET35
-            // TODO: Consider adding functionality to TypeExtensions to avoid this difference.
-            private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
-                enumType.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static)
-                    .ToDictionary(f => f.GetValue(null),
-                                  f => (f.GetCustomAttributes(typeof(OriginalNameAttribute), false)
-                                        .FirstOrDefault() as OriginalNameAttribute)
-                                        // If the attribute hasn't been applied, fall back to the name of the field.
-                                        ?.Name ?? f.Name);
-#else
             private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
                 enumType.GetTypeInfo().DeclaredFields
                     .Where(f => f.IsStatic)
@@ -849,7 +907,6 @@ namespace Google.Protobuf
                                         .FirstOrDefault()
                                         // If the attribute hasn't been applied, fall back to the name of the field.
                                         ?.Name ?? f.Name);
-#endif
         }
     }
 }

@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import junit.framework.TestCase;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
@@ -43,7 +45,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
-import junit.framework.TestCase;
 
 /**
  * Test {@code LiteralByteString} by setting up a reference string in {@link #setUp()}.

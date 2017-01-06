@@ -46,7 +46,6 @@
   TestAllTypes* message = [self allSetRepeatedCount:kGPBDefaultRepeatCount];
 
   NSData* rawBytes = message.data;
-  [self assertFieldsInOrder:rawBytes];
   XCTAssertEqual(message.serializedSize, (size_t)rawBytes.length);
 
   TestAllTypes* message2 = [TestAllTypes parseFromData:rawBytes error:NULL];
@@ -59,7 +58,6 @@
       [self packedSetRepeatedCount:kGPBDefaultRepeatCount];
 
   NSData* rawBytes = message.data;
-  [self assertFieldsInOrder:rawBytes];
   XCTAssertEqual(message.serializedSize, (size_t)rawBytes.length);
 
   TestPackedTypes* message2 =
@@ -76,7 +74,6 @@
   TestAllExtensions* message =
       [self allExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
-  [self assertFieldsInOrder:rawBytes];
   XCTAssertEqual(message.serializedSize, (size_t)rawBytes.length);
 
   TestAllTypes* message2 = [TestAllTypes parseFromData:rawBytes error:NULL];
@@ -90,7 +87,6 @@
   TestPackedExtensions* message =
       [self packedExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
-  [self assertFieldsInOrder:rawBytes];
 
   TestPackedTypes* message2 =
       [self packedSetRepeatedCount:kGPBDefaultRepeatCount];
@@ -106,7 +102,6 @@
 
   TestAllTypes* message = [self allSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
-  [self assertFieldsInOrder:rawBytes];
 
   GPBExtensionRegistry* registry = [self extensionRegistry];
 
@@ -118,7 +113,7 @@
 }
 
 
-- (void)testExtensionsSerializedSize {
+- (void) testExtensionsSerializedSize {
   size_t allSet = [self allSetRepeatedCount:kGPBDefaultRepeatCount].serializedSize;
   size_t extensionSet = [self allExtensionsSetRepeatedCount:kGPBDefaultRepeatCount].serializedSize;
   XCTAssertEqual(allSet, extensionSet);
@@ -129,7 +124,6 @@
   TestPackedExtensions* message =
       [self packedExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
-  [self assertFieldsInOrder:rawBytes];
 
   GPBExtensionRegistry* registry = [self extensionRegistry];
 

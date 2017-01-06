@@ -63,16 +63,16 @@
 // construct a key byte sequence if needed. |out_key| and |out_length| provide
 // the resulting key data/length.
 #define TABLE_KEY_BUF_LENGTH 8  // sizeof(uint64_t)
-static VALUE table_key(Map* self, VALUE key,
-                       char* buf,
-                       const char** out_key,
-                       size_t* out_length) {
+static void table_key(Map* self, VALUE key,
+                      char* buf,
+                      const char** out_key,
+                      size_t* out_length) {
   switch (self->key_type) {
     case UPB_TYPE_BYTES:
     case UPB_TYPE_STRING:
       // Strings: use string content directly.
       Check_Type(key, T_STRING);
-      key = native_slot_encode_and_freeze_string(self->key_type, key);
+      native_slot_validate_string_encoding(self->key_type, key);
       *out_key = RSTRING_PTR(key);
       *out_length = RSTRING_LEN(key);
       break;
@@ -93,8 +93,6 @@ static VALUE table_key(Map* self, VALUE key,
       assert(false);
       break;
   }
-
-  return key;
 }
 
 static VALUE table_key_to_ruby(Map* self, const char* buf, size_t length) {
@@ -359,7 +357,7 @@ VALUE Map_index(VALUE _self, VALUE key) {
   const char* keyval = NULL;
   size_t length = 0;
   upb_value v;
-  key = table_key(self, key, keybuf, &keyval, &length);
+  table_key(self, key, keybuf, &keyval, &length);
 
   if (upb_strtable_lookup2(&self->table, keyval, length, &v)) {
     void* mem = value_memory(&v);
@@ -385,7 +383,7 @@ VALUE Map_index_set(VALUE _self, VALUE key, VALUE value) {
   size_t length = 0;
   upb_value v;
   void* mem;
-  key = table_key(self, key, keybuf, &keyval, &length);
+  table_key(self, key, keybuf, &keyval, &length);
 
   mem = value_memory(&v);
   native_slot_set(self->value_type, self->value_type_class, mem, value);
@@ -413,7 +411,7 @@ VALUE Map_has_key(VALUE _self, VALUE key) {
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
   size_t length = 0;
-  key = table_key(self, key, keybuf, &keyval, &length);
+  table_key(self, key, keybuf, &keyval, &length);
 
   if (upb_strtable_lookup2(&self->table, keyval, length, NULL)) {
     return Qtrue;
@@ -436,7 +434,7 @@ VALUE Map_delete(VALUE _self, VALUE key) {
   const char* keyval = NULL;
   size_t length = 0;
   upb_value v;
-  key = table_key(self, key, keybuf, &keyval, &length);
+  table_key(self, key, keybuf, &keyval, &length);
 
   if (upb_strtable_remove2(&self->table, keyval, length, &v)) {
     void* mem = value_memory(&v);

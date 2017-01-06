@@ -39,12 +39,6 @@
 #import "GPBUnknownField.h"
 #import "GPBUnknownFieldSet.h"
 
-// Direct access is use for speed, to avoid even internally declaring things
-// read/write, etc. The warning is enabled in the project to ensure code calling
-// protos can turn on -Wdirect-ivar-access without issues.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdirect-ivar-access"
-
 static void AppendTextFormatForMessage(GPBMessage *message,
                                        NSMutableString *toStr,
                                        NSString *lineIndent);
@@ -58,50 +52,8 @@ NSData *GPBEmptyNSData(void) {
   return defaultNSData;
 }
 
-// -- About Version Checks --
-// There's actually 3 places these checks all come into play:
-// 1. When the generated source is compile into .o files, the header check
-//    happens. This is checking the protoc used matches the library being used
-//    when making the .o.
-// 2. Every place a generated proto header is included in a developer's code,
-//    the header check comes into play again. But this time it is checking that
-//    the current library headers being used still support/match the ones for
-//    the generated code.
-// 3. At runtime the final check here (GPBCheckRuntimeVersionsInternal), is
-//    called from the generated code passing in values captured when the
-//    generated code's .o was made. This checks that at runtime the generated
-//    code and runtime library match.
-
-void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
-  // NOTE: This is passing the value captured in the compiled code to check
-  // against the values captured when the runtime support was compiled. This
-  // ensures the library code isn't in a different framework/library that
-  // was generated with a non matching version.
-  if (GOOGLE_PROTOBUF_OBJC_VERSION < objcRuntimeVersion) {
-    // Library is too old for headers.
-    [NSException raise:NSInternalInconsistencyException
-                format:@"Linked to ProtocolBuffer runtime version %d,"
-                       @" but code compiled needing atleast %d!",
-                       GOOGLE_PROTOBUF_OBJC_VERSION, objcRuntimeVersion];
-  }
-  if (objcRuntimeVersion < GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION) {
-    // Headers are too old for library.
-    [NSException raise:NSInternalInconsistencyException
-                format:@"Proto generation source compiled against runtime"
-                       @" version %d, but this version of the runtime only"
-                       @" supports back to %d!",
-                       objcRuntimeVersion,
-                       GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION];
-  }
-}
-
-// This api is no longer used for version checks. 30001 is the last version
-// using this old versioning model. When that support is removed, this function
-// can be removed (along with the declaration in GPBUtilities_PackagePrivate.h).
 void GPBCheckRuntimeVersionInternal(int32_t version) {
-  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION == 30001,
-                           time_to_remove_this_old_version_shim);
-  if (version != GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION) {
+  if (version != GOOGLE_PROTOBUF_OBJC_GEN_VERSION) {
     [NSException raise:NSInternalInconsistencyException
                 format:@"Linked to ProtocolBuffer runtime version %d,"
                        @" but code compiled with version %d!",
@@ -260,10 +212,9 @@ void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
 //%  TYPE *typePtr = (TYPE *)&storage[field->description_->offset];
 //%  *typePtr = value;
 //%  // proto2: any value counts as having been set; proto3, it
-//%  // has to be a non zero value or be in a oneof.
-//%  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-//%                   || (value != (TYPE)0)
-//%                   || (field->containingOneof_ != NULL));
+//%  // has to be a non zero value.
+//%  BOOL hasValue =
+//%    (syntax == GPBFileSyntaxProto2) || (value != (TYPE)0);
 //%  GPBSetHasIvarField(self, field, hasValue);
 //%  GPBBecomeVisibleToAutocreator(self);
 //%}
@@ -380,19 +331,8 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
     // zero, they are being cleared.
     if ((syntax == GPBFileSyntaxProto3) && !fieldIsMessage &&
         ([value length] == 0)) {
-      // Except, if the field was in a oneof, then it still gets recorded as
-      // having been set so the state of the oneof can be serialized back out.
-      if (!oneof) {
-        setHasValue = NO;
-      }
-      if (setHasValue) {
-        NSCAssert(value != nil, @"Should never be setting has for nil");
-      } else {
-        // The value passed in was retained, it must be released since we
-        // aren't saving anything in the field.
-        [value release];
-        value = nil;
-      }
+      setHasValue = NO;
+      value = nil;
     }
     GPBSetHasIvarField(self, field, setHasValue);
   }
@@ -578,10 +518,9 @@ void GPBSetBoolIvarWithFieldInternal(GPBMessage *self,
   GPBSetHasIvar(self, (int32_t)(fieldDesc->offset), fieldDesc->number, value);
 
   // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (BOOL)0)
-                   || (field->containingOneof_ != NULL));
+  // has to be a non zero value.
+  BOOL hasValue =
+    (syntax == GPBFileSyntaxProto2) || (value != (BOOL)0);
   GPBSetHasIvarField(self, field, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -628,10 +567,9 @@ void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
   int32_t *typePtr = (int32_t *)&storage[field->description_->offset];
   *typePtr = value;
   // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (int32_t)0)
-                   || (field->containingOneof_ != NULL));
+  // has to be a non zero value.
+  BOOL hasValue =
+    (syntax == GPBFileSyntaxProto2) || (value != (int32_t)0);
   GPBSetHasIvarField(self, field, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -678,10 +616,9 @@ void GPBSetUInt32IvarWithFieldInternal(GPBMessage *self,
   uint32_t *typePtr = (uint32_t *)&storage[field->description_->offset];
   *typePtr = value;
   // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (uint32_t)0)
-                   || (field->containingOneof_ != NULL));
+  // has to be a non zero value.
+  BOOL hasValue =
+    (syntax == GPBFileSyntaxProto2) || (value != (uint32_t)0);
   GPBSetHasIvarField(self, field, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -728,10 +665,9 @@ void GPBSetInt64IvarWithFieldInternal(GPBMessage *self,
   int64_t *typePtr = (int64_t *)&storage[field->description_->offset];
   *typePtr = value;
   // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (int64_t)0)
-                   || (field->containingOneof_ != NULL));
+  // has to be a non zero value.
+  BOOL hasValue =
+    (syntax == GPBFileSyntaxProto2) || (value != (int64_t)0);
   GPBSetHasIvarField(self, field, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -778,10 +714,9 @@ void GPBSetUInt64IvarWithFieldInternal(GPBMessage *self,
   uint64_t *typePtr = (uint64_t *)&storage[field->description_->offset];
   *typePtr = value;
   // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (uint64_t)0)
-                   || (field->containingOneof_ != NULL));
+  // has to be a non zero value.
+  BOOL hasValue =
+    (syntax == GPBFileSyntaxProto2) || (value != (uint64_t)0);
   GPBSetHasIvarField(self, field, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -828,10 +763,9 @@ void GPBSetFloatIvarWithFieldInternal(GPBMessage *self,
   float *typePtr = (float *)&storage[field->description_->offset];
   *typePtr = value;
   // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (float)0)
-                   || (field->containingOneof_ != NULL));
+  // has to be a non zero value.
+  BOOL hasValue =
+    (syntax == GPBFileSyntaxProto2) || (value != (float)0);
   GPBSetHasIvarField(self, field, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -878,10 +812,9 @@ void GPBSetDoubleIvarWithFieldInternal(GPBMessage *self,
   double *typePtr = (double *)&storage[field->description_->offset];
   *typePtr = value;
   // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (double)0)
-                   || (field->containingOneof_ != NULL));
+  // has to be a non zero value.
+  BOOL hasValue =
+    (syntax == GPBFileSyntaxProto2) || (value != (double)0);
   GPBSetHasIvarField(self, field, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -956,11 +889,21 @@ void GPBSetMessageGroupField(GPBMessage *self,
 
 //%PDDM-EXPAND-END (4 expansions)
 
-// GPBGetMessageRepeatedField is defined in GPBMessage.m
+// Only exists for public api, no core code should use this.
+id GPBGetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field) {
+#if DEBUG
+  if (field.fieldType != GPBFieldTypeRepeated) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@.%@ is not a repeated field.",
+                       [self class], field.name];
+  }
+#endif
+  return GPBGetObjectIvarWithField(self, field);
+}
 
 // Only exists for public api, no core code should use this.
 void GPBSetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field, id array) {
-#if defined(DEBUG) && DEBUG
+#if DEBUG
   if (field.fieldType != GPBFieldTypeRepeated) {
     [NSException raise:NSInvalidArgumentException
                 format:@"%@.%@ is not a repeated field.",
@@ -999,10 +942,10 @@ void GPBSetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field, id 
     case GPBDataTypeString:
     case GPBDataTypeMessage:
     case GPBDataTypeGroup:
-      expectedClass = [NSMutableArray class];
+      expectedClass = [NSMutableDictionary class];
       break;
     case GPBDataTypeEnum:
-      expectedClass = [GPBEnumArray class];
+      expectedClass = [GPBBoolArray class];
       break;
   }
   if (array && ![array isKindOfClass:expectedClass]) {
@@ -1014,7 +957,7 @@ void GPBSetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field, id 
   GPBSetObjectIvarWithField(self, field, array);
 }
 
-#if defined(DEBUG) && DEBUG
+#if DEBUG
 static NSString *TypeToStr(GPBDataType dataType) {
   switch (dataType) {
     case GPBDataTypeBool:
@@ -1048,12 +991,22 @@ static NSString *TypeToStr(GPBDataType dataType) {
 }
 #endif
 
-// GPBGetMessageMapField is defined in GPBMessage.m
+// Only exists for public api, no core code should use this.
+id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field) {
+#if DEBUG
+  if (field.fieldType != GPBFieldTypeMap) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@.%@ is not a map<> field.",
+                       [self class], field.name];
+  }
+#endif
+  return GPBGetObjectIvarWithField(self, field);
+}
 
 // Only exists for public api, no core code should use this.
 void GPBSetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field,
                            id dictionary) {
-#if defined(DEBUG) && DEBUG
+#if DEBUG
   if (field.fieldType != GPBFieldTypeMap) {
     [NSException raise:NSInvalidArgumentException
                 format:@"%@.%@ is not a map<> field.",
@@ -1113,15 +1066,7 @@ static void AppendStringEscaped(NSString *toPrint, NSMutableString *destStr) {
       case '\'': [destStr appendString:@"\\\'"]; break;
       case '\\': [destStr appendString:@"\\\\"]; break;
       default:
-        // This differs slightly from the C++ code in that the C++ doesn't
-        // generate UTF8; it looks at the string in UTF8, but escapes every
-        // byte > 0x7E.
-        if (aChar < 0x20) {
-          [destStr appendFormat:@"\\%d%d%d",
-                                (aChar / 64), ((aChar % 64) / 8), (aChar % 8)];
-        } else {
-          [destStr appendFormat:@"%C", aChar];
-        }
+        [destStr appendFormat:@"%C", aChar];
         break;
     }
   }
@@ -1188,8 +1133,6 @@ static void AppendTextFormatForMapMessageField(
       [toStr appendString:@"\n"];
 
       [toStr appendString:valueLine];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch-enum"
       switch (valueDataType) {
         case GPBDataTypeString:
           AppendStringEscaped(value, toStr);
@@ -1210,7 +1153,6 @@ static void AppendTextFormatForMapMessageField(
           NSCAssert(NO, @"Can't happen");
           break;
       }
-#pragma clang diagnostic pop
       [toStr appendString:@"\n"];
 
       [toStr appendString:msgEnd];
@@ -1232,8 +1174,6 @@ static void AppendTextFormatForMapMessageField(
       }
 
       [toStr appendString:valueLine];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch-enum"
       switch (valueDataType) {
         case GPBDataTypeString:
           AppendStringEscaped(valueObj, toStr);
@@ -1271,7 +1211,6 @@ static void AppendTextFormatForMapMessageField(
           [toStr appendString:valueObj];
           break;
       }
-#pragma clang diagnostic pop
       [toStr appendString:@"\n"];
 
       [toStr appendString:msgEnd];
@@ -1541,8 +1480,7 @@ static void AppendTextFormatForMessage(GPBMessage *message,
   NSUInteger fieldCount = fieldsArray.count;
   const GPBExtensionRange *extensionRanges = descriptor.extensionRanges;
   NSUInteger extensionRangesCount = descriptor.extensionRangesCount;
-  NSArray *activeExtensions = [[message extensionsCurrentlySet]
-      sortedArrayUsingSelector:@selector(compareByFieldNumber:)];
+  NSArray *activeExtensions = [message sortedExtensionsInUse];
   for (NSUInteger i = 0, j = 0; i < fieldCount || j < extensionRangesCount;) {
     if (i == fieldCount) {
       AppendTextFormatForMessageExtensionRange(
@@ -1767,8 +1705,6 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key,
 
   return result;
 }
-
-#pragma clang diagnostic pop
 
 #pragma mark - GPBMessageSignatureProtocol
 
