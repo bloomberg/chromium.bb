@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
 
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -28,6 +29,11 @@ PrinterPrefManager* PrinterPrefManagerFactory::GetForBrowserContext(
 // static
 PrinterPrefManagerFactory* PrinterPrefManagerFactory::GetInstance() {
   return g_printer_pref_manager.Pointer();
+}
+
+content::BrowserContext* PrinterPrefManagerFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 PrinterPrefManagerFactory::PrinterPrefManagerFactory()

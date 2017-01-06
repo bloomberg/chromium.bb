@@ -23,6 +23,10 @@ class PrinterPrefManagerFactory : public BrowserContextKeyedServiceFactory {
 
   static PrinterPrefManagerFactory* GetInstance();
 
+ protected:
+  content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const override;
+
  private:
   friend struct base::DefaultLazyInstanceTraits<PrinterPrefManagerFactory>;
 
