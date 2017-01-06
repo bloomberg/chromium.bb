@@ -54,7 +54,6 @@ struct ResourceResponseInfo;
 struct SiteIsolationResponseMetaData {
   SiteIsolationResponseMetaData();
 
-  std::string frame_origin;
   GURL response_url;
   ResourceType resource_type;
   CrossSiteDocumentMimeType canonical_mime_type;

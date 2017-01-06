@@ -9,6 +9,7 @@
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -40,7 +41,8 @@ class CONTENT_EXPORT CrossSiteDocumentClassifier {
   static bool IsBlockableScheme(const GURL& frame_origin);
 
   // Returns whether the two urls belong to the same sites.
-  static bool IsSameSite(const GURL& frame_origin, const GURL& response_url);
+  static bool IsSameSite(const url::Origin& frame_origin,
+                         const GURL& response_url);
 
   // Returns whether there's a valid CORS header for frame_origin.  This is
   // simliar to CrossOriginAccessControl::passesAccessControlCheck(), but we use
@@ -50,7 +52,7 @@ class CONTENT_EXPORT CrossSiteDocumentClassifier {
   // not allowed by actual CORS rules by ignoring 1) credentials and 2)
   // methods. Preflight requests don't matter here since they are not used to
   // decide whether to block a document or not on the client side.
-  static bool IsValidCorsHeaderSet(const GURL& frame_origin,
+  static bool IsValidCorsHeaderSet(const url::Origin& frame_origin,
                                    const GURL& website_origin,
                                    const std::string& access_control_origin);
 
