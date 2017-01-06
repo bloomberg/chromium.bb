@@ -175,7 +175,6 @@ FrameView::FrameView(LocalFrame& frame)
       m_didScrollTimer(this, &FrameView::didScrollTimerFired),
       m_browserControlsViewportAdjustment(0),
       m_needsUpdateWidgetGeometries(false),
-      m_needsUpdateViewportIntersection(true),
 #if ENABLE(ASSERT)
       m_hasBeenDisposed(false),
 #endif
@@ -3584,7 +3583,6 @@ void FrameView::setParent(Widget* parentView) {
   Widget::setParent(parentView);
 
   updateParentScrollableAreaSet();
-  setNeedsUpdateViewportIntersection();
   setupRenderThrottling();
 
   if (parentFrameView())
@@ -3635,7 +3633,6 @@ void FrameView::frameRectsChanged() {
   if (layoutSizeFixedToFrameSize())
     setLayoutSizeInternal(frameRect().size());
 
-  setNeedsUpdateViewportIntersection();
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     // The overflow clip property depends on the frame rect.
     setNeedsPaintPropertyUpdate();
@@ -4550,12 +4547,6 @@ void FrameView::collectAnnotatedRegions(
     collectAnnotatedRegions(*curr, regions);
 }
 
-void FrameView::setNeedsUpdateViewportIntersection() {
-  for (FrameView* parent = parentFrameView(); parent;
-       parent = parent->parentFrameView())
-    parent->m_needsUpdateViewportIntersectionInSubtree = true;
-}
-
 void FrameView::updateViewportIntersectionsForSubtree(
     DocumentLifecycle::LifecycleState targetState) {
   // TODO(dcheng): Since widget tree updates are deferred, FrameViews might
@@ -4573,10 +4564,6 @@ void FrameView::updateViewportIntersectionsForSubtree(
         .document()
         ->intersectionObserverController()
         ->computeTrackedIntersectionObservations();
-
-  if (!m_needsUpdateViewportIntersectionInSubtree)
-    return;
-  m_needsUpdateViewportIntersectionInSubtree = false;
 
   for (Frame* child = m_frame->tree().firstChild(); child;
        child = child->tree().nextSibling()) {

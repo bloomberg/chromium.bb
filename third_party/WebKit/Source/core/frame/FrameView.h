@@ -984,7 +984,6 @@ class CORE_EXPORT FrameView final
   template <typename Function>
   void forAllNonThrottledFrameViews(const Function&);
 
-  void setNeedsUpdateViewportIntersection();
   void updateViewportIntersectionsForSubtree(
       DocumentLifecycle::LifecycleState targetState);
   void updateRenderThrottlingStatus(bool hidden, bool subtreeThrottled);
@@ -1075,8 +1074,6 @@ class CORE_EXPORT FrameView final
   float m_browserControlsViewportAdjustment;
 
   bool m_needsUpdateWidgetGeometries;
-  bool m_needsUpdateViewportIntersection;
-  bool m_needsUpdateViewportIntersectionInSubtree;
 
 #if ENABLE(ASSERT)
   // Verified when finalizing.

@@ -220,17 +220,12 @@ bool IntersectionObserver::rootIsValid() const {
 }
 
 Document& IntersectionObserver::trackingDocument() const {
-  Document* document = nullptr;
   if (rootIsImplicit()) {
     DCHECK(m_callback->getExecutionContext());
-    document = toDocument(m_callback->getExecutionContext());
-  } else {
-    DCHECK(root());
-    document = &root()->document();
+    return *toDocument(m_callback->getExecutionContext());
   }
-  DCHECK(document);
-  DCHECK(document->frame());
-  return *document->frame()->localFrameRoot()->document();
+  DCHECK(root());
+  return root()->document();
 }
 
 void IntersectionObserver::observe(Element* target,
