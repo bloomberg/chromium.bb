@@ -2240,7 +2240,7 @@ crbug.com/663855 fast/text/ellipsis-rtl-text-in-rtl-flow-underline.html [ Pass F
 crbug.com/663855 fast/text/ellipsis-rtl-text-in-ltr-flow-underline.html [ Pass Failure ]
 crbug.com/663855 fast/text/ellipsis-rtl-text-in-ltr-flow-underline-composition.html [ Pass Failure ]
 crbug.com/663855 fast/text/ellipsis-rtl-text-in-rtl-flow-underline-composition.html [ Pass Failure ]
-crbug.com/663855 [ Win ] fast/text/ellipsis-stroked.html [ Pass Failure ]
+crbug.com/663855 fast/text/ellipsis-stroked.html [ Pass Failure ]
 crbug.com/663858 fast/text/emphasis.html [ Pass Failure ]
 crbug.com/663858 fast/text/emphasis-vertical.html [ Pass Failure ]
 crbug.com/663872 http/tests/fetch/serviceworker-proxied/thorough/cookie-nocors.html [ Pass Failure ]
@@ -2389,5 +2389,3 @@ crbug.com/678346 [ Win7 Debug ] fast/forms/access-key-for-all-elements.html [ Pa
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/index-cursor.html [ Pass Timeout ]
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Pass Timeout ]
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass Timeout ]
-
-crbug.com/678388 [ Trusty Mac10.10 Mac10.11 Debug ] fast/text/ellipsis-stroked.html [ Pass Failure ]
