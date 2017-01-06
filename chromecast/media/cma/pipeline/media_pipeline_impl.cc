@@ -364,7 +364,7 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
       // TODO(alokp): WebMediaPlayerImpl currently only handles HAVE_ENOUGH.
       // See WebMediaPlayerImpl::OnPipelineBufferingStateChanged,
       // http://crbug.com/144683.
-      LOG(WARNING) << "Ignoring buffering notification.";
+      NOTIMPLEMENTED();
     } else {
       client_.buffering_state_cb.Run(::media::BUFFERING_HAVE_ENOUGH);
     }
