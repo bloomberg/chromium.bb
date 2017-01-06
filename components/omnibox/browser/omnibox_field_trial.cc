@@ -531,6 +531,47 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
   return static_cast<EmphasizeTitlesCondition>(value);
 }
 
+// static
+bool OmniboxFieldTrial::InPhysicalWebZeroSuggestFieldTrial() {
+  return variations::GetVariationParamValue(kBundledExperimentFieldTrialName,
+                                            kPhysicalWebZeroSuggestRule) ==
+         "true";
+}
+
+// static
+bool OmniboxFieldTrial::InPhysicalWebAfterTypingFieldTrial() {
+  return variations::GetVariationParamValue(kBundledExperimentFieldTrialName,
+                                            kPhysicalWebAfterTypingRule) ==
+         "true";
+}
+
+// static
+int OmniboxFieldTrial::GetPhysicalWebZeroSuggestBaseRelevance() {
+  std::string param_value(variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kPhysicalWebZeroSuggestBaseRelevanceParam));
+  int base_relevance;
+  if (!param_value.empty() && base::StringToInt(param_value, &base_relevance))
+    return base_relevance;
+  // Default relevance score of the first Physical Web URL autocomplete match
+  // when the user has not typed in the omnibox. This score is intended to be
+  // between ClipboardURLProvider and ZeroSuggestProvider.
+  return 700;
+}
+
+// static
+int OmniboxFieldTrial::GetPhysicalWebAfterTypingBaseRelevance() {
+  std::string param_value(variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kPhysicalWebAfterTypingBaseRelevanceParam));
+  int base_relevance;
+  if (!param_value.empty() && base::StringToInt(param_value, &base_relevance))
+    return base_relevance;
+  // Default relevance score of the first Physical Web URL autocomplete match
+  // when the user is typing in the omnibox.
+  return 700;
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -572,6 +613,10 @@ const char OmniboxFieldTrial::kKeywordRequiresPrefixMatchRule[] =
 const char OmniboxFieldTrial::kKeywordScoreForSufficientlyCompleteMatchRule[] =
     "KeywordScoreForSufficientlyCompleteMatch";
 const char OmniboxFieldTrial::kEmphasizeTitlesRule[] = "EmphasizeTitles";
+const char OmniboxFieldTrial::kPhysicalWebZeroSuggestRule[] =
+    "PhysicalWebZeroSuggest";
+const char OmniboxFieldTrial::kPhysicalWebAfterTypingRule[] =
+    "PhysicalWebAfterTyping";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";
@@ -597,6 +642,11 @@ const char OmniboxFieldTrial::kHQPExperimentalScoringBucketsParam[] =
 const char
     OmniboxFieldTrial::kHQPExperimentalScoringTopicalityThresholdParam[] =
       "HQPExperimentalScoringTopicalityThreshold";
+
+const char OmniboxFieldTrial::kPhysicalWebZeroSuggestBaseRelevanceParam[] =
+    "PhysicalWebZeroSuggestBaseRelevance";
+const char OmniboxFieldTrial::kPhysicalWebAfterTypingBaseRelevanceParam[] =
+    "PhysicalWebAfterTypingBaseRelevanceParam";
 
 // static
 int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;

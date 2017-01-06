@@ -8,15 +8,19 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/physical_web/data_source/fake_physical_web_data_source.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 #include "components/physical_web/data_source/physical_web_listener.h"
+#include "components/variations/entropy_provider.h"
+#include "components/variations/variations_associated_data.h"
 #include "grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,16 +76,40 @@ class FakeAutocompleteProviderClient
 
 class PhysicalWebProviderTest : public testing::Test {
  protected:
-  PhysicalWebProviderTest() : provider_(NULL) {}
+  PhysicalWebProviderTest() : provider_(NULL) {
+    ResetFieldTrialList();
+  }
+
   ~PhysicalWebProviderTest() override {}
 
   void SetUp() override {
+    base::FieldTrial* trial = CreatePhysicalWebFieldTrial();
+    trial->group();
     client_.reset(new FakeAutocompleteProviderClient());
     provider_ = PhysicalWebProvider::Create(client_.get(), nullptr);
   }
 
   void TearDown() override {
     provider_ = NULL;
+  }
+
+  void ResetFieldTrialList() {
+    // Destroy the existing FieldTrialList before creating a new one to avoid a
+    // DCHECK.
+    field_trial_list_.reset();
+    field_trial_list_.reset(new base::FieldTrialList(
+        base::MakeUnique<metrics::SHA1EntropyProvider>("foo")));
+    variations::testing::ClearAllVariationParams();
+  }
+
+  static base::FieldTrial* CreatePhysicalWebFieldTrial() {
+    std::map<std::string, std::string> params;
+    params[OmniboxFieldTrial::kPhysicalWebZeroSuggestRule] = "true";
+    params[OmniboxFieldTrial::kPhysicalWebAfterTypingRule] = "true";
+    variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
+    return base::FieldTrialList::CreateFieldTrial(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
   }
 
   // Create a dummy metadata list with |metadata_count| items. Each item is
@@ -221,6 +249,7 @@ class PhysicalWebProviderTest : public testing::Test {
 
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<PhysicalWebProvider> provider_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PhysicalWebProviderTest);

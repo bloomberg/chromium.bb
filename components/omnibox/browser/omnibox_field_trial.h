@@ -374,6 +374,26 @@ class OmniboxFieldTrial {
       metrics::OmniboxInputType::Type input_type);
 
   // ---------------------------------------------------------
+  // For PhysicalWebProvider related experiments.
+
+  // Returns whether the user is in a Physical Web field trial where the
+  // PhysicalWebProvider should be used to get suggestions when the user clicks
+  // on the omnibox but has not typed anything yet.
+  static bool InPhysicalWebZeroSuggestFieldTrial();
+
+  // Returns whether the user is in a Physical Web field trial and URL-based
+  // suggestions can continue to appear after the user has started typing.
+  static bool InPhysicalWebAfterTypingFieldTrial();
+
+  // Returns the base relevance score for Physical Web omnibox suggestions when
+  // the user has clicked on the omnibox but has not typed anything yet.
+  static int GetPhysicalWebZeroSuggestBaseRelevance();
+
+  // Returns the base relevance score for Physical Web omnibox suggestions when
+  // the user has started typing in the omnibox.
+  static int GetPhysicalWebAfterTypingBaseRelevance();
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -405,6 +425,8 @@ class OmniboxFieldTrial {
   static const char kKeywordScoreForSufficientlyCompleteMatchRule[];
   static const char kHQPAllowDupMatchesForScoringRule[];
   static const char kEmphasizeTitlesRule[];
+  static const char kPhysicalWebZeroSuggestRule[];
+  static const char kPhysicalWebAfterTypingRule[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];
@@ -420,6 +442,10 @@ class OmniboxFieldTrial {
   // Parameter names used by the HQP experimental scoring experiments.
   static const char kHQPExperimentalScoringBucketsParam[];
   static const char kHQPExperimentalScoringTopicalityThresholdParam[];
+
+  // Parameter names used by the Physical Web experimental scoring experiments.
+  static const char kPhysicalWebZeroSuggestBaseRelevanceParam[];
+  static const char kPhysicalWebAfterTypingBaseRelevanceParam[];
 
   // The amount of time to wait before sending a new suggest request after the
   // previous one unless overridden by a field trial parameter.

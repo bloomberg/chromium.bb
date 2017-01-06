@@ -77,6 +77,8 @@ static_library("browser") {
     "omnibox_switches.h",
     "omnibox_view.cc",
     "omnibox_view.h",
+    "physical_web_node.cc",
+    "physical_web_node.h",
     "physical_web_provider.cc",
     "physical_web_provider.h",
     "scored_history_match.cc",
