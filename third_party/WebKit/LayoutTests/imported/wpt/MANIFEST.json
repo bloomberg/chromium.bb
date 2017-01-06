@@ -3715,11 +3715,6 @@
      {}
     ]
    ],
-   "./MANIFEST.json": [
-    [
-     {}
-    ]
-   ],
    "./README.md": [
     [
      {}
@@ -4831,6 +4826,11 @@
     ]
    ],
    "domparsing/insert_adjacent_html.js": [
+    [
+     {}
+    ]
+   ],
+   "domxpath/xml_xpath_tests.xml": [
     [
      {}
     ]
@@ -32196,10 +32196,6 @@
    "89af73c41d456ee93bd40921e96414c1908fc48c",
    "support"
   ],
-  "./MANIFEST.json": [
-   "a45804cdc253f3d9735529c0bec828441e671aa0",
-   "support"
-  ],
   "./README.md": [
    "930f9755157d0a3da03b6a6f67c3ba12c05b22c4",
    "support"
@@ -33713,7 +33709,7 @@
    "support"
   ],
   "common/vendor-prefix.js": [
-   "2807645fda3cb1decbb944627b038fc87ef019a0",
+   "b80ec842b65a3423dd789a2226f2ba3caf598049",
    "support"
   ],
   "css-values/unset-value-storage.html": [
@@ -35675,6 +35671,10 @@
   "domxpath/evaluator-constructor.html": [
    "4842d40e22e25ee72536946d785a3cd03bc6a11d",
    "testharness"
+  ],
+  "domxpath/xml_xpath_tests.xml": [
+   "daef25b99b0e26c6bf726cb2efb8f903337746dd",
+   "support"
   ],
   "encoding/api-basics.html": [
    "f941c016bd9f6117af2e28652c770613c475b064",
