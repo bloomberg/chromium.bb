@@ -60,7 +60,7 @@
 
     function repaintTest() {
         runAfterLayoutAndPaint(function() {
-          // Changing the position will cause the scrolldiv to become composited becuase it overlaps another compostied element.
+          // Changing the position will cause the scrolldiv to become composited because it overlaps another compostied element.
           changeDivPosition();
 
           // Force DumpRenderTree to do a layout and repaint here, this is where the repaintRect
