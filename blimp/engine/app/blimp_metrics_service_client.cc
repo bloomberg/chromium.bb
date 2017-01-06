@@ -139,11 +139,13 @@ void BlimpMetricsServiceClient::CollectFinalMetricsForLog(
 
 std::unique_ptr<metrics::MetricsLogUploader>
 BlimpMetricsServiceClient::CreateUploader(
+    const std::string& server_url,
+    const std::string& mime_type,
     const base::Callback<void(int)>& on_upload_complete) {
   return base::WrapUnique<metrics::MetricsLogUploader>(
       new metrics::NetMetricsLogUploader(
-          request_context_getter_.get(), metrics::kDefaultMetricsServerUrl,
-          metrics::kDefaultMetricsMimeType, on_upload_complete));
+          request_context_getter_.get(), server_url,
+          mime_type, on_upload_complete));
 }
 
 base::TimeDelta BlimpMetricsServiceClient::GetStandardUploadInterval() {

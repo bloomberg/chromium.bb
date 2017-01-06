@@ -201,11 +201,12 @@ void AwMetricsServiceClient::CollectFinalMetricsForLog(
 
 std::unique_ptr<metrics::MetricsLogUploader>
 AwMetricsServiceClient::CreateUploader(
+    const std::string& server_url,
+    const std::string& mime_type,
     const base::Callback<void(int)>& on_upload_complete) {
   return std::unique_ptr<::metrics::MetricsLogUploader>(
       new metrics::NetMetricsLogUploader(
-          request_context_, metrics::kDefaultMetricsServerUrl,
-          metrics::kDefaultMetricsMimeType, on_upload_complete));
+          request_context_, server_url, mime_type, on_upload_complete));
 }
 
 base::TimeDelta AwMetricsServiceClient::GetStandardUploadInterval() {

@@ -82,9 +82,14 @@ class MetricsServiceClient {
   virtual void CollectFinalMetricsForLog(
       const base::Closure& done_callback) = 0;
 
+  // Get the URL of the metrics server.
+  virtual std::string GetMetricsServerUrl();
+
   // Creates a MetricsLogUploader with the specified parameters (see comments on
   // MetricsLogUploader for details).
   virtual std::unique_ptr<MetricsLogUploader> CreateUploader(
+      const std::string& server_url,
+      const std::string& mime_type,
       const base::Callback<void(int)>& on_upload_complete) = 0;
 
   // Returns the standard interval between upload attempts.

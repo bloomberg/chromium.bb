@@ -159,6 +159,7 @@
 #include "components/metrics/metrics_reporting_scheduler.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/metrics/url_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/entropy_provider.h"
@@ -1009,6 +1010,8 @@ void MetricsService::SendStagedLog() {
 
   if (!log_uploader_) {
     log_uploader_ = client_->CreateUploader(
+        client_->GetMetricsServerUrl(),
+        metrics::kDefaultMetricsMimeType,
         base::Bind(&MetricsService::OnLogUploadComplete,
                    self_ptr_factory_.GetWeakPtr()));
   }
