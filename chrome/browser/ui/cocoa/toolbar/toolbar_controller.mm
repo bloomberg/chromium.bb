@@ -36,6 +36,7 @@
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -145,8 +146,9 @@ CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
 // Height of the location bar. Used for animating the toolbar in and out when
 // the location bar is displayed stand-alone for bookmark apps.
 + (CGFloat)locationBarHeight;
-// Return the amount of left padding that the app menu should have.
-+ (CGFloat)appMenuLeftPadding;
+// Return the amount of horizontal padding that the app menu should have on
+// each side.
++ (CGFloat)appMenuPadding;
 - (void)cleanUp;
 - (void)addAccessibilityDescriptions;
 - (void)initCommandStatus:(CommandUpdater*)commands;
@@ -156,7 +158,7 @@ CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
 - (CGFloat)baseToolbarHeight;
 - (void)toolbarFrameChanged;
 - (void)showLocationBarOnly;
-- (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate;
+- (void)pinLocationBarBeforeBrowserActionsContainerAndAnimate:(BOOL)animate;
 - (void)maintainMinimumLocationBarWidth;
 - (void)adjustBrowserActionsContainerForNewWindow:(NSNotification*)notification;
 - (void)browserActionsContainerDragged:(NSNotification*)notification;
@@ -236,7 +238,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   return kLocationBarHeight;
 }
 
-+ (CGFloat)appMenuLeftPadding {
++ (CGFloat)appMenuPadding {
   return kElementPadding;
 }
 
@@ -297,6 +299,14 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     return;
   }
 
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+  NSAutoresizingMaskOptions leadingButtonMask =
+      isRTL ? NSViewMinXMargin | NSViewMinYMargin
+            : NSViewMaxXMargin | NSViewMinYMargin;
+  NSAutoresizingMaskOptions trailingButtonMask =
+      isRTL ? NSViewMaxXMargin | NSViewMinYMargin
+            : NSViewMinXMargin | NSViewMinYMargin;
+
   // Make Material Design layout adjustments to the NIB items.
   ToolbarView* toolbarView = [self toolbarView];
   NSRect toolbarBounds = [toolbarView bounds];
@@ -307,30 +317,24 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   frame.size.height = [self baseToolbarHeight];
   [toolbarView setFrame:frame];
 
-  NSRect backButtonFrame = [backButton_ frame];
-  backButtonFrame.origin.x = kElementPadding + kButtonInset;
-  backButtonFrame.origin.y =
+  NSArray* leadingButtons =
+      @[ backButton_, forwardButton_, reloadButton_, homeButton_ ];
+  const CGFloat xStart = kElementPadding + kButtonInset;
+  const CGFloat xOffset = toolbarButtonSize.width + kButtonInset * 2;
+  const CGFloat yPosition =
       NSMaxY(toolbarBounds) - kElementPadding - toolbarButtonSize.height;
-  backButtonFrame.size = toolbarButtonSize;
-  [backButton_ setFrame:backButtonFrame];
-
-  NSRect forwardButtonFrame = [forwardButton_ frame];
-  forwardButtonFrame.origin.x = NSMaxX(backButtonFrame) + 2 * kButtonInset;
-  forwardButtonFrame.origin.y = backButtonFrame.origin.y;
-  forwardButtonFrame.size = toolbarButtonSize;
-  [forwardButton_ setFrame:forwardButtonFrame];
-
-  NSRect reloadButtonFrame = [reloadButton_ frame];
-  reloadButtonFrame.origin.x = NSMaxX(forwardButtonFrame) + 2 * kButtonInset;
-  reloadButtonFrame.origin.y = forwardButtonFrame.origin.y;
-  reloadButtonFrame.size = toolbarButtonSize;
-  [reloadButton_ setFrame:reloadButtonFrame];
-
-  NSRect homeButtonFrame = [homeButton_ frame];
-  homeButtonFrame.origin.x = NSMaxX(reloadButtonFrame) + 2 * kButtonInset;
-  homeButtonFrame.origin.y = reloadButtonFrame.origin.y;
-  homeButtonFrame.size = toolbarButtonSize;
-  [homeButton_ setFrame:homeButtonFrame];
+  for (NSUInteger i = 0; i < [leadingButtons count]; i++) {
+    NSButton* button = leadingButtons[i];
+    NSRect buttonFrame = [button frame];
+    buttonFrame.size = toolbarButtonSize;
+    buttonFrame.origin.y = yPosition;
+    const CGFloat xPosition = xStart + i * xOffset;
+    buttonFrame.origin.x =
+        isRTL ? NSWidth(frame) - toolbarButtonSize.width - xPosition
+              : xPosition;
+    [button setFrame:buttonFrame];
+    [button setAutoresizingMask:leadingButtonMask];
+  }
 
   // Replace the app button from the nib with an AppToolbarButton instance for
   // Material Design.
@@ -344,27 +348,41 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 
   // Adjust the menu button's position.
   NSRect menuButtonFrame = [appMenuButton_ frame];
-  CGFloat menuButtonFrameMaxX =
-      NSMaxX(toolbarBounds) - [ToolbarController appMenuLeftPadding];
-  menuButtonFrame.origin.x =
-      menuButtonFrameMaxX - kButtonInset - toolbarButtonSize.width;
-  menuButtonFrame.origin.y = homeButtonFrame.origin.y;
+  if (isRTL) {
+    menuButtonFrame.origin.x = [ToolbarController appMenuPadding];
+  } else {
+    CGFloat menuButtonFrameMaxX =
+        NSMaxX(toolbarBounds) - [ToolbarController appMenuPadding];
+    menuButtonFrame.origin.x =
+        menuButtonFrameMaxX - kButtonInset - toolbarButtonSize.width;
+  }
+  menuButtonFrame.origin.y = yPosition;
   menuButtonFrame.size = toolbarButtonSize;
   [appMenuButton_ setFrame:menuButtonFrame];
+  [appMenuButton_ setAutoresizingMask:trailingButtonMask];
 
   // Adjust the size and location on the location bar to take up the
   // space between the reload and menu buttons.
   NSRect locationBarFrame = [locationBar_ frame];
-  locationBarFrame.origin.x = NSMaxX(homeButtonFrame) + kButtonInset;
-  if (![homeButton_ isHidden]) {
-    // Ensure proper spacing between the home button and the location bar.
+  locationBarFrame.origin.x = isRTL
+                                  ? NSMaxX(menuButtonFrame) + kButtonInset
+                                  : NSMaxX([homeButton_ frame]) + kButtonInset;
+  if (![homeButton_ isHidden] && !isRTL) {
+    // Ensure proper spacing between the home button and location bar
     locationBarFrame.origin.x += kElementPadding;
   }
   locationBarFrame.origin.y =
       NSMaxY(toolbarBounds) - kLocationBarPadding - kLocationBarHeight;
-  locationBarFrame.size.width =
-      menuButtonFrame.origin.x -
-          locationBarFrame.origin.x;
+  CGFloat rightEdge = 0;
+  if (isRTL) {
+    rightEdge = NSMinX([homeButton_ frame]) - kButtonInset;
+    if (![homeButton_ isHidden])
+      rightEdge -= kElementPadding;
+  } else {
+    rightEdge = NSMinX(menuButtonFrame);
+  }
+  locationBarFrame.size.width = rightEdge - NSMinX(locationBarFrame);
+
   locationBarFrame.size.height = kLocationBarHeight;
   [locationBar_ setFrame:locationBarFrame];
 
@@ -373,7 +391,10 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   containerFrame.size.width += kButtonInset;
   containerFrame.origin.y = locationBarFrame.origin.y + kContainerYOffset;
   containerFrame.size.height = toolbarButtonSize.height;
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    containerFrame.origin.x = NSMinX(locationBarFrame);
   [browserActionsContainerView_ setFrame:containerFrame];
+  [browserActionsContainerView_ setAutoresizingMask:trailingButtonMask];
 
   notificationBridge_.reset(
       new ToolbarControllerInternal::NotificationBridge(self));
@@ -420,7 +441,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [self showOptionalHomeButton];
   [self installAppMenu];
 
-  [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
+  [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
 
   // Create the controllers for the back/forward menus.
   backMenuController_.reset([[BackForwardMenuController alloc]
@@ -688,7 +709,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 
 - (id)customFieldEditorForObject:(id)obj {
   if (obj == locationBar_) {
-    // Lazilly construct Field editor, Cocoa UI code always runs on the
+    // Lazily construct Field editor, Cocoa UI code always runs on the
     // same thread, so there shoudn't be a race condition here.
     if (autocompleteTextFieldEditor_.get() == nil) {
       autocompleteTextFieldEditor_.reset(
@@ -704,20 +725,12 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   return nil;
 }
 
-// Returns an array of views in the order of the outlets above.
+// Returns an array of views, ordered leading to trailing.
 - (NSArray*)toolbarViews {
-  return [NSArray arrayWithObjects:backButton_, forwardButton_, reloadButton_,
-                                   homeButton_, appMenuButton_, locationBar_,
-                                   browserActionsContainerView_, nil];
-}
-
-// Moves |rect| to the right by |delta|, keeping the right side fixed by
-// shrinking the width to compensate. Passing a negative value for |deltaX|
-// moves to the left and increases the width.
-- (NSRect)adjustRect:(NSRect)rect byAmount:(CGFloat)deltaX {
-  NSRect frame = NSOffsetRect(rect, deltaX, 0);
-  frame.size.width -= deltaX;
-  return frame;
+  return @[
+    backButton_, forwardButton_, reloadButton_, homeButton_, locationBar_,
+    browserActionsContainerView_, appMenuButton_
+  ];
 }
 
 // Show or hide the home button based on the pref.
@@ -737,9 +750,11 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   moveX += kElementPadding;
   if (hide)
     moveX *= -1;  // Reverse the direction of the move.
-
-  [locationBar_ setFrame:[self adjustRect:[locationBar_ frame]
-                                 byAmount:moveX]];
+  CGRect locationBarFrame = [locationBar_ frame];
+  locationBarFrame.size.width -= moveX;
+  if (!cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    locationBarFrame.origin.x += moveX;
+  [locationBar_ setFrame:locationBarFrame];
   [homeButton_ setHidden:hide];
 }
 
@@ -800,7 +815,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
              object:[[self view] window]];
   }
   if (![browserActionsContainerView_ isHidden])
-    [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
+    [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
 }
 
 - (void)updateVisibility:(BOOL)visible withAnimation:(BOOL)animate {
@@ -826,34 +841,41 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)browserActionsContainerDragged:(NSNotification*)notification {
-  [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
+  [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
 }
 
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification {
-  [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
+  [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
 }
 
 - (void)browserActionsContainerWillAnimate:(NSNotification*)notification {
-  [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:YES];
+  [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:YES];
 }
 
-- (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate {
-  CGFloat locationBarXPos = NSMaxX([locationBar_ frame]);
-  CGFloat leftDistance = 0.0;
-
-  if ([browserActionsContainerView_ isHidden]) {
-    CGFloat edgeXPos = [appMenuButton_ frame].origin.x;
-    leftDistance = edgeXPos - locationBarXPos -
-        [ToolbarController appMenuLeftPadding] - kButtonInset;
+- (void)pinLocationBarBeforeBrowserActionsContainerAndAnimate:(BOOL)animate {
+  CGFloat delta = 0.0;
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+    CGFloat leftEdge = NSMinX([locationBar_ frame]);
+    if ([browserActionsContainerView_ isHidden]) {
+      delta = leftEdge - NSMaxX([appMenuButton_ frame]) +
+              [ToolbarController appMenuPadding] + kButtonInset;
+    } else {
+      delta = leftEdge - NSMaxX([browserActionsContainerView_ frame]) +
+              kButtonInset;
+    }
   } else {
-    leftDistance = NSMinX([browserActionsContainerView_ animationEndFrame]) -
-        locationBarXPos;
-    // Equalize the distance between the location bar and the first extension
-    // button, and the distance between the location bar and home/reload button.
-    leftDistance -= kButtonInset;
+    CGFloat rightEdge = NSMaxX([locationBar_ frame]);
+    if ([browserActionsContainerView_ isHidden]) {
+      delta = NSMinX([appMenuButton_ frame]) -
+              [ToolbarController appMenuPadding] - kButtonInset - rightEdge;
+    } else {
+      delta = NSMinX([browserActionsContainerView_ frame]) - kButtonInset -
+              rightEdge;
+    }
   }
-  if (leftDistance != 0.0)
-    [self adjustLocationSizeBy:leftDistance animate:animate];
+
+  if (delta != 0.0)
+    [self adjustLocationSizeBy:delta animate:animate];
   else
     [locationBar_ stopAnimation];
 }
@@ -883,7 +905,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     NSRect containerFrame = [browserActionsContainerView_ frame];
     containerFrame.origin.y = [locationBar_ frame].origin.y + kContainerYOffset;
     [browserActionsContainerView_ setFrame:containerFrame];
-    [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
+    [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
   }
 
   [self maintainMinimumLocationBarWidth];
@@ -894,9 +916,13 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     NSRect containerFrame = [browserActionsContainerView_ frame];
     // Determine how much the container needs to move in case it's overlapping
     // with the location bar.
-    CGFloat dX = NSMaxX([locationBar_ frame]) - containerFrame.origin.x;
-    containerFrame = NSOffsetRect(containerFrame, dX, 0);
-    containerFrame.size.width -= dX;
+    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+      CGFloat dX = NSMaxX(containerFrame) - NSMinX([locationBar_ frame]);
+      containerFrame.size.width -= dX;
+    } else {
+      CGFloat dX = NSMaxX([locationBar_ frame]) - containerFrame.origin.x;
+      containerFrame = NSOffsetRect(containerFrame, dX, 0);
+    }
     [browserActionsContainerView_ setFrame:containerFrame];
   } else if (!locationBarAtMinSize_ &&
       [browserActionsContainerView_ grippyPinned]) {
@@ -906,18 +932,21 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     CGFloat dX = NSWidth([locationBar_ frame]) -
         (kMinimumLocationBarWidth + 0.1);
     NSRect containerFrame = [browserActionsContainerView_ frame];
-    containerFrame = NSOffsetRect(containerFrame, -dX, 0);
+    if (!cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+      containerFrame = NSOffsetRect(containerFrame, -dX, 0);
     containerFrame.size.width += dX;
     CGFloat savedContainerWidth =
         [browserActionsController_ preferredSize].width();
     if (NSWidth(containerFrame) >= savedContainerWidth) {
-      containerFrame = NSOffsetRect(containerFrame,
-          NSWidth(containerFrame) - savedContainerWidth, 0);
+      if (!cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+        containerFrame = NSOffsetRect(
+            containerFrame, NSWidth(containerFrame) - savedContainerWidth, 0);
+      }
       containerFrame.size.width = savedContainerWidth;
       [browserActionsContainerView_ setGrippyPinned:NO];
     }
     [browserActionsContainerView_ setFrame:containerFrame];
-    [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
+    [self pinLocationBarBeforeBrowserActionsContainerAndAnimate:NO];
   }
 }
 
@@ -945,15 +974,17 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [reloadButton_ setHidden:YES];
   [appMenuButton_ setHidden:YES];
   [homeButton_ setHidden:YES];
+  [browserActionsContainerView_ setHidden:YES];
 }
 
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate {
   // Ensure that the location bar is in its proper place.
   NSRect locationFrame = [locationBar_ frame];
   locationFrame.size.width += dX;
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    locationFrame.origin.x -= dX;
 
   [locationBar_ stopAnimation];
-
   if (animate)
     [locationBar_ animateToFrame:locationFrame];
   else

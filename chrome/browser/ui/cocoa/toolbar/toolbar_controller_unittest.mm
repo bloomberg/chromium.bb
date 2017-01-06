@@ -4,25 +4,34 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/command_line.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
+#import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/translate_decoration.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
+#include "chrome/browser/ui/cocoa/test/scoped_force_rtl_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
+#include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -74,13 +83,36 @@ class ToolbarControllerTest : public CocoaProfileTest {
   // Indexes that match the ordering returned by the private ToolbarController
   // |-toolbarViews| method.
   enum SubviewIndex {
-    kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex,
-    kAppMenuIndex, kLocationIndex, kBrowserActionContainerViewIndex
+    kBackIndex,
+    kForwardIndex,
+    kReloadIndex,
+    kHomeIndex,
+    kLocationIndex,
+    kBrowserActionContainerViewIndex,
+    kAppMenuIndex
   };
 
   void SetUp() override {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
+
+    // Add an extension so the browser action container view
+    // is visible and has a real size/position.
+    extensions::TestExtensionSystem* extension_system =
+        static_cast<extensions::TestExtensionSystem*>(
+            extensions::ExtensionSystem::Get(profile()));
+    extension_system->CreateExtensionService(
+        base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
+    scoped_refptr<const extensions::Extension> extension =
+        extensions::extension_action_test_util::CreateActionExtension(
+            "ABC", extensions::extension_action_test_util::BROWSER_ACTION);
+    extensions::ExtensionSystem::Get(profile())
+        ->extension_service()
+        ->AddExtension(extension.get());
+    ToolbarActionsModel* model =
+        extensions::extension_action_test_util::CreateToolbarModelForProfile(
+            profile());
+    model->SetVisibleIconCount(1);
 
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
 
@@ -98,6 +130,12 @@ class ToolbarControllerTest : public CocoaProfileTest {
     EXPECT_TRUE([bar_ view]);
     NSView* parent = [test_window() contentView];
     [parent addSubview:[bar_ view]];
+
+    // Nudge a few things to ensure the browser actions container gets
+    // laid out.
+    [bar_ createBrowserActionButtons];
+    [[bar_ browserActionsController] update];
+    [bar_ toolbarFrameChanged];
   }
 
   void TearDown() override {
@@ -177,7 +215,7 @@ TEST_F(ToolbarControllerTest, UpdateVisibility) {
   EXPECT_FALSE([GetSubviewAt(kReloadIndex) isHidden]);
   EXPECT_FALSE([GetSubviewAt(kAppMenuIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
-  EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
 
   // For NO/NO, only the top level toolbar view is hidden.
   [bar_ setHasToolbar:NO hasLocationBar:NO];
@@ -188,7 +226,7 @@ TEST_F(ToolbarControllerTest, UpdateVisibility) {
   EXPECT_FALSE([GetSubviewAt(kReloadIndex) isHidden]);
   EXPECT_FALSE([GetSubviewAt(kAppMenuIndex) isHidden]);
   EXPECT_TRUE([GetSubviewAt(kHomeIndex) isHidden]);
-  EXPECT_TRUE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
+  EXPECT_FALSE([GetSubviewAt(kBrowserActionContainerViewIndex) isHidden]);
 
   // Now test the inescapable state.
   [bar_ setHasToolbar:NO hasLocationBar:YES];
@@ -389,6 +427,36 @@ TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
   // Restore the original view so that
   // -[ToolbarController browserWillBeDestroyed] will run correctly.
   [bar_ setView:toolbarView];
+}
+
+// Test that subviews are ordered left to right
+TEST_F(ToolbarControllerTest, ElementOrder) {
+  NSArray* views = [bar_ toolbarViews];
+  for (size_t i = 1; i < [views count]; i++) {
+    NSView* previousSubview = views[i - 1];
+    NSView* subview = views[i];
+    EXPECT_LE(NSMinX([previousSubview frame]), NSMinX([subview frame]));
+  }
+}
+
+class ToolbarControllerRTLTest : public ToolbarControllerTest {
+ public:
+  ToolbarControllerRTLTest() {}
+
+ private:
+  cocoa_l10n_util::ScopedForceRTLMac rtl_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToolbarControllerRTLTest);
+};
+
+// Test that subviews are ordered right to left
+TEST_F(ToolbarControllerRTLTest, ElementOrder) {
+  NSArray* views = [[[bar_ toolbarViews] reverseObjectEnumerator] allObjects];
+  for (size_t i = 1; i < [views count]; i++) {
+    NSView* previousSubview = views[i - 1];
+    NSView* subview = views[i];
+    EXPECT_LE(NSMinX([previousSubview frame]), NSMinX([subview frame]));
+  }
 }
 
 class BrowserRemovedObserver : public chrome::BrowserListObserver {
