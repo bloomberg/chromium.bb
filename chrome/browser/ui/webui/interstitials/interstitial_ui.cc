@@ -343,6 +343,11 @@ void InterstitialHTMLSource::StartDataRequest(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   content::WebContents* web_contents = wc_getter.Run();
+  if (!web_contents) {
+    // When browser-side navigation is enabled, web_contents can be null if
+    // the tab is closing. Nothing to do in this case.
+    return;
+  }
   std::unique_ptr<content::InterstitialPageDelegate> interstitial_delegate;
   if (base::StartsWith(path, "ssl", base::CompareCase::SENSITIVE)) {
     interstitial_delegate.reset(CreateSSLBlockingPage(web_contents));
