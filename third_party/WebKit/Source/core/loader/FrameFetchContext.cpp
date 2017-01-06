@@ -564,7 +564,7 @@ void FrameFetchContext::willStartLoadingResource(
 
     if (activityLogger) {
       Vector<String> argv;
-      argv.append(Resource::resourceTypeToString(type, fetchInitiatorName));
+      argv.push_back(Resource::resourceTypeToString(type, fetchInitiatorName));
       argv.append(request.url());
       activityLogger->logEvent("blinkRequestResource", argv.size(),
                                argv.data());

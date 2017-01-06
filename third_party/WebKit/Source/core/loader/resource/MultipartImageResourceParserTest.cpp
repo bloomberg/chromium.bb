@@ -27,8 +27,8 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
 
  public:
   void onePartInMultipartReceived(const ResourceResponse& response) override {
-    m_responses.append(response);
-    m_data.append(Vector<char>());
+    m_responses.push_back(response);
+    m_data.push_back(Vector<char>());
   }
   void multipartDataReceived(const char* bytes, size_t size) override {
     m_data.back().append(bytes, size);

@@ -206,9 +206,9 @@ void ApplicationCacheHost::notifyApplicationCache(
 
   if (m_defersEvents) {
     // Event dispatching is deferred until document.onload has fired.
-    m_deferredEvents.append(DeferredEvent(id, progressTotal, progressDone,
-                                          errorReason, errorURL, errorStatus,
-                                          errorMessage));
+    m_deferredEvents.push_back(DeferredEvent(id, progressTotal, progressDone,
+                                             errorReason, errorURL, errorStatus,
+                                             errorMessage));
     return;
   }
   dispatchDOMEvent(id, progressTotal, progressDone, errorReason, errorURL,
@@ -232,7 +232,7 @@ void ApplicationCacheHost::fillResourceList(ResourceInfoList* resources) {
   WebVector<WebApplicationCacheHost::ResourceInfo> webResources;
   m_host->getResourceList(&webResources);
   for (size_t i = 0; i < webResources.size(); ++i) {
-    resources->append(
+    resources->push_back(
         ResourceInfo(webResources[i].url, webResources[i].isMaster,
                      webResources[i].isManifest, webResources[i].isFallback,
                      webResources[i].isForeign, webResources[i].isExplicit,

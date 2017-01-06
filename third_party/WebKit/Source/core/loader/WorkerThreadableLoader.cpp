@@ -140,7 +140,7 @@ class WorkerThreadableLoader::WaitableEventWithTasks final
   void append(TaskWithLocation task) {
     DCHECK(isMainThread());
     CHECK(!m_isSignalCalled);
-    m_tasks.append(std::move(task));
+    m_tasks.push_back(std::move(task));
   }
   void setIsAborted() {
     DCHECK(isMainThread());
