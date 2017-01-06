@@ -272,24 +272,105 @@ static void i915_close(struct driver *drv)
 	drv->priv = NULL;
 }
 
+static int i915_bo_import(struct bo *bo, struct drv_import_fd_data *data)
+{
+	int ret;
+	struct drm_i915_gem_get_tiling gem_get_tiling;
+
+	ret = drv_prime_bo_import(bo, data);
+	if (ret)
+		return ret;
+
+	/* TODO(gsingh): export modifiers and get rid of backdoor tiling. */
+	memset(&gem_get_tiling, 0, sizeof(gem_get_tiling));
+	gem_get_tiling.handle = bo->handles[0].u32;
+
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_GET_TILING, &gem_get_tiling);
+	if (ret) {
+		fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_GET_TILING failed.");
+		return ret;
+	}
+
+	bo->tiling = gem_get_tiling.tiling_mode;
+	return 0;
+}
+
 static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 {
 	int ret;
-	struct drm_i915_gem_mmap_gtt gem_map;
+	void *addr;
+	struct drm_i915_gem_set_domain set_domain;
 
-	memset(&gem_map, 0, sizeof(gem_map));
-	gem_map.handle = bo->handles[0].u32;
+	memset(&set_domain, 0, sizeof(set_domain));
+	set_domain.handle = bo->handles[0].u32;
+	if (bo->tiling == I915_TILING_NONE) {
+		struct drm_i915_gem_mmap gem_map;
+		memset(&gem_map, 0, sizeof(gem_map));
 
-	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_MMAP_GTT, &gem_map);
+		gem_map.handle = bo->handles[0].u32;
+		gem_map.offset = 0;
+		gem_map.size = bo->total_size;
+
+		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_MMAP, &gem_map);
+		if (ret) {
+			fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_MMAP failed\n");
+			return MAP_FAILED;
+		}
+
+		addr = (void *)(uintptr_t)gem_map.addr_ptr;
+		set_domain.read_domains = I915_GEM_DOMAIN_CPU;
+		set_domain.write_domain = I915_GEM_DOMAIN_CPU;
+
+	} else {
+		struct drm_i915_gem_mmap_gtt gem_map;
+		memset(&gem_map, 0, sizeof(gem_map));
+
+		gem_map.handle = bo->handles[0].u32;
+
+		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_MMAP_GTT, &gem_map);
+		if (ret) {
+			fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_MMAP_GTT failed\n");
+			return MAP_FAILED;
+		}
+
+		addr = mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->drv->fd,
+			    gem_map.offset);
+
+		set_domain.read_domains = I915_GEM_DOMAIN_GTT;
+		set_domain.write_domain = I915_GEM_DOMAIN_GTT;
+	}
+
+	if (addr == MAP_FAILED) {
+		fprintf(stderr, "drv: i915 GEM mmap failed\n");
+		return addr;
+	}
+
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN, &set_domain);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_MMAP_GTT failed\n");
+		fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_SET_DOMAIN failed\n");
 		return MAP_FAILED;
 	}
 
 	data->length = bo->total_size;
+	return addr;
+}
 
-	return mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->drv->fd,
-		    gem_map.offset);
+static int i915_bo_unmap(struct bo *bo, struct map_info *data)
+{
+	if (bo->tiling == I915_TILING_NONE) {
+		int ret;
+		struct drm_i915_gem_sw_finish sw_finish;
+		memset(&sw_finish, 0, sizeof(sw_finish));
+
+		sw_finish.handle = bo->handles[0].u32;
+		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_SW_FINISH, &sw_finish);
+		if (ret) {
+			fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_SW_FINISH failed\n");
+			return ret;
+		}
+	}
+
+	return munmap(data->addr, data->length);
 }
 
 static uint32_t i915_resolve_format(uint32_t format)
@@ -311,8 +392,9 @@ struct backend backend_i915 = {
 	.close = i915_close,
 	.bo_create = i915_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
-	.bo_import = drv_prime_bo_import,
+	.bo_import = i915_bo_import,
 	.bo_map = i915_bo_map,
+	.bo_unmap = i915_bo_unmap,
 	.resolve_format = i915_resolve_format,
 };
 
