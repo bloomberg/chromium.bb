@@ -63,6 +63,9 @@ void ArcKioskAppService::OnTaskDestroyed(int32_t task_id) {
   if (task_id == task_id_) {
     app_launcher_.reset();
     task_id_ = -1;
+    // Trying to restart app if it was somehow closed or crashed
+    // as kiosk app should always be running during the session.
+    PreconditionsChanged();
   }
 }
 
