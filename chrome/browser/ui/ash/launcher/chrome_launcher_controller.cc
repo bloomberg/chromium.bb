@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_app_icon_loader.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -80,7 +80,7 @@ void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
     return;
 
   // The pref helper functions return default values for invalid display ids.
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     shelf_controller_->SetAutoHideBehavior(
         ash::launcher::GetShelfAutoHideBehaviorPref(prefs, display.id()),
@@ -93,7 +93,7 @@ void ChromeLauncherController::SetShelfAlignmentFromPrefs() {
     return;
 
   // The pref helper functions return default values for invalid display ids.
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     shelf_controller_->SetAlignment(
         ash::launcher::GetShelfAlignmentPref(prefs, display.id()),
