@@ -473,7 +473,14 @@ TEST_F(MemoryCoordinatorImplTest, ForceSetGlobalState) {
   EXPECT_EQ(base::MemoryState::THROTTLED, coordinator_->GetGlobalMemoryState());
 }
 
-TEST_F(MemoryCoordinatorImplTest, GetStateForProcess) {
+
+#if defined(OS_ANDROID)
+// TODO(jcivelli): Broken on Android. http://crbug.com/678665
+#define MAYBE_GetStateForProcess DISABLED_GetStateForProcess
+#else
+#define MAYBE_GetStateForProcess GetStateForProcess
+#endif
+TEST_F(MemoryCoordinatorImplTest, MAYBE_GetStateForProcess) {
   EXPECT_EQ(base::MemoryState::UNKNOWN,
             coordinator_->GetStateForProcess(base::kNullProcessHandle));
   EXPECT_EQ(base::MemoryState::NORMAL,

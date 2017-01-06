@@ -20,6 +20,7 @@ shared_library("libcontent_shell_content_view") {
   testonly = true
   deps = [
     ":content_shell_jni_headers",
+    "//base/test:test_support_main_stub",
     "//build/config/sanitizers:deps",
     "//components/crash/content/browser",
     "//content/shell:content_shell_lib",
@@ -233,6 +234,7 @@ if (current_cpu != "x64") {
 
     deps = [
       ":linker_test_jni_headers",
+      "//base/test:test_support_main_stub",
       "//build/config/sanitizers:deps",
       "//content/shell:content_shell_lib",
 

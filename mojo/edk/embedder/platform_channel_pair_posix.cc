@@ -35,6 +35,15 @@ namespace edk {
 
 namespace {
 
+#if defined(OS_ANDROID)
+enum {
+  // Leave room for any other descriptors defined in content for example.
+  // TODO(jcivelli): consider changing base::GlobalDescriptors to generate a
+  //   key when setting the file descriptor (http://crbug.com/676442).
+  kAndroidClientHandleDescriptor =
+      base::GlobalDescriptors::kBaseDescriptor + 10000,
+};
+#else
 bool IsTargetDescriptorUsed(
     const base::FileHandleMappingVector& file_handle_mapping,
     int target_fd) {
@@ -44,6 +53,7 @@ bool IsTargetDescriptorUsed(
   }
   return false;
 }
+#endif
 
 }  // namespace
 
@@ -92,13 +102,21 @@ ScopedPlatformHandle
 PlatformChannelPair::PassClientHandleFromParentProcessFromString(
     const std::string& value) {
   int client_fd = -1;
+#if defined(OS_ANDROID)
+  base::GlobalDescriptors::Key key = -1;
+  if (value.empty() || !base::StringToUint(value, &key)) {
+    LOG(ERROR) << "Missing or invalid --" << kMojoPlatformChannelHandleSwitch;
+    return ScopedPlatformHandle();
+  }
+  client_fd = base::GlobalDescriptors::GetInstance()->Get(key);
+#else
   if (value.empty() ||
       !base::StringToInt(value, &client_fd) ||
       client_fd < base::GlobalDescriptors::kBaseDescriptor) {
     LOG(ERROR) << "Missing or invalid --" << kMojoPlatformChannelHandleSwitch;
     return ScopedPlatformHandle();
   }
-
+#endif
   return ScopedPlatformHandle(PlatformHandle(client_fd));
 }
 
@@ -124,6 +142,12 @@ void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
 std::string
 PlatformChannelPair::PrepareToPassClientHandleToChildProcessAsString(
       HandlePassingInformation* handle_passing_info) const {
+#if defined(OS_ANDROID)
+  int fd = client_handle_.get().handle;
+  handle_passing_info->push_back(
+      std::pair<int, int>(fd, kAndroidClientHandleDescriptor));
+  return base::UintToString(kAndroidClientHandleDescriptor);
+#else
   DCHECK(handle_passing_info);
   // This is an arbitrary sanity check. (Note that this guarantees that the loop
   // below will terminate sanely.)
@@ -141,6 +165,7 @@ PlatformChannelPair::PrepareToPassClientHandleToChildProcessAsString(
   handle_passing_info->push_back(
       std::pair<int, int>(client_handle_.get().handle, target_fd));
   return base::IntToString(target_fd);
+#endif
 }
 
 }  // namespace edk
