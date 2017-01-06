@@ -91,7 +91,7 @@ void InspectorHistory::appendPerformedAction(Action* action) {
     m_history.resize(m_afterLastActionIndex);
   } else {
     m_history.resize(m_afterLastActionIndex);
-    m_history.append(action);
+    m_history.push_back(action);
     ++m_afterLastActionIndex;
   }
 }

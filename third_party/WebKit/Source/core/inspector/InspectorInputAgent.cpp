@@ -115,7 +115,7 @@ class SyntheticInspectorTouchEvent : public blink::PlatformTouchEvent {
   }
 
   void append(const blink::PlatformTouchPoint& point) {
-    m_touchPoints.append(point);
+    m_touchPoints.push_back(point);
   }
 };
 

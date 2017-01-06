@@ -101,7 +101,7 @@ void InspectorResourceContentLoader::start() {
   HeapVector<Member<Document>> documents;
   InspectedFrames* inspectedFrames = InspectedFrames::create(m_inspectedFrame);
   for (LocalFrame* frame : *inspectedFrames) {
-    documents.append(frame->document());
+    documents.push_back(frame->document());
     documents.appendVector(InspectorPageAgent::importsForFrame(frame));
   }
   for (Document* document : documents) {
@@ -125,7 +125,7 @@ void InspectorResourceContentLoader::start() {
       Resource* resource = RawResource::fetch(request, document->fetcher());
       if (resource) {
         // Prevent garbage collection by holding a reference to this resource.
-        m_resources.append(resource);
+        m_resources.push_back(resource);
         ResourceClient* resourceClient = new ResourceClient(this);
         m_pendingResourceClients.add(resourceClient);
         resourceClient->waitForResource(resource);
@@ -150,7 +150,7 @@ void InspectorResourceContentLoader::start() {
       if (!resource)
         continue;
       // Prevent garbage collection by holding a reference to this resource.
-      m_resources.append(resource);
+      m_resources.push_back(resource);
       ResourceClient* resourceClient = new ResourceClient(this);
       m_pendingResourceClients.add(resourceClient);
       resourceClient->waitForResource(resource);
@@ -171,7 +171,7 @@ void InspectorResourceContentLoader::ensureResourcesContentLoaded(
   if (!m_started)
     start();
   m_callbacks.add(clientId, Callbacks())
-      .storedValue->value.append(std::move(callback));
+      .storedValue->value.push_back(std::move(callback));
   checkDone();
 }
 

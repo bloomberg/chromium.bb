@@ -477,7 +477,7 @@ static void cachedResourcesForDocument(Document* document,
       continue;
     if (cachedResource->getType() == Resource::Raw && skipXHRs)
       continue;
-    result.append(cachedResource);
+    result.push_back(cachedResource);
   }
 }
 
@@ -490,7 +490,7 @@ HeapVector<Member<Document>> InspectorPageAgent::importsForFrame(
   if (HTMLImportsController* controller = rootDocument->importsController()) {
     for (size_t i = 0; i < controller->loaderCount(); ++i) {
       if (Document* document = controller->loaderAt(i)->document())
-        result.append(document);
+        result.push_back(document);
     }
   }
 

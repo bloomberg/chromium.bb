@@ -132,7 +132,7 @@ HeapVector<Member<CSSStyleRule>> filterDuplicateRules(CSSRuleList* ruleList) {
         uniqRulesSet.contains(rule))
       continue;
     uniqRulesSet.add(rule);
-    uniqRules.append(toCSSStyleRule(rule));
+    uniqRules.push_back(toCSSStyleRule(rule));
   }
   uniqRules.reverse();
   return uniqRules;
@@ -179,7 +179,7 @@ void blendWithColorsFromGradient(CSSGradientValue* gradient,
     for (auto stopColor : stopColors) {
       foundNonTransparentColor =
           foundNonTransparentColor || (stopColor.alpha() != 0);
-      colors.append(existingColor.blend(stopColor));
+      colors.push_back(existingColor.blend(stopColor));
     }
   }
   foundOpaqueColor =
@@ -263,11 +263,11 @@ bool getColorsFromRect(LayoutRect rect,
       if (colors.isEmpty()) {
         if (!backgroundColor.hasAlpha())
           foundOpaqueColor = true;
-        colors.append(backgroundColor);
+        colors.push_back(backgroundColor);
       } else {
         if (!backgroundColor.hasAlpha()) {
           colors.clear();
-          colors.append(backgroundColor);
+          colors.push_back(backgroundColor);
           foundOpaqueColor = true;
         } else {
           for (size_t i = 0; i < colors.size(); i++)
@@ -377,7 +377,7 @@ struct InspectorCSSAgent::VectorStringHashTraits
 
   static void constructDeletedValue(Vector<String>& vec, bool) {
     vec.clear();
-    vec.append(String(WTF::HashTableDeletedValue));
+    vec.push_back(String(WTF::HashTableDeletedValue));
   }
 
   static bool isDeletedValue(const Vector<String>& vec) {
@@ -806,9 +806,9 @@ void InspectorCSSAgent::setActiveStyleSheets(
     if (removedSheets.contains(cssStyleSheet)) {
       removedSheets.remove(cssStyleSheet);
       if (isInitialFrontendLoad)
-        addedSheets.append(cssStyleSheet);
+        addedSheets.push_back(cssStyleSheet);
     } else {
-      addedSheets.append(cssStyleSheet);
+      addedSheets.push_back(cssStyleSheet);
     }
   }
 
@@ -1374,13 +1374,13 @@ Response InspectorCSSAgent::multipleStyleTextsActions(
           static_cast<InspectorStyleSheetForInlineStyle*>(inspectorStyleSheet);
       SetElementStyleAction* action =
           new SetElementStyleAction(inlineStyleSheet, edit->getText());
-      actions->append(action);
+      actions->push_back(action);
     } else {
       ModifyRuleAction* action = new ModifyRuleAction(
           ModifyRuleAction::SetStyleText,
           static_cast<InspectorStyleSheet*>(inspectorStyleSheet), range,
           edit->getText());
-      actions->append(action);
+      actions->push_back(action);
     }
   }
   return Response::OK();
@@ -1794,7 +1794,7 @@ void InspectorCSSAgent::collectAllDocumentStyleSheets(
 void InspectorCSSAgent::collectStyleSheets(
     CSSStyleSheet* styleSheet,
     HeapVector<Member<CSSStyleSheet>>& result) {
-  result.append(styleSheet);
+  result.push_back(styleSheet);
   for (unsigned i = 0, size = styleSheet->length(); i < size; ++i) {
     CSSRule* rule = styleSheet->item(i);
     if (rule->type() == CSSRule::kImportRule) {
@@ -2082,12 +2082,12 @@ HeapVector<Member<CSSStyleDeclaration>> InspectorCSSAgent::matchingStyles(
           element, pseudoId, StyleResolver::AllCSSRules));
   HeapVector<Member<CSSStyleDeclaration>> styles;
   if (!pseudoId && element->style())
-    styles.append(element->style());
+    styles.push_back(element->style());
   for (unsigned i = rules.size(); i > 0; --i) {
     CSSStyleSheet* parentStyleSheet = rules.at(i - 1)->parentStyleSheet();
     if (!parentStyleSheet || !parentStyleSheet->ownerNode())
       continue;  // User agent.
-    styles.append(rules.at(i - 1)->style());
+    styles.push_back(rules.at(i - 1)->style());
   }
   return styles;
 }
@@ -2251,7 +2251,7 @@ Response InspectorCSSAgent::getBackgroundColors(
   if (isMainFrame && !view->isTransparent()) {
     // Start with the "default" page color (typically white).
     Color baseBackgroundColor = view->baseBackgroundColor();
-    colors.append(view->baseBackgroundColor());
+    colors.push_back(view->baseBackgroundColor());
     foundOpaqueColor = !baseBackgroundColor.hasAlpha();
   }
 
@@ -2287,7 +2287,7 @@ Response InspectorCSSAgent::getLayoutTreeAndStyles(
     CSSPropertyID propertyId = cssPropertyID(styleWhitelist->get(i));
     if (propertyId == CSSPropertyInvalid)
       continue;
-    cssPropertyWhitelist.append(
+    cssPropertyWhitelist.push_back(
         std::make_pair(styleWhitelist->get(i), propertyId));
   }
 
@@ -2315,7 +2315,7 @@ int InspectorCSSAgent::getStyleIndexForNode(
     String value = computedStyleInfo->getPropertyValue(pair.second);
     if (!value.isEmpty())
       allPropertiesEmpty = false;
-    style.append(value);
+    style.push_back(value);
   }
 
   // -1 means an empty style.

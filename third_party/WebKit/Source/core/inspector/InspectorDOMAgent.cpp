@@ -172,7 +172,7 @@ void InspectorRevalidateDOMTask::onTimer(TimerBase*) {
   // be called after m_domAgent has been destroyed.
   HeapVector<Member<Element>> elements;
   for (auto& attribute : m_styleAttrInvalidatedElements)
-    elements.append(attribute.get());
+    elements.push_back(attribute.get());
   m_domAgent->styleAttributeInvalidated(elements);
   m_styleAttrInvalidatedElements.clear();
 }
@@ -271,7 +271,7 @@ HeapVector<Member<Document>> InspectorDOMAgent::documents() {
   if (m_document) {
     for (LocalFrame* frame : *m_inspectedFrames) {
       if (Document* document = frame->document())
-        result.append(document);
+        result.push_back(document);
     }
   }
   return result;
@@ -661,7 +661,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush,
     Node* parent = innerParentNode(node);
     if (!parent)
       return 0;
-    path.append(parent);
+    path.push_back(parent);
     if (nodeMap->get(parent))
       break;
     node = parent;
@@ -690,7 +690,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush) {
   // Node being pushed is detached -> push subtree root.
   NodeToIdMap* newMap = new NodeToIdMap;
   NodeToIdMap* danglingMap = newMap;
-  m_danglingNodeToIdMaps.append(newMap);
+  m_danglingNodeToIdMaps.push_back(newMap);
   std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
       protocol::Array<protocol::DOM::Node>::create();
   children->addItem(buildObjectForNode(node, 0, false, danglingMap));
@@ -1072,7 +1072,7 @@ Response InspectorDOMAgent::performSearch(
            .storedValue->value;
 
   for (auto& result : resultCollector)
-    resultsIt->append(result);
+    resultsIt->push_back(result);
 
   *resultCount = resultsIt->size();
   return Response::OK();
@@ -1439,7 +1439,7 @@ Response InspectorDOMAgent::setFileInputFiles(
 
   Vector<String> paths;
   for (size_t index = 0; index < files->length(); ++index)
-    paths.append(files->get(index));
+    paths.push_back(files->get(index));
   toHTMLInputElement(node)->setFilesFromPaths(paths);
   return Response::OK();
 }

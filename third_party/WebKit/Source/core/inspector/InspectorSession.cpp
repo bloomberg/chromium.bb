@@ -53,7 +53,7 @@ InspectorSession::~InspectorSession() {
 }
 
 void InspectorSession::append(InspectorAgent* agent) {
-  m_agents.append(agent);
+  m_agents.push_back(agent);
   agent->init(m_instrumentingAgents.get(), m_inspectorBackendDispatcher.get(),
               m_state.get());
 }
@@ -161,7 +161,7 @@ void InspectorSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> notification) {
   if (m_disposed)
     return;
-  m_notificationQueue.append(
+  m_notificationQueue.push_back(
       Notification::createForBlink(std::move(notification)));
 }
 
@@ -169,7 +169,7 @@ void InspectorSession::sendNotification(
     std::unique_ptr<v8_inspector::StringBuffer> notification) {
   if (m_disposed)
     return;
-  m_notificationQueue.append(
+  m_notificationQueue.push_back(
       Notification::createForV8(std::move(notification)));
 }
 

@@ -351,7 +351,7 @@ HeapVector<Member<NetworkResourcesData::ResourceData>>
 NetworkResourcesData::resources() {
   HeapVector<Member<ResourceData>> result;
   for (auto& request : m_requestIdToResourceDataMap)
-    result.append(request.value);
+    result.push_back(request.value);
   return result;
 }
 

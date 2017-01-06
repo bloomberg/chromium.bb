@@ -495,7 +495,7 @@ Response InspectorLayerTreeAgent::snapshotCommandLog(
 }
 
 void InspectorLayerTreeAgent::willAddPageOverlay(const GraphicsLayer* layer) {
-  m_pageOverlayLayerIds.append(layer->platformLayer()->id());
+  m_pageOverlayLayerIds.push_back(layer->platformLayer()->id());
 }
 
 void InspectorLayerTreeAgent::didRemovePageOverlay(const GraphicsLayer* layer) {
