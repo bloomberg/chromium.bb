@@ -369,9 +369,15 @@ void SharedSampler::Refresh(base::ProcessId process_id, int64_t refresh_flags) {
         base::Bind(&SharedSampler::RefreshOnWorkerThread, this),
         base::Bind(&SharedSampler::OnRefreshDone, this));
   } else {
+    // http://crbug.com/678471
     // A group of consecutive Refresh calls should all specify the same refresh
-    // flags.
-    DCHECK_EQ(refresh_flags, refresh_flags_);
+    // flags. Rarely RefreshOnWorkerThread could take a long time (> 1 sec),
+    // long enough for a next refresh cycle to start before results are ready
+    // from a previous cycle. In that case refresh_flags_ would still remain
+    // set to the previous cycle refresh flags which might be different than
+    // this cycle refresh flags if a column was added or removed between the two
+    // cycles. The worst that could happen in that condition is that results for
+    // a newly added column would be missing for one extra refresh cycle.
   }
 
   refresh_flags_ |= refresh_flags;
