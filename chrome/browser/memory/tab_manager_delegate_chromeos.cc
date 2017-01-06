@@ -249,16 +249,24 @@ int TabManagerDelegate::MemoryStat::LowMemoryMarginKB() {
 int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
   static const int kRamVsSwapWeight = 4;
   static const char kMinFilelistConfig[] = "/proc/sys/vm/min_filelist_kbytes";
+  static const char kMinFreeKbytes[] = "/proc/sys/vm/min_free_kbytes";
 
   base::SystemMemoryInfoKB system_mem;
   base::GetSystemMemoryInfo(&system_mem);
   const int file_mem_kb = system_mem.active_file + system_mem.inactive_file;
   const int min_filelist_kb = ReadIntFromFile(kMinFilelistConfig, 0);
+  const int min_free_kb = ReadIntFromFile(kMinFreeKbytes, 0);
   // Calculate current available memory in system.
   // File-backed memory should be easy to reclaim, unless they're dirty.
+  // TODO(cylee): On ChromeOS, kernel reports low memory condition when
+  // available memory is low. The following formula duplicates the logic in
+  // kernel to calculate how much memory should be released. In the future,
+  // kernel should try to report the amount of memory to release directly to
+  // eliminate the duplication here.
   const int available_mem_kb = system_mem.free +
       file_mem_kb - system_mem.dirty - min_filelist_kb +
-      system_mem.swap_free / kRamVsSwapWeight;
+      system_mem.swap_free / kRamVsSwapWeight -
+      min_free_kb;
 
   return LowMemoryMarginKB() - available_mem_kb;
 }
@@ -573,7 +581,8 @@ void TabManagerDelegate::LowMemoryKillImpl(
     const TabStatsList& tab_list,
     const std::vector<arc::ArcProcess>& arc_processes) {
 
-  VLOG(2) << "LowMemoryKilleImpl";
+  VLOG(2) << "LowMemoryKillImpl";
+
   const std::vector<TabManagerDelegate::Candidate> candidates =
       GetSortedCandidates(tab_list, arc_processes);
 
