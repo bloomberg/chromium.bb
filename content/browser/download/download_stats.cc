@@ -469,15 +469,6 @@ void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
   }
 }
 
-void RecordDownloadWriteSize(size_t data_len) {
-  int max = 1024 * 1024;  // One Megabyte.
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.WriteSize", data_len, 1, max, 256);
-}
-
-void RecordDownloadWriteLoopCount(int count) {
-  UMA_HISTOGRAM_ENUMERATION("Download.WriteLoopCount", count, 20);
-}
-
 void RecordAcceptsRanges(const std::string& accepts_ranges,
                          int64_t download_len,
                          bool has_strong_validator) {
@@ -673,16 +664,6 @@ void RecordFileThreadReceiveBuffers(size_t num_buffers) {
       100, 100);
 }
 
-void RecordBandwidth(double actual_bandwidth, double potential_bandwidth) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Download.ActualBandwidth", actual_bandwidth, 1, 1000000000, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Download.PotentialBandwidth", potential_bandwidth, 1, 1000000000, 50);
-  UMA_HISTOGRAM_PERCENTAGE(
-      "Download.BandwidthUsed",
-      (int) ((actual_bandwidth * 100)/ potential_bandwidth));
-}
-
 void RecordOpen(const base::Time& end, bool first) {
   if (!end.is_null()) {
     UMA_HISTOGRAM_LONG_TIMES("Download.OpenTime", (base::Time::Now() - end));
@@ -735,8 +716,6 @@ void RecordFileBandwidth(size_t length,
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Download.BandwidthDiskBytesPerSecond",
       (1000 * length / disk_write_time_ms), 1, 50000000, 50);
-  UMA_HISTOGRAM_COUNTS_100("Download.DiskBandwidthUsedPercentage",
-                           disk_write_time_ms * 100 / elapsed_time_ms);
 }
 
 void RecordDownloadFileRenameResultAfterRetry(

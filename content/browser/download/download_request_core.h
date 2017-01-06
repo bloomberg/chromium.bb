@@ -146,10 +146,9 @@ class CONTENT_EXPORT DownloadRequestCore
 
   // The following are used to collect stats.
   base::TimeTicks download_start_time_;
-  base::TimeTicks last_read_time_;
   base::TimeTicks last_stream_pause_time_;
   base::TimeDelta total_pause_time_;
-  size_t last_buffer_size_;
+
   int64_t bytes_read_;
 
   int pause_count_;

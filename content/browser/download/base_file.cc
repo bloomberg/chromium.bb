@@ -117,9 +117,6 @@ DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
   net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_WRITTEN,
                     net::NetLog::Int64Callback("bytes", data_len));
 
-  RecordDownloadWriteSize(data_len);
-  RecordDownloadWriteLoopCount(write_count);
-
   if (secure_hash_)
     secure_hash_->Update(data, data_len);
 
