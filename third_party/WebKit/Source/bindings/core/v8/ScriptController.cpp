@@ -211,11 +211,7 @@ void ScriptController::executeScriptInMainWorld(
 
 WindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world) {
   WindowProxy* windowProxy = m_windowProxyManager->windowProxy(world);
-  if (!windowProxy->isContextInitialized()) {
-    windowProxy->initializeIfNeeded();
-    if (world.isMainWorld())
-      frame()->loader().dispatchDidClearWindowObjectInMainWorld();
-  }
+  windowProxy->initializeIfNeeded();
   return windowProxy;
 }
 

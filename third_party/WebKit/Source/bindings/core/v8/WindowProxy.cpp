@@ -214,6 +214,9 @@ void WindowProxy::initializeIfNeeded() {
   if (isContextInitialized())
     return;
   initialize();
+
+  if (m_world->isMainWorld() && m_frame->isLocalFrame())
+    toLocalFrame(m_frame)->loader().dispatchDidClearWindowObjectInMainWorld();
 }
 
 void WindowProxy::initialize() {
