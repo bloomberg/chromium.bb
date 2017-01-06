@@ -73,6 +73,7 @@ UIImage* PlaceholderIcon() {
   self = [super initWithFrame:frame];
   if (self) {
     UIView* contentView = self.contentView;
+    self.isAccessibilityElement = YES;
 
     _iconImageView = [[UIImageView alloc] init];
     _iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -171,21 +172,22 @@ UIImage* PlaceholderIcon() {
   return [self.accessoryView accessibilityHint];
 }
 
-- (UIAccessibilityTraits)accessibilityTraits {
-  // Remove the "button" accessibility trait from the switch. This matches
-  // native switch content views such as Settings > Airplane Mode.
-  return
-      [super accessibilityTraits] |
-      ([self.switchControl accessibilityTraits] & ~UIAccessibilityTraitButton);
-}
-
 - (NSString*)accessibilityValue {
   if (self.accessoryView == self.switchControl) {
-    return (self.switchControl.on)
-               ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-               : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+    if (self.switchControl.on) {
+      return [NSString
+          stringWithFormat:@"%@, %@", self.nameLabel.text,
+                           l10n_util::GetNSString(IDS_IOS_SETTING_ON)];
+    } else {
+      return [NSString
+          stringWithFormat:@"%@, %@", self.nameLabel.text,
+                           l10n_util::GetNSString(IDS_IOS_SETTING_OFF)];
+    }
   }
-  return [self.accessoryView accessibilityValue];
+
+  return [NSString stringWithFormat:@"%@, %@", self.nameLabel.text,
+                                    l10n_util::GetNSString(
+                                        IDS_IOS_GOOGLE_APPS_INSTALL_BUTTON)];
 }
 
 @end
