@@ -35,7 +35,7 @@ NavigatorVR& NavigatorVR::from(Navigator& navigator) {
   NavigatorVR* supplement = static_cast<NavigatorVR*>(
       Supplement<Navigator>::from(navigator, supplementName()));
   if (!supplement) {
-    supplement = new NavigatorVR(navigator.frame());
+    supplement = new NavigatorVR(navigator);
     provideTo(navigator, supplementName(), supplement);
   }
   return *supplement;
@@ -50,21 +50,20 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  Document* document = frame() ? frame()->document() : 0;
-
-  if (!document || !controller()) {
+  if (!document()) {
     DOMException* exception = DOMException::create(
         InvalidStateError, "The object is no longer associated to a document.");
     resolver->reject(exception);
     return promise;
   }
 
-  UseCounter::count(*document, UseCounter::VRGetDisplays);
+  UseCounter::count(*document(), UseCounter::VRGetDisplays);
   ExecutionContext* executionContext = scriptState->getExecutionContext();
   if (!executionContext->isSecureContext())
-    UseCounter::count(*document, UseCounter::VRGetDisplaysInsecureOrigin);
+    UseCounter::count(*document(), UseCounter::VRGetDisplaysInsecureOrigin);
 
-  Platform::current()->recordRapporURL("VR.WebVR.GetDisplays", document->url());
+  Platform::current()->recordRapporURL("VR.WebVR.GetDisplays",
+                                       document()->url());
 
   controller()->getDisplays(resolver);
 
@@ -72,7 +71,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState) {
 }
 
 VRController* NavigatorVR::controller() {
-  if (!frame())
+  if (!host()->frame())
     return 0;
 
   if (!m_controller) {
@@ -83,20 +82,19 @@ VRController* NavigatorVR::controller() {
 }
 
 Document* NavigatorVR::document() {
-  return frame() ? frame()->document() : 0;
+  return host()->frame() ? host()->frame()->document() : nullptr;
 }
 
 DEFINE_TRACE(NavigatorVR) {
   visitor->trace(m_controller);
-
   Supplement<Navigator>::trace(visitor);
-  ContextClient::trace(visitor);
   PageVisibilityObserver::trace(visitor);
 }
 
-NavigatorVR::NavigatorVR(LocalFrame* frame)
-    : ContextClient(frame), PageVisibilityObserver(frame->page()) {
-  frame->domWindow()->registerEventListenerObserver(this);
+NavigatorVR::NavigatorVR(Navigator& navigator)
+    : Supplement<Navigator>(navigator),
+      PageVisibilityObserver(navigator.frame()->page()) {
+  navigator.frame()->domWindow()->registerEventListenerObserver(this);
 }
 
 NavigatorVR::~NavigatorVR() {}
@@ -106,20 +104,20 @@ const char* NavigatorVR::supplementName() {
 }
 
 void NavigatorVR::enqueueVREvent(VRDisplayEvent* event) {
-  // TODO(dcheng): Why does this need to check both frame and domWindow?
-  if (frame() && frame()->domWindow()) {
-    frame()->domWindow()->enqueueWindowEvent(event);
+  if (host()->frame()) {
+    host()->frame()->domWindow()->enqueueWindowEvent(event);
   }
 }
 
 void NavigatorVR::dispatchVRGestureEvent(VRDisplayEvent* event) {
-  // TODO(dcheng): Why does this need to check both frame and domWindow?
-  if (frame() && frame()->domWindow()) {
-    UserGestureIndicator gestureIndicator(
-        DocumentUserGestureToken::create(frame()->document()));
-    event->setTarget(frame()->domWindow());
-    frame()->domWindow()->dispatchEvent(event);
-  }
+  if (host()->frame())
+    return;
+  UserGestureIndicator gestureIndicator(
+      DocumentUserGestureToken::create(document()));
+  LocalDOMWindow* window = host()->frame()->domWindow();
+  DCHECK(window);
+  event->setTarget(window);
+  window->dispatchEvent(event);
 }
 
 void NavigatorVR::pageVisibilityChanged() {

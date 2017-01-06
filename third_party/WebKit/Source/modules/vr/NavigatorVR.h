@@ -6,7 +6,6 @@
 #define NavigatorVR_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Navigator.h"
 #include "core/page/PageVisibilityObserver.h"
@@ -27,7 +26,6 @@ class VRController;
 class MODULES_EXPORT NavigatorVR final
     : public GarbageCollectedFinalized<NavigatorVR>,
       public Supplement<Navigator>,
-      public ContextClient,
       public PageVisibilityObserver,
       public LocalDOMWindow::EventListenerObserver {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorVR);
@@ -64,7 +62,7 @@ class MODULES_EXPORT NavigatorVR final
   friend class VRDisplay;
   friend class VRGetDevicesCallback;
 
-  explicit NavigatorVR(LocalFrame*);
+  explicit NavigatorVR(Navigator&);
 
   static const char* supplementName();
 
