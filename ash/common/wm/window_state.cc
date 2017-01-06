@@ -87,6 +87,10 @@ bool WindowState::IsPinned() const {
          GetStateType() == WINDOW_STATE_TYPE_TRUSTED_PINNED;
 }
 
+bool WindowState::IsTrustedPinned() const {
+  return GetStateType() == WINDOW_STATE_TYPE_TRUSTED_PINNED;
+}
+
 bool WindowState::IsNormalStateType() const {
   return GetStateType() == WINDOW_STATE_TYPE_NORMAL ||
          GetStateType() == WINDOW_STATE_TYPE_DEFAULT;

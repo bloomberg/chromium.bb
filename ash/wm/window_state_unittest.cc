@@ -11,6 +11,7 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/wm/window_state_aura.h"
+#include "ash/wm/window_util.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -358,6 +359,33 @@ TEST_P(WindowStateTest, DoNotResizeMaximizedWindowInFullscreen) {
   // Exiting fullscreen will update the maximized window to the work area.
   EXPECT_EQ(gfx::Rect(0, 0, 900, 653 + height_offset).ToString(),
             maximized->GetBoundsInScreen().ToString());
+}
+
+TEST_P(WindowStateTest, TrustedPinned) {
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  WindowState* window_state = GetWindowState(window.get());
+  EXPECT_FALSE(window_state->IsTrustedPinned());
+  wm::PinWindow(window.get(), true /* trusted */);
+  EXPECT_TRUE(window_state->IsTrustedPinned());
+
+  gfx::Rect work_area =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  EXPECT_EQ(work_area.ToString(), window->bounds().ToString());
+
+  // Sending non-unpin/non-workspace related event should be ignored.
+  {
+    const WMEvent fullscreen_event(WM_EVENT_FULLSCREEN);
+    window_state->OnWMEvent(&fullscreen_event);
+  }
+  EXPECT_TRUE(window_state->IsTrustedPinned());
+
+  // Update display triggers workspace event.
+  UpdateDisplay("300x200");
+  EXPECT_EQ("0,0 300x200", window->GetBoundsInScreen().ToString());
+
+  // Unpin should work.
+  window_state->Restore();
+  EXPECT_FALSE(window_state->IsTrustedPinned());
 }
 
 TEST_P(WindowStateTest, AllowSetBoundsInMaximized) {

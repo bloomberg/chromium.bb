@@ -167,6 +167,10 @@ void DefaultState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
   if (ProcessWorkspaceEvents(window_state, event))
     return;
 
+  // Do not change the PINNED window state if this is not unpin event.
+  if (window_state->IsTrustedPinned() && event->type() != WM_EVENT_NORMAL)
+    return;
+
   if (ProcessCompoundEvents(window_state, event))
     return;
 
