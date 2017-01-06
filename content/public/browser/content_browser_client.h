@@ -497,7 +497,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // type. If true is returned, |no_javascript_access| will indicate whether
   // the window that is created should be scriptable/in the same process.
   // This is called on the IO thread.
-  virtual bool CanCreateWindow(const GURL& opener_url,
+  virtual bool CanCreateWindow(int opener_render_process_id,
+                               int opener_render_frame_id,
+                               const GURL& opener_url,
                                const GURL& opener_top_level_frame_url,
                                const GURL& source_origin,
                                WindowContainerType container_type,
@@ -509,9 +511,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                bool user_gesture,
                                bool opener_suppressed,
                                ResourceContext* context,
-                               int render_process_id,
-                               int opener_render_view_id,
-                               int opener_render_frame_id,
                                bool* no_javascript_access);
 
   // Notifies the embedder that the ResourceDispatcherHost has been created.

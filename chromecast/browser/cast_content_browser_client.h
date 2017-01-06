@@ -132,23 +132,21 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
-  bool CanCreateWindow(
-      const GURL& opener_url,
-      const GURL& opener_top_level_frame_url,
-      const GURL& source_origin,
-      WindowContainerType container_type,
-      const GURL& target_url,
-      const content::Referrer& referrer,
-      const std::string& frame_name,
-      WindowOpenDisposition disposition,
-      const blink::WebWindowFeatures& features,
-      bool user_gesture,
-      bool opener_suppressed,
-      content::ResourceContext* context,
-      int render_process_id,
-      int opener_render_view_id,
-      int opener_render_frame_id,
-      bool* no_javascript_access) override;
+  bool CanCreateWindow(int opener_render_process_id,
+                       int opener_render_frame_id,
+                       const GURL& opener_url,
+                       const GURL& opener_top_level_frame_url,
+                       const GURL& source_origin,
+                       WindowContainerType container_type,
+                       const GURL& target_url,
+                       const content::Referrer& referrer,
+                       const std::string& frame_name,
+                       WindowOpenDisposition disposition,
+                       const blink::WebWindowFeatures& features,
+                       bool user_gesture,
+                       bool opener_suppressed,
+                       content::ResourceContext* context,
+                       bool* no_javascript_access) override;
   void ExposeInterfacesToRenderer(
       service_manager::InterfaceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;

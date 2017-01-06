@@ -215,24 +215,13 @@ void RenderMessageFilter::CreateNewWindow(
     mojom::CreateNewWindowParamsPtr params,
     const CreateNewWindowCallback& callback) {
   bool no_javascript_access;
-  bool can_create_window =
-      GetContentClient()->browser()->CanCreateWindow(
-          params->opener_url,
-          params->opener_top_level_frame_url,
-          params->opener_security_origin,
-          params->window_container_type,
-          params->target_url,
-          params->referrer,
-          params->frame_name,
-          params->disposition,
-          params->features,
-          params->user_gesture,
-          params->opener_suppressed,
-          resource_context_,
-          render_process_id_,
-          params->opener_id,
-          params->opener_render_frame_id,
-          &no_javascript_access);
+  bool can_create_window = GetContentClient()->browser()->CanCreateWindow(
+      render_process_id_, params->opener_render_frame_id, params->opener_url,
+      params->opener_top_level_frame_url, params->opener_security_origin,
+      params->window_container_type, params->target_url, params->referrer,
+      params->frame_name, params->disposition, params->features,
+      params->user_gesture, params->opener_suppressed, resource_context_,
+      &no_javascript_access);
 
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New();
   if (!can_create_window) {
@@ -250,7 +239,7 @@ void RenderMessageFilter::CreateNewWindow(
   reply->cloned_session_storage_namespace_id = cloned_namespace->id();
 
   render_widget_helper_->CreateNewWindow(
-      std::move(params), no_javascript_access, PeerHandle(), &reply->route_id,
+      std::move(params), no_javascript_access, &reply->route_id,
       &reply->main_frame_route_id, &reply->main_frame_widget_route_id,
       cloned_namespace.get());
   callback.Run(std::move(reply));

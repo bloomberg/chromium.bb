@@ -733,18 +733,18 @@ void InterstitialPageImpl::DontCreateViewForTesting() {
 
 void InterstitialPageImpl::CreateNewWindow(
     SiteInstance* source_site_instance,
-    int32_t route_id,
+    int32_t render_view_route_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
     const mojom::CreateNewWindowParams& params,
     SessionStorageNamespace* session_storage_namespace) {
-  NOTREACHED() << "InterstitialPage does not support showing popups yet.";
+  NOTREACHED() << "InterstitialPage does not support showing popups.";
 }
 
 void InterstitialPageImpl::CreateNewWidget(int32_t render_process_id,
                                            int32_t route_id,
                                            blink::WebPopupType popup_type) {
-  NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
+  NOTREACHED() << "InterstitialPage does not support showing drop-downs.";
 }
 
 void InterstitialPageImpl::CreateNewFullscreenWidget(int32_t render_process_id,
@@ -754,17 +754,17 @@ void InterstitialPageImpl::CreateNewFullscreenWidget(int32_t render_process_id,
 }
 
 void InterstitialPageImpl::ShowCreatedWindow(int process_id,
-                                             int route_id,
+                                             int main_frame_widget_route_id,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& initial_rect,
                                              bool user_gesture) {
-  NOTREACHED() << "InterstitialPage does not support showing popups yet.";
+  NOTREACHED() << "InterstitialPage does not support showing popups.";
 }
 
 void InterstitialPageImpl::ShowCreatedWidget(int process_id,
                                              int route_id,
                                              const gfx::Rect& initial_rect) {
-  NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
+  NOTREACHED() << "InterstitialPage does not support showing drop-downs.";
 }
 
 void InterstitialPageImpl::ShowCreatedFullscreenWidget(int process_id,

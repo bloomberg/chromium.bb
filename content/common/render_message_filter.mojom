@@ -13,8 +13,8 @@ import "ui/base/mojo/window_open_disposition.mojom";
 import "url/mojo/url.mojom";
 
 struct CreateNewWindowParams {
-  // Routing ID of the view initiating the open.
-  int32 opener_id;
+  // The routing id of the frame initiating the open.
+  int32 opener_render_frame_id;
 
   // True if this open request came in the context of a user gesture.
   bool user_gesture;
@@ -28,9 +28,6 @@ struct CreateNewWindowParams {
   // The name of the resulting frame that should be created (empty if none
   // has been specified). UTF8 encoded string.
   string frame_name;
-
-  // The routing id of the frame initiating the open.
-  int32 opener_render_frame_id;
 
   // The URL of the frame initiating the open.
   url.mojom.Url opener_url;
@@ -49,7 +46,7 @@ struct CreateNewWindowParams {
   ui.mojom.WindowOpenDisposition disposition;
 
   // The URL that will be loaded in the new window (empty if none has been
-  // sepcified).
+  // specified).
   url.mojom.Url target_url;
 
   // The referrer that will be used to load |target_url| (empty if none has
@@ -62,7 +59,10 @@ struct CreateNewWindowParams {
 
 struct CreateNewWindowReply {
   // The ID of the view to be created. If the ID is MSG_ROUTING_NONE, then the
-  // view couldn't be created.
+  // opener RenderFrame should not create a RenderView in its process.
+  // MSG_ROUTING_NONE does not necessarily indicate failure; it may also occur
+  // in cases where a window was created, but the opener relationship is
+  // severed.
   int32 route_id;
 
   // The ID of the main frame hosted in the view.

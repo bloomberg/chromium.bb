@@ -387,6 +387,8 @@ void AwContentBrowserClient::SelectClientCertificate(
 }
 
 bool AwContentBrowserClient::CanCreateWindow(
+    int opener_render_process_id,
+    int opener_render_frame_id,
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,
     const GURL& source_origin,
@@ -399,9 +401,6 @@ bool AwContentBrowserClient::CanCreateWindow(
     bool user_gesture,
     bool opener_suppressed,
     content::ResourceContext* context,
-    int render_process_id,
-    int opener_render_view_id,
-    int opener_render_frame_id,
     bool* no_javascript_access) {
   // We unconditionally allow popup windows at this stage and will give
   // the embedder the opporunity to handle displaying of the popup in

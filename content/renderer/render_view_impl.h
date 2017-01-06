@@ -231,11 +231,6 @@ class CONTENT_EXPORT RenderViewImpl
   void ShowCreatedFullscreenWidget(RenderWidget* fullscreen_widget,
                                    blink::WebNavigationPolicy policy,
                                    const gfx::Rect& initial_rect);
-  // A RenderView widget opened by this view needs to be shown.
-  void ShowCreatedViewWidget(bool opened_by_user_gesture,
-                             RenderWidget* render_view,
-                             blink::WebNavigationPolicy policy,
-                             const gfx::Rect& initial_rect);
 
   // Returns the length of the session history of this RenderView. Note that
   // this only coincides with the actual length of the session history if this

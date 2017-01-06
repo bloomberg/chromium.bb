@@ -7,52 +7,52 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/android/tab_android.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SingleTabModeTabHelper);
 
 namespace {
 
-typedef std::pair<int32_t, int32_t> RenderWidgetHostID;
-typedef std::set<RenderWidgetHostID> SingleTabIDSet;
+typedef std::pair<int32_t, int32_t> RenderFrameHostID;
+typedef std::set<RenderFrameHostID> SingleTabIDSet;
 base::LazyInstance<SingleTabIDSet> g_blocked_ids = LAZY_INSTANCE_INITIALIZER;
 
-void AddPairOnIOThread(int32_t process_id, int32_t routing_id) {
+void AddPairOnIOThread(int32_t process_id, int32_t frame_routing_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  RenderWidgetHostID single_tab_pair(process_id, routing_id);
+  RenderFrameHostID single_tab_pair(process_id, frame_routing_id);
   g_blocked_ids.Get().insert(single_tab_pair);
 }
 
-void RemovePairOnIOThread(int32_t process_id, int32_t routing_id) {
+void RemovePairOnIOThread(int32_t process_id, int32_t frame_routing_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  RenderWidgetHostID single_tab_pair(process_id, routing_id);
+  RenderFrameHostID single_tab_pair(process_id, frame_routing_id);
   SingleTabIDSet::iterator itr = g_blocked_ids.Get().find(single_tab_pair);
   DCHECK(itr != g_blocked_ids.Get().end());
   g_blocked_ids.Get().erase(itr);
 }
 
-void AddPair(content::RenderViewHost* render_view_host) {
-  if (!render_view_host)
+void AddPair(content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host)
     return;
 
-  int32_t process_id = render_view_host->GetProcess()->GetID();
-  int32_t routing_id = render_view_host->GetRoutingID();
+  int32_t process_id = render_frame_host->GetProcess()->GetID();
+  int32_t frame_routing_id = render_frame_host->GetRoutingID();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&AddPairOnIOThread, process_id, routing_id));
+      base::Bind(&AddPairOnIOThread, process_id, frame_routing_id));
 }
 
-void RemovePair(content::RenderViewHost* render_view_host) {
-  if (!render_view_host)
+void RemovePair(content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host)
     return;
 
-  int32_t process_id = render_view_host->GetProcess()->GetID();
-  int32_t routing_id = render_view_host->GetRoutingID();
+  int32_t process_id = render_frame_host->GetProcess()->GetID();
+  int32_t frame_routing_id = render_frame_host->GetRoutingID();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&RemovePairOnIOThread, process_id, routing_id));
+      base::Bind(&RemovePairOnIOThread, process_id, frame_routing_id));
 }
 
 }  // namespace
@@ -66,34 +66,35 @@ SingleTabModeTabHelper::SingleTabModeTabHelper(
 SingleTabModeTabHelper::~SingleTabModeTabHelper() {
 }
 
-void SingleTabModeTabHelper::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
+void SingleTabModeTabHelper::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
   if (!block_all_new_windows_)
     return;
-  AddPair(render_view_host);
+  AddPair(render_frame_host);
 }
 
-void SingleTabModeTabHelper::RenderViewDeleted(
-    content::RenderViewHost* render_view_host) {
+void SingleTabModeTabHelper::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
   if (!block_all_new_windows_)
     return;
-  RemovePair(render_view_host);
+  RemovePair(render_frame_host);
 }
 
 void SingleTabModeTabHelper::PermanentlyBlockAllNewWindows() {
   block_all_new_windows_ = true;
-  AddPair(web_contents()->GetRenderViewHost());
+  for (content::RenderFrameHost* frame : web_contents()->GetAllFrames())
+    AddPair(frame);
 }
 
 bool SingleTabModeTabHelper::IsRegistered(int32_t process_id,
-                                          int32_t routing_id) {
+                                          int32_t frame_routing_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  RenderWidgetHostID single_tab_pair(process_id, routing_id);
+  RenderFrameHostID single_tab_pair(process_id, frame_routing_id);
   SingleTabIDSet::iterator itr = g_blocked_ids.Get().find(single_tab_pair);
   return itr != g_blocked_ids.Get().end();
 }
 
-void SingleTabModeTabHelper::HandleOpenUrl(const BlockedWindowParams &params) {
+void SingleTabModeTabHelper::HandleOpenUrl(const BlockedWindowParams& params) {
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents());
   if (!tab)
     return;

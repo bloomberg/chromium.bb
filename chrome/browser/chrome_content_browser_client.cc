@@ -2265,6 +2265,8 @@ ChromeContentBrowserClient::GetPlatformNotificationService() {
 }
 
 bool ChromeContentBrowserClient::CanCreateWindow(
+    int opener_render_process_id,
+    int opener_render_frame_id,
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,
     const GURL& source_origin,
@@ -2277,9 +2279,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     bool user_gesture,
     bool opener_suppressed,
     content::ResourceContext* context,
-    int render_process_id,
-    int opener_render_view_id,
-    int opener_render_frame_id,
     bool* no_javascript_access) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -2291,10 +2290,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
     InfoMap* map = io_data->GetExtensionInfoMap();
-    if (!map->SecurityOriginHasAPIPermission(
-            source_origin,
-            render_process_id,
-            APIPermission::kBackground)) {
+    if (!map->SecurityOriginHasAPIPermission(source_origin,
+                                             opener_render_process_id,
+                                             APIPermission::kBackground)) {
       return false;
     }
 
@@ -2315,7 +2313,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (extensions::WebViewRendererState::GetInstance()->IsGuest(
-      render_process_id)) {
+          opener_render_process_id)) {
     return true;
   }
 
@@ -2354,21 +2352,16 @@ bool ChromeContentBrowserClient::CanCreateWindow(
           user_gesture)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&HandleFlashDownloadActionOnUIThread, render_process_id,
-                   opener_render_frame_id, opener_top_level_frame_url));
+        base::Bind(&HandleFlashDownloadActionOnUIThread,
+                   opener_render_process_id, opener_render_frame_id,
+                   opener_top_level_frame_url));
     return false;
   }
 #endif
 
-  BlockedWindowParams blocked_params(target_url,
-                                     referrer,
-                                     frame_name,
-                                     disposition,
-                                     features,
-                                     user_gesture,
-                                     opener_suppressed,
-                                     render_process_id,
-                                     opener_render_frame_id);
+  BlockedWindowParams blocked_params(
+      target_url, referrer, frame_name, disposition, features, user_gesture,
+      opener_suppressed, opener_render_process_id, opener_render_frame_id);
 
   if (!user_gesture &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -2387,8 +2380,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  if (SingleTabModeTabHelper::IsRegistered(render_process_id,
-                                           opener_render_view_id)) {
+  if (SingleTabModeTabHelper::IsRegistered(opener_render_process_id,
+                                           opener_render_frame_id)) {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(&HandleSingleTabModeBlockOnUIThread,

@@ -15,11 +15,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-namespace content {
-class RenderViewHost;
-class WebContents;
-}  // namespace content
-
 // Registers and unregisters the IDs of renderers in single tab mode, which
 // are disallowed from opening new windows via
 // ChromeContentBrowserClient::CanCreateWindow().
@@ -40,8 +35,8 @@ class SingleTabModeTabHelper
   void PermanentlyBlockAllNewWindows();
 
   // content::WebContentsObserver
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
-  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
  private:
   explicit SingleTabModeTabHelper(content::WebContents* web_contents);

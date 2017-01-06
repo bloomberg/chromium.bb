@@ -2617,14 +2617,32 @@ TEST_F(WebContentsImplTest, FilterURLs) {
 
 // Test that if a pending contents is deleted before it is shown, we don't
 // crash.
-TEST_F(WebContentsImplTest, PendingContents) {
+TEST_F(WebContentsImplTest, PendingContentsDestroyed) {
   std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   contents()->AddPendingContents(other_contents.get());
-  int process_id = other_contents->GetRenderViewHost()->GetProcess()->GetID();
-  int route_id = other_contents->GetRenderViewHost()->GetRoutingID();
+  RenderWidgetHost* widget =
+      other_contents->GetMainFrame()->GetRenderWidgetHost();
+  int process_id = widget->GetProcess()->GetID();
+  int widget_id = widget->GetRoutingID();
   other_contents.reset();
-  EXPECT_EQ(nullptr, contents()->GetCreatedWindow(process_id, route_id));
+  EXPECT_EQ(nullptr, contents()->GetCreatedWindow(process_id, widget_id));
+}
+
+TEST_F(WebContentsImplTest, PendingContentsShown) {
+  std::unique_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
+  contents()->AddPendingContents(other_contents.get());
+  RenderWidgetHost* widget =
+      other_contents->GetMainFrame()->GetRenderWidgetHost();
+  int process_id = widget->GetProcess()->GetID();
+  int widget_id = widget->GetRoutingID();
+
+  // The first call to GetCreatedWindow pops it off the pending list.
+  EXPECT_EQ(other_contents.get(),
+            contents()->GetCreatedWindow(process_id, widget_id));
+  // A second call should return nullptr, verifying that it's been forgotten.
+  EXPECT_EQ(nullptr, contents()->GetCreatedWindow(process_id, widget_id));
 }
 
 TEST_F(WebContentsImplTest, CapturerOverridesPreferredSize) {

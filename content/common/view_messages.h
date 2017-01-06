@@ -489,11 +489,11 @@ IPC_MESSAGE_ROUTED2(ViewMsg_UpdateScreenRects,
                     gfx::Rect /* view_screen_rect */,
                     gfx::Rect /* window_screen_rect */)
 
-// Reply to ViewHostMsg_RequestMove, ViewHostMsg_ShowView, and
-// ViewHostMsg_ShowWidget to inform the renderer that the browser has
+// Reply to ViewHostMsg_RequestMove, ViewHostMsg_ShowWidget, and
+// FrameHostMsg_ShowCreatedWindow, to inform the renderer that the browser has
 // processed the move.  The browser may have ignored the move, but it finished
-// processing.  This is used because the renderer keeps a temporary cache of
-// the widget position while these asynchronous operations are in progress.
+// processing.  This is used because the renderer keeps a temporary cache of the
+// widget position while these asynchronous operations are in progress.
 IPC_MESSAGE_ROUTED0(ViewMsg_Move_ACK)
 
 // Used to instruct the RenderView to send back updates to the preferred size.
@@ -617,20 +617,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_HandleCompositorProto,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrames,
                     bool /* enabled */)
 
-// These three messages are sent to the parent RenderViewHost to display the
-// page/widget that was created by
-// CreateWindow/CreateWidget/CreateFullscreenWidget. routing_id
-// refers to the id that was returned from the Create message above.
-// The initial_rect parameter is in screen coordinates.
-//
-// FUTURE: there will probably be flags here to control if the result is
-// in a new window.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_ShowView,
-                    int /* route_id */,
-                    WindowOpenDisposition /* disposition */,
-                    gfx::Rect /* initial_rect */,
-                    bool /* opened_by_user_gesture */)
-
+// These two messages are sent to the parent RenderViewHost to display a widget
+// that was created by CreateWidget/CreateFullscreenWidget. |route_id| refers
+// to the id that was returned from the corresponding Create message above.
+// |initial_rect| is in screen coordinates.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowWidget,
                     int /* route_id */,
                     gfx::Rect /* initial_rect */)

@@ -114,6 +114,18 @@ class CONTENT_EXPORT InterstitialPageImpl
   void Copy() override;
   void Paste() override;
   void SelectAll() override;
+  void CreateNewWindow(
+      SiteInstance* source_site_instance,
+      int32_t render_view_route_id,
+      int32_t main_frame_route_id,
+      int32_t main_frame_widget_route_id,
+      const mojom::CreateNewWindowParams& params,
+      SessionStorageNamespace* session_storage_namespace) override;
+  void ShowCreatedWindow(int process_id,
+                         int main_frame_widget_route_id,
+                         WindowOpenDisposition disposition,
+                         const gfx::Rect& initial_rect,
+                         bool user_gesture) override;
 
   // RenderViewHostDelegate implementation:
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -125,23 +137,11 @@ class CONTENT_EXPORT InterstitialPageImpl
                             int error_code) override;
   RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const override;
-  void CreateNewWindow(
-      SiteInstance* source_site_instance,
-      int32_t route_id,
-      int32_t main_frame_route_id,
-      int32_t main_frame_widget_route_id,
-      const mojom::CreateNewWindowParams& params,
-      SessionStorageNamespace* session_storage_namespace) override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
                        blink::WebPopupType popup_type) override;
   void CreateNewFullscreenWidget(int32_t render_process_id,
                                  int32_t route_id) override;
-  void ShowCreatedWindow(int process_id,
-                         int route_id,
-                         WindowOpenDisposition disposition,
-                         const gfx::Rect& initial_rect,
-                         bool user_gesture) override;
   void ShowCreatedWidget(int process_id,
                          int route_id,
                          const gfx::Rect& initial_rect) override;

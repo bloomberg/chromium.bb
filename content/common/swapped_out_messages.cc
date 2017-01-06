@@ -28,7 +28,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     // Handled by RenderViewHost.
     case ViewHostMsg_ClosePage_ACK::ID:
     case ViewHostMsg_ShowFullscreenWidget::ID:
-    case ViewHostMsg_ShowView::ID:
     case ViewHostMsg_ShowWidget::ID:
     case ViewHostMsg_SwapCompositorFrame::ID:
     // Handled by SharedWorkerMessageFilter.

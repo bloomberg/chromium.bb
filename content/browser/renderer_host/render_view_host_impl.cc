@@ -757,7 +757,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderViewHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowView, OnShowView)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
                         OnShowFullscreenWidget)
@@ -798,22 +797,6 @@ void RenderViewHostImpl::ShutdownAndDestroy() {
   delete this;
 }
 
-void RenderViewHostImpl::CreateNewWindow(
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
-    const mojom::CreateNewWindowParams& params,
-    SessionStorageNamespace* session_storage_namespace) {
-  mojom::CreateNewWindowParamsPtr validated_params(params.Clone());
-  GetProcess()->FilterURL(false, &validated_params->target_url);
-  GetProcess()->FilterURL(false, &validated_params->opener_url);
-  GetProcess()->FilterURL(true, &validated_params->opener_security_origin);
-
-  delegate_->CreateNewWindow(GetSiteInstance(), route_id, main_frame_route_id,
-                             main_frame_widget_route_id, *validated_params,
-                             session_storage_namespace);
-}
-
 void RenderViewHostImpl::CreateNewWidget(int32_t route_id,
                                          blink::WebPopupType popup_type) {
   delegate_->CreateNewWidget(GetProcess()->GetID(), route_id, popup_type);
@@ -821,15 +804,6 @@ void RenderViewHostImpl::CreateNewWidget(int32_t route_id,
 
 void RenderViewHostImpl::CreateNewFullscreenWidget(int32_t route_id) {
   delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), route_id);
-}
-
-void RenderViewHostImpl::OnShowView(int route_id,
-                                    WindowOpenDisposition disposition,
-                                    const gfx::Rect& initial_rect,
-                                    bool user_gesture) {
-  delegate_->ShowCreatedWindow(GetProcess()->GetID(), route_id, disposition,
-                               initial_rect, user_gesture);
-  Send(new ViewMsg_Move_ACK(route_id));
 }
 
 void RenderViewHostImpl::OnShowWidget(int route_id,

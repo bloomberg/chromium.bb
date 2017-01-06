@@ -7543,19 +7543,20 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DetachInUnloadHandler) {
       DepictFrameTree(root));
 }
 
-// Helper filter class to wait for a ShowView or ShowWidget message, record the
-// routing ID from the message, and then drop the message.
+// Helper filter class to wait for a ShowCreatedWindow or ShowWidget message,
+// record the routing ID from the message, and then drop the message.
+const uint32_t kMessageClasses[] = {ViewMsgStart, FrameMsgStart};
 class PendingWidgetMessageFilter : public BrowserMessageFilter {
  public:
   PendingWidgetMessageFilter()
-      : BrowserMessageFilter(ViewMsgStart),
+      : BrowserMessageFilter(kMessageClasses, arraysize(kMessageClasses)),
         routing_id_(MSG_ROUTING_NONE),
         message_loop_runner_(new MessageLoopRunner) {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PendingWidgetMessageFilter, message)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ShowView, OnShowView)
+      IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
@@ -7571,14 +7572,14 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
  private:
   ~PendingWidgetMessageFilter() override {}
 
-  void OnShowView(int routing_id,
-                  WindowOpenDisposition disposition,
-                  const gfx::Rect& initial_rect,
-                  bool user_gesture) {
+  void OnShowCreatedWindow(int pending_widget_routing_id,
+                           WindowOpenDisposition disposition,
+                           const gfx::Rect& initial_rect,
+                           bool user_gesture) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&PendingWidgetMessageFilter::OnReceivedRoutingIDOnUI, this,
-                   routing_id));
+                   pending_widget_routing_id));
   }
 
   void OnShowWidget(int routing_id, const gfx::Rect& initial_rect) {
@@ -7588,8 +7589,8 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
                    routing_id));
   }
 
-  void OnReceivedRoutingIDOnUI(int routing_id) {
-    routing_id_ = routing_id;
+  void OnReceivedRoutingIDOnUI(int widget_routing_id) {
+    routing_id_ = widget_routing_id;
     message_loop_runner_->Quit();
   }
 
@@ -7621,8 +7622,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderProcessHost* process2 = child2->current_frame_host()->GetProcess();
 
   // Call window.open simultaneously in both subframes to create two popups.
-  // Wait for and then drop both ViewHostMsg_ShowView messages.  This will
-  // ensure that both CreateNewWindow calls happen before either
+  // Wait for and then drop both FrameHostMsg_ShowCreatedWindow messages.  This
+  // will ensure that both CreateNewWindow calls happen before either
   // ShowCreatedWindow call.
   scoped_refptr<PendingWidgetMessageFilter> filter1 =
       new PendingWidgetMessageFilter();
@@ -7649,8 +7650,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // pending contents map in the original bug).
   EXPECT_EQ(filter1->routing_id(), filter2->routing_id());
 
-  // Now, simulate that both ShowView messages arrive by showing both of the
-  // pending WebContents.
+  // Now, simulate that both FrameHostMsg_ShowCreatedWindow messages arrive by
+  // showing both of the pending WebContents.
   web_contents()->ShowCreatedWindow(process1->GetID(), filter1->routing_id(),
                                     WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                     gfx::Rect(), true);

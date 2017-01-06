@@ -305,6 +305,12 @@ class CONTENT_EXPORT RenderFrameImpl
   // blink has a separate accessibility tree per frame.
   void FocusedNodeChangedForAccessibility(const blink::WebNode& node);
 
+  // A RenderView opened by this RenderFrame needs to be shown.
+  void ShowCreatedWindow(bool opened_by_user_gesture,
+                         RenderWidget* render_widget_to_show,
+                         blink::WebNavigationPolicy policy,
+                         const gfx::Rect& initial_rect);
+
   // Called when this frame's widget is focused.
   void RenderWidgetSetFocus(bool enable);
 

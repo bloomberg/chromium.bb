@@ -64,6 +64,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
+#include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
@@ -760,6 +761,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
 #endif
+    IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
   IPC_END_MESSAGE_MAP()
 
   // No further actions here, since we may have been deleted.
@@ -1019,6 +1021,33 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
                         scope, frame_name, frame_unique_name, sandbox_flags,
                         frame_owner_properties);
+}
+
+void RenderFrameHostImpl::OnCreateNewWindow(
+    int32_t render_view_route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
+    const mojom::CreateNewWindowParams& params,
+    SessionStorageNamespace* session_storage_namespace) {
+  mojom::CreateNewWindowParamsPtr validated_params(params.Clone());
+  GetProcess()->FilterURL(false, &validated_params->target_url);
+
+  // TODO(nick): http://crbug.com/674307 |opener_url|, |opener_security_origin|,
+  // and |opener_top_level_frame_url| should not be parameters; we can just use
+  // last_committed_url(), etc. Of these, |opener_top_level_frame_url| is
+  // particularly egregious, since an oopif isn't expected to know its top URL.
+  GetProcess()->FilterURL(false, &validated_params->opener_url);
+  GetProcess()->FilterURL(true, &validated_params->opener_security_origin);
+
+  // Ignore creation when sent from a frame that's not current.
+  if (frame_tree_node_->current_frame_host() == this) {
+    delegate_->CreateNewWindow(GetSiteInstance(), render_view_route_id,
+                               main_frame_route_id, main_frame_widget_route_id,
+                               *validated_params, session_storage_namespace);
+  }
+
+  // Our caller (RenderWidgetHelper::OnCreateNewWindowOnUI) will send
+  // ViewMsg_Close if the above step did not adopt |main_frame_route_id|.
 }
 
 void RenderFrameHostImpl::OnDetach() {
@@ -2190,6 +2219,14 @@ void RenderFrameHostImpl::OnHidePopup() {
     view->HidePopupMenu();
 }
 #endif
+
+void RenderFrameHostImpl::OnShowCreatedWindow(int pending_widget_routing_id,
+                                              WindowOpenDisposition disposition,
+                                              const gfx::Rect& initial_rect,
+                                              bool user_gesture) {
+  delegate_->ShowCreatedWindow(GetProcess()->GetID(), pending_widget_routing_id,
+                               disposition, initial_rect, user_gesture);
+}
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
   device::GeolocationServiceContext* geolocation_service_context =

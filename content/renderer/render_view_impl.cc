@@ -1370,20 +1370,6 @@ void RenderViewImpl::ShowCreatedFullscreenWidget(
                                             fullscreen_widget->routing_id()));
 }
 
-void RenderViewImpl::ShowCreatedViewWidget(bool opened_by_user_gesture,
-                                           RenderWidget* render_view_to_show,
-                                           WebNavigationPolicy policy,
-                                           const gfx::Rect& initial_rect) {
-  // |render_view_to_show| represents a pending view opened (e.g. a popup opened
-  // via window.open()) by this object, but not yet shown (it's offscreen, and
-  // still owned by the opener). Sending |ViewHostMsg_ShowView| will move it off
-  // the opener's pending list, into e.g. its own tab or window.
-  Send(new ViewHostMsg_ShowView(GetRoutingID(),
-                                render_view_to_show->routing_id(),
-                                NavigationPolicyToDisposition(policy),
-                                initial_rect, opened_by_user_gesture));
-}
-
 void RenderViewImpl::SendFrameStateUpdates() {
   // We only use this path in OOPIF-enabled modes.
   DCHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
@@ -1421,8 +1407,9 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
                                     const WebString& frame_name,
                                     WebNavigationPolicy policy,
                                     bool suppress_opener) {
+  RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
   mojom::CreateNewWindowParamsPtr params = mojom::CreateNewWindowParams::New();
-  params->opener_id = GetRoutingID();
+  params->opener_render_frame_id = creator_frame->GetRoutingID();
   params->user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
   if (GetContentClient()->renderer()->AllowPopup())
     params->user_gesture = true;
@@ -1430,8 +1417,6 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   params->session_storage_namespace_id = session_storage_namespace_id_;
   if (frame_name != "_blank")
     params->frame_name = base::UTF16ToUTF8(base::StringPiece16(frame_name));
-  params->opener_render_frame_id =
-      RenderFrameImpl::FromWebFrame(creator)->GetRoutingID();
   params->opener_url = creator->document().url();
 
   // The browser process uses the top frame's URL for a content settings check
@@ -1493,7 +1478,6 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   // disagrees.
   mojom::CreateViewParams view_params;
 
-  RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
   view_params.opener_frame_route_id = creator_frame->GetRoutingID();
   DCHECK_EQ(GetRoutingID(), creator_frame->render_view()->GetRoutingID());
 
@@ -1516,9 +1500,11 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   view_params.max_size = gfx::Size();
   view_params.page_zoom_level = page_zoom_level_;
 
+  // Unretained() is safe here because our calling function will also call
+  // show().
   RenderWidget::ShowCallback show_callback =
-      base::Bind(&RenderViewImpl::ShowCreatedViewWidget, this->AsWeakPtr(),
-                 opened_by_user_gesture);
+      base::Bind(&RenderFrameImpl::ShowCreatedWindow,
+                 base::Unretained(creator_frame), opened_by_user_gesture);
 
   RenderViewImpl* view =
       RenderViewImpl::Create(compositor_deps_, view_params, show_callback);

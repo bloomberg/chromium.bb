@@ -2000,11 +2000,22 @@ void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(bool visible) {
 
 void WebContentsImpl::CreateNewWindow(
     SiteInstance* source_site_instance,
-    int32_t route_id,
+    int32_t render_view_route_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
     const mojom::CreateNewWindowParams& params,
     SessionStorageNamespace* session_storage_namespace) {
+  // We should have zero valid routing ids, or three valid routing IDs.
+  DCHECK_EQ((render_view_route_id == MSG_ROUTING_NONE),
+            (main_frame_route_id == MSG_ROUTING_NONE));
+  DCHECK_EQ((render_view_route_id == MSG_ROUTING_NONE),
+            (main_frame_widget_route_id == MSG_ROUTING_NONE));
+
+  int render_process_id = source_site_instance->GetProcess()->GetID();
+  // The route IDs passed into this function can be trusted not to already be in
+  // use; they were allocated by the RenderWidgetHelper on the IO thread.
+  DCHECK(!RenderFrameHostImpl::FromID(render_process_id, main_frame_route_id));
+
   // We usually create the new window in the same BrowsingInstance (group of
   // script-related windows), by passing in the current SiteInstance.  However,
   // if the opener is being suppressed (in a non-guest), we create a new
@@ -2014,27 +2025,12 @@ void WebContentsImpl::CreateNewWindow(
   // If the opener is to be suppressed, the new window can be in any process.
   // Since routing ids are process specific, we must not have one passed in
   // as argument here.
-  DCHECK(!params.opener_suppressed || route_id == MSG_ROUTING_NONE);
+  DCHECK(!params.opener_suppressed || render_view_route_id == MSG_ROUTING_NONE);
 
   scoped_refptr<SiteInstance> site_instance =
       params.opener_suppressed && !is_guest
           ? SiteInstance::CreateForURL(GetBrowserContext(), params.target_url)
           : source_site_instance;
-
-  // A message to create a new window can only come from a process for a frame
-  // in this WebContents' FrameTree. If any other process sends the request, it
-  // is invalid and the process must be terminated.
-  int render_process_id = source_site_instance->GetProcess()->GetID();
-  if (!HasMatchingProcess(&frame_tree_, render_process_id)) {
-    RenderProcessHost* rph = source_site_instance->GetProcess();
-    base::ProcessHandle process_handle = rph->GetHandle();
-    if (process_handle != base::kNullProcessHandle) {
-      RecordAction(
-          base::UserMetricsAction("Terminate_ProcessMismatch_CreateNewWindow"));
-      rph->Shutdown(RESULT_CODE_KILLED, false);
-    }
-    return;
-  }
 
   // We must assign the SessionStorageNamespace before calling Init().
   //
@@ -2053,16 +2049,10 @@ void WebContentsImpl::CreateNewWindow(
 
   if (delegate_ &&
       !delegate_->ShouldCreateWebContents(
-          this, source_site_instance, route_id, main_frame_route_id,
+          this, source_site_instance, render_view_route_id, main_frame_route_id,
           main_frame_widget_route_id, params.window_container_type,
           params.opener_url, params.frame_name, params.target_url, partition_id,
           session_storage_namespace)) {
-    if (route_id != MSG_ROUTING_NONE &&
-        !RenderViewHost::FromID(render_process_id, route_id)) {
-      // If the embedder didn't create a WebContents for this route, we need to
-      // delete the RenderView that had already been created.
-      Send(new ViewMsg_Close(route_id));
-    }
     // Note: even though we're not creating a WebContents here, it could have
     // been created by the embedder so ensure that the RenderFrameHost is
     // properly initialized.
@@ -2070,15 +2060,17 @@ void WebContentsImpl::CreateNewWindow(
     // have a chance to create more frames at this point.
     RenderFrameHostImpl* rfh =
         RenderFrameHostImpl::FromID(render_process_id, main_frame_route_id);
-    if (rfh)
+    if (rfh) {
+      DCHECK(rfh->IsRenderFrameLive());
       rfh->Init();
+    }
     return;
   }
 
   // Create the new web contents. This will automatically create the new
   // WebContentsView. In the future, we may want to create the view separately.
   CreateParams create_params(GetBrowserContext(), site_instance.get());
-  create_params.routing_id = route_id;
+  create_params.routing_id = render_view_route_id;
   create_params.main_frame_routing_id = main_frame_route_id;
   create_params.main_frame_widget_routing_id = main_frame_widget_route_id;
   create_params.main_frame_name = params.frame_name;
@@ -2123,9 +2115,9 @@ void WebContentsImpl::CreateNewWindow(
     }
     // Save the created window associated with the route so we can show it
     // later.
-    DCHECK_NE(MSG_ROUTING_NONE, route_id);
-    pending_contents_[std::make_pair(render_process_id, route_id)] =
-        new_contents;
+    DCHECK_NE(MSG_ROUTING_NONE, main_frame_widget_route_id);
+    pending_contents_[std::make_pair(
+        render_process_id, main_frame_widget_route_id)] = new_contents;
     AddDestructionObserver(new_contents);
   }
 
@@ -2217,11 +2209,12 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
 }
 
 void WebContentsImpl::ShowCreatedWindow(int process_id,
-                                        int route_id,
+                                        int main_frame_widget_route_id,
                                         WindowOpenDisposition disposition,
                                         const gfx::Rect& initial_rect,
                                         bool user_gesture) {
-  WebContentsImpl* contents = GetCreatedWindow(process_id, route_id);
+  WebContentsImpl* contents =
+      GetCreatedWindow(process_id, main_frame_widget_route_id);
   if (contents) {
     WebContentsDelegate* delegate = GetDelegate();
     contents->is_resume_pending_ = true;
@@ -2229,9 +2222,13 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
       contents->ResumeLoadingCreatedWebContents();
 
     if (delegate) {
-      delegate->AddNewContents(
-          this, contents, disposition, initial_rect, user_gesture, NULL);
+      delegate->AddNewContents(this, contents, disposition, initial_rect,
+                               user_gesture, NULL);
     }
+
+    RenderWidgetHostImpl* rwh = contents->GetMainFrame()->GetRenderWidgetHost();
+    DCHECK_EQ(main_frame_widget_route_id, rwh->GetRoutingID());
+    rwh->Send(new ViewMsg_Move_ACK(rwh->GetRoutingID()));
   }
 }
 
@@ -2298,9 +2295,11 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
 #endif
 }
 
-WebContentsImpl* WebContentsImpl::GetCreatedWindow(int process_id,
-                                                   int route_id) {
-  auto iter = pending_contents_.find(std::make_pair(process_id, route_id));
+WebContentsImpl* WebContentsImpl::GetCreatedWindow(
+    int process_id,
+    int main_frame_widget_route_id) {
+  auto key = std::make_pair(process_id, main_frame_widget_route_id);
+  auto iter = pending_contents_.find(key);
 
   // Certain systems can block the creation of new windows. If we didn't succeed
   // in creating one, just return NULL.
@@ -2308,16 +2307,18 @@ WebContentsImpl* WebContentsImpl::GetCreatedWindow(int process_id,
     return nullptr;
 
   WebContentsImpl* new_contents = iter->second;
-  pending_contents_.erase(std::make_pair(process_id, route_id));
+  pending_contents_.erase(key);
   RemoveDestructionObserver(new_contents);
 
   // Don't initialize the guest WebContents immediately.
   if (BrowserPluginGuest::IsGuest(new_contents))
     return new_contents;
 
-  if (!new_contents->GetRenderProcessHost()->HasConnection() ||
-      !new_contents->GetRenderViewHost()->GetWidget()->GetView())
+  if (!new_contents->GetMainFrame()->GetProcess()->HasConnection() ||
+      !new_contents->GetMainFrame()->GetView()) {
+    // TODO(nick): http://crbug.com/674318 -- Who deletes |new_contents|?
     return nullptr;
+  }
 
   return new_contents;
 }

@@ -393,6 +393,8 @@ CastContentBrowserClient::SelectClientCertificateOnIOThread(
 }
 
 bool CastContentBrowserClient::CanCreateWindow(
+    int opener_render_process_id,
+    int opener_render_frame_id,
     const GURL& opener_url,
     const GURL& opener_top_level_frame_url,
     const GURL& source_origin,
@@ -405,9 +407,6 @@ bool CastContentBrowserClient::CanCreateWindow(
     bool user_gesture,
     bool opener_suppressed,
     content::ResourceContext* context,
-    int render_process_id,
-    int opener_render_view_id,
-    int opener_render_frame_id,
     bool* no_javascript_access) {
   *no_javascript_access = true;
   return false;

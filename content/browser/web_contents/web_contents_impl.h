@@ -487,6 +487,18 @@ class CONTENT_EXPORT WebContentsImpl
   void OnFocusedElementChangedInFrame(
       RenderFrameHostImpl* frame,
       const gfx::Rect& bounds_in_root_view) override;
+  void CreateNewWindow(
+      SiteInstance* source_site_instance,
+      int32_t render_view_route_id,
+      int32_t main_frame_route_id,
+      int32_t main_frame_widget_route_id,
+      const mojom::CreateNewWindowParams& params,
+      SessionStorageNamespace* session_storage_namespace) override;
+  void ShowCreatedWindow(int process_id,
+                         int main_frame_widget_route_id,
+                         WindowOpenDisposition disposition,
+                         const gfx::Rect& initial_rect,
+                         bool user_gesture) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -521,23 +533,11 @@ class CONTENT_EXPORT WebContentsImpl
   void OnIgnoredUIEvent() override;
   void Activate() override;
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
-  void CreateNewWindow(
-      SiteInstance* source_site_instance,
-      int32_t route_id,
-      int32_t main_frame_route_id,
-      int32_t main_frame_widget_route_id,
-      const mojom::CreateNewWindowParams& params,
-      SessionStorageNamespace* session_storage_namespace) override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
                        blink::WebPopupType popup_type) override;
   void CreateNewFullscreenWidget(int32_t render_process_id,
                                  int32_t route_id) override;
-  void ShowCreatedWindow(int process_id,
-                         int route_id,
-                         WindowOpenDisposition disposition,
-                         const gfx::Rect& initial_rect,
-                         bool user_gesture) override;
   void ShowCreatedWidget(int process_id,
                          int route_id,
                          const gfx::Rect& initial_rect) override;
@@ -806,7 +806,8 @@ class CONTENT_EXPORT WebContentsImpl
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, FindOpenerRVHWhenPending);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest,
                            CrossSiteCantPreemptAfterUnload);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, PendingContents);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, PendingContentsDestroyed);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, PendingContentsShown);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, FrameTreeShape);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, GetLastActiveTime);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest,
@@ -1092,10 +1093,11 @@ class CONTENT_EXPORT WebContentsImpl
   // called once as this call also removes it from the internal map.
   RenderWidgetHostView* GetCreatedWidget(int process_id, int route_id);
 
-  // Finds the new WebContentsImpl by route_id, initializes it for
-  // renderer-initiated creation, and returns it. Note that this can only be
-  // called once as this call also removes it from the internal map.
-  WebContentsImpl* GetCreatedWindow(int process_id, int route_id);
+  // Finds the new WebContentsImpl by |main_frame_widget_route_id|, initializes
+  // it for renderer-initiated creation, and returns it. Note that this can only
+  // be called once as this call also removes it from the internal map.
+  WebContentsImpl* GetCreatedWindow(int process_id,
+                                    int main_frame_widget_route_id);
 
   // Sends a Page message IPC.
   void SendPageMessage(IPC::Message* msg);

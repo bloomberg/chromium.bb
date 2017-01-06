@@ -102,6 +102,10 @@ struct FrameOwnerProperties;
 struct FileChooserParams;
 struct ResourceResponse;
 
+namespace mojom {
+class CreateNewWindowParams;
+}
+
 class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
       NON_EXPORTED_BASE(public mojom::FrameHost),
@@ -214,12 +218,27 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void Init();
 
   int routing_id() const { return routing_id_; }
+
+  // Called when this frame has added a child. This is a continuation of an IPC
+  // that was partially handled on the IO thread (to allocate |new_routing_id|),
+  // and is forwarded here. The renderer has already been told to create a
+  // RenderFrame with |new_routing_id|.
   void OnCreateChildFrame(int new_routing_id,
                           blink::WebTreeScopeType scope,
                           const std::string& frame_name,
                           const std::string& frame_unique_name,
                           blink::WebSandboxFlags sandbox_flags,
                           const FrameOwnerProperties& frame_owner_properties);
+
+  // Called when this frame tries to open a new WebContents, e.g. via a script
+  // call to window.open(). The renderer has already been told to create the
+  // RenderView and RenderFrame with the specified route ids, which were
+  // assigned on the IO thread.
+  void OnCreateNewWindow(int32_t render_view_route_id,
+                         int32_t main_frame_route_id,
+                         int32_t main_frame_widget_route_id,
+                         const mojom::CreateNewWindowParams& params,
+                         SessionStorageNamespace* session_storage_namespace);
 
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
@@ -724,6 +743,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
   void OnHidePopup();
 #endif
+  void OnShowCreatedWindow(int pending_widget_routing_id,
+                           WindowOpenDisposition disposition,
+                           const gfx::Rect& initial_rect,
+                           bool user_gesture);
 
   // Registers Mojo interfaces that this frame host makes available.
   void RegisterMojoInterfaces();

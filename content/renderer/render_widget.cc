@@ -1355,6 +1355,7 @@ void RenderWidget::show(WebNavigationPolicy policy) {
 
   // The opener is responsible for actually showing this widget.
   show_callback_.Run(this, policy, initial_rect_);
+  show_callback_.Reset();
 
   // NOTE: initial_rect_ may still have its default values at this point, but
   // that's okay.  It'll be ignored if as_popup is false, or the browser
