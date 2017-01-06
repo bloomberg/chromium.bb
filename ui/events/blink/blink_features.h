@@ -13,8 +13,8 @@ extern const base::Feature kVsyncAlignedInputEvents;
 
 // This feature allows native ET_MOUSE_EXIT events to be passed
 // through to blink as mouse leave events. Traditionally these events were
-// converted to mouse move events due to a number of incosistencies on
-// the native platforms. Enabled by default on ChromeOS. crbug.com/450631
+// converted to mouse move events due to a number of inconsistencies on
+// the native platforms. crbug.com/450631
 extern const base::Feature kSendMouseLeaveEvents;
 }
 
