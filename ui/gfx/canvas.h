@@ -13,11 +13,11 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_constants.h"
-
 namespace gfx {
 
 class Rect;
@@ -495,10 +495,10 @@ class GFX_EXPORT Canvas {
   float image_scale_;
 
   // canvas_ is our active canvas object. Sometimes we are also the owner,
-  // in which case canvas_owner_ will be set. Other times we are just
+  // in which case surface_ will be set. Other times we are just
   // borrowing someone else's canvas, in which case canvas_ will point there
-  // but canvas_owner_ will be null.
-  std::unique_ptr<SkCanvas> canvas_owner_;
+  // but surface_ will be null.
+  sk_sp<SkSurface> surface_;
   SkCanvas* canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(Canvas);

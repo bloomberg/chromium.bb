@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets_f.h"
@@ -26,12 +27,25 @@
 
 namespace gfx {
 
+namespace {
+
+sk_sp<SkSurface> CreateSurface(const Size& size, bool is_opaque) {
+  // SkSurface cannot be zero-sized, but clients of Canvas sometimes request
+  // that (and then later resize).
+  int width = std::max(size.width(), 1);
+  int height = std::max(size.height(), 1);
+  SkAlphaType alpha = is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+  SkImageInfo info = SkImageInfo::MakeN32(width, height, alpha);
+  return SkSurface::MakeRaster(info);
+}
+
+}  // namespace
+
 Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
     : image_scale_(image_scale) {
   Size pixel_size = ScaleToCeiledSize(size, image_scale);
-  canvas_owner_ = skia::CreatePlatformCanvas(pixel_size.width(),
-                                             pixel_size.height(), is_opaque);
-  canvas_ = canvas_owner_.get();
+  surface_ = CreateSurface(pixel_size, is_opaque);
+  canvas_ = surface_->getCanvas();
 
 #if !defined(USE_CAIRO)
   // skia::PlatformCanvas instances are initialized to 0 by Cairo, but
@@ -46,8 +60,8 @@ Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
 
 Canvas::Canvas()
     : image_scale_(1.f),
-      canvas_owner_(skia::CreatePlatformCanvas(0, 0, false)),
-      canvas_(canvas_owner_.get()) {}
+      surface_(CreateSurface({0, 0}, false)),
+      canvas_(surface_->getCanvas()) {}
 
 Canvas::Canvas(SkCanvas* canvas, float image_scale)
     : image_scale_(image_scale), canvas_(canvas) {
@@ -62,9 +76,8 @@ void Canvas::RecreateBackingCanvas(const Size& size,
                                    bool is_opaque) {
   image_scale_ = image_scale;
   Size pixel_size = ScaleToFlooredSize(size, image_scale);
-  canvas_owner_ = skia::CreatePlatformCanvas(pixel_size.width(),
-                                             pixel_size.height(), is_opaque);
-  canvas_ = canvas_owner_.get();
+  surface_ = CreateSurface(pixel_size, is_opaque);
+  canvas_ = surface_->getCanvas();
 
   SkScalar scale_scalar = SkFloatToScalar(image_scale);
   canvas_->scale(scale_scalar, scale_scalar);
