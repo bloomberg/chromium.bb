@@ -55,6 +55,7 @@ Polymer({
     chrome.bookmarks.getTree(function(results) {
       this.setupStore_(results[0]);
     }.bind(this));
+    chrome.bookmarks.onRemoved.addListener(this.onBookmarkRemoved_.bind(this));
   },
 
   /**
@@ -65,6 +66,7 @@ Polymer({
     this.rootNode = rootNode;
     this.idToNodeMap_ = {};
     this.rootNode.path = 'rootNode';
+    this.generatePaths_(rootNode, 0);
     this.initNodes_(this.rootNode);
     this.fire('selected-folder-changed', this.rootNode.children[0].id);
   },
@@ -115,10 +117,28 @@ Polymer({
   },
 
   /**
+   * Callback for when a bookmark node is removed.
+   * If a folder is selected or is an ancestor of a selected folder, the parent
+   * of the removed folder will be selected.
+   * @param {string} id The id of the removed bookmark node.
+   * @param {!{index: number,
+   *           parentId: string,
+   *           node: BookmarkTreeNode}} removeInfo
+   */
+  onBookmarkRemoved_: function(id, removeInfo) {
+    if (this.isAncestorOfSelected_(this.idToNodeMap_[id]))
+      this.fire('selected-folder-changed', removeInfo.parentId);
+
+    var parentNode = this.idToNodeMap_[removeInfo.parentId];
+    this.splice(parentNode.path + '.children', removeInfo.index, 1);
+    this.removeDescendantsFromMap_(id);
+    this.generatePaths_(parentNode, removeInfo.index);
+  },
+
+  /**
    * Initializes the nodes in the bookmarks tree as follows:
    * - Populates |idToNodeMap_| with a mapping of all node ids to their
    *   corresponding BookmarkTreeNode.
-   * - Stores the path from the store to a node inside the node.
    * - Sets all the nodes to not selected and open by default.
    * @param {BookmarkTreeNode} bookmarkNode
    * @private
@@ -131,8 +151,40 @@ Polymer({
     bookmarkNode.isSelected = false;
     bookmarkNode.isOpen = true;
     for (var i = 0; i < bookmarkNode.children.length; i++) {
-      bookmarkNode.children[i].path = bookmarkNode.path + '.children.' + i;
       this.initNodes_(bookmarkNode.children[i]);
     }
   },
+
+  /**
+   * Stores the path from the store to a node inside the node.
+   * @param {BookmarkTreeNode} bookmarkNode
+   * @param {number} startIndex
+   * @private
+   */
+  generatePaths_: function(bookmarkNode, startIndex) {
+    if (!bookmarkNode.children)
+      return;
+
+    for (var i = startIndex; i < bookmarkNode.children.length; i++) {
+      bookmarkNode.children[i].path = bookmarkNode.path + '.children.#' + i;
+      this.generatePaths_(bookmarkNode.children[i], 0);
+    }
+  },
+
+  /**
+   * Remove all descendants of a given node from the map.
+   * @param {string} id
+   * @private
+   */
+  removeDescendantsFromMap_: function(id) {
+    var node = this.idToNodeMap_[id];
+    if (!node)
+      return;
+
+    if (node.children) {
+      for (var i = 0; i < node.children.length; i++)
+        this.removeDescendantsFromMap_(node.children[i].id);
+    }
+    delete this.idToNodeMap_[id];
+  }
 });

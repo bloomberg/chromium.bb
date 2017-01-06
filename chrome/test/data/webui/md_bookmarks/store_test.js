@@ -4,9 +4,12 @@
 
 suite('<bookmarks-store>', function() {
   var store;
-  var TEST_TREE = {
-    id: '0',
-    children: [
+  var TEST_TREE;
+
+  setup(function() {
+    TEST_TREE = {
+      id: '0',
+      children: [
       {
         id: '1',
         children: [
@@ -19,9 +22,7 @@ suite('<bookmarks-store>', function() {
     ]
   };
 
-  setup(function() {
     store = document.createElement('bookmarks-store');
-    store.isTesting_ = true;
     replaceBody(store);
     store.setupStore_(TEST_TREE);
   });
@@ -53,11 +54,11 @@ suite('<bookmarks-store>', function() {
   test('correct paths generated for nodes', function() {
     var TEST_PATHS = {
       '0': 'rootNode',
-      '1': 'rootNode.children.0',
-      '2': 'rootNode.children.0.children.0',
-      '3': 'rootNode.children.0.children.1',
-      '4': 'rootNode.children.1',
-      '5': 'rootNode.children.2',
+      '1': 'rootNode.children.#0',
+      '2': 'rootNode.children.#0.children.#0',
+      '3': 'rootNode.children.#0.children.#1',
+      '4': 'rootNode.children.#1',
+      '5': 'rootNode.children.#2',
     };
 
     for (var id in store.idToNodeMap_)
@@ -109,5 +110,65 @@ suite('<bookmarks-store>', function() {
     assertEquals('1', store.selectedId);
     assertTrue(store.idToNodeMap_['1'].isSelected);
     assertFalse(store.idToNodeMap_['3'].isSelected);
+  });
+
+  test('deleting a node updates the tree', function() {
+    // Remove an empty folder/bookmark.
+    store.onBookmarkRemoved_('4', {parentId: '0', index: '1'});
+
+    // Check the tree is correct.
+    assertEquals('5', store.rootNode.children[1].id);
+
+    // idToNodeMap_ has been updated.
+    assertEquals(undefined, store.idToNodeMap_['4']);
+    assertEquals(store.rootNode.children[1], store.idToNodeMap_['5']);
+
+    // Paths have been updated.
+    var TEST_PATHS = {
+      '0': 'rootNode',
+      '1': 'rootNode.children.#0',
+      '2': 'rootNode.children.#0.children.#0',
+      '3': 'rootNode.children.#0.children.#1',
+      '5': 'rootNode.children.#1',
+    };
+
+    for (var id in store.idToNodeMap_)
+      assertEquals(TEST_PATHS[id], store.idToNodeMap_[id].path);
+
+    // Remove a folder with children.
+    store.onBookmarkRemoved_('1', {parentId: '0', index: '0'});
+
+    // Check the tree is correct.
+    assertEquals('5', store.rootNode.children[0].id);
+
+    // idToNodeMap_ has been updated.
+    assertEquals(undefined, store.idToNodeMap_['1']);
+    assertEquals(undefined, store.idToNodeMap_['2']);
+    assertEquals(undefined, store.idToNodeMap_['3']);
+    assertEquals(undefined, store.idToNodeMap_['4']);
+    assertEquals(store.rootNode.children[0], store.idToNodeMap_['5']);
+
+    // Paths have been updated.
+    TEST_PATHS = {
+      '0': 'rootNode',
+      '5': 'rootNode.children.#0',
+    };
+
+    for (var id in store.idToNodeMap_)
+      assertEquals(TEST_PATHS[id], store.idToNodeMap_[id].path);
+  });
+
+  test('selectedId updates after removing a selected folder', function() {
+    // Selected folder gets removed.
+    store.selectedId = '2';
+    store.onBookmarkRemoved_('2', {parentId:'1', index:'0'});
+    assertTrue(store.idToNodeMap_['1'].isSelected);
+    assertEquals('1', store.selectedId);
+
+    // A folder with selected folder in it gets removed.
+    store.selectedId = '3';
+    store.onBookmarkRemoved_('1', {parentId:'0', index:'0'});
+    assertTrue(store.idToNodeMap_['0'].isSelected);
+    assertEquals('0', store.selectedId);
   });
 });

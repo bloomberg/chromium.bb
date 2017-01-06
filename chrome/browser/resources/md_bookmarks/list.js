@@ -8,17 +8,21 @@ Polymer({
   properties: {
     /** @type {BookmarkTreeNode} */
     selectedNode: Object,
+
+    /** @type {BookmarkTreeNode} */
+    menuItem_: Object,
   },
 
   listeners: {
-    'toggle-menu': 'onToggleMenu_'
+    'open-item-menu': 'onOpenItemMenu_',
   },
 
   /**
    * @param {Event} e
    * @private
    */
-  onToggleMenu_: function(e) {
+  onOpenItemMenu_: function(e) {
+    this.menuItem_ = e.detail.item;
     var menu = /** @type {!CrActionMenuElement} */ (
         this.$.dropdown);
     menu.showAt(/** @type {!Element} */ (e.detail.target));
@@ -32,11 +36,24 @@ Polymer({
 
   /** @private */
   onCopyURLTap_: function() {
+    var idList = [this.menuItem_.id];
+    chrome.bookmarkManagerPrivate.copy(idList, function() {
+      // TODO(jiaxi): Add toast later.
+    });
     this.closeDropdownMenu_();
   },
 
   /** @private */
   onDeleteTap_: function() {
+    if (this.menuItem_.children) {
+      chrome.bookmarks.removeTree(this.menuItem_.id, function() {
+        // TODO(jiaxi): Add toast later.
+      }.bind(this));
+    } else {
+      chrome.bookmarks.remove(this.menuItem_.id, function() {
+        // TODO(jiaxi): Add toast later.
+      }.bind(this));
+    }
     this.closeDropdownMenu_();
   },
 

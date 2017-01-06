@@ -9,14 +9,14 @@ Polymer({
     /** @type {BookmarkTreeNode} */
     item: {
       type: Object,
-      observer: 'onItemChanged_'
+      observer: 'onItemChanged_',
     },
 
     isFolder_: Boolean,
   },
 
   observers: [
-    'updateFavicon_(item.url)'
+    'updateFavicon_(item.url)',
   ],
 
   /**
@@ -24,8 +24,9 @@ Polymer({
    * @private
    */
   onMenuButtonOpenTap_: function(e) {
-    this.fire('toggle-menu', {
-      target: e.target
+    this.fire('open-item-menu', {
+      target: e.target,
+      item: this.item
     });
   },
 
@@ -37,5 +38,5 @@ Polymer({
   /** @private */
   updateFavicon_: function(url) {
     this.$.icon.style.backgroundImage = cr.icon.getFavicon(url);
-  }
+  },
 });
