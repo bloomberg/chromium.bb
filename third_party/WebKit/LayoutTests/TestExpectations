@@ -1036,8 +1036,7 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/clip-rect-vrl-008.xht [
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/line-box-direction-vrl-009.xht [ Failure ]
 
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
-# TODO(robertphillips) reenable after rebaselining for crbug.com/674509
-#crbug.com/637255 [ Win10 ] media/video-layer-crash.html [ Pass Failure ]
+crbug.com/637255 [ Win10 ] media/video-layer-crash.html [ Pass Failure ]
 
 crbug.com/670307 virtual/threaded/http/tests/worklet/animation-worklet-import.html [ Skip ]
 
