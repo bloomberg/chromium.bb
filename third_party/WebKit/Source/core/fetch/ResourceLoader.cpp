@@ -67,7 +67,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource)
 }
 
 ResourceLoader::~ResourceLoader() {
-  DCHECK(!m_loader);
+  CHECK(!m_loader);
 }
 
 DEFINE_TRACE(ResourceLoader) {
@@ -302,6 +302,7 @@ void ResourceLoader::didReceiveResponse(
     const WebURLResponse& webURLResponse,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(!webURLResponse.isNull());
+  CHECK(m_resource);
 
   const ResourceResponse& response = webURLResponse.toResourceResponse();
 
@@ -354,11 +355,13 @@ void ResourceLoader::didReceiveResponse(
     }
   }
 
+  CHECK(m_resource);
   context().dispatchDidReceiveResponse(
       m_resource->identifier(), response,
       m_resource->resourceRequest().frameType(),
       m_resource->resourceRequest().requestContext(), m_resource);
 
+  CHECK(m_resource);
   m_resource->responseReceived(response, std::move(handle));
   if (!m_resource->loader())
     return;
