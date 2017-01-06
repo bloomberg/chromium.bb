@@ -854,16 +854,17 @@ TEST_F(InterfacePtrTest, ThreadSafeInterfacePointer) {
 }
 
 TEST_F(InterfacePtrTest, BindLaterThreadSafeInterfacePointer) {
-  // Create a ThreadSafeInterfacePtr that we'll bind from a different thread.
-  scoped_refptr<math::ThreadSafeCalculatorPtr> thread_safe_ptr =
-      math::ThreadSafeCalculatorPtr::CreateUnbound();
-  ASSERT_TRUE(thread_safe_ptr);
-
   // Create and start the thread from where we'll bind the interface pointer.
   base::Thread other_thread("service test thread");
   other_thread.Start();
   const scoped_refptr<base::SingleThreadTaskRunner>& other_thread_task_runner =
       other_thread.message_loop()->task_runner();
+
+  // Create a ThreadSafeInterfacePtr that we'll bind from a different thread.
+  scoped_refptr<math::ThreadSafeCalculatorPtr> thread_safe_ptr =
+      math::ThreadSafeCalculatorPtr::CreateUnbound(other_thread_task_runner);
+  ASSERT_TRUE(thread_safe_ptr);
+
   MathCalculatorImpl* math_calc_impl = nullptr;
   {
     base::RunLoop run_loop;

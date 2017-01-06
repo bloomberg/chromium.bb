@@ -60,16 +60,27 @@ class ThreadSafeInterfacePtrBase
   }
 
   // Creates a ThreadSafeInterfacePtrBase with no associated InterfacePtr.
-  // Call Bind() with the InterfacePtr once available.
+  // Call Bind() with the InterfacePtr once available, which must be called on
+  // the |bind_task_runner|.
+  // Providing the TaskRunner here allows you to post a task to
+  // |bind_task_runner| to do the bind and then immediately start calling
+  // methods on the returned interface.
   static scoped_refptr<ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>>
-  CreateUnbound() {
-    return new ThreadSafeInterfacePtrBase();
+  CreateUnbound(
+      const scoped_refptr<base::SingleThreadTaskRunner>& bind_task_runner) {
+    scoped_refptr<ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>> ptr =
+        new ThreadSafeInterfacePtrBase();
+    ptr->interface_ptr_task_runner_ = bind_task_runner;
+    return ptr;
   }
 
   // Binds a ThreadSafeInterfacePtrBase previously created with CreateUnbound().
   // This must be called on the thread that |interface_ptr| should be used.
+  // If created with CreateUnbound() that thread should be the same as the one
+  // provided at creation time.
   bool Bind(InterfacePtrType<Interface> interface_ptr) {
-    DCHECK(!interface_ptr_task_runner_);
+    DCHECK(!interface_ptr_task_runner_ ||
+        interface_ptr_task_runner_ == base::ThreadTaskRunnerHandle::Get());
     if (!interface_ptr.is_bound()) {
       LOG(ERROR) << "Attempting to bind a ThreadSafe[Associated]InterfacePtr "
                     "from an unbound InterfacePtr.";

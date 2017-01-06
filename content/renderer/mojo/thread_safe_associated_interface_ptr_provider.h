@@ -29,7 +29,8 @@ class ThreadSafeAssociatedInterfacePtrProvider {
   scoped_refptr<mojo::ThreadSafeAssociatedInterfacePtr<Interface>>
   CreateInterfacePtr() {
     scoped_refptr<mojo::ThreadSafeAssociatedInterfacePtr<Interface>> ptr =
-        mojo::ThreadSafeAssociatedInterfacePtr<Interface>::CreateUnbound();
+        mojo::ThreadSafeAssociatedInterfacePtr<Interface>::CreateUnbound(
+            channel_proxy_->ipc_task_runner());
     channel_proxy_->RetrieveAssociatedInterfaceOnIOThread<Interface>(base::Bind(
         &ThreadSafeAssociatedInterfacePtrProvider::BindInterfacePtr<Interface>,
         ptr));

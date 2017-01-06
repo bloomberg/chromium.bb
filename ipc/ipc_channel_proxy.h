@@ -242,6 +242,10 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
                               context_, callback));
   }
 
+  base::SingleThreadTaskRunner* ipc_task_runner() const {
+    return context_->ipc_task_runner();
+  }
+
   // Called to clear the pointer to the IPC task runner when it's going away.
   void ClearIPCTaskRunner();
 
