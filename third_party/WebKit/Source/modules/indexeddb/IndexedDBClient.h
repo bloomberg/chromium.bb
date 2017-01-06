@@ -49,7 +49,8 @@ class MODULES_EXPORT IndexedDBClient
   WTF_MAKE_NONCOPYABLE(IndexedDBClient);
 
  public:
-  IndexedDBClient();
+  explicit IndexedDBClient(LocalFrame&);
+  explicit IndexedDBClient(WorkerClients&);
   virtual ~IndexedDBClient() {}
 
   DECLARE_VIRTUAL_TRACE();

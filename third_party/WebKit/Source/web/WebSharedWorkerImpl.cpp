@@ -386,7 +386,8 @@ void WebSharedWorkerImpl::onScriptLoaderFinished() {
       workerClients,
       WTF::wrapUnique(
           m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
-  provideIndexedDBClientToWorker(workerClients, IndexedDBClientImpl::create());
+  provideIndexedDBClientToWorker(workerClients,
+                                 IndexedDBClientImpl::create(*workerClients));
   ContentSecurityPolicy* contentSecurityPolicy =
       m_mainScriptLoader->releaseContentSecurityPolicy();
   WorkerThreadStartMode startMode =

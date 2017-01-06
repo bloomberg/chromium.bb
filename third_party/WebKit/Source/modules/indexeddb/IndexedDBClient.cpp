@@ -12,7 +12,11 @@
 
 namespace blink {
 
-IndexedDBClient::IndexedDBClient() {}
+IndexedDBClient::IndexedDBClient(LocalFrame& frame)
+    : Supplement<LocalFrame>(frame) {}
+
+IndexedDBClient::IndexedDBClient(WorkerClients& clients)
+    : Supplement<WorkerClients>(clients) {}
 
 IndexedDBClient* IndexedDBClient::from(ExecutionContext* context) {
   if (context->isDocument())
@@ -35,7 +39,8 @@ DEFINE_TRACE(IndexedDBClient) {
 }
 
 void provideIndexedDBClientTo(LocalFrame& frame, IndexedDBClient* client) {
-  frame.provideSupplement(IndexedDBClient::supplementName(), client);
+  Supplement<LocalFrame>::provideTo(frame, IndexedDBClient::supplementName(),
+                                    client);
 }
 
 void provideIndexedDBClientToWorker(WorkerClients* clients,

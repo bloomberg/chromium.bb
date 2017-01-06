@@ -18,7 +18,7 @@ class AudioOutputDeviceClientImpl
   WTF_MAKE_NONCOPYABLE(AudioOutputDeviceClientImpl);
 
  public:
-  static AudioOutputDeviceClientImpl* create();
+  explicit AudioOutputDeviceClientImpl(LocalFrame&);
 
   ~AudioOutputDeviceClientImpl() override;
 

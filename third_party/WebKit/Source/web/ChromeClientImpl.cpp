@@ -1142,7 +1142,7 @@ void ChromeClientImpl::installSupplements(LocalFrame& frame) {
   providePushControllerTo(frame, client->pushClient());
   provideUserMediaTo(frame,
                      UserMediaClientImpl::create(client->userMediaClient()));
-  provideIndexedDBClientTo(frame, IndexedDBClientImpl::create());
+  provideIndexedDBClientTo(frame, IndexedDBClientImpl::create(frame));
   provideLocalFileSystemTo(frame, LocalFileSystemClient::create());
   provideNavigatorContentUtilsTo(
       frame, NavigatorContentUtilsClientImpl::create(webFrame));
@@ -1151,9 +1151,10 @@ void ChromeClientImpl::installSupplements(LocalFrame& frame) {
       frame, client->webScreenOrientationClient());
   if (RuntimeEnabledFeatures::presentationEnabled())
     PresentationController::provideTo(frame, client->presentationClient());
-  if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
+  if (RuntimeEnabledFeatures::audioOutputDevicesEnabled()) {
     provideAudioOutputDeviceClientTo(frame,
-                                     AudioOutputDeviceClientImpl::create());
+                                     new AudioOutputDeviceClientImpl(frame));
+  }
   if (RuntimeEnabledFeatures::installedAppEnabled())
     InstalledAppController::provideTo(frame, client->installedAppClient());
 }

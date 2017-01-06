@@ -56,7 +56,7 @@ DedicatedWorkerMessagingProxyProviderImpl::createWorkerMessagingProxy(
         WebLocalFrameImpl::fromFrame(document->frame());
     WorkerClients* workerClients = WorkerClients::create();
     provideIndexedDBClientToWorker(workerClients,
-                                   IndexedDBClientImpl::create());
+                                   IndexedDBClientImpl::create(*workerClients));
     provideLocalFileSystemToWorker(workerClients,
                                    LocalFileSystemClient::create());
     provideContentSettingsClientToWorker(

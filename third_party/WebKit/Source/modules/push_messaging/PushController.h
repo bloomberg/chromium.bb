@@ -21,7 +21,8 @@ class PushController final : public GarbageCollected<PushController>,
   WTF_MAKE_NONCOPYABLE(PushController);
 
  public:
-  static PushController* create(WebPushClient*);
+  PushController(LocalFrame&, WebPushClient*);
+
   static const char* supplementName();
   static PushController* from(LocalFrame* frame) {
     return static_cast<PushController*>(
@@ -32,8 +33,6 @@ class PushController final : public GarbageCollected<PushController>,
   DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<LocalFrame>::trace(visitor); }
 
  private:
-  explicit PushController(WebPushClient*);
-
   WebPushClient* client() const { return m_client; }
 
   WebPushClient* m_client;

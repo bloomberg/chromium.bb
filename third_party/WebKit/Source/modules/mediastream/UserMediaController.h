@@ -40,8 +40,7 @@ class UserMediaController final
   USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
 
  public:
-  static UserMediaController* create(std::unique_ptr<UserMediaClient>);
-
+  UserMediaController(LocalFrame&, std::unique_ptr<UserMediaClient>);
   DECLARE_VIRTUAL_TRACE();
 
   UserMediaClient* client() const { return m_client.get(); }
@@ -58,8 +57,6 @@ class UserMediaController final
   }
 
  private:
-  explicit UserMediaController(std::unique_ptr<UserMediaClient>);
-
   std::unique_ptr<UserMediaClient> m_client;
 };
 

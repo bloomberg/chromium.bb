@@ -33,7 +33,9 @@ InstalledAppController* InstalledAppController::from(LocalFrame& frame) {
 
 InstalledAppController::InstalledAppController(LocalFrame& frame,
                                                WebInstalledAppClient* client)
-    : ContextLifecycleObserver(frame.document()), m_client(client) {}
+    : Supplement<LocalFrame>(frame),
+      ContextLifecycleObserver(frame.document()),
+      m_client(client) {}
 
 const char* InstalledAppController::supplementName() {
   return "InstalledAppController";

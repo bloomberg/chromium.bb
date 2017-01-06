@@ -10,6 +10,9 @@
 
 namespace blink {
 
+AudioOutputDeviceClient::AudioOutputDeviceClient(LocalFrame& frame)
+    : Supplement<LocalFrame>(frame) {}
+
 const char* AudioOutputDeviceClient::supplementName() {
   return "AudioOutputDeviceClient";
 }
@@ -29,7 +32,8 @@ AudioOutputDeviceClient* AudioOutputDeviceClient::from(
 
 void provideAudioOutputDeviceClientTo(LocalFrame& frame,
                                       AudioOutputDeviceClient* client) {
-  frame.provideSupplement(AudioOutputDeviceClient::supplementName(), client);
+  Supplement<LocalFrame>::provideTo(
+      frame, AudioOutputDeviceClient::supplementName(), client);
 }
 
 DEFINE_TRACE(AudioOutputDeviceClient) {

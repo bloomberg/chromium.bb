@@ -9,11 +9,8 @@
 
 namespace blink {
 
-PushController::PushController(WebPushClient* client) : m_client(client) {}
-
-PushController* PushController::create(WebPushClient* client) {
-  return new PushController(client);
-}
+PushController::PushController(LocalFrame& frame, WebPushClient* client)
+    : Supplement<LocalFrame>(frame), m_client(client) {}
 
 WebPushClient& PushController::clientFrom(LocalFrame* frame) {
   PushController* controller = PushController::from(frame);
@@ -29,7 +26,7 @@ const char* PushController::supplementName() {
 
 void providePushControllerTo(LocalFrame& frame, WebPushClient* client) {
   PushController::provideTo(frame, PushController::supplementName(),
-                            PushController::create(client));
+                            new PushController(frame, client));
 }
 
 }  // namespace blink

@@ -15,7 +15,9 @@ namespace blink {
 
 PresentationController::PresentationController(LocalFrame& frame,
                                                WebPresentationClient* client)
-    : ContextLifecycleObserver(frame.document()), m_client(client) {
+    : Supplement<LocalFrame>(frame),
+      ContextLifecycleObserver(frame.document()),
+      m_client(client) {
   if (m_client)
     m_client->setController(this);
 }

@@ -72,11 +72,6 @@ class CallbackWrapper final
   std::unique_ptr<AsyncFileSystemCallbacks> m_callbacks;
 };
 
-LocalFileSystem* LocalFileSystem::create(
-    std::unique_ptr<FileSystemClient> client) {
-  return new LocalFileSystem(std::move(client));
-}
-
 LocalFileSystem::~LocalFileSystem() {}
 
 void LocalFileSystem::resolveURL(
@@ -214,8 +209,13 @@ void LocalFileSystem::deleteFileSystemInternal(ExecutionContext* context,
                                callbacks->release());
 }
 
-LocalFileSystem::LocalFileSystem(std::unique_ptr<FileSystemClient> client)
-    : m_client(std::move(client)) {}
+LocalFileSystem::LocalFileSystem(LocalFrame& frame,
+                                 std::unique_ptr<FileSystemClient> client)
+    : Supplement<LocalFrame>(frame), m_client(std::move(client)) {}
+
+LocalFileSystem::LocalFileSystem(WorkerClients& workerClients,
+                                 std::unique_ptr<FileSystemClient> client)
+    : Supplement<WorkerClients>(workerClients), m_client(std::move(client)) {}
 
 DEFINE_TRACE(LocalFileSystem) {
   Supplement<LocalFrame>::trace(visitor);
@@ -227,26 +227,33 @@ const char* LocalFileSystem::supplementName() {
 }
 
 LocalFileSystem* LocalFileSystem::from(ExecutionContext& context) {
-  if (context.isDocument())
-    return static_cast<LocalFileSystem*>(Supplement<LocalFrame>::from(
-        toDocument(context).frame(), supplementName()));
+  if (context.isDocument()) {
+    LocalFileSystem* fileSystem =
+        static_cast<LocalFileSystem*>(Supplement<LocalFrame>::from(
+            toDocument(context).frame(), supplementName()));
+    DCHECK(fileSystem);
+    return fileSystem;
+  }
 
   WorkerClients* clients = toWorkerGlobalScope(context).clients();
   ASSERT(clients);
-  return static_cast<LocalFileSystem*>(
+  LocalFileSystem* fileSystem = static_cast<LocalFileSystem*>(
       Supplement<WorkerClients>::from(clients, supplementName()));
+  DCHECK(fileSystem);
+  return fileSystem;
 }
 
 void provideLocalFileSystemTo(LocalFrame& frame,
                               std::unique_ptr<FileSystemClient> client) {
   frame.provideSupplement(LocalFileSystem::supplementName(),
-                          LocalFileSystem::create(std::move(client)));
+                          new LocalFileSystem(frame, std::move(client)));
 }
 
-void provideLocalFileSystemToWorker(WorkerClients* clients,
+void provideLocalFileSystemToWorker(WorkerClients* workerClients,
                                     std::unique_ptr<FileSystemClient> client) {
-  clients->provideSupplement(LocalFileSystem::supplementName(),
-                             LocalFileSystem::create(std::move(client)));
+  Supplement<WorkerClients>::provideTo(
+      *workerClients, LocalFileSystem::supplementName(),
+      new LocalFileSystem(*workerClients, std::move(client)));
 }
 
 }  // namespace blink

@@ -425,7 +425,8 @@ void WebEmbeddedWorkerImpl::startWorkerThread() {
   WorkerClients* workerClients = WorkerClients::create();
   provideContentSettingsClientToWorker(workerClients,
                                        std::move(m_contentSettingsClient));
-  provideIndexedDBClientToWorker(workerClients, IndexedDBClientImpl::create());
+  provideIndexedDBClientToWorker(workerClients,
+                                 IndexedDBClientImpl::create(*workerClients));
   provideServiceWorkerGlobalScopeClientToWorker(
       workerClients,
       ServiceWorkerGlobalScopeClientImpl::create(*m_workerContextClient));

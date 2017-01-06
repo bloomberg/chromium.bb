@@ -12,11 +12,8 @@
 
 namespace blink {
 
-AudioOutputDeviceClientImpl* AudioOutputDeviceClientImpl::create() {
-  return new AudioOutputDeviceClientImpl();
-}
-
-AudioOutputDeviceClientImpl::AudioOutputDeviceClientImpl() {}
+AudioOutputDeviceClientImpl::AudioOutputDeviceClientImpl(LocalFrame& frame)
+    : AudioOutputDeviceClient(frame) {}
 
 AudioOutputDeviceClientImpl::~AudioOutputDeviceClientImpl() {}
 

@@ -56,7 +56,8 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
   WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 
  public:
-  static LocalFileSystem* create(std::unique_ptr<FileSystemClient>);
+  LocalFileSystem(LocalFrame&, std::unique_ptr<FileSystemClient>);
+  LocalFileSystem(WorkerClients&, std::unique_ptr<FileSystemClient>);
   ~LocalFileSystem();
 
   void resolveURL(ExecutionContext*,
@@ -78,8 +79,6 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit LocalFileSystem(std::unique_ptr<FileSystemClient>);
-
   WebFileSystem* getFileSystem() const;
   void fileSystemNotAvailable(ExecutionContext*, CallbackWrapper*);
 

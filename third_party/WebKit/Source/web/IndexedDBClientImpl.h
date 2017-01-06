@@ -42,12 +42,14 @@ class ExecutionContext;
 // for the main thread.
 class IndexedDBClientImpl final : public IndexedDBClient {
  public:
-  static IndexedDBClient* create();
+  static IndexedDBClient* create(LocalFrame&);
+  static IndexedDBClient* create(WorkerClients&);
 
   bool allowIndexedDB(ExecutionContext*, const String& name) override;
 
  private:
-  IndexedDBClientImpl() {}
+  explicit IndexedDBClientImpl(LocalFrame&);
+  explicit IndexedDBClientImpl(WorkerClients&);
 };
 
 }  // namespace blink

@@ -62,7 +62,8 @@ DEFINE_TRACE(ScreenWakeLock) {
 }
 
 ScreenWakeLock::ScreenWakeLock(LocalFrame& frame)
-    : ContextLifecycleObserver(frame.document()),
+    : Supplement<LocalFrame>(frame),
+      ContextLifecycleObserver(frame.document()),
       PageVisibilityObserver(frame.page()),
       m_keepAwake(false) {
   DCHECK(!m_service.is_bound());
