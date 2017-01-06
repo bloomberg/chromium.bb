@@ -288,16 +288,23 @@ void AppListButton::SetDrawBackgroundAsActive(bool draw_background_as_active) {
 }
 
 gfx::Point AppListButton::GetCenterPoint() const {
-  // During shelf hide/show animations, width and height may not be equal. Take
-  // the greater of the two as the one that represents the normal size of the
-  // button.
-  int center = std::max(width(), height()) / 2.f;
-  gfx::Point centroid(center, center);
-  // For the left shelf alignment, we need to right-justify. For other shelf
-  // alignments, left/top justification (i.e. no adjustments are necessary).
-  if (SHELF_ALIGNMENT_LEFT == wm_shelf_->GetAlignment())
-    centroid.set_x(width() - center);
-  return centroid;
+  // For a bottom-aligned shelf, the button bounds could have a larger height
+  // than width (in the case of touch-dragging the shelf updwards) or a larger
+  // width than height (in the case of a shelf hide/show animation), so adjust
+  // the y-position of the circle's center to ensure correct layout. Similarly
+  // adjust the x-position for a left- or right-aligned shelf.
+  const int x_mid = width() / 2.f;
+  const int y_mid = height() / 2.f;
+  ShelfAlignment alignment = wm_shelf_->GetAlignment();
+  if (alignment == SHELF_ALIGNMENT_BOTTOM ||
+      alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+    return gfx::Point(x_mid, x_mid);
+  } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
+    return gfx::Point(y_mid, y_mid);
+  } else {
+    DCHECK_EQ(alignment, SHELF_ALIGNMENT_LEFT);
+    return gfx::Point(width() - y_mid, y_mid);
+  }
 }
 
 }  // namespace ash

@@ -172,18 +172,17 @@ int OverflowButton::NonMaterialBackgroundImageId() const {
 gfx::Rect OverflowButton::CalculateButtonBounds() const {
   ShelfAlignment alignment = wm_shelf_->GetAlignment();
   gfx::Rect bounds(GetContentsBounds());
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (MaterialDesignController::IsShelfMaterial()) {
-    const int width_offset = (bounds.width() - kOverflowButtonSize) / 2;
-    const int height_offset = (bounds.height() - kOverflowButtonSize) / 2;
-    if (IsHorizontalAlignment(alignment)) {
-      bounds = gfx::Rect(bounds.x() + width_offset, bounds.y() + height_offset,
-                         kOverflowButtonSize, kOverflowButtonSize);
-    } else {
-      bounds = gfx::Rect(bounds.x() + height_offset, bounds.y() + width_offset,
-                         kOverflowButtonSize, kOverflowButtonSize);
-    }
+    // Align the button to the top of a bottom-aligned shelf, to the right edge
+    // a left-aligned shelf, and to the left edge of a right-aligned shelf.
+    const int inset = (GetShelfConstant(SHELF_SIZE) - kOverflowButtonSize) / 2;
+    const int x = alignment == SHELF_ALIGNMENT_LEFT
+                      ? bounds.right() - inset - kOverflowButtonSize
+                      : bounds.x() + inset;
+    bounds = gfx::Rect(x, bounds.y() + inset, kOverflowButtonSize,
+                       kOverflowButtonSize);
   } else {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::ImageSkia* background =
         rb.GetImageNamed(NonMaterialBackgroundImageId()).ToImageSkia();
     if (alignment == SHELF_ALIGNMENT_LEFT) {
