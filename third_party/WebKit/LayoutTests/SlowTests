@@ -392,3 +392,13 @@ crbug.com/660492 [ Linux ] storage/indexeddb/structured-clone.html [ Slow ]
 crbug.com/671158 [ Linux ] imported/wpt/encoding/textdecoder-labels.html [ Slow ]
 crbug.com/671158 [ Linux ] http/tests/streams/writable-streams/write.https.html [ Slow ]
 crbug.com/671158 [ Linux ] virtual/mojo-loading/http/tests/streams/writable-streams/write.https.html [ Slow ]
+
+# Usually plenty fast, but sometimes very slow on windows.
+crbug.com/678498 [ Win ] http/tests/serviceworker/foreign-fetch-cors.html [ Slow ]
+crbug.com/678498 [ Win ] virtual/disable-mojo-service-worker/http/tests/serviceworker/foreign-fetch-cors.html [ Slow ]
+crbug.com/678498 [ Win ] virtual/mojo-loading/http/tests/serviceworker/foreign-fetch-cors.html [ Slow ]
+crbug.com/678498 [ Win ] virtual/service-worker-navigation-preload/http/tests/serviceworker/foreign-fetch-cors.html [ Slow ]
+crbug.com/678496 [ Win ] http/tests/serviceworker/foreign-fetch-basics.html [ Slow ]
+crbug.com/678496 [ Win ] virtual/disable-mojo-service-worker/http/tests/serviceworker/foreign-fetch-basics.html [ Slow ]
+crbug.com/678496 [ Win ] virtual/mojo-loading/http/tests/serviceworker/foreign-fetch-basics.html [ Slow ]
+crbug.com/678496 [ Win ] virtual/service-worker-navigation-preload/http/tests/serviceworker/foreign-fetch-basics.html [ Slow ]
