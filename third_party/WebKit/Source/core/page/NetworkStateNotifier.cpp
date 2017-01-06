@@ -96,7 +96,7 @@ void NetworkStateNotifier::addObserver(NetworkStateObserver* observer,
     result.storedValue->value = WTF::wrapUnique(new ObserverList);
 
   ASSERT(result.storedValue->value->observers.find(observer) == kNotFound);
-  result.storedValue->value->observers.append(observer);
+  result.storedValue->value->observers.push_back(observer);
 }
 
 void NetworkStateNotifier::removeObserver(NetworkStateObserver* observer,
@@ -112,7 +112,7 @@ void NetworkStateNotifier::removeObserver(NetworkStateObserver* observer,
   size_t index = observers.find(observer);
   if (index != kNotFound) {
     observers[index] = 0;
-    observerList->zeroedObservers.append(index);
+    observerList->zeroedObservers.push_back(index);
   }
 
   if (!observerList->iterating && !observerList->zeroedObservers.isEmpty())

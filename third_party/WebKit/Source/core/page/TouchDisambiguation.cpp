@@ -156,8 +156,8 @@ void findGoodTouchTargets(const IntRect& touchBoxInRootFrame,
     // avoid excessive popups.
     if (touchTarget.value.score < bestScore * 0.5)
       continue;
-    goodTargets.append(touchTarget.value.windowBoundingBox);
-    highlightNodes.append(touchTarget.key);
+    goodTargets.push_back(touchTarget.value.windowBoundingBox);
+    highlightNodes.push_back(touchTarget.key);
   }
 }
 

@@ -82,7 +82,7 @@ void Page::networkStateChanged(bool online) {
       // FIXME: There is currently no way to dispatch events to out-of-process
       // frames.
       if (frame->isLocalFrame())
-        frames.append(toLocalFrame(frame));
+        frames.push_back(toLocalFrame(frame));
     }
   }
 
@@ -485,7 +485,7 @@ void Page::acceptLanguagesChanged() {
   for (Frame* frame = mainFrame(); frame;
        frame = frame->tree().traverseNext()) {
     if (frame->isLocalFrame())
-      frames.append(toLocalFrame(frame));
+      frames.push_back(toLocalFrame(frame));
   }
 
   for (unsigned i = 0; i < frames.size(); ++i)

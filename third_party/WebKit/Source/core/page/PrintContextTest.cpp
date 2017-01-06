@@ -54,11 +54,11 @@ class MockCanvas : public SkCanvas {
       SkPoint point = getTotalMatrix().mapXY(rect.x(), rect.y());
       Operation operation = {DrawPoint,
                              SkRect::MakeXYWH(point.x(), point.y(), 0, 0)};
-      m_recordedOperations.append(operation);
+      m_recordedOperations.push_back(operation);
     } else {
       Operation operation = {DrawRect, rect};
       getTotalMatrix().mapRect(&operation.rect);
-      m_recordedOperations.append(operation);
+      m_recordedOperations.push_back(operation);
     }
   }
 

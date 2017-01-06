@@ -153,7 +153,7 @@ static inline void appendQuadsToSubtargetList(
   Vector<FloatQuad>::const_iterator it = quads.begin();
   const Vector<FloatQuad>::const_iterator end = quads.end();
   for (; it != end; ++it)
-    subtargets.append(SubtargetGeometry(node, *it));
+    subtargets.push_back(SubtargetGeometry(node, *it));
 }
 
 static inline void appendBasicSubtargetsForNode(
@@ -240,16 +240,16 @@ static inline void appendZoomableSubtargets(Node* node,
   Vector<FloatQuad> quads;
   FloatRect borderBoxRect(layoutObject->borderBoxRect());
   FloatRect contentBoxRect(layoutObject->contentBoxRect());
-  quads.append(layoutObject->localToAbsoluteQuad(borderBoxRect));
+  quads.push_back(layoutObject->localToAbsoluteQuad(borderBoxRect));
   if (borderBoxRect != contentBoxRect)
-    quads.append(layoutObject->localToAbsoluteQuad(contentBoxRect));
+    quads.push_back(layoutObject->localToAbsoluteQuad(contentBoxRect));
   // FIXME: For LayoutBlocks, add column boxes and content boxes cleared for
   // floats.
 
   Vector<FloatQuad>::const_iterator it = quads.begin();
   const Vector<FloatQuad>::const_iterator end = quads.end();
   for (; it != end; ++it)
-    subtargets.append(SubtargetGeometry(node, *it));
+    subtargets.push_back(SubtargetGeometry(node, *it));
 }
 
 static inline Node* parentShadowHostOrOwner(const Node* node) {
@@ -285,7 +285,7 @@ void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes,
       respondingNode = responderMap.get(visitedNode);
       if (respondingNode)
         break;
-      visitedNodes.append(visitedNode);
+      visitedNodes.push_back(visitedNode);
       // Check if the node filter applies, which would mean we have found a
       // responding node.
       if (nodeFilter(visitedNode)) {
@@ -307,7 +307,7 @@ void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes,
       responderMap.add(visitedNodes[j], respondingNode);
 
     if (respondingNode)
-      candidates.append(node);
+      candidates.push_back(node);
   }
 
   // We compile the list of component absolute quads instead of using the

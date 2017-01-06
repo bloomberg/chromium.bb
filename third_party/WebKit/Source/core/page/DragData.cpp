@@ -81,7 +81,7 @@ void DragData::asFilePaths(Vector<String>& result) const {
   const Vector<String>& filenames = m_platformDragData->filenames();
   for (size_t i = 0; i < filenames.size(); ++i) {
     if (!filenames[i].isEmpty())
-      result.append(filenames[i]);
+      result.push_back(filenames[i]);
   }
 }
 

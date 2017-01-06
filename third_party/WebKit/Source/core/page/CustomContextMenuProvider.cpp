@@ -73,7 +73,7 @@ void CustomContextMenuProvider::appendMenuItem(HTMLMenuItemElement* menuItem,
   if (labelString.isEmpty())
     return;
 
-  m_menuItems.append(menuItem);
+  m_menuItems.push_back(menuItem);
 
   bool enabled = !menuItem->fastHasAttribute(disabledAttr);
   String icon = menuItem->fastGetAttribute(iconAttr);

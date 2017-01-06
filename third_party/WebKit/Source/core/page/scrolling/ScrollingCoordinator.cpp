@@ -521,9 +521,9 @@ static void makeLayerChildFrameMap(const LocalFrame* currentFrame,
     LayerFrameMap::iterator iter = map->find(containingLayer);
     if (iter == map->end())
       map->add(containingLayer, HeapVector<Member<const LocalFrame>>())
-          .storedValue->value.append(toLocalFrame(child));
+          .storedValue->value.push_back(toLocalFrame(child));
     else
-      iter->value.append(toLocalFrame(child));
+      iter->value.push_back(toLocalFrame(child));
   }
 }
 

@@ -37,7 +37,7 @@ void PageAnimator::serviceScriptedAnimations(
   for (Frame* frame = m_page->mainFrame(); frame;
        frame = frame->tree().traverseNext()) {
     if (frame->isLocalFrame())
-      documents.append(toLocalFrame(frame)->document());
+      documents.push_back(toLocalFrame(frame)->document());
   }
 
   for (auto& document : documents) {

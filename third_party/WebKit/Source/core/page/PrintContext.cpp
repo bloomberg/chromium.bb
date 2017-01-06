@@ -159,7 +159,7 @@ void PrintContext::computePageRectsWithPageSizeInternal(
                      pageLogicalHeight);
     if (!isHorizontal)
       pageRect = pageRect.transposedRect();
-    m_pageRects.append(pageRect);
+    m_pageRects.push_back(pageRect);
   }
 }
 

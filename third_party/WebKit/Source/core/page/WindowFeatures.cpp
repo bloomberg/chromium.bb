@@ -169,7 +169,7 @@ void WindowFeatures::setWindowFeature(const String& keyString,
   } else if (keyString == "noopener") {
     noopener = true;
   } else if (value == 1) {
-    additionalFeatures.append(keyString);
+    additionalFeatures.push_back(keyString);
   }
 }
 
