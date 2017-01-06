@@ -191,6 +191,19 @@ void FakeAppInstance::SendPackageUninstalled(const std::string& package_name) {
   app_host_->OnPackageRemoved(package_name);
 }
 
+void FakeAppInstance::SendInstallationStarted(const std::string& package_name) {
+  app_host_->OnInstallationStarted(package_name);
+}
+
+void FakeAppInstance::SendInstallationFinished(const std::string& package_name,
+                                               bool success) {
+  mojom::InstallationResult result;
+  result.package_name = package_name;
+  result.success = success;
+  app_host_->OnInstallationFinished(
+      mojom::InstallationResultPtr(result.Clone()));
+}
+
 void FakeAppInstance::CanHandleResolution(
     const std::string& package_name,
     const std::string& activity,

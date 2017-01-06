@@ -201,6 +201,15 @@ void ArcDefaultAppList::MaybeMarkPackageUninstalled(
   it->second = uninstalled;
 }
 
+std::unordered_set<std::string> ArcDefaultAppList::GetActivePackages() const {
+  std::unordered_set<std::string> result;
+  for (const auto& package_info : packages_) {
+    if (!package_info.second)
+      result.insert(package_info.first);
+  }
+  return result;
+}
+
 ArcDefaultAppList::AppInfo::AppInfo(const std::string& name,
                                     const std::string& package_name,
                                     const std::string& activity,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 17
+// Next MinVersion: 18
 
 module arc.mojom;
 
@@ -29,6 +29,12 @@ enum OrientationLock {
   PORTRAIT_SECONDARY = 6,
   // Rotated 180 deg.
   LANDSCAPE_SECONDARY = 7,
+};
+
+// Describes installation result.
+struct InstallationResult {
+  string package_name;
+  bool success;  // true if app was installed successfully.
 };
 
 // Describes ARC app.
@@ -129,11 +135,15 @@ interface AppHost {
   // Notifies that an application shortcut needs to be created.
   [MinVersion=9] OnInstallShortcut@11(ShortcutInfo shortcut);
 
-  // Notifies that Play Store installation has been started.
-  [MinVersion=16] OnInstallationStarted@14();
+  // Notifies that Play Store installation has been started. |package_name|
+  // specifies installation package
+  [MinVersion=16] OnInstallationStarted@14(
+      [MinVersion=17] string? package_name@0);
 
-  // Notifies that Play Store installation is finished.
-  [MinVersion=16] OnInstallationFinished@15();
+  // Notifies that Play Store installation is finished. |result| contains
+  // details of installation result.
+  [MinVersion=16] OnInstallationFinished@15(
+      [MinVersion=17] InstallationResult? result@1);
 
   // Notifies that task requested orientation lock.
   [MinVersion=12] OnTaskOrientationLockRequested@12(int32 task_id,

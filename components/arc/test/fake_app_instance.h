@@ -135,6 +135,10 @@ class FakeAppInstance : public mojom::AppInstance {
   void SendPackageAdded(const mojom::ArcPackageInfo& package);
   void SendPackageUninstalled(const std::string& pacakge_name);
 
+  void SendInstallationStarted(const std::string& package_name);
+  void SendInstallationFinished(const std::string& package_name,
+                                bool success);
+
   int refresh_app_list_count() const { return refresh_app_list_count_; }
 
   const std::vector<std::unique_ptr<Request>>& launch_requests() const {

@@ -1288,6 +1288,65 @@ TEST_F(ArcDefaulAppTest, DefaultApps) {
   }
 }
 
+TEST_F(ArcDefaulAppTest, DefaultAppsNotAvailable) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  ValidateHaveApps(fake_default_apps());
+
+  const std::vector<arc::mojom::AppInfo> empty_app_list;
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(empty_app_list);
+
+  ValidateHaveApps(fake_default_apps());
+
+  prefs->SimulateDefaultAppAvailabilityTimeoutForTesting();
+
+  // No default app installation and already installed packages.
+  ValidateHaveApps(empty_app_list);
+}
+
+TEST_F(ArcDefaulAppTest, DefaultAppsInstallation) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  const std::vector<arc::mojom::AppInfo> empty_app_list;
+
+  ValidateHaveApps(fake_default_apps());
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(empty_app_list);
+
+  ValidateHaveApps(fake_default_apps());
+
+  // Notify that default installations have been started.
+  for (const auto& fake_app : fake_default_apps())
+    app_instance()->SendInstallationStarted(fake_app.package_name);
+
+  // Timeout does not affect default app availability because all installations
+  // for default apps have been started.
+  prefs->SimulateDefaultAppAvailabilityTimeoutForTesting();
+  ValidateHaveApps(fake_default_apps());
+
+  const arc::mojom::AppInfo& app_last = fake_default_apps().back();
+  std::vector<arc::mojom::AppInfo> available_apps = fake_default_apps();
+  available_apps.pop_back();
+
+  for (const auto& fake_app : available_apps)
+    app_instance()->SendInstallationFinished(fake_app.package_name, true);
+
+  // So far we have all default apps available because not all installations
+  // completed.
+  ValidateHaveApps(fake_default_apps());
+
+  // Last default app installation failed.
+  app_instance()->SendInstallationFinished(app_last.package_name, false);
+
+  // We should have all default apps except last.
+  ValidateHaveApps(available_apps);
+}
+
 TEST_F(ArcDefaulAppForManagedUserTest, DefaultAppsForManagedUser) {
   const ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);

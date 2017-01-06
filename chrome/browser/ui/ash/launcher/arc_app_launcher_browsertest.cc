@@ -227,13 +227,17 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
     app_host()->OnPackageRemoved(package_name);
   }
 
-  void SendInstallationStarted() {
-    app_host()->OnInstallationStarted();
+  void SendInstallationStarted(const std::string& package_name) {
+    app_host()->OnInstallationStarted(package_name);
     base::RunLoop().RunUntilIdle();
   }
 
-  void SendInstallationFinished() {
-    app_host()->OnInstallationFinished();
+  void SendInstallationFinished(const std::string& package_name, bool success) {
+    arc::mojom::InstallationResult result;
+    result.package_name = package_name;
+    result.success = success;
+    app_host()->OnInstallationFinished(
+        arc::mojom::InstallationResultPtr(result.Clone()));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -417,11 +421,11 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, AppListShown) {
 
   EXPECT_FALSE(app_list_service->IsAppListVisible());
 
-  SendInstallationStarted();
-  SendInstallationStarted();
+  SendInstallationStarted(kTestAppPackage);
+  SendInstallationStarted(kTestAppPackage2);
 
   // New package is available. Show app list.
-  SendInstallationFinished();
+  SendInstallationFinished(kTestAppPackage, true);
   InstallTestApps(kTestAppPackage, false);
   SendPackageAdded(kTestAppPackage, true);
   EXPECT_TRUE(app_list_service->IsAppListVisible());
@@ -435,14 +439,14 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, AppListShown) {
 
   // Install next package from batch. Next new package is available.
   // Don't show app list.
-  SendInstallationFinished();
+  SendInstallationFinished(kTestAppPackage2, true);
   InstallTestApps(kTestAppPackage2, false);
   SendPackageAdded(kTestAppPackage2, true);
   EXPECT_FALSE(app_list_service->IsAppListVisible());
 
   // Run next installation batch. App list should be shown again.
-  SendInstallationStarted();
-  SendInstallationFinished();
+  SendInstallationStarted(kTestAppPackage3);
+  SendInstallationFinished(kTestAppPackage3, true);
   InstallTestApps(kTestAppPackage3, false);
   SendPackageAdded(kTestAppPackage3, true);
   EXPECT_TRUE(app_list_service->IsAppListVisible());

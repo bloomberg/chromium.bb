@@ -50,6 +50,9 @@ const char kShouldSync[] = "should_sync";
 const char kSystem[] = "system";
 const char kUninstalled[] = "uninstalled";
 
+constexpr base::TimeDelta kDetectDefaultAppAvailabilityTimeout =
+    base::TimeDelta::FromSeconds(15);
+
 // Provider of write access to a dictionary storing ARC prefs.
 class ScopedArcPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -397,6 +400,10 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
       !packages->GetDictionaryWithoutPathExpansion(package_name, &package))
     return std::unique_ptr<PackageInfo>();
 
+  bool uninstalled = false;
+  if (package->GetBoolean(kUninstalled, &uninstalled) && uninstalled)
+    return nullptr;
+
   int32_t package_version = 0;
   int64_t last_backup_android_id = 0;
   int64_t last_backup_time = 0;
@@ -657,6 +664,13 @@ void ArcAppListPrefs::SetDefaltAppsReadyCallback(base::Closure callback) {
     default_apps_ready_callback_.Run();
 }
 
+void ArcAppListPrefs::SimulateDefaultAppAvailabilityTimeoutForTesting() {
+  if (!detect_default_app_availability_timeout_.IsRunning())
+    return;
+  detect_default_app_availability_timeout_.Stop();
+  DetectDefaultAppAvailability();
+}
+
 void ArcAppListPrefs::OnInstanceReady() {
   // Init() is also available at version 0.
   arc::mojom::AppInstance* app_instance =
@@ -678,6 +692,8 @@ void ArcAppListPrefs::OnInstanceReady() {
 void ArcAppListPrefs::OnInstanceClosed() {
   DisableAllApps();
   installing_packages_count_ = 0;
+  default_apps_installations_.clear();
+  detect_default_app_availability_timeout_.Stop();
   binding_.Close();
 
   if (sync_service_) {
@@ -905,7 +921,28 @@ void ArcAppListPrefs::OnAppListRefreshed(
 
   if (!is_initialized_) {
     is_initialized_ = true;
+    MaybeSetDefaultAppLoadingTimeout();
     UMA_HISTOGRAM_COUNTS_1000("Arc.AppsInstalledAtStartup", ready_apps_.size());
+  }
+}
+
+void ArcAppListPrefs::DetectDefaultAppAvailability() {
+  for (const auto& package : default_apps_.GetActivePackages()) {
+    // Check if already installed or installation in progress.
+    if (!GetPackage(package) && !default_apps_installations_.count(package))
+      HandlePackageRemoved(package);
+  }
+}
+
+void ArcAppListPrefs::MaybeSetDefaultAppLoadingTimeout() {
+  // Find at least one not installed default app package.
+  for (const auto& package : default_apps_.GetActivePackages()) {
+    if (!GetPackage(package)) {
+      detect_default_app_availability_timeout_.Start(FROM_HERE,
+          kDetectDefaultAppAvailabilityTimeout, this,
+          &ArcAppListPrefs::DetectDefaultAppAvailability);
+      break;
+    }
   }
 }
 
@@ -1007,13 +1044,18 @@ std::unordered_set<std::string> ArcAppListPrefs::GetAppsForPackage(
   return app_set;
 }
 
-void ArcAppListPrefs::OnPackageRemoved(const std::string& package_name) {
+void ArcAppListPrefs::HandlePackageRemoved(const std::string& package_name) {
   const std::unordered_set<std::string> apps_to_remove =
       GetAppsForPackage(package_name);
   for (const auto& app_id : apps_to_remove)
     RemoveApp(app_id);
 
   RemovePackageFromPrefs(prefs_, package_name);
+}
+
+void ArcAppListPrefs::OnPackageRemoved(const std::string& package_name) {
+  HandlePackageRemoved(package_name);
+
   for (auto& observer : observer_list_)
     observer.OnPackageRemoved(package_name);
 }
@@ -1252,14 +1294,26 @@ void ArcAppListPrefs::OnIconInstalled(const std::string& app_id,
     observer.OnAppIconUpdated(app_id, scale_factor);
 }
 
-void ArcAppListPrefs::OnInstallationStarted() {
+void ArcAppListPrefs::OnInstallationStarted(
+    const base::Optional<std::string>& package_name) {
   // Start new batch installation group if this is first installation.
   if (!installing_packages_count_)
     ++current_batch_installation_revision_;
   ++installing_packages_count_;
+
+  if (package_name.has_value() && default_apps_.HasPackage(*package_name))
+    default_apps_installations_.insert(*package_name);
 }
 
-void ArcAppListPrefs::OnInstallationFinished() {
+void ArcAppListPrefs::OnInstallationFinished(
+    arc::mojom::InstallationResultPtr result) {
+  if (result && default_apps_.HasPackage(result->package_name)) {
+    default_apps_installations_.erase(result->package_name);
+
+    if (!result->success && !GetPackage(result->package_name))
+      HandlePackageRemoved(result->package_name);
+  }
+
   if (!installing_packages_count_) {
     VLOG(2) << "Received unexpected installation finished event";
     return;

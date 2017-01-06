@@ -19,6 +19,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "components/arc/common/app.mojom.h"
@@ -244,6 +245,7 @@ class ArcAppListPrefs
       const std::string& package_name) const;
 
   void SetDefaltAppsReadyCallback(base::Closure callback);
+  void SimulateDefaultAppAvailabilityTimeoutForTesting();
 
  private:
   friend class ChromeLauncherControllerImplTest;
@@ -288,9 +290,10 @@ class ArcAppListPrefs
   void OnTaskOrientationLockRequested(
       int32_t task_id,
       const arc::mojom::OrientationLock orientation_lock) override;
-
-  void OnInstallationStarted() override;
-  void OnInstallationFinished() override;
+  void OnInstallationStarted(
+      const base::Optional<std::string>& package_name) override;
+  void OnInstallationFinished(
+      arc::mojom::InstallationResultPtr result) override;
 
   void StartPrefs();
 
@@ -356,6 +359,16 @@ class ArcAppListPrefs
   // and it is not scheduled to install by sync.
   bool IsUnknownPackage(const std::string& package_name) const;
 
+  // Detects that default apps either exist or installation session is started.
+  void DetectDefaultAppAvailability();
+
+  // Performs data clean up for removed package.
+  void HandlePackageRemoved(const std::string& package_name);
+
+  // Sets timeout to wait for default app installed or installation started if
+  // some default app is not available yet.
+  void MaybeSetDefaultAppLoadingTimeout();
+
   Profile* const profile_;
 
   // Owned by the BrowserContext.
@@ -384,6 +397,13 @@ class ArcAppListPrefs
   bool apps_restored_ = false;
   // True is Arc package list has been refreshed once.
   bool package_list_initial_refreshed_ = false;
+  // Play Store does not have publicly available observers for default app
+  // installations. This timeout is for validating default app availability.
+  // Default apps should be either already installed or their installations
+  // should be started soon after initial app list refresh.
+  base::OneShotTimer detect_default_app_availability_timeout_;
+  // Set of currently installing default apps_.
+  std::unordered_set<std::string> default_apps_installations_;
 
   arc::ArcPackageSyncableService* sync_service_ = nullptr;
 
