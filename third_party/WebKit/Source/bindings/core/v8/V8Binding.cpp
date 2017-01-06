@@ -869,7 +869,8 @@ bool isValidEnum(const String& value,
                  const String& enumName,
                  ExceptionState& exceptionState) {
   for (size_t i = 0; i < length; ++i) {
-    if (value == validValues[i])
+    // Avoid the strlen inside String::operator== (because of the StringView).
+    if (WTF::equal(value.impl(), validValues[i]))
       return true;
   }
   exceptionState.throwTypeError("The provided value '" + value +

@@ -232,54 +232,34 @@ class WTF_EXPORT AtomicString {
 inline bool operator==(const AtomicString& a, const AtomicString& b) {
   return a.impl() == b.impl();
 }
-WTF_EXPORT bool operator==(const AtomicString&, const LChar*);
-inline bool operator==(const AtomicString& a, const char* b) {
-  return WTF::equal(a.impl(), reinterpret_cast<const LChar*>(b));
-}
-inline bool operator==(const AtomicString& a, const Vector<UChar>& b) {
-  return a.impl() && equal(a.impl(), b.data(), b.size());
-}
 inline bool operator==(const AtomicString& a, const String& b) {
+  // We don't use equalStringView so we get the isAtomic() optimization inside
+  // WTF::equal.
   return equal(a.impl(), b.impl());
-}
-inline bool operator==(const LChar* a, const AtomicString& b) {
-  return b == a;
-}
-inline bool operator==(const char* a, const AtomicString& b) {
-  return b == a;
 }
 inline bool operator==(const String& a, const AtomicString& b) {
-  return equal(a.impl(), b.impl());
+  return b == a;
 }
-inline bool operator==(const Vector<UChar>& a, const AtomicString& b) {
+inline bool operator==(const AtomicString& a, const char* b) {
+  return equalStringView(a, b);
+}
+inline bool operator==(const char* a, const AtomicString& b) {
   return b == a;
 }
 
 inline bool operator!=(const AtomicString& a, const AtomicString& b) {
   return a.impl() != b.impl();
 }
-inline bool operator!=(const AtomicString& a, const LChar* b) {
+inline bool operator!=(const AtomicString& a, const String& b) {
+  return !(a == b);
+}
+inline bool operator!=(const String& a, const AtomicString& b) {
   return !(a == b);
 }
 inline bool operator!=(const AtomicString& a, const char* b) {
   return !(a == b);
 }
-inline bool operator!=(const AtomicString& a, const String& b) {
-  return !equal(a.impl(), b.impl());
-}
-inline bool operator!=(const AtomicString& a, const Vector<UChar>& b) {
-  return !(a == b);
-}
-inline bool operator!=(const LChar* a, const AtomicString& b) {
-  return !(b == a);
-}
 inline bool operator!=(const char* a, const AtomicString& b) {
-  return !(b == a);
-}
-inline bool operator!=(const String& a, const AtomicString& b) {
-  return !equal(a.impl(), b.impl());
-}
-inline bool operator!=(const Vector<UChar>& a, const AtomicString& b) {
   return !(a == b);
 }
 
