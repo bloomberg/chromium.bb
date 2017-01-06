@@ -34,6 +34,7 @@ namespace scheduler {
 class RendererScheduler;
 }
 class WebInputElement;
+class WebMouseEvent;
 class WebWidget;
 }
 

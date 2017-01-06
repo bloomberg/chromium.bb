@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/size_f.h"
 
 namespace blink {
+class WebMouseEvent;
 class WebMouseWheelEvent;
 }
 

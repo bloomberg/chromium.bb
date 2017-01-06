@@ -35,6 +35,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "third_party/WebKit/public/web/WebImageCache.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"

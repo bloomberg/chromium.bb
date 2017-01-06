@@ -10,6 +10,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/test_rappor_service.h"
+#include "third_party/WebKit/public/platform/WebMouseEvent.h"
 
 namespace {
 

@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "third_party/WebKit/public/platform/WebMouseEvent.h"
 
 namespace {
 const char kExampleUrl[] = "http://www.example.com/";

@@ -44,6 +44,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/text/TextDirection.h"
+#include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebExternalPopupMenu.h"
 #include "public/web/WebFrameClient.h"

@@ -29,6 +29,7 @@
 #include "core/events/MouseEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
 #include "platform/PlatformMouseEvent.h"
+#include "public/platform/WebMouseEvent.h"
 
 namespace blink {
 class DataTransfer;

@@ -10,7 +10,6 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -25,8 +24,6 @@ using blink::WebElement;
 using blink::WebFormControlElement;
 using blink::WebGestureEvent;
 using blink::WebInputElement;
-using blink::WebInputEvent;
-using blink::WebMouseEvent;
 using blink::WebNode;
 using blink::WebPoint;
 using blink::WebSize;

@@ -5,7 +5,7 @@
 #ifndef WebMouseWheelEvent_h
 #define WebMouseWheelEvent_h
 
-#include "WebInputEvent.h"
+#include "WebMouseEvent.h"
 
 namespace blink {
 
