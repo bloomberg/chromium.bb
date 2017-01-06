@@ -4978,12 +4978,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // initial blank page.  That might require updating all relevant NavEntries to
   // know what the first committed URL is, so that we really elide the initial
   // blank page from history.
-  //
-  // TODO(creis): This actually goes to frame_url in some cases when subframe
-  // FrameNavigationEntries are enabled, due to a mismatch between PageState and
-  // the entry's URL.  That should be fixed in https://crbug.com/617239.
-  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
-    EXPECT_EQ(blank_url, frame->current_url());
+  EXPECT_EQ(blank_url, frame->current_url());
 }
 
 // This test is similar to "BackToAboutBlankIframe" above, except that a
@@ -5104,12 +5099,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // TODO(creis): It's a bit surprising to go to frame_url_1 here instead of
   // frame_url_2.  Perhaps we should be going back to frame_url_1 when going
   // back two entries above, since it's different than the initial blank case.
-  //
-  // TODO(creis): This actually goes to frame_url_2 in some cases when subframe
-  // FrameNavigationEntries are enabled, due to a mismatch between PageState and
-  // the entry's URL.  That should be fixed in https://crbug.com/617239.
-  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
-    EXPECT_EQ(frame_url_1, frame->current_url());
+  EXPECT_EQ(frame_url_1, frame->current_url());
 }
 
 // Test for in-page navigation kills due to using the wrong history item in
@@ -5227,12 +5217,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // TODO(creis): It's a bit surprising to go to frame_url_1 here instead of
   // frame_url_2.  Perhaps we should be going back to frame_url_1 when going
   // back two entries above, since it's different than the initial blank case.
-  //
-  // TODO(creis): This actually goes to frame_url_2 in some cases when subframe
-  // FrameNavigationEntries are enabled, due to a mismatch between PageState and
-  // the entry's URL.  That should be fixed in https://crbug.com/617239.
-  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
-    EXPECT_EQ(frame_url_1, frame->current_url());
+  EXPECT_EQ(frame_url_1, frame->current_url());
 }
 
 // Test for in-page navigation kills when going back to about:blank after a
