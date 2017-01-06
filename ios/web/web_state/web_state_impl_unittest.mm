@@ -18,6 +18,7 @@
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
+#import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
@@ -112,95 +113,6 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
   bool did_stop_loading_called_;
   bool page_loaded_called_with_success_;
   bool web_state_destroyed_called_;
-};
-
-// Test delegate to check that the WebStateDelegate methods are called as
-// expected.
-class TestWebStateDelegate : public WebStateDelegate {
- public:
-  TestWebStateDelegate()
-      : load_progress_changed_called_(false),
-        handle_context_menu_called_(false),
-        get_java_script_dialog_presenter_called_(false) {}
-
-  // True if the WebStateDelegate LoadProgressChanged method has been called.
-  bool load_progress_changed_called() const {
-    return load_progress_changed_called_;
-  }
-
-  // True if the WebStateDelegate HandleContextMenu method has been called.
-  bool handle_context_menu_called() const {
-    return handle_context_menu_called_;
-  }
-
-  // True if the WebStateDelegate GetJavaScriptDialogPresenter method has been
-  // called.
-  bool get_java_script_dialog_presenter_called() const {
-    return get_java_script_dialog_presenter_called_;
-  }
-
-  void SetJavaScriptDialogPresenter(JavaScriptDialogPresenter* presenter) {
-    presenter_ = presenter;
-  }
-
- private:
-  // WebStateDelegate implementation:
-  void LoadProgressChanged(WebState* source, double progress) override {
-    load_progress_changed_called_ = true;
-  }
-
-  bool HandleContextMenu(WebState* source,
-                         const ContextMenuParams& params) override {
-    handle_context_menu_called_ = true;
-    return NO;
-  }
-
-  JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(
-      WebState* source) override {
-    get_java_script_dialog_presenter_called_ = true;
-    return presenter_;
-  }
-
-  bool load_progress_changed_called_;
-  bool handle_context_menu_called_;
-  bool get_java_script_dialog_presenter_called_;
-  JavaScriptDialogPresenter* presenter_;
-};
-
-// Test presenter to check that the JavaScriptDialogPresenter methods are called
-// as expected.
-class TestJavaScriptDialogPresenter : public JavaScriptDialogPresenter {
- public:
-  TestJavaScriptDialogPresenter()
-      : cancel_dialogs_called_(false), run_java_script_dialog_called_(false) {}
-
-  // True if the JavaScriptDialogPresenter CancelDialogs method has been called.
-  bool cancel_dialogs_called() const { return cancel_dialogs_called_; }
-
-  // True if the JavaScriptDialogPresenter RunJavaScriptDialog method has been
-  // called.
-  bool run_java_script_dialog_called() const {
-    return run_java_script_dialog_called_;
-  }
-
- private:
-  // JavaScriptDialogPresenter implementation:
-  void RunJavaScriptDialog(WebState* web_state,
-                           const GURL& origin_url,
-                           JavaScriptDialogType java_script_dialog_type,
-                           NSString* message_text,
-                           NSString* default_prompt_text,
-                           const DialogClosedCallback& callback) override {
-    run_java_script_dialog_called_ = true;
-    callback.Run(false, nil);
-  }
-
-  void CancelDialogs(WebState* web_state) override {
-    cancel_dialogs_called_ = true;
-  }
-
-  bool cancel_dialogs_called_;
-  bool run_java_script_dialog_called_;
 };
 
 // Test observer to check that the WebStateObserver methods are called as
@@ -506,12 +418,11 @@ TEST_F(WebStateTest, DelegateTest) {
   EXPECT_TRUE(delegate.handle_context_menu_called());
 
   // Test that GetJavaScriptDialogPresenter() is called.
-  TestJavaScriptDialogPresenter presenter;
-  delegate.SetJavaScriptDialogPresenter(&presenter);
-
+  TestJavaScriptDialogPresenter* presenter =
+      delegate.GetTestJavaScriptDialogPresenter();
   EXPECT_FALSE(delegate.get_java_script_dialog_presenter_called());
-  EXPECT_FALSE(presenter.run_java_script_dialog_called());
-  EXPECT_FALSE(presenter.cancel_dialogs_called());
+  EXPECT_TRUE(presenter->requested_dialogs().empty());
+  EXPECT_FALSE(presenter->cancel_dialogs_called());
 
   __block bool callback_called = false;
   web_state_->RunJavaScriptDialog(GURL(), JAVASCRIPT_DIALOG_TYPE_ALERT, @"",
@@ -520,12 +431,12 @@ TEST_F(WebStateTest, DelegateTest) {
                                   }));
 
   EXPECT_TRUE(delegate.get_java_script_dialog_presenter_called());
-  EXPECT_TRUE(presenter.run_java_script_dialog_called());
+  EXPECT_EQ(1U, presenter->requested_dialogs().size());
   EXPECT_TRUE(callback_called);
 
-  EXPECT_FALSE(presenter.cancel_dialogs_called());
+  EXPECT_FALSE(presenter->cancel_dialogs_called());
   web_state_->CancelDialogs();
-  EXPECT_TRUE(presenter.cancel_dialogs_called());
+  EXPECT_TRUE(presenter->cancel_dialogs_called());
 }
 
 // Verifies that GlobalWebStateObservers are called when expected.
