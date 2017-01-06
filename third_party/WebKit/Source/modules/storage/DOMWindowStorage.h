@@ -5,7 +5,6 @@
 #ifndef DOMWindowStorage_h
 #define DOMWindowStorage_h
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -18,8 +17,7 @@ class LocalDOMWindow;
 class Storage;
 
 class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
-                               public Supplement<LocalDOMWindow>,
-                               public ContextClient {
+                               public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorage);
 
  public:
@@ -38,7 +36,6 @@ class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
   explicit DOMWindowStorage(LocalDOMWindow&);
   static const char* supplementName();
 
-  Member<LocalDOMWindow> m_window;
   mutable Member<Storage> m_sessionStorage;
   mutable Member<Storage> m_localStorage;
 };
