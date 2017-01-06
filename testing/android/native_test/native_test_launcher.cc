@@ -24,7 +24,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/android/test_support_jni_registrar.h"
 #include "base/test/test_support_android.h"
 #include "gtest/gtest.h"
 #include "jni/NativeTest_jni.h"
@@ -129,10 +128,9 @@ static void RunTests(JNIEnv* env,
 }
 
 bool RegisterNativeTestJNI(JNIEnv* env) {
-  if (!base::android::RegisterJni(env))
+  if (!base::android::RegisterJni(env)) {
     return false;
-  if (!base::android::RegisterTestSupportJni(env))
-    return false;
+  }
   return RegisterNativesImpl(env);
 }
 

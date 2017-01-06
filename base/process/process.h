@@ -108,12 +108,12 @@ class BASE_EXPORT Process {
   // any process.
   // NOTE: |exit_code| is optional, nullptr can be passed if the exit code is
   // not required.
-  bool WaitForExit(int* exit_code) const;
+  bool WaitForExit(int* exit_code);
 
   // Same as WaitForExit() but only waits for up to |timeout|.
   // NOTE: |exit_code| is optional, nullptr can be passed if the exit code
   // is not required.
-  bool WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const;
+  bool WaitForExitWithTimeout(TimeDelta timeout, int* exit_code);
 
 #if defined(OS_MACOSX)
   // The Mac needs a Mach port in order to manipulate a process's priority,

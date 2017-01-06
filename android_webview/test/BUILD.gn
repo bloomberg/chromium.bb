@@ -269,6 +269,7 @@ android_library("android_webview_unittests_java") {
   deps = [
     "//android_webview:android_webview_java",
     "//base:base_java",
+    "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
   ]
   java_files = [

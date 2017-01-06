@@ -13,6 +13,10 @@
 #include "mojo/public/tests/test_support_private.h"
 
 int main(int argc, char** argv) {
+#if defined(OS_ANDROID)
+  base::InitAndroidMultiProcessTestHelper(main);
+#endif
+
   base::PerfTestSuite test(argc, argv);
 
   mojo::edk::Init();

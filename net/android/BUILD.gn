@@ -77,7 +77,6 @@ source_set("java_test_native_support") {
   ]
 
   deps = [
-    "//base/test:test_support_main_stub",
     "//net:test_support",
   ]
   public_deps = [

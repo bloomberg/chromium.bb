@@ -138,10 +138,6 @@ component("test_runner") {
   if (is_mac) {
     libs = [ "AppKit.framework" ]
   }
-
-  if (is_android) {
-    deps += [ "//base/test:test_support_main_stub" ]
-  }
 }
 
 # Font copies.

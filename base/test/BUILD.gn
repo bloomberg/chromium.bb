@@ -22,33 +22,12 @@ static_library("test_config") {
   ]
 }
 
-if (is_android) {
-  # This target is needed for components on Android depending on
-  # base:test_support that do not define a main function. This is because
-  # multiprocess support on Android requires a main function (the one invoked on
-  # the child process).
-  static_library("test_support_main_stub") {
-    testonly = true
-    if (is_component_build) {
-      sources = [
-        "main_stub.cc",
-      ]
-      deps = [
-        "//base",
-      ]
-    }
-  }
-}
-
 static_library("test_support") {
   testonly = true
   sources = [
     "../trace_event/trace_config_memory_test_util.h",
     "android/java_handler_thread_for_testing.cc",
     "android/java_handler_thread_for_testing.h",
-    "android/multiprocess_test_client_service.cc",
-    "android/test_support_jni_registrar.cc",
-    "android/test_support_jni_registrar.h",
     "android/test_system_message_handler_link_android.cc",
     "android/test_system_message_handler_link_android.h",
     "fuzzed_data_provider.cc",
@@ -77,9 +56,7 @@ static_library("test_support") {
     "mock_entropy_provider.h",
     "mock_log.cc",
     "mock_log.h",
-    "multiprocess_test.cc",
     "multiprocess_test.h",
-    "multiprocess_test_android.cc",
     "null_task_runner.cc",
     "null_task_runner.h",
     "opaque_ref_counted.cc",
@@ -169,6 +146,8 @@ static_library("test_support") {
       "launcher/test_launcher_tracer.h",
       "launcher/test_results_tracker.cc",
       "launcher/unit_test_launcher.cc",
+      "multiprocess_test.cc",
+      "multiprocess_test_android.cc",
     ]
   }
 
@@ -212,11 +191,7 @@ static_library("test_support") {
   }
 
   if (is_android) {
-    deps += [
-      ":base_unittests_jni_headers",
-      ":test_support_jni_headers",
-    ]
-    public_deps += [ ":test_support_java" ]
+    deps += [ ":base_unittests_jni_headers" ]
   }
 
   if (is_nacl_nonsfi) {
@@ -351,43 +326,5 @@ if (is_android) {
       "android/java/src/org/chromium/base/TestUiThread.java",
     ]
     jni_package = "base"
-  }
-
-  generate_jni("test_support_jni_headers") {
-    sources = [
-      "android/java/src/org/chromium/base/MainReturnCodeResult.java",
-      "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",
-      "android/java/src/org/chromium/base/MultiprocessTestClientService.java",
-    ]
-    jni_package = "base"
-  }
-
-  android_library("test_support_java") {
-    testonly = true
-    deps = [
-      "//base:base_java",
-      "//third_party/android_tools:android_support_annotations_java",
-      "//third_party/jsr-305:jsr_305_javalib",
-    ]
-    srcjar_deps = [ ":test_support_java_aidl" ]
-    java_files = [
-      "android/java/src/org/chromium/base/FileDescriptorInfo.java",
-      "android/java/src/org/chromium/base/MainReturnCodeResult.java",
-      "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",
-      "android/java/src/org/chromium/base/MultiprocessTestClientService.java",
-      "android/java/src/org/chromium/base/MultiprocessTestClientService0.java",
-      "android/java/src/org/chromium/base/MultiprocessTestClientService1.java",
-      "android/java/src/org/chromium/base/MultiprocessTestClientService2.java",
-      "android/java/src/org/chromium/base/MultiprocessTestClientService3.java",
-      "android/java/src/org/chromium/base/MultiprocessTestClientService4.java",
-    ]
-  }
-
-  android_aidl("test_support_java_aidl") {
-    testonly = true
-    import_include = "android/java/src"
-    sources = [
-      "android/java/src/org/chromium/base/ITestClient.aidl",
-    ]
   }
 }
