@@ -505,6 +505,7 @@ _x86_internal_release_boards = frozenset([
     'kip',
     'kunimitsu',
     'lakitu',
+    'lakitu-gpu',
     'lakitu_next',
     'lars',
     'leon',
@@ -653,6 +654,7 @@ _beaglebone_boards = frozenset([
 
 _lakitu_boards = frozenset([
     'lakitu',
+    'lakitu-gpu',
     'lakitu_next',
 ])
 
@@ -2466,6 +2468,16 @@ def IncrementalBuilders(site_config, ge_build_config):
   )
 
   site_config.Add(
+      'lakitu-gpu-incremental',
+      site_config.templates.incremental,
+      site_config.templates.internal_incremental,
+      site_config.templates.lakitu_notification_emails,
+      board_configs['lakitu-gpu'],
+      site_config.templates.lakitu_test_customizations,
+      active_waterfall=constants.WATERFALL_INTERNAL,
+  )
+
+  site_config.Add(
       'lakitu_next-incremental',
       site_config.templates.incremental,
       site_config.templates.internal_incremental,
@@ -3144,6 +3156,9 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'lakitu-pre-cq':
           site_config.templates.lakitu_test_customizations,
 
+      'lakitu-gpu-pre-cq':
+          site_config.templates.lakitu_test_customizations,
+
       'lakitu_next-pre-cq':
           site_config.templates.lakitu_test_customizations,
 
@@ -3178,6 +3193,12 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       },
 
       'lakitu-release': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_test_customizations,
+          site_config.templates.lakitu_notification_emails,
+          sign_types=['base'],
+      ),
+
+      'lakitu-gpu-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
