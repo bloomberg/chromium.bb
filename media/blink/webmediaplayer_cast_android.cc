@@ -339,14 +339,6 @@ void WebMediaPlayerCast::OnRemoteRouteAvailabilityChanged(
 
 void WebMediaPlayerCast::SuspendAndReleaseResources() {}
 
-bool WebMediaPlayerCast::hasVideo() const {
-  return true;
-}
-
-bool WebMediaPlayerCast::paused() const {
-  return paused_;
-}
-
 void WebMediaPlayerCast::SetDeviceScaleFactor(float scale_factor) {
   device_scale_factor_ = scale_factor;
 }

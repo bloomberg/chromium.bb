@@ -45,6 +45,7 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
   void SetMediaPlayerManager(
       RendererMediaPlayerManagerInterface* media_player_manager);
   bool isRemote() const { return is_remote_; }
+  bool IsPaused() const { return paused_; }
 
   double currentTime() const;
   void play();
@@ -82,19 +83,10 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
   void OnRemoteRouteAvailabilityChanged(
       blink::WebRemotePlaybackAvailability availability) override;
 
-  // Getters of playback state.
-  // bool paused() const override;
-
-  // True if the loaded media has a playable video track.
-  // bool hasVideo() const override;
-
   // This function is called by the RendererMediaPlayerManager to pause the
   // video and release the media player and surface texture when we switch tabs.
   // However, the actual GlTexture is not released to keep the video screenshot.
   void SuspendAndReleaseResources() override;
-
-  bool paused() const override;
-  bool hasVideo() const override;
 
   void SetDeviceScaleFactor(float scale_factor);
   scoped_refptr<VideoFrame> GetCastingBanner();

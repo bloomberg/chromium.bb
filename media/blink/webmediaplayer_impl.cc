@@ -689,7 +689,7 @@ bool WebMediaPlayerImpl::paused() const {
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   if (isRemote())
-    return cast_impl_.paused();
+    return cast_impl_.IsPaused();
 #endif
 
   return pipeline_.GetPlaybackRate() == 0.0f;

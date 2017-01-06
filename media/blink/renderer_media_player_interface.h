@@ -61,12 +61,6 @@ class RendererMediaPlayerInterface {
   virtual void OnRemoteRouteAvailabilityChanged(
       blink::WebRemotePlaybackAvailability availability) = 0;
 
-  // Getters of playback state.
-  virtual bool paused() const = 0;
-
-  // True if the loaded media has a playable video track.
-  virtual bool hasVideo() const = 0;
-
   // This function is called by the RendererMediaPlayerManager to pause the
   // video and release the media player and surface texture when we switch tabs.
   // However, the actual GlTexture is not released to keep the video screenshot.
