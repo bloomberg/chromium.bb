@@ -1776,6 +1776,7 @@ void WebViewImpl::performResize() {
   // viewport with the browser controls shown.
   IntSize ICBSize = m_size;
   if (RuntimeEnabledFeatures::inertTopControlsEnabled() &&
+      browserControls().permittedState() == WebBrowserControlsBoth &&
       !browserControls().shrinkViewport())
     ICBSize.expand(0, -browserControls().height());
 
@@ -1797,7 +1798,19 @@ void WebViewImpl::performResize() {
 void WebViewImpl::updateBrowserControlsState(WebBrowserControlsState constraint,
                                              WebBrowserControlsState current,
                                              bool animate) {
+  WebBrowserControlsState oldPermittedState =
+      browserControls().permittedState();
+
   browserControls().updateConstraintsAndState(constraint, current, animate);
+
+  // If the controls are going from a locked to an unlocked state, or
+  // vice-versa, then we need to force a recompute of the ICB size since that
+  // depends on the permitted browser controls state.
+  if (oldPermittedState != constraint &&
+      (oldPermittedState == WebBrowserControlsBoth ||
+       constraint == WebBrowserControlsBoth)) {
+    performResize();
+  }
 
   if (m_layerTreeView)
     m_layerTreeView->updateBrowserControlsState(constraint, current, animate);
@@ -1845,8 +1858,7 @@ BrowserControls& WebViewImpl::browserControls() {
   return page()->frameHost().browserControls();
 }
 
-void WebViewImpl::resizeViewWhileAnchored(FrameView* view,
-                                          float browserControlsHeight,
+void WebViewImpl::resizeViewWhileAnchored(float browserControlsHeight,
                                           bool browserControlsShrinkLayout) {
   DCHECK(mainFrameImpl());
 
@@ -1910,12 +1922,10 @@ void WebViewImpl::resizeWithBrowserControls(const WebSize& newSize,
   if (isRotation) {
     RotationViewportAnchor anchor(*view, visualViewport, viewportAnchorCoords,
                                   pageScaleConstraintsSet());
-    resizeViewWhileAnchored(view, browserControlsHeight,
-                            browserControlsShrinkLayout);
+    resizeViewWhileAnchored(browserControlsHeight, browserControlsShrinkLayout);
   } else {
     ResizeViewportAnchor::ResizeScope resizeScope(*m_resizeViewportAnchor);
-    resizeViewWhileAnchored(view, browserControlsHeight,
-                            browserControlsShrinkLayout);
+    resizeViewWhileAnchored(browserControlsHeight, browserControlsShrinkLayout);
   }
   sendResizeEventAndRepaint();
 }

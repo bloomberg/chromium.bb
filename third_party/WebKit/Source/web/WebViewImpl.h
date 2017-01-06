@@ -519,8 +519,7 @@ class WEB_EXPORT WebViewImpl final
   IntSize contentsSize() const;
 
   void performResize();
-  void resizeViewWhileAnchored(FrameView*,
-                               float browserControlsHeight,
+  void resizeViewWhileAnchored(float browserControlsHeight,
                                bool browserControlsShrinkLayout);
 
   // Overrides the compositor visibility. See the description of
