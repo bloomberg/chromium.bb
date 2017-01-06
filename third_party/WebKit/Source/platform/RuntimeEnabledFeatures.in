@@ -111,7 +111,7 @@ FeaturePolicy status=experimental
 FileAPIBlobClose status=experimental
 FileSystem status=stable
 ForeignFetch status=experimental, origin_trial_feature_name=ForeignFetch
-FramebustingNeedsSameOriginOrUserGesture status=stable, settable_from_internals=True
+FramebustingNeedsSameOriginOrUserGesture status=experimental, settable_from_internals=True
 FullscreenUnprefixed status=test, settable_from_internals=True
 FrameTimingSupport status=experimental
 GamepadExtensions status=test, origin_trial_feature_name=WebVR

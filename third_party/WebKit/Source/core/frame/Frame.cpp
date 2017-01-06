@@ -184,16 +184,38 @@ bool Frame::canNavigate(const Frame& targetFrame) {
     if (isAllowedNavigation)
       framebustParams |= allowedBit;
     framebustHistogram.count(framebustParams);
-    // Frame-busting used to be generally allowed in most situations, but may
-    // now blocked if there is no user gesture.
-    if (!RuntimeEnabledFeatures::
-            framebustingNeedsSameOriginOrUserGestureEnabled())
-      return true;
     if (hasUserGesture || isAllowedNavigation)
       return true;
+    // Frame-busting used to be generally allowed in most situations, but may
+    // now blocked if the document initiating the navigation has never received
+    // a user gesture.
+    if (!RuntimeEnabledFeatures::
+            framebustingNeedsSameOriginOrUserGestureEnabled()) {
+      String targetFrameDescription =
+          targetFrame.isLocalFrame()
+              ? "with URL '" +
+                    toLocalFrame(targetFrame).document()->url().getString() +
+                    "'"
+              : "with origin '" +
+                    targetFrame.securityContext()
+                        ->getSecurityOrigin()
+                        ->toString() +
+                    "'";
+      String message = "Frame with URL '" +
+                       toLocalFrame(this)->document()->url().getString() +
+                       "' attempted to navigate its top-level window " +
+                       targetFrameDescription +
+                       ". Navigating the top-level window from a cross-origin "
+                       "iframe will soon require that the iframe has received "
+                       "a user gesture. See "
+                       "https://www.chromestatus.com/features/"
+                       "5851021045661696.";
+      printNavigationWarning(message);
+      return true;
+    }
     errorReason =
         "The frame attempting navigation is targeting its top-level window, "
-        "but is neither same-origin with its target nor is it processing a "
+        "but is neither same-origin with its target nor has it received a "
         "user gesture. See "
         "https://www.chromestatus.com/features/5851021045661696.";
     printNavigationErrorMessage(targetFrame, errorReason.latin1().data());

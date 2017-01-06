@@ -118,6 +118,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool shouldClose() override;
   SecurityContext* securityContext() const override;
   void printNavigationErrorMessage(const Frame&, const char* reason) override;
+  void printNavigationWarning(const String&) override;
   bool prepareForCommit() override;
   void didChangeVisibilityState() override;
   void setDocumentHasReceivedUserGesture() override;
