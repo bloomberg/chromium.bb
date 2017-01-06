@@ -181,6 +181,8 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     rappor_service_ = rappor_service;
   }
 
+  static const int kAllowButtonIndex;
+
  protected:
   ContentSettingBubbleModel(
       Delegate* delegate,

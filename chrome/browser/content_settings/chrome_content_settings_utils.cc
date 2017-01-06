@@ -18,4 +18,9 @@ void RecordPluginsAction(PluginsAction action) {
                             PLUGINS_ACTION_COUNT);
 }
 
+void RecordPopupsAction(PopupsAction action) {
+  UMA_HISTOGRAM_ENUMERATION("ContentSettings.Popups", action,
+                            POPUPS_ACTION_COUNT);
+}
+
 }  // namespace content_settings

@@ -357,6 +357,9 @@ void TabSpecificContentSettings::OnContentBlockedWithDetail(
     } else if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
       content_settings::RecordPluginsAction(
           content_settings::PLUGINS_ACTION_DISPLAYED_BLOCKED_ICON_IN_OMNIBOX);
+    } else if (type == CONTENT_SETTINGS_TYPE_POPUPS) {
+      content_settings::RecordPopupsAction(
+          content_settings::POPUPS_ACTION_DISPLAYED_BLOCKED_ICON_IN_OMNIBOX);
     }
   }
 }

@@ -38,6 +38,20 @@ enum PluginsAction {
 
 void RecordPluginsAction(PluginsAction action);
 
+// UMA histogram for actions that a user can perform on the pop-up blocked page
+// action in the omnibox. The enum values correspond to histogram entries, so do
+// not remove any existing values.
+enum PopupsAction {
+  POPUPS_ACTION_DISPLAYED_BLOCKED_ICON_IN_OMNIBOX = 0,
+  POPUPS_ACTION_DISPLAYED_BUBBLE,
+  POPUPS_ACTION_SELECTED_ALWAYS_ALLOW_POPUPS_FROM,
+  POPUPS_ACTION_CLICKED_LIST_ITEM_CLICKED,
+  POPUPS_ACTION_CLICKED_MANAGE_POPUPS_BLOCKING,
+  POPUPS_ACTION_COUNT
+};
+
+void RecordPopupsAction(PopupsAction action);
+
 }  // namespace content_settings
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_CHROME_CONTENT_SETTINGS_UTILS_H_

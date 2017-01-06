@@ -65,8 +65,6 @@ using content_settings::SETTING_SOURCE_NONE;
 
 namespace {
 
-const int kAllowButtonIndex = 0;
-
 // These states must match the order of appearance of the radio buttons
 // in the XIB file for the Mac port.
 enum RPHState {
@@ -106,6 +104,8 @@ const content::MediaStreamDevice& GetMediaDeviceById(
 }
 
 }  // namespace
+
+const int ContentSettingBubbleModel::kAllowButtonIndex = 0;
 
 // ContentSettingSimpleBubbleModel ---------------------------------------------
 
@@ -189,6 +189,11 @@ void ContentSettingSimpleBubbleModel::OnManageLinkClicked() {
   if (content_type() == CONTENT_SETTINGS_TYPE_PLUGINS) {
     content_settings::RecordPluginsAction(
         content_settings::PLUGINS_ACTION_CLICKED_MANAGE_PLUGIN_BLOCKING);
+  }
+
+  if (content_type() == CONTENT_SETTINGS_TYPE_POPUPS) {
+    content_settings::RecordPopupsAction(
+        content_settings::POPUPS_ACTION_CLICKED_MANAGE_POPUPS_BLOCKING);
   }
 }
 
@@ -546,7 +551,7 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
   ContentSettingPopupBubbleModel(Delegate* delegate,
                                  WebContents* web_contents,
                                  Profile* profile);
-  ~ContentSettingPopupBubbleModel() override {}
+  ~ContentSettingPopupBubbleModel() override;
 
  private:
   void OnListItemClicked(int index) override;
@@ -582,12 +587,26 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
                         title, true, blocked_popup.first);
     add_list_item(popup_item);
   }
+  content_settings::RecordPopupsAction(
+      content_settings::POPUPS_ACTION_DISPLAYED_BUBBLE);
 }
 
 void ContentSettingPopupBubbleModel::OnListItemClicked(int index) {
   if (web_contents()) {
     auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents());
     helper->ShowBlockedPopup(item_id_from_item_index(index));
+
+    content_settings::RecordPopupsAction(
+        content_settings::POPUPS_ACTION_CLICKED_LIST_ITEM_CLICKED);
+  }
+}
+
+ContentSettingPopupBubbleModel::~ContentSettingPopupBubbleModel(){
+  // User selected to always allow pop-ups from.
+  if (settings_changed() && selected_item() == kAllowButtonIndex) {
+    // Increases the counter.
+    content_settings::RecordPopupsAction(
+        content_settings::POPUPS_ACTION_SELECTED_ALWAYS_ALLOW_POPUPS_FROM);
   }
 }
 
