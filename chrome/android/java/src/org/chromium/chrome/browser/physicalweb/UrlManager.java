@@ -74,8 +74,6 @@ class UrlManager {
     private static final long STALE_NOTIFICATION_TIMEOUT_MILLIS = 30 * 60 * 1000;  // 30 Minutes
     private static final long MAX_CACHE_TIME = 24 * 60 * 60 * 1000;  // 1 Day
     private static final int MAX_CACHE_SIZE = 100;
-    private static UrlManager sInstance;
-    private final Context mContext;
     private final ObserverList<Listener> mObservers;
     private final Set<String> mNearbyUrls;
     private final Map<String, UrlInfo> mUrlInfoMap;
@@ -102,8 +100,8 @@ class UrlManager {
      * @param context An instance of android.content.Context
      */
     @VisibleForTesting
-    public UrlManager(Context context) {
-        mContext = context;
+    public UrlManager() {
+        Context context = ContextUtils.getApplicationContext();
         mNotificationManager = new NotificationManagerProxyImpl(
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
         mPwsClient = new PwsClientImpl(context);
@@ -123,25 +121,19 @@ class UrlManager {
         registerNativeInitStartupCallback();
     }
 
+    // "Initialization on demand holder idiom"
+    private static class LazyHolder {
+        private static final UrlManager INSTANCE = new UrlManager();
+    }
+
+
     /**
      * Get a singleton instance of this class.
      * @return A singleton instance of this class.
      */
     @CalledByNative
     public static UrlManager getInstance() {
-        if (sInstance == null) {
-            sInstance = new UrlManager(ContextUtils.getApplicationContext());
-        }
-        return sInstance;
-    }
-
-    /**
-     * Get a singleton instance of this class.
-     * @param context unused
-     * @return A singleton instance of this class.
-     */
-    public static UrlManager getInstance(Context context) {
-        return getInstance();
+        return LazyHolder.INSTANCE;
     }
 
     /**
@@ -463,15 +455,17 @@ class UrlManager {
     }
 
     private PendingIntent createListUrlsIntent() {
-        Intent intent = new Intent(mContext, ListUrlsActivity.class);
+        Context appContext = ContextUtils.getApplicationContext();
+        Intent intent = new Intent(appContext, ListUrlsActivity.class);
         intent.putExtra(ListUrlsActivity.REFERER_KEY, ListUrlsActivity.NOTIFICATION_REFERER);
-        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(appContext, 0, intent, 0);
         return pendingIntent;
     }
 
     private PendingIntent createOptInIntent() {
-        Intent intent = new Intent(mContext, PhysicalWebOptInActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
+        Context appContext = ContextUtils.getApplicationContext();
+        Intent intent = new Intent(appContext, PhysicalWebOptInActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(appContext, 0, intent, 0);
         return pendingIntent;
     }
 
@@ -509,7 +503,8 @@ class UrlManager {
             @Override
             public void onPwsResults(final Collection<PwsResult> pwsResults) {
                 long duration = SystemClock.elapsedRealtime() - timestamp;
-                PhysicalWebUma.onBackgroundPwsResolution(mContext, duration);
+                PhysicalWebUma.onBackgroundPwsResolution(
+                        ContextUtils.getApplicationContext(), duration);
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -551,7 +546,7 @@ class UrlManager {
         // We should only show notifications if there's no other notification-based client.
         if (!PhysicalWeb.shouldIgnoreOtherClients()
                 && PhysicalWebEnvironment
-                        .getInstance((ChromeApplication) mContext.getApplicationContext())
+                        .getInstance((ChromeApplication) ContextUtils.getApplicationContext())
                         .hasNotificationBasedClient()) {
             return;
         }
@@ -561,11 +556,13 @@ class UrlManager {
                 // high priority notification
                 createOptInNotification(true);
                 PhysicalWeb.recordOptInNotification();
-                PhysicalWebUma.onOptInHighPriorityNotificationShown(mContext);
+                PhysicalWebUma.onOptInHighPriorityNotificationShown(
+                        ContextUtils.getApplicationContext());
             } else {
                 // min priority notification
                 createOptInNotification(false);
-                PhysicalWebUma.onOptInMinPriorityNotificationShown(mContext);
+                PhysicalWebUma.onOptInMinPriorityNotificationShown(
+                        ContextUtils.getApplicationContext());
             }
         } else if (PhysicalWeb.isPhysicalWebPreferenceEnabled()) {
             createNotification();
@@ -576,13 +573,14 @@ class UrlManager {
         PendingIntent pendingIntent = createListUrlsIntent();
 
         // Get values to display.
-        Resources resources = mContext.getResources();
+        Context appContext = ContextUtils.getApplicationContext();
+        Resources resources = appContext.getResources();
         String title = resources.getString(R.string.physical_web_notification_title);
         Bitmap largeIcon = BitmapFactory.decodeResource(resources,
                 R.drawable.physical_web_notification_large);
 
         // Create the notification.
-        Notification notification = new NotificationCompat.Builder(mContext)
+        Notification notification = new NotificationCompat.Builder(appContext)
                 .setLargeIcon(largeIcon)
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setContentTitle(title)
@@ -602,13 +600,14 @@ class UrlManager {
                 : NotificationCompat.PRIORITY_MIN;
 
         // Get values to display.
-        Resources resources = mContext.getResources();
+        Context appContext = ContextUtils.getApplicationContext();
+        Resources resources = appContext.getResources();
         String title = resources.getString(R.string.physical_web_optin_notification_title);
         String text = resources.getString(R.string.physical_web_optin_notification_text);
         Bitmap largeIcon = BitmapFactory.decodeResource(resources, R.mipmap.app_icon);
 
         // Create the notification.
-        Notification notification = new NotificationCompat.Builder(mContext)
+        Notification notification = new NotificationCompat.Builder(appContext)
                 .setLargeIcon(largeIcon)
                 .setSmallIcon(R.drawable.ic_physical_web_notification)
                 .setContentTitle(title)
@@ -624,20 +623,25 @@ class UrlManager {
     }
 
     private PendingIntent createClearNotificationAlarmIntent() {
-        Intent intent = new Intent(mContext, ClearNotificationAlarmReceiver.class);
-        return PendingIntent.getBroadcast(mContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        Context appContext = ContextUtils.getApplicationContext();
+        Intent intent = new Intent(appContext, ClearNotificationAlarmReceiver.class);
+        return PendingIntent.getBroadcast(appContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     private void scheduleClearNotificationAlarm() {
         PendingIntent pendingIntent = createClearNotificationAlarmIntent();
-        AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        Context appContext = ContextUtils.getApplicationContext();
+        AlarmManager alarmManager =
+                (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
         long time = SystemClock.elapsedRealtime() + STALE_NOTIFICATION_TIMEOUT_MILLIS;
         alarmManager.set(AlarmManager.ELAPSED_REALTIME, time, pendingIntent);
     }
 
     private void cancelClearNotificationAlarm() {
         PendingIntent pendingIntent = createClearNotificationAlarmIntent();
-        AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        Context appContext = ContextUtils.getApplicationContext();
+        AlarmManager alarmManager =
+                (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
     }
 
@@ -694,7 +698,8 @@ class UrlManager {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                BrowserStartupController.get(mContext, LibraryProcessType.PROCESS_BROWSER)
+                Context appContext = ContextUtils.getApplicationContext();
+                BrowserStartupController.get(appContext, LibraryProcessType.PROCESS_BROWSER)
                         .addStartupCompletedObserver(new StartupCallback() {
                             @Override
                             public void onSuccess(boolean alreadyStarted) {
@@ -796,7 +801,7 @@ class UrlManager {
     }
 
     @VisibleForTesting
-    static void clearPrefsForTesting(Context context) {
+    static void clearPrefsForTesting() {
         ContextUtils.getAppSharedPreferences().edit()
                 .remove(PREFS_VERSION_KEY)
                 .remove(PREFS_NEARBY_URLS_KEY)
