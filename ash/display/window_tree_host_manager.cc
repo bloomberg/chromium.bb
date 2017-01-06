@@ -59,7 +59,7 @@
 #undef RootWindow
 #endif  // defined(USE_X11)
 
-#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+#if defined(USE_OZONE)
 #include "ui/events/ozone/chromeos/cursor_controller.h"
 #endif
 
@@ -73,7 +73,7 @@ namespace {
 // This is initialized in the constructor, and then in CreatePrimaryHost().
 int64_t primary_display_id = -1;
 
-#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+#if defined(USE_OZONE)
 // Add 20% more cursor motion on non-integrated displays.
 const float kCursorMultiplierForExternalDisplays = 1.2f;
 #endif
@@ -87,7 +87,6 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
   display::ManagedDisplayInfo info =
       GetDisplayManager()->GetDisplayInfo(display.id());
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-#if defined(OS_CHROMEOS)
 #if defined(USE_X11)
   // Native window property (Atom in X11) that specifies the display's
   // rotation, scale factor and if it's internal display.  They are
@@ -132,7 +131,6 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
   ui::CursorController::GetInstance()->SetCursorConfigForWindow(
       host->GetAcceleratedWidget(), info.GetActiveRotation(), scale);
 #endif
-#endif
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(host->window(), display));
   ash_host->SetRootWindowTransformer(std::move(transformer));
@@ -151,7 +149,7 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
 }
 
 void ClearDisplayPropertiesOnHost(AshWindowTreeHost* ash_host) {
-#if defined(OS_CHROMEOS) && defined(USE_OZONE)
+#if defined(USE_OZONE)
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
   ui::CursorController::GetInstance()->ClearCursorConfigForWindow(
       host->GetAcceleratedWidget());
@@ -591,7 +589,6 @@ bool WindowTreeHostManager::UpdateWorkAreaOfDisplayNearestWindow(
 }
 
 void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
-#if defined(OS_CHROMEOS)
   // If we're switching from/to offscreen WTH, we need to
   // create new WTH for primary display instead of reusing.
   if (primary_tree_host_for_replace_ &&
@@ -639,12 +636,10 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
     DCHECK(iter == window_tree_hosts_.end());
 #endif
     // the host has already been removed from the window_tree_host_.
-  } else
-#endif
-      // TODO(oshima): It should be possible to consolidate logic for
-      // unified and non unified, but I'm keeping them separated to minimize
-      // the risk in M44. I'll consolidate this in M45.
-      if (primary_tree_host_for_replace_) {
+  } else if (primary_tree_host_for_replace_) {
+    // TODO(oshima): It should be possible to consolidate logic for
+    // unified and non unified, but I'm keeping them separated to minimize
+    // the risk in M44. I'll consolidate this in M45.
     DCHECK(window_tree_hosts_.empty());
     primary_display_id = display.id();
     window_tree_hosts_[display.id()] = primary_tree_host_for_replace_;
@@ -827,17 +822,15 @@ void WindowTreeHostManager::PostDisplayConfigurationChange(
     observer.OnDisplayConfigurationChanged();
   UpdateMouseLocationAfterDisplayChange();
 
-#if defined(USE_X11) && defined(OS_CHROMEOS)
+#if defined(USE_X11)
   if (must_clear_window)
     ui::ClearX11DefaultRootWindow();
 #endif
 }
 
-#if defined(OS_CHROMEOS)
 ui::DisplayConfigurator* WindowTreeHostManager::display_configurator() {
   return Shell::GetInstance()->display_configurator();
 }
-#endif
 
 ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
     ui::KeyEvent* event) {
@@ -889,10 +882,8 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
   window_tree_hosts_[display.id()] = ash_host;
   SetDisplayPropertiesOnHost(ash_host, display);
 
-#if defined(OS_CHROMEOS)
   if (switches::ConstrainPointerToRoot())
     ash_host->ConfineCursorToRootWindow();
-#endif
   return ash_host;
 }
 

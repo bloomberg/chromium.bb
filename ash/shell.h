@@ -21,8 +21,6 @@
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_target.h"
-#include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace aura {
@@ -44,7 +42,7 @@ class DisplayManager;
 }
 
 namespace gfx {
-class Rect;
+class Insets;
 }
 
 namespace ui {
@@ -398,8 +396,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   friend class test::ShellTestApi;
   friend class shell::WindowWatcher;
 
-  typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
-
   // Takes ownership of |delegate|.
   explicit Shell(ShellDelegate* delegate);
   ~Shell() override;
@@ -433,8 +429,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // The CompoundEventFilter owned by aura::Env object.
   std::unique_ptr<::wm::CompoundEventFilter> env_filter_;
-
-  std::vector<WindowAndBoundsPair> to_restore_;
 
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
   std::unique_ptr<AcceleratorControllerDelegateAura>

@@ -43,8 +43,6 @@ class WmRootWindowControllerMus : public WmRootWindowController {
   // Screen conversion functions.
   gfx::Point ConvertPointToScreen(const WmWindowMus* source,
                                   const gfx::Point& point) const;
-  gfx::Point ConvertPointFromScreen(const WmWindowMus* target,
-                                    const gfx::Point& point) const;
 
   const display::Display& GetDisplay() const;
 

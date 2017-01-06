@@ -157,9 +157,7 @@ class ASH_EXPORT WindowTreeHostManager
   void CloseMirroringDisplayIfNotNecessary() override;
   void PreDisplayConfigurationChange(bool clear_focus) override;
   void PostDisplayConfigurationChange(bool must_clear_window) override;
-#if defined(OS_CHROMEOS)
   ui::DisplayConfigurator* display_configurator() override;
-#endif
 
   // ui::internal::InputMethodDelegate overrides:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
@@ -172,7 +170,6 @@ class ASH_EXPORT WindowTreeHostManager
  private:
   FRIEND_TEST_ALL_PREFIXES(WindowTreeHostManagerTest, BoundsUpdated);
   FRIEND_TEST_ALL_PREFIXES(WindowTreeHostManagerTest, SecondaryDisplayLayout);
-  friend class DisplayManager;
   friend class MirrorWindowController;
 
   // Creates a WindowTreeHost for |display| and stores it in the

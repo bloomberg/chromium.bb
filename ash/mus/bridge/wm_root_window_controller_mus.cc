@@ -62,14 +62,6 @@ gfx::Point WmRootWindowControllerMus::ConvertPointToScreen(
   return point_in_root;
 }
 
-gfx::Point WmRootWindowControllerMus::ConvertPointFromScreen(
-    const WmWindowMus* target,
-    const gfx::Point& point) const {
-  gfx::Point result = point;
-  result -= GetDisplay().bounds().OffsetFromOrigin();
-  return target->GetRootWindow()->ConvertPointToTarget(target, result);
-}
-
 const display::Display& WmRootWindowControllerMus::GetDisplay() const {
   return root_window_controller_->display();
 }
