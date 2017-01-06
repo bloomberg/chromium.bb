@@ -28,8 +28,8 @@ void TestJavaScriptDialogPresenter::RunJavaScriptDialog(
   dialog.web_state = web_state;
   dialog.origin_url = origin_url;
   dialog.java_script_dialog_type = java_script_dialog_type;
-  dialog.message_text.reset(message_text);
-  dialog.default_prompt_text.reset(default_prompt_text);
+  dialog.message_text.reset([message_text copy]);
+  dialog.default_prompt_text.reset([default_prompt_text copy]);
 
   requested_dialogs_.push_back(dialog);
 
