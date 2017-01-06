@@ -383,14 +383,14 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   if (depth == MAX_VARTX_DEPTH) {
     txfm_partition_update(xd->above_txfm_context + tx_col,
-                          xd->left_txfm_context + tx_row, tx_size);
+                          xd->left_txfm_context + tx_row, tx_size, tx_size);
     return;
   }
 
   if (tx_size == mbmi->inter_tx_size[tx_row][tx_col]) {
     aom_write(w, 0, cm->fc->txfm_partition_prob[ctx]);
     txfm_partition_update(xd->above_txfm_context + tx_col,
-                          xd->left_txfm_context + tx_row, tx_size);
+                          xd->left_txfm_context + tx_row, tx_size, tx_size);
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsl = tx_size_wide_unit[sub_txs];
@@ -400,7 +400,7 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
     if (tx_size == TX_8X8) {
       txfm_partition_update(xd->above_txfm_context + tx_col,
-                            xd->left_txfm_context + tx_row, TX_4X4);
+                            xd->left_txfm_context + tx_row, TX_4X4, tx_size);
       return;
     }
 
@@ -1317,7 +1317,12 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
     if (!segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME))
       aom_write(w, is_inter, av1_get_intra_inter_prob(cm, xd));
 
-  if (bsize >= BLOCK_8X8 && cm->tx_mode == TX_MODE_SELECT &&
+  if (cm->tx_mode == TX_MODE_SELECT &&
+#if CONFIG_CB4X4 && CONFIG_VAR_TX
+      (bsize >= BLOCK_8X8 || (bsize >= BLOCK_4X4 && is_inter && !skip)) &&
+#else
+      bsize >= BLOCK_8X8 &&
+#endif
 #if CONFIG_SUPERTX
       !supertx_enabled &&
 #endif  // CONFIG_SUPERTX

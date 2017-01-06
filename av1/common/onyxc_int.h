@@ -793,8 +793,8 @@ static INLINE void set_txfm_ctxs(TX_SIZE tx_size, int n8_w, int n8_h,
 
 static INLINE void txfm_partition_update(TXFM_CONTEXT *above_ctx,
                                          TXFM_CONTEXT *left_ctx,
-                                         TX_SIZE tx_size) {
-  BLOCK_SIZE bsize = txsize_to_bsize[tx_size];
+                                         TX_SIZE tx_size, TX_SIZE txb_size) {
+  BLOCK_SIZE bsize = txsize_to_bsize[txb_size];
   int bh = mi_size_high[bsize];
   int bw = mi_size_wide[bsize];
   uint8_t txw = tx_size_wide[tx_size];

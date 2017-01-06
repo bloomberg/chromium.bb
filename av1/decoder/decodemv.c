@@ -332,7 +332,7 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
     mbmi->min_tx_size = AOMMIN(mbmi->min_tx_size, get_min_tx_size(tx_size));
     if (counts) ++counts->txfm_partition[ctx][0];
     txfm_partition_update(xd->above_txfm_context + tx_col,
-                          xd->left_txfm_context + tx_row, tx_size);
+                          xd->left_txfm_context + tx_row, tx_size, tx_size);
     return;
   }
 
@@ -350,11 +350,11 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
       inter_tx_size[0][0] = TX_4X4;
       for (idy = 0; idy < tx_size_high_unit[tx_size] / 2; ++idy)
         for (idx = 0; idx < tx_size_wide_unit[tx_size] / 2; ++idx)
-          inter_tx_size[idy][idx] = tx_size;
+          inter_tx_size[idy][idx] = inter_tx_size[0][0];
       mbmi->tx_size = TX_4X4;
       mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
       txfm_partition_update(xd->above_txfm_context + tx_col,
-                            xd->left_txfm_context + tx_row, TX_4X4);
+                            xd->left_txfm_context + tx_row, TX_4X4, tx_size);
       return;
     }
 
@@ -375,7 +375,7 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
     mbmi->min_tx_size = AOMMIN(mbmi->min_tx_size, get_min_tx_size(tx_size));
     if (counts) ++counts->txfm_partition[ctx][0];
     txfm_partition_update(xd->above_txfm_context + tx_col,
-                          xd->left_txfm_context + tx_row, tx_size);
+                          xd->left_txfm_context + tx_row, tx_size, tx_size);
   }
 }
 #endif
@@ -1952,8 +1952,15 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
     xd->above_txfm_context = cm->above_txfm_context + mi_col;
     xd->left_txfm_context =
         xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
-    if (bsize >= BLOCK_8X8 && cm->tx_mode == TX_MODE_SELECT && !mbmi->skip &&
-        inter_block) {
+
+    if (cm->tx_mode == TX_MODE_SELECT &&
+#if CONFIG_CB4X4
+        (bsize >= BLOCK_8X8 ||
+         (bsize >= BLOCK_4X4 && inter_block && !mbmi->skip)) &&
+#else
+        bsize >= BLOCK_8X8 &&
+#endif
+        !mbmi->skip && inter_block) {
       const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
       const int bh = tx_size_high_unit[max_tx_size];
       const int bw = tx_size_wide_unit[max_tx_size];

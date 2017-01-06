@@ -5231,7 +5231,7 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
     ++counts->txfm_partition[ctx][0];
     mbmi->tx_size = tx_size;
     txfm_partition_update(xd->above_txfm_context + tx_col,
-                          xd->left_txfm_context + tx_row, tx_size);
+                          xd->left_txfm_context + tx_row, tx_size, tx_size);
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bs = tx_size_wide_unit[sub_txs];
@@ -5244,7 +5244,7 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
       mbmi->inter_tx_size[tx_row][tx_col] = TX_4X4;
       mbmi->tx_size = TX_4X4;
       txfm_partition_update(xd->above_txfm_context + tx_col,
-                            xd->left_txfm_context + tx_row, TX_4X4);
+                            xd->left_txfm_context + tx_row, TX_4X4, tx_size);
       return;
     }
 
@@ -5292,7 +5292,7 @@ static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
   if (tx_size == plane_tx_size) {
     mbmi->tx_size = tx_size;
     txfm_partition_update(xd->above_txfm_context + tx_col,
-                          xd->left_txfm_context + tx_row, tx_size);
+                          xd->left_txfm_context + tx_row, tx_size, tx_size);
 
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
@@ -5303,7 +5303,7 @@ static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
       mbmi->inter_tx_size[tx_row][tx_col] = TX_4X4;
       mbmi->tx_size = TX_4X4;
       txfm_partition_update(xd->above_txfm_context + tx_col,
-                            xd->left_txfm_context + tx_row, TX_4X4);
+                            xd->left_txfm_context + tx_row, TX_4X4, tx_size);
       return;
     }
 
@@ -5496,26 +5496,39 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #else
     TX_SIZE tx_size = mbmi->tx_size;
 #endif
-    if (cm->tx_mode == TX_MODE_SELECT && mbmi->sb_type >= BLOCK_8X8 &&
+    if (cm->tx_mode == TX_MODE_SELECT &&
+#if CONFIG_CB4X4 && CONFIG_VAR_TX
+        (mbmi->sb_type >= BLOCK_8X8 ||
+         (mbmi->sb_type >= BLOCK_4X4 && is_inter &&
+          !(mbmi->skip || seg_skip))) &&
+#else
+        mbmi->sb_type >= BLOCK_8X8 &&
+#endif
         !(is_inter && (mbmi->skip || seg_skip))) {
+#if CONFIG_VAR_TX
+      if (is_inter) {
+        tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts);
+      } else {
+        const int tx_size_ctx = get_tx_size_context(xd);
+        const int tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
+                                         : intra_tx_size_cat_lookup[bsize];
+        const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
+        const int depth = tx_size_to_depth(coded_tx_size);
+        ++td->counts->tx_size[tx_size_cat][tx_size_ctx][depth];
+        if (tx_size != max_txsize_lookup[bsize]) ++x->txb_split_count;
+      }
+#else
       const int tx_size_ctx = get_tx_size_context(xd);
       const int tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
                                        : intra_tx_size_cat_lookup[bsize];
       const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
       const int depth = tx_size_to_depth(coded_tx_size);
+
+      ++td->counts->tx_size[tx_size_cat][tx_size_ctx][depth];
+#endif
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
       assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
-#if CONFIG_VAR_TX
-      if (is_inter) {
-        tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts);
-      } else {
-        ++td->counts->tx_size[tx_size_cat][tx_size_ctx][depth];
-        if (tx_size != max_txsize_lookup[bsize]) ++x->txb_split_count;
-      }
-#else
-      ++td->counts->tx_size[tx_size_cat][tx_size_ctx][depth];
-#endif
     } else {
       int i, j;
       TX_SIZE intra_tx_size;
@@ -5577,8 +5590,13 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
   }
 
 #if CONFIG_VAR_TX
-  if (cm->tx_mode == TX_MODE_SELECT && mbmi->sb_type >= BLOCK_8X8 && is_inter &&
-      !(mbmi->skip || seg_skip)) {
+  if (cm->tx_mode == TX_MODE_SELECT &&
+#if CONFIG_CB4X4
+      mbmi->sb_type >= BLOCK_4X4 &&
+#else
+      mbmi->sb_type >= BLOCK_8X8 &&
+#endif
+      is_inter && !(mbmi->skip || seg_skip)) {
     if (dry_run) tx_partition_set_contexts(cm, xd, bsize, mi_row, mi_col);
   } else {
     TX_SIZE tx_size = mbmi->tx_size;

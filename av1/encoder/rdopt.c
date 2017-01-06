@@ -3407,7 +3407,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     for (i = 0; i < tx_size_wide_unit[tx_size]; ++i) pta[i] = !(tmp_eob == 0);
     for (i = 0; i < tx_size_high_unit[tx_size]; ++i) ptl[i] = !(tmp_eob == 0);
     txfm_partition_update(tx_above + (blk_col >> 1), tx_left + (blk_row >> 1),
-                          tx_size);
+                          tx_size, tx_size);
     inter_tx_size[0][0] = tx_size;
     for (idy = 0; idy < tx_size_high_unit[tx_size] / 2; ++idy)
       for (idx = 0; idx < tx_size_wide_unit[tx_size] / 2; ++idx)
