@@ -11,8 +11,9 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 
-#include <algorithm>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/environment.h"
@@ -496,7 +497,6 @@ int InstallUtil::GetInstallReturnCode(installer::InstallStatus status) {
     case installer::INSTALL_REPAIRED:
     case installer::NEW_VERSION_UPDATED:
     case installer::IN_USE_UPDATED:
-    case installer::UNUSED_BINARIES_UNINSTALLED:
     case installer::OLD_VERSION_DOWNGRADE:
     case installer::IN_USE_DOWNGRADE:
       return 0;

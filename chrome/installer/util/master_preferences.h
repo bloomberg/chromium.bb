@@ -170,8 +170,6 @@ class MasterPreferences {
     return preferences_read_from_file_;
   }
 
-  bool install_chrome() const { return true; }
-
   bool is_multi_install() const { return false; }
 
   // Returns a reference to this MasterPreferences' root dictionary of values.

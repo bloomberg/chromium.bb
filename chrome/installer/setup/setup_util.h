@@ -83,16 +83,6 @@ base::FilePath FindArchiveToPatch(const InstallationState& original_state,
 bool DeleteFileFromTempProcess(const base::FilePath& path,
                                uint32_t delay_before_delete_ms);
 
-// Returns true if the product |type| will be installed after the current
-// setup.exe instance have carried out installation / uninstallation, at
-// the level specified by |installer_state|.
-// This function only returns meaningful results for install and update
-// operations if called after CheckPreInstallConditions (see setup_main.cc).
-bool WillProductBePresentAfterSetup(
-    const installer::InstallerState& installer_state,
-    const installer::InstallationState& machine_state,
-    BrowserDistribution::Type type);
-
 // Drops the process down to background processing mode on supported OSes if it
 // was launched below the normal process priority. Returns true when background
 // procesing mode is entered.
@@ -149,6 +139,10 @@ void RegisterEventLogProvider(const base::FilePath& install_directory,
 
 // De-register Chrome's EventLog message provider dll.
 void DeRegisterEventLogProvider();
+
+// Removes leftover bits from features that have been removed from the product.
+void DoLegacyCleanups(const InstallerState& installer_state,
+                      InstallStatus install_status);
 
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the

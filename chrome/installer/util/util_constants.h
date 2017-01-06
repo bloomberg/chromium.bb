@@ -78,10 +78,8 @@ enum InstallStatus {
                                  // they were invalid for any reason.
   DIFF_PATCH_SOURCE_MISSING = 50,  // No previous version archive found for
                                    // differential update.
-  UNUSED_BINARIES      = 51,  // No multi-install products to update. The
-                              // binaries will be uninstalled if they are not
-                              // in use.
-  UNUSED_BINARIES_UNINSTALLED = 52,  // The binaries were uninstalled.
+  // UNUSED_BINARIES = 51,
+  // UNUSED_BINARIES_UNINSTALLED = 52,
   UNSUPPORTED_OPTION   = 53,  // An unsupported legacy option was given.
   CPU_NOT_SUPPORTED    = 54,  // Current OS not supported
   REENABLE_UPDATES_SUCCEEDED = 55,  // Autoupdates are now enabled.
@@ -127,7 +125,6 @@ enum ArchiveType {
 enum InstallerStage {
   NO_STAGE,                   // No stage to report.
   UPDATING_SETUP,             // Courgette patching setup.exe (diff).
-  UNINSTALLING_CHROME_FRAME,  // Uninstalling multi-install Chrome Frame.
   PRECONDITIONS,              // Evaluating pre-install conditions.
   UNCOMPRESSING,              // Uncompressing chrome.packed.7z.
   PATCHING,                   // Patching chrome.7z using Courgette (diff).
@@ -135,7 +132,6 @@ enum InstallerStage {
   CREATING_VISUAL_MANIFEST,   // Creating VisualElementsManifest.xml.
   BUILDING,                   // Building the install work item list.
   EXECUTING,                  // Executing the install work item list.
-  REFRESHING_POLICY,          // Refreshing the elevation policy.
   UPDATING_CHANNELS,          // Updating channel information.
   COPYING_PREFERENCES_FILE,   // Copying preferences file.
   CREATING_SHORTCUTS,         // Creating shortcuts.
@@ -143,7 +139,6 @@ enum InstallerStage {
   REMOVING_OLD_VERSIONS,      // Deleting old version directories.
   ROLLINGBACK,                // Rolling-back the install work item list.
   FINISHING,                  // Finishing the install.
-  UNINSTALLING_BINARIES,      // Uninstalling unused binaries.
   NUM_STAGES                  // The number of stages.
 };
 
@@ -206,7 +201,6 @@ extern const char kGoogleUpdateIsMachineEnvVar[];
 }  // namespace env_vars
 
 extern const wchar_t kActiveSetupExe[];
-extern const wchar_t kAppLauncherGuid[];
 extern const wchar_t kChromeDll[];
 extern const wchar_t kChromeChildDll[];
 extern const wchar_t kChromeExe[];

@@ -21,11 +21,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/shortcut.h"
-#include "base/win/windows_version.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/installer_crash_reporting.h"
+#include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
@@ -34,12 +32,10 @@
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/delete_old_versions.h"
-#include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
-#include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
@@ -103,10 +99,8 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
   if (properties.has_arguments())
     message.append(base::UTF16ToUTF8(properties.arguments));
 
-  if (properties.pin_to_taskbar &&
-      base::win::GetVersion() >= base::win::VERSION_WIN7) {
+  if (properties.pin_to_taskbar && base::win::CanPinShortcutToTaskbar())
     message.append(" and pinning to the taskbar");
-  }
 
   message.push_back('.');
 
@@ -223,10 +217,6 @@ installer::InstallStatus InstallNewVersion(
     return result;
   }
 
-  installer_state.SetStage(installer::REFRESHING_POLICY);
-
-  installer::RefreshElevationPolicy();
-
   if (!current_version->get()) {
     VLOG(1) << "First install of version " << new_version;
     return installer::FIRST_INSTALL_SUCCESS;
@@ -265,7 +255,7 @@ installer::InstallStatus InstallNewVersion(
   return installer::INSTALL_FAILED;
 }
 
-}  // end namespace
+}  // namespace
 
 namespace installer {
 
@@ -480,8 +470,6 @@ InstallStatus InstallOrUpdateProduct(
     const base::FilePath& prefs_path,
     const MasterPreferences& prefs,
     const base::Version& new_version) {
-  DCHECK(!installer_state.products().empty());
-
   // TODO(robertshield): Removing the pending on-reboot moves should be done
   // elsewhere.
   // Remove any scheduled MOVEFILE_DELAY_UNTIL_REBOOT entries in the target of
@@ -507,8 +495,9 @@ InstallStatus InstallOrUpdateProduct(
   if (!InstallUtil::GetInstallReturnCode(result)) {
     installer_state.SetStage(UPDATING_CHANNELS);
 
-    // Update the modifiers on the channel values for the product(s) being
-    // installed and for the binaries in case of multi-install.
+    // Strip evidence of multi-install from the "ap" value.
+    // TODO(grt): Consider doing this earlier, prior to any other work, so that
+    // failed updates benefit from the stripping.
     installer_state.UpdateChannels();
 
     installer_state.SetStage(COPYING_PREFERENCES_FILE);
@@ -518,66 +507,59 @@ InstallStatus InstallOrUpdateProduct(
 
     installer_state.SetStage(CREATING_SHORTCUTS);
 
-    const installer::Product* chrome_product =
-        installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
     // Creates shortcuts for Chrome.
-    if (chrome_product) {
-      BrowserDistribution* chrome_dist = chrome_product->distribution();
-      const base::FilePath chrome_exe(
-          installer_state.target_path().Append(kChromeExe));
+    const Product& chrome_product = installer_state.product();
+    BrowserDistribution* chrome_dist = chrome_product.distribution();
+    const base::FilePath chrome_exe(
+        installer_state.target_path().Append(kChromeExe));
 
-      // Install per-user shortcuts on user-level installs and all-users
-      // shortcuts on system-level installs. Note that Active Setup will take
-      // care of installing missing per-user shortcuts on system-level install
-      // (i.e., quick launch, taskbar pin, and possibly deleted all-users
-      // shortcuts).
-      InstallShortcutLevel install_level = installer_state.system_install() ?
-          ALL_USERS : CURRENT_USER;
+    // Install per-user shortcuts on user-level installs and all-users shortcuts
+    // on system-level installs. Note that Active Setup will take care of
+    // installing missing per-user shortcuts on system-level install (i.e.,
+    // quick launch, taskbar pin, and possibly deleted all-users shortcuts).
+    InstallShortcutLevel install_level =
+        installer_state.system_install() ? ALL_USERS : CURRENT_USER;
 
-      InstallShortcutOperation install_operation =
-          INSTALL_SHORTCUT_REPLACE_EXISTING;
-      if (result == installer::FIRST_INSTALL_SUCCESS ||
-          result == installer::INSTALL_REPAIRED ||
-          !original_state.GetProductState(installer_state.system_install(),
-                                          chrome_dist->GetType())) {
-        // Always create the shortcuts on a new install, a repair install, and
-        // when the Chrome product is being added to the current install.
-        install_operation = INSTALL_SHORTCUT_CREATE_ALL;
-      }
-
-      CreateOrUpdateShortcuts(chrome_exe, *chrome_product, prefs, install_level,
-                              install_operation);
+    InstallShortcutOperation install_operation =
+        INSTALL_SHORTCUT_REPLACE_EXISTING;
+    if (result == installer::FIRST_INSTALL_SUCCESS ||
+        result == installer::INSTALL_REPAIRED ||
+        !original_state.GetProductState(installer_state.system_install(),
+                                        chrome_dist->GetType())) {
+      // Always create the shortcuts on a new install, a repair install, and
+      // when the Chrome product is being added to the current install.
+      install_operation = INSTALL_SHORTCUT_CREATE_ALL;
     }
 
-    if (chrome_product) {
-      // Register Chrome and, if requested, make Chrome the default browser.
-      installer_state.SetStage(REGISTERING_CHROME);
+    CreateOrUpdateShortcuts(chrome_exe, chrome_product, prefs, install_level,
+                            install_operation);
 
-      bool make_chrome_default = false;
-      prefs.GetBool(master_preferences::kMakeChromeDefault,
-                    &make_chrome_default);
+    // Register Chrome and, if requested, make Chrome the default browser.
+    installer_state.SetStage(REGISTERING_CHROME);
 
-      // If this is not the user's first Chrome install, but they have chosen
-      // Chrome to become their default browser on the download page, we must
-      // force it here because the master_preferences file will not get copied
-      // into the build.
-      bool force_chrome_default_for_user = false;
-      if (result == NEW_VERSION_UPDATED || result == INSTALL_REPAIRED ||
-          result == OLD_VERSION_DOWNGRADE || result == IN_USE_DOWNGRADE) {
-        prefs.GetBool(master_preferences::kMakeChromeDefaultForUser,
-                      &force_chrome_default_for_user);
-      }
+    bool make_chrome_default = false;
+    prefs.GetBool(master_preferences::kMakeChromeDefault, &make_chrome_default);
 
-      RegisterChromeOnMachine(
-          installer_state, *chrome_product,
-          make_chrome_default || force_chrome_default_for_user, new_version);
+    // If this is not the user's first Chrome install, but they have chosen
+    // Chrome to become their default browser on the download page, we must
+    // force it here because the master_preferences file will not get copied
+    // into the build.
+    bool force_chrome_default_for_user = false;
+    if (result == NEW_VERSION_UPDATED || result == INSTALL_REPAIRED ||
+        result == OLD_VERSION_DOWNGRADE || result == IN_USE_DOWNGRADE) {
+      prefs.GetBool(master_preferences::kMakeChromeDefaultForUser,
+                    &force_chrome_default_for_user);
+    }
 
-      if (!installer_state.system_install()) {
-        DCHECK_EQ(chrome_product->distribution(),
-                  BrowserDistribution::GetDistribution());
-        UpdateDefaultBrowserBeaconForPath(
-            installer_state.target_path().Append(installer::kChromeExe));
-      }
+    RegisterChromeOnMachine(
+        installer_state, chrome_product,
+        make_chrome_default || force_chrome_default_for_user, new_version);
+
+    if (!installer_state.system_install()) {
+      DCHECK_EQ(chrome_product.distribution(),
+                BrowserDistribution::GetDistribution());
+      UpdateDefaultBrowserBeaconForPath(
+          installer_state.target_path().Append(installer::kChromeExe));
     }
 
     // Delete files that belong to old versions of Chrome. If that fails during
@@ -600,17 +582,8 @@ InstallStatus InstallOrUpdateProduct(
 
 void LaunchDeleteOldVersionsProcess(const base::FilePath& setup_path,
                                     const InstallerState& installer_state) {
-  // Deleting old versions is relevant if multi-install binaries are being
-  // updated or if single-install Chrome is.
-  const Product* product =
-      installer_state.FindProduct(BrowserDistribution::CHROME_BINARIES);
-  if (!product)
-    product = installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
-  if (!product)
-    return;
-
   base::CommandLine command_line(setup_path);
-  product->AppendProductFlags(&command_line);
+  installer_state.product().AppendProductFlags(&command_line);
   command_line.AppendSwitch(switches::kDeleteOldVersions);
 
   if (installer_state.system_install())
@@ -636,8 +609,6 @@ void LaunchDeleteOldVersionsProcess(const base::FilePath& setup_path,
 void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
                                const installer::Product& chrome,
                                const base::Version& installed_version) {
-  DCHECK(chrome.is_chrome());
-
   VLOG(1) << "Updating and registering shortcuts for --on-os-upgrade.";
 
   // Read master_preferences copied beside chrome.exe at install.
@@ -700,8 +671,6 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
 void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
                                  const installer::Product& chrome,
                                  bool force) {
-  DCHECK(chrome.is_chrome());
-
   std::unique_ptr<WorkItemList> cleanup_list(WorkItem::CreateWorkItemList());
   cleanup_list->set_log_message("Cleanup deprecated per-user registrations");
   cleanup_list->set_rollback_enabled(false);

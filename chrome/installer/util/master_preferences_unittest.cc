@@ -323,7 +323,6 @@ TEST_F(MasterPreferencesTest, TestDefaultInstallConfig) {
   installer::MasterPreferences pref_chrome(chrome_install);
 
   EXPECT_FALSE(pref_chrome.is_multi_install());
-  EXPECT_TRUE(pref_chrome.install_chrome());
 }
 
 TEST_F(MasterPreferencesTest, TestMultiInstallIgnoredConfig) {
@@ -339,7 +338,6 @@ TEST_F(MasterPreferencesTest, TestMultiInstallIgnoredConfig) {
   installer::MasterPreferences pref_chrome(chrome_install);
 
   EXPECT_FALSE(pref_chrome.is_multi_install());
-  EXPECT_TRUE(pref_chrome.install_chrome());
 }
 
 TEST_F(MasterPreferencesTest, EnforceLegacyCreateAllShortcutsFalse) {

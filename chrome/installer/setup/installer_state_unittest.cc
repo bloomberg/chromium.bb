@@ -62,20 +62,15 @@ class MockInstallerState : public InstallerState {
   void set_target_path(const base::FilePath& target_path) {
     target_path_ = target_path;
   }
-  static bool IsFileInUse(const base::FilePath& file) {
-    return InstallerState::IsFileInUse(file);
-  }
   const base::Version& critical_update_version() const {
     return critical_update_version_;
   }
 };
 
 TEST_F(InstallerStateTest, WithProduct) {
-  const bool multi_install = false;
   const bool system_level = true;
   base::CommandLine cmd_line = base::CommandLine::FromString(
       std::wstring(L"setup.exe") +
-      (multi_install ? L" --multi-install --chrome" : L"") +
       (system_level ? L" --system-level" : L""));
   MasterPreferences prefs(cmd_line);
   InstallationState machine_state;
@@ -83,7 +78,6 @@ TEST_F(InstallerStateTest, WithProduct) {
   MockInstallerState installer_state;
   installer_state.Initialize(cmd_line, prefs, machine_state);
   installer_state.set_target_path(test_dir_.GetPath());
-  EXPECT_EQ(1U, installer_state.products().size());
   EXPECT_EQ(system_level, installer_state.system_install());
 
   const char kCurrentVersion[] = "1.2.3.4";
@@ -123,8 +117,8 @@ TEST_F(InstallerStateTest, InstallerResult) {
   std::wstring value;
   DWORD dw_value;
 
-  // Check results for a fresh install of single Chrome and the same for an
-  // attempt at multi-install, which is now ignored.
+  // Check results for a fresh install of Chrome and the same for an attempt at
+  // multi-install, which is now ignored.
   static constexpr const wchar_t* kCommandLines[] = {
       L"setup.exe --system-level",
       L"setup.exe --system-level --multi-install --chrome",
@@ -184,31 +178,6 @@ TEST_F(InstallerStateTest, GetCurrentVersionMigrateChrome) {
   EXPECT_TRUE(version.get() != NULL);
 }
 
-TEST_F(InstallerStateTest, IsFileInUse) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
-  base::FilePath temp_file;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &temp_file));
-
-  EXPECT_FALSE(MockInstallerState::IsFileInUse(temp_file));
-
-  {
-    // Open a handle to the file with the same access mode and sharing options
-    // as the loader.
-    base::win::ScopedHandle temp_handle(CreateFile(
-        temp_file.value().c_str(), SYNCHRONIZE | FILE_EXECUTE,
-        FILE_SHARE_DELETE | FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, 0));
-    ASSERT_TRUE(temp_handle.IsValid());
-
-    // The file should now be in use.
-    EXPECT_TRUE(MockInstallerState::IsFileInUse(temp_file));
-  }
-
-  // And once the handle is gone, it should no longer be in use.
-  EXPECT_FALSE(MockInstallerState::IsFileInUse(temp_file));
-}
-
 TEST_F(InstallerStateTest, InitializeTwice) {
   // Override these paths so that they can be found after the registry override
   // manager is in place.
@@ -239,7 +208,6 @@ TEST_F(InstallerStateTest, InitializeTwice) {
   }
   // Confirm the expected state.
   EXPECT_EQ(InstallerState::USER_LEVEL, installer_state.level());
-  EXPECT_EQ(InstallerState::SINGLE_PACKAGE, installer_state.package_type());
   EXPECT_EQ(InstallerState::SINGLE_INSTALL_OR_UPDATE,
             installer_state.operation());
   EXPECT_TRUE(wcsstr(installer_state.target_path().value().c_str(),
@@ -252,7 +220,6 @@ TEST_F(InstallerStateTest, InitializeTwice) {
             BrowserDistribution::GetSpecificDistribution(
                 BrowserDistribution::CHROME_BROWSER)->GetStateKey());
   EXPECT_EQ(installer_state.state_type(), BrowserDistribution::CHROME_BROWSER);
-  EXPECT_TRUE(installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER));
 
   // Now initialize it to install system-level single Chrome.
   {
@@ -264,7 +231,6 @@ TEST_F(InstallerStateTest, InitializeTwice) {
 
   // Confirm that the old state is gone.
   EXPECT_EQ(InstallerState::SYSTEM_LEVEL, installer_state.level());
-  EXPECT_EQ(InstallerState::SINGLE_PACKAGE, installer_state.package_type());
   EXPECT_EQ(InstallerState::SINGLE_INSTALL_OR_UPDATE,
             installer_state.operation());
   EXPECT_TRUE(wcsstr(installer_state.target_path().value().c_str(),
@@ -276,7 +242,6 @@ TEST_F(InstallerStateTest, InitializeTwice) {
             BrowserDistribution::GetSpecificDistribution(
                 BrowserDistribution::CHROME_BROWSER)->GetStateKey());
   EXPECT_EQ(installer_state.state_type(), BrowserDistribution::CHROME_BROWSER);
-  EXPECT_TRUE(installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER));
 }
 
 // A fixture for testing InstallerState::DetermineCriticalVersion.  Individual

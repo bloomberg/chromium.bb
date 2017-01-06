@@ -34,8 +34,6 @@ if (is_win) {
 
   static_library("lib") {
     sources = [
-      "app_launcher_installer.cc",
-      "app_launcher_installer.h",
       "archive_patch_helper.cc",
       "archive_patch_helper.h",
       "install.cc",
