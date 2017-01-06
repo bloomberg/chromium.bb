@@ -144,41 +144,29 @@ crbug.com/623265 virtual/mojo-loading/http/tests/inspector/indexeddb/resources-p
 # layout_test_runtime_flags_.have_top_loading_frame()
 crbug.com/645641 imported/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
 
-# https://crbug.com/670409 - multiple virtual/mojo-loading/http/tests fail with OOPIFs
-# The failures below seem unique / specific to the combination of
-# 1) --site-per-process mode and 2) virtual/mojo-loading virtual test suite.
-crbug.com/670409 virtual/mojo-loading/http/tests/feature-policy/vibrate-enabledforall.php [ Failure ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector/appcache/appcache-iframe-manifests.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector/command-line-api-inspect.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector/debugger/fetch-breakpoints.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector-enabled/reattach-after-editing-styles.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector-enabled/shadow-dom-rules-restart.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector/network/async-xhr-json-mime-type.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector/network/network-filters.html [ Failure ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector/network/preview-searchable.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector/persistence/persistence-tabbed-editor-tabs-order.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-reload.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector/search/source-frame-replace-2.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector/tracing/timeline-script-parse.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure ]
-crbug.com/670409 virtual/mojo-loading/http/tests/misc/webtiming-no-origin.html [ Crash ]
-crbug.com/670409 virtual/mojo-loading/http/tests/misc/webtiming-ssl.php [ Crash ]
-crbug.com/670409 virtual/mojo-loading/http/tests/permissions/chromium/test-request-window.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/security/create-document-unique-origin.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure ]
-crbug.com/670409 virtual/mojo-loading/http/tests/serviceworker/foreign-fetch-basics.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/serviceworker/foreign-fetch-cors.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/xmlhttprequest/response-text.html [ Failure ]
+# http/ flaky tests w/ --site-per-process
+crbug.com/678481 http/tests/inspector/appcache/appcache-iframe-manifests.html [ Timeout Pass ]
+crbug.com/678481 virtual/mojo-loading/http/tests/inspector/appcache/appcache-iframe-manifests.html [ Timeout Pass ]
+crbug.com/678482 http/tests/inspector/debugger/fetch-breakpoints.html [ Timeout Pass ]
+crbug.com/678482 virtual/mojo-loading/http/tests/inspector/debugger/fetch-breakpoints.html [ Timeout Pass ]
+crbug.com/678484 http/tests/inspector-enabled/reattach-after-editing-styles.html [ Timeout Pass ]
+crbug.com/678484 virtual/mojo-loading/http/tests/inspector-enabled/reattach-after-editing-styles.html [ Timeout Pass ]
+crbug.com/678485 http/tests/inspector-enabled/shadow-dom-rules-restart.html [ Timeout ]
+crbug.com/678485 virtual/mojo-loading/http/tests/inspector-enabled/shadow-dom-rules-restart.html [ Timeout ]
+crbug.com/678491 http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
+crbug.com/678491 virtual/mojo-loading/http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
 
-# https://crbug.com/670409 - multiple virtual/mojo-loading/http/tests fail with OOPIFs
-# The failures below are mentioned in other expectation files (i.e. in
-# SlowTests or RandomOrderExpectations), but since expectations are
-# unfortunately not inherited automatically (e.g. see https://crbug.com/594216)
-# we need to repeat the expectations below.
-crbug.com/670409 virtual/mojo-loading/http/tests/inspector/network/network-datareceived.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [ Timeout ]
-crbug.com/670409 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure ]
-crbug.com/670409 virtual/mojo-loading/http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Timeout ]
+# These tests sometimes fail on usual bots but crash w/ --site-per-process.
+crbug.com/678492 http/tests/misc/webtiming-ssl.php [ Crash ]
+crbug.com/678492 virtual/mojo-loading/http/tests/misc/webtiming-ssl.php [ Crash ]
+
+# Slow tests. These are listed in SlowTests listed here also because
+# expectations are unfortunately not inherited automatically (e.g. see
+# https://crbug.com/594216)
+crbug.com/451577 http/tests/inspector/network/network-datareceived.html [ Timeout Pass ]
+crbug.com/451577 virtual/mojo-loading/http/tests/inspector/network/network-datareceived.html [ Timeout Pass ]
+crbug.com/24182 http/tests/perf/large-inlined-script.html [ Timeout Pass ]
+crbug.com/24182 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [ Timeout Pass ]
 
 # https://crbug.com/672570: autoplay-crossorigin.html fails w/ --site-per-process
 crbug.com/672570 http/tests/media/autoplay-crossorigin.html [ Timeout ]
