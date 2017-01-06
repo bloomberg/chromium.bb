@@ -169,7 +169,7 @@ void StyleEngine::addPendingSheet(StyleEngineContext& context) {
 void StyleEngine::removePendingSheet(Node& styleSheetCandidateNode,
                                      const StyleEngineContext& context) {
   if (styleSheetCandidateNode.isConnected())
-    markTreeScopeDirty(styleSheetCandidateNode.treeScope());
+    setNeedsActiveStyleUpdate(styleSheetCandidateNode.treeScope());
 
   if (context.addedPendingSheetBeforeBody()) {
     DCHECK_GT(m_pendingRenderBlockingStylesheets, 0);
@@ -203,7 +203,7 @@ void StyleEngine::addStyleSheetCandidateNode(Node& node) {
   DCHECK(collection);
   collection->addStyleSheetCandidateNode(node);
 
-  markTreeScopeDirty(treeScope);
+  setNeedsActiveStyleUpdate(treeScope);
   if (treeScope != m_document)
     m_activeTreeScopes.add(&treeScope);
 }
@@ -227,12 +227,12 @@ void StyleEngine::removeStyleSheetCandidateNode(Node& node,
     return;
   collection->removeStyleSheetCandidateNode(node);
 
-  markTreeScopeDirty(treeScope);
+  setNeedsActiveStyleUpdate(treeScope);
 }
 
 void StyleEngine::modifiedStyleSheetCandidateNode(Node& node) {
   if (node.isConnected())
-    markTreeScopeDirty(node.treeScope());
+    setNeedsActiveStyleUpdate(node.treeScope());
 }
 
 void StyleEngine::mediaQueriesChangedInScope(TreeScope& treeScope) {
