@@ -62,25 +62,10 @@ class WmWindowMus : public WmWindowAura {
   // WmWindow:
   WmRootWindowController* GetRootWindowController() override;
   WmShell* GetShell() const override;
-  int GetIntProperty(WmWindowProperty key) override;
-  bool MoveToEventRoot(const ui::Event& event) override;
-  void SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
-                         const display::Display& dst_display) override;
-  void SetPinned(bool trusted) override;
   void CloseWidget() override;
-  bool CanActivate() const override;
-  void ShowResizeShadow(int component) override;
-  void HideResizeShadow() override;
-  void InstallResizeHandleWindowTargeter(
-      ImmersiveFullscreenController* immersive_fullscreen_controller) override;
-  void SetBoundsInScreenBehaviorForChildren(
-      BoundsInScreenBehavior behavior) override;
   void AddLimitedPreTargetHandler(ui::EventHandler* handler) override;
 
  private:
-  BoundsInScreenBehavior child_bounds_in_screen_behavior_ =
-      BoundsInScreenBehavior::USE_LOCAL_COORDINATES;
-
   DISALLOW_COPY_AND_ASSIGN(WmWindowMus);
 };
 

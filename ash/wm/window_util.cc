@@ -11,6 +11,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
@@ -73,10 +74,11 @@ bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
       target->GetWidget()->GetNativeView()->GetRootWindow();
   if (!target_root || target_root == window->GetRootWindow())
     return false;
-  aura::Window* window_container =
-      ash::Shell::GetContainer(target_root, window->parent()->id());
+  WmWindow* window_container = WmWindowAura::Get(target_root)
+                                   ->GetRootWindowController()
+                                   ->GetContainer(window->parent()->id());
   // Move the window to the target launcher.
-  window_container->AddChild(window);
+  window_container->AddChild(WmWindowAura::Get(window));
   return true;
 }
 

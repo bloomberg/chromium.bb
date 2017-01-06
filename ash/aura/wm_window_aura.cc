@@ -348,8 +348,14 @@ int WmWindowAura::GetIntProperty(WmWindowProperty key) {
   if (key == WmWindowProperty::SHELF_ID)
     return window_->GetProperty(kShelfIDKey);
 
-  if (key == WmWindowProperty::SHELF_ITEM_TYPE)
-    return window_->GetProperty(kShelfItemTypeKey);
+  if (key == WmWindowProperty::SHELF_ITEM_TYPE) {
+    if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL ||
+        window_->GetProperty(kShelfItemTypeKey) != TYPE_UNDEFINED) {
+      return window_->GetProperty(kShelfItemTypeKey);
+    }
+    // Mash provides a default shelf item type for non-ignored windows.
+    return GetWindowState()->ignored_by_shelf() ? TYPE_UNDEFINED : TYPE_APP;
+  }
 
   if (key == WmWindowProperty::TOP_VIEW_INSET)
     return window_->GetProperty(aura::client::kTopViewInset);
@@ -660,6 +666,8 @@ bool WmWindowAura::CanResize() const {
 }
 
 bool WmWindowAura::CanActivate() const {
+  // TODO(sky): for aura-mus need to key off CanFocus() as well, which is not
+  // currently mirrored to ash.
   return ::wm::CanActivateWindow(window_);
 }
 
@@ -680,6 +688,12 @@ void WmWindowAura::StackChildBelow(WmWindow* child, WmWindow* target) {
 }
 
 void WmWindowAura::SetPinned(bool trusted) {
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
+    // TODO: fix, see http://crbug.com/622486. With aura-mus pinning may just
+    // work.
+    NOTIMPLEMENTED();
+    return;
+  }
   wm::PinWindow(window_, trusted);
 }
 
@@ -759,6 +773,10 @@ WmWindow* WmWindowAura::GetChildByShellWindowId(int id) {
 }
 
 void WmWindowAura::ShowResizeShadow(int component) {
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
+    // TODO: http://crbug.com/640773.
+    return;
+  }
   ResizeShadowController* resize_shadow_controller =
       Shell::GetInstance()->resize_shadow_controller();
   if (resize_shadow_controller)
@@ -766,6 +784,10 @@ void WmWindowAura::ShowResizeShadow(int component) {
 }
 
 void WmWindowAura::HideResizeShadow() {
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
+    // TODO: http://crbug.com/640773.
+    return;
+  }
   ResizeShadowController* resize_shadow_controller =
       Shell::GetInstance()->resize_shadow_controller();
   if (resize_shadow_controller)
@@ -774,6 +796,12 @@ void WmWindowAura::HideResizeShadow() {
 
 void WmWindowAura::InstallResizeHandleWindowTargeter(
     ImmersiveFullscreenController* immersive_fullscreen_controller) {
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
+    // TODO(sky): I believe once ImmersiveFullscreenController is ported this
+    // won't be necessary in mash, but I need to verify that:
+    // http://crbug.com/548435.
+    return;
+  }
   window_->SetEventTargeter(base::MakeUnique<ResizeHandleWindowTargeter>(
       window_, immersive_fullscreen_controller));
 }
