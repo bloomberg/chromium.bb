@@ -11,29 +11,27 @@
   </head>
   <body>
     <script>
-      async_test(function(test) {
-        var script = 'resources/instrumentation-service-worker.js';
-        var scope = 'resources/scope/' + location.pathname;
-        var port;
+      promise_test(function(test) {
+        const script = 'resources/instrumentation-service-worker.js';
+        const scope = 'resources/scope/' + location.pathname;
+        let port;
 
-        budgetServiceMock.then(mock => {
+        return budgetServiceMock.then(mock => {
           mock.setReserveSuccess(true);
-          getActiveServiceWorkerWithMessagePort(test, script, scope)
-            .then(function(workerInfo) {
-              port = workerInfo.port;
-              port.postMessage({ command: 'reserve' });
+          return getActiveServiceWorkerWithMessagePort(test, script, scope);
+        }).then(function(workerInfo) {
+          port = workerInfo.port;
 
-              port.addEventListener('message', function(event) {
-                if (typeof event.data != 'object' || !event.data.command)
-                  assert_unreached('Invalid message from the service worker');
+          port.addEventListener('message', function(event) {
+            if (typeof event.data != 'object' || !event.data.command)
+              assert_unreached('Invalid message from the service worker');
 
-                assert_equals(event.data.command, 'reserve');
-                assert_true(event.data.success,
-                    'reserve should succeed. Error message: ' + event.data.errorMessage);
-                test.done();
-              });
-            })
-          .catch(unreached_rejection(test));
+            assert_equals(event.data.command, 'reserve');
+            assert_true(event.data.success,
+                'reserve should succeed. Error message: ' + event.data.errorMessage);
+          });
+
+          return sendCommand(port, { command: 'reserve' });
         });
       }, 'reserve should succeed from Service Worker');
     </script>

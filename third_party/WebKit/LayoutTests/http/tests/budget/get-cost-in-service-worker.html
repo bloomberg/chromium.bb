@@ -11,30 +11,28 @@
   </head>
   <body>
     <script>
-      async_test(function(test) {
-        var script = 'resources/instrumentation-service-worker.js';
-        var scope = 'resources/scope/' + location.pathname;
-        var port;
+      promise_test(function(test) {
+        const script = 'resources/instrumentation-service-worker.js';
+        const scope = 'resources/scope/' + location.pathname;
+        let port;
 
-        budgetServiceMock.then(mock => {
+        return budgetServiceMock.then(mock => {
           mock.setCost("silent-push", TEST_BUDGET_COST);
-          getActiveServiceWorkerWithMessagePort(test, script, scope)
-            .then(function(workerInfo) {
-              port = workerInfo.port;
-              port.postMessage({ command: 'getCost' });
+          return getActiveServiceWorkerWithMessagePort(test, script, scope);
+        }).then(function(workerInfo) {
+          port = workerInfo.port;
 
-              port.addEventListener('message', function(event) {
-                if (typeof event.data != 'object' || !event.data.command)
-                  assert_unreached('Invalid message from the service worker');
+          port.addEventListener('message', function(event) {
+            if (typeof event.data != 'object' || !event.data.command)
+              assert_unreached('Invalid message from the service worker');
 
-                assert_equals(event.data.command, 'getCost');
-                assert_true(event.data.success,
-                    'getCost should succeed. Error message: ' + event.data.errorMessage);
-                assert_equals(event.data.cost, TEST_BUDGET_COST);
-                test.done();
-              });
-            })
-          .catch(unreached_rejection(test));
+            assert_equals(event.data.command, 'getCost');
+            assert_true(event.data.success,
+                'getCost should succeed. Error message: ' + event.data.errorMessage);
+            assert_equals(event.data.cost, TEST_BUDGET_COST);
+          });
+
+          return sendCommand(port, { command: 'getCost' });
         });
       }, 'getCost should succeed from Service Worker');
     </script>

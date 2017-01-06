@@ -11,32 +11,30 @@
   </head>
   <body>
     <script>
-      async_test(function(test) {
-        var script = 'resources/instrumentation-service-worker.js';
-        var scope = 'resources/scope/' + location.pathname;
-        var port;
+      promise_test(function(test) {
+        const script = 'resources/instrumentation-service-worker.js';
+        const scope = 'resources/scope/' + location.pathname;
+        let port;
 
-        budgetServiceMock.then(mock => {
+        return budgetServiceMock.then(mock => {
           mock.addBudget(TEST_BUDGET_TIME, TEST_BUDGET_AT);
-          getActiveServiceWorkerWithMessagePort(test, script, scope)
-            .then(function(workerInfo) {
-              port = workerInfo.port;
-              port.postMessage({command: 'getBudget'});
+          return getActiveServiceWorkerWithMessagePort(test, script, scope);
+        }).then(function(workerInfo) {
+          port = workerInfo.port;
 
-              port.addEventListener('message', function(event) {
-                if (typeof event.data != 'object' || !event.data.command)
-                  assert_unreached('Invalid message from the service worker');
+          port.addEventListener('message', function(event) {
+            if (typeof event.data != 'object' || !event.data.command)
+              assert_unreached('Invalid message from the service worker');
 
-                assert_equals(event.data.command, 'getBudget');
-                assert_true(event.data.success,
-                    'getBudget should succeed. Error message: ' + event.data.errorMessage);
-                assert_equals(event.data.budgetAt, TEST_BUDGET_AT);
-                assert_equals(event.data.time, TEST_BUDGET_TIME);
-                test.done();
-              });
-            })
-          .catch(unreached_rejection(test));
-        });
+            assert_equals(event.data.command, 'getBudget');
+            assert_true(event.data.success,
+                'getBudget should succeed. Error message: ' + event.data.errorMessage);
+            assert_equals(event.data.budgetAt, TEST_BUDGET_AT);
+            assert_equals(event.data.time, TEST_BUDGET_TIME);
+          });
+
+          return sendCommand(port, { command: 'getBudget' });
+      });
       }, 'getBudget should succeed from Service Worker');
     </script>
   </body>
