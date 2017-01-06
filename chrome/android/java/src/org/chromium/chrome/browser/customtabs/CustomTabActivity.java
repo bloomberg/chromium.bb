@@ -852,7 +852,7 @@ public class CustomTabActivity extends ChromeActivity {
                 getContextualSearchManager().hideContextualSearch(StateChangeReason.UNKNOWN);
             }
             if (fromMenu) {
-                RecordUserAction.record("MobileMeanuFindInPage");
+                RecordUserAction.record("MobileMenuFindInPage");
             } else {
                 RecordUserAction.record("MobileShortcutFindInPage");
             }
