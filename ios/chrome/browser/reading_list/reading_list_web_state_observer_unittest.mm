@@ -31,6 +31,18 @@ class TestNavigationManager : public web::TestNavigationManager {
   bool reload_called_ = false;
 };
 
+// A Test navigation manager that remembers the last opened parameters.
+class TestWebState : public web::TestWebState {
+ public:
+  void OpenURL(const web::WebState::OpenURLParams& params) override {
+    last_opened_url_ = params.url;
+  }
+  const GURL& LastOpenedUrl() { return last_opened_url_; }
+
+ private:
+  GURL last_opened_url_;
+};
+
 // Test fixture to test loading of Reading list entries.
 class ReadingListWebStateObserverTest : public web::WebTest {
  public:
@@ -54,7 +66,7 @@ class ReadingListWebStateObserverTest : public web::WebTest {
   std::unique_ptr<web::NavigationItem> last_committed_item_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   TestNavigationManager* test_navigation_manager_;
-  web::TestWebState test_web_state_;
+  TestWebState test_web_state_;
 };
 
 // Tests that failing loading an online version does not mark it read.
@@ -97,8 +109,8 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListOnline) {
   EXPECT_TRUE(entry->IsRead());
 }
 
-// Tests that loading a distilled version of an entry.
-TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilled) {
+// Tests that loading a distilled version of an entry from a commited entry.
+TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledCommitted) {
   GURL url(kTestURL);
   std::string distilled_path = kTestDistilledPath;
   reading_list_model_->SetEntryDistilledPath(url,
@@ -112,10 +124,32 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilled) {
   test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::FAILURE);
   test_web_state_.SetLoading(false);
 
+  EXPECT_FALSE(test_navigation_manager_->ReloadCalled());
+  EXPECT_EQ(test_web_state_.LastOpenedUrl(), distilled_url);
+  EXPECT_TRUE(entry->IsRead());
+}
+
+// Tests that loading a distilled version of an entry.
+TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledPending) {
+  GURL url(kTestURL);
+  std::string distilled_path = kTestDistilledPath;
+  reading_list_model_->SetEntryDistilledPath(url,
+                                             base::FilePath(distilled_path));
+  const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+  GURL distilled_url =
+      reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());
+
+  test_navigation_manager_->SetPendingItem(nil);
+  test_navigation_manager_->GetLastCommittedItem()->SetURL(url);
+  test_web_state_.SetLoading(true);
+  test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::FAILURE);
+  test_web_state_.SetLoading(false);
+
   EXPECT_TRUE(test_navigation_manager_->ReloadCalled());
   EXPECT_EQ(test_navigation_manager_->GetLastCommittedItem()->GetVirtualURL(),
             url);
   EXPECT_EQ(test_navigation_manager_->GetLastCommittedItem()->GetURL(),
             distilled_url);
+
   EXPECT_TRUE(entry->IsRead());
 }

@@ -49,7 +49,7 @@ class ReadingListWebStateObserver : public web::WebStateObserver,
   void StopCheckingProgress();
 
   // Loads the offline version of the URL in place of the current page.
-  void LoadOfflineReadingListEntry(web::NavigationItem* item);
+  void LoadOfflineReadingListEntry();
 
   // Returns if the current page with |url| has an offline version that can be
   // displayed if the normal loading fails.

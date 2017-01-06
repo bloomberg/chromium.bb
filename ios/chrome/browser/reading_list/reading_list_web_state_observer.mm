@@ -125,7 +125,7 @@ void ReadingListWebStateObserver::ReadingListModelLoaded(
   const GURL& currentURL = item->GetVirtualURL();
   if (IsUrlAvailableOffline(currentURL)) {
     pending_url_ = currentURL;
-    LoadOfflineReadingListEntry(item);
+    LoadOfflineReadingListEntry();
     StopCheckingProgress();
   }
 }
@@ -203,7 +203,7 @@ void ReadingListWebStateObserver::PageLoaded(
     reading_list_model_->SetReadStatus(pending_url_, true);
     UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", false);
   } else {
-    LoadOfflineReadingListEntry(item);
+    LoadOfflineReadingListEntry();
   }
   StopCheckingProgress();
 }
@@ -245,7 +245,7 @@ void ReadingListWebStateObserver::VerifyIfReadingListEntryStartedLoading() {
   double progress = web_state()->GetLoadingProgress();
   const double kMinimumExpectedProgressPerStep = 0.25;
   if (progress < try_number_ * kMinimumExpectedProgressPerStep) {
-    LoadOfflineReadingListEntry(item);
+    LoadOfflineReadingListEntry();
     StopCheckingProgress();
     return;
   }
@@ -258,9 +258,7 @@ void ReadingListWebStateObserver::VerifyIfReadingListEntryStartedLoading() {
   }
 }
 
-void ReadingListWebStateObserver::LoadOfflineReadingListEntry(
-    web::NavigationItem* item) {
-  DCHECK(item);
+void ReadingListWebStateObserver::LoadOfflineReadingListEntry() {
   DCHECK(reading_list_model_);
   if (!pending_url_.is_valid() || !IsUrlAvailableOffline(pending_url_)) {
     return;
@@ -270,9 +268,20 @@ void ReadingListWebStateObserver::LoadOfflineReadingListEntry(
   DCHECK(entry->DistilledState() == ReadingListEntry::PROCESSED);
   GURL url =
       reading_list::DistilledURLForPath(entry->DistilledPath(), entry->URL());
-  item->SetURL(url);
-  item->SetVirtualURL(pending_url_);
-  web_state()->GetNavigationManager()->Reload(false);
+  web::NavigationManager* manager = web_state()->GetNavigationManager();
+  web::NavigationItem* item = manager->GetPendingItem();
+  if (item) {
+    web_state()->Stop();
+    web::WebState::OpenURLParams params(url, item->GetReferrer(),
+                                        WindowOpenDisposition::CURRENT_TAB,
+                                        item->GetTransitionType(), NO);
+    web_state()->OpenURL(params);
+  } else {
+    item = manager->GetLastCommittedItem();
+    item->SetURL(url);
+    item->SetVirtualURL(pending_url_);
+    web_state()->GetNavigationManager()->Reload(false);
+  }
   reading_list_model_->SetReadStatus(entry->URL(), true);
   UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", true);
 }
