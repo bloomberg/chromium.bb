@@ -33,21 +33,6 @@ void LoadClippingRegionToDC(HDC context,
 
 namespace skia {
 
-void DrawToNativeContext(SkCanvas* canvas, HDC destination_hdc, int x, int y,
-                         const RECT* src_rect) {
-  RECT temp_rect;
-  if (!src_rect) {
-    temp_rect.left = 0;
-    temp_rect.right = canvas->imageInfo().width();
-    temp_rect.top = 0;
-    temp_rect.bottom = canvas->imageInfo().height();
-    src_rect = &temp_rect;
-  }
-  skia::CopyHDC(skia::GetNativeDrawingContext(canvas), destination_hdc, x, y,
-                canvas->imageInfo().isOpaque(), *src_rect,
-                canvas->getTotalMatrix());
-}
-
 HDC GetNativeDrawingContext(SkCanvas* canvas) {
   PlatformDevice* platform_device = GetPlatformDevice(canvas->getTopDevice(true));
   if (!platform_device)

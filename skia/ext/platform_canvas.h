@@ -52,16 +52,6 @@ SK_API std::unique_ptr<SkCanvas> CreatePlatformCanvasWithSharedSection(
     HANDLE shared_section,
     OnFailureType failure_type);
 
-// Draws the top layer of the canvas into the specified HDC. Only works
-// with a SkCanvas with a BitmapPlatformDevice. Will create a temporary
-// HDC to back the canvas if one doesn't already exist, tearing it down
-// before returning. If |src_rect| is null, copies the entire canvas.
-SK_API void DrawToNativeContext(SkCanvas* canvas,
-                                HDC hdc,
-                                int x,
-                                int y,
-                                const RECT* src_rect);
-
 // Returns the NativeDrawingContext to use for native platform drawing calls.
 SK_API HDC GetNativeDrawingContext(SkCanvas* canvas);
 
