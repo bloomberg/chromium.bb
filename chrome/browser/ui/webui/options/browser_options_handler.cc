@@ -709,8 +709,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 #if defined(OS_CHROMEOS)
   values->SetBoolean("cupsPrintEnabled",
                      base::CommandLine::ForCurrentProcess()->HasSwitch(
-                         ::switches::kEnableNativeCups) &&
-                         !profile->IsOffTheRecord());
+                         ::switches::kEnableNativeCups));
   values->SetString("cupsPrintLearnMoreURL",
                     chrome::kChromeUIMdCupsSettingsURL);
 #endif  // defined(OS_CHROMEOS)
