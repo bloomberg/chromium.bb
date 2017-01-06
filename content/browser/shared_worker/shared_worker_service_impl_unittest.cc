@@ -298,9 +298,8 @@ class MockSharedWorkerConnector {
   }
   void SendConnect() {
     EXPECT_TRUE(
-        renderer_host_->OnMessageReceived(new ViewHostMsg_ForwardToWorker(
-            WorkerMsg_Connect(create_worker_reply_.route_id, remote_port_id_,
-                              MSG_ROUTING_NONE))));
+        renderer_host_->OnMessageReceived(new ViewHostMsg_ConnectToWorker(
+            create_worker_reply_.route_id, remote_port_id_)));
   }
   void SendSendQueuedMessages(
       const std::vector<QueuedMessage>& queued_messages) {

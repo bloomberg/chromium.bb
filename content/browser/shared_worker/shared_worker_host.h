@@ -45,8 +45,9 @@ class SharedWorkerHost {
 
   // Returns true iff the given message from a renderer process was forwarded to
   // the worker.
-  bool FilterMessage(const IPC::Message& message,
-                     SharedWorkerMessageFilter* filter);
+  bool FilterConnectionMessage(int route_id,
+                               int sent_message_port_id,
+                               SharedWorkerMessageFilter* incoming_filter);
 
   // Handles the shutdown of the filter. If the worker has no other client,
   // sends TerminateWorkerContext message to shut it down.
@@ -109,21 +110,20 @@ class SharedWorkerHost {
 
   using FilterList = std::list<FilterInfo>;
 
-  // Relays |message| to the SharedWorker. Takes care of parsing the message if
-  // it contains a message port and sending it a valid route id.
-  void RelayMessage(const IPC::Message& message,
-                    SharedWorkerMessageFilter* incoming_filter);
-
   // Return a vector of all the render process/render frame IDs.
   std::vector<std::pair<int, int> > GetRenderFrameIDsForWorker();
 
   void RemoveFilters(SharedWorkerMessageFilter* filter);
   bool HasFilter(SharedWorkerMessageFilter* filter, int route_id) const;
+  void Connect(int route_id,
+               int sent_message_port_id,
+               SharedWorkerMessageFilter* incoming_filter);
   void SetMessagePortID(SharedWorkerMessageFilter* filter,
                         int route_id,
                         int message_port_id);
   void AllowFileSystemResponse(std::unique_ptr<IPC::Message> reply_msg,
                                bool allowed);
+
   std::unique_ptr<SharedWorkerInstance> instance_;
   scoped_refptr<WorkerDocumentSet> worker_document_set_;
   FilterList filters_;

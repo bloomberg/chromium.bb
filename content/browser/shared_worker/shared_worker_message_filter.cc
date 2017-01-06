@@ -50,7 +50,7 @@ bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(SharedWorkerMessageFilter, message)
     // Only sent from renderer for now, until we have nested workers.
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker, OnForwardToWorker)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ConnectToWorker, OnConnectToWorker)
     // Only sent from renderer.
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentDetached, OnDocumentDetached)
     // Only sent from SharedWorker in renderer.
@@ -88,8 +88,10 @@ void SharedWorkerMessageFilter::OnCreateWorker(
       WorkerStoragePartitionId(partition_));
 }
 
-void SharedWorkerMessageFilter::OnForwardToWorker(const IPC::Message& message) {
-  SharedWorkerServiceImpl::GetInstance()->ForwardToWorker(message, this);
+void SharedWorkerMessageFilter::OnConnectToWorker(int route_id,
+                                                  int sent_message_port_id) {
+  SharedWorkerServiceImpl::GetInstance()->ConnectToWorker(
+      route_id, sent_message_port_id, this);
 }
 
 void SharedWorkerMessageFilter::OnDocumentDetached(

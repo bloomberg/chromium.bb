@@ -40,7 +40,7 @@ bool WebSharedWorkerProxy::Send(std::unique_ptr<IPC::Message> message) {
   // For now we proxy all messages to the worker process through the browser.
   // Revisit if we find this slow.
   // TODO(jabdelmalek): handle sync messages if we need them.
-  return router_->Send(new ViewHostMsg_ForwardToWorker(*message));
+  return router_->Send(message.release());
 }
 
 void WebSharedWorkerProxy::SendQueuedMessages() {
@@ -63,8 +63,8 @@ void WebSharedWorkerProxy::connect(blink::WebMessagePortChannel* channel,
   DCHECK_NE(MSG_ROUTING_NONE, message_port_id);
   webchannel->QueueMessages();
 
-  Send(base::MakeUnique<WorkerMsg_Connect>(route_id_, message_port_id,
-                                           MSG_ROUTING_NONE));
+  Send(base::MakeUnique<ViewHostMsg_ConnectToWorker>(route_id_,
+                                                     message_port_id));
   connect_listener_ = listener;
 }
 

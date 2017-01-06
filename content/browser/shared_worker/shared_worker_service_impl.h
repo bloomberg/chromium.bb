@@ -56,7 +56,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
       SharedWorkerMessageFilter* filter,
       ResourceContext* resource_context,
       const WorkerStoragePartitionId& partition_id);
-  void ForwardToWorker(const IPC::Message& message,
+  void ConnectToWorker(int route_id,
+                       int sent_message_port_id,
                        SharedWorkerMessageFilter* filter);
   void DocumentDetached(unsigned long long document_id,
                         SharedWorkerMessageFilter* filter);

@@ -699,10 +699,11 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateWorker,
 // is detached).
 IPC_MESSAGE_CONTROL1(ViewHostMsg_DocumentDetached, uint64_t /* document_id */)
 
-// Wraps an IPC message that's destined to the worker on the renderer->browser
-// hop.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_ForwardToWorker,
-                     IPC::Message /* message */)
+// A renderer sends this to the browser process when it wants to connect to a
+// worker.
+IPC_MESSAGE_CONTROL2(ViewHostMsg_ConnectToWorker,
+                     int /* route_id */,
+                     int /* sent_message_port_id */)
 
 // Tells the browser that a specific Appcache manifest in the current page
 // was accessed.

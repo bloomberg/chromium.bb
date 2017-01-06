@@ -98,12 +98,14 @@ void SharedWorkerHost::Start(bool pause_on_start) {
     info.filter()->Send(new ViewMsg_WorkerCreated(info.route_id()));
 }
 
-bool SharedWorkerHost::FilterMessage(const IPC::Message& message,
-                                     SharedWorkerMessageFilter* filter) {
-  if (!IsAvailable() || !HasFilter(filter, message.routing_id()))
+bool SharedWorkerHost::FilterConnectionMessage(
+    int route_id,
+    int sent_message_port_id,
+    SharedWorkerMessageFilter* incoming_filter) {
+  if (!IsAvailable() || !HasFilter(incoming_filter, route_id))
     return false;
 
-  RelayMessage(message, filter);
+  Connect(route_id, sent_message_port_id, incoming_filter);
   return true;
 }
 
@@ -222,42 +224,6 @@ void SharedWorkerHost::AllowIndexedDB(const GURL& url,
       url, name, instance_->resource_context(), GetRenderFrameIDsForWorker());
 }
 
-void SharedWorkerHost::RelayMessage(
-    const IPC::Message& message,
-    SharedWorkerMessageFilter* incoming_filter) {
-  if (!instance_)
-    return;
-  if (message.type() == WorkerMsg_Connect::ID) {
-    // Crack the SharedWorker Connect message to setup routing for the port.
-    WorkerMsg_Connect::Param param;
-    if (!WorkerMsg_Connect::Read(&message, &param))
-      return;
-    int sent_message_port_id = std::get<0>(param);
-    int new_routing_id = std::get<1>(param);
-
-    DCHECK(container_render_filter_);
-    new_routing_id = container_render_filter_->GetNextRoutingID();
-    MessagePortService::GetInstance()->UpdateMessagePort(
-        sent_message_port_id,
-        container_render_filter_->message_port_message_filter(),
-        new_routing_id);
-    SetMessagePortID(
-        incoming_filter, message.routing_id(), sent_message_port_id);
-    // Resend the message with the new routing id.
-    Send(new WorkerMsg_Connect(
-        worker_route_id_, sent_message_port_id, new_routing_id));
-
-    // Send any queued messages for the sent port.
-    MessagePortService::GetInstance()->SendQueuedMessagesIfPossible(
-        sent_message_port_id);
-  } else {
-    IPC::Message* new_message = new IPC::Message(message);
-    new_message->set_routing_id(worker_route_id_);
-    Send(new_message);
-    return;
-  }
-}
-
 void SharedWorkerHost::TerminateWorker() {
   termination_message_sent_ = true;
   if (!closed_)
@@ -309,6 +275,26 @@ bool SharedWorkerHost::HasFilter(SharedWorkerMessageFilter* filter,
       return true;
   }
   return false;
+}
+
+void SharedWorkerHost::Connect(int route_id,
+                               int sent_message_port_id,
+                               SharedWorkerMessageFilter* incoming_filter) {
+  DCHECK(IsAvailable());
+  DCHECK(HasFilter(incoming_filter, route_id));
+  DCHECK(container_render_filter_);
+
+  int new_routing_id = container_render_filter_->GetNextRoutingID();
+  MessagePortService::GetInstance()->UpdateMessagePort(
+      sent_message_port_id,
+      container_render_filter_->message_port_message_filter(), new_routing_id);
+  SetMessagePortID(incoming_filter, route_id, sent_message_port_id);
+  Send(new WorkerMsg_Connect(worker_route_id_, sent_message_port_id,
+                             new_routing_id));
+
+  // Send any queued messages for the sent port.
+  MessagePortService::GetInstance()->SendQueuedMessagesIfPossible(
+      sent_message_port_id);
 }
 
 void SharedWorkerHost::SetMessagePortID(SharedWorkerMessageFilter* filter,
