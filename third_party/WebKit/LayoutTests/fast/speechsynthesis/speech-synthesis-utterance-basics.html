@@ -5,7 +5,7 @@
 <script>
 setup(function() {
   if (window.internals)
-    window.internals.enableMockSpeechSynthesizer(document);
+    window.internals.enableMockSpeechSynthesizer(window);
 });
 
 test(function() {

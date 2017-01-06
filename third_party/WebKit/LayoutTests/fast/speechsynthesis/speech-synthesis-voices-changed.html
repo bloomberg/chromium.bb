@@ -16,7 +16,7 @@
     debug('Initially, there are ' + list.length + ' voices.');
 
     if (window.internals)
-        window.internals.enableMockSpeechSynthesizer(document);
+        window.internals.enableMockSpeechSynthesizer(window);
 
     list = speechSynthesis.getVoices();
     debug('Now there are ' + list.length + ' voices.');

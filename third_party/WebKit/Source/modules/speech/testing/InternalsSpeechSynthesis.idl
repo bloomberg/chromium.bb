@@ -29,5 +29,5 @@
  */
 
 partial interface Internals {
-    void enableMockSpeechSynthesizer(Document document);
+    [CallWith=ScriptState] void enableMockSpeechSynthesizer(Window window);
 };

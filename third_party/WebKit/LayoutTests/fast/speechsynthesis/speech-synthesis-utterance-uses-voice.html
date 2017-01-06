@@ -11,7 +11,7 @@
     description("This tests that we can get synthesizer voices on the Mac");
 
     if (window.internals)
-        window.internals.enableMockSpeechSynthesizer(document);
+        window.internals.enableMockSpeechSynthesizer(window);
 
     if (window.testRunner)
         testRunner.waitUntilDone();

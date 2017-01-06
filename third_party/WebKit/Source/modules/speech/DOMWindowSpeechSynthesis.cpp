@@ -30,6 +30,7 @@
 
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "wtf/PassRefPtr.h"
@@ -37,7 +38,7 @@
 namespace blink {
 
 DOMWindowSpeechSynthesis::DOMWindowSpeechSynthesis(LocalDOMWindow& window)
-    : ContextClient(window.frame()) {}
+    : Supplement<LocalDOMWindow>(window) {}
 
 const char* DOMWindowSpeechSynthesis::supplementName() {
   return "DOMWindowSpeechSynthesis";
@@ -56,22 +57,25 @@ DOMWindowSpeechSynthesis& DOMWindowSpeechSynthesis::from(
 }
 
 // static
-SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis(DOMWindow& window) {
+SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis(
+    ScriptState* scriptState,
+    DOMWindow& window) {
   return DOMWindowSpeechSynthesis::from(toLocalDOMWindow(window))
-      .speechSynthesis();
+      .speechSynthesis(scriptState);
 }
 
-SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis() {
-  if (!m_speechSynthesis && frame())
+SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis(
+    ScriptState* scriptState) {
+  if (!m_speechSynthesis) {
     m_speechSynthesis =
-        SpeechSynthesis::create(frame()->domWindow()->getExecutionContext());
+        SpeechSynthesis::create(scriptState->getExecutionContext());
+  }
   return m_speechSynthesis;
 }
 
 DEFINE_TRACE(DOMWindowSpeechSynthesis) {
   visitor->trace(m_speechSynthesis);
   Supplement<LocalDOMWindow>::trace(visitor);
-  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

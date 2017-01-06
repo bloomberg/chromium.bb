@@ -186,6 +186,10 @@ PASS childWindow.screenY is 0
 PASS childWindow.scrollX is 0
 PASS childWindow.scrollY is 0
 PASS childWindow.scrollbars.visible is false
+PASS childWindow.speechSynthesis.onvoiceschanged is null
+PASS childWindow.speechSynthesis.paused is false
+PASS childWindow.speechSynthesis.pending is false
+PASS childWindow.speechSynthesis.speaking is false
 PASS childWindow.status is ''
 PASS childWindow.statusbar.visible is false
 PASS childWindow.styleMedia.type is ''

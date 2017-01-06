@@ -7,7 +7,7 @@
     description("This tests that the mock speech synthesizer is well behaved when attempting to pause/resume without first speaking.");
 
     if (window.internals)
-        window.internals.enableMockSpeechSynthesizer(document);
+        window.internals.enableMockSpeechSynthesizer(window);
 
     shouldBeUndefined("speechSynthesis.pause()");
     shouldBeUndefined("speechSynthesis.resume()");

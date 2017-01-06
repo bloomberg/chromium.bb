@@ -972,7 +972,7 @@ struct NativeValueTraits<Vector<T>> {
 CORE_EXPORT v8::Isolate* toIsolate(ExecutionContext*);
 CORE_EXPORT v8::Isolate* toIsolate(LocalFrame*);
 
-DOMWindow* toDOMWindow(v8::Isolate*, v8::Local<v8::Value>);
+CORE_EXPORT DOMWindow* toDOMWindow(v8::Isolate*, v8::Local<v8::Value>);
 DOMWindow* toDOMWindow(v8::Local<v8::Context>);
 LocalDOMWindow* enteredDOMWindow(v8::Isolate*);
 CORE_EXPORT LocalDOMWindow* currentDOMWindow(v8::Isolate*);

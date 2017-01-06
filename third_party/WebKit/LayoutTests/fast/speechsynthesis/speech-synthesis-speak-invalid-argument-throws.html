@@ -10,7 +10,7 @@
 <script>
 
     if (window.internals)
-        window.internals.enableMockSpeechSynthesizer(document);
+        window.internals.enableMockSpeechSynthesizer(window);
 
     description("This tests that passing an argument other than a SpeechSynthesisUtterance to speechSynthesis.speak throws a TypeError exception.");
 

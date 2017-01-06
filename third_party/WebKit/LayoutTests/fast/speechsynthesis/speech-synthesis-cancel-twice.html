@@ -12,7 +12,7 @@
     description("This tests that cancelling an utterance a second time after garbage collection doesn't crash under ASAN.");
 
     if (window.internals)
-        window.internals.enableMockSpeechSynthesizer(document);
+        window.internals.enableMockSpeechSynthesizer(window);
 
     speechSynthesis.speak(new SpeechSynthesisUtterance("Hello"));
     speechSynthesis.cancel();

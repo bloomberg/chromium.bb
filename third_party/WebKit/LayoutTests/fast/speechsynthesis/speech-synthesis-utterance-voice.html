@@ -25,7 +25,7 @@ test(() => {
 }, 'setting to non-SpeechSynthesisVoice values');
 
 test(() => {
-  internals.enableMockSpeechSynthesizer(document);
+  internals.enableMockSpeechSynthesizer(window);
 
   const u = new SpeechSynthesisUtterance();
   const voice = speechSynthesis.getVoices()[0];

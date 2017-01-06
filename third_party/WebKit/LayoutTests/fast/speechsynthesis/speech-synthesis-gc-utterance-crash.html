@@ -10,7 +10,7 @@
 <script>
 
     if (window.internals)
-        window.internals.enableMockSpeechSynthesizer(document);
+        window.internals.enableMockSpeechSynthesizer(window);
 
     description("This tests that there isn't a crash if the utterance object is garbage-collected before speaking finishes.");
 

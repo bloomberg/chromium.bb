@@ -8,7 +8,7 @@
     description("This tests that multiple speak utterances are handled in sequence.");
 
     if (window.internals)
-        window.internals.enableMockSpeechSynthesizer(document);
+        window.internals.enableMockSpeechSynthesizer(window);
 
     if (window.testRunner)
         testRunner.waitUntilDone();
