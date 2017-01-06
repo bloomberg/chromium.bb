@@ -4,7 +4,8 @@
 
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 
-#include <memory>
+#include <map>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
@@ -21,10 +22,12 @@
 #include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/webdata/common/web_database.h"
-#include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using sync_pb::AutofillSpecifics;
+using sync_pb::EntitySpecifics;
+using syncer::EntityDataPtr;
+using syncer::EntityData;
 using syncer::SyncError;
 
 namespace autofill {
@@ -58,6 +61,28 @@ std::unique_ptr<syncer::ModelTypeChangeProcessor>
 CreateModelTypeChangeProcessor(syncer::ModelType type,
                                syncer::ModelTypeSyncBridge* bridge) {
   return base::MakeUnique<syncer::FakeModelTypeChangeProcessor>();
+}
+
+AutofillEntry CreateAutofillEntry(
+    const sync_pb::AutofillSpecifics& autofill_specifics) {
+  AutofillKey key(base::UTF8ToUTF16(autofill_specifics.name()),
+                  base::UTF8ToUTF16(autofill_specifics.value()));
+  base::Time date_created, date_last_used;
+  const google::protobuf::RepeatedField<int64_t>& timestamps =
+      autofill_specifics.usage_timestamp();
+  if (!timestamps.empty()) {
+    date_created = base::Time::FromInternalValue(*timestamps.begin());
+    date_last_used = base::Time::FromInternalValue(*timestamps.rbegin());
+  }
+  return AutofillEntry(key, date_created, date_last_used);
+}
+
+// Creates an EntityData/EntityDataPtr around a copy of the given specifics.
+EntityDataPtr SpecificsToEntity(const AutofillSpecifics& specifics) {
+  EntityData data;
+  data.client_tag_hash = "ignored";
+  *data.specifics.mutable_autofill() = specifics;
+  return data.PassToPtr();
 }
 
 class FakeAutofillBackend : public AutofillWebDataBackend {
@@ -101,8 +126,7 @@ class AutocompleteSyncBridgeTest : public testing::Test {
       const std::vector<AutofillSpecifics>& specifics_list) {
     std::vector<AutofillEntry> new_entries;
     for (const auto& specifics : specifics_list) {
-      new_entries.push_back(
-          AutocompleteSyncBridge::CreateAutofillEntry(specifics));
+      new_entries.push_back(CreateAutofillEntry(specifics));
     }
     table_.UpdateAutofillEntries(new_entries);
   }
@@ -116,8 +140,10 @@ class AutocompleteSyncBridgeTest : public testing::Test {
   }
 
   std::string GetStorageKey(const AutofillSpecifics& specifics) {
-    return net::EscapePath(specifics.name()) + "|" +
-           net::EscapePath(specifics.value());
+    std::string key =
+        bridge()->GetStorageKey(SpecificsToEntity(specifics).value());
+    EXPECT_FALSE(key.empty());
+    return key;
   }
 
  private:
@@ -130,6 +156,56 @@ class AutocompleteSyncBridgeTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteSyncBridgeTest);
 };
+
+TEST_F(AutocompleteSyncBridgeTest, GetClientTag) {
+  // TODO(skym, crbug.com/675991): Implementation.
+}
+
+TEST_F(AutocompleteSyncBridgeTest, GetStorageKey) {
+  std::string key = GetStorageKey(CreateSpecifics(1));
+  EXPECT_EQ(key, GetStorageKey(CreateSpecifics(1)));
+  EXPECT_NE(key, GetStorageKey(CreateSpecifics(2)));
+}
+
+// Timestamps should not affect storage keys.
+TEST_F(AutocompleteSyncBridgeTest, GetStorageKeyTimestamp) {
+  AutofillSpecifics specifics = CreateSpecifics(1);
+  std::string key = GetStorageKey(specifics);
+
+  specifics.add_usage_timestamp(1);
+  EXPECT_EQ(key, GetStorageKey(specifics));
+
+  specifics.add_usage_timestamp(0);
+  EXPECT_EQ(key, GetStorageKey(specifics));
+
+  specifics.add_usage_timestamp(-1);
+  EXPECT_EQ(key, GetStorageKey(specifics));
+}
+
+// Verify that the \0 character is respected as a difference.
+TEST_F(AutocompleteSyncBridgeTest, GetStorageKeyNull) {
+  AutofillSpecifics specifics;
+  std::string key = GetStorageKey(specifics);
+
+  specifics.set_value(std::string("\0", 1));
+  EXPECT_NE(key, GetStorageKey(specifics));
+}
+
+// The storage key should never accidentally change for existing data. This
+// would cause lookups to fail and either lose or duplicate user data. It should
+// be possible for the model type to migrate storage key formats, but doing so
+// would need to be done very carefully.
+TEST_F(AutocompleteSyncBridgeTest, GetStorageKeyFixed) {
+  EXPECT_EQ("\n\x6name 1\x12\avalue 1", GetStorageKey(CreateSpecifics(1)));
+  EXPECT_EQ("\n\x6name 2\x12\avalue 2", GetStorageKey(CreateSpecifics(2)));
+  // This literal contains the null terminating character, which causes
+  // std::string to stop copying early if we don't tell it how much to read.
+  EXPECT_EQ(std::string("\n\0\x12\0", 4), GetStorageKey(AutofillSpecifics()));
+  AutofillSpecifics specifics;
+  specifics.set_name("\xEC\xA4\x91");
+  specifics.set_value("\xD0\x80");
+  EXPECT_EQ("\n\x3\xEC\xA4\x91\x12\x2\xD0\x80", GetStorageKey(specifics));
+}
 
 TEST_F(AutocompleteSyncBridgeTest, GetData) {
   const AutofillSpecifics specifics1 = CreateSpecifics(1);

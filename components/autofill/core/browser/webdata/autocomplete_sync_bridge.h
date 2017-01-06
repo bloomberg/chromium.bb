@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOCOMPLETE_SYNC_BRIDGE_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOCOMPLETE_SYNC_BRIDGE_H_
 
+#include <memory>
+#include <string>
+
 #include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
 #include "base/threading/non_thread_safe.h"

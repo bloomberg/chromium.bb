@@ -5,10 +5,13 @@
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/proto/autofill_sync.pb.h"
 #include "components/autofill/core/browser/webdata/autofill_metadata_change_list.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
@@ -19,9 +22,12 @@
 #include "components/sync/model/sync_error.h"
 #include "net/base/escape.h"
 
+namespace autofill {
+
 namespace {
 
 const char kAutocompleteEntryNamespaceTag[] = "autofill_entry|";
+const char kAutocompleteTagDelimiter[] = "|";
 
 void* UserDataKey() {
   // Use the address of a static that COMDAT folding won't ever collide
@@ -31,7 +37,7 @@ void* UserDataKey() {
 }
 
 std::unique_ptr<syncer::EntityData> CreateEntityData(
-    const autofill::AutofillEntry& entry) {
+    const AutofillEntry& entry) {
   auto entity_data = base::MakeUnique<syncer::EntityData>();
   entity_data->non_unique_name = base::UTF16ToUTF8(entry.key().name());
   sync_pb::AutofillSpecifics* autofill =
@@ -44,9 +50,20 @@ std::unique_ptr<syncer::EntityData> CreateEntityData(
   return entity_data;
 }
 
-}  // namespace
+std::string BuildSerializedStorageKey(const std::string& name,
+                                      const std::string& value) {
+  AutofillSyncStorageKey proto;
+  proto.set_name(name);
+  proto.set_value(value);
+  return proto.SerializeAsString();
+}
 
-namespace autofill {
+std::string GetStorageKeyFromModel(const AutofillKey& key) {
+  return BuildSerializedStorageKey(base::UTF16ToUTF8(key.name()),
+                                   base::UTF16ToUTF8(key.value()));
+}
+
+}  // namespace
 
 // static
 void AutocompleteSyncBridge::CreateForWebDataServiceAndBackend(
@@ -117,7 +134,7 @@ void AutocompleteSyncBridge::AutocompleteSyncBridge::GetData(
   std::vector<AutofillEntry> entries;
   GetAutofillTable()->GetAllAutofillEntries(&entries);
   for (const AutofillEntry& entry : entries) {
-    std::string key = GetStorageKeyFromAutofillEntry(entry);
+    std::string key = GetStorageKeyFromModel(entry.key());
     if (keys_set.find(key) != keys_set.end()) {
       batch->Put(key, CreateEntityData(entry));
     }
@@ -131,7 +148,7 @@ void AutocompleteSyncBridge::GetAllData(DataCallback callback) {
   std::vector<AutofillEntry> entries;
   GetAutofillTable()->GetAllAutofillEntries(&entries);
   for (const AutofillEntry& entry : entries) {
-    batch->Put(GetStorageKeyFromAutofillEntry(entry), CreateEntityData(entry));
+    batch->Put(GetStorageKeyFromModel(entry.key()), CreateEntityData(entry));
   }
   callback.Run(syncer::SyncError(), std::move(batch));
 }
@@ -139,18 +156,18 @@ void AutocompleteSyncBridge::GetAllData(DataCallback callback) {
 std::string AutocompleteSyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_autofill());
-
   const sync_pb::AutofillSpecifics specifics = entity_data.specifics.autofill();
-  std::string storage_key =
-      FormatStorageKey(specifics.name(), specifics.value());
-  std::string prefix(kAutocompleteEntryNamespaceTag);
-  return prefix + storage_key;
+  return std::string(kAutocompleteEntryNamespaceTag) +
+         net::EscapePath(specifics.name()) +
+         std::string(kAutocompleteTagDelimiter) +
+         net::EscapePath(specifics.value());
 }
 
 std::string AutocompleteSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
+  DCHECK(entity_data.specifics.has_autofill());
   const sync_pb::AutofillSpecifics specifics = entity_data.specifics.autofill();
-  return FormatStorageKey(specifics.name(), specifics.value());
+  return BuildSerializedStorageKey(specifics.name(), specifics.value());
 }
 
 // AutofillWebDataServiceObserverOnDBThread implementation.
@@ -176,18 +193,6 @@ AutofillEntry AutocompleteSyncBridge::CreateAutofillEntry(
 
 AutofillTable* AutocompleteSyncBridge::GetAutofillTable() const {
   return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase());
-}
-
-std::string AutocompleteSyncBridge::GetStorageKeyFromAutofillEntry(
-    const autofill::AutofillEntry& entry) {
-  return FormatStorageKey(base::UTF16ToUTF8(entry.key().name()),
-                          base::UTF16ToUTF8(entry.key().value()));
-}
-
-// static
-std::string AutocompleteSyncBridge::FormatStorageKey(const std::string& name,
-                                                     const std::string& value) {
-  return net::EscapePath(name) + "|" + net::EscapePath(value);
 }
 
 }  // namespace autofill

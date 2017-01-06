@@ -6,6 +6,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
   sources = [
+    "autofill_sync.proto",
     "server.proto",
   ]
 }
