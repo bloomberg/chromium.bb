@@ -684,13 +684,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FocusDuringUnminimize) {
 }
 
 // Tests maximized window size during root window resize.
-#if defined(OS_WIN) && !defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_MaximizeRootWindowResize DISABLED_MaximizeRootWindowResize
-#else
-#define MAYBE_MaximizeRootWindowResize MaximizeRootWindowResize
-#endif
-TEST_F(WorkspaceLayoutManagerSoloTest, MAYBE_MaximizeRootWindowResize) {
+TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeRootWindowResize) {
   gfx::Rect bounds(100, 100, 200, 200);
   std::unique_ptr<WindowOwner> window_owner(CreateTestWindow(bounds));
   WmWindow* window = window_owner->window();

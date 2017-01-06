@@ -14,15 +14,12 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "ui/gfx/geometry/vector3d_f.h"
-
-#if defined(OS_CHROMEOS)
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "chromeos/dbus/power_manager_client.h"
-#endif  // OS_CHROMEOS
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 namespace base {
 class TickClock;
@@ -48,10 +45,8 @@ class VirtualKeyboardControllerTest;
 // enters and exits maximize mode when the lid is opened beyond the triggering
 // angle and rotates the display to match the device when in maximize mode.
 class ASH_EXPORT MaximizeModeController :
-#if defined(OS_CHROMEOS)
     public chromeos::AccelerometerReader::Observer,
     public chromeos::PowerManagerClient::Observer,
-#endif  // OS_CHROMEOS
     NON_EXPORTED_BASE(public mojom::TouchViewManager),
     public ShellObserver,
     public WmDisplayObserver {
@@ -91,7 +86,6 @@ class ASH_EXPORT MaximizeModeController :
   // WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
 
-#if defined(OS_CHROMEOS)
   // chromeos::AccelerometerReader::Observer:
   void OnAccelerometerUpdated(
       scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
@@ -101,7 +95,6 @@ class ASH_EXPORT MaximizeModeController :
   void TabletModeEventReceived(bool on, const base::TimeTicks& time) override;
   void SuspendImminent() override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
-#endif  // OS_CHROMEOS
 
  private:
   friend class MaximizeModeControllerTest;
@@ -120,12 +113,10 @@ class ASH_EXPORT MaximizeModeController :
   // artificially and deterministically control the current time.
   void SetTickClockForTest(std::unique_ptr<base::TickClock> tick_clock);
 
-#if defined(OS_CHROMEOS)
   // Detect hinge rotation from base and lid accelerometers and automatically
   // start / stop maximize mode.
   void HandleHingeRotation(
       scoped_refptr<const chromeos::AccelerometerUpdate> update);
-#endif
 
   // Returns true if the lid was recently opened.
   bool WasLidOpenedRecently() const;
@@ -175,10 +166,8 @@ class ASH_EXPORT MaximizeModeController :
   // Source for the current time in base::TimeTicks.
   std::unique_ptr<base::TickClock> tick_clock_;
 
-#if defined(OS_CHROMEOS)
   // Set when tablet mode switch is on. This is used to force maximize mode.
   bool tablet_mode_switch_is_on_;
-#endif
 
   // Tracks when the lid is closed. Used to prevent entering maximize mode.
   bool lid_is_closed_;

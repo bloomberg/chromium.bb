@@ -400,14 +400,7 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRearranged) {
   ExpectChildNodeInserted(target_node->getNodeId(), sibling_node->getNodeId());
 }
 
-#if defined(OS_WIN)
-#define MAYBE_WindowReorganizedChildNodeRemovedAndInserted \
-  DISABLED_WindowReorganizedChildNodeRemovedAndInserted
-#else
-#define MAYBE_WindowReorganizedChildNodeRemovedAndInserted \
-  WindowReorganizedChildNodeRemovedAndInserted
-#endif  // defined(OS_WIN)
-TEST_F(AshDevToolsTest, MAYBE_WindowReorganizedChildNodeRemovedAndInserted) {
+TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
   WmWindow* root_window = WmShell::Get()->GetPrimaryRootWindow();
   WmWindow* target_window = root_window->GetChildren()[1];
   WmWindow* parent_window = root_window->GetChildren()[0];

@@ -7,8 +7,6 @@
 
 #include "ash/ash_export.h"
 
-#include "build/build_config.h"
-
 namespace ash {
 namespace switches {
 
@@ -23,16 +21,12 @@ ASH_EXPORT extern const char kAshCopyHostBackgroundAtBoot[];
 ASH_EXPORT extern const char kAshDebugShortcuts[];
 ASH_EXPORT extern const char kAshDeveloperShortcuts[];
 ASH_EXPORT extern const char kAshDisableMaximizeModeWindowBackdrop[];
-#if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshDisableScreenOrientationLock[];
-#endif
 ASH_EXPORT extern const char kAshDisableTouchExplorationMode[];
-#if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshEnableFullscreenAppList[];
 ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
 ASH_EXPORT extern const char kAshEnablePalette[];
 ASH_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
-#endif
 ASH_EXPORT extern const char kAshEnableTouchView[];
 ASH_EXPORT extern const char kAshEnableMirroredScreen[];
 ASH_EXPORT extern const char kAshDisableStableOverviewOrder[];
@@ -45,10 +39,8 @@ ASH_EXPORT extern const char kAshMaterialDesignExperimental[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 
-#if defined(OS_CHROMEOS)
 // True if the pointer (cursor) position should be kept inside root windows.
 ASH_EXPORT bool ConstrainPointerToRoot();
-#endif
 
 }  // namespace switches
 }  // namespace ash

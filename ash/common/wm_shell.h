@@ -60,6 +60,7 @@ class KeyEventWatcher;
 class KeyboardBrightnessControlDelegate;
 class KeyboardUI;
 class LocaleNotificationController;
+class LogoutConfirmationController;
 class MaximizeModeController;
 class MediaController;
 class MruWindowTracker;
@@ -79,6 +80,7 @@ class SystemTrayDelegate;
 class SystemTrayController;
 class SystemTrayNotifier;
 class ToastManager;
+class VpnList;
 class WallpaperController;
 class WallpaperDelegate;
 class WindowCycleController;
@@ -98,11 +100,6 @@ namespace wm {
 class MaximizeModeEventHandler;
 class WindowState;
 }
-
-#if defined(OS_CHROMEOS)
-class LogoutConfirmationController;
-class VpnList;
-#endif
 
 // Similar to ash::Shell. Eventually the two will be merged.
 class ASH_EXPORT WmShell : public SessionStateObserver {
@@ -144,6 +141,10 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   LocaleNotificationController* locale_notification_controller() {
     return locale_notification_controller_.get();
+  }
+
+  LogoutConfirmationController* logout_confirmation_controller() {
+    return logout_confirmation_controller_.get();
   }
 
   MaximizeModeController* maximize_mode_controller() {
@@ -193,6 +194,8 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   ToastManager* toast_manager() { return toast_manager_.get(); }
 
+  VpnList* vpn_list() { return vpn_list_.get(); }
+
   WallpaperController* wallpaper_controller() {
     return wallpaper_controller_.get();
   }
@@ -205,6 +208,10 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   WindowSelectorController* window_selector_controller() {
     return window_selector_controller_.get();
+  }
+
+  const scoped_refptr<base::SequencedWorkerPool>& blocking_pool() {
+    return blocking_pool_;
   }
 
   // Returns true when ash is running as a service_manager::Service.
@@ -430,23 +437,11 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   // True if any touch points are down.
   virtual bool IsTouchDown() = 0;
 
-  const scoped_refptr<base::SequencedWorkerPool>& blocking_pool() {
-    return blocking_pool_;
-  }
-
-#if defined(OS_CHROMEOS)
-  LogoutConfirmationController* logout_confirmation_controller() {
-    return logout_confirmation_controller_.get();
-  }
-
-  VpnList* vpn_list() { return vpn_list_.get(); }
-
   // TODO(jamescook): Remove this when VirtualKeyboardController has been moved.
   virtual void ToggleIgnoreExternalKeyboard() = 0;
 
   // Enable or disable the laser pointer.
   virtual void SetLaserPointerEnabled(bool enabled) = 0;
-#endif
 
  protected:
   explicit WmShell(std::unique_ptr<ShellDelegate> shell_delegate);
@@ -505,6 +500,7 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
       keyboard_brightness_control_delegate_;
   std::unique_ptr<KeyboardUI> keyboard_ui_;
   std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
+  std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
   std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
   std::unique_ptr<MediaController> media_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
@@ -519,6 +515,7 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<ToastManager> toast_manager_;
+  std::unique_ptr<VpnList> vpn_list_;
   std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<WallpaperDelegate> wallpaper_delegate_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
@@ -534,11 +531,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   bool simulate_modal_window_open_for_testing_ = false;
 
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
-
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
-  std::unique_ptr<VpnList> vpn_list_;
-#endif
 };
 
 }  // namespace ash

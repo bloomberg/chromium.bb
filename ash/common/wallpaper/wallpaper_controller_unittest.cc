@@ -372,13 +372,7 @@ TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
   EXPECT_TRUE(resized_image.BackedBySameObjectAs(controller_->GetWallpaper()));
 }
 
-#if defined(OS_WIN) && !defined(USE_ASH)
-// TODO(msw): Broken on Windows. http://crbug.com/584038
-#define MAYBE_GetMaxDisplaySize DISABLED_GetMaxDisplaySize
-#else
-#define MAYBE_GetMaxDisplaySize GetMaxDisplaySize
-#endif
-TEST_F(WallpaperControllerTest, MAYBE_GetMaxDisplaySize) {
+TEST_F(WallpaperControllerTest, GetMaxDisplaySize) {
   // Device scale factor shouldn't affect the native size.
   UpdateDisplay("1000x300*2");
   EXPECT_EQ("1000x300",

@@ -27,6 +27,10 @@
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shutdown_controller.h"
 #include "ash/common/system/brightness_control_delegate.h"
+#include "ash/common/system/chromeos/brightness/brightness_controller_chromeos.h"
+#include "ash/common/system/chromeos/keyboard_brightness_controller.h"
+#include "ash/common/system/chromeos/network/vpn_list.h"
+#include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/toast/toast_manager.h"
@@ -54,13 +58,6 @@
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/display/display.h"
 #include "ui/views/focus/focus_manager_factory.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/brightness/brightness_controller_chromeos.h"
-#include "ash/common/system/chromeos/keyboard_brightness_controller.h"
-#include "ash/common/system/chromeos/network/vpn_list.h"
-#include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
-#endif
 
 namespace ash {
 
@@ -251,9 +248,13 @@ void WmShell::SetPaletteDelegateForTesting(
 WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
     : delegate_(std::move(shell_delegate)),
       app_list_(base::MakeUnique<app_list::AppList>()),
+      brightness_control_delegate_(
+          base::MakeUnique<system::BrightnessControllerChromeos>()),
       cast_config_(base::MakeUnique<CastConfigController>()),
       focus_cycler_(base::MakeUnique<FocusCycler>()),
       immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
+      keyboard_brightness_control_delegate_(
+          base::MakeUnique<KeyboardBrightnessController>()),
       locale_notification_controller_(
           base::MakeUnique<LocaleNotificationController>()),
       media_controller_(base::MakeUnique<MediaController>()),
@@ -263,15 +264,11 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
       shutdown_controller_(base::MakeUnique<ShutdownController>()),
       system_tray_controller_(base::MakeUnique<SystemTrayController>()),
       system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),
+      vpn_list_(base::MakeUnique<VpnList>()),
       wallpaper_delegate_(delegate_->CreateWallpaperDelegate()),
       window_cycle_controller_(base::MakeUnique<WindowCycleController>()),
       window_selector_controller_(
           base::MakeUnique<WindowSelectorController>()) {
-#if defined(OS_CHROMEOS)
-  brightness_control_delegate_.reset(new system::BrightnessControllerChromeos);
-  keyboard_brightness_control_delegate_.reset(new KeyboardBrightnessController);
-  vpn_list_ = base::MakeUnique<VpnList>();
-#endif
   session_controller_->AddSessionStateObserver(this);
 
   prefs::mojom::PreferencesManagerPtr pref_manager_ptr;
@@ -373,20 +370,16 @@ void WmShell::SetSystemTrayDelegate(
   DCHECK(delegate);
   system_tray_delegate_ = std::move(delegate);
   system_tray_delegate_->Initialize();
-#if defined(OS_CHROMEOS)
   // Accesses WmShell in its constructor.
   logout_confirmation_controller_.reset(new LogoutConfirmationController(
       base::Bind(&SystemTrayController::SignOut,
                  base::Unretained(system_tray_controller_.get()))));
-#endif
 }
 
 void WmShell::DeleteSystemTrayDelegate() {
   DCHECK(system_tray_delegate_);
-#if defined(OS_CHROMEOS)
   // Accesses WmShell in its destructor.
   logout_confirmation_controller_.reset();
-#endif
   system_tray_delegate_.reset();
 }
 

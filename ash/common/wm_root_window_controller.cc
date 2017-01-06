@@ -454,12 +454,10 @@ void WmRootWindowController::CreateContainers() {
   overlay_container->SetBoundsInScreenBehaviorForChildren(
       WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
 
-#if defined(OS_CHROMEOS)
   WmWindow* mouse_cursor_container = CreateContainer(
       kShellWindowId_MouseCursorContainer, "MouseCursorContainer", root_);
   mouse_cursor_container->SetBoundsInScreenBehaviorForChildren(
       WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
-#endif
 
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
                   "PowerButtonAnimationContainer", root_);

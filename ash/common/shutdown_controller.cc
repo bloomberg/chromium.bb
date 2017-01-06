@@ -6,12 +6,9 @@
 
 #include "ash/common/shell_delegate.h"
 #include "ash/common/wm_shell.h"
-
-#if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-#endif
 
 namespace ash {
 
@@ -20,20 +17,18 @@ ShutdownController::ShutdownController() {}
 ShutdownController::~ShutdownController() {}
 
 void ShutdownController::ShutDownOrReboot() {
-#if defined(OS_CHROMEOS)
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    // Power manager handles shutdown on Chrome OS hardware.
-    using chromeos::DBusThreadManager;
-    if (reboot_on_shutdown_)
-      DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
-    else
-      DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
+  // For developers on Linux desktop just exit the app.
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
+    WmShell::Get()->delegate()->Exit();
     return;
   }
-#endif  // defined(OS_CHROMEOS)
 
-  // On Windows and on Linux desktop just exit.
-  WmShell::Get()->delegate()->Exit();
+  // On real Chrome OS hardware the power manager handles shutdown.
+  using chromeos::DBusThreadManager;
+  if (reboot_on_shutdown_)
+    DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
+  else
+    DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
 }
 
 void ShutdownController::SetRebootOnShutdown(bool reboot_on_shutdown) {

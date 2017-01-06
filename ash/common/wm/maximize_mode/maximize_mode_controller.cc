@@ -14,22 +14,18 @@
 #include "base/metrics/histogram.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/chromeos/accelerometer/accelerometer_util.h"
 #include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "ui/chromeos/accelerometer/accelerometer_util.h"
-#endif  // OS_CHROMEOS
-
 namespace ash {
 
 namespace {
 
-#if defined(OS_CHROMEOS)
 // The hinge angle at which to enter maximize mode.
 const float kEnterMaximizeModeAngle = 200.0f;
 
@@ -43,7 +39,6 @@ const float kExitMaximizeModeAngle = 160.0f;
 // vice versa).
 const float kMinStableAngle = 20.0f;
 const float kMaxStableAngle = 340.0f;
-#endif  // OS_CHROMEOS
 
 // The time duration to consider the lid to be recently opened.
 // This is used to prevent entering maximize mode if an erroneous accelerometer
@@ -51,7 +46,6 @@ const float kMaxStableAngle = 340.0f;
 // lid from a closed position.
 const int kLidRecentlyOpenedDurationSeconds = 2;
 
-#if defined(OS_CHROMEOS)
 // When the device approaches vertical orientation (i.e. portrait orientation)
 // the accelerometers for the base and lid approach the same values (i.e.
 // gravity pointing in the direction of the hinge). When this happens abrupt
@@ -83,7 +77,6 @@ bool IsAngleBetweenAccelerometerReadingsStable(
                  update.get(chromeos::ACCELEROMETER_SOURCE_SCREEN))
                  .Length()) <= kNoisyMagnitudeDeviation;
 }
-#endif  // OS_CHROMEOS
 
 bool IsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -96,9 +89,7 @@ MaximizeModeController::MaximizeModeController()
     : have_seen_accelerometer_data_(false),
       touchview_usage_interval_start_time_(base::Time::Now()),
       tick_clock_(new base::DefaultTickClock()),
-#if defined(OS_CHROMEOS)
       tablet_mode_switch_is_on_(false),
-#endif
       lid_is_closed_(false) {
   WmShell::Get()->AddShellObserver(this);
   WmShell::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
@@ -111,12 +102,10 @@ MaximizeModeController::MaximizeModeController()
   if (is_enabled)
     WmShell::Get()->AddDisplayObserver(this);
 
-#if defined(OS_CHROMEOS)
   if (is_enabled)
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
-#endif  // OS_CHROMEOS
 }
 
 MaximizeModeController::~MaximizeModeController() {
@@ -125,12 +114,10 @@ MaximizeModeController::~MaximizeModeController() {
   if (is_enabled)
     WmShell::Get()->RemoveDisplayObserver(this);
 
-#if defined(OS_CHROMEOS)
   if (is_enabled)
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
-#endif  // OS_CHROMEOS
 }
 
 bool MaximizeModeController::CanEnterMaximizeMode() {
@@ -193,7 +180,6 @@ void MaximizeModeController::BindRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-#if defined(OS_CHROMEOS)
 void MaximizeModeController::OnAccelerometerUpdated(
     scoped_refptr<const chromeos::AccelerometerUpdate> update) {
   bool first_accelerometer_update = !have_seen_accelerometer_data_;
@@ -323,7 +309,6 @@ void MaximizeModeController::HandleHingeRotation(
     EnterMaximizeMode();
   }
 }
-#endif  // OS_CHROMEOS
 
 void MaximizeModeController::EnterMaximizeMode() {
   // Always reset first to avoid creation before destruction of a previous

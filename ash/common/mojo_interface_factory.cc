@@ -14,6 +14,7 @@
 #include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shutdown_controller.h"
+#include "ash/common/system/chromeos/network/vpn_list.h"
 #include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
@@ -22,10 +23,6 @@
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/app_list/presenter/app_list.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/network/vpn_list.h"
-#endif
 
 namespace ash {
 
@@ -82,11 +79,9 @@ void BindTouchViewRequestOnMainThread(mojom::TouchViewManagerRequest request) {
   WmShell::Get()->maximize_mode_controller()->BindRequest(std::move(request));
 }
 
-#if defined(OS_CHROMEOS)
 void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
   WmShell::Get()->vpn_list()->BindRequest(std::move(request));
 }
-#endif
 
 void BindWallpaperRequestOnMainThread(
     mojom::WallpaperControllerRequest request) {
@@ -125,10 +120,8 @@ void RegisterInterfaces(
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindTouchViewRequestOnMainThread),
                          main_thread_task_runner);
-#if defined(OS_CHROMEOS)
   registry->AddInterface(base::Bind(&BindVpnListRequestOnMainThread),
                          main_thread_task_runner);
-#endif
   registry->AddInterface(base::Bind(&BindWallpaperRequestOnMainThread),
                          main_thread_task_runner);
 }

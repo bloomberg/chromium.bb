@@ -34,11 +34,9 @@ const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 const char kAshDisableMaximizeModeWindowBackdrop[] =
     "ash-disable-maximize-mode-window-backdrop";
 
-#if defined(OS_CHROMEOS)
 // Disable the support for WebContents to lock the screen orientation.
 const char kAshDisableScreenOrientationLock[] =
     "ash-disable-screen-orientation-lock";
-#endif
 
 // Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
 // turned on automatically when spoken feedback is enabled when this flag is
@@ -46,7 +44,6 @@ const char kAshDisableScreenOrientationLock[] =
 const char kAshDisableTouchExplorationMode[] =
     "ash-disable-touch-exploration-mode";
 
-#if defined(OS_CHROMEOS)
 // Enables fullscreen app list if Ash is in maximize mode.
 const char kAshEnableFullscreenAppList[] = "ash-enable-fullscreen-app-list";
 
@@ -60,7 +57,6 @@ const char kAshEnablePalette[] = "ash-enable-palette";
 // Enables the palette on every display, instead of only the internal one.
 const char kAshEnablePaletteOnAllDisplays[] =
     "ash-enable-palette-on-all-displays";
-#endif
 
 // Enables the observation of accelerometer events to enter touch-view mode.
 const char kAshEnableTouchView[] = "enable-touchview";
@@ -94,7 +90,6 @@ const char kAshTouchHud[] = "ash-touch-hud";
 // instead of displaying an interactive animation.
 const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 
-#if defined(OS_CHROMEOS)
 // Constrains the pointer movement within a root window on desktop.
 bool ConstrainPointerToRoot() {
   const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
@@ -103,8 +98,6 @@ bool ConstrainPointerToRoot() {
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              kAshConstrainPointerToRoot);
 }
-
-#endif
 
 }  // namespace switches
 }  // namespace ash
