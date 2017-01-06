@@ -2196,12 +2196,9 @@ TEST_F(NavigationControllerTest, NewSubframe) {
     subframe->PrepareForCommit();
     subframe->SendNavigateWithParams(&params);
 
-    // In UseSubframeNavigationEntries mode, we notify of a PageState update to
-    // the entry here rather than during UpdateState.
-    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-      EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
-    else
-      EXPECT_EQ(0U, notifications.size());
+    // We notify of a PageState update here rather than during UpdateState for
+    // auto subframe navigations.
+    EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
   }
 
   // Now do a new navigation in the frame.
@@ -2236,15 +2233,9 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   // reflect the toplevel URL).
   EXPECT_EQ(url1, entry->GetURL());
 
-  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // The entry should have a subframe FrameNavigationEntry.
-    ASSERT_EQ(1U, entry->root_node()->children.size());
-    EXPECT_EQ(url2, entry->root_node()->children[0]->frame_entry->url());
-  } else {
-    // There are no subframe FrameNavigationEntries by default.
-    EXPECT_EQ(0U, entry->root_node()->children.size());
-  }
+  // The entry should have a subframe FrameNavigationEntry.
+  ASSERT_EQ(1U, entry->root_node()->children.size());
+  EXPECT_EQ(url2, entry->root_node()->children[0]->frame_entry->url());
 }
 
 // Auto subframes are ones the page loads automatically like ads. They should
@@ -2286,12 +2277,9 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     subframe->PrepareForCommit();
     subframe->SendNavigateWithParams(&params);
 
-    // In UseSubframeNavigationEntries mode, we notify of a PageState update to
-    // the entry here rather than during UpdateState.
-    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-      EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
-    else
-      EXPECT_EQ(0U, notifications.size());
+    // We notify of a PageState update here rather than during UpdateState for
+    // auto subframe navigations.
+    EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
   }
 
   // There should still be only one entry.
@@ -2301,17 +2289,11 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   FrameNavigationEntry* root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(url1, root_entry->url());
 
-  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // The entry should now have a subframe FrameNavigationEntry.
-    ASSERT_EQ(1U, entry->root_node()->children.size());
-    FrameNavigationEntry* frame_entry =
-        entry->root_node()->children[0]->frame_entry.get();
-    EXPECT_EQ(url2, frame_entry->url());
-  } else {
-    // There are no subframe FrameNavigationEntries by default.
-    EXPECT_EQ(0U, entry->root_node()->children.size());
-  }
+  // The entry should now have a subframe FrameNavigationEntry.
+  ASSERT_EQ(1U, entry->root_node()->children.size());
+  FrameNavigationEntry* frame_entry =
+      entry->root_node()->children[0]->frame_entry.get();
+  EXPECT_EQ(url2, frame_entry->url());
 
   // Add a second subframe and navigate.
   std::string unique_name1("uniqueName1");
@@ -2339,12 +2321,9 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     subframe2->PrepareForCommit();
     subframe2->SendNavigateWithParams(&params);
 
-    // In UseSubframeNavigationEntries mode, we notify of a PageState update to
-    // the entry here rather than during UpdateState.
-    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-      EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
-    else
-      EXPECT_EQ(0U, notifications.size());
+    // We notify of a PageState update here rather than during UpdateState for
+    // auto subframe navigations.
+    EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
   }
 
   // There should still be only one entry, mostly unchanged.
@@ -2354,17 +2333,11 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   EXPECT_EQ(root_entry, entry->root_node()->frame_entry.get());
   EXPECT_EQ(url1, root_entry->url());
 
-  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // The entry should now have 2 subframe FrameNavigationEntries.
-    ASSERT_EQ(2U, entry->root_node()->children.size());
-    FrameNavigationEntry* new_frame_entry =
-        entry->root_node()->children[1]->frame_entry.get();
-    EXPECT_EQ(url3, new_frame_entry->url());
-  } else {
-    // There are no subframe FrameNavigationEntries by default.
-    EXPECT_EQ(0U, entry->root_node()->children.size());
-  }
+  // The entry should now have 2 subframe FrameNavigationEntries.
+  ASSERT_EQ(2U, entry->root_node()->children.size());
+  FrameNavigationEntry* new_frame_entry =
+      entry->root_node()->children[1]->frame_entry.get();
+  EXPECT_EQ(url3, new_frame_entry->url());
 
   // Add a nested subframe and navigate.
   std::string unique_name2("uniqueName2");
@@ -2397,12 +2370,9 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     subframe3->PrepareForCommit();
     subframe3->SendNavigateWithParams(&params);
 
-    // In UseSubframeNavigationEntries mode, we notify of a PageState update to
-    // the entry here rather than during UpdateState.
-    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-      EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
-    else
-      EXPECT_EQ(0U, notifications.size());
+    // We notify of a PageState update here rather than during UpdateState for
+    // auto subframe navigations.
+    EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
   }
 
   // There should still be only one entry, mostly unchanged.
@@ -2412,18 +2382,12 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   EXPECT_EQ(root_entry, entry->root_node()->frame_entry.get());
   EXPECT_EQ(url1, root_entry->url());
 
-  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // The entry should now have a nested FrameNavigationEntry.
-    EXPECT_EQ(2U, entry->root_node()->children.size());
-    ASSERT_EQ(1U, entry->root_node()->children[0]->children.size());
-    FrameNavigationEntry* new_frame_entry =
-        entry->root_node()->children[0]->children[0]->frame_entry.get();
-    EXPECT_EQ(url4, new_frame_entry->url());
-  } else {
-    // There are no subframe FrameNavigationEntries by default.
-    EXPECT_EQ(0U, entry->root_node()->children.size());
-  }
+  // The entry should now have a nested FrameNavigationEntry.
+  EXPECT_EQ(2U, entry->root_node()->children.size());
+  ASSERT_EQ(1U, entry->root_node()->children[0]->children.size());
+  new_frame_entry =
+      entry->root_node()->children[0]->children[0]->frame_entry.get();
+  EXPECT_EQ(url4, new_frame_entry->url());
 }
 
 // Tests navigation and then going back to a subframe navigation.
@@ -2473,12 +2437,9 @@ TEST_F(NavigationControllerTest, BackSubframe) {
     subframe->PrepareForCommit();
     subframe->SendNavigateWithParams(&params);
 
-    // In UseSubframeNavigationEntries mode, we notify of a PageState update to
-    // the entry here rather than during UpdateState.
-    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-      EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
-    else
-      EXPECT_EQ(0U, notifications.size());
+    // We notify of a PageState update here rather than during UpdateState for
+    // auto subframe navigations.
+    EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
   }
 
   // First manual subframe navigation.
@@ -2508,16 +2469,9 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(2, controller.GetEntryCount());
 
-  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // The entry should have a subframe FrameNavigationEntry.
-    ASSERT_EQ(1U, entry2->root_node()->children.size());
-    EXPECT_EQ(url2, entry2->root_node()->children[0]->frame_entry->url());
-  } else {
-    // There are no subframe FrameNavigationEntries by default.
-    EXPECT_EQ(0U, entry2->root_node()->children.size());
-  }
-
+  // The entry should have a subframe FrameNavigationEntry.
+  ASSERT_EQ(1U, entry2->root_node()->children.size());
+  EXPECT_EQ(url2, entry2->root_node()->children[0]->frame_entry->url());
 
   // Second manual subframe navigation should also make a new entry.
   const GURL url3("http://foo3");
@@ -2541,15 +2495,9 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
-  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // The entry should have a subframe FrameNavigationEntry.
-    ASSERT_EQ(1U, entry3->root_node()->children.size());
-    EXPECT_EQ(url3, entry3->root_node()->children[0]->frame_entry->url());
-  } else {
-    // There are no subframe FrameNavigationEntries by default.
-    EXPECT_EQ(0U, entry3->root_node()->children.size());
-  }
+  // The entry should have a subframe FrameNavigationEntry.
+  ASSERT_EQ(1U, entry3->root_node()->children.size());
+  EXPECT_EQ(url3, entry3->root_node()->children[0]->frame_entry->url());
 
   // Go back one.
   controller.GoBack();

@@ -592,13 +592,8 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
       "document.getElementById('elt_text').value = 'foo';");
   ProcessPendingMessages();
 
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
-        FrameHostMsg_UpdateState::ID));
-  } else {
-    EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
-        ViewHostMsg_UpdateState::ID));
-  }
+  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_UpdateState::ID));
 }
 
 TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
