@@ -11,10 +11,12 @@
 #include "chrome/browser/android/ntp/content_suggestions_notification_helper.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_handler.h"
+#include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -72,20 +74,19 @@ class ContentSuggestionsNotifierService::NotifyingObserver
         weak_ptr_factory_(this) {}
 
   void OnNewSuggestions(Category category) override {
-    if (!ShouldNotifyInState(app_status_listener_.GetState()) ||
-        !category.IsKnownCategory(KnownCategories::ARTICLES)) {
+    if (!ShouldNotifyInState(app_status_listener_.GetState())) {
       return;
     }
-    const auto& suggestions = service_->GetSuggestionsForCategory(category);
-    if (!suggestions.empty()) {
-      const auto& suggestion = suggestions[0];
-      service_->FetchSuggestionImage(
-          suggestions[0].id(),
-          base::Bind(&NotifyingObserver::ImageFetched,
-                     weak_ptr_factory_.GetWeakPtr(), suggestion.id(),
-                     suggestion.url(), suggestion.title(),
-                     suggestion.publisher_name()));
+    const ContentSuggestion* suggestion = GetSuggestionToNotifyAbout(category);
+    if (!suggestion) {
+      return;
     }
+    service_->FetchSuggestionImage(
+        suggestion->id(),
+        base::Bind(&NotifyingObserver::ImageFetched,
+                   weak_ptr_factory_.GetWeakPtr(), suggestion->id(),
+                   suggestion->url(), suggestion->title(),
+                   suggestion->publisher_name()));
   }
 
   void OnCategoryStatusChanged(Category category,
@@ -126,6 +127,27 @@ class ContentSuggestionsNotifierService::NotifyingObserver
   }
 
  private:
+  const ContentSuggestion* GetSuggestionToNotifyAbout(Category category) {
+    const auto& suggestions = service_->GetSuggestionsForCategory(category);
+    // TODO(sfiera): replace with AlwaysNotifyAboutContentSuggestions().
+    if (variations::GetVariationParamByFeatureAsBool(
+             kContentSuggestionsNotificationsFeature,
+             kContentSuggestionsNotificationsAlwaysNotifyParam, false)) {
+      if (category.IsKnownCategory(KnownCategories::ARTICLES) &&
+          !suggestions.empty()) {
+        return &suggestions[0];
+      }
+      return nullptr;
+    }
+
+    for (const ContentSuggestion& suggestion : suggestions) {
+      if (suggestion.notification_extra()) {
+        return &suggestion;
+      }
+    }
+    return nullptr;
+  }
+
   void AppStatusChanged(base::android::ApplicationState state) {
     if (!ShouldNotifyInState(state)) {
       ContentSuggestionsNotificationHelper::HideNotification();
