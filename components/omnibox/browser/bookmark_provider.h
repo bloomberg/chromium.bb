@@ -12,9 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_input.h"
-#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
-#include "components/query_parser/snippet.h"
 
 class AutocompleteProviderClient;
 
@@ -55,24 +53,9 @@ class BookmarkProvider : public AutocompleteProvider {
   // |matches_|.
   void DoAutocomplete(const AutocompleteInput& input);
 
-  // Compose an AutocompleteMatch based on |match| that has 1) the URL of
-  // |match|'s bookmark, and 2) the bookmark's title, not the URL's page
-  // title, as the description.  |input| is used to compute the match's
-  // inline_autocompletion.  |fixed_up_input_text| is used in that way as well;
-  // it's passed separately so this function doesn't have to compute it.
-  AutocompleteMatch TitledUrlMatchToACMatch(
-      const AutocompleteInput& input,
-      const base::string16& fixed_up_input_text,
-      const bookmarks::TitledUrlMatch& match);
-
-  // Converts |positions| into ACMatchClassifications and returns the
-  // classifications. |text_length| is used to determine the need to add an
-  // 'unhighlighted' classification span so the tail of the source string
-  // properly highlighted.
-  static ACMatchClassifications ClassificationsFromMatch(
-      const query_parser::Snippet::MatchPositions& positions,
-      size_t text_length,
-      bool is_url);
+  // Calculates the relevance score for |match|.
+  int CalculateBookmarkMatchRelevance(
+      const bookmarks::TitledUrlMatch& match) const;
 
   AutocompleteProviderClient* client_;
   bookmarks::BookmarkModel* bookmark_model_;

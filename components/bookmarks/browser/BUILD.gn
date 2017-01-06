@@ -100,6 +100,7 @@ source_set("unit_tests") {
     "bookmark_index_unittest.cc",
     "bookmark_model_unittest.cc",
     "bookmark_utils_unittest.cc",
+    "titled_url_match_unittest.cc",
   ]
 
   if (toolkit_views) {

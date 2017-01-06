@@ -29,6 +29,9 @@ struct TitledUrlMatch;
 // TitledUrlNodes that contain that string in their title or URL.
 class TitledUrlIndex {
  public:
+  // Constructs a TitledUrlIndex. |sorter| is used to construct a sorted list
+  // of matches when matches are returned from the index. If null, matches are
+  // returned unsorted.
   TitledUrlIndex(std::unique_ptr<TitledUrlNodeSorter> sorter);
   ~TitledUrlIndex();
 

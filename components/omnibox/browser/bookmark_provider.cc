@@ -17,39 +17,13 @@
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_result.h"
-#include "components/omnibox/browser/history_provider.h"
-#include "components/omnibox/browser/url_prefix.h"
+#include "components/omnibox/browser/titled_url_match_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/url_formatter/url_formatter.h"
 #include "url/url_constants.h"
 
 using bookmarks::BookmarkNode;
 using bookmarks::TitledUrlMatch;
 using TitledUrlMatches = std::vector<TitledUrlMatch>;
-
-namespace {
-
-// Removes leading spaces from |title| before displaying, otherwise it looks
-// funny.  In the process, corrects |title_match_positions| so the correct
-// characters are highlighted.
-void CorrectTitleAndMatchPositions(
-    base::string16* title,
-    TitledUrlMatch::MatchPositions* title_match_positions) {
-  size_t leading_whitespace_chars = title->length();
-  base::TrimWhitespace(*title, base::TRIM_LEADING, title);
-  leading_whitespace_chars-= title->length();
-  if (leading_whitespace_chars == 0)
-    return;
-  for (query_parser::Snippet::MatchPositions::iterator it =
-           title_match_positions->begin();
-       it != title_match_positions->end(); ++it) {
-    (*it) = query_parser::Snippet::MatchPosition(
-        it->first - leading_whitespace_chars,
-        it->second - leading_whitespace_chars);
-  }
-}
-
-}  // namespace
 
 // BookmarkProvider ------------------------------------------------------------
 
@@ -107,13 +81,15 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   if (matches.empty())
     return;  // There were no matches.
   const base::string16 fixed_up_input(FixupUserInput(input).second);
-  for (TitledUrlMatches::const_iterator i = matches.begin(); i != matches.end();
-       ++i) {
-    // Create and score the AutocompleteMatch. If its score is 0 then the
-    // match is discarded.
-    AutocompleteMatch match(TitledUrlMatchToACMatch(input, fixed_up_input, *i));
-    if (match.relevance > 0)
-      matches_.push_back(match);
+  for (const auto& bookmark_match : matches) {
+    // Score the TitledUrlMatch. If its score is greater than 0 then the
+    // AutocompleteMatch is created and added to matches_.
+    int relevance = CalculateBookmarkMatchRelevance(bookmark_match);
+    if (relevance > 0) {
+      matches_.push_back(TitledUrlMatchToAutocompleteMatch(
+          bookmark_match, AutocompleteMatchType::BOOKMARK_TITLE, relevance,
+          this, client_->GetSchemeClassifier(), input, fixed_up_input));
+    }
   }
 
   // Sort and clip the resulting matches.
@@ -155,69 +131,8 @@ class ScoringFunctor {
 
 }  // namespace
 
-AutocompleteMatch BookmarkProvider::TitledUrlMatchToACMatch(
-    const AutocompleteInput& input,
-    const base::string16& fixed_up_input_text,
-    const TitledUrlMatch& bookmark_match) {
-  // The AutocompleteMatch we construct is non-deletable because the only
-  // way to support this would be to delete the underlying bookmark, which is
-  // unlikely to be what the user intends.
-  AutocompleteMatch match(this, 0, false,
-                          AutocompleteMatchType::BOOKMARK_TITLE);
-  base::string16 title(bookmark_match.node->GetTitledUrlNodeTitle());
-  TitledUrlMatch::MatchPositions new_title_match_positions =
-      bookmark_match.title_match_positions;
-  CorrectTitleAndMatchPositions(&title, &new_title_match_positions);
-  const GURL& url(bookmark_match.node->GetTitledUrlNodeUrl());
-  const base::string16& url_utf16 = base::UTF8ToUTF16(url.spec());
-  size_t inline_autocomplete_offset = URLPrefix::GetInlineAutocompleteOffset(
-      input.text(), fixed_up_input_text, false, url_utf16);
-  match.destination_url = url;
-  const size_t match_start = bookmark_match.url_match_positions.empty() ?
-      0 : bookmark_match.url_match_positions[0].first;
-  const bool trim_http = !AutocompleteInput::HasHTTPScheme(input.text()) &&
-      ((match_start == base::string16::npos) || (match_start != 0));
-  std::vector<size_t> offsets = TitledUrlMatch::OffsetsFromMatchPositions(
-      bookmark_match.url_match_positions);
-  // In addition to knowing how |offsets| is transformed, we need to know how
-  // |inline_autocomplete_offset| is transformed.  We add it to the end of
-  // |offsets|, compute how everything is transformed, then remove it from the
-  // end.
-  offsets.push_back(inline_autocomplete_offset);
-  match.contents = url_formatter::FormatUrlWithOffsets(
-      url, url_formatter::kFormatUrlOmitAll &
-               ~(trim_http ? 0 : url_formatter::kFormatUrlOmitHTTP),
-      net::UnescapeRule::SPACES, nullptr, nullptr, &offsets);
-  inline_autocomplete_offset = offsets.back();
-  offsets.pop_back();
-  TitledUrlMatch::MatchPositions new_url_match_positions =
-      TitledUrlMatch::ReplaceOffsetsInMatchPositions(
-          bookmark_match.url_match_positions, offsets);
-  match.contents_class =
-      ClassificationsFromMatch(new_url_match_positions,
-                               match.contents.size(),
-                               true);
-  match.fill_into_edit =
-      AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          url, match.contents, client_->GetSchemeClassifier());
-  if (inline_autocomplete_offset != base::string16::npos) {
-    // |inline_autocomplete_offset| may be beyond the end of the
-    // |fill_into_edit| if the user has typed an URL with a scheme and the
-    // last character typed is a slash.  That slash is removed by the
-    // FormatURLWithOffsets call above.
-    if (inline_autocomplete_offset < match.fill_into_edit.length()) {
-      match.inline_autocompletion =
-          match.fill_into_edit.substr(inline_autocomplete_offset);
-    }
-    match.allowed_to_be_default_match = match.inline_autocompletion.empty() ||
-        !HistoryProvider::PreventInlineAutocomplete(input);
-  }
-  match.description = title;
-  match.description_class =
-      ClassificationsFromMatch(bookmark_match.title_match_positions,
-                               match.description.size(),
-                               false);
-
+int BookmarkProvider::CalculateBookmarkMatchRelevance(
+    const TitledUrlMatch& bookmark_match) const {
   // Summary on how a relevance score is determined for the match:
   //
   // For each match within the bookmark's title or URL (or both), calculate a
@@ -268,7 +183,9 @@ AutocompleteMatch BookmarkProvider::TitledUrlMatchToACMatch(
   // and, for each additional reference beyond the one for the bookmark being
   // scored up to a maximum of three, the score is boosted by a fixed amount
   // given by |kURLCountBoost|, below.
-  //
+
+  base::string16 title(bookmark_match.node->GetTitledUrlNodeTitle());
+  const GURL& url(bookmark_match.node->GetTitledUrlNodeUrl());
 
   // Pretend empty titles are identical to the URL.
   if (title.empty())
@@ -297,46 +214,19 @@ AutocompleteMatch BookmarkProvider::TitledUrlMatchToACMatch(
   const int kMaxBookmarkScore = bookmarklet_without_title_match ? 799 : 1199;
   const double kBookmarkScoreRange =
       static_cast<double>(kMaxBookmarkScore - kBaseBookmarkScore);
-  match.relevance = static_cast<int>(normalized_sum * kBookmarkScoreRange) +
-      kBaseBookmarkScore;
+  int relevance = static_cast<int>(normalized_sum * kBookmarkScoreRange) +
+                  kBaseBookmarkScore;
   // Don't waste any time searching for additional referenced URLs if we
   // already have a perfect title match.
-  if (match.relevance >= kMaxBookmarkScore)
-    return match;
+  if (relevance >= kMaxBookmarkScore)
+    return relevance;
   // Boost the score if the bookmark's URL is referenced by other bookmarks.
   const int kURLCountBoost[4] = { 0, 75, 125, 150 };
   std::vector<const BookmarkNode*> nodes;
   bookmark_model_->GetNodesByURL(url, &nodes);
   DCHECK_GE(std::min(arraysize(kURLCountBoost), nodes.size()), 1U);
-  match.relevance +=
+  relevance +=
       kURLCountBoost[std::min(arraysize(kURLCountBoost), nodes.size()) - 1];
-  match.relevance = std::min(kMaxBookmarkScore, match.relevance);
-  return match;
-}
-
-// static
-ACMatchClassifications BookmarkProvider::ClassificationsFromMatch(
-    const query_parser::Snippet::MatchPositions& positions,
-    size_t text_length,
-    bool is_url) {
-  ACMatchClassification::Style url_style =
-      is_url ? ACMatchClassification::URL : ACMatchClassification::NONE;
-  ACMatchClassifications classifications;
-  if (positions.empty()) {
-    if (text_length > 0)
-      classifications.push_back(ACMatchClassification(0, url_style));
-    return classifications;
-  }
-
-  for (query_parser::Snippet::MatchPositions::const_iterator i =
-           positions.begin();
-       i != positions.end();
-       ++i) {
-    AutocompleteMatch::ACMatchClassifications new_class;
-    AutocompleteMatch::ClassifyLocationInString(i->first, i->second - i->first,
-        text_length, url_style, &new_class);
-    classifications = AutocompleteMatch::MergeClassifications(
-        classifications, new_class);
-  }
-  return classifications;
+  relevance = std::min(kMaxBookmarkScore, relevance);
+  return relevance;
 }
