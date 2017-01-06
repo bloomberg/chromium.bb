@@ -282,26 +282,6 @@ bool CSSPropertyParser::consumeCSSWideKeyword(CSSPropertyID unresolvedProperty,
   return true;
 }
 
-static CSSValueList* consumeTransformOrigin(CSSParserTokenRange& range,
-                                            CSSParserMode cssParserMode,
-                                            UnitlessQuirk unitless) {
-  CSSValue* resultX = nullptr;
-  CSSValue* resultY = nullptr;
-  if (consumeOneOrTwoValuedPosition(range, cssParserMode, unitless, resultX,
-                                    resultY)) {
-    CSSValueList* list = CSSValueList::createSpaceSeparated();
-    list->append(*resultX);
-    list->append(*resultY);
-    CSSValue* resultZ = consumeLength(range, cssParserMode, ValueRangeAll);
-    if (!resultZ)
-      resultZ =
-          CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
-    list->append(*resultZ);
-    return list;
-  }
-  return nullptr;
-}
-
 static CSSFontFeatureValue* consumeFontFeatureTag(CSSParserTokenRange& range) {
   // Feature tag name consists of 4-letter characters.
   static const unsigned tagNameLength = 4;
@@ -3707,9 +3687,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
       return consumeCursor(m_range, m_context, inQuirksMode());
     case CSSPropertyContain:
       return consumeContain(m_range);
-    case CSSPropertyTransformOrigin:
-      return consumeTransformOrigin(m_range, m_context.mode(),
-                                    UnitlessQuirk::Forbid);
     case CSSPropertyContent:
       return consumeContent(m_range, m_context);
     case CSSPropertyListStyleImage:
