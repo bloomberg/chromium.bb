@@ -745,6 +745,27 @@ void LocalDOMWindow::alert(ScriptState* scriptState, const String& message) {
     return;
   }
 
+  switch (document()->getEngagementLevel()) {
+    case mojom::blink::EngagementLevel::NONE:
+      UseCounter::count(document(), UseCounter::AlertEngagementNone);
+      break;
+    case mojom::blink::EngagementLevel::MINIMAL:
+      UseCounter::count(document(), UseCounter::AlertEngagementMinimal);
+      break;
+    case mojom::blink::EngagementLevel::LOW:
+      UseCounter::count(document(), UseCounter::AlertEngagementLow);
+      break;
+    case mojom::blink::EngagementLevel::MEDIUM:
+      UseCounter::count(document(), UseCounter::AlertEngagementMedium);
+      break;
+    case mojom::blink::EngagementLevel::HIGH:
+      UseCounter::count(document(), UseCounter::AlertEngagementHigh);
+      break;
+    case mojom::blink::EngagementLevel::MAX:
+      UseCounter::count(document(), UseCounter::AlertEngagementMax);
+      break;
+  }
+
   if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
     UseCounter::count(document(), UseCounter::During_Microtask_Alert);
   }
@@ -772,6 +793,27 @@ bool LocalDOMWindow::confirm(ScriptState* scriptState, const String& message) {
         "Ignored call to 'confirm()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return false;
+  }
+
+  switch (document()->getEngagementLevel()) {
+    case mojom::blink::EngagementLevel::NONE:
+      UseCounter::count(document(), UseCounter::ConfirmEngagementNone);
+      break;
+    case mojom::blink::EngagementLevel::MINIMAL:
+      UseCounter::count(document(), UseCounter::ConfirmEngagementMinimal);
+      break;
+    case mojom::blink::EngagementLevel::LOW:
+      UseCounter::count(document(), UseCounter::ConfirmEngagementLow);
+      break;
+    case mojom::blink::EngagementLevel::MEDIUM:
+      UseCounter::count(document(), UseCounter::ConfirmEngagementMedium);
+      break;
+    case mojom::blink::EngagementLevel::HIGH:
+      UseCounter::count(document(), UseCounter::ConfirmEngagementHigh);
+      break;
+    case mojom::blink::EngagementLevel::MAX:
+      UseCounter::count(document(), UseCounter::ConfirmEngagementMax);
+      break;
   }
 
   if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
@@ -803,6 +845,27 @@ String LocalDOMWindow::prompt(ScriptState* scriptState,
         "Ignored call to 'prompt()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return String();
+  }
+
+  switch (document()->getEngagementLevel()) {
+    case mojom::blink::EngagementLevel::NONE:
+      UseCounter::count(document(), UseCounter::PromptEngagementNone);
+      break;
+    case mojom::blink::EngagementLevel::MINIMAL:
+      UseCounter::count(document(), UseCounter::PromptEngagementMinimal);
+      break;
+    case mojom::blink::EngagementLevel::LOW:
+      UseCounter::count(document(), UseCounter::PromptEngagementLow);
+      break;
+    case mojom::blink::EngagementLevel::MEDIUM:
+      UseCounter::count(document(), UseCounter::PromptEngagementMedium);
+      break;
+    case mojom::blink::EngagementLevel::HIGH:
+      UseCounter::count(document(), UseCounter::PromptEngagementHigh);
+      break;
+    case mojom::blink::EngagementLevel::MAX:
+      UseCounter::count(document(), UseCounter::PromptEngagementMax);
+      break;
   }
 
   if (v8::MicrotasksScope::IsRunningMicrotasks(scriptState->isolate())) {
