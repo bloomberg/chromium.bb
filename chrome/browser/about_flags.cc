@@ -2054,6 +2054,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"no-credit-card-abort", IDS_FLAGS_NO_CREDIT_CARD_ABORT,
      IDS_FLAGS_NO_CREDIT_CARD_ABORT_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNoCreditCardAbort)},
+    {"autofill-scan-theme-dialog",
+     IDS_FLAGS_AUTOFILL_SCAN_THEME_DIALOG_NAME,
+     IDS_FLAGS_AUTOFILL_SCAN_THEME_DIALOG_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAutofillScanThemeDialog)},
 #endif  // OS_ANDROID
     {"enable-feature-policy", IDS_FLAGS_FEATURE_POLICY_NAME,
      IDS_FLAGS_FEATURE_POLICY_DESCRIPTION, kOsAll,

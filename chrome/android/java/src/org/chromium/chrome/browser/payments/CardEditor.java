@@ -21,9 +21,7 @@ import org.chromium.chrome.browser.payments.ui.EditorFieldModel.EditorFieldValid
 import org.chromium.chrome.browser.payments.ui.EditorFieldModel.EditorValueIconGenerator;
 import org.chromium.chrome.browser.payments.ui.EditorModel;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.WindowAndroid;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -408,14 +406,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         // Card scanner is expensive to query.
         if (mCardScanner == null) {
-            ContentViewCore contentView = ContentViewCore.fromWebContents(mWebContents);
-            if (contentView != null) {
-                WindowAndroid window = contentView.getWindowAndroid();
-                if (window != null) {
-                    mCardScanner = CreditCardScanner.create(mContext, window, this);
-                    mCanScan = mCardScanner.canScan();
-                }
-            }
+            mCardScanner = CreditCardScanner.create(mContext, mWebContents, this);
+            mCanScan = mCardScanner.canScan();
         }
 
         // Card number is validated.

@@ -8,7 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.ui.base.WindowAndroid;
+import org.chromium.content_public.browser.WebContents;
 
 /** Native bridge for credit card scanner. */
 @JNINamespace("autofill")
@@ -18,13 +18,13 @@ public class CreditCardScannerBridge implements CreditCardScanner.Delegate {
 
     @CalledByNative
     private static CreditCardScannerBridge create(
-            long nativeScanner, Context context, WindowAndroid window) {
-        return new CreditCardScannerBridge(nativeScanner, context, window);
+            long nativeScanner, Context context, WebContents webContents) {
+        return new CreditCardScannerBridge(nativeScanner, context, webContents);
     }
 
-    private CreditCardScannerBridge(long nativeScanner, Context context, WindowAndroid window) {
+    private CreditCardScannerBridge(long nativeScanner, Context context, WebContents webContents) {
         mNativeScanner = nativeScanner;
-        mScanner = CreditCardScanner.create(context, window, this);
+        mScanner = CreditCardScanner.create(context, webContents, this);
     }
 
     @CalledByNative

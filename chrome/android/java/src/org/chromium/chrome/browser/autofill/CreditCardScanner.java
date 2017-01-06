@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.autofill;
 import android.content.Context;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.ui.base.WindowAndroid;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Helper for detecting whether the device supports scanning credit cards and for scanning credit
@@ -28,21 +28,21 @@ public class CreditCardScanner {
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     protected final Context mContext;
 
-    /** The window that's requesting a scan. Used in subclass. */
+    /** The web contents that's requesting a scan. Used in subclass. */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    protected final WindowAndroid mWindow;
+    protected final WebContents mWebContents;
 
     /** Builds instances of credit card scanners. */
     public interface Factory {
         /**
          * Builds an instance of credit card scanner.
          *
-         * @param context  Application context.
-         * @param window   The window that's requesting a scan.
-         * @param delegate The delegate to notify of scanning result.
+         * @param context     Application context.
+         * @param webContents The web contents that are requesting a scan.
+         * @param delegate    The delegate to notify of scanning result.
          * @return An object that can scan a credit card.
          */
-        CreditCardScanner create(Context context, WindowAndroid window, Delegate delegate);
+        CreditCardScanner create(Context context, WebContents webContents, Delegate delegate);
     }
 
     /** The delegate for credit card scanning. */
@@ -76,27 +76,27 @@ public class CreditCardScanner {
     /**
      * Creates an instance of a credit card scanner.
      *
-     * @param context  Application context.
-     * @param window   The window that's requesting a scan.
-     * @param delegate The delegate to notify of scanning result.
+     * @param context     Application context.
+     * @param webContents The web contents that are requesting a scan.
+     * @param delegate    The delegate to notify of scanning result.
      * @return An object that can scan a credit card.
      */
     public static CreditCardScanner create(
-            Context context, WindowAndroid window, Delegate delegate) {
-        return sFactory != null ? sFactory.create(context, window, delegate)
-                                : new CreditCardScanner(context, window, delegate);
+            Context context, WebContents webContents, Delegate delegate) {
+        return sFactory != null ? sFactory.create(context, webContents, delegate)
+                                : new CreditCardScanner(context, webContents, delegate);
     }
 
     /**
      * Constructor for the credit card scanner.
      *
-     * @param context  Application context.
-     * @param window   The window that's requesting a scan.
-     * @param delegate The delegate to notify of scanning result.
+     * @param context     Application context.
+     * @param webContents The web contents that are requesting a scan.
+     * @param delegate    The delegate to notify of scanning result.
      */
-    protected CreditCardScanner(Context context, WindowAndroid window, Delegate delegate) {
+    protected CreditCardScanner(Context context, WebContents webContents, Delegate delegate) {
         mContext = context;
-        mWindow = window;
+        mWebContents = webContents;
         mDelegate = delegate;
     }
 

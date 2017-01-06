@@ -55,10 +55,7 @@ CreditCardScannerViewAndroid::CreditCardScannerViewAndroid(
           base::android::AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this),
           base::android::GetApplicationContext(),
-          ViewAndroidHelper::FromWebContents(web_contents)
-              ->GetViewAndroid()
-              ->GetWindowAndroid()
-              ->GetJavaObject())) {}
+          web_contents->GetJavaWebContents())) {}
 
 CreditCardScannerViewAndroid::~CreditCardScannerViewAndroid() {}
 
