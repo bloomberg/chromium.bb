@@ -796,12 +796,6 @@ void WmWindowAura::HideResizeShadow() {
 
 void WmWindowAura::InstallResizeHandleWindowTargeter(
     ImmersiveFullscreenController* immersive_fullscreen_controller) {
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
-    // TODO(sky): I believe once ImmersiveFullscreenController is ported this
-    // won't be necessary in mash, but I need to verify that:
-    // http://crbug.com/548435.
-    return;
-  }
   window_->SetEventTargeter(base::MakeUnique<ResizeHandleWindowTargeter>(
       window_, immersive_fullscreen_controller));
 }
@@ -823,14 +817,16 @@ void WmWindowAura::SnapToPixelBoundaryIfNecessary() {
 
 void WmWindowAura::SetChildrenUseExtendedHitRegion() {
   children_use_extended_hit_region_ = true;
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
-    return;
-
   gfx::Insets mouse_extend(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize,
                            -kResizeOutsideBoundsSize,
                            -kResizeOutsideBoundsSize);
   gfx::Insets touch_extend =
       mouse_extend.Scale(kResizeOutsideBoundsScaleForTouch);
+  // TODO: EasyResizeWindowTargeter makes it so children get events outside
+  // their bounds. This only works in mash when mash is providing the non-client
+  // frame. Mus needs to support an api for the WindowManager that enables
+  // events to be dispatched to windows outside the windows bounds that this
+  // function calls into. http://crbug.com/679056.
   window_->SetEventTargeter(base::MakeUnique<::wm::EasyResizeWindowTargeter>(
       window_, mouse_extend, touch_extend));
 }
