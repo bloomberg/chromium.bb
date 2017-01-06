@@ -6,6 +6,7 @@
 
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/blink/blink_features.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -385,13 +386,13 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
       type = blink::WebInputEvent::MouseUp;
       click_count = event.GetClickCount();
       break;
-    case ET_MOUSE_EXITED:
-// TODO(chaopeng) this fix only for chromeos now, should convert ET_MOUSE_EXITED
-// to MouseLeave when crbug.com/450631 fixed.
-#if defined(OS_CHROMEOS)
-      type = blink::WebInputEvent::MouseLeave;
+    case ET_MOUSE_EXITED: {
+      static bool s_send_leave =
+          base::FeatureList::IsEnabled(features::kSendMouseLeaveEvents);
+      type = s_send_leave ? blink::WebInputEvent::MouseLeave
+                          : blink::WebInputEvent::MouseMove;
       break;
-#endif
+    }
     case ET_MOUSE_ENTERED:
     case ET_MOUSE_MOVED:
     case ET_MOUSE_DRAGGED:

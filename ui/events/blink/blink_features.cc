@@ -11,4 +11,14 @@ namespace features {
 const base::Feature kVsyncAlignedInputEvents{"VsyncAlignedInput",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSendMouseLeaveEvents {
+  "SendMouseLeaveEvents",
+// TODO(chaopeng) this fix only for chromeos now, should convert ET_MOUSE_EXITED
+// to MouseLeave when crbug.com/450631 fixed.
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 }
