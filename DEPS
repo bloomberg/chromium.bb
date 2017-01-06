@@ -356,19 +356,19 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '3d5fd0b8281a7224c057deb2d17709b5bea64836',
 
     'src/ios/third_party/material_components_ios/src':
-      Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '079c1c9a8b040f924de2919393b65c38239890f0',
+      Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'b1eb638d70792b7aa06118b128e3518c20e2aaae',
 
     'src/ios/third_party/material_font_disk_loader_ios/src':
-      Var('chromium_git') + '/external/github.com/material-foundation/material-font-disk-loader-ios.git' + '@' + '20c8fe37329cb18826f90159ce4ee445079e2e46',
+      Var('chromium_git') + '/external/github.com/material-foundation/material-font-disk-loader-ios.git' + '@' + '93acc021e3034898716028822cb802a3a816be7e',
 
     'src/ios/third_party/material_roboto_font_loader_ios/src':
       Var('chromium_git') + '/external/github.com/material-foundation/material-roboto-font-loader-ios.git' + '@' + 'e9b86479540ee3a200ade154f907fac889865c72',
 
     'src/ios/third_party/material_sprited_animation_view_ios/src':
-      Var('chromium_git') + '/external/github.com/material-foundation/material-sprited-animation-view-ios.git' + '@' + 'e240cdcd4538f0763ca5bd8c5afc2991eb482f1a',
+      Var('chromium_git') + '/external/github.com/material-foundation/material-sprited-animation-view-ios.git' + '@' + 'c6e16d06bdafd95540c62b3402d9414692fbca81',
 
     'src/ios/third_party/material_text_accessibility_ios/src':
-      Var('chromium_git') + '/external/github.com/material-foundation/material-text-accessibility-ios.git' + '@' + '96d2b0f13976a897bc7a41daf67f36d9548cff94',
+      Var('chromium_git') + '/external/github.com/material-foundation/material-text-accessibility-ios.git' + '@' + '318d5100f2976e59c94643e5dcab69e7a830ee43',
 
     'src/ios/third_party/ochamcrest/src':
       Var('chromium_git') + '/external/github.com/hamcrest/OCHamcrest.git' + '@' + 'd7ee4ecfb6bd13c3c8d364682b6228ccd86e1e1a',
