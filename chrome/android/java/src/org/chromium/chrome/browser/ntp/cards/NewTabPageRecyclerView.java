@@ -236,7 +236,14 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
             return 0;
         }
 
-        if (firstVisiblePos > aboveTheFoldPosition && mHasRenderedAboveTheFoldView) {
+        // For the scroll below the fold experiment, the above the fold item must be scrolled away
+        // completely, so the spacer must be large enough even when we're not sure exactly how
+        // large it should be. Returning 0 would lead to http://crbug.com/674432.
+        boolean allowSpaceForInitiallyScrollingBelowTheFold =
+                CardsVariationParameters.isScrollBelowTheFoldEnabled()
+                && !mHasRenderedAboveTheFoldView;
+        if (firstVisiblePos > aboveTheFoldPosition
+                && !allowSpaceForInitiallyScrollingBelowTheFold) {
             // We have enough items to fill the viewport, since we have scrolled past the
             // above-the-fold item. We must check whether the above-the-fold view has been rendered
             // at least once, because it's possible to skip right over it if the initial scroll
