@@ -179,7 +179,7 @@ public class AppMenuPropertiesDelegate {
             // Hide request desktop site on all chrome:// pages except for the NTP. Check request
             // desktop site if it's activated on this page.
             MenuItem requestItem = menu.findItem(R.id.request_desktop_site_id);
-            updateRequestDesktopSiteMenuItem(requestItem, currentTab, isChromeScheme);
+            updateRequestDesktopSiteMenuItem(requestItem, currentTab);
 
             // Only display reader mode settings menu option if the current page is in reader mode.
             menu.findItem(R.id.reader_mode_prefs_id)
@@ -294,15 +294,16 @@ public class AppMenuPropertiesDelegate {
      *
      * @param requstMenuItem {@link MenuItem} for request desktop site.
      * @param currentTab      Current tab being displayed.
-     * @param isChromeScheme  whether the url being displayed starts with chrome:// or
-     * chrome-native://.
      */
     protected void updateRequestDesktopSiteMenuItem(
-            MenuItem requstMenuItem, Tab currentTab, boolean isChromeScheme) {
+            MenuItem requstMenuItem, Tab currentTab) {
+        String url = currentTab.getUrl();
+        boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_SCHEME)
+                || url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
         requstMenuItem.setVisible(!isChromeScheme || currentTab.isNativePage());
         requstMenuItem.setChecked(currentTab.getUseDesktopUserAgent());
         requstMenuItem.setTitleCondensed(requstMenuItem.isChecked()
-                        ? mActivity.getString(R.string.menu_request_desktop_site_on)
-                        : mActivity.getString(R.string.menu_request_desktop_site_off));
+                ? mActivity.getString(R.string.menu_request_desktop_site_on)
+                : mActivity.getString(R.string.menu_request_desktop_site_off));
     }
 }
