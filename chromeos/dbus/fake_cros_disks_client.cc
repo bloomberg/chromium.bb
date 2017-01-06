@@ -9,9 +9,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 
 namespace chromeos {
 
@@ -104,16 +103,14 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
   }
   mounted_paths_.insert(mounted_path);
 
-  base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true /* task_is_slow */).get(),
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .MayBlock(),
       base::Bind(&PerformFakeMount, source_path, mounted_path),
-      base::Bind(&DidMount,
-                 mount_completed_handler_,
-                 source_path,
-                 type,
-                 callback,
-                 mounted_path));
+      base::Bind(&DidMount, mount_completed_handler_, source_path, type,
+                 callback, mounted_path));
 }
 
 void FakeCrosDisksClient::Unmount(const std::string& device_path,
@@ -126,13 +123,16 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
   // Remove the dummy mounted directory if it exists.
   if (mounted_paths_.count(base::FilePath::FromUTF8Unsafe(device_path)) > 0) {
     mounted_paths_.erase(base::FilePath::FromUTF8Unsafe(device_path));
-    base::WorkerPool::PostTaskAndReply(
-        FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, base::TaskTraits()
+                       .WithShutdownBehavior(
+                           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                       .WithPriority(base::TaskPriority::BACKGROUND)
+                       .MayBlock(),
         base::Bind(base::IgnoreResult(&base::DeleteFile),
                    base::FilePath::FromUTF8Unsafe(device_path),
                    true /* recursive */),
-        callback,
-        true /* task_is_slow */);
+        callback);
   }
 
   unmount_call_count_++;
