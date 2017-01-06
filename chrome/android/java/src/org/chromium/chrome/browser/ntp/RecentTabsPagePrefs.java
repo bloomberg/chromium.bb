@@ -8,26 +8,26 @@ import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
- * This class allows Java code to read and modify preferences related to the NTP
+ * Allows Java code to read and modify preferences related to the {@link RecentTabsPage}.
  */
-class NewTabPagePrefs {
-    private long mNativeNewTabPagePrefs;
+class RecentTabsPagePrefs {
+    private long mNativePrefs;
 
     /**
      * Initialize this class with the given profile.
      * @param profile Profile that will be used for syncing.
      */
-    NewTabPagePrefs(Profile profile) {
-        mNativeNewTabPagePrefs = nativeInit(profile);
+    RecentTabsPagePrefs(Profile profile) {
+        mNativePrefs = nativeInit(profile);
     }
 
     /**
      * Clean up the C++ side of this class. After the call, this class instance shouldn't be used.
      */
     void destroy() {
-        assert mNativeNewTabPagePrefs != 0;
-        nativeDestroy(mNativeNewTabPagePrefs);
-        mNativeNewTabPagePrefs = 0;
+        assert mNativePrefs != 0;
+        nativeDestroy(mNativePrefs);
+        mNativePrefs = 0;
     }
 
     /**
@@ -36,7 +36,7 @@ class NewTabPagePrefs {
      * @param isCollapsed Whether we want the snapshot documents list to be collapsed.
      */
     void setSnapshotDocumentCollapsed(boolean isCollapsed) {
-        nativeSetSnapshotDocumentCollapsed(mNativeNewTabPagePrefs, isCollapsed);
+        nativeSetSnapshotDocumentCollapsed(mNativePrefs, isCollapsed);
     }
 
     /**
@@ -46,7 +46,7 @@ class NewTabPagePrefs {
      *         the Recent Tabs page.
      */
     boolean getSnapshotDocumentCollapsed() {
-        return nativeGetSnapshotDocumentCollapsed(mNativeNewTabPagePrefs);
+        return nativeGetSnapshotDocumentCollapsed(mNativePrefs);
     }
 
     /**
@@ -55,7 +55,7 @@ class NewTabPagePrefs {
      * @param isCollapsed Whether we want the recently closed tabs list to be collapsed.
      */
     void setRecentlyClosedTabsCollapsed(boolean isCollapsed) {
-        nativeSetRecentlyClosedTabsCollapsed(mNativeNewTabPagePrefs, isCollapsed);
+        nativeSetRecentlyClosedTabsCollapsed(mNativePrefs, isCollapsed);
     }
 
     /**
@@ -65,7 +65,7 @@ class NewTabPagePrefs {
      *         the Recent Tabs page.
      */
     boolean getRecentlyClosedTabsCollapsed() {
-        return nativeGetRecentlyClosedTabsCollapsed(mNativeNewTabPagePrefs);
+        return nativeGetRecentlyClosedTabsCollapsed(mNativePrefs);
     }
 
     /**
@@ -73,7 +73,7 @@ class NewTabPagePrefs {
      * @param isCollapsed Whether we want the sync promo to be collapsed.
      */
     void setSyncPromoCollapsed(boolean isCollapsed) {
-        nativeSetSyncPromoCollapsed(mNativeNewTabPagePrefs, isCollapsed);
+        nativeSetSyncPromoCollapsed(mNativePrefs, isCollapsed);
     }
 
     /**
@@ -81,7 +81,7 @@ class NewTabPagePrefs {
      * @return Whether the sync promo is collapsed (vs expanded) on the Recent Tabs page.
      */
     boolean getSyncPromoCollapsed() {
-        return nativeGetSyncPromoCollapsed(mNativeNewTabPagePrefs);
+        return nativeGetSyncPromoCollapsed(mNativePrefs);
     }
 
     /**
@@ -90,7 +90,7 @@ class NewTabPagePrefs {
      * @param isCollapsed Whether we want the foreign session to be collapsed.
      */
     void setForeignSessionCollapsed(ForeignSession session, boolean isCollapsed) {
-        nativeSetForeignSessionCollapsed(mNativeNewTabPagePrefs, session.tag, isCollapsed);
+        nativeSetForeignSessionCollapsed(mNativePrefs, session.tag, isCollapsed);
     }
 
     /**
@@ -99,24 +99,24 @@ class NewTabPagePrefs {
      * @return Whether the given foreign session is collapsed (vs expanded) on the Recent Tabs page.
      */
     boolean getForeignSessionCollapsed(ForeignSession session) {
-        return nativeGetForeignSessionCollapsed(mNativeNewTabPagePrefs, session.tag);
+        return nativeGetForeignSessionCollapsed(mNativePrefs, session.tag);
     }
 
     private static native long nativeInit(Profile profile);
-    private static native void nativeDestroy(long nativeNewTabPagePrefs);
+    private static native void nativeDestroy(long nativeRecentTabsPagePrefs);
     private static native void nativeSetSnapshotDocumentCollapsed(
-            long nativeNewTabPagePrefs, boolean isCollapsed);
+            long nativeRecentTabsPagePrefs, boolean isCollapsed);
     private static native boolean nativeGetSnapshotDocumentCollapsed(
-            long nativeNewTabPagePrefs);
+            long nativeRecentTabsPagePrefs);
     private static native void nativeSetRecentlyClosedTabsCollapsed(
-            long nativeNewTabPagePrefs, boolean isCollapsed);
+            long nativeRecentTabsPagePrefs, boolean isCollapsed);
     private static native boolean nativeGetRecentlyClosedTabsCollapsed(
-            long nativeNewTabPagePrefs);
-    private static native void nativeSetSyncPromoCollapsed(long nativeNewTabPagePrefs,
-            boolean isCollapsed);
-    private static native boolean nativeGetSyncPromoCollapsed(long nativeNewTabPagePrefs);
+            long nativeRecentTabsPagePrefs);
+    private static native void nativeSetSyncPromoCollapsed(
+            long nativeRecentTabsPagePrefs, boolean isCollapsed);
+    private static native boolean nativeGetSyncPromoCollapsed(long nativeRecentTabsPagePrefs);
     private static native void nativeSetForeignSessionCollapsed(
-            long nativeNewTabPagePrefs, String sessionTag, boolean isCollapsed);
+            long nativeRecentTabsPagePrefs, String sessionTag, boolean isCollapsed);
     private static native boolean nativeGetForeignSessionCollapsed(
-            long nativeNewTabPagePrefs, String sessionTag);
+            long nativeRecentTabsPagePrefs, String sessionTag);
 }

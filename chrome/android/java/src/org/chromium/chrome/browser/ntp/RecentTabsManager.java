@@ -59,7 +59,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     private ForeignSessionHelper mForeignSessionHelper;
     private List<ForeignSession> mForeignSessions;
     private List<RecentlyClosedTab> mRecentlyClosedTabs;
-    private NewTabPagePrefs mNewTabPagePrefs;
+    private RecentTabsPagePrefs mPrefs;
     private RecentlyClosedBridge mRecentlyClosedBridge;
     private SigninManager mSignInManager;
     private UpdatedCallback mUpdatedCallback;
@@ -76,7 +76,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mProfile = profile;
         mTab = tab;
         mForeignSessionHelper = buildForeignSessionHelper(mProfile);
-        mNewTabPagePrefs = buildNewTabPagePrefs(mProfile);
+        mPrefs = new RecentTabsPagePrefs(mProfile);
         mFaviconHelper = buildFaviconHelper();
         mRecentlyClosedBridge = buildRecentlyClosedBridge(mProfile);
         mSignInManager = SigninManager.get(context);
@@ -112,8 +112,8 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
         mUpdatedCallback = null;
 
-        mNewTabPagePrefs.destroy();
-        mNewTabPagePrefs = null;
+        mPrefs.destroy();
+        mPrefs = null;
 
         InvalidationController.get(mContext).onRecentTabsPageClosed();
     }
@@ -127,10 +127,6 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
 
     private static ForeignSessionHelper buildForeignSessionHelper(Profile profile) {
         return new ForeignSessionHelper(profile);
-    }
-
-    private static NewTabPagePrefs buildNewTabPagePrefs(Profile profile) {
-        return new NewTabPagePrefs(profile);
     }
 
     private static FaviconHelper buildFaviconHelper() {
@@ -268,7 +264,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void setForeignSessionCollapsed(ForeignSession session, boolean isCollapsed) {
         if (mIsDestroyed) return;
-        mNewTabPagePrefs.setForeignSessionCollapsed(session, isCollapsed);
+        mPrefs.setForeignSessionCollapsed(session, isCollapsed);
     }
 
     /**
@@ -279,7 +275,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * @return Whether the session is collapsed.
      */
     public boolean getForeignSessionCollapsed(ForeignSession session) {
-        return mNewTabPagePrefs.getForeignSessionCollapsed(session);
+        return mPrefs.getForeignSessionCollapsed(session);
     }
 
     /**
@@ -289,7 +285,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void setRecentlyClosedTabsCollapsed(boolean isCollapsed) {
         if (mIsDestroyed) return;
-        mNewTabPagePrefs.setRecentlyClosedTabsCollapsed(isCollapsed);
+        mPrefs.setRecentlyClosedTabsCollapsed(isCollapsed);
     }
 
     /**
@@ -298,7 +294,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * @return Whether the recently closed tabs list is collapsed.
      */
     public boolean isRecentlyClosedTabsCollapsed() {
-        return mNewTabPagePrefs.getRecentlyClosedTabsCollapsed();
+        return mPrefs.getRecentlyClosedTabsCollapsed();
     }
 
    /**
@@ -357,7 +353,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void setSyncPromoCollapsed(boolean isCollapsed) {
         if (mIsDestroyed) return;
-        mNewTabPagePrefs.setSyncPromoCollapsed(isCollapsed);
+        mPrefs.setSyncPromoCollapsed(isCollapsed);
     }
 
     /**
@@ -366,7 +362,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * @return Whether the sync promo is collapsed.
      */
     public boolean isSyncPromoCollapsed() {
-        return mNewTabPagePrefs.getSyncPromoCollapsed();
+        return mPrefs.getSyncPromoCollapsed();
     }
 
     protected void postUpdate() {

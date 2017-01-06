@@ -67,8 +67,8 @@
 #include "chrome/browser/android/metrics/variations_session.h"
 #include "chrome/browser/android/net/external_estimate_provider_android.h"
 #include "chrome/browser/android/ntp/most_visited_sites_bridge.h"
-#include "chrome/browser/android/ntp/new_tab_page_prefs.h"
 #include "chrome/browser/android/ntp/ntp_snippets_bridge.h"
+#include "chrome/browser/android/ntp/recent_tabs_page_prefs.h"
 #include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_download_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_bridge.h"
@@ -322,7 +322,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"NativeInfoBar", RegisterNativeInfoBar},
     {"ExternalEstimateProviderAndroid",
      chrome::android::RegisterExternalEstimateProviderAndroid},
-    {"NewTabPagePrefs", NewTabPagePrefs::RegisterNewTabPagePrefs},
+    {"RecentTabsPagePrefs", RecentTabsPagePrefs::RegisterJni},
     {"NotificationPlatformBridge",
      NotificationPlatformBridgeAndroid::RegisterNotificationPlatformBridge},
     {"NTPSnippetsBridge", NTPSnippetsBridge::Register},

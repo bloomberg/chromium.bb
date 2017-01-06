@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_NTP_NEW_TAB_PAGE_PREFS_H_
-#define CHROME_BROWSER_ANDROID_NTP_NEW_TAB_PAGE_PREFS_H_
+#ifndef CHROME_BROWSER_ANDROID_NTP_RECENT_TABS_PAGE_PREFS_H_
+#define CHROME_BROWSER_ANDROID_NTP_RECENT_TABS_PAGE_PREFS_H_
 
 #include <jni.h>
 
@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 
-class NewTabPagePrefs {
+class RecentTabsPagePrefs {
  public:
-  explicit NewTabPagePrefs(Profile* profile);
+  explicit RecentTabsPagePrefs(Profile* profile);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   jboolean GetSnapshotDocumentCollapsed(
@@ -49,13 +49,14 @@ class NewTabPagePrefs {
       const base::android::JavaParamRef<jstring>& session_tag,
       jboolean is_collapsed);
 
-  static bool RegisterNewTabPagePrefs(JNIEnv* env);
+  static bool RegisterJni(JNIEnv* env);
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
  private:
-  virtual ~NewTabPagePrefs();
+  virtual ~RecentTabsPagePrefs();
 
   Profile* profile_;  // weak
-  DISALLOW_COPY_AND_ASSIGN(NewTabPagePrefs);
+  DISALLOW_COPY_AND_ASSIGN(RecentTabsPagePrefs);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_NTP_NEW_TAB_PAGE_PREFS_H_
+#endif  // CHROME_BROWSER_ANDROID_NTP_RECENT_TABS_PAGE_PREFS_H_
