@@ -198,10 +198,12 @@ class WebFrameSerializerSanitizationTest : public WebFrameSerializerTest {
 
   ~WebFrameSerializerSanitizationTest() override {}
 
-  String generateMHTMLParts(const String& url, const String& fileName) {
+  String generateMHTMLParts(const String& url,
+                            const String& fileName,
+                            const String& mimeType = "text/html") {
     KURL parsedURL(ParsedURLString, url);
     URLTestHelpers::registerMockedURLLoad(parsedURL, fileName,
-                                          "frameserialization/", "text/html");
+                                          "frameserialization/", mimeType);
     FrameTestHelpers::loadFrame(mainFrameImpl(), url.utf8().data());
     WebThreadSafeData result = WebFrameSerializer::generateMHTMLParts(
         WebString("boundary"), mainFrameImpl(), &m_mhtmlDelegate);
@@ -272,6 +274,14 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveHiddenElements) {
   EXPECT_NE(WTF::kNotFound, mhtml.find("<form"));
   EXPECT_NE(WTF::kNotFound, mhtml.find("<input type=3D\"text\""));
   EXPECT_NE(WTF::kNotFound, mhtml.find("<div"));
+}
+
+// Regression test for crbug.com/678893, where in some cases serializing an
+// image document could cause code to pick an element from an empty container.
+TEST_F(WebFrameSerializerSanitizationTest, FromBrokenImageDocument) {
+  String mhtml = generateMHTMLParts("http://www.test.com", "broken-image.png",
+                                    "image/png");
+  EXPECT_TRUE(mhtml.isEmpty());
 }
 
 }  // namespace blink

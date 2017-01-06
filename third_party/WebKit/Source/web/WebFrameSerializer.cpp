@@ -294,6 +294,11 @@ WebThreadSafeData WebFrameSerializer::generateMHTMLParts(
     FrameSerializer serializer(resources, coreDelegate);
     serializer.serializeFrame(*frame);
   }
+
+  // There was an error serializing the frame (e.g. of an image resource).
+  if (resources.isEmpty())
+    return WebThreadSafeData();
+
   TRACE_EVENT_END1("page-serialization",
                    "WebFrameSerializer::generateMHTMLParts serializing",
                    "resource count",
@@ -302,7 +307,6 @@ WebThreadSafeData WebFrameSerializer::generateMHTMLParts(
   // Encode serialized resources as MHTML.
   RefPtr<RawData> output = RawData::create();
   {
-    DCHECK(!resources.isEmpty());
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
         "PageSerialization.MhtmlGeneration.EncodingTime.SingleFrame");
     // Frame is the 1st resource (see FrameSerializer::serializeFrame doc
