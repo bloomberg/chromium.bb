@@ -1030,7 +1030,8 @@
                   '|content/browser/renderer_host/media/.*(capture|media)'\
                   '|content/renderer/media/.*(capture|media|webrtc)'\
                   '|media/capture/'\
-                  '|media/muxers/',
+                  '|media/muxers/'\
+                  '|services/video_capture/',
     },
     'views': {
       # Applies to all files and subdirs within this directory.
@@ -2066,7 +2067,8 @@
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
     'video': ['posciak+watch@chromium.org'],
-    'video_capture': ['mcasas+watch+vc@chromium.org'],
+    'video_capture': ['mcasas+watch+vc@chromium.org',
+                      'chfremer+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'virtual_keyboard': ['dfaden+virtualkb@google.com',
                          'groby+virtualkb@chromium.org'],
