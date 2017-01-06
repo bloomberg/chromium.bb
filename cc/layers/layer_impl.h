@@ -546,6 +546,11 @@ class CC_EXPORT LayerImpl {
   DrawMode current_draw_mode_;
 
  private:
+  PropertyTrees* GetPropertyTrees() const;
+  EffectTree& GetEffectTree() const;
+  ScrollTree& GetScrollTree() const;
+  TransformTree& GetTransformTree() const;
+
   ElementId element_id_;
   uint32_t mutable_properties_;
   // Rect indicating what was repainted/updated during update.
