@@ -1619,6 +1619,8 @@ bool UnownedPasswordFormElementsAndFieldSetsToFormData(
 bool FindFormAndFieldForFormControlElement(const WebFormControlElement& element,
                                            FormData* form,
                                            FormFieldData* field) {
+  DCHECK(!element.isNull());
+
   if (!IsAutofillableElement(element))
     return false;
 

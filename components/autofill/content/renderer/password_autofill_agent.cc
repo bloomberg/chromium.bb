@@ -1266,7 +1266,7 @@ void PasswordAutofillAgent::FillPasswordForm(
                        base::Unretained(&gatekeeper_)),
             logger.get())) {
       if (form_data.show_form_not_secure_warning_on_autofill)
-        autofill_agent_->ShowNotSecureWarning(username_element);
+        autofill_agent_->ShowNotSecureWarning(element);
     }
   }
 }
