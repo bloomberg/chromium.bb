@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.27",
+  "version": "9.28",
   "entries": [
     {
       "id": 1,
@@ -2312,6 +2312,16 @@ LONG_STRING_CONST(
       "gl_renderer": "Adreno.*",
       "features": [
         "disable_program_caching_for_transform_feedback"
+      ]
+    },
+    {
+      "id": 213,
+      "description": "The Mali-Gxx driver does not guarantee flush ordering",
+      "cr_bugs": [678508],
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali-G.*",
+      "features": [
+        "use_virtualized_gl_contexts"
       ]
     }
   ]
