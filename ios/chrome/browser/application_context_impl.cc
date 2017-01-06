@@ -289,7 +289,8 @@ physical_web::PhysicalWebDataSource*
 ApplicationContextImpl::GetPhysicalWebDataSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!physical_web_data_source_) {
-    physical_web_data_source_ = CreateIOSChromePhysicalWebDataSource();
+    physical_web_data_source_ =
+        CreateIOSChromePhysicalWebDataSource(GetLocalState());
     DCHECK(physical_web_data_source_);
   }
   return physical_web_data_source_.get();

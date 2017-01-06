@@ -12,14 +12,16 @@
 namespace base {
 class ListValue;
 }
+class PrefService;
 
 @class PhysicalWebScanner;
+@class PhysicalWebInitialStateRecorder;
 
 // iOS implementation of PhysicalWebDataSource
 class IOSChromePhysicalWebDataSource
     : public physical_web::PhysicalWebDataSourceImpl {
  public:
-  IOSChromePhysicalWebDataSource();
+  IOSChromePhysicalWebDataSource(PrefService* pref_service);
   ~IOSChromePhysicalWebDataSource() override;
 
   // Starts scanning for Physical Web URLs. If |network_request_enabled| is
@@ -40,6 +42,9 @@ class IOSChromePhysicalWebDataSource
  private:
   // Scanner for nearby Physical Web URL devices.
   base::scoped_nsobject<PhysicalWebScanner> scanner_;
+
+  // Utility for fetching initial application state for logging purposes.
+  base::scoped_nsobject<PhysicalWebInitialStateRecorder> initialStateRecorder_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromePhysicalWebDataSource);
 };

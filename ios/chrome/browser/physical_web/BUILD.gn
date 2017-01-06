@@ -9,6 +9,8 @@ source_set("physical_web") {
     "ios_chrome_physical_web_data_source.h",
     "ios_chrome_physical_web_data_source.mm",
     "physical_web_constants.h",
+    "physical_web_initial_state_recorder.h",
+    "physical_web_initial_state_recorder.mm",
     "physical_web_prefs_registration.cc",
     "physical_web_prefs_registration.h",
     "start_physical_web_discovery.h",

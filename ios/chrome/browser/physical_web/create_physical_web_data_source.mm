@@ -8,8 +8,6 @@
 #import "ios/chrome/browser/physical_web/ios_chrome_physical_web_data_source.h"
 
 std::unique_ptr<physical_web::PhysicalWebDataSource>
-CreateIOSChromePhysicalWebDataSource() {
-  std::unique_ptr<physical_web::PhysicalWebDataSource> datasource =
-      base::MakeUnique<IOSChromePhysicalWebDataSource>();
-  return datasource;
+CreateIOSChromePhysicalWebDataSource(PrefService* prefService) {
+  return base::MakeUnique<IOSChromePhysicalWebDataSource>(prefService);
 }
