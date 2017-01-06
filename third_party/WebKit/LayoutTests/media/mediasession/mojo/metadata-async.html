@@ -54,9 +54,9 @@ async_test(t => {
     window.navigator.mediaSession.metadata.title = 'new title';
     window.navigator.mediaSession.metadata.album = 'new album';
     window.navigator.mediaSession.metadata.artist = 'new artist';
-    var image = new MediaImage(
-        { src: 'http://example.com/', sizes: '40x40', type: 'image/png' });
-    window.navigator.mediaSession.metadata.artwork = [ image ];
+    window.navigator.mediaSession.metadata.artwork = [
+      { src: 'http://example.com/', sizes: '40x40', type: 'image/png' }
+    ];
 
     // This two last changes are made asynchronously and will go in different
     // mojo calls.

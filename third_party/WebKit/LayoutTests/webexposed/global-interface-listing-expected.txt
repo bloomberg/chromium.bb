@@ -3818,12 +3818,6 @@ interface MediaError
     attribute MEDIA_ERR_SRC_NOT_SUPPORTED
     getter code
     method constructor
-interface MediaImage
-    attribute @@toStringTag
-    getter sizes
-    getter src
-    getter type
-    method constructor
 interface MediaKeyMessageEvent : Event
     attribute @@toStringTag
     getter message

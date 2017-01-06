@@ -13,10 +13,11 @@
 
 namespace blink {
 
-class ExecutionContext;
+class ExceptionState;
 class MediaImage;
 class MediaMetadataInit;
 class MediaSession;
+class ScriptState;
 
 // Implementation of MediaMetadata interface from the Media Session API.
 // The MediaMetadata object is linked to a MediaSession that owns it. When one
@@ -30,17 +31,23 @@ class MODULES_EXPORT MediaMetadata final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MediaMetadata* create(ExecutionContext*, const MediaMetadataInit&);
+  static MediaMetadata* create(ScriptState*,
+                               const MediaMetadataInit&,
+                               ExceptionState&);
 
   String title() const;
   String artist() const;
   String album() const;
-  const HeapVector<Member<MediaImage>>& artwork() const;
+  Vector<v8::Local<v8::Value>> artwork(ScriptState*) const;
+
+  // Internal use only, returns a reference to m_artwork instead of a Frozen
+  // copy of a MediaImage array.
+  const HeapVector<MediaImage>& artwork() const;
 
   void setTitle(const String&);
   void setArtist(const String&);
   void setAlbum(const String&);
-  void setArtwork(const HeapVector<Member<MediaImage>>&);
+  void setArtwork(ScriptState*, const HeapVector<MediaImage>&, ExceptionState&);
 
   // Called by MediaSession to associate or de-associate itself.
   void setSession(MediaSession*);
@@ -48,7 +55,7 @@ class MODULES_EXPORT MediaMetadata final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  MediaMetadata(ExecutionContext*, const MediaMetadataInit&);
+  MediaMetadata(ScriptState*, const MediaMetadataInit&, ExceptionState&);
 
   // Called when one of the metadata fields is updated from script. It will
   // notify the session asynchronously in order to bundle multiple call in one
@@ -59,10 +66,16 @@ class MODULES_EXPORT MediaMetadata final
   // modified.
   void notifySessionTimerFired(TimerBase*);
 
+  // Make an internal copy of the MediaImage vector with some internal steps
+  // such as parsing of the src property.
+  void setArtworkInternal(ScriptState*,
+                          const HeapVector<MediaImage>&,
+                          ExceptionState&);
+
   String m_title;
   String m_artist;
   String m_album;
-  HeapVector<Member<MediaImage>> m_artwork;
+  HeapVector<MediaImage> m_artwork;
 
   Member<MediaSession> m_session;
   Timer<MediaMetadata> m_notifySessionTimer;

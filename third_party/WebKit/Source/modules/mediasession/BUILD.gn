@@ -6,8 +6,6 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("mediasession") {
   sources = [
-    "MediaImage.cpp",
-    "MediaImage.h",
     "MediaMetadata.cpp",
     "MediaMetadata.h",
     "MediaMetadataSanitizer.cpp",

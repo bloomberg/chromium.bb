@@ -2,14 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/mediasession/#the-mediaimage-interface
+// https://wicg.github.io/mediasession/#dictdef-mediaimage
 
-[
-    ConstructorCallWith=ExecutionContext,
-    Constructor(MediaImageInit image),
-    RuntimeEnabled=MediaSession,
-] interface MediaImage {
-  readonly attribute USVString src;
-  readonly attribute DOMString sizes;
-  readonly attribute DOMString type;
+dictionary MediaImage {
+  required USVString src;
+  DOMString sizes = "";
+  DOMString type = "";
 };

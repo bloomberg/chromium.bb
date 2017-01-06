@@ -5,12 +5,13 @@
 // https://wicg.github.io/mediasession/#the-mediametadata-interface
 
 [
-    ConstructorCallWith=ExecutionContext,
+    ConstructorCallWith=ScriptState,
     Constructor(optional MediaMetadataInit metadata),
+    RaisesException=Constructor,
     RuntimeEnabled=MediaSession,
 ] interface MediaMetadata {
     attribute DOMString title;
     attribute DOMString artist;
     attribute DOMString album;
-    attribute FrozenArray<MediaImage> artwork;
+    [CallWith=ScriptState, RaisesException=Setter] attribute FrozenArray<MediaImage> artwork;
 };

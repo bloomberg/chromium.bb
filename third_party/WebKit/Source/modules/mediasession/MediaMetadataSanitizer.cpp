@@ -34,9 +34,8 @@ const size_t kMaxNumberOfMediaImages = 10;
 const size_t kMaxNumberOfImageSizes = 10;
 
 bool checkMediaImageSrcSanity(const KURL& src, ExecutionContext* context) {
-  // Console warning for invalid src is printed upon MediaImage creation.
-  if (!src.isValid())
-    return false;
+  // Invalid URLs will be rejected early on.
+  DCHECK(src.isValid());
 
   if (!src.protocolIs(url::kHttpScheme) && !src.protocolIs(url::kHttpsScheme) &&
       !src.protocolIs(url::kDataScheme) && !src.protocolIs(url::kBlobScheme)) {
@@ -46,6 +45,7 @@ bool checkMediaImageSrcSanity(const KURL& src, ExecutionContext* context) {
             src.getString()));
     return false;
   }
+
   DCHECK(src.getString().is8Bit());
   if (src.getString().length() > url::kMaxURLChars) {
     context->addConsoleMessage(ConsoleMessage::create(
@@ -59,21 +59,19 @@ bool checkMediaImageSrcSanity(const KURL& src, ExecutionContext* context) {
 // Sanitize MediaImage and do mojo serialization. Returns null when
 // |image.src()| is bad.
 blink::mojom::blink::MediaImagePtr sanitizeMediaImageAndConvertToMojo(
-    const MediaImage* image,
+    const MediaImage& image,
     ExecutionContext* context) {
-  DCHECK(image);
-
   blink::mojom::blink::MediaImagePtr mojoImage;
 
-  KURL url = KURL(ParsedURLString, image->src());
+  KURL url = KURL(ParsedURLString, image.src());
   if (!checkMediaImageSrcSanity(url, context))
     return mojoImage;
 
   mojoImage = blink::mojom::blink::MediaImage::New();
   mojoImage->src = url;
-  mojoImage->type = image->type().left(kMaxImageTypeLength);
+  mojoImage->type = image.type().left(kMaxImageTypeLength);
   for (const auto& webSize :
-       WebIconSizesParser::parseIconSizes(image->sizes())) {
+       WebIconSizesParser::parseIconSizes(image.sizes())) {
     mojoImage->sizes.push_back(webSize);
     if (mojoImage->sizes.size() == kMaxNumberOfImageSizes) {
       context->addConsoleMessage(ConsoleMessage::create(
@@ -101,9 +99,9 @@ MediaMetadataSanitizer::sanitizeAndConvertToMojo(const MediaMetadata* metadata,
   mojoMetadata->artist = metadata->artist().left(kMaxStringLength);
   mojoMetadata->album = metadata->album().left(kMaxStringLength);
 
-  for (const auto image : metadata->artwork()) {
+  for (const MediaImage& image : metadata->artwork()) {
     blink::mojom::blink::MediaImagePtr mojoImage =
-        sanitizeMediaImageAndConvertToMojo(image.get(), context);
+        sanitizeMediaImageAndConvertToMojo(image, context);
     if (!mojoImage.is_null())
       mojoMetadata->artwork.push_back(std::move(mojoImage));
     if (mojoMetadata->artwork.size() == kMaxNumberOfMediaImages) {
