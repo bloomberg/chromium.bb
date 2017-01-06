@@ -200,12 +200,10 @@ void APIBinding::HandleCall(const std::string& name,
   {
     v8::TryCatch try_catch(isolate);
     APIBindingHooks::RequestResult hooks_result =
-        APIBindingHooks::RequestResult::NOT_HANDLED;
-    hooks_result = binding_hooks_->HandleRequest(api_name_, name, context,
-                                                 signature, &argument_list,
-                                                 *type_refs_);
+        binding_hooks_->HandleRequest(api_name_, name, context,
+                                      signature, &argument_list, *type_refs_);
 
-    switch (hooks_result) {
+    switch (hooks_result.code) {
       case APIBindingHooks::RequestResult::INVALID_INVOCATION:
         invalid_invocation = true;
         // Throw a type error below so that it's not caught by our try-catch.
@@ -215,6 +213,8 @@ void APIBinding::HandleCall(const std::string& name,
         try_catch.ReThrow();
         return;
       case APIBindingHooks::RequestResult::HANDLED:
+        if (!hooks_result.return_value.IsEmpty())
+          arguments->Return(hooks_result.return_value);
         return;  // Our work here is done.
       case APIBindingHooks::RequestResult::NOT_HANDLED:
         break;  // Handle in the default manner.

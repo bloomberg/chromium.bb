@@ -478,12 +478,14 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
                  std::vector<v8::Local<v8::Value>>* arguments,
                  const ArgumentSpec::RefMap& ref_map) {
     *did_call = true;
-    if (arguments->size() != 1u) {
+    APIBindingHooks::RequestResult result(
+        APIBindingHooks::RequestResult::HANDLED);
+    if (arguments->size() != 1u) {  // ASSERT* messes with the return type.
       EXPECT_EQ(1u, arguments->size());
-      return APIBindingHooks::RequestResult::HANDLED;
+      return result;
     }
     EXPECT_EQ("foo", gin::V8ToString(arguments->at(0)));
-    return APIBindingHooks::RequestResult::HANDLED;
+    return result;
   };
   hooks->RegisterHandleRequest("test.oneString", base::Bind(hook, &did_call));
 
@@ -689,6 +691,197 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
 
   // Other methods, like stringAndInt(), should behave normally.
   ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");
+}
+
+// Tests that custom JS hooks can return results synchronously.
+TEST_F(APIBindingUnittest, TestReturningResultFromCustomJSHook) {
+  // Register a hook for the test.oneString method.
+  auto hooks = base::MakeUnique<APIBindingHooks>(
+      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+  const char kRegisterHook[] =
+      "(function(hooks) {\n"
+      "  hooks.setHandleRequest('oneString', str => {\n"
+      "    return str + ' pong';\n"
+      "  });\n"
+      "})";
+  v8::Local<v8::String> source_string =
+      gin::StringToV8(isolate(), kRegisterHook);
+  v8::Local<v8::String> source_name =
+      gin::StringToV8(isolate(), "custom_hook");
+  hooks->RegisterJsSource(
+      v8::Global<v8::String>(isolate(), source_string),
+      v8::Global<v8::String>(isolate(), source_name));
+
+  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+
+  APIBinding binding(
+      "test", functions.get(), nullptr, nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      std::move(hooks), &refs);
+  EXPECT_TRUE(refs.empty());
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+
+  v8::Local<v8::Function> function =
+      FunctionFromString(context,
+                         "(function(obj) { return obj.oneString('ping'); })");
+  v8::Local<v8::Value> args[] = {binding_object};
+  v8::Local<v8::Value> result =
+      RunFunction(function, context, arraysize(args), args);
+  ASSERT_FALSE(result.IsEmpty());
+  std::unique_ptr<base::Value> json_result = V8ToBaseValue(result, context);
+  ASSERT_TRUE(json_result);
+  EXPECT_EQ("\"ping pong\"", ValueToString(*json_result));
+}
+
+// Tests that JS custom hooks can throw exceptions for bad invocations.
+TEST_F(APIBindingUnittest, TestThrowingFromCustomJSHook) {
+  // Our testing handlers for running functions expect a pre-determined success
+  // or failure. Since we're testing throwing exceptions here, we need a way of
+  // running that allows exceptions to be thrown, but we still expect most JS
+  // calls to succeed.
+  // TODO(devlin): This is a bit clunky. If we need to do this enough, we could
+  // figure out a different solution, like having a stack object for allowing
+  // errors/exceptions. But given this is the only place we need it so far, this
+  // is sufficient.
+  auto run_js_and_expect_error = [](v8::Local<v8::Function> function,
+                                          v8::Local<v8::Context> context,
+                                          int argc,
+                                          v8::Local<v8::Value> argv[]) {
+    v8::MaybeLocal<v8::Value> maybe_result =
+        function->Call(context, context->Global(), argc, argv);
+    v8::Global<v8::Value> result;
+    v8::Local<v8::Value> local;
+    if (maybe_result.ToLocal(&local))
+      result.Reset(context->GetIsolate(), local);
+    return result;
+  };
+  // Register a hook for the test.oneString method.
+  auto hooks = base::MakeUnique<APIBindingHooks>(
+      base::Bind(run_js_and_expect_error));
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+  const char kRegisterHook[] =
+      "(function(hooks) {\n"
+      "  hooks.setHandleRequest('oneString', str => {\n"
+      "    throw new Error('Custom Hook Error');\n"
+      "  });\n"
+      "})";
+  v8::Local<v8::String> source_string =
+      gin::StringToV8(isolate(), kRegisterHook);
+  v8::Local<v8::String> source_name =
+      gin::StringToV8(isolate(), "custom_hook");
+  hooks->RegisterJsSource(
+      v8::Global<v8::String>(isolate(), source_string),
+      v8::Global<v8::String>(isolate(), source_name));
+
+  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+
+  APIBinding binding(
+      "test", functions.get(), nullptr, nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      std::move(hooks), &refs);
+  EXPECT_TRUE(refs.empty());
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+
+  v8::Local<v8::Function> function =
+      FunctionFromString(context,
+                         "(function(obj) { return obj.oneString('ping'); })");
+  v8::Local<v8::Value> args[] = {binding_object};
+  RunFunctionAndExpectError(function, context, v8::Undefined(isolate()),
+                            arraysize(args), args,
+                            "Uncaught Error: Custom Hook Error");
+}
+
+// Tests that native custom hooks can return results synchronously, or throw
+// exceptions for bad invocations.
+TEST_F(APIBindingUnittest,
+       TestReturningResultAndThrowingExceptionFromCustomNativeHook) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  // Register a hook for the test.oneString method.
+  auto hooks = base::MakeUnique<APIBindingHooks>(
+      base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+  bool did_call = false;
+  auto hook = [](bool* did_call, const APISignature* signature,
+                 v8::Local<v8::Context> context,
+                 std::vector<v8::Local<v8::Value>>* arguments,
+                 const ArgumentSpec::RefMap& ref_map) {
+    APIBindingHooks::RequestResult result(
+        APIBindingHooks::RequestResult::HANDLED);
+    if (arguments->size() != 1u) {  // ASSERT* messes with the return type.
+      EXPECT_EQ(1u, arguments->size());
+      return result;
+    }
+    v8::Isolate* isolate = context->GetIsolate();
+    std::string arg_value = gin::V8ToString(arguments->at(0));
+    if (arg_value == "throw") {
+      isolate->ThrowException(v8::Exception::Error(
+          gin::StringToV8(isolate, "Custom Hook Error")));
+      result.code = APIBindingHooks::RequestResult::THROWN;
+      return result;
+    }
+    result.return_value =
+        gin::StringToV8(context->GetIsolate(), arg_value + " pong");
+    return result;
+  };
+  hooks->RegisterHandleRequest("test.oneString", base::Bind(hook, &did_call));
+
+  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+
+  APIBinding binding(
+      "test", functions.get(), nullptr, nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      std::move(hooks), &refs);
+  EXPECT_TRUE(refs.empty());
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+
+  {
+    // Test an invocation that we expect to throw an exception.
+    v8::Local<v8::Function> function =
+        FunctionFromString(
+            context, "(function(obj) { return obj.oneString('throw'); })");
+    v8::Local<v8::Value> args[] = {binding_object};
+    RunFunctionAndExpectError(function, context, v8::Undefined(isolate()),
+                              arraysize(args), args,
+                              "Uncaught Error: Custom Hook Error");
+  }
+
+  {
+    // Test an invocation we expect to succeed.
+    v8::Local<v8::Function> function =
+        FunctionFromString(context,
+                           "(function(obj) { return obj.oneString('ping'); })");
+    v8::Local<v8::Value> args[] = {binding_object};
+    v8::Local<v8::Value> result =
+        RunFunction(function, context, arraysize(args), args);
+    ASSERT_FALSE(result.IsEmpty());
+    std::unique_ptr<base::Value> json_result = V8ToBaseValue(result, context);
+    ASSERT_TRUE(json_result);
+    EXPECT_EQ("\"ping pong\"", ValueToString(*json_result));
+  }
 }
 
 }  // namespace extensions

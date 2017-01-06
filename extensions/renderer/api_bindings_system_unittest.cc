@@ -300,22 +300,24 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
                  std::vector<v8::Local<v8::Value>>* arguments,
                  const ArgumentSpec::RefMap& type_refs) {
     *did_call = true;
+    APIBindingHooks::RequestResult result(
+        APIBindingHooks::RequestResult::HANDLED);
     if (arguments->size() != 2) {  // ASSERT* messes with the return type.
       EXPECT_EQ(2u, arguments->size());
-      return APIBindingHooks::RequestResult::HANDLED;
+      return result;
     }
     std::string argument;
     EXPECT_EQ("foo", gin::V8ToString(arguments->at(0)));
     if (!arguments->at(1)->IsFunction()) {
       EXPECT_TRUE(arguments->at(1)->IsFunction());
-      return APIBindingHooks::RequestResult::HANDLED;
+      return result;
     }
     v8::Local<v8::String> response =
         gin::StringToV8(context->GetIsolate(), "bar");
     v8::Local<v8::Value> response_args[] = {response};
     RunFunctionOnGlobal(arguments->at(1).As<v8::Function>(),
                         context, 1, response_args);
-    return APIBindingHooks::RequestResult::HANDLED;
+    return result;
   };
 
   APIBindingHooks* hooks = bindings_system()->GetHooksForAPI(kAlphaAPIName);

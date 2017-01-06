@@ -30,11 +30,21 @@ class APISignature;
 class APIBindingHooks {
  public:
   // The result of checking for hooks to handle a request.
-  enum class RequestResult {
-    HANDLED,             // A custom hook handled the request.
-    THROWN,              // An exception was thrown during parsing or handling.
-    INVALID_INVOCATION,  // The request was called with invalid arguments.
-    NOT_HANDLED,         // The request was not handled.
+  struct RequestResult {
+    enum ResultCode {
+      HANDLED,             // A custom hook handled the request.
+      THROWN,              // An exception was thrown during parsing or
+                           // handling.
+      INVALID_INVOCATION,  // The request was called with invalid arguments.
+      NOT_HANDLED,         // The request was not handled.
+    };
+
+    explicit RequestResult(ResultCode code);
+    RequestResult(const RequestResult& other);
+    ~RequestResult();
+
+    ResultCode code;
+    v8::Local<v8::Value> return_value;  // Only valid if code == HANDLED.
   };
 
   // The callback to handle an API method. We pass in the expected signature
@@ -68,8 +78,7 @@ class APIBindingHooks {
                            const std::string& api_name);
 
   // Looks for a custom hook to handle the given request and, if one exists,
-  // runs it. Returns the result of trying to run the hook, or NOT_HANDLED if no
-  // hook was found.
+  // runs it. Returns the result of running the hook, if any.
   RequestResult HandleRequest(const std::string& api_name,
                               const std::string& method_name,
                               v8::Local<v8::Context> context,

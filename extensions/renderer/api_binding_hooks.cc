@@ -164,6 +164,11 @@ v8::Local<v8::Object> GetJSHookInterfaceObject(
 
 }  // namespace
 
+APIBindingHooks::RequestResult::RequestResult(ResultCode code) : code(code) {}
+APIBindingHooks::RequestResult::~RequestResult() {}
+APIBindingHooks::RequestResult::RequestResult(const RequestResult& other) =
+    default;
+
 APIBindingHooks::APIBindingHooks(const binding::RunJSFunctionSync& run_js)
     : run_js_(run_js) {}
 APIBindingHooks::~APIBindingHooks() {}
@@ -195,7 +200,7 @@ APIBindingHooks::RequestResult APIBindingHooks::HandleRequest(
             signature, context, arguments, type_refs);
     // Right now, it doesn't make sense to register a request handler that
     // doesn't handle the request.
-    DCHECK_NE(RequestResult::NOT_HANDLED, result);
+    DCHECK_NE(RequestResult::NOT_HANDLED, result.code);
     return result;
   }
 
@@ -204,7 +209,7 @@ APIBindingHooks::RequestResult APIBindingHooks::HandleRequest(
   v8::Local<v8::Object> hook_interface_object =
       GetJSHookInterfaceObject(api_name, context, false);
   if (hook_interface_object.IsEmpty())
-    return RequestResult::NOT_HANDLED;
+    return RequestResult(RequestResult::NOT_HANDLED);
 
   v8::Isolate* isolate = context->GetIsolate();
 
@@ -223,7 +228,7 @@ APIBindingHooks::RequestResult APIBindingHooks::HandleRequest(
     UpdateArguments(pre_validate_hook, context, arguments);
     if (try_catch.HasCaught()) {
       try_catch.ReThrow();
-      return RequestResult::THROWN;
+      return RequestResult(RequestResult::THROWN);
     }
   }
 
@@ -237,17 +242,25 @@ APIBindingHooks::RequestResult APIBindingHooks::HandleRequest(
                                                  &parsed_v8_args, &error);
     if (try_catch.HasCaught()) {
       try_catch.ReThrow();
-      return RequestResult::THROWN;
+      return RequestResult(RequestResult::THROWN);
     }
     if (!success)
-      return RequestResult::INVALID_INVOCATION;
+      return RequestResult(RequestResult::INVALID_INVOCATION);
 
-    run_js_.Run(handle_request, context, parsed_v8_args.size(),
-                parsed_v8_args.data());
-    return RequestResult::HANDLED;
+    v8::Global<v8::Value> global_result =
+        run_js_.Run(handle_request, context, parsed_v8_args.size(),
+                    parsed_v8_args.data());
+    if (try_catch.HasCaught()) {
+      try_catch.ReThrow();
+      return RequestResult(RequestResult::THROWN);
+    }
+    RequestResult result(RequestResult::HANDLED);
+    if (!global_result.IsEmpty())
+      result.return_value = global_result.Get(isolate);
+    return result;
   }
 
-  return RequestResult::NOT_HANDLED;
+  return RequestResult(RequestResult::NOT_HANDLED);
 }
 
 void APIBindingHooks::InitializeInContext(
