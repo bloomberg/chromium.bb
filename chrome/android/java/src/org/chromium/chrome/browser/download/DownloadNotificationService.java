@@ -753,7 +753,7 @@ public class DownloadNotificationService extends Service {
      */
     @VisibleForTesting
     void updateNotification(int id, Notification notification) {
-        mNotificationManager.notify(id, notification);
+        mNotificationManager.notify(NOTIFICATION_NAMESPACE, id, notification);
     }
 
     /**
