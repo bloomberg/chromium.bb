@@ -30,8 +30,8 @@
 
 namespace blink {
 
-NavigatorGeolocation::NavigatorGeolocation(LocalFrame* frame)
-    : ContextClient(frame) {}
+NavigatorGeolocation::NavigatorGeolocation(Navigator& navigator)
+    : Supplement<Navigator>(navigator) {}
 
 const char* NavigatorGeolocation::supplementName() {
   return "NavigatorGeolocation";
@@ -41,7 +41,7 @@ NavigatorGeolocation& NavigatorGeolocation::from(Navigator& navigator) {
   NavigatorGeolocation* supplement = static_cast<NavigatorGeolocation*>(
       Supplement<Navigator>::from(navigator, supplementName()));
   if (!supplement) {
-    supplement = new NavigatorGeolocation(navigator.frame());
+    supplement = new NavigatorGeolocation(navigator);
     provideTo(navigator, supplementName(), supplement);
   }
   return *supplement;
@@ -52,15 +52,14 @@ Geolocation* NavigatorGeolocation::geolocation(Navigator& navigator) {
 }
 
 Geolocation* NavigatorGeolocation::geolocation() {
-  if (!m_geolocation && frame())
-    m_geolocation = Geolocation::create(frame()->document());
+  if (!m_geolocation && host()->frame())
+    m_geolocation = Geolocation::create(host()->frame()->document());
   return m_geolocation;
 }
 
 DEFINE_TRACE(NavigatorGeolocation) {
   visitor->trace(m_geolocation);
   Supplement<Navigator>::trace(visitor);
-  ContextClient::trace(visitor);
 }
 
 }  // namespace blink
