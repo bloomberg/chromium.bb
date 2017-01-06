@@ -89,7 +89,8 @@ views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
                                           kMenuIconSize, gfx::kGoogleGreen700);
 
   highlight_view_ = new HoverHighlightView(this);
-  highlight_view_->SetBorder(views::CreateEmptyBorder(0, 0, 0, 0));
+  highlight_view_->SetBorder(
+      views::CreateEmptyBorder(0, kMenuExtraMarginFromLeftEdge, 0, 0));
   const int interior_button_padding = (kMenuButtonSize - kMenuIconSize) / 2;
   highlight_view_->AddIconAndLabelCustomSize(icon, name, false, kMenuIconSize,
                                              interior_button_padding,

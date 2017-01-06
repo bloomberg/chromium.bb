@@ -45,25 +45,34 @@ namespace {
 
 // Predefined padding for the icon used in this tray. These are to be set to the
 // border of the icon, depending on the current |shelf_alignment()|.
-constexpr int kHorizontalShelfHorizontalPadding = 8;
-constexpr int kHorizontalShelfVerticalPadding = 4;
-constexpr int kVerticalShelfHorizontalPadding = 2;
-constexpr int kVerticalShelfVerticalPadding = 5;
+const int kHorizontalShelfHorizontalPadding = 8;
+const int kHorizontalShelfVerticalPadding = 4;
+const int kVerticalShelfHorizontalPadding = 2;
+const int kVerticalShelfVerticalPadding = 5;
 
 // Width of the palette itself (dp).
-constexpr int kPaletteWidth = 332;
+const int kPaletteWidth = 332;
 
 // Padding at the top/bottom of the palette (dp).
-constexpr int kPalettePaddingOnTop = 4;
-constexpr int kPalettePaddingOnBottom = 2;
+const int kPalettePaddingOnTop = 4;
+const int kPalettePaddingOnBottom = 4;
+
+// Size of icon in the shelf (dp).
+const int kShelfIconSize = 18;
+
+// Vertical margin around the title view elements so that the title view height
+// matches kMenuButtonSize.
+const int kVerticalMarginAroundTitleView = 1;
 
 // Margins between the title view and the edges around it (dp).
-constexpr int kPaddingBetweenTitleAndLeftEdge = 12;
-constexpr int kPaddingBetweenTitleAndSeparator = 3;
+const int kPaddingBetweenTitleAndLeftEdge = 12;
+const int kPaddingBetweenTitleAndSeparator = 3;
+
+// The distance between the title, help, and settings button in the title (dp).
+const int kHorizontalPaddingBetweenTitleEntries = 2;
 
 // Color of the separator.
-constexpr SkColor kPaletteSeparatorColor =
-    SkColorSetARGB(0x1E, 0x00, 0x00, 0x00);
+const SkColor kPaletteSeparatorColor = SkColorSetARGB(0x1E, 0x00, 0x00, 0x00);
 
 // Returns true if we are in a user session that can show the stylus tools.
 bool IsInUserSession() {
@@ -81,8 +90,9 @@ class TitleView : public views::View, public views::ButtonListener {
   explicit TitleView(PaletteTray* palette_tray) : palette_tray_(palette_tray) {
     // TODO(tdanderson|jdufault): Use TriView to handle the layout of the title.
     // See crbug.com/614453.
-    auto* box_layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+    auto* box_layout = new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, kVerticalMarginAroundTitleView,
+        kHorizontalPaddingBetweenTitleEntries);
     SetLayoutManager(box_layout);
 
     title_label_ =
@@ -421,7 +431,7 @@ void PaletteTray::UpdateTrayIcon() {
   icon_->SetImage(CreateVectorIcon(
       palette_tool_manager_->GetActiveTrayIcon(
           palette_tool_manager_->GetActiveTool(ash::PaletteGroup::MODE)),
-      kTrayIconSize, kShelfIconColor));
+      kShelfIconSize, kShelfIconColor));
 }
 
 void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
