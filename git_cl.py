@@ -2737,10 +2737,12 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         if not parent or (RunGitSilent(['rev-parse', upstream_branch + ':']) !=
                           RunGitSilent(['rev-parse', parent + ':'])):
           DieWithError(
-              'Upload upstream branch %s first.\n'
-              'Note: maybe you\'ve uploaded it with --no-squash. '
-              'If so, then re-upload it with:\n'
-              '    git cl upload --squash\n' % upstream_branch_name)
+              '\nUpload upstream branch %s first.\n'
+              'It is likely that this branch has been rebased since its last '
+              'upload, so you just need to upload it again.\n'
+              '(If you uploaded it with --no-squash, then branch dependencies '
+              'are not supported, and you should reupload with --squash.)'
+              % upstream_branch_name)
       else:
         parent = self.GetCommonAncestorWithUpstream()
 
