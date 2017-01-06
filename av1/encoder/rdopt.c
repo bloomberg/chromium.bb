@@ -3207,7 +3207,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
       for (idx = 0; idx < blocks_width; ++idx) {
         const int16_t *d =
             diff + ((idy * diff_stride + idx) << tx_size_wide_log2[0]);
-        tmp += aom_sum_squares_2d_i16(d, diff_stride, 4);
+        tmp += sum_squares_2d(d, diff_stride, 0);
       }
     }
   } else {
@@ -3251,7 +3251,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
               src + ((idy * src_stride + idx) << tx_size_wide_log2[0]);
           uint8_t *const r =
               rec_buffer + ((idy * MAX_TX_SIZE + idx) << tx_size_wide_log2[0]);
-          cpi->fn_ptr[BLOCK_4X4].vf(s, src_stride, r, MAX_TX_SIZE, &this_dist);
+          cpi->fn_ptr[0].vf(s, src_stride, r, MAX_TX_SIZE, &this_dist);
           tmp += this_dist;
         }
       }
