@@ -1378,9 +1378,9 @@ FloatSize FrameView::viewportSizeForViewportUnits() const {
   // height, compensating for page scale as well, since we want to use the
   // viewport with browser controls hidden for vh (to match Safari).
   BrowserControls& browserControls = m_frame->host()->browserControls();
-  if (m_frame->isMainFrame() && size.width()) {
-    float pageScaleAtLayoutWidth =
-        m_frame->host()->visualViewport().size().width() / size.width();
+  int viewportWidth = m_frame->host()->visualViewport().size().width();
+  if (m_frame->isMainFrame() && size.width() && viewportWidth) {
+    float pageScaleAtLayoutWidth = viewportWidth / size.width();
     size.expand(0, browserControls.height() / pageScaleAtLayoutWidth);
   }
 

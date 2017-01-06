@@ -2456,4 +2456,24 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
   RuntimeEnabledFeatures::setInertTopControlsEnabled(originalInertTopControls);
 }
 
+// Make sure we don't crash when the visual viewport's height is 0. This can
+// happen transiently in autoresize mode and cause a crash. This test passes if
+// it doesn't crash.
+TEST_P(VisualViewportTest, AutoResizeNoHeightUsesMinimumHeight) {
+  initializeWithDesktopSettings();
+  webViewImpl()->resizeWithBrowserControls(WebSize(0, 0), 0, false);
+  webViewImpl()->enableAutoResizeMode(WebSize(25, 25), WebSize(100, 100));
+  WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
+  FrameTestHelpers::loadHTMLString(webViewImpl()->mainFrame(),
+                                   "<!DOCTYPE html>"
+                                   "<style>"
+                                   "  body {"
+                                   "    margin: 0px;"
+                                   "  }"
+                                   "  div { height:110vh; width: 110vw; }"
+                                   "</style>"
+                                   "<div></div>",
+                                   baseURL);
+}
+
 }  // namespace
