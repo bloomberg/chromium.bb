@@ -242,8 +242,6 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
   DCHECK_EQ(0ull, video_track->crop_bottom());
   DCHECK_EQ(0.0f, video_track->frame_rate());
 
-  video_track->set_default_duration(base::Time::kNanosecondsPerSecond /
-                                    frame_rate);
   // Segment's timestamps should be in milliseconds, DCHECK it. See
   // http://www.webmproject.org/docs/container/#muxer-guidelines
   DCHECK_EQ(1000000ull, segment_.GetSegmentInfo()->timecode_scale());
