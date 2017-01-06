@@ -31,7 +31,6 @@
 #ifndef NavigatorDoNotTrack_h
 #define NavigatorDoNotTrack_h
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -39,12 +38,10 @@
 
 namespace blink {
 
-class LocalFrame;
 class Navigator;
 
 class NavigatorDoNotTrack final : public GarbageCollected<NavigatorDoNotTrack>,
-                                  public Supplement<Navigator>,
-                                  public ContextClient {
+                                  public Supplement<Navigator> {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorDoNotTrack);
 
  public:
@@ -56,7 +53,7 @@ class NavigatorDoNotTrack final : public GarbageCollected<NavigatorDoNotTrack>,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit NavigatorDoNotTrack(LocalFrame*);
+  explicit NavigatorDoNotTrack(Navigator&);
   static const char* supplementName();
 };
 
