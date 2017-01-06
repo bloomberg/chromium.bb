@@ -511,6 +511,7 @@ namespace networkingPrivate {
     CellularProviderProperties? ServingOperator;
     SIMLockStatus? SIMLockStatus;
     boolean? SIMPresent;
+    long? SignalStrength;
     boolean? SupportNetworkScan;
     DOMString[]? SupportedCarriers;
   };
@@ -544,6 +545,7 @@ namespace networkingPrivate {
     CellularProviderProperties? ServingOperator;
     SIMLockStatus? SIMLockStatus;
     boolean? SIMPresent;
+    long? SignalStrength;
     boolean? SupportNetworkScan;
     DOMString[]? SupportedCarriers;
   };
