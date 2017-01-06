@@ -4,7 +4,7 @@
 
 #include "bindings/modules/v8/serialization/V8ScriptValueSerializerForModules.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8BindingForTesting.h"

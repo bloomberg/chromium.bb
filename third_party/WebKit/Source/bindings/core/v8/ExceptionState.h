@@ -156,11 +156,8 @@ class CORE_EXPORT ExceptionState {
 // Should be used if an exception must not be thrown.
 class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
  public:
-  NonThrowableExceptionState()
-      : ExceptionState(nullptr,
-                       ExceptionState::UnknownContext,
-                       nullptr,
-                       nullptr) {}
+  NonThrowableExceptionState();
+  NonThrowableExceptionState(const char*, int);
 
   void throwDOMException(ExceptionCode, const String& message) override;
   void throwTypeError(const String& message) override;
@@ -168,7 +165,24 @@ class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
                           const String& unsanitizedMessage) override;
   void throwRangeError(const String& message) override;
   void rethrowV8Exception(v8::Local<v8::Value>) override;
+  ExceptionState& returnThis() { return *this; }
+
+ private:
+  const char* m_file;
+  const int m_line;
 };
+
+// Syntax sugar for NonThrowableExceptionState.
+// This can be used as a default value of an ExceptionState parameter like this:
+//
+//   Node* removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION)
+#if ENABLE(ASSERT)
+#define ASSERT_NO_EXCEPTION \
+  (::blink::NonThrowableExceptionState(__FILE__, __LINE__).returnThis())
+#else
+#define ASSERT_NO_EXCEPTION \
+  (::blink::DummyExceptionStateForTesting().returnThis())
+#endif
 
 // DummyExceptionStateForTesting ignores all thrown exceptions. You should not
 // use DummyExceptionStateForTesting in production code, where you need to
@@ -195,6 +209,12 @@ class CORE_EXPORT DummyExceptionStateForTesting final : public ExceptionState {
   void rethrowV8Exception(v8::Local<v8::Value>) override;
   ExceptionState& returnThis() { return *this; }
 };
+
+// Syntax sugar for DummyExceptionStateForTesting.
+// This can be used as a default value of an ExceptionState parameter like this:
+//
+//   Node* removeChild(Node* child, ExceptionState& = IGNORE_EXCEPTION)
+#define IGNORE_EXCEPTION (::blink::DummyExceptionStateForTesting().returnThis())
 
 }  // namespace blink
 

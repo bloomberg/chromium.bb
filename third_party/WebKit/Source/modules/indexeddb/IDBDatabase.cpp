@@ -26,7 +26,6 @@
 #include "modules/indexeddb/IDBDatabase.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/modules/v8/IDBObserverCallback.h"

@@ -4,7 +4,7 @@
 
 #include "modules/remoteplayback/RemotePlayback.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/modules/v8/RemotePlaybackAvailabilityCallback.h"
 #include "core/dom/DocumentUserGestureToken.h"

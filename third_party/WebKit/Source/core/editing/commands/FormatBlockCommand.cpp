@@ -25,7 +25,7 @@
 
 #include "core/editing/commands/FormatBlockCommand.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"

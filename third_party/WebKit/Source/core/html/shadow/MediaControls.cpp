@@ -26,7 +26,7 @@
 
 #include "core/html/shadow/MediaControls.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/Fullscreen.h"
 #include "core/events/MouseEvent.h"

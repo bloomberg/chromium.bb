@@ -5,7 +5,7 @@
 #ifndef IntersectionObserver_h
 #define IntersectionObserver_h
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/IntersectionObservation.h"
 #include "core/dom/IntersectionObserverEntry.h"

@@ -22,7 +22,7 @@
 
 #include "core/html/HTMLMarqueeElement.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8HTMLMarqueeElement.h"
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"

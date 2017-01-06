@@ -28,7 +28,7 @@
 
 #include "modules/webdatabase/InspectorDatabaseAgent.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/VoidCallback.h"
 #include "core/loader/DocumentLoader.h"

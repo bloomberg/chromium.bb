@@ -30,7 +30,7 @@
 
 #include "core/html/TimeRanges.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <sstream>
 

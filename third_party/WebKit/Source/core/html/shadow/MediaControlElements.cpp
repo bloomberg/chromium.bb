@@ -29,7 +29,7 @@
 
 #include "core/html/shadow/MediaControlElements.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/Text.h"

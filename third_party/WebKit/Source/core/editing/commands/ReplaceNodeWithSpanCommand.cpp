@@ -30,7 +30,7 @@
 
 #include "core/editing/commands/ReplaceNodeWithSpanCommand.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLElement.h"

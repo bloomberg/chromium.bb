@@ -60,8 +60,6 @@ bindings_core_v8_files =
                     "core/v8/ExceptionMessages.h",
                     "core/v8/ExceptionState.cpp",
                     "core/v8/ExceptionState.h",
-                    "core/v8/ExceptionStatePlaceholder.cpp",
-                    "core/v8/ExceptionStatePlaceholder.h",
                     "core/v8/GeneratedCodeHelper.cpp",
                     "core/v8/GeneratedCodeHelper.h",
                     "core/v8/IDLDictionaryBase.cpp",

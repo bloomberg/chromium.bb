@@ -4,7 +4,7 @@
 
 #include "modules/peerconnection/RTCDataChannel.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMException.h"
 #include "core/events/Event.h"

@@ -5,7 +5,7 @@
 #ifndef DOMMatrix_h
 #define DOMMatrix_h
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMMatrixInit.h"
 #include "core/dom/DOMMatrixReadOnly.h"
 

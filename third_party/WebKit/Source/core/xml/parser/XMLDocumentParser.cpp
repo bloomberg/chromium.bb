@@ -27,7 +27,6 @@
 #include "core/xml/parser/XMLDocumentParser.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/HTMLNames.h"

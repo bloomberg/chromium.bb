@@ -30,7 +30,7 @@
 
 #include "public/web/WebElement.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"

@@ -26,7 +26,6 @@
 #include "modules/indexeddb/IDBTransaction.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/DOMException.h"

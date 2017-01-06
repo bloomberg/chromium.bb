@@ -26,7 +26,7 @@
 #ifndef Range_h
 #define Range_h
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/RangeBoundaryPoint.h"

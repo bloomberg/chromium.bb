@@ -25,7 +25,7 @@
 
 #include "web/LinkHighlightImpl.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
 #include "core/input/EventHandler.h"

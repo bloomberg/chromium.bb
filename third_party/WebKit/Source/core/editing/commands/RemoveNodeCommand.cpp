@@ -25,7 +25,7 @@
 
 #include "core/editing/commands/RemoveNodeCommand.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Node.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/commands/EditingState.h"

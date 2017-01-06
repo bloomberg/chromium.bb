@@ -26,7 +26,6 @@
 #include "modules/indexeddb/IDBObjectStore.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/modules/v8/ToV8ForModules.h"

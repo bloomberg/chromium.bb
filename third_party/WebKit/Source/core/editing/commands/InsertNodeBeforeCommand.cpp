@@ -25,7 +25,7 @@
 
 #include "core/editing/commands/InsertNodeBeforeCommand.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/editing/EditingUtilities.h"
 
 namespace blink {

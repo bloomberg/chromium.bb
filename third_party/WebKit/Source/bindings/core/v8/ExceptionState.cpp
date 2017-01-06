@@ -144,27 +144,38 @@ String ExceptionState::addExceptionContext(const String& message) const {
   return processedMessage;
 }
 
+NonThrowableExceptionState::NonThrowableExceptionState()
+    : ExceptionState(nullptr, ExceptionState::UnknownContext, nullptr, nullptr),
+      m_file(""),
+      m_line(0) {}
+
+NonThrowableExceptionState::NonThrowableExceptionState(const char* file,
+                                                       int line)
+    : ExceptionState(nullptr, ExceptionState::UnknownContext, nullptr, nullptr),
+      m_file(file),
+      m_line(line) {}
+
 void NonThrowableExceptionState::throwDOMException(ExceptionCode ec,
                                                    const String& message) {
-  NOTREACHED();
+  DCHECK_AT(false, m_file, m_line) << "DOMExeption should not be thrown.";
 }
 
 void NonThrowableExceptionState::throwRangeError(const String& message) {
-  NOTREACHED();
+  DCHECK_AT(false, m_file, m_line) << "RangeError should not be thrown.";
 }
 
 void NonThrowableExceptionState::throwSecurityError(
     const String& sanitizedMessage,
     const String&) {
-  NOTREACHED();
+  DCHECK_AT(false, m_file, m_line) << "SecurityError should not be thrown.";
 }
 
 void NonThrowableExceptionState::throwTypeError(const String& message) {
-  NOTREACHED();
+  DCHECK_AT(false, m_file, m_line) << "TypeError should not be thrown.";
 }
 
 void NonThrowableExceptionState::rethrowV8Exception(v8::Local<v8::Value>) {
-  NOTREACHED();
+  DCHECK_AT(false, m_file, m_line) << "An exception should not be rethrown.";
 }
 
 void DummyExceptionStateForTesting::throwDOMException(ExceptionCode ec,

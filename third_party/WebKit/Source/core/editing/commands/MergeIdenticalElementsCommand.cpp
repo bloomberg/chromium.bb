@@ -26,7 +26,6 @@
 #include "core/editing/commands/MergeIdenticalElementsCommand.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Element.h"
 #include "core/editing/EditingUtilities.h"
 
