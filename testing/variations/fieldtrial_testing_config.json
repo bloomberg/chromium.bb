@@ -1256,6 +1256,21 @@
             ]
         }
     ],
+    "OfflinePagesAsyncLoading": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OfflinePagesAsyncDownload"
+                    ]
+                }
+            ]
+        }
+    ],
     "OutOfProcessPac": [
         {
             "platforms": [
