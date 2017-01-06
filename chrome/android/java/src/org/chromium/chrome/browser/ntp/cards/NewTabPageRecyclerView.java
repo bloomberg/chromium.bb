@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Region;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -548,6 +549,10 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
 
             @Override
             public void onAnimationEnd(Animator animation) {
+                // It is possible that by the time the animation ends, we navigated away from the
+                // container and it got destroyed. In that case, abort. (https://crbug.com/668945)
+                if (!ViewCompat.isAttachedToWindow(viewHolder.itemView)) return;
+
                 dismissItemInternal(viewHolder);
                 NewTabPageRecyclerView.this.onItemDismissFinished(viewHolder);
             }

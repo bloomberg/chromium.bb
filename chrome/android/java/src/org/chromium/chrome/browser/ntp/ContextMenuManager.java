@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.ntp;
 import android.app.Activity;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
-import android.support.v13.view.ViewCompat;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -81,7 +80,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
      *                 are tapped.
      */
     public void createContextMenu(ContextMenu menu, View associatedView, Delegate delegate) {
-        OnMenuItemClickListener listener = new ItemClickListener(delegate, associatedView);
+        OnMenuItemClickListener listener = new ItemClickListener(delegate);
         boolean hasItems = false;
 
         for (@ContextMenuItemId int itemId : MenuItemLabelMatcher.STRING_MAP.keySet()) {
@@ -168,23 +167,13 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
 
     private static class ItemClickListener implements OnMenuItemClickListener {
         private final Delegate mDelegate;
-        private final View mAssociatedView;
 
-        ItemClickListener(Delegate delegate, View associatedView) {
+        ItemClickListener(Delegate delegate) {
             mDelegate = delegate;
-            mAssociatedView = associatedView;
         }
 
         @Override
         public boolean onMenuItemClick(MenuItem item) {
-            // If the user clicks a snippet then immediately long presses they will create a context
-            // menu while the snippet's URL loads in the background. This means that when they press
-            // an item on context menu the NTP will not actually be open. We add this check here to
-            // prevent taking any action if the user has left the NTP. (https://crbug.com/640468)
-            // Although the menu is supposed to be closed when we navigate away from the NTP, we
-            // have to keep this check because of race conditions. (https://crbug.com/668945)
-            if (!ViewCompat.isAttachedToWindow(mAssociatedView)) return true;
-
             switch (item.getItemId()) {
                 case ID_OPEN_IN_NEW_WINDOW:
                     mDelegate.openItem(WindowOpenDisposition.NEW_WINDOW);
