@@ -36,9 +36,12 @@ class PaymentRequestDialog : public views::DialogDelegateView {
 
   // views::DialogDelegate
   bool Cancel() override;
+  bool ShouldShowCloseButton() const override;
+  int GetDialogButtons() const override;
 
   void GoBack();
   void ShowOrderSummary();
+  void CloseDialog();
 
  private:
   void ShowInitialPaymentSheet();

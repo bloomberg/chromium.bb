@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "components/payments/payment_details_validation.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -61,7 +62,14 @@ void PaymentRequestImpl::Init(
     payments::mojom::PaymentDetailsPtr details,
     payments::mojom::PaymentOptionsPtr options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  std::string error;
+  if (!payments::validatePaymentDetails(details, &error)) {
+    LOG(ERROR) << error;
+    OnError();
+    return;
+  }
   client_ = std::move(client);
+  details_ = std::move(details);
 }
 
 void PaymentRequestImpl::Show() {

@@ -34,6 +34,7 @@ class PaymentRequestImpl : payments::mojom::PaymentRequest,
 
   void Cancel();
   void OnError();
+  payments::mojom::PaymentDetails* details() { return details_.get(); }
 
   content::WebContents* web_contents() { return web_contents_; }
 
@@ -44,6 +45,7 @@ class PaymentRequestImpl : payments::mojom::PaymentRequest,
   content::WebContents* web_contents_;
   mojo::Binding<payments::mojom::PaymentRequest> binding_;
   payments::mojom::PaymentRequestClientPtr client_;
+  payments::mojom::PaymentDetailsPtr details_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestImpl);
 };

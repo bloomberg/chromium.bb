@@ -17,6 +17,16 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/fill_layout.h"
 
+namespace chrome {
+
+void ShowPaymentRequestDialog(payments::PaymentRequestImpl* impl) {
+  constrained_window::ShowWebModalDialogViews(
+      new payments::PaymentRequestDialog(impl), impl->web_contents());
+}
+
+}  // namespace chrome
+
+namespace payments {
 namespace {
 
 // This function creates an instance of a PaymentRequestSheetController
@@ -36,17 +46,6 @@ std::unique_ptr<views::View> CreateViewAndInstallController(
 }
 
 }  // namespace
-
-namespace chrome {
-
-void ShowPaymentRequestDialog(payments::PaymentRequestImpl* impl) {
-  constrained_window::ShowWebModalDialogViews(
-      new payments::PaymentRequestDialog(impl), impl->web_contents());
-}
-
-}  // namespace chrome
-
-namespace payments {
 
 PaymentRequestDialog::PaymentRequestDialog(PaymentRequestImpl* impl)
     : impl_(impl) {
@@ -71,6 +70,23 @@ bool PaymentRequestDialog::Cancel() {
   return true;
 }
 
+bool PaymentRequestDialog::ShouldShowCloseButton() const {
+  // Don't show the normal close button on the dialog. This is because the
+  // typical dialog header doesn't allow displaying anything other that the
+  // title and the close button. This is insufficient for the PaymentRequest
+  // dialog, which must sometimes show the back arrow next to the title.
+  // Moreover, the title (and back arrow) should animate with the view they're
+  // attached to.
+  return false;
+}
+
+int PaymentRequestDialog::GetDialogButtons() const {
+  // The buttons should animate along with the different dialog sheets since
+  // each sheet presents a different set of buttons. Because of this, hide the
+  // usual dialog buttons.
+  return ui::DIALOG_BUTTON_NONE;
+}
+
 void PaymentRequestDialog::GoBack() {
   view_stack_.Pop();
 }
@@ -80,6 +96,10 @@ void PaymentRequestDialog::ShowOrderSummary() {
         CreateViewAndInstallController<OrderSummaryViewController>(
             &controller_map_, impl_, this),
         true);
+}
+
+void PaymentRequestDialog::CloseDialog() {
+  GetWidget()->Close();
 }
 
 void PaymentRequestDialog::ShowInitialPaymentSheet() {
