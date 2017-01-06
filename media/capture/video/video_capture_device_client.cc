@@ -38,43 +38,43 @@ bool IsFormatSupported(media::VideoPixelFormat pixel_format) {
 
 namespace media {
 
-// Class combining a Client::Buffer interface implementation and a pool buffer
-// implementation to guarantee proper cleanup on destruction on our side.
-class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
+class BufferPoolProducerReservationReleaser
+    : public VideoCaptureDevice::Client::Buffer::ScopedAccessPermission {
  public:
-  AutoReleaseBuffer(scoped_refptr<VideoCaptureBufferPool> pool,
-                    int buffer_id,
-                    int frame_feedback_id)
-      : pool_(std::move(pool)),
-        id_(buffer_id),
-        frame_feedback_id_(frame_feedback_id),
-        buffer_handle_(pool_->GetBufferHandle(buffer_id)) {
-    DCHECK(pool_.get());
-  }
-  int id() const override { return id_; }
-  int frame_feedback_id() const override { return frame_feedback_id_; }
-  gfx::Size dimensions() const override { return buffer_handle_->dimensions(); }
-  size_t mapped_size() const override { return buffer_handle_->mapped_size(); }
-  void* data(int plane) override { return buffer_handle_->data(plane); }
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  base::FileDescriptor AsPlatformFile() override {
-    return buffer_handle_->AsPlatformFile();
-  }
-#endif
-  bool IsBackedByVideoFrame() const override {
-    return buffer_handle_->IsBackedByVideoFrame();
-  }
-  scoped_refptr<VideoFrame> GetVideoFrame() override {
-    return buffer_handle_->GetVideoFrame();
+  BufferPoolProducerReservationReleaser(
+      scoped_refptr<VideoCaptureBufferPool> buffer_pool,
+      int buffer_id)
+      : buffer_pool_(std::move(buffer_pool)), buffer_id_(buffer_id) {}
+
+  ~BufferPoolProducerReservationReleaser() override {
+    buffer_pool_->RelinquishProducerReservation(buffer_id_);
   }
 
  private:
-  ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
+  const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
+  const int buffer_id_;
+};
 
-  const scoped_refptr<VideoCaptureBufferPool> pool_;
-  const int id_;
-  const int frame_feedback_id_;
-  const std::unique_ptr<VideoCaptureBufferHandle> buffer_handle_;
+class BufferPoolBufferHandleProvider
+    : public VideoCaptureDevice::Client::Buffer::HandleProvider {
+ public:
+  BufferPoolBufferHandleProvider(
+      scoped_refptr<VideoCaptureBufferPool> buffer_pool,
+      int buffer_id)
+      : buffer_pool_(std::move(buffer_pool)), buffer_id_(buffer_id) {}
+
+  // Implementation of HandleProvider:
+  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit() override {
+    return buffer_pool_->GetHandleForInterProcessTransit(buffer_id_);
+  }
+  std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
+      override {
+    return buffer_pool_->GetHandleForInProcessAccess(buffer_id_);
+  }
+
+ private:
+  const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
+  const int buffer_id_;
 };
 
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(
@@ -91,6 +91,18 @@ VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {
   // This should be on the platform auxiliary thread since
   // |external_jpeg_decoder_| need to be destructed on the same thread as
   // OnIncomingCapturedData.
+}
+
+// static
+VideoCaptureDevice::Client::Buffer VideoCaptureDeviceClient::MakeBufferStruct(
+    scoped_refptr<VideoCaptureBufferPool> buffer_pool,
+    int buffer_id,
+    int frame_feedback_id) {
+  return Buffer(
+      buffer_id, frame_feedback_id,
+      base::MakeUnique<BufferPoolBufferHandleProvider>(buffer_pool, buffer_id),
+      base::MakeUnique<BufferPoolProducerReservationReleaser>(buffer_pool,
+                                                              buffer_id));
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedData(
@@ -148,18 +160,22 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     rotation_mode = libyuv::kRotate270;
 
   const gfx::Size dimensions(destination_width, destination_height);
-  uint8_t *y_plane_data, *u_plane_data, *v_plane_data;
-  std::unique_ptr<Buffer> buffer(ReserveI420OutputBuffer(
-      dimensions, media::PIXEL_STORAGE_CPU, frame_feedback_id, &y_plane_data,
-      &u_plane_data, &v_plane_data));
+  Buffer buffer =
+      ReserveOutputBuffer(dimensions, media::PIXEL_FORMAT_I420,
+                          media::PIXEL_STORAGE_CPU, frame_feedback_id);
 #if DCHECK_IS_ON()
-  dropped_frame_counter_ = buffer.get() ? 0 : dropped_frame_counter_ + 1;
+  dropped_frame_counter_ = buffer.is_valid() ? 0 : dropped_frame_counter_ + 1;
   if (dropped_frame_counter_ >= kMaxDroppedFrames)
     OnError(FROM_HERE, "Too many frames dropped");
 #endif
   // Failed to reserve I420 output buffer, so drop the frame.
-  if (!buffer.get())
+  if (!buffer.is_valid())
     return;
+
+  auto buffer_access = buffer.handle_provider()->GetHandleForInProcessAccess();
+  uint8_t *y_plane_data, *u_plane_data, *v_plane_data;
+  InitializeI420PlanePointers(dimensions, buffer_access->data(), &y_plane_data,
+                              &u_plane_data, &v_plane_data);
 
   const int yplane_stride = dimensions.width();
   const int uv_plane_stride = yplane_stride / 2;
@@ -267,7 +283,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
                            timestamp);
 }
 
-std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
+media::VideoCaptureDevice::Client::Buffer
 VideoCaptureDeviceClient::ReserveOutputBuffer(
     const gfx::Size& frame_size,
     media::VideoPixelFormat pixel_format,
@@ -277,8 +293,6 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
   DCHECK_GT(frame_size.height(), 0);
   DCHECK(IsFormatSupported(pixel_format));
 
-  // TODO(mcasas): For PIXEL_STORAGE_GPUMEMORYBUFFER, find a way to indicate if
-  // it's a ShMem GMB or a DmaBuf GMB.
   int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;
   const int buffer_id =
       buffer_pool_->ReserveForProducer(frame_size, pixel_format, pixel_storage,
@@ -286,13 +300,12 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
   if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId)
     receiver_->OnBufferDestroyed(buffer_id_to_drop);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
-    return nullptr;
-  return base::WrapUnique<Buffer>(
-      new AutoReleaseBuffer(buffer_pool_, buffer_id, frame_feedback_id));
+    return Buffer();
+  return MakeBufferStruct(buffer_pool_, buffer_id, frame_feedback_id);
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
-    std::unique_ptr<Buffer> buffer,
+    Buffer buffer,
     const VideoCaptureFormat& format,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
@@ -302,15 +315,14 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
-    std::unique_ptr<Buffer> buffer,
+    Buffer buffer,
     const VideoCaptureFormat& format,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
     gfx::Rect visible_rect,
     const VideoFrameMetadata& additional_metadata) {
-  const int buffer_id = buffer->id();
-
-  auto buffer_mojo_handle = buffer_pool_->GetHandleForTransit(buffer_id);
+  auto buffer_mojo_handle =
+      buffer_pool_->GetHandleForInterProcessTransit(buffer.id());
   base::SharedMemoryHandle memory_handle;
   size_t memory_size = 0;
   bool read_only_flag = false;
@@ -319,17 +331,18 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
       &read_only_flag);
   DCHECK_EQ(MOJO_RESULT_OK, unwrap_result_code);
 
+  auto buffer_access = buffer.handle_provider()->GetHandleForInProcessAccess();
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalSharedMemory(
-          format.pixel_format,                    // format
-          format.frame_size,                      // coded_size
-          visible_rect,                           // visible_rect
-          format.frame_size,                      // natural_size
-          static_cast<uint8_t*>(buffer->data()),  // data
-          buffer->mapped_size(),                  // data_size
-          memory_handle,                          // handle
-          0,                                      // shared_memory_offset
-          timestamp);                             // timestamp
+          format.pixel_format,           // format
+          format.frame_size,             // coded_size
+          visible_rect,                  // visible_rect
+          format.frame_size,             // natural_size
+          buffer_access->data(),         // data
+          buffer_access->mapped_size(),  // data_size
+          memory_handle,                 // handle
+          0,                             // shared_memory_offset
+          timestamp);                    // timestamp
   frame->metadata()->MergeMetadataFrom(&additional_metadata);
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                format.frame_rate);
@@ -339,7 +352,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
   receiver_->OnIncomingCapturedVideoFrame(std::move(buffer), std::move(frame));
 }
 
-std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
+media::VideoCaptureDevice::Client::Buffer
 VideoCaptureDeviceClient::ResurrectLastOutputBuffer(
     const gfx::Size& dimensions,
     media::VideoPixelFormat format,
@@ -348,9 +361,8 @@ VideoCaptureDeviceClient::ResurrectLastOutputBuffer(
   const int buffer_id =
       buffer_pool_->ResurrectLastForProducer(dimensions, format, storage);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
-    return nullptr;
-  return base::WrapUnique<Buffer>(
-      new AutoReleaseBuffer(buffer_pool_, buffer_id, new_frame_feedback_id));
+    return Buffer();
+  return MakeBufferStruct(buffer_pool_, buffer_id, new_frame_feedback_id);
 }
 
 void VideoCaptureDeviceClient::OnError(
@@ -374,33 +386,25 @@ double VideoCaptureDeviceClient::GetBufferPoolUtilization() const {
   return buffer_pool_->GetBufferPoolUtilization();
 }
 
-std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
-VideoCaptureDeviceClient::ReserveI420OutputBuffer(
+void VideoCaptureDeviceClient::InitializeI420PlanePointers(
     const gfx::Size& dimensions,
-    media::VideoPixelStorage storage,
-    int frame_feedback_id,
+    uint8_t* const data,
     uint8_t** y_plane_data,
     uint8_t** u_plane_data,
     uint8_t** v_plane_data) {
-  DCHECK(storage == media::PIXEL_STORAGE_CPU);
   DCHECK(dimensions.height());
   DCHECK(dimensions.width());
 
   const media::VideoPixelFormat format = media::PIXEL_FORMAT_I420;
-  std::unique_ptr<Buffer> buffer(ReserveOutputBuffer(
-      dimensions, media::PIXEL_FORMAT_I420, storage, frame_feedback_id));
-  if (!buffer)
-    return std::unique_ptr<Buffer>();
   // TODO(emircan): See http://crbug.com/521068, move this pointer
   // arithmetic inside Buffer::data() when this bug is resolved.
-  *y_plane_data = reinterpret_cast<uint8_t*>(buffer->data());
+  *y_plane_data = data;
   *u_plane_data =
       *y_plane_data +
       VideoFrame::PlaneSize(format, VideoFrame::kYPlane, dimensions).GetArea();
   *v_plane_data =
       *u_plane_data +
       VideoFrame::PlaneSize(format, VideoFrame::kUPlane, dimensions).GetArea();
-  return buffer;
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedY16Data(
@@ -410,21 +414,22 @@ void VideoCaptureDeviceClient::OnIncomingCapturedY16Data(
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
     int frame_feedback_id) {
-  std::unique_ptr<Buffer> buffer(
+  Buffer buffer =
       ReserveOutputBuffer(format.frame_size, media::PIXEL_FORMAT_Y16,
-                          media::PIXEL_STORAGE_CPU, frame_feedback_id));
+                          media::PIXEL_STORAGE_CPU, frame_feedback_id);
   // The input |length| can be greater than the required buffer size because of
   // paddings and/or alignments, but it cannot be smaller.
   DCHECK_GE(static_cast<size_t>(length), format.ImageAllocationSize());
 #if DCHECK_IS_ON()
-  dropped_frame_counter_ = buffer.get() ? 0 : dropped_frame_counter_ + 1;
+  dropped_frame_counter_ = buffer.is_valid() ? 0 : dropped_frame_counter_ + 1;
   if (dropped_frame_counter_ >= kMaxDroppedFrames)
     OnError(FROM_HERE, "Too many frames dropped");
 #endif
   // Failed to reserve output buffer, so drop the frame.
-  if (!buffer.get())
+  if (!buffer.is_valid())
     return;
-  memcpy(buffer->data(), data, length);
+  auto buffer_access = buffer.handle_provider()->GetHandleForInProcessAccess();
+  memcpy(buffer_access->data(), data, length);
   const VideoCaptureFormat output_format =
       VideoCaptureFormat(format.frame_size, format.frame_rate,
                          media::PIXEL_FORMAT_Y16, media::PIXEL_STORAGE_CPU);

@@ -159,11 +159,11 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
                     base::TimeDelta,
                     int));
   MOCK_METHOD4(ReserveOutputBuffer,
-               std::unique_ptr<Buffer>(const gfx::Size&,
-                                       media::VideoPixelFormat,
-                                       media::VideoPixelStorage,
-                                       int));
-  void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
+               Buffer(const gfx::Size&,
+                      media::VideoPixelFormat,
+                      media::VideoPixelStorage,
+                      int));
+  void OnIncomingCapturedBuffer(Buffer buffer,
                                 const VideoCaptureFormat& frame_format,
                                 base::TimeTicks reference_time,
                                 base::TimeDelta timestamp) override {
@@ -171,7 +171,7 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
   }
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
   void OnIncomingCapturedBufferExt(
-      std::unique_ptr<Buffer> buffer,
+      Buffer buffer,
       const VideoCaptureFormat& format,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
@@ -180,11 +180,9 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
     DoOnIncomingCapturedVideoFrame();
   }
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
-  MOCK_METHOD4(ResurrectLastOutputBuffer,
-               std::unique_ptr<Buffer>(const gfx::Size&,
-                                       VideoPixelFormat,
-                                       VideoPixelStorage,
-                                       int));
+  MOCK_METHOD4(
+      ResurrectLastOutputBuffer,
+      Buffer(const gfx::Size&, VideoPixelFormat, VideoPixelStorage, int));
   MOCK_METHOD2(OnError,
                void(const tracked_objects::Location& from_here,
                     const std::string& reason));

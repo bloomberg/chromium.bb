@@ -42,10 +42,11 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   static constexpr int kInvalidId = -1;
 
   // One-time (per client/per-buffer) call to allow sharing |buffer_id|.
-  virtual mojo::ScopedSharedBufferHandle GetHandleForTransit(int buffer_id) = 0;
+  virtual mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
+      int buffer_id) = 0;
 
-  // Try and obtain a BufferHandle for |buffer_id|.
-  virtual std::unique_ptr<VideoCaptureBufferHandle> GetBufferHandle(
+  // Try and obtain a read/write access to the buffer.
+  virtual std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess(
       int buffer_id) = 0;
 
   // Reserve or allocate a buffer to support a packed frame of |dimensions| of

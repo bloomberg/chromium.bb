@@ -226,10 +226,6 @@ class BufferPoolFrameBufferPool : public media::FrameBufferPool {
     buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
   }
 
-  mojo::ScopedSharedBufferHandle GetHandleForTransit(int buffer_id) override {
-    return buffer_pool_->GetHandleForTransit(buffer_id);
-  }
-
  private:
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;
 };
@@ -750,7 +746,7 @@ void VideoCaptureManager::StartCaptureForClient(
   // Run the callback first, as AddClient() may trigger OnFrameInfo().
   done_cb.Run(entry->video_capture_controller.GetWeakPtrForIOThread());
   entry->video_capture_controller.AddClient(client_id, client_handler,
-                                             session_id, params);
+                                            session_id, params);
 }
 
 void VideoCaptureManager::StopCaptureForClient(

@@ -34,34 +34,60 @@ namespace media {
 
 namespace {
 
-// This class is a Client::Buffer that allocates and frees the requested |size|.
-class MockBuffer : public VideoCaptureDevice::Client::Buffer {
+class StubBufferHandle : public VideoCaptureBufferHandle {
  public:
-  MockBuffer(int buffer_id, int frame_feedback_id, size_t mapped_size)
-      : id_(buffer_id),
-        frame_feedback_id_(frame_feedback_id),
-        mapped_size_(mapped_size),
-        data_(new uint8_t[mapped_size]) {}
-  ~MockBuffer() override { delete[] data_; }
+  StubBufferHandle(size_t mapped_size, uint8_t* data)
+      : mapped_size_(mapped_size), data_(data) {}
 
-  int id() const override { return id_; }
-  int frame_feedback_id() const override { return frame_feedback_id_; }
-  gfx::Size dimensions() const override { return gfx::Size(); }
   size_t mapped_size() const override { return mapped_size_; }
-  void* data(int plane) override { return data_; }
-#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
-  base::FileDescriptor AsPlatformFile() override {
-    return base::FileDescriptor();
-  }
-#endif
-  bool IsBackedByVideoFrame() const override { return false; };
-  scoped_refptr<VideoFrame> GetVideoFrame() override { return nullptr; }
+  uint8_t* data() override { return data_; }
+  const uint8_t* data() const override { return data_; }
 
  private:
-  const int id_;
-  const int frame_feedback_id_;
   const size_t mapped_size_;
   uint8_t* const data_;
+};
+
+class StubBufferHandleProvider
+    : public VideoCaptureDevice::Client::Buffer::HandleProvider {
+ public:
+  StubBufferHandleProvider(size_t mapped_size, uint8_t* data)
+      : mapped_size_(mapped_size), data_(data) {}
+
+  ~StubBufferHandleProvider() override {}
+
+  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit() override {
+    return mojo::ScopedSharedBufferHandle();
+  }
+
+  std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
+      override {
+    return base::MakeUnique<StubBufferHandle>(mapped_size_, data_);
+  }
+
+ private:
+  const size_t mapped_size_;
+  uint8_t* const data_;
+};
+
+class StubReadWritePermission
+    : public VideoCaptureDevice::Client::Buffer::ScopedAccessPermission {
+ public:
+  StubReadWritePermission(uint8_t* data) : data_(data) {}
+  ~StubReadWritePermission() override { delete[] data_; }
+
+ private:
+  uint8_t* const data_;
+};
+
+VideoCaptureDevice::Client::Buffer CreateStubBuffer(int buffer_id,
+                                                    size_t mapped_size) {
+  auto buffer = new uint8_t[mapped_size];
+  const int arbitrary_frame_feedback_id = 0;
+  return VideoCaptureDevice::Client::Buffer(
+      buffer_id, arbitrary_frame_feedback_id,
+      base::MakeUnique<StubBufferHandleProvider>(mapped_size, buffer),
+      base::MakeUnique<StubReadWritePermission>(buffer));
 };
 
 class MockClient : public VideoCaptureDevice::Client {
@@ -84,25 +110,24 @@ class MockClient : public VideoCaptureDevice::Client {
     frame_cb_.Run(format);
   }
   // Virtual methods for capturing using Client's Buffers.
-  std::unique_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
-                                              media::VideoPixelFormat format,
-                                              media::VideoPixelStorage storage,
-                                              int frame_feedback_id) override {
+  Buffer ReserveOutputBuffer(const gfx::Size& dimensions,
+                             media::VideoPixelFormat format,
+                             media::VideoPixelStorage storage,
+                             int frame_feedback_id) override {
     EXPECT_TRUE((format == media::PIXEL_FORMAT_ARGB &&
                  storage == media::PIXEL_STORAGE_CPU));
     EXPECT_GT(dimensions.GetArea(), 0);
     const VideoCaptureFormat frame_format(dimensions, 0.0, format);
-    return base::MakeUnique<MockBuffer>(0, frame_feedback_id,
-                                        frame_format.ImageAllocationSize());
+    return CreateStubBuffer(0, frame_format.ImageAllocationSize());
   }
-  void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
+  void OnIncomingCapturedBuffer(Buffer buffer,
                                 const VideoCaptureFormat& format,
                                 base::TimeTicks reference_time,
                                 base::TimeDelta timestamp) override {
     frame_cb_.Run(format);
   }
   void OnIncomingCapturedBufferExt(
-      std::unique_ptr<Buffer> buffer,
+      Buffer buffer,
       const VideoCaptureFormat& format,
       base::TimeTicks reference_time,
       base::TimeDelta timestamp,
@@ -110,12 +135,11 @@ class MockClient : public VideoCaptureDevice::Client {
       const VideoFrameMetadata& additional_metadata) override {
     frame_cb_.Run(format);
   }
-  std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
-      const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
-      media::VideoPixelStorage storage,
-      int frame_feedback_id) override {
-    return std::unique_ptr<Buffer>();
+  Buffer ResurrectLastOutputBuffer(const gfx::Size& dimensions,
+                                   media::VideoPixelFormat format,
+                                   media::VideoPixelStorage storage,
+                                   int frame_feedback_id) override {
+    return Buffer();
   }
   double GetBufferPoolUtilization() const override { return 0.0; }
 
