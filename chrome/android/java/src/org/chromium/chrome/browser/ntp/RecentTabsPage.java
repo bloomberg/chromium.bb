@@ -89,7 +89,7 @@ public class RecentTabsPage
         LayoutInflater inflater = LayoutInflater.from(activity);
         mView = (ViewGroup) inflater.inflate(R.layout.recent_tabs_page, null);
         mListView = (ExpandableListView) mView.findViewById(R.id.odp_listview);
-        mAdapter = buildAdapter(activity, recentTabsManager);
+        mAdapter = new RecentTabsRowAdapter(activity, recentTabsManager);
         mListView.setAdapter(mAdapter);
         mListView.setOnChildClickListener(this);
         mListView.setGroupIndicator(null);
@@ -102,11 +102,6 @@ public class RecentTabsPage
         // {@link #mInForeground} will be updated once the view is attached to the window.
 
         onUpdated();
-    }
-
-    private static RecentTabsRowAdapter buildAdapter(Activity activity,
-            RecentTabsManager recentTabsManager) {
-        return new RecentTabsRowAdapter(activity, recentTabsManager);
     }
 
     /**

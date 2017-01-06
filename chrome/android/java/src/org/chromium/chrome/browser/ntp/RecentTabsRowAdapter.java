@@ -95,11 +95,13 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
          */
         abstract ChildType getChildType();
 
-
         /**
+         * @param childPosition The position for which to return the child.
          * @return The child at the position childPosition.
          */
-        abstract Object getChild(int childPosition);
+        Object getChild(int childPosition) {
+            return null;
+        }
 
         /**
          * Returns the view corresponding to the child view at a given position.
@@ -136,7 +138,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
          * @param childPosition The position of the child within this group.
          * @param viewHolder The ViewHolder with references to pieces of the view.
          */
-        abstract void configureChildView(int childPosition, ViewHolder viewHolder);
+        void configureChildView(int childPosition, ViewHolder viewHolder) {}
 
         /**
          * Returns the view corresponding to this group.
@@ -180,7 +182,9 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
          * @param childPosition The position of the child in the group.
          * @return Whether the click was handled.
          */
-        abstract boolean onChildClick(int childPosition);
+        boolean onChildClick(int childPosition) {
+            return false;
+        }
 
         /**
          * Called when the context menu for the group view is being built.
@@ -499,25 +503,11 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         }
 
         @Override
-        public void configureChildView(int childPosition, ViewHolder viewHolder) {
-        }
-
-        @Override
-        public Object getChild(int childPosition) {
-            return null;
-        }
-
-        @Override
         public void setCollapsed(boolean isCollapsed) {
         }
 
         @Override
         public boolean isCollapsed() {
-            return false;
-        }
-
-        @Override
-        public boolean onChildClick(int childPosition) {
             return false;
         }
     }
@@ -542,11 +532,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         }
 
         @Override
-        public Object getChild(int childPosition) {
-            return null;
-        }
-
-        @Override
         View getChildView(int childPosition, boolean isLastChild, View convertView,
                 ViewGroup parent) {
             if (convertView == null) {
@@ -568,10 +553,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         }
 
         @Override
-        public void configureChildView(int childPosition, ViewHolder viewHolder) {
-        }
-
-        @Override
         public void configureGroupView(RecentTabsGroupView groupView, boolean isExpanded) {
             groupView.configureForSyncPromo(isExpanded);
         }
@@ -584,11 +565,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         @Override
         public boolean isCollapsed() {
             return mRecentTabsManager.isSyncPromoCollapsed();
-        }
-
-        @Override
-        public boolean onChildClick(int childPosition) {
-            return false;
         }
     }
 
@@ -630,7 +606,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         mActivity = activity;
         mRecentTabsManager = recentTabsManager;
         mGroups = new ArrayList<>();
-        mFaviconCache = buildFaviconCache(MAX_NUM_FAVICONS_TO_CACHE);
+        mFaviconCache = new FaviconCache(MAX_NUM_FAVICONS_TO_CACHE);
 
         Resources resources = activity.getResources();
         mDefaultFavicon = ApiCompatibilityUtils.getDrawable(resources, R.drawable.default_favicon);
@@ -638,10 +614,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
 
         RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
                 OtherSessionsActions.MENU_INITIALIZED, OtherSessionsActions.LIMIT);
-    }
-
-    private static FaviconCache buildFaviconCache(int size) {
-        return new FaviconCache(size);
     }
 
     /**
