@@ -69,9 +69,9 @@
 namespace blink {
 
 static const char defaultFont[] = "10px sans-serif";
-static const char inherit[] = "inherit";
-static const char rtl[] = "rtl";
-static const char ltr[] = "ltr";
+static const char inheritDirectionString[] = "inherit";
+static const char rtlDirectionString[] = "rtl";
+static const char ltrDirectionString[] = "ltr";
 static const double TryRestoreContextInterval = 0.5;
 static const unsigned MaxTryRestoreContextAttempts = 4;
 static const double cDeviceScaleFactor = 1.0;  // Canvas is device independent
@@ -690,17 +690,17 @@ String CanvasRenderingContext2D::direction() const {
   if (state().getDirection() == CanvasRenderingContext2DState::DirectionInherit)
     canvas()->document().updateStyleAndLayoutTreeForNode(canvas());
   return toTextDirection(state().getDirection(), canvas()) == TextDirection::Rtl
-             ? rtl
-             : ltr;
+             ? rtlDirectionString
+             : ltrDirectionString;
 }
 
 void CanvasRenderingContext2D::setDirection(const String& directionString) {
   CanvasRenderingContext2DState::Direction direction;
-  if (directionString == inherit)
+  if (directionString == inheritDirectionString)
     direction = CanvasRenderingContext2DState::DirectionInherit;
-  else if (directionString == rtl)
+  else if (directionString == rtlDirectionString)
     direction = CanvasRenderingContext2DState::DirectionRTL;
-  else if (directionString == ltr)
+  else if (directionString == ltrDirectionString)
     direction = CanvasRenderingContext2DState::DirectionLTR;
   else
     return;
