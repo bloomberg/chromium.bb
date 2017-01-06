@@ -369,6 +369,14 @@ base::win::ScopedHICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
   return base::win::ScopedHICON(CreateIconIndirect(&ii));
 }
 
+gfx::Point IconUtil::GetHotSpotFromHICON(HICON icon) {
+  ScopedICONINFO icon_info;
+  gfx::Point hotspot;
+  if (::GetIconInfo(icon, &icon_info))
+    hotspot = gfx::Point(icon_info.xHotspot, icon_info.yHotspot);
+
+  return hotspot;
+}
 SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
                                                  const gfx::Size& s) {
   DCHECK(icon);

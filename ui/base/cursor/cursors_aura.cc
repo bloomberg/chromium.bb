@@ -239,6 +239,7 @@ bool GetCursorBitmap(const Cursor& cursor,
   cursor_loader.SetPlatformCursor(&cursor_copy);
   const std::unique_ptr<SkBitmap> cursor_bitmap(
       IconUtil::CreateSkBitmapFromHICON(cursor_copy.platform()));
+  *point = IconUtil::GetHotSpotFromHICON(cursor_copy.platform());
 #else
   int resource_id;
   if (!GetCursorDataFor(ui::CURSOR_SET_NORMAL,

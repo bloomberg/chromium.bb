@@ -141,6 +141,10 @@ class GFX_EXPORT IconUtil {
                                                     const void* dib_bits,
                                                     size_t dib_size);
 
+  // Given a valid HICON handle representing an icon, this function retrieves
+  // the hot spot of the icon.
+  static gfx::Point GetHotSpotFromHICON(HICON icon);
+
  private:
   // The icon format is published in the MSDN but there is no definition of
   // the icon file structures in any of the Windows header files so we need to
